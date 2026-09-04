@@ -2,7 +2,7 @@
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Library Update Confirm
   FRAME    : B Missing Surfaces.dc.html — B14b   (derived from the lifts on this page — build.py asserts the line below agrees)
-  DECLARED : B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected
+  DECLARED : B Missing Surfaces.dc.html — B14b (its one stale sentence corrected by A9 item 12, 2026-09-04)
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F4 · FR-J14
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -23,7 +23,7 @@
 <header class="proto">
   <a href="index.html">← All surfaces</a>
   <h1 class="name">Library Update Confirm</h1>
-  <span class="frame">B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected</span>
+  <span class="frame">B Missing Surfaces.dc.html — B14b (its one stale sentence corrected by A9 item 12, 2026-09-04)</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F4 · FR-J14</span>
   <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#stale">The stale line</a><a href="#why">Why a confirm exists</a></nav>
@@ -63,7 +63,7 @@
         </div>
         <div style="margin:16px 26px 0;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:9px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" style="flex-shrink:0"><path d="M4 4v6h6"></path><path d="M4 10a8 8 0 0113.6-2.6"></path></svg>
-          <span style="font-size:12px;color:#4A453D;line-height:1.5">We snapshot before redeploying, so this is reversible from history.</span>
+          <span style="font-size:12px;color:#4A453D;line-height:1.5">The version you're on now stays in history and rolls back in one click.</span>
         </div>
         <div style="padding:18px 26px 22px;display:flex;align-items:center;gap:10px">
           <button style="height:38px;padding:0 19px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Update and ship</button>
@@ -71,7 +71,7 @@
           <span style="flex:1"></span>
           <span style="font-size:12px;color:#6E6A64">Nothing changes until you ship.</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="stale"><h2>The one stale line</h2><p>B14b says <i>&ldquo;We snapshot before redeploying, so this is reversible from history.&rdquo;</i> The snapshot is <b>first upload only</b> (FR-J13). What is true, and what the line should say: <b>the version you are on now stays in history and rolls back in one click</b> — every successful compile is stored as an artifact.</p></div><div class="section-head" id="why"><h2>Why a confirm exists at all</h2><p>Compiles always use the current library — a single live library, <b>no per-project pinning</b> — so any redeploy carries every library change since the last deploy, and <b>there is no way to redeploy without them</b>. Because the update is inseparable from the redeploy, the deploy flow makes it consensual instead. What makes that safe is the backward-compatibility contract: designs are never deleted, only <b>superseded</b>; schema changes are append-only or ship a migration map; catalog keys are never reworded in place.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="stale"><h2>The one stale line, and its correction</h2><p>B14b said <i>&ldquo;We snapshot before redeploying, so this is reversible from history.&rdquo;</i> The snapshot is <b>first upload only</b> (FR-J13). Since A9 item 12 it says what is true: <b>&ldquo;The version you&rsquo;re on now stays in history and rolls back in one click&rdquo;</b> — every successful compile is stored as an artifact.</p></div><div class="section-head" id="why"><h2>Why a confirm exists at all</h2><p>Compiles always use the current library — a single live library, <b>no per-project pinning</b> — so any redeploy carries every library change since the last deploy, and <b>there is no way to redeploy without them</b>. Because the update is inseparable from the redeploy, the deploy flow makes it consensual instead. What makes that safe is the backward-compatibility contract: designs are never deleted, only <b>superseded</b>; schema changes are append-only or ship a migration map; catalog keys are never reworded in place.</p></div>
 </main>
 <footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>

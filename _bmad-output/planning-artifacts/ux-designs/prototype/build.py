@@ -412,17 +412,17 @@ page('starter-chooser', 'Starter Chooser', 'Onboarding',
           '<a href="template-binding-checklist.html">Template Binding Checklist</a>.')
 
 page('redesign-proposals', 'Redesign Proposals', 'Onboarding',
-     'B Missing Surfaces.dc.html — B22 (re-specified per ruling R-78 and FR-C7)',
+     'B Missing Surfaces.dc.html — B22 (re-specified per ruling R-78 and FR-C7; corrected by A9 item 9, 2026-09-04)',
      '§ IA → Onboarding · § wrong mechanism → B22 · J1 step 7',
      lift('B Missing Surfaces', caption='B22 · #22', capt='B22 · redesign proposals, after connecting')
-     + head('What changes, and what stays',
-            'The frame draws <b>four per-section swaps</b>. FR-C7 and ruling R-78 make it <b>2–3 whole-site '
-            'starter × Style Pack combinations that differ in layout structure</b> — the card, the NOW / '
-            'PROPOSED pairing and above all the argued-from-your-own-data sentence are the frame&rsquo;s and '
-            'stay; the unit changes, one card per combination instead of one per section. '
-            '<b>The third proposal goes entirely:</b> &ldquo;you have no tag template, so Ghost falls back to '
-            'a bare list&rdquo; is false on Inflozo — <span class="mono">tag.hbs</span> always compiles from '
-            'the Synthesis Defaults. Re-runnable later from the New Project Sheet.', anchor='respec'),
+     + head('What changed, and what stayed — A9 item 9, 2026-09-04',
+            'Until the A9 export the frame drew <b>four per-section swaps</b>. FR-C7 and ruling R-78 make it '
+            '<b>whole-site starter × Style Pack combinations that differ in layout structure</b>, and the frame '
+            'now draws three — the card, the NOW / PROPOSED pairing and above all the argued-from-your-own-data '
+            'sentence kept, one card per combination instead of one per section. '
+            '<b>The third proposal&rsquo;s false line is gone:</b> &ldquo;you have no tag template, so Ghost falls '
+            'back to a bare list&rdquo; was false on Inflozo — <span class="mono">tag.hbs</span> always compiles '
+            'from the Synthesis Defaults. Re-runnable from the New Project Sheet, as the frame now says.', anchor='respec'),
      subs=[SUB('The re-specification', 'respec', 'R-78')])
 
 
@@ -522,9 +522,10 @@ page('sites', 'Sites', 'Dashboard and account',
      subs=[SUB('Connect Site Modal', 'connect-modal', 'S11b'),
            SUB('Sites — Free at one site', 'free', 'S11c'),
            SUB('Sites — empty, and disconnect', 'empty', 'not drawn')],
-     note='<b>The frame&rsquo;s Preview-only row says the wrong thing.</b> S11a offers &ldquo;download the theme '
-          'and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit '
-          'forbids custom themes <b>in Ghost Admin too</b>. B15 already gets this right — see '
+     note='<b>The frame&rsquo;s Preview-only row said the wrong thing until A9 item 11 (2026-09-04).</b> S11a offered '
+          '&ldquo;download the theme and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit '
+          'forbids custom themes <b>in Ghost Admin too</b>. It now says where the zip installs — a self-hosted Ghost, '
+          'or a Ghost(Pro) plan that allows custom themes — matching B15, see '
           '<a href="preview-only-notice.html">Preview-Only Notice</a>. <b>And its &ldquo;Admin key expired Aug '
           '15&rdquo; chip named a cause Ghost never produces</b> — keys never expire; a regenerated or removed key '
           'answers 401 Unknown Admin API Key (see <a href="deploy-failure.html">Deploy Failure</a>). Corrected in '
@@ -536,13 +537,15 @@ page('manage-keys', 'Manage Keys', 'Dashboard and account',
      lift('S11 Sites', caption='S11d ·', capt='S11d · manage API keys — roll or replace')
      + head('And B20&rsquo;s version of the same surface', '', 'B20 · #20 · manage API keys', anchor='b20')
      + lift('B Missing Surfaces', caption='B20 · #20')
-     + head('Three things both frames get wrong',
+     + head('Three things both frames got wrong — A9 item 17 corrected them (2026-09-04)',
             '<b>FR-C8 needs three credentials, not two</b> — the Staff Access Token is addable and removable at '
             'any time, and each credential is shown <b>present or absent with what it enables</b>, never as an '
-            'error badge. <b>B20 invents grantable scopes:</b> Ghost fixes what a Custom Integration token may '
-            'do, so the missing capability is the token, not a permission — there is nothing to grant. '
-            '<b>S11d draws the API URL as an editable field:</b> the site URL is immutable, a domain move is '
-            'disconnect + reconnect, so the affordance is <b>absent</b> rather than present-and-refusing.',
+            'error badge; both frames now draw the three, the token &ldquo;Not added · Add token&rdquo;. '
+            '<b>B20 invented grantable scopes:</b> Ghost fixes what a Custom Integration token may do, so the '
+            'missing capability is the token, not a permission — the frame now says there is nothing to grant. '
+            '<b>S11d drew the API URL as an editable field:</b> the site URL is immutable, a domain move is '
+            'disconnect + reconnect, so the affordance is <b>absent</b> — the URL is now read-only text, '
+            '&ldquo;Fixed for this connection&rdquo;.',
             anchor='respec'),
      subs=[SUB('B20&rsquo;s version', 'b20', 'B20'), SUB('The re-specification', 'respec', 'FR-C8')])
 
@@ -754,8 +757,9 @@ page('editor', 'Editor', 'Editor',
      + lift('P0-1 Inline Text Toolbar', label='P0-1 link popover states')
      + head('B4b, the part of B4 that P0-1 does not supersede',
             'P0-1 supersedes B4a — exactly the four marks and Remove link, no block-type menu, because Inflozo '
-            'does not own the post body (FR-D4). <b>B4b&rsquo;s link entry is kept</b> and gains FR-D9&rsquo;s '
-            'new-tab and <span class="mono">rel</span> options, which neither frame draws.',
+            'does not own the post body (FR-D4); since A9 item 16 (2026-09-04) B4a draws exactly that. '
+            '<b>B4b&rsquo;s link entry is kept</b> and now draws FR-D9&rsquo;s &ldquo;Open in new tab&rdquo; and '
+            '<span class="mono">rel</span> row.',
             anchor='link-entry-b4b')
      + lift('B Missing Surfaces', caption='B4b ·', capt='B4b · link entry')
      + head('At 390 the toolbar docks', '', anchor='toolbar-390')
@@ -763,14 +767,16 @@ page('editor', 'Editor', 'Editor',
      + head('Layers', 'The Site-wide card is pinned above the page&rsquo;s own sections, with a page count, and '
             'cannot be reordered against them.', anchor='layers')
      + lift('B Missing Surfaces', caption='B7 · #7', capt='B7 · layers with site-wide pinned')
-     + head('The frame says &ldquo;on 26 pages&rdquo;, and the unit is templates',
-            'A project has roughly seven to ten <b>templates</b>, not 26 pages (FR-D6).', anchor='layers-fix')
-     + head('Persistence Indicator', 'Four labels, one dot, <b>never a spinner</b>. The expanded panel appears '
+     + head('The frame said &ldquo;on 26 pages&rdquo;; the unit is templates, and since A9 item 13 it says so',
+            'A project has roughly seven to ten <b>templates</b>, not 26 pages (FR-D6). The frame now reads '
+            '&ldquo;on all 9 templates&rdquo; (2026-09-04).', anchor='layers-fix')
+     + head('Persistence Indicator', 'Five labels, one dot, <b>never a spinner</b>. The expanded panel appears '
             'only on Retrying, and its first sentence is the reassurance.', anchor='persistence')
-     + lift('B Missing Surfaces', caption='B6 · #6', capt='B6 · persistence, four states')
+     + lift('B Missing Surfaces', caption='B6 · #6', capt='B6 · persistence, five states')
      + head('And the fifth state FR-D10 requires',
-            'The <b>no-local-storage fallback</b> — &ldquo;syncing every change to the cloud&rdquo; — because a '
-            'false &ldquo;Saved on this device&rdquo; is the one thing this indicator must never say. Not drawn.',
+            'The <b>no-local-storage fallback</b> — &ldquo;Syncing every change to the cloud&rdquo; — because a '
+            'false &ldquo;Saved on this device&rdquo; is the one thing this indicator must never say. Drawn since '
+            'A9 item 18 (2026-09-04).',
             anchor='persistence-fix')
      + head('Content Source Pill', 'It describes the canvas, so it sits over the canvas. Solid hairline with a '
             'mint dot when the content is real; dashed with grey when it is sample.', anchor='content-source')
@@ -797,11 +803,11 @@ page('editor', 'Editor', 'Editor',
      + head('Site Remix', 'One button re-rolls every design, keeping every word. <b>One undo, always</b> — a '
             'Shuffle is several operations and <i>one</i> edit.', anchor='remix')
      + lift('B Missing Surfaces', caption='B8 · #8', capt='B8 · site remix')
-     + head('B8 loses a control and gains one',
+     + head('B8 lost a control and gained one — A9 item 15, 2026-09-04',
             '<b>Ruling R-77 drops &ldquo;Keep Free designs only&rdquo;</b> — Remix always re-rolls from the '
-            'whole library and the Pro Exit Sheet catches it at deploy. And FR-D17&rsquo;s own axis is '
-            '<b>what</b> is re-rolled — Style Pack, designs, or both — which the frame has no control for; it '
-            'is added as a second radio-card group above the existing scope group.', anchor='remix-fix')
+            'whole library and the Pro Exit Sheet catches it at deploy; the toggle is gone. And FR-D17&rsquo;s '
+            'own axis is <b>what</b> is re-rolled — Style Pack, designs, or both — now drawn as '
+            '&ldquo;Re-roll what&rdquo; above &ldquo;Re-roll where&rdquo;.', anchor='remix-fix')
      + head('Auto-Generated Marker',
             'An untouched Tag archive rendering its default stack. The same sentence in two places — a chip in the '
             'top bar beside the template name and a row at the head of Layers — &ldquo;Auto-generated — edit '
@@ -912,9 +918,9 @@ page('editor-narrow', 'Editor Below 1440', 'Editor',
             'As any irreversible confirm opens, focus is on the <b>cancelling</b> action, never on the danger fill. '
             'The subject is B5c&rsquo;s &ldquo;Take over from Rosa?&rdquo;; the same rule governs Delete account, '
             'Roll back, project delete, delete-in-use assets and &ldquo;Overwrite and ship anyway&rdquo;. D8f '
-            'inherits B5c&rsquo;s wording — &ldquo;7 unsynced <i>changes</i>&rdquo; — where §AD2 makes '
-            '<i>edits</i> canonical (the <a href="edit-lock.html#respec">one deviation on Edit Lock</a>); D8g '
-            'already says edits.', 'D8f · a destructive confirm, as it opens · 620', anchor='destructive-confirm')
+            'inherited B5c&rsquo;s wording — &ldquo;7 unsynced <i>changes</i>&rdquo; — where §AD2 makes '
+            '<i>edits</i> canonical; A9 item 4 corrected both frames on 2026-09-04 (the '
+            '<a href="edit-lock.html#respec">one deviation on Edit Lock</a>), and D8g already said edits.', 'D8f · a destructive confirm, as it opens · 620', anchor='destructive-confirm')
      + lift('D8 Editor Below 1440', label='D8f Destructive confirm'),
      subs=[SUB('At 834 — tablet', 'tablet', 'D8a'), SUB('The overflow menu', 'overflow', 'D8a'),
            SUB('At 720 — 200% zoom', 'zoom', 'D8b'), SUB('The skip link', 'skip-link', 'D8c'),
@@ -972,12 +978,12 @@ page('routes-manager', 'Routes Manager', 'Editor',
      'S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route',
      '§ IA → Editor · § wrong mechanism → S9 · § State Patterns → Routes Manager',
      lift('S9 Routes', label='S9a Routes manager', capt='S9a · routes &amp; templates · 1440')
-     + head('Two rows the frame draws that have to go',
+     + head('Two rows the frame drew that had to go — gone since A9 item 8 (2026-09-04)',
             'A membership page emits <b>no route</b> — it is <span class="mono">custom-{name}.hbs</span>, bound '
-            'from Ghost&rsquo;s page editor, so <span class="mono">/subscribe/ : members-signup</span> goes. '
+            'from Ghost&rsquo;s page editor, so <span class="mono">/subscribe/ : members-signup</span> went. '
             'And <span class="mono">home.hbs</span> resolves for the root by itself; a '
             '<span class="mono">routes:</span> entry for <span class="mono">/</span> also removes the index '
-            'collection, which breaks <span class="mono">/page/2/</span> — so that row goes too (FR-I1/I5).',
+            'collection, which breaks <span class="mono">/page/2/</span> — so that row went too (FR-I1/I5), and the YAML pane now opens with the index collection ahead of any custom one.',
             anchor='respec')
      + head('YAML error', 'Line-numbered, and <b>deploys are blocked until routing is valid — the Ship button '
             'carries the reason</b> rather than failing later.', anchor='error')
@@ -1044,15 +1050,16 @@ page('theme-settings', 'Theme Settings', 'Editor',
             capt='D6c · the text-prop promote confirm — detail at 520')
      + head('Translations', 'Every chrome string the theme prints.', anchor='translations')
      + lift('B Missing Surfaces', caption='B18 · #18', capt='B18 · translations · 940')
-     + head('B18&rsquo;s keys are the wrong shape',
-            'The frame draws flat keys — <span class="mono">subscribe</span>, '
+     + head('B18&rsquo;s keys were the wrong shape until A9 item 14 (2026-09-04)',
+            'The frame drew flat keys — <span class="mono">subscribe</span>, '
             '<span class="mono">read_more</span>. FR-Q6 makes them <b>dotted '
             '<span class="mono">namespace.name</span></b> — <span class="mono">member.signup_cta</span>, '
             '<span class="mono">post.reading_time</span>, <span class="mono">archive.empty_heading</span> — '
-            'because a flat catalogue collides the moment two surfaces both want &ldquo;subscribe&rdquo;. '
-            'FR-Q8 adds a <b>brace-refusal error state</b>: a malformed interpolation token is a whole-site '
-            '500. The RTL acknowledgement is right, and FR-Q6 requires it <b>repeated as a pre-deploy '
-            'warning</b> on the Pre-flight Check.', anchor='translations-fix'),
+            'because a flat catalogue collides the moment two surfaces both want &ldquo;subscribe&rdquo;; the '
+            'frame now draws them, and FR-Q8&rsquo;s <b>brace-refusal error row</b> — &ldquo;Braces would break '
+            'every page of your site&rdquo;, because a malformed interpolation token is a whole-site 500. The '
+            'RTL acknowledgement is right, and FR-Q6 requires it <b>repeated as a pre-deploy warning</b> on the '
+            'Pre-flight Check.', anchor='translations-fix'),
      subs=[SUB('The four corrections', 'respec', 'A6 → D6a'),
            SUB('Custom Settings Builder — the additions', 'additions', 'D6a'),
            SUB('Theme Settings, completed', 'completed', 'D6a'),
@@ -1171,14 +1178,14 @@ page('edit-lock', 'Edit Lock', 'Editor',
      + lift('B Missing Surfaces', caption='B5b ·', capt='B5b · request arrives for the holder')
      + head('The takeover', '', anchor='takeover')
      + lift('B Missing Surfaces', caption='B5c ·', capt='B5c · takeover with unsynced edits')
-     + head('One deviation from B5c, and it is not optional',
-            'The frame itemises the loss per section — &ldquo;Home hero — design and two controls · Footer — '
+     + head('One deviation from B5c, no longer needed — A9 item 4 (2026-09-04)',
+            'The frame itemised the loss per section — &ldquo;Home hero — design and two controls · Footer — '
             'three link labels · Post template — measure&rdquo;. <b>That detail does not exist.</b> The '
             'heartbeat carries <span class="mono">unsynced_edits</span> and nothing else; the requester&rsquo;s '
-            'browser has never seen the holder&rsquo;s journal. The modal keeps its shape, its danger fill and '
-            'its &ldquo;Or message Rosa&rdquo; escape, and its body becomes: <b>&ldquo;7 unsynced edits will be '
-            'lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> '
-            'Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b>.',
+            'browser has never seen the holder&rsquo;s journal. The frame now keeps its shape, its danger fill and '
+            'its &ldquo;Or message Rosa&rdquo; escape, and its body reads: <b>&ldquo;7 unsynced edits will be '
+            'lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> — '
+            '<i>edits</i>, as <b>§AD2 makes canonical everywhere</b>.',
             anchor='respec')
      + head('Deploy and export from a read-only session — the fourth state',
             'Ship it or Export first prompts a take-over, <b>surfacing the unsynced edits that exist '
@@ -1244,12 +1251,12 @@ page('deploy-destination', 'Deploy Destination', 'Deploy',
      + head('Preview-Only Destination', 'The site cannot take a custom theme, so the exit is <b>export</b> '
             'instead of deploy.', anchor='preview-only')
      + lift('S8 Deploy', caption='S8a′ ·', capt='S8a′ · step 1 variant — Ghost(Pro) Starter, preview-only')
-     + head('And its copy is wrong in the way that wastes an afternoon',
-            'S8a′ says &ldquo;download your theme and upload it in Ghost Admin&rdquo;. <b>Starter&rsquo;s '
+     + head('Its copy was wrong in the way that wastes an afternoon — A9 item 11 fixed it (2026-09-04)',
+            'S8a′ said &ldquo;download your theme and upload it in Ghost Admin&rdquo;. <b>Starter&rsquo;s '
             '<span class="mono">customThemes</span> limit forbids custom themes in Ghost Admin too</b> — it is '
             'a plan limit, not an API limit, so the manual route does not exist either. The zip still downloads '
-            'on every plan (FR-J12); what the copy must say is where it can be installed: a self-hosted Ghost, '
-            'or a Ghost(Pro) plan that allows custom themes. B15 already gets this right.', anchor='preview-fix'),
+            'on every plan (FR-J12), and the frame now says where it installs: a self-hosted Ghost, or a '
+            'Ghost(Pro) plan that allows custom themes — matching B15.', anchor='preview-fix'),
      subs=[SUB('What the first deploy adds', 'first-deploy', 'D1a'),
            SUB('Preview-Only Destination', 'preview-only', 'S8a′'),
            SUB('Its copy correction', 'preview-fix', 'FR-C2')])
@@ -1543,14 +1550,14 @@ page('pro-exit-sheet', 'Pro Exit Sheet', 'Deploy',
           'the section picker, or on click of a Pro badge.</b>')
 
 page('library-update-confirm', 'Library Update Confirm', 'Deploy',
-     'B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected',
+     'B Missing Surfaces.dc.html — B14b (its one stale sentence corrected by A9 item 12, 2026-09-04)',
      '§ IA → Deploy · flow F4 · FR-J14',
      lift('B Missing Surfaces', caption='B14b · #14', capt='B14b · redeploy confirmation')
-     + head('The one stale line',
-            'B14b says <i>&ldquo;We snapshot before redeploying, so this is reversible from history.&rdquo;</i> '
-            'The snapshot is <b>first upload only</b> (FR-J13). What is true, and what the line should say: '
-            '<b>the version you are on now stays in history and rolls back in one click</b> — every successful '
-            'compile is stored as an artifact.', anchor='stale')
+     + head('The one stale line, and its correction',
+            'B14b said <i>&ldquo;We snapshot before redeploying, so this is reversible from history.&rdquo;</i> '
+            'The snapshot is <b>first upload only</b> (FR-J13). Since A9 item 12 it says what is true: '
+            '<b>&ldquo;The version you&rsquo;re on now stays in history and rolls back in one click&rdquo;</b> — '
+            'every successful compile is stored as an artifact.', anchor='stale')
      + head('Why a confirm exists at all',
             'Compiles always use the current library — a single live library, <b>no per-project pinning</b> — '
             'so any redeploy carries every library change since the last deploy, and <b>there is no way to '
@@ -1596,15 +1603,15 @@ page('deploy-history', 'Deploy History', 'Deploy',
            SUB('Free', 'free', 'D2c'), SUB('The limit line', 'limit', 'F8')])
 
 page('preview-only-notice', 'Preview-Only Notice', 'Deploy',
-     'B Missing Surfaces.dc.html — B15 (right, apart from the plan name)',
+     'B Missing Surfaces.dc.html — B15 (right; its plan name corrected by A9 item 10, 2026-09-04)',
      '§ IA → Deploy · flow F5 · § wrong mechanism → B15 · FR-C2',
      lift('B Missing Surfaces', caption='B15 · #15', capt='B15 · preview-only connection')
-     + head('One word on it is wrong',
-            'B15 says upgrade to Ghost(Pro) <b>Creator</b>. Ghost&rsquo;s 2026 lineup is <b>Starter / Publisher '
-            '/ Business</b>, so it is <b>Publisher or higher</b> — read at ghost.org/pricing on 2026-09-03, a page '
-            'read and not an executed probe, so VERIFY-AT-BUILD item 1 stays ⛔ until the Starter trial. '
-            'Everything else on this frame is right, and '
-            'S8a′ and S11a move to match <i>it</i> rather than the other way round.', anchor='respec')
+     + head('One word on it was wrong',
+            'B15 said upgrade to Ghost(Pro) <b>Creator</b>. Ghost&rsquo;s 2026 lineup is <b>Starter / Publisher '
+            '/ Business</b>, so it is <b>Publisher or higher</b> — the frame says so since A9 item 10 — read at '
+            'ghost.org/pricing on 2026-09-03, a page read and not an executed probe, so VERIFY-AT-BUILD item 1 '
+            'stays ⛔ until the Starter trial. Everything else on this frame is right, and S8a′ and S11a now '
+            'match <i>it</i>.', anchor='respec')
      + head('Probed, never asked',
             'At connect, <span class="mono">hostSettings.limits.customThemes</span> is read. <b>It is a '
             'theme-name allowlist, not a yes/no flag</b>: <span class="mono">@tryghost/limit-service</span> declares '

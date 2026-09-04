@@ -38,17 +38,19 @@ patches this file used to carry (S11c, S12a, S12b, M5, S10b — §A12 decision 2
 now say what the patches used to say, and `check()` still refuses any plan string the PRD overrides,
 so the export cannot quietly regress. The same pass corrected the wrong-mechanism frames decision 6
 held out (B12, B13a, B16, B19, B24, B11, S4d, B23a, S8c), so they are lifted as drawn. What A7 did
-NOT touch stays out: Redesign Proposals (B22, R-78) and Translations (B18, FR-Q6) — see NOT_YET.
+NOT touch — Redesign Proposals (B22, R-78) and Translations (B18, FR-Q6) — A9 corrected on 2026-09-04,
+and both are lifted: J1 runs Auto-Branding → Redesign Proposals → Editor, and the Theme Settings rail
+row opens Translations.
 Prompts A1–A6 and A8 drew the surfaces that had no frame — D1 the first-deploy gates, D2 history
 with pinning, D3 the drift report, D4 the dashboard sheets, D5 the canvas markers and the complete
 template switcher, D6 Theme Settings completed, D8 the editor below 1440 — and every one is lifted
 below under a `# D<n>` comment.
 
 WHERE THE PRD STILL OVERRIDES THE FRAME, AND EVERY PATCH SAYS SO (F-007, F-008). R-74 gives the
-export the construction; `prd.md` keeps behaviour and strings. Two sentences remain the PRD's: the
-Preview-only destination copy on S8a′ and S11a (FR-J12 — Starter forbids custom themes in Ghost Admin
-too; A7 did not list it and the frame still carries the old sentence) and B15's Ghost(Pro) plan name
-(FR-C2 — Publisher, not Creator). Each `patch()` carries a comment naming the ruling it serves.
+export the construction; `prd.md` keeps behaviour and strings. Since the A9 export (2026-09-04) no
+string is patched: the Preview-only destination copy on S8a′ and S11a (FR-J12) and B15's Ghost(Pro)
+plan name (FR-C2) were the last two, and A9 items 10 and 11 put them in the frames. `check()` still
+refuses any plan string the PRD overrides, so a regression fails the build.
 
 WHAT IS PATCHED INTO A FRAME, AND WHAT IS NOT. A lift is patched only with links, ids, classes,
 hooks and the PRD's own strings — never with markup in a second vocabulary. Every overlay is a
@@ -545,9 +547,17 @@ for ph in ('8d41c0a97b', '65a3f'):
 page('connect-keys', 'Paste your keys', fill(ck))
 
 ab = unbox(region('S2 Onboarding', label='S2c Auto branding'))
-# F-008 (decision 6): Redesign Proposals (B22) is held out until a Claude Design pass redraws it (R-78; A7 did not), so J1 goes Auto-Branding → Editor
-ab = link(ab, ('Use your brand', 'editor.html'), ('Skip', 'editor.html'))
+# J1 step 7: A9 item 9 (2026-09-04) redrew Redesign Proposals (B22) as R-78 rules — three whole-site proposals —
+# so J1 goes Auto-Branding → Redesign Proposals → Editor (decision 6's hold-out is over)
+ab = link(ab, ('Use your brand', 'redesign-proposals.html'), ('Skip', 'redesign-proposals.html'))
 page('auto-branding', 'Your brand', fill(ab))
+
+# B22 · Redesign Proposals, after connecting — lifted as A9 corrected it. Every proposal's door and the
+# as-is door land on the editor; a proposal's Preview has no drawn result (NOT_YET).
+rp = region('B Missing Surfaces', caption='B22 ·')          # the lift is the 820 sheet itself (as B15, B14b) — card() would keep only its header strip
+rp = link_all(rp, 'Use this', 'editor.html')
+rp = wire(rp, ('Use Letterpress', 'editor.html'), ('Start from my site as-is', 'editor.html'))
+page('redesign-proposals', 'Redesign proposals', fill(rp, centre=True))
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -573,7 +583,8 @@ def acct_menu(h, trigger_style):
 
 
 # D4a · the New Project Sheet, over the dashboard — FR-B2's four doors. Its sheet alone is lifted (F-010);
-# the dashboard behind it is this page. Redesign is drawn greyed with its reason, so it goes nowhere.
+# the dashboard behind it is this page. Redesign is drawn greyed with its reason, so it goes nowhere here
+# (B22 itself is reached on J1, after Auto-Branding).
 new_project = modal(region('D4 Dashboard Sheets and Blocks', label='D4a New project sheet'))
 new_project = link(new_project, ('Start from a starter', 'starter-chooser.html'), ('Blank canvas', 'editor.html'),
                                 ('Create project', 'editor.html'), ('Connect a site', 'sites.html'),
@@ -668,18 +679,13 @@ sites = menu_above(sites, 'Re-check connection', 'site-menu')
 sites = trigger(sites, '⋯', 'site-menu')
 sites = link(sites, ('Manage API keys', 'manage-keys.html'))
 sites = trigger(sites, 'Connect site', 'connect-site')
-# B15 · the Preview-only chip raises the preview-only notice (corrected here: FR-C2 names Publisher, not Creator — PRD copy, decision 6)
+# B15 · the Preview-only chip raises the preview-only notice (FR-C2 names Publisher; the frame says so since A9 item 10)
 sites = trigger(sites, 'Preview-only', 'preview-only')
-# F-008 (decision 6) · F5 / FR-J12: Starter's customThemes limit forbids custom themes in Ghost Admin too;
-# the zip downloads on every plan and installs on self-hosted Ghost or a Ghost(Pro) plan that allows custom themes.
-# A7 did not list this sentence and the 2026-09-04 frame still carries it — verified by grep — so the patch stays.
-sites = patch(sites, ('Starter plans can\'t take API uploads — download the theme and upload it in Ghost Admin.',
-                      'Ghost(Pro) Starter doesn\'t allow custom themes. Your theme still downloads — install it on '
-                      'self-hosted Ghost, or on a Ghost(Pro) plan that allows custom themes.'))
+# F-008 (decision 6) · F5 / FR-J12: the frame carries the corrected sentence since A9 item 11 (2026-09-04); the patch is gone.
 connect = card(region('S11 Sites', caption='S11b ·'))
 connect = attr(connect, 'Cancel', 'data-close') if '>Cancel<' in connect else connect
 pon = region('B Missing Surfaces', caption='B15 ·')
-pon = patch(pon, ('Ghost(Pro) Creator or above', 'Ghost(Pro) Publisher or higher'))      # FR-C2 · EXPERIENCE.md § wrong mechanism, B15
+# FR-C2: the frame says Publisher or higher since A9 item 10 (2026-09-04); check() refuses 'Creator or above'.
 pon = attr(pon, 'Re-check plan', 'data-close')
 page('sites', 'Sites', fill(sites) + sheet('connect-site', connect) + sheet('preview-only', pon)
      + bar(('Ship to a preview-only site (F5)', 'deploy-preview-only.html')))
@@ -1020,16 +1026,22 @@ page('style-guide', 'Style-guide article', fill(sg) + sheet('subject', subject_g
 # D6a · Theme Settings, completed (A6): posts_per_page first, the logo read-only, the project's dark mode,
 # Credits, the 3 OF 17 meter, the builder with group and visibility; D6c · the text-prop promote confirm
 theme = unbox(region('D6 Theme Settings Completed', label='D6a Theme settings Pro'))
-theme = group(theme, 'settings-nav', 'Site basics', 'Navigation', 'Social accounts', 'Translations', 'Code injection')
+theme = group(theme, 'settings-nav', 'Site basics', 'Navigation', 'Social accounts', 'Code injection')
+# B18 · the rail row opens Translations, lifted as A9 item 14 corrected it (dotted keys, the refused row)
+theme = link(theme, ('Translations', 'translations.html'))
 theme = group(theme, 'mode', 'Light only', 'Light + Dark')
 theme = trigger(theme, '>Promote<', 'promote-text')
-# F-034: no self-links — Translations (B18) has no page here (FR-Q6 re-specifies it and A7 did not draw it); Clear has no drawn result
+# F-034: no self-links — Clear has no drawn result
 theme = wire(theme, ('Ship update', 'deploy-again.html'), ('Preview', 'preview-mode.html'), ('Orbit Weekly', 'editor.html'))
 promote = widen(white(region('D6 Theme Settings Completed', label='D6c Text prop confirm')), 464)
 promote = attr(promote, '>Cancel<', 'data-close')
 promote = attr(promote, 'Promote it', 'data-close')
 page('theme-settings', 'Theme settings', fill(theme) + sheet('promote-text', promote)
      + bar(('← Editor', 'editor.html'), ('On Free', 'theme-settings-free.html')))
+
+# B18 · Translations — the 940 card; Add and Understood have no drawn result, so the bar is the way back
+tr = region('B Missing Surfaces', caption='B18 ·')          # the 940 sheet itself
+page('translations', 'Translations', fill(tr, centre=True) + bar(('← Theme settings', 'theme-settings.html')))
 # D6b · Theme Settings on Free — A6 drew the two rows that differ (credits greyed with its reason; a light-only project), as details
 _d6b = region('D6 Theme Settings Completed', label='D6b Theme settings Free')
 tfree = ''.join(widen(white(child(_d6b, n)), 648) for n in range(2))
@@ -1264,12 +1276,7 @@ page('deploy-again', 'Ship it', '<div data-wizard data-at="1">'
            ('Template binding checklist (B19)', 'open:binding'), ('History', 'deploy-history.html')))
 
 po = card(region('S8 Deploy', caption='S8a′ ·'))
-# F-008 (decision 6) · F5 / FR-J12: the manual Ghost Admin route does not exist on Starter either.
-# A7 did not list this sentence and the 2026-09-04 frame still carries it — verified by grep — so the patch stays.
-po = patch(po, ("Ghost(Pro)'s Starter plan doesn't accept custom themes over the API. Download your theme and "
-                "upload it in Ghost Admin — or upgrade your Ghost plan to ship directly from here.",
-                "Ghost(Pro)'s Starter plan doesn't allow custom themes. Your theme still downloads — install it on "
-                "self-hosted Ghost or a Ghost(Pro) plan that allows custom themes — or upgrade your Ghost plan to ship from here."))
+# F-008 (decision 6) · F5 / FR-J12: the frame carries the corrected sentence since A9 item 11 (2026-09-04); the patch is gone.
 po = wire(po, ('Download theme', 'sites.html'), ('Which Ghost plans work? ↗', 'pricing.html'))
 page('deploy-preview-only', 'Preview-only', fill(po, centre=True) + bar(('← Sites', 'sites.html')))
 
@@ -1359,12 +1366,10 @@ NOT_YET = {
         ('The partial-success history row (D2d) — D2a draws v5 as an ordinary row, so the bar raises it', 'no drawn trigger', 'deploy-history'),
         ('The tablet device preview — B11 draws Desktop and Mobile', 'no frame', 'device-preview'),
     ],
-    'Drawn on a mechanism a ruling re-specifies, and prompt A7 did not correct it — held out': [
-        ('Redesign Proposals (B22) — held out entirely; J1 goes Auto-Branding → Editor, and D4a\'s door is drawn greyed', 'R-78 / FR-C7', 'auto-branding'),
-        ('Translations (B18) — flat keys where FR-Q6 rules dotted namespace.name; D6a\'s rail row is unwired', 'FR-Q6', 'theme-settings'),
-    ],
     'States and canvases no frame draws — the surface is here, the state is not': [
         ('The empty canvas — Blank canvas and Start empty land on the drawn canvas', 'no frame', 'editor'),
+        ('A redesign proposal\'s Preview (B22) — Use this and Use Letterpress land on the editor; D4a\'s Redesign door is drawn greyed with its reason', 'no frame', 'redesign-proposals'),
+        ('Translations — Add a locale and the RTL notice\'s Understood have no drawn result', 'no frame', 'translations'),
         ('Template canvases the switcher lists and no frame draws: ' + UNDRAWN_TEMPLATES + ' — A5 drew Tag and Author', 'no frame', 'editor'),
         ('The editor below 1440 is the resting editor only (D8a, D8b); hover, selected, shuffle and the D5 canvases are drawn at 1440', 'A8 drew the rest state', 'editor'),
         ('Connect · Keys with a bad key — Connect always succeeds', 'no frame', 'connect-keys'),
@@ -1424,10 +1429,10 @@ def build_screens_index():
     build refuses to report success if one is not, if any link is dead, or if a screen has nothing that responds.</p>
   <div class="idxgrid" style="margin-top:22px">{rows}</div>
   <h2 style="font-size:18px;margin:32px 0 6px">Not in this cut, and why</h2>
-  <p class="helper" style="max-width:74ch;margin-bottom:12px">Three lists, because three different things are
-    true. Some surfaces are <b>drawn as detail cards</b> with nothing on the app frame to raise them. Two are <b>drawn on a
-    mechanism a ruling re-specifies</b> and prompt A7 did not correct them, so they are held out. And some <b>states and
-    canvases</b> of a surface that is here were never drawn — the template list is derived from the switcher itself.</p>
+  <p class="helper" style="max-width:74ch;margin-bottom:12px">Two lists, because two different things are
+    true. Some surfaces are <b>drawn as detail cards</b> with nothing on the app frame to raise them. And some <b>states and
+    canvases</b> of a surface that is here were never drawn — the template list is derived from the switcher itself.
+    (B22 and B18, held out until A9 corrected them on 2026-09-04, are in.)</p>
   {missing}
   <p class="helper" style="margin-top:24px"><a href="_selfcheck.html">app.js self-check</a> ·
     <a href="../prototype/index.html">step 5b — the annotated prototype</a></p>

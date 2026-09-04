@@ -43,12 +43,10 @@
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <span style="font-size:12px;font-weight:500;color:#6E6A64">API URL</span>
-          <div style="display:flex;align-items:center;gap:8px;height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;background:#F7F5F2">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6E6A64;flex:1">https://orbitweekly.com</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="cursor:pointer"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          </div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:12px;font-weight:500;color:#6E6A64">Site URL</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#1C1B1A">https://orbitweekly.com</span>
+          <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Fixed for this connection. Moving the site to a new domain means disconnecting and connecting again.</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Admin API key</span>
@@ -57,6 +55,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="cursor:pointer" title="Show"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer;border-left:1px solid #E7E2DB;padding-left:10px">Paste new</span>
             </div>
+            <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Uploads your theme when you ship.</span>
           </div>
         <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Content API key</span>
@@ -65,6 +64,15 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="cursor:pointer" title="Show"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer;border-left:1px solid #E7E2DB;padding-left:10px">Paste new</span>
             </div>
+            <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Reads your posts, pages and tags, so previews use your real content.</span>
+          </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;font-weight:500;color:#6E6A64">Staff Access Token</span>
+            <div style="display:flex;align-items:center;gap:8px;height:40px;border:1px dashed #C9C2B8;border-radius:8px;padding:0 12px;background:#FFFFFF">
+              <span style="font-size:13px;color:#6B6459;flex:1">Not added</span>
+              <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer">Add token</span>
+            </div>
+            <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Uploads routes.yaml, and reads the live theme for the snapshot and the drift report. Add or remove it at any time.</span>
           </div>
         <div style="display:flex;align-items:center;gap:9px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:10px;padding:10px 13px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
@@ -96,7 +104,7 @@
               <span style="width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F1EDE7"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></span>
             </div>
             <div style="display:flex;align-items:center;gap:14px">
-              <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">themes · settings · content</span>
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.45;flex:1">Uploads your theme when you ship.</span>
               <span style="margin-left:auto;font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">Rotate</span>
             </div>
           </div>
@@ -110,8 +118,18 @@
               <span style="width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F1EDE7"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></span>
             </div>
             <div style="display:flex;align-items:center;gap:14px">
-              <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">read-only · posts, pages, tags</span>
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.45;flex:1">Reads your posts, pages and tags, so previews use your real content.</span>
               <span style="margin-left:auto;font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">Rotate</span>
+            </div>
+          </div>
+          <div style="border:1px dashed #C9C2B8;border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="font-size:12.5px;font-weight:600;flex:1">Staff Access Token</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C9C2B8"></span><span style="font-size:11.5px;color:#6B6459">Not added</span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.45;flex:1">Uploads routes.yaml, and reads the live theme for the snapshot and the drift report.</span>
+              <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer;flex-shrink:0">Add</span>
             </div>
           </div>
           <div style="background:#FBF9F5;border:1px solid #E7E2DB;border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:9px">
@@ -122,11 +140,11 @@
             <div style="display:flex;flex-direction:column;gap:6px">
               <div style="display:flex;align-items:center;gap:9px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#146F50" stroke-width="2.6" stroke-linecap="round" style="flex-shrink:0"><polyline points="5 13 10 18 19 6"></polyline></svg><span style="font-size:12px;color:#3A3835;flex:1">Read the site's posts and pages</span></div>
               <div style="display:flex;align-items:center;gap:9px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#146F50" stroke-width="2.6" stroke-linecap="round" style="flex-shrink:0"><polyline points="5 13 10 18 19 6"></polyline></svg><span style="font-size:12px;color:#3A3835;flex:1">Read and upload themes</span></div>
-              <div style="display:flex;align-items:center;gap:9px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A6100" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg><span style="font-size:12px;color:#3A3835;flex:1">Write settings — needed for automatic routes upload</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A6100" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg><span style="font-size:12px;color:#3A3835;flex:1">Upload routes.yaml — needs a Staff Access Token</span></div>
             </div>
             <div style="display:flex;align-items:center;gap:9px;border-top:1px solid #EFEAE2;padding-top:9px">
               <span style="height:30px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:9px;display:flex;align-items:center;padding:0 11px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F1EDE7">Test again</span>
-              <span style="font-size:11px;color:#6E6A64;line-height:1.45;flex:1">One permission short — routes need the manual card until it is granted.</span>
+              <span style="font-size:11px;color:#6E6A64;line-height:1.45;flex:1">No token yet — routes use the manual card until you add one.</span>
             </div>
           </div>
         </div>
@@ -135,7 +153,7 @@
           <span style="flex:1"></span>
           <span style="font-size:11.5px;color:#6E6A64">Rotating a key disconnects this site until you paste the new one.</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>Three things both frames get wrong</h2><p><b>FR-C8 needs three credentials, not two</b> — the Staff Access Token is addable and removable at any time, and each credential is shown <b>present or absent with what it enables</b>, never as an error badge. <b>B20 invents grantable scopes:</b> Ghost fixes what a Custom Integration token may do, so the missing capability is the token, not a permission — there is nothing to grant. <b>S11d draws the API URL as an editable field:</b> the site URL is immutable, a domain move is disconnect + reconnect, so the affordance is <b>absent</b> rather than present-and-refusing.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>Three things both frames got wrong — A9 item 17 corrected them (2026-09-04)</h2><p><b>FR-C8 needs three credentials, not two</b> — the Staff Access Token is addable and removable at any time, and each credential is shown <b>present or absent with what it enables</b>, never as an error badge; both frames now draw the three, the token &ldquo;Not added · Add token&rdquo;. <b>B20 invented grantable scopes:</b> Ghost fixes what a Custom Integration token may do, so the missing capability is the token, not a permission — the frame now says there is nothing to grant. <b>S11d drew the API URL as an editable field:</b> the site URL is immutable, a domain move is disconnect + reconnect, so the affordance is <b>absent</b> — the URL is now read-only text, &ldquo;Fixed for this connection&rdquo;.</p></div>
 </main>
 <footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>

@@ -44,7 +44,7 @@ DOCS = [
   'Step 5. The information architecture, the state patterns, the accessibility floor, the four '
   'journeys and the eight flows. EVERY SURFACE HAS ONE STABLE NAME and either points at a drawn '
   'frame by filename or names the frame it extrapolates from — step 5b keys its prototype pages off '
-  'those names (R-75). Its Appendix A carries the Claude Design prompts that drew the undrawn surfaces and corrected the frames — run, and landed 2026-09-04, verified in reconcile-designs-decisions.md §A15, with A9 for the misses. '
+  'those names (R-75). Its Appendix A carries the Claude Design prompts that drew the undrawn surfaces and corrected the frames — run, and landed 2026-09-04, verified in reconcile-designs-decisions.md §A15 — A9, the corrections pass for that export’s misses, ran and landed the same day. '
   'Also the record of §37.7 re-verified against the export: the Paywall editor turned out to be '
   'drawn at C Post Body C3a.'),
  ('ux-designs/WALK-NOTES.md', 'live', "The owner's walk notes — an optional notebook",
@@ -538,7 +538,7 @@ GROUPS = [
   'four on later ones; history pins; the dashboard sheets open; in the editor the complete switcher, the canvas markers, the skip '
   'link and the 834/720 layouts are there, P opens Preview, Esc leaves it, L hides Layers, and ] and [ step the design ring '
   'between its two drawn positions — and every key passes the WCAG 2.1.4 typing guard. WHAT IS HELD OUT is listed in '
-  '`_screens.html`: detail cards with no drawn trigger, the two wrong-mechanism frames A7 left (B22, B18 — prompt A9), and '
+  '`_screens.html`: detail cards with no drawn trigger, and '
   'states no frame draws. Two files are not product screens, both `_`-prefixed: '
   '`_screens.html` (the jump list and those lists) and `_selfcheck.html` (drives the hooks build-app.py '
   'attaches and prints ALL PASS). Shared with 5b, exactly: `../frames.py`, `../prototype/styles.css` (plus '

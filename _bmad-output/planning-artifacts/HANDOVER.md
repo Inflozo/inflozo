@@ -115,8 +115,8 @@ walk four, and history pins; the dashboard raises its sheets; in the editor the 
 switcher, the canvas markers, the skip link and the 834 and 720 layouts are there, `P` opens Preview,
 `Esc` leaves it, `L` hides Layers, `]` and `[` and the drawn ◀ ▶ step the design ring between its two
 drawn positions, and every key passes the WCAG 2.1.4 typing guard. **What is held out** is listed in
-`_screens.html` — detail cards with no drawn trigger (the on-section design nav among them), the two
-wrong-mechanism frames A7 left (B22, B18 — prompt A9), and states no frame draws. The owner read 5b and
+`_screens.html` — detail cards with no drawn trigger (the on-section design nav among them), and states no
+frame draws; B22 and B18 are in since A9 corrected them. The owner read 5b and
 said the true thing: its annotations are exactly what stop it feeling like the product. They are also
 the point of it, so 5c drops them and adds behaviour instead. **What is shared with 5b is exactly
 four things** — `../frames.py`, `../prototype/styles.css`, and `FONTS` and `LIMITS` (Appendix F.1)
@@ -206,7 +206,7 @@ the owner's instruction to clear them before step 5, and R-29's long-outstanding
 
 **Step 4's design work has finished.** Patch passes two to five all ran and were verified
 (`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
-record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **One follow-up prompt is owed — A9** (`EXPERIENCE.md` Appendix A; on `APPENDIX-A-PROMPTS.html`): its first half is the misses of the 2026-09-04 export, its second half the frames the UX pass had deferred, and **the owner ruled on 2026-09-04 that both halves run in one session (R-86)**; the same day he ruled the touch-device threshold at 834 (R-87), so § Responsive, the walkthrough and D8a agree. It blocks nothing.
+record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **A9 ran the same day, whole (R-86), and its export landed and was verified** (§A15, "A9 landed": nineteen of twenty items in full, item 3 in part and absorbed by the token). Nothing is owed to Claude Design. The same day he ruled the touch-device threshold at 834 (R-87), so § Responsive, the walkthrough and D8a agree.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive

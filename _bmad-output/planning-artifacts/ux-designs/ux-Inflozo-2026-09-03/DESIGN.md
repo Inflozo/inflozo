@@ -200,10 +200,10 @@ in the same Claude Design project, never invented in prose beside it.
 Kit changed in exactly two tokens — the keyboard focus ring and the placeholder-and-hint colour (A7
 items 7 and 10) — and every other value transcribed here was checked again against both frames and
 against the whole export, and holds. Where a value moved, the old value is recorded beside the new
-one, in the front matter and in the section that carries it. One disagreement inside the export is
-recorded rather than smoothed over: the Kit's inputs caption still reads "focus ring 2px @40%" while
-the focused input it captions carries the solid ring — the drawing governs, and A9 item 2 corrects
-the caption (`reconcile-designs-decisions.md` §A15).
+one, in the front matter and in the section that carries it. One disagreement inside the first export was
+recorded rather than smoothed over: the Kit's inputs caption read "focus ring 2px @40%" while
+the focused input it captions carried the solid ring — the drawing governed, and A9 item 2 corrected
+the caption the same day (`reconcile-designs-decisions.md` §A15).
 
 **Scope.** This spine governs **Inflozo's own interface** — the app chrome and the marketing site.
 It does **not** govern the sites Inflozo builds. Those are the section library's business: their

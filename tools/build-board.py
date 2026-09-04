@@ -79,7 +79,7 @@ STEPS = [
   'Four rulings in \u00a7A11 of the decisions file (R-76 \u2026 R-79); prd.md FR-D1, FR-J7 and FR-J9 '
   'moved.',
   'Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per '
-  'undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count) \u2014 all run, export landed 2026-09-04, \u00a7A15 verified, A9 drafted for the misses. A8 came out of the step\u2019s own stress test: the export then drew the editor at 1440 and '
+  'undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count) \u2014 all run, export landed 2026-09-04, \u00a7A15 verified; A9 (the misses) ran and landed the same day. A8 came out of the step\u2019s own stress test: the export then drew the editor at 1440 and '
   'NOWHERE ELSE, so R-76\u2019s tablet half and the 200%-zoom floor were both prose with no frame '
   'behind them.', None),
  ('s5b', '5b', 'Static prototype', 'done',
@@ -119,8 +119,7 @@ STEPS = [
   'walk four; history pins; the dashboard sheets open; the editor carries the complete switcher, the canvas '
   'markers, the skip link and the 834/720 layouts; P opens Preview, Esc leaves it, L hides Layers, ] and [ '
   'step the ring, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in '
-  '<code>_screens.html</code> with the reason: detail cards with no drawn trigger, the two wrong-mechanism '
-  'frames A7 left (B22, B18 \u2014 prompt A9), and the states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files '
+  '<code>_screens.html</code> with the reason: detail cards with no drawn trigger, and the states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files '
   'that are not product screens.',
   'The product as a clickable application \u2014 the artifact that answers <b>is this any good</b>, where '
   '5b answers <b>is this screen right</b>. Walked AFTER 5b, for feel; it is not the gate. A change to '
@@ -270,13 +269,9 @@ ACTIONS = [
   'advance. Then the loop of build-sequence.md '
   'step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase '
   '(R-81), review and test on the real infrastructure (R-82), every question to you in plain English with '
-  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.'), ('soon', 'One Claude Design session is owed \u2014 prompt A9, both halves (R-86)',
-  'The Appendix A export landed 2026-09-04 (the previous issue is InflozoOld/, for diffing only), the '
-  'runbook ran once, and both builds lift the D canvases. reconcile-designs-decisions.md \u00a7A15 verified '
-  'every prompt frame by frame and wrote A9: items 1\u20139 are misses of this export, items 10 onward the '
-  'frames the UX pass had deferred. You ruled on 2026-09-04 that both halves run in one session (R-86) and '
-  'that a touch device below 834 gets the notice while a tablet gets the editor (R-87) \u2014 so copy the whole '
-  'of A9 from APPENDIX-A-PROMPTS.html, export once after, run the runbook once. It blocks nothing.'),
+  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt. The Appendix A '
+  'export and its A9 corrections both landed on 2026-09-04 and both builds lift them; nothing is owed to '
+  'Claude Design.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),

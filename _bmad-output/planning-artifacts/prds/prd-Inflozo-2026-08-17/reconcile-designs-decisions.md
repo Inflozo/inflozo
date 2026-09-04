@@ -1296,7 +1296,7 @@ on every one. Each row names its targets so a later session can tick them. ✅ l
 | **3** | **5b is R-75's gate, and "walked" means every journey and every flow on its front door, with the owner's notes in one named file** | ✅ `build-sequence.md` step 5b (the definition of done) · ⬜ `prototype/index.html` (the front door lists them) · ⬜ the notes file (owner) — landed 2026-09-03 by the docs pass; the walk itself 2026-09-04 (§A13) |
 | **4** | **An accessibility item that would change a frame goes to Claude Design prompt A7, not A8**, because it corrects an existing frame; nothing in 5b or 5c alters what a frame looks like | ✅ `EXPERIENCE.md` Appendix A7 items 7–10 (focus-ring token, accessible names, labels, placeholder colour) · ✅ A8 FRAMES 3 and 5 inherit A7's ring · ⬜ 5c may add attributes only, each naming its finding |
 | **5** | **FR-J13's gate offers the theme and `routes.yaml` downloads only when the Staff Access Token is present, and otherwise names the Ghost Admin path** (F-077 — FR-J13 and `BACKUP-GATE.md` had disagreed) | ✅ `prd.md` FR-J13 · ✅ `BACKUP-GATE.md` § What the gate offers as a download · ✅ `EXPERIENCE.md` F7 and A1 FRAME 4 · ⬜ `prototype/build.py` backup-gate note · *recorded for the owner:* `routes.yaml` alone is readable with the integration key (`MEASUREMENTS.md` §37) |
-| **6** | **The wrong-mechanism frames are held out of 5c until A7 runs, except copy the PRD owns**: Redesign Proposals (B22) held out entirely; the Pro Exit Sheet stays and its remedy count is A7's; the Starter Chooser stays and its roster is A7's; S4d's paid-tier rows are A7's | ✅ `EXPERIENCE.md` § Drawn, but on the wrong mechanism (preamble; S4d and B23a marked → A7) · ✅ A7 items 18 and 19 · ⬜ `walkthrough/build-app.py` and `_screens.html` (the held-out list) |
+| **6** | **The wrong-mechanism frames are held out of 5c until A7 runs, except copy the PRD owns**: Redesign Proposals (B22) held out entirely; the Pro Exit Sheet stays and its remedy count is A7's; the Starter Chooser stays and its roster is A7's; S4d's paid-tier rows are A7's | ✅ `EXPERIENCE.md` § Drawn, but on the wrong mechanism (preamble; S4d and B23a marked → A7) · ✅ A7 items 18 and 19 · ✅ `walkthrough/build-app.py` and `_screens.html` — B22 and B18 lifted once A9 corrected them (2026-09-04) |
 
 **Also taken by the pass, as routine judgement rather than owner decisions — flagged here so they are
 visible:** (a) **AD-20 gains the compile-once rule** — Pre-flight is the `compiling` and `checking`
@@ -1451,6 +1451,51 @@ Written into `EXPERIENCE.md` Appendix A as **A9**, nine items: (1) S5's "ALL CAT
 "until A7 runs" (§A12 decision 6) but never in A7's list. Items 8 and 9 are the spine's own misses,
 not the session's: two rows pointed at a prompt that did not carry them.
 
+### A9 landed — verified 2026-09-04, the same day
+
+The owner ran A9 whole (R-86) and replaced `Inflozo/` with the export. Checked frame by frame — old
+string gone and new string present — before the re-apply script touched anything:
+
+| Item | Landed | Evidence |
+|---|---|---|
+| 1 S5 rail head | ✅ | "ALL CATEGORIES" with nothing beside it, S5a and S5c |
+| 2 Kit inputs caption | ✅ | "focus ring 2px solid coral-text #C2381F" |
+| 3 P0-2 · P0-3 · P0-5 hint colour | **partly** | the six named strings are `#6B6459`; three sibling hints on P0-3 — "+ 3 more from the feed", "+ Add message", "+ 4 more, kept but not shown" — are still `#A8A29A`. Not sent back: the built control takes `input.placeholderColor` from `DESIGN.md`, so the frame's colour never reaches the product, and the story that builds P0-3 does not inherit it |
+| 4 B5c · D8f edits, not changes | ✅ | "7 unsynced edits will be lost", the itemised list gone, "edits that never reached the server" |
+| 5 D8b caption | ✅ | "the 44px rules and the small-screen notice" |
+| 6 D5b template file | ✅ | "Landing · custom-landing.hbs"; D5f's own `custom-membership.hbs` stays, as it should |
+| 7 the storage row | ✅ | S12b and M5 at 1440: "Asset storage · 100 MB · 5 GB"; S12a is the Pro account view and prints Pro's figures |
+| 8 S9 YAML pane and custom routes | ✅ | the two rows gone; the YAML opens `collections: / : permalink /{slug}/ template index`, then /articles/, /tutorials/, /notes/; S9c "Posts per page is your theme setting — 12 right now"; "in the last 30 days" first |
+| 9 B22 | ✅ | three whole-site proposals, a starter × pack each, one sentence from the data; the tag-template card gone; "You can run this again from New project → Redesign one of my sites" |
+| 10 B15 | ✅ | "Publisher or higher" |
+| 11 S8a′ · S11a | ✅ | "Download your theme — it installs on a self-hosted Ghost, or on a Ghost(Pro) plan that allows custom themes" |
+| 12 B14b | ✅ | "The version you're on now stays in history and rolls back in one click" |
+| 13 B7 | ✅ | "on all 9 templates", and the notice line |
+| 14 B18 | ✅ | dotted keys (`member.signup_cta`, `post.read_more`, `post.reading_time`, `archive.empty_heading` …) and the refused row "Braces would break every page of your site"; the RTL note kept |
+| 15 B8 | ✅ | "Keep Free designs only" gone; "Re-roll what — Style Pack · Designs · Both" above "Re-roll where" |
+| 16 B4 | ✅ | no "Body" menu — four marks and Remove link; B4b gains "Open in new tab" and a rel row |
+| 17 B20 · S11d | ✅ | three credentials with one line each; "nothing on this surface to grant"; the URL "Fixed for this connection", as text |
+| 18 B6 | ✅ | the fifth state, "Syncing every change to the cloud" |
+| 19 D1b | ✅ | "uploading routes.yaml, and reading the live theme for the snapshot and the drift report" |
+| 20 D8c skip link | ✅ | the canvas carries `id="d8-canvas"` |
+
+**The runbook, in order.** The re-export undid the two repo-side edits for the THIRD time (485 and
+"466 designs across 33 categories" back on M1, M2, M4, S2, S3 and both Index canvases; P0's mark
+allowlist gone from its spec) — `reapply-export-edits.py` put all of it back, which is exactly the
+case the script was written for. `verify-design-pass.py`: every structural check passes and the same
+five prose scans want a glance. Roster and inventory: already current — A9 changed no design, so the
+tuple gate printed the figures it printed before. Module reach and the content and control lines:
+unchanged. The documentation gate: green on its second run.
+
+**What the landing changed downstream.** The walkthrough's three lift-time patches (S11a, B15, S8a′ —
+the PRD's copy) are gone, because `patch()` refuses a target the frame no longer carries; B22 and B18
+are lifted into 5c (J1 runs Auto-Branding → Redesign Proposals → Editor; the Theme Settings rail row
+opens Translations), which closes §A12 decision 6's last ⬜; 5b's annotations that said "the frame
+says …" now say what A9 changed, and when. `InflozoOld/` is still the issue before Appendix A; the
+A1–A8 issue is in git at e7f5041d, which is where a diff against it belongs.
+
+**Owed to Claude Design: nothing.**
+
 ### A control that walked past a library total for the fourth time
 
 `tools/verify-design-pass.py` reports **PASS · "§37.7 no design total on S/M screens · no S/M/B
@@ -1475,13 +1520,12 @@ item 1 removes the figure at the source. Until then the gate is green on a scree
   new frames: B12b now says exactly what item 61 allows on the first upload ("Ghost keeps your
   previous theme under Settings → Design"), B16's step 2 hard-codes no menu path (`MEASUREMENTS.md`
   §33), and C3b's condition is item 11's ("paid tier or not"). Nothing to edit.
-- **The ten frames the UX pass re-specified and deferred are unchanged, by that pass's own rule**
+- **The ten frames the UX pass re-specified and deferred were unchanged in this export, by that pass's own rule** *(and A9 corrected all ten the same day — "A9 landed", above)*
   ("the frames catch up whenever a library pass next touches them"): B15 "Creator" 1 → 1; S8a′ and
   S11a "download the theme and upload it in Ghost Admin"; B14b "We snapshot before redeploying"
   1 → 1; B7 "on 26 pages" 3 → 3; B18 `read_more` / `min_read` 1 → 1; B8 "Keep Free designs only"
   1 → 1; B4a's "Body" menu 2 → 2; B20's grantable scopes and S11d's editable URL; B6's four states.
-  B17 is completed by D6 and needs nothing. They are A9's **second half**, and it runs —
-  decision 1, ruled R-86.
+  B17 is completed by D6 and needs nothing. They were A9's **second half**, ruled in by R-86 and landed the same day.
 - **The Index canvases** changed only their totals, which they derive from the export (the
   re-apply script's own note on why that is not a breach).
 
@@ -1520,7 +1564,7 @@ recorded; every other value re-checked against the new Calibration Set, Kit and 
 process documents and generators that said "not drawn", "until A7 runs" or "prompt A8 draws"
 (main session, 2026-09-04) · ✅ `tools/reapply-export-edits.py` and `tools/verify-design-pass.py`
 (main session, above) · ✅ the prototypes lift the D frames (2026-09-04, both builds) · ✅ decision 1
-(R-86) and decision 2 (R-87), ruled 2026-09-04 · ⬜ A9, both halves, and the export runbook after it (owner).
+(R-86) and decision 2 (R-87), ruled 2026-09-04 · ✅ A9, both halves, and the export runbook after it (the owner ran it; landed and verified 2026-09-04).
 
 ## B · Approved decisions superseded by this session
 
