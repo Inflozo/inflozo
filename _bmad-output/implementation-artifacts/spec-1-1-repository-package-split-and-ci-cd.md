@@ -322,6 +322,16 @@ package and the `.tsx`; `./util/index.ts` produced none; deleting every fixture 
 to **exit 0** and `pnpm build` to the same route manifest (`○ /`, `○ /app`, `ƒ Proxy (Middleware)`).
 The controls passed, so the exit-0s above were the open rules and not a broken run.
 
+**The fixes were verified in production, not only locally.** The review commit `02c44887` deployed as
+`dpl_DqQjmbVW9GcSxeVjesTx9ZCrTWHy` — **READY**, `target: production` — and its GitHub check is
+`completed success`. Re-read live afterwards: `inflozo.com/` **200** `<p>Inflozo</p>` ·
+`app.inflozo.com/` **200** `<p>Inflozo · app</p>` · `www.inflozo.com/` **308** → apex ·
+`inflozo.com/app/x` **308** → `https://app.inflozo.com/x`. Every frozen matrix row still holds, and
+the four defects are closed on the live site: `inflozo.com/apply` → **404** (a missing page, no
+longer 308'd to `/ly`) · `inflozo.com/app/signin?next=%2Fdashboard` → **308** →
+`https://app.inflozo.com/signin?next=%2Fdashboard`, the parameter intact ·
+`app.inflozo.com/app/x` → **308** → `https://app.inflozo.com/x` instead of 404.
+
 **One state change nobody made, recorded rather than left to be discovered.** Linking Git moved the
 `inflozo-probe.vercel.app` alias onto the new production deployment: it now serves the live site, and
 `MEASUREMENTS.md` §18's CSP probe is no longer reachable in place — story 1.5 must re-execute it
