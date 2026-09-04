@@ -90,7 +90,7 @@ begin
 end $$;
 -- NOTE: no blanket grant here. PRELUDE.sql sets Supabase's default privileges before the migration,
 -- and SCHEMA.sql §11 narrows them afterwards. Re-granting here would mask exactly what is under test.
-grant select on public.suggestion_votes, public.suggestions_public to anon;
+-- (SCHEMA.sql section 11 already grants both to anon; re-granting here masked a dropped grant.)
 
 -- seed as the table owner (RLS is bypassed for the owner, which is what the server role is)
 insert into public.sites(id,user_id,url) values
@@ -171,30 +171,45 @@ do $$ begin
       values ('22222222-2222-2222-2222-222222222222','stolen','s','{}')
 on conflict do nothing;
     raise exception 'FAIL: A inserted a project owned by B';
-  exception when others then raise notice 'PASS: cross-tenant project insert blocked (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: cross-tenant project insert blocked (%)', sqlstate; end;
 
   begin
     update public.sites set title='hijacked' where user_id='22222222-2222-2222-2222-222222222222';
     if found then raise exception 'FAIL: A updated Bs site'; else raise notice 'PASS: A cannot see or update Bs site'; end if;
-  exception when others then raise notice 'PASS: cross-tenant site update blocked (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: cross-tenant site update blocked (%)', sqlstate; end;
 
   begin
     update public.profiles set is_admin=true where user_id='11111111-1111-1111-1111-111111111111';
     raise exception 'FAIL: A self-granted admin';
-  exception when others then raise notice 'PASS: is_admin frozen against client update (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: is_admin frozen against client update (%)', sqlstate; end;
 
   begin
     insert into public.deploys(project_id,user_id,site_id,version,theme_name,status)
       values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
               'aaaaaaaa-0000-0000-0000-000000000001','1.0.0','inflozo-a','live');
     raise exception 'FAIL: A forged a deploy row';
-  exception when others then raise notice 'PASS: deploys is read-only to the client (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: deploys is read-only to the client (%)', sqlstate; end;
 
   begin
     insert into public.suggestion_votes(suggestion_id,user_id)
       values ('cccccccc-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222');
     raise exception 'FAIL: A voted as B';
-  exception when others then raise notice 'PASS: vote-as-another-user blocked (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: vote-as-another-user blocked (%)', sqlstate; end;
 end $$;
 
 -- --- the column-write surfaces the adversarial review found open (SCHEMA.sql §11) ---
@@ -203,46 +218,70 @@ do $$ begin
     update public.sites set deploy_rate_limit_exempt = true
       where user_id='11111111-1111-1111-1111-111111111111';
     raise exception 'FAIL: A granted itself the deploy rate-limit bypass';
-  exception when others then raise notice 'PASS: sites.deploy_rate_limit_exempt is server-only (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: sites.deploy_rate_limit_exempt is server-only (%)', sqlstate; end;
 
   begin
     update public.sites set capability='full', capability_source='user_declared'
       where user_id='11111111-1111-1111-1111-111111111111';
     raise exception 'FAIL: A forged the FR-C2 Preview-only verdict';
-  exception when others then raise notice 'PASS: sites.capability is server-only (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: sites.capability is server-only (%)', sqlstate; end;
 
   begin
     update public.projects set revision = revision + 5
       where id='aaaaaaaa-1111-0000-0000-000000000001';
     raise exception 'FAIL: A wrote projects.revision (AD-15 lineage marker)';
-  exception when others then raise notice 'PASS: projects.revision is server-only (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: projects.revision is server-only (%)', sqlstate; end;
 
   begin
     update public.deploy_jobs set stage='done';
     raise exception 'FAIL: A set a deploy job to done';
-  exception when others then raise notice 'PASS: deploy_jobs grants only cancel_requested (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: deploy_jobs grants only cancel_requested (%)', sqlstate; end;
 
   begin
     update public.custom_settings set frozen_at = null;
     raise exception 'FAIL: A nulled frozen_at, which reopens the key rename';
-  exception when others then raise notice 'PASS: custom_settings.frozen_at is server-only (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: custom_settings.frozen_at is server-only (%)', sqlstate; end;
 
   begin
     update public.template_binding_checklist set filename='other.hbs';
     raise exception 'FAIL: A rewrote a checklist filename';
-  exception when others then raise notice 'PASS: checklist grants only marked_done_at (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: checklist grants only marked_done_at (%)', sqlstate; end;
 
   begin
     insert into storage.objects(bucket_id, name)
       values ('deploy-artifacts','aaaaaaaa-1111-0000-0000-000000000001/theme.zip');
     raise exception 'FAIL: A wrote into deploy-artifacts';
-  exception when others then raise notice 'PASS: deploy-artifacts is server-only storage (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: deploy-artifacts is server-only storage (%)', sqlstate; end;
 
   begin
     insert into storage.objects(bucket_id, name)
       values ('assets','22222222-2222-2222-2222-222222222222/x.webp');
     raise exception 'FAIL: A wrote into Bs asset folder';
-  exception when others then raise notice 'PASS: storage assets are folder-scoped to the owner (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: storage assets are folder-scoped to the owner (%)', sqlstate; end;
 
   begin
     insert into storage.objects(bucket_id, name)
@@ -258,7 +297,10 @@ do $$ begin
   begin
     update public.projects set revision = 3 where id='aaaaaaaa-1111-0000-0000-000000000001';
     raise exception 'FAIL: revision went backwards (7 -> 3)';
-  exception when others then raise notice 'PASS: projects.revision is monotonic even server-side (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: projects.revision is monotonic even server-side (%)', sqlstate; end;
 
   insert into public.project_site_bindings(project_id,user_id,site_id,theme_name)
     values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
@@ -266,14 +308,20 @@ do $$ begin
   begin
     update public.projects set slug='renamed' where id='aaaaaaaa-1111-0000-0000-000000000001';
     raise exception 'FAIL: slug changed after a theme name was frozen';
-  exception when others then raise notice 'PASS: projects.slug frozen once a theme name exists (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: projects.slug frozen once a theme name exists (%)', sqlstate; end;
 
   begin
     insert into public.project_site_bindings(project_id,user_id,site_id,theme_name)
       values ('bbbbbbbb-1111-0000-0000-000000000002','22222222-2222-2222-2222-222222222222',
               'aaaaaaaa-0000-0000-0000-000000000001','inflozo-a');
     raise exception 'FAIL: two projects froze the same theme name on one site';
-  exception when others then raise notice 'PASS: theme name is unique per site (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: theme name is unique per site (%)', sqlstate; end;
 
   insert into public.deployed_template_names(project_id,user_id,filename)
     values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','custom-member-home.hbs');
@@ -282,13 +330,19 @@ do $$ begin
       values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
               'Member Home','custom-member-home.hbs','membership','member_home');
     raise exception 'FAIL: reused a filename this project already deployed';
-  exception when others then raise notice 'PASS: a deployed custom-template name can never be reused (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: a deployed custom-template name can never be reused (%)', sqlstate; end;
 
   begin
     insert into public.project_templates(project_id,user_id,template_key,doc)
       values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','posts','{}');
     raise exception 'FAIL: an unknown template_key was accepted';
-  exception when others then raise notice 'PASS: template_key is constrained (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: template_key is constrained (%)', sqlstate; end;
 end $$;
 
 -- the 17-setting cap (FR-Q2)
@@ -304,17 +358,26 @@ begin
     insert into public.custom_settings(project_id,user_id,key,label,type,bound_to)
       values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','k18','L18','boolean','{}');
     raise exception 'FAIL: 18th custom setting accepted';
-  exception when others then raise notice 'PASS: custom-setting cap held at 17 (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: custom-setting cap held at 17 (%)', sqlstate; end;
   begin
     insert into public.custom_settings(project_id,user_id,key,label,type,default_value,bound_to)
       values ('bbbbbbbb-1111-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','c','C','color','#abc','{}');
     raise exception 'FAIL: 3-digit hex colour default accepted';
-  exception when others then raise notice 'PASS: colour default must be 6-digit hex (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: colour default must be 6-digit hex (%)', sqlstate; end;
   begin
     insert into public.translation_overrides(project_id,user_id,catalog_key,value)
       values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','credit.built_with','Nope');
     raise exception 'FAIL: credit.* override accepted';
-  exception when others then raise notice 'PASS: credit.* namespace locked (%)', sqlstate; end;
+  exception when others then
+    -- the block's own FAIL sentinel must ABORT, never be swallowed and reported as a PASS.
+    if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;
+    raise notice 'PASS: credit.* namespace locked (%)', sqlstate; end;
 end $$;
 -- ============================================================================
 -- 5. Structural invariants — every one of these RAISES.  [Round 4, F0]
@@ -328,9 +391,9 @@ begin
   -- 1. Every public table must have RLS enabled. Anything false is a hole.
   select string_agg(c.relname, ', ' order by c.relname) into bad
   from pg_class c join pg_namespace n on n.oid=c.relnamespace
-  where n.nspname='public' and c.relkind='r' and not c.relrowsecurity;
+  where n.nspname in ('public','private') and c.relkind in ('r','p') and not c.relrowsecurity;
   if bad is not null then raise exception 'FAIL: RLS is disabled on %', bad; end if;
-  raise notice 'PASS: RLS is enabled on every public table';
+  raise notice 'PASS: RLS is enabled on every public and private table';
 
   -- 2. Tables with RLS on and ZERO policies are deny-all. That must be a DELIBERATE list.
   --    site_credentials and billing_events moved to `private` in Round 4 (F6), so the public
@@ -355,6 +418,28 @@ begin
           or pg_get_expr(p.polwithcheck,p.polrelid) like '%user_id%'));
   if bad is not null then raise exception 'FAIL: user_id table(s) with no policy scoping them: %', bad; end if;
   raise notice 'PASS: every user_id table is RLS-scoped by it';
+
+  -- 3b. AD-6 is `user_id = (select auth.uid())` WRAPPED, so the planner hoists it out of the
+  --     per-row loop. The bare `user_id = auth.uid()` scopes correctly and re-evaluates per row;
+  --     asserting only the substring `user_id` above cannot tell the two apart.
+  select string_agg(distinct c.relname, ', ' order by c.relname) into bad
+  from pg_policy p join pg_class c on c.oid=p.polrelid join pg_namespace n on n.oid=c.relnamespace
+  where n.nspname='public'
+    and (pg_get_expr(p.polqual,p.polrelid) like '%user_id%'
+      or pg_get_expr(p.polwithcheck,p.polrelid) like '%user_id%')
+    and coalesce(pg_get_expr(p.polqual,p.polrelid),'')||coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'')
+        not like '%( SELECT auth.uid()%';
+  if bad is not null then raise exception 'FAIL (AD-6): policy body is not the hoisted (select auth.uid()) form on %', bad; end if;
+  raise notice 'PASS (AD-6): every user_id policy body is the hoisted (select auth.uid()) form';
+
+  -- 3c. AD-7: a `private` table is RLS on with ZERO policies. Derived from the catalogue, so a
+  --     fourth private table is caught the day it lands rather than inheriting no assertion.
+  select string_agg(c.relname, ', ' order by c.relname) into bad
+  from pg_class c join pg_namespace n on n.oid=c.relnamespace
+  where n.nspname='private' and c.relkind in ('r','p')
+    and (not c.relrowsecurity or exists (select 1 from pg_policy p where p.polrelid=c.oid));
+  if bad is not null then raise exception 'FAIL (AD-7): private table(s) not RLS-on-with-zero-policies: %', bad; end if;
+  raise notice 'PASS (AD-7): every private table is RLS on with zero policies';
 end $$;
 
 select count(*) as policies, count(distinct polrelid) as tables_with_policies from pg_policy;
@@ -818,6 +903,9 @@ end $$;
 do $$
 declare exposed text := coalesce(current_setting('pgrst.db_schemas', true), '');
 begin
+  if exposed <> '' and exposed like '%private%' then
+    raise exception 'FAIL (AD-7): `private` is an exposed PostgREST schema (%). Server-only tables carry no policy, so exposure is a direct read of every credential row.', exposed;
+  end if;
   if exposed <> '' and exposed like '%storage%' then
     raise exception 'FAIL: `storage` is an exposed PostgREST schema (%). With TRUNCATE still granted (D6), any authenticated session can destroy every user''s objects.', exposed;
   end if;

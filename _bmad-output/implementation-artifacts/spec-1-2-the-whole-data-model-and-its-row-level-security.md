@@ -3,7 +3,7 @@ title: 'Story 1.2 — The whole data model and its row-level security'
 type: 'feature'
 created: '2026-09-04'
 status: 'in-review'
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '17c86c77fb6e459606ad87d7e9d69d79e2a793b0'
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md']
@@ -42,7 +42,7 @@ Nothing changes on screen in this story: it builds the product's filing cabinet,
 - `.../PRELUDE.sql` -- container stand-ins for the Supabase-provided objects (auth, storage, roles). Copy verbatim into `supabase/tests/prelude.sql`. Container-only. Read-only source.
 - `.github/workflows/ci.yml` -- today runs `pnpm check` + `pnpm build` on push to `main`; the RLS gate job is added here.
 - `apps/web/vercel.json`, `pnpm-workspace.yaml` -- the spine's Structural Seed puts `supabase/` at repo root beside `apps/` and `packages/`; `tools/doc-audit.py` `BASES` does not walk `supabase/`, so no catalogue row is needed.
-- `tools/probe/.env` (never printed) -- `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_DB_URL` for the app's project; the Vercel project also holds `SUPABASE_URL`/`SUPABASE_SECRET_KEY` as Sensitive env vars whose values the API will not return, so Dev confirms project identity by result, not by reading the value.
+- `tools/probe/.env` (never printed) -- `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_DB_URL` for the app's project; the Vercel project also holds `SUPABASE_URL`/`SUPABASE_SECRET_KEY`. Planning assumed these were **Sensitive** env vars the API would never return, so identity could only be inferred by result; executed, they are `type: encrypted` and `GET /v1/projects/{id}/env/{envId}` returns them decrypted, so identity is confirmed by comparing in memory and printing a boolean (see Design Notes).
 
 ## Tasks & Acceptance
 
@@ -155,3 +155,113 @@ command. Queried with `GITHUB_TOKEN` after the Dev push:*
 
 So the gate is green on a clean runner, not only on this machine. `pnpm check` is unaffected: ESLint lints
 `.ts`/`.tsx`/`.js` only, and nothing this story adds is one.
+
+
+## Review (2026-09-05)
+
+**Every layer ran, the Real-infra verifier included (R-82). The story's central claim did not hold as
+delivered and was fixed inside this story; everything else re-executed green.**
+
+*The defect, proved by execution rather than by reading (standing rule 1):*
+
+| Mutation | Before the fix | After the fix |
+|---|---|---|
+| a real cross-tenant hole — `create policy projects_hole on public.projects for insert to authenticated with check (true)` | **exit 0**, `NOTICE: PASS: cross-tenant project insert blocked (P0001)` | **exit 3**, `ERROR: FAIL: A inserted a project owned by B` |
+
+Twenty-one assertions were written `<attack>; raise exception 'FAIL…'; exception when others then raise
+notice 'PASS…'`. When the attack **succeeded**, the block's own `FAIL` was caught by its own `when others`
+and reported as a PASS. This is exactly the F0 defect the file's INDEX row says it was rebuilt to remove
+("it used to print FAIL and exit 0, which is why six holes survived three rounds"), reintroduced by the
+handler idiom. Fixed in the design authority `RLS-TEST.sql` and re-copied: each of the 21 handlers now
+re-raises its own sentinel (`if sqlstate = 'P0001' and sqlerrm like 'FAIL%' then raise; end if;`) and is
+otherwise unchanged, so every legitimate denial (42501 · 23505 · 23514) still reads PASS.
+
+*Also fixed in the same pass, each against an acceptance criterion the delivered artifact did not meet:*
+
+| Fix | Why |
+|---|---|
+| `run-rls-gate.sh` applies **every** `supabase/migrations/*.sql` in filename order, not one hardcoded name | at migration #2 the gate silently proved the 2026-09-04 catalogue instead of the repository's — AD-26's own failure mode, and CLAUDE.md's "derive, never assert membership" |
+| sweep 1 covers `private` and partitioned tables; new AD-7 sweep asserts every `private` table is RLS-on-with-zero-policies, derived from the catalogue | the AC says "the whole catalogue rather than a subset"; every structural sweep filtered `nspname='public'`, so a fourth `private` table would inherit no assertion |
+| new AD-6 sweep asserts the **hoisted** `( SELECT auth.uid())` form | the old test matched the substring `user_id`, so the bare `user_id = auth.uid()` — the per-row form AD-6 exists to prevent — passed |
+| the `pgrst.db_schemas` check gained its `private` arm | `SCHEMA.sql` §0 and `ARCHITECTURE-SPINE.md` AD-7 both state "RLS-TEST.sql asserts that"; it asserted only `%storage%` |
+| the proof no longer re-grants `suggestion_votes`/`suggestions_public` to `anon` | `SCHEMA.sql` §11 already grants both; the re-grant masked a dropped grant, against the file's own note two lines above it |
+| `trap cleanup EXIT INT TERM`; the readiness loop reports `docker logs` instead of exiting 1 in silence; `timeout-minutes: 15` on the `rls` job | a cancelled run orphaned a container; a dead container gave 60s of nothing and a bare exit 1 |
+
+*Controls (standing rule 2 — a result whose control did not pass is not a result):*
+
+| Control | Expected | Got |
+|---|---|---|
+| the patched gate, clean | exit 0 | **exit 0**, 72 `PASS`, 0 `ERROR` (70 before the two new sweeps) |
+| the cross-tenant hole, patched gate | non-zero | **exit 3** (it was exit 0 before the fix — the control that found the defect) |
+| a second migration adding `public.gate_glob_probe` with RLS off | non-zero | **exit 3**, `FAIL: RLS is disabled on gate_glob_probe`; the pre-patch script never applied it at all |
+| `cmp -s` on all three copies after the re-copy | identical | identical |
+
+*Real infrastructure, re-executed independently for the review (read-only; keys named by variable, never printed):*
+
+| Check | Returned |
+|---|---|
+| hosted Supabase over `SUPABASE_DB_URL` | 29 public base tables + `suggestions_public`; `private` = `billing_events`, `credential_audit`, `site_credentials`, each RLS on with **0** policies; **no** public table without RLS; 43 policies; both `auth.users` signup triggers; four buckets; every table the AC names; the three `routes_*` columns; `deploys.variant_manifest` `jsonb` |
+| hosted table **set** vs. the migration's `create table` names | **identical** under `LC_ALL=C diff` — stronger than the counts Dev recorded, which could not tell "same 29" from "29" |
+| `GET /rest/v1/` with `SUPABASE_SECRET_KEY` | HTTP 200, 30 relations, no `private` table exposed |
+| Vercel `GET /v1/projects/{VERCEL_PROJECT}/env/{envId}` for both vars | HTTP 200, decrypted, compared in memory — **both match** `tools/probe/.env` |
+| GitHub Actions | `acc46ee1` → run 33908002428 **success**; HEAD `a7490b37` → run 33908127990 **success**, `check` and `rls` both green |
+| negative controls | a non-existent table → exit 1; a bare container → 0 tables not 29; a wrong REST key → 401; a wrong Vercel project → 404; an all-zero SHA → 0 runs |
+
+**Reproducibility note the record needed:** the hosted database host is **IPv6-only**, so the `psql`
+container needs `--network host`; on the default bridge it returns `Network unreachable`, which reads
+like an outage and is not one.
+
+*Still not touched, and why:* Resend, Dodo, T1/T3 — this story adds no email, no billing call and no Ghost call.
+
+## Questions for the owner
+
+**1. Should a broken database lock be able to stop a release, or only report one?**
+
+Right now the RLS check runs on GitHub *after* the code is already on `main`. So if a lock breaks, the
+code is live first and the red light comes on second. Story 1.1 did the opposite for the code checks:
+those run *during* the deploy, so a failure stops the release.
+
+*Example:* someone changes a table next month and accidentally removes the lock that stops one customer
+reading another's site. Today: it pushes, it goes live, GitHub turns red a few minutes later, and the
+hole is live until someone notices. With option 1: the deploy refuses to publish and nothing goes live.
+
+1. **Make the database check block the release too, like the code checks (RECOMMENDED)** — the strongest
+   protection, and it makes the two checks behave the same way, which is one less thing to remember. It
+   adds roughly a minute to each deploy.
+2. Also run the drift check (not the full database check) before each commit — very fast, catches a
+   copy that no longer matches the architecture, but does not catch a broken lock.
+3. Leave it as it is — the red light on GitHub is enough, and we rely on noticing it.
+
+**2. Where does the *next* database change come from?**
+
+Today's file `supabase/migrations/20260904120000_complete_schema.sql` is an exact copy of the
+architecture's `SCHEMA.sql`, and the gate refuses to run if the two ever differ. That works for one
+file. It does not say what happens for the second one.
+
+*Example:* in a few weeks a story adds a "scheduled posts" table. Do we (a) edit the architecture's
+`SCHEMA.sql`, re-copy it over today's migration file and re-run everything, or (b) leave today's file
+frozen forever and add a small second file that only adds the new table?
+
+1. **(b) — today's file is frozen; every change is a new small file (RECOMMENDED)** — this is what the
+   architecture already says migrations are, it is how the hosted database will actually be updated, and
+   the gate now applies every file in the folder in order, so it is already supported. The architecture's
+   `SCHEMA.sql` stays the readable picture of the whole database.
+2. (a) — keep one file that is always the whole database, re-copied each time. Simpler to read, but it
+   means editing a file that has already been run against the live database, which the architecture
+   forbids.
+3. Decide later, when the second change actually arrives.
+
+**3. Four test users are sitting in the live database. Leave them or clear them?**
+
+Building the proof created four fake users (and their 2 projects, 2 sites, 1 uploaded file). They are
+still in the real database — verified today: 4 users, 4 profiles, 2 projects, 2 sites, 1 stored object.
+They are harmless and invisible to customers, but they are not real people.
+
+*Example:* the first time you look at a "how many users do we have" number, it will say 4 before a single
+real person has signed up.
+
+1. **Clear them before launch, not now (RECOMMENDED)** — they cost nothing today, and removing rows from
+   the live database is worth doing once, deliberately, with a written-down step, rather than as a side
+   effect of a code review.
+2. Clear them now — I would rather the live database be empty from here on.
+3. Leave them permanently as a smoke-test fixture.

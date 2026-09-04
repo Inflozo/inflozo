@@ -313,7 +313,7 @@ cd tools/stress && node test-ad36.js && node test-renderer-agreement.js
 
 The database proof is `architecture-.../RLS-TEST.sql`; run it against a Postgres 17 container with
 `PRELUDE.sql` then `SCHEMA.sql` first. It is a **gate** — it aborts on failure rather than printing
-one.
+one. Story 1.2 gave it one command, which CI runs too: `bash supabase/tests/run-rls-gate.sh`.
 
 **Work happens directly on `main`** — there are no feature branches and no pull-request review, so
 the documentation gate is the only thing between a mistake and the live branch. Never push a red gate.

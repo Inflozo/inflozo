@@ -35,20 +35,34 @@ fi
 
 CONTAINER="inflozo-rls-gate-$$"
 cleanup() { docker rm -f "$CONTAINER" >/dev/null 2>&1 || true; }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 docker run -d --name "$CONTAINER" -e POSTGRES_PASSWORD=gate \
   -v "$REPO/supabase:/supabase:ro" "$IMAGE" >/dev/null
 
 # -h forces TCP. The entrypoint's temporary init server listens on the unix socket only, so a
 # TCP pg_isready answers for the real server and never for the half-built one.
+ready=0
 for _ in $(seq 60); do
-  docker exec "$CONTAINER" pg_isready -h 127.0.0.1 -U postgres -q && break
+  docker exec "$CONTAINER" pg_isready -h 127.0.0.1 -U postgres -q && { ready=1; break; }
   sleep 1
 done
-docker exec "$CONTAINER" pg_isready -h 127.0.0.1 -U postgres -q
+if [ "$ready" -ne 1 ]; then
+  echo "Postgres never became ready in 60s. This is not an RLS result. Container log:" >&2
+  docker logs "$CONTAINER" >&2 || true
+  exit 1
+fi
+
+# EVERY migration, in filename order, never a hardcoded one: the gate must prove the schema the
+# repository actually ships. A migration the gate does not apply is a table with no assertion.
+LC_ALL=C
+migrations=()
+for f in "$REPO"/supabase/migrations/*.sql; do
+  [ -e "$f" ] || { echo "No migration found under supabase/migrations/." >&2; exit 1; }
+  migrations+=(-f "/supabase/migrations/$(basename "$f")")
+done
 
 docker exec "$CONTAINER" psql -U postgres -q -v ON_ERROR_STOP=1 \
   -f "/supabase/tests/prelude.sql" \
-  -f "/supabase/$MIGRATION_REL" \
+  "${migrations[@]}" \
   -f "/supabase/tests/rls.sql"

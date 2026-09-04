@@ -187,3 +187,6 @@ cd tools/stress && node test-ad36.js && node test-renderer-agreement.js
 
 The database proof is `architecture-.../RLS-TEST.sql` — run it against a PostgreSQL 17 container with
 `PRELUDE.sql` then `SCHEMA.sql` first. It is a **gate**: it aborts on failure rather than printing one.
+Since story 1.2 there is one command for it, and CI runs the same one: `bash supabase/tests/run-rls-gate.sh`.
+It brings its own container, refuses to run if the `supabase/` copies have drifted from the architecture
+originals, and applies **every** file in `supabase/migrations/` before the proof.
