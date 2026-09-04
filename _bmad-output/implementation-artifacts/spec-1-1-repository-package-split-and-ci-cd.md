@@ -451,6 +451,11 @@ refuses to start against 7.0.2; its own error names the remedy and its issue 109
 for TypeScript 7.1. It compiles nothing and ships nothing. This question is only about whether the
 architecture's version table should say so.*
 
+**Ruled:** "Leave the code alone, and I add one line to the architecture's version table saying the
+checker holds a second, older copy and why" *(owner, 2026-09-04)* — **option 1**. No code changed.
+`ARCHITECTURE-SPINE.md`'s Stack table, TypeScript row, now carries it, so the highest-authority
+document and the machine agree.
+
 ### 6. A leftover test address now shows the real site. Leave it, or take it down?
 
 Before this story, `inflozo-probe.vercel.app` was a scratch address used to try things out on Vercel.

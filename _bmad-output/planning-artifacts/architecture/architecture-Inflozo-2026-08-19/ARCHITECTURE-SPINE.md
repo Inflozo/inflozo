@@ -429,7 +429,7 @@ project maintains its own documents, not how the product behaves.)*
 | Name | Version | Note |
 | --- | --- | --- |
 | Node.js | 24.x | Vercel's current default and the active LTS; Next 16 requires ≥ 20.9. **22.x was a recalled default, not a read one** |
-| TypeScript | 7.0.2 | npm `latest`; Next 16's floor is 5.1. `strict`, and the core packages additionally forbid `any` at their boundaries |
+| TypeScript | 7.0.2 | npm `latest`; Next 16's floor is 5.1. `strict`, and the core packages additionally forbid `any` at their boundaries. **The root workspace holds a second, older copy — 7.0.2 compiles and ships everything; `typescript@6.0.3` exists only because `typescript-eslint` refuses to load against 7 and is what enforces AD-1's ban** (executed 2026-09-04; its error names the side-by-side remedy and its issue 10940 tracks TS ≥ 7.1). Owner's ruling, Story 1.1 question 5 |
 | Next.js (App Router) | 16.3.1 | one deployment, two domains, host-routed in **`proxy.ts`** — Next 16 renamed `middleware.ts` to `proxy.ts` and runs it on the Node.js runtime; `middleware.ts` survives only for Edge and is deprecated |
 | React / React DOM | 19.2.8 | a **peerDependency** of Next, not a bundled one — the app pins it explicitly. Next 16's App Router runs the React Canary line, so pin `react`/`react-dom` together and move them together |
 | pnpm workspaces | 11.22.0 | npm `latest`; no Turborepo until a build is measurably slow |
