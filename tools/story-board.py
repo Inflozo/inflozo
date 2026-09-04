@@ -747,8 +747,23 @@ def next_action(ctx, stories):
 
 CSS = """
 :root{--good:var(--build);--good-s:var(--build-s);--warn:var(--patch);--warn-s:var(--patch-s);
---crit:#b42318;--crit-s:#fdeceb;--wait:#8b8b93;--rail:224px}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--crit:#f08b80;--crit-s:#3a1a17;--wait:#75757e}}
+--crit:#b42318;--crit-s:#fdeceb;--wait:#8b8b93;--rail:224px;--on:#fff;
+--l-backlog:#8b8b93;--l-backlog-s:#f2f1ef;--l-ready:#0f8a86;--l-ready-s:#e0f4f3;
+--l-progress:#1f6feb;--l-progress-s:#e9f0fe;--l-review:#7847cc;--l-review-s:#f1eafc;
+--l-test:#96650a;--l-test-s:#fff4d9;--l-done:#12784a;--l-done-s:#e2f5ec}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--crit:#f08b80;--crit-s:#3a1a17;--wait:#75757e;--on:#15151a;
+--l-backlog:#75757e;--l-backlog-s:#26262c;--l-ready:#4fc9c2;--l-ready-s:#102c2b;
+--l-progress:#6ea8fe;--l-progress-s:#1b2a45;--l-review:#b494f5;--l-review-s:#281c40;
+--l-test:#e8bd57;--l-test-s:#33280d;--l-done:#5ed6a0;--l-done-s:#112f20}}
+/* One lane, one colour. Every element that belongs to a lane carries the pair and paints from it,
+   so a new lane is two tokens and one row here rather than a rule per element. */
+.card,.lane,.pill,.lanechip{--c:var(--l-backlog);--cs:var(--l-backlog-s)}
+.card.ready,.lane.ready,.pill.ready,.lanechip.ready{--c:var(--l-ready);--cs:var(--l-ready-s)}
+.card.progress,.lane.progress,.pill.progress,.lanechip.progress{--c:var(--l-progress);--cs:var(--l-progress-s)}
+.card.review,.lane.review,.pill.review,.lanechip.review{--c:var(--l-review);--cs:var(--l-review-s)}
+.card.test,.lane.test,.pill.test,.lanechip.test{--c:var(--l-test);--cs:var(--l-test-s)}
+.card.done,.lane.done,.pill.done,.lanechip.done{--c:var(--l-done);--cs:var(--l-done-s)}
+.card.issues,.card.blocked{--c:var(--crit);--cs:var(--crit-s)}
 [hidden]{display:none!important}
 html,body{height:100%}body{display:flex;flex-direction:column;overflow:hidden}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -757,28 +772,36 @@ a{color:var(--accent)}
 background:var(--card);flex-wrap:wrap}
 .top h1{font-size:1.1rem;margin:0}
 .kick{color:var(--accent);font-weight:650;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;display:block}
-.demo{background:var(--crit);color:#fff;font-weight:800;font-size:.74rem;padding:4px 10px;border-radius:99px;letter-spacing:.08em}
-.pulse{display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--muted)}
-.pulse .lbl{margin:0 2px 0 8px;text-transform:uppercase;letter-spacing:.06em;font-size:.66rem;font-weight:700}
-.chip{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:99px;background:var(--code);
-border:1px solid var(--line);color:var(--ink);font-size:.74rem;font-weight:600;text-decoration:none}
-.chip i{width:8px;height:8px;border-radius:50%;background:var(--wait)}
-.chip.done i{background:var(--good)}.chip.progress i,.chip.review i{background:var(--accent)}
-.chip.test i{background:var(--warn)}.chip.ready i{background:var(--accent);opacity:.5}
+.demo{background:var(--crit);color:var(--on);font-weight:800;font-size:.74rem;padding:4px 10px;border-radius:99px;letter-spacing:.08em}
+.stats{display:flex;align-items:center;gap:9px 20px;flex-wrap:wrap;padding:7px 18px;
+border-bottom:1px solid var(--line);background:var(--card)}
+.sgrp{display:flex;align-items:center;gap:6px;min-width:0}
+.sgrp .lbl{text-transform:uppercase;letter-spacing:.07em;font-size:.63rem;font-weight:700;color:var(--muted)}
+.pct{font-size:1.2rem;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.stats .prog{width:150px;height:7px;flex:none}
+.stats .prog i{background:var(--l-done)}
+.sn{font-size:.76rem;color:var(--muted);white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;
+background:var(--cs);color:var(--c);font-size:.73rem;font-weight:700;white-space:nowrap;
+font-variant-numeric:tabular-nums}
+.pill.zero{background:var(--code);color:var(--muted);opacity:.6;font-weight:600}
 .tools{margin-left:auto;display:flex;gap:7px;align-items:center}
 #q{font:inherit;font-size:.84rem;padding:6px 10px;border:1px solid var(--line);border-radius:8px;
 background:var(--bg);color:var(--ink);width:210px}
-.btn b{background:var(--crit);color:#fff;border-radius:99px;padding:0 7px;margin-left:5px;font-size:.7rem}
+.btn b{background:var(--crit);color:var(--on);border-radius:99px;padding:0 7px;margin-left:5px;font-size:.7rem}
 .btn b.zero{background:var(--line);color:var(--muted)}
-.next{margin:10px 18px 0;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
-border-radius:12px;padding:9px 16px 10px;box-shadow:var(--sh)}
-.next.you{border-left-color:var(--warn)}.next.done{border-left-color:var(--good)}
-.next .nh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.next h2{font-size:.98rem;margin:0}
-.next p{margin:3px 0 7px;color:var(--muted);font-size:.86rem;max-width:120ch}
-.next .na{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.next details{flex-basis:100%}.next summary{cursor:pointer;font-size:.8rem;color:var(--accent)}
-.next pre{margin:6px 0 0;max-height:200px}
+.next{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 18px 0;padding:7px 8px 7px 14px;
+background:var(--card);border:1px solid var(--line);border-left:4px solid var(--l-progress);
+border-radius:11px;box-shadow:var(--sh)}
+.next.you{border-left-color:var(--l-test);background-image:linear-gradient(100deg,var(--l-test-s),transparent 46%)}
+.next.done{border-left-color:var(--l-done)}
+.next .kick{display:inline;flex:none}
+.next .nt{font-size:.93rem;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.next .na{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.next .btn.prime{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.next .btn.prime:hover{color:var(--on);filter:brightness(1.08)}
+.pd .brief{margin:10px 0 0}
+.pd .brief .md{font-size:.9rem}
 .board{flex:1;min-height:0;display:grid;grid-template-columns:var(--rail) 1fr;gap:12px;padding:10px 18px 10px}
 .rail{overflow:auto;display:flex;flex-direction:column;gap:4px;padding-right:3px;min-height:0}
 .ep{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);
@@ -791,22 +814,25 @@ position:relative;overflow:hidden;line-height:1.3}
 .ep .em{color:var(--muted);font-size:.66rem;flex:none;white-space:nowrap}
 .ep .epbar{position:absolute;left:0;bottom:0;height:2px;background:var(--good)}
 .lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;min-height:0}
-.lane{display:flex;flex-direction:column;min-height:0;background:var(--code);border-radius:12px;border:1px solid var(--line)}
-.lane h2{font-size:.78rem;margin:0;padding:8px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);line-height:1.2}
-.lane h2::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--wait);flex:none}
-.lane h2 .n{margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:0 7px;
-font-size:.7rem;color:var(--muted);white-space:nowrap}
-.lane.ready h2::before{background:var(--accent);opacity:.5}.lane.progress h2::before,.lane.review h2::before{background:var(--accent)}
-.lane.test h2::before{background:var(--warn)}.lane.done h2::before{background:var(--good)}
-.lane.test{border-color:var(--warn)}
+.lane{display:flex;flex-direction:column;min-height:0;background:var(--code);border-radius:12px;
+border:1px solid var(--line);border-top:3px solid var(--c);overflow:hidden}
+.lane h2{font-size:.78rem;margin:0;padding:8px 10px;display:flex;align-items:center;gap:6px;
+border-bottom:1px solid var(--line);line-height:1.2;background:var(--cs)}
+.lane h2::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.lane h2 .n{margin-left:auto;background:var(--card);border-radius:99px;padding:0 8px;font-weight:700;
+font-size:.7rem;color:var(--c);white-space:nowrap;font-variant-numeric:tabular-nums}
+.lane.test{border-color:var(--l-test);box-shadow:0 0 0 2px var(--l-test-s)}
 .cards{overflow:auto;flex:1;padding:8px;display:flex;flex-direction:column;gap:8px}
-.card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--wait);border-radius:9px;
-padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none;cursor:pointer}
-.card:hover{border-color:var(--accent)}
-.card.ready,.card.progress,.card.review{border-left-color:var(--accent)}.card.test{border-left-color:var(--warn)}
-.card.done{border-left-color:var(--good);opacity:.8}.card.issues,.card.blocked{border-left-color:var(--crit)}
+.card{background:var(--card);background-image:linear-gradient(103deg,var(--cs),transparent 60%);
+border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;
+padding:8px 10px 9px;box-shadow:var(--sh);font-size:.78rem;flex:none;cursor:pointer;
+transition:transform .12s,box-shadow .12s,border-color .12s}
+.card:hover{border-color:var(--c);transform:translateY(-1px);
+box-shadow:0 2px 4px rgba(0,0,0,.05),0 10px 22px rgba(0,0,0,.09)}
+.card.done{opacity:.72}
 .card .ch{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .ebadge{font-size:.66rem;font-weight:700;padding:1px 6px;border-radius:99px;background:var(--accent-s);color:var(--accent);white-space:nowrap}
+.card .ebadge{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px currentColor}
 .key{font-weight:700;font-size:.78rem}
 .ph{margin-left:auto;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:1px 6px;
 border-radius:99px;background:var(--code);color:var(--muted);white-space:nowrap}
@@ -815,16 +841,18 @@ border-radius:99px;background:var(--code);color:var(--muted);white-space:nowrap}
 .card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}
 .card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
-background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap}
-.cp.ok,.btn.ok,.cpv.ok{background:var(--good);border-color:var(--good);color:#fff}
+background:var(--accent);color:var(--on);cursor:pointer;white-space:nowrap}
+.cp.ok,.btn.ok,.cpv.ok{background:var(--good);border-color:var(--good);color:var(--on)}
 .more{margin-left:auto;text-decoration:none;color:var(--muted);font-weight:600;padding:0 7px;border-radius:6px;
 border:1px solid var(--line);font-size:.7rem;line-height:1.7}
 .more:hover{color:var(--accent);border-color:var(--accent)}
 .empty{color:var(--muted);font-size:.76rem;padding:10px 8px;text-align:center;line-height:1.45}
 .tag{display:inline-block;font-size:.64rem;font-weight:700;padding:1px 7px;border-radius:99px;vertical-align:middle;
 text-transform:uppercase;letter-spacing:.04em}
-.tag.long{text-transform:none;letter-spacing:0}
-.tag.warn{background:var(--warn);color:#fff}.tag.good{background:var(--good-s);color:var(--good)}.tag.crit{background:var(--crit-s);color:var(--crit)}
+.tag.long{text-transform:none;letter-spacing:0;font-weight:600}
+.tag.warn{background:var(--warn);color:var(--on)}.tag.good{background:var(--good-s);color:var(--good)}.tag.crit{background:var(--crit-s);color:var(--crit)}
+/* The long one is a note, not a verdict: it says its piece without shouting over the card it sits on. */
+.tag.warn.long{background:var(--warn-s);color:var(--warn);box-shadow:inset 0 0 0 1px currentColor}
 .flag{display:inline-block;font-size:.8rem;font-weight:600;color:var(--warn)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);background:var(--card);border-left:1px solid var(--line);
@@ -834,7 +862,7 @@ background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:
 .sd header .ebadge{font-size:.72rem}
 .sd h2,.pd h2{font-size:1.18rem;margin:8px 0 4px;letter-spacing:-.01em;line-height:1.3}
 .sd h3,.pd h3{font-size:.74rem;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
-.sd h3 .fine{text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
+.sd h3 .fine,.pd h3 .fine{text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
 .meta{margin:0 0 4px;font-size:.8rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .lanechip{font-weight:700;font-size:.72rem;padding:2px 9px;border-radius:99px;background:var(--code);color:var(--muted)}
 .lanechip.test{background:var(--warn-s);color:var(--warn)}.lanechip.done{background:var(--good-s);color:var(--good)}
@@ -843,8 +871,8 @@ background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:
 .md{font-size:.9rem;line-height:1.55}.md p{margin:5px 0}.md ul,.md ol{padding-left:1.35em;margin:4px 0}.md h4{margin:10px 0 2px;font-size:.92rem}
 .stepper{display:flex;gap:4px;list-style:none;margin:12px 0;padding:0}
 .stepper li{flex:1;text-align:center;font-size:.7rem;font-weight:700;padding:5px 2px;border-radius:7px;background:var(--code);color:var(--muted)}
-.stepper li.done{background:var(--good-s);color:var(--good)}.stepper li.cur{background:var(--accent);color:#fff}
-.stepper li.issues{background:var(--crit);color:#fff}
+.stepper li.done{background:var(--good-s);color:var(--good)}.stepper li.cur{background:var(--accent);color:var(--on)}
+.stepper li.issues{background:var(--crit);color:var(--on)}
 .now{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--accent-s);border-radius:10px;padding:9px 12px;margin:8px 0;font-size:.88rem}
 .qbox{border:1px solid var(--warn);background:var(--warn-s);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
 .qbox h3{color:var(--warn);margin-top:4px}.q{padding:6px 0;border-top:1px solid rgba(0,0,0,.08)}.q:first-of-type{border-top:0}
@@ -949,6 +977,9 @@ HELP = '''<section class="pd help" id="pd-help" hidden><h2>How to read this boar
 <dt>Deployed, your test</dt><dd>The gold column. Live on the real site and waiting for <b>you</b>. Open the card, follow the numbered steps, and say what you saw in chat. A red stripe means you reported issues and they are being fixed. A story with no screen skips your test: say "done" in chat and the Record prompt closes it.</dd>
 <dt>Done</dt><dd>You accepted it.</dd>
 </dl>
+<p><b>The strip at the top.</b> How far the build has come: the percentage and the bar are stories you have accepted out of every story there is, then the epics and the stories by column. A grey number is a zero.</p>
+<p><b>The next action.</b> The one line under it is the single next thing to do, and its <b>Copy prompt</b> button is the prompt for it. <b>What to do</b> opens the briefing — what that session will do, where it stops, what it asks you — with the prompt itself underneath. <b>Open the story</b> jumps to the card.</p>
+<p><b>The colours.</b> Every column has its own, and a card carries its column's colour on its left edge, so a story's state reads from the colour before you read a word. Red is the exception and it always means you: issues you reported, or a story blocked behind another.</p>
 <p><b>The phases.</b> Create (write the spec) → Build → Review (check it on the real services) → Deploy (put it live) → Test (you) → Done. If your test finds issues: Fix → Review → Deploy → Test again, inside the same story.</p>
 <p><b>The prompts.</b> Each card carries one Copy prompt button, for the phase on its badge; Details shows every phase's prompt. Paste it into a Claude Code chat exactly as copied, top to bottom — some begin with a /command, some do not.</p>
 <p><b>Reload.</b> Reload this page whenever a session says it has saved. Every save is a commit shaped <code>Story E.S - Phase - one line</code>, this board is rebuilt from those commits, and a story's history is its commit list.</p>
@@ -975,22 +1006,38 @@ def render(ctx):
     lane_n = {k: sum(1 for s in flat if s['lane'] == k) for k, _ in LANES}
     open_qs = [(s, ep, q) for s, ep in stories if s['spec'] and s['lane'] != 'done'
                for q in s['spec']['questions'] if not q['answered']]
-    pulse = (f'<span class="lbl">Epics</span><span class="chip done"><i></i>{ep_n["done"]} done</span>'
-             f'<span class="chip progress"><i></i>{ep_n["progress"]} in progress</span>'
-             f'<span class="chip"><i></i>{ep_n["backlog"]} not started</span>'
-             f'<span class="lbl">Stories</span>'
-             + ''.join(f'<span class="chip {k}"><i></i>{lane_n[k]} {e(n.lower())}</span>' for k, n in LANES))
+    done_n, tot_n = lane_n['done'], len(flat)
+    pct = int(round(100 * done_n / tot_n)) if tot_n else 0
+    def pill(cls, n, label):
+        return f'<span class="pill {cls}{" zero" if not n else ""}">{n} {e(label)}</span>'
+    stats = (f'<div class="sgrp"><span class="pct">{pct}%</span>'
+             f'<div class="prog" role="img" aria-label="{pct}% of stories done"><i style="width:{pct}%"></i></div>'
+             f'<span class="sn">{done_n} of {tot_n} stories done</span></div>'
+             f'<div class="sgrp"><span class="lbl">Epics</span>'
+             + pill('done', ep_n['done'], 'done') + pill('progress', ep_n['progress'], 'in progress')
+             + pill('', ep_n['backlog'], 'not started')
+             + f'<span class="sn">of {len(epics)}</span></div>'
+             f'<div class="sgrp"><span class="lbl">Stories</span>'
+             + ''.join(pill(k, lane_n[k], n.lower()) for k, n in LANES) + '</div>')
 
+    # The bar carries the one thing to do and the button that does it; everything that explains it —
+    # the why, the briefing, the prompt itself — lives in the drawer every other panel already uses,
+    # so the board keeps the height instead of the explanation.
     kind, title, why, prompt, link, brief = next_action(ctx, flat)
-    na = (f'<section class="next {kind}"><div class="nh"><span class="kick">Next action</span><h2>{e(title)}</h2></div><p>{e(why)}</p>'
-          + (f'<div class="brief">{mdblock(brief)}</div>' if brief else '') + '<div class="na">')
+    na = (f'<section class="next {kind}"><span class="kick">Next action</span>'
+          f'<span class="nt">{e(title)}</span><div class="na">')
     if prompt:
-        na += '<button class="btn copy" data-copy="na-prompt">Copy prompt</button>'
+        na += '<button class="btn copy prime" data-copy="na-prompt">Copy prompt</button>'
+    na += '<button class="btn" data-panel="next">What to do</button>'
     if link:
         na += f'<a class="btn" href="{e(link)}">Open the story</a>'
-    if prompt:
-        na += f'<details><summary>Show the prompt</summary><pre id="na-prompt">{e(prompt)}</pre></details>'
     na += '</div></section>'
+    na_panel = (f'<section class="pd" id="pd-next" hidden><h2>Next action <span class="fine">{e(title)}</span></h2>'
+                f'<p>{e(why)}</p>' + (f'<div class="brief">{mdblock(brief)}</div>' if brief else '')
+                + (f'<h3>The prompt <span class="fine">paste it whole, first line included</span></h3>'
+                   f'<p><button class="btn copy" data-copy="na-prompt">Copy prompt</button></p>'
+                   f'<pre id="na-prompt">{e(prompt)}</pre>' if prompt else '')
+                + (f'<p><a class="btn" href="{e(link)}">Open the story</a></p>' if link else '') + '</section>')
 
     # ── the epic rail: one line per epic ──
     rail = ['<button class="ep all" data-e=""><span class="et">All epics</span>'
@@ -1055,6 +1102,7 @@ def render(ctx):
     details.append(f'<section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">{len(ctx["deferred"])} entries</span></h2>'
                    '<p class="fine">Small things put off for later: a review chose not to do them inside its story. Each is a small decision for later, not a bug in what shipped.</p>'
                    f'{dw}</section>')
+    details.append(na_panel)
     details.append(HELP)
 
     stamp = ctx['stamp']
@@ -1068,13 +1116,13 @@ def render(ctx):
 <body>
 <header class="top">
   <div><span class="kick">Inflozo</span><h1>Story board</h1></div>{demo}
-  <div class="pulse">{pulse}</div>
   <div class="tools"><input id="q" type="search" placeholder="Search stories  ( / )" aria-label="search stories">
     <button class="btn" data-panel="questions">Questions for you <b class="{'zero' if not open_qs else ''}">{len(open_qs)}</b></button>
     <button class="btn" data-panel="activity">Activity</button>
     <button class="btn" data-panel="deferred" title="small things put off for later">Deferred</button>
     <button class="btn" data-panel="help">Help</button></div>
 </header>
+<div class="stats">{stats}</div>
 {na}
 <main class="board">
   <nav class="rail" aria-label="epics">{''.join(rail)}</nav>
