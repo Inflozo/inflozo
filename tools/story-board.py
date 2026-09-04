@@ -399,7 +399,8 @@ def load_deferred(text):
     for i, m in enumerate(heads):
         end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
         blk = text[m.end():end]
-        f = dict(re.findall(r'^(\w+):\s*(.*)$', blk, re.M))
+        f = {k: re.sub(r'\s+', ' ', v).strip()                  # a field runs on over indented lines
+             for k, v in re.findall(r'^(\w+):[ \t]*(.*(?:\n[ \t]+\S.*)*)$', blk, re.M)}
         out.append({'id': m.group(1), 'title': m.group(2), 'status': f.get('status', 'open'),
                     'severity': f.get('severity', ''), 'reason': f.get('reason', ''),
                     'origin': f.get('origin', ''), 'location': f.get('location', '')})
@@ -575,6 +576,10 @@ def render_test(story):
             'goes through chat — tell me what you found, passed or not.</p></div>')
 
 
+# Severity word to tone. A word with no row reads grey — unrated, not safe.
+SEV_TONE = {'critical': 's-crit', 'high': 's-crit', 'medium': 's-warn', 'low': 's-info'}
+TONE_ORDER = ['s-crit', 's-warn', 's-info', 's-mute', 's-good']
+
 NO_OPTIONS = ("This one arrived without options. Don't answer it yet — the next session on this story "
               "will rewrite it properly.")
 NO_RECOMMENDED = 'No option is marked RECOMMENDED yet — you can still answer by number.'
@@ -599,6 +604,11 @@ def render_questions(story):
     return (f'<div class="qbox" data-sub="questions"><h3>Questions for you</h3>{"".join(items)}'
             f'<p class="fine">{when} A question is written in plain English with numbered options and one '
             'marked RECOMMENDED (R-83).</p></div>')
+
+
+def phchip(phase, label=None):
+    """The phase pill. `p-<Phase>` carries the colour, so a table row can wear the same class."""
+    return f'<span class="ph p-{e(phase)}">{e(label if label is not None else phase)}</span>' if phase else ''
 
 
 def plain_state(spec):
@@ -626,7 +636,7 @@ def render_story(story, ep, phase_prompts, briefs):
     parts = [f'<header><span class="ebadge">E{ep["n"]} · {e(ep["title"])}</span>'
              f'<h2><span class="key">{e(key)}</span> {e(story["title"])}</h2>'
              f'<p class="meta"><span class="lanechip {story["lane"]}">{e(LANE_NAME[story["lane"]])}</span> '
-             f'<span class="ph {phase}">{lab(phase)}</span>'
+             + phchip(phase, lab(phase))
              + (' <span class="tag crit">blocked</span>' if story['blocked'] else '')
              + (' <span class="tag warn long">Verification names no real service</span>' if story['unverified'] else '')
              + (f' <span class="fine">{e(plain_state(spec))}</span>' if spec and plain_state(spec) else '')
@@ -669,7 +679,8 @@ def render_story(story, ep, phase_prompts, briefs):
         eng.append('<h3>Files this story touches</h3><ul class="md">' + ''.join(f'<li>{md(c)}</li>' for c in spec['codemap']) + '</ul>')
     if story['commits']:
         eng.append('<h3>Commits</h3><table class="ct">' + ''.join(
-            f'<tr><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td><td><span class="ph {e(c["phase"])}">{e(c["phase"])}</span></td>'
+            f'<tr class="{("p-" + e(c["phase"])) if c["phase"] else "s-mute"}"><td>{e(c["date"])}</td>'
+            f'<td><code>{e(c["h"])}</code></td><td>{phchip(c["phase"])}</td>'
             f'<td>{e(c["msg"])}</td></tr>' for c in story['commits']) + '</table>')
     else:
         eng.append('<h3>Commits</h3><p class="fine">None yet. Every phase ends with one: '
@@ -717,7 +728,7 @@ def render_card(story, ep):
         tag += '<span class="tag warn long">Verification names no real service</span>'
     return (f'<article class="{cls}" data-e="{ep["n"]}" data-key="{e(story["key"])}" data-s="{e(search)}" id="c-{kid}">'
             f'<div class="ch"><span class="ebadge">E{ep["n"]}</span><span class="key">{e(story["key"])}</span>'
-            f'<span class="ph {story["phase"]}">{lab(story["phase"])}</span></div>'
+            + phchip(story["phase"], lab(story["phase"])) + '</div>'
             f'<h3>{e(story["title"])}</h3>'
             f'<div class="cf">{btn}{tag}<a class="more" href="#{e(story["key"])}" aria-label="open story {e(story["key"])}">Details</a></div></article>')
 
@@ -845,10 +856,14 @@ box-shadow:0 2px 4px rgba(0,0,0,.05),0 10px 22px rgba(0,0,0,.09)}
 .ebadge{font-size:.66rem;font-weight:700;padding:1px 6px;border-radius:99px;background:var(--accent-s);color:var(--accent);white-space:nowrap}
 .card .ebadge{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px currentColor}
 .key{font-weight:700;font-size:.78rem}
-.ph{margin-left:auto;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:1px 6px;
-border-radius:99px;background:var(--code);color:var(--muted);white-space:nowrap}
-.ph.Test{background:var(--warn-s);color:var(--warn)}.ph.Fix,.ph.Blocked{background:var(--crit-s);color:var(--crit)}
-.ph.Done{background:var(--good-s);color:var(--good)}.ph.Dev,.ph.Review,.ph.Deploy{background:var(--accent-s);color:var(--accent)}
+/* One phase, one colour, and it is the lane palette — so a chip in the activity feed and a card in
+   a lane say the same thing in the same colour. A phase with no row here reads grey, which is what
+   an unstarted phase means. */
+.ph{--c:var(--wait);--cs:var(--code);margin-left:auto;font-size:.64rem;font-weight:700;text-transform:uppercase;
+letter-spacing:.05em;padding:1px 6px;border-radius:99px;background:var(--cs);color:var(--c);white-space:nowrap}
+.p-Create{--c:var(--l-ready);--cs:var(--l-ready-s)}.p-Dev{--c:var(--l-progress);--cs:var(--l-progress-s)}
+.p-Review,.p-Deploy{--c:var(--l-review);--cs:var(--l-review-s)}.p-Test{--c:var(--l-test);--cs:var(--l-test-s)}
+.p-Done{--c:var(--l-done);--cs:var(--l-done-s)}.p-Fix,.p-Blocked{--c:var(--crit);--cs:var(--crit-s)}
 .card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}
 .card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
@@ -867,7 +882,9 @@ text-transform:uppercase;letter-spacing:.04em}
 .flag{display:inline-block;font-size:.8rem;font-weight:600;color:var(--warn)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);background:var(--card);border-left:1px solid var(--line);
-box-shadow:-8px 0 30px rgba(0,0,0,.18);z-index:21;overflow:auto;padding:16px 22px 48px}
+box-shadow:-8px 0 30px rgba(0,0,0,.18);z-index:21;overflow:auto;padding:16px 22px 48px;transition:width .12s}
+/* A story reads as prose and wants a column; a panel is a list of rows and wants the room. */
+.drawer.wide{width:min(1040px,96vw)}
 .drawer .close{position:sticky;top:0;float:right;font:inherit;font-size:.88rem;border:1px solid var(--line);
 background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:1}
 .sd header .ebadge{font-size:.72rem}
@@ -911,6 +928,36 @@ details.eng[open] summary{border-bottom:1px solid var(--line)}details.eng h3:fir
 .pr .brief{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0}.next .brief{flex-basis:100%;margin:0 0 8px}
 .links{font-size:.84rem;color:var(--muted);margin-top:16px}
 .dw{border-top:1px solid var(--line);padding:8px 0}.dw:first-of-type{border-top:0}.dw b{display:block}
+/* ── The three panels: one row shape, one chip, five tones. A tone is a --c/--cs pair like a lane's,
+      so a new status is one row here and one name in TONE, never a rule per element. ───────────── */
+.st{--c:var(--wait);--cs:var(--code);display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.05em;
+text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--cs);color:var(--c);white-space:nowrap}
+.st.solid{background:var(--c);color:var(--on)}
+/* A tone overrides the chip default, so it is declared after it. */
+.s-crit{--c:var(--crit);--cs:var(--crit-s)}.s-warn{--c:var(--warn);--cs:var(--warn-s)}
+.s-info{--c:var(--accent);--cs:var(--accent-s)}.s-good{--c:var(--good);--cs:var(--good-s)}
+.s-mute{--c:var(--wait);--cs:var(--code)}
+.tally{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.pl{--c:var(--wait);list-style:none;margin:12px 0 0;padding:0;display:grid;gap:9px}
+.pl>li{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:11px;background:var(--card);
+padding:10px 14px;transition:border-color .12s,box-shadow .12s}
+.pl>li:hover{border-color:var(--c);box-shadow:var(--sh)}
+.plh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 4px}
+.plh b{font-size:.9rem;font-weight:700;margin-right:auto}.plh b a{text-decoration:none}
+.plh .ph{margin-left:0}
+.pl .why{margin:0;font-size:.84rem;line-height:1.5;color:var(--muted);max-width:none}
+.pl .where{display:block;margin-top:5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+font-size:.74rem;color:var(--muted);word-break:break-word}
+.pl .from{display:block;margin-top:4px;font-size:.76rem;color:var(--muted)}
+/* The activity feed stays a table — twenty rows read faster in columns than in cards. */
+.ct thead th{text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;
+color:var(--muted);font-weight:700;padding:0 6px 5px;border-bottom:1px solid var(--line)}
+/* The default is on the table so a row's own p-<Phase>/tone class — one class — can override it. */
+.ct{--c:var(--wait);--cs:var(--code)}
+.ct tbody tr:hover{background:var(--cs)}
+.ct tbody td:first-child{border-left:3px solid var(--c)}
+.ct td:nth-child(3){white-space:nowrap}
+.ct .msg{width:100%}
 .help p{margin:6px 0;font-size:.92rem;line-height:1.55}.help dt{font-weight:700;margin-top:8px}.help dd{margin:0 0 4px;color:var(--muted);font-size:.9rem}
 footer{padding:6px 18px;margin:0;border-top:1px solid var(--line);font-size:.72rem;color:var(--muted);background:var(--card)}
 @media(max-width:1100px){.lanes{grid-template-columns:repeat(3,minmax(0,1fr))}.board{grid-template-columns:1fr;grid-template-rows:auto 1fr}
@@ -933,6 +980,7 @@ function openSection(id,sub){
   if(openSec&&openSec!==s){openSec.hidden=true;store.append(openSec);}
   lastFocus=lastFocus||document.activeElement;
   openSec=s;dbody.append(s);s.hidden=false;drawer.hidden=false;scrim.hidden=false;paintTicks(s);
+  drawer.classList.toggle('wide',s.classList.contains('pd'));   // a panel is a list; a story is prose
   drawer.scrollTop=0;
   if(sub){const el=s.querySelector('[data-sub="'+sub+'"]');if(el)el.scrollIntoView({block:'start'});}
   drawer.querySelector('.close').focus();}
@@ -1081,11 +1129,23 @@ def render(ctx):
     # ── the hidden detail sections and the panels ──
     details = [render_story(s, ep, ctx['phase_prompts'], ctx['briefs']) for s, ep in stories]
     if open_qs:
-        ql = ''.join(f'<div class="dw"><b><a href="#{e(s["key"])}/questions">{e(s["key"])} · {e(s["title"])}</a></b>'
-                     f'{e(q["title"])}'
-                     + (f'<br><span class="flag">{e(NO_OPTIONS)}</span>' if not q['options'] else
-                        f'<br><span class="flag">{e(NO_RECOMMENDED)}</span>' if not q['recommended'] else '')
-                     + '</div>' for s, ep, q in open_qs)
+        rows = []
+        for s, ep, q in open_qs:
+            # The tone is what the question is worth answering *now*: a shapeless one is not yet
+            # answerable and says so in red, rather than sitting in the inbox looking ready.
+            tone, chip, note = 's-warn', 'needs an answer', ''
+            if not q['options']:
+                tone, chip, note = 's-crit', 'not answerable yet', NO_OPTIONS
+            elif not q['recommended']:
+                note = NO_RECOMMENDED
+            rows.append(f'<li class="{tone}"><div class="plh">'
+                        f'<b><a href="#{e(s["key"])}/questions">{e(s["key"])} · {e(s["title"])}</a></b>'
+                        f'{phchip(s["phase"], lab(s["phase"]))}'
+                        f'<span class="st {tone} solid">{e(chip)}</span></div>'
+                        f'<p class="why">{md(q["title"])}</p>'
+                        + (f'<p class="why"><span class="flag">{e(note)}</span></p>' if note else '')
+                        + '</li>')
+        ql = '<ul class="pl">' + ''.join(rows) + '</ul>'
     else:
         ql = '<p class="fine">Nothing is waiting on you. A question appears here the moment a spec writes one under "Questions for the owner".</p>'
     details.append(f'<section class="pd" id="pd-questions" hidden><h2>Questions for you <span class="fine">{len(open_qs)} open</span></h2>'
@@ -1094,11 +1154,12 @@ def render(ctx):
     feed = [c for c in ctx['commits'] if c['kind'] != 'unreadable'][:20]
     unreadable = [c for c in ctx['commits'] if c['kind'] == 'unreadable']
     if feed:
-        rows = ''.join(f'<tr><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
-                       f'<td>{("<a href=#" + e(c["key"]) + ">" + e(c["key"]) + "</a>") if c["kind"] == "story" else e(c["key"])} '
-                       + (f'<span class="ph {e(c["phase"])}">{e(c["phase"])}</span>' if c['phase'] else '')
-                       + f'</td><td>{e(c["msg"])}</td></tr>' for c in feed)
-        act = f'<table class="ct">{rows}</table>'
+        rows = ''.join(f'<tr class="{("p-" + e(c["phase"])) if c["phase"] else "s-mute"}"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
+                       f'<td>{("<a href=#" + e(c["key"]) + ">" + e(c["key"]) + "</a>") if c["kind"] == "story" else e(c["key"])}</td>'
+                       f'<td>{phchip(c["phase"])}</td>'
+                       f'<td class="msg">{e(c["msg"])}</td></tr>' for c in feed)
+        act = ('<table class="ct"><thead><tr><th>When</th><th>Commit</th><th>Story</th><th>Phase</th>'
+               f'<th>What it did</th></tr></thead><tbody>{rows}</tbody></table>')
     else:
         act = '<p class="fine">No story commits yet. Every phase ends with one, shaped <code>Story E.S - Phase - one line</code>, and they appear here as they land.</p>'
     if unreadable:
@@ -1106,14 +1167,29 @@ def render(ctx):
                 '<p class="fine">These start like a story, step, hotfix or retro commit but do not fit the shape '
                 '<code>Story E.S - Phase - one line</code> (or <code>Step n - Phase - …</code>, <code>Hotfix - …</code>, '
                 '<code>Epic N - Retro - …</code>), so the board cannot read them. The commit-msg hook rejects new ones.</p>'
-                '<table class="ct">' + ''.join(f'<tr><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td><td>{e(c["msg"])}</td></tr>'
-                                               for c in unreadable) + '</table>')
+                '<table class="ct"><tbody>' + ''.join(f'<tr class="s-crit"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
+                                                      f'<td class="msg">{e(c["msg"])}</td></tr>'
+                                                      for c in unreadable) + '</tbody></table>')
     details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last {len(feed)} commits</span></h2>{act}</section>')
     if ctx['deferred']:
-        dw = ''.join(f'<div class="dw"><b>{e(d["id"] + " · " if d["id"] else "")}{e(d["title"])}'
-                     + (f' <span class="tag {"crit" if d["severity"] in ("critical", "high") else "warn" if d["severity"] else "good"}">{e(d["severity"] or d["status"])}</span>' if (d['severity'] or d['status']) else '')
-                     + f'</b><span class="fine">{e(d["reason"])}'
-                     + (f' — {e(d["origin"])}' if d['origin'] else '') + '</span></div>' for d in ctx['deferred'])
+        rows, tally = [], {}
+        for d in ctx['deferred']:
+            closed = d['status'] and d['status'] != 'open'
+            tone = 's-good' if closed else SEV_TONE.get(d['severity'], 's-mute')
+            tally[(tone, d['status'] if closed else (d['severity'] or 'unrated'))] = \
+                tally.get((tone, d['status'] if closed else (d['severity'] or 'unrated')), 0) + 1
+            rows.append(f'<li class="{tone}"><div class="plh">'
+                        f'<b>{e(d["id"] + " · " if d["id"] else "")}{md(d["title"])}</b>'
+                        + (f'<span class="st {tone} solid">{e(d["severity"])}</span>' if d['severity'] else '')
+                        + f'<span class="st {"s-good" if closed else "s-mute"}">{e(d["status"] or "open")}</span></div>'
+                        + (f'<p class="why">{md(d["reason"])}</p>' if d['reason'] else '')
+                        + (f'<span class="where">{e(d["location"])}</span>' if d['location'] else '')
+                        + (f'<span class="from">Raised by {e(d["origin"])}</span>' if d['origin'] else '')
+                        + '</li>')
+        # Counted from the rows, never written down: a new severity word needs no edit here.
+        chips = ''.join(f'<span class="st {t} solid">{n} {e(w)}</span>'
+                        for (t, w), n in sorted(tally.items(), key=lambda kv: (TONE_ORDER.index(kv[0][0]), kv[0][1])))
+        dw = f'<div class="tally">{chips}</div><ul class="pl">' + ''.join(rows) + '</ul>'
     else:
         dw = ('<p class="fine">Nothing has been deferred.' + ('' if ctx['deferred_exists'] else ' The ledger (deferred-work.md) does not exist yet; a review writes it the first time it sets something aside.') + '</p>')
     details.append(f'<section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">{len(ctx["deferred"])} entries</span></h2>'
@@ -1658,6 +1734,11 @@ def demo():
     kinds = {c['kind'] for c in ctx['commits']}
     assert {'story', 'step', 'hotfix', 'retro', 'unreadable'} <= kinds, kinds
     assert 'Dvelop' in out and 'Unreadable commits' in out
+    # The three panels paint from a tone; a tone that loses to its own element default is the bug
+    # this pair catches, because both classes are one class and only source order separates them.
+    assert '<tr class="p-Deploy">' in out and '<tr class="s-mute">' in out, 'activity rows carry no tone'
+    assert '<span class="st s-crit solid">not answerable yet' in out, 'a shapeless question is not flagged red'
+    assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
     assert not q32[0]['options'], 'the shapeless question must fail R-83'
