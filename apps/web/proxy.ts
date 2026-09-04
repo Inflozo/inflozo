@@ -1,27 +1,24 @@
 // Host routing for the one deployment that serves both domains. Next 16 renamed
 // middleware.ts to proxy.ts and runs it on the Node.js runtime.
+// The decision itself lives in ./routing.ts, which imports nothing, so `node --test` can
+// prove it — `next/server` does not resolve outside Next's own resolver.
 // The CSP arrives with the first story that has a page to protect; tools/probe/csp/proxy.ts
 // is its executed shape.
 import { NextResponse, type NextRequest } from 'next/server'
+import { route } from './routing.ts'
 
 export function proxy(req: NextRequest) {
-  const host = req.headers.get('host') ?? ''
-  const { pathname } = req.nextUrl
+  const { pathname, search } = req.nextUrl
+  const decision = route(req.headers.get('host') ?? '', pathname, search)
 
-  // app.inflozo.com → the internal /app prefix. A rewrite, so the URL never changes.
-  if (host.startsWith('app.')) {
-    return NextResponse.rewrite(new URL(`/app${pathname}`, req.url))
+  switch (decision.kind) {
+    case 'rewrite':
+      return NextResponse.rewrite(new URL(decision.path, req.url))
+    case 'redirect':
+      return NextResponse.redirect(new URL(decision.url), 308)
+    default:
+      return NextResponse.next()
   }
-
-  // The app prefix is not a public URL on the apex — send it to the app host.
-  if (pathname.startsWith('/app') && host.endsWith('inflozo.com')) {
-    return NextResponse.redirect(
-      new URL(pathname.slice(4) || '/', `https://app.${host}`),
-      308,
-    )
-  }
-
-  return NextResponse.next()
 }
 
 export const config = { matcher: ['/((?!_next/|favicon.ico).*)'] }

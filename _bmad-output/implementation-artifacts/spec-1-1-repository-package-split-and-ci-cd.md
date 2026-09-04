@@ -2,8 +2,8 @@
 title: 'Story 1.1 — The repository, the package split and CI/CD to production'
 type: 'feature'
 created: '2026-09-04'
-status: 'in-progress'
-review_loop_iteration: 0
+status: 'in-review'
+review_loop_iteration: 1
 baseline_commit: '686749c3d822548125d383d06d6dbe8273794877'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md']
@@ -78,11 +78,51 @@ Greenfield — nothing under `apps/` or `packages/` exists. Read-only evidence t
 - [x] `packages/{section-runtime,ghost-shim,theme-compiler}/{package.json,tsconfig.json,src/index.ts,src/index.test.ts}` -- `@inflozo/<name>`, private, `dependencies: { "@inflozo/library": "workspace:*" }` (plus each other only where used); scripts `typecheck` (`tsc --noEmit -p .`) and `test` (`node --test 'src/**/*.test.ts'`); `index.ts` exports the package name, the test asserts it -- three pure packages with a green suite from day one
 - [x] `packages/theme-compiler/package.json` -- `devDependencies: { "gscan": "6.4.2", "handlebars": "4.7.9" }` -- pinned, dev-only, never shipped
 - [x] `eslint.config.js` -- flat config with `typescript-eslint`'s parser; one block scoped to `packages/{section-runtime,ghost-shim,theme-compiler}/**`: `no-restricted-imports` (patterns `next`, `next/*`, `@supabase/*`, `node:*`, `@inflozo/web`, `**/apps/**`, and the bare built-in names derived from `node:module`'s `builtinModules` — never a hand list), `no-restricted-globals` (`process`, `fetch`, `window`, `document`), `no-restricted-properties` (`Date.now`, `Math.random`, `Intl.*`), `no-restricted-syntax` on `localeCompare`/`toLocaleUpperCase`/`toLocaleLowerCase`/`toString`/`getHours` member calls -- AD-1's ban as a rule, not a review
-- [x] `apps/web/{package.json,tsconfig.json,next.config.ts,postcss.config.mjs,app/globals.css,app/layout.tsx,app/(marketing)/page.tsx,app/(app)/app/page.tsx,proxy.ts}` -- `@inflozo/web` private; deps `next 16.3.1`, `react`/`react-dom 19.2.8`; dev `typescript 7.0.2`, `tailwindcss` 4.x, `@tailwindcss/postcss`, `@types/react`, `@types/node`; `transpilePackages` for the three core packages; `globals.css` = `@import "tailwindcss"; @source not "../../packages/library";`; layout `<html lang="en">`; two pages, one line of text each; `proxy.ts` per Design Notes -- the only deployable
+- [x] `apps/web/{package.json,tsconfig.json,next.config.ts,postcss.config.mjs,app/globals.css,app/layout.tsx,app/(marketing)/page.tsx,app/(app)/app/page.tsx,proxy.ts}` -- `@inflozo/web` private; deps `next 16.3.1`, `react`/`react-dom 19.2.8`; dev `typescript 7.0.2`, `tailwindcss` 4.x, `@tailwindcss/postcss`, `@types/react`, `@types/node`; `transpilePackages` for the three core packages; `globals.css` = `@import "tailwindcss"; @source not "../../../packages/library";`  (three levels — the file sits in `apps/web/app/`); layout `<html lang="en">`; two pages, one line of text each; `proxy.ts` per Design Notes -- the only deployable
 - [x] `apps/web/vercel.json` -- `"buildCommand": "node --version && pnpm --version && pnpm -w check && next build"` -- lint, types and tests fail the deploy, and the build log proves the pins on the platform
 - [x] `.github/workflows/ci.yml` -- on push to `main`: `pnpm/action-setup` (reads `packageManager`), `actions/setup-node` with `node-version-file: .nvmrc`, `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` -- the green check
 - [x] `.gitignore` -- add `.next/`, `.vercel/`, `*.tsbuildinfo` -- build output stays out
 - [x] Vercel project `inflozo` (API, token read only into the command's environment, recorded by name) -- `PATCH /v9/projects/{id}` `rootDirectory: "apps/web"`, `framework: "nextjs"`; env `ENABLE_EXPERIMENTAL_COREPACK=1` (production, preview, development); `POST /v9/projects/{id}/link` `{ "type": "github", "repo": "Inflozo/inflozo" }` with production branch `main` (fallback: the dashboard's *Connect Git*, by the owner) -- push-to-main deploys; assumes Question 1's recommended answer
+
+### Review Findings
+
+Code review 2026-09-04, five layers over `686749c3..66a86ca4`. Everything below was **executed**, not
+read: the four routing defects were reproduced against production and against a running `next start`,
+and every lint escape was run through `pnpm lint` with a passing control either side.
+
+**Decisions — these two are the owner's, and they are questions 5 and 6 below (R-83).**
+
+- [ ] [Review][Decision] The root workspace installs a second TypeScript (6.0.3) against a frozen "installed versions equal the spine's Stack table" constraint — the spine's table still says one version. Question 5.
+- [ ] [Review][Decision] `inflozo-probe.vercel.app` now serves the production site; the spec's Never list forbids touching that alias, so leaving or removing it is not mine to choose. Question 6.
+
+**Patches — all applied in this phase.**
+
+- [x] [Review][Patch] The query string was dropped by both proxy branches; `?token=` and `?next=` never arrived [apps/web/proxy.ts]
+- [x] [Review][Patch] `/app` was matched as a string prefix, so `https://inflozo.com/apply` 308'd to `https://app.inflozo.com/ly` on the live site [apps/web/proxy.ts]
+- [x] [Review][Patch] The app host rewrote unconditionally, so `app.inflozo.com/app/x` became `/app/app/x` and 404'd [apps/web/proxy.ts]
+- [x] [Review][Patch] Hosts were matched by `startsWith`/`endsWith` and the 308 target built from the header, sending `www.inflozo.com/app/x` to the nonexistent `app.www.inflozo.com`; a port or capitals matched nothing [apps/web/proxy.ts]
+- [x] [Review][Patch] `proxy.ts` had four branches and no test, because `next/server` does not resolve under bare `node --test` — the decision moved to a dependency-free module with a suite over all four defects [apps/web/routing.ts, apps/web/routing.test.ts, apps/web/package.json]
+- [x] [Review][Patch] `await import('node:fs')` walked through the whole import ban — `no-restricted-imports` never visits `import()` [eslint.config.js]
+- [x] [Review][Patch] `globalThis.process` walked through the globals ban — `no-restricted-globals` sees unqualified identifiers only [eslint.config.js]
+- [x] [Review][Patch] `new Date()`, `performance.now()` and `crypto.randomUUID()` were unbanned while `Date.now` and `Math.random` were banned — the same clock and the same entropy [eslint.config.js]
+- [x] [Review][Patch] The locale date formatters were unbanned while `toLocaleUpperCase` was banned [eslint.config.js]
+- [x] [Review][Patch] `CORE` was a hand-written, `.ts`-only, three-package list — a fourth package, any `.tsx` and any `.js` linted with no ban at all; membership is now derived from the directory, as the file's own comment four lines below demands [eslint.config.js]
+- [x] [Review][Patch] `ignores: ['**/*.test.ts']` exempted test files from *every* ban, not from the two modules that needed exempting; a core test could import `next/server` [eslint.config.js]
+- [x] [Review][Patch] False positive that would have blocked real code: a core package could not import its own `./util/index.ts`, because the derived built-in patterns matched the relative specifier [eslint.config.js]
+- [x] [Review][Patch] The CI workflow had no `permissions:` block, so its own token took the repository default — in the one story that spent two owner questions on token scope [.github/workflows/ci.yml]
+- [x] [Review][Patch] A count was written into code ("the library's 484 flat stylesheets") against the standing rule that counts are derived, and the library holds none today [apps/web/app/globals.css]
+- [x] [Review][Patch] The ticked task described `@source not "../../packages/library"`; the code correctly uses three levels [this spec, Tasks]
+- [x] [Review][Patch] Verification pinned a deployment id that R-81's per-phase pushes make stale immediately; it now names `HEAD` [this spec, Verification]
+
+**Deferred — real, not this story's, and recorded so they are not lost.** Full entries in
+`deferred-work.md`.
+
+- [x] [Review][Defer] `packages/library` declares no entry point, so `@inflozo/library` cannot resolve for the three packages that depend on it [packages/library/package.json] — deferred, the shape is a guess until story 1.3 has a consumer (DW-1)
+- [x] [Review][Defer] `apps/web` does not depend on the core packages, so `transpilePackages` is inert [apps/web/next.config.ts] — deferred, the story that imports adds its own dependency (DW-2)
+- [x] [Review][Defer] `@types/node@26.4.1` types two majors past the pinned Node 24.x [apps/web/package.json] — deferred, changing it moves the lockfile and wants its own install-and-verify (DW-3)
+- [x] [Review][Defer] `.toString()` is banned on every receiver, not only on a Date as AD-1 says [eslint.config.js] — deferred, errs safe; narrow it when there is real code to narrow against (DW-4)
+- [x] [Review][Defer] The GitHub token expires 2027-09-05 and no register row carries the date [tools/probe/.env.example] — deferred, needs the project's dated-deadline convention (DW-5)
+- [x] [Review][Defer] `node --test` prints a MODULE_TYPELESS_PACKAGE_JSON warning on every `apps/web` run [apps/web/package.json] — deferred, the fix is a claim about Next that wants executing (DW-6)
 
 **Acceptance Criteria:**
 - Given a fresh clone on Node 24, when `pnpm install --frozen-lockfile && pnpm check && pnpm build` runs, then every step exits 0 and `pnpm ls -r --depth 0` shows exactly the pinned versions
@@ -177,7 +217,7 @@ here by variable name — `VERCEL_TOKEN`, `VERCEL_TEAM_ID` — never by value.
 | `PATCH /v9/projects/{id}` | `rootDirectory: apps/web` · `framework: nextjs` |
 | `POST /v10/projects/{id}/env` | created `ENABLE_EXPERIMENTAL_COREPACK` = `1`, targets `production, preview, development`, type `plain` |
 | `POST /v9/projects/{id}/link` | `link.org` `Inflozo` · `link.repo` `inflozo` · `productionBranch` `main` — the Vercel GitHub App was already granted on the organisation, so no owner action was needed |
-| `GET /v6/deployments?limit=1` | `dpl_EQuk6rYKWKyzPwQkWkdVYbMF6z83` · **READY** · `target: production` · `meta.githubCommitSha` `d36b009523fc9936eff23a1fe07f8f86a0fabc87` — the pushed commit |
+| `GET /v6/deployments?limit=1` | the newest production deployment is **READY**, `target: production`, and its `meta.githubCommitSha` equals `HEAD`. Read as `dpl_EQuk6rYKWKyzPwQkWkdVYbMF6z83` / `d36b0095` when this was written — R-81 pushes on every phase, so the id is re-read each time rather than pinned |
 | `GET /v3/deployments/{id}/events` | the build log prints `v24.19.0` then `11.22.0`, runs `pnpm -w check` green (lint, four typechecks, three suites), then `next build` → `○ /`, `○ /app`, `ƒ Proxy (Middleware)`, `Build Completed in /vercel/output [23s]` |
 
 **Deployment:** `inflozo-7vsfd74vy-umangkagathara.vercel.app` (`dpl_EQuk6rYKWKyzPwQkWkdVYbMF6z83`), production, from `d36b0095`.
@@ -221,6 +261,71 @@ cannot write. It is a fine-grained token (`github_pat_` prefix, no `x-oauth-scop
 `tools/probe/.env.example` describes**, though: `contents`, `issues`, `pulls`, `actions/secrets` (names
 only — GitHub never returns a secret's value), `actions/variables`, `collaborators`, `hooks` and
 `orgs/Inflozo/members` all return **200**. Read-only, but repository-wide. That is question 4 below.
+
+### Review phase — 2026-09-04, re-executed rather than re-read (R-82)
+
+Every claim above was re-executed against the same real services, plus the cases the matrix did not
+cover. Keys were read only into a command's environment and are recorded by variable name —
+`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `GITHUB_TOKEN` — never by value.
+
+**Held, unchanged:** `api.vercel.com` project `inflozo` — `rootDirectory apps/web`, `framework
+nextjs`, git link `Inflozo/inflozo` on `main`, `ENABLE_EXPERIMENTAL_COREPACK=1` on all three targets,
+the three pre-existing encrypted env vars untouched; the newest production deployment READY at
+`meta.githubCommitSha` = `HEAD`; its build log prints `v24.19.0` then `11.22.0`, runs `pnpm -w check`
+green and `next build`. The three domains 200 · 200 · 308→apex and `/app/x` → 308. Every GitHub
+Actions run on `main` `completed success`. `pnpm why -r` puts `gscan` and `handlebars` under
+`@inflozo/theme-compiler` only. `pnpm install --frozen-lockfile` on Node 22 refuses.
+**Controls:** wrong bearer → 403; real token, nonexistent project → 404; GitHub unauthenticated →
+404; apex paths that are not the app prefix (`/about`, `/pricing`, `/ap`) → 404 with no `Location`,
+so the 308s were the rule firing and not a blanket redirect.
+
+**Four routing defects found on the live site, and fixed in this story (R-80: findings are fixed
+inside the story).** The I/O matrix tested `/` and `/app/x` with no query string, and every one of
+these passed underneath it:
+
+| Executed against production | Was | Now |
+|---|---|---|
+| `GET https://inflozo.com/apply` | **308 → `https://app.inflozo.com/ly`** — `startsWith('/app')` matched any path merely beginning `app`, and `slice(4)` ate four characters | passes through to marketing |
+| `GET https://inflozo.com/app/signin?next=%2Fdashboard` | **308 → `https://app.inflozo.com/signin`** — the query string was dropped by both branches, which is the shape story 1.4's magic link needs | `…/signin?next=%2Fdashboard` |
+| `GET https://app.inflozo.com/app/x` | **404** — the app host rewrote unconditionally, so an already-prefixed path became `/app/app/x` | 308 → `https://app.inflozo.com/x` |
+| `Host: www.inflozo.com` `/app/x` | **308 → `https://app.www.inflozo.com/x`**, a host that does not exist — `endsWith('inflozo.com')` matched every subdomain and the target was built from the header | passes through |
+
+The decision moved into `apps/web/routing.ts`, which imports nothing, because `next/server` does not
+resolve under bare `node --test` (executed) and so `proxy.ts` could not be tested at all — which is
+why four defects in four branches met no check. `apps/web/routing.test.ts` now pins all four plus
+localhost dev and a host carrying a port or capitals; `apps/web` gained the `test` script that
+`pnpm -r test` needs to reach it. Re-executed against a running `next start`: `/apply` → 404 (no
+longer hijacked) · `/app/x?token=T` → 308 with the token · `/app` → 308 → `/` · `app.…/app/x` → 308 →
+`/x` · `www.` and `ghost5.inflozo.com` → not routed · `localhost:3000/` and `/app` → 200 and 200.
+
+**Five holes in the AD-1 boundary lint, executed as escapes and closed.** The recorded control —
+five errors, one per ban class — kept passing through all of them, which is what made the ban look
+wider than it was:
+
+| Escape, run in a core package | Was | Now |
+|---|---|---|
+| `await import('node:fs')` | **exit 0** — `no-restricted-imports` never visits `import()` | `no-restricted-syntax` on `ImportExpression` |
+| `(globalThis as …).process` | **exit 0** — `no-restricted-globals` sees unqualified identifiers only | `globalThis` is itself banned |
+| `new Date()`, `performance.now()`, `crypto.randomUUID()` | **exit 0** — only `Date.now` and `Math.random` were named | zero-arg `new Date` banned; `performance` and `crypto` are restricted globals |
+| `new Date(0).toLocaleDateString()` | **exit 0** — the list held `toLocaleUpperCase`/`toLocaleLowerCase` but no date formatter | `toLocaleString`, `toLocaleDateString`, `toLocaleTimeString`, `getTimezoneOffset` added |
+| a `.tsx`, a `.js`, or a fourth package under `packages/` | **exit 0** — `CORE` was a hand-written three-glob `.ts`-only list, in the file whose own comment four lines below forbids hand lists | `packages/*/**/*.{ts,tsx,mts,cts,js,mjs,cjs}` minus `library` — derived from the directory |
+| a `.test.ts` importing `next/server` or calling `Math.random()` | **exit 0** — `ignores: ['**/*.test.ts']` exempted tests from *every* rule, though only `node:test` and `node:assert` needed exempting | tests keep every ban; only those two modules are relaxed |
+
+**And one false positive, which would have blocked real code.** A core package could not import its
+own `./util/index.ts`: the derived built-in patterns matched the relative specifier (`'./util/index.ts'
+import is restricted from being used by a pattern`, executed). `util`, `path`, `url`, `stream`,
+`events`, `assert` and `test` are all built-in names and all plausible subdirectories of
+`section-runtime`. Closed with trailing `!./**` and `!../**` negations.
+
+**Controls on the new rules** — ten errors across eight fixtures, one per new ban plus the new
+package and the `.tsx`; `./util/index.ts` produced none; deleting every fixture returned `pnpm check`
+to **exit 0** and `pnpm build` to the same route manifest (`○ /`, `○ /app`, `ƒ Proxy (Middleware)`).
+The controls passed, so the exit-0s above were the open rules and not a broken run.
+
+**One state change nobody made, recorded rather than left to be discovered.** Linking Git moved the
+`inflozo-probe.vercel.app` alias onto the new production deployment: it now serves the live site, and
+`MEASUREMENTS.md` §18's CSP probe is no longer reachable in place — story 1.5 must re-execute it
+rather than cite it. Nothing touched the alias; it moved. That is question 6 below.
 
 ## Owner's manual test
 
@@ -304,3 +409,47 @@ repository — that is how the code got pushed. So the token is weaker than some
    later story loses the automatic tick.
 
 **Ruled:** "leave it" *(owner, 2026-09-04)* — **option 1**. The token stays repository-wide read-only; the row in `tools/probe/.env.example` now describes what it actually does rather than what was asked for, so the record is true. It is strictly weaker than the SSH key already on this machine, which can write.
+
+### 5. The project now has two copies of TypeScript. Should the architecture say so?
+
+TypeScript is the language the code is written in, and the architecture document says this project
+uses exactly one version of it: 7.0.2. Everything that gets built and shipped does use 7.0.2. But the
+tool that enforces the safety rule — the one that stops a building block from reaching out to the
+machine it is running on — **refuses to start** against 7.0.2 and needs the older 6.0.3. So a second
+copy of 6.0.3 now sits at the top of the repository doing nothing except powering that checker.
+
+Example: if you listed the installed packages you would see `typescript 7.0.2` five times and
+`typescript 6.0.3` once — and the architecture's version table, which says there is only one, would
+be quietly wrong. This project has been bitten before by a document that stopped being true without
+anyone noticing.
+
+1. **Leave the code alone, and I add one line to the architecture's version table saying the checker
+   holds a second, older copy and why (RECOMMENDED)** — nothing changes in what gets built or
+   shipped, and the highest-authority document stops disagreeing with the machine. The disagreement
+   is the actual risk here, not the second copy.
+2. Leave the code alone and change nothing — the explanation stays only in this story's change log,
+   where a future story is unlikely to look, and the architecture keeps saying something untrue.
+3. Switch the safety checker off until its makers support 7.0.2 — no second copy, but the rule that
+   stops a building block reaching the host machine stops being enforced, and that rule is the main
+   thing this story built.
+
+**Ruled:**
+
+### 6. A leftover test address now shows the real site. Leave it, or take it down?
+
+Before this story, `inflozo-probe.vercel.app` was a scratch address used to try things out on Vercel.
+Connecting the repository to Vercel **moved it by itself** — nobody touched it — and it now serves
+the live Inflozo site. So three public addresses show your product instead of two.
+
+Example: type `inflozo-probe.vercel.app` into a browser today and you get the same page as
+`inflozo.com`. Nothing is broken. But it is a leftover name from the testing phase, and one earlier
+measurement that story 1.5 was going to build on used to live at that address and no longer does.
+
+1. **Leave it (RECOMMENDED)** — harmless before launch, costs nothing, and nobody knows the address.
+   I have already recorded that story 1.5 must re-run that measurement rather than cite the old one.
+2. Remove the address from the project — one call, about a minute, and `inflozo.com` and
+   `app.inflozo.com` are unaffected. Choose this if you would rather nothing but your two real
+   addresses ever answers.
+
+**Ruled:**
+
