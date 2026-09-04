@@ -2,10 +2,10 @@
 title: 'Story 1.1 — The repository, the package split and CI/CD to production'
 type: 'feature'
 created: '2026-09-04'
-status: 'in-review'
+status: 'done'
 review_loop_iteration: 1
 baseline_commit: '686749c3d822548125d383d06d6dbe8273794877'
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md']
 ---
 
@@ -384,6 +384,9 @@ owns it. No tooling change to deploy.
 | 3 | https://www.inflozo.com/ | — | Open the address | — | The address bar changes to inflozo.com and shows the same page as step 1 |
 
 There is nothing to judge as design yet — each page is one line of plain text. The real screens arrive with stories 1.3 to 1.5.
+
+**Ruled:** "Passed" *(owner, 2026-09-04)* — he walked all three steps on the live production domains
+and accepted the story. `owner_test: passed`; the story is done (R-80: done is written on his word).
 
 ## Questions for the owner
 
