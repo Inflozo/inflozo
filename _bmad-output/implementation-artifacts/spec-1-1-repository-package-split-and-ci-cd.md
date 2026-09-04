@@ -143,18 +143,59 @@ Tests run with `node --test` on erasable-syntax TypeScript and no framework — 
 
 ## Verification
 
-**Commands:**
-- `nvm use 24 && corepack enable && pnpm install --frozen-lockfile` -- expected: exit 0; `pnpm --version` prints `11.22.0`, `node --version` prints `v24.`
-- `pnpm check` -- expected: lint, typecheck and the three test files green
-- `echo "import 'next/server'" > packages/ghost-shim/src/bad.ts && pnpm lint; echo "exit=$?"; rm packages/ghost-shim/src/bad.ts && pnpm lint && echo "control ok"` -- expected: `exit=1` then `control ok` (negative control — standing rule 2)
-- `pnpm why -r handlebars && pnpm why -r gscan` -- expected: only `@inflozo/theme-compiler` devDependencies
-- `pnpm build` -- expected: `next build` succeeds; the route manifest lists `/` and `/app` and `ƒ Proxy`
-- `env $(grep -E '^VERCEL_(TOKEN|TEAM_ID)=' tools/probe/.env | xargs) sh -c 'curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/prj_ptauaY2o7FQckRDk31b7hdl06FSb?teamId=$VERCEL_TEAM_ID"' | python3 -c 'import json,sys; p=json.load(sys.stdin); print(p.get("link",{}).get("repo"), p.get("rootDirectory"), p.get("framework"))'` -- expected: `Inflozo/inflozo apps/web nextjs`
-- `env $(grep -E '^VERCEL_(TOKEN|TEAM_ID)=' tools/probe/.env | xargs) sh -c 'curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v6/deployments?projectId=prj_ptauaY2o7FQckRDk31b7hdl06FSb&limit=1&teamId=$VERCEL_TEAM_ID"'` -- expected: newest deployment `READY`, `target: production`, `meta.githubCommitSha` = the pushed commit; record `Deployment: <url>` below
-- `for h in inflozo.com app.inflozo.com www.inflozo.com; do curl -s -o /dev/null -w "$h %{http_code} %{redirect_url}\n" https://$h/; done` -- expected: `inflozo.com 200`, `app.inflozo.com 200`, `www.inflozo.com 308 https://inflozo.com/`
-- `curl -s https://inflozo.com/ | grep -c Inflozo; curl -s https://app.inflozo.com/ | grep -c 'Inflozo · app'` -- expected: at least 1 each
+Executed 2026-09-04 on Node 24.18.1 locally and on Vercel's builder, against the real Vercel API and
+the three production domains (R-82). Keys were read only into a command's environment and are recorded
+here by variable name — `VERCEL_TOKEN`, `VERCEL_TEAM_ID` — never by value.
 
-**Real services hit (R-82):** Vercel — `api.vercel.com`, the `inflozo` project, the production domains — and GitHub Actions. No Supabase, Resend, Dodo or Ghost call belongs to this story.
+**Ran locally, on the workspace:**
+
+| Command | Result |
+|---|---|
+| `corepack pnpm install --frozen-lockfile` | exit 0 · `node --version` `v24.18.1` · `pnpm --version` `11.22.0` |
+| `pnpm ls -r --depth 0` | `next 16.3.1`, `react`/`react-dom 19.2.8`, `typescript 7.0.2` in `apps/web` and all three core packages, `tailwindcss`/`@tailwindcss/postcss 4.3.3`, `gscan 6.4.2` + `handlebars 4.7.9` under `@inflozo/theme-compiler` only. Root: `eslint 10.9.1`, `@typescript-eslint/parser 8.69.0`, `typescript 6.0.3` (see Spec Change Log) |
+| `pnpm check` | exit 0 — lint clean, four `tsc --noEmit` projects Done, three `node --test` suites 1 pass / 0 fail each |
+| `pnpm build` | exit 0 — route manifest `○ /`, `○ /app`, `ƒ Proxy (Middleware)` |
+| `pnpm why -r handlebars` · `pnpm why -r gscan` | one version each, reached only from `@inflozo/theme-compiler` devDependencies |
+
+**Negative controls — a result whose control did not pass is not a result:**
+
+| Control | Result |
+|---|---|
+| `echo "import 'next/server'" > packages/ghost-shim/src/bad.ts && pnpm lint` | **exit 1** — `'next/server' import is restricted from being used by a pattern  no-restricted-imports` |
+| a file reaching for `node:fs/promises`, `Math.random`, `Date.now`, `process`, `localeCompare` | **exit 1** — five errors, one per ban class (`no-restricted-imports`, `no-restricted-properties` ×2, `no-restricted-globals`, `no-restricted-syntax`) |
+| `rm packages/ghost-shim/src/bad.ts && pnpm lint` | **exit 0** — the control passes, so the failures above were the rule and not a broken run |
+| a `.vercel/cache/**/worker.js` fixture reproducing the first deploy's failure, then `pnpm lint` | **exit 0** after the ignore fix; the same fixture failed before it |
+| `pnpm install --frozen-lockfile` on Node **22.23.2** | **exit 1** — *"Your Node version is incompatible … Expected version: 24.x, Got: v22.23.2"*. `.npmrc`'s `engine-strict` alone only **warned**; `engineStrict: true` in `pnpm-workspace.yaml` is what refuses (Spec Change Log) |
+
+**Host routing, exercised against a running `next start` before deploying:**
+`/` → 200 `<p>Inflozo</p>` · `/app` → 200 `<p>Inflozo · app</p>` · `Host: app.inflozo.com` `/` → 200 `<p>Inflozo · app</p>` (rewrite, URL unchanged) · `Host: inflozo.com` `/app/x` → **308** `https://app.inflozo.com/x`.
+
+**Vercel — `api.vercel.com`, project `inflozo` `prj_ptauaY2o7FQckRDk31b7hdl06FSb` (real service):**
+
+| Call | Returned |
+|---|---|
+| `PATCH /v9/projects/{id}` | `rootDirectory: apps/web` · `framework: nextjs` |
+| `POST /v10/projects/{id}/env` | created `ENABLE_EXPERIMENTAL_COREPACK` = `1`, targets `production, preview, development`, type `plain` |
+| `POST /v9/projects/{id}/link` | `link.org` `Inflozo` · `link.repo` `inflozo` · `productionBranch` `main` — the Vercel GitHub App was already granted on the organisation, so no owner action was needed |
+| `GET /v6/deployments?limit=1` | `dpl_EQuk6rYKWKyzPwQkWkdVYbMF6z83` · **READY** · `target: production` · `meta.githubCommitSha` `d36b009523fc9936eff23a1fe07f8f86a0fabc87` — the pushed commit |
+| `GET /v3/deployments/{id}/events` | the build log prints `v24.19.0` then `11.22.0`, runs `pnpm -w check` green (lint, four typechecks, three suites), then `next build` → `○ /`, `○ /app`, `ƒ Proxy (Middleware)`, `Build Completed in /vercel/output [23s]` |
+
+**Deployment:** `inflozo-7vsfd74vy-umangkagathara.vercel.app` (`dpl_EQuk6rYKWKyzPwQkWkdVYbMF6z83`), production, from `d36b0095`.
+
+**The production domains (real, live):**
+
+| Request | Returned |
+|---|---|
+| `GET https://inflozo.com/` | **200**, body contains `Inflozo` |
+| `GET https://app.inflozo.com/` | **200**, body contains `Inflozo · app`, no redirect |
+| `GET https://www.inflozo.com/` | **308** → `https://inflozo.com/` (Vercel's existing rule, untouched) |
+| `GET https://inflozo.com/app/x` | **308** → `https://app.inflozo.com/x` |
+
+No domain returns 404 any more. The first deployment on this story, `dpl_BoS2pAq9xkoP4rL7v1Wxt7AT4Ujw` (commit `190fc972`), **failed** — `eslint .` walked `.vercel/cache/`, Vercel's restored build cache, and reported 60 errors from the vendored pnpm bundle inside it. That is the failure the ignore fix and its fixture above close, and it is recorded rather than quietly overwritten.
+
+**Real services hit (R-82):** Vercel only — `api.vercel.com` (project read, `PATCH` project, `POST` env, `POST` link, deployment list, deployment events) and the three production domains. No Supabase, Resend, Dodo or Ghost call belongs to this story, and none was made.
+
+**One acceptance criterion is not verified from this machine.** *"the workflow is green"*: `Inflozo/inflozo` is a **private** repository, `gh` is not installed, and there is no GitHub token in `tools/probe/.env`, no `GH_TOKEN` and no git credential helper — the push is SSH-key only. `GET https://api.github.com/repos/Inflozo/inflozo/actions/runs` returns **404 Not Found** unauthenticated. What *is* verified is that the workflow's exact command sequence — `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` — passed twice: locally on Node 24.18.1, and inside the Vercel build on Node v24.19.0 with pnpm 11.22.0. The run's colour is a question for the owner below.
 
 ## Owner's manual test
 
@@ -186,4 +227,24 @@ The app will need keys (Supabase, Resend, Dodo) to run in the cloud, and a copy 
 
 **Ruled:** "i am okay with the recommended options for both questions" *(owner, 2026-09-04)* — option 1.
 
-Story 1.1 itself needs no secrets. Both questions were ruled on 2026-09-04 with answer 1; the tasks stand as written.
+Story 1.1 itself needs no secrets. Questions 1 and 2 were ruled on 2026-09-04 with answer 1; the tasks stand as written. Question 3 came out of the Dev phase and is open.
+
+### 3. How should we see whether the GitHub safety check passed?
+
+Two things now build the site on every save to `main`: Vercel (which puts it live) and GitHub's own
+checker (a second opinion that runs the same tests). Vercel's result can be read from this machine —
+the token for it is already in `tools/probe/.env`. GitHub's cannot: the repository is private, and no
+GitHub key exists here, so the tick or cross next to each commit on github.com is invisible to a
+Claude session. Example: if a future story breaks a test in a way Vercel happens to skip, GitHub would
+show a red cross that nobody in the session would ever see.
+
+1. **Leave it as is — you glance at github.com after a story, and Vercel stays the gate that actually
+   blocks a bad deploy (RECOMMENDED)** — nothing new to create or keep secret, and the check that
+   matters (Vercel's) already refuses to publish a broken build, because the same tests run inside it.
+2. You create a read-only GitHub token and paste it into `tools/probe/.env` as `GITHUB_TOKEN`, and
+   every future story's verification reads the tick automatically — one more key to make and guard,
+   for a second opinion on a check the deploy already enforces.
+3. Drop the GitHub checker entirely and rely on Vercel alone — fewer moving parts, but no second
+   opinion at all, and no tick on github.com.
+
+**Ruled:** _(awaiting the owner)_
