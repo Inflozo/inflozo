@@ -303,4 +303,4 @@ repository — that is how the code got pushed. So the token is weaker than some
 3. Delete it and go back to glancing at github.com yourself — undoes the thing you just did, and every
    later story loses the automatic tick.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled:** "leave it" *(owner, 2026-09-04)* — **option 1**. The token stays repository-wide read-only; the row in `tools/probe/.env.example` now describes what it actually does rather than what was asked for, so the record is true. It is strictly weaker than the SSH key already on this machine, which can write.
