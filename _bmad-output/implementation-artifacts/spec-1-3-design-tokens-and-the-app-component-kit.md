@@ -334,8 +334,14 @@ negative control `app.inflozo.com/kit-does-not-exist` → **404** · GitHub Acti
 and `8efc4f62` both `completed success` with `check`, `rls`, `deploy` all `success` (`gh run view`,
 `GITHUB_TOKEN` read from `tools/probe/.env` into the environment and never printed; note `gh run list
 --commit` needs the full SHA) · axe **0** violations on the deployed page with the positive control
-above · 280px · no horizontal scroll. The reviewed build's own production figures are appended below
-once CI has published this commit.
+above · 280px · no horizontal scroll. The reviewed build was then published and read the same way: GitHub Actions run `33950508600` on
+`b868b090` → `completed success`, `check` · `rls` · `deploy` all `success`; `https://app.inflozo.com/kit`
+**200** (served CSS `200`) · `inflozo.com` **200** · `kit-does-not-exist` **404**; the verification
+script above, run against production, returned every figure in the review re-run table unchanged —
+`violations: 0` with the positive control live, **92** focusable both ways, the six greyed stops with the
+ring, R-69 at 0, the frame's four hairlines, the 40% hover wash, `0.16s` transitions, no horizontal
+scroll at the three widths, 23 sections at 280px. The gallery a reviewer opens is the gallery that was
+reviewed.
 
 **Manual check (the frame, side by side).** The gallery was rendered at 1280px and read against
 `Editor Sidebar Kit.dc.html`: same groups, same order, same states, group for group from labels & text
