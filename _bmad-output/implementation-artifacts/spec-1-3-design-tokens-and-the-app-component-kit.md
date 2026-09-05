@@ -225,18 +225,23 @@ __typecontrol.tsx(7,46): error TS2322: Type '"Saving…"' is not assignable to t
 
 and the tree typechecks clean once that file is removed — so the errors are the controls', not the kit's.
 
-**Real services this story hit (R-82).** None, and that is the story: the kit reads no service. It has no
-database call, no session, no email, no payment and no Ghost request, so no key in `tools/probe/.env` was
-opened or needed. The remote surface is the deployed page itself, which arrives when CI's `deploy` job
-runs on this commit; `check` and `rls` gate it, and the deployed check is one command:
+**Real services this story hit (R-82), and the one key it used.**
 
-```
-curl -s -o /dev/null -w '%{http_code}
-' https://app.inflozo.com/kit     # expect 200
-```
+The kit itself reads no service — no database call, no session, no email, no payment, no Ghost request —
+so no Supabase, Resend, Dodo or T1/T3 key was opened. Two real services were nonetheless exercised, and
+both on the production domain, never a `vercel.app` preview:
 
-followed by the same axe run against that URL rather than localhost. Story 1.4 is the first story with a
-key to name.
+| Service | How it was reached | What it returned |
+|---|---|---|
+| **GitHub Actions** | `gh run view` on the push of `356924d8`, authenticated with `GITHUB_TOKEN` read from `tools/probe/.env` into the command environment and never printed | **`completed success`** — `check: success`, `rls: success`, `deploy: success`. `deploy` declares `needs: [check, rls]`, so the gallery published because the gate was green (DW-7) |
+| **Vercel production** | the deployed page itself, over HTTPS | `https://app.inflozo.com/kit` → **200** · `https://inflozo.com/` → **200** · the internal prefix `app.inflozo.com/app/kit` canonicalises and resolves **200** |
+
+**Every browser check was then re-run against `https://app.inflozo.com/kit` rather than localhost** — the
+same three scripts, the same results: **`violations: 0`** at WCAG 2.1 AA, **99 focusable** elements, all
+eight matrix rows verified, and no horizontal scroll at 1440, 834 or 390. The local and deployed readings
+agree, so the gallery a reviewer opens is the gallery that was tested.
+
+Story 1.4 is the first story with a Supabase or Resend key to name.
 
 **Manual check (the frame, side by side).** The gallery was rendered at 1280px and read against
 `Editor Sidebar Kit.dc.html`: same groups, same order, same states, group for group from labels & text
