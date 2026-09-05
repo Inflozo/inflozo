@@ -10,6 +10,14 @@
 # The three SQL files here are byte-identical copies of the architecture's design authority.
 # The cmp guard below is the standing-rule-7 audit that keeps them from drifting: a copy that
 # has moved away from its original refuses to run at all, rather than proving a stale schema.
+#
+# Owner's ruling, 2026-09-05: the 2026-09-04 migration is FROZEN — it has been applied to the live
+# database — and every later schema change is a NEW file in supabase/migrations/, which is why the
+# psql step below globs the directory instead of naming a file. SCHEMA.sql stays the cumulative
+# readable picture of the whole database, so the day it gains a table its cmp against the frozen
+# migration will report DRIFT on a file that is correct. That check must then become an equivalence
+# check (apply all migrations to one container, SCHEMA.sql to another, diff the two schemas) rather
+# than a byte comparison. Tracked as DW-8; the rls.sql and prelude.sql guards are unaffected.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

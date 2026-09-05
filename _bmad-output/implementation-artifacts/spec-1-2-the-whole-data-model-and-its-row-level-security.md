@@ -233,6 +233,16 @@ hole is live until someone notices. With option 1: the deploy refuses to publish
    copy that no longer matches the architecture, but does not catch a broken lock.
 3. Leave it as it is — the red light on GitHub is enough, and we rely on noticing it.
 
+**Ruled (owner, 2026-09-05): option 1 — the database check blocks the release too.** Logged as DW-7.
+The mechanism in option 1's description was wrong and is corrected here rather than quietly: the code
+checks block because they run *inside* the Vercel build (`apps/web/vercel.json`'s `buildCommand`), and
+the database gate cannot join them there — Vercel's build image is Amazon Linux 2023 with `dnf` and no
+Docker daemon (Vercel, *Build image overview*, read 2026-09-05), while the gate starts a `postgres:17`
+container. Vercel's own documented way to gate a release is to stop deploying on push and deploy from
+GitHub Actions instead (*Deploying GitHub Projects with Vercel* → "Using GitHub Actions"). That changes
+how every production deploy is triggered — Story 1.1's deliverable, and a setting inside the owner's
+Vercel project — so it is not a review patch. It is DW-7 and question 4 below.
+
 **2. Where does the *next* database change come from?**
 
 Today's file `supabase/migrations/20260904120000_complete_schema.sql` is an exact copy of the
@@ -252,6 +262,15 @@ frozen forever and add a small second file that only adds the new table?
    forbids.
 3. Decide later, when the second change actually arrives.
 
+**Ruled (owner, 2026-09-05): option b — today's migration file is frozen; every later change is a new
+small file.** Already supported: the gate applies every `supabase/migrations/*.sql` in filename order,
+proved by a control (a second migration adding an RLS-off table turns it red). One consequence follows
+and is logged as DW-8: the gate currently asserts today's migration is *byte-identical* to the
+architecture's `SCHEMA.sql`. Under this ruling `SCHEMA.sql` keeps growing into "the readable picture of
+the whole database" while the migration stays frozen, so the day `SCHEMA.sql` first changes that check
+fires `DRIFT` when nothing is wrong. The check that survives the ruling compares the *resulting schema*
+of all migrations against `SCHEMA.sql`, not the bytes of one file.
+
 **3. Four test users are sitting in the live database. Leave them or clear them?**
 
 Building the proof created four fake users (and their 2 projects, 2 sites, 1 uploaded file). They are
@@ -266,3 +285,25 @@ real person has signed up.
    effect of a code review.
 2. Clear them now — I would rather the live database be empty from here on.
 3. Leave them permanently as a smoke-test fixture.
+
+**Ruled (owner, 2026-09-05): option 1 — clear them before launch, not now.** Logged as DW-9, which
+carries the trigger (before the first real signup) so it cannot be lost.
+
+**4. Your "block the release" ruling needs one more choice from you, because it touches your Vercel
+project — which of these two ways?**
+
+Both give you what you asked for: a broken database lock stops the release. They differ in what changes.
+
+*Example:* the lock that stops one customer reading another's site gets broken. Way 1: the release
+simply never publishes, and the site keeps serving yesterday's working version. Way 2: the same, but
+the publish waits for the check to finish first, so each deploy takes a couple of minutes longer.
+
+1. **Move publishing into GitHub, so it only publishes after both checks pass (RECOMMENDED)** — this is
+   the method Vercel documents for exactly this. You would turn off "deploy on every push" in your
+   Vercel project once, and afterwards nothing changes for you day to day: you push, the checks run,
+   and it publishes only if they are green. It is the sturdier of the two because the publish never
+   starts until the checks have finished.
+2. Keep publishing as it is, and make the build ask GitHub whether the database check passed before it
+   finishes — no Vercel setting to change, but every publish now waits on GitHub, so a slow or unhappy
+   GitHub delays or fails a deploy that is otherwise fine.
+3. Not yet — leave it as it is until after launch.

@@ -83,3 +83,51 @@ reason: `apps/web` sets no `"type"`, so Node reparses `routing.test.ts` as ESM a
   of warning in every local and CI run. `"type": "module"` silences it, but whether Next 16 builds
   clean under it is a claim about an external platform and wants executing, not asserting — and this
   story's build is already green without touching it.
+
+### DW-7: the RLS gate reports a broken lock but cannot stop the release
+
+plain: If a database lock breaks, the site still goes live and the warning arrives afterwards; you asked for the warning to stop the release, and that needs one change to your Vercel settings.
+status: open
+severity: high
+origin: Story 1.2 review (2026-09-05), owner ruling on question 1
+location: .github/workflows/ci.yml · apps/web/vercel.json
+reason: `pnpm -w check` blocks a release because it runs inside the Vercel build; the RLS gate cannot
+  join it there. Vercel's build image is Amazon Linux 2023 with `dnf` and no Docker daemon (Vercel,
+  *Build image overview*, read 2026-09-05) and the gate starts a `postgres:17` container. The owner
+  ruled the gate must block. Vercel's documented mechanism is to stop deploying on push and run
+  `vercel build --prod` + `vercel deploy --prebuilt --prod` from Actions after `check` and `rls` pass.
+  That rewires Story 1.1's deployment path and needs the Vercel project's git auto-deploy turned off,
+  so it is a story, not a review patch. Question 4 in spec 1.2 asks the owner which of the two
+  mechanisms to build.
+
+### DW-8: the migration's byte-identity guard cannot survive the frozen-migration ruling
+
+plain: A safety check that compares two files will start crying wolf the first time we add a new table; it needs to compare the resulting database instead.
+status: open
+severity: medium
+origin: Story 1.2 review (2026-09-05), owner ruling on question 2
+location: supabase/tests/run-rls-gate.sh
+reason: The owner ruled today's migration is frozen and every later change is a new file, with
+  `SCHEMA.sql` remaining the cumulative readable picture. The gate's `cmp -s` asserts the frozen
+  migration is byte-identical to `SCHEMA.sql`, so the first time `SCHEMA.sql` gains a table the gate
+  reports `DRIFT` on a file that is correct. The invariant that survives the ruling is equivalence,
+  not equality: apply every migration to one container and `SCHEMA.sql` to another, and diff the two
+  schemas. The `rls.sql` and `prelude.sql` byte-guards are unaffected — those stay true copies of
+  live authorities. Nothing is wrong today (they are byte-identical, re-verified this review); this
+  is due the same day the second migration lands.
+
+### DW-9: four proof-fixture users are resident in the production database
+
+plain: Four fake users left over from testing are sitting in the real database; harmless now, but your first "how many users" number would say four before anyone has signed up.
+status: open
+severity: low
+origin: Story 1.2 review (2026-09-05), owner ruling on question 3
+location: hosted Supabase project (`SUPABASE_URL`) — `auth.users` and what cascades from it
+reason: Building the proof against the hosted project fired the signup triggers for the RLS-TEST
+  fixture users. Verified read-only on 2026-09-05: 4 `auth.users`, 4 `profiles`, 2 `projects`,
+  2 `sites`, 1 `storage.objects` row. The owner ruled they are cleared before launch rather than now,
+  because deleting rows from the live database is worth doing once, deliberately, with a written-down
+  step. TRIGGER: the story that opens signup to real people, before the first real account exists.
+  Deleting the four `auth.users` rows cascades the rest; the `storage.objects` row has no FK to
+  `auth.users` and must be deleted by its `11111111-…/` name prefix separately.
+
