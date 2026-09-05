@@ -180,6 +180,11 @@ The frozen Intent, Boundaries and Matrix are untouched.
     the proxy holding a 2666-byte `Cookie` header the layout could not see. No error, no warning, and the
     route table said `ƒ` throughout. Moving a page behind a guard is therefore also a segment-config change,
     which is now written beside the export it replaced.
+14. **No `autoFocus` on the email field.** It was there and came off after looking at the deployed page:
+    the frame draws S1a at REST, with the `line` border, and autofocus put the coral focus border on it the
+    moment the page loaded. It also made the real Tab order `Send magic link → Terms → Privacy`, where this
+    spec's own Verification expects `field → button → Terms → Privacy`, and it moves a screen reader's cursor
+    without being asked. Removing it settles all three.
 13. **The sign-in watermark is CSS `content`, not a text node.** Written as text, "Inflozo" in `paper-sunk` on
     `paper` is 1.08:1 — WCAG's logotype exception covers it and axe cannot see an exception, so at 390 (where
     the card stops covering it) axe-core reported a real `color-contrast` violation. Darkening it would be
@@ -289,7 +294,7 @@ below was deleted, and the profile and entitlement rows cascaded with it.
 | `curl -sI https://inflozo.com/` | the static policy, **no nonce**, `x-inflozo-policy: marketing-static`, **`x-vercel-cache: PRERENDER`** — marketing carries a CSP and stays prerendered, exactly as §18b measured |
 | playwright console, whole session (S1a, the field error, S1b, 390) | **0 CSP violations** |
 | `axe.run` wcag2a/2aa/21a/21aa | **0 violations** on S1a (1440), S1a with the field error, S1b, and S1a at 390 — 24 rules passing. The only `incomplete` is the decorative `·` between Terms and Privacy: *"content is too short to determine if it is actual text"* |
-| Tab and the one ring | field (autofocused) → **Send magic link → Terms → Privacy**; both the field and the button show `rgb(194, 56, 31) 0px 0px 0px 2px` — the one ring, by value |
+| Tab and the one ring | **field → Send magic link → Terms → Privacy**, the spec's own order; both the field and the button show `rgb(194, 56, 31) 0px 0px 0px 2px` — the one ring, by value. At rest the field's border is `rgb(231, 226, 219)` (`line`) and on focus `rgb(194, 56, 31)` (`coral-text`) — the frame's two states, both by value |
 | 390 | `scrollWidth === clientWidth === 390` (no horizontal scroll), field text 16px, card 342px inside 24px gutters |
 | no password anywhere (HTML **and** code) | `input[type=password]` count **0** on the deployed page. Grepping `apps/web/**/*.{ts,tsx}` for `password` returns exactly two hits and both are the frame's own sentence — *"Sign in or create an account — no passwords, ever."* — one in the card, one in the page description. No `type="password"`, no `signInWithPassword`, and no password setting touched on the project |
 | the passkey button | **absent**, as `feature_flags.passkeys` is off |

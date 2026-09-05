@@ -163,7 +163,10 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
               name="email"
               type="email"
               autoComplete="email"
-              autoFocus
+              // No `autoFocus`. The frame draws S1a at REST — a `line` border, not the coral
+              // focus border — and the spec's own Tab order is field → button → Terms → Privacy,
+              // which autofocus turns into button → Terms → Privacy. It also moves a screen
+              // reader's cursor without being asked. Both settled by looking at the deployed page.
               placeholder="you@example.com"
               defaultValue={state.status === 'error' ? state.email : ''}
               aria-invalid={fieldError ? true : undefined}
