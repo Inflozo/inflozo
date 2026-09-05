@@ -271,6 +271,8 @@ below was deleted, and the profile and entitlement rows cascaded with it.
 | `profiles` / `entitlements` for that user | **1 and 1** — 1.2's `auth_user_profile` and `auth_user_entitlement` triggers fired on a real sign-in |
 | `DELETE /auth/v1/admin/users/{id}`, then the same query | **0 and 0**, `auth.users = 0` — the fixture is gone and the rows cascaded |
 | Sign out, driven in a real browser | 303 to `/sign-in`, the Sign In card visible, **0 session cookies left**, and `/kit` afterwards → `/sign-in`. The cookie inspected before it: `httpOnly=true secure=true sameSite=Lax`, **30 days** |
+| an EXPIRED access token with a live refresh token | **200**, the page names the user, and a **new** cookie comes back — different access token, `expires_at` in the future, `Max-Age=2592000; Secure; HttpOnly`. This is the rolling half of FR-A6 and it was executed rather than waited for: the session's own `expires_at` in the cookie was moved into the past, leaving the real refresh token untouched, so `proxy.ts` had to do a real `grant_type=refresh_token` round trip |
+| the same, with the refresh token replaced by a dead one | **307** to `/sign-in` — a refresh that fails is treated as signed out, not as an error page |
 
 **CSP and hosting (real)**
 
