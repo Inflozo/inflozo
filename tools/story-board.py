@@ -1084,6 +1084,8 @@ font-size:.74rem;color:var(--muted);word-break:break-word}
 color:var(--muted);font-weight:700;padding:0 6px 5px;border-bottom:1px solid var(--line)}
 /* The default is on the table so a row's own p-<Phase>/tone class — one class — can override it. */
 .ct{--c:var(--wait);--cs:var(--code)}
+/* Alternate STORY, not alternate row: a run of rows is one story, and the band is what groups it. */
+.ct tbody tr.band{background:color-mix(in srgb,var(--ink) 4.5%,transparent)}
 .ct tbody tr:hover{background:var(--cs)}
 .ct tbody td:first-child{border-left:3px solid var(--c)}
 .ct td:nth-child(3){white-space:nowrap}
@@ -1289,10 +1291,18 @@ def render(ctx):
     feed = [c for c in ctx['commits'] if c['kind'] != 'unreadable'][:20]
     unreadable = [c for c in ctx['commits'] if c['kind'] == 'unreadable']
     if feed:
-        rows = ''.join(f'<tr class="{("p-" + e(c["phase"])) if c["phase"] else "s-mute"}"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
+        # The feed is one row per commit, so a story's phases arrive as a run of rows. Shading
+        # alternate runs is what makes "where does 1.2 end and 1.1 begin" readable without counting.
+        def band(feed):
+            on, prev = False, object()
+            for c in feed:
+                if c['key'] != prev:
+                    on, prev = not on, c['key']
+                yield c, ' band' if on else ''
+        rows = ''.join(f'<tr class="{("p-" + e(c["phase"])) if c["phase"] else "s-mute"}{b}"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
                        f'<td>{("<a href=#" + e(c["key"]) + ">" + e(c["key"]) + "</a>") if c["kind"] == "story" else e(c["key"])}</td>'
                        f'<td>{phchip(c["phase"])}</td>'
-                       f'<td class="msg">{e(c["msg"])}</td></tr>' for c in feed)
+                       f'<td class="msg">{e(c["msg"])}</td></tr>' for c, b in band(feed))
         act = ('<table class="ct"><thead><tr><th>When</th><th>Commit</th><th>Story</th><th>Phase</th>'
                f'<th>What it did</th></tr></thead><tbody>{rows}</tbody></table>')
     else:
@@ -1880,7 +1890,12 @@ def demo():
     assert 'Dvelop' in out and 'Unreadable commits' in out
     # The three panels paint from a tone; a tone that loses to its own element default is the bug
     # this pair catches, because both classes are one class and only source order separates them.
-    assert '<tr class="p-Deploy">' in out and '<tr class="s-mute">' in out, 'activity rows carry no tone'
+    assert re.search(r'<tr class="p-Deploy( band)?">', out) and re.search(r'<tr class="s-mute( band)?">', out), \
+        'activity rows carry no tone'
+    # the activity feed shades alternate stories: as many banded runs as there are story changes
+    feed_html = out.split('id="pd-activity"', 1)[1].split('</table>', 1)[0]
+    rows_n, banded = feed_html.count('<tr class='), feed_html.count(' band">')
+    assert 0 < banded < rows_n, f'the activity feed is all one band or none ({banded} of {rows_n})'
     assert '<span class="st s-crit solid">not answerable yet' in out, 'a shapeless question is not flagged red'
     assert 'class="lede">Someone could hammer' in out, 'a deferred entry ignores its plain: line'
     assert 'A retry count belongs in configuration' in out, 'an entry with no plain: lost its reason'
