@@ -540,8 +540,15 @@ the picture on screen.
 2. Force the chip to come last, after the cards — your written order is honoured to the letter, but the Tab order stops matching the picture and the page has to carry the one technique accessibility guidance warns against.
 3. A different order — tell me the order you want and it is changed inside this story.
 
-Nothing is blocked by this: the dashboard is built, deployed and working either way. It is here because the
-answer is yours and not mine, and if you pick 2 or 3 it is a small change inside this same story.
+Nothing is blocked by this: the dashboard is built, deployed and working either way. It is here because
+the decision belongs to you, and options 2 and 3 are each a small change inside this same story.
+
+**Ruled (owner, 2026-09-05): option 1 — "Leave it as built — the chip is reached at the bottom of the left
+column, before the search box."** No code changes: the Tab order stays `Inflozo → Projects → Sites → Assets
+→ account chip → search → New project → ⋯`, which is document order and therefore screen order (WCAG 2.4.3),
+and no positive `tabindex` enters the app. The matrix's Keyboard row keeps its written order as the reading
+it was given; this ruling is the record of what the built page does instead, and the two agree on everything
+else in that row.
 
 ## Owner's manual test
 

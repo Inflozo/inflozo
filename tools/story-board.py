@@ -313,16 +313,26 @@ def test_steps(t):
 
 
 # The two lines a question block is cut on, in one place: the ruling label, and an option.
-RULING_RE = re.compile(r'\s*\**\s*(Answer|Answered|Ruled|Ruling|Decision)\b\**\s*:?\**\s*(.*)$', re.I)
+RULING_RE = re.compile(
+    r'\s*(\**)\s*(Answer|Answered|Ruled|Ruling|Decision)\b(\**\s*:?)\**\s*(.*)$', re.I)
 OPTION_RE = re.compile(r'^\s*\d+[.)]\s+\S', re.M)      # .match() per line, .search() per block
 
 
 def ruled_line(line):
     """True on a ruling label that carries a ruling. An empty `**Ruled:**` is a placeholder a
     spec leaves for the owner, and reading it as an answer hides a live question from his inbox —
-    which is exactly what it did to two of Story 1.1's (owner, 2026-09-04)."""
+    which is exactly what it did to two of Story 1.1's (owner, 2026-09-04).
+
+    The label must also LOOK like a label — **bold**, or followed by a colon. Prose whose wrapped
+    line merely begins "answer …" or "ruling …" is neither, and reading it as a ruling hides the
+    question the same way: it marked Story 1.5's tab-order question Ruled and kept it out of the
+    owner's inbox, and a line in 1.4's spec had been misread the same way unnoticed
+    (owner, 2026-09-05). Erring towards "not ruled" only ever shows a question that is already
+    answered; erring the other way loses one."""
     m = RULING_RE.match(line)
-    return bool(m and m.group(2).strip(' *:'))
+    if not (m and m.group(4).strip(' *:')):
+        return False
+    return bool(m.group(1)) or ':' in m.group(3)
 
 
 def answered(blk):
@@ -1889,6 +1899,12 @@ def demo():
     assert flat['3.4']['blocked'] and flat['3.4']['spec']['questions'][0]['answered']
     # an empty ruling label is a placeholder, never an answer — it used to hide the question
     assert not answered('### Q\n\n**Ruled:**\n') and answered('### Q\n\n**Ruled:** option 1\n')
+    # …and prose is not a ruling. A wrapped line beginning "answer"/"ruling" read as one, which marked
+    # 1.5's tab-order question Ruled and kept it out of the owner's inbox (owner, 2026-09-05).
+    assert not answered('either way. It is here because the\nanswer is yours and not mine, and if you pick 2')
+    assert not answered('the\nruling amends them** (R-74 is the owner\'s to amend, and he just did)')
+    assert answered('**Ruled (owner, 2026-09-05): option 1 — leave it as built.**')
+    assert answered('Answer: 1 — keep the projects.')
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
     # …and the pill's explanation is rendered inside every story it flags, and only those
