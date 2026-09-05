@@ -44,7 +44,7 @@ development_status:
   epic-1: in-progress
   1-1-the-repository-the-package-split-and-ci-cd-to-production: done
   1-2-the-whole-data-model-and-its-row-level-security: done
-  1-3-design-tokens-and-the-app-component-kit-taken-from-the-expor: backlog
+  1-3-design-tokens-and-the-app-component-kit-taken-from-the-expor: ready-for-dev
   1-4-sign-in-with-a-magic-link: backlog
   1-5-the-app-shell-and-the-dashboard-skeleton: backlog
   epic-1-retrospective: optional

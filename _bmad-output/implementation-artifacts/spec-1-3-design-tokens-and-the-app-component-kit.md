@@ -2,7 +2,7 @@
 title: 'Story 1.3 — Design tokens and the app component kit, taken from the export'
 type: 'feature'
 created: '2026-09-05'
-status: 'draft'
+status: 'ready-for-dev'
 review_loop_iteration: 0
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
@@ -38,7 +38,7 @@ Nothing a customer uses changes in this story: it builds the box of parts every 
 - Any new dependency. `next/font/google` and Tailwind are installed; an icon package is not needed.
 
 **Never:**
-- No app dark palette. The export draws none and `DESIGN.md` says there is no app dark mode in v1; dark ground exists in exactly two designed places (`ink-deep` template-surface chrome, `ink` canvas pills) and the gallery shows those components on that ground only. This is the recommended reading of the epic's "light and dark" — see Questions for the owner; his ruling governs.
+- No app dark palette. The export draws none and `DESIGN.md` says there is no app dark mode in v1; dark ground exists in exactly two designed places (`ink-deep` template-surface chrome, `ink` canvas pills) and the gallery shows those components on that ground only. Ruled by the owner on 2026-09-05 (question 1, option 1): light as drawn, and the canvas pills and the paywall chrome on their dark ground.
 - No Style Pack tokens. The Calibration Set's Paper / Tangerine / Ink light+dark values are the sites' system and belong to E6 (`packages/library/packs`, Story 6.1).
 - No editor collapse behaviour. `R Responsive System` gives the app its three widths; the editor's own ladder (Layers to an icon rail, Controls to an overlay) is drawn in D8 and built in Story 5.22. This story ships the breakpoint tokens and the coarse-pointer `app-floor` condition — nothing that collapses.
 - No `@inflozo/library` import. Nothing here reads the library, so DW-1 and DW-2 stay open for the first story that does (E4).
@@ -143,3 +143,5 @@ Claude Design drew the whole app in one look: warm, light paper. The only dark t
 1. **Show every part in the light look, and show the few parts that live on dark ground (the canvas pills, the paywall chrome) on that dark ground. Nothing invented. (RECOMMENDED)** — it is exactly what was drawn, it costs nothing, and if a dark app is ever wanted it is a design prompt later, not a rebuild.
 2. Draw a dark version of the app in Claude Design first, then build both here — a new design prompt, a re-export and a re-check of every frame before this story can start, for a feature the product plan does not have.
 3. Light only, and correct the plan's sentence to say so — option 1 minus the two dark spots.
+
+**Ruled (owner, 2026-09-05): option 1 — every part in the light look, and the parts that live on dark ground (the canvas pills, the paywall chrome) shown on that ground. Nothing invented.** The gallery renders the three canvas pills and the paywall editor's surround on `ink` / `ink-deep`; no dark palette exists for anything else.
