@@ -235,6 +235,54 @@ recorded home, and the checks above are the confirmation the phase asks for.
 **No screen, so `owner_test: none` and the story goes straight to Done on this commit** (build-sequence
 step 7). The three review rulings that outlived the story are carried by DW-7, DW-8 and DW-9.
 
+### Re-confirmed after the review work that followed (2026-09-05)
+
+The Deploy above was recorded at `da9a620c`. Four review commits landed after it (DW-7, DW-8, DW-9,
+DW-10), and one of them **changed how production is published**: publishing now runs from GitHub
+Actions behind `needs: [check, rls]` and Vercel's push deploy is off (`git.deploymentEnabled.main =
+false`). A deployment recorded before that change is not evidence about the pipeline that exists now,
+so the phase was re-run end to end. Read-only throughout; every key is named by its variable in
+`tools/probe/.env` and no value was printed.
+
+**Deployment: `dpl_9vtiXaBrp93TqA2tYxCh6qBAiq6o`** — production, `readyState: READY`, built from
+`a8848f5c` by the Actions `deploy` job (`inflozo-nykcn1byz-umangkagathara.vercel.app`), and it is the
+deployment all three production domains alias to.
+
+*App code — the story ships none, so the deployment is recorded rather than exercised
+(`VERCEL_TOKEN` · `VERCEL_TEAM_ID` · `VERCEL_PROJECT`, `GITHUB_TOKEN`):*
+
+| Check | Returned |
+|---|---|
+| `GET /v6/deployments?target=production` | newest is `dpl_9vtiXaBrp93TqA2tYxCh6qBAiq6o`, `READY`, `githubCommitSha` `a8848f5c` |
+| `GET /v4/aliases` | `inflozo.com`, `app.inflozo.com` and `www.inflozo.com` **all three** point at that deployment id |
+| the three domains over HTTPS | `inflozo.com` **200** · `app.inflozo.com` **200** · `www.inflozo.com` **308** |
+| `GET /actions/runs?branch=main` | the run for `a8848f5c` — `completed` / **success**, so `check`, `rls` and `deploy` all passed; that job is what produced the deployment above |
+
+*Schema change — the migration applied and the proof green (`SUPABASE_DB_URL`, `SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`):*
+
+| Check | Returned |
+|---|---|
+| `bash supabase/tests/run-rls-gate.sh` at this commit | **exit 0**, 72 `PASS`, 0 `ERROR` |
+| hosted public base tables · without RLS · policies | 29 · **0** · 43 |
+| hosted `private` tables · those carrying a policy | 3 · **0** (AD-7) |
+| hosted table **set** vs. every `create table` in `supabase/migrations/` | **identical** under `LC_ALL=C diff` — the equivalence check DW-8 left behind, not a count |
+| signup triggers on `auth.users` · storage buckets | 2 · 4 |
+| `auth.users` · `profiles` rows | **0 · 0** — DW-9's clearing held; the live database starts at zero |
+| `GET /rest/v1/` with `SUPABASE_SECRET_KEY` | HTTP 200, 31 paths = 29 tables + `suggestions_public` + `/rpc/owns_project`; **no** `private` table exposed |
+
+*Reproducibility, added to the note the review already left:* the hosted database host is IPv6-only and
+this machine's `systemd-resolved` stub fails intermittently, so the `psql` container needs
+`--network host` **and**, when the stub is in one of its moods, `--add-host <db host>:<AAAA from
+`dig +short @1.1.1.1`>`. Three consecutive `Name does not resolve` failures here were that, not an
+outage — the same pitfall `docs/project-context.md` records, hitting inside a container this time.
+
+*Not touched, and why:* Resend, Dodo, T1/T3 — this story still adds no email, no billing call and no
+Ghost call. Nothing was applied or written to the hosted database at Deploy.
+
+**Still `owner_test: none`, so the story stays Done** — there is no screen to hand him. Its `## Owner's
+manual test` section is deliberately absent for that reason.
+
 ## Questions for the owner
 
 **1. Should a broken database lock be able to stop a release, or only report one?**
