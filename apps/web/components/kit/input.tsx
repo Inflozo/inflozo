@@ -48,9 +48,13 @@ export function TextInput({
         maxLength={maxLength}
         readOnly={Boolean(greyed)}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${id}-error` : undefined}
         className={`${field} ${error ? 'border-danger caret-danger' : fieldTone(greyed)} ${ring} focus-visible:border-coral-text ${mono ? 'font-mono text-control-label' : ''} ${greyed ? 'text-ink-faint' : ''}`}
         {...greyedProps(id, greyed)}
+        // After the spread, so a field that is both greyed and refused is described by both
+        // sentences rather than the reason overwriting the error (review, 2026-09-05).
+        aria-describedby={
+          [error && `${id}-error`, greyed && `${id}-reason`].filter(Boolean).join(' ') || undefined
+        }
       />
       {error ? (
         <p id={`${id}-error`} role="alert" className="text-helper-caption leading-[1.5] text-danger-text">

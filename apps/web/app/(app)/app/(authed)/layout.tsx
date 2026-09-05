@@ -21,13 +21,16 @@ export default async function AuthedLayout({ children }: { children: ReactNode }
   if (!user) redirect('/sign-in')
 
   const supabase = await supabaseServer()
-  const [{ data: profile }, { plan }] = await Promise.all([
+  const [{ data: profile, error: profileError }, { plan }] = await Promise.all([
     // `profiles.display_name` is the chip's name. Nothing sets it until Epic 2, and until then
     // the email stands in the name slot with no second line — the row itself exists from
     // signup (the `auth.users` trigger), so this is a null column, not a missing row.
     supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle(),
     resolveEntitlement(user.id),
   ])
+  // Logged without the id: logs carry no user content (spine, Security floor). Silently, the
+  // email would have stood in the name slot for ever with nothing saying why (review, 2026-09-05).
+  if (profileError) console.error('profile: read failed', { code: profileError.code })
 
   return (
     <Shell user={{ email: user.email ?? '', displayName: profile?.display_name ?? null }} plan={plan}>

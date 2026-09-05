@@ -1,5 +1,6 @@
 'use client'
 
+import Form from 'next/form'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
@@ -8,6 +9,7 @@ import { ring } from '@/components/kit/greyed'
 import { Globe, Image, MenuLines, Plus, Projects, Search, X } from '@/components/kit/icons'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
+import { stripApp } from '@/routing'
 import { AccountMenu, type ShellUser } from './account-menu'
 
 /* ──────────────────────────────────────── S3 Dashboard.dc.html — the shell, 1440 and 390.
@@ -36,21 +38,18 @@ const NAV = [
   { href: '/assets', label: 'Assets', Icon: Image },
 ] as const
 
-/**
+/*
  * `proxy.ts` rewrites `app.inflozo.com/x` onto the internal `/app/x`, and on localhost the
  * internal prefix is reached directly — so the path a link is written with (`/sites`) and the
- * path the router reports can differ by exactly that prefix. Stripped the same way
- * `routing.ts` strips it, so "am I on the dashboard" is one answer at both addresses.
+ * path the router reports can differ by exactly that prefix. `stripApp` is `routing.ts`'s own
+ * strip, so "am I on the dashboard" is one answer at both addresses and one function under test.
  */
-const internal = (pathname: string) =>
-  pathname === '/app' || pathname.startsWith('/app/') ? pathname.slice(4) || '/' : pathname
-
 const isActive = (path: string, href: string) => (href === '/' ? path === '/' : path.startsWith(href))
 
 /** The one opener: the button is in the layout and the sheet is rendered by the page. */
 export const openNewProject = () => {
   const sheet = document.getElementById(NEW_PROJECT_DIALOG)
-  if (sheet instanceof HTMLDialogElement) sheet.showModal()
+  if (sheet instanceof HTMLDialogElement && !sheet.open) sheet.showModal()
 }
 
 /**
@@ -83,11 +82,19 @@ export function NewProjectButton({ look }: { look: 'bar' | 'empty' | 'mobile' })
  * the cards are in the page, and the URL is the one thing both already share, so `?q=` needs
  * no client state and no context. Enter searches.
  * ponytail: Enter-to-search; live filtering is a router.replace on input if the owner wants it.
+ *
+ * `next/form`, not a bare `<form>`: a bare GET is a full document navigation, which threw the
+ * phone's field away the moment Enter was pressed — `searchOpen` is layout state and a reload
+ * starts it closed. A client navigation keeps the layout, so the box the user typed into stays
+ * on screen with the results under it (review, 2026-09-05). The action is the path the router
+ * reports, so it is right on both hosts.
  */
 function SearchField({ id, wide, focused = false }: { id: string; wide: boolean; focused?: boolean }) {
   const q = useSearchParams().get('q') ?? ''
+  const pathname = usePathname()
   return (
-    <form
+    <Form
+      action={pathname}
       role="search"
       className={`flex h-9 items-center gap-2 rounded-sm border border-line bg-surface px-[10px] has-[:focus-visible]:border-coral-text has-[:focus-visible]:shadow-focus ${
         wide ? 'w-full' : 'w-[320px]'
@@ -119,7 +126,7 @@ function SearchField({ id, wide, focused = false }: { id: string; wide: boolean;
       >
         ⌘K
       </kbd>
-    </form>
+    </Form>
   )
 }
 
@@ -178,17 +185,20 @@ export function Shell({
   plan: PlanId
   children: ReactNode
 }) {
-  const path = internal(usePathname())
+  const path = stripApp(usePathname())
   const onDashboard = path === '/'
   const drawer = useRef<HTMLDialogElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
 
   // ⌘K (and Ctrl+K) puts the cursor in the field, whichever of the two is on screen: only one
   // is ever visible, so "the visible one" is unambiguous and needs no width test here.
+  // Lower-cased, because Shift or Caps Lock reports `K`; and not under a modal, where the
+  // field would be inert and, at 390, mount behind it (review, 2026-09-05).
   useEffect(() => {
     if (!onDashboard) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'k' || !(event.metaKey || event.ctrlKey)) return
+      if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return
+      if (document.querySelector('dialog[open]')) return
       event.preventDefault()
       setSearchOpen(true)
       // after the mobile field has been rendered by the state change above
@@ -257,9 +267,10 @@ export function Shell({
     <div className="flex min-h-dvh flex-col tablet:flex-row">
       {/* ── the 220px sidebar, tablet and up */}
       <div className="hidden w-[220px] shrink-0 flex-col border-r border-line p-[24px_12px_16px] tablet:flex">
-        <div className="p-[0_12px_24px]">
+        {/* A landmark, so the wordmark is inside one (axe `region`, second review 2026-09-05). */}
+        <header className="p-[0_12px_24px]">
           <Wordmark size={20} />
-        </div>
+        </header>
         {nav(false)}
         <div className="mt-auto">
           <AccountMenu user={user} plan={plan} variant="sidebar" />
@@ -268,7 +279,7 @@ export function Shell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* ── the 60px bar at 390 */}
-        <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-line p-[0_12px_0_6px] tablet:hidden">
+        <header className="flex h-[60px] shrink-0 items-center gap-2 border-b border-line p-[0_12px_0_6px] tablet:hidden">
           <button
             type="button"
             aria-label="Menu"
@@ -291,7 +302,7 @@ export function Shell({
               </button>
             ) : null}
           </div>
-        </div>
+        </header>
         {onDashboard && searchOpen ? (
           <div className="border-b border-line p-[10px_12px] tablet:hidden">
             <SearchField id="q-mobile" wide focused />
@@ -311,13 +322,16 @@ export function Shell({
         <main className="flex min-w-0 flex-1 flex-col">{children}</main>
       </div>
 
-      {/* ── ☰: a modal dialog, so the scrim, Escape and the focus trap are the platform's */}
+      {/* ── ☰: a modal dialog, so the scrim, Escape and the focus trap are the platform's.
+          No `tablet:hidden` on it: closed, the user agent hides it anyway, and open across the
+          seam (a tablet rotated) it would have been an invisible modal holding the page inert
+          (review, 2026-09-05) — now it stays a closable panel until dismissed. */}
       <dialog
         ref={drawer}
         aria-label="Menu"
         tabIndex={-1}
         onClick={dismissDrawer}
-        className="m-0 h-dvh max-h-dvh w-[300px] max-w-[300px] flex-col bg-surface p-[20px_14px_16px] shadow-lg outline-none backdrop:bg-scrim open:flex tablet:hidden"
+        className="m-0 h-dvh max-h-dvh w-[300px] max-w-[300px] flex-col bg-surface p-[20px_14px_16px] shadow-lg outline-none backdrop:bg-scrim open:flex"
       >
         <div className="flex items-center justify-between p-[0_10px_20px]">
           <Wordmark size={20} />

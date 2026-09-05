@@ -1,9 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, capSentence } from '@/lib/plan'
-import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugify } from '@/lib/projects'
+import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
@@ -53,6 +54,17 @@ const idOf = (formData: FormData) => {
 }
 
 /**
+ * A session that ended between the render and the click. "Try again in a moment" could never
+ * succeed — and through RLS the write reads as zero rows, a generic failure — so the answer is
+ * the layout guard's, not a sentence (review, 2026-09-05). `redirect` throws, so it narrows.
+ */
+async function signedIn() {
+  const user = await currentUser()
+  if (!user) redirect('/sign-in')
+  return user
+}
+
+/**
  * The cap is counted and then written, rather than enforced by a trigger: the limit depends on
  * the plan, and the PRD asks for a CONTEXTUAL PROMPT at creation time, which is an application
  * answer and not a constraint violation.
@@ -60,29 +72,45 @@ const idOf = (formData: FormData) => {
  * projects reading entitlements is the upgrade if a race ever lands two.
  */
 async function names() {
-  const user = await currentUser()
-  if (!user) return null
+  const user = await signedIn()
   const supabase = await supabaseServer()
   const [{ data, error }, { plan }] = await Promise.all([
-    supabase.from('projects').select('name'),
+    supabase.from('projects').select('name, slug'),
     resolveEntitlement(user.id),
   ])
   if (error || !data) return null
-  return { user, supabase, taken: data.map((row) => row.name), plan }
+  return {
+    user,
+    supabase,
+    taken: data.map((row) => row.name),
+    // The slugs too: a rename keeps its slug, so the names alone do not say which are free.
+    slugs: data.map((row) => row.slug),
+    plan,
+  }
+}
+
+/**
+ * The page's `atCap` was drawn from an older count — a second tab filled the cap since — so
+ * the page is re-rendered with the true one before the refusal is answered: the sheet then
+ * opens as D4b and S3c's tile appears, rather than D4a with a live Create (review, 2026-09-05).
+ */
+function refusedAtCap(plan: Parameters<typeof capSentence>[0]): ActionResult {
+  revalidatePath(DASHBOARD)
+  return fail('at_cap', capSentence(plan))
 }
 
 export async function createProject(_previous: ActionResult | null, _formData: FormData): Promise<ActionResult> {
   const context = await names()
   if (!context) return logged('create', null, COULD_NOT.create)
-  const { user, supabase, taken, plan } = context
+  const { user, supabase, taken, slugs, plan } = context
 
-  if (atCap(plan, taken.length)) return fail('at_cap', capSentence(plan))
+  if (atCap(plan, taken.length)) return refusedAtCap(plan)
 
   const name = nextUntitled(taken)
   const { error } = await supabase.from('projects').insert({
     user_id: user.id,
     name,
-    slug: slugify(name),
+    slug: uniqueSlug(slugify(name), slugs),
     style_pack: defaultStylePack(),
   })
   if (error) return logged('create', error, COULD_NOT.create)
@@ -97,6 +125,7 @@ export async function renameProject(_previous: ActionResult | null, formData: Fo
   const parsed = nameSchema.safeParse(formData.get('name'))
   if (!parsed.success) return fail('bad_name', NAME_HINT)
   if (!id) return logged('rename', null, COULD_NOT.rename)
+  await signedIn()
 
   const supabase = await supabaseServer()
   const { data, error } = await supabase
@@ -116,9 +145,9 @@ export async function duplicateProject(_previous: ActionResult | null, formData:
   const id = idOf(formData)
   const context = await names()
   if (!context || !id) return logged('duplicate', null, COULD_NOT.duplicate)
-  const { user, supabase, taken, plan } = context
+  const { user, supabase, taken, slugs, plan } = context
 
-  if (atCap(plan, taken.length)) return fail('at_cap', capSentence(plan))
+  if (atCap(plan, taken.length)) return refusedAtCap(plan)
 
   // Every column `authenticated` may insert, and nothing the server asserts: `revision` is
   // AD-15's lineage marker and starts fresh, and the new row gets its own slug.
@@ -138,7 +167,7 @@ export async function duplicateProject(_previous: ActionResult | null, formData:
   const name = copyName(source.name, taken)
   const { error } = await supabase
     .from('projects')
-    .insert({ ...source, user_id: user.id, name, slug: slugify(name) })
+    .insert({ ...source, user_id: user.id, name, slug: uniqueSlug(slugify(name), slugs) })
   if (error) return logged('duplicate', error, COULD_NOT.duplicate)
 
   revalidatePath(DASHBOARD)
@@ -153,6 +182,7 @@ export async function deleteProject(_previous: ActionResult | null, formData: Fo
   const id = idOf(formData)
   const typed = formData.get('typed')
   if (!id || typeof typed !== 'string') return logged('delete', null, COULD_NOT.delete)
+  await signedIn()
 
   const supabase = await supabaseServer()
   const { data: project, error: readError } = await supabase

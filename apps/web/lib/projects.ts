@@ -39,7 +39,9 @@ export function nextUntitled(names: readonly string[]): string {
  * The suffix is `nextUntitled`'s own idiom, so a copy reads like every other generated name.
  */
 export function copyName(name: string, taken: readonly string[] = []): string {
-  const clamp = (s: string) => s.slice(0, NAME_MAX)
+  // Trimmed AFTER the cut: a cut that lands on a space left a name ending in one, which never
+  // matched the trimmed taken set, so the second copy reused the first's name (review, 2026-09-05).
+  const clamp = (s: string) => s.slice(0, NAME_MAX).trim()
   const base = clamp(`Copy of ${name}`)
   const used = new Set(taken.map((n) => n.trim()))
   if (!used.has(base)) return base
@@ -63,6 +65,39 @@ export const slugify = (name: string): string =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'project'
+
+/**
+ * A slug no other project of the user's has. Derived against the SLUGS taken, never the names:
+ * a rename keeps its slug (FR-J10), so "Untitled project" renamed to "Field Notes" still holds
+ * `untitled-project` and the next blank project would have taken it again; and two names that
+ * differ only in punctuation slug to the same string. `projects.slug` carries no unique
+ * constraint to refuse either (schema :212), and FR-J10 makes it the emitted theme name
+ * (review, 2026-09-05).
+ */
+export function uniqueSlug(base: string, taken: readonly string[]): string {
+  const used = new Set(taken)
+  if (!used.has(base)) return base
+  for (let n = 2; ; n += 1) {
+    const candidate = `${base}-${n}`
+    if (!used.has(candidate)) return candidate
+  }
+}
+
+/**
+ * The dashboard's `?q=`: a repeated key (`?q=a&q=b`) arrives as an ARRAY, which `q.trim()`
+ * threw on and 500'd the page; the field only ever posts one, so the first is taken. The match
+ * is a case-insensitive substring of the name. Pure, so the page's one branch is under test.
+ */
+export function filterProjects<T extends { name: string }>(
+  rows: readonly T[],
+  q: string | string[] | undefined,
+): { query: string; shown: T[] } {
+  const raw = Array.isArray(q) ? q[0] : q
+  const query = raw?.trim() ?? ''
+  const needle = query.toLowerCase()
+  const shown = query ? rows.filter((row) => row.name.toLowerCase().includes(needle)) : [...rows]
+  return { query, shown }
+}
 
 /**
  * D4d's format: "Updated today", "Updated Aug 19", and the year when it is not this one.

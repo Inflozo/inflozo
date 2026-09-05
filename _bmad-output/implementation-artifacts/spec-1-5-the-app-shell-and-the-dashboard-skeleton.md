@@ -2,9 +2,9 @@
 title: 'Story 1.5 — The app shell and the dashboard skeleton'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
-review_loop_iteration: 1
+review_loop_iteration: 2
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
@@ -283,6 +283,36 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - Given every surface in every state at 1440, 834 and 390, when axe-core runs, then zero violations; Tab reaches every control with the one ring; the console shows zero CSP violations (NFR-5, NFR-3).
 - Given a push to `main`, when CI runs, then `check` and `rls` are green and `deploy` publishes the dashboard.
 
+### Review Findings — second review, 2026-09-05, after the Fix run
+
+Five layers over the whole diff since the baseline, the Real-infra verifier on the live deployment of the
+Fix commit (`93e100ee`). No finding is the owner's to decide; none is deferred; twelve were dismissed as
+noise or as behaviour the frozen Boundaries themselves ask for.
+
+- [x] [Review][Patch] Duplicate refused by the cap in a race opens D4a, not D4b — the `at_cap` returns never revalidate, so the page's `atCap` is stale [apps/web/app/(app)/app/(authed)/projects/actions.ts:79]
+- [x] [Review][Patch] The slug collides after a rename ("Untitled project" renamed keeps `untitled-project`; the next create takes it again) and for names that differ only by punctuation — derive it from the taken slugs, never the names [apps/web/app/(app)/app/(authed)/projects/actions.ts:85]
+- [x] [Review][Patch] `copyName`'s clamp can end in a space (never matches the trimmed taken set, so the second duplicate reuses the name) and its taken branch is asserted by no test [apps/web/lib/projects.ts:43]
+- [x] [Review][Patch] A dialog closed after a failed action reopens with the stale Banner or sentence — the sheet, rename and delete [apps/web/app/(app)/app/(authed)/new-project-sheet.tsx:124]
+- [x] [Review][Patch] A menu anchored `down` near the bottom of the viewport (a card's ⋯ in the last row at 390) is clipped and cannot be scrolled to; `up` on a short viewport goes negative; a scroll leaves the fixed menu floating [apps/web/lib/menu.ts:31]
+- [x] [Review][Patch] An expired session inside an action answers "Try again in a moment", which cannot succeed — it should send the user to sign in [apps/web/app/(app)/app/(authed)/projects/actions.ts:64]
+- [x] [Review][Patch] The search is a plain GET form, a full document navigation: on the phone Enter resets the field's open state and the box the user just typed into vanishes [apps/web/components/shell/shell.tsx:90]
+- [x] [Review][Patch] ⌘K compares `event.key !== 'k'`, so Shift or Caps Lock kills it, and it fires under an open modal [apps/web/components/shell/shell.tsx:191]
+- [x] [Review][Patch] The drawer open across the 834 seam (a tablet rotated) is hidden by `tablet:hidden` while still modal — the page is inert and nothing is on screen [apps/web/components/shell/shell.tsx:320]
+- [x] [Review][Patch] `openNewProject` calls `showModal()` on a sheet that may already be open [apps/web/components/shell/shell.tsx:53]
+- [x] [Review][Patch] `TextInput` given both `error` and `greyed` loses the error's `aria-describedby` to `greyedProps`'s spread [apps/web/components/kit/input.tsx:117]
+- [x] [Review][Patch] The ⋯ trigger has no open-state ink; S3c draws it in ink while its menu is open [apps/web/app/(app)/app/(authed)/project-menu.tsx:136]
+- [x] [Review][Patch] The drawer's account trigger overrides its visible name with `aria-label="Account"` (WCAG 2.5.3 Label in Name) [apps/web/components/shell/account-menu.tsx:158]
+- [x] [Review][Patch] The capped "Create project" is `aria-disabled` with no `aria-describedby` to the cap sentence — a screen reader hears "dimmed" and no reason [apps/web/app/(app)/app/(authed)/new-project-sheet.tsx:208]
+- [x] [Review][Patch] The doors' `<ul>` is `list-none` without `role="list"`, so VoiceOver drops the list semantics [apps/web/app/(app)/app/(authed)/new-project-sheet.tsx:146]
+- [x] [Review][Patch] S3a has no `<h1>` — every card name is an `<h2>` under nothing [apps/web/app/(app)/app/(authed)/page.tsx:287]
+- [x] [Review][Patch] The layout swallows a `profiles` read error with no log, unlike `resolveEntitlement` [apps/web/app/(app)/app/(authed)/layout.tsx:28]
+- [x] [Review][Patch] The `?q` normalisation (a repeated key arrives as an array) and the filter live in the page where no test reaches them [apps/web/app/(app)/app/(authed)/page.tsx:236]
+- [x] [Review][Patch] `internal()` re-implements `routing.ts`'s prefix strip in a client file `node --test` cannot import [apps/web/components/shell/shell.tsx:45]
+- [x] [Review][Patch] A `story-board.py` self-check failure surfaces in the gate as "STALE — run story-board.py", which would not fix it [tools/doc-audit.py:720]
+- [x] [Review][Patch] `demo()` pins neither `**Ruled** — option 1` (bold, dash) nor `Ruled — option 1` (plain, dash), the boundary the docstring describes [tools/story-board.py:1901]
+- [x] [Review][Patch] Two departures from the frozen Data boundary — `linked_site_id` not copied, the duplicate's name suffixed — are in Verification's table but not in the Spec Change Log [this spec]
+- [x] [Review][Patch] DW-17 does not mention the two `Failed to load resource` console lines every dashboard load logs from prefetching `/sites` and `/assets`; DW-18 writes "eight" where the live count is already ten [_bmad-output/implementation-artifacts/deferred-work.md]
+
 ## Spec Change Log
 
 Every entry below is a change to the Code Map's plan, made during Dev and executed rather than reasoned.
@@ -390,6 +420,25 @@ the same way 1.4 recorded its own two owner-ruled departures.
 17. **`apps/web/app/(app)/app/error.tsx` is new, and closes half of DW-17.** See Design Notes for why it
    sits at the `/app` segment and not inside `(authed)`, and `## Verification` for what the Fix run could
    and could not prove about findings 3 and 8.
+
+**Three departures from the frozen Data boundary, recorded by the second review (2026-09-05).** Each was
+applied by a review as a patch and had reached Verification's tables but not this log, which is where a
+departure lives; none needs the owner, because each keeps a rule the PRD already states.
+
+18. **A duplicate does not copy `linked_site_id`.** The boundary lists it among the columns Duplicate
+   copies; the action deliberately does not select it. It is null on every 1.5 project, and copying it
+   would have made a duplicate inherit E3's binding the moment E3 lands — two projects on one site, which
+   FR-B5 forbids. Applied by the first review; the comment beside the select is the reason.
+19. **A duplicate's name steps away from names already taken — "Copy of X 2", "3", …** The boundary
+   says "Copy of {name}"; duplicating twice wrote two rows with one name and, since the slug is derived
+   from the name, one slug, and `projects.slug` has no unique constraint to refuse it. Applied by the
+   first review as `copyName(name, taken)`; the second review trims the clamp (a cut on a space left a
+   trailing blank that never matched) and asserts the branch.
+20. **The slug is unique among the user's slugs, not merely "slugified name".** A rename keeps its slug
+   (FR-J10), so "Untitled project" renamed to "Field Notes" still holds `untitled-project` and the next
+   blank project took it again — the live database showed exactly that row (`name = "Test"`,
+   `slug = "untitled-project"`). `uniqueSlug(base, taken)` appends `-2`, `-3`, … against the slugs the
+   user already has, for create and duplicate both. Applied by the second review.
 
 **Five defects the executed pass found and fixed, each with the control that found it.**
 
@@ -750,6 +799,74 @@ routes, not the policy as such. Nothing visible is broken today; the policies ar
 marketing pages are Epic 14's, and the fix is a real three-way choice that belongs with whoever owns them.
 It also means **Story 1.4's "console 0 CSP violations" claim did not hold for marketing**.
 
+
+### The second review — 2026-09-05, after the Fix run
+
+Five layers over the whole diff since the baseline, with the Real-infra verifier executing the Fix run's
+claims against the live deployment of `93e100ee` (R-82) — CI `check` · `rls` · `deploy` all success on
+that commit, the production Vercel deployment READY from it, and the delivered client chunk carrying the
+new boundary's sentence, so the site under test was the Fix code. Two fixture users were created and both
+deleted; the live database holds the owner's two accounts and no fixture. Every key was read into a
+command's environment by variable name and none printed.
+
+| Re-executed, live | Result |
+|---|---|
+| the Fix run's finding 2 · 4 · 5 · 6 · 7 rows, each | **held** — the centred confirm (disc above, 52px, two 154×44 buttons, opens on Cancel); a tap outside closes ☰ and one inside does not; ☰ focuses the `DIALOG`; the search icon focuses `input[name=q]`; no account trigger visible in the 390 top bar, the drawer's row opens the menu in the top layer, the whole address unclipped (`scrollWidth == clientWidth`), the badge on Billing & plan only, Sign out present, the 1440 chip untouched |
+| the boundary, not only its compilation | **held** — a page throw on `/app?q=__boom__` and a layout throw (via a temporary header, reverted) both rendered *We couldn't show that just now.* with Try again and the back link; Next's own sentence absent; `digest` logged |
+| the deployed shape, the forged cookie, RLS as B against A, the plan badge | 307 → `/sign-in` for `/` and `/kit`; a garbage cookie value 307; B's select/update/delete `[]` and B's insert with A's `user_id` **42501**, B's own insert 201 (the positive control); `free` → Free, `pro_active` → ✦ Pro, `pro_past_due` → ✦ Pro |
+| axe-core 4.12.1, WCAG 2.x A/AA — 1440 with the menu open, 390 with ☰, ☰ + the menu, the delete confirm | zero violations each; **positive control** reported `button-name` and `image-alt` on an injected pair |
+| DW-18 | reproduced: `inflozo.com` two blocked scripts and one page error; `app.inflozo.com/sites` ten blocked; the dynamic `/sign-in` zero — the count moved from eight to ten between builds, so the ledger now says "every script on it" |
+
+**What the layers found, and what was done.** Twenty-three findings survived triage; none was the owner's
+to decide, none was deferred, twelve were dismissed as noise or as behaviour the frozen Boundaries ask
+for (a duplicate copies `rtl_ack_at` because the boundary lists it; Docs and the five app destinations
+link and 404 by the boundary's own rule; `reasons: []` is AD-28's shape; the `not-found` half is DW-17's).
+Every one of the twenty-three was applied as a patch in this story:
+
+| Fixed | Was |
+|---|---|
+| the `at_cap` refusal revalidates the page before answering (`refusedAtCap`) | a Duplicate refused by the cap in a race opened **D4a** with a live Create — the sheet's flip only listened to `createProject`, and the page's `atCap` was stale; Verification's earlier table claimed this fixed and it was not |
+| the slug is `uniqueSlug(slugify(name), slugs)` for create and duplicate, and `names()` reads the slugs | a rename keeps its slug (FR-J10), so "Untitled project" renamed left `untitled-project` for the next blank project to take again — the live database already held that pair; and two names differing only in punctuation slugged the same |
+| `copyName`'s clamp trims; its taken branch, `uniqueSlug` and `filterProjects` are asserted (`projects.test.ts`, 63 tests) | a cut on a space left a trailing blank that never matched the trimmed set, so the second copy reused the first's name — **control: ignoring `taken` left every test green**; now four fail |
+| a dialog closed on a failure reopens clean (`seen`, set `onClose`) — the sheet, rename, delete | the stale Banner or sentence stayed until the next attempt |
+| `openMenu` flips a menu that would overrun the bottom or the top, and a scroll closes it | a card's ⋯ in the last row at 390 opened a menu cut off by the viewport, unreachable and unscrollable; a scroll left it floating |
+| an ended session inside any action `redirect`s to sign-in (`signedIn()`) | "Try again in a moment", which could never succeed |
+| the search is `next/form` with the router's own path as its action | a bare GET was a full navigation: on the phone, Enter threw the field away and left the results with no box to clear |
+| ⌘K lower-cases the key and is inert under an open modal | Shift or Caps Lock killed it; under a modal it mounted the phone's field behind the dialog |
+| the drawer `<dialog>` has no `tablet:hidden` | opened at 390 and rotated across 834 it was an invisible modal holding the page inert |
+| `openNewProject` skips `showModal()` on an open sheet | a second open threw `InvalidStateError` in older engines |
+| `TextInput` joins the error's and the reason's `aria-describedby` after the spread | `greyedProps` overwrote the error id |
+| the ⋯ trigger is ink while its menu is open (`[&:has(+:popover-open)]:text-ink`, grepped from the built CSS) | S3c's open state was not drawn |
+| the drawer's account trigger has no `aria-label` | "Account" overrode the visible name (WCAG 2.5.3) |
+| the capped Create is described by the cap sentence (`aria-describedby="new-project-cap"`); the doors' `ul` is `role="list"`; S3a carries an sr-only `<h1>` | "dimmed" with no reason; Safari dropping the list; card `<h2>`s under no heading |
+| the layout logs a `profiles` read error by code | swallowed |
+| `stripApp` lives in `routing.ts` and is under test; the shell imports it | a private copy in a client file `node --test` cannot import |
+| `doc-audit.py` reports a sub-tool's SELF-CHECK failure as itself — **control: breaking the assertion printed `story-board.py: story board: SELF-CHECK FAILED`, not STALE** | the gate said "run story-board.py", which would not have fixed it |
+| `demo()` pins `**Ruled** — option 1` as ruled and `Ruled — option 1` as not | the boundary the docstring describes was held by nothing |
+| Spec Change Log 18–20; DW-17 and DW-18 amended | three departures from the frozen Data boundary lived only in Verification's table; the prefetch 404 noise and a hardcoded count |
+
+**The patches, executed before they were committed** — a local `next start` of the production build against
+the real Supabase project (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` in the server's environment,
+`SUPABASE_SECRET_KEY` for the admin API and the reads), one fixture user signed in through `/auth/confirm`
+and deleted at the end (the live database: the owner's two accounts, zero fixtures, zero project rows).
+
+| Claim | Result |
+|---|---|
+| a rename keeps its slug and the next create takes a fresh one | `("Field Notes","untitled-project")` then `("Untitled project","untitled-project-2")`; two duplicates `copy-of-field-notes` and `copy-of-field-notes-2` — **4 rows, 4 distinct slugs** |
+| Duplicate/Create refused by the cap in a race opens D4b | Free, zero rows, dashboard open; a row inserted behind it with the secret key; New project opened the stale D4a; Create → the SAME open sheet turned D4b (the cap pills, the greyed Create), the grid grew the `Race` card and the upgrade tile, no reload (`window.__mark` survived); **control: still one row** |
+| a failure is spent on close | the delete confirm's server-side `name_mismatch` (the row renamed behind it) showed *That's not this project's name.*; Cancel, reopen → the sentence **absent**, the field empty |
+| the ⋯ trigger's open-state ink | `rgb(110,106,100)` closed → `rgb(28,27,26)` (the title's ink) while `:popover-open` → reverted |
+| a menu flips rather than overruns; a scroll closes it | a ⋯ at `top=794` of 844: the menu at `659–788`, above the trigger; `scrollBy(-200)` → not open; **control: the top card's menu opens down** |
+| the phone's search survives Enter | `?q=harb` → one card, the field still on screen with `harb`, no reload; `?q=zzz` → *No projects match*, field still there |
+| ⌘K with Shift; under a modal | `K` + Ctrl focuses `#q`; with the delete confirm open, focus stays on its Cancel |
+| the drawer across the seam | ☰ at 390 then a 1024 viewport: still open, `300×768`; Escape → closed, no rect |
+| the sheet's re-open guard | a second open on an open sheet: still open, zero errors |
+| an ended session inside an action | cookies cleared, rename submitted → `/sign-in`, no failure sentence, the row unchanged |
+| axe-core 4.12.1 A/AA — S3a, D4a, D4b at 1440, the drawer at 390 | **zero** each; one `<h1>` (sr-only "Projects"); `ul[role=list]`; the greyed Create described by the cap sentence; the drawer trigger's accessible name = its visible email; the positive control reported `button-name`, `image-alt` |
+| the build | the route table unchanged; `has(+:popover-open)` in the emitted CSS; `pnpm check` green, **63 tests, 63 pass**; the gate PASS twice |
+
+One `best-practice` (not WCAG) note from that run — the sidebar's wordmark sat outside any landmark — was
+taken as well: both bars are `<header>`s now, one visible at a time.
 
 ## Questions for the owner
 

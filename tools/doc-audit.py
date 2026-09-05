@@ -719,9 +719,14 @@ def check():
                             'epics.md, sprint-status.yaml, the specs and git log'),
                            ('category-prompts.py', 'CATEGORY-PROMPTS.html',
                             'the prompt file or the design export')):
-        if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
-                   capture_output=True).returncode != 0:
-            fails.append(f'STALE: {art} does not match {src} — run python3 tools/{tool}')
+        r = _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
+                    capture_output=True, text=True)
+        if r.returncode != 0:
+            # A tool's own self-check (story-board.py exits 2 with the failed assertion on
+            # stderr) is not staleness, and "run the tool" would not fix it (review, 2026-09-05).
+            last = (r.stderr.strip().splitlines() or [''])[-1]
+            fails.append(f'{tool}: {last}' if 'SELF-CHECK' in last else
+                         f'STALE: {art} does not match {src} — run python3 tools/{tool}')
 
     # 3c. the structural tuples must stay unique and in vocabulary (FR-G5)
     if _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'tuple-check.py')],

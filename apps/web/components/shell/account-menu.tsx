@@ -155,7 +155,8 @@ export function AccountMenu({
           type="button"
           popoverTarget={id}
           onClick={place}
-          aria-label="Account"
+          // No `aria-label`: the visible name IS the accessible name (WCAG 2.5.3, Label in Name),
+          // as the sidebar's chip above already does (review, 2026-09-05).
           className={`flex w-full items-center gap-[10px] rounded p-[10px] text-left transition-colors hover:bg-paper-sunk ${ring}`}
         >
           <Avatar user={user} size={32} />

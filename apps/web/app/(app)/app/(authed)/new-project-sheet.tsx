@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useActionState, useEffect, useRef } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button, IconButton } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
@@ -114,6 +114,9 @@ const GoPro = () => (
 export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(createProject, null)
+  // A failure the sheet was CLOSED on is spent — reopened, no stale Banner (review, 2026-09-05).
+  // `raced` is not spent with it: at the cap the sheet is D4b however often it is reopened.
+  const [seen, setSeen] = useState<ActionResult | null>(null)
 
   useEffect(() => {
     if (state && 'ok' in state) dialog.current?.close()
@@ -121,7 +124,8 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
 
   const raced = Boolean(state && 'error' in state && state.error.code === 'at_cap')
   const capped = atCap || raced
-  const failed = state && 'error' in state && state.error.code === 'failed' ? state.error.message : null
+  const failed =
+    state !== seen && state && 'error' in state && state.error.code === 'failed' ? state.error.message : null
   const paper = PRESETS.paper
 
   return (
@@ -129,6 +133,7 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
       ref={dialog}
       id={NEW_PROJECT_DIALOG}
       aria-labelledby="new-project-title"
+      onClose={() => setSeen(state)}
       // `m-auto`: Preflight resets the UA's centring margin — see project-menu.tsx.
       className="m-auto w-[560px] max-w-[calc(100vw-20px)] flex-col gap-5 rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex"
     >
@@ -143,7 +148,8 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
 
       {failed ? <Banner kind="error">{failed}</Banner> : null}
 
-      <ul className={`flex list-none flex-col ${capped ? 'gap-[9px]' : 'gap-[10px]'}`}>
+      {/* `role="list"`: Safari drops a `list-style: none` list's semantics without it. */}
+      <ul role="list" className={`flex list-none flex-col ${capped ? 'gap-[9px]' : 'gap-[10px]'}`}>
         {DOORS.map((door) =>
           capped || door.reason ? (
             <GreyedDoor
@@ -169,7 +175,9 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
       {capped ? (
         <div className="flex items-center gap-[13px] rounded border border-marigold-line bg-surface p-[14px_16px]">
           <div className="flex flex-1 flex-col gap-[3px]">
-            <span className="text-[13.5px] font-semibold text-ink">{capSentence(plan)}</span>
+            <span id="new-project-cap" className="text-[13.5px] font-semibold text-ink">
+              {capSentence(plan)}
+            </span>
             <span className="text-control-label leading-[1.5] text-ink-soft-aa">
               Your project stays exactly as it is either way.
             </span>
@@ -201,13 +209,15 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
           </Button>
         </div>
         {capped ? (
-          // The frame draws it disabled — sunk paper, faint ink — and the pills above are the
-          // reasons, so it carries none of its own. Written out rather than passed to the kit's
-          // `Button` as extra classes: two `bg-*` utilities on one element are settled by the
-          // order of the generated stylesheet, not by the order they are written in.
+          // The frame draws it disabled — sunk paper, faint ink — and the block's sentence is
+          // its reason, read aloud with it (`aria-describedby`, P0-0's pairing). Written out
+          // rather than passed to the kit's `Button` as extra classes: two `bg-*` utilities on
+          // one element are settled by the order of the generated stylesheet, not by the order
+          // they are written in.
           <span
             role="button"
             aria-disabled
+            aria-describedby="new-project-cap"
             tabIndex={0}
             className={`inline-flex h-11 cursor-not-allowed items-center justify-center rounded bg-paper-sunk px-5 text-ui font-semibold text-ink-faint ${ring}`}
           >

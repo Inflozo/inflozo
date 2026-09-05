@@ -54,7 +54,20 @@ export function anchorTo(menu: HTMLElement, trigger: Element, { side, align }: P
  */
 export function openMenu(menu: HTMLElement, trigger: Element, placement: Placement) {
   anchorTo(menu, trigger, placement)
-  requestAnimationFrame(() => menu.querySelector<HTMLElement>('a[href], button')?.focus())
+  requestAnimationFrame(() => {
+    // Now it is shown and has a height: a menu that would run off the bottom (a card's ⋯ in
+    // the last row at 390) or off the top (`up` on a short viewport) flips to the other side
+    // (review, 2026-09-05).
+    const box = menu.getBoundingClientRect()
+    if (placement.side === 'down' && box.bottom > window.innerHeight) {
+      anchorTo(menu, trigger, { ...placement, side: 'up' })
+    } else if (placement.side === 'up' && box.top < 0) {
+      anchorTo(menu, trigger, { ...placement, side: 'down' })
+    }
+    menu.querySelector<HTMLElement>('a[href], button')?.focus()
+  })
+  // Fixed coordinates do not follow a scroll, so the menu closes rather than floats away.
+  window.addEventListener('scroll', () => menu.hidePopover(), { once: true, capture: true, passive: true })
 }
 
 /**

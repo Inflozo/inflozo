@@ -1905,6 +1905,8 @@ def demo():
     assert not answered('the\nruling amends them** (R-74 is the owner\'s to amend, and he just did)')
     assert answered('**Ruled (owner, 2026-09-05): option 1 — leave it as built.**')
     assert answered('Answer: 1 — keep the projects.')
+    # The label must LOOK like a label: bold OR a colon. A dash alone is prose (review, 2026-09-05).
+    assert answered('**Ruled** — option 1') and not answered('Ruled — option 1')
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
     # …and the pill's explanation is rendered inside every story it flags, and only those

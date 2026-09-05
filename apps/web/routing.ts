@@ -10,6 +10,17 @@ export type Route =
   | { kind: 'redirect'; url: string }
   | { kind: 'pass' }
 
+// A path segment, never a prefix: `startsWith('/app')` ate /apply, which 308'd to /ly.
+const isApp = (pathname: string) => pathname === '/app' || pathname.startsWith('/app/')
+
+/**
+ * The internal prefix off a path: `/app` → `/`, `/app/sites` → `/sites`, `/apply` untouched.
+ * The shell asks the same question of `usePathname()`, which reports `/app/…` on localhost and
+ * the public path on the app host, so the one strip lives here where `node --test` reaches it
+ * (review, 2026-09-05).
+ */
+export const stripApp = (pathname: string) => (isApp(pathname) ? pathname.slice(4) || '/' : pathname)
+
 /** `host` is the raw Host header; `search` is `''` or a leading `?`. */
 export function route(host: string, pathname: string, search: string): Route {
   // Exact hosts, lowercased and without the port. `startsWith('app.')` and
@@ -18,10 +29,9 @@ export function route(host: string, pathname: string, search: string): Route {
   // nonexistent app.www.inflozo.com.
   const h = host.toLowerCase().split(':')[0]
 
-  // A path segment, never a prefix: `startsWith('/app')` ate /apply, which 308'd to /ly.
-  const isAppPath = pathname === '/app' || pathname.startsWith('/app/')
+  const isAppPath = isApp(pathname)
   // `search` rides along on every branch, or the magic link's ?token= is dropped in flight.
-  const stripped = `${pathname.slice(4) || '/'}${search}`
+  const stripped = `${stripApp(pathname)}${search}`
 
   if (h === APP) {
     // The internal prefix is not a public URL, so it canonicalises. It used to be rewritten

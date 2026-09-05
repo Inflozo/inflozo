@@ -5,6 +5,7 @@ import { NewProjectButton } from '@/components/shell/shell'
 import { ring } from '@/components/kit/greyed'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
+import { filterProjects } from '@/lib/projects'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { NewProjectSheet } from './new-project-sheet'
 import { ProjectCard } from './project-card'
@@ -34,8 +35,8 @@ type Row = { id: string; name: string; style_pack: unknown; updated_at: string }
 export default async function Dashboard({
   searchParams,
 }: {
-  // A repeated key (`?q=a&q=b`) arrives as an ARRAY, which `q.trim()` threw on — a pasted URL
-  // 500'd the dashboard (review, 2026-09-05). The field only ever posts one.
+  // A repeated key (`?q=a&q=b`) arrives as an ARRAY; `filterProjects` takes the first and is
+  // under test for it (review, 2026-09-05).
   searchParams: Promise<{ q?: string | string[] }>
 }) {
   const [{ q }, user] = await Promise.all([searchParams, currentUser()])
@@ -57,11 +58,7 @@ export default async function Dashboard({
   // the plan cap silently lifted at the same moment (review, 2026-09-05).
   const unread = Boolean(error)
   const atCap = !unread && overCap(plan, projects.length)
-  const raw = Array.isArray(q) ? q[0] : q
-  const query = raw?.trim() ?? ''
-  const shown = query
-    ? projects.filter((project) => project.name.toLowerCase().includes(query.toLowerCase()))
-    : projects
+  const { query, shown } = filterProjects(projects, q)
 
   // One clock for the whole render, so two cards written a millisecond apart never disagree
   // about what "today" is.
@@ -109,6 +106,9 @@ export default async function Dashboard({
         </div>
       ) : (
         <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6">
+          {/* The frame draws no heading and no count; a screen reader still needs the page's
+              name above the cards' own `<h2>`s (review, 2026-09-05). */}
+          <h1 className="sr-only">Projects</h1>
           {/* 390 puts the action first, full width — the frame's own order. */}
           <div className="tablet:hidden">
             <NewProjectButton look="mobile" />

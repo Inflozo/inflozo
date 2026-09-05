@@ -442,7 +442,9 @@ closed-part: Story 1.5's Fix run (2026-09-05) added `apps/web/app/(app)/app/erro
   reachable from anything that throws under the app host. STILL OPEN: `not-found.tsx`. A nested one
   would not help the six unbuilt destinations anyway — an unmatched URL renders the ROOT not-found, so
   the fix is a catch-all route inside the group, which is the first story with a second real screen's
-  to write, not this one's.
+  to write, not this one's. Until it exists, every dashboard load also logs two `Failed to load
+  resource` lines in the console — `<Link>` prefetches `/sites` and `/assets` and each answers 404
+  (second review, 2026-09-05, on the live site); the same catch-all ends that noise.
 
 ### DW-18: a statically prerendered page can run no script under either CSP, and the marketing home page throws because of it
 
@@ -461,8 +463,10 @@ reason: The nonce is stamped into script tags PER REQUEST, so a prerendered page
   `https://inflozo.com/` (marketing, `script-src 'self'`) reports two blocked INLINE scripts — Next's
   own flight-data bootstrap — and throws `Minified React error #412`, uncaught; `https://app.inflozo.com/sites`
   (the root `not-found`, prerendered, served under the app host's `script-src 'self' 'nonce-…'
-  'strict-dynamic'`) reports EIGHT blocked scripts, inline and external both, because `'strict-dynamic'`
-  discards the `'self'` allowlist and every tag lacks the nonce — that page boots no JavaScript at all.
+  'strict-dynamic'`) reports EVERY script on it blocked, inline and external both (eight that day,
+  ten at the second review — the figure is the page's script count and moves with each build),
+  because `'strict-dynamic'` discards the `'self'` allowlist and every tag lacks the nonce — that page
+  boots no JavaScript at all.
   The control passed: `app.inflozo.com/sign-in` and `/app` are dynamic, carry the nonce, and report
   zero blocked scripts and no page error, in the same run. Nothing visible is broken today — marketing
   is one static line and the 404 has no controls — which is why this is deferred rather than patched

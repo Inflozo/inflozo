@@ -2,12 +2,14 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   copyName,
+  filterProjects,
   matchesName,
   NAME_HINT,
   NAME_MAX,
   nameSchema,
   nextUntitled,
   slugify,
+  uniqueSlug,
   updatedLabel,
   UNTITLED,
 } from './lib/projects.ts'
@@ -51,6 +53,39 @@ test('copyName is clamped to the schema’s maximum', () => {
   const long = copyName('a'.repeat(NAME_MAX))
   assert.equal(long.length, NAME_MAX)
   assert.equal(nameSchema.safeParse(long).success, true)
+})
+
+test('copyName steps away from the names already taken, clamped with the suffix on', () => {
+  assert.equal(copyName('X', ['Copy of X']), 'Copy of X 2')
+  assert.equal(copyName('X', ['Copy of X', 'Copy of X 2']), 'Copy of X 3')
+  assert.equal(copyName('X', ['  Copy of X  ']), 'Copy of X 2')
+  const name = 'a'.repeat(NAME_MAX)
+  const first = copyName(name)
+  const second = copyName(name, [first])
+  assert.equal(second.length, NAME_MAX)
+  assert.notEqual(second, first)
+  assert.notEqual(slugify(second), slugify(first))
+  // A cut that lands on a space: the name is trimmed, so the second copy still differs.
+  const spaced = `${'b'.repeat(NAME_MAX - 9)} ccccccccc`
+  const cut = copyName(spaced)
+  assert.equal(cut, cut.trim())
+  assert.notEqual(copyName(spaced, [cut]), cut)
+})
+
+test('uniqueSlug counts against the slugs taken, not the names', () => {
+  assert.equal(uniqueSlug('untitled-project', []), 'untitled-project')
+  assert.equal(uniqueSlug('untitled-project', ['untitled-project']), 'untitled-project-2')
+  assert.equal(uniqueSlug('untitled-project', ['untitled-project', 'untitled-project-2']), 'untitled-project-3')
+  assert.equal(uniqueSlug('untitled-project', ['untitled-project-2']), 'untitled-project')
+})
+
+test('filterProjects: one key or many, case-insensitive, and the empty query shows all', () => {
+  const rows = [{ name: 'Harbour Letter' }, { name: 'Field Notes' }]
+  assert.deepEqual(filterProjects(rows, undefined), { query: '', shown: rows })
+  assert.deepEqual(filterProjects(rows, '  '), { query: '', shown: rows })
+  assert.deepEqual(filterProjects(rows, 'HARB'), { query: 'HARB', shown: [rows[0]] })
+  assert.deepEqual(filterProjects(rows, ['harb', 'zzz']), { query: 'harb', shown: [rows[0]] })
+  assert.deepEqual(filterProjects(rows, 'zzz'), { query: 'zzz', shown: [] })
 })
 
 test('slugify', () => {

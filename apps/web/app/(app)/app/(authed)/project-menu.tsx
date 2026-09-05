@@ -63,7 +63,8 @@ export function DuplicateScope({ children }: { children: ReactNode }) {
   // contextual prompt "New project" raises — and a card rendered under the cap can still meet
   // it by the time it posts (a second tab). Only `'failed'` was rendered, so that race was a
   // click that did nothing at all; every other code now says its sentence rather than none
-  // (review, 2026-09-05). The sheet reads its own `at_cap` and flips itself.
+  // (review, 2026-09-05). The action revalidates the page before answering `at_cap`, so the
+  // sheet it opens already has the true `atCap` and is D4b.
   useEffect(() => {
     if (error?.code === 'at_cap') openNewProject()
   }, [error])
@@ -87,6 +88,11 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
   const [renamed, renameAction, renaming] = useActionState<ActionResult | null, FormData>(renameProject, null)
   const [removed, deleteAction, removing] = useActionState<ActionResult | null, FormData>(deleteProject, null)
   const [typed, setTyped] = useState('')
+  // A result the dialog was CLOSED on is spent: reopened, it starts clean rather than with the
+  // last attempt's sentence still on screen (review, 2026-09-05). Identity is enough — every
+  // action call returns a new object.
+  const [renamedSeen, setRenamedSeen] = useState<ActionResult | null>(null)
+  const [removedSeen, setRemovedSeen] = useState<ActionResult | null>(null)
 
   // A dialog closes when its action succeeded, and stays open with its sentence when it did not.
   useEffect(() => {
@@ -112,13 +118,13 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
     dialog.querySelector<HTMLElement>('[data-cancel]')?.focus()
   }
 
-  const renameError = renamed && 'error' in renamed ? renamed.error : null
+  const renameError = renamed !== renamedSeen && renamed && 'error' in renamed ? renamed.error : null
   // The field's own refusal goes in the field's helper-caption slot; anything else is a Banner
   // above the form. Only `bad_name` was read, so a rename that FAILED left the dialog open,
   // unchanged and silent — the sentence was composed and never shown (review, 2026-09-05).
   const nameError = renameError?.code === 'bad_name' ? renameError.message : null
   const renameFailed = renameError && renameError.code !== 'bad_name' ? renameError.message : null
-  const deleteError = removed && 'error' in removed ? removed.error.message : null
+  const deleteError = removed !== removedSeen && removed && 'error' in removed ? removed.error.message : null
   const armed = matchesName(typed, name)
 
   return (
@@ -133,7 +139,8 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
           // display:none when this runs — see lib/menu.ts.
           if (menu.current) openMenu(menu.current, event.currentTarget, { side: 'down', align: 'right' })
         }}
-        className={`rounded-sm px-1 font-semibold tracking-[2px] text-ink-soft transition-colors hover:text-ink ${ring}`}
+        // S3c draws the trigger in ink while its menu is open; the popover is the next sibling.
+        className={`rounded-sm px-1 font-semibold tracking-[2px] text-ink-soft transition-colors hover:text-ink [&:has(+:popover-open)]:text-ink ${ring}`}
       >
         ⋯
       </button>
@@ -203,7 +210,12 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
       </div>
 
       {/* ── Rename */}
-      <dialog ref={rename} aria-labelledby={`rename-${id}-title`} className={`${sheet} gap-[18px]`}>
+      <dialog
+        ref={rename}
+        aria-labelledby={`rename-${id}-title`}
+        onClose={() => setRenamedSeen(renamed)}
+        className={`${sheet} gap-[18px]`}
+      >
         <h2 id={`rename-${id}-title`} className={title}>
           Rename project
         </h2>
@@ -233,7 +245,12 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
       </dialog>
 
       {/* ── Delete, S12c's shape, centred */}
-      <dialog ref={remove} aria-labelledby={`delete-${id}-title`} className={`${sheet} gap-5`}>
+      <dialog
+        ref={remove}
+        aria-labelledby={`delete-${id}-title`}
+        onClose={() => setRemovedSeen(removed)}
+        className={`${sheet} gap-5`}
+      >
         <div className="flex flex-col items-center gap-[14px] text-center">
           {/* The disc, and a softer ring around it so the icon reads as the subject of the
               window rather than a bullet beside the title. Both are `danger-tint`; the ring is
