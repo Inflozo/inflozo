@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 review_loop_iteration: 2
 baseline_commit: '24da0d3d41055db49b463bb55195a4b0b1f89886'
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
 ---
 
@@ -693,6 +693,20 @@ for probes; only the hardcoded count in its docstring was fixed).
 test appearing mid-run and asked whether another agent was in the repo. That was **this review's own
 patches** landing while it worked. Its `pnpm check` finished before the first of those writes, so its green
 is a HEAD result; the tree's green is the run recorded above.
+
+**Deploy, round 2 (2026-09-05)** — the push of the Review 2 commit, confirmed on the real stack (R-82;
+PRD §4, AD-26: production is the stack under test). No schema change in this story, so nothing beyond app
+code to deploy.
+
+| Check | Result |
+|---|---|
+| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `7c3ed1c2` — `check` ✓ `rls` ✓ `deploy` ✓ |
+| Vercel deployments (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_2BGJFQw1m3GLBgEW5u32xcC3N1K8`, state **READY**, built from `7c3ed1c2` |
+| Aliases on that deployment | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`), plus the probe and account preview aliases |
+| `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present |
+| `curl -sI https://inflozo.com/` | **200** |
+
+Deployment: `inflozo-8t4fc5nj9-umangkagathara.vercel.app` (`dpl_2BGJFQw1m3GLBgEW5u32xcC3N1K8`)
 
 ## Owner's manual test
 
