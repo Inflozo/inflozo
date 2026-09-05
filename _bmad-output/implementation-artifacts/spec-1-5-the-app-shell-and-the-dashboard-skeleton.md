@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -603,7 +603,29 @@ re-executed, so it was published and checked in turn: CI on `8249dd9f` reported 
 where it was; `/sign-in` **200** with `x-inflozo-policy: app-nonce`; `https://inflozo.com/` **200**,
 marketing untouched. The four patches that change what a person SEES — the rename Banner, the duplicate
 race opening D4b, the error Banner over S3b, and the fresh duplicate name — are on the owner's own screens
-and are his to confirm in `## Owner's manual test` below.
+and are his to confirm in `**2. On your phone there are two of your initial — one in the top bar and one at the bottom of the ☰ drawer. Which one should go?**
+
+You are right that it looks like a duplicate, and both are drawn that way in `S3 Dashboard.dc.html` — the
+phone frame puts your initial at the top right, and the "menu open" frame puts your initial, email and Free
+tag at the bottom of the drawer. They are not the same control, though, and that is the catch: **the one in
+the top bar is the only way to reach Account settings, Billing & plan, Suggestions, Docs and Sign out on a
+phone.** The one in the drawer is a label — it shows who you are and nothing opens when you tap it. So
+removing the top-bar one on its own would take Sign out off your phone entirely.
+
+*Example:* today, on your phone, tapping ☰ shows Projects · Sites · Assets and your initial at the bottom
+(nothing happens if you tap it), and tapping your initial at the top right drops down the menu with Sign out
+in it. With option 1 the top bar keeps ☰, "Inflozo" and the search icon only, and your initial at the bottom
+of the drawer becomes the thing you tap for that menu — one initial on the screen, and Sign out two taps away
+instead of one.
+
+1. **Move the menu into the drawer: no initial in the top bar, and the one at the bottom of the drawer opens the account menu. (RECOMMENDED)** — one initial on the phone, which is what you asked for, and nothing is lost: everything in that menu is still reachable, just from inside ☰. It is how most phone apps with a ☰ drawer do it.
+2. Keep both as the frames draw them — the top-bar initial opens the menu, the drawer one stays a label. Nothing changes.
+3. Remove the initial, email and Free tag from the bottom of the drawer instead, and keep the top-bar one as the menu — also one initial, and Sign out stays one tap away, but the drawer loses the line that tells you which account you are in.
+
+This one is yours because it moves the phone away from the frames, and the export is the design authority
+(R-74) until you say otherwise. Whichever you choose is a small change inside this story.
+
+## Owner's manual test` below.
 
 **Dismissed on measurement, not argument.** A layer read the greyed doors' `aria-disabled` as silencing
 axe rather than fixing contrast. Measured: the reason sentence (`marigold-text` on `grey-field`) is
@@ -678,3 +700,54 @@ would rather not see them until then, say so in your findings and it is changed 
 | 14 | same, phone | Dropdown | Tap your initial top-right | — | The same menu as step 3, dropping down from your initial, with the "Free" tag beside your email |
 | 15 | same, phone | Sheet and delete | Tap "+ New project", Cancel; then ⋯ → Delete on your card, Cancel | — | Both windows fill the width with a small margin and every button is reachable |
 | 16 | same | Sign out | Open the account menu → Sign out | — | The Sign In card from 1.4 |
+
+## Owner's test findings
+
+You tested the deployed dashboard on `app.inflozo.com` on 2026-09-05. **The findings arrived on Story
+1.4's prompt and they are this story's** — every one of them names a screen from the table above: your
+"Step 4" is step 4's New project sheet, the delete window is step 10, and the rest are steps 12 to 14 on
+your phone. Story 1.4 is the magic link, and you passed and closed it the day before. Recorded here, in
+your words:
+
+1. **"Step 4: The New Project modal does not match the one created in Claude Design? Is it expected? Will
+   it be worked upon in future stories."** — *Mostly expected; the one part that is not is named below.*
+2. **"The Delete Project Popup needs a better design. With the icon in top center. And overall better
+   visuals."**
+3. **"After deleting I got error: This page couldn't load. Reload to try again, or go back. Url:
+   https://app.inflozo.com/?q=test"**
+4. **"On mobile devices, clicking outside the sidebar menu should close it."**
+5. **"On mobile devices, opening the sidebar menu, focuses the logo and shows a focus border around it
+   which does not looks good."**
+6. **"On mobile devices, there are two avatr user menu. One in sidebar and another in header right. Can we
+   remove the header avatar."** — *this one takes the only route to Sign out on a phone with it, so it is
+   asked as question 2 above rather than guessed.*
+7. **"On mobile devices, when we click search icon, the focus should be added to the search box."**
+8. **"Sometimes, after deleting a project I get an error: This page couldn't load. Reload to try again, or
+   go back. URL: https://app.inflozo.com/"**
+
+**Finding 1 — what is expected, and what is not.** `D4a` draws four doors with **Start from a starter**
+first and selected, a project picker sitting inside the Duplicate door, a "Connect a site" button on the
+Redesign door, and three Style Pack cells — Paper, Tangerine and "+ New pack". The built sheet has **Blank
+canvas** as the one live door and the other three greyed with their one-line reason, and a single Paper
+cell. **Every one of those differences is deliberate and is in this spec's Boundaries**, because there is
+nothing behind those doors to open yet: the ten starters are Epic 11, the whole four-path sheet with its
+project picker is **Story 13.6**, connecting a Ghost site is Epic 3, and a second Style Pack and the pencil
+that edits one are Epic 6. The frame draws the finished product; this story draws the same sheet with only
+the door that works. **So yes — future stories fill it in, and D4a's own caption is the reason all four
+stay on screen rather than being hidden.**
+
+The one difference that is *not* the frame's instruction is the **order**: the frame puts "Start from a
+starter" first and "Blank canvas" second, and the build puts the only usable door first. That was a choice
+made when this story was written, not the frame's. Say the word and it goes back to the frame's order
+inside this story.
+
+**Findings 3 and 8 are the same defect** — a project deleted, and the page that comes back throws instead
+of rendering; the `?q=test` in one of the two URLs says the search term surviving the delete is part of it.
+The bare grey page you saw is the second half: the `(authed)` group has no `error.tsx`, which is already
+written down as **DW-17**, so anything that throws inside the shell replaces the whole screen instead of
+showing a sentence inside it. The Fix run owns both halves — the throw first, then the boundary.
+
+**Findings 2, 4, 5 and 7 are plain defects of this story** and need no ruling from you: the delete window
+is an extrapolation with no frame of its own, so its icon can move to the top and centre; the ☰ drawer is a
+native modal that does not close on an outside tap unless it is told to; the drawer hands focus to the first
+thing in it, which is the wordmark; and the phone's search field is focused a beat too early to take it.
