@@ -409,6 +409,16 @@ spec scopes localhost to reaching `/app` directly. And the live database held **
 owner's own address, created shortly before the review began, so his manual test is under way; it was not
 touched, and every fixture the review made was deleted.
 
+**Deploy (2026-09-05)** — the push of the Review commit, confirmed on the real stack (R-82; PRD §4, AD-26:
+production is the stack under test). No schema change in this story, so nothing beyond app code to deploy.
+
+| Check | Result |
+|---|---|
+| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `faef42ea` — `check` ✓ `rls` ✓ `deploy` ✓ |
+| Deployment: | `inflozo-rfm32308x-umangkagathara.vercel.app`, state **READY**, built from `faef42ea` |
+| Vercel aliases on that deployment (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`) |
+| `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present, `x-matched-path: /app/sign-in` |
+
 ## Owner's manual test
 
 Use your own email address. Every address below is the real site, and the email really does come from
