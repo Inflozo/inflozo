@@ -233,7 +233,7 @@ below was deleted, and the profile and entitlement rows cascaded with it.
 
 | Command | Result |
 |---|---|
-| `pnpm check` | green — lint, typecheck, **every test in `apps/web` passing and none failing**, across `csp.test.ts`, `resend-timer.test.ts` and `session-cookie.test.ts` (this story's three) plus `tokens.test.ts` (now carrying the `ink-hover` twin), `greyed.test.ts` and `routing.test.ts` |
+| `pnpm check` | green — lint, typecheck, **every test in `apps/web` passing and none failing**, across `csp.test.ts`, `resend-timer.test.ts`, `session-cookie.test.ts` and `email.test.ts` (this story's four) plus `tokens.test.ts` (now carrying the `ink-hover` twin), `greyed.test.ts` and `routing.test.ts` |
 | `pnpm build` | the route table §18 predicted: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
 | `python3 tools/doc-audit.py --check` (twice) | PASS, 0 warnings; `tools/probe/configure-supabase-auth.py` catalogued |
 
@@ -256,6 +256,12 @@ below was deleted, and the profile and entitlement rows cascaded with it.
 | `POST $SUPABASE_URL/auth/v1/otp` | **200 in 2.2 s** — GoTrue answers only after the SMTP handshake, so the elapsed time is the hand-off to Resend |
 | the same again, inside 60 s | **429 `over_email_send_rate_limit`**, *"For security purposes, you can only request this after 58 seconds."* — the string `retryAfterFrom()` parses, executed rather than imagined |
 | `POST /auth/v1/otp` to `story-1-4@example.com` | **500 `unexpected_failure` — "Error sending confirmation email"**: Resend refuses an undeliverable domain, which is the matrix's *Send fails* row arriving for real. The card kept the address and showed the error Banner |
+
+**The bad-address row, proved by counting requests** — the matrix says *no request*, not merely *no email*
+
+| Input | Result |
+|---|---|
+| `maya`, then blank, submitted on the deployed page | **0 POST requests** left the browser either time (counted with `page.on('request')`), the sentence under the field was *"Enter an email address like you@example.com"* in `rgb(196, 56, 60)` (`danger-text`), the field carried `aria-invalid` and `aria-describedby`, the card stayed on S1a and focus did not move. The client and the action share one schema, so the two can never say different things (`email.test.ts`) |
 
 **The link, end to end on the deployed site** — `SUPABASE_SECRET_KEY` for the one admin call
 
