@@ -525,3 +525,23 @@ to Inflozo") or only these two cards; the Fix run assumes **only the cards** unl
 **Not a question, just telling you:** finding 4's width is a routine call and the Fix run makes it —
 the card grows from the drawn 400px by the smallest amount that puts the headline on one line,
 measured on the deployed page at 1440 and 390, and no other value on the card moves.
+
+**Ruled (owner, 2026-09-05): option 3 — "Keep both lines and cut only the passwords half."** The card
+reads **"Make something gorgeous."** then **"Sign in or create an account."** and nothing else changes
+on it. **"Keep the sparkle — matches the vibe of the website"**, so the S1b heading stays *Check your
+inbox ✨*. And **one line comes out of the email: "One button, no password."** — the sentence in
+`supabase/auth/magic-link.html` keeps its remainder, *"This link is good for 15 minutes. If you didn't
+ask for it, ignore this email."*
+
+Three things the Fix run owes this ruling, none of them a new decision:
+
+- `page.tsx`'s `description` carries the same passwords half (*"Sign in or create an Inflozo account —
+  no passwords, ever."*) and moves with the card — one wording, not two (standing rule 7: the repo was
+  grepped, and these are the only three places the sentence lives).
+- The email template is stored **inside Supabase**, so editing the file is half the job:
+  `tools/probe/configure-supabase-auth.py --apply` pushes it to both templates and `--check` proves
+  both came back byte-identical to the file, exactly as the Dev run did it.
+- Boundaries & Constraints and the "matches frame S1a" criterion still quote the drawn sentence. **This
+  ruling amends them** (R-74 is the owner's to amend, and he just did): the frame's third line and its
+  400px width are superseded here and only here, and the amendment is written beside each so a later
+  reader is not left comparing the card to a drawing it deliberately no longer matches.
