@@ -2,7 +2,7 @@
 title: 'Story 1.2 — The whole data model and its row-level security'
 type: 'feature'
 created: '2026-09-04'
-status: 'in-review'
+status: 'done'
 review_loop_iteration: 1
 baseline_commit: '17c86c77fb6e459606ad87d7e9d69d79e2a793b0'
 owner_test: none
@@ -213,6 +213,27 @@ container needs `--network host`; on the default bridge it returns `Network unre
 like an outage and is not one.
 
 *Still not touched, and why:* Resend, Dodo, T1/T3 — this story adds no email, no billing call and no Ghost call.
+
+## Deploy (2026-09-05)
+
+**Deployment: `dpl_HmwvgnzVR1Mr6exhqm7YEJ8Pm8MX`** — production, `readyState: READY`, built from
+`da9a620c` (`inflozo-5bvivucbg-umangkagathara.vercel.app`). This story ships no app code; the
+deployment is recorded because the push builds the production project either way.
+
+*What "live" means for a schema story — the migration applied and `RLS-TEST.sql` green (build-sequence
+step 7). Both re-confirmed at this commit, read-only, keys named by variable and never printed:*
+
+| Check | Returned |
+|---|---|
+| hosted Supabase over `SUPABASE_DB_URL` | 29 public base tables · **no** public table without RLS · **no** `private` table carrying a policy (AD-7) · 43 policies over `public` · signup triggers `auth_user_entitlement` + `auth_user_profile` · buckets `assets`, `deploy-artifacts`, `site-snapshots`, `suggestion-images` |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, 72 `PASS`, 0 `ERROR` |
+| the three production domains | `inflozo.com` **200** · `app.inflozo.com` **200** · `www.inflozo.com` **308** (redirect, as configured) |
+
+The hosted project already carried this schema, so nothing was applied at Deploy — the migration is its
+recorded home, and the checks above are the confirmation the phase asks for.
+
+**No screen, so `owner_test: none` and the story goes straight to Done on this commit** (build-sequence
+step 7). The three review rulings that outlived the story are carried by DW-7, DW-8 and DW-9.
 
 ## Questions for the owner
 
