@@ -10,7 +10,8 @@ export { SESSION_MAX_AGE, sessionCookie } from './cookies.ts'
  * Two keys reach the server and neither is public: `SUPABASE_URL` and
  * `SUPABASE_PUBLISHABLE_KEY`. There is no `NEXT_PUBLIC_*` and no browser-side client — the
  * spine's "secrets never in `NEXT_PUBLIC_*`" holds here by there being nothing to expose.
- * The secret key stays out of the app entirely for this story.
+ * `SUPABASE_SECRET_KEY` is set in production for later server-side work; nothing in the app
+ * reads it in this story.
  *
  * The guard is always `getUser()`, never `getSession()`: `getSession()` reads the cookie and
  * believes it, `getUser()` asks GoTrue whether the token is real.

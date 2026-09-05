@@ -17,6 +17,8 @@ test('maxAge 0 is a DELETION and survives untouched — this is what Sign out is
   // absent is not zero: a cookie with no lifetime asked for is a session cookie, and stretching
   // it is right, while stretching a deletion would leave the user signed in after Sign out
   assert.equal(sessionCookie({}).maxAge, undefined)
+  // negative is truthy in JS and is not a lifetime either — it passes through untouched
+  assert.equal(sessionCookie({ maxAge: -1 }).maxAge, -1)
 })
 
 test('the cookie is closed to script, and everything else the library set is kept', () => {
@@ -24,4 +26,12 @@ test('the cookie is closed to script, and everything else the library set is kep
   assert.equal(out.httpOnly, true) // there is no browser Supabase client to read it
   assert.equal(out.path, '/')
   assert.equal(out.sameSite, 'lax') // the magic link is a top-level navigation from an email
+})
+
+test('Secure follows NODE_ENV, so the deployed cookie never travels over plain http', () => {
+  // `node --test` runs each file in its own process, so nothing here needs putting back
+  Object.assign(process.env, { NODE_ENV: 'production' })
+  assert.equal(sessionCookie({}).secure, true)
+  Object.assign(process.env, { NODE_ENV: 'development' })
+  assert.equal(sessionCookie({}).secure, false) // localhost:3000 is http
 })

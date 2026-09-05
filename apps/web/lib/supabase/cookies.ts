@@ -19,13 +19,14 @@ export const SESSION_MAX_AGE = 2_592_000
  * `httpOnly` is the library's `false` for a reason that is not ours: a browser client has to be
  * able to read the session. This app has none, so the cookie is closed to script.
  *
- * `maxAge: 0` is a DELETION — sign-out — and is passed straight through. Stretching that one to
- * 30 days would leave the user signed in after pressing Sign out.
+ * `maxAge: 0` is a DELETION — sign-out — and is passed straight through, as is anything else
+ * that is not a positive lifetime. Stretching a deletion to 30 days would leave the user signed
+ * in after pressing Sign out.
  */
 export function sessionCookie(options: CookieOptions): CookieOptions {
   return {
     ...options,
-    ...(options.maxAge ? { maxAge: SESSION_MAX_AGE } : {}),
+    ...((options.maxAge ?? 0) > 0 ? { maxAge: SESSION_MAX_AGE } : {}),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   }

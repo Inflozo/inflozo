@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mmss, retryAfterFrom, secondsLeft } from './app/(app)/app/sign-in/resend-timer.ts'
+import { linkAlreadySent, mmss, retryAfterFrom, secondsLeft } from './app/(app)/app/sign-in/resend-timer.ts'
 
 // Beside the other four checks at the package root, where `node --test '*.test.ts'` finds
 // them — a test inside the route folder would exist and never run, which counts as missing.
@@ -13,6 +13,16 @@ test('secondsLeft counts down from the interval and floors at zero', () => {
   assert.equal(secondsLeft(sentAt, 60, sentAt + 600_000), 0, 'never negative')
   // a part-second is not a second: 32.9s elapsed still leaves 28, not 27
   assert.equal(secondsLeft(sentAt, 60, sentAt + 32_900), 28)
+  // a clock stepped backwards never shows more than the interval
+  assert.equal(secondsLeft(sentAt, 60, sentAt - 5_000), 60)
+})
+
+test('only the per-address 429 means the link is already on its way', () => {
+  assert.equal(linkAlreadySent({ status: 429, code: 'over_email_send_rate_limit' }), true)
+  // the project-wide hourly cap is also a 429, and nothing was sent — that one is an error
+  assert.equal(linkAlreadySent({ status: 429, code: 'over_request_rate_limit' }), false)
+  assert.equal(linkAlreadySent({ status: 500, code: 'unexpected_failure' }), false)
+  assert.equal(linkAlreadySent({}), false)
 })
 
 test('mmss is the frame’s m:ss, zero-padded on the seconds only', () => {

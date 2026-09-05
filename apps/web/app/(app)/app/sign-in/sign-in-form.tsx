@@ -115,12 +115,18 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
 
           <div className="flex w-full flex-col items-center gap-2.5">
             {/* The countdown says when another may be asked for and nothing more: the link in
-                the inbox is good for its own 15 minutes either way (UX-DR13). */}
+                the inbox is good for its own 15 minutes either way (UX-DR13).
+                The number is a `timer`, which a screen reader does not re-read every second; the
+                paragraph is polite, so the one change that matters — Resend becoming a link — is
+                announced once. */}
             <p className="text-ui-dense text-ink-soft" aria-live="polite">
               Didn&rsquo;t get it?{' '}
               {left > 0 ? (
                 <>
-                  Resend in <span className="font-mono text-ui-dense text-ink">{mmss(left)}</span>
+                  Resend in{' '}
+                  <span role="timer" aria-live="off" className="font-mono text-ui-dense text-ink">
+                    {mmss(left)}
+                  </span>
                 </>
               ) : (
                 <button type="submit" className={linkStyle}>

@@ -17,7 +17,10 @@ import { sessionCookie } from '@/lib/supabase/server'
  * user is not signed in yet.
  */
 
-// GoTrue's own list; anything else in the URL is not a link we sent.
+// GoTrue's own list; anything else in the URL is not a link we sent. `email` is the one the
+// template carries (supabase/auth/magic-link.html) for a magic-link AND a signup token —
+// executed: `/auth/v1/verify` returned 200 for both (Spec Change Log 2). Narrowing this list to
+// the two "obvious" types would break every real link.
 const TYPES: readonly EmailOtpType[] = ['magiclink', 'signup', 'email', 'invite', 'recovery', 'email_change']
 
 export async function GET(request: NextRequest) {

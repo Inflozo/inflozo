@@ -10,10 +10,22 @@
  *  when the two disagree, because that one is the server's answer rather than our copy. */
 export const SEND_INTERVAL = 60
 
-/** Whole seconds left before a resend is allowed. Never negative. */
+/** Whole seconds left before a resend is allowed. Never negative, and never more than the
+ *  interval — a clock stepped backwards would otherwise show more time than was ever asked for. */
 export function secondsLeft(sentAt: number, interval: number, now: number): number {
   const elapsed = Math.floor((now - sentAt) / 1000)
-  return Math.max(0, interval - elapsed)
+  return Math.min(interval, Math.max(0, interval - elapsed))
+}
+
+/**
+ * TWO different 429s, and only one of them means "your link is already on its way".
+ * `over_email_send_rate_limit` is the per-address minimum interval: nothing was sent because
+ * something was sent seconds ago, so S1b with the countdown reset is the truth (UX-DR13 — it
+ * blocks nothing, and the earlier link is still good). The project-wide hourly cap also answers
+ * 429; showing "Check your inbox" for that one would be a lie, so it is not this.
+ */
+export function linkAlreadySent(error: { status?: number; code?: string }): boolean {
+  return error.status === 429 && error.code === 'over_email_send_rate_limit'
 }
 
 /** `27` -> `0:27`, the frame's own form (S1b: "Resend in 0:27"). */

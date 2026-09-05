@@ -2,8 +2,8 @@
 title: 'Story 1.4 — Sign in with a magic link'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-progress'
-review_loop_iteration: 0
+status: 'in-review'
+review_loop_iteration: 1
 baseline_commit: '24da0d3d41055db49b463bb55195a4b0b1f89886'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
@@ -120,6 +120,24 @@ After this story anyone can get into Inflozo on the real site with nothing but t
 - Given the deployed page in both states, when axe-core runs, then zero violations; Tab reaches every control with the one ring; no horizontal scroll at 390 (NFR-5, UX-DR16).
 - Given a push to `main`, when CI runs, then `check` and `rls` are green and `deploy` publishes the page.
 
+### Review Findings
+
+Code review of 2026-09-05, five layers (blind hunter, edge-case hunter, verification-gap reviewer, acceptance auditor, real-infra verifier). Nothing needed the owner's decision; nothing was deferred. Twelve findings were dismissed as noise, as handled, or — one of them — by execution; the reasons are in the Review block under `## Verification`.
+
+- [x] [Review][Patch] `secure` is the one field `sessionCookie()` sets that its test never reads [apps/web/session-cookie.test.ts:22]
+- [x] [Review][Patch] A negative `maxAge` is truthy and would be stretched to 30 days [apps/web/lib/supabase/cookies.ts:28]
+- [x] [Review][Patch] `secondsLeft` can exceed the interval if the clock steps backwards [apps/web/app/(app)/app/sign-in/resend-timer.ts:16]
+- [x] [Review][Patch] The countdown ticks inside `aria-live="polite"`, re-announcing itself every second [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:119]
+- [x] [Review][Patch] `--expect` on a SOFT field leaks it into the hard checks, on a bool field `bool('0')` is `True`, and a missing `=value` is a traceback [tools/probe/configure-supabase-auth.py:147]
+- [x] [Review][Patch] `sessions_inactivity_timeout: 720` carries no unit — the API says hours, so it is 30 days, and the comment must say so [tools/probe/configure-supabase-auth.py:73]
+- [x] [Review][Patch] `minimumReleaseAgeExclude` has no comment and no Spec Change Log entry [pnpm-workspace.yaml:13]
+- [x] [Review][Patch] Three auth fields written beyond the Code Map's list are not disclosed in the Spec Change Log [tools/probe/configure-supabase-auth.py:65]
+- [x] [Review][Patch] The two-429 distinction in `sendMagicLink` has no repeatable test [apps/web/app/(app)/app/sign-in/actions.ts:52]
+- [x] [Review][Patch] `TYPES` does not say that `email` is the type the template sends and must not be narrowed away [apps/web/app/(app)/app/auth/confirm/route.ts:21]
+- [x] [Review][Patch] "The secret key stays out of the app" reads as "unset in production"; it is set there and unread [apps/web/lib/supabase/server.ts:13]
+- [x] [Review][Patch] Spec Change Log entries 13 and 14 are in the wrong order [_bmad-output/implementation-artifacts/spec-1-4-sign-in-with-a-magic-link.md]
+- [x] [Review][Patch] The documented launcher `env $(grep … | xargs)` cannot carry `RESEND_FROM`'s space — quoted or not, `<hello@inflozo.com>` becomes the command and the tool never runs; the tool now reads `tools/probe/.env` itself, as every other probe does [tools/probe/configure-supabase-auth.py:4]
+
 ## Spec Change Log
 
 Every entry below is a change to the Code Map's plan, made during Dev and executed rather than reasoned.
@@ -180,16 +198,25 @@ The frozen Intent, Boundaries and Matrix are untouched.
     the proxy holding a 2666-byte `Cookie` header the layout could not see. No error, no warning, and the
     route table said `ƒ` throughout. Moving a page behind a guard is therefore also a segment-config change,
     which is now written beside the export it replaced.
-14. **No `autoFocus` on the email field.** It was there and came off after looking at the deployed page:
+13. **No `autoFocus` on the email field.** It was there and came off after looking at the deployed page:
     the frame draws S1a at REST, with the `line` border, and autofocus put the coral focus border on it the
     moment the page loaded. It also made the real Tab order `Send magic link → Terms → Privacy`, where this
     spec's own Verification expects `field → button → Terms → Privacy`, and it moves a screen reader's cursor
     without being asked. Removing it settles all three.
-13. **The sign-in watermark is CSS `content`, not a text node.** Written as text, "Inflozo" in `paper-sunk` on
+14. **The sign-in watermark is CSS `content`, not a text node.** Written as text, "Inflozo" in `paper-sunk` on
     `paper` is 1.08:1 — WCAG's logotype exception covers it and axe cannot see an exception, so at 390 (where
     the card stops covering it) axe-core reported a real `color-contrast` violation. Darkening it would be
     editing the frame, which R-74 forbids. As generated content it is what it always was — ornament — and the
     rule no longer applies to it. Zero violations at 1440, 834 and 390 after the change.
+15. **Three auth fields beyond the Code Map's list are written, and they are the Boundaries' own
+    values** (found by the review): `mailer_autoconfirm false`, `disable_signup false` and
+    `external_email_enabled true`. Each was already the live value on 2026-09-05 (Code Map, Supabase
+    row) and each is a sentence in this spec's Always/Never — writing them pins those sentences and
+    `--check` proves them on every run. No value changed.
+16. **`pnpm-workspace.yaml` carries `minimumReleaseAgeExclude` for `@supabase/ssr@0.12.6`** (found
+    by the review): the version was published 2026-09-04 11:05Z, under a day before it was pinned, and
+    pnpm 11's minimum-release-age gate refused it at install. The line is commented and is to be
+    dropped when the pin moves on.
 
 ## Design Notes
 
@@ -309,6 +336,78 @@ below was deleted, and the profile and entitlement rows cascaded with it.
 | Vercel env (`VERCEL_TOKEN`, `VERCEL_PROJECT`) | `SUPABASE_PUBLISHABLE_KEY` added as an encrypted production variable; production now holds `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DODO_WEBHOOK_SECRET`, `ENABLE_EXPERIMENTAL_COREPACK` |
 
 **Not touched by this story:** Dodo, and the Ghost test servers T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`. They appear in the app only as `connect-src` origins in the CSP string, which no request in this story used.
+
+**Review (2026-09-05)** — five layers, on the real infrastructure (R-82); keys by variable name only.
+
+*What the real-infra verifier re-executed, independently of the table above, and what held:* `pnpm check`
+green; `doc-audit --check` PASS; `gh run list` (`GITHUB_TOKEN`) `check` ✓ `rls` ✓ `deploy` ✓ on every Story 1.4
+commit through `536f3f83`; `configure-supabase-auth.py --check` (`SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`,
+`RESEND_API_KEY`, `RESEND_FROM`) PASS on every field with `--expect mailer_otp_exp=901` failing as the control;
+`GET /auth/v1/settings` 200; `dig` on `send.inflozo.com` and `resend._domainkey.inflozo.com` live, apex MX still
+iCloud (no email sent for this); both CSP strings byte-identical to the rows above, header nonce equal to the
+page's one nonce, 0 of 10 scripts unnonced, marketing `x-vercel-cache: HIT` + `x-nextjs-prerender: 1`; 0 password
+hits beyond the frame's sentence; axe-core 4.12.1 0 violations at 1440 and 390, the `·` the only incomplete; Tab
+order and the one ring by value; `maya` → 0 POSTs; one fixture user round-tripped on the deployed site
+(`SUPABASE_SECRET_KEY`): confirm 303 + `Max-Age=2592000; Secure; HttpOnly`, `/` 200 signed in, `/kit` 200 with
+and 307 without the cookie, `/sign-in` 307, reused token 303 `?error=link`, plus two controls the Dev run did not
+have — a forged and a missing `token_hash` both 303 `?error=link` — `profiles`/`entitlements` 1/1 then 0/0
+after `DELETE /auth/v1/admin/users/{id}`; Vercel production env (`VERCEL_TOKEN`, `VERCEL_PROJECT`) exactly the
+five names above and the latest deployment READY from HEAD.
+
+*The rolling-session row, reproduced by the review* — the one row the verifier had not re-run. `next dev` on
+`localhost:3000` with the real `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_URL` pointed at a counting pass-through
+that forwards every request unchanged to the real project (nothing mocked; it only prints method, path and
+status):
+
+| Step | Result |
+|---|---|
+| `generate_link` (`SUPABASE_SECRET_KEY`) → `/app/auth/confirm?…&type=email` | 303 to `/`, one session cookie, `expires_at` in the future |
+| the cookie with `expires_at` moved an hour into the past, refresh token untouched → `GET /app` | **200** in 1.2 s, "Signed in as" the fixture, a **new** cookie: `Max-Age=2592000`, access token changed, `expires_at` in the future |
+| what the pass-through saw for that one page request | `POST /auth/v1/token?grant_type=refresh_token` **once**, then `GET /auth/v1/user` three times (proxy, guard, page) — **one refresh per visit** |
+| the same with the refresh token replaced by a dead one | proxy's refresh **400** `Refresh token is not valid`, then **307** to `/sign-in`; no second attempt |
+| cleanup | `DELETE /auth/v1/admin/users/{id}` 200, `GET` after 404 |
+
+The single refresh is the fact that dismissed the review's largest finding: the acceptance auditor read
+`proxy.ts` as writing the refreshed cookies only onto the response, so the page's own `getUser()` would meet
+the expired token and refresh a second time with a refresh token GoTrue had just rotated — held together only
+by the project's 10-second `security_refresh_token_reuse_interval` (read back, with
+`refresh_token_rotation_enabled true` and `jwt_exp 3600`). Executed, the page saw the fresh token: Next merges a
+middleware's `Set-Cookie` into the cookies the render reads
+(`next/dist/server/async-storage/request-store.js`, `mergeMiddlewareCookies`, "so that when `cookies()` is
+accessed it's able to read the newly set cookies"). `server.ts`'s comment was right and the patch was not
+applied. Standing rule: the control ran before the fix, which is why there was no fix.
+
+*The `--expect` control, after the patch (real readback, plain command):* `--check` exit 0 with every field PASS
+and `sessions_inactivity_timeout` a stated `----` · `--expect mailer_otp_exp=901` exit 1, `FAIL … (live: 900)` ·
+`--expect sessions_inactivity_timeout=720` stays `----`, exit 0 — before the patch this leaked into the hard
+checks and failed on the plan rather than the expectation · `--expect disable_signup=true` exit 1, `FAIL … (live:
+False)` — before the patch `bool('0')` and `bool('false')` were both `True` · `--expect mailer_otp_exp` "give
+key=value", exit 1 · `SUPABASE_ACCESS_TOKEN=not-a-token` in the environment → `GET 401` — the environment wins
+over the file.
+
+*`pnpm check` after the patches (Node 24):* lint and typecheck clean, `apps/web` **37 tests, 37 pass, 0 fail**
+(two more than the Dev run: `Secure` both ways, a negative `maxAge`, a stepped-back clock, and the two-429
+predicate `linkAlreadySent`).
+
+*Dismissed, with the reason:* the nonce's entropy (a v4 UUID is 122 random bits; the probe's executed form) ·
+`.ts` on relative imports (the repo's own `node --test` convention, `proxy.ts` says why) · the confirmation
+subject reusing the sign-in sentence (disclosed in Change Log 1; the owner judges the email in his inbox, step 6)
+· the Resend story told three times in this spec (it is history, executed) · DW-12 not carried into a Story 2.1
+spec that does not exist yet (the ledger is the mechanism) · double-submit on Send and Resend (`pending` disables
+the button after the first render, and GoTrue's per-address interval turns any duplicate into the sent card) ·
+`try/catch` around `getUser`, `signInWithOtp` and `verifyOtp` (a failed fetch is an `AuthRetryableFetchError`,
+which `isAuthError` returns as `{ error }` — `auth-js/dist/main/GoTrueClient.js` `_getUser`'s `catch` — so every
+site already handles it) · `project_ref` on a malformed URL (an internal tool on a known value) · a test that
+`button.tsx` contains the string `ink-hover` (a literal-string snapshot guards nothing) · `last_updated 00:00` (the
+sync step writes "the current date") · the frozen matrix row naming `type=magiclink` while the link carries
+`type=email` (the frozen text is unedited by rule; Change Log 2 is the record and the behaviour is unchanged) ·
+the proxy refresh, above.
+
+*Two observations, not findings:* on `localhost:3000`, `redirect('/sign-in')` lands on `/sign-in` without the
+`/app` prefix, so the guard's redirect 404s in development — on both real hosts the proxy rewrites it, and the
+spec scopes localhost to reaching `/app` directly. And the live database held **one** user at review time — the
+owner's own address, created shortly before the review began, so his manual test is under way; it was not
+touched, and every fixture the review made was deleted.
 
 ## Owner's manual test
 

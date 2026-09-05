@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
-import { retryAfterFrom, SEND_INTERVAL } from './resend-timer.ts'
+import { linkAlreadySent, retryAfterFrom, SEND_INTERVAL } from './resend-timer.ts'
 
 /**
  * Sending the link is a POST that runs entirely on the server: the publishable key, the
@@ -44,12 +44,9 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
 
   if (!error) return { status: 'sent', email, retryAfter: SEND_INTERVAL }
 
-  // TWO different 429s, and only one of them means "your link is already on its way".
-  // `over_email_send_rate_limit` is the per-address minimum interval: nothing was sent because
-  // something was sent seconds ago, so S1b with the countdown reset is the truth (UX-DR13 — it
-  // blocks nothing, and the earlier link is still good). The project-wide hourly cap also
-  // answers 429; showing "Check your inbox" for that one would be a lie, so it falls through.
-  if (error.status === 429 && error.code === 'over_email_send_rate_limit') {
+  // Two different 429s, and only the per-address one means the link is on its way — the
+  // distinction lives in `resend-timer.ts` so `node --test` holds it.
+  if (linkAlreadySent(error)) {
     return { status: 'sent', email, retryAfter: retryAfterFrom(error.message, SEND_INTERVAL) }
   }
 

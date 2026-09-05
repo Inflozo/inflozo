@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Set the live project's Supabase Auth configuration, and PROVE each value by reading it back.
 
-    env $(grep -E '^(SUPABASE_URL|SUPABASE_ACCESS_TOKEN|RESEND_API_KEY|RESEND_FROM)=' \
-        tools/probe/.env | xargs) python3 tools/probe/configure-supabase-auth.py --apply
-    …                                                                            --check
-    …                                            --check --expect mailer_otp_exp=901   # the control
+    python3 tools/probe/configure-supabase-auth.py --apply
+    python3 tools/probe/configure-supabase-auth.py --check
+    python3 tools/probe/configure-supabase-auth.py --check --expect mailer_otp_exp=901   # the control
+
+The keys — SUPABASE_URL, SUPABASE_ACCESS_TOKEN, RESEND_API_KEY, RESEND_FROM — come from the
+environment, else from `tools/probe/.env` beside this file, read the way every other probe reads it
+and never printed. (`env $(grep … | xargs)` cannot carry `RESEND_FROM`'s space: xargs strips the
+quotes and the shell splits `$(…)`, so `<hello@inflozo.com>` becomes the command — found by the
+review of Story 1.4.)
 
 `--apply` PATCHes every field below and then runs `--check`; `--check` GETs the config and
 asserts each field, exiting non-zero on any miss. A setting that cannot be read back is not set
@@ -27,11 +32,13 @@ Two pitfalls, both executed rather than assumed (2026-09-05, against the live pr
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(HERE))
 TEMPLATE = os.path.join(ROOT, 'supabase', 'auth', 'magic-link.html')
 
 APP = 'https://app.inflozo.com'
@@ -69,7 +76,9 @@ def settings(template: str, sender: str) -> dict:
 
 
 # Written with everything else but reported separately: it is a paid-plan field on some plans and
-# a miss here is a fact about the plan, not a failure of the story.
+# a miss here is a fact about the plan, not a failure of the story. The unit is HOURS — the API
+# describes it as "Session inactivity timeout in hours" (api.supabase.com/api/v1-json, read
+# 2026-09-05) — so 720 is thirty days, FR-A6's own number, and never twelve minutes.
 SOFT = {'sessions_inactivity_timeout': 720}
 
 
@@ -91,10 +100,24 @@ def api(method: str, ref: str, token: str, body: dict | None = None):
         return e.code, json.loads(e.read() or b'{}')
 
 
-def env(name: str) -> str:
-    value = os.environ.get(name)
+def dotenv() -> dict:
+    """`tools/probe/.env`, the same six lines as `run-verify-all.py`'s `load_env`."""
+    out = {}
+    path = os.path.join(HERE, '.env')
+    if os.path.exists(path):
+        for line in open(path, encoding='utf-8'):
+            m = re.match(r'^([A-Z0-9_]+)=(.*)$', line.rstrip('\n'))
+            if m and m.group(2).strip():
+                out[m.group(1)] = m.group(2).strip()
+    return out
+
+
+def env(name: str, _file: dict = {}) -> str:
+    if not _file:
+        _file.update(dotenv())
+    value = os.environ.get(name) or _file.get(name)
     if not value:
-        sys.exit(f'{name} is not in the environment — read it in from tools/probe/.env')
+        sys.exit(f'{name} is neither in the environment nor in tools/probe/.env')
     return value
 
 
@@ -141,11 +164,18 @@ def main() -> int:
     print(f'GET 200 — reading back {ref}')
 
     for override in args.expect:
-        key, _, value = override.partition('=')
-        if key not in want and key not in SOFT:
-            return sys.exit(f'--expect {key}: not a field this tool sets')
-        want[key] = type(want.get(key, ''))(value) if isinstance(want.get(key), int) else value
-        print(f'  (--expect override: {key} = {want[key]!r})')
+        key, sep, value = override.partition('=')
+        # a SOFT field stays soft — putting it in `want` would make the control fail on the plan,
+        # not on the expectation; and `bool('0')` is True, so booleans are read by word
+        target = want if key in want else SOFT if key in SOFT else None
+        if target is None:
+            sys.exit(f'--expect {key}: not a field this tool sets')
+        if not sep:
+            sys.exit(f'--expect {key}: give key=value')
+        current = target[key]
+        target[key] = (value.lower() in ('true', '1') if isinstance(current, bool)
+                       else int(value) if isinstance(current, int) else value)
+        print(f'  (--expect override: {key} = {target[key]!r})')
 
     fails = 0
     for key, expected in want.items():

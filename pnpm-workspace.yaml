@@ -10,5 +10,8 @@ packages:
 allowBuilds:
   dtrace-provider: false
 
+# @supabase/ssr 0.12.6 was published 2026-09-04 11:05Z (`npm view @supabase/ssr time`), under a
+# day before Story 1.4 pinned it, and pnpm 11's minimum-release-age gate refused it at install.
+# Drop this line when the pin moves on.
 minimumReleaseAgeExclude:
   - '@supabase/ssr@0.12.6'
