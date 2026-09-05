@@ -137,6 +137,16 @@
     color: var(--color-ink-soft-aa);
   }
 
+  /* Tailwind 4's Preflight leaves a <button> on `cursor: default` (v3 set `pointer`), so every
+     button in the app — the Kit's, the Sign In card's two link-styled ones, and every one still
+     to be written — showed an arrow. It comes back here rather than on each control: one rule is
+     the whole fix, and a control the Kit greys out keeps the default. Anchors already carry it
+     from the user agent. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* Every motion rule degrades to no motion under the same query (DESIGN.md § Motion). */
   @media (prefers-reduced-motion: reduce) {
     *,

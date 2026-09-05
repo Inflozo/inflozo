@@ -112,6 +112,11 @@ After this story anyone can get into Inflozo on the real site with nothing but t
 
 **Acceptance Criteria:**
 - Given `https://app.inflozo.com/sign-in` at 1440 and at 390, when it renders signed out, then it **matches frame S1a** — the wordmark, "Make something gorgeous.", the sentence, one Email field, one ink "Send magic link", "Terms · Privacy", the watermark — with the passkey button and its divider absent while `feature_flags.passkeys` is off (R-74, FR-A2).
+  **Amended by the owner on 2026-09-05** (his test, findings 4 and 5; the ruling is under `## Questions for
+  the owner` 2): the sentence is **"Sign in or create an account."** and the card is **440px**, not the drawn
+  400. Everything else on the card is still the frame's. Boundaries & Constraints still quotes the drawn
+  sentence and the drawn width because it is frozen text — **this line is the record of the two differences**,
+  with the reason beside each value in the code.
 - Given an address sent, when the card changes, then it **matches frame S1b** — the envelope, "Check your inbox ✨", the address in bold, "It's good for 15 minutes.", "Resend in m:ss" in mono counting down, "Use a different email" — and the countdown blocks nothing (UX-DR13).
 - Given the email, when it arrives, then it is from Inflozo at the verified domain, sent through Resend on the repo's template, and its button signs the user in on `app.inflozo.com` within 15 minutes (FR-A1, FR-P1 (1)).
 - Given a signed-in user, when the session is inspected, then the cookie's Max-Age is 30 days and is reissued on a refresh — the session persists 30 days rolling (FR-A6's client half).
@@ -137,6 +142,26 @@ Code review of 2026-09-05, five layers (blind hunter, edge-case hunter, verifica
 - [x] [Review][Patch] "The secret key stays out of the app" reads as "unset in production"; it is set there and unread [apps/web/lib/supabase/server.ts:13]
 - [x] [Review][Patch] Spec Change Log entries 13 and 14 are in the wrong order [_bmad-output/implementation-artifacts/spec-1-4-sign-in-with-a-magic-link.md]
 - [x] [Review][Patch] The documented launcher `env $(grep … | xargs)` cannot carry `RESEND_FROM`'s space — quoted or not, `<hello@inflozo.com>` becomes the command and the tool never runs; the tool now reads `tools/probe/.env` itself, as every other probe does [tools/probe/configure-supabase-auth.py:4]
+
+### Owner's Test Fixes
+
+The owner's test of 2026-09-05 (his findings above). Six findings, all fixed inside this story (R-80);
+findings 4 and 5 carry his ruling, recorded under `## Questions for the owner`.
+
+- [x] [Test][1] Every button in the app showed an arrow, not a hand — Tailwind 4's Preflight leaves a
+      `<button>` on `cursor: default`. One base rule, not one class per control [apps/web/app/globals.css:145]
+- [x] [Test][2] "Use a different email" then Send put the PREVIOUS send's card back — old address, old
+      countdown — for the ~1.7 s GoTrue spends handing the mail to Resend. Only a new result leaves the
+      "different" state now [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:51]
+- [x] [Test][3] Resend sat on the word "Resend" until the round trip returned. The line answers the click
+      with "Sending…" [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:138]
+- [x] [Test][4] "Make something gorgeous." measures 364px at 28px and had 328px, so the headline always took
+      two lines. The card is 440px [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:91]
+- [x] [Test][5] The owner's wording, ruled: the card, the page description and the email
+      [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:175] [apps/web/app/(app)/app/sign-in/page.tsx:24]
+      [supabase/auth/magic-link.html:45]
+- [x] [Test][6] The sentence under the field outlived the mistake — it cleared only on the next submit. A
+      valid address and the field losing focus takes it away [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:199]
 
 ## Spec Change Log
 
@@ -217,6 +242,16 @@ The frozen Intent, Boundaries and Matrix are untouched.
     by the review): the version was published 2026-09-04 11:05Z, under a day before it was pinned, and
     pnpm 11's minimum-release-age gate refused it at install. The line is commented and is to be
     dropped when the pin moves on.
+17. **The card's third line and its width are the owner's, not the frame's** (his test, 2026-09-05,
+    findings 4 and 5, ruled under `## Questions for the owner` 2). The card says "Sign in or create an
+    account."; `page.tsx`'s `description` says the same, because one wording in two places is one wording;
+    and "One button, no password." leaves `supabase/auth/magic-link.html`, which is why both live templates
+    are now 4394 characters and not 4419. The width moved with them: at the drawn 400px the content box is
+    328px and the headline measures 364px, so "Make something gorgeous." had always taken two lines — 440px
+    is the smallest step that fits it with the frame's 36px padding untouched. **At 390 nothing changes**:
+    the frame draws the card as `width:100%` inside the page's 24px padding, so it is 342px and the headline
+    still wraps there, exactly as the frame draws it. R-74 says the export is the design authority; the owner
+    is the authority over R-74 and amended it here, for this card only.
 
 ## Design Notes
 
@@ -251,6 +286,18 @@ template — a different template with a different subject. One branded file is 
 its link carries the generic `type=email`, which `/auth/v1/verify` accepts for a `magiclink` token and a
 `signup` token alike (executed). The owner sees one email whether he is new or returning, which is also the
 only honest thing for a product whose Sign In card says "Sign in or create an account".
+
+**Why the card waits for the result before it moves (the owner's findings 2 and 3).** A send takes about
+1.7 seconds, all of it GoTrue's SMTP hand-off to Resend, and the card used to spend that time telling a lie:
+`guard` cleared `different` on submit, so the moment you pressed Send the *previous* send's inbox card came
+back — its address, its countdown — until the new result replaced it. Measured on the pre-fix build: the old
+address was on screen in 17 of 18 samples across the send. The rule now is that **only a new result leaves the
+"different" state**, which puts the change where React already tracks a new action result (the
+adjust-state-during-render block), and the card simply stays on S1a with "Sending…" on the button until there
+is something true to show. The resend line takes the same rule: a resend is only offered at 0:00, so there is
+no countdown to move, and the line says "Sending…" the instant it is clicked rather than sitting on "Resend"
+for the round trip. **Nothing is shown optimistically** — the countdown still starts from the number GoTrue
+answers with, because that is the only number that is true (UX-DR13).
 
 **The holding page is scaffolding.** One line and one button so the owner's test can round-trip and 1.5's dashboard has a signed-in user to replace it with. It uses the kit and the tokens and claims nothing about the dashboard.
 
@@ -419,6 +466,44 @@ production is the stack under test). No schema change in this story, so nothing 
 | Vercel aliases on that deployment (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`) |
 | `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present, `x-matched-path: /app/sign-in` |
 
+**Fix (2026-09-05)** — the owner's six findings, checked on a production build of this change talking to
+the **real** Supabase and the **real** Resend (R-82). Keys read into a command's environment from
+`tools/probe/.env` and named by variable only; the test addresses are `RESEND_TEST_INBOX` plus-aliases and
+are recorded as A and B rather than printed.
+
+| Command | Result |
+|---|---|
+| `pnpm check` (Node 24) | green — lint, typecheck, **40 tests passing, 0 failing** across the seven files |
+| `pnpm build` | the same route table: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+| `configure-supabase-auth.py --apply` (`SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`, `RESEND_API_KEY`, `RESEND_FROM`) | `PATCH 200`, 18 fields; readback **PASS on every field**, both templates now **4394 chars** and byte-identical to the file — 25 characters shorter, which is "One button, no password. " exactly |
+| `--check --expect mailer_otp_exp=901` | **exit 1** — the control, so the green readback above is a result |
+| `python3 tools/doc-audit.py --check` (twice) | PASS, 0 warnings |
+
+**The six findings, on the running build** (`next start` on the production output, real project):
+
+| # | The owner's finding | What the check saw |
+|---|---|---|
+| 1 | pointer on links and buttons | `cursor` computes to **`pointer`** on "Send magic link", on "Resend" and on "Use a different email" — the rule is on `button`, so it is every button in the app, not these three |
+| 2 | the old address and timer linger | across **15 samples over the 1.4 s send**, the previous address appeared **0 times**; the card stayed on Sign In with "Sending…" and the inbox card appeared once, already showing the new address |
+| 3 | Resend is slow to reset | the line reads **"Didn't get it? Sending…"** 150 ms after the click, then **"Resend in 1:00"** when GoTrue answers |
+| 4 | the title should be one line | the card is **440px** and the headline is **32.2px high against a 32.2px line** — one line. At 390 the card is 342px and wraps, as the frame draws it |
+| 5 | more professional, and why "no passwords, ever." | the card reads **"Sign in or create an account."**, the page description matches, and the string `no passwords` is absent from both viewports and from the email template |
+| 6 | a corrected address should clear the error | `maya` still shows the sentence with **0 POST requests**; correcting it and leaving the field removes the sentence **and** `aria-invalid`; nothing new appears on blur |
+| — | nothing else moved | **axe-core 4.12.1: zero violations** on S1a (24 rules passing) and on S1b; at 390 no horizontal scroll |
+| — | the no-password criterion, re-checked | grepping `apps/web/**/*.{ts,tsx}` for `password` now returns **zero** hits, not the two the Dev run recorded: those two were the frame's own sentence and the owner's wording took it away. No `type="password"`, no `signInWithPassword` (FR-A1) |
+
+**The control, and it held** (standing rule: a result whose control did not pass is not a result). The three
+changed files were reverted to `991070b5`, rebuilt, and the same assertions run again: **every one failed** —
+`cursor: default`, card 400px, headline 64.4px (two lines), the passwords line present, the error surviving a
+corrected address, and the old address on screen in **17 of 18 samples**. The files were then restored, rebuilt
+and re-checked green.
+
+**Fixture users deleted; the two that remain are the owner's own.** Eight plus-aliased users were created by
+these runs and all eight were deleted (`DELETE /auth/v1/admin/users/{id}` → 200 each). Two accounts remain and
+were **not** touched: both were created on 2026-09-05 between 10:33Z and 11:00Z with sign-ins at 11:16Z and
+11:20Z — the owner's own address and the second one he used to test "Use a different email". The live database
+is no longer at zero users, and that is his test, not a leftover.
+
 ## Owner's manual test
 
 Use your own email address. Every address below is the real site, and the email really does come from
@@ -427,7 +512,7 @@ is waiting on you. The live database is at zero users, so step 3 will be the fir
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | https://app.inflozo.com/sign-in | Sign In (S1a) | Open the address in a browser where you are not signed in | — | A white card on warm paper with a huge faint "Inflozo" behind it: the small "Inflozo" wordmark, "Make something gorgeous.", "Sign in or create an account — no passwords, ever.", one Email field, one black "Send magic link" button, and "Terms · Privacy" at the bottom. No password field. No passkey button yet — that arrives with Epic 2 |
+| 1 | https://app.inflozo.com/sign-in | Sign In (S1a) | Open the address in a browser where you are not signed in | — | A white card on warm paper with a huge faint "Inflozo" behind it: the small "Inflozo" wordmark, "Make something gorgeous.", "Sign in or create an account.", one Email field, one black "Send magic link" button, and "Terms · Privacy" at the bottom — the card is a little wider than before and **"Make something gorgeous." is on one line**. No password field. No passkey button yet — that arrives with Epic 2 |
 | 2 | same | Sign In | Type a wrong address and press Send | `maya` | The card stays; one red sentence under the field: "Enter an email address like you@example.com". No email is sent |
 | 3 | same | Sign In → Check your inbox (S1b) | Type your own address and press Send | your email | The card changes to an envelope, "Check your inbox ✨", "We sent a magic link to" with your address in bold, "It's good for 15 minutes.", then "Didn't get it? Resend in 1:00" counting down, and "Use a different email" |
 | 4 | same | Check your inbox | Click "Use a different email" | — | Back to the empty Sign In card |
@@ -439,6 +524,18 @@ is waiting on you. The live database is at zero users, so step 3 will be the fir
 | 10 | the email from step 6 | Sign In | Click the email's button a second time | — | The Sign In card with a red notice: "That link has expired or was already used. Ask for a new one." |
 | 11 | https://app.inflozo.com/kit | — | While signed in, open the parts page; then press Sign out on the holding page and open the parts page again | — | Signed in: the parts page from story 1.3. Signed out: you are sent to Sign In instead |
 | 12 | https://app.inflozo.com/sign-in | Sign In, on your phone | Do steps 1 and 3 on your phone | your email | Both cards fill the width with a small margin, the text is readable, nothing is cut off and nothing scrolls sideways |
+
+**Your six findings — what to look at this time.** Same site, same URL; these are numbered to match what you
+wrote, not the steps above.
+
+| Your finding | What to do | What you should see |
+|---|---|---|
+| 1 · the cursor | Hover over "Send magic link", then over "Resend" and "Use a different email" on the second card | The hand cursor on all three — and on every button everywhere else in the app, because it was fixed once for all of them |
+| 2 · the old email lingered | Send to your address, press "Use a different email", type a **second** address and press Send | The Sign In card stays put while it sends, with "Sending…" on the button. The "Check your inbox" card appears once, already showing the **second** address with a fresh 1:00. The first address never comes back |
+| 3 · Resend was slow | On the "Check your inbox" card, wait for the countdown to reach 0:00, then press Resend | "Didn't get it? Sending…" the moment you press it, then "Resend in 1:00" a second or two later |
+| 4 · the title wrapped | Look at the Sign In card on your computer | "Make something gorgeous." on one line, in a slightly wider card. On your phone it still wraps — the card there is as wide as the screen allows and that is how it is drawn |
+| 5 · the wording | Read the card, and open the email | The card says "Sign in or create an account." — no mention of passwords. The email no longer starts "One button, no password."; it goes straight to "This link is good for 15 minutes." |
+| 6 · the error stuck | Type `maya`, press Send, then correct it to your real address and click anywhere outside the box | The red sentence disappears as soon as you leave the box with a valid address. Nothing new appears while you are still typing |
 
 Terms and Privacy at the bottom lead to inflozo.com/terms and inflozo.com/privacy, which show "not found" until Epic 14 writes them — expected, not a fault.
 

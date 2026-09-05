@@ -7,9 +7,12 @@ import { SignInForm } from './sign-in-form'
 /* ─────────────────────────────────────────────────── S1 Sign In.dc.html — S1a and S1b
 
    The frame is the authority (R-74) and every value below is read off it, never rounded
-   (F-111): the 400px card at `rounded-lg` and `shadow-lg`, padding 40/36 at 1440 and 32/24 at
-   390, the 380px paper-sunk watermark behind it (130px at 390), and "Terms · Privacy" pinned
-   28px from the bottom (20px at 390).
+   (F-111): the card at `rounded-lg` and `shadow-lg`, padding 40/36 at 1440 and 32/24 at 390, the
+   380px paper-sunk watermark behind it (130px at 390), and "Terms · Privacy" pinned 28px from the
+   bottom (20px at 390). THE ONE VALUE THAT IS NO LONGER THE FRAME'S is the card's width: the owner
+   amended R-74 for this card on 2026-09-05 (his test, finding 4), so it is 440px and not the drawn
+   400 — the reason is in `sign-in-form.tsx` beside the class, and the sentence under the headline
+   moved with it (finding 5).
 
    The passkey button and its "or" divider are S1a's and are NOT drawn while `feature_flags.
    passkeys` is off — absent, not greyed, because they could never act here today (UX-DR3).
@@ -18,7 +21,7 @@ import { SignInForm } from './sign-in-form'
 
 export const metadata: Metadata = {
   title: 'Sign in · Inflozo',
-  description: 'Sign in or create an Inflozo account — no passwords, ever.',
+  description: 'Sign in or create an Inflozo account.',
   robots: { index: false, follow: false },
 }
 

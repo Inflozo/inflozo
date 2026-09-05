@@ -43,6 +43,12 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
   if (seen !== state) {
     setSeen(state)
     setLeft(state.status === 'sent' ? state.retryAfter : 0)
+    // A NEW RESULT IS THE ONLY THING THAT LEAVES "different" (finding 2). Clearing it on submit
+    // instead put the previous send's card back — old address, old countdown — for the two
+    // seconds GoTrue spends handing the mail to Resend, because `state` was still the old one.
+    // Waiting for the result means S1a simply stays put with "Sending…" on the button, and S1b
+    // arrives already showing the address that was actually sent to.
+    setDifferent(false)
   }
 
   useEffect(() => {
@@ -66,7 +72,6 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
       return
     }
     setClientError(null)
-    setDifferent(false)
   }
 
   const fieldError =
@@ -78,7 +83,12 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
       action={formAction}
       onSubmit={guard}
       noValidate
-      className={`relative z-10 flex w-full max-w-[400px] flex-col rounded-lg bg-surface shadow-lg ${
+      // 440px, not the frame's 400: at 400 the content box is 328px and "Make something gorgeous."
+      // measures 364px at 28px display, so the headline always took two lines. The owner amended
+      // R-74 for this card on his test (finding 4); 440 is the smallest step that fits it on one
+      // line with the frame's 36px padding untouched. At 390 the card is `width:100%` inside the
+      // page's 24px padding — the frame's own shape — so mobile still wraps, as the frame draws it.
+      className={`relative z-10 flex w-full max-w-[440px] flex-col rounded-lg bg-surface shadow-lg ${
         sent ? 'items-center gap-5 p-[32px_24px] text-center tablet:p-[44px_36px]' : 'gap-[22px] p-[32px_24px] tablet:gap-6 tablet:p-[40px_36px]'
       }`}
     >
@@ -121,7 +131,13 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
                 announced once. */}
             <p className="text-ui-dense text-ink-soft" aria-live="polite">
               Didn&rsquo;t get it?{' '}
-              {left > 0 ? (
+              {/* `pending` first: a resend is only offered at 0:00, so the click has nothing to
+                  count down and the line sat on "Resend" until the send returned (finding 3).
+                  "Sending…" is the same word the button uses and it is true — the countdown
+                  restarts from what GoTrue answers, which is the only honest number. */}
+              {pending ? (
+                'Sending…'
+              ) : left > 0 ? (
                 <>
                   Resend in{' '}
                   <span role="timer" aria-live="off" className="font-mono text-ui-dense text-ink">
@@ -156,7 +172,7 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
               Make something gorgeous.
             </h1>
             <p className="text-ui leading-[1.5] text-ink-soft">
-              Sign in or create an account — no passwords, ever.
+              Sign in or create an account.
             </p>
           </div>
 
@@ -175,6 +191,14 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
               // reader's cursor without being asked. Both settled by looking at the deployed page.
               placeholder="you@example.com"
               defaultValue={state.status === 'error' ? state.email : ''}
+              // Leaving the field with a valid address takes the sentence away (finding 6). Only
+              // the client's own error can be cleared here, and only it needs to be: the action
+              // shares this schema, so a `bad_email` from the server means JS never ran — and
+              // neither would this. Nothing is added on blur: an error while the address is still
+              // half-typed is the reason the check waits for the submit in the first place.
+              onBlur={(event) => {
+                if (parseEmail(event.currentTarget.value)) setClientError(null)
+              }}
               aria-invalid={fieldError ? true : undefined}
               aria-describedby={fieldError ? `${FIELD}-error` : undefined}
               className={`h-11 rounded-sm border border-line bg-surface px-[14px] text-body text-ink caret-coral placeholder:text-ink-soft-aa focus-visible:border-coral-text tablet:text-ui ${ring}`}
