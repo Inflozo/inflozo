@@ -71,6 +71,23 @@ Nothing changes on screen in this story: it builds the product's filing cabinet,
 
 ## Verification
 
+**The real services this story hit, by address.** R-82 wants the review and the test on the real
+infrastructure, and the story board's check reads this section for one. Every call below was
+read-only; each key is named by its variable in `tools/probe/.env` and no value was printed. The
+addresses are not credentials — the Supabase project URL is the same one the browser calls.
+
+| Service | Address | What it was used for |
+|---|---|---|
+| Supabase — PostgREST | `https://adasbmxypwvnxznzzxwp.supabase.co/rest/v1/` (`SUPABASE_URL` · `SUPABASE_SECRET_KEY`) | the exposed relations, and that no `private` table is among them |
+| Supabase — Postgres | `db.adasbmxypwvnxznzzxwp.supabase.co:5432` (`SUPABASE_DB_URL`) | the catalogue: tables, RLS, policies, triggers, buckets, row counts |
+| Vercel | `api.vercel.com` (`VERCEL_TOKEN` · `VERCEL_TEAM_ID` · `VERCEL_PROJECT`) | the production deployment's state, and which deployment the domains alias to |
+| the production domains | `inflozo.com` · `app.inflozo.com` · `www.inflozo.com` | that the deployment actually serves |
+| GitHub Actions | `api.github.com/repos/Inflozo/inflozo` (`GITHUB_TOKEN`) | that `check`, `rls` and `deploy` were green on the real runner |
+
+Resend, Dodo and the Ghost servers T1 `ghost6.inflozo.com` / T3 `ghost5.inflozo.com` were **not**
+touched: this story adds no email, no billing call and no Ghost call, so hitting them would prove
+nothing about a schema.
+
 **Container gate — executed 2026-09-04 on `postgres:17-alpine` against the architecture SQL (the copies will be byte-identical):**
 
 | Command | Result |
