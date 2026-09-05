@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 review_loop_iteration: 1
 baseline_commit: '24da0d3d41055db49b463bb55195a4b0b1f89886'
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
 ---
 
@@ -442,6 +442,31 @@ is waiting on you. The live database is at zero users, so step 3 will be the fir
 
 Terms and Privacy at the bottom lead to inflozo.com/terms and inflozo.com/privacy, which show "not found" until Epic 14 writes them — expected, not a fault.
 
+## Owner's test findings
+
+You tested the deployed site on 2026-09-05. The link, the email, the thirty-day session and the
+signed-out redirects all did what the steps said; six things about the two cards did not. In your
+words:
+
+1. **"Cursor should be a pointer when over links and buttons. Issue with Send Magic link, Resend,
+   Use a different email."** — all three are on `/app/sign-in`; the same lack of a pointer is in the
+   kit's `Button`, so it is every button in the app, not only this card's.
+2. **"When changing the email using 'Use a different email' — the Check your inbox ✨ card still
+   shows the old email with old timer for quite some time and then updates it. This should be done
+   instantly for a better UX."**
+3. **"Clicking Resend also takes quite some time to update the counter back to 1:00."**
+4. **"Make the cards a bit wider so that title comes in one line."**
+5. **"Make the text written more professional. Why we need to mention 'no passwords, ever.'?"** —
+   the wording is yours to choose, so it is asked as question 2 below rather than guessed.
+6. **"Better field validation needed. If after invalid field, user enters valid field and focus is
+   gone from the text box, then if input is correct, should remove the validation error."**
+
+**Findings 4 and 5 move the card away from the frame, and only you can do that.** `S1 Sign In.dc.html`
+draws the card 400px wide and draws both lines exactly as they ship, and R-74 makes the export the
+design authority — so this story's "matches frame S1a" criterion (Tasks & Acceptance) and its
+Boundaries line are amended by your ruling under question 2, not by the Fix run's judgement. Findings
+1, 2, 3 and 6 are plain defects and need no ruling.
+
 ## Questions for the owner
 
 **1. Two things only you can do stand between the sign-in email and anyone's inbox. How do you want to do them?**
@@ -469,3 +494,34 @@ both resolve, and your iCloud mail records at the apex are untouched. So the sig
 **No new question. One thing worth knowing before you test:** your very first sign-in is also a sign-up, and
 Supabase sends a *different* template for that. Both templates now hold the same branded email with the same
 subject, so you will see one email whichever it is — that is why the run set two templates rather than one.
+
+**2. Finding 5 — what exactly should the Sign In card say?**
+
+"More professional" can go several ways and the words are yours, not the Fix run's. Today the card
+says **"Make something gorgeous."** and under it **"Sign in or create an account — no passwords,
+ever."** The second line is there because there is no password field and nothing else on the page
+explains why; dropping it is fine, it just leaves the page silent about what happens when you press
+the button, which is why every option below still says that in some form.
+
+*Example:* option 1 leaves the big line alone and changes only the small one, so the card reads
+"Make something gorgeous." / "Sign in or create an account with your email address." — the same card
+you tested, with the passwords remark gone and the next step named instead.
+
+1. **Keep the headline, replace the line under it: "Sign in or create an account with your email
+   address." (RECOMMENDED)** — drops "no passwords, ever.", says what pressing the button does, and
+   keeps the brand line you already approved in the drawing.
+2. Neutral and plain, both lines new: **"Sign in to Inflozo"** / **"Enter your email address and
+   we'll send you a link to sign in."** — the most conventional, and the least like the rest of the
+   site's voice.
+3. Keep both lines and cut only the passwords half: **"Make something gorgeous."** / **"Sign in or
+   create an account."**
+4. Your own two lines — write them here and they go in exactly as typed.
+
+**Two smaller things in the same answer, if you have a view:** the "Check your inbox ✨" heading is
+drawn with that sparkle — say "plain" and it becomes "Check your inbox". And say whether "more
+professional" also covers the sign-in **email** (subject "Your Inflozo sign-in link", button "Sign in
+to Inflozo") or only these two cards; the Fix run assumes **only the cards** unless you say otherwise.
+
+**Not a question, just telling you:** finding 4's width is a routine call and the Fix run makes it —
+the card grows from the drawn 400px by the smallest amount that puts the headline on one line,
+measured on the deployed page at 1440 and 390, and no other value on the card moves.
