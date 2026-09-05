@@ -3,7 +3,7 @@ name: Inflozo
 description: The visual identity of Inflozo's own interface — "Playful Pro", transcribed from the Claude Design export.
 status: final
 created: 2026-09-03
-updated: 2026-09-04
+updated: 2026-09-05
 sources:
   - "{planning_artifacts}/design/claude-design-export/Inflozo/Calibration Set.dc.html"
   - "{planning_artifacts}/design/claude-design-export/Inflozo/Editor Sidebar Kit.dc.html"
@@ -41,7 +41,8 @@ colors:
   sky: '#4E7FFF'
   sky-text: '#2B5BD7'
   sky-tint: '#EAF0FF — the Editor Sidebar Kit info banner fill; the earlier #E8EEFF occurred nowhere in the export (F-110)'
-  danger: '#E5484D'
+  danger: '#E5484D — the fill and the glyph; it carries no words, at 3.91:1 on white'
+  danger-text: '#C4383C — danger wherever it carries words: the danger button fill under white type, the outline variant label, the Delete menu row (Editor Sidebar Kit :113, :135). Added 2026-09-05 by Story 1.3 — every other hue already had its -text twin and danger did not, so #E5484D was being set in words at 3.91:1 and 3.42:1. Read off the frame, which had it all along'
   danger-tint: '#FDECEC — B Missing Surfaces; the frames more often use #FDEBEC (S12 delete hover), both are export values (F-110)'
   scrim: 'rgba(28,27,26,.4)'
 
@@ -110,8 +111,9 @@ components:
     border: '1px solid {colors.line}'
     color: '{colors.ink}'
   button-danger:
-    background: '{colors.danger}'
+    background: '{colors.danger-text}'
     color: '{colors.surface}'
+    note: 'the frame fills #C4383C, not {colors.danger} — white type on {colors.danger} reads at 3.91:1 (Editor Sidebar Kit :135)'
   input:
     rounded: '{rounded.sm}'
     border: '1px solid {colors.line}'

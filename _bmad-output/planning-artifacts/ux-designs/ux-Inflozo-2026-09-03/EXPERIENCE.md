@@ -292,7 +292,7 @@ Behavioural. Visual specs live in `DESIGN.md` § Components.
 | **Inline toolbar** | Exactly four marks. **A mark a field does not permit is absent, not greyed** — a fixed button order keeps the shapes recognisable at any width (`P0 Editor Primitives - Spec.md`) |
 | **Site-wide singleton** | Header, announcement bar and footer are one shared instance shown in every template's Layers as a pinned card with a page count. Cannot be duplicated. Deleting or hiding one confirms that it affects every template (FR-D5) |
 | **Pro badge** | Marigold ✦ on selection only. **No upgrade sheet on click, ever** — that is the Pro Exit Sheet's job, once, at the exit |
-| **Persistence indicator** | Four labels, one dot, never a spinner. The expanded panel appears only on Retrying |
+| **Persistence indicator** | One dot and one label, never a spinner. The labels are exactly those `B Missing Surfaces` B6 draws — it is headed FIVE STATES, the fifth being the browser with no local storage, which must never be told its work is saved on the device. Corrected 2026-09-05 by Story 1.3, which built the component from the frame and found this row said four. The expanded panel appears only on Retrying |
 | **Feedback banner** | One icon, one plain sentence. Sky informs, mint succeeds, marigold nudges without blocking, danger is serious |
 | **Wizard step rail** | Numbered, and the count grows: 4 steps on an ordinary deploy, 6 on the first deploy to a site |
 | **Typed confirm** | Only where the action is irreversible and account-wide — Delete Account, and project delete |

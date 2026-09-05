@@ -2,7 +2,8 @@
 title: 'Story 1.3 — Design tokens and the app component kit, taken from the export'
 type: 'feature'
 created: '2026-09-05'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'f83a46ae414455c8aa95149b0d14d4d9a5adf2c1'
 review_loop_iteration: 0
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
@@ -80,13 +81,13 @@ Nothing a customer uses changes in this story: it builds the box of parts every 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/app/globals.css` -- the `@theme` block: every `colors.*` → `--color-*` (plus `--color-grey-field` / `--color-grey-border` from P0-0), `rounded.*` → `--radius-*`, `elevation.*` → `--shadow-*`, `--breakpoint-mobile/tablet/desktop` 390 / 834 / 1440, `--text-body/ui/ui-dense/panel-label/control-label/helper-caption`, `--ease-out`, `--duration-fast: 160ms`, `--duration-overlay: 200ms`; `@theme inline` for the three font variables; `@custom-variant coarse (@media (pointer: coarse))` as `app-floor`'s condition; base: body on paper in ink, `::placeholder` in ink-soft-aa, `prefers-reduced-motion: reduce` zeroing transitions. The 4px grid is Tailwind's default `--spacing` and is not redeclared -- one token layer, `DESIGN.md`'s names, native Tailwind 4
-- [ ] `apps/web/app/layout.tsx` -- the three `next/font/google` faces with the frames' axes, their variables on `<html>`, `font-ui` on `<body>` -- self-hosted at build, no runtime request to Google, nothing for 1.4's CSP to allow
-- [ ] `apps/web/components/kit/icons.tsx` -- the Tabler icons the Kit draws, inline `<svg>` in `currentColor`, stroke 1.5, `aria-hidden` unless labelled; MIT notice at the top; membership derived from the Kit, never fixed here
-- [ ] `apps/web/components/kit/greyed.ts` -- `type Greyed = { reason: string; value?: null }` and `greyedProps(id, greyed)` (`aria-disabled`, `aria-describedby`, `data-greyed`) -- UX-DR3 by construction, in one place
-- [ ] `apps/web/components/kit/*.tsx` -- one file per Kit group, named after it (`labels`, `accordion`, `input`, `segmented`, `design-picker`, `swatch-row`, `stepper`, `toggle`, `visibility`, `grip`, `select`, `radio-card`, `button`, `badge`, `tooltip`, `quick-controls-card`, `pack-cell`, `layers-row`, `condition-row`, `banner`, `toast`, `loading`, `image-control`, `empty-panel`, `shortcut-row`, and from the S/B frames `canvas-pill`, `persistence-indicator`, `moon-badge`); Tailwind utilities on the tokens only; `'use client'` only where a control holds state; every control accepts `greyed?: Greyed` and renders the reason under itself -- the vocabulary, once
-- [ ] `apps/web/app/(app)/app/kit/page.tsx` -- the gallery: the token sheet first (each colour as a swatch with name and value, the radii, the shadows, the type roles in their faces, the breakpoints), then every group in the Kit's order inside a 280px column on paper, each state the frame draws as its own instance (rest · greyed with reason · selected · icon button disabled at 35%), the components that float over the canvas on an `ink` ground; `metadata.robots = { index: false }`; statically prerendered -- the review surface
-- [ ] `apps/web/tokens.test.ts` -- reads the `@theme` block: (a) every hex / rgba value occurs in some `.dc.html` under the export; (b) every `colors.*`, `rounded.*` and `elevation.*` key in `DESIGN.md`'s front matter has its `--color-*` / `--radius-*` / `--shadow-*` twin; (c) no `.tsx` under `apps/web` contains a hex colour literal -- "matches the frame" and "no second vocabulary" as a gate, run by `pnpm check`
+- [x] `apps/web/app/globals.css` -- the `@theme` block: every `colors.*` → `--color-*` (plus `--color-grey-field` / `--color-grey-border` from P0-0), `rounded.*` → `--radius-*`, `elevation.*` → `--shadow-*`, `--breakpoint-mobile/tablet/desktop` 390 / 834 / 1440, `--text-body/ui/ui-dense/panel-label/control-label/helper-caption`, `--ease-out`, `--duration-fast: 160ms`, `--duration-overlay: 200ms`; `@theme inline` for the three font variables; `@custom-variant coarse (@media (pointer: coarse))` as `app-floor`'s condition; base: body on paper in ink, `::placeholder` in ink-soft-aa, `prefers-reduced-motion: reduce` zeroing transitions. The 4px grid is Tailwind's default `--spacing` and is not redeclared -- one token layer, `DESIGN.md`'s names, native Tailwind 4
+- [x] `apps/web/app/layout.tsx` -- the three `next/font/google` faces with the frames' axes, their variables on `<html>`, `font-ui` on `<body>` -- self-hosted at build, no runtime request to Google, nothing for 1.4's CSP to allow
+- [x] `apps/web/components/kit/icons.tsx` -- the Tabler icons the Kit draws, inline `<svg>` in `currentColor`, stroke 1.5, `aria-hidden` unless labelled; MIT notice at the top; membership derived from the Kit, never fixed here
+- [x] `apps/web/components/kit/greyed.ts` -- `type Greyed = { reason: string; value?: null }` and `greyedProps(id, greyed)` (`aria-disabled`, `aria-describedby`, `data-greyed`) -- UX-DR3 by construction, in one place
+- [x] `apps/web/components/kit/*.tsx` -- one file per Kit group, named after it (`labels`, `accordion`, `input`, `segmented`, `design-picker`, `swatch-row`, `stepper`, `toggle`, `visibility`, `grip`, `select`, `radio-card`, `button`, `badge`, `tooltip`, `quick-controls-card`, `pack-cell`, `layers-row`, `condition-row`, `banner`, `toast`, `loading`, `image-control`, `empty-panel`, `shortcut-row`, and from the S/B frames `canvas-pill`, `persistence-indicator`, `moon-badge`); Tailwind utilities on the tokens only; `'use client'` only where a control holds state; every control accepts `greyed?: Greyed` and renders the reason under itself -- the vocabulary, once
+- [x] `apps/web/app/(app)/app/kit/page.tsx` -- the gallery: the token sheet first (each colour as a swatch with name and value, the radii, the shadows, the type roles in their faces, the breakpoints), then every group in the Kit's order inside a 280px column on paper, each state the frame draws as its own instance (rest · greyed with reason · selected · icon button disabled at 35%), the components that float over the canvas on an `ink` ground; `metadata.robots = { index: false }`; statically prerendered -- the review surface
+- [x] `apps/web/tokens.test.ts` -- reads the `@theme` block: (a) every hex / rgba value occurs in some `.dc.html` under the export; (b) every `colors.*`, `rounded.*` and `elevation.*` key in `DESIGN.md`'s front matter has its `--color-*` / `--radius-*` / `--shadow-*` twin; (c) no `.tsx` under `apps/web` contains a hex colour literal -- "matches the frame" and "no second vocabulary" as a gate, run by `pnpm check`
 
 **Acceptance Criteria:**
 - Given `Calibration Set.dc.html`, `Editor Sidebar Kit.dc.html` and `R Responsive System.dc.html`, when the token layer is built, then its values are theirs (every colour and shadow value greps in the export) and its names are `DESIGN.md`'s recorded names — the test asserts both.
@@ -98,6 +99,45 @@ Nothing a customer uses changes in this story: it builds the box of parts every 
 - Given a push to `main`, when CI runs, then `check` (lint, typecheck, the token test, `next build`) is green and `deploy` publishes the gallery.
 
 ## Spec Change Log
+
+**Three corrections the frames forced, made under the spec's own precedence rule** ("where
+`DESIGN.md` and a frame disagree, the frame is right: read the value off the frame and correct
+`DESIGN.md` in the same commit"). None of them invents a value; each was read off the export.
+
+1. **`danger-text` `#C4383C` added to `DESIGN.md`'s colours, and `components.button-danger.background`
+   corrected to it.** Every other hue that carries words already had its `-text` twin; danger did not,
+   so `{colors.danger}` `#E5484D` was being set in words — 3.91:1 on white and 3.42:1 on its own tint,
+   both under WCAG AA, and axe-core said so on the first run (six nodes). The Kit has had the darker
+   value all along: `:135` fills the danger button `#C4383C` under white type and `:113` sets the
+   Delete menu row in it. Measured after the change: 5.28:1 on surface and on the fill, 4.62:1 on the
+   tint. Now used by the danger button, its outline variant, the Delete row, the error banner and the
+   error result chip.
+2. **`EXPERIENCE.md` § Component Patterns said the persistence indicator has "Four labels".** The frame
+   is headed `B6 · #6 · PERSISTENCE, FIVE STATES` and its own note reads "One indicator, five labels".
+   The fifth exists because a browser with no local storage must never be told its work is saved on the
+   device. The row now names the frame instead of a number, and `PersistenceState` is exactly those
+   five — a sixth is a compile error.
+3. **`next/font` refuses `axes` beside a weight list** (executed: `next build` fails outright, "Axes can
+   only be defined for variable fonts when the weight property is nonexistent or set to `variable`").
+   Bricolage Grotesque therefore loads as the variable face across `opsz` and `wght`, which is what the
+   frames' `<link>` asks for — `12..96,500…800` is a range on the variable font, not four static cuts.
+
+**Two readings a reviewer may disagree with, stated rather than buried.**
+
+- **The danger outline button keeps `border-danger`, not the frame's `#F5C6C9`.** That hairline reads at
+  1.5:1 on white and would be the visual boundary of a UI component, which WCAG 2.1 1.4.11 puts at 3:1;
+  `danger` clears it at 3.91:1 and names the same hue. `DESIGN.md` records no border value for this
+  button, so nothing was contradicted — but the frame does draw the lighter hairline, and this trades
+  it for the contrast floor the spec calls non-negotiable.
+- **Two groups do not fit the 280px column the way the Kit's own 352px panel does.** The swatch row's
+  seven labels now wrap rather than clip (one class; every circle and label stays at its drawn size),
+  and the condition row scrolls inside its own box. Neither reflows or hides anything, and no page-level
+  horizontal scroll exists at 1440, 834 or 390.
+
+**One prop tightened during verification.** `id` on the stateless controls was only a namespace for
+`${id}-label` and `${id}-reason`; it is now also the element's own `id`, as it always was on the input.
+The stepper additionally gained `role="group"` + `aria-labelledby`, which every sibling control already
+had and which is why axe saw its greyed label as live text on the first run.
 
 ## Design Notes
 
@@ -121,16 +161,88 @@ export function greyedProps(id: string, g?: Greyed) {
 
 ## Verification
 
-**Commands:**
-- `pnpm check` -- expected: lint, typecheck and every test green, `apps/web/tokens.test.ts` included
-- `pnpm build` -- expected: `/app/kit` in Next's route table as a static page
-- `python3 tools/doc-audit.py --check` -- expected: exit 0
-- After the `deploy` job (R-82, the real domain, never a preview URL): `curl -s -o /dev/null -w '%{http_code}\n' https://app.inflozo.com/kit` -- expected: `200`
-- axe-core over the deployed page with the machine's playwright 1.61.1 + axe-core 4.12.1: `page.goto('https://app.inflozo.com/kit')`, `page.addScriptTag({ path: axe })`, `axe.run()` -- expected: `violations.length === 0`
-- Negative control (standing rule 2): change one token value to a hex that occurs nowhere in the export and run `pnpm test` -- expected: the token test fails
+Run 2026-09-05 against the production build (`pnpm build`, then `next start`), with the export and
+`DESIGN.md` read from disk. Every command below is reproducible; the browser checks use this machine's
+playwright 1.61.1 and axe-core 4.12.1, which live outside the repo and were added to nothing.
 
-**Manual checks (if no CLI):**
-- Open the gallery beside `Editor Sidebar Kit.dc.html`, both at 280px: same groups, same order, same states. Tab through it and see one ring, everywhere.
+**The gate**
+
+| Command | Result |
+|---|---|
+| `pnpm check` (lint · typecheck · every test) | **PASS** — `apps/web` 16 tests, `tokens.test.ts` 9 of them, 0 fail |
+| `pnpm build` | **PASS** — `/app/kit` in the route table as `○ (Static) prerendered as static content` |
+| `python3 tools/doc-audit.py --check` | **PASS**, 0 warnings (after `tools/story-board.py`, as the hook does) |
+
+**The token layer is the export's** — `tokens.test.ts`, run by `pnpm check`:
+
+- every hex and `rgba()` in the `@theme` block occurs verbatim in some `.dc.html` under the export;
+- every `--shadow-*` value occurs whole, geometry included, not merely its colour;
+- every `colors.*`, `rounded.*` and `elevation.*` name in `DESIGN.md`'s front matter has its
+  `--color-*` / `--radius-*` / `--shadow-*` twin (membership derived from the file, never listed);
+- no `.tsx` under `apps/web` contains a hex colour literal;
+- the three widths are 390 / 834 / 1440 and `app-floor` is `@media (pointer: coarse)`.
+
+**Negative control (standing rule 2).** `--color-coral` set to `#AB12CD`, a value that greps nowhere in
+the export: `pass 8 / fail 1`, `error: '--color-coral: #AB12CD occurs in no frame of the export'`.
+Restored: `pass 9 / fail 0`. The test can fail, so its passing is a result.
+
+**A control that did NOT pass, and what it cost.** The first axe run reported 0 violations against a
+*stale* server — a second `next start` was still holding the port and serving HTML that pointed at a CSS
+chunk the rebuild had replaced, which 500'd, so the page under test was unstyled (`--spacing` and
+`--color-paper` both empty, every group 1424px wide). By standing rule 2 that reading was discarded, not
+reported. Every figure below is from a single server whose served CSS chunk was confirmed `200` and whose
+`section[aria-label="labels & text"]` measures 280px.
+
+**Accessibility (NFR-5), on the built page**
+
+- `axe.run({ runOnly: ['wcag2a','wcag2aa','wcag21a','wcag21aa'] })` → **`violations: 0`**.
+  The first run found **1 serious** (`color-contrast`, 6 nodes) — five of them danger-in-words, fixed by
+  the `danger-text` correction above; the sixth the stepper's greyed label, fixed by giving its group the
+  `aria-labelledby` every sibling control already had.
+- **99 focusable elements** reachable by Tab; the ring is `0 0 0 2px rgb(194, 56, 31)` — coral-text, one
+  ring, never the 40% wash.
+- No page-level horizontal scroll at 1440, 834 or 390 (`scrollWidth === clientWidth` at each).
+
+**Every row of the I/O & Edge-Case Matrix, executed in the browser**
+
+| Row | What was asserted, and what came back |
+|---|---|
+| Greyed control | `aria-disabled="true"`, `aria-describedby="in-greyed-reason"`, value still `Soft dark`, `readOnly`, `tabIndex -1`; the reason is a `<p>` at `11.5px` in `rgb(110,106,100)` (ink-soft); fill `rgb(242,239,234)` (grey-field), track `rgb(234,229,221)` (grey-border), label `rgb(168,162,154)` (ink-faint), `cursor: not-allowed`; **`[title]` count on the page is 0** — never a tooltip |
+| Greyed, value not its own (R-69) | `#seg-r69 [role=radio][aria-checked=true]` → **0 marked**; the reason reads "The list you picked is the order." |
+| Pro badge clicked | the badge is a `SPAN`, clicking it leaves `dialog, [role=dialog]` at **0** — no upgrade sheet, ever |
+| Persistence indicator | the five labels in the frame's order, each one dot + text; `.animate-spin, [class*=spinner]` → **0** |
+| Feedback banner | sky-tint/sky-text, mint-tint/mint-text, marigold-tint/marigold-text, danger-tint/danger-text as computed rgb; the in-banner link computes `rgb(43,91,215)` — sky, never coral |
+| Keyboard focus | one ring on focus; a selected layers row is `rgb(255,237,232)` (coral-tint) and focusing it keeps the tint **and** adds the ring — focused-and-selected reads as both (D8e) |
+| Reduced motion | under `prefers-reduced-motion: reduce`, `transitionDuration` on a button is `1e-05s` — an instant state change |
+| Gallery route | `GET /app/kit` → **200**, `robots` meta carries `noindex`, statically prerendered, token sheet first, then **24 sections** in the Kit's own order at **280px** |
+
+The matrix's two type-error clauses were proved by compiling them, not by assertion:
+
+```
+__typecontrol.tsx(5,57): error TS2741: Property 'reason' is missing in type '{}' but required in type 'Greyed'.
+__typecontrol.tsx(7,46): error TS2322: Type '"Saving…"' is not assignable to type 'PersistenceState'.
+```
+
+and the tree typechecks clean once that file is removed — so the errors are the controls', not the kit's.
+
+**Real services this story hit (R-82).** None, and that is the story: the kit reads no service. It has no
+database call, no session, no email, no payment and no Ghost request, so no key in `tools/probe/.env` was
+opened or needed. The remote surface is the deployed page itself, which arrives when CI's `deploy` job
+runs on this commit; `check` and `rls` gate it, and the deployed check is one command:
+
+```
+curl -s -o /dev/null -w '%{http_code}
+' https://app.inflozo.com/kit     # expect 200
+```
+
+followed by the same axe run against that URL rather than localhost. Story 1.4 is the first story with a
+key to name.
+
+**Manual check (the frame, side by side).** The gallery was rendered at 1280px and read against
+`Editor Sidebar Kit.dc.html`: same groups, same order, same states, group for group from labels & text
+through shortcut rows, then the two surfaces the S/B frames add — the persistence indicator and, on the
+only dark ground the app has, the canvas pill.
+
 
 ## Questions for the owner
 
