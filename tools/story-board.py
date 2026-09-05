@@ -1289,7 +1289,9 @@ def render(ctx):
     details.append(f'<section class="pd" id="pd-questions" hidden><h2>Questions for you <span class="fine">{len(open_qs)} open</span></h2>'
                    '<p class="fine">Everything the build needs you to decide, across every story. Open one, read the options, answer in chat by number.</p>'
                    f'{ql}</section>')
-    feed = [c for c in ctx['commits'] if c['kind'] != 'unreadable'][:20]
+    # No slice: the drawer scrolls, and a story's own run is now long enough that a 20-row window
+    # hid whole stories. The count is derived here rather than written into the heading.
+    feed = [c for c in ctx['commits'] if c['kind'] != 'unreadable']
     unreadable = [c for c in ctx['commits'] if c['kind'] == 'unreadable']
     if feed:
         # The feed is one row per commit, so a story's phases arrive as a run of rows. Shading
@@ -1316,7 +1318,7 @@ def render(ctx):
                 '<table class="ct"><tbody>' + ''.join(f'<tr class="s-crit"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
                                                       f'<td class="msg">{e(c["msg"])}</td></tr>'
                                                       for c in unreadable) + '</tbody></table>')
-    details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last {len(feed)} commits</span></h2>{act}</section>')
+    details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">every story commit — {len(feed)}</span></h2>{act}</section>')
     if ctx['deferred']:
         tally, part = {}, {False: [], True: []}
         for d in ctx['deferred']:
