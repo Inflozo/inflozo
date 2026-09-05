@@ -434,12 +434,31 @@ deleted at the end**; the live database is back to the owner's own accounts, and
 | **RLS, as B against A's project id** | `select` → `[]` · `update` → `[]` · `delete` → `[]` · `insert` with A's `user_id` → **42501**; A's two rows unchanged, and B's dashboard showed **0 cards** and the empty state |
 | both fixtures deleted | the live database is the owner's accounts only |
 
+**The deployed site — `https://app.inflozo.com`, commit `f23954b5`, after CI's `check` · `rls` · `deploy`
+all reported success.** The same fixture pass was run again against the live deployment rather than the
+local one, because R-82 asks for the real infrastructure and a local server is not it. The Supabase project
+is the live one throughout (its REST and Auth hosts are `{ref}.supabase.co`, the ref read from
+`SUPABASE_URL` and never written down; the project's own config API is `https://api.supabase.com/v1/projects/{ref}`).
+
+| Step on `app.inflozo.com` | Result |
+|---|---|
+| the magic link's `/auth/confirm` | 200 at `https://app.inflozo.com/`, `x-inflozo-policy: app-nonce` |
+| S3b, S3a, D4a, D4b, the delete confirm at 1440, and S3b + the drawer at 390 | **axe-core: clean on every one** |
+| D4a's box | `x = 440` in a 1440 viewport — centred, the `m-auto` fix holding in the production build |
+| create · rename · delete | one row `("Untitled project","untitled-project")`; renamed to `("Field Notes","untitled-project")` — **slug untouched**; deleted with the typed name, back to S3b |
+| the ⋯ menu | `Rename / Duplicate / Delete`, focus stepping to **Rename**; both confirms opened on **Cancel** |
+| S3c's tile and D4b's block | `Free includes 1 project. Pro gives you 25.` + `Go Pro — $15/mo`, composed from `plan.ts` |
+| `entitlements.state = pro_past_due` | the chip reads **✦ Pro** — F.1's third column, the row AD-28 exists to keep from diverging, executed rather than asserted |
+| no horizontal scroll at 390 | none |
+| **console CSP violations across the whole pass** | **zero** |
+| the fixture user | deleted; the live database is the owner's accounts only |
+
 **The deployed shape**
 
 | Check | Result |
 |---|---|
-| `/app` signed out | **307 → `/sign-in`** (1.4's guard, unchanged) |
-| `/app/sites` · `/app/assets` · `/app/account` · `/app/billing` · `/app/suggestions` | **404 each** — drawn, linked, and answering "not found" until their epics land, exactly as the owner's test says to expect |
+| `https://app.inflozo.com/` signed out | **307 → `https://app.inflozo.com/sign-in`** (1.4's guard, unchanged); `/kit` the same |
+| `/sites` · `/assets` · `/account` · `/billing` · `/suggestions` on `app.inflozo.com` | **404 each** — drawn, linked, and answering "not found" until their epics land, exactly as the owner's test says to expect |
 | console CSP violations on every app surface visited | **zero.** The three the run recorded are on the MARKETING page at `localhost`, whose static policy carries no nonce while `next dev` inlines its own bootstrap — 1.4's shape, unchanged by this story, and absent from the app host (`x-inflozo-policy: app-nonce`, `'nonce-…' 'strict-dynamic'`) |
 
 **Playwright + axe-core 4.12.1** (this machine, `headless-browser-tooling`), WCAG 2.0/2.1 A and AA
