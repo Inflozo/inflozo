@@ -1,37 +1,21 @@
 /*
- * Tabler Icons — MIT License
+ * The app's icons — the frames' own drawings, read verbatim.
  *
- * Copyright (c) 2020-2024 Paweł Kuna
+ * Every path below is the inline <svg> markup of the Claude Design export (`Editor Sidebar
+ * Kit.dc.html` and the S/B frames), copied as drawn under R-74: Claude Design's own, Feather-like
+ * geometry, 24-unit viewBox, 1.5px stroke. No icon library is used here and no licence notice
+ * is owed for these paths.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
- * to whom the Software is furnished to do so, subject to the following conditions:
+ * Tabler (decision D1, ruling R-26) is the SECTIONS' icon set — the Icon Picker and the glyphs
+ * inside the sites customers build — not Inflozo's own chrome. The owner ruled that scope on
+ * 2026-09-05 (R-92, Story 1.3's review) when this file was found carrying Tabler's MIT notice
+ * over drawings that were not Tabler's; the notice left with the ruling and returns with the
+ * first Tabler path, which belongs in the library, not here.
  *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
- * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- * ─────────────────────────────────────────────────────────────────────────────────────────
- * Icons are drawn inline, once per use (ruling R-26, decision D1): no sprite, no icon font,
- * no package. Each inherits `currentColor` at 1.5px stroke, costs no request, and survives
- * with everything switched off. MEMBERSHIP IS THE KIT'S — every glyph below is one the
- * export actually draws, and a glyph the export does not draw is a Claude Design prompt,
- * never a new file here.
- *
- * PROVENANCE, stated plainly (review, 2026-09-05): every path below is the frame's own
- * inline <svg> markup, read verbatim under R-74. Compared against Tabler's sources, that
- * geometry is Claude Design's own, Feather-like drawing — not Tabler's paths — so the notice
- * above covers the Tabler set D1 names and nothing in this file yet. Whether the frame's
- * paths stay or Tabler's replace them is the owner's call, asked in the story's spec under
- * "Questions for the owner"; until he rules, nothing here is silently relabelled.
+ * Icons are drawn inline, once per use (R-26): no sprite, no icon font, no package. Each inherits
+ * `currentColor`, costs no request, and survives with everything switched off. MEMBERSHIP IS THE
+ * KIT'S — every glyph below is one the export actually draws, and a glyph the export does not
+ * draw is a Claude Design prompt, never a new file here.
  */
 import type { ReactNode, SVGProps } from 'react'
 
@@ -214,7 +198,7 @@ export const XCircleSolid = ({ size = 14, label, ...rest }: IconProps) => (
   </svg>
 )
 
-/** Six dots. Not a Tabler glyph — the Kit draws it itself, so it is drawn here as drawn there. */
+/** Six dots — the Kit's own grip, drawn here as drawn there. */
 export const Grip = ({ label, ...rest }: IconProps) => (
   <svg
     width="10"

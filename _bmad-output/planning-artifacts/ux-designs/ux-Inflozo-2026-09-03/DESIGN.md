@@ -544,6 +544,13 @@ Appendix C, decision D1). 1.5px stroke at 16 and 20px. **Icons are drawn inline,
 > wins; the prompt is a dated `record` and is not edited. The `Editor Sidebar Kit` names no icon
 > library at all, which is `reconcile-designs.md`'s E4 finding and stands.
 
+**Scope, ruled 2026-09-05 (R-92).** Tabler is the **sections'** set — the Icon Picker and every glyph
+inside the sites customers build — and its licence ships in the emitted theme for that reason.
+**Inflozo's own chrome draws the frames' icons as drawn**: Story 1.3's review compared the app kit's
+paths with Tabler's and found them to be Claude Design's own, Feather-like drawings, copied verbatim
+under R-74. The owner kept them and ruled the scope; `apps/web/components/kit/icons.tsx` states its
+provenance and carries no Tabler notice, which returns with the first Tabler path — in the library.
+
 **Empty states and 404s**: simple ink line drawings with one coral or marigold accent shape — never
 corporate blob-people. **Section thumbnails**: abstract wireframe mini-diagrams, ink lines with a
 coral highlight on paper.

@@ -98,7 +98,7 @@ downward correction; the owner took the upward decision the same day — **no ca
 | **R-23** narrowing a universal control | ✅ FR-F3 | ⬜ ≥ 10 specs |
 | **R-24** native search only | ✅ **A23 deleted**; FR-G7(1) restored whole, NFR-2's re-measurement cancelled, FR-I5 (no `/search/`, the two routes that *are* emitted), FR-F6 (**Link Picker gains \u201cGhost search\u201d** — the architect's reading, confirmed), NFR-5, `CATEGORY-PROMPTS.html` marks A23 deleted with no copy button. **Two merge decisions taken and recorded below** | ⬜ A1, A4, A31 |
 | **R-25** all-tags / all-authors routes | ✅ FR-I5 | ⬜ |
-| **R-26** inline icons, Tabler | ✅ FR-F1, `Appendix C`, FR-Q7 | ⬜ |
+| **R-26** inline icons, Tabler | ✅ FR-F1, `Appendix C`, FR-Q7 · scope clarified by **R-92** (§A17): Tabler is the sections', the app chrome draws the frames' own paths | ⬜ |
 | **R-27** inline-token allow-list | ✅ FR-G3, FR-D4, FR-F6 | ⬜ |
 | **R-28** member PII never rendered | ✅ FR-H6 | ⬜ A30, A16 |
 | **R-29** share destinations | ⬜ `Appendix B`, and **R11's FR still needs drafting** | ⬜ |
@@ -1654,6 +1654,29 @@ is settled for the duration, so the question is closed rather than deferred.
 - Targets: ✅ `docs/project-context.md`, so every skill run inherits it · ✅ `CLAUDE.md`, so every
   session inherits it before it reaches for the installer · `_bmad/_config/manifest.yaml` needs no
   edit — it is the installer's own record and already names the version.
+
+---
+
+## A17 · Step 7 — Story 1.3's review, one ruling on the app's icons, 2026-09-05
+
+Taken during the code review of Story 1.3 (the token layer and the app component kit). The review
+compared the kit's icon paths with Tabler's sources and found they were not Tabler's: the frames draw
+their own, Feather-like glyphs, and the kit copies them verbatim under R-74 — while the file carried
+Tabler's MIT notice, as D1 and the story's constraint asked. Two rulings pointed different ways, so
+the question went to the owner in R-83's shape.
+
+**R-92 — the app's icons are the frames' own drawings; Tabler is the sections' set.** The owner ruled
+*"Keep the frames' drawings and correct the notice … Tabler icons are for the sections using which the
+customer/user will build their site. It is used for the icon picker and other icons used in various
+sections — not the actual Inflozo frame/chrome/UI."* So D1 and R-26's "Tabler" are scoped to the
+library — the Icon Picker (FR-F1, Appendix C) and every glyph in an emitted theme, where the licence
+text ships — and **Inflozo's own chrome draws what the export draws**, read verbatim (R-74). Nothing
+visible changed. The Tabler notice leaves the app kit and returns with the first Tabler path, which
+belongs in `packages/library`.
+- Targets: ✅ `apps/web/components/kit/icons.tsx` (provenance stated, notice removed) · ✅ Story 1.3's
+  spec (the constraint amended, the question ruled) · ✅ `epic-1-context.md` · ✅ `DESIGN.md` § Icons
+  & Illustration · ✅ the R-26 row above. `prd.md` needs no edit: FR-F1, Appendix C and FR-Q7 already
+  name Tabler for the picker and the sections only.
 
 ---
 
