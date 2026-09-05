@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { supabaseServer } from './supabase/server.ts'
 import { PLANS, planFor, type Caps, type EntitlementState, type PlanId } from './plan.ts'
 
@@ -17,7 +18,16 @@ import { PLANS, planFor, type Caps, type EntitlementState, type PlanId } from '.
  */
 export type Entitlement = { plan: PlanId; caps: Caps; reasons: string[] }
 
-export async function resolveEntitlement(userId: string): Promise<Entitlement> {
+/**
+ * `cache()` because the LAYOUT and the PAGE both resolve the same user in one render — the chip's
+ * badge and the dashboard's cap — and two independent reads can disagree: AD-28 degrades a failed
+ * read to Free, so one failing while the other succeeded would draw a Pro badge over a Free cap on
+ * the same screen. One read per request settles it, and drops a round trip with it (review,
+ * 2026-09-05). React's request cache, so a server action gets its own.
+ */
+export const resolveEntitlement = cache(async function resolveEntitlement(
+  userId: string,
+): Promise<Entitlement> {
   const supabase = await supabaseServer()
   const { data, error } = await supabase
     .from('entitlements')
@@ -30,4 +40,4 @@ export async function resolveEntitlement(userId: string): Promise<Entitlement> {
 
   const plan = planFor(data?.state)
   return { plan, caps: PLANS[plan], reasons: [] }
-}
+})

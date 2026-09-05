@@ -1965,6 +1965,20 @@ def main():
         open(path, 'w', encoding='utf8').write(demo())
         print(f'wrote {path} (demo fixture; self-check passed)')
         return 0
+    if '--check' in sys.argv:
+        # THE SELF-CHECK RUNS IN THE GATE, not only on request. `demo()` holds every assertion
+        # this script has — including the ruling parser that decides whether the owner ever SEES
+        # a question (R-83/R-84) — and nothing invoked it: `doc-audit.py` runs this file with
+        # `--check`, which only compared rendered HTML, so a parser regression regenerated the
+        # board, the pre-commit hook's one retry matched the file it had just rewritten, and the
+        # gate went green over a question it had hidden. Found by the review of Story 1.5
+        # (2026-09-05), on the commit that fixed that very parser.
+        try:
+            demo()
+        except AssertionError as e:
+            print(f'story board: SELF-CHECK FAILED — {e or "an assertion in demo() did not hold"}',
+                  file=sys.stderr)
+            return 2
     out = render(real())
     if '--check' in sys.argv:
         cur = open(OUT, encoding='utf8').read() if os.path.exists(OUT) else ''

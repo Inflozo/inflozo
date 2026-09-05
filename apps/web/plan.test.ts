@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+  atCap,
   capSentence,
   goProLabel,
   includesProjects,
@@ -66,4 +67,20 @@ test('every number in PLANS occurs in Appendix F.1’s own table', () => {
   assert.match(rows, new RegExp(`\\|\\s*Per-upload cap\\s*\\|\\s*${PLANS.free.uploadMb} MB`))
   assert.match(rows, new RegExp(`\\|\\s*Deploy history / rollback\\s*\\|\\s*last ${PLANS.free.history}\\s*\\|\\s*last ${PLANS.pro.history} `))
   assert.ok(rows.includes(`$${PRICE.monthly}/mo · $${PRICE.yearly}/yr`), 'the price is not F.1’s price')
+})
+
+// FR-B4's comparison itself, which nothing executed while it was written out at three call
+// sites: `pnpm check`, `pnpm build` and the RLS gate were all green with the paywall inverted,
+// and only a hand-driven fixture pass would have caught it (review, 2026-09-05).
+test('atCap: refuses AT the cap and not below it, on both plans', () => {
+  for (const plan of ['free', 'pro'] as const) {
+    const cap = PLANS[plan].projects
+    assert.equal(atCap(plan, 0), false, `${plan}: an empty account is never at the cap`)
+    assert.equal(atCap(plan, cap - 1), false, `${plan}: one below the cap still creates`)
+    assert.equal(atCap(plan, cap), true, `${plan}: the cap itself refuses`)
+    assert.equal(atCap(plan, cap + 1), true, `${plan}: over the cap refuses`)
+  }
+  // And the two plans really do differ, so a single shared number could not satisfy both.
+  assert.equal(atCap('free', 1), true)
+  assert.equal(atCap('pro', 1), false)
 })

@@ -30,8 +30,25 @@ export function nextUntitled(names: readonly string[]): string {
   }
 }
 
-/** Duplicate's name. Clamped to the schema's maximum, so a copy of a long name still saves. */
-export const copyName = (name: string): string => `Copy of ${name}`.slice(0, NAME_MAX)
+/**
+ * Duplicate's name. Clamped to the schema's maximum, so a copy of a long name still saves, and
+ * suffixed away from the names already taken — because the SLUG is derived from the name and
+ * the boundary asks a duplicate for "a fresh slug". Duplicating twice produced two rows with
+ * one name and one slug, and `projects.slug` carries no unique constraint to refuse it
+ * (schema :212, checked); FR-J10 makes that slug the emitted theme name (review, 2026-09-05).
+ * The suffix is `nextUntitled`'s own idiom, so a copy reads like every other generated name.
+ */
+export function copyName(name: string, taken: readonly string[] = []): string {
+  const clamp = (s: string) => s.slice(0, NAME_MAX)
+  const base = clamp(`Copy of ${name}`)
+  const used = new Set(taken.map((n) => n.trim()))
+  if (!used.has(base)) return base
+  for (let n = 2; ; n += 1) {
+    // Clamped with the suffix on, so a copy of an 80-character name still gets a distinct one.
+    const candidate = clamp(`Copy of ${name}`.slice(0, NAME_MAX - ` ${n}`.length)) + ` ${n}`
+    if (!used.has(candidate)) return candidate
+  }
+}
 
 /**
  * FR-J10: the slug feeds the emitted theme name, so it is ASCII, lowercase and hyphenated.

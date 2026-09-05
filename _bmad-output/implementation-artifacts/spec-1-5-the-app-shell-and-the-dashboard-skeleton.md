@@ -2,9 +2,9 @@
 title: 'Story 1.5 — The app shell and the dashboard skeleton'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
@@ -322,6 +322,27 @@ The frozen Intent, Boundaries and Matrix are untouched.
    positioning is not in every browser the app supports, so `lib/menu.ts` writes fixed coordinates from
    the trigger's edges (never its width, which a `display:none` popover does not have yet).
 
+9. **The drawer is inside `shell.tsx`, and `components/shell/drawer.tsx` was never created.** The Code
+   Map names it as its own client file and the ticked task line says "shell, account-menu, drawer". It is
+   the `<dialog ref={drawer}>` at the end of `shell.tsx` instead, because the drawer renders the same
+   `nav()` and the same account row as the sidebar and lifting it out would have meant passing both
+   across a module boundary to save nothing. Behaviour is the Code Map's; the file is not. Recorded by
+   the review (2026-09-05), which found it against the Code Map rather than against the screen.
+10. **`shell.tsx` is one `'use client'` module, not the Code Map's server component with a `NavLink` and
+   a `SearchField` inside it.** The shell owns three pieces of browser state — the drawer's `<dialog>`
+   ref, the 390 search field's open/closed, and the ⌘K listener — and they sit in the same tree as the
+   nav and the top bar, so splitting it would have been three client islands and a server wrapper that
+   held nothing of its own. The cost is that the sidebar and top bar ship to the browser; the page
+   itself still crosses as a server-rendered `children`. Recorded by the review (2026-09-05); E5, which
+   adds the editor's own shell, is where the split is worth making if it ever is.
+11. **The rename field carries `maxLength`, the schema's own `NAME_MAX`.** The frozen boundary asks for
+   "one zod schema shared by the client field and the action" and the matrix's Rename row ends "nothing
+   sent"; the field had neither, so an 81-character name round-tripped to the server to be refused.
+   `maxLength` is the native half of that schema and needs no second copy of the number. The BLANK name
+   still posts and is refused by the action, deliberately: `required` would raise the browser's own
+   validation bubble, and P0-0 puts a refusal in the helper-caption slot and never in a tooltip. Applied
+   by the review (2026-09-05).
+
 **Five defects the executed pass found and fixed, each with the control that found it.**
 
 1. **Every popover was permanently on screen.** `className="flex …"` on a `popover` element beats the user
@@ -518,6 +539,60 @@ fixture user holding **exactly 25 projects** and `entitlements.state = pro_activ
 before the search field. The chip is inside the sidebar in the drawing and in the DOM, so document order
 already is visual order (WCAG 2.4.3); moving it after the cards would need a positive `tabindex`, which is
 the one thing an accessibility floor should not carry. Everything else in that row holds exactly.
+
+**The code review, 2026-09-05 — re-executed against the real infrastructure (R-82), then patched.**
+Every claim in the tables above was run again from scratch by a reviewer that had not seen the Dev run,
+against the live Supabase project, `https://app.inflozo.com` and `https://inflozo.com`, with the keys read
+into each command's environment from `tools/probe/.env` by variable name and never printed. **Every one
+held**, and the pass carried its own controls, which is what makes them results rather than green text:
+an axe positive control (a deliberately broken element in the clean page WAS reported: `button-name`,
+`image-alt`), a forged session cookie refused (`307`, still signed out), the nonce compared across two
+responses and different each time, B's insert with A's `user_id` refused `42501`, and A's own
+`entitlements` PATCH refused `42501` (select-only to `authenticated`). Five fixture users were created and
+all five deleted; the live database holds the owner's two accounts.
+
+| Re-executed | Result |
+|---|---|
+| `pnpm check` · `pnpm build` · `bash supabase/tests/run-rls-gate.sh` · `doc-audit.py --check` ×2 | green; route table unchanged; RLS exit 0, zero FAIL lines |
+| `gh run view` on HEAD | `check: success` · `rls: success` · `deploy: success` |
+| the deployed shape — `/` signed out, the nonce CSP, the six future destinations, `inflozo.com` | 307 → `/sign-in`; `x-inflozo-policy: app-nonce`; 404 each; 200 |
+| RLS as B against A's project — select · update · delete · insert | `[]` · `[]` · `[]` · **42501** |
+| S3b · S3a · D4a · D4b · the ⋯ menu · both confirms · the account popover, at 1440 / 834 / 390 | axe-core zero violations on every one; no horizontal scroll; zero console CSP violations |
+| the Pro-at-25 row, the search rows, `pro_past_due` → Pro, D4a centred at x=440 | each held |
+| Tab order | `Inflozo → Projects → Sites → Assets → account chip → search → New project → ⋯` — the owner's ruling below, executed |
+
+**What the review then found, and what was done about it.** Sixteen findings survived triage across five
+layers; the ones that were the owner's to decide were none — the one candidate, the greyed doors' contrast,
+was settled by measurement instead (below). Every finding was applied as a patch in this story:
+
+| Fixed | Was |
+|---|---|
+| a rename that FAILED now says so — a Banner above the form (`project-menu.tsx`) | only `bad_name` was rendered, so a failed rename left the dialog open, unchanged and silent |
+| `at_cap` from Duplicate opens the D4b sheet, the matrix's own row | only `'failed'` was rendered, so a duplicate refused by the cap in a second tab was a click that did nothing |
+| a duplicate takes a name no other project has, so its slug is fresh (`copyName`) | duplicating twice wrote two rows with ONE name and ONE slug, and `projects.slug` has no unique constraint to refuse it — FR-J10 makes that slug the emitted theme name |
+| `linked_site_id` is no longer selected into a duplicate | it was spread into the insert; null today, and an inherited site binding the moment E3 lands (FR-B5) |
+| a failed projects read renders the error Banner, not S3b | `data ?? []` showed the first-run illustration to a user who HAS projects, and cleared `atCap` with it, lifting the plan cap |
+| `?q=a&q=b` no longer throws | a repeated key arrives as an array and `q.trim()` 500'd the dashboard |
+| `placeholderFor` uses `Object.hasOwn` | `PRESETS['__proto__']` is TRUTHY, so `??` never reached the fallback and the card painted `undefined` colours — proved by control |
+| `/kit` renders a `div`, not a second `<main>` | the shell's `<main>` now wraps it, so the document had two main landmarks — invalid HTML, and `/kit` was never in the axe matrix |
+| the greyed "Create project" carries `${ring}` | it was focusable with the user agent's outline instead of the one ring |
+| the rename field carries `maxLength={NAME_MAX}` | an 81-character name round-tripped to be refused; the matrix says "nothing sent" |
+| `atCap(plan, count)` is one predicate in `plan.ts`, asserted in `plan.test.ts` | FR-B4's comparison was written out at three call sites and executed by no test — **control: inverting `>=` to `>` left `pnpm check`, `pnpm build` and the RLS gate all green**; the new test refuses it |
+| `style-pack.test.ts` (new) holds the fallback branch | nothing imported the module — **control: removing the guard fails the new test** |
+| `story-board.py --check` now runs its own `demo()` self-check | the assertions lived in `--demo`, which the gate never invokes, so the ruling parser that decides whether the owner SEES a question was unchecked — **control: restoring the pre-fix parser now exits 2, where it previously regenerated the board and went green through the pre-commit retry** |
+| `currentUser` and `resolveEntitlement` are `cache()`d | the layout and the page each read `entitlements` independently, so a failed read degrading to Free on one and not the other would draw a Pro badge over a Free cap on one screen; and `getUser()` ran three times per render |
+
+**Dismissed on measurement, not argument.** A layer read the greyed doors' `aria-disabled` as silencing
+axe rather than fixing contrast. Measured: the reason sentence (`marigold-text` on `grey-field`) is
+**4.83:1** and D4b's cap pill **5.01:1** — both pass AA on their own. Only the inactive door's title and
+description (2.21:1) and the disabled Create label (2.15:1) sit below, and those are exactly what WCAG
+1.4.3's "inactive user interface component" exemption covers. Every piece of information a user needs to
+act is above 4.5:1, so P0-0's treatment stands and no owner question arises.
+
+**Deferred, as DW-16 and DW-17.** Three of the five defects the Dev pass found were browser-only, and no
+repeatable check holds them — deleting `open:` from the ⋯ menu leaves the whole gate green (DW-16, Story
+15.1 owns it). The `(authed)` group has no `error.tsx` or `not-found.tsx`, so a layout throw or one of the
+six future destinations leaves the shell entirely (DW-17, the first story with a second real screen).
 
 ## Questions for the owner
 

@@ -8,7 +8,7 @@ import { AlertTriangle, Copy, Pencil, Trash } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { openNewProject } from '@/components/shell/shell'
 import { arrowKeys, openMenu } from '@/lib/menu'
-import { matchesName } from '@/lib/projects'
+import { matchesName, NAME_MAX } from '@/lib/projects'
 import { deleteProject, duplicateProject, renameProject, type ActionResult } from './projects/actions'
 
 /* ────────────────────────────────────── S3c's ⋯ menu, and the two confirms behind it.
@@ -49,7 +49,16 @@ const DuplicateContext = createContext<((formData: FormData) => void) | null>(nu
 
 export function DuplicateScope({ children }: { children: ReactNode }) {
   const [state, action] = useActionState<ActionResult | null, FormData>(duplicateProject, null)
-  const failed = state && 'error' in state && state.error.code === 'failed' ? state.error.message : null
+  const error = state && 'error' in state ? state.error : null
+  // The matrix's *Duplicate, at cap* row answers `at_cap` with the D4b sheet, the same
+  // contextual prompt "New project" raises — and a card rendered under the cap can still meet
+  // it by the time it posts (a second tab). Only `'failed'` was rendered, so that race was a
+  // click that did nothing at all; every other code now says its sentence rather than none
+  // (review, 2026-09-05). The sheet reads its own `at_cap` and flips itself.
+  useEffect(() => {
+    if (error?.code === 'at_cap') openNewProject()
+  }, [error])
+  const failed = error && error.code !== 'at_cap' ? error.message : null
 
   return (
     <DuplicateContext value={action}>
@@ -94,7 +103,12 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
     dialog.querySelector<HTMLElement>('[data-cancel]')?.focus()
   }
 
-  const nameError = renamed && 'error' in renamed && renamed.error.code === 'bad_name' ? renamed.error.message : null
+  const renameError = renamed && 'error' in renamed ? renamed.error : null
+  // The field's own refusal goes in the field's helper-caption slot; anything else is a Banner
+  // above the form. Only `bad_name` was read, so a rename that FAILED left the dialog open,
+  // unchanged and silent — the sentence was composed and never shown (review, 2026-09-05).
+  const nameError = renameError?.code === 'bad_name' ? renameError.message : null
+  const renameFailed = renameError && renameError.code !== 'bad_name' ? renameError.message : null
   const deleteError = removed && 'error' in removed ? removed.error.message : null
   const armed = matchesName(typed, name)
 
@@ -184,13 +198,18 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
         <h2 id={`rename-${id}-title`} className={title}>
           Rename project
         </h2>
+        {renameFailed ? <Banner kind="error">{renameFailed}</Banner> : null}
         <form action={renameAction} className="flex flex-col gap-[18px]">
           <input type="hidden" name="id" value={id} />
+          {/* `maxLength` is the schema's own number, so the 81st character cannot be typed or
+              pasted and the matrix's "nothing sent" is true of it natively — the sentence still
+              belongs to the server, which never trusts the field (review, 2026-09-05). */}
           <TextInput
             id={`rename-${id}`}
             name="name"
             label="Name"
             defaultValue={name}
+            maxLength={NAME_MAX}
             error={nameError}
           />
           <div className="flex justify-end gap-[10px]">

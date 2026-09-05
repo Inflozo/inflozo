@@ -157,8 +157,11 @@ function TokenSheet({ tokens }: { tokens: Token[] }) {
 export default function KitGallery() {
   const tokens = theme()
 
+  // A `div`, not a `main`: since Story 1.5 the shell owns the page's one `<main>`
+  // (`components/shell/shell.tsx`) and `/kit` is inside it, so a second one here nested two main
+  // landmarks in one document — invalid HTML, and axe's own rule (review, 2026-09-05).
   return (
-    <main className="flex flex-col gap-7 bg-paper p-12">
+    <div className="flex flex-col gap-7 bg-paper p-12">
       <header className="flex max-w-[820px] flex-col gap-[6px]">
         <h1 className="font-display text-[30px] font-extrabold tracking-[-0.02em] text-ink">
           Editor sidebar kit
@@ -538,6 +541,6 @@ export default function KitGallery() {
           except where something is live.
         </p>
       </section>
-    </main>
+    </div>
   )
 }

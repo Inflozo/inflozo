@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { sessionCookie } from './cookies.ts'
@@ -43,8 +44,15 @@ export async function supabaseServer() {
   })
 }
 
-/** The signed-in user, server-verified, or null. */
-export async function currentUser() {
+/**
+ * The signed-in user, server-verified, or null.
+ *
+ * `cache()` because one dashboard render asks three times — the layout's guard, the page, and
+ * the type narrowing after it — and each was a separate verifying call to GoTrue. React's
+ * request cache collapses them to one and changes nothing else: a server action is a different
+ * request and verifies again (review, 2026-09-05).
+ */
+export const currentUser = cache(async function currentUser() {
   const { data } = await (await supabaseServer()).auth.getUser()
   return data.user
-}
+})

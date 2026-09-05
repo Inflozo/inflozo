@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Banner } from '@/components/kit/banner'
 import { NewProjectButton } from '@/components/shell/shell'
 import { ring } from '@/components/kit/greyed'
 import { resolveEntitlement } from '@/lib/entitlement'
-import { capSentence, goProLabel } from '@/lib/plan'
+import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { NewProjectSheet } from './new-project-sheet'
 import { ProjectCard } from './project-card'
@@ -33,14 +34,16 @@ type Row = { id: string; name: string; style_pack: unknown; updated_at: string }
 export default async function Dashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  // A repeated key (`?q=a&q=b`) arrives as an ARRAY, which `q.trim()` threw on — a pasted URL
+  // 500'd the dashboard (review, 2026-09-05). The field only ever posts one.
+  searchParams: Promise<{ q?: string | string[] }>
 }) {
   const [{ q }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
   const supabase = await supabaseServer()
-  const [{ data }, { plan, caps }] = await Promise.all([
+  const [{ data, error }, { plan }] = await Promise.all([
     supabase
       .from('projects')
       .select('id, name, style_pack, updated_at')
@@ -49,8 +52,13 @@ export default async function Dashboard({
   ])
 
   const projects: Row[] = data ?? []
-  const atCap = projects.length >= caps.projects
-  const query = q?.trim() ?? ''
+  // A FAILED READ IS NOT AN EMPTY ACCOUNT. `data ?? []` told a user with projects that they had
+  // none — S3b's first-run illustration over their own work — and cleared `atCap` with it, so
+  // the plan cap silently lifted at the same moment (review, 2026-09-05).
+  const unread = Boolean(error)
+  const atCap = !unread && overCap(plan, projects.length)
+  const raw = Array.isArray(q) ? q[0] : q
+  const query = raw?.trim() ?? ''
   const shown = query
     ? projects.filter((project) => project.name.toLowerCase().includes(query.toLowerCase()))
     : projects
@@ -61,9 +69,14 @@ export default async function Dashboard({
 
   return (
     <>
-      {/* S3b: the empty state is the FIRST-RUN state, and a search that matched nothing is not
-          it — the illustration would be telling someone with a project that they have none. */}
-      {projects.length === 0 ? (
+      {unread ? (
+        <div className="p-[16px_20px] tablet:p-6">
+          <Banner kind="error">We couldn&rsquo;t load your projects just now. Try again in a moment.</Banner>
+        </div>
+      ) : /* S3b: the empty state is the FIRST-RUN state, and neither a search that matched
+             nothing nor a read that failed is it — the illustration would be telling someone
+             with projects that they have none. */
+      projects.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center">
           {/* The frame's own drawing, its four hexes read as the tokens they are. */}
           <svg width="160" height="120" viewBox="0 0 160 120" fill="none" aria-hidden className="text-ink">

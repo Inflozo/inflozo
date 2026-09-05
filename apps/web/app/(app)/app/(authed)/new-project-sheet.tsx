@@ -209,7 +209,7 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
             role="button"
             aria-disabled
             tabIndex={0}
-            className="inline-flex h-11 cursor-not-allowed items-center justify-center rounded bg-paper-sunk px-5 text-ui font-semibold text-ink-faint"
+            className={`inline-flex h-11 cursor-not-allowed items-center justify-center rounded bg-paper-sunk px-5 text-ui font-semibold text-ink-faint ${ring}`}
           >
             Create project
           </span>

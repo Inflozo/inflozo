@@ -38,6 +38,14 @@ export const PRICE = { monthly: 15, yearly: 150 }
 export const planFor = (state?: EntitlementState | null): PlanId =>
   state === 'pro_active' || state === 'pro_past_due' ? 'pro' : 'free'
 
+/**
+ * FR-B4's comparison, in ONE place. It used to be written out at three call sites — the two
+ * actions and the page that decides D4a from D4b — and three copies of a paywall predicate is
+ * how a paywall drifts: nothing failed when they disagreed, because nothing executed the
+ * comparison (review, 2026-09-05). `plan.test.ts` holds it at the cap and either side of it.
+ */
+export const atCap = (plan: PlanId, count: number): boolean => count >= PLANS[plan].projects
+
 /** The badge's word, and the subject of every sentence below. */
 export const planName = (plan: PlanId): string => (plan === 'free' ? 'Free' : 'Pro')
 

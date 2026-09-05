@@ -386,3 +386,50 @@ reason: FR-B1 derives the placeholder from the pack's accent and surface. PRD Ap
   app tokens, and falls back to Paper for any preset it does not know. Story 6.2 (the twelve presets)
   owns replacing `PRESETS` from Appendix D; nothing on the card changes shape when it does.
 
+
+### DW-16: the browser-only invariants three of Story 1.5's defects were, are held by no repeatable check
+
+plain: Three of the faults found while building the dashboard could only be seen by opening the page in
+  a real browser — menus that were always visible, windows that opened in the corner. They are fixed,
+  but nothing re-checks them automatically: if one came back, every automatic test would still pass and
+  the site would publish. Someone has to look. A browser-driven test running in CI is what would close
+  it, and that is a decision about time and cost rather than a bug to fix.
+status: open
+severity: medium
+origin: Story 1.5 review (2026-09-05), Verification Gap layer
+location: apps/web/app/(app)/app/(authed)/project-menu.tsx · new-project-sheet.tsx ·
+  components/shell/shell.tsx · components/shell/account-menu.tsx (the `open:` display variant and the
+  `m-auto` dialog centring) · .github/workflows/ci.yml
+reason: Story 1.5's own Spec Change Log records five executed defects; three were browser-only — every
+  popover permanently on screen because an author `display` beats the UA's `[popover]:not(:popover-open)`
+  rule, every modal flush to the top-left because Preflight resets the UA's centring margin, and no
+  confirm opening on Cancel because React leaves no `autofocus` ATTRIBUTE for `showModal()` to find.
+  Each is now a class or a line in a component, and `pnpm lint`, `pnpm typecheck`, `pnpm test` and the
+  RLS gate are all blind to every one of them: deleting `open:` from the ⋯ menu leaves the whole gate
+  green and CI publishes a dashboard with three menu items loose in every card's tab order. The Dev run
+  caught them with a Playwright session and a compiled-CSS grep, both typed by hand. The repository has
+  no browser harness in CI and adding one is a new capability with a real minutes cost, so it is not a
+  patch this review can apply. Story 15.1 (the e2e suite, including the keyboard-only journey) is the
+  story that owns it; if the owner wants it sooner, the cheapest useful step is one Playwright job
+  asserting each overlay is not visible before its trigger is clicked.
+
+### DW-17: the authenticated group has no `error.tsx` and no `not-found.tsx`, so a failure leaves the shell
+
+plain: If something goes wrong loading a page, or you click one of the links whose screen has not been
+  built yet, you get a bare browser error page instead of the app — the left column and everything else
+  disappears, and the only way back is the Back button. The app should keep its frame around those
+  messages. It is small, and it belongs with the first story that has a second real screen to fail.
+status: open
+severity: low
+origin: Story 1.5 review (2026-09-05), Blind Hunter layer
+location: apps/web/app/(app)/app/(authed)/ (no error.tsx, no not-found.tsx)
+reason: Story 1.5 adds two database reads to the layout and four server actions; `supabaseServer()`
+  throws outright on a missing key, and any throw inside the group now renders Next's default error page
+  outside the shell. The page-level half is handled — a failed projects read renders the kit's error
+  Banner inside the shell (this review) — but a throw in the LAYOUT cannot be, because the layout is
+  what would have to catch it. Separately, the six drawn-and-linked destinations (`/sites`, `/assets`,
+  `/account`, `/billing`, `/suggestions`) 404 outside the shell, which the owner's test for 1.5 records
+  as expected and which a `not-found.tsx` inside the group would improve rather than fix. Both are
+  boundary files the whole `(authed)` group shares, so the story that adds the first of those screens —
+  Epic 2's account settings, or Epic 3's Sites — is where they belong, drawn from the export's own
+  error surface rather than invented here (R-74).

@@ -55,5 +55,8 @@ export const defaultStylePack = (): StylePack => ({ preset: DEFAULT_PRESET })
 export function placeholderFor(stylePack: unknown): Preset {
   const parsed = stylePackSchema.safeParse(stylePack)
   const preset = parsed.success ? parsed.data.preset : DEFAULT_PRESET
-  return PRESETS[preset] ?? PRESETS[DEFAULT_PRESET]
+  // `Object.hasOwn`, not `??`: `PRESETS['__proto__']` and `PRESETS['constructor']` are TRUTHY on
+  // an object literal, so `??` never reached the fallback and the card painted `undefined`
+  // colours. `style_pack` is a column the user's own session may write (review, 2026-09-05).
+  return Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : PRESETS[DEFAULT_PRESET]
 }

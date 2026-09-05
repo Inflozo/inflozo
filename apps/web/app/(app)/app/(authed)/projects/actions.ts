@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { resolveEntitlement } from '@/lib/entitlement'
-import { capSentence } from '@/lib/plan'
+import { atCap, capSentence } from '@/lib/plan'
 import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugify } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
@@ -63,20 +63,20 @@ async function names() {
   const user = await currentUser()
   if (!user) return null
   const supabase = await supabaseServer()
-  const [{ data, error }, { plan, caps }] = await Promise.all([
+  const [{ data, error }, { plan }] = await Promise.all([
     supabase.from('projects').select('name'),
     resolveEntitlement(user.id),
   ])
   if (error || !data) return null
-  return { user, supabase, taken: data.map((row) => row.name), plan, caps }
+  return { user, supabase, taken: data.map((row) => row.name), plan }
 }
 
 export async function createProject(_previous: ActionResult | null, _formData: FormData): Promise<ActionResult> {
   const context = await names()
   if (!context) return logged('create', null, COULD_NOT.create)
-  const { user, supabase, taken, plan, caps } = context
+  const { user, supabase, taken, plan } = context
 
-  if (taken.length >= caps.projects) return fail('at_cap', capSentence(plan))
+  if (atCap(plan, taken.length)) return fail('at_cap', capSentence(plan))
 
   const name = nextUntitled(taken)
   const { error } = await supabase.from('projects').insert({
@@ -116,23 +116,26 @@ export async function duplicateProject(_previous: ActionResult | null, formData:
   const id = idOf(formData)
   const context = await names()
   if (!context || !id) return logged('duplicate', null, COULD_NOT.duplicate)
-  const { user, supabase, taken, plan, caps } = context
+  const { user, supabase, taken, plan } = context
 
-  if (taken.length >= caps.projects) return fail('at_cap', capSentence(plan))
+  if (atCap(plan, taken.length)) return fail('at_cap', capSentence(plan))
 
   // Every column `authenticated` may insert, and nothing the server asserts: `revision` is
   // AD-15's lineage marker and starts fresh, and the new row gets its own slug.
-  // `linked_site_id` is null on every 1.5 project — E3 decides what a duplicate does with a
-  // real binding, and FR-B5 (one site per project) is where that question lands.
+  // `linked_site_id` IS DELIBERATELY NOT SELECTED, so it cannot be spread into the insert and
+  // defaults to null. It is null on every 1.5 project, so carrying it forward showed nothing
+  // today and would have made a duplicate inherit E3's binding the moment E3 lands — two
+  // projects pointing at one site, which is the thing FR-B5 forbids. Leaving the column out is
+  // the version of that decision that cannot rot (review, 2026-09-05); E3 makes it on purpose.
   const { data: source, error: readError } = await supabase
     .from('projects')
-    .select('name, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at')
+    .select('name, style_pack, dark_enabled, language, posts_per_page, credit_enabled, rtl_ack_at')
     .eq('id', id)
     .maybeSingle()
   if (readError) return logged('duplicate', readError, COULD_NOT.duplicate)
   if (!source) return logged('duplicate', null, COULD_NOT.duplicate)
 
-  const name = copyName(source.name)
+  const name = copyName(source.name, taken)
   const { error } = await supabase
     .from('projects')
     .insert({ ...source, user_id: user.id, name, slug: slugify(name) })

@@ -16,6 +16,7 @@ export function TextInput({
   name,
   defaultValue,
   placeholder,
+  maxLength,
   mono = false,
   error,
   greyed,
@@ -24,6 +25,8 @@ export function TextInput({
   name?: string
   defaultValue?: string
   placeholder?: string
+  /** The schema's own maximum, so the field refuses the character the action would refuse. */
+  maxLength?: number
   mono?: boolean
   /**
    * The refusal sentence, in the same helper-caption slot a greyed control's reason takes —
@@ -42,6 +45,7 @@ export function TextInput({
         type="text"
         defaultValue={defaultValue}
         placeholder={placeholder}
+        maxLength={maxLength}
         readOnly={Boolean(greyed)}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
