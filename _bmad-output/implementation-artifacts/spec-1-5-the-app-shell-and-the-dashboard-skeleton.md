@@ -1,0 +1,397 @@
+---
+title: 'Story 1.5 — The app shell and the dashboard skeleton'
+type: 'feature'
+created: '2026-09-05'
+status: 'ready-for-dev'
+review_loop_iteration: 0
+owner_test: pending
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
+---
+
+## In plain English
+
+After this story, signing in lands you on a real dashboard instead of the holding page: a left sidebar
+with the Inflozo wordmark, Projects · Sites · Assets, and your account at the bottom; a top bar with a
+project search and a red "New project" button; and your projects as cards, each with a small wireframe
+picture, its name, a "Sample content" tag and when it was last touched. You can make a blank project,
+rename it, duplicate it and delete it (after typing its name), and on the Free plan the second project
+is refused politely with "Free includes 1 project. Pro gives you 25." and a Go Pro pill rather than a
+blank error. Sites, Assets, Account settings, Billing & plan, Suggestions and Docs are drawn and linked
+but show "not found" until their own epics build them — expected, not a fault — and everything works on
+a phone, where the sidebar folds into a ☰ drawer.
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** A signed-in user lands on 1.4's one-line holding page. Nothing lists, creates, renames,
+duplicates or deletes a project; the app has no shell for any later surface to sit in; and the plan cap
+(FR-B4) and the one-site-per-project rule (FR-B5) have no surface. Every epic from E3 on needs a
+dashboard to come back to.
+
+**Approach:** The authenticated route group gains the S3 shell — sidebar, top bar, account menu, ☰ drawer
+at 390 — and the dashboard page renders the user's projects as S3's cards from the `projects` table
+through the user's own RLS-scoped session, with four server actions (create blank, rename, duplicate,
+delete behind a typed name) and one server-side `resolveEntitlement` whose plan table is Appendix F.1
+expressed once as data. "New project" opens the D4a sheet with Blank canvas as the one live door; at
+the cap it opens as D4b, and the grid shows S3c's upgrade tile. Cards carry a static placeholder drawn
+from the project's Style Pack, and the only pack that exists today is Paper.
+
+## Boundaries & Constraints
+
+**Always:**
+- **The frames are `S3 Dashboard.dc.html` — S3a, S3b empty, S3c Free, S3d account menu (desktop popover
+  and mobile dropdown), S3 · mobile · 390 and S3 · mobile — menu open — and `D4 Dashboard Sheets and
+  Blocks.dc.html` D4a and D4b** (EXPERIENCE.md § Information Architecture, Dashboard and account).
+  Values are read off the frames, never rounded (F-111); geometry is the frame's and colours are the
+  token layer's names (1.4's precedent for S1's field). At 1440: a **220px sidebar** (`border-r line`,
+  padding 24/12/16) carrying the wordmark "Inflozo" (display 20px/800, tracking −0.02em, padding
+  0 12 24), the nav — **Projects · Sites · Assets**, each 13px with a 16px icon, padding 8/12, radius
+  `sm`, gap 10; the active item 600 ink on `surface` with `shadow-sm`, the others 500 ink-soft — and at
+  the bottom the **account chip**: 30px round avatar (the initial, 12px/600), name 13px/600, email
+  11px ink-soft (max-width 100px, ellipsis) — the name is `profiles.display_name`, and while nothing sets it (E2) the email stands in the name slot with no second line — and at `margin-left:auto` the plan badge — the kit's
+  `ProBadge` or `FreeBadge`. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
+  field first — 320×36, `rounded-sm`, hairline `line`, padding 0 10, the frame's magnifier at 15px,
+  placeholder "Search projects…" 13px ink-soft-aa, and a mono "⌘K" chip (11px, `line` border, radius
+  5px, padding 1/5); then at `margin-left:auto` the kit's `Button` coral 36 "New project" with the
+  frame's 14px plus icon. The body is padding 24, gap 20, no heading and no count; the grid is
+  `gap-5`, three columns at 1440.
+- **The card**: `surface`, `border line`, `rounded` (12), `shadow-sm`, overflow hidden; hover `shadow-md`
+  and `-translate-y-px`. On top the **placeholder**, `aspect-ratio 16/10`, `border-b line`, padding
+  18/24, the frame's card-2 wireframe (the unlinked, never-deployed card — a 1.5 project's exact
+  state): a 40%×14 bar radius 3, a 55%×7 bar radius 2, then three equal 44px blocks radius 5 with the
+  middle one at 85% — **coloured from the project's Style Pack**: block background = the pack's
+  surface, the headline bar = the pack's text colour, the middle block = the pack's accent, the two
+  outer blocks and the sub-bar = `line` and `line-strong` (FR-B1: derived from the pack's accent and
+  surface; never a captured thumbnail). Below: padding 14/16, gap 8; row 1 the name 14px/600 and the
+  **⋯** trigger (ink-soft, tracking 2px, 600; hover and open state ink); row 2 the **"Sample content"**
+  badge (11px ink-soft, `line` border, `rounded-pill`, padding 2/9) and, at `margin-left:auto`, the
+  updated-at line — **"Updated today"** or **"Updated Aug 19"**, 11.5px ink-soft, D4d's format, in the
+  slot the deploy chip takes on the frame.
+- **The ⋯ menu** (S3c): 160px, `surface`, `border line`, `rounded`, `shadow-lg`, padding 6, opening
+  down under the trigger; items **Rename · Duplicate · — · Delete**, each 13px/500, padding 8/12,
+  radius `sm`, gap 9, a 15px icon (the frame's pencil, copy and trash paths); hover `paper`; Delete in
+  `danger-text` with its trash in `danger`, hover `danger-tint`; the separator a `line` hairline with
+  margin 4/8. Escape and a click outside close it; focus returns to the trigger.
+- **S3b empty state**: the body centres, gap 24, the frame's 160×120 SVG verbatim (the dashed page,
+  the `line` bar, the coral bar, the marigold sparkle, the dot and the swoosh), then **"Every great site
+  starts somewhere."** display 28px/700 tracking −0.01em and **"Yours starts with hundreds of gorgeous
+  sections."** 15px ink-soft, then the kit's `Button` coral 44 "New project" with the plus. The top
+  bar keeps its own "New project" — the frame draws both (UX-DR6: never a blank page).
+- **S3c at the cap**: the grid's next cell after the cards is the **upgrade tile** — `border-[1.5px]
+  dashed line-strong`, `rounded`, min-height 280, centred, gap 10; ✦ 20px marigold-text; **"Upgrade to
+  add more"** 14px/600 ink; **"Free includes 1 project. Pro gives you 25."** 13px ink-soft centred,
+  max-width 200, leading 1.5; a **"Go Pro — $15/mo"** pill (13px/600, marigold-tint on marigold-text,
+  padding 6/14, `rounded-pill`); hover `border-marigold`. The whole tile links to `/billing`. Every
+  figure in it is read from the plan table, never typed.
+- **S3d account menu**: opens **up** from the sidebar chip — 240px, `surface`, `border line`, `rounded`,
+  `shadow-lg`, padding 6; a header (32px avatar, name 13px/600, email 11px ink-soft, `border-b line`,
+  padding 10/12, margin-bottom 4); items 13px/500, padding 9/12, radius `sm`, gap 10, 15px icons, hover
+  `paper`: **Account settings · Billing & plan (with the plan badge at `margin-left:auto`) ·
+  Suggestions · Docs · — · Sign out**. At 390 it drops **down** from the 32px avatar in the top bar —
+  280px, header 36px avatar, name 15px, email 12px, the badge in the header, items 15px, padding 13/12,
+  16px icons. Sign out posts 1.4's `signOut()`.
+- **S3 at 390**: a 60px top bar (padding 0 12 0 6, `border-b line`) — a 44px ☰ button, the wordmark
+  at 19px/800, then at `margin-left:auto` a 44px search button and the 32px avatar; the body padding
+  16/20, gap 16, with **"+ New project"** first — full width, 48px, 15px/600, coral-text, radius 12 —
+  then the cards in one column, gap 14, the placeholder a fixed 150px, the name 15px. ☰ opens the
+  **drawer**: 300px, left, full height, `surface`, `shadow-lg`, padding 20/14/16, the wordmark 20px
+  and a 44px close ✕ in its header, the nav at 15px (padding 12/14, 18px icons; the active item on
+  `paper`), and at the bottom the account row above a `line` hairline (32px avatar, name 14px/600,
+  email 11px, the badge); a `scrim` behind it. The dashboard is fully usable at 390 (UX-DR16): no
+  horizontal scroll, every action reachable.
+- **D4a, the New project sheet** — a centred `<dialog>`: 560px (full width less 20px at 390), `surface`,
+  `rounded-lg`, `shadow-modal` (the export's 0 12px 40px at .25), padding 26, gap 20, the `scrim`
+  behind; "New project" display 22px/700 tracking −0.01em and the kit's `IconButton` ✕ on the right.
+  Four **doors** in a column, gap 10, each padding 12/13, `rounded-thumb`, gap 11, a 16px radio circle,
+  title 13px/600, description 12px ink-soft (the kit's radio-card tokens: selected `border-coral
+  bg-coral-tint` with the coral dot, rest `border-line hover:border-line-strong`): **Blank canvas —
+  "An empty page and every design."** is the one live door and is selected; **Start from a starter —
+  "Ten full sites, ready to wear your brand."**, **Duplicate an existing project — "A copy to try
+  things on, with nothing at stake."** and **Redesign one of my sites — "We look at your posts and
+  suggest whole-site designs."** are drawn greyed in the frame's treatment with the kit's P0-0 tokens
+  (`grey-field`, `grey-border`, title and description `ink-faint`, `cursor-not-allowed`) and each
+  carries its reason on a third line, 11.5px marigold-text with the frame's alert-circle at 12px:
+  "Starters aren't here yet." · "Duplicate a project from its ⋯ menu." · "Connect a Ghost site first."
+  (the frame's own sentence). The frame's own caption is the rule: *all four doors stay drawn and each
+  carries its reason.* Below a `line` rule (padding-top 18): **"Style Pack"** 12px/500 ink-soft with
+  **"Change it any time, in any project."** 11px ink-soft at the right, and a three-column grid (gap 6)
+  holding one cell — the kit's `PackCell` for **Paper**, active (the coral ring), "Ag" in Georgia,
+  its three dots — with no pencil and no New pack cell (the pack editor is E6's). Footer: the kit's
+  `Button` ghost 36 "Cancel" and `Button` coral 44 "Create project" (the frame's 14px/600 label).
+- **D4b, at the cap**: the same sheet with **all four doors greyed** (gap 9), each carrying a pill at
+  the right instead of a reason — **"Free includes 1 project"** 11.5px marigold-text on marigold-tint,
+  `rounded-pill`, padding 3/10; no Style Pack row; between the doors and the footer the **upgrade
+  block** — `border marigold-line`, `surface`, `rounded`, padding 14/16, gap 13: **"Free includes 1
+  project. Pro gives you 25."** 13.5px/600 and **"Your project stays exactly as it is either way."**
+  12px ink-soft-aa leading 1.5, with S3c's "Go Pro — $15/mo" pill at the right linking to `/billing`;
+  "Create project" drawn as the frame draws it disabled — `paper-sunk`, `ink-faint`, `aria-disabled`,
+  the reasons being the pills. On Pro at 25 the pills and the block read "Pro includes 25 projects"
+  and there is no Go Pro. Every figure from the plan table.
+- **Rename and delete have no frame and are extrapolated from S12c**, the nearest typed confirm: a
+  460px `<dialog>` (`surface`, `rounded-lg`, `shadow-modal`, padding 26, gap 18), a title in display
+  20px/700 tracking −0.01em, body 13px ink-soft leading 1.5, and a right-aligned footer of the kit's
+  `Button` secondary 36 "Cancel" plus the primary. **Rename**: "Rename project", the kit's `TextInput`
+  "Name" prefilled, `Button` primary 36 "Save". **Delete**: S12c's 38px `danger-tint` circle with the
+  trash, **"Delete {name}?"**, "This project will be permanently deleted. This cannot be undone." (no
+  wit — serious voice; the live-theme warning is E7's), then "Type" · the name in S12c's mono chip
+  (12px, `paper`, `line` border, radius 5, padding 1/6) · "to confirm" as the label of a 40px mono
+  field (13px, `border-danger`, `caret-danger`, the one ring), and `Button` danger 36 "Delete project",
+  `aria-disabled` at 45% opacity until the typed text (trimmed) equals the name exactly. **Every confirm opens
+  with focus on Cancel** (EXPERIENCE.md § Destructive confirms). Escape cancels; the server action
+  re-checks the typed name and never trusts the client.
+- **Data.** Cards come from `projects` ordered `updated_at desc` through the user's own session (the
+  spine's Mutation row: the client's session writes only AD-6 owner-policy tables, and `projects` is
+  one); every write is a server action with the user-scoped client, so RLS is exercised by every
+  mutation rather than bypassed. A blank project is `{ user_id, name, slug, style_pack }` with
+  `name` "Untitled project" (then "Untitled project 2", "3", … counting the user's existing names),
+  `slug` = slugified name, `style_pack` = `{ preset: 'paper' }`. Duplicate copies every column
+  `authenticated` may insert (name, style_pack, dark_enabled, language, posts_per_page,
+  credit_enabled, linked_site_id, rtl_ack_at) under the name "Copy of {name}" and a fresh slug.
+  Rename changes `name` only — `slug` is never rewritten (FR-J10: a rename after first deploy
+  changes the display name only, and the trigger freezes it once bound). A name is trimmed, 1–80
+  characters, one zod schema shared by the client field and the action. Delete is one `delete` by id.
+- **The cap.** `resolveEntitlement(userId)` in `apps/web/lib/entitlement.ts` reads the user's
+  `entitlements` row (RLS-scoped select) and returns `{ plan, caps, reasons: [] }`; `free` or no row →
+  Free, `pro_active` and `pro_past_due` → Pro (Appendix F.1's third column: during grace every Pro
+  capability is kept). Appendix F.1's numeric rows live once, as data, in `apps/web/lib/plan.ts`
+  (Free 1 project, Pro 25; the sites, storage, per-upload and history rows beside them for the epics
+  that read them; the $15/mo price). Create and duplicate count the user's projects and refuse at or
+  over the cap with `{ code: 'at_cap' }`; the page decides D4a or D4b from the same count and passes
+  it to the sheet, and an `at_cap` result that arrives anyway (a race) flips the open sheet to D4b.
+- **FR-B5**: `linked_site_id` is one nullable column and stays null here; every 1.5 project is unlinked
+  and therefore wears "Sample content" — the badge is FR-B5's visible half, and nothing in this story
+  links a site (E3).
+- **Search** filters the cards by name, case-insensitive substring, as a GET form (`?q=`) the page reads
+  — no client state crosses the layout/page boundary; ⌘K (and Ctrl+K) focuses the field. At 390 the
+  44px search button reveals the same field full-width under the top bar and focuses it.
+- **Loading is skeleton cards** (`loading.tsx`): three card-shaped blocks in `paper-sunk` — never a
+  spinner (UX state patterns, Dashboard row).
+- **Every control carries the one ring** (`ring` from `greyed.ts`), every icon is the frame's own path
+  added to `icons.tsx` (R-92), and every surface passes axe-core at WCAG 2.1 AA at 1440, 834 and 390.
+  Dialogs are native `<dialog>` via `showModal()` (focus trap, Escape, `::backdrop` in `scrim`);
+  menus are `popover="auto"` (light-dismiss and Escape are the platform's). Nothing inline-scripted:
+  1.4's nonce CSP stays at zero violations.
+- **The shell lives in `(authed)/layout.tsx`** so every later authenticated surface — Sites, Assets,
+  Billing — is inside it by where its file sits; `/kit` inherits it too.
+- **Destinations that later epics build are real links to their addresses and 404 until then** —
+  Sites `/sites` (E3), Assets `/assets` (E8), Account settings `/account` (E2), Billing & plan and Go
+  Pro `/billing` (E12), Suggestions `/suggestions` (E13), Docs `https://inflozo.com/docs` (E14) — the
+  same way 1.4's Terms · Privacy links were accepted. **Keyboard shortcuts is absent** from the menu:
+  there is no editor and so nothing to list (UX-DR3: could never act here → absent); Story 5.9 adds it.
+  The frame's "Connect a site" button on the Redesign door is absent for the same reason (E3).
+- **R-81 / R-82 / R-83 / R-80** as the epic context binds them: commit and push after this and every
+  phase; review and test on the real Supabase and the production domains, keys read from
+  `tools/probe/.env` by variable name and never printed; the owner tests on `app.inflozo.com`.
+
+**Ask First:**
+- Any new table, column or migration — none is expected; `projects` and `entitlements` carry
+  everything this story reads and writes.
+- Any dependency beyond the pinned set — none is expected; dialogs, popovers and forms are the
+  platform's.
+- Any token whose value greps nowhere in the export — the `avatar` colours, the door hexes and the
+  D4b gold button are deliberately *not* new tokens (Design Notes); only `shadow-modal` is added.
+- Moving the delete confirm or the rename away from the S12c extrapolation above.
+
+**Never:**
+- Linked-site badges, deploy-status chips, the starter / duplicate-door / redesign creation paths,
+  the connected-sites strip, the storage meter in the sidebar, the What's-new sparkle and popover,
+  the notifications bell (the epic's cut line: E3, E7, E13) — absent, not greyed, not stubbed.
+- A `<select>` of projects on the Duplicate door, a name field in the create sheet, a Tangerine cell or
+  a New pack cell — none is drawn live for this story.
+- Opening a project: the card is not a link (the editor and its URL scheme are Story 5.1's).
+- A service-role client in the app, a browser Supabase client, or anything in `NEXT_PUBLIC_*`.
+- A captured or rendered thumbnail (FR-B1), a spinner, a tooltip carrying a reason, a `disabled`
+  attribute on a kit `Button`, coral for anything but the surface's one action, marigold for anything
+  but Pro and the upgrade tile.
+- Writing a count down: "Free includes 1 project", "Pro gives you 25", "$15/mo" and the 80-character
+  limit are read from `plan.ts` and the name schema wherever they appear.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| Land, no projects | signed in, zero rows | S3b: the shell, the illustration, the two sentences, "New project"; the account chip says Free | N/A |
+| Land, projects | rows exist | S3a: cards ordered by `updated_at desc`, each with placeholder · name · Sample content · "Updated today" / "Updated Aug 19" | N/A |
+| Create, under cap | "New project" → D4a → Create project | insert; sheet closes; the new card "Untitled project" (or "… 2") is first; `updated_at` = now | insert fails → the kit's error Banner in the sheet, "We couldn't create that just now. Try again in a moment." |
+| Create, at cap (Free, 1) | "New project" with 1 project | the sheet opens as D4b: greyed doors with "Free includes 1 project" pills, the upgrade block, Create disabled; the grid already shows S3c's tile | `at_cap` from the action (race) → the open sheet flips to D4b |
+| Create, at cap (Pro, 25) | 25 projects | D4b with "Pro includes 25 projects", no Go Pro; no tile in the grid | as above |
+| Rename | ⋯ → Rename → "Field Notes" → Save | `name` updated, `slug` untouched, `updated_at` bumped by the trigger; the card re-sorts to first | blank or > 80 chars → the field's helper-caption sentence "Give it a name — up to 80 characters."; `aria-invalid`; nothing sent |
+| Duplicate, under cap | ⋯ → Duplicate | a new row "Copy of Field Notes", same pack and settings, fresh slug; first in the grid | insert fails → the kit's error Banner above the grid: "We couldn't duplicate that just now." |
+| Duplicate, at cap | Free with 1 | refused: the sheet opens as D4b (the same contextual prompt as create) | `{ code: 'at_cap' }` |
+| Delete, wrong name | ⋯ → Delete → "field notes" | Delete stays `aria-disabled` at 45%; nothing sent | N/A |
+| Delete, right name | typed exactly "Field Notes" → Delete project | row gone; card gone; zero rows → S3b | the action compares server-side; mismatch → `{ code: 'name_mismatch' }`, the dialog stays with "That's not this project's name." |
+| Search | `?q=fie` | only cards whose name contains "fie" (case-insensitive); no matches → "No projects match “fie”." 13px ink-soft in the grid's place, the empty illustration not shown | N/A |
+| Another user's project | user B, project of A | invisible to B's list; B's rename/delete/duplicate by A's id → zero rows affected, `{ code: 'failed' }` — RLS, executed in Verification | N/A |
+| Plan badge | `entitlements.state` free · pro_active · pro_past_due · no row | Free · ✦ Pro · ✦ Pro · Free | N/A |
+| 390 | phone width | ☰ · wordmark · search · avatar; full-width "+ New project"; one column; drawer and dropdown as S3; no horizontal scroll | N/A |
+| Keyboard | Tab through the shell and a card | sidebar → search → New project → cards' ⋯ → chip; ⋯ opens with Enter, arrows move, Escape closes and returns focus; every confirm opens on Cancel | N/A |
+| Signed out | any of these URLs | 307 to `/sign-in` (1.4's guard, unchanged) | N/A |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `apps/web/app/(app)/app/(authed)/layout.tsx` -- today the guard alone (`currentUser()` → `redirect('/sign-in')`); gains the shell: reads the user and `resolveEntitlement`, renders `<Shell user plan>` around `children`. The comment there ("everything under /app is behind the guard by where its file sits") becomes true of the shell as well
+- `apps/web/app/(app)/app/(authed)/page.tsx` -- 1.4's holding page, **replaced whole** (its own comment says so): reads `searchParams.q`, the projects (`select … order updated_at desc`), the entitlement's cap and the count; renders the grid of `ProjectCard`s, S3b's empty state, S3c's tile at the cap, or the no-match line; passes `atCap` to the sheet. `metadata.title` "Projects · Inflozo", noindex as `sign-in/page.tsx:27`
+- `apps/web/app/(app)/app/(authed)/loading.tsx` (new) -- three skeleton cards in the card's own shape; `components/kit/loading.tsx:4` is the list-shaped `Skeleton` and is the wrong shape here
+- `apps/web/app/(app)/app/(authed)/projects/actions.ts` (new, `'use server'`) -- `createProject()`, `renameProject(id, name)`, `duplicateProject(id)`, `deleteProject(id, typed)`; each `supabaseServer()` → the user-scoped write → `revalidatePath` on the dashboard's **internal** path (`/app` — execute it, the rewrite in `routing.ts:25` is why it is not `/`); the result union `{ ok: true } | { error: { code: 'at_cap' | 'bad_name' | 'name_mismatch' | 'failed'; message } }`; `console.error` without the name (logs carry no user content). Only async exports, as `sign-in/actions.ts:12` explains; the pure parts live next door
+- `apps/web/lib/plan.ts` (new, pure) -- Appendix F.1 as data: `PLANS = { free: {…}, pro: {…} }` with `projects`, `sites`, `storageMb`, `uploadMb`, `history` and `PRICE = { monthly: 15, yearly: 150 }`; `planFor(state?: EntitlementState)`; `cap` sentence helpers so "Free includes 1 project" is composed, never typed. `apps/web/plan.test.ts`: free/absent → free, `pro_past_due` → pro, the sentence pluralises
+- `apps/web/lib/entitlement.ts` (new, server) -- `resolveEntitlement(userId)`: one select on `entitlements` (own row) → `{ plan, caps: PLANS[plan], reasons: [] }`. The spine's single resolver (AD-28 / the `resolveEntitlement` rule); `subscriptions` and `reasons` are E12's to add here. Split from `plan.ts` exactly as `server.ts` is split from `cookies.ts` (`next/headers` is unreachable under `node --test`)
+- `apps/web/lib/style-pack.ts` (new, pure) -- the one zod schema for `projects.style_pack` (`{ preset: string }` today — the spine's rule (a): E6 owns the column and E1's placeholder reads it *through the same schema three epics early*), `PRESETS` with Paper's three values read off D4a's cell dots — surface `#FBF9F5`, accent `#D96C3F`, text `#232019` — and `placeholderFor(stylePack)` → `{ surface, accent, text }` falling back to Paper for a preset it does not know, so a card never renders empty when E6 widens the shape. Paper's accent is pack data, not a chrome token (`pack-cell.tsx:6`); DW-11 says E6 re-sources every pack from Appendix D, and this file is where that lands
+- `apps/web/lib/projects.ts` (new, pure) -- `nameSchema` (zod, trim, 1–80), `nextUntitled(names)`, `copyName(name)` (clamped to the schema's maximum), `slugify(name)`, `updatedLabel(updatedAt, now)` ("Updated today" / "Updated Aug 19", and "Updated Aug 19, 2025" for another year, `Intl.DateTimeFormat('en', …)`, UTC — `// ponytail: server UTC; the viewer's zone if "today" ever reads wrong at midnight`), `matchesName(typed, name)` (the typed value trimmed, then exact). `apps/web/projects.test.ts` holds each, including the 80-char edge, "Untitled project 2", the same-day and other-day labels, and that `slugify('Copy of Field Notes')` is `copy-of-field-notes`
+- `apps/web/components/shell/shell.tsx` (new, server) -- the sidebar and top bar at 1440 and the 60px bar at 390 (`tablet:` is the seam — S3 draws 1440 and 390 and the sidebar holds from `tablet` up); the nav via `next/link` with the active item from `usePathname` in a tiny client `NavLink`; the search form — its field a small client `SearchField` reading `useSearchParams` for its value (a layout receives no query) and owning ⌘K; the "New project" button that opens the sheet
+- `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, down at 390); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts:57`
+- `apps/web/components/shell/drawer.tsx` (new, client) -- the ☰ `<dialog>` at 390: nav, account row, close
+- `apps/web/app/(app)/app/(authed)/project-card.tsx` (new, server) + `placeholder.tsx` (new) -- the card and its wireframe with the pack's three colours as inline `style` (they are pack data, the site's system, never Tailwind classes)
+- `apps/web/app/(app)/app/(authed)/project-menu.tsx` (new, client) -- the ⋯ `popover="auto"` menu and the two S12c-shaped `<dialog>`s (rename, delete) with `useActionState` over the actions; the delete button's `aria-disabled` follows `matchesName`
+- `apps/web/app/(app)/app/(authed)/new-project-sheet.tsx` (new, client) -- D4a / D4b in one `<dialog>`, chosen by `atCap`; `useActionState(createProject)`; an `at_cap` result flips it
+- `apps/web/components/kit/icons.tsx` -- add the frames' own paths: `Projects` (four rects), `Globe`, `Image`, `Plus`, `MenuLines`, `Copy`, `Person`, `Card`, `Lightbulb`, `Book`, `Logout`, `AlertCircle`; `Search`, `X`, `Pencil`, `Trash`, `ChevronDown` already exist (`icons.tsx`)
+- `apps/web/components/kit/pack-cell.tsx:11` -- `PackCell` gains an optional `onEdit`; without it the pencil is not rendered (a dead "Edit Paper" button would be a lie; the editor is E6's). `/kit` keeps passing one so the gallery is unchanged
+- `apps/web/app/globals.css:80` + `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter -- `--shadow-modal: 0 12px 40px rgba(28,27,26,.25)` and its `elevation.modal` twin (`tokens.test.ts:47` requires the value to occur in the export; D4a and S12c carry it). Nothing else is added — see Design Notes for every hex that was mapped to an existing name instead
+- `apps/web/app-routes.test.ts:33` -- already discovers every `page.tsx`; the new page is inside `(authed)` and needs no entry. `loading.tsx` is not a page
+- `apps/web/routing.ts:22-31` -- read-only: `app.inflozo.com/x` is rewritten to `/app/x`, so links are written as `/sites`, `/billing`… and `revalidatePath` takes `/app`
+- `supabase/migrations/20260904120000_complete_schema.sql` -- read-only, the grants this story lives inside: insert `(id, user_id, name, slug, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at)`, update `(name, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at, updated_at)`, `projects_touch` bumps `updated_at`, `projects_slug_frozen` holds only once a binding exists, `entitlements` is select-only to `authenticated`, the `(user_id, updated_at desc)` index is the list's order
+- `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/S3 Dashboard.dc.html` · `D4 Dashboard Sheets and Blocks.dc.html` · `S12 Billing.dc.html` (S12c) -- the frames; read the inline styles, never the CSS variables. `EXPERIENCE.md:118-124, 309, 482` and `prd.md:189-193, 1150-1152` (Appendix F.1) -- the rows that bind
+
+## Tasks & Acceptance
+
+**Execution:**
+- [ ] `apps/web/lib/plan.ts` + `apps/web/plan.test.ts` -- Appendix F.1 as data and `planFor` -- one table, expressed once, with its check
+- [ ] `apps/web/lib/style-pack.ts` -- the column's schema, Paper, `placeholderFor` -- E6's boundary, declared once and read early
+- [ ] `apps/web/lib/projects.ts` + `apps/web/projects.test.ts` -- the name rules, the labels, the slug -- every branch under `node --test`
+- [ ] `apps/web/lib/entitlement.ts` -- `resolveEntitlement` -- the spine's single resolver
+- [ ] `apps/web/app/globals.css` + `DESIGN.md` -- `shadow-modal` -- the frame's value, named once
+- [ ] `apps/web/components/kit/icons.tsx` + `pack-cell.tsx` -- the frames' icons; the optional pencil -- R-92, and no dead control
+- [ ] `apps/web/components/shell/` shell, account-menu, drawer -- S3's shell at 1440 and 390 -- the surface every later story sits in
+- [ ] `apps/web/app/(app)/app/(authed)/layout.tsx` -- the shell around the guard -- by file position
+- [ ] `apps/web/app/(app)/app/(authed)/projects/actions.ts` -- the four actions with the cap -- FR-B3, FR-B4, through RLS
+- [ ] `apps/web/app/(app)/app/(authed)/` page, loading, project-card, placeholder, project-menu, new-project-sheet -- S3a/b/c, D4a/b, the S12c extrapolations -- the story's surface
+- [ ] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
+
+**Acceptance Criteria:**
+- Given `https://app.inflozo.com/` at 1440 with no projects, when it renders, then it **matches frame S3b** — the sidebar with Projects active, Sites and Assets, the account chip with the Free badge; the top bar with "Search projects…", ⌘K and "New project"; the illustration, both sentences and the centred "New project" — with the storage meter, bell and sparkle absent (R-74; the cut line).
+- Given projects, when the dashboard renders, then it **matches frame S3a**'s shell and card — placeholder, name, "Sample content", "Updated …", ⋯ — with no favicon, no domain and no deploy chip, ordered most-recently-updated first (FR-B1's static placeholder, FR-B5's badge).
+- Given the ⋯ trigger, when it opens, then the menu **matches S3c** — Rename, Duplicate, a rule, Delete in danger — and Rename and Delete open their S12c-shaped confirms with focus on Cancel; Delete stays disabled until the exact name is typed (FR-B3; EXPERIENCE.md § Destructive confirms).
+- Given a Free account with one project, when "New project" or ⋯ → Duplicate is used, then the sheet opens as **D4b** with "Free includes 1 project. Pro gives you 25." and Go Pro, Create disabled, and the grid shows **S3c's** upgrade tile; given a Pro account, the 26th is refused the same way without Go Pro (FR-B4, Appendix F.1).
+- Given "New project" under the cap, when the sheet opens, then it **matches D4a** with Blank canvas live and selected, the three other doors greyed with their reasons, Paper as the one Style Pack cell, and Create project inserts a row the card then shows.
+- Given the account chip, when it opens, then the popover **matches S3d** (desktop up, mobile down) with Keyboard shortcuts absent, and Sign out ends the session as in 1.4.
+- Given 390 wide, when the dashboard, the drawer, the dropdown, the sheet and both confirms render, then they **match S3 · mobile and S3 · mobile — menu open** and nothing scrolls sideways (UX-DR16).
+- Given two fixture users, when each exercises every action against the other's project id through the deployed site and the REST API, then nothing is visible or changed — RLS held, and `bash supabase/tests/run-rls-gate.sh` is green on every table the schema story created (the epic's exit).
+- Given every surface in every state at 1440, 834 and 390, when axe-core runs, then zero violations; Tab reaches every control with the one ring; the console shows zero CSP violations (NFR-5, NFR-3).
+- Given a push to `main`, when CI runs, then `check` and `rls` are green and `deploy` publishes the dashboard.
+
+## Spec Change Log
+
+## Design Notes
+
+**The 1.4 rule for a frame's values, applied here.** Geometry is read off the frame and never rounded;
+colours are the token layer's names, and where a frame draws a hex that has no name the nearest named
+token carries it rather than a new token being minted — S1's field took the Kit's tokens at S1's size
+in 1.4, and this story does the same in eight places: the frame's `rgba(28,27,26,.04)` nav hover is
+`paper-sunk` (the kit's ghost hover); D4a's selected door `#FFF9F7` is `coral-tint` (the kit's radio
+card); D4a's greyed door (`#FBF9F5`, `#8B857C`, `#DDD6CB`) is P0-0's `grey-field` / `ink-faint` /
+`grey-border`; the reason icon's `#B87A00` takes the sentence's `marigold-text`; D4b's solid gold
+"Go Pro" button (`#B87A00`, hover `#9E6800`) is drawn as S3c draws the same call to action, a
+marigold-tint pill, so one CTA has one look; D4b's upgrade-block `#FFFDF6` is `surface` with the
+`marigold-line` hairline doing the work; the disabled Create's `#A39C91` is `ink-faint`; the frame's
+avatar (`#2F4A3E` on `#F4EFE6`) is the *fixture publication's* brand — Orbit Weekly's favicon wears
+the same pair — so a real user's avatar takes the frame's other avatar treatment, ink on paper
+(Maya's portfolio's "M"). The only addition is `shadow-modal`, because the export draws every modal at
+.25 and the token layer had no name for it.
+
+**Why the doors are drawn and not dropped.** D4a's own caption is a design instruction: *all four
+doors stay drawn and each carries its reason.* The cut line makes three of them another epic's, so they
+are greyed in the frame's treatment with a one-sentence reason in the frame's slot — the reason is the
+product's way of saying "not here yet" (UX-DR3) and the frame's own sentence ("Connect a Ghost site
+first.") is reused where it is true today. Two controls that are absent rather than greyed — the
+Redesign door's "Connect a site" button and the menu's Keyboard shortcuts — are absent because there is
+nothing for them to open at all, which is the other half of the same rule.
+
+**Why unbuilt destinations are links.** The nav and the account menu are the shell, and the shell is IN.
+Each item links to the address its surface will have; until that epic lands the address answers "not
+found", exactly as inflozo.com/terms did in 1.4 and was accepted. The owner's test names every one of
+them as expected. If he rules otherwise the fix is inside this story (R-80).
+
+**Why the search is a GET form.** The field is in the layout and the cards are in the page; the URL
+is the one piece of state both already share, so `?q=` needs no client state and no context. Enter
+searches; ⌘K focuses. `// ponytail: Enter-to-search; live filtering is a router.replace on input if the
+owner wants it`.
+
+**Why the placeholder's colours are inline styles.** They are the Style Pack's — the site's system,
+never the app's (`pack-cell.tsx`), and Tailwind's palette is cleared on purpose. Layout from S3's card
+2, colours from the pack: with one pack every card looks alike today, and that is the truthful state
+until E6 makes packs differ.
+
+**Why create and duplicate count then insert.** A trigger could enforce the cap in the database, but
+the cap depends on the plan, and the PRD asks for a *contextual prompt at creation time*, which is an
+application answer. `// ponytail: count-then-insert; a double-submit is closed by the pending state, and a
+trigger on projects reading entitlements is the upgrade if a race ever lands two`.
+
+```ts
+// projects/actions.ts — the shape every dialog reads
+type Result =
+  | { ok: true }
+  | { error: { code: 'at_cap' | 'bad_name' | 'name_mismatch' | 'failed'; message: string } }
+```
+
+## Verification
+
+To be executed by the Dev run on the real infrastructure (R-82) and recorded here with what each
+returned; every key is read from `tools/probe/.env` into a command's environment and named by its
+variable only.
+
+**Commands:**
+- `pnpm check` -- expected: lint, typecheck and every `apps/web` test green, including the new
+  `plan.test.ts` and `projects.test.ts`
+- `pnpm build` (in `apps/web`) -- expected: the route table unchanged from 1.4 — `○ /` · `ƒ /app` ·
+  `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy` — no new route, because
+  actions, loading and components are not routes
+- `python3 tools/doc-audit.py --check` (twice) -- expected: PASS
+- `bash supabase/tests/run-rls-gate.sh` -- expected: green — the epic's exit, RLS on every table the
+  schema story created, proved by the gate rather than by a subset
+- Supabase (real) — `SUPABASE_URL`, `SUPABASE_SECRET_KEY`: create two fixture users through the admin
+  API, mint each a session; as A through the deployed site: create → 1 row; create again → `at_cap`;
+  rename → `name` changed, `slug` unchanged, `updated_at` bumped; duplicate → `at_cap`; delete with the
+  wrong name → `name_mismatch`, with the right name → 0 rows. Set A to `pro_active` with the secret
+  key → create and duplicate succeed; as B with A's id → every action `failed` and a REST `select` of
+  A's project returns `[]`. Delete both fixtures; expected: the live database returns to the owner's
+  accounts only
+- Deployed site — `curl -sI https://app.inflozo.com/` with a fixture cookie -- expected: 200 with the
+  nonce CSP; without one 307 to `/sign-in`
+- Playwright + axe-core (this machine, `headless-browser-tooling`) at 1440, 834 and 390 on: S3b,
+  S3a with two cards, S3c at the cap, the ⋯ menu open, the rename and delete dialogs, D4a, D4b, the
+  account popover, the drawer and the dropdown -- expected: zero violations each; no horizontal
+  scroll at 390; zero console CSP violations; Tab order sidebar → search → New project → ⋯ → chip;
+  every confirm opens on Cancel
+
+## Owner's manual test
+
+Your account is on the Free plan, so you will see the Free side of every screen — the one project, the
+polite refusal of a second, the Go Pro pill. The Pro side (up to 25 projects, duplicate succeeding) is
+proved by the Dev run with a throwaway account and recorded above; say the word if you would like your
+own account switched to Pro for a look — it is one row, and it is switched back the same way.
+
+**Six links are expected to show "not found" today, and that is not a fault:** Sites and Assets in the
+sidebar, and Account settings, Billing & plan, Suggestions and Docs in your account menu, plus the Go
+Pro pill. Each is drawn and linked now so the shell is complete; their own epics fill them in. If you
+would rather not see them until then, say so in your findings and it is changed in this story.
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|---|---|---|---|---|
+| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial, your email and a "Free" tag; a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
+| 2 | same | Dashboard | Click Sites, then Assets, then use the browser's Back | — | "This page could not be found" for both — expected until Epics 3 and 8 |
+| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and email, then Account settings, Billing & plan (with a "Free" tag), Suggestions, Docs, a line, Sign out. Press Escape to close it |
+| 4 | same | New project sheet (D4a) | Click "New project" | — | A white sheet over a dimmed dashboard: "New project", four choices — Blank canvas is selected; Start from a starter, Duplicate an existing project and Redesign one of my sites are greyed with a short reason under each; below, "Style Pack" with one card, Paper; Cancel and a red "Create project" |
+| 5 | same | Dashboard (S3a) | Click "Create project" | — | The sheet closes and one card appears: a small wireframe on cream, "Untitled project", a "Sample content" tag and "Updated today" on the right |
+| 6 | same | At the cap (S3c · D4b) | Click "New project" again | — | The sheet opens with all four choices greyed, each with a "Free includes 1 project" pill, a box saying "Free includes 1 project. Pro gives you 25." with a gold "Go Pro — $15/mo" pill, and "Create project" greyed out. Press Cancel. Beside your card the grid now shows a dashed tile: ✦, "Upgrade to add more", the same sentence, the same pill |
+| 7 | same | Rename | Click the ⋯ on the card → Rename | `Field Notes` | A small window "Rename project" with the name in a box; type the new name, press Save; the card now says "Field Notes" and still "Updated today" |
+| 8 | same | Rename, refused | ⋯ → Rename, clear the box, press Save | (empty) | The box goes red with "Give it a name — up to 80 characters." and nothing is saved; Cancel |
+| 9 | same | Duplicate at the cap | ⋯ → Duplicate | — | The same "Free includes 1 project" sheet as step 6 — a copy would be a second project. Cancel |
+| 10 | same | Delete (S12c-shaped) | ⋯ → Delete | first `field notes`, then `Field Notes` | A window "Delete Field Notes?" with a red circle, "This project will be permanently deleted. This cannot be undone.", and "Type Field Notes to confirm". The cursor starts on Cancel. With `field notes` the red Delete button stays faded and does nothing; with `Field Notes` exactly it goes solid, and pressing it removes the card — you are back on the empty dashboard |
+| 11 | same | Search | Create a project again (steps 4–5), rename it `Harbour Letter`, then type in the search box and press Enter | `harb` · then `zzz` | With `harb` the card stays; with `zzz` the grid says "No projects match “zzz”." Clear the box and press Enter to see the card again. ⌘K (Ctrl+K on Windows) jumps the cursor into the box |
+| 12 | same, on your phone | Dashboard at 390 | Open the address on your phone | — | A short top bar: ☰, "Inflozo", a search icon and your initial; a full-width red "+ New project"; your card below it, one per row; nothing cut off, nothing scrolling sideways |
+| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, your initial and email with the "Free" tag at the bottom, and an ✕ to close |
+| 14 | same, phone | Dropdown | Tap your initial top-right | — | The same menu as step 3, dropping down from your initial, with the "Free" tag beside your email |
+| 15 | same, phone | Sheet and delete | Tap "+ New project", Cancel; then ⋯ → Delete on your card, Cancel | — | Both windows fill the width with a small margin and every button is reachable |
+| 16 | same | Sign out | Open the account menu → Sign out | — | The Sign In card from 1.4 |

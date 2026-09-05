@@ -368,3 +368,21 @@ reason: `PATCH …/config/auth` answered `402 "User sessions can only be configu
   everywhere) is the first story that might want it; if it does, the choice is Supabase Pro or an
   application-level last-seen check, and the first one costs money, so it is the owner's call and should
   be put to him in that story rather than assumed here.
+
+### DW-15: the dashboard placeholder's Paper colours are read off D4a's pack cell, because Appendix D names no hex
+
+plain: The little wireframe on each project card is coloured with the "Paper" colour scheme, and the only
+  place those three colours are written down today is a drawing; the story that builds the colour
+  schemes properly must replace them from the product plan, and the card will follow automatically.
+status: open
+severity: low
+origin: Story 1.5 create (2026-09-05), found while reading D4a and Appendix D together
+location: apps/web/lib/style-pack.ts (PRESETS, once Story 1.5's Dev run writes it) · prd.md Appendix D
+reason: FR-B1 derives the placeholder from the pack's accent and surface. PRD Appendix D is the owning
+  document for the twelve packs (DW-11) but carries vibes and font pairings, no values; the export draws
+  Paper's three dots once, on D4a's Style Pack cell (`#FBF9F5`, `#D96C3F`, `#232019`), and the S3 cards
+  themselves are drawn in chrome colours, not pack colours. Story 1.5 therefore reads the placeholder
+  through the column's one schema (`placeholderFor`) with Paper's three values as pack DATA, never as
+  app tokens, and falls back to Paper for any preset it does not know. Story 6.2 (the twelve presets)
+  owns replacing `PRESETS` from Appendix D; nothing on the card changes shape when it does.
+
