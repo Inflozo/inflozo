@@ -413,6 +413,10 @@ def load_commits(lines):
             continue
         if SHAPED.match(s):
             out.append({'h': h, 'date': d, 'kind': 'unreadable', 'key': '', 'phase': '', 'msg': s})
+            continue
+        # Everything else — board tooling, planning, the design passes. Kept (owner, 2026-09-05) so the
+        # feed is the whole history rather than the story-shaped slice of it, and greyed where it renders.
+        out.append({'h': h, 'date': d, 'kind': 'other', 'key': '', 'phase': '', 'msg': s})
     return out
 
 
@@ -765,7 +769,9 @@ def render_story(story, ep, phase_prompts, briefs):
     else:
         eng.append('<h3>Commits</h3><p class="fine">None yet. Every phase ends with one: '
                    f'<code>Story {e(key)} - Phase - one line</code>.</p>')
-    parts.append(f'<details class="eng"><summary>For the build session</summary>{"".join(eng)}</details>')
+    # Open by default (owner, 2026-09-05): this is where a story's own commits live, and hiding them
+    # behind a click was the reason the activity panel was being asked to do that job.
+    parts.append(f'<details class="eng" open><summary>For the build session</summary>{"".join(eng)}</details>')
     if not story['waits']:
         ran = {c['phase'] for c in story['commits']}          # the trail is what actually ran (R-81)
         done = [p for p, _ in PROMPTS if p != pk and PROMPT_COMMIT.get(p, p) in ran]
@@ -1085,6 +1091,8 @@ font-size:.74rem;color:var(--muted);word-break:break-word}
 color:var(--muted);font-weight:700;padding:0 6px 5px;border-bottom:1px solid var(--line)}
 /* The default is on the table so a row's own p-<Phase>/tone class — one class — can override it. */
 .ct{--c:var(--wait);--cs:var(--code)}
+/* A commit that is not story work: kept in the feed, greyed, and with no phase colour to claim. */
+.ct tbody tr.dim{--c:var(--line)}.ct tbody tr.dim td{color:var(--muted)}.ct tbody tr.dim .msg{font-style:italic}
 /* Alternate STORY, not alternate row: a run of rows is one story, and the band is what groups it. */
 .ct tbody tr.band{background:color-mix(in srgb,var(--ink) 4.5%,transparent)}
 .ct tbody tr:hover{background:var(--cs)}
@@ -1302,7 +1310,8 @@ def render(ctx):
                 if c['key'] != prev:
                     on, prev = not on, c['key']
                 yield c, ' band' if on else ''
-        rows = ''.join(f'<tr class="{("p-" + e(c["phase"])) if c["phase"] else "s-mute"}{b}"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
+        tone = lambda c: 'dim' if c['kind'] == 'other' else ('p-' + e(c['phase'])) if c['phase'] else 's-mute'
+        rows = ''.join(f'<tr class="{tone(c)}{b}"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
                        f'<td>{("<a href=#" + e(c["key"]) + ">" + e(c["key"]) + "</a>") if c["kind"] == "story" else e(c["key"])}</td>'
                        f'<td>{phchip(c["phase"])}</td>'
                        f'<td class="msg">{e(c["msg"])}</td></tr>' for c, b in band(feed))
@@ -1318,7 +1327,7 @@ def render(ctx):
                 '<table class="ct"><tbody>' + ''.join(f'<tr class="s-crit"><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
                                                       f'<td class="msg">{e(c["msg"])}</td></tr>'
                                                       for c in unreadable) + '</tbody></table>')
-    details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">every story commit — {len(feed)}</span></h2>{act}</section>')
+    details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">every commit — {len(feed)}</span></h2>{act}</section>')
     if ctx['deferred']:
         tally, part = {}, {False: [], True: []}
         for d in ctx['deferred']:
@@ -1889,7 +1898,8 @@ def demo():
     assert flat['9.1']['waits'] is None and flat['9.2']['waits'] == '9.1' and 'waits for 9.1' in out
     # F6: the commit vocabulary, and everything else shaped like ours is listed rather than dropped
     kinds = {c['kind'] for c in ctx['commits']}
-    assert {'story', 'step', 'hotfix', 'retro', 'unreadable'} <= kinds, kinds
+    assert {'story', 'step', 'hotfix', 'retro', 'unreadable', 'other'} <= kinds, kinds
+    assert '<tr class="dim' in out, 'a non-story commit is not greyed in the feed'
     assert 'Dvelop' in out and 'Unreadable commits' in out
     # The three panels paint from a tone; a tone that loses to its own element default is the bug
     # this pair catches, because both classes are one class and only source order separates them.
