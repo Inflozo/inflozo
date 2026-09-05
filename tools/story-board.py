@@ -312,16 +312,32 @@ def test_steps(t):
     return None
 
 
-def answered(blk):
-    """True only when a ruling label carries a ruling. An empty `**Ruled:**` is a placeholder a
+# The two lines a question block is cut on, in one place: the ruling label, and an option.
+RULING_RE = re.compile(r'\s*\**\s*(Answer|Answered|Ruled|Ruling|Decision)\b\**\s*:?\**\s*(.*)$', re.I)
+OPTION_RE = re.compile(r'^\s*\d+[.)]\s+\S', re.M)      # .match() per line, .search() per block
+
+
+def ruled_line(line):
+    """True on a ruling label that carries a ruling. An empty `**Ruled:**` is a placeholder a
     spec leaves for the owner, and reading it as an answer hides a live question from his inbox —
     which is exactly what it did to two of Story 1.1's (owner, 2026-09-04)."""
-    for line in blk.splitlines():
-        m = re.match(r'\s*\**\s*(Answer|Answered|Ruled|Ruling|Decision)\b\**\s*:?\**\s*(.*)$',
-                     line, re.I)
-        if m and m.group(2).strip(' *:'):
-            return True
-    return False
+    m = RULING_RE.match(line)
+    return bool(m and m.group(2).strip(' *:'))
+
+
+def answered(blk):
+    """True when any line of the block is a ruling that carries a ruling."""
+    return any(ruled_line(l) for l in blk.splitlines())
+
+
+def split_question(blk):
+    """(the ask, the options, the ruling) as markdown — the three parts R-83 gives every question.
+    The ruling is found first, because it may quote an option number of its own."""
+    lines = blk.splitlines()
+    cut = next((i for i, l in enumerate(lines) if ruled_line(l)), len(lines))
+    opt = next((i for i, l in enumerate(lines[:cut]) if OPTION_RE.match(l)), cut)
+    j = '\n'.join
+    return j(lines[:opt]).strip(), j(lines[opt:cut]).strip(), j(lines[cut:]).strip()
 
 
 def question_blocks(text):
@@ -329,7 +345,11 @@ def question_blocks(text):
     R-83 says each carries numbered options and a (RECOMMENDED) mark — both are checked, not assumed."""
     if not text.strip():
         return []
-    starts = [m.start() for m in re.finditer(r'^(?:#{3,6}\s+|\**\s*(?:QUESTION|Question|Q)\s*\d+)', text, re.M)]
+    # `**1. …**` is the shape the specs actually use. An option line starts with a bare digit, never
+    # with `**`, so requiring the asterisks keeps the two apart — before this, a section written that
+    # way read as ONE question and hid the rest (spec 1.2 had four inside one).
+    starts = [m.start() for m in re.finditer(
+        r'^(?:#{3,6}\s+|\**\s*(?:QUESTION|Question|Q)\s*\d+|\*\*\d+[.)]\s)', text, re.M)]
     if not starts or starts[0] != 0:
         starts = [0] + starts
     out = []
@@ -340,12 +360,15 @@ def question_blocks(text):
         first = re.sub(r'^#+\s*|\*', '', blk.split('\n', 1)[0]).strip()
         # ponytail: "answered" is a line starting Answer/Answered/Ruled/Ruling/Decision — the spec has no
         # field for it yet; add one to the template if this heuristic ever misfiles a question.
+        ask, opts, ruled = split_question(blk)
         if len(first) > 110:
             first = first[:110].rsplit(' ', 1)[0] + ' …'
+        else:                                   # the head already carries it whole; don't say it twice
+            ask = ask.split('\n', 1)[1].strip() if '\n' in ask else ''
         out.append({'title': first, 'text': blk,
-                    'options': bool(re.search(r'^\s*\d+[.)]\s+\S', blk, re.M)),
+                    'options': bool(OPTION_RE.search(blk)),
                     'recommended': '(RECOMMENDED)' in blk,
-                    'answered': answered(blk)})
+                    'answered': answered(blk), 'parts': (ask, opts, ruled)})
     return out
 
 
@@ -602,12 +625,16 @@ def render_questions(story):
             flag = f'<span class="flag">{e(NO_OPTIONS)}</span>'
         elif not q['answered'] and not q['recommended']:
             flag = f'<span class="flag">{e(NO_RECOMMENDED)}</span>'
-        # Open questions start open — they are the thing he came here for; ruled ones stay shut.
+        ask, opts, ruled = q['parts']
+        body = ''.join(f'<div class="qpart {cls}"><h5>{lbl}</h5>{mdblock(txt)}</div>'
+                       for cls, lbl, txt in (('ask', 'The question', ask),
+                                             ('opts', 'Your options', opts),
+                                             ('ruled', 'Ruled', ruled)) if txt)
         part[q['answered']].append(
-            f'<li><details{"" if q["answered"] else " open"}><summary class="plh">'
+            f'<li><details><summary class="plh">'
             f'<b>{md(q["title"])}</b>'
             f'<span class="st {"s-good" if q["answered"] else "s-warn"} solid">{"ruled" if q["answered"] else "open"}</span>'
-            f'</summary><div class="q">{mdblock(q["text"])}'
+            f'</summary><div class="q">{body}'
             f'{("<p class=flags>" + flag + "</p>") if flag else ""}</div></details></li>')
     when = ('Answer any time — it does not block your test.' if story['phase'] == 'Test'
             else 'Answer in chat, by number.')
@@ -726,7 +753,7 @@ def render_story(story, ep, phase_prompts, briefs):
         todo = ([pk] if pk else []) + [p for p, _ in PROMPTS if p != pk and p not in done]
 
         def one(p):
-            return (f'<li><details class="pr {"cur" if p == pk else ""}"{" open" if p == pk else ""}>'
+            return (f'<li><details class="pr {"cur" if p == pk else ""}">'
                     f'<summary class="prh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
                     + ('<span class="tag good">now</span>' if p == pk else '')
                     + (f'<span class="st s-good">done</span>' if p in done else '')
@@ -1004,6 +1031,14 @@ text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--cs)
 .acc>li>details>summary::before{content:"▸";color:var(--muted);font-size:.8rem;flex:0 0 auto;transition:transform .12s}
 .acc>li>details[open]>summary::before{transform:rotate(90deg)}
 .acc>li>details[open]>summary{margin-bottom:6px}
+.qpart{border-left:3px solid var(--c);border-radius:0 8px 8px 0;padding:7px 12px;margin:8px 0;background:var(--cs)}
+.qpart h5{margin:0 0 4px;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--c)}
+.qpart>:last-child{margin-bottom:0}
+.qpart.ask{--c:var(--wait);--cs:var(--code)}
+.qpart.opts{--c:var(--accent);--cs:var(--accent-s)}
+.qpart.ruled{--c:var(--good);--cs:var(--good-s)}
+.qpart.opts ol{margin:0;padding-left:1.3em}.qpart.opts li{margin:3px 0}
+.qpart.opts li:has(.tag.good){font-weight:600}
 .acc .plh{margin:0;flex-wrap:nowrap}.acc .plh b{flex:1 1 auto;min-width:0}.acc .q{border-top:0;padding:0}
 h3.sub,h4.sub{margin:18px 0 0;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 .prl{gap:6px}.prl>li{padding:0;border:0;background:transparent}.prl>li:hover{box-shadow:none}
@@ -1727,6 +1762,13 @@ Example: you remove your test site; two projects were last deployed there.
    One action, but it throws away work.
 
 Answer: 1 — keep the projects.
+
+**2. Should the removed site's name be free to reuse straight away?**
+
+Example: you remove "my-blog" and want to connect a new site under the same name the same afternoon.
+
+1. **Free it straight away (RECOMMENDED)** — nothing holds the name once the keys are gone.
+2. Hold it for thirty days in case the removal was a mistake.
 """),
 ]
 
@@ -1819,6 +1861,13 @@ def demo():
     assert 'class="lede">Someone could hammer' in out, 'a deferred entry ignores its plain: line'
     assert 'A retry count belongs in configuration' in out, 'an entry with no plain: lost its reason'
     assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
+    # A `**N. …**` heading starts a question; an option line, which begins with a bare digit, does not.
+    # Before this, spec 1.2's four questions read as one and three of them were invisible.
+    q34 = flat['3.4']['spec']['questions']
+    assert len(q34) == 2 and q34[1]['title'].startswith('2. Should the removed site'), \
+        f'a `**N. …**` question heading did not start a block: {[q["title"][:30] for q in q34]}'
+    assert [len(x) > 0 for x in q34[1]['parts']] == [True, True, False], 'the three parts did not split'
+    assert q34[0]['parts'][2].startswith('Answer: 1'), 'the ruling did not end the first question'
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
     assert not q32[0]['options'], 'the shapeless question must fail R-83'
