@@ -290,3 +290,22 @@ reason: Hosted `storage.objects` has `protect_objects_delete BEFORE DELETE ... F
   deletes from `storage.objects` is currently proving something about the stand-in only. Neither is
   urgent — no story deletes storage rows yet — but the first story that does will be built on the
   wrong model unless this is fixed first.
+
+### DW-11: the export's section render kits disagree with the Calibration Set on two Style Pack accents
+
+plain: Two files in the design export give two different oranges for one colour scheme and a purple versus a blue for another; the story that builds the colour schemes must take them from the product plan, not from either file.
+status: open
+severity: low
+origin: Story 1.3 create (2026-09-05), found while distilling the frames
+location: _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/a29-kit.js · Calibration Set.dc.html
+reason: The `*-kit.js` token objects (`PACKS` in `a29-kit.js:1-40`, same in the other five kits) and
+  the Calibration Set's hero strips (`Calibration Set.dc.html:41-96`) disagree: Tangerine's accent is
+  `#E8450A` / `#FF6B33` in the Calibration Set and `#E8541F` / `#F27C4A` in the kits; Ink's accent is
+  purple `#7C5CFF` / `#9B82FF` in the Calibration Set and blue `#2F6FED` / `#5A8CF5` in the kits.
+  Paper agrees. The Calibration Set says of itself (`:21`) that it is "aesthetic reference, NOT
+  per-variant specs — Appendix A of the PRD wins on any conflict", and the twelve packs' values live
+  in PRD Appendix D under AD-30's computed-or-authored rule. So the owning document already exists and
+  neither export file is it. Story 6.1 (the token engine) and 6.2 (the twelve presets) must read
+  Appendix D and treat both export files as calibration; the Style Pack tokens are out of Story 1.3's
+  scope entirely (app chrome only). Logged so the disagreement is not rediscovered in E6 as a
+  "which file is right" question when the answer is "neither, by the file's own header".
