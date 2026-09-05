@@ -112,6 +112,40 @@ reason: `pnpm -w check` blocks a release because it runs inside the Vercel build
   push deploys exactly once, through Actions. Rollback at any point is deleting that key.
   CONSEQUENCE the owner has been told: `VERCEL_TOKEN` will live in GitHub Actions as well as in
   `tools/probe/.env`.
+  BLOCKED at step 1, executed 2026-09-05: `tools/probe/.env`'s `GITHUB_TOKEN` can READ the secrets
+  public key (`GET /actions/secrets/public-key` -> HTTP 200) but cannot WRITE a secret
+  (`PUT /actions/secrets/<name>` -> HTTP 403 "Resource not accessible by personal access token").
+  Reading that 200 as permission to write was a wrong inference and is recorded so it is not repeated.
+  The repository still holds no secrets. Unblock either way: the owner adds the three by hand, or he
+  issues a fine-grained PAT with repository permission **Secrets: Read and write**. Two of the three
+  values are identifiers, not credentials, and are written down here so nobody re-derives them:
+  `VERCEL_ORG_ID = team_ISxd9rXNWzolPDHJX4TJpUKj` (the project's `accountId`, equal to
+  `VERCEL_TEAM_ID` in `.env`) and `VERCEL_PROJECT_ID = prj_ptauaY2o7FQckRDk31b7hdl06FSb`. The third,
+  `VERCEL_TOKEN`, is the value of that line in `tools/probe/.env` and is never written down.
+  STEP 2 IS WRITTEN AND WAITING - the job to append to `.github/workflows/ci.yml`, unchanged from the
+  method Vercel documents:
+
+      deploy:
+        needs: [check, rls]
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+          - uses: actions/checkout@v7
+          - uses: actions/setup-node@v7
+            with:
+              node-version-file: .nvmrc
+          - run: npm i -g vercel@latest
+          - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  It is deliberately NOT committed yet: without the secrets the job fails, and a red `main` is the one
+  thing the project does not push. The unverified claim inside it is that `vercel build` honours the
+  project's `rootDirectory: apps/web` when run from the repository root - a claim about an external
+  platform, so step 3 executes it while auto-deploy is still on, where a failure costs nothing.
 
 ### DW-8: the migration's byte-identity guard cannot survive the frozen-migration ruling
 
