@@ -245,6 +245,11 @@ DOCS = [
  ('tools/probe/seed-ghost.py', 'tool', 'Ghost fixture seeder', 'Seeds both Ghosts identically.'),
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
+ ('tools/probe/configure-supabase-auth.py', 'tool', 'Supabase Auth configuration',
+  "Writes the live project's Auth settings — Resend as custom SMTP, the 15-minute OTP expiry, the "
+  'branded template, the site URL — and PROVES each one by reading it back; --expect breaks one '
+  'expectation on purpose so a green run can be told from a run that checks nothing. Never prints '
+  'smtp_pass. Story 1.4.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
  ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
  ('tools/probe/run-verify-a33-cards.py', 'tool', 'Register probe · Koenig card selectors',

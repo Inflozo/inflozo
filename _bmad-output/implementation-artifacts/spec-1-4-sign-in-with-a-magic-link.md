@@ -2,8 +2,9 @@
 title: 'Story 1.4 — Sign in with a magic link'
 type: 'feature'
 created: '2026-09-05'
-status: 'ready-for-dev'
+status: 'in-progress'
 review_loop_iteration: 0
+baseline_commit: '24da0d3d41055db49b463bb55195a4b0b1f89886'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
 ---

@@ -34,6 +34,7 @@
   --color-surface: #FFFFFF;
   --color-ink: #1C1B1A;
   --color-ink-deep: #232019;
+  --color-ink-hover: #33312E;   /* the ink button's hover — S1 :34, Editor Sidebar Kit :132 */
   --color-ink-soft: #6E6A64;
   --color-ink-soft-aa: #6B6459;
   --color-ink-faint: #A8A29A;      /* rules, dividers and greyed text — never placeholder or hint text (2026-09-04) */

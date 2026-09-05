@@ -9,3 +9,6 @@ packages:
 # logger. Nothing here traces, so its build script never runs.
 allowBuilds:
   dtrace-provider: false
+
+minimumReleaseAgeExclude:
+  - '@supabase/ssr@0.12.6'

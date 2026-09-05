@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your Inflozo sign-in link</title>
+  </head>
+  <!--
+    S1b's vocabulary as an email. A transactional email is NOT a drawn surface (epics.md,
+    Stories 3.7 and 7.31), so this is extrapolated from the nearest frame that is — the same
+    wordmark, the same ink button, the same fifteen minutes, and nothing the frame does not say.
+
+    Values, not tokens, and inline, not a stylesheet: an email client has neither custom
+    properties nor a <style> block it can be trusted with. Every hex below is `globals.css`'s
+    token value — paper #F7F5F2, surface #FFFFFF, ink #1C1B1A, ink-soft #6E6A64, line #E7E2DB.
+    The faces are system stacks: Bricolage and Inter are self-hosted by the app and no email
+    client will fetch them.
+
+    `{{ .TokenHash }}` is why the link lands on our own route instead of GoTrue's /verify — see
+    apps/web/app/(app)/app/auth/confirm/route.ts. `{{ .SiteURL }}` is the project's `site_url`,
+    which `tools/probe/configure-supabase-auth.py` sets to https://app.inflozo.com and reads back.
+
+    `type=email` is EXECUTED, not assumed (2026-09-05, against the live project): GoTrue's
+    /auth/v1/verify returned 200 for this generic type on BOTH a `magiclink` token and a `signup`
+    token. That matters because a first-ever address does not get the magic-link mail at all — it
+    gets Confirm signup — so this ONE file is pushed to both templates and both must verify
+    through the same route. `{{ .Type }}` is not a documented GoTrue variable and is not used.
+  -->
+  <body style="margin:0;padding:0;background:#F7F5F2;">
+    <div style="display:none;font-size:0;line-height:0;max-height:0;overflow:hidden;">
+      Your sign-in link for Inflozo. It is good for 15 minutes.
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F7F5F2;">
+      <tr>
+        <td align="center" style="padding:40px 24px;">
+          <table role="presentation" width="400" cellpadding="0" cellspacing="0" border="0" style="width:400px;max-width:100%;background:#FFFFFF;border-radius:16px;">
+            <tr>
+              <td style="padding:40px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1C1B1A;">
+
+                <div style="font-family:'Trebuchet MS','Segoe UI',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.02em;color:#1C1B1A;">Inflozo</div>
+
+                <div style="font-family:'Trebuchet MS','Segoe UI',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.01em;line-height:1.15;color:#1C1B1A;padding-top:10px;">Sign in to Inflozo</div>
+
+                <div style="font-size:14px;line-height:1.55;color:#6E6A64;padding-top:10px;">One button, no password. This link is good for 15 minutes. If you didn&rsquo;t ask for it, ignore this email.</div>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="padding-top:24px;">
+                  <tr>
+                    <td align="center" bgcolor="#1C1B1A" style="border-radius:12px;">
+                      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email"
+                         style="display:inline-block;height:44px;line-height:44px;padding:0 24px;background:#1C1B1A;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;border-radius:12px;">Sign in to Inflozo</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="font-size:13px;line-height:1.5;color:#6E6A64;padding-top:24px;">Or paste this into your browser:</div>
+                <div style="font-size:13px;line-height:1.5;padding-top:4px;word-break:break-all;">
+                  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email" style="color:#6E6A64;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email</a>
+                </div>
+
+                <div style="border-top:1px solid #E7E2DB;margin-top:28px;"></div>
+                <div style="font-size:13px;color:#6E6A64;padding-top:16px;">Inflozo &middot; <a href="https://inflozo.com" style="color:#6E6A64;">inflozo.com</a></div>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

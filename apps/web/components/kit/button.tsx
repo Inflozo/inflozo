@@ -15,7 +15,7 @@ type Size = 44 | 36 | 32
 
 const variants: Record<Variant, string> = {
   coral: 'bg-coral-text text-surface hover:bg-coral-text-hover',
-  primary: 'bg-ink text-surface hover:bg-ink-deep',
+  primary: 'bg-ink text-surface hover:bg-ink-hover',
   secondary: 'border border-line bg-surface text-ink hover:bg-paper',
   ghost: 'text-ink-soft hover:bg-paper-sunk',
   'coral-outline': 'border border-coral bg-surface text-coral-text hover:bg-coral-tint',

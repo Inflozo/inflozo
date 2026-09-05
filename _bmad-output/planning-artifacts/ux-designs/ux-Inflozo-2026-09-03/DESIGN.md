@@ -19,6 +19,7 @@ colors:
   surface: '#FFFFFF'
   ink: '#1C1B1A'
   ink-deep: '#232019'
+  ink-hover: '#33312E — the ink button's hover, drawn as its own value by the Kit (:132) and by S1 (:34); until 2026-09-05 the primary button hovered to ink-deep, which is the canvas chrome, not this. Added by Story 1.4'
   ink-soft: '#6E6A64'
   ink-soft-aa: '#6B6459'
   ink-faint: '#A8A29A — rules, dividers and disabled text; never placeholder or hint text, which moved to ink-soft-aa on 2026-09-04 (A7 item 10)'
