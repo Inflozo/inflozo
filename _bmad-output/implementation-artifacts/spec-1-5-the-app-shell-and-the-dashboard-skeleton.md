@@ -515,6 +515,20 @@ that the first pass had not covered were executed for the first time.
 
 **A fixture user round-tripped on the deployed site** — `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
 
+**Deploy (2026-09-05)** — the push of the Review commit, confirmed on the real stack (R-82; PRD §4, AD-26:
+production is the stack under test). No schema change in this story, so nothing beyond app code to deploy.
+
+| Check | Result |
+|---|---|
+| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `d677a159` — `check` ✓ `rls` ✓ `deploy` ✓ |
+| Vercel deployments (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_27Ftr4NiH4htjcYP6EE9yE2gpvtq`, state **READY**, built from `d677a159` |
+| Aliases on that deployment | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`), plus the probe and account preview aliases |
+| `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present |
+| `curl -sI https://app.inflozo.com/` signed out | **307** → `/sign-in`, unchanged |
+| `curl -sI https://inflozo.com/` | **200** |
+
+Deployment: `inflozo-p3pavnpq3-umangkagathara.vercel.app` (`dpl_27Ftr4NiH4htjcYP6EE9yE2gpvtq`)
+
 | Step | Result |
 |---|---|
 | admin-created user → `profiles` / `entitlements` | **1 and 1**, `state = free` — 1.2's triggers fired |
