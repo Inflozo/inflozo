@@ -17,23 +17,32 @@ export type Greyed = {
 }
 
 /**
- * P0-0: not focusable for editing, but read aloud with its reason —
+ * P0-0: "not focusable for editing, but read aloud with its reason" —
  * "Overlay tint, Soft dark, unavailable — Not available while the media uses the accent colour."
+ * So the control STAYS in the Tab order (`aria-disabled`, never `disabled`) and its inner
+ * options leave it: one stop, one announcement, the reason in it. Removing it from Tab
+ * entirely would leave a keyboard user never hearing the sentence (review, 2026-09-05).
  */
 export function greyedProps(id: string, greyed?: Greyed) {
-  return greyed
-    ? {
-        'aria-disabled': true,
-        'aria-describedby': `${id}-reason`,
-        'data-greyed': '',
-        tabIndex: -1,
-      }
-    : {}
+  if (!greyed) return {}
+  if (!greyed.reason.trim()) throw new Error(`${id}: a greyed control must say why (UX-DR3)`)
+  return {
+    'aria-disabled': true,
+    'aria-describedby': `${id}-reason`,
+    'data-greyed': '',
+    tabIndex: 0,
+  }
+}
+
+/** R-69: the option to mark — none when the value in force is not this control's own. */
+export function marked<T>(active: T, greyed?: Greyed): T | null {
+  return greyed && greyed.value === null ? null : active
 }
 
 /** The sentence itself: 11.5px ink-soft, inside the control's own row group. */
 export function reason(id: string, greyed?: Greyed): ReactNode {
   if (!greyed) return null
+  if (!greyed.reason.trim()) throw new Error(`${id}: a greyed control must say why (UX-DR3)`)
   return createElement(
     'p',
     { id: `${id}-reason`, className: 'text-[11.5px] leading-[1.5] text-ink-soft' },

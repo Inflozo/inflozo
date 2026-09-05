@@ -17,19 +17,19 @@ export function ConditionRow({
 }) {
   const box = `flex h-9 shrink-0 items-center gap-[6px] rounded-sm border border-line bg-surface px-[10px] ${ring}`
   return (
-    <div className="flex items-center gap-2">
-      <button type="button" aria-label="Field" className={`${box} w-[84px]`}>
+    <div id={id} className="flex items-center gap-2">
+      <button type="button" aria-label={`Field: ${field}`} className={`${box} w-[84px]`}>
         <span className="flex-1 text-left text-[12.5px] font-medium text-ink">{field}</span>
         <ChevronDown size={11} className="text-ink-soft" />
       </button>
-      <button type="button" aria-label="Operator" className={`${box} w-[88px]`}>
+      <button type="button" aria-label={`Operator: ${operator}`} className={`${box} w-[88px]`}>
         <span className="flex-1 text-left text-[12.5px] font-medium text-ink">{operator}</span>
         <ChevronDown size={11} className="text-ink-soft" />
       </button>
       <div className="flex min-h-9 flex-1 flex-wrap items-center gap-[5px] rounded-sm border border-line bg-surface px-2 py-[3px]">
-        {values.map((value) => (
+        {values.map((value, i) => (
           <span
-            key={value}
+            key={`${i}-${value}`}
             className="inline-flex items-center gap-[5px] rounded-pill border border-line bg-paper px-2 py-[2px] text-[11.5px] font-medium text-ink"
           >
             {value}
@@ -43,7 +43,7 @@ export function ConditionRow({
           </span>
         ))}
       </div>
-      <button type="button" aria-label={`Remove the ${field} condition`} className={`shrink-0 text-ink-soft ${ring}`} id={id}>
+      <button type="button" aria-label={`Remove the ${field} condition`} className={`shrink-0 text-ink-soft ${ring}`}>
         <X />
       </button>
     </div>

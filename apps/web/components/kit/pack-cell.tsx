@@ -1,3 +1,4 @@
+import { ProBadge } from './badge'
 import { Pencil } from './icons'
 import { ring } from './greyed'
 
@@ -33,8 +34,8 @@ export function PackCell({
       </span>
       <span className="text-[10.5px] font-semibold text-ink">{name}</span>
       <span aria-hidden className="flex gap-[3px]">
-        {palette.map((c) => (
-          <span key={c} style={{ background: c }} className="size-[9px] rounded-full shadow-hairline-inset" />
+        {palette.map((c, i) => (
+          <span key={i} style={{ background: c }} className="size-[9px] rounded-full shadow-hairline-inset" />
         ))}
       </span>
     </div>
@@ -45,9 +46,9 @@ export function PackCell({
 export const NewPackCell = () => (
   <button
     type="button"
-    className={`flex flex-col items-center justify-center gap-[3px] rounded-sm border-[1.5px] border-dashed border-line-strong text-ink-soft transition-colors duration-fast ease-out hover:border-coral ${ring}`}
+    className={`flex flex-col items-center justify-center gap-[3px] rounded-sm border-[1.5px] border-dashed border-line-strong text-ink-soft transition-colors hover:border-coral ${ring}`}
   >
-    <span aria-hidden className="text-base leading-none">
+    <span aria-hidden className="text-body leading-none">
       +
     </span>
     <span className="text-[10px] font-semibold">New pack</span>
@@ -67,7 +68,7 @@ export function VariantThumb({
   return (
     <button
       type="button"
-      className={`flex items-center gap-2 rounded-sm border border-line bg-surface p-2 text-left transition-shadow duration-fast ease-out hover:shadow-md ${ring}`}
+      className={`flex items-center gap-2 rounded-sm border border-line bg-surface p-2 text-left transition-shadow hover:shadow-md ${ring}`}
     >
       <span aria-hidden className="flex h-[34px] w-12 shrink-0 items-center rounded-[6px] border border-line bg-surface p-[5px]">
         <span className="flex flex-1 flex-col items-center justify-center gap-[2px]">
@@ -80,8 +81,8 @@ export function VariantThumb({
         <span className="text-[10px] text-ink-soft">{line}</span>
       </span>
       {pro ? (
-        <span className="ml-auto shrink-0 rounded-pill bg-marigold-tint px-[7px] py-px text-[10px] font-semibold text-marigold-text">
-          ✦ Pro
+        <span className="ml-auto shrink-0">
+          <ProBadge small />
         </span>
       ) : null}
     </button>

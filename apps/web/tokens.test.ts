@@ -25,10 +25,17 @@ test('the export has frames to check against', () => {
   assert.ok(frames.length > 0, `no .dc.html frames under ${EXPORT}`)
 })
 
+/** The colour forms the export uses: 6-digit hex and rgb(a). Anything else is not a
+    transcription and fails loudly rather than slipping past the grep. */
+const atoms = /#[0-9A-Fa-f]{6}\b|rgba?\([^)]*\)/g
+
 test('every colour value in the token layer occurs verbatim in the export', () => {
-  const atoms = /#[0-9A-Fa-f]{6}\b|rgba?\([^)]*\)/g
   for (const { name, value } of tokens) {
-    for (const atom of value.match(atoms) ?? []) {
+    const found = value.match(atoms) ?? []
+    if (name.startsWith('--color-')) {
+      assert.equal(found.join(''), value, `${name}: "${value}" is not a hex or rgb(a) colour the export could contain`)
+    }
+    for (const atom of found) {
       assert.ok(inExport(atom), `${name}: ${atom} occurs in no frame of the export`)
     }
   }
@@ -57,6 +64,7 @@ function frontMatterKeys(section: string): string[] {
     const key = /^ {2}([A-Za-z0-9-]+):/.exec(line)
     if (key) keys.push(key[1])
   }
+  assert.ok(keys.length > 0, `DESIGN.md front matter: ${section}: block parsed to no keys`)
   return keys
 }
 
@@ -67,28 +75,48 @@ const twins: [string, string][] = [
 ]
 
 for (const [section, prefix] of twins) {
-  test(`every DESIGN.md ${section}.* name has its ${prefix}-* twin`, () => {
-    const declared = new Set(group(tokens, prefix).map((t) => shortName(t.name, prefix)))
-    const missing = frontMatterKeys(section).filter((k) => !declared.has(k))
+  test(`every DESIGN.md ${section}.* name has its ${prefix}-* twin, and nothing else is named`, () => {
+    const declared = group(tokens, prefix).map((t) => shortName(t.name, prefix))
+    const recorded = frontMatterKeys(section)
+    const missing = recorded.filter((k) => !declared.includes(k))
     assert.deepEqual(missing, [], `${prefix}: no token for ${section}.${missing.join(', ')}`)
+    // both ways: a name invented in CSS is as much a second vocabulary as a value
+    const invented = declared.filter((k) => !recorded.includes(k))
+    assert.deepEqual(invented, [], `${prefix}: ${invented.join(', ')} is not a name DESIGN.md records`)
   })
 }
 
-test('no .tsx under apps/web carries a hex colour literal', () => {
+test('no .ts or .tsx under apps/web carries a colour literal', () => {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
       if (e.name === 'node_modules' || e.name === '.next') return []
       const p = join(dir, e.name)
-      return e.isDirectory() ? walk(p) : e.name.endsWith('.tsx') ? [p] : []
+      if (e.isDirectory()) return walk(p)
+      return /\.tsx?$/.test(e.name) && !e.name.endsWith('.test.ts') && !e.name.endsWith('.d.ts') ? [p] : []
     })
 
   const files = walk(process.cwd())
-  assert.ok(files.length > 0, 'found no .tsx to scan')
+  assert.ok(files.some((f) => f.endsWith('.tsx')), 'found no .tsx to scan')
+  // hex in any length, and rgb(a) — the same atoms the token test accepts, so what one
+  // gate allows in globals.css the other refuses everywhere else
+  const literal = /#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g
   const offenders = files.flatMap((f) => {
-    const hits = readFileSync(f, 'utf8').match(/#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b/g)
+    const hits = readFileSync(f, 'utf8').match(literal)
     return hits ? [`${f}: ${[...new Set(hits)].join(' ')}`] : []
   })
   assert.deepEqual(offenders, [], 'the tokens are the only colour vocabulary')
+})
+
+test('every face the theme names is a face layout.tsx loads', () => {
+  const css = readFileSync(themeFile(), 'utf8')
+  const inline = /@theme inline\s*\{([\s\S]*?)\n\}/.exec(css)
+  assert.ok(inline, 'globals.css has no @theme inline block')
+  const faces = [...inline[1].matchAll(/var\((--font-[a-z-]+)\)/g)].map((m) => m[1])
+  assert.ok(faces.length > 0, 'the inline theme names no font variable')
+  const layout = readFileSync(join(process.cwd(), 'app', 'layout.tsx'), 'utf8')
+  for (const face of faces) {
+    assert.ok(layout.includes(`variable: '${face}'`), `${face} is read by the theme but no next/font call declares it`)
+  }
 })
 
 test('the app’s three widths are the export’s three widths', () => {

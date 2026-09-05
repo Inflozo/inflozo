@@ -27,7 +27,7 @@ export function Stepper({
           id={id}
           role="group"
           aria-labelledby={`${id}-label`}
-          className={`flex items-center overflow-hidden rounded-sm border ${greyed ? 'border-grey-border bg-grey-field' : 'border-line bg-surface'}`}
+          className={`flex items-center overflow-hidden rounded-sm border ${ring} ${greyed ? 'border-grey-border bg-grey-field' : 'border-line bg-surface'}`}
           {...greyedProps(id, greyed)}
         >
           <button type="button" aria-label={`Fewer ${label}`} tabIndex={greyed ? -1 : 0} className={step}>

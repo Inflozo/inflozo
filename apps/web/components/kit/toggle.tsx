@@ -28,7 +28,7 @@ export function Toggle({
           aria-checked={checked}
           aria-labelledby={`${id}-label`}
           className={`relative h-5 w-9 rounded-thumb ${ring} ${
-            greyed ? 'cursor-not-allowed bg-grey-border' : checked ? 'bg-coral' : 'bg-line-strong'
+            greyed ? 'cursor-not-allowed bg-grey-track' : checked ? 'bg-coral' : 'bg-line-strong'
           }`}
           {...greyedProps(id, greyed)}
         >

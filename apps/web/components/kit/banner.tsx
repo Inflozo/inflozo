@@ -2,26 +2,27 @@ import type { ReactNode } from 'react'
 import { AlertTriangle, CheckCircleSolid, InfoCircle, XCircleSolid } from './icons'
 
 /* Editor Sidebar Kit.dc.html:238 — feedback banners: ONE ICON, ONE PLAIN SENTENCE, in the
-   four colours. Sky informs, mint succeeds, marigold nudges without blocking, danger is
-   serious. A LINK INSIDE TAKES SKY, NEVER CORAL (DESIGN.md Don'ts). */
+   four colours, each with the hairline the frame draws as its own hex (:238-241). Sky informs,
+   mint succeeds, marigold nudges without blocking, danger is serious. A LINK INSIDE TAKES SKY,
+   NEVER CORAL (DESIGN.md Don'ts). */
 
 export type BannerKind = 'info' | 'success' | 'notice' | 'error'
 
 const looks: Record<BannerKind, { box: string; icon: ReactNode }> = {
   info: {
-    box: 'bg-sky-tint border-sky/25 text-sky-text',
+    box: 'bg-sky-tint border-sky-line text-sky-text',
     icon: <InfoCircle />,
   },
   success: {
-    box: 'bg-mint-tint border-mint/30 text-mint-text',
+    box: 'bg-mint-tint border-mint-line text-mint-text',
     icon: <CheckCircleSolid className="text-mint" />,
   },
   notice: {
-    box: 'bg-marigold-tint border-marigold/40 text-marigold-text',
+    box: 'bg-marigold-tint border-marigold-line text-marigold-text',
     icon: <AlertTriangle />,
   },
   error: {
-    box: 'bg-danger-tint border-danger/30 text-danger-text',
+    box: 'bg-danger-tint border-danger-line text-danger-text',
     icon: <XCircleSolid className="text-danger" />,
   },
 }

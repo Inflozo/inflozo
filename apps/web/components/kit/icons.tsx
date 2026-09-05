@@ -25,6 +25,13 @@
  * with everything switched off. MEMBERSHIP IS THE KIT'S — every glyph below is one the
  * export actually draws, and a glyph the export does not draw is a Claude Design prompt,
  * never a new file here.
+ *
+ * PROVENANCE, stated plainly (review, 2026-09-05): every path below is the frame's own
+ * inline <svg> markup, read verbatim under R-74. Compared against Tabler's sources, that
+ * geometry is Claude Design's own, Feather-like drawing — not Tabler's paths — so the notice
+ * above covers the Tabler set D1 names and nothing in this file yet. Whether the frame's
+ * paths stay or Tabler's replace them is the owner's call, asked in the story's spec under
+ * "Questions for the owner"; until he rules, nothing here is silently relabelled.
  */
 import type { ReactNode, SVGProps } from 'react'
 

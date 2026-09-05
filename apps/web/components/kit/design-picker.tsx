@@ -1,9 +1,9 @@
-import { greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
+import { greyedProps, labelTone, marked, reason, ring, type Greyed } from './greyed'
 
 /* Editor Sidebar Kit.dc.html:71 — design picker. 64×44 wireframe mini-diagrams, ink lines
    with a coral highlight on surface, active takes a coral ring. Above it the counter —
-   "7 of 18", mono, under a label reading Design, NEVER "Layout". Twelve then a +N tile,
-   because a scrollbar 44px tall is a worse target than a tile (B1a). */
+   "7 of 18", mono, under a label reading Design, NEVER "Layout". The Kit draws six tiles;
+   the full picker's +N tile (B1a) is the Design accordion's and is not drawn here. */
 
 /** The six wireframes the Kit draws, each a arrangement of ink rules and a coral block. */
 const wireframes = [
@@ -66,22 +66,25 @@ export function DesignPicker({
         id={id}
         role="radiogroup"
         aria-labelledby={`${id}-label`}
-        className="flex flex-wrap gap-2"
+        className={`flex flex-wrap gap-2 ${ring}`}
         {...greyedProps(id, greyed)}
       >
-        {wireframes.map((art, i) => (
+        {wireframes.map((art, i) => {
+          const on = i === marked(active, greyed)
+          return (
           <button
             key={i}
             type="button"
             role="radio"
-            aria-checked={i === active}
+            aria-checked={on}
             aria-label={`Design ${i + 1}`}
             tabIndex={greyed ? -1 : 0}
-            className={`flex h-11 w-16 items-center gap-1 rounded-[6px] border border-line bg-surface p-[6px] ${ring} ${i === active ? 'shadow-[0_0_0_2px_var(--color-coral)]' : ''}`}
+            className={`flex h-11 w-16 items-center gap-1 rounded-[6px] border border-line bg-surface p-[6px] ${ring} ${on ? 'shadow-[0_0_0_2px_var(--color-coral)]' : ''}`}
           >
             {art}
           </button>
-        ))}
+          )
+        })}
       </div>
       {reason(id, greyed)}
     </div>

@@ -11,10 +11,14 @@ export const themeFile = () => join(process.cwd(), 'app', 'globals.css')
 
 /** The `@theme` block only — `@theme inline` holds var() references, not values. */
 export function readTheme(css: string): Token[] {
-  const block = /@theme\s*\{([\s\S]*?)\n\}/.exec(css)
+  // comments go first, so a `}` inside one can never end the block early
+  const bare = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  const block = /@theme\s*\{([\s\S]*?)\n\}/.exec(bare)
   if (!block) throw new Error('globals.css has no @theme block')
-  const body = block[1].replace(/\/\*[\s\S]*?\*\//g, '')
-  return [...body.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)].map((m) => ({
+  const body = block[1]
+  return [...body.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)]
+    .filter((m) => !m[1].endsWith('-*')) // `--color-*: initial` clears Tailwind's own; it is not a token
+    .map((m) => ({
     name: `--${m[1]}`,
     value: m[2].trim(),
   }))

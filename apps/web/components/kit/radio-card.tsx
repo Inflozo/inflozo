@@ -1,4 +1,4 @@
-import { greyedProps, reason, ring, type Greyed } from './greyed'
+import { greyedProps, marked, reason, ring, type Greyed } from './greyed'
 
 /* Editor Sidebar Kit.dc.html:117 — radio cards. The selected card takes a coral border and
    a tint wash, and EACH CARD CARRIES ONE LINE OF CONSEQUENCE, PLAINLY SAID. Hover firms up
@@ -24,9 +24,9 @@ export function RadioCards({
       <span id={`${id}-label`} className="sr-only">
         {label}
       </span>
-      <div id={id} role="radiogroup" aria-labelledby={`${id}-label`} className="flex flex-col gap-[10px]" {...greyedProps(id, greyed)}>
+      <div id={id} role="radiogroup" aria-labelledby={`${id}-label`} className={`flex flex-col gap-[10px] ${ring}`} {...greyedProps(id, greyed)}>
         {options.map(({ value, title, consequence }) => {
-          const on = value === active
+          const on = value === marked(active, greyed)
           return (
             <button
               key={value}

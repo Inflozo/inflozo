@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
       className={`${bricolage.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="font-ui">{children}</body>
+      <body>{children}</body>
     </html>
   )
 }

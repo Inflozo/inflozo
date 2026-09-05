@@ -25,6 +25,7 @@ export function Progress({
   count: string
   percent: number
 }) {
+  const p = Math.min(100, Math.max(0, Number.isFinite(percent) ? percent : 0))
   return (
     <div className="flex flex-col gap-[6px]">
       <div className="flex justify-between">
@@ -34,12 +35,12 @@ export function Progress({
       <div
         role="progressbar"
         aria-label={label}
-        aria-valuenow={percent}
+        aria-valuenow={p}
         aria-valuemin={0}
         aria-valuemax={100}
         className="h-[5px] overflow-hidden rounded-[3px] bg-paper-sunk"
       >
-        <div style={{ width: `${percent}%` }} className="h-full rounded-[3px] bg-coral" />
+        <div style={{ width: `${p}%` }} className="h-full rounded-[3px] bg-coral" />
       </div>
     </div>
   )

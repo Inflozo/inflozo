@@ -26,7 +26,8 @@ export function Select({
       </span>
       <button
         type="button"
-        aria-labelledby={`${id}-label`}
+        id={id}
+        aria-labelledby={`${id}-label ${id}`}
         className={`flex h-[38px] items-center gap-[9px] rounded-sm border px-[11px] ${fieldTone(greyed)} ${ring} ${greyed ? '' : 'hover:border-line-strong'}`}
         {...greyedProps(id, greyed)}
       >
@@ -74,10 +75,10 @@ export function Menu({ label, items }: { label: string; items: MenuItem[] }) {
   return (
     <ul
       aria-label={label}
-      className="flex w-[210px] list-none flex-col gap-px rounded-[12px] border border-line bg-surface p-[6px] shadow-lg"
+      className="flex w-[210px] list-none flex-col gap-px rounded border border-line bg-surface p-[6px] shadow-lg"
     >
       {items.map((item, i) => (
-        <li key={item.label} className="contents">
+        <li key={item.label} className="flex flex-col">
           {item.danger && i > 0 ? <hr className="mx-2 my-1 h-px border-0 bg-line" /> : null}
           <button
             type="button"

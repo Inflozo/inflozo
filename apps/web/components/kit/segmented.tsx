@@ -1,10 +1,12 @@
-import { greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
+import { greyedProps, labelTone, marked, reason, ring, type Greyed } from './greyed'
 import { MoonBadge } from './moon-badge'
 
 /* Editor Sidebar Kit.dc.html:63 — segmented. A pill track on paper-sunk; the active
    segment is surface + sm. NAMED VALUES ONLY, never numbers (Appendix C).
    Greyed (P0-0): the track goes grey-field and the pill stays on the value IN FORCE —
-   and when that value is not one of its own, `greyed.value: null` marks none (R-69). */
+   and when that value is not one of its own, `greyed.value: null` marks none (R-69).
+   P0-0 :96 fills the greyed active pill one unit off paper-raised (…F6 for …F5), read as the
+   same value rather than a token of its own. */
 
 export function Segmented({
   id,
@@ -21,8 +23,7 @@ export function Segmented({
   greyed?: Greyed
   moon?: boolean
 }) {
-  // R-69: the value in force is another control's, so no segment is marked.
-  const marked = greyed && greyed.value === null ? null : active
+  const on = marked(active, greyed)
   return (
     <div className="flex flex-col gap-[5px]">
       <span
@@ -36,20 +37,20 @@ export function Segmented({
         id={id}
         role="radiogroup"
         aria-labelledby={`${id}-label`}
-        className={`flex rounded-pill p-[3px] ${greyed ? 'bg-grey-field' : 'bg-paper-sunk'}`}
+        className={`flex rounded-pill p-[3px] ${ring} ${greyed ? 'bg-grey-field' : 'bg-paper-sunk'}`}
         {...greyedProps(id, greyed)}
       >
         {options.map((option) => {
-          const on = option === marked
+          const active_ = option === on
           return (
             <button
               key={option}
               type="button"
               role="radio"
-              aria-checked={on}
+              aria-checked={active_}
               tabIndex={greyed ? -1 : 0}
               className={`flex-1 rounded-[20px] py-1 text-center text-[11.5px] ${ring} ${
-                on
+                active_
                   ? `font-semibold shadow-sm ${greyed ? 'bg-paper-raised text-ink-faint' : 'bg-surface text-ink'}`
                   : `font-medium ${greyed ? 'text-line-strong cursor-not-allowed' : 'text-ink-soft'}`
               }`}

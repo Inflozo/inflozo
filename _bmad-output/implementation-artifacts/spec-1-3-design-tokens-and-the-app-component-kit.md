@@ -2,9 +2,9 @@
 title: 'Story 1.3 — Design tokens and the app component kit, taken from the export'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'f83a46ae414455c8aa95149b0d14d4d9a5adf2c1'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
@@ -85,9 +85,11 @@ Nothing a customer uses changes in this story: it builds the box of parts every 
 - [x] `apps/web/app/layout.tsx` -- the three `next/font/google` faces with the frames' axes, their variables on `<html>`, `font-ui` on `<body>` -- self-hosted at build, no runtime request to Google, nothing for 1.4's CSP to allow
 - [x] `apps/web/components/kit/icons.tsx` -- the Tabler icons the Kit draws, inline `<svg>` in `currentColor`, stroke 1.5, `aria-hidden` unless labelled; MIT notice at the top; membership derived from the Kit, never fixed here
 - [x] `apps/web/components/kit/greyed.ts` -- `type Greyed = { reason: string; value?: null }` and `greyedProps(id, greyed)` (`aria-disabled`, `aria-describedby`, `data-greyed`) -- UX-DR3 by construction, in one place
-- [x] `apps/web/components/kit/*.tsx` -- one file per Kit group, named after it (`labels`, `accordion`, `input`, `segmented`, `design-picker`, `swatch-row`, `stepper`, `toggle`, `visibility`, `grip`, `select`, `radio-card`, `button`, `badge`, `tooltip`, `quick-controls-card`, `pack-cell`, `layers-row`, `condition-row`, `banner`, `toast`, `loading`, `image-control`, `empty-panel`, `shortcut-row`, and from the S/B frames `canvas-pill`, `persistence-indicator`, `moon-badge`); Tailwind utilities on the tokens only; `'use client'` only where a control holds state; every control accepts `greyed?: Greyed` and renders the reason under itself -- the vocabulary, once
+- [x] `apps/web/components/kit/*.tsx` -- one file per Kit group, named after it (`labels`, `accordion`, `input`, `segmented`, `design-picker`, `swatch-row`, `stepper`, `toggle`, `visibility`, `grip`, `select`, `radio-card`, `button`, `badge`, `tooltip`, `quick-controls-card`, `pack-cell`, `layers-row`, `condition-row`, `banner`, `toast`, `loading`, `image-control`, `empty-panel`, `shortcut-row`, and from the S/B frames `canvas-pill`, `persistence-indicator`, `moon-badge`); Tailwind utilities on the tokens only; `'use client'` only where a control holds state; every control P0-0 greys (its five shapes and the input of its pair) accepts `greyed?: Greyed` and renders the reason under itself -- a control the export never draws greyed has no `greyed` prop, because that state would be invented -- the vocabulary, once
+- [x] `apps/web/tokens.ts` -- the one reader of the `@theme` block, shared by the gallery (which draws it) and the token test (which proves it): a token added in CSS needs no second edit
+- [x] `apps/web/greyed.test.ts` -- the greyed contract under `node --test`: the announced attributes, the reason element, a blank reason throws, and `marked()` for R-69 (added by the review)
 - [x] `apps/web/app/(app)/app/kit/page.tsx` -- the gallery: the token sheet first (each colour as a swatch with name and value, the radii, the shadows, the type roles in their faces, the breakpoints), then every group in the Kit's order inside a 280px column on paper, each state the frame draws as its own instance (rest · greyed with reason · selected · icon button disabled at 35%), the components that float over the canvas on an `ink` ground; `metadata.robots = { index: false }`; statically prerendered -- the review surface
-- [x] `apps/web/tokens.test.ts` -- reads the `@theme` block: (a) every hex / rgba value occurs in some `.dc.html` under the export; (b) every `colors.*`, `rounded.*` and `elevation.*` key in `DESIGN.md`'s front matter has its `--color-*` / `--radius-*` / `--shadow-*` twin; (c) no `.tsx` under `apps/web` contains a hex colour literal -- "matches the frame" and "no second vocabulary" as a gate, run by `pnpm check`
+- [x] `apps/web/tokens.test.ts` -- reads the `@theme` block: (a) every hex / rgba value occurs in some `.dc.html` under the export, and every `--color-*` value is wholly one of those forms; (b) every `colors.*`, `rounded.*` and `elevation.*` key in `DESIGN.md`'s front matter has its `--color-*` / `--radius-*` / `--shadow-*` twin **and vice versa** -- a name invented in CSS fails too; (c) no `.ts` or `.tsx` under `apps/web` contains a hex or `rgb(a)` colour literal; (d) every `var(--font-*)` the inline theme reads is a `variable:` some `next/font` call in `layout.tsx` declares -- "matches the frame" and "no second vocabulary" as a gate, run by `pnpm check`
 
 **Acceptance Criteria:**
 - Given `Calibration Set.dc.html`, `Editor Sidebar Kit.dc.html` and `R Responsive System.dc.html`, when the token layer is built, then its values are theirs (every colour and shadow value greps in the export) and its names are `DESIGN.md`'s recorded names — the test asserts both.
@@ -138,6 +140,72 @@ Nothing a customer uses changes in this story: it builds the box of parts every 
 `${id}-label` and `${id}-reason`; it is now also the element's own `id`, as it always was on the input.
 The stepper additionally gained `role="group"` + `aria-labelledby`, which every sibling control already
 had and which is why axe saw its greyed label as live text on the first run.
+
+**The review's corrections (2026-09-05, five review layers, each finding read against the frame or
+executed before it was rated).** None invents a value; every colour added was read off a frame and
+named in `DESIGN.md` in the same commit, as the spec's precedence rule requires.
+
+1. **Tailwind's own vocabulary is now cleared.** `@theme` opens with `--color-*`, `--breakpoint-*`,
+   `--text-*`, `--radius-*` and `--shadow-*: initial`, so `bg-red-500`, `md:`, `text-2xl`, `rounded-xl`
+   and `shadow-2xl` compile to nothing (executed with Tailwind 4.3.3's `compile()`: NOT GENERATED;
+   every token utility still is). "No second vocabulary" was true of hex literals only; it is now true
+   by construction. The gallery's three default sizes became frame sizes (24 · 44 · body).
+2. **The motion tokens now reach the components.** Tailwind has no `duration-*` namespace — executed:
+   `duration-fast` and `duration-(--duration-fast)` compile to nothing, so every transition was running
+   at Tailwind's 150ms default. `--default-transition-duration: var(--duration-fast)` and the easing
+   are set in the inline theme; `transition-colors` alone now measures `0.16s` and
+   `cubic-bezier(0, 0, 0.2, 1)` in the browser.
+3. **A greyed control stays in the Tab order.** `greyedProps` set `tabIndex -1`, which the spec's own
+   snippet never did; P0-0 :82 says "not focusable for editing, but read aloud with its reason", and a
+   control Tab never reaches is never read aloud. It is now `tabIndex 0` on the control (or on the
+   group, whose options leave the order): one stop, the ring, label and reason announced together.
+   Measured: each of the six greyed instances is one Tab stop carrying `0 0 0 2px rgb(194,56,31)`.
+4. **The layers-row hover is the 40% wash.** The code had `coral-wash/10` — a 4% coral in no frame —
+   under a comment saying 40%. The Kit's older row (`:222`) draws an ink 4% wash; D8e (`D8 Editor Below
+   1440.dc.html:387`, "HOVER · THE WASH") draws `rgba(255,89,65,.4)` and `DESIGN.md` § Components
+   follows D8e. The newer frame wins; the gallery now pins that state as its own instance.
+5. **Four banner hairlines and one hover, as drawn.** The banners bordered `sky/25`, `mint/30`,
+   `marigold/40`, `danger/30` — tinted mixes in no frame — where the Kit (`:238-241`) draws
+   `#D4E0FA` `#BFE7D6` `#F5E3B8` `#F5C6C9`; those are now `sky-line` … `danger-line`. The danger button
+   hovers to `#C63A3F` (`:135`) as `danger-text-hover`. The greyed toggle track is P0-0's `#E2DCD3`
+   (`grey-track`), not the greyed border. `grey-field` and `grey-border` are now named in `DESIGN.md`
+   too, which the new reverse twin test requires of every token.
+6. **`Button` has no `disabled`.** The Kit draws a disabled state for the 28px icon button only
+   (`:158`); a full-size button at 35% was an invented state, so the prop is a compile error now — the
+   same mechanism as an unreasoned grey. `IconButton` keeps it.
+7. **Names that screen readers hear.** `Select`'s `aria-labelledby` replaced the button's content, so
+   "Post Grid" was never announced — it now names label and value. The condition row's Field and
+   Operator buttons carried `aria-label="Field"`, hiding their visible text from voice control (WCAG
+   2.5.3); the labels now contain it. The visibility eye dropped `aria-pressed` beside a label that
+   already changes. The menu's `<li class="contents">` lost list semantics in some engines; it is a
+   flex column now.
+8. **R-69 is one helper, tested.** `marked(active, greyed)` in `greyed.ts` decides "mark no value"
+   for the segmented, the design picker, the swatch row and the radio cards alike (it was the
+   segmented's alone), and `greyed.test.ts` proves it under `node --test`, together with the announced
+   attributes and the rule that a blank reason throws.
+9. **The gate widened.** The literal scan covers `.ts` as well as `.tsx` and `rgb(a)` as well as hex
+   (it caught the swatch row's retyped hairline, now `var(--shadow-hairline-inset)`, and then the
+   review's own comment naming two hexes — it fails when it should); every `--color-*` value must be
+   wholly a hex or `rgb(a)`; a `DESIGN.md` block that parses to no keys fails rather than passing on
+   nothing; the font variables the theme reads must be ones `layout.tsx` declares. `readTheme` strips
+   comments before finding the block.
+10. **Propagation.** `DESIGN.md` prose still set the danger button in `{colors.danger}` (`:278`,
+   `:416`) and the segmented track in `paper` (`:125`, the frame draws paper-sunk); `epics.md` still
+   said "four labels". All corrected. The I/O matrix row above that says "one of the four labels" sits
+   inside the frozen block and is left as written; the Change Log's item 2 is its correction.
+11. **Small things.** `rounded` (the `--radius` token, which does compile) replaces seven
+   `rounded-[12px]`; the search field hides WebKit's native × and rings on `:focus-visible` like every
+   sibling; `Progress` clamps to 0–100; "1 pages" reads "1 page"; list keys are indices where values may
+   repeat; the variant thumb's Pro pill is `<ProBadge small />`; `body`'s face is set once; the
+   `ink-faint` comment says what `DESIGN.md` says (greyed text is allowed, hint text is not).
+
+**Read and left as they are, stated so the next reader need not re-derive them.** A focused *and*
+active design-picker tile shows the focus ring only (both are box-shadows; D8e draws the layered case
+for layers rows, not for tiles). The frame's "Text · focused" input state has no static gallery instance
+— it is reached by Tab. The skeleton's second shade and the canvas pill's hover alpha are within a shade
+of the frame's and have no `DESIGN.md` name; the drop zone's `coral-tint/60` computes to the frame's
+`rgba(255,237,232,.6)`. `CanvasPillButton disabled` is the state B4 draws; whether an inline-toolbar mark
+is disabled or absent is the editor story's behaviour question (EXPERIENCE § Component Patterns).
 
 ## Design Notes
 
@@ -225,6 +293,22 @@ __typecontrol.tsx(7,46): error TS2322: Type '"Saving…"' is not assignable to t
 
 and the tree typechecks clean once that file is removed — so the errors are the controls', not the kit's.
 
+**Review re-run (2026-09-05), after the corrections above.** The same production build
+(`pnpm build`, `next start` on a fresh port, served CSS chunk `200`), one script, the same axe
+version, every figure from a page whose `section[aria-label="labels & text"]` measured 280px:
+
+| Check | Result |
+|---|---|
+| `pnpm check` | **PASS** — `apps/web` 21 tests (`tokens.test.ts` 10, `greyed.test.ts` 4, `routing.test.ts` 7), 0 fail |
+| `pnpm build` | **PASS** — `/app/kit` `○ (Static)` |
+| Tailwind 4.3.3 `compile()` on `globals.css` | `bg-red-500` · `md:flex` · `text-2xl` · `rounded-xl` · `shadow-2xl` → **NOT GENERATED**; `bg-paper` · `text-ui` · `rounded` · `tablet:` · `coarse:` · `shadow-focus` · `font-semibold` → generated; `transition-colors` carries `var(--duration-fast)` and `var(--ease-out)` |
+| axe, WCAG 2.1 AA | **`violations: 0`**; positive control (a `data:` page with an unlabelled image) → 3 violations, so the run was live |
+| Focusable, counted two ways | **92** elements with `tabIndex ≥ 0`, not disabled and rendered; a Tab walk reaches **92** distinct elements before it wraps. (The Dev phase wrote 99 without its method; the review measured 86 on that build the same two ways, and 92 now that the six greyed controls are stops again.) |
+| The six greyed controls | each one Tab stop; each focused with `0 0 0 2px rgb(194, 56, 31)` |
+| Matrix rows | greyed input: `aria-disabled` · `aria-describedby="in-greyed-reason"` · `tabIndex 0` · `readOnly` · value `Soft dark` · fill `rgb(242,239,234)` · `cursor: not-allowed` · reason at `11.5px`; `[title]` count **0** · R-69 `#seg-r69` marks **0**, the plain greyed segmented still marks `Show` · greyed swatch row marks 0 (its `active` is unset) · Pro badge is a `SPAN`, click leaves dialogs at **0** · five persistence labels, `.animate-spin` **0** · banners `rgb(234,240,255)/rgb(212,224,250)` · `rgb(228,245,238)/rgb(191,231,214)` · `rgb(255,244,214)/rgb(245,227,184)` · `rgb(253,236,236)/rgb(245,198,201)` (tint / the frame's hairline), link `rgb(43,91,215)` · hover row `rgba(255,89,65,0.4)` on hover and pinned in the gallery; selected row `rgb(255,237,232)` · `Select` names `sel-closed-label sel-closed` · condition buttons `Field: Tag` / `Operator: is any of` · danger button `rgb(196,56,60)` → `rgb(198,58,63)` on hover · a button's transition `0.16s cubic-bezier(0, 0, 0.2, 1)`, and `1e-05s` under reduced motion |
+| Horizontal scroll | none at 1440 / 834 / 390 (`scrollWidth === clientWidth`) |
+| Sections | 23 `<section aria-label>` groups in the Kit's order, then the ink ground |
+
 **Real services this story hit (R-82), and the one key it used.**
 
 The kit itself reads no service — no database call, no session, no email, no payment, no Ghost request —
@@ -242,6 +326,16 @@ eight matrix rows verified, and no horizontal scroll at 1440, 834 or 390. The lo
 agree, so the gallery a reviewer opens is the gallery that was tested.
 
 Story 1.4 is the first story with a Supabase or Resend key to name.
+
+**The review's own pass at production (R-82).** The Real-infra verifier re-executed the Dev phase's
+claims against `https://app.inflozo.com/kit` before any patch: `200` · `inflozo.com` `200` ·
+`app.inflozo.com/app/kit` `308` → `/kit` `200` · `<meta name="robots" content="noindex, nofollow">` ·
+negative control `app.inflozo.com/kit-does-not-exist` → **404** · GitHub Actions runs for `356924d8`
+and `8efc4f62` both `completed success` with `check`, `rls`, `deploy` all `success` (`gh run view`,
+`GITHUB_TOKEN` read from `tools/probe/.env` into the environment and never printed; note `gh run list
+--commit` needs the full SHA) · axe **0** violations on the deployed page with the positive control
+above · 280px · no horizontal scroll. The reviewed build's own production figures are appended below
+once CI has published this commit.
 
 **Manual check (the frame, side by side).** The gallery was rendered at 1280px and read against
 `Editor Sidebar Kit.dc.html`: same groups, same order, same states, group for group from labels & text
@@ -262,3 +356,15 @@ Claude Design drew the whole app in one look: warm, light paper. The only dark t
 3. Light only, and correct the plan's sentence to say so — option 1 minus the two dark spots.
 
 **Ruled (owner, 2026-09-05): option 1 — every part in the light look, and the parts that live on dark ground (the canvas pills, the paywall chrome) shown on that ground. Nothing invented.** The gallery renders the three canvas pills and the paywall editor's surround on `ink` / `ink-deep`; no dark palette exists for anything else.
+
+**2. The little icons (arrows, the eye, the search glass, the trash can) — keep the ones the design drew, or swap in the Tabler set's own drawings?**
+
+The project ruled on 2026-08-25 that the app's icons come from **Tabler**, a free icon set with an MIT licence, and the code carries that licence notice at the top of the icons file. But when the review compared the drawings line by line, the icons in the design frames are not Tabler's: Claude Design drew its own, in the same style. The code copies the frames exactly (which the design-authority rule asks for), so today the file says "Tabler" over drawings that are not Tabler's. Nothing is broken on screen — the two sets look the same at this size — but a licence notice should be true, and two rulings point different ways.
+
+*Example:* the small down-arrow on a select box. Today it is the frame's drawing. Option 1 keeps it and makes the file say so. Option 2 replaces it with Tabler's drawing of the same arrow — a hair different, and then the Tabler notice is true.
+
+1. **Keep the frames' drawings and correct the notice** — the file says the paths are the frames' own, and the Tabler notice goes until a Tabler drawing is actually used. Nothing visible changes. **(RECOMMENDED)** — it follows the rule that the design export decides what things are built from, costs nothing, and keeps the notice honest.
+2. Replace every icon with Tabler's own drawing of it — a small, careful swap of about twenty paths, after which the frames and the app differ by a hair and the Tabler notice is true.
+3. Both: Tabler's drawings *and* a Claude Design prompt to redraw the frames with them, so the export and the app agree again — the most work, for a difference nobody will see.
+
+Until you rule, the file carries a plain note saying which it is, and the notice stays.

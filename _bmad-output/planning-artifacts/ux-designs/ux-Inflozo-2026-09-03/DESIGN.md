@@ -43,7 +43,15 @@ colors:
   sky-tint: '#EAF0FF — the Editor Sidebar Kit info banner fill; the earlier #E8EEFF occurred nowhere in the export (F-110)'
   danger: '#E5484D — the fill and the glyph; it carries no words, at 3.91:1 on white'
   danger-text: '#C4383C — danger wherever it carries words: the danger button fill under white type, the outline variant label, the Delete menu row (Editor Sidebar Kit :113, :135). Added 2026-09-05 by Story 1.3 — every other hue already had its -text twin and danger did not, so #E5484D was being set in words at 3.91:1 and 3.42:1. Read off the frame, which had it all along'
+  danger-text-hover: '#C63A3F — the danger button's hover (Editor Sidebar Kit :135). Added 2026-09-05 by Story 1.3's review'
   danger-tint: '#FDECEC — B Missing Surfaces; the frames more often use #FDEBEC (S12 delete hover), both are export values (F-110)'
+  sky-line: '#D4E0FA — the info banner's hairline (Editor Sidebar Kit :238). The four banner hairlines are drawn as their own solid hexes, never a tinted mix; added 2026-09-05 by Story 1.3's review'
+  mint-line: '#BFE7D6 — the success banner's hairline (Editor Sidebar Kit :239)'
+  marigold-line: '#F5E3B8 — the notice banner's hairline (Editor Sidebar Kit :240)'
+  danger-line: '#F5C6C9 — the error banner's hairline (Editor Sidebar Kit :241); not a button border, which 1.4.11 puts at 3:1'
+  grey-field: '#F2EFEA — a greyed control's fill (P0-0 Greyed Control Pattern :76). The three greyed colours were transcribed by Story 1.3 and named here by its review, 2026-09-05'
+  grey-border: '#EAE5DD — a greyed control's border (P0-0 :76)'
+  grey-track: '#E2DCD3 — a greyed toggle's track (P0-0, the toggle in the five shapes)'
   scrim: 'rgba(28,27,26,.4)'
 
 typography:
@@ -112,6 +120,7 @@ components:
     color: '{colors.ink}'
   button-danger:
     background: '{colors.danger-text}'
+    hover: '{colors.danger-text-hover}'
     color: '{colors.surface}'
     note: 'the frame fills #C4383C, not {colors.danger} — white type on {colors.danger} reads at 3.91:1 (Editor Sidebar Kit :135)'
   input:
@@ -122,7 +131,7 @@ components:
     focusBorder: '1px solid {colors.coral-text} — was {colors.coral} until 2026-09-04'
     focusRing: '{elevation.focus} — was 0 0 0 2px rgba(255,89,65,.4) until 2026-09-04'
   segmented:
-    track: '{colors.paper}'
+    track: '{colors.paper-sunk} — the frame draws #EFECE7 (Editor Sidebar Kit :63); this row said paper until Story 1.3's review, 2026-09-05'
     activeBackground: '{colors.surface}'
     activeShadow: '{elevation.sm}'
     rounded: '{rounded.sm}'
@@ -275,7 +284,7 @@ value, and the text value is what carries a sentence.
 | `{colors.marigold}` / `{colors.marigold-text}` / `{colors.marigold-tint}` | Pro badges, celebration, a nudge that does not block |
 | `{colors.mint}` / `{colors.mint-text}` / `{colors.mint-tint}` | success, "Live" states |
 | `{colors.sky}` / `{colors.sky-text}` | informational chips and docs links. **Links in an info banner take sky, not coral** |
-| `{colors.danger}` | destructive actions and deploy failures |
+| `{colors.danger}` | destructive fills and glyphs, deploy failures; `{colors.danger-text}` wherever danger carries words |
 
 **Two token rules, added to the Calibration Set on 2026-09-04, and they hold in every frame, app and
 section alike.** Keyboard focus is **one ring, everywhere** — 2px solid `{colors.coral-text}`, 7.9:1
@@ -413,7 +422,7 @@ governs the look.
 **Buttons** — three heights, 44 / 36 / 32. **Primary** is an ink fill. **Coral is reserved for THE
 action of a surface** and appears once: Ship it on the deploy wizard, Remix on the remix sheet,
 Connect on the connect step. **Secondary** is surface plus a hairline. **Ghost** is text only.
-**Danger** is a `{colors.danger}` fill, with an outline variant for the less final of two
+**Danger** is a `{colors.danger-text}` fill under white type (`{colors.danger}` reads at 3.91:1), with an outline variant for the less final of two
 destructive choices. A **split button** carries a primary action and a `▾` that opens its menu —
 that is the Ship it control, and the `▾` is named "Deploy options" (A7 item 8).
 

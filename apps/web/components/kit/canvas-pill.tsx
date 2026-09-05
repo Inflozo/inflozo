@@ -31,7 +31,7 @@ export const CanvasPillButton = ({
     type="button"
     aria-label={label}
     disabled={disabled}
-    className={`flex size-[30px] items-center justify-center rounded-[7px] text-surface transition-colors duration-fast ease-out hover:bg-surface/15 disabled:opacity-35 disabled:hover:bg-transparent ${ring}`}
+    className={`flex size-[30px] items-center justify-center rounded-[7px] text-surface transition-colors hover:bg-surface/15 disabled:opacity-35 disabled:hover:bg-transparent ${ring}`}
   >
     {children}
   </button>

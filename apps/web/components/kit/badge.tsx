@@ -8,8 +8,13 @@ import type { ReactNode } from 'react'
 
 const pill = 'inline-flex items-center rounded-pill px-[9px] py-[2px] text-helper-caption font-semibold'
 
-export const ProBadge = () => (
-  <span className={`${pill} bg-marigold-tint text-marigold-text`}>✦ Pro</span>
+/** `small` is the variant thumb's pill — 10px, 1×7 (Kit :208) beside the 11px, 2×9 badge (Kit :161). */
+export const ProBadge = ({ small = false }: { small?: boolean }) => (
+  <span
+    className={`inline-flex items-center rounded-pill bg-marigold-tint font-semibold text-marigold-text ${small ? 'px-[7px] py-px text-[10px]' : 'px-[9px] py-[2px] text-helper-caption'}`}
+  >
+    ✦ Pro
+  </span>
 )
 
 export const FreeBadge = () => (

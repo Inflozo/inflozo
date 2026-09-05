@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import type { ReactNode } from 'react'
 import { group, shortName, theme, type Token } from '@/tokens'
 import { Accordion } from '@/components/kit/accordion'
 import { FreeBadge, LiveBadge, ProBadge, ResultChip, StatusChip, TagChip, VersionChip } from '@/components/kit/badge'
@@ -47,9 +48,9 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
 export const dynamic = 'force-static'
 
 /** The Kit's own column: 280px, the narrow end of the 280–320px Controls sidebar. */
-function Group({ name, note, children }: { name: string; note?: string; children: React.ReactNode }) {
+function Group({ name, note, children }: { name: string; note?: string; children: ReactNode }) {
   return (
-    <section aria-label={name} className="flex w-[280px] flex-col gap-3 rounded-[12px] border border-line bg-paper p-5 shadow-sm">
+    <section aria-label={name} className="flex w-[280px] flex-col gap-3 rounded border border-line bg-paper p-5 shadow-sm">
       <h3 className="font-mono text-helper-caption font-normal text-ink-soft">{name}</h3>
       {note ? <p className="font-mono text-[10px] leading-[1.5] text-ink-soft">{note}</p> : null}
       {children}
@@ -68,7 +69,7 @@ function TokenSheet({ tokens }: { tokens: Token[] }) {
   return (
     <section aria-labelledby="tokens" className="flex flex-col gap-6">
       <div className="flex flex-col gap-[6px]">
-        <h2 id="tokens" className="font-display text-2xl font-bold tracking-[-0.02em] text-ink">
+        <h2 id="tokens" className="font-display text-[24px] font-bold tracking-[-0.02em] text-ink">
           The token layer
         </h2>
         <p className="max-w-[820px] font-mono text-control-label text-ink-soft">
@@ -114,7 +115,7 @@ function TokenSheet({ tokens }: { tokens: Token[] }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="font-display text-4xl font-extrabold tracking-[-0.03em] text-ink">
+        <span className="font-display text-[44px] font-extrabold tracking-[-0.03em] text-ink">
           Bricolage Grotesque — display
         </span>
         <span className="font-ui text-body text-ink">Inter — the interface face, 400 / 500 / 600</span>
@@ -424,7 +425,7 @@ export default function KitGallery() {
         {/* layers rows */}
         <Group name="layers rows — grip · mini-thumb · name · eye (rest / hover / selected)">
           <LayersRow name="Rest" />
-          <LayersRow name="Hover — wash" />
+          <LayersRow name="Hover — wash" className="bg-coral-wash" />
           <LayersRow name="Selected — coral tint" selected />
           <LayersRow name="Hidden" shown={false} />
           <SiteWideGroup pages={9}>
@@ -501,7 +502,7 @@ export default function KitGallery() {
 
       {/* The only dark ground the app has. There is no app dark palette: these components
           are drawn on ink because that is where they live (owner's ruling, 2026-09-05). */}
-      <section aria-label="On the canvas — the ink ground" className="flex flex-col gap-4 rounded-[12px] bg-ink-deep p-8">
+      <section aria-label="On the canvas — the ink ground" className="flex flex-col gap-4 rounded bg-ink-deep p-8">
         <h3 className="font-mono text-helper-caption text-paper-sunk">
           over the canvas — ink pills, 10px radius · 4px padding · lg shadow · 30px targets
         </h3>

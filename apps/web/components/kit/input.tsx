@@ -72,13 +72,13 @@ export function SearchInput({
       <label htmlFor={id} className="text-control-label font-medium text-ink-soft">
         {label}
       </label>
-      <div className="flex h-9 items-center gap-2 rounded-sm border border-line bg-surface px-[10px] focus-within:border-coral-text focus-within:shadow-focus">
+      <div className="flex h-9 items-center gap-2 rounded-sm border border-line bg-surface px-[10px] has-[:focus-visible]:border-coral-text has-[:focus-visible]:shadow-focus">
         <Search className="shrink-0 text-ink-soft" />
         <input
           id={id}
           type="search"
           placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink caret-coral outline-none placeholder:text-ink-soft-aa"
+          className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink caret-coral outline-none placeholder:text-ink-soft-aa [&::-webkit-search-cancel-button]:hidden"
         />
         <kbd className="rounded-[5px] border border-line px-[5px] py-px font-mono text-helper-caption text-ink-soft">
           {hint}
