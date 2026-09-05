@@ -434,7 +434,8 @@ project maintains its own documents, not how the product behaves.)*
 | React / React DOM | 19.2.8 | a **peerDependency** of Next, not a bundled one — the app pins it explicitly. Next 16's App Router runs the React Canary line, so pin `react`/`react-dom` together and move them together |
 | pnpm workspaces | 11.22.0 | npm `latest`; no Turborepo until a build is measurably slow |
 | Tailwind CSS | 4.x | `apps/web` only (see conventions) |
-| `@supabase/supabase-js` | 2.112.3 | PRD floor is ≥ 2.105.0 for the passkey API |
+| `@supabase/supabase-js` | 2.115.0 | PRD floor is ≥ 2.105.0 for the passkey API. Moved from 2.112.3 by Story 1.4 — it is `@supabase/ssr`'s peer (`^2.114.0`), so the two move together |
+| `@supabase/ssr` | 0.12.6 | the cookie-backed server client — the ONLY Supabase client the app makes (Story 1.4). Its `cookieOptions.maxAge` is inert and fails silently, so the session lifetime is applied in our own `setAll`: `apps/web/lib/supabase/cookies.ts`, DW-13 |
 | Supabase | Postgres 17 · Auth · Storage · Vault · Realtime | Vault's API is stable; its pgsodium backend is being replaced underneath and is a watch item |
 | `jsdom` | 30.0.1 | the injected DOM for the server-side renderer only |
 | `gscan` | 6.4.2 | pinned; Ghost `main` (6.58.1-rc.0) bundles exactly this version |

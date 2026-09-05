@@ -97,11 +97,25 @@ def api(method: str, ref: str, token: str, body: dict | None = None):
         with urllib.request.urlopen(req) as r:
             return r.status, json.load(r)
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read() or b'{}')
+        # The error body is not always JSON: Cloudflare's own 1010 page (see the docstring) is
+        # HTML, and json.loads on it raised, hiding the very status this tool exists to report.
+        raw = e.read()
+        try:
+            return e.code, json.loads(raw or b'{}')
+        except ValueError:
+            return e.code, {'body': raw[:400].decode('utf-8', 'replace')}
+    except urllib.error.URLError as e:
+        # DNS or TCP. This machine's stub resolver fails intermittently (docs/project-context.md),
+        # and a traceback there reads like an outage instead of something to retry.
+        return 0, {'error': str(e.reason)}
 
 
 def dotenv() -> dict:
-    """`tools/probe/.env`, the same six lines as `run-verify-all.py`'s `load_env`."""
+    """`tools/probe/.env`, parsed the same way as `run-verify-all.py`'s `load_env`.
+
+    Values are used VERBATIM and the file is never sourced as shell, so a value is not quoted —
+    `RESEND_FROM=Inflozo <hello@inflozo.com>` is one line, spaces and angle brackets included.
+    """
     out = {}
     path = os.path.join(HERE, '.env')
     if os.path.exists(path):
@@ -145,16 +159,19 @@ def main() -> int:
     if args.apply:
         payload = {**want, **SOFT, 'smtp_pass': env('RESEND_API_KEY')}
         status, body = api('PATCH', ref, token, payload)
-        if status != 200:
-            # `sessions_inactivity_timeout` is the one field a plan may refuse; retry without it
-            # rather than leaving thirteen proved settings unwritten because of one.
+        if status == 402:
+            # 402 is the ONE status `sessions_inactivity_timeout` produces — "User sessions can
+            # only be configured on Pro Plans and up", executed 2026-09-05. Retrying on ANY
+            # non-200 made a 401, or a template the API rejected, print "retrying without the
+            # plan-dependent field…" and then fail identically a second time, which says nothing
+            # true about what was wrong (review, 2026-09-05).
             print(f'PATCH {status}: {json.dumps(body)[:400]}')
             print('retrying without the plan-dependent field…')
             payload.pop('sessions_inactivity_timeout', None)
             status, body = api('PATCH', ref, token, payload)
-            if status != 200:
-                print(f'PATCH {status}: {json.dumps(body)[:400]}')
-                return 1
+        if status != 200:
+            print(f'PATCH {status}: {json.dumps(body)[:400]}')
+            return 1
         print(f'PATCH 200 — {len(payload)} fields written (smtp_pass by name only)')
 
     status, live = api('GET', ref, token)
@@ -173,8 +190,15 @@ def main() -> int:
         if not sep:
             sys.exit(f'--expect {key}: give key=value')
         current = target[key]
-        target[key] = (value.lower() in ('true', '1') if isinstance(current, bool)
-                       else int(value) if isinstance(current, int) else value)
+        if isinstance(current, bool):        # bool before int — bool IS an int in Python
+            target[key] = value.lower() in ('true', '1')
+        elif isinstance(current, int):
+            # its sibling misuses exit with a sentence; this one exited with a traceback
+            if not re.fullmatch(r'-?\d+', value):
+                sys.exit(f'--expect {key}: {value!r} is not a number')
+            target[key] = int(value)
+        else:
+            target[key] = value
         print(f'  (--expect override: {key} = {target[key]!r})')
 
     fails = 0

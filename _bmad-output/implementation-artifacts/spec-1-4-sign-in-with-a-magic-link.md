@@ -3,7 +3,7 @@ title: 'Story 1.4 — Sign in with a magic link'
 type: 'feature'
 created: '2026-09-05'
 status: 'in-review'
-review_loop_iteration: 1
+review_loop_iteration: 2
 baseline_commit: '24da0d3d41055db49b463bb55195a4b0b1f89886'
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
@@ -163,6 +163,78 @@ findings 4 and 5 carry his ruling, recorded under `## Questions for the owner`.
 - [x] [Test][6] The sentence under the field outlived the mistake — it cleared only on the next submit. A
       valid address and the field losing focus takes it away [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:199]
 
+### Review Findings — second pass (2026-09-05, after the owner's fixes)
+
+Five layers again (blind hunter, edge-case hunter, verification-gap reviewer, acceptance auditor,
+real-infra verifier), on the real infrastructure (R-82), over the whole diff since `baseline_commit`.
+Nothing needed the owner's decision — both questions below are already ruled — and nothing was
+deferred. What was dismissed, and why, is in the Review 2 block under `## Verification`.
+
+- [x] [Review][Patch] The owner's finding-1 cursor rule offered a hand on GREYED controls: it excluded
+      `:disabled`, but the Kit greys with `aria-disabled` and puts it on the container. Visible on `/kit`
+      at the greyed "Arrows" segmented control; latent in `design-picker` and `radio-card`
+      [apps/web/app/globals.css:151]
+- [x] [Review][Patch] The finding-2 fix had a door of its own: "Use a different email" pressed during a
+      pending **Resend** was undone when that send's answer landed, snapping the card back to the
+      abandoned address. Measured on the deployed site by the real-infra verifier before the patch
+      [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:40]
+- [x] [Review][Patch] The countdown kept ticking, and re-rendering the form once a second, after the user
+      had left S1b [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:70]
+- [x] [Review][Patch] A second click on Send queued a second send. The FIRST review dismissed this on a
+      mechanism that does not exist — the kit's `Button` cannot take `disabled` by design (button.tsx:38)
+      — so the block is real now rather than assumed [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:89]
+- [x] [Review][Patch] The two CSP **request** headers were two loose `headers.set` calls in the one file
+      `node --test` cannot reach. Dropping either ships a dead-JS page behind a policy that still looks
+      right — §18's named silent failure — with lint, types, every test and the build green. They are one
+      value now, held by a test [apps/web/csp.ts:65 · apps/web/proxy.ts:68]
+- [x] [Review][Patch] Nothing tied the email template's `type=` to the confirm route's accepted list;
+      narrowing it to the two "obvious" types reads like a tightening and ends sign-in for everybody
+      [apps/web/app-routes.test.ts]
+- [x] [Review][Patch] Nothing kept a page under `/app` inside `(authed)`, or kept `force-static` off one —
+      the two failures this story's own Spec Change Log 12 records as invisible to the build
+      [apps/web/app-routes.test.ts]
+- [x] [Review][Patch] `style-src` and `img-src`, the two widest directives in either policy, were the two
+      `csp.test.ts` did not assert by value [apps/web/csp.test.ts]
+- [x] [Review][Patch] `proxy.ts` and the confirm route reached `sessionCookie` through `server.ts`, pulling
+      `next/headers` and the whole server client in with it; `cookies.ts` is the leaf that exists to stop
+      exactly that [apps/web/proxy.ts:15]
+- [x] [Review][Patch] The PATCH retry fired on any non-200, so a 401 printed "retrying without the
+      plan-dependent field…" and then failed identically twice, saying nothing true
+      [tools/probe/configure-supabase-auth.py:162]
+- [x] [Review][Patch] `api()` raised on a non-JSON error body — the Cloudflare 1010 page its own docstring
+      names — hiding the status the tool exists to report; a resolver failure was a traceback
+      [tools/probe/configure-supabase-auth.py:102]
+- [x] [Review][Patch] `--expect mailer_otp_exp=abc` was a traceback where every sibling misuse exits with a
+      sentence [tools/probe/configure-supabase-auth.py:198]
+- [x] [Review][Patch] The spine's Stack row still read `@supabase/supabase-js` **2.112.3** with no
+      `@supabase/ssr` row at all, though the Execution task claiming it was ticked — propagate, never
+      localise [ARCHITECTURE-SPINE.md:437 · epic-1-context.md:29]
+- [x] [Review][Patch] `page.tsx`'s description said "an Inflozo account" while the card said "an account".
+      The owner's ruling says one wording, not two [apps/web/app/(app)/app/sign-in/page.tsx:24]
+- [x] [Review][Patch] `.env.example` still documented `onboarding@resend.dev` above a `RESEND_FROM` that is
+      no longer it, and said nothing about why the value must NOT be quoted [tools/probe/.env.example:98]
+- [x] [Review][Patch] The Owner's manual test told him the live database is at zero users, which the Fix
+      block contradicts three paragraphs above it [this spec, `## Owner's manual test`]
+- [x] [Review][Patch] Manual-test step 10 asked him to see the expired-link notice **while signed in**,
+      where the guard sends him to the holding page instead and the notice can never appear. Swapped with
+      step 11 so the sign-out comes first [this spec, `## Owner's manual test`]
+- [x] [Review][Patch] Three Dev-run Verification rows were superseded by the Fix run and read as current
+      [this spec, `## Verification`]
+- [x] [Review][Patch] The Fix table restated **40** tests for the seven files in `apps/web`, which hold 37
+      — 40 is the whole workspace. Counts are derived, never restated [this spec, `## Verification`]
+- [x] [Review][Patch] `agentRules: false` reached `next.config.ts` with no Spec Change Log entry
+      [apps/web/next.config.ts:5]
+- [x] [Review][Patch] The passkey branch builds only the divider, so flipping the flag without Story 2.1's
+      button leaves an "or" rule over empty space. Left as it is — a button that did nothing when pressed
+      is the worse thing to ship (UX-DR3) — with the trap named at the line for 2.1
+      [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:255]
+- [x] [Review][Patch] DW-14 said an inactivity timeout works against FR-A6; at the 720 hours the tool asks
+      for it is the same thirty days [deferred-work.md]
+- [x] [Review][Patch] The tool's docstring counted another file's implementation ("the same six lines as")
+      [tools/probe/configure-supabase-auth.py:114]
+- [x] [Review][Patch] "The cookie is reissued on every visit" is rounder than the mechanism; recorded in
+      Design Notes rather than left for a later story to build on [this spec, `## Design Notes`]
+
 ## Spec Change Log
 
 Every entry below is a change to the Code Map's plan, made during Dev and executed rather than reasoned.
@@ -253,6 +325,13 @@ The frozen Intent, Boundaries and Matrix are untouched.
     still wraps there, exactly as the frame draws it. R-74 says the export is the design authority; the owner
     is the authority over R-74 and amended it here, for this card only.
 
+18. **`next.config.ts` gains `agentRules: false`** (found by the second review, and disclosed here rather
+    than left off the ledger). Next 16 writes `AGENTS.md` and `CLAUDE.md` into `apps/web/` on every
+    `next dev` start; the flag stops it. `next.config.ts` is not in the Code Map, and entry 5 names only the
+    two other files the plan did not, so this belonged here from the moment it was written. It is a real
+    Next 16 option — `next/dist/server/config-schema.js` declares `agentRules: z.boolean().optional()`,
+    read 2026-09-05 — and it changes nothing the app serves.
+
 ## Design Notes
 
 **Why server actions and no browser client.** Sending the link and signing out are two POSTs; consuming the link is one GET. All three run on the server with the publishable key and cookies, so nothing needs `NEXT_PUBLIC_*` and the secret key stays out of the app — the spine's "secrets never in `NEXT_PUBLIC_*`" holds by there being nothing to expose.
@@ -299,6 +378,19 @@ no countdown to move, and the line says "Sending…" the instant it is clicked r
 for the round trip. **Nothing is shown optimistically** — the countdown still starts from the number GoTrue
 answers with, because that is the only number that is true (UX-DR13).
 
+**"Reissued on every visit" is the shape, not the mechanism** (second review, 2026-09-05). Boundaries says
+the cookie is reissued on every visit. What `proxy.ts` does is call `getUser()`, and `@supabase/ssr` reaches
+our `setAll` only when the session storage actually CHANGED and the event is one of `SIGNED_IN` /
+`TOKEN_REFRESHED` / `USER_UPDATED` / `PASSWORD_RECOVERY` / `SIGNED_OUT` / `MFA_CHALLENGE_VERIFIED` — read in
+the installed source, `dist/main/createServerClient.js`: *"The SIGNED_IN event is fired very often, but we
+don't need to apply the storage each time it fires, only if there are changes."* So a visit inside the
+access token's own hour (`jwt_exp 3600`) rewrites nothing. **FR-A6's thirty days rolling still holds**, and
+it is what was executed: any visit more than an hour after the last one refreshes the token and writes a
+fresh 30-day `Max-Age`, which is exactly what the rolling-session rows prove. The acceptance criterion
+already words it correctly — *"reissued on a refresh"* — and only the frozen Boundaries line rounds it to
+"every visit". Nothing to change in the code; recorded so a later story does not build on the rounded
+version.
+
 **The holding page is scaffolding.** One line and one button so the owner's test can round-trip and 1.5's dashboard has a signed-in user to replace it with. It uses the kit and the tokens and claims nothing about the dashboard.
 
 ## Verification
@@ -307,6 +399,12 @@ Executed 2026-09-05 by the Dev run, on the real infrastructure (R-82). Every key
 command's environment from `tools/probe/.env` and is named here by its variable only — no value was
 printed, logged or committed. The live database was left at **zero users**: every fixture user created
 below was deleted, and the profile and entitlement rows cascaded with it.
+
+**Read the Dev tables as what the Dev run saw, not as the state today.** Three of their rows were
+superseded by the Fix run at the end of this section (review, 2026-09-05): both templates are now **4394**
+characters and not 4419; the card is **440px** and not the drawn 400; and grepping for `password` returns
+**zero** hits, not the two recorded below. The live database is no longer at zero users either — the two
+accounts that remain are the owner's own.
 
 **Gate and build** — commit `6b7be268`
 
@@ -473,7 +571,7 @@ are recorded as A and B rather than printed.
 
 | Command | Result |
 |---|---|
-| `pnpm check` (Node 24) | green — lint, typecheck, **40 tests passing, 0 failing** across the seven files |
+| `pnpm check` (Node 24) | green — lint, typecheck, **37 tests passing, 0 failing** across the seven files in `apps/web`. (This row said **40**, which is the whole workspace: the seven files plus the three one-test package placeholders. Corrected by the second review, which counted them — standing rule: counts are derived, never restated.) |
 | `pnpm build` | the same route table: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
 | `configure-supabase-auth.py --apply` (`SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`, `RESEND_API_KEY`, `RESEND_FROM`) | `PATCH 200`, 18 fields; readback **PASS on every field**, both templates now **4394 chars** and byte-identical to the file — 25 characters shorter, which is "One button, no password. " exactly |
 | `--check --expect mailer_otp_exp=901` | **exit 1** — the control, so the green readback above is a result |
@@ -504,11 +602,106 @@ were **not** touched: both were created on 2026-09-05 between 10:33Z and 11:00Z 
 11:20Z — the owner's own address and the second one he used to test "Use a different email". The live database
 is no longer at zero users, and that is his test, not a leftover.
 
+**Review 2 (2026-09-05)** — the second review, after the owner's fixes, over the whole diff since
+`baseline_commit`. Five layers, on the real infrastructure (R-82); keys by variable name only.
+
+*What the real-infra verifier re-executed on HEAD (`1298867b`), independently of every table above.*
+Deployed `inflozo-nv6wbscin-umangkagathara.vercel.app`, READY, aliased to `inflozo.com`,
+`app.inflozo.com` and `www.inflozo.com`; CI on that sha `check` ✓ `rls` ✓ `deploy` ✓. **Every one of the
+Fix table's six findings held on the deployed site**: pointer on all three controls *and* on the holding
+page's Sign out; 22 samples across a 1992 ms send with the previous address appearing **0** times; the
+resend line answering in 150 ms; the card 440px with the headline one line at 1440 and 342px wrapping at
+390; the wording on the card, the page description and both live templates; and a corrected address
+clearing both the sentence and `aria-invalid` on blur with **0** POSTs throughout. `--check` PASS on
+every field with `--expect mailer_otp_exp=901` failing as the control, both templates 4394 chars and
+byte-identical to the repo file, fetched independently. Nonce: **10 of 10** scripts nonced, one distinct
+value, equal to the header's, 0 unnonced, 0 CSP console violations; marketing `x-vercel-cache: PRERENDER`
++ `x-nextjs-prerender: 1`. axe-core 4.12.1 **0 violations** on S1a at 1440 and 390 and on S1b. The link
+end to end with **three** negative controls the earlier runs did not have — a forged token, a missing
+`token_hash` and `type=bogus`, all 303 `?error=link`. **The rolling session proved on production, not
+only on localhost**: `expires_at` moved 2 h into the past with the refresh token untouched → 200, a
+rotated access token and a fresh `Max-Age=2592000`; the same with a dead refresh token → 307 to
+`/sign-in`. Three real sends through Resend (2.0–2.3 s each), with a **control**: a direct send from an
+unverified sender → **403 `not authorized to send emails from …`**, so the successful ones are a result.
+Triggers 1/1 then 0/0 after deletion; every fixture the review made was removed and the live database is
+back to exactly the owner's two accounts, which were not touched.
+
+*What was executed after the patches, on this working tree.* `pnpm check` **exit 0** — lint, typecheck,
+and `apps/web` **42 tests, 42 pass, 0 fail** (37 before, plus the five this review adds). `pnpm build`
+exit 0 with §18's route table unchanged: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` ·
+`ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)`. `configure-supabase-auth.py --check` against the
+**real project**: PASS on every field, both templates 4394 chars, `sessions_inactivity_timeout` a stated
+`----`, exit 0 — with four controls: `--expect mailer_otp_exp=901` exit 1 `FAIL … (live: 900)`,
+`--expect disable_signup=true` exit 1 `(live: False)`, `--expect mailer_otp_exp=abc` exit **1** with
+*"'abc' is not a number"* (a traceback before this review's patch), and `--expect mailer_otp_exp` exit 1
+*"give key=value"*.
+
+*Every new check ran against its own negative control, and all five failed without the thing they guard*
+(standing rule: a result whose control did not pass is not a result):
+
+| The check | Its control | Result |
+|---|---|---|
+| a page under `/app` sits inside `(authed)` | added `app/(app)/app/__ctl/page.tsx` | **fails**, as it must |
+| no page re-declares `force-static` | put the line back on `/kit` — the story's own Change Log 12 | **fails** |
+| the template's `type=` is one the route accepts | narrowed `TYPES` to `['magiclink', 'signup']` | **fails** |
+| the two CSP request headers travel together | dropped `content-security-policy` from the pair | **fails** |
+| `style-src` and `img-src` by value | widened `img-src` to `*` | **fails** |
+
+*The cursor fix has no test, so it was proved in a browser against the SHIPPED CSS bundle* — the built
+`.next/static/chunks/*.css`, in which Lightning CSS keeps the `:not()` selector verbatim — with the DOM
+shapes the Kit actually emits, run once with this patch and once with the rule exactly as it stood on
+HEAD:
+
+| element | HEAD | patched |
+|---|---|---|
+| an ordinary `<button>` | `pointer` | `pointer` |
+| a natively `disabled` button | `default` | `default` |
+| the greyed container (`aria-disabled`, a `div`) | `auto` | `auto` — never targeted by either rule |
+| **the marked option inside it** (segmented's own shape) | **`pointer`** | **`default`** |
+| a live `[role=button]` | `pointer` | `pointer` |
+| **a greyed `[role=button]`** | **`pointer`** | **`auto`** |
+
+*Dismissed, with the reason:* **`signOut()` ignoring its error leaves the cookies behind** — false, and
+read rather than argued: `@supabase/auth-js@2.115.0` `GoTrueClient.js` `_signOut` calls
+`removeCurrentSession()` on **every** path where `scope !== 'others'`, the error return included, so the
+local session is always cleared · a signed-in visitor never seeing the `?error=link` banner (correct by
+the frozen matrix — *Signed in → /sign-in → 307 to /*; the defect was the owner's test script, and it is
+patched) · `searchParams.error` arriving as `string[]` (only from a hand-built URL; our own redirect emits
+one) · clamping `retryAfterFrom` (GoTrue's number comes from `smtp_max_frequency`, so an hours-long
+remainder is not a shape it can answer) · the app layout's nonce read being "dead code" (the file already
+resolves it at `:23-30` — the read is §18's mechanism and `force-dynamic` covers Next 16's prerender
+attempt; both are true and both are written down) · `--expect` on a SOFT field being an inert control (it
+is recorded as *"stays `----`, exit 0"*, which is the no-op it is — the claim being proved is that a soft
+field does **not** leak into the hard checks) · **quoting `RESEND_FROM` in `.env.example`** (wrong for this
+repo, and checked: every probe PARSES the file and uses the value verbatim — `run-verify-all.py`'s
+`load_env` does not strip quotes — so quoting puts the quote marks inside the address; the patch says so in
+the file instead) · three `getUser()` calls per page view (a real round trip `cache()` would save, but it
+changes the recorded evidence for the rolling-session row and belongs with 1.5's shell) · `refreshSession`
+on every non-`_next` request (`apps/web/public/` is empty and there is no `robots.txt` or `sitemap.xml`
+yet; latent, and the matcher is 1.1's) · a 14px field at exactly 834px on iOS (834 is the design system's
+own tablet breakpoint from 1.3; moving it is a design change) · a link scanner consuming the single-use
+token (inherent to magic links; the mitigation is a design change and the owner's own inbox does not
+prefetch — worth remembering when a corporate customer appears) · `object-src 'none'` and CSP reporting
+(`default-src 'self'` already covers `object-src`; a report endpoint is a service this story does not have)
+· a test for the sign-in form's state machine (the decision is two booleans and a test of it would restate
+the code; the Fix run's revert-and-rebuild control is the real evidence and it is recorded above) ·
+`sprint-status.yaml` saying `review` while the spec says `in-review` (two vocabularies by design —
+`tools/story-board.py` reads both) · a seventh copy of `load_env` (five copies is this repo's convention
+for probes; only the hardcoded count in its docstring was fixed).
+
+*One observation, not a finding:* the real-infra verifier reported seven modified files and one untracked
+test appearing mid-run and asked whether another agent was in the repo. That was **this review's own
+patches** landing while it worked. Its `pnpm check` finished before the first of those writes, so its green
+is a HEAD result; the tree's green is the run recorded above.
+
 ## Owner's manual test
 
 Use your own email address. Every address below is the real site, and the email really does come from
 **Inflozo <hello@inflozo.com>** — inflozo.com is already a verified sender at Resend, so nothing about DNS
-is waiting on you. The live database is at zero users, so step 3 will be the first account it has ever had.
+is waiting on you. **The live database is no longer empty** (it was when this was first written): your test
+on 2026-09-05 left your own account and the second address you tried, so step 3 signs you back in rather
+than creating the first account there has ever been. Nothing you can see changes — both templates carry the
+same branded email with the same subject, which is why the run set two of them rather than one.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -521,8 +714,8 @@ is waiting on you. The live database is at zero users, so step 3 will be the fir
 | 7 | https://app.inflozo.com/ | Holding page | Click the button in the email | — | You land on app.inflozo.com and see "Signed in as" your address and a "Sign out" button — a plain holding page; the real dashboard is story 1.5 |
 | 8 | https://app.inflozo.com/ | Holding page | Quit the browser completely, open it again, go to the address | — | Still signed in — no email needed. That is the thirty-day session |
 | 9 | https://app.inflozo.com/sign-in | — | Open the Sign In address while signed in | — | You are sent straight to the holding page |
-| 10 | the email from step 6 | Sign In | Click the email's button a second time | — | The Sign In card with a red notice: "That link has expired or was already used. Ask for a new one." |
-| 11 | https://app.inflozo.com/kit | — | While signed in, open the parts page; then press Sign out on the holding page and open the parts page again | — | Signed in: the parts page from story 1.3. Signed out: you are sent to Sign In instead |
+| 10 | https://app.inflozo.com/kit | — | While signed in, open the parts page; then press Sign out on the holding page and open the parts page again | — | Signed in: the parts page from story 1.3. Signed out: you are sent to Sign In instead |
+| 11 | the email from step 6 | Sign In | **Step 10 has just signed you out** — now click the email's button a second time | — | The Sign In card with a red notice: "That link has expired or was already used. Ask for a new one." **Do this while still signed in and you land on the holding page instead**, with no notice: a used link never signs you out, and the Sign In card is the page you are redirected away from. That is correct, and it is why this step follows the sign-out (review, 2026-09-05) |
 | 12 | https://app.inflozo.com/sign-in | Sign In, on your phone | Do steps 1 and 3 on your phone | your email | Both cards fill the width with a small margin, the text is readable, nothing is cut off and nothing scrolls sideways |
 
 **Your six findings — what to look at this time.** Same site, same URL; these are numbered to match what you

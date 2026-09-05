@@ -2,8 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { sessionCookie } from './cookies.ts'
 
-export { SESSION_MAX_AGE, sessionCookie } from './cookies.ts'
-
 /**
  * THE ONLY PLACE A SUPABASE CLIENT IS MADE in the app.
  *

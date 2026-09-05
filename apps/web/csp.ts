@@ -53,6 +53,19 @@ export function policy(host: string, nonce: string, dev = false): string {
   ].join('; ')
 }
 
+/**
+ * THE TWO REQUEST HEADERS AN APP REQUEST CARRIES, returned as one value so they cannot drift
+ * apart. `x-nonce` is for our own layout; `content-security-policy` on the REQUEST is how Next
+ * finds the nonce to stamp onto the framework's own <script> tags. Dropping the second is §18's
+ * stated SILENT failure: every Next script ships unnonced, `'strict-dynamic'` blocks the lot, and
+ * the response still carries a policy that looks exactly right. `proxy.ts` is beyond `node --test`
+ * (it imports `next/server`), so the pair lives here where `csp.test.ts` can hold it — the same
+ * reason `routing.ts` and `policy()` are here rather than there.
+ */
+export function requestHeaders(nonce: string, csp: string): Record<string, string> {
+  return nonce ? { 'x-nonce': nonce, 'content-security-policy': csp } : {}
+}
+
 /** The header `proxy.ts` sets so the review surface can tell the two apart by looking. */
 export const policyName = (host: string, nonce: string) =>
   host.toLowerCase().split(':')[0] === APP || nonce ? 'app-nonce' : 'marketing-static'

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { policy, policyName } from './csp.ts'
+import { policy, policyName, requestHeaders } from './csp.ts'
 
 // The four claims the spine and NFR-3 make about the CSP, made checkable. §18 proved the
 // MECHANISM on Vercel; this proves the STRING, which is the half a deploy cannot catch —
@@ -71,4 +71,23 @@ test('the policy name says which branch served the page', () => {
   assert.equal(policyName(MARKETING, ''), 'marketing-static')
   // a Ghost test server is not the app host — the same near-miss routing.ts was built around
   assert.equal(policyName('ghost6.inflozo.com', ''), 'marketing-static')
+})
+
+test('the two request headers travel together, and marketing gets neither', () => {
+  const csp = policy(APP, N)
+  // §18's SILENT failure: Next stamps its own <script> tags from the REQUEST policy, so handing
+  // the layout a nonce without it blocks every script on the page behind a response header that
+  // still reads exactly right. The pair is one value so one of them cannot be dropped alone.
+  assert.deepEqual(requestHeaders(N, csp), { 'x-nonce': N, 'content-security-policy': csp })
+  assert.deepEqual(requestHeaders('', policy(MARKETING, '')), {})
+})
+
+test('the two most-weakened directives are held by value, not left to drift wider', () => {
+  for (const csp of [policy(APP, N), policy(MARKETING, '')]) {
+    const d = directives(csp)
+    // 'unsafe-inline' is here because next/font and React inline critical CSS; it is the widest
+    // thing in either policy and the one most likely to be copied into script-src by accident.
+    assert.equal(d['style-src'], `'self' 'unsafe-inline'`)
+    assert.equal(d['img-src'], `'self' data: https:`)
+  }
 })

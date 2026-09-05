@@ -140,10 +140,16 @@
   /* Tailwind 4's Preflight leaves a <button> on `cursor: default` (v3 set `pointer`), so every
      button in the app — the Kit's, the Sign In card's two link-styled ones, and every one still
      to be written — showed an arrow. It comes back here rather than on each control: one rule is
-     the whole fix, and a control the Kit greys out keeps the default. Anchors already carry it
-     from the user agent. */
-  button:not(:disabled),
-  [role='button']:not(:disabled) {
+     the whole fix. Anchors already carry it from the user agent.
+
+     THE KIT GREYS WITH `aria-disabled`, NEVER `disabled` (greyed.ts:22 — a greyed control stays in
+     the Tab order so a screen reader still reaches its reason), and it puts the attribute on the
+     CONTAINER, so the exclusion has to reach the buttons inside one as well. Excluding only
+     `:disabled` left the greyed "Arrows" segmented control on /kit offering a hand on its marked
+     option, and would do the same to `design-picker` and `radio-card`, neither of which carries a
+     `cursor-not-allowed` of its own (review, 2026-09-05). */
+  button:not(:disabled, [aria-disabled='true'], [aria-disabled='true'] *),
+  [role='button']:not([aria-disabled='true'], [aria-disabled='true'] *) {
     cursor: pointer;
   }
 

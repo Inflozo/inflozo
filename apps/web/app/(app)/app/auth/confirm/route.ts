@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import type { EmailOtpType } from '@supabase/supabase-js'
-import { sessionCookie } from '@/lib/supabase/server'
+import { sessionCookie } from '@/lib/supabase/cookies'
 
 /**
  * WHERE THE EMAIL'S BUTTON LANDS. It is a route handler and not a page because this is the one

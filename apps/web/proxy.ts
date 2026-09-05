@@ -9,8 +9,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { route } from './routing.ts'
-import { policy, policyName } from './csp.ts'
-import { sessionCookie } from './lib/supabase/server.ts'
+import { policy, policyName, requestHeaders } from './csp.ts'
+// `cookies.ts`, not `server.ts`: the leaf exists so this symbol is reachable without dragging
+// `next/headers` and the whole server client into the proxy bundle (review, 2026-09-05).
+import { sessionCookie } from './lib/supabase/cookies.ts'
 
 /**
  * Reissue the session cookies on every app request, so the 30-day window starts again from
@@ -59,15 +61,11 @@ export async function proxy(req: NextRequest) {
   const nonce = isApp ? Buffer.from(crypto.randomUUID()).toString('base64') : ''
   const csp = policy(host, nonce, process.env.NODE_ENV !== 'production')
 
-  // TWO request headers, and the second is load-bearing. `x-nonce` is for our own layout;
-  // `content-security-policy` on the REQUEST is how Next finds the nonce to stamp onto the
-  // framework's own <script> tags. Without it every Next script is unnonced, `'strict-dynamic'`
-  // blocks the lot, and the page ships a policy that LOOKS right — §18's stated failure mode.
+  // TWO request headers, and the second is load-bearing — `requestHeaders` in csp.ts says why and
+  // is where `csp.test.ts` holds the pair together. Set as two loose calls here, either one could
+  // be deleted by a later edit with lint, types, every test and the build all still green.
   const headers = new Headers(req.headers)
-  if (isApp) {
-    headers.set('x-nonce', nonce)
-    headers.set('content-security-policy', csp)
-  }
+  for (const [name, value] of Object.entries(requestHeaders(nonce, csp))) headers.set(name, value)
 
   const res =
     decision.kind === 'rewrite'

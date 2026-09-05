@@ -360,8 +360,11 @@ location: tools/probe/configure-supabase-auth.py (the SOFT block)
 reason: `PATCH …/config/auth` answered `402 "User sessions can only be configured on Pro Plans and up."`
   The tool retried without that one field and wrote the other eighteen, and `--check` reports it as a
   stated `----` rather than a PASS, so it can never be mistaken for applied. Nothing in Story 1.4 needs
-  it: FR-A6 is thirty days ROLLING, which is the cookie's `Max-Age` plus the refresh in `proxy.ts`, and
-  an inactivity timeout would work against that rather than with it. Story 2.4 (end every session
+  it: FR-A6 is thirty days ROLLING, which is the cookie's `Max-Age` plus the refresh in `proxy.ts`, and an
+  inactivity timeout of a DIFFERENT length would work against that rather than with it. The 720 hours the
+  tool asks for is thirty days — the same window — so a plan upgrade applying it silently would change
+  nothing; a SHORTER one is the thing that would need arguing, and that is the decision below (second
+  review, 2026-09-05, correcting this sentence, which read as though any inactivity timeout was opposed). Story 2.4 (end every session
   everywhere) is the first story that might want it; if it does, the choice is Supabase Pro or an
   application-level last-seen check, and the first one costs money, so it is the owner's call and should
   be put to him in that story rather than assumed here.

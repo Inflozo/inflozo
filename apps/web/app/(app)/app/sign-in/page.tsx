@@ -21,7 +21,9 @@ import { SignInForm } from './sign-in-form'
 
 export const metadata: Metadata = {
   title: 'Sign in · Inflozo',
-  description: 'Sign in or create an Inflozo account.',
+  // The card's own sentence, verbatim: one wording, not two (the owner's ruling of 2026-09-05,
+  // finding 5). It read 'an Inflozo account' here and 'an account' on the card, which is two.
+  description: 'Sign in or create an account.',
   robots: { index: false, follow: false },
 }
 

@@ -30,6 +30,14 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
   // "Use a different email" is a return to S1a without discarding the send that happened —
   // the link stays valid and the countdown is irrelevant once the address changes (UX-DR13).
   const [different, setDifferent] = useState(false)
+  // …and a send can already be on the wire when it is pressed: the resend line offers Resend at
+  // 0:00 and both buttons stay live for the ~1.5 s GoTrue takes to answer (UX-DR13 — the countdown
+  // blocks nothing). THAT answer is one the user has walked away from, so it must not clear
+  // `different`: doing so snapped them back to S1b showing the abandoned address and threw away
+  // whatever they had typed since — the owner's finding 2 arriving by the other door. `pending` is
+  // already false in the render that carries the result, so the intent is recorded at the click
+  // rather than read at the answer (review, 2026-09-05).
+  const [walkedAway, setWalkedAway] = useState(false)
   const [clientError, setClientError] = useState<string | null>(null)
   const [left, setLeft] = useState(0)
 
@@ -42,17 +50,24 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
   const [seen, setSeen] = useState<SendState>(state)
   if (seen !== state) {
     setSeen(state)
-    setLeft(state.status === 'sent' ? state.retryAfter : 0)
-    // A NEW RESULT IS THE ONLY THING THAT LEAVES "different" (finding 2). Clearing it on submit
-    // instead put the previous send's card back — old address, old countdown — for the two
-    // seconds GoTrue spends handing the mail to Resend, because `state` was still the old one.
-    // Waiting for the result means S1a simply stays put with "Sending…" on the button, and S1b
-    // arrives already showing the address that was actually sent to.
-    setDifferent(false)
+    if (walkedAway) {
+      // the answer to a send the user has already left; S1a stays exactly as they left it
+      setWalkedAway(false)
+    } else {
+      setLeft(state.status === 'sent' ? state.retryAfter : 0)
+      // A NEW RESULT IS THE ONLY THING THAT LEAVES "different" (finding 2). Clearing it on submit
+      // instead put the previous send's card back — old address, old countdown — for the two
+      // seconds GoTrue spends handing the mail to Resend, because `state` was still the old one.
+      // Waiting for the result means S1a simply stays put with "Sending…" on the button, and S1b
+      // arrives already showing the address that was actually sent to.
+      setDifferent(false)
+    }
   }
 
   useEffect(() => {
-    if (state.status !== 'sent') return
+    // `different` as well as the status: on S1a there is no countdown on screen, and leaving the
+    // interval running re-rendered the whole form once a second for the rest of the minute.
+    if (state.status !== 'sent' || different) return
     // The action has just returned, so "now" is when the mail left. `state` is a new object per
     // send, so a resend restarts this effect and the countdown with it.
     const sentAt = Date.now()
@@ -60,11 +75,21 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [state])
+  }, [state, different])
 
   // The same schema the action uses, so the sentence cannot differ — and no round trip for an
   // address that was never one. `preventDefault` stops React running the action.
   function guard(event: FormEvent<HTMLFormElement>) {
+    // A second submit while the first is still in flight. The kit's `Button` cannot take
+    // `disabled` by design (button.tsx:38 — the Kit draws no disabled full-size button) and
+    // `useActionState` queues actions rather than dropping them, so the block belongs here.
+    // GoTrue's per-address interval turned the duplicate into a harmless 429 and the sent card,
+    // which is why nothing was visibly wrong — but it was a second round trip and a second send
+    // attempt for one click (review, 2026-09-05).
+    if (pending) {
+      event.preventDefault()
+      return
+    }
     const value = new FormData(event.currentTarget).get('email')
     if (!parseEmail(value)) {
       event.preventDefault()
@@ -150,7 +175,14 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
                 </button>
               )}
             </p>
-            <button type="button" onClick={() => setDifferent(true)} className={linkStyle}>
+            <button
+              type="button"
+              onClick={() => {
+                setDifferent(true)
+                setWalkedAway(pending)
+              }}
+              className={linkStyle}
+            >
               Use a different email
             </button>
           </div>
@@ -218,8 +250,14 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
             </Button>
 
             {/* S1a draws a passkey button and an "or" divider. Both are absent until
-                `feature_flags.passkeys` is on — Story 2.1 flips the row and wires the
-                ceremony; a control that could never act here is absent, not greyed (UX-DR3). */}
+                `feature_flags.passkeys` is on — a control that could never act here is absent,
+                not greyed (UX-DR3).
+                ONLY THE DIVIDER IS BUILT, and deliberately: `passkeysEnabled()` is a hardcoded
+                `false` (flags.ts, DW-12), so this branch is unreachable today, and a button that
+                did nothing when pressed is a worse thing to ship than no button — UX-DR3 again.
+                STORY 2.1 ADDS THE BUTTON HERE, INSIDE THIS BRANCH, with the ceremony behind it.
+                Flipping the flag without doing so leaves an "or" rule over empty space, which is
+                the one way this can go wrong (review, 2026-09-05). */}
             {passkeys ? (
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-line" />
