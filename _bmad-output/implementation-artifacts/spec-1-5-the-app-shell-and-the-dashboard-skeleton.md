@@ -625,6 +625,33 @@ instead of one.
 This one is yours because it moves the phone away from the frames, and the export is the design authority
 (R-74) until you say otherwise. Whichever you choose is a small change inside this story.
 
+**Ruled (owner, 2026-09-05): option 1 — "Move the menu into the drawer — no initial in the top bar, the
+drawer's bottom avatar row opens the account menu."** With three further instructions in his words:
+*"Claude design should have this in. I want to show the full name (if available) else email in the bottom
+avatar row. Right now the email is clipped and shows three dots. Remove Free label from the row as we are
+already showing it in the menu that opens along with Billing and Plan row."*
+
+What that binds, for the Fix run:
+
+- **At 390 the top bar is ☰ · "Inflozo" · the search icon, and nothing else.** The 32px avatar and its
+  dropdown leave the top bar entirely; `AccountMenu`'s `topbar` variant becomes the drawer's, triggered by
+  the account row at the bottom of the ☰ panel and opening **upward** from it, since that is now where it
+  sits. Every destination in it — Account settings, Billing & plan, Suggestions, Docs, Sign out — stays
+  reachable on a phone, two taps in rather than one.
+- **The drawer's account row shows one line: `display_name` if there is one, otherwise the email, and it is
+  not clipped.** No `truncate` and no `max-w-[100px]` on it; the row has the drawer's full 300px less the
+  avatar to spend, and a long address wraps or shrinks rather than ending in an ellipsis. The **sidebar
+  chip at 1440 is untouched** — it has 220px and the ellipsis there is the frame's own treatment.
+- **The Free / ✦ Pro badge leaves the drawer row.** The menu keeps it, and because the owner names the
+  Billing & plan row, the phone's menu now carries it there exactly as the desktop menu does, rather than
+  in the menu header — one badge per menu, not two.
+- **This overrides the frames for the phone, and deliberately.** `S3 · mobile · 390` draws the avatar in
+  the top bar and `S3 · mobile — menu open` draws the account row with its badge in the drawer; the owner
+  has ruled otherwise and this spec is the record of it. **The export itself is not edited** — it is the
+  design authority under R-74 and is never touched by a story. Redrawing these two frames to match is a
+  design pass of its own and is not this story's; say the word and it is scheduled separately.
+
+
 ## Owner's manual test` below.
 
 **Dismissed on measurement, not argument.** A layer read the greyed doors' `aria-disabled` as silencing
@@ -719,8 +746,8 @@ your words:
 5. **"On mobile devices, opening the sidebar menu, focuses the logo and shows a focus border around it
    which does not looks good."**
 6. **"On mobile devices, there are two avatr user menu. One in sidebar and another in header right. Can we
-   remove the header avatar."** — *this one takes the only route to Sign out on a phone with it, so it is
-   asked as question 2 above rather than guessed.*
+   remove the header avatar."** — *this one takes the only route to Sign out on a phone with it, so it was
+   asked as question 2 above; ruled on 2026-09-05 — the menu moves into the drawer.*
 7. **"On mobile devices, when we click search icon, the focus should be added to the search box."**
 8. **"Sometimes, after deleting a project I get an error: This page couldn't load. Reload to try again, or
    go back. URL: https://app.inflozo.com/"**
