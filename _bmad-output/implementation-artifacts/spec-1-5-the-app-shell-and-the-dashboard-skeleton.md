@@ -258,17 +258,17 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/plan.ts` + `apps/web/plan.test.ts` -- Appendix F.1 as data and `planFor` -- one table, expressed once, with its check
-- [ ] `apps/web/lib/style-pack.ts` -- the column's schema, Paper, `placeholderFor` -- E6's boundary, declared once and read early
-- [ ] `apps/web/lib/projects.ts` + `apps/web/projects.test.ts` -- the name rules, the labels, the slug -- every branch under `node --test`
-- [ ] `apps/web/lib/entitlement.ts` -- `resolveEntitlement` -- the spine's single resolver
-- [ ] `apps/web/app/globals.css` + `DESIGN.md` -- `shadow-modal` -- the frame's value, named once
-- [ ] `apps/web/components/kit/icons.tsx` + `pack-cell.tsx` -- the frames' icons; the optional pencil -- R-92, and no dead control
-- [ ] `apps/web/components/shell/` shell, account-menu, drawer -- S3's shell at 1440 and 390 -- the surface every later story sits in
-- [ ] `apps/web/app/(app)/app/(authed)/layout.tsx` -- the shell around the guard -- by file position
-- [ ] `apps/web/app/(app)/app/(authed)/projects/actions.ts` -- the four actions with the cap -- FR-B3, FR-B4, through RLS
-- [ ] `apps/web/app/(app)/app/(authed)/` page, loading, project-card, placeholder, project-menu, new-project-sheet -- S3a/b/c, D4a/b, the S12c extrapolations -- the story's surface
-- [ ] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
+- [x] `apps/web/lib/plan.ts` + `apps/web/plan.test.ts` -- Appendix F.1 as data and `planFor` -- one table, expressed once, with its check
+- [x] `apps/web/lib/style-pack.ts` -- the column's schema, Paper, `placeholderFor` -- E6's boundary, declared once and read early
+- [x] `apps/web/lib/projects.ts` + `apps/web/projects.test.ts` -- the name rules, the labels, the slug -- every branch under `node --test`
+- [x] `apps/web/lib/entitlement.ts` -- `resolveEntitlement` -- the spine's single resolver
+- [x] `apps/web/app/globals.css` + `DESIGN.md` -- `shadow-modal` -- the frame's value, named once
+- [x] `apps/web/components/kit/icons.tsx` + `pack-cell.tsx` -- the frames' icons; the optional pencil -- R-92, and no dead control
+- [x] `apps/web/components/shell/` shell, account-menu, drawer -- S3's shell at 1440 and 390 -- the surface every later story sits in
+- [x] `apps/web/app/(app)/app/(authed)/layout.tsx` -- the shell around the guard -- by file position
+- [x] `apps/web/app/(app)/app/(authed)/projects/actions.ts` -- the four actions with the cap -- FR-B3, FR-B4, through RLS
+- [x] `apps/web/app/(app)/app/(authed)/` page, loading, project-card, placeholder, project-menu, new-project-sheet -- S3a/b/c, D4a/b, the S12c extrapolations -- the story's surface
+- [x] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
 
 **Acceptance Criteria:**
 - Given `https://app.inflozo.com/` at 1440 with no projects, when it renders, then it **matches frame S3b** — the sidebar with Projects active, Sites and Assets, the account chip with the Free badge; the top bar with "Search projects…", ⌘K and "New project"; the illustration, both sentences and the centred "New project" — with the storage meter, bell and sparkle absent (R-74; the cut line).
@@ -476,11 +476,72 @@ is the live one throughout (its REST and Auth hosts are `{ref}.supabase.co`, the
 | both confirms | open on **Cancel** |
 | ⌘K / Ctrl+K | focuses the field named `q` |
 
+**Re-executed independently at the close of the Dev run (2026-09-05), against the live deployment.**
+Every command below was run again from scratch rather than read from the table above, and two matrix rows
+that the first pass had not covered were executed for the first time.
+
+| Command / check | Result |
+|---|---|
+| `pnpm check` | green — **54 tests, 54 pass, 0 fail, 0 skipped** in `apps/web`. Nothing is filtered out or disabled, so every covering test in the matrix audit really ran |
+| `pnpm build` | `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` — the 1.4 table exactly, no new route |
+| `python3 tools/doc-audit.py --check` twice | **PASS, 0 warnings** both times |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0** — run independently before the implementation landed and green then too, so the gate is a result and not an artefact of this story |
+| `gh run view` on head (`GITHUB_TOKEN`) | `check: success` · `rls: success` · `deploy: success` |
+| `https://app.inflozo.com/` signed out | **307 → `/sign-in`** |
+| `https://app.inflozo.com/sign-in` | **200**, `x-inflozo-policy: app-nonce`, `script-src 'self' 'nonce-…'` |
+| `/sites` `/assets` `/account` `/billing` `/suggestions` | **404 each**; `https://inflozo.com/docs` **404** — the six future destinations, drawn and linked, as the owner's test says to expect |
+| `https://inflozo.com/` | **200** — marketing untouched by this story |
+
+**A fixture user round-tripped on the deployed site** — `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
+
+| Step | Result |
+|---|---|
+| admin-created user → `profiles` / `entitlements` | **1 and 1**, `state = free` — 1.2's triggers fired |
+| `/auth/confirm` with an admin-minted `token_hash` | **303 → `https://app.inflozo.com/`** |
+| `GET /` with the cookie | **200**, and the delivered HTML carries `Inflozo`, `Projects`, `Sites`, `Assets`, `Search projects…`, `New project`, **"Every great site starts somewhere."**, **"Yours starts with hundreds of gorgeous sections."** and the **Free** badge — S3b, rendered by the real deployment |
+| `input[type=password]` on that page | **0** |
+| the nonce, header and body from the **same** response | **15 scripts, 15 nonced, exactly one distinct nonce in the page, and it equals the header's**. (Compared across two requests it never matches — each response mints a fresh nonce, which is the point) |
+| `DELETE /auth/v1/admin/users/{id}` | `profiles` **[]**, `entitlements` **[]** — cascaded |
+
+**The two matrix rows the first pass had not executed.** Both were run against `app.inflozo.com` with a
+fixture user holding **exactly 25 projects** and `entitlements.state = pro_active`.
+
+| Matrix row | Result |
+|---|---|
+| *Create, at cap (Pro, 25)* | the page carries **"Pro includes 25 projects"**; **"Go Pro" appears zero times**, **"Free includes" zero times**, and **"Upgrade to add more" zero times** — the Pro cap refuses without the upsell and the grid grows no tile, which is the row's whole point |
+| *Search* — `?q=harb` | **one card**, "Harbour Letter"; `?q=HARB` **the same one card**, so the match is case-insensitive as the row says |
+| *Search* — `?q=zzz` | **zero cards**, the line **"No projects match"**, and the S3b illustration **not** shown — the row's exact distinction between "no matches" and "no projects" |
+| cleanup | every fixture user deleted; the live database holds the owner's two accounts. One `projects` row remains and is **not** a fixture: it belongs to one of the owner's own accounts, created while this run was in progress. It is left alone — and it is incidental live evidence for FR-J10, because it reads `name = "Test"` with `slug = "untitled-project"`, a rename that did not rewrite the slug |
+
 **One deviation from the matrix's Keyboard row, recorded rather than forced.** It reads
 `sidebar → search → New project → cards' ⋯ → chip`, and the run produces the chip *with the sidebar*,
 before the search field. The chip is inside the sidebar in the drawing and in the DOM, so document order
 already is visual order (WCAG 2.4.3); moving it after the cards would need a positive `tabindex`, which is
 the one thing an accessibility floor should not carry. Everything else in that row holds exactly.
+
+## Questions for the owner
+
+**1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
+
+Your story's test script lists the keyboard order as *left column → search box → New project → a card's ⋯ →
+your account chip*, with the chip last. What the built page actually does is *Inflozo → Projects → Sites →
+Assets → your account chip → search box → New project → ⋯*. The chip comes at the end of the **left column**
+because that is exactly where it sits on the screen — the bottom of that column — and the Tab key follows
+what your eye follows.
+
+*Example:* sign in and press Tab five times. The fifth press lands on your initial at the bottom left,
+because you have just walked down that column — Inflozo, Projects, Sites, Assets, then your account. The
+sixth press crosses to the top bar and lands in the search box. To make the chip come last instead, it
+would have to be lifted out of its natural place in the page's order and forced to the end, which is the
+one trick accessibility guidance tells you not to use, and it would leave the Tab order no longer matching
+the picture on screen.
+
+1. **Leave it as built — the chip is reached at the bottom of the left column, before the search box. (RECOMMENDED)** — Tab follows the screen, top to bottom and left to right, so nothing jumps around; it keeps the accessibility check clean, and it is what apps with a left column normally do.
+2. Force the chip to come last, after the cards — your written order is honoured to the letter, but the Tab order stops matching the picture and the page has to carry the one technique accessibility guidance warns against.
+3. A different order — tell me the order you want and it is changed inside this story.
+
+Nothing is blocked by this: the dashboard is built, deployed and working either way. It is here because the
+answer is yours and not mine, and if you pick 2 or 3 it is a small change inside this same story.
 
 ## Owner's manual test
 
