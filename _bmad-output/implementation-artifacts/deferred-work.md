@@ -86,8 +86,17 @@ reason: `apps/web` sets no `"type"`, so Node reparses `routing.test.ts` as ESM a
 
 ### DW-7: the RLS gate reports a broken lock but cannot stop the release
 
-plain: If a database lock breaks, the site still goes live and the warning arrives afterwards; you asked for the warning to stop the release, and that needs one change to your Vercel settings.
-status: open
+plain: FIXED 2026-09-05 — a broken database lock now stops the release instead of arriving as a warning afterwards. Proved by deliberately breaking one and watching nothing publish.
+status: closed
+closed: 2026-09-05 — publishing moved into GitHub Actions behind `needs: [check, rls]`; auto-deploy
+  off via `git.deploymentEnabled.main = false`. CONTROL (standing rule 2): commit `15a22638` carried a
+  migration creating a table with no RLS; run 33940741143 gave `check` success, `rls` **failure**,
+  `deploy` **skipped**, and Vercel created **no** production deployment for it, while the domains kept
+  serving 200 from the previous one. The happy path was proved first on `f7d0e807`: all three jobs
+  green and **exactly one** production deployment, against two for `2e346ea6` when both paths were
+  live. The rootDirectory claim held — `vercel build` honours `apps/web` from the repository root.
+  Propagated to CLAUDE.md and docs/project-context.md (standing rule 3).
+was_status: open
 severity: high
 origin: Story 1.2 review (2026-09-05), owner ruling on question 1
 location: .github/workflows/ci.yml · apps/web/vercel.json

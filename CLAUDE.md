@@ -117,8 +117,10 @@ propagation ledger is the record of what has landed, and it is a human tick, not
 
 ## Git workflow
 
-**Work directly on `main`. There are no feature branches and no pull-request review**, so the gate is
-the only thing between a mistake and the live branch.
+**Work directly on `main`. There are no feature branches and no pull-request review.** Two gates stand
+between a mistake and the live site: the pre-commit gate below, and **CI**, because since 2026-09-05
+(owner's ruling, DW-7) publishing happens from GitHub Actions rather than on the push — `ci.yml`'s
+`deploy` job needs `check` and `rls`, so a red gate publishes nothing. Proved by control, not asserted.
 
 Claude may **commit and push freely** at sensible checkpoints, always running the gate first and never
 pushing a red gate. **Once stories exist, the checkpoints are mandatory, not sensible** (owner, 2026-09-04,
