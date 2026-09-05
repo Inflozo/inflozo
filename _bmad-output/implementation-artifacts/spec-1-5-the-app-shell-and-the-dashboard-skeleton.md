@@ -582,6 +582,15 @@ was settled by measurement instead (below). Every finding was applied as a patch
 | `story-board.py --check` now runs its own `demo()` self-check | the assertions lived in `--demo`, which the gate never invokes, so the ruling parser that decides whether the owner SEES a question was unchecked — **control: restoring the pre-fix parser now exits 2, where it previously regenerated the board and went green through the pre-commit retry** |
 | `currentUser` and `resolveEntitlement` are `cache()`d | the layout and the page each read `entitlements` independently, so a failed read degrading to Free on one and not the other would draw a Pro badge over a Free cap on one screen; and `getUser()` ran three times per render |
 
+**The patches themselves, on the real deployment.** The patched code is not the code the pass above
+re-executed, so it was published and checked in turn: CI on `8249dd9f` reported `check: success` ·
+`rls: success` · `deploy: success`, and against `https://app.inflozo.com` afterwards — `/` signed out
+**307 → `/sign-in`** and `/kit` **307**, so wrapping `currentUser` in `cache()` left the guard exactly
+where it was; `/sign-in` **200** with `x-inflozo-policy: app-nonce`; `https://inflozo.com/` **200**,
+marketing untouched. The four patches that change what a person SEES — the rename Banner, the duplicate
+race opening D4b, the error Banner over S3b, and the fresh duplicate name — are on the owner's own screens
+and are his to confirm in `## Owner's manual test` below.
+
 **Dismissed on measurement, not argument.** A layer read the greyed doors' `aria-disabled` as silencing
 axe rather than fixing contrast. Measured: the reason sentence (`marigold-text` on `grey-field`) is
 **4.83:1** and D4b's cap pill **5.01:1** — both pass AA on their own. Only the inactive door's title and
