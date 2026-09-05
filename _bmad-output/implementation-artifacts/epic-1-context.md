@@ -4,13 +4,13 @@
 
 ## Goal
 
-Stand up everything every later epic lands inside: the monorepo with its pure/shell package split, CI/CD to production Vercel on both production domains, the whole schema with row-level security proven by a gate, tokens and components lifted from the Claude Design export, magic-link sign-in over Resend, and a dashboard where a signed-in user can create, rename, duplicate and delete projects. Exit: sign in on production; the dashboard exactly as cut below; RLS verified on every table the schema story creates. **Stories 1.1 and 1.2 are done**; 1.3, 1.4 and 1.5 remain.
+Stand up everything every later epic lands inside: the monorepo with its pure/shell package split, CI/CD to production Vercel on both production domains, the whole schema with row-level security proven by a gate, tokens and components lifted from the Claude Design export, magic-link sign-in over Resend, and a dashboard where a signed-in user can create, rename, duplicate and delete projects. Exit: sign in on production; the dashboard exactly as cut below; RLS verified on every table the schema story creates. **Stories 1.1, 1.2 and 1.3 are done**; 1.4 and 1.5 remain.
 
 ## Stories
 
 - Story 1.1: The repository, the package split and CI/CD to production — done
 - Story 1.2: The whole data model and its row-level security — done
-- Story 1.3: Design tokens and the app component kit, taken from the export
+- Story 1.3: Design tokens and the app component kit, taken from the export — done
 - Story 1.4: Sign in with a magic link
 - Story 1.5: The app shell and the dashboard skeleton
 
