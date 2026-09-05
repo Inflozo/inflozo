@@ -188,8 +188,16 @@ reason: The owner ruled today's migration is frozen and every later change is a 
 
 ### DW-9: four proof-fixture users are resident in the production database
 
-plain: Four fake users left over from testing are sitting in the real database; harmless now, but your first "how many users" number would say four before anyone has signed up. The exact SQL is written out below and tested — the owner runs it in the Supabase SQL editor.
-status: awaiting-owner
+plain: DONE 2026-09-05 — the four fake users and their data are out of the real database, so your first "how many users" number starts at zero.
+status: closed
+closed: 2026-09-05 — the owner ran the SQL in the Supabase SQL editor and deleted the object through
+  the Storage UI. VERIFIED read-only afterwards: `auth.users` 0 · `profiles` 0 · `projects` 0 ·
+  `sites` 0 · `entitlements` 0, and `feature_flags` still 2 (seed data, correctly untouched). One row
+  remains in `storage.objects`: `11111111-…/.emptyFolderPlaceholder`, created 03:32 on 2026-09-05 by
+  the dashboard itself to keep the emptied folder visible — a UI artefact, not fixture data. It goes
+  away by deleting the folder in Storage, or now that DW-10 has read the platform's escape hatch, by
+  `set storage.allow_delete_query = 'true'; delete from storage.objects where name like '11111111-%';`
+  Left as the owner's convenience; it holds no data.
 prepared: 2026-09-05 — the owner chose to run it himself rather than have it run for him (the
   sandbox also refuses destructive writes to the production database, which is the correct default).
   DRY-RUN, twice, against a throwaway `postgres:17-alpine` seeded to match the live database: the
@@ -251,8 +259,24 @@ reason: Building the proof against the hosted project fired the signup triggers 
 
 ### DW-10: the container's storage stand-in permits deletes that hosted Supabase forbids
 
-plain: Our offline copy of the file store is missing a lock the real one has, so a test can pass on the copy and fail for real — which is exactly what happened when clearing the test users.
-status: open
+plain: FIXED 2026-09-05 — the offline copy now has the same lock the real file store has, so a test that would fail for real now fails offline first.
+status: closed
+closed: 2026-09-05 — `PRELUDE.sql` now installs `storage.protect_delete()` and its
+  `protect_objects_delete BEFORE DELETE ... FOR EACH STATEMENT` trigger. The function body was READ
+  FROM THE HOSTED CATALOGUE (`pg_proc.prosrc`, the app's project) and pasted verbatim rather than
+  written from memory — AD-23. Reading it also surfaced something guessing would have missed: the
+  platform's refusal has an escape hatch, `set storage.allow_delete_query = 'true'`, which is how a
+  deliberate SQL cleanup is done. Both halves are modelled; a stand-in that only refused would be a
+  different lie from one that only permitted.
+  CONTROLS (standing rule 2), in a container: a direct `delete from storage.objects` now returns the
+  IDENTICAL message hosted returned — `ERROR: Direct deletion from storage tables is not allowed.
+  Use the Storage API instead. / HINT: This prevents accidental data loss from orphaned objects.` —
+  and with the escape hatch set, `DELETE 1`, 0 rows left. The gate is unaffected: exit 0, 72 PASS.
+  Checked before changing anything, because a BEFORE DELETE trigger could have broken the proof:
+  `rls.sql` only ever INSERTs into `storage.objects`, `storage.objects.owner` carries no FK to
+  `auth.users` so the fixture's user deletion does not cascade into it, and TRUNCATE does not fire a
+  DELETE trigger, so the D6 assertion is untouched.
+was_status: open
 severity: medium
 origin: Story 1.2 review (2026-09-05), found by DW-9 failing on the live database
 location: _bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/PRELUDE.sql

@@ -61,6 +61,29 @@ create table storage.objects (
   bucket_id text references storage.buckets(id),
   name text, owner uuid, created_at timestamptz default now());
 alter table storage.objects enable row level security;
+-- Hosted Supabase REFUSES a direct SQL DELETE on storage.objects, and this stand-in used to permit
+-- one. That divergence was found the expensive way on 2026-09-05: SQL written and dry-run green
+-- against this container failed against the live database with
+--     ERROR 42501: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+-- The body below is `storage.protect_delete()` READ FROM THE HOSTED CATALOGUE (pg_proc.prosrc on the
+-- app's project, 2026-09-05), not written from memory -- AD-23: a claim about an external platform is
+-- a hypothesis until read in its source. Note the escape hatch is real and part of the platform's
+-- behaviour: `set storage.allow_delete_query = 'true'` permits the delete, which is how a deliberate
+-- SQL cleanup is done. Modelling both halves is the point; a stand-in that only refuses would be a
+-- different lie from one that only permits.
+create or replace function storage.protect_delete() returns trigger language plpgsql as $$
+BEGIN
+    -- Check if storage.allow_delete_query is set to 'true'
+    IF COALESCE(current_setting('storage.allow_delete_query', true), 'false') != 'true' THEN
+        RAISE EXCEPTION 'Direct deletion from storage tables is not allowed. Use the Storage API instead.'
+            USING HINT = 'This prevents accidental data loss from orphaned objects.',
+                  ERRCODE = '42501';
+    END IF;
+    RETURN NULL;
+END;
+$$;
+create trigger protect_objects_delete before delete on storage.objects
+  for each statement execute function storage.protect_delete();
 create or replace function storage.foldername(name text) returns text[]
   language sql immutable as $$ select string_to_array(name, '/') $$;
 grant usage on schema storage to anon, authenticated, service_role;
