@@ -93,12 +93,25 @@ origin: Story 1.2 review (2026-09-05), owner ruling on question 1
 location: .github/workflows/ci.yml · apps/web/vercel.json
 reason: `pnpm -w check` blocks a release because it runs inside the Vercel build; the RLS gate cannot
   join it there. Vercel's build image is Amazon Linux 2023 with `dnf` and no Docker daemon (Vercel,
-  *Build image overview*, read 2026-09-05) and the gate starts a `postgres:17` container. The owner
-  ruled the gate must block. Vercel's documented mechanism is to stop deploying on push and run
-  `vercel build --prod` + `vercel deploy --prebuilt --prod` from Actions after `check` and `rls` pass.
-  That rewires Story 1.1's deployment path and needs the Vercel project's git auto-deploy turned off,
-  so it is a story, not a review patch. Question 4 in spec 1.2 asks the owner which of the two
-  mechanisms to build.
+  *Build image overview*, read 2026-09-05) and the gate starts a `postgres:17` container.
+  RULED (owner, 2026-09-05, spec 1.2 question 4): publishing moves into GitHub Actions and runs only
+  after `check` and `rls` are green — Vercel's own documented mechanism (*Deploying GitHub Projects
+  with Vercel* -> "Using GitHub Actions"). Executed 2026-09-05 so the story need not re-derive any of
+  it: the Vercel project is linked to `github Inflozo/inflozo`, `rootDirectory: apps/web`,
+  `productionBranch: main`; the repository holds NO Actions secrets today (`/actions/secrets` -> `[]`)
+  and `GITHUB_TOKEN` can create them (`/actions/secrets/public-key` -> HTTP 200);
+  `git.deploymentEnabled` takes a per-branch map and stops deployments "upon commits", so
+  `{"git":{"deploymentEnabled":{"main":false}}}` in `apps/web/vercel.json` turns off the auto-deploy
+  without touching a dashboard setting, and it is revertible in one commit.
+  BUILD IN THIS ORDER, because the wrong order takes the live site off updates: (1) add the three
+  secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID` (the project's `accountId`), `VERCEL_PROJECT_ID`;
+  (2) add a `deploy` job to `ci.yml` with `needs: [check, rls]` running `vercel pull --environment=
+  production`, `vercel build --prod`, `vercel deploy --prebuilt --prod`; (3) push and confirm that
+  job publishes — auto-deploy is still on, so this push deploys twice, which is expected and harmless;
+  (4) only once step 3 is proven green, set `git.deploymentEnabled.main = false` and confirm the next
+  push deploys exactly once, through Actions. Rollback at any point is deleting that key.
+  CONSEQUENCE the owner has been told: `VERCEL_TOKEN` will live in GitHub Actions as well as in
+  `tools/probe/.env`.
 
 ### DW-8: the migration's byte-identity guard cannot survive the frozen-migration ruling
 

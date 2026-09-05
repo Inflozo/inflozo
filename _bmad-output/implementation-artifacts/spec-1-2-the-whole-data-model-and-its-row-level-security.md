@@ -307,3 +307,9 @@ the publish waits for the check to finish first, so each deploy takes a couple o
    finishes — no Vercel setting to change, but every publish now waits on GitHub, so a slow or unhappy
    GitHub delays or fails a deploy that is otherwise fine.
 3. Not yet — leave it as it is until after launch.
+
+**Ruled (owner, 2026-09-05): option 1 — publishing moves into GitHub and only runs after both checks
+pass.** DW-7 carries the mechanism and the order of operations. It is a story of its own, not a patch
+inside this one: it changes how every production deploy is triggered, and R-80 wants the owner's test
+on it. One consequence to know before it is built — the Vercel deploy token has to be stored as a
+GitHub Actions secret, so that credential will live in two places instead of one.
