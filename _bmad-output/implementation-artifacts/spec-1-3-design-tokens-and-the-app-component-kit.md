@@ -2,7 +2,7 @@
 title: 'Story 1.3 — Design tokens and the app component kit, taken from the export'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'f83a46ae414455c8aa95149b0d14d4d9a5adf2c1'
 review_loop_iteration: 1
 owner_test: none
@@ -347,6 +347,15 @@ reviewed.
 `Editor Sidebar Kit.dc.html`: same groups, same order, same states, group for group from labels & text
 through shortcut rows, then the two surfaces the S/B frames add — the persistence indicator and, on the
 only dark ground the app has, the canvas pill.
+
+**Deploy phase (2026-09-05), HEAD `5778e1f7`.** `gh run list --commit 5778e1f787fd70ac5d71fecfe1aab17d36becb77`
+(`GITHUB_TOKEN` read from `tools/probe/.env` into the environment, never printed) → run `33950945534`
+`completed success`. The Vercel Deployments API (`VERCEL_TOKEN`/`VERCEL_PROJECT`/`VERCEL_TEAM_ID`, same
+handling) matched that commit's SHA to its production deployment:
+
+`Deployment: dpl_ES2KNj4PazSw5G68edJAiDnfYSfw` (`readyState: READY`) — `https://app.inflozo.com/kit`
+
+`https://app.inflozo.com/kit` → **200** · `https://inflozo.com/` → **200** · `https://app.inflozo.com/kit-does-not-exist` → **404**. The one Vercel deployment serving both production domains is Ready on this commit; nothing else in this story changes the schema or ships tooling only, so no migration and no `RLS-TEST.sql` run applies here.
 
 
 ## Questions for the owner
