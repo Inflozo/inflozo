@@ -343,3 +343,15 @@ The email will come from **Inflozo <hello@inflozo.com>**, the address your Prici
 3. Move inflozo.com's DNS from Namecheap to Vercel first so the run can add DNS records itself — cleaner in the long run, but a nameserver change that touches your iCloud mail and both Ghost test servers, and not this story's job.
 
 **Ruled (owner, 2026-09-05): option 1 — "Already added the token now."** `SUPABASE_ACCESS_TOKEN` is in `tools/probe/.env` (confirmed by name, and by one read-only `GET …/config/auth` that returned HTTP 200 — the values are in the Code Map). The DNS paste happens when the Dev run hands over Resend's three records. The sender stays `Inflozo <hello@inflozo.com>`.
+
+**Closed by the Dev run (2026-09-05), and there is nothing left for you to do here.** The token worked:
+every Supabase Auth setting was written and read back, and one deliberately wrong expectation was made to
+fail so the green run counts as a result. **The DNS lines turned out to be unnecessary — they are already
+at Namecheap and Resend has already verified inflozo.com.** Proved by sending a real message from
+`Inflozo <hello@inflozo.com>`, which returned 200; `send.inflozo.com` and `resend._domainkey.inflozo.com`
+both resolve, and your iCloud mail records at the apex are untouched. So the sign-in email comes from
+`Inflozo <hello@inflozo.com>` today, with no waiting.
+
+**No new question. One thing worth knowing before you test:** your very first sign-in is also a sign-up, and
+Supabase sends a *different* template for that. Both templates now hold the same branded email with the same
+subject, so you will see one email whichever it is — that is why the run set two templates rather than one.
