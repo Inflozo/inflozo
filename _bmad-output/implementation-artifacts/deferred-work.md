@@ -347,3 +347,21 @@ reason: `createServerClient(url, key, { cookieOptions: { maxAge } })` reads like
   passed through untouched, because stretching that one to thirty days would leave a user signed in
   after pressing Sign out. `session-cookie.test.ts` holds all three claims. Closed by this story;
   recorded because the inert form is the one a future story will reach for.
+
+### DW-14: `sessions_inactivity_timeout` is a paid Supabase feature and the project is not on that plan
+
+plain: One session setting we asked Supabase for needs their paid plan, so it was not applied. Nothing
+  about the thirty-day sign-in depends on it — it is only worth revisiting if a later story wants
+  sessions to expire after a period of doing nothing, and that would be a decision about money.
+status: open
+severity: low
+origin: Story 1.4 dev (2026-09-05), executed against the live project
+location: tools/probe/configure-supabase-auth.py (the SOFT block)
+reason: `PATCH …/config/auth` answered `402 "User sessions can only be configured on Pro Plans and up."`
+  The tool retried without that one field and wrote the other eighteen, and `--check` reports it as a
+  stated `----` rather than a PASS, so it can never be mistaken for applied. Nothing in Story 1.4 needs
+  it: FR-A6 is thirty days ROLLING, which is the cookie's `Max-Age` plus the refresh in `proxy.ts`, and
+  an inactivity timeout would work against that rather than with it. Story 2.4 (end every session
+  everywhere) is the first story that might want it; if it does, the choice is Supabase Pro or an
+  application-level last-seen check, and the first one costs money, so it is the owner's call and should
+  be put to him in that story rather than assumed here.

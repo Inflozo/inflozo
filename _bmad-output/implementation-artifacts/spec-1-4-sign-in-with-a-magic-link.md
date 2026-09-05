@@ -172,6 +172,20 @@ The frozen Intent, Boundaries and Matrix are untouched.
     real message from `Inflozo <hello@inflozo.com>`, HTTP 200. `RESEND_FROM` is updated in `tools/probe/.env`
     and documented in `.env.example`. The DNS half of the owner's question is therefore closed by execution.
 
+12. **`export const dynamic = 'force-static'` had to come off `/kit`.** Story 1.3's gallery declared it while
+    the page was public. A page-level segment config beats the layout's, and under `force-static` Next hands
+    every server component an **empty cookie store** — so the guard in `(authed)/layout.tsx` saw no user and
+    307'd a signed-in visitor straight back to `/sign-in`. Found by executing the matrix's `/kit` row, not by
+    reading: `/` returned 200 and `/kit` returned 307 **with the same cookie**, and instrumenting both showed
+    the proxy holding a 2666-byte `Cookie` header the layout could not see. No error, no warning, and the
+    route table said `ƒ` throughout. Moving a page behind a guard is therefore also a segment-config change,
+    which is now written beside the export it replaced.
+13. **The sign-in watermark is CSS `content`, not a text node.** Written as text, "Inflozo" in `paper-sunk` on
+    `paper` is 1.08:1 — WCAG's logotype exception covers it and axe cannot see an exception, so at 390 (where
+    the card stops covering it) axe-core reported a real `color-contrast` violation. Darkening it would be
+    editing the frame, which R-74 forbids. As generated content it is what it always was — ornament — and the
+    rule no longer applies to it. Zero violations at 1440, 834 and 390 after the change.
+
 ## Design Notes
 
 **Why server actions and no browser client.** Sending the link and signing out are two POSTs; consuming the link is one GET. All three run on the server with the publishable key and cookies, so nothing needs `NEXT_PUBLIC_*` and the secret key stays out of the app — the spine's "secrets never in `NEXT_PUBLIC_*`" holds by there being nothing to expose.
@@ -210,66 +224,84 @@ only honest thing for a product whose Sign In card says "Sign in or create an ac
 
 ## Verification
 
-*Dev records results here; the Real-infra verifier re-runs them (R-82). Keys are read into a command's environment and named, never printed.*
+Executed 2026-09-05 by the Dev run, on the real infrastructure (R-82). Every key was read into a
+command's environment from `tools/probe/.env` and is named here by its variable only — no value was
+printed, logged or committed. The live database was left at **zero users**: every fixture user created
+below was deleted, and the profile and entitlement rows cascaded with it.
 
-**Gate and build**
+**Gate and build** — commit `6b7be268`
 
-| Command | Expected |
+| Command | Result |
 |---|---|
-| `pnpm check` | lint, typecheck and every test green — `csp.test.ts`, `resend-timer.test.ts`, `tokens.test.ts` (with the `ink-hover` twin), `greyed.test.ts`, `routing.test.ts` |
-| `pnpm build` | route table: `/` ○ static; `/app/sign-in`, `/app/auth/confirm`, `/app`, `/app/kit` ƒ dynamic; `ƒ Proxy` |
-| `python3 tools/doc-audit.py --check` (twice) | green, the new tool catalogued |
+| `pnpm check` | green — lint, typecheck, **every test in `apps/web` passing and none failing**, across `csp.test.ts`, `resend-timer.test.ts` and `session-cookie.test.ts` (this story's three) plus `tokens.test.ts` (now carrying the `ink-hover` twin), `greyed.test.ts` and `routing.test.ts` |
+| `pnpm build` | the route table §18 predicted: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+| `python3 tools/doc-audit.py --check` (twice) | PASS, 0 warnings; `tools/probe/configure-supabase-auth.py` catalogued |
 
-**Supabase Auth (real) — `SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`, `RESEND_API_KEY`, `RESEND_FROM`**
+**Supabase Auth (real)** — `SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`, `RESEND_API_KEY`, `RESEND_FROM`
 
-| Command | Expected |
+| Command | Result |
 |---|---|
-| `env $(grep -E '^(SUPABASE_URL|SUPABASE_ACCESS_TOKEN|RESEND_API_KEY|RESEND_FROM)=' tools/probe/.env \| xargs) python3 tools/probe/configure-supabase-auth.py --apply` | PATCH 200; each field echoed back as PASS |
-| `… --check` | every field PASS, exit 0; `sessions_inactivity_timeout` PASS or "not on this plan", stated |
-| `… --check --expect mailer_otp_exp=901` | FAIL on that field, exit non-zero — the negative control |
-| `curl -s $SUPABASE_URL/auth/v1/settings -H "apikey: $SUPABASE_PUBLISHABLE_KEY"` | `external.email true`, `disable_signup false`, `mailer_autoconfirm false` |
+| `… configure-supabase-auth.py --apply` | first PATCH **402** — *"User sessions can only be configured on Pro Plans and up."* — retried without that one field, **PATCH 200**, 18 fields written (`smtp_pass` by name only) |
+| `… --check` | **exit 0.** PASS on every field: `site_url https://app.inflozo.com` · `uri_allow_list https://app.inflozo.com/**,http://localhost:3000/**` · `mailer_otp_exp 900` · `smtp_host smtp.resend.com` · `smtp_port 465` · `smtp_user resend` · `smtp_admin_email hello@inflozo.com` · `smtp_sender_name Inflozo` · `smtp_max_frequency 60` · `rate_limit_email_sent 30` · both subjects `Your Inflozo sign-in link` · both templates 4419 chars, byte-identical to `supabase/auth/magic-link.html` · `mailer_autoconfirm false` · `disable_signup false` · `external_email_enabled true`. `sessions_inactivity_timeout` printed as a stated `----`, never a PASS (DW-14) |
+| `… --check --expect mailer_otp_exp=901` | **exit 1**, `FAIL mailer_otp_exp = 901 (live: 900)` — the negative control, so the green run above is a result and not a no-op |
+| `GET $SUPABASE_URL/auth/v1/settings` | 200 — `external.email true`, `disable_signup false`, `mailer_autoconfirm false` |
+| `POST /auth/v1/verify {type:"email"}` on a `magiclink` token, then on a `signup` token | **200 both times** — this is what settles the template's `type=email` (Spec Change Log 2) |
 
-**Resend (real) — `RESEND_API_KEY`**
+**Resend (real)** — `RESEND_API_KEY`, `RESEND_TEST_INBOX`
 
-| Command | Expected |
+| Command | Result |
 |---|---|
-| `curl -s https://api.resend.com/domains -H "Authorization: Bearer $RESEND_API_KEY"` | `inflozo.com` with `status: verified` |
-| `curl -s -X POST $SUPABASE_URL/auth/v1/otp -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H 'content-type: application/json' -d '{"email":"'$RESEND_TEST_INBOX'"}'` | HTTP 200 — GoTrue answers only after the SMTP handshake, so 200 is the hand-off to Resend; the send appears in Resend's Emails log as delivered |
-| the same again inside 60 s | HTTP 429, `over_email_send_rate_limit`, the message naming the seconds — the countdown's source, executed |
+| `GET https://api.resend.com/domains` | **401 `restricted_api_key`** — the key is a *sending* key, so the domain cannot be read or created by API |
+| `POST /emails` from `Inflozo <hello@inflozo.com>` | **200** with a message id — which proves the domain is verified more directly than the listing would have. `dig` confirms the records are live at Namecheap: `send.inflozo.com` TXT `v=spf1 include:amazonses.com ~all` + MX `feedback-smtp.eu-west-1.amazonses.com`, and `resend._domainkey.inflozo.com` TXT. iCloud's MX at the apex is untouched |
+| `POST $SUPABASE_URL/auth/v1/otp` | **200 in 2.2 s** — GoTrue answers only after the SMTP handshake, so the elapsed time is the hand-off to Resend |
+| the same again, inside 60 s | **429 `over_email_send_rate_limit`**, *"For security purposes, you can only request this after 58 seconds."* — the string `retryAfterFrom()` parses, executed rather than imagined |
+| `POST /auth/v1/otp` to `story-1-4@example.com` | **500 `unexpected_failure` — "Error sending confirmation email"**: Resend refuses an undeliverable domain, which is the matrix's *Send fails* row arriving for real. The card kept the address and showed the error Banner |
 
-**The link, end to end, without an inbox — `SUPABASE_SECRET_KEY` for the one admin call**
+**The link, end to end on the deployed site** — `SUPABASE_SECRET_KEY` for the one admin call
 
-| Command | Expected |
+| Command | Result |
 |---|---|
-| `POST $SUPABASE_URL/auth/v1/admin/generate_link {"type":"magiclink","email":"story-1-4@example.com"}` | 200 with `hashed_token` |
-| `curl -i "https://app.inflozo.com/auth/confirm?token_hash=<hashed_token>&type=magiclink"` | 303 to `/`; `Set-Cookie` with `Max-Age=2592000`, `HttpOnly`, `Secure` |
-| `curl -i https://app.inflozo.com/ -b <the cookies>` | 200, body carries "Signed in as story-1-4@example.com" |
-| `curl -i https://app.inflozo.com/sign-in -b <the cookies>` | 307 to `/` |
-| `curl -i https://app.inflozo.com/kit` (no cookies) | 307 to `/sign-in` |
-| the confirm URL a second time | 303 to `/sign-in?error=link` |
-| `psql "$SUPABASE_DB_URL" -c "select (select count(*) from profiles p join auth.users u on u.id=p.user_id where u.email='story-1-4@example.com'), (select count(*) from entitlements e join auth.users u on u.id=e.user_id where u.email='story-1-4@example.com')"` | `1 \| 1` — 1.2's triggers fired for a real sign-in |
-| `DELETE $SUPABASE_URL/auth/v1/admin/users/<id>` then the query again | `0 \| 0` — the fixture user is gone and the rows cascaded; the live database is back at its user count |
+| `POST /auth/v1/admin/generate_link {"type":"magiclink"}` | 200 with `hashed_token` (56 chars) |
+| `curl -i "https://app.inflozo.com/auth/confirm?token_hash=…&type=email"` | **303** to `https://app.inflozo.com/` · `Set-Cookie … Max-Age=2592000; Secure; HttpOnly; SameSite=lax` — thirty days, closed to script (FR-A6) |
+| `curl -b … https://app.inflozo.com/` | **200**, body carries "Signed in as story-1-4@example.com" and "Sign out" |
+| `curl -b … https://app.inflozo.com/sign-in` | **307** to `/` |
+| `curl -b … https://app.inflozo.com/kit` | **200**, `<title>Component kit — Inflozo</title>` |
+| `curl https://app.inflozo.com/kit` (no cookies) | **307** to `/sign-in` |
+| the confirm URL a second time | **303** to `/sign-in?error=link` — and the token is never echoed |
+| `profiles` / `entitlements` for that user | **1 and 1** — 1.2's `auth_user_profile` and `auth_user_entitlement` triggers fired on a real sign-in |
+| `DELETE /auth/v1/admin/users/{id}`, then the same query | **0 and 0**, `auth.users = 0` — the fixture is gone and the rows cascaded |
+| Sign out, driven in a real browser | 303 to `/sign-in`, the Sign In card visible, **0 session cookies left**, and `/kit` afterwards → `/sign-in`. The cookie inspected before it: `httpOnly=true secure=true sameSite=Lax`, **30 days** |
 
 **CSP and hosting (real)**
 
-| Command | Expected |
+| Check | Result |
 |---|---|
-| `curl -sI https://app.inflozo.com/sign-in` | `content-security-policy` with `'nonce-…' 'strict-dynamic'`, no `unsafe-eval`, `frame-ancestors 'self'`, `form-action 'self'`; `cache-control: private, no-cache, no-store` |
-| `curl -s https://app.inflozo.com/sign-in \| grep -o 'nonce="[^"]*"' \| sort -u` | exactly one value, equal to the header's |
-| `curl -sI https://inflozo.com/` | the static policy, no nonce; `x-vercel-cache: PRERENDER` or `HIT` |
-| playwright on `https://app.inflozo.com/sign-in`, both states | console: 0 CSP violations; `axe.run` wcag2a/2aa/21a/21aa → `violations: 0`; Tab order field → button → Terms → Privacy with the ring `0 0 0 2px rgb(194, 56, 31)`; at 390 `scrollWidth === clientWidth` |
-| side-by-side with `S1 Sign In.dc.html` at 1440 and 390 | matches S1a and S1b, the passkey button absent |
+| `curl -sI https://app.inflozo.com/sign-in` | `content-security-policy: default-src 'self'; script-src 'self' 'nonce-…' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://ghost5.inflozo.com https://ghost6.inflozo.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'` · **no `unsafe-eval`** · `x-inflozo-policy: app-nonce` · `cache-control: private, no-cache, no-store` |
+| the header's nonce against the delivered HTML | **exactly one** `nonce="…"` value in the page and it **equals the header's**; **zero** `<script>` tags without one. §18 names this as the failure that would otherwise be invisible |
+| `curl -sI https://inflozo.com/` | the static policy, **no nonce**, `x-inflozo-policy: marketing-static`, **`x-vercel-cache: PRERENDER`** — marketing carries a CSP and stays prerendered, exactly as §18b measured |
+| playwright console, whole session (S1a, the field error, S1b, 390) | **0 CSP violations** |
+| `axe.run` wcag2a/2aa/21a/21aa | **0 violations** on S1a (1440), S1a with the field error, S1b, and S1a at 390 — 24 rules passing. The only `incomplete` is the decorative `·` between Terms and Privacy: *"content is too short to determine if it is actual text"* |
+| Tab and the one ring | field (autofocused) → **Send magic link → Terms → Privacy**; both the field and the button show `rgb(194, 56, 31) 0px 0px 0px 2px` — the one ring, by value |
+| 390 | `scrollWidth === clientWidth === 390` (no horizontal scroll), field text 16px, card 342px inside 24px gutters |
+| no password anywhere | `input[type=password]` count **0** on the page; no password grant and no password setting touched |
+| the passkey button | **absent**, as `feature_flags.passkeys` is off |
+| computed styles against `S1 Sign In.dc.html` | every compared value is the frame's own at **1440 and 390**: card 400px / `16px` / `40px 36px` / gap 24 (32/24 and gap 22 at 390) and the shadow `rgba(28,27,26,.14) 0 12px 40px`; wordmark 22/800/-0.02em (20 at 390); headline 28/700/1.15 (26); sub 14px `#6E6A64`; label 13/500 `#6E6A64`; field 44px, radius 8, border `#E7E2DB` at rest and `#C2381F` on focus, padding-left 14, 14px (16 at 390), caret `#FF5941`; button 44px `#1C1B1A`, radius 12, 14/600, white; Terms · Privacy 13px `#6E6A64` with the `#E7E2DB` separator; watermark 380px `#EFECE7` 800 (130px at 390) |
 
 **CI and deployment**
 
-| Check | Expected |
+| Check | Result |
 |---|---|
-| `gh run list --branch main --limit 1` (`GITHUB_TOKEN`) | `check` ✓ `rls` ✓ `deploy` ✓ |
-| `Deployment:` | *(Deploy fills this with the production deployment)* |
+| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `6b7be268` — **`check` ✓ `rls` ✓ `deploy` ✓** |
+| Deployment: | `inflozo-r2g4qguxa-umangkagathara.vercel.app`, state READY, from `6b7be268` — serving `inflozo.com` and `app.inflozo.com` |
+| Vercel env (`VERCEL_TOKEN`, `VERCEL_PROJECT`) | `SUPABASE_PUBLISHABLE_KEY` added as an encrypted production variable; production now holds `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DODO_WEBHOOK_SECRET`, `ENABLE_EXPERIMENTAL_COREPACK` |
+
+**Not touched by this story:** Dodo, and the Ghost test servers T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`. They appear in the app only as `connect-src` origins in the CSP string, which no request in this story used.
 
 ## Owner's manual test
 
-Use your own email address — the one Resend already sends test emails to. Every address below is the real site.
+Use your own email address. Every address below is the real site, and the email really does come from
+**Inflozo <hello@inflozo.com>** — inflozo.com is already a verified sender at Resend, so nothing about DNS
+is waiting on you. The live database is at zero users, so step 3 will be the first account it has ever had.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|

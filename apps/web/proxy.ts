@@ -8,7 +8,7 @@
 // file is beyond `node --test`. Keep it thin on purpose.
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { route, APP } from './routing.ts'
+import { route } from './routing.ts'
 import { policy, policyName } from './csp.ts'
 import { sessionCookie } from './lib/supabase/server.ts'
 
