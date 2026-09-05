@@ -7,32 +7,38 @@
 #
 #   bash supabase/tests/run-rls-gate.sh
 #
-# The three SQL files here are byte-identical copies of the architecture's design authority.
-# The cmp guard below is the standing-rule-7 audit that keeps them from drifting: a copy that
-# has moved away from its original refuses to run at all, rather than proving a stale schema.
+# TWO different guards, because the three files here are not the same kind of copy (DW-8).
 #
-# Owner's ruling, 2026-09-05: the 2026-09-04 migration is FROZEN — it has been applied to the live
-# database — and every later schema change is a NEW file in supabase/migrations/, which is why the
-# psql step below globs the directory instead of naming a file. SCHEMA.sql stays the cumulative
-# readable picture of the whole database, so the day it gains a table its cmp against the frozen
-# migration will report DRIFT on a file that is correct. That check must then become an equivalence
-# check (apply all migrations to one container, SCHEMA.sql to another, diff the two schemas) rather
-# than a byte comparison. Tracked as DW-8; the rls.sql and prelude.sql guards are unaffected.
+#   rls.sql and prelude.sql are byte-identical copies of live design authorities, and `cmp -s`
+#   is the standing-rule-7 audit that keeps them so: a copy that has moved away from its original
+#   refuses to run at all, rather than proving a stale schema.
+#
+#   The migrations are NOT copies. Owner's ruling, 2026-09-05: the 2026-09-04 migration is FROZEN —
+#   it has been applied to the live database — and every later schema change is a NEW file here,
+#   while the architecture's SCHEMA.sql keeps growing into the cumulative readable picture of the
+#   database. Their BYTES must therefore be allowed to diverge; what must never diverge is the
+#   DATABASE they produce. So the gate applies every migration to one database and SCHEMA.sql to
+#   another, and diffs the two schemas. Equivalence, not equality.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-ARCH="$REPO/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19"
-MIGRATION_REL="migrations/20260904120000_complete_schema.sql"
+# Overridable only so the control run can point at a deliberately divergent copy and prove this
+# gate actually catches a divergence. It defaults to the design authority.
+ARCH="${INFLOZO_ARCH_DIR:-$REPO/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19}"
 IMAGE="postgres:17-alpine"
+
+for f in SCHEMA.sql RLS-TEST.sql PRELUDE.sql; do
+  [ -f "$ARCH/$f" ] || { echo "MISSING: $ARCH/$f — the design authority is not where the gate expects it." >&2; exit 1; }
+done
 
 drift=0
 guard() {  # guard <supabase-relative copy> <architecture original>
   if ! cmp -s "$REPO/supabase/$1" "$ARCH/$2"; then
     echo "DRIFT: supabase/$1 is not byte-identical to $2 (the design authority)." >&2
+    echo "       Re-copy it:  cp '$ARCH/$2' '$REPO/supabase/$1'" >&2
     drift=1
   fi
 }
-guard "$MIGRATION_REL" SCHEMA.sql
 guard tests/rls.sql     RLS-TEST.sql
 guard tests/prelude.sql PRELUDE.sql
 if [ "$drift" -ne 0 ]; then
@@ -41,12 +47,13 @@ if [ "$drift" -ne 0 ]; then
   exit 1
 fi
 
+WORK="$(mktemp -d)"
 CONTAINER="inflozo-rls-gate-$$"
-cleanup() { docker rm -f "$CONTAINER" >/dev/null 2>&1 || true; }
+cleanup() { docker rm -f "$CONTAINER" >/dev/null 2>&1 || true; rm -rf "$WORK"; }
 trap cleanup EXIT INT TERM
 
 docker run -d --name "$CONTAINER" -e POSTGRES_PASSWORD=gate \
-  -v "$REPO/supabase:/supabase:ro" "$IMAGE" >/dev/null
+  -v "$REPO/supabase:/supabase:ro" -v "$ARCH:/arch:ro" "$IMAGE" >/dev/null
 
 # -h forces TCP. The entrypoint's temporary init server listens on the unix socket only, so a
 # TCP pg_isready answers for the real server and never for the half-built one.
@@ -70,7 +77,31 @@ for f in "$REPO"/supabase/migrations/*.sql; do
   migrations+=(-f "/supabase/migrations/$(basename "$f")")
 done
 
+# 1. the database the repository ships
 docker exec "$CONTAINER" psql -U postgres -q -v ON_ERROR_STOP=1 \
-  -f "/supabase/tests/prelude.sql" \
-  "${migrations[@]}" \
-  -f "/supabase/tests/rls.sql"
+  -f "/supabase/tests/prelude.sql" "${migrations[@]}"
+
+# 2. the database the architecture describes
+docker exec "$CONTAINER" psql -U postgres -q -v ON_ERROR_STOP=1 -c 'create database schema_ref'
+docker exec "$CONTAINER" psql -U postgres -q -v ON_ERROR_STOP=1 -d schema_ref \
+  -f "/supabase/tests/prelude.sql" -f "/arch/SCHEMA.sql"
+
+# 3. they must be the same database (DW-8). Schema only — the fixture data in rls.sql is irrelevant
+#    and has not run yet.
+# pg_dump since 17.6 wraps its output in \restrict/\unrestrict lines carrying a RANDOM token per
+# run, so the two dumps never match byte-for-byte no matter how identical the databases. Dropping
+# those two lines is the whole normalisation; everything else pg_dump emits is deterministic.
+dump() { docker exec "$CONTAINER" pg_dump -U postgres -s -n public -n private "$1" \
+           | grep -vE '^\\(un)?restrict '; }
+dump postgres    > "$WORK/repo.sql"
+dump schema_ref  > "$WORK/arch.sql"
+if ! diff -u "$WORK/arch.sql" "$WORK/repo.sql" > "$WORK/schema.diff"; then
+  echo "SCHEMA DRIFT: supabase/migrations/ and $ARCH/SCHEMA.sql do not describe the same database." >&2
+  echo "  '-' is what SCHEMA.sql has and the migrations do not; '+' is the reverse." >&2
+  echo "  Fix whichever is behind — a new table needs BOTH a migration here and its row in SCHEMA.sql." >&2
+  sed -n '1,120p' "$WORK/schema.diff" >&2
+  exit 1
+fi
+
+# 4. the proof itself
+docker exec "$CONTAINER" psql -U postgres -q -v ON_ERROR_STOP=1 -f "/supabase/tests/rls.sql"

@@ -158,8 +158,22 @@ reason: `pnpm -w check` blocks a release because it runs inside the Vercel build
 
 ### DW-8: the migration's byte-identity guard cannot survive the frozen-migration ruling
 
-plain: A safety check that compares two files will start crying wolf the first time we add a new table; it needs to compare the resulting database instead.
-status: open
+plain: FIXED 2026-09-05 — the safety check now compares the database the files produce instead of the files themselves, so adding a table no longer sets off a false alarm while a real mismatch still does.
+status: closed
+closed: 2026-09-05 — `run-rls-gate.sh` now applies every migration to one database and `SCHEMA.sql`
+  to a second database in the same container, and diffs the two schema dumps. `rls.sql` and
+  `prelude.sql` keep their `cmp -s` byte-guards: those are still true copies of live authorities.
+  CONTROLS (standing rule 2), both run with a second migration adding `public.dw8_probe`:
+    A. `SCHEMA.sql` gains the same table -> **exit 0**, while `cmp` on the frozen migration reports
+       DRIFT, i.e. the old guard would have refused to run and the new one correctly does not.
+    B. `SCHEMA.sql` does NOT gain it -> **exit 1**, `SCHEMA DRIFT`, the diff naming `dw8_probe`.
+  A first attempt at control A failed `FAIL (F11): client-readable but neither client- nor
+  server-insertable` — the proof rejecting a malformed probe, not the gate misbehaving; recorded
+  because it is evidence the F11 class assertion works on a table invented after it was written.
+  One platform fact found by executing: `pg_dump` since 17.6 wraps output in `\restrict`/`\unrestrict`
+  lines carrying a RANDOM token per run, so two dumps of identical databases never match until those
+  two lines are dropped. That is the only normalisation; everything else pg_dump emits is stable.
+was_status: open
 severity: medium
 origin: Story 1.2 review (2026-09-05), owner ruling on question 2
 location: supabase/tests/run-rls-gate.sh
