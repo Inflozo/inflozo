@@ -4,7 +4,7 @@ import { createContext, useActionState, useContext, useEffect, useRef, useState,
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
-import { AlertTriangle, Copy, Pencil, Trash } from '@/components/kit/icons'
+import { Copy, Pencil, Trash } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { openNewProject } from '@/components/shell/shell'
 import { arrowKeys, openMenu } from '@/lib/menu'
@@ -22,7 +22,16 @@ import { deleteProject, duplicateProject, renameProject, type ActionResult } fro
    RENAME AND DELETE HAVE NO FRAME and are extrapolated from S12c, the nearest typed confirm
    (R-74: extrapolate from the nearest frame, never invent a second vocabulary): a 460px
    `<dialog>`, the display title, the 13px body, the right-aligned Cancel + primary footer, and
-   for Delete the 38px danger-tint disc, the mono chip in the label and the mono field.
+   for Delete the danger-tint disc, the mono chip in the label and the mono field.
+
+   DELETE IS CENTRED ON THE OWNER'S OWN INSTRUCTION — "the Delete Project Popup needs a better
+   design. With the icon in top center. And overall better visuals." (his test, 2026-09-05). So
+   the disc moved from the left of the title to above it and grew to 52px, the title and the
+   sentence centre under it, the two buttons are equal halves at 44 rather than a right-aligned
+   pair at 36, and the icon is the trash the ⋯ menu's Delete already wears rather than a warning
+   triangle — one delete, one symbol. It stays inside the S12c vocabulary: same dialog, same
+   tokens, same typed name, same focus-on-Cancel. RENAME IS UNTOUCHED: it is not destructive and
+   a form with one field is right-aligned like every other form in the app.
 
    BOTH OPEN WITH FOCUS ON CANCEL (EXPERIENCE.md § Destructive confirms), which is why Cancel
    carries `autoFocus` — a confirm whose primary action is irreversible never opens on it.
@@ -223,17 +232,20 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
         </form>
       </dialog>
 
-      {/* ── Delete, S12c's shape */}
-      <dialog ref={remove} aria-labelledby={`delete-${id}-title`} className={`${sheet} gap-[18px]`}>
-        <div className="flex items-start gap-3">
+      {/* ── Delete, S12c's shape, centred */}
+      <dialog ref={remove} aria-labelledby={`delete-${id}-title`} className={`${sheet} gap-5`}>
+        <div className="flex flex-col items-center gap-[14px] text-center">
+          {/* The disc, and a softer ring around it so the icon reads as the subject of the
+              window rather than a bullet beside the title. Both are `danger-tint`; the ring is
+              the same token at 50%, which is a token used twice and not a second colour. */}
           <span
             aria-hidden
-            className="inline-flex size-[38px] shrink-0 items-center justify-center rounded-full bg-danger-tint text-danger"
+            className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-full bg-danger-tint text-danger ring-8 ring-danger-tint/50"
           >
-            <AlertTriangle size={17} strokeWidth={1.8} />
+            <Trash size={22} strokeWidth={1.7} />
           </span>
-          <div className="flex min-w-0 flex-col gap-1">
-            <h2 id={`delete-${id}-title`} className={title}>
+          <div className="flex min-w-0 flex-col gap-[6px]">
+            <h2 id={`delete-${id}-title`} className={`${title} wrap-anywhere`}>
               Delete {name}?
             </h2>
             <p className="text-ui-dense leading-[1.5] text-ink-soft">
@@ -249,11 +261,14 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
             // a greyed button cannot be pressed into action by Enter.
             if (!armed) event.preventDefault()
           }}
-          className="flex flex-col gap-[18px]"
+          className="flex flex-col gap-5"
         >
           <input type="hidden" name="id" value={id} />
-          <div className="flex flex-col gap-[6px]">
-            <label htmlFor={`delete-${id}-typed`} className="text-control-label font-medium text-ink-soft">
+          <div className="flex flex-col gap-[7px]">
+            <label
+              htmlFor={`delete-${id}-typed`}
+              className="text-center text-control-label font-medium text-ink-soft"
+            >
               Type{' '}
               <span className="rounded-[5px] border border-line bg-paper px-[6px] py-px font-mono text-control-label text-ink">
                 {name}
@@ -281,8 +296,17 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
             ) : null}
           </div>
 
-          <div className="flex justify-end gap-[10px]">
-            <Button type="button" variant="secondary" size={36} data-cancel onClick={() => remove.current?.close()}>
+          {/* Two equal halves, so neither destructive choice looks like the small one, and so
+              both are a full-width tap target at 390. Cancel is first: it is the way out. */}
+          <div className="grid grid-cols-2 gap-[10px]">
+            <Button
+              type="button"
+              variant="secondary"
+              size={44}
+              data-cancel
+              className="w-full"
+              onClick={() => remove.current?.close()}
+            >
               Cancel
             </Button>
             {/* The kit greys with `aria-disabled`, never `disabled`: the button stays in the tab
@@ -290,9 +314,9 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
             <Button
               type="submit"
               variant="danger"
-              size={36}
+              size={44}
               aria-disabled={armed ? undefined : true}
-              className={armed ? '' : 'opacity-45'}
+              className={`w-full ${armed ? '' : 'opacity-45'}`}
             >
               {removing ? 'Deleting…' : 'Delete project'}
             </Button>

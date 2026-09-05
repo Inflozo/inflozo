@@ -418,8 +418,10 @@ reason: Story 1.5's own Spec Change Log records five executed defects; three wer
 plain: If something goes wrong loading a page, or you click one of the links whose screen has not been
   built yet, you get a bare browser error page instead of the app — the left column and everything else
   disappears, and the only way back is the Back button. The app should keep its frame around those
-  messages. It is small, and it belongs with the first story that has a second real screen to fail.
-status: open
+  messages. **The error half is done: the owner met this on 2026-09-05 (his findings 3 and 8 — "This
+  page couldn't load"), so Story 1.5's Fix run added the app's own error page.** What is left is the
+  "not found" half: the six links whose screens are not built yet still answer with a bare page.
+status: half-closed by Story 1.5 Fix (2026-09-05) — the `not-found.tsx` half is open
 severity: low
 origin: Story 1.5 review (2026-09-05), Blind Hunter layer
 location: apps/web/app/(app)/app/(authed)/ (no error.tsx, no not-found.tsx)
@@ -433,3 +435,40 @@ reason: Story 1.5 adds two database reads to the layout and four server actions;
   boundary files the whole `(authed)` group shares, so the story that adds the first of those screens —
   Epic 2's account settings, or Epic 3's Sites — is where they belong, drawn from the export's own
   error surface rather than invented here (R-74).
+closed-part: Story 1.5's Fix run (2026-09-05) added `apps/web/app/(app)/app/error.tsx`, at the `/app`
+  segment rather than inside `(authed)` so that it catches a throw in the SHELL as well as in a page —
+  an `error.tsx` never catches its own segment's layout, and `revalidatePath` after a write re-renders
+  the shell and the page together. The owner's bare "This page couldn't load" is therefore no longer
+  reachable from anything that throws under the app host. STILL OPEN: `not-found.tsx`. A nested one
+  would not help the six unbuilt destinations anyway — an unmatched URL renders the ROOT not-found, so
+  the fix is a catch-all route inside the group, which is the first story with a second real screen's
+  to write, not this one's.
+
+### DW-18: a statically prerendered page can run no script under either CSP, and the marketing home page throws because of it
+
+plain: The public home page at inflozo.com loads and looks right, but none of its code actually runs —
+  the security rule the site sends blocks it — and the browser records an error behind the scenes.
+  Nothing on that page needs code today, so nobody can see the difference; the moment a button or a
+  form goes on it, that button would not work. The same is true of the "not found" pages inside the
+  app. It should be fixed before Epic 14 writes the real marketing pages.
+status: open
+severity: medium
+origin: Story 1.5 Fix run (2026-09-05), hunting the owner's findings 3 and 8 on the real site
+location: apps/web/csp.ts · apps/web/proxy.ts · the prerendered routes `○ /` and `○ /_not-found`
+reason: The nonce is stamped into script tags PER REQUEST, so a prerendered page has none — its HTML
+  was written at build time. Both policies then block it, for opposite reasons. Executed 2026-09-05
+  with Playwright against production and against a local `next build && next start`, identically:
+  `https://inflozo.com/` (marketing, `script-src 'self'`) reports two blocked INLINE scripts — Next's
+  own flight-data bootstrap — and throws `Minified React error #412`, uncaught; `https://app.inflozo.com/sites`
+  (the root `not-found`, prerendered, served under the app host's `script-src 'self' 'nonce-…'
+  'strict-dynamic'`) reports EIGHT blocked scripts, inline and external both, because `'strict-dynamic'`
+  discards the `'self'` allowlist and every tag lacks the nonce — that page boots no JavaScript at all.
+  The control passed: `app.inflozo.com/sign-in` and `/app` are dynamic, carry the nonce, and report
+  zero blocked scripts and no page error, in the same run. Nothing visible is broken today — marketing
+  is one static line and the 404 has no controls — which is why this is deferred rather than patched
+  into a story about the dashboard. It is not Story 1.5's: the policies are Story 1.4's and the
+  marketing pages are Epic 14's. The fix is a real choice between three, and belongs with whoever owns
+  it: allow `'unsafe-inline'` on the marketing policy only (weakest, simplest), give marketing a
+  build-time hash allowlist, or make the two prerendered routes dynamic and pay §18's prerender cost.
+  **Story 1.4's `## Verification` claim of "console 0 CSP violations" on both hosts did not hold for
+  marketing** and should be re-read when this is picked up.

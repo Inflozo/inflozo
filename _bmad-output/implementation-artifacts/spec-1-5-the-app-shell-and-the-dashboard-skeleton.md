@@ -2,7 +2,7 @@
 title: 'Story 1.5 — The app shell and the dashboard skeleton'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-review'
+status: 'in-progress'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 1
 owner_test: issues
@@ -269,6 +269,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - [x] `apps/web/app/(app)/app/(authed)/projects/actions.ts` -- the four actions with the cap -- FR-B3, FR-B4, through RLS
 - [x] `apps/web/app/(app)/app/(authed)/` page, loading, project-card, placeholder, project-menu, new-project-sheet -- S3a/b/c, D4a/b, the S12c extrapolations -- the story's surface
 - [x] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
+- [x] **Fix run (2026-09-05)** -- the owner's eight findings: the centred delete confirm, the drawer's outside-tap and focus, the phone's account menu moved into ☰ per his ruling, the phone's search focus, and `app/(app)/app/error.tsx` -- his test of the deployed site, R-80
 
 **Acceptance Criteria:**
 - Given `https://app.inflozo.com/` at 1440 with no projects, when it renders, then it **matches frame S3b** — the sidebar with Projects active, Sites and Assets, the account chip with the Free badge; the top bar with "Search projects…", ⌘K and "New project"; the illustration, both sentences and the centred "New project" — with the storage meter, bell and sparkle absent (R-74; the cut line).
@@ -343,6 +344,53 @@ The frozen Intent, Boundaries and Matrix are untouched.
    validation bubble, and P0-0 puts a refusal in the helper-caption slot and never in a tooltip. Applied
    by the review (2026-09-05).
 
+**The Fix run (2026-09-05), from the owner's test of the deployed site.** His eight findings are under
+`## Owner's test findings`; these are the changes they caused. **The frozen Intent, Boundaries and Matrix
+are untouched, by rule**, so where a fix moves away from what they say, the entry below is the record —
+the same way 1.4 recorded its own two owner-ruled departures.
+
+12. **The phone's account menu moved from the top bar into the ☰ drawer, and the top-bar avatar is gone.**
+   The frozen boundary says *"at `margin-left:auto` a 44px search button and the 32px avatar"* and *"At 390
+   it drops **down** from the 32px avatar in the top bar"*; both are now false on purpose. **Owner's ruling,
+   2026-09-05, question 2 option 1** — he read the top-bar initial and the drawer's account row as one
+   control duplicated. They were not (the first opened the menu, the second was a label), which is why it
+   was asked rather than guessed; the ruling merges them, so the drawer's row is the trigger and the menu
+   opens UP from it. `AccountMenu`'s second variant is renamed `topbar` → `drawer` to say so. Everything in
+   the menu — Account settings, Billing & plan, Suggestions, Docs, Sign out — is still reachable on a phone,
+   two taps in rather than one, and the 1440 sidebar chip is untouched.
+13. **Two riders from the same ruling.** The drawer's account row shows `display_name` if there is one and
+   OTHERWISE THE WHOLE EMAIL, with no `truncate` and no `max-w-[100px]` — his words: *"Right now the email
+   is clipped and shows three dots."* The 300px drawer has the room the 220px sidebar does not, which is why
+   only the sidebar chip still clips (defect 5 above stands). And the plan badge leaves that row — *"we are
+   already showing it in the menu that opens along with Billing and Plan row"* — so the badge now rides the
+   **Billing & plan row in both menus**; the 390 frame drew it in the menu header, and no menu now carries
+   it twice.
+14. **The delete confirm is centred: the disc above the title, not beside it.** His words: *"The Delete
+   Project Popup needs a better design. With the icon in top center. And overall better visuals."* The
+   frozen boundary describes S12c's left-aligned 38px disc; it is now 52px, centred above a centred title
+   and sentence, with a `danger-tint` ring at 50% behind it, the typed-name label centred, and the footer
+   two equal-width 44px buttons instead of a right-aligned pair at 36 — which is also a full-width tap
+   target at 390. The icon is the **trash** the ⋯ menu's Delete already wears rather than a warning
+   triangle: one delete, one symbol, and the frozen boundary asked for the trash in the first place.
+   Everything load-bearing is unchanged — the typed name, the server-side re-check, focus on Cancel,
+   Escape. **Rename is deliberately untouched**: it is not destructive, and a one-field form is
+   right-aligned like every other form in the app.
+15. **A tap outside the ☰ drawer closes it, and ☰ no longer hands focus to the wordmark.** A modal
+   `<dialog>` gives Escape and a focus trap but not light dismiss, so the scrim's click is caught on the
+   dialog and answered with a rect test — the panel's own padding is also the dialog element, and a target
+   test alone would close it on a tap inside. And `showModal()` focuses the first focusable thing in the
+   panel, which was the wordmark, ringed: the dialog takes the focus itself (`tabIndex={-1}`, `outline-none`),
+   which a screen reader announces and Tab still walks out of. **The confirms and the New project sheet do
+   NOT get light dismiss**: a destructive confirm a stray tap dismisses is what the typed name exists to
+   prevent.
+16. **The phone's search field is focused by being rendered.** The button set the state and then chased the
+   field with `requestAnimationFrame`, which fires before React has committed the element — so the tap
+   revealed the field and left the cursor nowhere. `autoFocus` runs on mount, and mount is what the tap
+   causes. ⌘K is unchanged and still finds whichever field is visible.
+17. **`apps/web/app/(app)/app/error.tsx` is new, and closes half of DW-17.** See Design Notes for why it
+   sits at the `/app` segment and not inside `(authed)`, and `## Verification` for what the Fix run could
+   and could not prove about findings 3 and 8.
+
 **Five defects the executed pass found and fixed, each with the control that found it.**
 
 1. **Every popover was permanently on screen.** `className="flex …"` on a `popover` element beats the user
@@ -367,6 +415,27 @@ The frozen Intent, Boundaries and Matrix are untouched.
    truncate. Found by looking at the 1440 screenshot.
 
 ## Design Notes
+
+**Where this story now departs from the frames, and on whose authority.** Two places, both the owner's
+own words on the deployed site (R-80), and R-74 makes the export the design authority *until he rules
+otherwise* — which is exactly what these are. (1) **The phone has one initial, not two**, and it lives at
+the bottom of the ☰ drawer where it opens the account menu; `S3 · mobile · 390` draws an avatar in the top
+bar and `S3 · mobile — menu open` draws an account row below it, and his ruling of 2026-09-05 merges the
+pair. (2) **The delete confirm is centred** — the disc above the title rather than beside it, and two
+equal buttons rather than a right-aligned pair; that surface has no frame at all, so the S12c
+extrapolation is what moved, which the frozen Boundaries put under "Ask First" and he has now answered.
+**The export itself is not edited** — it never is by a story — and if he wants the two phone frames
+redrawn to match, that is a design pass of its own. Nothing else moved: the sidebar, the top bar at 1440,
+S3a/b/c, D4a/b and the rename confirm are as they were.
+
+**The app's error boundary sits at `/app`, not inside `(authed)`, and that is the whole point of it.**
+An `error.tsx` catches throws in its segment's children — its own segment's LAYOUT included only if the
+boundary is a level up. The shell is `(authed)/layout.tsx`, and `revalidatePath` after any of the four
+writes re-renders the shell and the page together, so a boundary inside `(authed)` would have covered
+exactly half of what the owner met. At `/app` it covers both, at the cost of the sidebar disappearing
+while the message is on screen; a second boundary inside the group is the upgrade if that ever matters,
+and the `ponytail:` comment beside it says so. It logs `error.digest` and nothing else — logs carry no
+user content (spine, Security floor).
 
 **The 1.4 rule for a frame's values, applied here.** Geometry is read off the frame and never rounded;
 colours are the token layer's names, and where a frame draws a hex that has no name the nearest named
@@ -603,7 +672,117 @@ re-executed, so it was published and checked in turn: CI on `8249dd9f` reported 
 where it was; `/sign-in` **200** with `x-inflozo-policy: app-nonce`; `https://inflozo.com/` **200**,
 marketing untouched. The four patches that change what a person SEES — the rename Banner, the duplicate
 race opening D4b, the error Banner over S3b, and the fresh duplicate name — are on the owner's own screens
-and are his to confirm in `**2. On your phone there are two of your initial — one in the top bar and one at the bottom of the ☰ drawer. Which one should go?**
+and are his to confirm in `## Owner's manual test` below.
+
+**Dismissed on measurement, not argument.** A layer read the greyed doors' `aria-disabled` as silencing
+axe rather than fixing contrast. Measured: the reason sentence (`marigold-text` on `grey-field`) is
+**4.83:1** and D4b's cap pill **5.01:1** — both pass AA on their own. Only the inactive door's title and
+description (2.21:1) and the disabled Create label (2.15:1) sit below, and those are exactly what WCAG
+1.4.3's "inactive user interface component" exemption covers. Every piece of information a user needs to
+act is above 4.5:1, so P0-0's treatment stands and no owner question arises.
+
+**Deferred, as DW-16 and DW-17.** Three of the five defects the Dev pass found were browser-only, and no
+repeatable check holds them — deleting `open:` from the ⋯ menu leaves the whole gate green (DW-16, Story
+15.1 owns it). The `(authed)` group has no `error.tsx` or `not-found.tsx`, so a layout throw or one of the
+six future destinations leaves the shell entirely (DW-17, the first story with a second real screen).
+
+### The Fix run — 2026-09-05, the owner's eight findings
+
+Executed against the real Supabase project (R-82) and against **the live `https://app.inflozo.com` and
+`https://inflozo.com`**, with a headless Chromium driving the pages. One throwaway account,
+`story-1-5-fix@inflozo.com`, was created through the Supabase admin API, signed in with a real
+`generate_link` token, used for every pass below and **deleted at the end**; its `profiles` and
+`entitlements` rows cascaded with it. Every key was read into a command's environment from
+`tools/probe/.env` and is named here by its variable only.
+
+**Findings 3 and 8 — what the error actually is, and what was and was not proved.** The page the owner
+saw is Next's **client-side** global error, not a 500: the two are different files with different
+sentences, and only the client one ends *"Reload to try again, or go back."* (grepped out of the built
+client bundle — the server's says *"A server error occurred. Reload to try again."*). So an uncaught
+error in the BROWSER, and no boundary anywhere under `/app` to catch it — DW-17, which the owner has now
+met. **The throw itself was not reproduced**, and the attempts are recorded because a negative result is
+one: eight delete cycles across `next dev`, a local `next build && next start`, and the live site; with
+and without a `?q=` search; deleting the last project so S3b comes back; the owner's own step 2 (click
+Sites, browser Back) before deleting; and a fuzz pass over the paths that CAN throw
+(`showModal()`/`hidePopover()` on a dialog or popover in the wrong state) — double-clicking "New project",
+Escape-and-reopen on the sheet, on the ⋯ menu and on the delete confirm, and a double-click on "Delete
+project". Zero page errors in every one. The fix is therefore the boundary rather than a guess at a cause:
+whatever throws, the owner now gets the app's own sentence and a **Try again** button instead of a bare
+page, and `error.digest` reaches the log so a recurrence is identifiable.
+
+| Claim | Command / control | Result |
+|---|---|---|
+| the error page is the CLIENT boundary's, not the server's | `grep -hoE "Reload to try again[^\"]*" .next/server/chunks/ssr/node_modules__pnpm_*.js` | both strings present: `Reload to try again.` (server) and **`Reload to try again, or go back.`** (client) — the owner's wording is the client one |
+| delete does not throw | 8 delete cycles, dev + local prod + live, with and without `?q=`, plus the 404-and-Back flow | every cycle ended on S3b with **zero** `pageerror` and zero console errors |
+| dialogs and popovers do not throw when driven wrongly | double-click New project · Escape+reopen sheet · Escape+reopen ⋯ · Escape+reopen delete · double-click Delete project, live | zero `pageerror` |
+| the new boundary compiles into the route tree | `pnpm build` | route table unchanged: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` — an `error.tsx` is a boundary, not a route |
+
+**Findings 2, 4, 5, 6 and 7 — every one proved in a real browser**, at 390 with touch on the production
+build, and the 1440 side re-checked in the same run so the ruling cannot have broken the sidebar:
+
+| Finding | Control | Result |
+|---|---|---|
+| 6 · one initial on the phone | every `button[popovertarget^="account-menu"]`, with `offsetParent` | two triggers in the document, **neither visible** at 390 until ☰ is open — the top bar carries none |
+| 6 · the row opens the menu | tap the drawer's row → `#account-menu-mobile:popover-open` | true, and the menu draws above the modal drawer (top layer) |
+| 6 · the whole address, unclipped | `scrollWidth > clientWidth` on the row's text | **false** — no ellipsis; the row reads `story-1-5-fix@inflozo.com` in full |
+| 6 · no badge on the row, one in the menu | text of the row · text of the Billing row · text of the menu header | row: no `Free` · **Billing & plan → `Free`** · header: none |
+| 6 · Sign out still reachable on a phone | `#account-menu-mobile button[type=submit]` | `Sign out` present |
+| 6 · the desktop is untouched | `#account-menu` at 1440, opened from the chip | present, and the badge still rides Billing & plan |
+| 5 · ☰ does not ring the wordmark | `document.activeElement` after `showModal()` | **`DIALOG`**, not the wordmark; `a[href="/"]:focus-visible` is false |
+| 4 · a tap outside closes the drawer | click at (370, 500) — outside a 300px panel | `dialog[open]` gone |
+| 4 · a tap inside does not | click at (150, 700) — inside it | `dialog[open]` still there |
+| 7 · the search icon focuses the box | tap the 44px search button, then read `document.activeElement` | `input[name="q"]` |
+| 2 · the icon is top-centre | rects of the disc, the `<h2>` and the dialog | disc **above** the title and centred to within 2px; **52px**; title `text-align: center` |
+| 2 · two equal buttons | the footer's rects at 390 | `Cancel` and `Delete project`, **154 × 44** each |
+| 2 · the confirm still confirms | open it, type the name in the wrong case, then exactly | wrong: `aria-disabled="true"` and nothing sent · exact: the row is deleted and S3b returns |
+| 2 · it still opens on Cancel | `document.activeElement.hasAttribute('data-cancel')` | true |
+| axe-core, WCAG 2.1 A + AA | the open delete confirm · the phone with ☰ open · 1440 with the account menu open | **zero violations** in all three |
+| the gate | `pnpm lint` · `pnpm typecheck` · `pnpm test` | green — 59 `apps/web` assertions, 0 failing |
+
+**A defect found while hunting findings 3 and 8, deferred as DW-18, and not this story's.** A statically
+prerendered page can run no script under either policy, because the nonce is stamped per request and a
+prerendered page's HTML was written at build time. Executed on the live site: `https://inflozo.com/`
+reports **two blocked inline scripts** and throws `Minified React error #412`, uncaught; the app host's
+prerendered 404 (`https://app.inflozo.com/sites`) reports **eight blocked scripts** and boots no
+JavaScript at all. **The control passed**: `app.inflozo.com/sign-in` and the dashboard are dynamic, carry
+the nonce, and report zero blocked scripts and no error in the same run — so this is the prerendered
+routes, not the policy as such. Nothing visible is broken today; the policies are Story 1.4's and the
+marketing pages are Epic 14's, and the fix is a real three-way choice that belongs with whoever owns them.
+It also means **Story 1.4's "console 0 CSP violations" claim did not hold for marketing**.
+
+
+## Questions for the owner
+
+**1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
+
+Your story's test script lists the keyboard order as *left column → search box → New project → a card's ⋯ →
+your account chip*, with the chip last. What the built page actually does is *Inflozo → Projects → Sites →
+Assets → your account chip → search box → New project → ⋯*. The chip comes at the end of the **left column**
+because that is exactly where it sits on the screen — the bottom of that column — and the Tab key follows
+what your eye follows.
+
+*Example:* sign in and press Tab five times. The fifth press lands on your initial at the bottom left,
+because you have just walked down that column — Inflozo, Projects, Sites, Assets, then your account. The
+sixth press crosses to the top bar and lands in the search box. To make the chip come last instead, it
+would have to be lifted out of its natural place in the page's order and forced to the end, which is the
+one trick accessibility guidance tells you not to use, and it would leave the Tab order no longer matching
+the picture on screen.
+
+1. **Leave it as built — the chip is reached at the bottom of the left column, before the search box. (RECOMMENDED)** — Tab follows the screen, top to bottom and left to right, so nothing jumps around; it keeps the accessibility check clean, and it is what apps with a left column normally do.
+2. Force the chip to come last, after the cards — your written order is honoured to the letter, but the Tab order stops matching the picture and the page has to carry the one technique accessibility guidance warns against.
+3. A different order — tell me the order you want and it is changed inside this story.
+
+Nothing is blocked by this: the dashboard is built, deployed and working either way. It is here because
+the decision belongs to you, and options 2 and 3 are each a small change inside this same story.
+
+**Ruled (owner, 2026-09-05): option 1 — "Leave it as built — the chip is reached at the bottom of the left
+column, before the search box."** No code changes: the Tab order stays `Inflozo → Projects → Sites → Assets
+→ account chip → search → New project → ⋯`, which is document order and therefore screen order (WCAG 2.4.3),
+and no positive `tabindex` enters the app. The matrix's Keyboard row keeps its written order as the reading
+it was given; this ruling is the record of what the built page does instead, and the two agree on everything
+else in that row.
+
+**2. On your phone there are two of your initial — one in the top bar and one at the bottom of the ☰ drawer. Which one should go?**
 
 You are right that it looks like a duplicate, and both are drawn that way in `S3 Dashboard.dc.html` — the
 phone frame puts your initial at the top right, and the "menu open" frame puts your initial, email and Free
@@ -651,58 +830,24 @@ What that binds, for the Fix run:
   design authority under R-74 and is never touched by a story. Redrawing these two frames to match is a
   design pass of its own and is not this story's; say the word and it is scheduled separately.
 
-
-## Owner's manual test` below.
-
-**Dismissed on measurement, not argument.** A layer read the greyed doors' `aria-disabled` as silencing
-axe rather than fixing contrast. Measured: the reason sentence (`marigold-text` on `grey-field`) is
-**4.83:1** and D4b's cap pill **5.01:1** — both pass AA on their own. Only the inactive door's title and
-description (2.21:1) and the disabled Create label (2.15:1) sit below, and those are exactly what WCAG
-1.4.3's "inactive user interface component" exemption covers. Every piece of information a user needs to
-act is above 4.5:1, so P0-0's treatment stands and no owner question arises.
-
-**Deferred, as DW-16 and DW-17.** Three of the five defects the Dev pass found were browser-only, and no
-repeatable check holds them — deleting `open:` from the ⋯ menu leaves the whole gate green (DW-16, Story
-15.1 owns it). The `(authed)` group has no `error.tsx` or `not-found.tsx`, so a layout throw or one of the
-six future destinations leaves the shell entirely (DW-17, the first story with a second real screen).
-
-## Questions for the owner
-
-**1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
-
-Your story's test script lists the keyboard order as *left column → search box → New project → a card's ⋯ →
-your account chip*, with the chip last. What the built page actually does is *Inflozo → Projects → Sites →
-Assets → your account chip → search box → New project → ⋯*. The chip comes at the end of the **left column**
-because that is exactly where it sits on the screen — the bottom of that column — and the Tab key follows
-what your eye follows.
-
-*Example:* sign in and press Tab five times. The fifth press lands on your initial at the bottom left,
-because you have just walked down that column — Inflozo, Projects, Sites, Assets, then your account. The
-sixth press crosses to the top bar and lands in the search box. To make the chip come last instead, it
-would have to be lifted out of its natural place in the page's order and forced to the end, which is the
-one trick accessibility guidance tells you not to use, and it would leave the Tab order no longer matching
-the picture on screen.
-
-1. **Leave it as built — the chip is reached at the bottom of the left column, before the search box. (RECOMMENDED)** — Tab follows the screen, top to bottom and left to right, so nothing jumps around; it keeps the accessibility check clean, and it is what apps with a left column normally do.
-2. Force the chip to come last, after the cards — your written order is honoured to the letter, but the Tab order stops matching the picture and the page has to carry the one technique accessibility guidance warns against.
-3. A different order — tell me the order you want and it is changed inside this story.
-
-Nothing is blocked by this: the dashboard is built, deployed and working either way. It is here because
-the decision belongs to you, and options 2 and 3 are each a small change inside this same story.
-
-**Ruled (owner, 2026-09-05): option 1 — "Leave it as built — the chip is reached at the bottom of the left
-column, before the search box."** No code changes: the Tab order stays `Inflozo → Projects → Sites → Assets
-→ account chip → search → New project → ⋯`, which is document order and therefore screen order (WCAG 2.4.3),
-and no positive `tabindex` enters the app. The matrix's Keyboard row keeps its written order as the reading
-it was given; this ruling is the record of what the built page does instead, and the two agree on everything
-else in that row.
-
 ## Owner's manual test
 
 Your account is on the Free plan, so you will see the Free side of every screen — the one project, the
 polite refusal of a second, the Go Pro pill. The Pro side (up to 25 projects, duplicate succeeding) is
 proved by the Dev run with a throwaway account and recorded above; say the word if you would like your
 own account switched to Pro for a look — it is one row, and it is switched back the same way.
+
+**Your eight findings — what changed, and what to look at this time.** Numbered as you wrote them, not
+as the steps above. Finding 1 needed no change and is answered under `## Owner's test findings`.
+
+| Your finding | What to do | What you should see |
+|---|---|---|
+| 2 · the delete window | ⋯ → Delete on a card, on your computer and on your phone | The red bin in a pink disc at the **top, centred**, the title and sentence centred under it, and two equal buttons instead of a small pair in the corner |
+| 3 and 8 · the error page | Delete a project a few times, with and without something typed in the search box | The card goes and the empty dashboard comes back, every time. **If anything ever does go wrong now you will see Inflozo's own page** — "We couldn't show that just now.", a red "Try again" and a link back — instead of the bare browser error. Tell me if you see it, and what you had just done |
+| 4 · tapping outside the menu | On your phone, tap ☰, then tap the greyed area to the right | The panel closes. Tapping inside it does not |
+| 5 · the box around the logo | On your phone, tap ☰ | No box, ring or outline around "Inflozo" or anything else in the panel |
+| 6 · two initials | On your phone, look at the top bar, then tap ☰ | **One** initial now, at the bottom of the ☰ panel, and tapping it opens your account menu. The top bar has ☰, "Inflozo" and the search icon only. Your whole email is on that row, not cut off, and the "Free" tag has moved to the Billing & plan line inside the menu |
+| 7 · the search icon | On your phone, tap the search icon | The box appears with the cursor already in it |
 
 **Six links are expected to show "not found" today, and that is not a fault:** Sites and Assets in the
 sidebar, and Account settings, Billing & plan, Suggestions and Docs in your account menu, plus the Go
@@ -720,13 +865,15 @@ would rather not see them until then, say so in your findings and it is changed 
 | 7 | same | Rename | Click the ⋯ on the card → Rename | `Field Notes` | A small window "Rename project" with the name in a box; type the new name, press Save; the card now says "Field Notes" and still "Updated today" |
 | 8 | same | Rename, refused | ⋯ → Rename, clear the box, press Save | (empty) | The box goes red with "Give it a name — up to 80 characters." and nothing is saved; Cancel |
 | 9 | same | Duplicate at the cap | ⋯ → Duplicate | — | The same "Free includes 1 project" sheet as step 6 — a copy would be a second project. Cancel |
-| 10 | same | Delete (S12c-shaped) | ⋯ → Delete | first `field notes`, then `Field Notes` | A window "Delete Field Notes?" with a red circle, "This project will be permanently deleted. This cannot be undone.", and "Type Field Notes to confirm". The cursor starts on Cancel. With `field notes` the red Delete button stays faded and does nothing; with `Field Notes` exactly it goes solid, and pressing it removes the card — you are back on the empty dashboard |
+| 10 | same | Delete (redrawn on your word) | ⋯ → Delete | first `field notes`, then `Field Notes` | A window with a **red bin in a round pink disc at the top, centred**, "Delete Field Notes?" and "This project will be permanently deleted. This cannot be undone." centred under it, then "Type Field Notes to confirm", then **two equal buttons**, Cancel and a red Delete project. The cursor starts on Cancel. With `field notes` the red button stays faded and does nothing; with `Field Notes` exactly it goes solid, and pressing it removes the card — you are back on the empty dashboard |
 | 11 | same | Search | Create a project again (steps 4–5), rename it `Harbour Letter`, then type in the search box and press Enter | `harb` · then `zzz` | With `harb` the card stays; with `zzz` the grid says "No projects match “zzz”." Clear the box and press Enter to see the card again. ⌘K (Ctrl+K on Windows) jumps the cursor into the box |
-| 12 | same, on your phone | Dashboard at 390 | Open the address on your phone | — | A short top bar: ☰, "Inflozo", a search icon and your initial; a full-width red "+ New project"; your card below it, one per row; nothing cut off, nothing scrolling sideways |
-| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, your initial and email with the "Free" tag at the bottom, and an ✕ to close |
-| 14 | same, phone | Dropdown | Tap your initial top-right | — | The same menu as step 3, dropping down from your initial, with the "Free" tag beside your email |
-| 15 | same, phone | Sheet and delete | Tap "+ New project", Cancel; then ⋯ → Delete on your card, Cancel | — | Both windows fill the width with a small margin and every button is reachable |
-| 16 | same | Sign out | Open the account menu → Sign out | — | The Sign In card from 1.4 |
+| 12 | same, on your phone | Dashboard at 390 | Open the address on your phone | — | A short top bar: ☰, "Inflozo" and a search icon — **and no initial beside it any more**; a full-width red "+ New project"; your card below it, one per row; nothing cut off, nothing scrolling sideways |
+| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, and at the bottom your initial with **your whole email address beside it, not cut off with three dots** and no "Free" tag; an ✕ to close. Nothing on the panel has a box drawn around it when it opens |
+| 14 | same, phone | The account menu, now inside ☰ | Tap ☰, then tap your initial at the bottom of the panel | — | The same menu as step 3 opens **upwards from that row**: your initial and email, Account settings, Billing & plan **with the "Free" tag**, Suggestions, Docs, a line, Sign out |
+| 15 | same, phone | Closing the panel | Tap ☰, then tap the greyed area to the right of the panel | — | The panel closes. Tapping inside it does not close it |
+| 16 | same, phone | Sheet and delete | Tap "+ New project", Cancel; then ⋯ → Delete on your card, Cancel | — | Both windows fill the width with a small margin and every button is reachable; the delete window's bin, title and two buttons are centred as in step 10 |
+| 17 | same, phone | Search | Tap the search icon in the top bar | — | The search box appears under the bar **with the cursor already in it** and the keyboard up — you can type straight away |
+| 18 | same | Sign out | Open the account menu (the chip at the bottom left on a computer, or ☰ → your initial on a phone) → Sign out | — | The Sign In card from 1.4 |
 
 ## Owner's test findings
 
@@ -778,3 +925,22 @@ showing a sentence inside it. The Fix run owns both halves — the throw first, 
 is an extrapolation with no frame of its own, so its icon can move to the top and centre; the ☰ drawer is a
 native modal that does not close on an outside tap unless it is told to; the drawer hands focus to the first
 thing in it, which is the wordmark; and the phone's search field is focused a beat too early to take it.
+
+### What the Fix run did, 2026-09-05 — one line each
+
+| Your finding | What was done |
+|---|---|
+| 1 · the New project sheet | **No change, and none is due here.** The greyed doors and the single Paper card are this story's deliberate state; Epic 11 (starters), Story 13.6 (the whole four-path sheet), Epic 3 (connect a site) and Epic 6 (packs and the pack editor) fill them in. The one thing that is this story's — the frame puts "Start from a starter" first and the build puts Blank canvas first — is left as built because you did not ask for it; say the word and it is one line |
+| 2 · the delete window | Redrawn centred: a 52px pink disc with the bin **above** the title, title and sentence centred under it, the typed-name label centred, and two equal 44px buttons. Rename is deliberately untouched |
+| 3 and 8 · the error page | The app now has its own error page (`app/(app)/app/error.tsx`), so the bare browser one is unreachable from anything under `app.inflozo.com`. **The throw itself was not reproduced** — eight delete cycles on the live site and two local builds, with and without a search, plus your own step 2 (Sites → Back) and a deliberate fuzz of every dialog, all clean. What you saw is Next's own page for an uncaught browser error, and it appeared because nothing was there to catch it (DW-17). If it happens again, you now see Inflozo's page and a "Try again" — tell me what you had just done |
+| 4 · tapping outside ☰ | A tap on the greyed area closes the panel; a tap inside does not. The confirms and the New project sheet deliberately do **not** get this — a delete window a stray tap dismisses is the thing typing the name exists to prevent |
+| 5 · the ring on the logo | The panel itself takes the focus when it opens, so nothing inside it is ringed, and Tab still walks into it |
+| 6 · two initials | Your ruling, built: no initial in the top bar, the drawer's row opens the menu upwards, the whole address on that row unclipped, and the Free tag moved to the Billing & plan line |
+| 7 · the search icon | The box is focused by appearing rather than chased a frame later, so the cursor is in it and the keyboard is up |
+
+**One thing found while hunting findings 3 and 8, and it is not this story's.** The public home page at
+`inflozo.com` loads and looks right, but none of its code runs — the security header the site sends blocks
+it, and the browser records an error behind the scenes. Nothing on that page needs code today, so nothing
+is visibly wrong; the moment a button or a form goes on it, that button would not work. Recorded as
+**DW-18** with the evidence. The header is Story 1.4's and the marketing pages are Epic 14's, so it is
+fixed there rather than inside a story about the dashboard.

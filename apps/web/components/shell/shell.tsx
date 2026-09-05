@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { Globe, Image, MenuLines, Plus, Projects, Search, X } from '@/components/kit/icons'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
-import { AccountMenu, Avatar, PlanBadge, nameOf, secondLineOf, type ShellUser } from './account-menu'
+import { AccountMenu, type ShellUser } from './account-menu'
 
 /* ──────────────────────────────────────── S3 Dashboard.dc.html — the shell, 1440 and 390.
 
@@ -20,6 +20,11 @@ import { AccountMenu, Avatar, PlanBadge, nameOf, secondLineOf, type ShellUser } 
    ABSENT, deliberately, and each is another epic's: the storage meter under the nav (E8), the
    notifications bell (E13) and the what's-new sparkle (the epic's cut line). Absent, not
    greyed — there is nothing behind any of them to reach yet (UX-DR3).
+
+   AND ABSENT ON THE OWNER'S RULING: the 32px avatar the 390 frame draws at the right of the top
+   bar. It and the account row inside ☰ read as one control duplicated, so the menu moved into
+   the drawer and the top bar keeps ☰ · the wordmark · search (2026-09-05, spec question 2,
+   option 1 — see account-menu.tsx, which carries the rest of that ruling).
 
    The shell lives in `(authed)/layout.tsx`, so every later authenticated surface is inside it
    by where its file sits. The search field and "New project" belong to the DASHBOARD and are
@@ -79,7 +84,7 @@ export function NewProjectButton({ look }: { look: 'bar' | 'empty' | 'mobile' })
  * no client state and no context. Enter searches.
  * ponytail: Enter-to-search; live filtering is a router.replace on input if the owner wants it.
  */
-function SearchField({ id, wide }: { id: string; wide: boolean }) {
+function SearchField({ id, wide, focused = false }: { id: string; wide: boolean; focused?: boolean }) {
   const q = useSearchParams().get('q') ?? ''
   return (
     <form
@@ -99,6 +104,12 @@ function SearchField({ id, wide }: { id: string; wide: boolean }) {
         // The value is whatever the URL says, and a new URL is a new field.
         key={q}
         defaultValue={q}
+        // THE PHONE'S FIELD IS FOCUSED BY BEING RENDERED. The search button used to set the
+        // state and then chase the field with a `requestAnimationFrame`, which fires before
+        // React has committed the element — so the tap opened the field and left the cursor
+        // nowhere (the owner's finding 7). `autoFocus` runs on mount, which is exactly when
+        // the field exists, and mount is what the tap causes.
+        autoFocus={focused}
         placeholder="Search projects…"
         className="min-w-0 flex-1 bg-transparent text-ui-dense text-ink caret-coral outline-none placeholder:text-ink-soft-aa [&::-webkit-search-cancel-button]:hidden"
       />
@@ -190,6 +201,44 @@ export function Shell({
     return () => window.removeEventListener('keydown', onKey)
   }, [onDashboard])
 
+  /**
+   * `showModal()` hands focus to the first focusable thing inside the panel, which is the
+   * wordmark — and the ring the app draws around every focusable control then appeared around
+   * the logo the moment ☰ was tapped (the owner's finding 5). The DIALOG takes the focus
+   * instead: it is the thing that just opened, a screen reader announces it, Tab still walks
+   * into the panel from there, and `tabIndex={-1}` is what makes an element focusable without
+   * putting it in the tab order.
+   */
+  const openDrawer = () => {
+    const panel = drawer.current
+    if (!panel) return
+    panel.showModal()
+    panel.focus()
+  }
+
+  /**
+   * A tap on the scrim closes the drawer (the owner's finding 4). A modal `<dialog>` does not
+   * do this itself — the platform gives Escape and the focus trap, not light dismiss — and the
+   * backdrop's clicks arrive on the dialog element, so "outside" is a rect test rather than a
+   * target test alone: the panel's own padding is also the dialog element, and closing on a tap
+   * in the padding would be the same bug with the sign flipped.
+   *
+   * The confirms and the New project sheet deliberately do NOT get this: a destructive confirm
+   * that a stray tap dismisses is the thing the typed name exists to prevent, and Escape and
+   * Cancel are their two ways out (EXPERIENCE.md § Destructive confirms).
+   */
+  const dismissDrawer = (event: MouseEvent<HTMLDialogElement>) => {
+    const panel = drawer.current
+    if (!panel || event.target !== panel) return
+    const box = panel.getBoundingClientRect()
+    const outside =
+      event.clientX < box.left ||
+      event.clientX > box.right ||
+      event.clientY < box.top ||
+      event.clientY > box.bottom
+    if (outside) panel.close()
+  }
+
   const nav = (big: boolean, onNavigate?: () => void) => (
     <nav aria-label="Sections" className="flex flex-col gap-[2px]">
       {NAV.map((item) => (
@@ -223,33 +272,29 @@ export function Shell({
           <button
             type="button"
             aria-label="Menu"
-            onClick={() => drawer.current?.showModal()}
+            onClick={openDrawer}
             className={`inline-flex size-11 items-center justify-center rounded-sm text-ink ${ring}`}
           >
             <MenuLines size={20} />
           </button>
           <Wordmark size={19} />
-          <div className="ml-auto flex items-center gap-[2px]">
+          <div className="ml-auto flex items-center">
             {onDashboard ? (
               <button
                 type="button"
                 aria-label="Search projects"
                 aria-expanded={searchOpen}
-                onClick={() => {
-                  setSearchOpen((open) => !open)
-                  requestAnimationFrame(() => document.getElementById('q-mobile')?.focus())
-                }}
+                onClick={() => setSearchOpen((open) => !open)}
                 className={`inline-flex size-11 items-center justify-center rounded-sm text-ink-soft ${ring}`}
               >
                 <Search size={18} />
               </button>
             ) : null}
-            <AccountMenu user={user} plan={plan} variant="topbar" />
           </div>
         </div>
         {onDashboard && searchOpen ? (
           <div className="border-b border-line p-[10px_12px] tablet:hidden">
-            <SearchField id="q-mobile" wide />
+            <SearchField id="q-mobile" wide focused />
           </div>
         ) : null}
 
@@ -270,7 +315,9 @@ export function Shell({
       <dialog
         ref={drawer}
         aria-label="Menu"
-        className="m-0 h-dvh max-h-dvh w-[300px] max-w-[300px] flex-col bg-surface p-[20px_14px_16px] shadow-lg backdrop:bg-scrim open:flex tablet:hidden"
+        tabIndex={-1}
+        onClick={dismissDrawer}
+        className="m-0 h-dvh max-h-dvh w-[300px] max-w-[300px] flex-col bg-surface p-[20px_14px_16px] shadow-lg outline-none backdrop:bg-scrim open:flex tablet:hidden"
       >
         <div className="flex items-center justify-between p-[0_10px_20px]">
           <Wordmark size={20} />
@@ -284,19 +331,15 @@ export function Shell({
           </button>
         </div>
         {nav(true, () => drawer.current?.close())}
-        <div className="mt-auto flex items-center gap-[10px] border-t border-line p-[10px]">
-          <Avatar user={user} size={32} />
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-ui font-semibold text-ink">{nameOf(user)}</span>
-            {secondLineOf(user) ? (
-              <span className="max-w-[100px] truncate text-helper-caption text-ink-soft">
-                {secondLineOf(user)}
-              </span>
-            ) : null}
-          </span>
-          <span className="ml-auto shrink-0">
-            <PlanBadge plan={plan} />
-          </span>
+        {/* The phone's account menu, on the owner's ruling: this row opens it, upwards, and
+            the top bar carries no second initial. */}
+        <div className="mt-auto border-t border-line pt-1">
+          <AccountMenu
+            user={user}
+            plan={plan}
+            variant="drawer"
+            onNavigate={() => drawer.current?.close()}
+          />
         </div>
       </dialog>
     </div>
