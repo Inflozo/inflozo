@@ -683,6 +683,23 @@ def plain_state(spec):
 
 
 NO_SCREEN = "no screen — say 'done' in chat and the Record prompt closes it"
+
+# The amber pill's own explanation. It is a reminder, not a verdict, and saying so is the whole point:
+# this project's rule is never to print a key, so a Verification written by the book can name every
+# service it hit by variable name and still trip a check that looks for an address.
+UNVERIFIED_NOTE = (
+    '<div class="flag"><b>What the amber “Verification names no real service” note means</b>'
+    '<p>Every story has to be checked against the <b>real</b> services before it goes live — the live '
+    'database, the live hosting, the email and payment services, or the two test blogs — never against '
+    'a stand-in copy. That is your ruling R-82.</p>'
+    '<p>This page checks one thing automatically: do the story\'s <b>Verification</b> notes name the '
+    '<b>address</b> of one of those real services? On this story it does not, so the note is lit.</p>'
+    '<p><b>It does not mean the checking was skipped.</b> It means nobody can tell from that section '
+    'alone. It commonly lights up on a story that really was checked properly, because the project '
+    'forbids writing a password down, so the notes name each service by its label rather than its '
+    'address. The note goes out as soon as the Verification notes mention the address of a real '
+    'service. If you are unsure which it is, ask in chat and I will say which services that story '
+    'actually touched.</p></div>')
 PASTE_HOW = 'Paste it into a Claude Code chat exactly as copied, top to bottom.'
 
 
@@ -702,6 +719,8 @@ def render_story(story, ep, phase_prompts, briefs):
              + (' <span class="tag warn long">Verification names no real service</span>' if story['unverified'] else '')
              + (f' <span class="fine">{e(plain_state(spec))}</span>' if spec and plain_state(spec) else '')
              + '</p></header>']
+    if story['unverified']:
+        parts.append(UNVERIFIED_NOTE)
     parts.append(mdblock(plain) if plain else '<p class="fine">No plain-English summary yet — the Create phase writes one.</p>')
     parts.append(f'<ol class="stepper">{stepper}</ol>')
     pk = PROMPT_FOR[phase]
@@ -967,6 +986,8 @@ text-transform:uppercase;letter-spacing:.04em}
 .tag.warn{background:var(--warn);color:var(--on)}.tag.good{background:var(--good-s);color:var(--good)}.tag.crit{background:var(--crit-s);color:var(--crit)}
 /* The long one is a note, not a verdict: it says its piece without shouting over the card it sits on. */
 .tag.warn.long{background:var(--warn-s);color:var(--warn);box-shadow:inset 0 0 0 1px currentColor}
+.flag{background:var(--warn-s);color:var(--warn);border-radius:10px;padding:10px 13px;margin:8px 0;font-size:.88rem;box-shadow:inset 0 0 0 1px currentColor}
+.flag b{display:block;margin-bottom:2px}.flag p{margin:.4em 0 0}.flag p:first-of-type{margin-top:.3em}
 .flag{display:inline-block;font-size:.8rem;font-weight:600;color:var(--warn)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);background:var(--card);border-left:1px solid var(--line);
@@ -1848,6 +1869,9 @@ def demo():
     assert not answered('### Q\n\n**Ruled:**\n') and answered('### Q\n\n**Ruled:** option 1\n')
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
+    # …and the pill's explanation is rendered inside every story it flags, and only those
+    flagged = sum(1 for st in flat.values() if st['unverified'])
+    assert flagged and out.count('What the amber') == flagged, out.count('What the amber')
     # 2.1: the library epic gates its stories on the one before
     assert flat['9.1']['waits'] is None and flat['9.2']['waits'] == '9.1' and 'waits for 9.1' in out
     # F6: the commit vocabulary, and everything else shaped like ours is listed rather than dropped
