@@ -868,6 +868,22 @@ and deleted at the end (the live database: the owner's two accounts, zero fixtur
 One `best-practice` (not WCAG) note from that run — the sidebar's wordmark sat outside any landmark — was
 taken as well: both bars are `<header>`s now, one visible at a time.
 
+**The patches on the real deployment.** The review commit `6cb8982d` was pushed; CI reported `check` ·
+`rls` · `deploy` all success (`GITHUB_TOKEN`), and the newest production deployment,
+`dpl_2CxLFAyjda8m59JkbZ9nL9QWtjPg`, is READY from that commit (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+`VERCEL_PROJECT`). A fresh fixture user on the live site, deleted at the end (the database: the owner's two
+accounts, zero project rows):
+
+| On `https://app.inflozo.com`, after the deploy | Result |
+|---|---|
+| the delivered S3a HTML | carries the sr-only `<h1>Projects</h1>` — new to this commit, so the live code is this code |
+| create · rename to Field Notes · (Pro) create · Duplicate | `untitled-project` kept by the rename; the next create `untitled-project-2`; the copy `copy-of-field-notes` |
+| 390: search icon, `harb`, Enter | `?q=harb`, one card, the field still on screen with `harb`, no reload |
+| the ⋯ trigger while open; the delete confirm reopened after Cancel | the title's ink, reverting; the field empty and no alert |
+| ☰ at 390, then a 1024 viewport | still open; Escape closes |
+| axe-core A/AA — S3a, D4b at 1440, the drawer at 390 | zero each; the positive control reported `button-name`, `image-alt` |
+| `/` and `/kit` signed out · `/sign-in` · `inflozo.com` · console CSP violations signed in | 307 → `/sign-in` both · 200, `x-inflozo-policy: app-nonce` · 200 · zero |
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
