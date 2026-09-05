@@ -45,7 +45,15 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
-export const dynamic = 'force-static'
+
+/* Story 1.4 moved this page behind the sign-in guard, and `export const dynamic = 'force-static'`
+   — which stood here while the page was public — CANNOT survive that move. A page-level segment
+   config beats the layout's, and under `force-static` Next hands every server component an EMPTY
+   cookie store: the guard in `(authed)/layout.tsx` then sees no user and 307s a signed-in visitor
+   to /sign-in. Executed 2026-09-05 — `/` returned 200 and `/kit` returned 307 with the same cookie,
+   and the proxy could see a 2666-byte Cookie header the layout could not. No error, no warning; the
+   page simply became unreachable. The gallery is dynamic now, which costs nothing: it is internal,
+   noindex, and behind a session. */
 
 /** The Kit's own column: 280px, the narrow end of the 280–320px Controls sidebar. */
 function Group({ name, note, children }: { name: string; note?: string; children: ReactNode }) {
