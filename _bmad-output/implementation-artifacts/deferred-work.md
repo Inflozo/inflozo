@@ -229,7 +229,15 @@ prepared: 2026-09-05 — the owner chose to run it himself rather than have it r
       union all select 'storage.objects', count(*) from storage.objects
       order by 1;
 
-  Close this entry when the owner reports the five counts came back 0.
+  ATTEMPT 1 FAILED on the live database, 2026-09-05, and the container could not have predicted it:
+  `ERROR 42501: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+  CONTEXT: PL/pgSQL function storage.protect_delete()`. The whole transaction rolled back — nothing
+  was deleted. Executed on hosted afterwards: `storage.objects` carries
+  `protect_objects_delete BEFORE DELETE ... FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()`,
+  while `auth.users` carries only the two AFTER INSERT signup triggers, so the user deletion is
+  unobstructed. The storage row must go through the Storage API or the dashboard's Storage UI; the
+  SQL above is therefore run WITHOUT its `delete from storage.objects` statement. See DW-10.
+  Close this entry when the owner reports the four user counts came back 0 and the object is gone.
 severity: low
 origin: Story 1.2 review (2026-09-05), owner ruling on question 3
 location: hosted Supabase project (`SUPABASE_URL`) — `auth.users` and what cascades from it
@@ -241,3 +249,20 @@ reason: Building the proof against the hosted project fired the signup triggers 
   Deleting the four `auth.users` rows cascades the rest; the `storage.objects` row has no FK to
   `auth.users` and must be deleted by its `11111111-…/` name prefix separately.
 
+### DW-10: the container's storage stand-in permits deletes that hosted Supabase forbids
+
+plain: Our offline copy of the file store is missing a lock the real one has, so a test can pass on the copy and fail for real — which is exactly what happened when clearing the test users.
+status: open
+severity: medium
+origin: Story 1.2 review (2026-09-05), found by DW-9 failing on the live database
+location: _bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/PRELUDE.sql
+reason: Hosted `storage.objects` has `protect_objects_delete BEFORE DELETE ... FOR EACH STATEMENT
+  EXECUTE FUNCTION storage.protect_delete()`, which refuses any direct SQL DELETE and points at the
+  Storage API. `PRELUDE.sql`'s stand-in creates `storage.objects` with no such trigger, so the
+  container permits a DELETE the real platform rejects. This is the AD-23 class — an uncited
+  assumption about an external platform baked into a stand-in — and it cost a failed run against the
+  live database to find, which is the cheap version of finding it. Two things follow: PRELUDE.sql
+  should grow the trigger so the container models the platform, and any RLS-TEST assertion that
+  deletes from `storage.objects` is currently proving something about the stand-in only. Neither is
+  urgent — no story deletes storage rows yet — but the first story that does will be built on the
+  wrong model unless this is fixed first.

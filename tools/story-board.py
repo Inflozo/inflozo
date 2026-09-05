@@ -55,6 +55,7 @@ STEPS = ['Create', 'Dev', 'Review', 'Deploy', 'Test', 'Done']           # the st
 LABEL = {'Dev': 'Build'}                                                # what the owner reads for a phase
 PROMPT_FOR = {'Create': 'Create', 'Dev': 'Dev', 'Review': 'Review', 'Deploy': 'Deploy',
               'Test': 'Record', 'Fix': 'Fix', 'Done': None}             # phase → the prompt to run next
+PROMPT_COMMIT = {'Record': 'Test'}          # prompt → the commit phase it ends with, where they differ
 LANES = [('backlog', 'Backlog'), ('ready', 'Ready'), ('progress', 'In progress'),
          ('review', 'In review'), ('test', 'Deployed, your test'), ('done', 'Done')]
 LANE_NAME = dict(LANES)
@@ -624,9 +625,10 @@ def render_questions(story):
 
 def dw_entry(d, closed, tone):
     """One deferred entry as an accordion: the head is always visible, the detail opens."""
+    st = 's-good' if closed else 's-mute' if d['status'] in ('', 'open') else 's-warn'
     head = (f'<summary class="plh"><b>{e(d["id"] + " · " if d["id"] else "")}{md(d["title"])}</b>'
             + (f'<span class="st {tone} solid">{e(d["severity"])}</span>' if d['severity'] else '')
-            + f'<span class="st {"s-good" if closed else "s-mute"}">{e(d["status"] or "open")}</span>'
+            + f'<span class="st {st} solid">{e(d["status"] or "open")}</span>'
             + (f'<a class="st s-mute" href="#{e(d["story"])}">Story {e(d["story"])}</a>' if d['story'] else '')
             + '</summary>')
     # The owner reads the first line; `reason` is the developer's note under it.
@@ -719,13 +721,22 @@ def render_story(story, ep, phase_prompts, briefs):
                    f'<code>Story {e(key)} - Phase - one line</code>.</p>')
     parts.append(f'<details class="eng"><summary>For the build session</summary>{"".join(eng)}</details>')
     if not story['waits']:
-        order = ([pk] if pk else []) + [p for p, _ in PROMPTS if p != pk]
-        parts.append('<h3>Every prompt for this story</h3>' + ''.join(
-            f'<div class="pr {"cur" if p == pk else ""}"><div class="prh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
-            + ('<span class="tag good">now</span>' if p == pk else '')
-            + f'<button class="btn copy" data-copy="pr-{kid}-{p}">Copy prompt</button></div>'
-            + (f'<div class="brief">{mdblock(briefs[p])}</div>' if briefs.get(p) else '')
-            + f'<pre id="pr-{kid}-{p}">{e(fill(phase_prompts[p], story))}</pre></div>' for p in order))
+        ran = {c['phase'] for c in story['commits']}          # the trail is what actually ran (R-81)
+        done = [p for p, _ in PROMPTS if p != pk and PROMPT_COMMIT.get(p, p) in ran]
+        todo = ([pk] if pk else []) + [p for p, _ in PROMPTS if p != pk and p not in done]
+
+        def one(p):
+            return (f'<li><details class="pr {"cur" if p == pk else ""}"{" open" if p == pk else ""}>'
+                    f'<summary class="prh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
+                    + ('<span class="tag good">now</span>' if p == pk else '')
+                    + (f'<span class="st s-good">done</span>' if p in done else '')
+                    + f'<button class="btn copy" data-copy="pr-{kid}-{p}">Copy prompt</button></summary>'
+                    + (f'<div class="brief">{mdblock(briefs[p])}</div>' if briefs.get(p) else '')
+                    + f'<pre id="pr-{kid}-{p}">{e(fill(phase_prompts[p], story))}</pre></details></li>')
+        parts.append('<h3>Every prompt for this story</h3>'
+                     + f'<ul class="pl acc prl">{"".join(one(p) for p in todo)}</ul>'
+                     + (f'<h4 class="sub">Completed <span class="fine">{len(done)}</span></h4>'
+                        f'<ul class="pl acc prl">{"".join(one(p) for p in done)}</ul>' if done else ''))
     links = []
     if spec:
         links.append(f'<a href="{e(os.path.relpath(os.path.join(ROOT, spec["rel"]), PLAN))}">the spec file</a>')
@@ -988,6 +999,18 @@ text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--cs)
 .s-info{--c:var(--accent);--cs:var(--accent-s)}.s-good{--c:var(--good);--cs:var(--good-s)}
 .s-mute{--c:var(--wait);--cs:var(--code)}
 .tally{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.acc>li>details>summary{cursor:pointer;list-style:none;margin:0}
+.acc>li>details>summary::-webkit-details-marker{display:none}
+.acc>li>details>summary::before{content:"▸";color:var(--muted);font-size:.8rem;flex:0 0 auto;transition:transform .12s}
+.acc>li>details[open]>summary::before{transform:rotate(90deg)}
+.acc>li>details[open]>summary{margin-bottom:6px}
+.acc .plh{margin:0;flex-wrap:nowrap}.acc .plh b{flex:1 1 auto;min-width:0}.acc .q{border-top:0;padding:0}
+h3.sub,h4.sub{margin:18px 0 0;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.prl{gap:6px}.prl>li{padding:0;border:0;background:transparent}.prl>li:hover{box-shadow:none}
+.prl .pr{margin:0}
+.prl summary.prh{display:flex;padding:6px 10px}
+.qbox.quiet{border-color:var(--line);background:transparent}
+.qbox.quiet h3{color:var(--muted)}
 .pl{--c:var(--wait);list-style:none;margin:12px 0 0;padding:0;display:grid;gap:9px}
 .pl>li{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:11px;background:var(--card);
 padding:10px 14px;transition:border-color .12s,box-shadow .12s}
@@ -1056,6 +1079,7 @@ document.addEventListener('click',e=>{
   const c=e.target.closest('[data-copy],[data-text]');
   if(c){const src=c.dataset.text!==undefined?c.dataset.text:(document.getElementById(c.dataset.copy)||{}).textContent;
     if(src===undefined)return;
+    e.preventDefault();                     // a copy button inside a <summary> must not toggle it
     copy(src).then(()=>{const o=c.textContent;c.textContent='Copied';c.classList.add('ok');
       setTimeout(()=>{c.textContent=o;c.classList.remove('ok');},1400);});return;}
   const p=e.target.closest('[data-panel]');
@@ -1229,7 +1253,7 @@ def render(ctx):
     if ctx['deferred']:
         tally, part = {}, {False: [], True: []}
         for d in ctx['deferred']:
-            closed = bool(d['status']) and d['status'] != 'open'
+            closed = d['status'] == 'closed' or bool(d['closed'])
             tone = 's-good' if closed else SEV_TONE.get(d['severity'], 's-mute')
             word = d['status'] if closed else (d['severity'] or 'unrated')
             tally[(tone, word)] = tally.get((tone, word), 0) + 1
