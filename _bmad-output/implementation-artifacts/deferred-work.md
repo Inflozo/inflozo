@@ -188,8 +188,48 @@ reason: The owner ruled today's migration is frozen and every later change is a 
 
 ### DW-9: four proof-fixture users are resident in the production database
 
-plain: Four fake users left over from testing are sitting in the real database; harmless now, but your first "how many users" number would say four before anyone has signed up.
-status: open
+plain: Four fake users left over from testing are sitting in the real database; harmless now, but your first "how many users" number would say four before anyone has signed up. The exact SQL is written out below and tested — the owner runs it in the Supabase SQL editor.
+status: awaiting-owner
+prepared: 2026-09-05 — the owner chose to run it himself rather than have it run for him (the
+  sandbox also refuses destructive writes to the production database, which is the correct default).
+  DRY-RUN, twice, against a throwaway `postgres:17-alpine` seeded to match the live database: the
+  first version was WRONG and the dry run is what caught it — it asserted every public table came
+  back empty, which `feature_flags` (2 seed rows, by design) fails, so it would have aborted on the
+  live database too. The corrected form asserts only that nothing belonging to those four user ids
+  survives. Second dry run: 4 users deleted, profiles/projects/sites cascaded to 0, the storage row
+  deleted, `feature_flags` untouched at 2. The SQL to paste:
+
+      begin;
+      delete from storage.objects
+       where name like '11111111-1111-1111-1111-111111111111/%'
+          or name like '22222222-2222-2222-2222-222222222222/%';
+      delete from auth.users where id in (
+        '11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222',
+        '33333333-3333-3333-3333-333333333333','44444444-4444-4444-4444-444444444444');
+      do $$
+      declare r record; n bigint; bad text := '';
+      begin
+        for r in select c.relname from pg_class c
+                 join pg_namespace nn on nn.oid = c.relnamespace
+                 join pg_attribute a on a.attrelid = c.oid and a.attname = 'user_id' and a.attnum > 0
+                 where nn.nspname = 'public' and c.relkind = 'r' loop
+          execute format($q$select count(*) from public.%I where user_id in
+            ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222',
+             '33333333-3333-3333-3333-333333333333','44444444-4444-4444-4444-444444444444')$q$, r.relname)
+            into n;
+          if n > 0 then bad := bad || format('%s=%s ', r.relname, n); end if;
+        end loop;
+        if bad <> '' then raise exception 'ABORTED, nothing deleted: rows survived the cascade: %', bad; end if;
+      end $$;
+      commit;
+      select 'auth.users' as table_name, count(*) as rows_left from auth.users
+      union all select 'profiles', count(*) from public.profiles
+      union all select 'projects', count(*) from public.projects
+      union all select 'sites', count(*) from public.sites
+      union all select 'storage.objects', count(*) from storage.objects
+      order by 1;
+
+  Close this entry when the owner reports the five counts came back 0.
 severity: low
 origin: Story 1.2 review (2026-09-05), owner ruling on question 3
 location: hosted Supabase project (`SUPABASE_URL`) — `auth.users` and what cascades from it

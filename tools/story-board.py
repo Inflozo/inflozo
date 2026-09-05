@@ -401,13 +401,16 @@ def load_deferred(text):
         blk = text[m.end():end]
         f = {k: re.sub(r'\s+', ' ', v).strip()                  # a field runs on over indented lines
              for k, v in re.findall(r'^(\w+):[ \t]*(.*(?:\n[ \t]+\S.*)*)$', blk, re.M)}
+        org = f.get('origin', '')
+        st = re.search(r'\bStory (\d+\.\d+)', org)                        # 'Story 1.2 review (…)'
         out.append({'id': m.group(1), 'title': m.group(2), 'status': f.get('status', 'open'),
                     'severity': f.get('severity', ''), 'reason': f.get('reason', ''),
                     'plain': f.get('plain', ''),      # the owner's sentence; reason is the developer's
-                    'origin': f.get('origin', ''), 'location': f.get('location', '')})
+                    'origin': org, 'location': f.get('location', ''),
+                    'closed': f.get('closed', ''), 'story': st.group(1) if st else ''})
     if not out:
         out = [{'id': '', 'title': t, 'status': 'open', 'severity': '', 'reason': '', 'plain': '',
-                'origin': '', 'location': ''}
+                'origin': '', 'location': '', 'closed': '', 'story': ''}
                for t in re.findall(r'^[-*] (.*)$', text, re.M)]
     return out
 
@@ -591,21 +594,48 @@ def render_questions(story):
     qs = [q for q in story['spec']['questions']] if story['spec'] else []
     if not qs:
         return ''
-    items = []
+    part = {False: [], True: []}
     for q in qs:
         flag = ''
-        if q['answered']:
-            flag = '<span class="tag good">answered</span>'
-        elif not q['options']:
+        if not q['answered'] and not q['options']:
             flag = f'<span class="flag">{e(NO_OPTIONS)}</span>'
-        elif not q['recommended']:
+        elif not q['answered'] and not q['recommended']:
             flag = f'<span class="flag">{e(NO_RECOMMENDED)}</span>'
-        items.append(f'<div class="q">{mdblock(q["text"])}{("<p class=flags>" + flag + "</p>") if flag else ""}</div>')
+        # Open questions start open — they are the thing he came here for; ruled ones stay shut.
+        part[q['answered']].append(
+            f'<li><details{"" if q["answered"] else " open"}><summary class="plh">'
+            f'<b>{md(q["title"])}</b>'
+            f'<span class="st {"s-good" if q["answered"] else "s-warn"} solid">{"ruled" if q["answered"] else "open"}</span>'
+            f'</summary><div class="q">{mdblock(q["text"])}'
+            f'{("<p class=flags>" + flag + "</p>") if flag else ""}</div></details></li>')
     when = ('Answer any time — it does not block your test.' if story['phase'] == 'Test'
             else 'Answer in chat, by number.')
-    return (f'<div class="qbox" data-sub="questions"><h3>Questions for you</h3>{"".join(items)}'
+    body = (f'<ul class="pl acc">{"".join(part[False])}</ul>' if part[False]
+            else '<p class="fine">Nothing is waiting on you here — every question below has been ruled.</p>')
+    if part[True]:
+        body += (f'<h4 class="sub">Ruled <span class="fine">{len(part[True])}</span></h4>'
+                 f'<ul class="pl acc">{"".join(part[True])}</ul>')
+    n = len(part[False])
+    return (f'<div class="qbox{" quiet" if not n else ""}" data-sub="questions">'
+            f'<h3>Questions for you <span class="fine">{n} open</span></h3>{body}'
             f'<p class="fine">{when} A question is written in plain English with numbered options and one '
             'marked RECOMMENDED (R-83).</p></div>')
+
+
+def dw_entry(d, closed, tone):
+    """One deferred entry as an accordion: the head is always visible, the detail opens."""
+    head = (f'<summary class="plh"><b>{e(d["id"] + " · " if d["id"] else "")}{md(d["title"])}</b>'
+            + (f'<span class="st {tone} solid">{e(d["severity"])}</span>' if d['severity'] else '')
+            + f'<span class="st {"s-good" if closed else "s-mute"}">{e(d["status"] or "open")}</span>'
+            + (f'<a class="st s-mute" href="#{e(d["story"])}">Story {e(d["story"])}</a>' if d['story'] else '')
+            + '</summary>')
+    # The owner reads the first line; `reason` is the developer's note under it.
+    body = ((f'<p class="lede">{md(d["plain"])}</p>' if d['plain'] else '')
+            + (f'<p class="why"><b>Closed:</b> {md(d["closed"])}</p>' if d['closed'] else '')
+            + (f'<p class="why">{md(d["reason"])}</p>' if d['reason'] else '')
+            + (f'<span class="where">{e(d["location"])}</span>' if d['location'] else '')
+            + (f'<span class="from">Raised by {e(d["origin"])}</span>' if d['origin'] else ''))
+    return f'<li class="{tone}"><details>{head}{body}</details></li>'
 
 
 def phchip(phase, label=None):
@@ -1197,26 +1227,22 @@ def render(ctx):
                                                       for c in unreadable) + '</tbody></table>')
     details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last {len(feed)} commits</span></h2>{act}</section>')
     if ctx['deferred']:
-        rows, tally = [], {}
+        tally, part = {}, {False: [], True: []}
         for d in ctx['deferred']:
-            closed = d['status'] and d['status'] != 'open'
+            closed = bool(d['status']) and d['status'] != 'open'
             tone = 's-good' if closed else SEV_TONE.get(d['severity'], 's-mute')
-            tally[(tone, d['status'] if closed else (d['severity'] or 'unrated'))] = \
-                tally.get((tone, d['status'] if closed else (d['severity'] or 'unrated')), 0) + 1
-            rows.append(f'<li class="{tone}"><div class="plh">'
-                        f'<b>{e(d["id"] + " · " if d["id"] else "")}{md(d["title"])}</b>'
-                        + (f'<span class="st {tone} solid">{e(d["severity"])}</span>' if d['severity'] else '')
-                        + f'<span class="st {"s-good" if closed else "s-mute"}">{e(d["status"] or "open")}</span></div>'
-                        # The owner reads the first line; `reason` is the developer's note under it.
-                        + (f'<p class="lede">{md(d["plain"])}</p>' if d['plain'] else '')
-                        + (f'<p class="why">{md(d["reason"])}</p>' if d['reason'] else '')
-                        + (f'<span class="where">{e(d["location"])}</span>' if d['location'] else '')
-                        + (f'<span class="from">Raised by {e(d["origin"])}</span>' if d['origin'] else '')
-                        + '</li>')
+            word = d['status'] if closed else (d['severity'] or 'unrated')
+            tally[(tone, word)] = tally.get((tone, word), 0) + 1
+            part[closed].append(dw_entry(d, closed, tone))
         # Counted from the rows, never written down: a new severity word needs no edit here.
         chips = ''.join(f'<span class="st {t} solid">{n} {e(w)}</span>'
                         for (t, w), n in sorted(tally.items(), key=lambda kv: (TONE_ORDER.index(kv[0][0]), kv[0][1])))
-        dw = f'<div class="tally">{chips}</div><ul class="pl">' + ''.join(rows) + '</ul>'
+        dw = f'<div class="tally">{chips}</div>'
+        dw += (f'<ul class="pl acc">{"".join(part[False])}</ul>' if part[False]
+               else '<p class="fine">Nothing is still open — every entry below has been closed.</p>')
+        if part[True]:
+            dw += (f'<h3 class="sub">Closed <span class="fine">{len(part[True])}</span></h3>'
+                   f'<ul class="pl acc">{"".join(part[True])}</ul>')
     else:
         dw = ('<p class="fine">Nothing has been deferred.' + ('' if ctx['deferred_exists'] else ' The ledger (deferred-work.md) does not exist yet; a review writes it the first time it sets something aside.') + '</p>')
     details.append(f'<section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">{len(ctx["deferred"])} entries</span></h2>'
