@@ -95,20 +95,20 @@ After this story anyone can get into Inflozo on the real site with nothing but t
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/package.json` -- add and pin the three dependencies; update the spine's Stack row -- the installed version is the pinned version
-- [ ] `apps/web/app/globals.css` + `DESIGN.md` + `apps/web/components/kit/button.tsx` -- `ink-hover` -- the frame's hover, not a near token
-- [ ] `apps/web/csp.ts` + `apps/web/csp.test.ts` -- the two policies as a pure function with its check -- the probe's shape, provable under `node --test`
-- [ ] `apps/web/lib/supabase/server.ts` -- the server client with 30-day cookies -- one place, one lifetime
-- [ ] `apps/web/proxy.ts` -- CSP headers and the app-host session refresh; `routing.ts` untouched -- the Node runtime is why `proxy.ts` exists (spine)
-- [ ] `apps/web/app/(app)/app/layout.tsx` -- the nonce read -- app pages pay for the nonce, marketing does not
-- [ ] `apps/web/app/(app)/app/(authed)/layout.tsx` + `git mv` of `page.tsx` and `kit/` -- the guard and the holding page with Sign out -- everything under `/app` except sign-in and the link's landing is behind it
-- [ ] `apps/web/app/(app)/app/sign-in/` page, form, actions, `resend-timer.ts` + test -- S1a and S1b -- the story's surface
-- [ ] `apps/web/app/(app)/app/auth/confirm/route.ts` -- the link's landing -- cookies can only be set server-side
-- [ ] `supabase/auth/magic-link.html` -- the template -- FR-P1 (1), branded
-- [ ] `tools/probe/configure-supabase-auth.py` + catalogue row + `.env.example` -- apply, then check, on the real project -- every setting proven by readback
-- [ ] Resend domain -- create by API, hand the owner the records, verify; `RESEND_FROM` updated -- until then the email reaches one inbox only
-- [ ] Vercel -- `SUPABASE_PUBLISHABLE_KEY` on production; push; CI deploys -- the app has the two values it reads
-- [ ] Verification -- every matrix row on the deployed site, recorded below -- R-82
+- [x] `apps/web/package.json` -- add and pin the three dependencies; update the spine's Stack row -- the installed version is the pinned version
+- [x] `apps/web/app/globals.css` + `DESIGN.md` + `apps/web/components/kit/button.tsx` -- `ink-hover` -- the frame's hover, not a near token
+- [x] `apps/web/csp.ts` + `apps/web/csp.test.ts` -- the two policies as a pure function with its check -- the probe's shape, provable under `node --test`
+- [x] `apps/web/lib/supabase/server.ts` -- the server client with 30-day cookies -- one place, one lifetime
+- [x] `apps/web/proxy.ts` -- CSP headers and the app-host session refresh; `routing.ts` untouched -- the Node runtime is why `proxy.ts` exists (spine)
+- [x] `apps/web/app/(app)/app/layout.tsx` -- the nonce read -- app pages pay for the nonce, marketing does not
+- [x] `apps/web/app/(app)/app/(authed)/layout.tsx` + `git mv` of `page.tsx` and `kit/` -- the guard and the holding page with Sign out -- everything under `/app` except sign-in and the link's landing is behind it
+- [x] `apps/web/app/(app)/app/sign-in/` page, form, actions, `resend-timer.ts` + test -- S1a and S1b -- the story's surface
+- [x] `apps/web/app/(app)/app/auth/confirm/route.ts` -- the link's landing -- cookies can only be set server-side
+- [x] `supabase/auth/magic-link.html` -- the template -- FR-P1 (1), branded
+- [x] `tools/probe/configure-supabase-auth.py` + catalogue row + `.env.example` -- apply, then check, on the real project -- every setting proven by readback
+- [x] Resend domain -- create by API, hand the owner the records, verify; `RESEND_FROM` updated -- until then the email reaches one inbox only
+- [x] Vercel -- `SUPABASE_PUBLISHABLE_KEY` on production; push; CI deploys -- the app has the two values it reads
+- [x] Verification -- every matrix row on the deployed site, recorded below -- R-82
 
 **Acceptance Criteria:**
 - Given `https://app.inflozo.com/sign-in` at 1440 and at 390, when it renders signed out, then it **matches frame S1a** — the wordmark, "Make something gorgeous.", the sentence, one Email field, one ink "Send magic link", "Terms · Privacy", the watermark — with the passkey button and its divider absent while `feature_flags.passkeys` is off (R-74, FR-A2).
@@ -121,6 +121,56 @@ After this story anyone can get into Inflozo on the real site with nothing but t
 - Given a push to `main`, when CI runs, then `check` and `rls` are green and `deploy` publishes the page.
 
 ## Spec Change Log
+
+Every entry below is a change to the Code Map's plan, made during Dev and executed rather than reasoned.
+The frozen Intent, Boundaries and Matrix are untouched.
+
+1. **The email template is pushed to TWO Supabase templates, not one** — `mailer_templates_magic_link_content`
+   *and* `mailer_templates_confirmation_content`, with `mailer_subjects_confirmation` set to the same
+   sentence. This is beyond the Code Map's list and so inside "Ask First", but the alternative fails an
+   acceptance criterion for **every user there is today**: sign-up and sign-in are one flow (FR-A1) and the
+   live database starts at zero users, so a first-ever address does not receive the magic-link email at
+   all — GoTrue sends Confirm signup. Same file, same wording, same subject; no new behaviour, and the
+   owner sees one email either way.
+2. **The link carries `type=email`, not `{{ .Type }}`** — `{{ .Type }}` is not a documented GoTrue
+   template variable and was not risked. Executed against the live project instead: `POST /auth/v1/verify`
+   returned **200** with `type: "email"` for a `magiclink` token *and* for a `signup` token, so one literal
+   serves both templates. The Code Map's fallback ("if the live project refuses `magiclink`, `email`") is
+   therefore settled the other way round — `email` is the one that covers both cases.
+3. **`cookieOptions.maxAge` does not set the session lifetime and fails silently** — see Design Notes and
+   **DW-13**. The 30 days now come from `apps/web/lib/supabase/cookies.ts`'s `sessionCookie()`, applied
+   inside our own `setAll` at all three write sites, with `session-cookie.test.ts` holding the three claims
+   — including that `maxAge: 0` survives, which is what Sign out is.
+4. **`export const dynamic = 'force-dynamic'` in `app/(app)/app/layout.tsx`** — reading the nonce is what
+   §18 measured, and it is not enough on its own: Next 16 still *attempts* a prerender of every `/app/*`
+   route, runs the subtree with no request behind it and fails on the first thing that needs one. Executed
+   twice — once on the absent nonce, once on `SUPABASE_URL`, which CI's `check` job does not carry because
+   only `vercel build` pulls the environment. The route table is what §18 predicted either way.
+5. **Two files the Code Map did not name.** `apps/web/app/(app)/app/sign-in/email.ts` holds the one zod
+   schema, because a `'use server'` module may only export async functions and the client form needs the
+   same schema — one boundary, one sentence, two readers. `apps/web/lib/flags.ts` holds the passkey flag;
+   see **DW-12** for why it does not query yet.
+6. **`sessionCookie` and `SESSION_MAX_AGE` live in `lib/supabase/cookies.ts`**, re-exported by `server.ts`,
+   so `node --test` can reach them: `server.ts` imports `next/headers`, which does not resolve outside
+   Next's own resolver — the same reason `routing.ts` and `csp.ts` exist beside `proxy.ts`.
+7. **The action's error union is `bad_email | send_failed`; `rate_limited` was dropped.** The matrix gives
+   a too-soon resend the *sent* card with a reset countdown, not an error, so there was no state to carry
+   it. But there are **two** 429s and only one means "your link is already on its way": the per-address
+   minimum interval answers `over_email_send_rate_limit`, and the project-wide hourly cap also answers 429.
+   Only the first returns the sent card; the second falls through to the error banner, because showing
+   "Check your inbox" for an email that was never sent would be a lie.
+8. **`form-action 'self'` is on the marketing policy too.** The probe's static policy carried neither it
+   nor `form-action` at all; `csp.test.ts` asserts it on both, per this spec's Boundaries.
+9. **`policy()` treats a nonce as the app marker, not only the app host**, so `localhost:3000/app/*` — which
+   has no host split — gets the nonce policy in development instead of marketing's.
+10. **`sessions_inactivity_timeout` is not on this plan** and is reported, not swallowed: the PATCH
+    returned `402 "User sessions can only be configured on Pro Plans and up."`, the tool retried without
+    that one field and wrote the other eighteen. `--check` prints it as a stated `----`, never a PASS.
+11. **Resend needed nothing from the owner.** The Code Map planned to create the domain by API and hand
+    over three DNS records; the API key is a *sending* key (`GET /domains` → 401 `restricted_api_key`), and
+    the records turned out to be **already live at Namecheap and already verified** — proved by sending a
+    real message from `Inflozo <hello@inflozo.com>`, HTTP 200. `RESEND_FROM` is updated in `tools/probe/.env`
+    and documented in `.env.example`. The DNS half of the owner's question is therefore closed by execution.
 
 ## Design Notes
 
@@ -139,6 +189,22 @@ type Failed = { error: { code: 'bad_email' | 'rate_limited' | 'send_failed'; mes
 ```
 
 **The email is extrapolated, not drawn.** Every transactional email in epics.md is "not a drawn surface"; S1b is the nearest frame, so the email speaks in its words and colours and no more. `hello@inflozo.com` is the address M5 already shows, and replies land in the owner's own inbox.
+
+**Thirty days is not a setting you can ask for.** `createServerClient({ cookieOptions: { maxAge } })` is
+the documented-looking way to set the session lifetime and it is inert: `@supabase/ssr` 0.12.6 composes each
+write as `{ ...DEFAULT_COOKIE_OPTIONS, ...options.cookieOptions, maxAge: DEFAULT_COOKIE_OPTIONS.maxAge }`
+(`dist/main/cookies.js:231`), so its own 400-day default is applied *last*. The cookie came back
+`Max-Age=34560000` from the real project with no error anywhere — the kind of miss a passing build and a
+working sign-in both hide. The only place we control is our own `setAll`, so every write goes through
+`sessionCookie()`, which also closes the cookie to script: the library defaults `httpOnly: false` because a
+browser client has to read the session, and this app has no browser client at all.
+
+**Why a first-ever address does not get the magic-link email.** Sign-up and sign-in are one flow, and the
+live database starts at zero users, so the very first thing anyone receives is GoTrue's **Confirm signup**
+template — a different template with a different subject. One branded file is therefore pushed to both, and
+its link carries the generic `type=email`, which `/auth/v1/verify` accepts for a `magiclink` token and a
+`signup` token alike (executed). The owner sees one email whether he is new or returning, which is also the
+only honest thing for a product whose Sign In card says "Sign in or create an account".
 
 **The holding page is scaffolding.** One line and one button so the owner's test can round-trip and 1.5's dashboard has a signed-in user to replace it with. It uses the kit and the tokens and claims nothing about the dashboard.
 
@@ -209,7 +275,7 @@ Use your own email address — the one Resend already sends test emails to. Ever
 |---|---|---|---|---|---|
 | 1 | https://app.inflozo.com/sign-in | Sign In (S1a) | Open the address in a browser where you are not signed in | — | A white card on warm paper with a huge faint "Inflozo" behind it: the small "Inflozo" wordmark, "Make something gorgeous.", "Sign in or create an account — no passwords, ever.", one Email field, one black "Send magic link" button, and "Terms · Privacy" at the bottom. No password field. No passkey button yet — that arrives with Epic 2 |
 | 2 | same | Sign In | Type a wrong address and press Send | `maya` | The card stays; one red sentence under the field: "Enter an email address like you@example.com". No email is sent |
-| 3 | same | Sign In → Check your inbox (S1b) | Type your own address and press Send | your email | The card changes to an envelope, "Check your inbox ✨", "We sent a magic link to" with your address in bold, "It's good for 15 minutes.", then "Didn't get it? Resend in 0:59" counting down, and "Use a different email" |
+| 3 | same | Sign In → Check your inbox (S1b) | Type your own address and press Send | your email | The card changes to an envelope, "Check your inbox ✨", "We sent a magic link to" with your address in bold, "It's good for 15 minutes.", then "Didn't get it? Resend in 1:00" counting down, and "Use a different email" |
 | 4 | same | Check your inbox | Click "Use a different email" | — | Back to the empty Sign In card |
 | 5 | same | Check your inbox | Send again with your address, then wait for the countdown to reach 0:00 | your email | The line becomes "Didn't get it? Resend" with Resend as a link; nothing else is blocked |
 | 6 | your inbox | — | Open the newest email from Inflozo | — | From "Inflozo <hello@inflozo.com>", subject "Your Inflozo sign-in link", one button "Sign in to Inflozo", a line saying it is good for 15 minutes, and the plain link under it |

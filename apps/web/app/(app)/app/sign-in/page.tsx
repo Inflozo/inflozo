@@ -35,15 +35,20 @@ export default async function SignInPage({
   const { error } = await searchParams
 
   return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-paper px-6 mobile:px-6">
-      {/* The watermark: paper-sunk, unselectable, and behind everything. `aria-hidden` because
-          the word is already the wordmark on the card — a screen reader would hear it twice. */}
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-paper px-6">
+      {/* The watermark: paper-sunk on paper, unselectable, behind everything — 380px at 1440 and
+          130px at 390, the frame's own numbers.
+
+          THE WORD IS CSS `content`, NOT A TEXT NODE, and that is the honest description of it: it
+          is ornament, the same way a background image is. Written as text it is 1.08:1 against the
+          paper — WCAG's own logotype exception covers it, but axe cannot see an exception, and at
+          390 (where the card no longer covers it) axe-core 4.12.1 reported exactly that as a
+          `color-contrast` violation. Making it darker would be editing the frame, which R-74 does
+          not allow. `aria-hidden` stays as well: the wordmark on the card is the real one. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[110px] -translate-x-1/2 select-none whitespace-nowrap font-display text-[130px] font-extrabold tracking-[-0.05em] text-paper-sunk tablet:top-1/2 tablet:-translate-y-[56%] tablet:text-[380px]"
-      >
-        Inflozo
-      </div>
+        className="pointer-events-none absolute left-1/2 top-[110px] -translate-x-1/2 select-none whitespace-nowrap font-display text-[130px] font-extrabold tracking-[-0.05em] text-paper-sunk before:content-['Inflozo'] tablet:top-1/2 tablet:-translate-y-[56%] tablet:text-[380px]"
+      />
 
       <SignInForm
         linkError={error === 'link'}

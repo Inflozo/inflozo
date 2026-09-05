@@ -309,3 +309,41 @@ reason: The `*-kit.js` token objects (`PACKS` in `a29-kit.js:1-40`, same in the 
   Appendix D and treat both export files as calibration; the Style Pack tokens are out of Story 1.3's
   scope entirely (app chrome only). Logged so the disagreement is not rediscovered in E6 as a
   "which file is right" question when the answer is "neither, by the file's own header".
+
+### DW-12: nothing in the app can read `feature_flags`, so the one flag it has resolves to its seeded value
+
+plain: The on/off switches meant to be flippable without a redeploy cannot actually be read by the website yet; the one switch that exists is off, which is what it should be today, so nothing is broken — the story that first needs a switch ON has to build the reader.
+status: open
+severity: medium
+origin: Story 1.4 dev (2026-09-05), found while gating S1a's passkey button
+location: apps/web/lib/flags.ts · supabase/migrations/20260904120000_complete_schema.sql:1175
+reason: The spine's Feature-flags row says flags are rows "read server-side per request", and the
+  schema grants `select on public.feature_flags` to `service_role` ONLY, with RLS on and no policy.
+  The app reads with the publishable key — Story 1.4's Keys boundary keeps the secret key out of the
+  shell entirely — so any query it makes is refused. `passkeysEnabled()` therefore returns the seeded
+  value (`false`) rather than making a round trip that is guaranteed to fail on every render of the
+  sign-in page. That is behaviourally identical today, and it stops being identical the moment a flag
+  must be ON. Story 2.1 is that moment: it flips `passkeys` and needs a server-side reader holding
+  `SUPABASE_SECRET_KEY` (or a narrow `security definer` function granted to `authenticated`, which
+  would keep the secret key out of the app and is the smaller change). Whichever it is, it is one
+  file — `apps/web/lib/flags.ts` — and the decision belongs to the story that needs the flag on.
+
+### DW-13: `@supabase/ssr`'s `cookieOptions.maxAge` is inert, and it fails silently
+
+plain: The obvious way to say "keep people signed in for thirty days" does nothing at all, with no
+  error — we found it by reading the cookie the real server sent back, and the fix is in place; this
+  is written down so nobody puts the broken version back.
+status: closed
+severity: medium
+origin: Story 1.4 dev (2026-09-05), found by reading a real Set-Cookie header
+location: apps/web/lib/supabase/cookies.ts · apps/web/session-cookie.test.ts
+reason: `createServerClient(url, key, { cookieOptions: { maxAge } })` reads like the way to set the
+  session lifetime and is ignored: 0.12.6 builds every write as
+  `{ ...DEFAULT_COOKIE_OPTIONS, ...options.cookieOptions, maxAge: DEFAULT_COOKIE_OPTIONS.maxAge }`
+  (`dist/main/cookies.js:231`), so its own 400-day default is spread last and wins. Executed against
+  the real project on the production build: `Max-Age=34560000`, no warning anywhere, and FR-A6's
+  thirty days quietly not in force. The fix is `sessionCookie()`, applied inside our own `setAll` at
+  all three write sites, and it carries the branch that matters — `maxAge: 0` is a DELETION and is
+  passed through untouched, because stretching that one to thirty days would leave a user signed in
+  after pressing Sign out. `session-cookie.test.ts` holds all three claims. Closed by this story;
+  recorded because the inert form is the one a future story will reach for.
