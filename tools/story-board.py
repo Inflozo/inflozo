@@ -771,18 +771,24 @@ def render_story(story, ep, phase_prompts, briefs):
         done = [p for p, _ in PROMPTS if p != pk and PROMPT_COMMIT.get(p, p) in ran]
         todo = ([pk] if pk else []) + [p for p, _ in PROMPTS if p != pk and p not in done]
 
+        # One container, the shape Questions and Your test already use: the accordions live inside it
+        # and `Completed n` is a subheading within the same box, not a second box beside it.
         def one(p):
-            return (f'<li><details class="pr {"cur" if p == pk else ""}">'
-                    f'<summary class="prh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
-                    + ('<span class="tag good">now</span>' if p == pk else '')
-                    + (f'<span class="st s-good">done</span>' if p in done else '')
+            return (f'<li class="{"cur" if p == pk else ""}"><details class="pr">'
+                    f'<summary class="plh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
+                    + ('<span class="st s-info solid">now</span>' if p == pk else '')
+                    + ('<span class="st s-good solid">done</span>' if p in done else '')
                     + f'<button class="btn copy" data-copy="pr-{kid}-{p}">Copy prompt</button></summary>'
                     + (f'<div class="brief">{mdblock(briefs[p])}</div>' if briefs.get(p) else '')
                     + f'<pre id="pr-{kid}-{p}">{e(fill(phase_prompts[p], story))}</pre></details></li>')
-        parts.append('<h3>Every prompt for this story</h3>'
-                     + f'<ul class="pl acc prl">{"".join(one(p) for p in todo)}</ul>'
-                     + (f'<h4 class="sub">Completed <span class="fine">{len(done)}</span></h4>'
-                        f'<ul class="pl acc prl">{"".join(one(p) for p in done)}</ul>' if done else ''))
+        body = (f'<ul class="pl acc prl">{"".join(one(p) for p in todo)}</ul>' if todo
+                else '<p class="fine">Every phase of this story has run — they are all under Completed below.</p>')
+        if done:
+            body += (f'<h4 class="sub">Completed <span class="fine">{len(done)}</span></h4>'
+                     f'<ul class="pl acc prl">{"".join(one(p) for p in done)}</ul>')
+        parts.append(f'<div class="pbox" data-sub="prompts">'
+                     f'<h3>Every prompt for this story <span class="fine">{len(todo)} left</span></h3>{body}'
+                     f'<p class="fine">{PASTE_HOW}</p></div>')
     links = []
     if spec:
         links.append(f'<a href="{e(os.path.relpath(os.path.join(ROOT, spec["rel"]), PLAN))}">the spec file</a>')
@@ -1011,8 +1017,8 @@ background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:
 .stepper li.done{background:var(--good-s);color:var(--good)}.stepper li.cur{background:var(--accent);color:var(--on)}
 .stepper li.issues{background:var(--crit);color:var(--on)}
 .now{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--accent-s);border-radius:10px;padding:9px 12px;margin:8px 0;font-size:.88rem}
-.qbox{border:1px solid var(--warn);background:var(--warn-s);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
-.qbox h3{color:var(--warn);margin-top:4px}.q{padding:6px 0;border-top:1px solid rgba(0,0,0,.08)}.q:first-of-type{border-top:0}
+.qbox,.pbox{border:1px solid var(--warn);background:var(--warn-s);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
+.qbox h3{color:var(--warn);margin-top:4px}.pbox h3{color:var(--muted);margin-top:4px}.q{padding:6px 0;border-top:1px solid rgba(0,0,0,.08)}.q:first-of-type{border-top:0}
 .flags{margin:4px 0 0}
 .tbox{border:1px solid var(--accent);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
 .tbox h3{color:var(--accent);margin-top:4px}
@@ -1029,12 +1035,9 @@ background:var(--card);color:var(--accent);cursor:pointer}
 details.eng{margin:14px 0;border:1px solid var(--line);border-radius:10px;padding:0 12px}
 details.eng summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--muted);padding:8px 0;text-transform:uppercase;letter-spacing:.07em}
 details.eng[open] summary{border-bottom:1px solid var(--line)}details.eng h3:first-of-type{margin-top:10px}
-.pr{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden}
-.pr.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
-.prh{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--code);font-size:.84rem}.prh b{flex:1}
-.pr pre{border:0;border-radius:0;margin:0;max-height:280px}
+.pr pre{margin:7px 0 0;max-height:280px}
 .brief{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:6px 0;font-size:.86rem}
-.pr .brief{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0}.next .brief{flex-basis:100%;margin:0 0 8px}
+.pr .brief{margin:7px 0 0}.next .brief{flex-basis:100%;margin:0 0 8px}
 .links{font-size:.84rem;color:var(--muted);margin-top:16px}
 .dw{border-top:1px solid var(--line);padding:8px 0}.dw:first-of-type{border-top:0}.dw b{display:block}
 /* ── The three panels: one row shape, one chip, five tones. A tone is a --c/--cs pair like a lane's,
@@ -1062,10 +1065,8 @@ text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--cs)
 .qpart.opts li:has(.tag.good){font-weight:600}
 .acc .plh{margin:0;flex-wrap:nowrap}.acc .plh b{flex:1 1 auto;min-width:0}.acc .q{border-top:0;padding:0}
 h3.sub,h4.sub{margin:18px 0 0;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
-.prl{gap:6px}.prl>li{padding:0;border:0;background:transparent}.prl>li:hover{box-shadow:none}
-.prl .pr{margin:0}
-.prl summary.prh{display:flex;padding:6px 10px}
-.qbox.quiet{border-color:var(--line);background:transparent}
+.prl{gap:6px}.prl>li.cur{--c:var(--accent)}
+.qbox.quiet,.pbox{border-color:var(--line);background:transparent}
 .qbox.quiet h3{color:var(--muted)}
 .pl{--c:var(--wait);list-style:none;margin:12px 0 0;padding:0;display:grid;gap:9px}
 .pl>li{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:11px;background:var(--card);
@@ -1897,6 +1898,12 @@ def demo():
     rows_n, banded = feed_html.count('<tr class='), feed_html.count(' band">')
     assert 0 < banded < rows_n, f'the activity feed is all one band or none ({banded} of {rows_n})'
     assert '<span class="st s-crit solid">not answerable yet' in out, 'a shapeless question is not flagged red'
+    # every prompt lives inside the one container, Completed included — never a box per prompt
+    sd = out.split('id="sd-1-1"', 1)[1].split('</section>', 1)[0]
+    box = sd.split('class="pbox"', 1)[1]
+    assert sd.count('class="pbox"') == 1 and 'class="prh"' not in out, 'prompts still carry their own box'
+    assert box.count('<h4 class="sub">Completed') == 1, 'Completed is not a subheading inside the box'
+    assert box.count('<ul class="pl acc prl">') == 2, 'the two prompt lists are not both inside the box'
     assert 'class="lede">Someone could hammer' in out, 'a deferred entry ignores its plain: line'
     assert 'A retry count belongs in configuration' in out, 'an entry with no plain: lost its reason'
     assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
