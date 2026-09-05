@@ -13,11 +13,24 @@ type Base = { id: string; label: string; greyed?: Greyed }
 export function TextInput({
   id,
   label,
+  name,
   defaultValue,
   placeholder,
   mono = false,
+  error,
   greyed,
-}: Base & { defaultValue?: string; placeholder?: string; mono?: boolean }) {
+}: Base & {
+  /** Present when the field is inside a form that submits it. */
+  name?: string
+  defaultValue?: string
+  placeholder?: string
+  mono?: boolean
+  /**
+   * The refusal sentence, in the same helper-caption slot a greyed control's reason takes —
+   * under the control, never a tooltip (P0-0). Danger-text, because it says something failed.
+   */
+  error?: string | null
+}) {
   return (
     <div className="flex flex-col gap-[5px]">
       <label htmlFor={id} className={`text-control-label font-medium ${labelTone(greyed)}`}>
@@ -25,13 +38,21 @@ export function TextInput({
       </label>
       <input
         id={id}
+        name={name}
         type="text"
         defaultValue={defaultValue}
         placeholder={placeholder}
         readOnly={Boolean(greyed)}
-        className={`${field} ${fieldTone(greyed)} ${ring} focus-visible:border-coral-text ${mono ? 'font-mono text-control-label' : ''} ${greyed ? 'text-ink-faint' : ''}`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={`${field} ${error ? 'border-danger caret-danger' : fieldTone(greyed)} ${ring} focus-visible:border-coral-text ${mono ? 'font-mono text-control-label' : ''} ${greyed ? 'text-ink-faint' : ''}`}
         {...greyedProps(id, greyed)}
       />
+      {error ? (
+        <p id={`${id}-error`} role="alert" className="text-helper-caption leading-[1.5] text-danger-text">
+          {error}
+        </p>
+      ) : null}
       {reason(id, greyed)}
     </div>
   )

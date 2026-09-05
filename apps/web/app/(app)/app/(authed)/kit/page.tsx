@@ -420,11 +420,13 @@ export default function KitGallery() {
               glyphFamily="Georgia, serif"
               palette={['var(--color-paper-raised)', 'var(--color-coral-deep)', 'var(--color-ink-deep)']}
               active
+              editable
             />
             <PackCell
               name="Tangerine"
               glyphFamily="var(--font-display)"
               palette={['var(--color-paper-raised)', 'var(--color-coral)', 'var(--color-ink)']}
+              editable
             />
             <NewPackCell />
           </div>

@@ -234,3 +234,89 @@ export const Moon = ({ size = 7, label, ...rest }: IconProps) => (
     <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" />
   </svg>
 )
+
+/* ────────────────────────────────────────────── S3 / D4 / S12 — the dashboard's own glyphs.
+   Added by Story 1.5, each read verbatim off the frame that draws it: the sidebar nav
+   (`S3 Dashboard.dc.html` S3a/S3b/S3c), the account menu (S3d), the ⋯ menu (S3c), the top
+   bar's "New project" and the 390 header, and D4a's greyed-door reason icon. R-92: these are
+   Claude Design's own drawings, not Tabler's. */
+
+export const Projects = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </Icon>
+)
+export const Globe = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+  </Icon>
+)
+export const Image = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <circle cx="9" cy="9" r="2" />
+    <path d="M21 15l-5-5L5 21" />
+  </Icon>
+)
+/** The frame draws the plus at stroke 2, not 1.5 — it is a label's companion, not a panel icon. */
+export const Plus = ({ strokeWidth = 2, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </Icon>
+)
+export const MenuLines = (p: IconProps) => (
+  <Icon {...p}>
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="17" x2="20" y2="17" />
+  </Icon>
+)
+export const Copy = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </Icon>
+)
+export const Person = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </Icon>
+)
+export const Card = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <path d="M2 10h20" />
+  </Icon>
+)
+export const Lightbulb = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.6.5-1 1.5-1 2.5H9c0-1-.4-2-1-2.5A6 6 0 0 1 12 3z" />
+  </Icon>
+)
+export const Book = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z" />
+    <path d="M12 6v14" />
+  </Icon>
+)
+export const Logout = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </Icon>
+)
+/** D4a's reason icon. The frame sets it at stroke 1.9 and fills the dot in the same hue. */
+export const AlertCircle = ({ strokeWidth = 1.9, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <line x1="12" y1="11" x2="12" y2="16.5" />
+    <circle cx="12" cy="7.8" r="0.5" fill="currentColor" />
+  </Icon>
+)

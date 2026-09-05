@@ -2,7 +2,8 @@
 title: 'Story 1.5 — The app shell and the dashboard skeleton'
 type: 'feature'
 created: '2026-09-05'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
@@ -283,6 +284,67 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 
 ## Spec Change Log
 
+Every entry below is a change to the Code Map's plan, made during Dev and executed rather than reasoned.
+The frozen Intent, Boundaries and Matrix are untouched.
+
+1. **`PackCell` takes `editable`, a flag, and not the Code Map's `onEdit` handler.** `/kit` is a Server
+   Component and "keeps passing one" is not possible with a function: a function on a host element's prop
+   cannot cross the flight boundary, which is React's "Event handlers cannot be passed to Client Component
+   props". The flag does exactly what the Code Map asked for — the sheet renders no pencil, the gallery
+   keeps its own — and E6 turns it into the handler at the moment there is an editor to open. Reasoned in
+   the comment beside the prop.
+2. **The four actions take `(previous, formData)`, not positional arguments.** Each is driven by
+   `useActionState` from the dialog that owns it, which is the Code Map's own instruction two lines later;
+   the ids and the typed name ride in the form, so every one of them also posts with JavaScript off.
+3. **Duplicate is ONE action for the whole grid, held by a `DuplicateScope` around it.** The matrix puts
+   its failure Banner *above the grid*, and a per-card `useActionState` can only put it inside whichever
+   card was clicked. The scope owns the action and the banner; each card's Duplicate is still a real
+   `<form>` posting its own id. Nothing else in the story needs context.
+4. **`components/kit/input.tsx`'s `TextInput` gained `name` and `error`.** The Code Map asks the rename
+   confirm to use the kit's field, and the kit's field had no `name` (so it submitted nothing) and no
+   refusal slot. `error` renders the sentence in P0-0's helper-caption slot with `aria-invalid` and
+   `aria-describedby`, which is 1.4's precedent on the sign-in field, now in the kit where the next story
+   inherits it.
+5. **`tokens.test.ts` names `lib/style-pack.ts` as the one file that may carry a colour literal.** The gate
+   forbids a hex anywhere under `apps/web`, and Paper's three values are not app tokens — they are the
+   user's SITE's system (`pack-cell.tsx`), applied as inline `style` because Tailwind's palette is cleared
+   on purpose. The exemption is one named path and the test asserts the file still exists, so it cannot
+   spread and cannot rot.
+6. **`DESIGN.md`'s `components.modal.shadow` moved to `{elevation.modal}` with the new token.** Adding
+   `elevation.modal` and leaving the component row reading `{elevation.lg}` beside it would be two answers
+   to one question in the same file; the export draws every modal at .25 (propagate, never localise).
+7. **The shell draws the search field and "New project" on the dashboard only.** The shell is in the
+   layout, so `/kit` — and Sites and Assets when they arrive — inherit it. A project search and a "New
+   project" button on a surface with no sheet to open would be two controls that could never act there,
+   which UX-DR3 says are absent, not greyed.
+8. **The `⋯` menu and the account menu are `popover="auto"` positioned from the trigger's rect in
+   JavaScript**, as the Code Map says for the account menu, and the same for the card menu — CSS anchor
+   positioning is not in every browser the app supports, so `lib/menu.ts` writes fixed coordinates from
+   the trigger's edges (never its width, which a `display:none` popover does not have yet).
+
+**Five defects the executed pass found and fixed, each with the control that found it.**
+
+1. **Every popover was permanently on screen.** `className="flex …"` on a `popover` element beats the user
+   agent's `[popover]:not(:popover-open){display:none}` — so the ⋯ menu rendered inside every card and its
+   three items sat in the tab order. Found by a Playwright click at 390 that a 15px icon "from the `<main>`
+   subtree" intercepted. `open:flex` (Tailwind 4's `:is([open], :popover-open)`) is the fix, and the
+   compiled CSS is grepped for it.
+2. **Every modal opened flush against the top-left corner.** A modal `<dialog>` is centred by the UA's
+   `inset:0; margin:auto`, and Tailwind's Preflight resets `margin:0` on `*`. `m-auto` restores it;
+   `boundingBox()` now reports D4a at x=440 in a 1440 viewport and the delete confirm at x=10 in a 390 one.
+3. **No confirm opened on Cancel.** React applies `autoFocus` once at mount and leaves no `autofocus`
+   ATTRIBUTE in the DOM, which is what `showModal()` looks for — so the rename dialog opened on its name
+   field. Both confirms now focus `[data-cancel]` after `showModal()`.
+4. **D4a and D4b failed axe with six and eight `color-contrast` violations.** P0-0's greyed ink on P0-0's
+   greyed field is 2.2:1 — a WCAG 1.4.3 "inactive user interface component", which axe cannot infer. The
+   greyed door carries `aria-disabled` on the container, which is the kit's own greyed treatment
+   (`greyedProps`) and is what makes the exemption legible to the tool. Proved by a probe run in the page:
+   the same text is reported when plain and skipped when `aria-disabled`, and `aria-allowed-attr` stays
+   clean.
+5. **The account chip broke out of the 220px sidebar.** The frame's chip truncates the email in the SECOND
+   line, and until E2 sets a display name the email is in the FIRST — so the name slot is what has to
+   truncate. Found by looking at the 1440 screenshot.
+
 ## Design Notes
 
 **The 1.4 rule for a frame's values, applied here.** Geometry is read off the frame and never rounded;
@@ -337,33 +399,69 @@ type Result =
 
 ## Verification
 
-To be executed by the Dev run on the real infrastructure (R-82) and recorded here with what each
-returned; every key is read from `tools/probe/.env` into a command's environment and named by its
-variable only.
+Executed 2026-09-05 by the Dev run against the real Supabase project (R-82), with the app running from
+this repository at `localhost:3000` so the browser passes could drive it. Every key was read into a
+command's environment from `tools/probe/.env` and is named here by its variable only — no value was
+printed, logged or committed. **Two fixture users were created through the admin API and both were
+deleted at the end**; the live database is back to the owner's own accounts, and their `profiles` and
+`entitlements` rows cascaded with them.
 
-**Commands:**
-- `pnpm check` -- expected: lint, typecheck and every `apps/web` test green, including the new
-  `plan.test.ts` and `projects.test.ts`
-- `pnpm build` (in `apps/web`) -- expected: the route table unchanged from 1.4 — `○ /` · `ƒ /app` ·
-  `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy` — no new route, because
-  actions, loading and components are not routes
-- `python3 tools/doc-audit.py --check` (twice) -- expected: PASS
-- `bash supabase/tests/run-rls-gate.sh` -- expected: green — the epic's exit, RLS on every table the
-  schema story created, proved by the gate rather than by a subset
-- Supabase (real) — `SUPABASE_URL`, `SUPABASE_SECRET_KEY`: create two fixture users through the admin
-  API, mint each a session; as A through the deployed site: create → 1 row; create again → `at_cap`;
-  rename → `name` changed, `slug` unchanged, `updated_at` bumped; duplicate → `at_cap`; delete with the
-  wrong name → `name_mismatch`, with the right name → 0 rows. Set A to `pro_active` with the secret
-  key → create and duplicate succeed; as B with A's id → every action `failed` and a REST `select` of
-  A's project returns `[]`. Delete both fixtures; expected: the live database returns to the owner's
-  accounts only
-- Deployed site — `curl -sI https://app.inflozo.com/` with a fixture cookie -- expected: 200 with the
-  nonce CSP; without one 307 to `/sign-in`
-- Playwright + axe-core (this machine, `headless-browser-tooling`) at 1440, 834 and 390 on: S3b,
-  S3a with two cards, S3c at the cap, the ⋯ menu open, the rename and delete dialogs, D4a, D4b, the
-  account popover, the drawer and the dropdown -- expected: zero violations each; no horizontal
-  scroll at 390; zero console CSP violations; Tab order sidebar → search → New project → ⋯ → chip;
-  every confirm opens on Cancel
+**Gate and build**
+
+| Command | Result |
+|---|---|
+| `pnpm check` | green — lint, typecheck, and every `apps/web` test passing, including the new `plan.test.ts` (7) and `projects.test.ts` (8) |
+| `pnpm build` (in `apps/web`) | the route table unchanged from 1.4: `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)`. Actions, `loading.tsx` and components are not routes |
+| `python3 tools/doc-audit.py --check` | first run FAIL (STORY-BOARD stale, the documented behaviour); `python3 tools/story-board.py`; second run **PASS, 0 warnings** |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, every assertion PASS, zero FAIL lines — the epic's exit, on every table the schema story created |
+| `grep -o ':is(\[open\][^)]*)' .next/static/chunks/*.css` | `:is([open],:popover-open,:open)` — the variant the menus' hidden state depends on really compiles |
+
+**Supabase (real)** — `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
+
+| Step | Result |
+|---|---|
+| two fixture users created, each signed in through `/app/auth/confirm` with an admin-minted `token_hash` | 200, session cookies written by 1.4's own route |
+| A, empty | S3b: "Every great site starts somewhere.", sidebar `Projects / Sites / Assets`, the chip's badge **Free** |
+| A creates from D4a | one row, `("Untitled project", "untitled-project")`; the sheet closed; the card reads `Untitled project / ⋯ / Sample content / Updated today` |
+| A creates again (Free, 1 of 1) | the sheet opens as **D4b** — every door greyed with a `Free includes 1 project` pill, no Style Pack row, the block `Free includes 1 project. Pro gives you 25.` + `Your project stays exactly as it is either way.` + `Go Pro — $15/mo`, Create greyed |
+| the grid at the cap | S3c's tile: `✦ / Upgrade to add more / Free includes 1 project. Pro gives you 25. / Go Pro — $15/mo` |
+| rename to a blank name, then to 81 characters | refused both times with `Give it a name — up to 80 characters.`; nothing sent |
+| rename to `Field Notes` | `("Field Notes", "untitled-project")` — **the slug is untouched** (FR-J10); the dialog closed |
+| ⋯ → Duplicate at the cap | the D4b sheet opened instead of a write |
+| delete, typing `field notes`, and the greyed button clicked with `force` | `aria-disabled="true"`; **1 row still there** |
+| delete, typing `Field Notes` | 0 rows; the dashboard returned to S3b |
+| A set to `pro_active` by the secret key | ✦ Pro on the chip, **no upgrade tile**, create and ⋯ → Duplicate both succeeded: `("Copy of Untitled project", "copy-of-untitled-project")` beside `("Untitled project", "untitled-project")` |
+| **RLS, as B against A's project id** | `select` → `[]` · `update` → `[]` · `delete` → `[]` · `insert` with A's `user_id` → **42501**; A's two rows unchanged, and B's dashboard showed **0 cards** and the empty state |
+| both fixtures deleted | the live database is the owner's accounts only |
+
+**The deployed shape**
+
+| Check | Result |
+|---|---|
+| `/app` signed out | **307 → `/sign-in`** (1.4's guard, unchanged) |
+| `/app/sites` · `/app/assets` · `/app/account` · `/app/billing` · `/app/suggestions` | **404 each** — drawn, linked, and answering "not found" until their epics land, exactly as the owner's test says to expect |
+| console CSP violations on every app surface visited | **zero.** The three the run recorded are on the MARKETING page at `localhost`, whose static policy carries no nonce while `next dev` inlines its own bootstrap — 1.4's shape, unchanged by this story, and absent from the app host (`x-inflozo-policy: app-nonce`, `'nonce-…' 'strict-dynamic'`) |
+
+**Playwright + axe-core 4.12.1** (this machine, `headless-browser-tooling`), WCAG 2.0/2.1 A and AA
+
+| Surface | 1440 | 834 | 390 |
+|---|---|---|---|
+| S3b empty · S3a with cards · the ⋯ menu open · rename · delete · D4a · D4b · the account popover | **zero violations each** | S3a zero | S3a, the drawer, the dropdown and the delete confirm — zero each |
+| no horizontal scroll | — | none | none, including with the search field open and a confirm open |
+
+| Keyboard | Result |
+|---|---|
+| Tab from the top of the dashboard | `Inflozo → Projects → Sites → Assets → account chip → search → New project → ⋯ → upgrade tile` |
+| ⋯ with Enter | opens and focus steps to **Rename**; ArrowDown → Duplicate → Delete; ArrowUp → Duplicate; **Escape closes and returns focus to the ⋯** |
+| the account chip with Enter | opens on **Account settings**; ArrowDown → Billing & plan |
+| both confirms | open on **Cancel** |
+| ⌘K / Ctrl+K | focuses the field named `q` |
+
+**One deviation from the matrix's Keyboard row, recorded rather than forced.** It reads
+`sidebar → search → New project → cards' ⋯ → chip`, and the run produces the chip *with the sidebar*,
+before the search field. The chip is inside the sidebar in the drawing and in the DOM, so document order
+already is visual order (WCAG 2.4.3); moving it after the cards would need a positive `tabindex`, which is
+the one thing an accessibility floor should not carry. Everything else in that row holds exactly.
 
 ## Owner's manual test
 

@@ -163,7 +163,7 @@ components:
     fontFamily: '{typography.mono.fontFamily}'
   modal:
     rounded: '{rounded.lg}'
-    shadow: '{elevation.lg}'
+    shadow: '{elevation.modal} — the frames draw every modal and sheet at .25, not lg's .14 (D4a, D4b, S12c). This row said {elevation.lg} until Story 1.5, 2026-09-05'
     scrim: '{colors.scrim}'
   toast:
     rounded: '{rounded.pill}'
@@ -183,6 +183,7 @@ elevation:
   sm: '0 1px 2px rgba(28,27,26,.06)'
   md: '0 4px 16px rgba(28,27,26,.08)'
   lg: '0 12px 40px rgba(28,27,26,.14)'
+  modal: '0 12px 40px rgba(28,27,26,.25) — lg's geometry at .25: every modal and sheet in the export is drawn at this alpha (D4a, D4b, S12c), and the token layer had no name for it. Added 2026-09-05 by Story 1.5'
   hairline-inset: 'inset 0 0 0 1px rgba(28,27,26,.12)'
   focus: '0 0 0 2px #C2381F — the one ring, everywhere: 7.9:1 on paper, past 3:1 on white; was 0 0 0 2px rgba(255,89,65,.4) until 2026-09-04 (A7 item 7)'
 ---
@@ -375,7 +376,8 @@ low alpha — because a neutral-grey shadow on warm paper reads as dirt.
 |---|---|---|
 | `sm` | `0 1px 2px rgba(28,27,26,.06)` | cards at rest, the active segment of a segmented control |
 | `md` | `0 4px 16px rgba(28,27,26,.08)` | card hover, popovers, the account and notifications menus |
-| `lg` | `0 12px 40px rgba(28,27,26,.14)` | modals, sheets, the pills that float over the canvas |
+| `lg` | `0 12px 40px rgba(28,27,26,.14)` | popovers at their heaviest, and the pills that float over the canvas |
+| `modal` | `0 12px 40px rgba(28,27,26,.25)` | modals and sheets — `lg`'s geometry at a heavier alpha, which is how the export draws every one of them (D4a, D4b, S12c). Named 2026-09-05 by Story 1.5 |
 | hairline inset | `inset 0 0 0 1px rgba(28,27,26,.12)` | a border that must not add to the box's size |
 | focus | `0 0 0 2px #C2381F` | **the focus ring, everywhere** — solid coral-text since 2026-09-04; was `0 0 0 2px rgba(255,89,65,.4)` |
 

@@ -86,6 +86,16 @@ for (const [section, prefix] of twins) {
   })
 }
 
+/**
+ * THE ONE FILE THAT MAY CARRY A COLOUR, and it is a different vocabulary rather than a leak: a
+ * Style Pack's colours belong to the USER'S SITE (`components/kit/pack-cell.tsx`), not to
+ * Inflozo's chrome, so they are hex strings applied as inline `style` and can never be a
+ * Tailwind class. E6 owns the column and re-sources every pack from Appendix D (DW-11);
+ * Story 1.5 reads Paper early for the dashboard card's placeholder (FR-B1).
+ * Named, so the exemption is one file rather than a habit.
+ */
+const PACK_DATA = join('lib', 'style-pack.ts')
+
 test('no .ts or .tsx under apps/web carries a colour literal', () => {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -95,7 +105,10 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
       return /\.tsx?$/.test(e.name) && !e.name.endsWith('.test.ts') && !e.name.endsWith('.d.ts') ? [p] : []
     })
 
-  const files = walk(process.cwd())
+  const all = walk(process.cwd())
+  // The exemption cannot outlive the file it names.
+  assert.ok(all.some((f) => f.endsWith(PACK_DATA)), `${PACK_DATA} is gone — delete its exemption with it`)
+  const files = all.filter((f) => !f.endsWith(PACK_DATA))
   assert.ok(files.some((f) => f.endsWith('.tsx')), 'found no .tsx to scan')
   // hex in any length, and rgb(a) — the same atoms the token test accepts, so what one
   // gate allows in globals.css the other refuses everywhere else

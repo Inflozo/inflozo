@@ -1,0 +1,304 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Button } from '@/components/kit/button'
+import { ring } from '@/components/kit/greyed'
+import { Globe, Image, MenuLines, Plus, Projects, Search, X } from '@/components/kit/icons'
+import { NEW_PROJECT_DIALOG } from '@/lib/projects'
+import type { PlanId } from '@/lib/plan'
+import { AccountMenu, Avatar, PlanBadge, nameOf, secondLineOf, type ShellUser } from './account-menu'
+
+/* ──────────────────────────────────────── S3 Dashboard.dc.html — the shell, 1440 and 390.
+
+   Every value is read off the frame and never rounded (F-111): the 220px sidebar with its
+   24/12/16 padding, the 64px top bar at 0 24, the 60px bar at 390 with its 0 12 0 6, the
+   320×36 search field, the 44px touch targets. `tablet:` is the seam — the frame draws 1440
+   and 390, and the sidebar holds from `tablet` (834) up.
+
+   ABSENT, deliberately, and each is another epic's: the storage meter under the nav (E8), the
+   notifications bell (E13) and the what's-new sparkle (the epic's cut line). Absent, not
+   greyed — there is nothing behind any of them to reach yet (UX-DR3).
+
+   The shell lives in `(authed)/layout.tsx`, so every later authenticated surface is inside it
+   by where its file sits. The search field and "New project" belong to the DASHBOARD and are
+   drawn only there: on any other surface they would be controls with nothing to act on. */
+
+const NAV = [
+  { href: '/', label: 'Projects', Icon: Projects },
+  { href: '/sites', label: 'Sites', Icon: Globe },
+  { href: '/assets', label: 'Assets', Icon: Image },
+] as const
+
+/**
+ * `proxy.ts` rewrites `app.inflozo.com/x` onto the internal `/app/x`, and on localhost the
+ * internal prefix is reached directly — so the path a link is written with (`/sites`) and the
+ * path the router reports can differ by exactly that prefix. Stripped the same way
+ * `routing.ts` strips it, so "am I on the dashboard" is one answer at both addresses.
+ */
+const internal = (pathname: string) =>
+  pathname === '/app' || pathname.startsWith('/app/') ? pathname.slice(4) || '/' : pathname
+
+const isActive = (path: string, href: string) => (href === '/' ? path === '/' : path.startsWith(href))
+
+/** The one opener: the button is in the layout and the sheet is rendered by the page. */
+export const openNewProject = () => {
+  const sheet = document.getElementById(NEW_PROJECT_DIALOG)
+  if (sheet instanceof HTMLDialogElement) sheet.showModal()
+}
+
+/**
+ * S3's coral call to action, in the three sizes the frames draw it: the top bar's 36, S3b's
+ * centred 44, and 390's full-width 48 in the body. Coral is THE action of this surface and
+ * appears once per view — the empty state and the top bar are never on screen together.
+ */
+export function NewProjectButton({ look }: { look: 'bar' | 'empty' | 'mobile' }) {
+  if (look === 'mobile') {
+    return (
+      <button
+        type="button"
+        onClick={openNewProject}
+        className={`h-12 w-full rounded bg-coral-text text-[15px] font-semibold text-surface transition-colors hover:bg-coral-text-hover ${ring}`}
+      >
+        + New project
+      </button>
+    )
+  }
+  return (
+    <Button variant="coral" size={look === 'bar' ? 36 : 44} onClick={openNewProject}>
+      <Plus size={look === 'bar' ? 14 : 15} />
+      New project
+    </Button>
+  )
+}
+
+/**
+ * The search is a GET form and that is the whole of its state: the field is in the layout and
+ * the cards are in the page, and the URL is the one thing both already share, so `?q=` needs
+ * no client state and no context. Enter searches.
+ * ponytail: Enter-to-search; live filtering is a router.replace on input if the owner wants it.
+ */
+function SearchField({ id, wide }: { id: string; wide: boolean }) {
+  const q = useSearchParams().get('q') ?? ''
+  return (
+    <form
+      role="search"
+      className={`flex h-9 items-center gap-2 rounded-sm border border-line bg-surface px-[10px] has-[:focus-visible]:border-coral-text has-[:focus-visible]:shadow-focus ${
+        wide ? 'w-full' : 'w-[320px]'
+      }`}
+    >
+      <Search size={15} className="shrink-0 text-ink-soft" />
+      <label htmlFor={id} className="sr-only">
+        Search projects
+      </label>
+      <input
+        id={id}
+        name="q"
+        type="search"
+        // The value is whatever the URL says, and a new URL is a new field.
+        key={q}
+        defaultValue={q}
+        placeholder="Search projects…"
+        className="min-w-0 flex-1 bg-transparent text-ui-dense text-ink caret-coral outline-none placeholder:text-ink-soft-aa [&::-webkit-search-cancel-button]:hidden"
+      />
+      <kbd
+        aria-hidden
+        className="hidden shrink-0 rounded-[5px] border border-line px-[5px] py-px font-mono text-helper-caption text-ink-soft tablet:block"
+      >
+        ⌘K
+      </kbd>
+    </form>
+  )
+}
+
+const Wordmark = ({ size }: { size: 19 | 20 }) => (
+  <Link
+    href="/"
+    style={{ fontSize: size }}
+    className={`rounded-sm font-display font-extrabold tracking-[-0.02em] text-ink ${ring}`}
+  >
+    Inflozo
+  </Link>
+)
+
+function NavItem({
+  href,
+  label,
+  Icon,
+  active,
+  big,
+  onNavigate,
+}: {
+  href: string
+  label: string
+  Icon: (p: { size?: number }) => ReactNode
+  active: boolean
+  big: boolean
+  onNavigate?: () => void
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      aria-current={active ? 'page' : undefined}
+      className={`flex items-center rounded-sm transition-colors ${
+        big ? 'gap-3 p-[12px_14px] text-[15px]' : 'gap-[10px] p-[8px_12px] text-ui-dense'
+      } ${
+        active
+          ? big
+            ? 'bg-paper font-semibold text-ink'
+            : 'bg-surface font-semibold text-ink shadow-sm'
+          : 'font-medium text-ink-soft hover:bg-paper-sunk'
+      } ${ring}`}
+    >
+      <Icon size={big ? 18 : 16} />
+      {label}
+    </Link>
+  )
+}
+
+export function Shell({
+  user,
+  plan,
+  children,
+}: {
+  user: ShellUser
+  plan: PlanId
+  children: ReactNode
+}) {
+  const path = internal(usePathname())
+  const onDashboard = path === '/'
+  const drawer = useRef<HTMLDialogElement>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // ⌘K (and Ctrl+K) puts the cursor in the field, whichever of the two is on screen: only one
+  // is ever visible, so "the visible one" is unambiguous and needs no width test here.
+  useEffect(() => {
+    if (!onDashboard) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'k' || !(event.metaKey || event.ctrlKey)) return
+      event.preventDefault()
+      setSearchOpen(true)
+      // after the mobile field has been rendered by the state change above
+      requestAnimationFrame(() => {
+        const fields = [...document.querySelectorAll<HTMLInputElement>('input[name="q"]')]
+        fields.find((field) => field.offsetParent !== null)?.focus()
+      })
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onDashboard])
+
+  const nav = (big: boolean, onNavigate?: () => void) => (
+    <nav aria-label="Sections" className="flex flex-col gap-[2px]">
+      {NAV.map((item) => (
+        <NavItem
+          key={item.href}
+          {...item}
+          big={big}
+          active={isActive(path, item.href)}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </nav>
+  )
+
+  return (
+    <div className="flex min-h-dvh flex-col tablet:flex-row">
+      {/* ── the 220px sidebar, tablet and up */}
+      <div className="hidden w-[220px] shrink-0 flex-col border-r border-line p-[24px_12px_16px] tablet:flex">
+        <div className="p-[0_12px_24px]">
+          <Wordmark size={20} />
+        </div>
+        {nav(false)}
+        <div className="mt-auto">
+          <AccountMenu user={user} plan={plan} variant="sidebar" />
+        </div>
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* ── the 60px bar at 390 */}
+        <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-line p-[0_12px_0_6px] tablet:hidden">
+          <button
+            type="button"
+            aria-label="Menu"
+            onClick={() => drawer.current?.showModal()}
+            className={`inline-flex size-11 items-center justify-center rounded-sm text-ink ${ring}`}
+          >
+            <MenuLines size={20} />
+          </button>
+          <Wordmark size={19} />
+          <div className="ml-auto flex items-center gap-[2px]">
+            {onDashboard ? (
+              <button
+                type="button"
+                aria-label="Search projects"
+                aria-expanded={searchOpen}
+                onClick={() => {
+                  setSearchOpen((open) => !open)
+                  requestAnimationFrame(() => document.getElementById('q-mobile')?.focus())
+                }}
+                className={`inline-flex size-11 items-center justify-center rounded-sm text-ink-soft ${ring}`}
+              >
+                <Search size={18} />
+              </button>
+            ) : null}
+            <AccountMenu user={user} plan={plan} variant="topbar" />
+          </div>
+        </div>
+        {onDashboard && searchOpen ? (
+          <div className="border-b border-line p-[10px_12px] tablet:hidden">
+            <SearchField id="q-mobile" wide />
+          </div>
+        ) : null}
+
+        {/* ── the 64px top bar at 1440. The dashboard's own controls, so only there. */}
+        {onDashboard ? (
+          <div className="hidden h-16 shrink-0 items-center gap-3 border-b border-line px-6 tablet:flex">
+            <SearchField id="q" wide={false} />
+            <div className="ml-auto">
+              <NewProjectButton look="bar" />
+            </div>
+          </div>
+        ) : null}
+
+        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+      </div>
+
+      {/* ── ☰: a modal dialog, so the scrim, Escape and the focus trap are the platform's */}
+      <dialog
+        ref={drawer}
+        aria-label="Menu"
+        className="m-0 h-dvh max-h-dvh w-[300px] max-w-[300px] flex-col bg-surface p-[20px_14px_16px] shadow-lg backdrop:bg-scrim open:flex tablet:hidden"
+      >
+        <div className="flex items-center justify-between p-[0_10px_20px]">
+          <Wordmark size={20} />
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => drawer.current?.close()}
+            className={`-mt-[10px] -mr-3 inline-flex size-11 items-center justify-center rounded-sm text-ink-soft ${ring}`}
+          >
+            <X size={18} />
+          </button>
+        </div>
+        {nav(true, () => drawer.current?.close())}
+        <div className="mt-auto flex items-center gap-[10px] border-t border-line p-[10px]">
+          <Avatar user={user} size={32} />
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-ui font-semibold text-ink">{nameOf(user)}</span>
+            {secondLineOf(user) ? (
+              <span className="max-w-[100px] truncate text-helper-caption text-ink-soft">
+                {secondLineOf(user)}
+              </span>
+            ) : null}
+          </span>
+          <span className="ml-auto shrink-0">
+            <PlanBadge plan={plan} />
+          </span>
+        </div>
+      </dialog>
+    </div>
+  )
+}
