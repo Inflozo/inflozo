@@ -32,3 +32,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: bash supabase/tests/run-rls-gate.sh
+
+  # Publishing happens here, not on the push (owner's ruling, 2026-09-05, DW-7). `needs` is the whole
+  # point: a red `check` or a red `rls` means this job never runs, so a broken row-level-security
+  # policy cannot reach production. Vercel's own documented mechanism — vercel pull/build/deploy from
+  # CI — see "Deploying GitHub Projects with Vercel" -> Using GitHub Actions.
+  deploy:
+    needs: [check, rls]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: npm i -g vercel@latest
+      - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
