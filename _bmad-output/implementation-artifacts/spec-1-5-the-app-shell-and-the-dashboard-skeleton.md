@@ -1292,6 +1292,28 @@ could prove anything. A control that passes for the wrong reason is the thing st
 
 
 
+**Re-executed against the deployed site.** The pass above drove a production build at `localhost:3100`,
+which is not the real infrastructure R-82 asks for, so every one of its checks was run again — the same
+two scripts, `BASE=https://app.inflozo.com` — against the published Fix commit.
+
+| On `https://app.inflozo.com` | Result |
+|---|---|
+| CI on `50bb2579` (`GITHUB_TOKEN`) | `check: success` · `rls: success` · `deploy: success` (run `34015251988`) |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_6tr5XCPmriZmBaMBjtLMyvxGcu5a`, state **READY**, built from `50bb2579` |
+| the deployed shape | `/sign-in` **200** `x-inflozo-policy: app-nonce` · `/` signed out **307 → /sign-in** · `inflozo.com` **200** `marketing-static` · `/sites` **404** — unchanged by this run |
+| **the region still holds after this deployment** | `x-vercel-id: bom1::fra1::…` on both app responses; `inflozo.com` still answers from the edge with no function region — one deployment, both domains (AD-26) |
+| finding 1 — the 1440 row | `S | story-1-5-fix3-live@inflozo.com | Free`, **195px** in the 196px column, address `11px` `rgb(110, 106, 100)`, `scrollWidth <= clientWidth` **true**, `text-overflow: clip`, badge's right edge **12px** from the row's, and the only 600-weight text is the initial and the badge — **no invented name line** |
+| finding 1 — the 390 drawer row | the same, at **272px**; **zero** account triggers in the phone's top bar |
+| finding 1 — the other branch | with `display_name` set through the REST API: `U | Umang Kagathara @13px | story-1-5-fix3-live@inflozo.com @11px rgb(110,106,100) | Free @11px` — **S3b exactly**, the avatar's initial following the name; cleared again, back to one line |
+| finding 1 — the badge inside the menu | `Billing & plan Free`, both variants |
+| finding 2 — Sign out | the row read **`Signing out…`** in flight, landed on `https://app.inflozo.com/sign-in?signed-out=1`, and the card carried `role="status"` **"You've been signed out."** on `rgb(228, 245, 238)` (`mint-tint`); `/sign-in` without the key carries **no** banner; **no confirm window** |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A + AA) — the dashboard and the open menu at 1440 with and without a name, the sign-in card with the notice, the delete confirm, the drawer and its menu at 390 | **zero violations on every one**; the positive control flagged `button-name(1)`, `image-alt(1)` |
+| the untouched surface — the sheet's three doors, the ⋯ menu, the centred delete confirm (x=490, two 199px buttons, focus on Cancel), the drawer's outside tap, ☰ taking focus itself, the phone's search field | **each held** |
+| no horizontal scroll at 390 | **none** |
+| **console CSP violations** | **zero** — which also identifies the local pass's as the marketing paths' (DW-18), since on localhost there is no host split and `signOut`'s `/sign-in` lands on marketing there |
+| the fixture user | **deleted**; census `projects: 1 · profiles: 2 · entitlements: 2` — the owner's two accounts and his one project |
+
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
