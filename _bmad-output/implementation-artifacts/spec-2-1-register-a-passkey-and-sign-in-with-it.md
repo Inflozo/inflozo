@@ -274,8 +274,12 @@ markup, `/account` with `Change email` and `Danger zone` at **0**, and the live 
   grow a duplicate row in silence — DW-32 (4)
 - [x] [Review][Defer] No measured rate limit on the two signed-out passkey actions, and no timeout on
   `auth.passkey.list()` where both flag reads have one — DW-33
-- [ ] [Review][Decision] A browser without WebAuthn gets a normal-looking button that does nothing when
-  pressed, while assistive technology is told it is unavailable — see `## Questions for the owner` 3
+- [x] [Review][Decision] A browser without WebAuthn got a normal-looking button that did nothing when
+  pressed, while assistive technology was told it was unavailable. **Ruled (owner, 2026-09-06): option 1 —
+  hide the button and the "or" line with it, keeping the sentence.** Applied to both ceremony controls: the
+  divider now lives inside `passkey-button.tsx` so it cannot outlive the button, and `/account`'s "Add a
+  passkey" goes the same way. `aria-disabled` is gone from both — there is no longer a control to disagree
+  about [passkey-button.tsx · sign-in-form.tsx · passkeys-card.tsx]
 
 Dismissed as noise, second loop (9): the caption live regions being mounted with their text rather than
 standing empty (axe is green at AA and an always-mounted region costs a flex gap in both cards); the card's
@@ -728,6 +732,42 @@ Review runs this one could execute the flag-**on** state. Keys read by name from
   also lives under `/app` — the host rewrite only happens on `app.inflozo.com` — which the Fix run had
   already recorded.
 
+### The owner's ruling on question 3 (2026-09-06)
+
+He ruled option 1: on a browser that cannot do passkeys, hide the button **and the "or" line with it**,
+leaving the email box and the one sentence. Applied to both ceremony controls and proved both ways in real
+Chromium (`~/.cache/ms-playwright/chromium-1228`) against a real production build serving the real project,
+with both switches on. The second browser context is the same build with `window.PublicKeyCredential`
+deleted and `navigator.credentials` made `undefined` — the two things `browserSupportsWebAuthn()` reads.
+
+`/app/sign-in`, signed out:
+
+| | passkey button | "or" divider | the sentence | Send magic link | email field |
+|---|---|---|---|---|---|
+| WebAuthn present | **1** | **1** | 0 | 1 | 1 |
+| WebAuthn removed | **0** | **0** | **1** | 1 | 1 |
+
+`/app/account`, signed in as a fixture user:
+
+| | Passkeys card | Add a passkey | the sentence | Email card |
+|---|---|---|---|---|
+| WebAuthn present | 1 | **1** | 0 | 1 |
+| WebAuthn removed | 1 | **0** | **1** | 1 |
+
+The card's heading and any rows already in it stay when the button goes: those passkeys are real, and this
+browser simply cannot add another. axe-core 4.12.1 on the `wcag2a · wcag2aa · wcag21a · wcag21aa` set:
+**0 violations** on all eight — both pages, both browsers, 1440 and 390.
+
+`pnpm check` green, exit 0. `pnpm build` with the three keys unset green. The fixture user was deleted
+(`DELETE /auth/v1/admin/users/{id}` → **200**) and the live count read **2 before and 2 after**.
+
+**Two harness faults, recorded because the first produced a convincing wrong answer.** A `hashed_token` from
+`generate_link` is SINGLE USE, so re-using one for the second browser context left it signed out entirely and
+`/account` reported every element absent — which reads exactly like the ruling working and is nothing of the
+kind. The `emailCard: 0` in that run is what gave it away, and the fix is a fresh `magiclink` per context.
+And the card's heading is uppercased by CSS, so `innerText` returns `PASSKEYS`: a case-sensitive probe for
+`Passkeys` reported the card missing in **both** runs, including the one where it was plainly there.
+
 ## Owner's manual test
 
 Everything below is on the live site, after the Deploy run has turned both switches on. Use your Mac first,
@@ -753,6 +793,11 @@ then your phone.
    signs you in. If the phone has none, one sentence under the button: "No passkey on this device yet — sign
    in with a magic link, then add one under Account settings." — and the magic link works as before. Then
    add one on the phone from Account settings too; the Passkeys card lists both.
+5b. **Only if you happen to have a very old browser to hand** — this is rare and skippable. **URL:**
+   https://app.inflozo.com/sign-in · **See:** no "or" line and no passkey button at all, just the email box
+   and one grey sentence: "This browser can't use passkeys." The magic link works exactly as before. That is
+   your ruling on question 3.
+
 6. **Optional, say the word:** I turn the switch off with one line and no deploy. On your next page load the
    button, the card and the yellow line are all gone; one line turns them back on. **Say plainly what that
    means, because it is more than an empty page:** while it is off, a passkey you have already added still
@@ -825,6 +870,15 @@ browser can't use passkeys. They press the button anyway. Nothing at all happens
    faded-button look that your design kit does not currently have, which is why it is your call and not mine.
 3. **Leave it exactly as it is today** — the reason is already printed on screen, and the case is rare enough
    that it may not be worth any change at all.
+
+**Ruled (owner, 2026-09-06): option 1 — "Hide the button on those browsers — and the 'or' line with it —
+leaving just the email box and the one sentence."** Applied in the same review. The divider moved INTO
+`passkey-button.tsx`, so the rule and the button are one thing and neither can outlive the other; the
+sentence stays, because it is the reason the offer is missing. **The same ruling was applied to its sibling,
+"Add a passkey" on `/account`** — the same control on the same browser, and leaving one of the two greyed
+would have been the same defect half fixed (standing rule 3). Both now ask `browserSupportsWebAuthn()` at
+the click as well, because `supported` is `true` for the one paint before the effect runs. Proved both
+ways in real Chromium under `## Verification` → *The owner's ruling on question 3*.
 
 ## Owner's test findings
 

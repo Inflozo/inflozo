@@ -32,10 +32,13 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
   const [caption, setCaption] = useState<Caption>(null)
   const [busy, setBusy] = useState(false)
 
-  // `browserSupportsWebAuthn()` reads `window`, so it cannot run in the render that the server
-  // produces: the button is drawn either way and the sentence arrives on the client's first
-  // paint — UP FRONT, in the caption slot, because a greyed control shows its reason (UX-DR3).
-  // Nothing is hidden — a browser without WebAuthn still has the magic link above.
+  // `browserSupportsWebAuthn()` reads `window`, so it cannot run in the render the server
+  // produces: it starts `true` and the client's first paint corrects it. A browser that cannot do
+  // passkeys therefore loses THE WHOLE OFFER — the divider and the button both — and keeps only
+  // the sentence saying why, with the magic link above untouched. That is the owner's ruling on
+  // question 3 (2026-09-06), and it is his own standing rule: a control that could never act here
+  // is ABSENT, not greyed (UX-DR3). It also ends the mismatch the review found, where the button
+  // looked ordinary to the eye while `aria-disabled` told a screen reader it was unavailable.
   const [supported, setSupported] = useState(true)
   useEffect(() => {
     if (browserSupportsWebAuthn()) return
@@ -45,7 +48,16 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
 
   async function signIn() {
     let navigating = false
-    if (busy || !supported) return
+    if (busy) return
+    // ASKED AT THE CLICK, not read off state: `supported` is `true` for the one paint before the
+    // effect above runs, so a press inside that instant would otherwise reach `navigator
+    // .credentials` on a browser that has none and report the generic failure sentence instead of
+    // the true reason.
+    if (!browserSupportsWebAuthn()) {
+      setSupported(false)
+      setCaption(NO_WEBAUTHN)
+      return
+    }
     setCaption(null)
     setBusy(true)
     onPending(true)
@@ -101,25 +113,37 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
 
   return (
     <>
-      <Button
-        variant="secondary"
-        size={44}
-        // The frame draws this one label at 500 (`S1 Sign In.dc.html:49`) where the Kit's
-        // secondary is 600. It goes through the Kit's own `weight`, NOT through `className`:
-        // passed as a class it lost to the Kit's `font-semibold` every time and the button
-        // shipped at 600 — measured on the deployed site (review, 2026-09-06).
-        weight="font-medium"
-        className="w-full"
-        onClick={signIn}
-        aria-busy={busy || undefined}
-        aria-disabled={!supported || undefined}
-        aria-describedby={caption ? 'passkey-caption' : undefined}
-      >
-        {/* The frame's own 18px key. The Kit's secondary 44 is the vocabulary the surface is
-            built from. */}
-        <Passkey size={18} />
-        {busy ? 'Waiting for your device…' : 'Sign in with a passkey'}
-      </Button>
+      {supported ? (
+        <>
+          {/* S1a's "or" rule belongs to the button, not to the form: the two are ONE offer, so
+              when the offer is withdrawn the rule goes with it. Held together here, a divider
+              over empty space — the one way the spec says this can go wrong — cannot happen. */}
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-line" />
+            <span className="text-control-label text-ink-soft">or</span>
+            <div className="h-px flex-1 bg-line" />
+          </div>
+          <Button
+            variant="secondary"
+            size={44}
+            // The frame draws this one label at 500 (`S1 Sign In.dc.html:49`) where the Kit's
+            // secondary is 600. It goes through the Kit's own `weight`, NOT through `className`:
+            // passed as a class it lost to the Kit's `font-semibold` every time and the button
+            // shipped at 600 — measured on the deployed site (review, 2026-09-06).
+            weight="font-medium"
+            className="w-full"
+            onClick={signIn}
+            aria-busy={busy || undefined}
+            aria-describedby={caption ? 'passkey-caption' : undefined}
+          >
+            {/* The frame's own 18px key. The Kit's secondary 44 is the vocabulary the surface is
+                built from. */}
+            <Passkey size={18} />
+            {busy ? 'Waiting for your device…' : 'Sign in with a passkey'}
+          </Button>
+        </>
+      ) : null}
+      {/* The sentence stays when the offer goes: it is the whole reason the offer is missing. */}
       {caption ? (
         <p id="passkey-caption" role="status" className="text-helper-caption leading-[1.5] text-ink-soft">
           {caption}

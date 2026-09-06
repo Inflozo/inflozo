@@ -31,8 +31,12 @@ const LIST_FAILED = "We couldn't load your passkeys just now. Refresh to try aga
 export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
   const [caption, setCaption] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // A browser that cannot do passkeys loses the "Add a passkey" control entirely and keeps only
+  // the sentence — the owner's ruling on the sign-in button (question 3, 2026-09-06), applied to
+  // its sibling because it is the same control on the same browser and leaving one of the two
+  // greyed would be the same defect, half fixed (standing rule 3). Any passkeys already listed
+  // above stay listed: they are real, and this browser simply cannot add another.
   const [supported, setSupported] = useState(true)
-  // Up front, in the caption slot: a greyed control shows its reason (UX-DR3).
   useEffect(() => {
     if (browserSupportsWebAuthn()) return
     setSupported(false)
@@ -47,7 +51,15 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
 
   async function add() {
     let navigating = false
-    if (busy || !supported) return
+    if (busy) return
+    // Asked at the click: `supported` is `true` for the one paint before the effect runs, and a
+    // press inside that instant would otherwise reach `navigator.credentials` and report the
+    // generic failure instead of the true reason.
+    if (!browserSupportsWebAuthn()) {
+      setSupported(false)
+      setCaption(NO_WEBAUTHN)
+      return
+    }
     setCaption(null)
     setBusy(true)
     try {
@@ -130,17 +142,18 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
         </ul>
       ) : null}
 
-      <button
-        type="button"
-        onClick={add}
-        aria-busy={busy || undefined}
-        aria-disabled={!supported || undefined}
-        aria-describedby={shown ? 'passkeys-caption' : undefined}
-        className={`inline-flex h-[34px] items-center gap-2 self-start rounded border border-line bg-surface px-[15px] text-ui-dense font-medium text-ink transition-colors hover:bg-paper ${ring}`}
-      >
-        <Passkey size={14} />
-        {busy ? 'Waiting for your device…' : 'Add a passkey'}
-      </button>
+      {supported ? (
+        <button
+          type="button"
+          onClick={add}
+          aria-busy={busy || undefined}
+          aria-describedby={shown ? 'passkeys-caption' : undefined}
+          className={`inline-flex h-[34px] items-center gap-2 self-start rounded border border-line bg-surface px-[15px] text-ui-dense font-medium text-ink transition-colors hover:bg-paper ${ring}`}
+        >
+          <Passkey size={14} />
+          {busy ? 'Waiting for your device…' : 'Add a passkey'}
+        </button>
+      ) : null}
 
       {shown ? (
         // P0-0's helper-caption slot: one sentence, under the control, never a tooltip.

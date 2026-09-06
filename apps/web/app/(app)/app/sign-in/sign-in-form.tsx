@@ -291,20 +291,13 @@ export function SignInForm({
                 switches are on — our `feature_flags.passkeys` row and Supabase's own
                 `passkeys_enabled` (`lib/flags.ts`, MEASUREMENTS §20) — because a control that
                 could never act here is absent, not greyed (UX-DR3).
-                Story 2.1 put the button inside this branch, where the divider had been waiting
-                for it: an "or" rule over empty space was the one way flipping the flag could go
-                wrong (review, 2026-09-05), and it can no longer happen — the pair is one
-                condition. */}
-            {passkeys ? (
-              <>
-                <div className="flex items-center gap-3">
-                  <div className="h-px flex-1 bg-line" />
-                  <span className="text-control-label text-ink-soft">or</span>
-                  <div className="h-px flex-1 bg-line" />
-                </div>
-                <PasskeyButton onPending={setPasskeyPending} />
-              </>
-            ) : null}
+                THE DIVIDER IS DRAWN BY `PasskeyButton` ITSELF, not here. An "or" rule over empty
+                space is the one way this can go wrong (review, 2026-09-05), and there is a second
+                way to reach it that this branch cannot see: a browser without WebAuthn, which the
+                owner ruled must lose the whole offer and keep only the sentence (question 3,
+                2026-09-06). Holding the pair in one component makes the rule and the button one
+                thing, so neither can outlive the other. */}
+            {passkeys ? <PasskeyButton onPending={setPasskeyPending} /> : null}
           </div>
         </>
       )}
