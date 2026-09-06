@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { currentUser } from '@/lib/supabase/server'
 import { passkeysEnabled } from '@/lib/flags'
 import { SignInForm } from './sign-in-form'
-import { SIGNED_OUT } from './signed-out'
+import { isSignedOut, SIGNED_OUT } from './signed-out'
 
 /* ─────────────────────────────────────────────────── S1 Sign In.dc.html — S1a and S1b
 
@@ -60,7 +60,7 @@ export default async function SignInPage({
 
       <SignInForm
         linkError={error === 'link'}
-        signedOut={signedOut === '1'}
+        signedOut={isSignedOut(signedOut)}
         passkeys={await passkeysEnabled()}
       />
 

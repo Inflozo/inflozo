@@ -1,6 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mmss, retryAfterFrom, secondsLeft, sentTooRecently } from './app/(app)/app/sign-in/resend-timer.ts'
+import {
+  mmss,
+  retryAfterFrom,
+  secondsLeft,
+  sentStateFor,
+  sentTooRecently,
+} from './app/(app)/app/sign-in/resend-timer.ts'
 
 // Beside the other four checks at the package root, where `node --test '*.test.ts'` finds
 // them — a test inside the route folder would exist and never run, which counts as missing.
@@ -42,4 +48,31 @@ test('the 429 remainder is read from GoTrue’s own message, with the interval a
   // live Resend link that 429s again
   assert.equal(retryAfterFrom('slow down', 60), 60)
   assert.equal(retryAfterFrom('', 60), 60)
+})
+
+// The MAPPING, not just the predicate: the card's whole honesty is `throttled`, and it lived
+// where no test could reach it (review, 2026-09-06).
+test('the per-address 429 maps to a throttled sent-state carrying GoTrue’s own remainder', () => {
+  const state = sentStateFor(
+    {
+      status: 429,
+      code: 'over_email_send_rate_limit',
+      message: 'For security purposes, you can only request this after 53 seconds.',
+    },
+    60,
+  )
+  assert.deepEqual(state, { retryAfter: 53, throttled: true })
+})
+
+test('a message GoTrue worded differently still throttles, falling back to the interval', () => {
+  assert.deepEqual(sentStateFor({ status: 429, code: 'over_email_send_rate_limit' }, 60), {
+    retryAfter: 60,
+    throttled: true,
+  })
+})
+
+test('nothing else is a too-soon answer, so the card never claims a send that failed', () => {
+  assert.equal(sentStateFor({ status: 429, code: 'over_request_rate_limit', message: '' }, 60), null)
+  assert.equal(sentStateFor({ status: 500, code: 'unexpected_failure', message: '' }, 60), null)
+  assert.equal(sentStateFor({}, 60), null)
 })

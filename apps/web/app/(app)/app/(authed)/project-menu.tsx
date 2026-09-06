@@ -57,8 +57,22 @@ const item = `flex w-full items-center gap-[9px] rounded-sm p-[8px_12px] text-le
 const DuplicateContext = createContext<((formData: FormData) => void) | null>(null)
 
 export function DuplicateScope({ children }: { children: ReactNode }) {
-  const [state, action] = useActionState<ActionResult | null, FormData>(duplicateProject, null)
+  const [state, action, pending] = useActionState<ActionResult | null, FormData>(duplicateProject, null)
   const error = state && 'error' in state ? state.error : null
+  // The same double-submit the sheet's "Create project" was executed with — React queues form
+  // actions and `pending` only turns true on the NEXT render, so two submits in one tick both
+  // count before either inserts and Pro's 25 becomes 27. The guard is HERE and not on each
+  // card's button because duplicate is one action for the whole grid: two different cards race
+  // each other exactly as one card raced itself (review, 2026-09-06).
+  const inFlight = useRef(false)
+  useEffect(() => {
+    if (!pending) inFlight.current = false
+  }, [pending])
+  const guarded = (formData: FormData) => {
+    if (inFlight.current) return
+    inFlight.current = true
+    action(formData)
+  }
   // The matrix's *Duplicate, at cap* row answers `at_cap` with the D4b sheet, the same
   // contextual prompt "New project" raises — and a card rendered under the cap can still meet
   // it by the time it posts (a second tab). Only `'failed'` was rendered, so that race was a
@@ -71,7 +85,7 @@ export function DuplicateScope({ children }: { children: ReactNode }) {
   const failed = error && error.code !== 'at_cap' ? error.message : null
 
   return (
-    <DuplicateContext value={action}>
+    <DuplicateContext value={guarded}>
       {failed ? <Banner kind="error">{failed}</Banner> : null}
       {children}
     </DuplicateContext>

@@ -55,3 +55,20 @@ export function retryAfterFrom(message: string, fallback: number): number {
   const named = /after (\d+) seconds?/.exec(message)
   return named ? Number(named[1]) : fallback
 }
+
+/**
+ * THE MAPPING ITSELF, not just the predicate under it. `sentTooRecently` was pinned by
+ * `resend-timer.test.ts` while the thing the owner actually reported — the card claiming a send
+ * that never happened — lived in the `'use server'` action, which `node --test` cannot import:
+ * dropping `throttled: true` there left the whole gate green and the defect back (review,
+ * 2026-09-06). This is the same move `lib/shell-user.ts` made for the account row's rule.
+ *
+ * `null` means "not a too-soon answer" — the caller's error branch owns it.
+ */
+export function sentStateFor(
+  error: { status?: number; code?: string; message?: string },
+  interval: number,
+): { retryAfter: number; throttled: true } | null {
+  if (!sentTooRecently(error)) return null
+  return { retryAfter: retryAfterFrom(error.message ?? '', interval), throttled: true }
+}

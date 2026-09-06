@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
-import { retryAfterFrom, SEND_INTERVAL, sentTooRecently } from './resend-timer.ts'
+import { SEND_INTERVAL, sentStateFor } from './resend-timer.ts'
 import { SIGNED_OUT_PATH } from './signed-out.ts'
 
 /**
@@ -52,17 +52,12 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
 
   if (!error) return { status: 'sent', email, retryAfter: SEND_INTERVAL }
 
-  // Two different 429s, and only the per-address one is "too soon" rather than a failure — the
-  // distinction lives in `resend-timer.ts` so `node --test` holds it. Nothing was sent on this
-  // one, which is exactly what `throttled` carries to the card.
-  if (sentTooRecently(error)) {
-    return {
-      status: 'sent',
-      email,
-      retryAfter: retryAfterFrom(error.message, SEND_INTERVAL),
-      throttled: true,
-    }
-  }
+  // Two different 429s, and only the per-address one is "too soon" rather than a failure. The
+  // WHOLE mapping — not just the predicate — lives in `resend-timer.ts` so `node --test` holds
+  // it: `throttled` deleted here used to leave every check green (review, 2026-09-06). Nothing
+  // was sent on this one, which is exactly what `throttled` carries to the card.
+  const tooSoon = sentStateFor(error, SEND_INTERVAL)
+  if (tooSoon) return { status: 'sent', email, ...tooSoon }
 
   // Logged without the address: logs carry no user content (spine, Security floor).
   console.error('sign-in: send failed', { status: error.status, code: error.code })

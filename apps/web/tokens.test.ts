@@ -106,9 +106,13 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
     })
 
   const all = walk(process.cwd())
+  // The ONE exempt path, not any path ending in it: `endsWith` would have exempted a future
+  // `components/lib/style-pack.ts` too, which is the habit the name was chosen against
+  // (review, 2026-09-06).
+  const exempt = join(process.cwd(), PACK_DATA)
   // The exemption cannot outlive the file it names.
-  assert.ok(all.some((f) => f.endsWith(PACK_DATA)), `${PACK_DATA} is gone — delete its exemption with it`)
-  const files = all.filter((f) => !f.endsWith(PACK_DATA))
+  assert.ok(all.includes(exempt), `${PACK_DATA} is gone — delete its exemption with it`)
+  const files = all.filter((f) => f !== exempt)
   assert.ok(files.some((f) => f.endsWith('.tsx')), 'found no .tsx to scan')
   // hex in any length, and rgb(a) — the same atoms the token test accepts, so what one
   // gate allows in globals.css the other refuses everywhere else

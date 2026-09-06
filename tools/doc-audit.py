@@ -724,8 +724,13 @@ def check():
         if r.returncode != 0:
             # A tool's own self-check (story-board.py exits 2 with the failed assertion on
             # stderr) is not staleness, and "run the tool" would not fix it (review, 2026-09-05).
+            # A REFUSAL is the same thing at exit 1 — category-prompts.py:552 refuses when the
+            # export has files but no designs, and "run the tool" would not fix that either; and
+            # a self-check whose message is empty used to print the label and nothing else
+            # (review, 2026-09-06).
             last = (r.stderr.strip().splitlines() or [''])[-1]
-            fails.append(f'{tool}: {last}' if r.returncode == 2 or 'SELF-CHECK' in last else
+            own = r.returncode == 2 or 'SELF-CHECK' in last or last.startswith('REFUSING')
+            fails.append(f'{tool}: {last or f"exited {r.returncode} with no message"}' if own else
                          f'STALE: {art} does not match {src} — run python3 tools/{tool}')
 
     # 3c. the structural tuples must stay unique and in vocabulary (FR-G5)

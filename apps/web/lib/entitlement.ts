@@ -15,6 +15,12 @@ import { PLANS, planFor, type Caps, type EntitlementState, type PlanId } from '.
  *
  * `subscriptions` and the `reasons` a capability is withheld for are Epic 12's to add here.
  * They are named in the return shape so E12 widens this function rather than writing a second one.
+ *
+ * SO IS THE GRACE WINDOW, AND IT IS UNENFORCED TODAY. `entitlements.grace_expires_at` (schema
+ * §11a) is Inflozo's own 7-day window for `pro_past_due`, and this resolver never reads it — a
+ * past-due row therefore resolves to Pro for as long as it says `pro_past_due`. That is F.1's
+ * third column and what the story verified; expiring it needs the Dodo reconciliation E12
+ * brings, so it is recorded (DW-23) rather than half-built here (review, 2026-09-06).
  */
 export type Entitlement = { plan: PlanId; caps: Caps; reasons: string[] }
 

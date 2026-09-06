@@ -160,7 +160,10 @@ export function SignInForm({
               <strong className="font-semibold text-ink">{state.email}</strong>
               <br />
               {state.throttled
-                ? 'less than a minute ago, so we haven’t sent another. If it isn’t in your inbox — or you’ve already used it — ask again below.'
+                ? // "a moment ago" and not "less than a minute ago": the interval is
+                  // `smtp_max_frequency` and the countdown beside this sentence is derived from
+                  // it, so a written minute is a count that can go stale (standing rule 4).
+                  'a moment ago, so we haven’t sent another. If it isn’t in your inbox — or you’ve already used it — ask again below.'
                 : 'It’s good for 15 minutes.'}
             </p>
           </div>

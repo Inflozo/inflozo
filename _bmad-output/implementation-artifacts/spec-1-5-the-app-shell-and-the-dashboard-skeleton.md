@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
-review_loop_iteration: 3
+review_loop_iteration: 4
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
@@ -117,9 +117,14 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   `shadow-lg`, padding 6; a header (32px avatar, name 13px/600, email 11px ink-soft, `border-b line`,
   padding 10/12, margin-bottom 4); items 13px/500, padding 9/12, radius `sm`, gap 10, 15px icons, hover
   `paper`: **Account settings · Billing & plan (with the plan badge at `margin-left:auto`) ·
-  Suggestions · Docs · — · Sign out**. At 390 it drops **down** from the 32px avatar in the top bar —
-  280px, header 36px avatar, name 15px, email 12px, the badge in the header, items 15px, padding 13/12,
-  16px icons. Sign out posts 1.4's `signOut()`. **AMENDED BY THE OWNER, 2026-09-06 — his third test,
+  Suggestions · Docs · — · Sign out**. At 390 it opens **UP from the ☰ drawer's own account row** — 280px,
+  header 36px avatar, name 15px, email 12px, items 15px, padding 13/12, 16px icons. **AMENDED BY THE
+  OWNER, 2026-09-05 — his ruling at question 2, option 1**, which took the avatar out of the phone's
+  top bar altogether, so there is no trigger there for a menu to drop from; and the badge is NOT in the
+  header — it rides the **Billing & plan** row in both variants, the same row it rides at 1440
+  (the shape his third test settled at question 5). Recorded here because the ruling reached the
+  Matrix's 390 row, the Design Notes, the Change Log and the code, and left these two lines behind
+  (review, 2026-09-06). Sign out posts 1.4's `signOut()`. **AMENDED BY THE OWNER, 2026-09-06 — his third test,
   finding 2, ruled at question 6 option 1: Sign out SAYS IT IS WORKING and SAYS IT HAPPENED.** *"When I
   click Sign out, there is no message or confirmation popup … User has no idea whether they are actually
   signing out."* The row reads **`Signing out…`** while the action is in flight (the form's own
@@ -129,7 +134,9 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   accident costs one magic link, so a guard rail is not worth the friction."* The wait underneath the
   complaint is finding 3's and was fixed with it — the function now runs in `fra1`, beside the database.
 - **S3 at 390**: a 60px top bar (padding 0 12 0 6, `border-b line`) — a 44px ☰ button, the wordmark
-  at 19px/800, then at `margin-left:auto` a 44px search button and the 32px avatar; the body padding
+  at 19px/800, then at `margin-left:auto` a 44px search button and **no avatar** — the owner's
+  ruling at question 2 (2026-09-05) moved the phone's account menu into the ☰ drawer, so the top bar
+  carries ☰ · wordmark · search and nothing else (review, 2026-09-06); the body padding
   16/20, gap 16, with **"+ New project"** first — full width, 48px, 15px/600, coral-text, radius 12 —
   then the cards in one column, gap 14, the placeholder a fixed 150px, the name 15px. ☰ opens the
   **drawer**: 300px, left, full height, `surface`, `shadow-lg`, padding 20/14/16, the wordmark 20px
@@ -427,6 +434,38 @@ class already record).
 - [x] [Review][Patch] The page's `Row` type restated the card's `project` prop; one exported `Project` type keeps the `select(...)` and the card from drifting [apps/web/app/(app)/app/(authed)/project-card.tsx:18]
 - [x] [Review][Patch] `refusedAtCap(plan: Parameters<typeof capSentence>[0])` is `PlanId`, which the module already exports [apps/web/app/(app)/app/(authed)/projects/actions.ts:102]
 - [x] [Review][Patch] The acceptance criterion for S3d still read "desktop up, mobile down" — question 2's ruling reached the Design Notes and the code and not the criterion; amended inline, with question 6's sentence beside it [this spec]
+
+### Review Findings — fifth review, 2026-09-06, after the fourth Fix run
+
+Five layers over the whole diff since the baseline (`db959b18..92988cbd`, the code last changed in
+`f6927f7e`), the Real-infra verifier on the live deployment: production is built from HEAD, CI green on
+both commits, every fourth-Fix-run claim re-executed and held, RLS refused every cross-user call with a
+passing positive control, and axe-core clean on every surface with its planted control flagging
+`button-name(1)` and `image-alt(1)`. A mutation control turned the suite red before each new test was
+kept. **One finding is the owner's to decide (question 8).** Two are deferred as work another epic owns;
+seventeen were dismissed as noise, as already recorded (DW-16, DW-17, DW-20), or as what the frames and
+the frozen Boundaries ask for (the greyed doors' `aria-disabled` contrast exemption, the ⌘K hint the
+frame draws, the hidden search-cancel button, duplicate names, the second `<nav>` that is never exposed
+beside the first, `revalidatePath('/app')` — proved live, and an email-less account, dismissed for the
+third time).
+
+- [ ] [Review][Decision] Sign out that FAILS says nothing: `signOut()` withholds the flag and redirects to `/`, so the user watches `Signing out…`, lands back on the dashboard still signed in, and is told nothing — the one branch of the owner's own question 6 ruling that does not "say it happened" [apps/web/app/(app)/app/sign-in/actions.ts:93] — **question 8**
+- [x] [Review][Patch] Duplicate had no in-flight guard — the double-submit the sheet's "Create project" was executed with (three `requestSubmit()` made three rows), and duplicate is ONE action for the whole grid, so two cards race each other exactly as one card raced itself; two queued duplicates both count before either inserts and Pro's 25 becomes 27. The ref is on the scope, not the button [apps/web/app/(app)/app/(authed)/project-menu.tsx:59]
+- [x] [Review][Patch] Closing the phone's search unmounted the field and left `?q` filtering the grid — "No projects match", or a subset of the user's own work, with nothing on screen to explain it and no way back but the browser's Back button [apps/web/components/shell/shell.tsx:301]
+- [x] [Review][Patch] The 429 → "Just a moment" mapping — the whole of the owner's fourth-test fix — was pinned by nothing: `sentTooRecently` is tested, but deleting `throttled: true` from the action left `pnpm check`, `next build` and the RLS gate green and the defect back. Extracted to `sentStateFor` in the pure module, the move `lib/shell-user.ts` made for the account row [apps/web/app/(app)/app/sign-in/resend-timer.ts:59]
+- [x] [Review][Patch] `signed-out` shared the KEY and not the VALUE: `?signed-out=1` was written in the constant and compared to a literal `'1'` on the page, so `=true` on either side lost the owner's mint sentence with `tsc` and every test green. `SIGNED_OUT_VALUE` + `isSignedOut`, and `signed-out.test.ts` walks the real round trip [apps/web/app/(app)/app/sign-in/signed-out.ts]
+- [x] [Review][Patch] `what = e if isinstance(e, AssertionError)` left an exception OBJECT, which is always truthy, so the `or` fallback beside it was dead and a bare `assert x` — most of `demo()` — printed `SELF-CHECK FAILED —` with nothing after the dash [tools/story-board.py:1989]
+- [x] [Review][Patch] The gate read a sub-tool's failure as staleness unless it exited 2: `category-prompts.py:552`'s `REFUSING:` (exit 1) was answered with "run python3 tools/category-prompts.py", which would not fix it; and a self-check with empty stderr printed the label and nothing else [tools/doc-audit.py:728]
+- [x] [Review][Patch] The colour-literal exemption matched by path SUFFIX, so a future `components/lib/style-pack.ts` would inherit it — the habit the "one file rather than a habit" comment was written against; the companion assertion proved one such file exists, not that it is the only one [apps/web/tokens.test.ts:111]
+- [x] [Review][Patch] "less than a minute ago" is a written count beside a countdown derived from `SEND_INTERVAL`, so it goes stale the day `smtp_max_frequency` moves or GoTrue answers "after 90 seconds" — worded so it cannot (standing rule 4) [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:163]
+- [x] [Review][Patch] `resolveEntitlement` never reads `entitlements.grace_expires_at`, so `pro_past_due` is Pro for ever rather than for its 7-day window, and no comment said so — named beside the code, and recorded as DW-23 for Epic 12 [apps/web/lib/entitlement.ts:15]
+- [x] [Review][Patch] The fourth review struck "the Kit's notice block" from `--color-marigold-tint-soft`'s comment and left its DESIGN.md twin saying it — the two token records disagreed about who consumes the colour, which is exactly what the twinning exists to prevent (standing rule 3) [ux-designs/ux-Inflozo-2026-09-03/DESIGN.md:39]
+- [x] [Review][Patch] Two frozen Boundaries bullets still drew the phone's account menu as the FRAMES draw it — dropping "down" from "the 32px avatar in the top bar", with "the badge in the header" — though the owner's ruling at question 2 (2026-09-05) moved it into the ☰ drawer and there is no top-bar avatar to drop from. The sibling of the fourth review's S3d criterion, amended inline the same way [this spec]
+- [x] [Review][Patch] The live door's comment claimed it was "announced as what it is: the option in force" while the markup carried no `role`, no `aria-checked` and an `aria-hidden` dot — a comment asserting behaviour the code did not implement; an `sr-only` "Selected" makes it true [apps/web/app/(app)/app/(authed)/new-project-sheet.tsx:191]
+- [x] [Review][Patch] The Resend claim did not reproduce: `GET /emails`, `/domains` and `/api-keys` answer **401 `restricted_api_key`**, not the recorded `403 / error code: 1010` — that is Cloudflare refusing the client before Resend sees it. Re-executed with a control set that separates them (no key → `401 missing_api_key`, bogus → `400 validation_error`). DW-22's conclusion stands; the code is what standing rule 1 asks be right [this spec · deferred-work.md:545]
+- [x] [Review][Patch] The menu header's slot is recorded as a fixed 153px/160px and re-measured at 154px — a figure that moves with the browser's font conditions and that nothing behavioural turns on, so it is written approximate (standing rule 4) [this spec]
+- [x] [Review][Defer] `pro_past_due` grants Pro indefinitely — the grace window has no reader anywhere in the app [apps/web/lib/entitlement.ts] — deferred, Epic 12 owns the Dodo reconciliation (DW-23)
+- [x] [Review][Defer] `projects.slug` carries no unique constraint, so `uniqueSlug`'s read-then-insert can collide between two overlapping requests [apps/web/lib/projects.ts:60] — deferred, it is a migration and DW-8 froze this epic's (DW-24)
 
 ## Spec Change Log
 
@@ -1501,8 +1540,13 @@ and an unlabelled `<img>` planted on the dashboard axe had just called clean wer
 **The half of finding 1 that could NOT be settled from this repository, stated rather than assumed.**
 Whether the *first* email of his sequence reached his inbox is a delivery question, and the delivery log
 is unreadable with the key the repository holds: `GET https://api.resend.com/emails`, `/domains` and
-`/api-keys` with `RESEND_API_KEY` all answer **`403`, `error code: 1010`** — a send-only key. (The
-earlier note in this spec said `401`; `403 / 1010` is what it answers today, executed 2026-09-06.) What
+`/api-keys` with `RESEND_API_KEY` all answer **`401`, `restricted_api_key`, "This API key is
+restricted to only send emails"** — a send-only key. (**CORRECTED BY THE FIFTH REVIEW, 2026-09-06**:
+this run recorded `403 / error code: 1010`, which is Cloudflare refusing the client before Resend sees
+it, not Resend's answer. Re-executed with a control set that tells them apart — no key → `401
+missing_api_key`, a bogus key → `400 validation_error`, this key → `401 restricted_api_key` — so the
+`401` is Resend's own answer about this key. The conclusion is unchanged and DW-22 stands; the code is
+what standing rule 1 asks be right.) What
 *can* be said is executed: GoTrue answered **200**, which means the SMTP hand-off to Resend was accepted,
 and the two 429s explain his symptom completely — a countdown starting part-way through the minute is a
 refusal, not a send. **Two real magic links left for his own address during this run** (`RESEND_TEST_INBOX`
@@ -1516,7 +1560,7 @@ they arrived, which is the only place that question can be answered.
 | the 1440 row's address line | `white-space: nowrap` · `overflow: hidden` · `text-overflow: ellipsis` — S3b's own treatment |
 | is it one line now | **height 17px**, one line; `clientWidth 77` against `scrollWidth 153`, so the ellipsis is doing the work the wrap used to |
 | **the owner's own address, measured in that row's own font** | `umngkmr@gmail.com` renders **115px** against a **77px** slot — so no treatment fits it whole there, which is why this is a truncation and not another attempt at fitting it |
-| the menu that row opens | 240px wide; its header line has a **153px** slot and the address measures **115px** → **whole, one line, `text-overflow: clip`, `scrollWidth == clientWidth`** — the address is one click away and unshortened, checked rather than assumed |
+| the menu that row opens | 240px wide; its header line has a **≈153px** slot and the address measures **115px** → **whole, one line, `text-overflow: clip`, `scrollWidth == clientWidth`** — the address is one click away and unshortened, checked rather than assumed. (The fifth review re-measured the same slot at **154px**; the figure moves a point or two with the browser's font conditions and nothing behavioural turns on it, so it is written approximate rather than as a fixed number) |
 | the row still fits its column | **195px** in the 196px content box, badge and all |
 | the badge, and no invented name | `Free` at the end; the only 600-weight text in the row is the initial and the badge |
 | **the other branch**, `display_name = "Umang Kagathara"` set through the REST API | the frame's two lines return — `Umang Kagathara` at **13px/600** above the address at **11px** `rgb(110, 106, 100)`, row height 56 — and both lines take the same ellipsis in the 77px slot. Cleared again, back to one line |
@@ -1554,6 +1598,62 @@ which is not the real infrastructure R-82 asks for, so the same script was run a
 | no horizontal scroll at 390 | **none** |
 | the fixture user | **deleted**; census `projects: 0 · profiles: 2 · entitlements: 2` |
 
+
+### The fifth review — 2026-09-06, after the fourth Fix run
+
+Five layers over `db959b18..92988cbd`; the Real-infra verifier ran against the live stack before any
+patch. Keys were read into each command's environment from `tools/probe/.env` by variable name and never
+printed. Two fixture users were created and **both deleted**; the census before and after is identical.
+
+**Is production HEAD, and is it green**
+
+| Check | Result |
+|---|---|
+| the deployment serving `app.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_HRjXgPnbpvtjri6qd5QwjTmWfYtE`, **READY**, production, `githubCommitSha` **`92988cbd`** — HEAD; `regions: [fra1]`; aliases `inflozo.com` · `app.inflozo.com` · `www.inflozo.com` |
+| the serving code IS the fourth Fix run's | `git diff f6927f7e..92988cbd -- apps/web supabase` is **empty** |
+| CI on both commits (`GITHUB_TOKEN`) | run `34019221060` (`f6927f7e`) and `34019427028` (`92988cbd`) — `check: success · rls: success · deploy: success` |
+| the deployed shape | `/sign-in` **200** `x-inflozo-policy: app-nonce`; `/` signed out **307 → /sign-in**; `/sites` **404**; `inflozo.com` **200** `marketing-static`; `x-vercel-id: bom1::fra1::…` on both app responses |
+| `pnpm check` · `doc-audit --check` · `run-rls-gate.sh` | **exit 0** each; `apps/web` **65 pass, 0 fail** before this review's patches |
+
+**The fourth Fix run's two findings, re-executed on `https://app.inflozo.com`**
+
+| Claim | Held? |
+|---|---|
+| the 1440 account row is one line with S3b's ellipsis | **HELD** — row 195px; address `nowrap · hidden · ellipsis`, `11px rgb(110,106,100)`, height **17px**, `clientWidth 77` vs `scrollWidth 154`; `Free` at the end; no invented name line |
+| the owner's own address cannot fit that slot | **HELD** — measured in the row's own font: `umngkmr@gmail.com` = **115px** against a **77px** slot |
+| the whole address is one click away, unshortened | **HELD** — popover 240px, header line `text-overflow: clip`, slot **≈154px**, `scrollWidth == clientWidth` |
+| the 390 drawer row shows it whole | **HELD** — row 272px, slot **156px**, ellipsis never fires; **zero** account triggers in the phone's top bar |
+| **control** — the rule is not vacuous | **PASSED** — `display_name` set through the REST API returned the frame's two lines (`13px/600` over `11px`), both taking the same ellipsis; cleared again |
+| GoTrue's per-address 429 | **HELD** — `POST /auth/v1/otp` **200**, the same address 4 s later **429 `over_email_send_rate_limit`, "after 53 seconds"** |
+| the card tells the two apart, in the browser on the live site | **HELD** — idle > 60 s → `Check your inbox ✨ … It's good for 15 minutes. · Resend in 0:54`; resubmitted seconds later → **`Just a moment`** … `so we haven't sent another …` · `Resend in 0:44` |
+| **control** — mutating `sentTooRecently` to any 429 | **PASSED** — `pnpm test` went **red**, 64 pass / 1 fail; tree restored |
+| Sign out | **HELD** — no `aria-disabled` at rest, `Signing out…` + `aria-disabled="true"` in flight, a double press produced **1** POST, landed on `/sign-in?signed-out=1` with one `role="status"` mint banner |
+| **negative control** — the flag is read by value | **PASSED** — `?signed-out=0` → **0 banners**; bare `/sign-in` → **0 banners**; a signed-out cookie replayed in a fresh context lands on `/sign-in`, not the dashboard |
+| **RLS**, B against A's project id | `select` · list-all · `update` · `delete` → **200 `[]`** each; insert carrying A's `user_id` → **42501**; B's PATCH of its own `entitlements` → **42501** |
+| **positive control** — the empties are RLS, not a broken query | **PASSED** — A's own JWT on the same id returned `[{"name":"Review5 fixture"}]` |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A + AA) | **zero violations** — 1440 with the menu open, menus closed, with a `display_name`, the 390 drawer + menu, the throttled sign-in card. **Positive control** flagged `button-name(1)`, `image-alt(1)` every time |
+| CSP console violations · horizontal scroll at 1440 and 390 | **zero** · **none** |
+| the fixtures | **deleted**; census identical before and after — `projects 0 · profiles 2 · entitlements 2 · users 2` |
+
+**Re-executed by this review, and it corrected the record** — `RESEND_API_KEY`
+
+| Command | Result |
+|---|---|
+| `GET https://api.resend.com/emails` · `/domains` · `/api-keys` | **`401` `restricted_api_key`**, *"This API key is restricted to only send emails"* — **not** the `403 / 1010` recorded above |
+| **control**, no key | **`401` `missing_api_key`** |
+| **control**, a bogus key | **`400` `validation_error`** |
+
+The controls separate the two answers, so the `401` is Resend's own answer about this key rather than a
+client-level block. **DW-22's conclusion is unchanged** — no key here can read the delivery log.
+
+**After this review's patches**
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **green** — lint, typecheck, **70 tests, 70 pass, 0 fail** (65 + the five this review added) |
+| **control** on the two new tests | **PASSED** — inverting `sentStateFor`'s `throttled` and `SIGNED_OUT_VALUE` turned the suite **red, 3 fail**; tree restored and green again |
+| `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+| `python3 tools/doc-audit.py --check` twice | **PASS, 0 warnings** both times |
 
 ## Questions for the owner
 
@@ -1814,6 +1914,35 @@ file, `sign-in/actions.ts`.
 **Ruled: 1** (owner, 2026-09-06) — *finding 1 is fixed inside Story 1.5, not by reopening Story 1.4.* The
 Fix run therefore touches `apps/web/app/(app)/app/sign-in/` as well as the shell, and the spec's Code Map
 and Verification carry both.
+
+**8. If Sign out ever fails, you are put back on your dashboard and told nothing. Should it say something?**
+
+You ruled at question 6 that Sign out must *say it is working and confirm it happened* — and it does, both
+times, whenever it works. There is one branch where it does not: if our login service cannot be reached at
+that moment, the sign-out genuinely does not happen, so we deliberately do **not** show "You've been signed
+out." (saying it would be a lie, and that was the right call). But today we also say nothing at all — you
+are simply returned to your dashboard, still signed in.
+
+*Example:* you click Sign out. The row reads `Signing out…` for a second, the page reloads, and you are
+looking at your projects again, still signed in, with no message. Nothing is broken and nothing is unsafe —
+clicking Sign out again almost always works — but for that one second you cannot tell whether it did
+nothing or whether it signed you out and put you back. This is rare: it needs our login service to be
+unreachable at the exact moment you click.
+
+1. **Show a short red line at the top of your dashboard — "We couldn't sign you out just now. Try again in
+   a moment." (RECOMMENDED)** — it uses the same red message strip your dashboard already shows when your
+   projects fail to load, so nothing new is invented and nothing new is designed. It finishes the rule you
+   already set at question 6: it says what happened, every time, including when the answer is "it didn't".
+2. Leave it silent — you are returned to your dashboard and click Sign out again. Nothing to build, and the
+   screen stays exactly as it is drawn today; the cost is that one rare second where you cannot tell what
+   happened.
+3. Send you to the sign-in page anyway with a message there — reads well, but it is a lie in the other
+   direction: you are still signed in, so that page would immediately bounce you back to the dashboard and
+   you would see a flicker instead of a sentence. Not recommended, and named here only so you can see it
+   was considered.
+
+Nothing is blocked by this: the dashboard is built, deployed and working, and Sign out works. Option 1 is a
+few lines inside this same story.
 
 ## Owner's manual test
 

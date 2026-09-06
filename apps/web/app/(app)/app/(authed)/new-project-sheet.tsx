@@ -186,10 +186,13 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
             />
           ) : (
             // The one live door, and it is the selected one. A single choice needs no
-            // radiogroup to move between, so it is drawn as the frame draws it and announced
-            // as what it is: the option in force.
+            // radiogroup to move between, so it is drawn as the frame draws it. The coral ring
+            // and the filled dot say "selected" to the eye and the dot is `aria-hidden`, so the
+            // word itself is what carries it to a screen reader — the comment used to claim an
+            // announcement the markup never made (review, 2026-09-06).
             <li key={door.title} className={`${doorBox} border-coral bg-coral-tint`}>
               <Radio on greyed={false} />
+              <span className="sr-only">Selected</span>
               <span className="flex flex-1 flex-col gap-[2px]">
                 <span className="text-ui-dense font-semibold text-ink">{door.title}</span>
                 <span className="text-control-label text-ink-soft">{door.consequence}</span>

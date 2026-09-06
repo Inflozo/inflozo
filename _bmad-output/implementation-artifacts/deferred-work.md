@@ -541,12 +541,55 @@ status: open
 severity: medium
 origin: Story 1.5 fourth Fix run (2026-09-06), the owner's fourth test, finding 1
 location: tools/probe/.env (`RESEND_API_KEY`) · apps/web/app/(app)/app/sign-in/actions.ts · Epic 12
-reason: Executed 2026-09-06: `GET https://api.resend.com/emails`, `/domains` and `/api-keys` with
-  `RESEND_API_KEY` each answer **403, `error code: 1010`** — it is a send-only key. (An earlier note in
-  spec-1-5 said 401; 403/1010 is what it answers.) So a story can prove GoTrue accepted the SMTP
+reason: Executed 2026-09-06 and RE-EXECUTED by the fifth review the same day: `GET
+  https://api.resend.com/emails`, `/domains` and `/api-keys` with `RESEND_API_KEY` each answer **401,
+  `restricted_api_key`, "This API key is restricted to only send emails"** — it is a send-only key. (The
+  first pass recorded `403 / error code: 1010`; that is Cloudflare refusing the client before Resend sees
+  the request, not Resend's answer. The control set separates them: no key → `401 missing_api_key`, a
+  bogus key → `400 validation_error`, this key → `401 restricted_api_key`.) So a story can prove GoTrue accepted the SMTP
   hand-off (200) and can prove a refusal (429), but "did it arrive" leaves the repository and becomes a
   line in `## Owner's manual test`. That is tolerable for one magic link and is NOT tolerable for **Epic
   12**, which builds five or six transactional emails whose whole acceptance is delivery. The fix is one
   credential — a Resend key with read access, beside the sending one — and it is the owner's to create,
   so it is recorded rather than assumed.
 
+
+### DW-23: `pro_past_due` grants Pro for ever, because nothing expires the grace window
+
+plain: If someone's card fails, we keep them on Pro for a grace period so their sites stay up. The
+  database has a column for when that grace runs out, but nothing reads it yet — so today a failed
+  payment leaves the account on Pro indefinitely rather than for seven days. Nobody is in that state
+  now, and Epic 12 (billing) is where the clock gets connected.
+status: open
+severity: medium
+origin: Story 1.5 fifth review (2026-09-06), Blind Hunter layer
+location: apps/web/lib/entitlement.ts (`resolveEntitlement`) · apps/web/lib/plan.ts (`planFor`) ·
+  supabase/migrations/20260904120000_complete_schema.sql:585 (`entitlements.grace_expires_at`)
+reason: `planFor` maps `pro_active` and `pro_past_due` to `pro` — Appendix F.1's third column, executed
+  and verified live on the chip. `grace_expires_at` is Inflozo's own 7-day window, "reconciled against
+  Dodo `on_hold`" in the schema's own comment, and `resolveEntitlement` selects `state` alone, so the
+  window has no reader anywhere in the app. Enforcing it needs the Dodo reconciliation and the
+  `subscriptions` read that Epic 12 brings — the resolver is already shaped for both, and AD-28 says E12
+  widens this function rather than writing a second one. Half-building the expiry here would put a
+  billing decision in a dashboard story with no way to test it against a real past-due subscription, so
+  it is recorded and the resolver's own comment now names it beside the code.
+
+### DW-24: `projects.slug` has no unique constraint, so two concurrent creates can collide
+
+plain: Each project gets a short web-safe name (its "slug") that later becomes the theme's name. We pick
+  one that is not already taken, but the database does not enforce it — so two projects created at the
+  very same instant could end up with the same slug. It needs a database rule, and the schema is frozen
+  for this epic.
+status: open
+severity: low
+origin: Story 1.5 fifth review (2026-09-06), Blind Hunter layer
+location: apps/web/lib/projects.ts (`uniqueSlug`) · apps/web/app/(app)/app/(authed)/projects/actions.ts
+  (`createProject`, `duplicateProject`) · supabase/migrations/20260904120000_complete_schema.sql:212
+reason: `uniqueSlug` reads the taken slugs and then inserts, which is a read-then-write with no database
+  backstop: `projects.slug` carries no unique index (and `slug` is correctly absent from the update grant,
+  FR-J10, so a collision can never be repaired by a rename either). The window is the milliseconds between
+  the count and the insert and needs two requests from one user to overlap, which is why it is low; the
+  in-flight guards this review added to Create and Duplicate narrow it further without closing it. The
+  real fix is `unique (user_id, slug)` plus a retry on `23505`, and it is a migration — DW-8 froze the
+  schema's migration for this epic, so it belongs to the story that next opens one rather than to a
+  dashboard story reaching into a frozen file.

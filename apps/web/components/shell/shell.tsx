@@ -2,7 +2,7 @@
 
 import Form from 'next/form'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
@@ -187,10 +187,20 @@ export function Shell({
   plan: PlanId
   children: ReactNode
 }) {
-  const path = stripApp(usePathname())
+  // The raw path is what a navigation is written with; `stripApp` answers "where am I" at both
+  // addresses (see the note above `isActive`).
+  const here = usePathname()
+  const path = stripApp(here)
   const onDashboard = path === '/'
   const drawer = useRef<HTMLDialogElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  // The phone's field is the ONLY way to see or clear `?q`, and closing it used to unmount the
+  // field and leave the filter running: a grid showing "No projects match" — or a subset of the
+  // user's own work — with nothing on screen to explain it and no way back but the browser's
+  // Back button (review, 2026-09-06). Closing the search closes the search: the filter goes with
+  // the field it was typed into.
+  const q = useSearchParams().get('q') ?? ''
+  const router = useRouter()
 
   // ⌘K (and Ctrl+K) puts the cursor in the field, whichever of the two is on screen: only one
   // is ever visible, so "the visible one" is unambiguous and needs no width test here.
@@ -298,7 +308,10 @@ export function Shell({
                 type="button"
                 aria-label="Search projects"
                 aria-expanded={searchOpen}
-                onClick={() => setSearchOpen((open) => !open)}
+                onClick={() => {
+                  if (searchOpen && q) router.replace(here)
+                  setSearchOpen((open) => !open)
+                }}
                 className={`inline-flex size-11 items-center justify-center rounded-sm text-ink-soft ${ring}`}
               >
                 <Search size={18} />

@@ -1986,7 +1986,10 @@ def main():
             # last line the gate did not recognise, so it said "STALE — run story-board.py", which
             # cannot fix it (review, 2026-09-06). The traceback still goes first, for the reader.
             import traceback; traceback.print_exc()
-            what = e if isinstance(e, AssertionError) else f'{type(e).__name__}: {e}'
+            # `str(e)`, not `e`: an exception object is ALWAYS truthy, so the `or` below was dead
+            # and a bare `assert x` — which most of demo() is — printed the line with nothing
+            # after the dash (review, 2026-09-06).
+            what = str(e) if isinstance(e, AssertionError) else f'{type(e).__name__}: {e}'
             print(f'story board: SELF-CHECK FAILED — {what or "an assertion in demo() did not hold"}',
                   file=sys.stderr)
             return 2
