@@ -1399,6 +1399,25 @@ building and held no session there. The owner's account shows `last_sign_in_at` 
 deleted his one project on `app.inflozo.com`, made another and deleted that, during the review. No fixture
 row remains anywhere; the `0` is his, not a leak.
 
+**Re-executed against the deployed site.** The Review commit `e378c7ba` was pushed, CI published it, and the
+same checks were run again with `BASE=https://app.inflozo.com`, because the local build is not the real
+infrastructure R-82 asks for.
+
+| On `https://app.inflozo.com` | Result |
+|---|---|
+| CI on `e378c7ba` (`GITHUB_TOKEN`) | run `34016460644`: `check: success` · `rls: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) | `dpl_GScRwx1EYYZuCy3iX9199MGDu2W8`, state **READY**, built from `e378c7ba`; `x-vercel-id` reads `bom1::fra1::…` on `/sign-in` and `/` |
+| the popover header, 1440 and 390, no `display_name` · with one | one line, the address at 11px/12px `rgb(110,106,100)`, `clip`, whole, no bold · the name 13px/600 above and the address beneath, cleared afterwards — **held** |
+| Sign out at rest · in flight | no `aria-disabled` attribute · `Signing out…` with `aria-disabled="true"` — **held** |
+| the double press | **1** POST carrying `next-action`, landed on `https://app.inflozo.com/sign-in?signed-out=1` with the mint card; the single-click control the same — **held** |
+| ⌘K at 1440 and 390 · under an open ⋯ menu | `input[name="q"]` focused in both, the phone's field mounting and taking focus itself · the menu stays open, focus does not move — **held** |
+| `/sign-in?signed-out=1` · `/sign-in`, unauthenticated | the `role="status"` card on `mint-tint` · none — **held** |
+| axe-core 4.12.1: 1440 popover open without and with a name, 390 drawer + menu | **zero violations each**; the planted control flagged `button-name(1)`, `image-alt(1)` |
+| CSP violations · console errors | **0** · only the prefetch 404s of the five destinations later epics build (DW-17) |
+| the fixture | **deleted**; census `projects 0 · profiles 2 · entitlements 2` — the owner's two accounts, his project gone by his own hand at 06:11 UTC (above) |
+
+The story stays **in review**: Deploy and the owner's own test follow, and Done is written on his word (R-80).
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
