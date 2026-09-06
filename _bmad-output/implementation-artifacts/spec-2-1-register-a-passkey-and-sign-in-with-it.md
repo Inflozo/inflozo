@@ -159,8 +159,8 @@ Code review of 2026-09-06 — five layers (Blind Hunter, Edge Case Hunter, Verif
 Auditor, Real-infra verifier), the last against the live project. Every patch below is applied; the
 run that proves them is `## Verification` → *The review's run*.
 
-- [ ] [Review][Decision] Cancelling the OS passkey sheet on Sign In shows "No passkey on this device yet…" — the frozen matrix says "nothing said", and the browser gives the same `NotAllowedError` for a cancel and for "no passkey here", so the two cannot be told apart. Question 1 under `## Questions for the owner`.
-- [ ] [Review][Decision] `/account` caps its cards at 720px, a value that occurs nowhere in the frame (S12a's right column takes the room beside the 480px plan column) — the spec's own Ask First. Question 2 under `## Questions for the owner`; the page stays at 720 until ruled.
+- [x] [Review][Decision] Cancelling the OS passkey sheet on Sign In shows "No passkey on this device yet…" — the frozen matrix says "nothing said", and the browser gives the same `NotAllowedError` for a cancel and for "no passkey here", so the two cannot be told apart. **Ruled (owner, 2026-09-06): option 1, keep it as built** — the matrix's "nothing said" row is superseded by the ruling; nothing changed in code.
+- [x] [Review][Decision] `/account` capped its cards at 720px, a value that occurs nowhere in the frame — the spec's own Ask First. **Ruled (owner, 2026-09-06): option 2, the frame's own width** — at desktop the column is `100% - 504px` (the 480px plan column and the 24px gap, `S12 Billing.dc.html:35`), full width below, so nothing moves when Epic 12's column lands [apps/web/app/(app)/app/(authed)/account/page.tsx:45].
 - [x] [Review][Patch] A successful passkey sign-in showed the failure caption and restored the card before the dashboard arrived: a server action that `redirect`s REJECTS the awaited promise with a `NEXT_REDIRECT` error (Next 16.3.1, `server-action-reducer.js:241-262`, read) and the catch treated it as "no passkey" [apps/web/app/(app)/app/sign-in/passkey-button.tsx]
 - [x] [Review][Patch] Errors that are not the OS sheet's answer (`SecurityError` from an unlisted origin, a `TypeError` from a malformed challenge, a rejected action) were reported as "no passkey on this device" on Sign In and swallowed silently on the card; each now gets one failure sentence and a name-only log line [passkey-button.tsx · account/passkeys-card.tsx]
 - [x] [Review][Patch] A browser without WebAuthn showed its reason only after a press; the caption is up front and the control carries `aria-disabled` (UX-DR3: a greyed control shows its reason) [passkey-button.tsx · passkeys-card.tsx]
@@ -488,6 +488,10 @@ nothing, you would be looking at the same page wondering whether the button work
 2. **Say nothing in both cases** — quieter, but the person with no passkey gets no help at all.
 3. **A neutral sentence for both** — e.g. "Nothing was signed in. Try again, or use a magic link." Same mechanism as option 1, different words.
 
+**Ruled (owner, 2026-09-06): option 1 — "Keep it as built — one sentence for both cases, the one that
+names the way in that always works."** Nothing changed in code; the matrix's "nothing said" row is
+superseded by this ruling.
+
 **2. On the Account page, how wide should the Email and Passkeys cards be on a big screen?**
 
 The design draws this page with two columns: your plan and invoices on the left (that part comes with
@@ -501,3 +505,8 @@ would.
 
 1. **The design's own width — the cards take the room beside where the plan column will be, about 870 pixels on a wide screen. (RECOMMENDED)** — nothing shifts later, and it is what the design draws.
 2. **Keep the 720-pixel cap** — a little narrower to read today; the cards widen when the plan column lands.
+
+**Ruled (owner, 2026-09-06): option 2 — "The design's own width — the cards take the room beside where
+the plan column will be, about 870 pixels on a wide screen."** Applied in the same review: at desktop the
+column is `100% - 504px`, the frame's own 480px column plus its 24px gap; full width below desktop, where
+the frame draws nothing and 390 is one column.

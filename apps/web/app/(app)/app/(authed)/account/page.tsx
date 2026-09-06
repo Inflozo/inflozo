@@ -19,6 +19,12 @@ import { PasskeysCard } from './passkeys-card'
    over 11px ink-soft. At 390 the two-column row is one column — the frame's own collapse, and
    the reason `flex-col` is the base and the width class is the exception.
 
+   THE COLUMN'S WIDTH IS THE FRAME'S, not a cap of ours: S12a's right column is `flex:1` beside a
+   480px plan column and a 24px gap (`S12 Billing.dc.html:35`), so at desktop the cards take
+   `100% - 504px` — the room beside where Epic 12's column will sit, so nothing moves when it
+   lands (the owner's ruling, question 2, 2026-09-06). Below desktop the frame draws nothing and
+   the column is full width, as it is at 390.
+
    The Passkeys card is absent entirely unless BOTH switches are on (`lib/flags.ts`). */
 
 export const metadata: Metadata = {
@@ -42,7 +48,7 @@ export default async function AccountPage() {
         Account &amp; Billing
       </h1>
 
-      <div className="flex max-w-[720px] flex-col gap-4">
+      <div className="flex flex-col gap-4 desktop:max-w-[calc(100%-504px)]">
         <section className="flex flex-col gap-[14px] rounded-lg border border-line bg-surface p-[20px_24px] shadow-sm">
           <h2 className="text-ui-dense font-semibold uppercase tracking-[0.04em] text-ink-soft">Email</h2>
           <div className="flex items-center gap-3 py-[2px]">
