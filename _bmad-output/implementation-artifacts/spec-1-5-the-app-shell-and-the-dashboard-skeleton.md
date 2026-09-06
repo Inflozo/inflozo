@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 3
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -1331,6 +1331,45 @@ measures below 4.5:1 where it carries words — will recur in later epics, and w
 nearest passing shade" becomes a standing rule for all of them is a separate decision and is not made here.
 Until it is, a later story meeting the same fork stops and asks, as this one did.
 
+**5. Your account row will show a name above and the email below — but there is no name yet. What should the top line say until you can type one?**
+
+You asked for the row to read like `S3b`: the name in bold on top, the email very small and grey under
+it, and the Free/Pro tag at the end. `S3b` draws it with **Maya Chen** on top and
+`maya@orbitweekly.com` under — but Maya is the fixture, and the place where a real person types their
+name is **Account settings**, which **Epic 2** builds. Nothing in the product sets it today, so the top
+line has nothing of yours to put in it. That is also why the row currently shows your address on the
+one line: there was only one thing to show.
+
+*Example:* signed in as `you@example.com` with no name saved, option 1 shows a single small grey
+`you@example.com` beside your initial with **Free** at the end, and the bold line appears the day Epic 2
+lets you save "Umang". Option 2 shows **You** on top with `you@example.com` under it. Option 3 shows
+**You@example** — the part before the @, capitalised — on top with the full address under it.
+
+1. **No stand-in: until Epic 2, the row is your initial, your email on the small grey line, and the Free tag — and the bold name line appears by itself the day you save a name. (RECOMMENDED)** — nothing invented, nothing to undo later, and your address is shown whole rather than cut. It is `S3b`'s row with the line that has no content yet simply not drawn.
+2. The words **"Your account"** on the bold line until you save a name, with the email small underneath — `S3b`'s exact two-line shape from day one, at the cost of a line that says nothing about you.
+3. The part of your address before the @, capitalised, as a stand-in name — `Umngkmr` for yours, `Info` for `info@acme.com`. Two real lines, but the top one can read like nonsense.
+
+Whichever you pick: the **Free / ✦ Pro tag comes back to the end of the row** in both places, as you
+asked, and the email line is given the whole width the row has rather than the frame's 100px cap, so a
+long address shrinks or wraps instead of ending in three dots. The phone's top bar is untouched — ☰,
+Inflozo and the search icon, with the account row inside ☰ — which is your ruling of 2026-09-05.
+
+**6. Sign out: a "are you sure?" popup first, or just tell you it is working?**
+
+Your words were *"no message or confirmation popup … no idea whether they are actually signing out"*,
+which can mean either of two things, and they are different products. The slowness underneath it is a
+defect either way and is being fixed with finding 3 — the button today gives no sign at all while it
+waits, which is what makes the wait feel broken.
+
+*Example:* you click Sign out. Option 1: the row immediately reads **"Signing out…"** and greys, and the
+sign-in screen you land on says **"You've been signed out."** at the top. Option 2: a small window asks
+**"Sign out of Inflozo?"** with Cancel and Sign out first, then the same. Option 3: only the
+"Signing out…" state, and the sign-in screen looks exactly as it does today.
+
+1. **Tell you it is working, and confirm it happened: "Signing out…" on the button, then "You've been signed out." on the sign-in screen. No extra click. (RECOMMENDED)** — it answers "is anything happening?" without making you click twice every time; signing out by accident costs one magic link, so a guard rail is not worth the friction.
+2. Ask first — a confirm window, then the same two messages. Safest against a mis-tap on a phone, one extra tap every time.
+3. Just "Signing out…" and nothing on the sign-in screen — the smallest change, but nothing tells you it finished rather than failed.
+
 
 ## Owner's manual test
 
@@ -1543,3 +1582,63 @@ a dashboard story's.
 
 **Nothing else moved.** The delete window, the drawer, the search focus, the error page and the phone's
 account menu are exactly as your first test left them, and every one was re-run in this pass.
+
+### The owner's third test — 2026-09-06, three findings
+
+He tested the redeployed dashboard on `app.inflozo.com` on 2026-09-06, after the Deploy commit
+`8eb95cbf`. In his words:
+
+1. **"Make the avatar menu like in S3b · dashboard — empty · 1440 for desktop and mobile. Name above and
+   very small and subtle email below it. With FREE/Pro label at end. As earlier ruled, do not add avatar
+   in top header in mobile. Keep that in the sidebar for both mobile and desktop."**
+2. **"When I click Sign out, there is no message or confirmation popup. Also it takes a lot of time to
+   sign out. User has not idea whether they are actually signing out or what is happening."**
+3. **"Vercel is bom1::iad1::jr8ll-1788664244568-baa9745ff6be and and Supabase is in Germany.. That might
+   add to latency so want to move vercel to Germany. Guide me step by step or if you can do that with API
+   keys?"**
+
+**Finding 1 — this story's, and it reverses this morning's ruling on purpose; one thing has to be settled
+before it can be built.** `S3b`'s chip is `Maya Chen` at 13px/600 with `maya@orbitweekly.com` at 11px
+ink-soft under it (`max-width:100px`, ellipsis) and a `Free` pill at `margin-left:auto` — read off the
+frame, lines 223–241 of `S3 Dashboard.dc.html`. His finding 2 of earlier the same day took the badge off
+and put the whole address on the single bold line, precisely because the badge was taking the width the
+address needed; he now wants the frame's two-line row back, badge included, in both columns. The catch is
+that **there is no name to put on the top line**: `profiles.display_name` is null until **Epic 2** builds
+Account settings, so `nameOf()` returns the email and `secondLineOf()` returns null — restore the frame's
+row literally and the bold line holds the address while the small line holds nothing, which is the
+clipping complaint again. Asked as **question 5**. The rest of the finding needs no ruling and is
+unchanged from his 2026-09-05 ruling: no avatar in the phone's top bar (☰ · Inflozo · search), the account
+row at the bottom of the sidebar at 1440 and at the bottom of the ☰ drawer at 390, one piece of code.
+
+**Finding 2 — two defects in one, and both are this story's.** *No feedback:* Sign out is 1.4's
+`signOut` server action inside a plain `<form>` in `account-menu.tsx` with no pending state, so the menu
+sits there looking untouched until the document is replaced — nothing says the click landed. What he
+wants said, and whether a confirm window comes first, is **question 6**. *The wait:* `signOut()` awaits
+`supabase.auth.signOut()`, which is a network round trip from the function to the Supabase auth server
+**before** the redirect — and finding 3 is why that round trip is long. The two are one fix.
+
+**Finding 3 — executed, not asserted, and he is right.** Read on 2026-09-06 from the two platforms'
+own APIs with the keys in `tools/probe/.env`:
+
+| Read | Result |
+|---|---|
+| Vercel `GET /v9/projects/{VERCEL_PROJECT}` | `serverlessFunctionRegion = "iad1"`, `resourceConfig.functionDefaultRegions = ["iad1"]`, `fluid: true`, `nodeVersion 24.x` |
+| Vercel `GET /v2/teams/{VERCEL_TEAM_ID}` | `billing.plan = "pro"` |
+| Supabase `GET /v1/projects` | project `Inflozo` → `region = "eu-central-1"`, `ACTIVE_HEALTHY` |
+
+So every page render and every server action runs in **Washington DC** and reaches a database in
+**Frankfurt** — one Atlantic crossing per query, and several per screen. The `bom1` in his header is only
+the edge that received his request (Mumbai); `iad1` is where the code ran. Vercel's **`fra1` is
+eu-central-1**, the same AWS region as the database, so the crossing disappears; the team is on **Pro**,
+where the function region is a project setting rather than a fixed default, and it applies **on the next
+deployment**, not retroactively. It is also nearer to him: Mumbai → Frankfurt is shorter than Mumbai →
+Washington.
+
+**This is the case the spine already anticipated, so it is a propagation and not just a switch.**
+`ARCHITECTURE-SPINE.md` § Deferred says *"One region (`iad1`) until latency is a measured complaint"* —
+this is the measured complaint. The Fix run therefore: measures the dashboard's server timing from the
+live site before the change, sets the region, redeploys through CI, measures again, records both numbers
+in `## Verification`, and **amends that spine line** with the date, the reason and the two figures.
+Nothing about the deployment's shape changes — one region still, one deployment still serving both
+domains.
+
