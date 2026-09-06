@@ -1129,6 +1129,21 @@ control where one exists.
 | `story-board.py` self-check | a copy of the script with `demo()` raising `KeyError` | exit **2**, last stderr line `story board: SELF-CHECK FAILED — KeyError: 'fixture-missing'` |
 | the pure patches | `pnpm check` after every edit | lint, typecheck and 63 tests green; `tsc --noEmit` clean on `proxy.ts`'s import of `isApp` |
 
+**Re-executed against the deployed site.** The Review commit `85adbf47` was pushed, CI published it, and the
+same script — `BASE=https://app.inflozo.com` — was run again, because the local build is not the real
+infrastructure R-82 asks for.
+
+| On `https://app.inflozo.com` | Result |
+|---|---|
+| CI on `85adbf47` (`GITHUB_TOKEN`) | `check: success` · `rls: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) | `dpl_S2Vqh8EsTq2VwMaY3rZZr7oVKEbG`, state **READY**, built from `85adbf47` |
+| the deployed shape | `/` signed out **307 → `/sign-in`** · `inflozo.com` **200** — unchanged |
+| double submit · `raced` spent · rename reset · ⋯ toggle and scroll · ⌘K under a menu · popover closing on a row | **every check PASS, every control PASS** — the same lines as the local table above, on the published build |
+| CSP violations · console errors | **0** · none |
+| the fixture user | **deleted**; `projects` rows left behind: **0**; census: the owner's two accounts, no fixtures |
+
+The story stays **in review**: Deploy and the owner's own test follow, and Done is written on his word (R-80).
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
