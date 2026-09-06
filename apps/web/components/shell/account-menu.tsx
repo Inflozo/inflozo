@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
+import { useFormStatus } from 'react-dom'
 import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
 import { Book, Card, Lightbulb, Logout, Person } from '@/components/kit/icons'
@@ -13,9 +14,12 @@ import { signOut } from '@/app/(app)/app/sign-in/actions'
 
    Desktop: the account chip at the bottom of the sidebar opens a 240px popover UPWARDS.
    390: the account row at the bottom of the ☰ DRAWER opens the same menu, 280px, also upwards.
-   BOTH ROWS ARE NOW THE SAME ROW at two sizes — see the trigger below and the owner's finding 2
-   of 2026-09-06, which extended the phone's ruling to the desktop: no plan badge, and the whole
-   address rather than an ellipsis.
+   BOTH ROWS ARE NOW THE SAME ROW at two sizes, and the row is S3b's again: the owner's third
+   test (2026-09-06, finding 1) reversed his own finding 2 of that morning — the plan badge comes
+   back to the row in both columns and the address is still never clipped. What settles the
+   contradiction between the two is spec question 5, ruled option 1: there is NO stand-in name, so
+   with nothing in `display_name` the row is avatar · address on the small line · badge, and the
+   bold name line simply appears the day E2 lets someone save one.
 
    THE PHONE'S MENU MOVED OUT OF THE TOP BAR ON THE OWNER'S RULING (2026-09-05, spec question 2,
    option 1). The frames draw an avatar in the 390 top bar AND an account row in the drawer, and
@@ -138,17 +142,24 @@ export function AccountMenu({
 
   return (
     <>
-      {/* ONE ROW IN BOTH COLUMNS, at each column's size. It was two: the sidebar's carried the
-          plan badge at `margin-left:auto` and truncated the name slot — which holds the EMAIL
-          until E2 sets a display name — and the badge was taking the width the address needed.
-          The owner ruled the desktop the way he had already ruled the phone (2026-09-06,
-          finding 2): "remove the Free/Pro plan and show full email. Just like we have in
-          mobile." The badge is not lost — it rides the Billing & plan row inside the menu this
-          opens, in both variants. `break-all`, because an email has no spaces to break at and
-          `break-words` alone leaves it overflowing. No `aria-label`: the visible name IS the
-          accessible name (WCAG 2.5.3, Label in Name). This is the second place the phone's
-          ruling now governs the desktop, and S3d's chip is drawn with neither — the export is
-          untouched (R-74) and the spec is the record. */}
+      {/* ONE ROW IN BOTH COLUMNS, at each column's size — S3b's chip at 1440 (30px avatar, name
+          13px/600, address 11px ink-soft, badge at `margin-left:auto`) and the drawer's own at
+          390 (32px avatar, name 14px/600, the same small address and the same badge).
+
+          THE TOP LINE IS DRAWN ONLY WHEN THERE IS SOMETHING TO PUT ON IT. `display_name` is
+          null until E2 builds Account settings, and the owner ruled against inventing a stand-in
+          (spec question 5, option 1: "the bold name line appears by itself the day you save a
+          name"). So `secondLineOf` is the whole rule: no name → one small grey line holding the
+          address; a name → the frame's two lines exactly. That is also why the badge could come
+          back after his finding 2 took it off — the address is on the 11px line now, not on the
+          bold one, and it has the room.
+
+          NOT CLIPPED, in either state: no `max-width:100px` and no `truncate`, which is the
+          frame's own treatment and was his complaint. `break-all`, because an email has no
+          spaces to break at and `break-words` alone leaves it overflowing. No `aria-label`: the
+          visible text IS the accessible name (WCAG 2.5.3, Label in Name). The export is
+          untouched (R-74) — S3b draws the fixture's name and its ellipsis — and this is the
+          record of what the product draws instead. */}
       <button
         type="button"
         popoverTarget={id}
@@ -158,10 +169,19 @@ export function AccountMenu({
         } ${ring}`}
       >
         <Avatar user={user} size={dense ? 30 : 32} />
-        <span
-          className={`min-w-0 flex-1 font-semibold break-all text-ink ${dense ? 'text-ui-dense' : 'text-ui'}`}
-        >
-          {name}
+        <span className="flex min-w-0 flex-1 flex-col">
+          {second ? (
+            <span className={`font-semibold break-all text-ink ${dense ? 'text-ui-dense' : 'text-ui'}`}>
+              {name}
+            </span>
+          ) : null}
+          <span className="break-all text-helper-caption text-ink-soft">{second ?? name}</span>
+        </span>
+        {/* The badge is on the row AND on the Billing & plan line inside the menu: he asked for
+            it in both places, so the "one badge per menu" note of 2026-09-06 stands for the menu
+            and is superseded for the row. */}
+        <span className="ml-auto shrink-0">
+          <PlanBadge plan={plan} />
         </span>
       </button>
 
@@ -223,19 +243,45 @@ export function AccountMenu({
 
         {/* Clearing the cookies is a write, so Sign out is 1.4's server action, not a link. */}
         <form action={signOut}>
-          <button
-            type="submit"
-            className={`flex w-full items-center gap-[10px] rounded-sm text-left font-medium text-ink transition-colors hover:bg-paper ${
-              dense ? 'p-[9px_12px] text-ui-dense' : 'p-[13px_12px] text-[15px]'
-            } ${ring}`}
-          >
-            <span className="shrink-0 text-ink-soft">
-              <Logout size={iconSize} />
-            </span>
-            Sign out
-          </button>
+          <SignOut dense={dense} iconSize={iconSize} />
         </form>
       </div>
     </>
+  )
+}
+
+/**
+ * "no message or confirmation popup … no idea whether they are actually signing out" — the
+ * owner's third test, finding 2. He ruled question 6 option 1: say it is working, confirm it
+ * happened, and DO NOT add a confirm window ("signing out by accident costs one magic link").
+ * So this row says `Signing out…` while the action is in flight and `signOut` lands on
+ * `/sign-in?signed-out=1`, where S1's card shows the mint Banner that says it finished.
+ *
+ * `useFormStatus` is the form's OWN status and needs no state of its own to go wrong — which is
+ * why it has to be a child of the `<form>` rather than part of `AccountMenu`.
+ *
+ * `aria-disabled` and not `disabled`: a disabled button loses focus to the body and stops being
+ * announced, and this one is the thing the user is waiting on. The click is refused here instead
+ * — `useActionState`-style queuing would otherwise send a second sign-out for one impatient
+ * double tap.
+ */
+function SignOut({ dense, iconSize }: { dense: boolean; iconSize: number }) {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      aria-disabled={pending}
+      onClick={(event) => {
+        if (pending) event.preventDefault()
+      }}
+      className={`flex w-full items-center gap-[10px] rounded-sm text-left font-medium text-ink transition-colors hover:bg-paper ${
+        dense ? 'p-[9px_12px] text-ui-dense' : 'p-[13px_12px] text-[15px]'
+      } ${pending ? 'text-ink-soft' : ''} ${ring}`}
+    >
+      <span className="shrink-0 text-ink-soft">
+        <Logout size={iconSize} />
+      </span>
+      {pending ? 'Signing out…' : 'Sign out'}
+    </button>
   )
 }

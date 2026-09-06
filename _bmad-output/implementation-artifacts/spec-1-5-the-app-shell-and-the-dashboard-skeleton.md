@@ -59,7 +59,18 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   *"remove the Free/Pro plan and show full email. Just like we have in mobile."* The badge is not lost:
   it rides the **Billing & plan** row inside the menu the chip opens, in both variants, exactly as his
   ruling of 2026-09-05 put it on the phone's. S3d draws the chip with the badge and the ellipsis; the
-  export is untouched (R-74) and this is the record. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
+  export is untouched (R-74) and this is the record. **AMENDED AGAIN BY THE OWNER THE SAME DAY — his
+  third test, finding 1, ruled at question 5 option 1, and it is the row's settled shape: S3b's row
+  comes back, badge included, in BOTH columns, and the address is still never clipped.** *"Make the
+  avatar menu like in S3b · dashboard — empty · 1440 for desktop and mobile. Name above and very small
+  and subtle email below it. With FREE/Pro label at end."* What made the two amendments look
+  contradictory is the missing name: `display_name` is null until E2, so the frame's bold line had the
+  ADDRESS on it and the badge was what pushed it into an ellipsis. The rule is therefore
+  `secondLineOf()` and nothing else — **no `display_name`: avatar · the address on the 11px ink-soft
+  line · the badge at `margin-left:auto`, and no bold line at all; with a `display_name`: S3b exactly,
+  name 13px/600 above (14px in the drawer), address 11px beneath, badge at the end.** No stand-in name
+  is invented — *"the bold name line appears by itself the day you save a name"*. No `max-width:100px`
+  and no `truncate` in either state. The two columns stay one piece of code. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
   field first — 320×36, `rounded-sm`, hairline `line`, padding 0 10, the frame's magnifier at 15px,
   placeholder "Search projects…" 13px ink-soft-aa, and a mono "⌘K" chip (11px, `line` border, radius
   5px, padding 1/5); then at `margin-left:auto` the kit's `Button` coral 36 "New project" with the
@@ -99,7 +110,15 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   `paper`: **Account settings · Billing & plan (with the plan badge at `margin-left:auto`) ·
   Suggestions · Docs · — · Sign out**. At 390 it drops **down** from the 32px avatar in the top bar —
   280px, header 36px avatar, name 15px, email 12px, the badge in the header, items 15px, padding 13/12,
-  16px icons. Sign out posts 1.4's `signOut()`.
+  16px icons. Sign out posts 1.4's `signOut()`. **AMENDED BY THE OWNER, 2026-09-06 — his third test,
+  finding 2, ruled at question 6 option 1: Sign out SAYS IT IS WORKING and SAYS IT HAPPENED.** *"When I
+  click Sign out, there is no message or confirmation popup … User has no idea whether they are actually
+  signing out."* The row reads **`Signing out…`** while the action is in flight (the form's own
+  `useFormStatus`, so it carries no state of its own) and `signOut()` lands on `/sign-in?signed-out=1`,
+  where S1's card shows the Kit's mint `Banner` reading **"You've been signed out."** — one sentence, in
+  S1's voice, above the headline. **No confirm window**, and that is the ruled half: *"signing out by
+  accident costs one magic link, so a guard rail is not worth the friction."* The wait underneath the
+  complaint is finding 3's and was fixed with it — the function now runs in `fra1`, beside the database.
 - **S3 at 390**: a 60px top bar (padding 0 12 0 6, `border-b line`) — a 44px ☰ button, the wordmark
   at 19px/800, then at `margin-left:auto` a 44px search button and the 32px avatar; the body padding
   16/20, gap 16, with **"+ New project"** first — full width, 48px, 15px/600, coral-text, radius 12 —
@@ -236,7 +255,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Land, no projects | signed in, zero rows | S3b: the shell, the illustration, the two sentences, "New project"; the account chip says Free — **AMENDED BY THE OWNER, 2026-09-06 (finding 2): the chip carries no badge; "Free" is on the menu's Billing & plan row** | N/A |
+| Land, no projects | signed in, zero rows | S3b: the shell, the illustration, the two sentences, "New project"; the account chip says Free — **AMENDED TWICE BY THE OWNER, 2026-09-06: finding 2 took the badge off the chip, and finding 1 of his third test the same day put it back (question 5, option 1). The row is S3b's: the badge at the end, the address on the 11px line, and no bold name line until E2 sets one. "Free" is on the chip AND on the menu's Billing & plan row** | N/A |
 | Land, projects | rows exist | S3a: cards ordered by `updated_at desc`, each with placeholder · name · Sample content · "Updated today" / "Updated Aug 19" | N/A |
 | Create, under cap | "New project" → D4a → Create project | insert; sheet closes; the new card "Untitled project" (or "… 2") is first; `updated_at` = now | insert fails → the kit's error Banner in the sheet, "We couldn't create that just now. Try again in a moment." |
 | Create, at cap (Free, 1) | "New project" with 1 project | the sheet opens as D4b: greyed doors with "Free includes 1 project" pills, the upgrade block, Create disabled; the grid already shows S3c's tile | `at_cap` from the action (race) → the open sheet flips to D4b |
@@ -249,8 +268,9 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 | Search | `?q=fie` | only cards whose name contains "fie" (case-insensitive); no matches → "No projects match “fie”." 13px ink-soft in the grid's place, the empty illustration not shown | N/A |
 | Another user's project | user B, project of A | invisible to B's list; B's rename/delete/duplicate by A's id → zero rows affected, `{ code: 'failed' }` — RLS, executed in Verification | N/A |
 | Plan badge | `entitlements.state` free · pro_active · pro_past_due · no row | Free · ✦ Pro · ✦ Pro · Free | N/A |
-| 390 | phone width | ☰ · wordmark · search · avatar; full-width "+ New project"; one column; drawer and dropdown as S3; no horizontal scroll | N/A |
+| 390 | phone width | ☰ · wordmark · search · avatar; full-width "+ New project"; one column; drawer and dropdown as S3; no horizontal scroll — **AMENDED BY THE OWNER, 2026-09-05 (finding 6, question 2 option 1) and re-affirmed in his third test: the top bar is ☰ · wordmark · search and NO avatar; the account row at the bottom of the ☰ drawer is the menu's trigger** | N/A |
 | Keyboard | Tab through the shell and a card | sidebar → search → New project → cards' ⋯ → chip; ⋯ opens with Enter, arrows move, Escape closes and returns focus; every confirm opens on Cancel | N/A |
+| Sign out | the menu's Sign out pressed | the row reads `Signing out…` while it runs, then `/sign-in?signed-out=1` shows the mint Banner "You've been signed out."; no confirm window (**the owner's third test, finding 2, question 6 option 1**) | a second press while it runs is refused (`aria-disabled`), so one click is one sign-out |
 | Signed out | any of these URLs | 307 to `/sign-in` (1.4's guard, unchanged) | N/A |
 
 </frozen-after-approval>
@@ -266,7 +286,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/lib/style-pack.ts` (new, pure) -- the one zod schema for `projects.style_pack` (`{ preset: string }` today — the spine's rule (a): E6 owns the column and E1's placeholder reads it *through the same schema three epics early*), `PRESETS` with Paper's three values read off D4a's cell dots — surface `#FBF9F5`, accent `#D96C3F`, text `#232019` — and `placeholderFor(stylePack)` → `{ surface, accent, text }` falling back to Paper for a preset it does not know, so a card never renders empty when E6 widens the shape. Paper's accent is pack data, not a chrome token (`pack-cell.tsx:6`); DW-11 says E6 re-sources every pack from Appendix D, and this file is where that lands
 - `apps/web/lib/projects.ts` (new, pure) -- `nameSchema` (zod, trim, 1–80), `nextUntitled(names)`, `copyName(name)` (clamped to the schema's maximum), `slugify(name)`, `updatedLabel(updatedAt, now)` ("Updated today" / "Updated Aug 19", and "Updated Aug 19, 2025" for another year, `Intl.DateTimeFormat('en', …)`, UTC — `// ponytail: server UTC; the viewer's zone if "today" ever reads wrong at midnight`), `matchesName(typed, name)` (the typed value trimmed, then exact). `apps/web/projects.test.ts` holds each, including the 80-char edge, "Untitled project 2", the same-day and other-day labels, and that `slugify('Copy of Field Notes')` is `copy-of-field-notes`
 - `apps/web/components/shell/shell.tsx` (new, server) -- the sidebar and top bar at 1440 and the 60px bar at 390 (`tablet:` is the seam — S3 draws 1440 and 390 and the sidebar holds from `tablet` up); the nav via `next/link` with the active item from `usePathname` in a tiny client `NavLink`; the search form — its field a small client `SearchField` reading `useSearchParams` for its value (a layout receives no query) and owning ⌘K; the "New project" button that opens the sheet
-- `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, down at 390); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts:57`
+- `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, up at 390 since the owner moved the phone's menu into ☰); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts`, its row a child component (`SignOut`) so `useFormStatus` has a form to read and the row can say `Signing out…`. The trigger row is `secondLineOf()` in both columns: no `display_name` → the address on the 11px line and the plan badge at the end; a `display_name` → S3b's two lines. Never clipped in either state
 - `apps/web/components/shell/drawer.tsx` (new, client) -- the ☰ `<dialog>` at 390: nav, account row, close
 - `apps/web/app/(app)/app/(authed)/project-card.tsx` (new, server) + `placeholder.tsx` (new) -- the card and its wireframe with the pack's three colours as inline `style` (they are pack data, the site's system, never Tailwind classes)
 - `apps/web/app/(app)/app/(authed)/project-menu.tsx` (new, client) -- the ⋯ `popover="auto"` menu and the two S12c-shaped `<dialog>`s (rename, delete) with `useActionState` over the actions; the delete button's `aria-disabled` follows `matchesName`
@@ -274,6 +294,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/components/kit/icons.tsx` -- add the frames' own paths: `Projects` (four rects), `Globe`, `Image`, `Plus`, `MenuLines`, `Copy`, `Person`, `Card`, `Lightbulb`, `Book`, `Logout`, `AlertCircle`; `Search`, `X`, `Pencil`, `Trash`, `ChevronDown` already exist (`icons.tsx`)
 - `apps/web/components/kit/pack-cell.tsx:11` -- `PackCell` gains an optional `onEdit`; without it the pencil is not rendered (a dead "Edit Paper" button would be a lie; the editor is E6's). `/kit` keeps passing one so the gallery is unchanged
 - `apps/web/app/globals.css:80` + `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter -- `--shadow-modal: 0 12px 40px rgba(28,27,26,.25)` and its `elevation.modal` twin (`tokens.test.ts:47` requires the value to occur in the export; D4a and S12c carry it). Nothing else is added — see Design Notes for every hex that was mapped to an existing name instead. **Two colours joined it on 2026-09-06** (the owner's finding 3): `--color-marigold-tint-soft` and `--color-marigold-solid`, each with its `colors.*` twin in DESIGN.md, both values the export's own and both asserted by the same two token tests
+- `apps/web/app/(app)/app/sign-in/actions.ts:59` · `sign-in/page.tsx` · `sign-in/sign-in-form.tsx` -- **1.4's files, touched by this story's third Fix run only** (the owner's finding 2, question 6 option 1): `signOut()` redirects to `/sign-in?signed-out=1`; the page reads that one key beside `?error=link` and passes `signedOut`; the card draws the Kit's mint `Banner` "You've been signed out." above the headline while `state.status === 'idle'`. Nothing else in 1.4 moves — the guard, the nonce and the send path are untouched
 - `apps/web/app-routes.test.ts:33` -- already discovers every `page.tsx`; the new page is inside `(authed)` and needs no entry. `loading.tsx` is not a page
 - `apps/web/routing.ts:22-31` -- read-only: `app.inflozo.com/x` is rewritten to `/app/x`, so links are written as `/sites`, `/billing`… and `revalidatePath` takes `/app`
 - `supabase/migrations/20260904120000_complete_schema.sql` -- read-only, the grants this story lives inside: insert `(id, user_id, name, slug, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at)`, update `(name, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at, updated_at)`, `projects_touch` bumps `updated_at`, `projects_slug_frozen` holds only once a binding exists, `entitlements` is select-only to `authenticated`, the `(user_id, updated_at desc)` index is the list's order
@@ -294,6 +315,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - [x] `apps/web/app/(app)/app/(authed)/` page, loading, project-card, placeholder, project-menu, new-project-sheet -- S3a/b/c, D4a/b, the S12c extrapolations -- the story's surface
 - [x] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
 - [x] **Fix run (2026-09-05)** -- the owner's eight findings: the centred delete confirm, the drawer's outside-tap and focus, the phone's account menu moved into ☰ per his ruling, the phone's search focus, and `app/(app)/app/error.tsx` -- his test of the deployed site, R-80
+- [x] **Third Fix run (2026-09-06)** -- the owner's third test: the account row back to S3b in both columns with the badge and no stand-in name (question 5), and Sign out saying `Signing out…` then "You've been signed out." on the card (question 6). His finding 3, the `fra1` region move, was executed and controlled on his ruling before this run -- his third test of the deployed site, R-80
 - [x] **Second Fix run (2026-09-06)** -- the owner's three findings: the Duplicate door removed from the New project sheet (R-93), the sidebar chip made the drawer's row — no plan badge, the whole address — and D4b's upgrade card brought back to the frame's warm tint and solid gold button -- his second test of the deployed site, R-80
 
 **Acceptance Criteria:**
@@ -524,6 +546,19 @@ departure lives; none needs the owner, because each keeps a rule the PRD already
    filled with, 44 occurrences across ten). Both are transcriptions, both have their `colors.*` twin in
    DESIGN.md, and both are asserted by `tokens.test.ts` — which also caught the first draft of the change
    writing a hex into a `.tsx` comment and failed the build on it.
+7. **`signOut()` is 1.4's, and this story changed it.** The frozen Code Map lists it read-only — *"Sign
+   out as a form posting `signOut` from `sign-in/actions.ts`"* — and the owner's third test asked for
+   feedback that only the action can give: it is the thing that redirects, so it is the thing that has to
+   say where. The change is one string (`/sign-in` → `/sign-in?signed-out=1`); the session clear, the
+   `await`, the guard and 1.4's own tests are untouched, and a card that ignores the key renders exactly
+   as it did. Recorded here because it crosses a story boundary, not because it is large.
+8. **The account row reversed itself inside one day, and both rulings are the owner's.** Finding 2 of his
+   second test took the plan badge off and put the whole address on the bold line; finding 1 of his third
+   put S3b's two-line row back with the badge. They only look contradictory: what he was complaining
+   about both times is the address being cut, and the reason it was cut is that `display_name` is null
+   until E2, so the address was sitting on the 13px bold line where the badge crowded it. On the 11px
+   line it fits with the badge beside it — 195px of the column's 196, measured. `secondLineOf()` is now
+   the whole rule and the two columns are one piece of code, so this cannot drift again.
 
 ## Design Notes
 
@@ -544,6 +579,30 @@ and it still rides the Billing & plan row inside the menu. **The export itself i
 is by a story — and if he wants `S3d`, `S3 · mobile · 390`, `S3 · mobile — menu open` and `D4a/D4b`
 redrawn to match, that is a design pass of its own. Nothing else moved: the top bar at 1440, S3a/b/c, the
 rename confirm and D4b's *behaviour* are as they were.
+
+**Departure (4) was withdrawn by the owner the same day, and the row is the frame's again.** His third
+test, finding 1: *"Make the avatar menu like in S3b · dashboard — empty · 1440 for desktop and mobile.
+Name above and very small and subtle email below it. With FREE/Pro label at end."* So the badge is back
+at `margin-left:auto` in both columns and the address sits on the 11px ink-soft line the frame draws it
+on. **The one thing the product still cannot draw is the frame's bold line**, because `profiles.
+display_name` is null until Epic 2 builds Account settings — and he ruled at **question 5, option 1**
+against inventing anything to put there. So the row is `S3b` with the line that has no content simply not
+drawn: avatar · address · badge today, and avatar · name · address · badge the day a name exists, which
+is one `secondLineOf()` and no second code path. The frame's `max-width:100px` ellipsis is the only value
+of S3b's chip that is deliberately not taken — his complaint of that morning was exactly that clipping,
+and the row has the width without it. **The export is not edited.**
+
+**Sign out now says both things, and neither is a window.** The owner's finding 2 — *"no message or
+confirmation popup … no idea whether they are actually signing out"* — reads two ways, so it was put to
+him as **question 6** and he ruled option 1: tell him it is working, confirm it happened, no extra click.
+The row's `Signing out…` comes from `useFormStatus`, which is the `<form>`'s own status rather than state
+this component keeps — the smallest thing that cannot get out of step with the action. The confirmation
+is the Kit's mint `Banner` on S1's card, chosen over a toast because this app has no toast and S1 already
+draws banners at exactly that spot for `?error=link`. The row is `aria-disabled` while it runs rather
+than `disabled`: a disabled button drops out of the accessibility tree and loses focus at the moment the
+user is waiting on it. The **latency** half of his complaint is finding 3's and was fixed there — the
+function moved to `fra1`, the database's own region, so `supabase.auth.signOut()` no longer crosses the
+Atlantic before the redirect.
 
 **D4b's upgrade card, and the one place a frame's value could not be taken whole.** The owner's finding 3
 asked for the frame's card, and it is now the frame's card: `marigold-tint-soft` inside the
@@ -1159,6 +1218,80 @@ infrastructure R-82 asks for.
 
 The story stays **in review**: Deploy and the owner's own test follow, and Done is written on his word (R-80).
 
+### The third Fix run — 2026-09-06, the owner's third test
+
+Executed against the **real Supabase project** (R-82) with the production build of this repository
+serving at `localhost:3100`, so a browser could drive the change before it existed anywhere to deploy;
+then re-executed against `https://app.inflozo.com` after CI published it (the second table). Keys were
+read into each command's environment from `tools/probe/.env` by variable name and never printed. One
+fixture user, `story-1-5-fix3@inflozo.com`, was created through the admin API and **deleted at the end**;
+the census afterwards is `projects: 1 · profiles: 2 · entitlements: 2` — the owner's own two accounts and
+his one project, which is what it was before this run started.
+
+**His finding 3 is not in these tables because it was executed and controlled before the run began** —
+the Vercel region move to `fra1`, on his word, with the `x-vercel-id` header as its control and the
+before/after TTFB medians recorded above under his third test.
+
+**The control first, because a result whose control did not pass is not a result.** axe-core reported
+`button-name(1)` and `image-alt(1)` the moment a bare `<button>` and an unlabelled `<img>` were appended
+to the page it had just called clean. The control also failed its own first attempt and that is worth
+recording: planted while the ☰ drawer was open, it reported **zero** — a modal `<dialog>` makes the rest
+of the document inert and axe skips inert content, so the drawer had to be closed before the control
+could prove anything. A control that passes for the wrong reason is the thing standing rule 2 exists for.
+
+**Gate and build**
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **green** — lint, typecheck, 63 tests in `apps/web`, 63 pass, 0 fail |
+| `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+
+**Finding 1 — the account row is S3b's again, in both columns**
+
+| Check | Result |
+|---|---|
+| the 1440 row, no `display_name` (today's real state) | `S | story-1-5-fix3@inflozo.com | Free` — the initial, the address, the badge |
+| the address's size and colour on that row | `11px`, `rgb(110, 106, 100)` — 11px ink-soft, S3b's own second-line treatment |
+| **no bold name line invented** | the only 600-weight text in the row is the avatar's initial and the badge — the ruling's "no stand-in", executed |
+| the badge is back and at the end | `Free`, its right edge **12px** from the row's — the row's own padding, so `margin-left:auto` |
+| the address is whole | `scrollWidth <= clientWidth` **true**; `text-overflow: clip`, no ellipsis |
+| the row inside the 220px column | **195px** wide, the content box being 196 — it fits *with* the badge, because the address is on the 11px line now |
+| the 390 drawer row | `S | story-1-5-fix3@inflozo.com | Free` at **272px**, the address `11px` and whole — the same code, the drawer's size |
+| the top bar at 390 | **zero** account triggers — his 2026-09-05 ruling, unchanged |
+| the badge inside the menu | `Billing & plan Free` in both variants — he asked for it in both places, so it is in both |
+| **the other branch**, `display_name = "Umang Kagathara"` set through the REST API | `U | Umang Kagathara @13px | story-1-5-fix3@inflozo.com @11px rgb(110,106,100) | Free @11px` — **S3b exactly**, and the avatar's initial follows the name to `U` |
+| the name cleared again | back to `S | story-1-5-fix3@inflozo.com | Free` in one render — one code path, two states |
+| axe-core, 1440 dashboard + the open menu, with and without a name | **zero violations each** |
+| axe-core, 390 drawer + the open menu | **zero violations** |
+| no horizontal scroll, 1440 and 390 | **none** |
+
+**Finding 2 — Sign out says it is working, and the card says it happened**
+
+| Check | Result |
+|---|---|
+| the row's label while the action is in flight | **`Signing out…`**, read from the live button before the document was replaced |
+| where it lands | `…/sign-in?signed-out=1` |
+| the card there | `role="status"`, **"You've been signed out."**, background `rgb(228, 245, 238)` — `mint-tint`, the Kit's success Banner |
+| `/sign-in` without the key | **no banner** — the sentence is the sign-out's, not the page's |
+| axe-core on the sign-in card carrying the notice | **zero violations** |
+| a confirm window | **none**, as ruled |
+
+**The surface around the two changed files, re-run because they changed under it**
+
+| Check | Result |
+|---|---|
+| the New project sheet | **3 doors** — `Blank canvas` · `Start from a starter` · `Redesign one of my sites`; "Duplicate" absent (R-93, still holding) |
+| create → a card → its ⋯ menu | `Rename / Duplicate / Delete` |
+| the delete confirm (his finding 2 of the first test) | title `text-align: center`, dialog at x=**490** in a 1440 viewport, two buttons **199px each**, focus on **Cancel** |
+| axe on that confirm | **zero violations** |
+| the ☰ drawer's outside tap (finding 4) | a click at (360, 400) with the panel open → **no `dialog[open]`** |
+| focus on ☰ open (finding 5) | `document.activeElement` is the **DIALOG**, so nothing inside it is ringed |
+| the phone's search focus (finding 7) | tapping the magnifier leaves `document.activeElement` as `input[name="q"]` |
+| **console CSP violations on the app host** | **zero.** The ones the local pass recorded are all located at `http://localhost:3100/` and `…/sign-in` **without** the `/app` prefix — the MARKETING paths, which is **DW-18** and Story 1.4's header. There is no host split on localhost, so `signOut`'s `/sign-in` lands on marketing there; on `app.inflozo.com` the proxy rewrites the same URL onto the app and the app policy carries a nonce |
+| the fixture user | **deleted**; census back to the owner's two accounts and one project |
+
+
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
@@ -1402,7 +1535,15 @@ polite refusal of a second, the Go Pro pill. The Pro side (up to 25 projects, du
 proved by the Dev run with a throwaway account and recorded above; say the word if you would like your
 own account switched to Pro for a look — it is one row, and it is switched back the same way.
 
-**Your three findings of 2026-09-06 — what changed, and what to look at this time.**
+**Your three findings of 2026-09-06 (your third test) — what changed, and what to look at first.**
+
+| Your finding | What to do | What you should see |
+|---|---|---|
+| 1 · the avatar menu like `S3b` | Look at the bottom left of the dashboard, then tap ☰ → the same row on your phone | Your initial, your **whole email** on a small grey line beside it, and the **Free** tag at the far right. **There is no bold name line yet** — that is what you ruled: nothing is invented to put there, and it appears by itself the day Epic 2 lets you save a name. Nothing is cut off with three dots. No initial in the phone's top bar |
+| 2 · Sign out said nothing | Open the account menu → Sign out | The row reads **"Signing out…"** the moment you press it, and the screen you land on carries a green line at the top of the card: **"You've been signed out."** No "are you sure?" window — that is what you chose |
+| 3 · Vercel in Washington | Sign in, move around the dashboard, sign out | Everything should feel quicker. The site now runs in Frankfurt beside its database — the sign-in page alone measured **78 ms** faster from your city, and the screens that read the database gain more than that. Nothing looks different; tell me if anything feels slower rather than faster |
+
+**Your three findings of 2026-09-06 (your second test) — what changed, and what to look at.**
 
 | Your finding | What to do | What you should see |
 |---|---|---|
@@ -1429,9 +1570,9 @@ would rather not see them until then, say so in your findings and it is changed 
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial with **your whole email beside it and no "Free" tag** (your finding 2); a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
+| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial with **your whole email on a small grey line beside it and the "Free" tag at the end** (your third test, finding 1 — the tag is back on the row and still on the Billing & plan line inside the menu); a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
 | 2 | same | Dashboard | Click Sites, then Assets, then use the browser's Back | — | "This page could not be found" for both — expected until Epics 3 and 8 |
-| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and email, then Account settings, Billing & plan (with a "Free" tag — **this is where the tag lives now**), Suggestions, Docs, a line, Sign out. Press Escape to close it |
+| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and email, then Account settings, Billing & plan (with a "Free" tag — it is on this line **and** on the row you clicked, which is what you asked for), Suggestions, Docs, a line, Sign out. Press Escape to close it |
 | 4 | same | New project sheet (D4a) | Click "New project" | — | A white sheet over a dimmed dashboard: "New project", **three** choices — Blank canvas is selected; Start from a starter and Redesign one of my sites are greyed with a short reason under each. **"Duplicate an existing project" is gone** (your finding 1); below, "Style Pack" with one card, Paper; Cancel and a red "Create project" |
 | 5 | same | Dashboard (S3a) | Click "Create project" | — | The sheet closes and one card appears: a small wireframe on cream, "Untitled project", a "Sample content" tag and "Updated today" on the right |
 | 6 | same | At the cap (S3c · D4b) | Click "New project" again | — | The sheet opens with all **three** choices greyed, each with a "Free includes 1 project" pill, and a **cream card** saying "Free includes 1 project. Pro gives you 25." with a **solid gold "Go Pro — $15/mo" button** on it (your finding 3), and "Create project" greyed out. Press Cancel. Beside your card the grid still shows the dashed tile: ✦, "Upgrade to add more", the same sentence, and there the pale pill, because that is what its own drawing has |
@@ -1441,12 +1582,12 @@ would rather not see them until then, say so in your findings and it is changed 
 | 10 | same | Delete (redrawn on your word) | ⋯ → Delete | first `field notes`, then `Field Notes` | A window with a **red bin in a round pink disc at the top, centred**, "Delete Field Notes?" and "This project will be permanently deleted. This cannot be undone." centred under it, then "Type Field Notes to confirm", then **two equal buttons**, Cancel and a red Delete project. The cursor starts on Cancel. With `field notes` the red button stays faded and does nothing; with `Field Notes` exactly it goes solid, and pressing it removes the card — you are back on the empty dashboard |
 | 11 | same | Search | Create a project again (steps 4–5), rename it `Harbour Letter`, then type in the search box and press Enter | `harb` · then `zzz` | With `harb` the card stays; with `zzz` the grid says "No projects match “zzz”." Clear the box and press Enter to see the card again. ⌘K (Ctrl+K on Windows) jumps the cursor into the box |
 | 12 | same, on your phone | Dashboard at 390 | Open the address on your phone | — | A short top bar: ☰, "Inflozo" and a search icon — **and no initial beside it any more**; a full-width red "+ New project"; your card below it, one per row; nothing cut off, nothing scrolling sideways |
-| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, and at the bottom your initial with **your whole email address beside it, not cut off with three dots** and no "Free" tag; an ✕ to close. Nothing on the panel has a box drawn around it when it opens |
+| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, and at the bottom your initial with **your whole email address on a small grey line beside it, not cut off with three dots, and the "Free" tag at the end**; an ✕ to close. Nothing on the panel has a box drawn around it when it opens |
 | 14 | same, phone | The account menu, now inside ☰ | Tap ☰, then tap your initial at the bottom of the panel | — | The same menu as step 3 opens **upwards from that row**: your initial and email, Account settings, Billing & plan **with the "Free" tag**, Suggestions, Docs, a line, Sign out |
 | 15 | same, phone | Closing the panel | Tap ☰, then tap the greyed area to the right of the panel | — | The panel closes. Tapping inside it does not close it |
 | 16 | same, phone | Sheet and delete | Tap "+ New project", Cancel; then ⋯ → Delete on your card, Cancel | — | Both windows fill the width with a small margin and every button is reachable; the delete window's bin, title and two buttons are centred as in step 10 |
 | 17 | same, phone | Search | Tap the search icon in the top bar | — | The search box appears under the bar **with the cursor already in it** and the keyboard up — you can type straight away |
-| 18 | same | Sign out | Open the account menu (the chip at the bottom left on a computer, or ☰ → your initial on a phone) → Sign out | — | The Sign In card from 1.4 |
+| 18 | same | Sign out | Open the account menu (the chip at the bottom left on a computer, or ☰ → your initial on a phone) → Sign out | — | The row reads **"Signing out…"** while it works — no "are you sure?" window, which is what you chose — and then the Sign In card from 1.4 with a **green line above the headline: "You've been signed out."** Ask for a new link and the green line goes; it belongs to the sign-out, not to the page |
 
 ## Owner's test findings
 
@@ -1704,3 +1845,15 @@ will do it."* Executed against the Vercel API with `VERCEL_TOKEN`:
   those calls no longer cross the Atlantic at all — function and database are now in one AWS region. The
   measurement of that half is the owner's next test of the dashboard and of Sign out, which is what
   finding 2 is about.
+
+### What the third Fix run did, 2026-09-06 — one line each
+
+| Your finding | What was done |
+|---|---|
+| 1 · the avatar menu like `S3b` | **The row is `S3b`'s again, in both columns** — the **Free** tag back at the end, and the address on the small grey line the frame draws it on, whole rather than cut. The bold name line is **not** drawn yet and that is your own ruling (question 5, option 1): there is nothing to put on it until Epic 2 lets you save a name, and the day you save one it appears — checked by setting a name on a test account and watching the row become `Umang Kagathara` above the address, then clearing it again. It is one piece of code at two sizes, so the phone and the desktop cannot drift apart. No avatar in the phone's top bar, unchanged from your earlier ruling |
+| 2 · Sign out said nothing, and took a while | **It says both things now.** The row reads **`Signing out…`** the moment you press it, and the sign-in screen you land on carries a green line: **"You've been signed out."** No confirm window — that was your ruling (question 6, option 1). The *wait* was your finding 3: the code was running in Washington and the database is in Frankfurt, so signing out crossed the Atlantic first. It runs in Frankfurt now, beside the database |
+| 3 · Vercel in Washington, Supabase in Germany | **Moved to `fra1`, on your word, before this run** — and proved, not assumed: the live site's own header now reads `fra1`, and the sign-in page got **78 ms** faster from your city. The larger half of it is the part this measurement cannot see — every dashboard screen and every button that writes to the database no longer crosses the ocean. The spine's "one region until latency is a measured complaint" line was amended with your complaint and the two readings |
+
+**Nothing else moved.** The New project sheet's three doors, the delete window, the ☰ drawer, the search
+focus and the app's error page are exactly as your last two tests left them, and every one was re-run in
+this pass.

@@ -23,7 +23,15 @@ const linkStyle = `text-ui-dense font-medium text-ink-soft underline underline-o
 // across deploys, which is what the owner's test and the axe run both address it by.
 const FIELD = 'email'
 
-export function SignInForm({ linkError, passkeys }: { linkError: boolean; passkeys: boolean }) {
+export function SignInForm({
+  linkError,
+  signedOut,
+  passkeys,
+}: {
+  linkError: boolean
+  signedOut: boolean
+  passkeys: boolean
+}) {
   const [state, formAction, pending] = useActionState<SendState, FormData>(sendMagicLink, {
     status: 'idle',
   })
@@ -189,6 +197,14 @@ export function SignInForm({ linkError, passkeys }: { linkError: boolean; passke
         </>
       ) : (
         <>
+          {/* "There is no message … user has no idea whether they are actually signing out" — the
+              owner's third test, finding 2, ruled at question 6 option 1: the row says it is
+              working and this says it finished. Mint, `role="status"`, one sentence in S1's
+              voice, in the Kit's own component. Only while the card is untouched: once a link
+              has been asked for, the last thing that happened is the send, not the sign-out. */}
+          {signedOut && state.status === 'idle' ? (
+            <Banner kind="success">You&rsquo;ve been signed out.</Banner>
+          ) : null}
           {linkError ? (
             <Banner kind="error">That link has expired or was already used. Ask for a new one.</Banner>
           ) : null}

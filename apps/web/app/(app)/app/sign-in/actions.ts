@@ -55,9 +55,19 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
   return { status: 'error', error: { code: 'send_failed', message: messages.send_failed }, email }
 }
 
-/** The holding page's Sign out. Clearing the cookies is a write, so it cannot be a page. */
+/**
+ * The shell's Sign out. Clearing the cookies is a write, so it cannot be a page.
+ *
+ * `?signed-out=1` is how the sign-in card knows to say it happened — the owner's third test,
+ * finding 2, ruled at question 6 option 1. It is a hint on the URL and nothing depends on it:
+ * the session is already gone whether or not the card reads it.
+ *
+ * The round trip to GoTrue used to be the slow half of his complaint. It is not the code that
+ * changed — the function now runs in `fra1`, the database's own AWS region, on his ruling of the
+ * same day (finding 3). Keep the await: signing out has to be true before the redirect says so.
+ */
 export async function signOut() {
   const supabase = await supabaseServer()
   await supabase.auth.signOut()
-  redirect('/sign-in')
+  redirect('/sign-in?signed-out=1')
 }
