@@ -709,5 +709,5 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
   height, Bricolage Grotesque 800 at -0.035em) and the CSS-only animation with `prefers-reduced-motion`
   respected. The replacement story inventories every place a logo is drawn — derived by grepping the app
   and the frames, never listed here — swaps each for the matching mark or lockup, keeps the background
-  watermarks untouched by the owner's ruling, and lands the favicon and app icon. Where the story sits (its
-  epic and number) is the owner's call and is open.
+  watermarks untouched by the owner's ruling, and lands the favicon and app icon. **Placed by the owner on 2026-09-06 as Story 1.6, "The new identity everywhere", at the end of
+  Epic 1** (option 1 of the three put to him); this entry closes when that story is done.

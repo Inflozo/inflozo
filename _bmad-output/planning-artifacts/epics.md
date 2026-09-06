@@ -368,7 +368,9 @@ them. **Owns no FRs; owns two blocking spikes.**
 
 A user can sign in on production and see, name, duplicate and delete their projects. The repo, the pure/shell
 package split, CI/CD to production Vercel, the design tokens and components **taken from the export**, magic-link
-auth and the Resend transport all exist.
+auth and the Resend transport all exist — and, since the owner's ruling of 2026-09-06, the product wears the
+**new identity** (the Nest icon mark, its lockups, favicon and app icon) everywhere a logo is drawn, the faded
+background watermarks alone excepted.
 **FRs covered:** FR-A1, FR-B3, FR-B4, FR-B5, FR-P1 emails (1)–(2).
 
 ### Epic 2: Accounts & Passkeys
@@ -692,6 +694,37 @@ meter, the changelog popover and the notifications bell (all E13).
 
 *Exit:* sign in on production; the skeleton exactly as cut above; **RLS verified on every table the schema
 story creates**, not on a subset.
+
+### Story 1.6: The new identity everywhere
+
+As a user of Inflozo on any of its surfaces,
+I want to see the product's real logo — the icon mark with the wordmark — wherever Inflozo names itself,
+So that the app, the emails and the site read as one product and not as a placeholder.
+
+**Acceptance Criteria:**
+
+**Given** the new identity is in the design export (`design/claude-design-export/Logo/`, added by the owner on
+2026-09-06: five SVG marks, the lockup rules in its README, and the launch animation)
+**When** any surface of the product draws a logo
+**Then** it draws the **new mark or lockup** taken from that export — the app shell's top bar and sidebar, the
+☰ drawer, the Sign In card, the app's error page, the marketing pages, the magic-link email, and the
+browser-tab favicon and app icon — with the light mark on light surfaces and the dark mark on dark ones
+**And** the **huge faded background wordmarks stay exactly as they are** (the Sign In watermark and any surface
+drawn like it) — the owner's ruling, 2026-09-06
+**And** every place a logo is drawn is **found by grepping the app and the frames**, never listed by hand, so
+none is missed
+**And** the lockup follows the README's rules — mark height 1.85× the wordmark's cap height, clear space 0.28×
+the mark's height, Bricolage Grotesque 800 at −0.035em, never below 600 weight, never letterspaced positive
+**And** the launch animation is used **at most once**, only where the owner asks, and respects
+`prefers-reduced-motion`; nothing else in the product animates because of this story
+**And** the marks are the export's own SVGs, inlined or served as static assets — never redrawn by hand — and
+every page still reports zero axe-core violations
+**And** the frames the export draws with the old wordmark are **not edited** (R-74); this story departs from
+them on the owner's ruling, recorded beside the code.
+
+**FRs:** none new — the identity of every surface FR-A1 and FR-B3–B5 already deliver. · **Frame:**
+`design/claude-design-export/Logo/export/Inflozo Logo/` (README.txt, `assets/*.svg`, `Inflozo Logo.html`) for
+the marks; the surfaces keep their own frames (`S1`, `S3`, `M1`…). · **Owner test:** yes. · **Origin:** DW-31.
 
 ---
 
