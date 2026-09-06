@@ -51,6 +51,12 @@
   --color-marigold: #FFB100;
   --color-marigold-text: #8A6100;
   --color-marigold-tint: #FFF4D6;
+  --color-marigold-tint-soft: #FFFDF6;   /* softer than tint: D4b's upgrade card and the Kit's notice block */
+  --color-marigold-solid: #9E6800;       /* the gold a Go Pro button is FILLED with. D4b fills it #B87A00 and
+                                            darkens to #9E6800 on hover; white on #B87A00 is 3.61:1 and fails
+                                            AA, so the frame's own hover shade (4.74:1) is the resting fill and
+                                            the hover goes one step further to marigold-text (5.54:1). Both are
+                                            the frame's own values — spec 1.5 question 4, 2026-09-06 */
   --color-mint: #1FA97A;
   --color-mint-text: #157A58;
   --color-mint-tint: #E4F5EE;

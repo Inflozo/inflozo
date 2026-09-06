@@ -13,6 +13,9 @@ import { signOut } from '@/app/(app)/app/sign-in/actions'
 
    Desktop: the account chip at the bottom of the sidebar opens a 240px popover UPWARDS.
    390: the account row at the bottom of the ☰ DRAWER opens the same menu, 280px, also upwards.
+   BOTH ROWS ARE NOW THE SAME ROW at two sizes — see the trigger below and the owner's finding 2
+   of 2026-09-06, which extended the phone's ruling to the desktop: no plan badge, and the whole
+   address rather than an ellipsis.
 
    THE PHONE'S MENU MOVED OUT OF THE TOP BAR ON THE OWNER'S RULING (2026-09-05, spec question 2,
    option 1). The frames draw an avatar in the 390 top bar AND an account row in the drawer, and
@@ -128,43 +131,32 @@ export function AccountMenu({
 
   return (
     <>
-      {dense ? (
-        <button
-          type="button"
-          popoverTarget={id}
-          onClick={place}
-          className={`flex w-full items-center gap-[10px] rounded p-[10px_12px] text-left transition-colors hover:bg-paper-sunk ${ring}`}
+      {/* ONE ROW IN BOTH COLUMNS, at each column's size. It was two: the sidebar's carried the
+          plan badge at `margin-left:auto` and truncated the name slot — which holds the EMAIL
+          until E2 sets a display name — and the badge was taking the width the address needed.
+          The owner ruled the desktop the way he had already ruled the phone (2026-09-06,
+          finding 2): "remove the Free/Pro plan and show full email. Just like we have in
+          mobile." The badge is not lost — it rides the Billing & plan row inside the menu this
+          opens, in both variants. `break-all`, because an email has no spaces to break at and
+          `break-words` alone leaves it overflowing. No `aria-label`: the visible name IS the
+          accessible name (WCAG 2.5.3, Label in Name). This is the second place the phone's
+          ruling now governs the desktop, and S3d's chip is drawn with neither — the export is
+          untouched (R-74) and the spec is the record. */}
+      <button
+        type="button"
+        popoverTarget={id}
+        onClick={place}
+        className={`flex w-full items-center gap-[10px] rounded text-left transition-colors hover:bg-paper-sunk ${
+          dense ? 'p-[10px_12px]' : 'p-[10px]'
+        } ${ring}`}
+      >
+        <Avatar user={user} size={dense ? 30 : 32} />
+        <span
+          className={`min-w-0 flex-1 font-semibold break-all text-ink ${dense ? 'text-ui-dense' : 'text-ui'}`}
         >
-          <Avatar user={user} size={30} />
-          {/* The frame's chip carries a short display name and truncates only the email. Until
-              E2 sets one, the EMAIL is in the name slot, so the name slot is what has to
-              truncate — an untruncated address pushed the whole chip out of the 220px sidebar.
-              The DRAWER below has 300px and no such problem, which is why only this one clips. */}
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-ui-dense font-semibold text-ink">{name}</span>
-            {second ? (
-              <span className="max-w-[100px] truncate text-helper-caption text-ink-soft">{second}</span>
-            ) : null}
-          </span>
-          <span className="ml-auto shrink-0">
-            <PlanBadge plan={plan} />
-          </span>
-        </button>
-      ) : (
-        <button
-          type="button"
-          popoverTarget={id}
-          onClick={place}
-          // No `aria-label`: the visible name IS the accessible name (WCAG 2.5.3, Label in Name),
-          // as the sidebar's chip above already does (review, 2026-09-05).
-          className={`flex w-full items-center gap-[10px] rounded p-[10px] text-left transition-colors hover:bg-paper-sunk ${ring}`}
-        >
-          <Avatar user={user} size={32} />
-          {/* THE OWNER'S RIDER: the whole address, wrapped rather than cut. `break-all` because
-              an email has no spaces to break at and `break-words` alone leaves it overflowing. */}
-          <span className="min-w-0 flex-1 text-ui font-semibold break-all text-ink">{name}</span>
-        </button>
-      )}
+          {name}
+        </span>
+      </button>
 
       <div
         ref={menu}

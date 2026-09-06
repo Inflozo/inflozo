@@ -14,16 +14,24 @@ import { createProject, type ActionResult } from './projects/actions'
 
 /* ─────────────────── D4 Dashboard Sheets and Blocks.dc.html — D4a, and D4b at the cap.
 
-   ALL FOUR DOORS STAY DRAWN AND EACH CARRIES ITS REASON. That sentence is D4a's own caption
-   and it is a design instruction, not a note: a door the customer can't open is still
-   information about the product. Blank canvas is the one live door in this story and is
-   selected; the other three are greyed in P0-0's treatment with one sentence each in the
-   helper-caption slot (UX-DR3 — greyed WITH the reason, never a tooltip).
+   A DOOR STAYS DRAWN AND CARRIES ITS REASON. That sentence is D4a's own caption and it is a
+   design instruction, not a note: a door the customer can't open is still information about
+   the product. Blank canvas is the one live door in this story and is selected; the others are
+   greyed in P0-0's treatment with one sentence each in the helper-caption slot (UX-DR3 —
+   greyed WITH the reason, never a tooltip).
+
+   THE DUPLICATE DOOR IS THE ONE EXCEPTION AND IT IS GONE, on the owner's ruling of 2026-09-06
+   (R-93, spec question 3, option 1): "Remove option of 'Duplicating a project' as they can
+   directly click on the three dots menu of a project and click duplicate." Duplicating is an
+   action on a project already in front of the user, and `project-menu.tsx` is where this story
+   built it — one way to do one thing. The caption still governs the three doors that remain,
+   FR-B2 is amended to match, and the EXPORT IS NOT EDITED: D4a and D4b keep four doors and the
+   spec is the record that the product diverges from them here, deliberately (R-74).
 
    Two controls the frame draws are ABSENT rather than greyed, and that is the other half of
-   the same rule — there is nothing behind either of them to open at all: the Redesign door's
-   "Connect a site" button (E3) and the Duplicate door's project picker. The Style Pack row
-   carries Paper and no pencil and no New pack cell: the pack editor is E6's.
+   the same rule — there is nothing behind them to open at all: the Redesign door's "Connect a
+   site" button (E3), and the project picker that sat inside the door now removed. The Style
+   Pack row carries Paper and no pencil and no New pack cell: the pack editor is E6's.
 
    AT THE CAP THE SAME DIALOG IS D4b — every door greyed with the plan's pill instead of a
    reason, no Style Pack row, the upgrade block, and Create project drawn disabled. The page
@@ -37,11 +45,6 @@ const DOORS: Door[] = [
     title: 'Start from a starter',
     consequence: 'Ten full sites, ready to wear your brand.',
     reason: "Starters aren't here yet.",
-  },
-  {
-    title: 'Duplicate an existing project',
-    consequence: 'A copy to try things on, with nothing at stake.',
-    reason: 'Duplicate a project from its ⋯ menu.',
   },
   {
     title: 'Redesign one of my sites',
@@ -97,10 +100,24 @@ function GreyedDoor({ door, pill }: { door: Door; pill?: string }) {
   )
 }
 
+/**
+ * D4b's call to action, as D4b draws it: a SOLID GOLD BUTTON — 38px, radius 12, 13.5px/600,
+ * white on gold — on the warm tinted card below. It was built as S3c's quieter marigold-tint
+ * pill so that one call to action had one look, and the owner read the result as the card not
+ * being prominent enough (his finding 3, 2026-09-06). The frame is what he is owed, and S3c's
+ * tile in the grid keeps its own pill because that is what S3 draws there.
+ *
+ * The fill is `marigold-solid`, which is the frame's HOVER gold rather than its resting one:
+ * white on the resting gold is 3.61:1 and fails WCAG AA at this size, so the shade is the
+ * frame's own next one down (4.74:1) and the hover goes one further to `marigold-text`
+ * (5.54:1). Both values are the frame's, and globals.css carries them by name — no hex reaches
+ * a .tsx, which is the token gate's whole point. Spec question 4 is the owner's to rule;
+ * nothing about the card's behaviour turns on it.
+ */
 const GoPro = () => (
   <Link
     href="/billing"
-    className={`shrink-0 rounded-pill bg-marigold-tint px-[14px] py-[6px] text-ui-dense font-semibold text-marigold-text ${ring}`}
+    className={`inline-flex h-[38px] shrink-0 items-center rounded bg-marigold-solid px-[18px] text-[13.5px] font-semibold text-surface transition-colors hover:bg-marigold-text ${ring}`}
   >
     {goProLabel()}
   </Link>
@@ -173,7 +190,8 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
       </ul>
 
       {capped ? (
-        <div className="flex items-center gap-[13px] rounded border border-marigold-line bg-surface p-[14px_16px]">
+        // D4b :160 — the warm tinted card, hairline and fill both the frame's.
+        <div className="flex items-center gap-[13px] rounded border border-marigold-line bg-marigold-tint-soft p-[14px_16px]">
           <div className="flex flex-1 flex-col gap-[3px]">
             <span id="new-project-cap" className="text-[13.5px] font-semibold text-ink">
               {capSentence(plan)}
@@ -182,7 +200,6 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
               Your project stays exactly as it is either way.
             </span>
           </div>
-          {/* One call to action, one look: S3c's marigold-tint pill, not a second gold button. */}
           {plan === 'free' ? <GoPro /> : null}
         </div>
       ) : (

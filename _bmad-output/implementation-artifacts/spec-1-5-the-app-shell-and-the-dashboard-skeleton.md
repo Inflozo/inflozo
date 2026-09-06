@@ -51,7 +51,15 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   `sm`, gap 10; the active item 600 ink on `surface` with `shadow-sm`, the others 500 ink-soft — and at
   the bottom the **account chip**: 30px round avatar (the initial, 12px/600), name 13px/600, email
   11px ink-soft (max-width 100px, ellipsis) — the name is `profiles.display_name`, and while nothing sets it (E2) the email stands in the name slot with no second line — and at `margin-left:auto` the plan badge — the kit's
-  `ProBadge` or `FreeBadge`. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
+  `ProBadge` or `FreeBadge`. **AMENDED BY THE OWNER, 2026-09-06 — his finding 2, and the second
+  renegotiation the freeze asks for: the chip carries NO plan badge and does not clip.** The badge was
+  taking the width the address needed, and the address is what the name slot holds until E2 sets a
+  display name. It becomes the drawer's own row at the sidebar's size — 30px avatar, one line at
+  13px/600, the whole address wrapped rather than cut — which is what he asked for in as many words:
+  *"remove the Free/Pro plan and show full email. Just like we have in mobile."* The badge is not lost:
+  it rides the **Billing & plan** row inside the menu the chip opens, in both variants, exactly as his
+  ruling of 2026-09-05 put it on the phone's. S3d draws the chip with the badge and the ellipsis; the
+  export is untouched (R-74) and this is the record. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
   field first — 320×36, `rounded-sm`, hairline `line`, padding 0 10, the frame's magnifier at 15px,
   placeholder "Search projects…" 13px ink-soft-aa, and a mono "⌘K" chip (11px, `line` border, radius
   5px, padding 1/5); then at `margin-left:auto` the kit's `Button` coral 36 "New project" with the
@@ -131,6 +139,16 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   block** — `border marigold-line`, `surface`, `rounded`, padding 14/16, gap 13: **"Free includes 1
   project. Pro gives you 25."** 13.5px/600 and **"Your project stays exactly as it is either way."**
   12px ink-soft-aa leading 1.5, with S3c's "Go Pro — $15/mo" pill at the right linking to `/billing`;
+  **AMENDED BY THE OWNER, 2026-09-06 — his finding 3: the card is D4b's own, not S3c's quieter
+  reading of it.** The fill is the frame's warm tint (`marigold-tint-soft`) inside the same
+  `marigold-line` hairline, and the call to action is the frame's **solid gold button** — 38px, radius
+  12, padding 0/18, 13.5px/600, white on `marigold-solid` — rather than a marigold-tint pill. It was
+  built as the pill so that one call to action had one look, and he read the result as the card not
+  being prominent enough. **S3c's tile in the grid keeps its pill**, because that is what S3 draws
+  there; the two are different frames and now read as the frames draw them. `marigold-solid` is the
+  frame's own hover gold and not its resting one — the resting gold under white type is 3.61:1 and
+  fails AA at this size, so the shade steps down one (4.74:1) and the hover goes one further to
+  `marigold-text` (5.54:1); **question 4 below is the owner's to rule** and no behaviour turns on it.
   "Create project" drawn as the frame draws it disabled — `paper-sunk`, `ink-faint`, `aria-disabled`,
   the reasons being the pills. On Pro at 25 the pills and the block read "Pro includes 25 projects"
   and there is no Go Pro. Every figure from the plan table.
@@ -195,8 +213,9 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   everything this story reads and writes.
 - Any dependency beyond the pinned set — none is expected; dialogs, popovers and forms are the
   platform's.
-- Any token whose value greps nowhere in the export — the `avatar` colours, the door hexes and the
-  D4b gold button are deliberately *not* new tokens (Design Notes); only `shadow-modal` is added.
+- Any token whose value greps nowhere in the export — the `avatar` colours and the door hexes are
+  deliberately *not* new tokens (Design Notes); `shadow-modal` is added, and on 2026-09-06 the owner's
+  finding 3 added `marigold-tint-soft` and `marigold-solid` with it, both values the export's own.
 - Moving the delete confirm or the rename away from the S12c extrapolation above.
 
 **Never:**
@@ -254,7 +273,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/app/(app)/app/(authed)/new-project-sheet.tsx` (new, client) -- D4a / D4b in one `<dialog>`, chosen by `atCap`; `useActionState(createProject)`; an `at_cap` result flips it
 - `apps/web/components/kit/icons.tsx` -- add the frames' own paths: `Projects` (four rects), `Globe`, `Image`, `Plus`, `MenuLines`, `Copy`, `Person`, `Card`, `Lightbulb`, `Book`, `Logout`, `AlertCircle`; `Search`, `X`, `Pencil`, `Trash`, `ChevronDown` already exist (`icons.tsx`)
 - `apps/web/components/kit/pack-cell.tsx:11` -- `PackCell` gains an optional `onEdit`; without it the pencil is not rendered (a dead "Edit Paper" button would be a lie; the editor is E6's). `/kit` keeps passing one so the gallery is unchanged
-- `apps/web/app/globals.css:80` + `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter -- `--shadow-modal: 0 12px 40px rgba(28,27,26,.25)` and its `elevation.modal` twin (`tokens.test.ts:47` requires the value to occur in the export; D4a and S12c carry it). Nothing else is added — see Design Notes for every hex that was mapped to an existing name instead
+- `apps/web/app/globals.css:80` + `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter -- `--shadow-modal: 0 12px 40px rgba(28,27,26,.25)` and its `elevation.modal` twin (`tokens.test.ts:47` requires the value to occur in the export; D4a and S12c carry it). Nothing else is added — see Design Notes for every hex that was mapped to an existing name instead. **Two colours joined it on 2026-09-06** (the owner's finding 3): `--color-marigold-tint-soft` and `--color-marigold-solid`, each with its `colors.*` twin in DESIGN.md, both values the export's own and both asserted by the same two token tests
 - `apps/web/app-routes.test.ts:33` -- already discovers every `page.tsx`; the new page is inside `(authed)` and needs no entry. `loading.tsx` is not a page
 - `apps/web/routing.ts:22-31` -- read-only: `app.inflozo.com/x` is rewritten to `/app/x`, so links are written as `/sites`, `/billing`… and `revalidatePath` takes `/app`
 - `supabase/migrations/20260904120000_complete_schema.sql` -- read-only, the grants this story lives inside: insert `(id, user_id, name, slug, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at)`, update `(name, style_pack, dark_enabled, language, posts_per_page, credit_enabled, linked_site_id, rtl_ack_at, updated_at)`, `projects_touch` bumps `updated_at`, `projects_slug_frozen` holds only once a binding exists, `entitlements` is select-only to `authenticated`, the `(user_id, updated_at desc)` index is the list's order
@@ -275,6 +294,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - [x] `apps/web/app/(app)/app/(authed)/` page, loading, project-card, placeholder, project-menu, new-project-sheet -- S3a/b/c, D4a/b, the S12c extrapolations -- the story's surface
 - [x] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
 - [x] **Fix run (2026-09-05)** -- the owner's eight findings: the centred delete confirm, the drawer's outside-tap and focus, the phone's account menu moved into ☰ per his ruling, the phone's search focus, and `app/(app)/app/error.tsx` -- his test of the deployed site, R-80
+- [x] **Second Fix run (2026-09-06)** -- the owner's three findings: the Duplicate door removed from the New project sheet (R-93), the sidebar chip made the drawer's row — no plan badge, the whole address — and D4b's upgrade card brought back to the frame's warm tint and solid gold button -- his second test of the deployed site, R-80
 
 **Acceptance Criteria:**
 - Given `https://app.inflozo.com/` at 1440 with no projects, when it renders, then it **matches frame S3b** — the sidebar with Projects active, Sites and Assets, the account chip with the Free badge; the top bar with "Search projects…", ⌘K and "New project"; the illustration, both sentences and the centred "New project" — with the storage meter, bell and sparkle absent (R-74; the cut line).
@@ -466,21 +486,55 @@ departure lives; none needs the owner, because each keeps a rule the PRD already
    clean.
 5. **The account chip broke out of the 220px sidebar.** The frame's chip truncates the email in the SECOND
    line, and until E2 sets a display name the email is in the FIRST — so the name slot is what has to
-   truncate. Found by looking at the 1440 screenshot.
+   truncate. Found by looking at the 1440 screenshot. **Superseded on 2026-09-06 by the owner's finding 2:**
+   the plan badge leaves the chip, and the 195px the row then measures fits the column's 196 without any
+   truncation at all — the badge was the overflow, not the address. The two account rows are now one
+   piece of code at two sizes, so the desktop cannot drift from the phone again.
+6. **The token layer gained two colours, and the Code Map said it would gain only `shadow-modal`.**
+   The owner's finding 3 asked for D4b's card as the frame draws it, and the frame's card is a fill and a
+   button fill that no existing name carried: `marigold-tint-soft` (`#FFFDF6`, the export's warm card and
+   notice-block fill, 29 occurrences across six frames) and `marigold-solid` (the gold a Go Pro button is
+   filled with, 44 occurrences across ten). Both are transcriptions, both have their `colors.*` twin in
+   DESIGN.md, and both are asserted by `tokens.test.ts` — which also caught the first draft of the change
+   writing a hex into a `.tsx` comment and failed the build on it.
 
 ## Design Notes
 
-**Where this story now departs from the frames, and on whose authority.** Two places, both the owner's
-own words on the deployed site (R-80), and R-74 makes the export the design authority *until he rules
-otherwise* — which is exactly what these are. (1) **The phone has one initial, not two**, and it lives at
-the bottom of the ☰ drawer where it opens the account menu; `S3 · mobile · 390` draws an avatar in the top
-bar and `S3 · mobile — menu open` draws an account row below it, and his ruling of 2026-09-05 merges the
-pair. (2) **The delete confirm is centred** — the disc above the title rather than beside it, and two
-equal buttons rather than a right-aligned pair; that surface has no frame at all, so the S12c
-extrapolation is what moved, which the frozen Boundaries put under "Ask First" and he has now answered.
-**The export itself is not edited** — it never is by a story — and if he wants the two phone frames
-redrawn to match, that is a design pass of its own. Nothing else moved: the sidebar, the top bar at 1440,
-S3a/b/c, D4a/b and the rename confirm are as they were.
+**Where this story now departs from the frames, and on whose authority.** Four places, every one of them
+the owner's own words on the deployed site (R-80), and R-74 makes the export the design authority *until
+he rules otherwise* — which is exactly what these are. From his first test (2026-09-05): (1) **The phone
+has one initial, not two**, and it lives at the bottom of the ☰ drawer where it opens the account menu;
+`S3 · mobile · 390` draws an avatar in the top bar and `S3 · mobile — menu open` draws an account row
+below it, and his ruling merges the pair. (2) **The delete confirm is centred** — the disc above the title
+rather than beside it, and two equal buttons rather than a right-aligned pair; that surface has no frame
+at all, so the S12c extrapolation is what moved, which the frozen Boundaries put under "Ask First" and he
+has now answered. From his second test (2026-09-06): (3) **The New project sheet has three doors**, the
+Duplicate one removed outright rather than greyed — ruling **R-93**, which is a change to what the surface
+*does* and therefore amends FR-B2 rather than living only here. (4) **The sidebar chip at 1440 carries no
+plan badge and does not clip**: it is the drawer's own row at the sidebar's size, which is the ruling of
+2026-09-05 extended to the desktop on his word — the badge was taking exactly the width the address needed,
+and it still rides the Billing & plan row inside the menu. **The export itself is not edited** — it never
+is by a story — and if he wants `S3d`, `S3 · mobile · 390`, `S3 · mobile — menu open` and `D4a/D4b`
+redrawn to match, that is a design pass of its own. Nothing else moved: the top bar at 1440, S3a/b/c, the
+rename confirm and D4b's *behaviour* are as they were.
+
+**D4b's upgrade card, and the one place a frame's value could not be taken whole.** The owner's finding 3
+asked for the frame's card, and it is now the frame's card: `marigold-tint-soft` inside the
+`marigold-line` hairline, radius 12, padding 14/16, and a solid gold button at 38px, radius 12, padding
+0/18, 13.5px/600 in white. The **fill of that button is the frame's hover gold, not its resting one**, and
+that is the whole of the departure: white on the resting gold measures **3.61:1**, and WCAG AA asks 4.5:1
+of 13.5px semibold text, so the button as drawn would have been the one axe-core violation in a story
+whose acceptance criteria say zero. Its own hover shade is **4.74:1** and passes, so it is the resting
+fill and the hover steps once more to `marigold-text` (**5.54:1**). Both values are the frame's own and
+neither was invented. The alternative — the frame's exact gold and a failing contrast check — is the
+owner's to take rather than a story's, and it is **question 4** below. Measured with the WCAG relative
+luminance formula and confirmed by axe-core on the deployed card, which reports nothing.
+
+**Why S3c's tile did NOT take the gold button too.** It was built as a marigold-tint pill on the reasoning
+that one call to action should have one look, and that reasoning is what made D4b quieter than its frame.
+The frames disagree with it: `S3 Dashboard.dc.html:337` draws the tile's pill in `marigold-tint` on
+`marigold-text` and `D4 :165` draws the sheet's as a solid gold button, and they are different surfaces.
+Both are now as their own frame draws them, and the tile is unchanged by this Fix run.
 
 **The app's error boundary sits at `/app`, not inside `(authed)`, and that is the whole point of it.**
 An `error.tsx` catches throws in its segment's children — its own segment's LAYOUT included only if the
@@ -905,6 +959,77 @@ so nothing beyond app code to confirm.
 
 Deployment: `inflozo-dwe1s98i8-umangkagathara.vercel.app` (`dpl_AmtoTZCoEagCLPW7igNBnEEBy6Cj`)
 
+### The second Fix run — 2026-09-06, the owner's three findings
+
+Executed against the **real Supabase project** (R-82) with the production build of this repository
+serving at `localhost:3000`, so a browser could drive it before the code existed anywhere to deploy;
+then re-executed against `https://app.inflozo.com` after CI published it (the table below the first).
+Keys were read into each command's environment from `tools/probe/.env` by variable name and never
+printed. **Fixture users were created through the admin API and every one was deleted at the end**; the
+live database is back to the owner's own accounts.
+
+**The controls first, because a result whose control did not pass is not a result.** axe-core reported
+`button-name(1)` and `image-alt(1)` the moment a bare `<button>` and an unlabelled `<img>` were appended
+to the page it had just called clean — so "clean" is a reading and not a silence. And the token gate
+caught its own violation on the way through: the first draft of `new-project-sheet.tsx` carried the
+frame's resting gold *inside a comment*, and `tokens.test.ts`'s colour-literal grep failed the build on
+it, which is the rule working rather than a rule being described.
+
+**Gate and build**
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **green** — lint, typecheck, 63 tests in `apps/web`, 63 pass, 0 fail. The two new colours pass both token tests: each value occurs verbatim in the export, and each has its `colors.*` twin in DESIGN.md |
+| `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+
+**Finding 1 — the Duplicate door is gone** (R-93)
+
+| Check | Result |
+|---|---|
+| the doors in the open sheet | **3** — `Blank canvas` · `Start from a starter` · `Redesign one of my sites` |
+| the string "Duplicate" anywhere in the sheet | **absent** |
+| the same three at the cap | each carrying `Free includes 1 project`, as D4b does |
+| duplicating still reachable | ⋯ → **Duplicate** on a card, unchanged and untouched by this run — the owner's own reason for the removal |
+| axe on D4a with three doors | **zero violations** |
+
+**Finding 2 — the sidebar chip: no plan badge, the whole address**
+
+| Check | Result |
+|---|---|
+| the chip's text at 1440 | `F / <the account's address>` — one line under the initial |
+| "Free" or "Pro" inside the chip | **false** |
+| the address is whole | `scrollWidth <= clientWidth` → **true**; no ellipsis, nothing clipped |
+| the chip inside the 220px column | **195px** wide, and the column's content box is 196 — it fits without the badge, which is what the badge had been costing |
+| the badge is not lost | the menu the chip opens reads **`Billing & plan / Free`** — the row he named, in both variants |
+| the drawer's row at 390 | unchanged and identical in shape: `F / <the address>`, no badge |
+| axe on the dashboard and on the open menu | **zero violations each** |
+
+**Finding 3 — D4b's upgrade card, measured against the frame**
+
+| Property | The frame (`D4 :160`, `:165`) | Built |
+|---|---|---|
+| card background | `#FFFDF6` | `rgb(255, 253, 246)` ✓ |
+| card hairline | `#F5E3B8` | `rgb(245, 227, 184)` ✓ |
+| card radius · padding | 12 · 14/16 | `12px` · `14px 16px` ✓ |
+| button height · radius · padding | 38 · 12 · 0/18 | `38px` · `12px` · `18px` ✓ |
+| button type | 13.5px/600, white | `13.5px` · `600` · `rgb(255, 255, 255)` ✓ |
+| button fill | `#B87A00`, hover `#9E6800` | `rgb(158, 104, 0)` — **the frame's hover gold as the resting fill**, hover `marigold-text`. The frame's resting gold under white is 3.61:1 and fails AA; this is 4.74:1 and the hover 5.54:1. **Question 4 is the owner's** |
+| axe on D4b, 1440 and 390 | — | **zero violations**, colour-contrast included |
+| S3c's tile in the grid | `marigold-tint` pill on `marigold-text` (`S3 :337`) | `rgb(255, 244, 214)` on `rgb(138, 97, 0)` — **unchanged**, as its own frame draws it |
+
+**The rest of the surface, re-run because two shell files and the token layer changed**
+
+| Check | Result |
+|---|---|
+| create · the card · the cap | one row `("Untitled project", "untitled-project")`; the second attempt opened **D4b**; the grid grew S3c's tile |
+| the capped Create button | `aria-disabled`, `aria-describedby="new-project-cap"` — the cap sentence still reads aloud as its reason |
+| ☰ at 390 — focus on open | `document.activeElement` is the **DIALOG**, so nothing inside it is ringed (his finding 5 of the first test, still holding) |
+| horizontal scroll at 390, dashboard and open sheet | **none** |
+| axe-core 4.12.1, WCAG 2.0/2.1 A + AA — S3b, S3d's popover, D4a, D4b at 1440; the drawer and D4b at 390 | **zero violations on every one** |
+| console CSP violations on the app host | **zero.** Two were recorded during the pass and both are located at `http://localhost:3000/` — the **marketing** page, which is **DW-18** and Story 1.4's header, not this story's. `curl -sI` on `/app/sign-in` returns `x-inflozo-policy: app-nonce` with `script-src 'self' 'nonce-…' 'strict-dynamic'`, locally and on `app.inflozo.com` alike |
+| every fixture user | **deleted**; `projects` rows left behind: **0** |
+
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
@@ -1037,6 +1162,35 @@ What it binds:
 Propagated the same day: `prd.md` FR-B2 and §8 E13 · `epics.md` FR-B2 and Story 13.6 · `EXPERIENCE.md`
 § Information Architecture · this spec's Boundaries · `reconcile-designs-decisions.md` §A18.
 
+**4. The Go Pro button on the "Free includes 1 project" card: the design's exact gold is a shade too light to read as white text. Which do you want?**
+
+You asked for the upgrade card to be as prominent as the design draws it, and it now is — the warm cream
+card, the hairline, and a solid gold button instead of the pale pill. One thing had to give by a hair.
+The design paints that button in a gold that, with white writing on it, is **3.6 times** lighter-to-darker.
+The accessibility standard this project is built to asks for **4.5**. Below that, some people genuinely
+cannot read the words — and the automatic check this story runs on every screen would report it as the one
+failure on an otherwise clean dashboard.
+
+The design already contains a second, slightly deeper gold: the shade the same button turns when you hover
+your mouse over it. That one measures **4.7** and passes. The button on the live site is that shade now,
+and it darkens once more when you hover.
+
+*Example:* put the two side by side and they are the same gold — one is a touch richer, the way a colour
+looks in shade rather than in sun. Nobody would spot the difference without the two together; the check
+does, and so would a customer reading it on a phone in daylight.
+
+1. **Keep it as built — the design's own deeper gold, which passes. (RECOMMENDED)** — the card looks like
+   the design, the check stays clean, and every customer can read the button. Both shades are the
+   designer's own, so nothing has been invented.
+2. Use the design's exact gold and accept the failure — the button is a hair lighter, and this story's
+   accessibility check reports one violation from now on, which every later story inherits.
+3. Something else — name a gold, or ask for the button in another colour entirely, and it is changed
+   inside this story.
+
+Nothing is blocked by this: the card is built, deployed and working. It is here because a design value and
+an accessibility floor genuinely disagree, and that is yours to settle rather than mine (standing rule 6).
+
+
 ## Owner's manual test
 
 Your account is on the Free plan, so you will see the Free side of every screen — the one project, the
@@ -1044,7 +1198,15 @@ polite refusal of a second, the Go Pro pill. The Pro side (up to 25 projects, du
 proved by the Dev run with a throwaway account and recorded above; say the word if you would like your
 own account switched to Pro for a look — it is one row, and it is switched back the same way.
 
-**Your eight findings — what changed, and what to look at this time.** Numbered as you wrote them, not
+**Your three findings of 2026-09-06 — what changed, and what to look at this time.**
+
+| Your finding | What to do | What you should see |
+|---|---|---|
+| 1 · the New project window | Click "New project" on your computer | **Three** choices, not four. "Duplicate an existing project" is gone for good, and duplicating is on a card's ⋯ menu where you said it belongs. The other two greyed doors and their reasons stay — the starters are Epic 11 and connecting a site is Epic 3 |
+| 2 · the email cut off in the left column | Look at the bottom left of the dashboard | Your **whole email address**, not cut off with three dots, and **no "Free" tag beside it**. The tag has moved inside — click the row and it is on the "Billing & plan" line, exactly as it is on your phone |
+| 3 · the upgrade card | Create a project so you are at your limit, then click "New project" | The card behind the choices is now a **warm cream card with a solid gold "Go Pro — $15/mo" button**, instead of the pale pill it had. Nothing it does has changed — it was always refusing the second project and always said why; it now looks the way the design draws it. **Question 4 above is about the exact shade of that gold and is yours to rule** |
+
+**Your earlier eight findings — what changed, and what to look at.** Numbered as you wrote them, not
 as the steps above. Finding 1 needed no change and is answered under `## Owner's test findings`.
 
 | Your finding | What to do | What you should see |
@@ -1063,15 +1225,15 @@ would rather not see them until then, say so in your findings and it is changed 
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial, your email and a "Free" tag; a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
+| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial with **your whole email beside it and no "Free" tag** (your finding 2); a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
 | 2 | same | Dashboard | Click Sites, then Assets, then use the browser's Back | — | "This page could not be found" for both — expected until Epics 3 and 8 |
-| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and email, then Account settings, Billing & plan (with a "Free" tag), Suggestions, Docs, a line, Sign out. Press Escape to close it |
-| 4 | same | New project sheet (D4a) | Click "New project" | — | A white sheet over a dimmed dashboard: "New project", four choices — Blank canvas is selected; Start from a starter, Duplicate an existing project and Redesign one of my sites are greyed with a short reason under each; below, "Style Pack" with one card, Paper; Cancel and a red "Create project" |
+| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and email, then Account settings, Billing & plan (with a "Free" tag — **this is where the tag lives now**), Suggestions, Docs, a line, Sign out. Press Escape to close it |
+| 4 | same | New project sheet (D4a) | Click "New project" | — | A white sheet over a dimmed dashboard: "New project", **three** choices — Blank canvas is selected; Start from a starter and Redesign one of my sites are greyed with a short reason under each. **"Duplicate an existing project" is gone** (your finding 1); below, "Style Pack" with one card, Paper; Cancel and a red "Create project" |
 | 5 | same | Dashboard (S3a) | Click "Create project" | — | The sheet closes and one card appears: a small wireframe on cream, "Untitled project", a "Sample content" tag and "Updated today" on the right |
-| 6 | same | At the cap (S3c · D4b) | Click "New project" again | — | The sheet opens with all four choices greyed, each with a "Free includes 1 project" pill, a box saying "Free includes 1 project. Pro gives you 25." with a gold "Go Pro — $15/mo" pill, and "Create project" greyed out. Press Cancel. Beside your card the grid now shows a dashed tile: ✦, "Upgrade to add more", the same sentence, the same pill |
+| 6 | same | At the cap (S3c · D4b) | Click "New project" again | — | The sheet opens with all **three** choices greyed, each with a "Free includes 1 project" pill, and a **cream card** saying "Free includes 1 project. Pro gives you 25." with a **solid gold "Go Pro — $15/mo" button** on it (your finding 3), and "Create project" greyed out. Press Cancel. Beside your card the grid still shows the dashed tile: ✦, "Upgrade to add more", the same sentence, and there the pale pill, because that is what its own drawing has |
 | 7 | same | Rename | Click the ⋯ on the card → Rename | `Field Notes` | A small window "Rename project" with the name in a box; type the new name, press Save; the card now says "Field Notes" and still "Updated today" |
 | 8 | same | Rename, refused | ⋯ → Rename, clear the box, press Save | (empty) | The box goes red with "Give it a name — up to 80 characters." and nothing is saved; Cancel |
-| 9 | same | Duplicate at the cap | ⋯ → Duplicate | — | The same "Free includes 1 project" sheet as step 6 — a copy would be a second project. Cancel |
+| 9 | same | Duplicate at the cap | ⋯ → Duplicate | — | The same "Free includes 1 project" sheet as step 6 — a copy would be a second project. Cancel. **This is now the only way to duplicate, which is what you asked for** |
 | 10 | same | Delete (redrawn on your word) | ⋯ → Delete | first `field notes`, then `Field Notes` | A window with a **red bin in a round pink disc at the top, centred**, "Delete Field Notes?" and "This project will be permanently deleted. This cannot be undone." centred under it, then "Type Field Notes to confirm", then **two equal buttons**, Cancel and a red Delete project. The cursor starts on Cancel. With `field notes` the red button stays faded and does nothing; with `Field Notes` exactly it goes solid, and pressing it removes the card — you are back on the empty dashboard |
 | 11 | same | Search | Create a project again (steps 4–5), rename it `Harbour Letter`, then type in the search box and press Enter | `harb` · then `zzz` | With `harb` the card stays; with `zzz` the grid says "No projects match “zzz”." Clear the box and press Enter to see the card again. ⌘K (Ctrl+K on Windows) jumps the cursor into the box |
 | 12 | same, on your phone | Dashboard at 390 | Open the address on your phone | — | A short top bar: ☰, "Inflozo" and a search icon — **and no initial beside it any more**; a full-width red "+ New project"; your card below it, one per row; nothing cut off, nothing scrolling sideways |
@@ -1229,3 +1391,14 @@ prototypes, and **is named by no story in `epics.md`**: the searches find `S2b·
 by Epic 3's stories and nothing anywhere claiming S2a. Recorded as **DW-19** rather than fixed, because
 deciding whether a first-run screen exists at all — and which epic builds it — is a planning decision, not
 a dashboard story's.
+
+### What the second Fix run did, 2026-09-06 — one line each
+
+| Your finding | What was done |
+|---|---|
+| 1 · the New project window | **The Duplicate door is gone**, on your ruling R-93 — three doors now, Blank canvas live and the other two greyed with their reasons. Duplicating is unchanged on a card's ⋯ menu, which is where you said it belongs and where this story had already built it. `epics.md`, the PRD's FR-B2 and Story 13.6 were amended the same day so the door does not quietly come back months from now. The drawing keeps four doors and is not edited (R-74) |
+| 2 · the email cut off, and the "FREE" tag | **The left column's account row is now the phone's row**, at the sidebar's size: the whole address on one line, wrapped rather than cut, and no plan badge. The badge was taking exactly the width the address needed — removing it gave the row back 195px of the column's 196. The badge still rides the **Billing & plan** line inside the menu, in both places. The two rows are now literally one piece of code, so they cannot drift apart again |
+| 3 · the upgrade card | **D4b's card, as D4b draws it**: the warm cream fill inside its gold hairline, and a solid gold 38px "Go Pro" button in place of the pale pill. Nothing it *does* changed — every behaviour you asked for was already live and is in `## Verification` — this was the card being quieter than its drawing. The dashboard tile beside your card keeps its pale pill, because that is what *its* drawing has. **One thing is yours to settle: question 4** — the design's exact gold is 3.6:1 under white text where the accessibility floor asks 4.5:1, so the button wears the design's own next shade down (4.7:1) until you rule otherwise |
+
+**Nothing else moved.** The delete window, the drawer, the search focus, the error page and the phone's
+account menu are exactly as your first test left them, and every one was re-run in this pass.

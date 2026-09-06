@@ -36,6 +36,8 @@ colors:
   marigold: '#FFB100'
   marigold-text: '#8A6100'
   marigold-tint: '#FFF4D6'
+  marigold-tint-soft: '#FFFDF6 — softer than tint: D4b's upgrade card and the Kit's notice block (D4 :160, Editor Sidebar Kit). Added 2026-09-06 by Story 1.5's second Fix run'
+  marigold-solid: '#9E6800 — the gold a Go Pro button is FILLED with (D4 :165). The frame fills it #B87A00 and darkens to #9E6800 on hover; white on #B87A00 is 3.61:1 and fails AA, so the frame's own hover shade (4.74:1) is the resting fill and the hover goes one step further to marigold-text (5.54:1). Both values are the frame's. Added 2026-09-06 by Story 1.5's second Fix run; spec question 4 is the owner's to rule'
   mint: '#1FA97A'
   mint-text: '#157A58'
   mint-tint: '#E4F5EE'
