@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 5
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -1844,6 +1844,19 @@ two silently. And `RESEND_API_KEY` remains send-only (`401 restricted_api_key`, 
 from here — DW-22, unchanged. Dodo and the Ghost servers T1/T3 are correctly absent from
 `## Verification`: this story touches neither, and **no mock stands in for a real service anywhere in it.**
 
+**Deploy phase, 2026-09-06 — the sixth review's commit confirmed on the real stack, nothing further
+patched.** No schema changed in this pass, so there is no migration to apply; `GITHUB_TOKEN` and
+`VERCEL_TOKEN`/`VERCEL_TEAM_ID`/`VERCEL_PROJECT` were read into commands' environments, no value printed.
+
+| Check | Result |
+|---|---|
+| GitHub Actions run for HEAD `2a20f488` | run `34030402933` — `check: success` · `rls: success` · `deploy: success` |
+| Vercel production deployment for `2a20f488` | `dpl_8m6z6KsnyrrFEdtQy43HXsZVKryb`, `readyState: READY`, `target: production` |
+| `app.inflozo.com` alias | points at `dpl_8m6z6KsnyrrFEdtQy43HXsZVKryb` (read from `GET /v4/aliases/app.inflozo.com`, not assumed) |
+| `curl -sI https://app.inflozo.com/sign-in` | `200`, `x-vercel-id: bom1::fra1::…` — still `fra1`, still one Atlantic-free hop to Frankfurt |
+| `curl -sI https://inflozo.com/` | `200`, edge-served, unrelated to the function region — one deployment, both domains (AD-26) |
+
+Deployment: `inflozo-pjhvjabzr-umangkagathara.vercel.app` (`dpl_8m6z6KsnyrrFEdtQy43HXsZVKryb`)
 
 ## Questions for the owner
 
