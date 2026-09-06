@@ -38,7 +38,16 @@
             <tr>
               <td style="padding:40px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1C1B1A;">
 
-                <div style="font-family:'Trebuchet MS','Segoe UI',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.02em;color:#1C1B1A;">Inflozo</div>
+                <!-- The identity's header row (Story 1.6, DW-31). The mark is a PNG and not the
+                     export's SVG because Gmail strips SVG outright; it is that SVG rendered at
+                     2x by headless Chromium, served from inflozo.com/brand/. A client that
+                     blocks images leaves the word, which is the whole name — hence alt="".
+                     The word stays in the system stack: Bricolage cannot be relied on in an
+                     inbox, so the lockup's 800/-0.035em is met only where the font is. -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="padding-right:12px;"><img src="https://inflozo.com/brand/mark-light@2x.png" width="44" height="44" alt="" style="display:block;width:44px;height:44px;border:0;"></td>
+                  <td><div style="font-family:'Trebuchet MS','Segoe UI',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.02em;color:#1C1B1A;">Inflozo</div></td>
+                </tr></table>
 
                 <div style="font-family:'Trebuchet MS','Segoe UI',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.01em;line-height:1.15;color:#1C1B1A;padding-top:10px;">Sign in to Inflozo</div>
 

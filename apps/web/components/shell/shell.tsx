@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 're
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { Globe, Image, MenuLines, Plus, Projects, Search, X } from '@/components/kit/icons'
+import { Lockup } from '@/components/kit/logo'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
 import { stripApp } from '@/routing'
@@ -132,15 +133,11 @@ function SearchField({ id, wide, focused = false }: { id: string; wide: boolean;
   )
 }
 
-const Wordmark = ({ size }: { size: 19 | 20 }) => (
-  <Link
-    href="/"
-    style={{ fontSize: size }}
-    className={`rounded-sm font-display font-extrabold tracking-[-0.02em] text-ink ${ring}`}
-  >
-    Inflozo
-  </Link>
-)
+// The frames (S3a/S3b and S3 · mobile) draw the word alone, because they predate the identity.
+// THE LOGO IS THIS FILE'S ONE DEPARTURE FROM THEM — the owner ruled it on 2026-09-06 (DW-31 →
+// Story 1.6). Everything else is the frame's: the three sizes, the link to the dashboard, and
+// the one focus ring. `Lockup` carries the link and the ring, so the call sites do not change.
+const Wordmark = ({ size }: { size: 19 | 20 }) => <Lockup size={size} href="/" />
 
 function NavItem({
   href,

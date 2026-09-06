@@ -2,8 +2,9 @@
 title: 'Story 1.6 — The new identity everywhere'
 type: 'feature'
 created: '2026-09-06'
-status: 'ready-for-dev'
+status: 'in-progress'
 review_loop_iteration: 0
+baseline_commit: '039fe1fe8631f2f10ac32b001247cd51df0c1993'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
 ---
@@ -114,13 +115,13 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/public/brand/` + `apps/web/app/icon.svg` + `apps/web/app/apple-icon.png` -- copy the five SVGs byte-for-byte (`cmp` each), render the two PNGs with the headless Chromium (command in Design Notes) -- the marks are the export's, never redrawn
-- [ ] `apps/web/proxy.ts` -- extend the matcher exclusion -- the app host must serve the icons and `/brand/` unrewritten
-- [ ] `apps/web/components/kit/logo.tsx` -- `Mark` and `Lockup` -- one component, the README's ratios expressed once
-- [ ] `apps/web/components/shell/shell.tsx` · `sign-in-form.tsx` · `error.tsx` · `(marketing)/page.tsx` -- substitute the lockup at the frame's type size, a one-line comment at each naming DW-31 as the departure -- every logo site from the grep
-- [ ] `supabase/auth/magic-link.html` + `tools/probe/configure-supabase-auth.py --apply` then `--check` -- the mark beside the word; pushed and read back -- FR-P1's email carries the identity
-- [ ] `apps/web/components/kit/banner.tsx` + `passkey-nudge.tsx` -- `rowHeight` and the 32px sentence box -- the icon level with its sentence
-- [ ] Verification -- the grep, the diff of the watermark, the measured banner, axe, the curls, on the deployed site -- R-82
+- [x] `apps/web/public/brand/` + `apps/web/app/icon.svg` + `apps/web/app/apple-icon.png` -- copy the five SVGs byte-for-byte (`cmp` each), render the two PNGs with the headless Chromium (command in Design Notes) -- the marks are the export's, never redrawn
+- [x] `apps/web/proxy.ts` -- extend the matcher exclusion -- the app host must serve the icons and `/brand/` unrewritten
+- [x] `apps/web/components/kit/logo.tsx` -- `Mark` and `Lockup` -- one component, the README's ratios expressed once
+- [x] `apps/web/components/shell/shell.tsx` · `sign-in-form.tsx` · `error.tsx` · `(marketing)/page.tsx` -- substitute the lockup at the frame's type size, a one-line comment at each naming DW-31 as the departure -- every logo site from the grep
+- [x] `supabase/auth/magic-link.html` + `tools/probe/configure-supabase-auth.py --apply` then `--check` -- the mark beside the word; pushed and read back -- FR-P1's email carries the identity
+- [x] `apps/web/components/kit/banner.tsx` + `passkey-nudge.tsx` -- `rowHeight` and the 32px sentence box -- the icon level with its sentence
+- [x] Verification -- the grep, the diff of the watermark, the measured banner, axe, the curls, on the deployed site -- R-82
 
 **Acceptance Criteria:**
 - Given `grep -rnE "font-extrabold|>Inflozo<" apps/web --include='*.tsx'` after the change, when it runs, then every hit is either inside `components/kit/logo.tsx` or the watermark at `sign-in/page.tsx`, and `git diff` of that page's watermark line is empty.
@@ -133,6 +134,25 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 - Given `pnpm check`, `pnpm build` and `node --test`, when they run, then green; given a push to `main`, then CI's `check` and `rls` are green and `deploy` publishes.
 
 ## Spec Change Log
+
+1. **The card's two sizes are two media-query variants, not one** (Dev, 2026-09-06). The Code Map
+   prescribed `tablet:hidden` on the 20px lockup and `hidden tablet:inline-flex` on the 22px one.
+   Measured at 390 in real Chromium, **both drew**: the bare `hidden` and the `inline-flex`
+   `Lockup` sets on itself are the same unprefixed display utility, so the later one in the sheet
+   wins. The 22px one now carries `max-tablet:hidden`, so each side is a media query and each beats
+   the component's own display. Re-measured: exactly one lockup visible at 390, 834 and 1440.
+2. **`tokens.test.ts`'s colour exemption is now two named files** (Dev, 2026-09-06). The test allows
+   a colour literal in exactly one named file, and the identity's ink and accent core are the second
+   such vocabulary — the Code Map said so ("the way `style-pack.ts` keeps pack colours out of the
+   chrome tokens") but nothing had widened the guard. `components/kit/logo.tsx` is named beside
+   `lib/style-pack.ts`, each still asserted to exist so an exemption cannot outlive its file.
+3. **The acceptance grep is broader than the rule it enforces** (Dev, 2026-09-06). Run after the
+   change, `grep -rnE "font-extrabold|>Inflozo<"` returns two hits the AC does not name:
+   `kit/page.tsx:126` (the type specimen, the words "Bricolage Grotesque — display") and
+   `kit/page.tsx:166` (the page's own `<h1>`, "Editor sidebar kit"). Neither is a wordmark, and the
+   Code Map rules `/kit` untouched. The frozen constraint — *the only literal display-weight
+   "Inflozo" left in `apps/web` is the Sign In watermark* — holds exactly, and is now a test
+   (`identity.test.ts`) rather than a grep run once.
 
 ## Design Notes
 
@@ -180,19 +200,117 @@ animates and the CSS from `Inflozo Logo.html` is not copied. Question 1 is where
 
 ## Verification
 
-**Commands** (R-82 — the deployed site, both domains):
-- `grep -rnE "font-extrabold|>Inflozo<" apps/web --include='*.tsx'` -- expected: hits only in `components/kit/logo.tsx` and `sign-in/page.tsx:60`
-- `git diff HEAD~N -- "apps/web/app/(app)/app/sign-in/page.tsx" | grep content:` -- expected: empty (the watermark line unchanged)
-- `for f in mark-light mark-dark mark-mono app-icon favicon-16; do cmp "…/assets/$f.svg" apps/web/public/brand/$f.svg; done; cmp "…/assets/favicon-16.svg" apps/web/app/icon.svg` -- expected: silent
-- `pnpm check && pnpm build && (cd apps/web && node --test '*.test.ts')` -- expected: green
-- `for u in app.inflozo.com inflozo.com; do for p in icon.svg apple-icon.png brand/mark-light@2x.png; do curl -sI https://$u/$p | head -1; done; done` -- expected: six `200`s; `curl -s https://app.inflozo.com/icon.svg | cmp - "…/assets/favicon-16.svg"` silent
-- `env $(grep '^SUPABASE_' tools/probe/.env | xargs) python3 tools/probe/configure-supabase-auth.py --apply && … --check` -- expected: PASS, both templates byte-identical to `supabase/auth/magic-link.html`
-- A Playwright script (the 2.1 review's pattern: real Chromium, the fixture user signed in, `passkey_nudge_done_at` cleared by the admin API first) measuring `getBoundingClientRect()` of the banner's icon `span` and the sentence `span` at 390 and 1440 -- expected: `|iconCenterY − textCenterY| ≤ 1` at both; the pre-change build measured first as the failing control
-- axe-core 4.12.1 on `/sign-in`, `/`, `/account`, `/` with the drawer open, the error page (throw from a test render), `inflozo.com/`, at 1440, 834 and 390 -- expected: zero violations at `wcag2a · wcag2aa · wcag21a · wcag21aa`
-- A magic link sent to the fixture address from `https://app.inflozo.com/sign-in` -- expected: the email in the fixture inbox shows the mark beside "Inflozo"; note the Resend message id
+**R-82 — the real services this story hit, by the variable name of the key used, never its value.**
+Every browser measurement is real Chromium (`~/.cache/ms-playwright/chromium-1228`) driving a real
+`next build` + `next start` production build served with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`
+and `SUPABASE_SECRET_KEY` in its environment — the real project, not a mock. The deployed-domain
+curls and the email in the inbox are the Deploy phase's, and are listed as still owed at the end.
 
-**Manual checks:**
-- The owner's test below, on both his Mac and his phone.
+**Supabase — Management API** (`SUPABASE_ACCESS_TOKEN`), `PATCH`/`GET /v1/projects/{ref}/config/auth`:
+- `configure-supabase-auth.py --check` **before** the push, as the control: **`FAIL` on exactly
+  `mailer_templates_magic_link_content` and `mailer_templates_confirmation_content`**, every other
+  field `PASS`. A control that reports the two things that changed and nothing else.
+- `--apply`: `PATCH 402` on `sessions_inactivity_timeout` (not on this plan, stated not swallowed),
+  retried without it → **`PATCH 200`, 22 fields written**, then **`GET 200` and every field `PASS`**,
+  both templates **5284 chars, byte-identical to `supabase/auth/magic-link.html`**.
+- Read back independently: both live templates carry
+  `<img src="https://inflozo.com/brand/mark-light@2x.png" width="44" height="44" alt="">`.
+
+**Supabase — GoTrue admin API** (`SUPABASE_SECRET_KEY`), for every signed-in measurement:
+- `POST /auth/v1/admin/generate_link` → **HTTP 200**, `verification_type: signup`, redeemed at
+  `/app/auth/confirm?token_hash=…&type=email` in the browser, landing signed in.
+- **Every fixture user was deleted in a `finally`: `DELETE /auth/v1/admin/users/{id}` → HTTP 200**,
+  on all four runs (two measurement passes, one control pass, one screenshot pass).
+
+**The banner's alignment — the icon GLYPH, not its wrapper.** The first pass measured the wrapper
+`<span>` and produced a convincing wrong answer: before the change that span is a flex child with no
+height and no `align-self`, so it **stretches to the row** and its box centre reads *correct* while
+the 14px icon inside sits flush against the top. Measuring the `<svg>` is the only honest reading,
+and every number below is the `<svg>`.
+
+| | icon vs sentence, 1440 | icon vs sentence, 390 | plain banner, first line |
+|---|---|---|---|
+| **before** (HEAD `039fe1fe`, rebuilt and re-served) | **8.00px** | 1.38px | 0.50px |
+| **after** | **0.00px** | **0.00px** | 0.88px |
+
+- The failing control is the owner's bug itself: **8.00px apart at 1440** before the change, which is
+  the ">5px" the spec predicted. At 390 the buttons already wrapped, so the sentence sat on its own
+  row and the gap was 1.38px — the defect is a 1440 symptom, and both widths are now 0.00px.
+- The plain banner is **0.88px** after against `mt-px`'s 0.50px: both inside the ≤1px the AC asks,
+  and the new default is one rule (`rowHeight ?? the sentence's line box`) where the old was a
+  hand-set guess. Recorded because it is a 0.38px move, not an improvement.
+- No horizontal scroll at 390, before or after.
+- **The refusal row** (matrix row "Banner, nudge failed"), proved by fulfilling the dismissal's own
+  POST with a 500 so the component takes its `setFailed` path: the caption appears on a second line,
+  and the icon is **0.00px from the sentence's centre at both 1440 and 390** while sitting
+  **12.25px (1440) and 40.50px (390) from the centre of the whole block** — on the first row, not on
+  the block, which is what the row asks for.
+
+**The lockup, measured where each frame draws it** — `mark ÷ font-size` against the README's 1.221,
+`gap ÷ mark` against its 0.28:
+
+| surface | font | mark | ratio | gap | ratio | weight | tracking |
+|---|---|---|---|---|---|---|---|
+| sidebar, 1440 | 20px | 24.41 | 1.2203 | 6.8376 | 0.2801 | 800 | −0.7px (= −0.035em) |
+| top bar, 390 | 19px | 23.19 | 1.2205 | 6.4957 | 0.2801 | 800 | −0.665em-equivalent |
+| ☰ drawer, 390 | 20px | 24.41 | 1.2203 | — | — | 800 | — |
+| Sign In card, 390 | 20px | 24.41 | 1.2203 | 6.8376 | 0.2801 | 800 | −0.7px |
+| Sign In card, 834 · 1440 | 22px | 26.86 | 1.2209 | 7.5214 | 0.2800 | 800 | −0.77px |
+| marketing, 390 · 834 · 1440 | 35.7px | 43.58 | 1.2207 | 12.2051 | 0.2801 | 800 | −1.2495px |
+
+- The face is `"Bricolage Grotesque"` at every one; the accessible name of the shell's lockup is
+  **"Inflozo"** and the mark is `aria-hidden`, so it is not announced.
+- **Exactly one lockup is visible at each width on the Sign In card** (390: the 20px, 22px
+  `offsetParent === null`; 834 and 1440: the reverse). This is what Spec Change Log 1 fixed.
+- The 1.221 itself was re-derived from the export before anything was written: the six horizontal
+  lockups in `Inflozo Logo.html` give 101.6/83.2, 52.3/42.9, 43.6/35.7, 29.0/23.8, 75.5/61.9 and
+  34.6/28.3 — **1.2185 to 1.2226**. Executed against the export, not asserted.
+
+**The watermark is untouched.** `git diff -- "apps/web/app/(app)/app/sign-in/page.tsx"` is **empty**,
+and measured in the browser it is still `content: "Inflozo"`, 130px at 390 / 380px at 834 and 1440,
+tracking −6.5px / −19px, `rgb(239, 236, 231)`. The first tab stop on Sign In is the email `INPUT`,
+not the card's lockup — it is a `span`, so the card gained no new focus stop.
+
+**The marks are the export's bytes.** `cmp` silent for all five SVGs into `public/brand/` and for
+`app/icon.svg` against `favicon-16.svg`. Served locally, `GET /icon.svg` is **200 `image/svg+xml`**
+and its body `cmp`s silent against `assets/favicon-16.svg`; `/apple-icon.png` **200 `image/png`**;
+`/brand/mark-light@2x.png` **200 `image/png`**. Next's file convention emits
+`<link rel="icon" href="/icon.svg?…" sizes="any" type="image/svg+xml">` and
+`<link rel="apple-touch-icon" href="/apple-icon.png?…" sizes="180x180" type="image/png">`.
+The two rasters are 88×88 and 180×180, rendered from the export's own SVGs by the headless Chromium
+in Design Notes and read back as images to confirm they draw the mark and the filled tile.
+
+**axe-core 4.12.1, `wcag2a · wcag2aa · wcag21a · wcag21aa` — zero violations on all sixteen:**
+the dashboard with the nudge shown, `/kit` and `/account` signed in, `/sign-in` signed out and the
+marketing placeholder, each at **1440, 834 and 390**, plus the ☰ drawer open at 390.
+(The first pass ran `/sign-in` inside the signed-in context, where it redirects — those three rows
+measured the marketing page. Re-run in a context with no cookies at all; the table above is that run.)
+
+**`identity.test.ts` — the acceptance grep made permanent, each guard proved by its own control:**
+- every SVG the export ships is byte-identical in `public/brand/`, and `app/icon.svg` is
+  `favicon-16.svg` — red only when a byte is appended to `public/brand/mark-mono.svg`;
+- the inlined mark carries the export's `viewBox` and every attribute of every `<rect>` — red only
+  when `rx="5.51"` becomes `rx="5.5"` (the README: a re-radius breaks the dash rhythm);
+- no `.tsx` but the lockup draws the word — red only when a surface types `<span>Inflozo</span>`.
+Each control turned exactly its own test red and the other two stayed green; all three green again
+once restored.
+
+**The gates:** `pnpm check` **exit 0** (lint, typecheck, and 104 tests across the four packages,
+`fail 0`), `pnpm build` **exit 0** with `/icon.svg` and `/apple-icon.png` in the route table.
+
+**Not executed in this phase, and owed:**
+- The six deployed-domain curls (`app.inflozo.com` and `inflozo.com` × `icon.svg`, `apple-icon.png`,
+  `brand/mark-light@2x.png`) — the proxy-matcher exclusion is the thing they control, and
+  `routing.test.ts` covers `route()` but not the matcher. **Deploy phase.**
+- The magic-link email seen in an inbox with the mark drawn. The template is live and carries the
+  `<img>`; the URL it points at 404s until this commit deploys. **Deploy phase, and the owner's
+  test step 3.**
+- **The error page was not rendered — the one matrix row without a passing test.** Two attempts to
+  trip the boundary from outside failed: the client navigation's RSC fetch fulfilled with a `500`,
+  and with a `200` carrying a body that is not valid flight. Next recovered from both and stayed on
+  `/app`. `error.tsx`'s lockup is therefore verified by code — it is `<Lockup size={20} />`, the same
+  node measured at 24.41px in the sidebar — and by `pnpm build`, not by a rendered page. **Flagged
+  for review**; the honest reading is that this row is untested, not that it passed.
 
 ## Questions for the owner
 

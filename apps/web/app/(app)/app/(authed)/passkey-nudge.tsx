@@ -65,10 +65,13 @@ export function PasskeyNudge() {
 
   return (
     <div className="p-[16px_20px] pb-0 tablet:p-6 tablet:pb-0">
-      <Banner kind="notice">
+      <Banner kind="notice" rowHeight={32}>
         <span className="flex flex-col gap-2">
           <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span>Sign in faster next time — add a passkey.</span>
+            {/* The sentence declares the control row's own height, so its line box is 32px
+                whether the buttons sit beside it (1440) or wrap below it (390) — that is what
+                keeps the icon level with it in both. */}
+            <span className="flex min-h-8 items-center">Sign in faster next time — add a passkey.</span>
             <span className="flex items-center gap-2">
               <Link href="/account" className={buttonClasses('primary', 32)}>
                 Add a passkey

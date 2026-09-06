@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState, type FormEvent } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
+import { Lockup } from '@/components/kit/logo'
 import { sendMagicLink, type SendState } from './actions'
 import { PasskeyButton } from './passkey-button'
 import { BAD_EMAIL, parseEmail } from './email.ts'
@@ -235,9 +236,15 @@ export function SignInForm({
           ) : null}
 
           <div className="flex flex-col gap-2.5">
-            <div className="font-display text-[20px] font-extrabold tracking-[-0.02em] tablet:text-[22px]">
-              Inflozo
-            </div>
+            {/* S1a draws the word alone at 20/22px; the LOGO is this card's one departure from
+                the frame (owner, 2026-09-06 — DW-31 → Story 1.6), at the frame's own two sizes.
+                Two elements and not one: the lockup's ratios live in inline `style`, which no
+                breakpoint variant can reach, so each size is drawn and one is hidden. BOTH
+                `hidden`s ARE MEDIA-QUERY VARIANTS — a bare `hidden` loses to the `inline-flex`
+                `Lockup` sets on itself, because they are the same unprefixed display utility and
+                the later one in the sheet wins; measured, both drew at 390. */}
+            <Lockup size={20} className="tablet:hidden" />
+            <Lockup size={22} className="max-tablet:hidden" />
             <h1 className="font-display text-[26px] font-bold leading-[1.15] tracking-[-0.01em] tablet:text-[28px]">
               Make something gorgeous.
             </h1>

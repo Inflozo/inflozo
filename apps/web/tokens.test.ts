@@ -96,6 +96,16 @@ for (const [section, prefix] of twins) {
  */
 const PACK_DATA = join('lib', 'style-pack.ts')
 
+/*
+ * THE SECOND, and it is the same kind of exemption: the Nest mark's ink and its accent core
+ * belong to INFLOZO'S IDENTITY, not to the app's chrome. They are the export's own SVG
+ * attributes, inlined byte-for-byte under R-74 (Story 1.6) — tokenising them would be redrawing
+ * the mark, which the logo README forbids, and the accent tittle is that same core colour beside
+ * it. The comment there also names the dark mark's pair, for the day a dark surface exists.
+ * Named, so this stays two files rather than a habit.
+ */
+const IDENTITY = join('components', 'kit', 'logo.tsx')
+
 test('no .ts or .tsx under apps/web carries a colour literal', () => {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -109,10 +119,12 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
   // The ONE exempt path, not any path ending in it: `endsWith` would have exempted a future
   // `components/lib/style-pack.ts` too, which is the habit the name was chosen against
   // (review, 2026-09-06).
-  const exempt = join(process.cwd(), PACK_DATA)
-  // The exemption cannot outlive the file it names.
-  assert.ok(all.includes(exempt), `${PACK_DATA} is gone — delete its exemption with it`)
-  const files = all.filter((f) => f !== exempt)
+  const exempt = [PACK_DATA, IDENTITY].map((p) => join(process.cwd(), p))
+  // An exemption cannot outlive the file it names.
+  for (const [i, f] of exempt.entries()) {
+    assert.ok(all.includes(f), `${[PACK_DATA, IDENTITY][i]} is gone — delete its exemption with it`)
+  }
+  const files = all.filter((f) => !exempt.includes(f))
   assert.ok(files.some((f) => f.endsWith('.tsx')), 'found no .tsx to scan')
   // hex in any length, and rgb(a) — the same atoms the token test accepts, so what one
   // gate allows in globals.css the other refuses everywhere else

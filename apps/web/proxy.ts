@@ -81,4 +81,9 @@ export async function proxy(req: NextRequest) {
   return res
 }
 
-export const config = { matcher: ['/((?!_next/|favicon.ico).*)'] }
+// `icon.svg`, `apple-icon.png` and `brand/` join the exclusion with Story 1.6's identity: on
+// app.inflozo.com every path the proxy sees is rewritten to /app/… (`routing.ts`), which would
+// send the root-served icons and the email's mark to a 404. Excluded here they are served by
+// Next's own static handling on both hosts; `routing.test.ts` covers `route()`, so the control
+// is the deployed curl in the story's Verification.
+export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|apple-icon.png|brand/).*)'] }

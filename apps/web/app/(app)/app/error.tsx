@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
+import { Lockup } from '@/components/kit/logo'
 
 /**
  * THE APP'S ERROR BOUNDARY — DW-17, closed here because the owner met it.
@@ -50,7 +51,10 @@ export default function AppError({
   // 2026-09-06). It is never on screen beside the shell, so there is still exactly one.
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-paper p-6 text-center">
-      <span className="font-display text-[20px] font-extrabold tracking-[-0.02em] text-ink">Inflozo</span>
+      {/* The S3 extrapolation draws the word alone; the LOGO is this page's one departure from
+          it (owner, 2026-09-06 — DW-31 → Story 1.6). No link: the page's own button is the way
+          out, and a second route out of a broken render is a second thing that can break. */}
+      <Lockup size={20} />
       <div className="flex max-w-[420px] flex-col gap-2">
         <h1 className="font-display text-[28px] font-bold tracking-[-0.01em] text-ink">
           We couldn&rsquo;t show that just now.
