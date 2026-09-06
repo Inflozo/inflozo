@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 3
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -2002,3 +2002,64 @@ will do it."* Executed against the Vercel API with `VERCEL_TOKEN`:
 **Nothing else moved.** The New project sheet's three doors, the delete window, the ☰ drawer, the search
 focus and the app's error page are exactly as your last two tests left them, and every one was re-run in
 this pass.
+
+### The owner's fourth test — 2026-09-06, two findings
+
+He tested the redeployed dashboard on `app.inflozo.com` on 2026-09-06, after the Deploy commit
+`0efab9ed`. In his words:
+
+1. **"On Signed out state — https://app.inflozo.com/sign-in?signed-out=1 — If I sign back in and add
+   my email — I do not get the magic link email and resend count down starts from around 35 seconds."**
+2. **"The email is shown full but is cut off. Can we do not cut it off and show … after cut off email."**
+
+**Finding 1 — reproduced on the live infrastructure, and the cause is certain.** Two `POST /auth/v1/otp`
+calls to the live Supabase project, the second three seconds after the first, with the `RESEND_TEST_INBOX`
+address and `SUPABASE_PUBLISHABLE_KEY` from `tools/probe/.env` (2026-09-06):
+
+| Call | Answer |
+|---|---|
+| first | `HTTP 200` in 2.08 s — the link is sent |
+| second, 3 s later | `HTTP 429`, `over_email_send_rate_limit`, `"For security purposes, you can only request this after 55 seconds."` — **nothing is sent** |
+
+`configure-supabase-auth.py --check` read the project back green the same day: `smtp_max_frequency = 60`,
+so **one address may be mailed once a minute and no more**. `sendMagicLink` (`sign-in/actions.ts`) turns
+that 429 into `{ status: 'sent' }` and `retryAfterFrom` reads the remainder off the message — which is
+exactly what he saw: **the "Check your inbox ✨ / We sent a magic link to …" card, a countdown starting
+part-way through the minute, and no email**, because none was sent. His "around 35 seconds" says the
+previous request was about 25 seconds earlier.
+
+**The card says a thing that is not true, and that is the defect.** The reasoning it was built on
+(`resend-timer.ts`: *"the link already sent stays valid for its own 15 minutes"*, UX-DR13) holds only while
+the earlier link is still unused. Signing out and signing straight back in is the case where it is not:
+the link he last used is spent, so telling him one is in his inbox sends him to wait for mail that will
+never arrive. The Fix run makes the card honest in that one branch — it must say a link went out **a
+moment ago**, or say plainly that a new one cannot be asked for yet, rather than claiming a fresh send.
+Making it honest is a routine judgement call and needs no ruling; the wording lands in S1's own voice.
+
+**One thing this test could NOT settle, and the Fix run must.** Whether the *first* email of his sequence
+also failed to arrive is a different question from the 429, and it cannot be answered from here: the
+`RESEND_API_KEY` in `tools/probe/.env` is a send-only key and answers `401` to `GET /emails`, so the
+delivery log is unreadable with what the repository holds. The Fix run checks the Resend dashboard or a
+key that can read it before it calls the delivery half clean.
+
+**Finding 1 is Story 1.4's code, and Story 1.4 is done.** `sign-in/actions.ts`, `resend-timer.ts` and the
+S1b card are all "Sign in with a magic link"; Story 1.5 only added `signOut` and the `?signed-out=1`
+banner beside them. It is reached through 1.5's own door — Sign out — and is a change of a few lines in
+one file, so it is fixed **inside this story** on the owner's word rather than by reopening a closed one.
+The options he was given, and the one he was recommended, are in the reply that carried this test.
+
+**Finding 2 — this story's, and it is the account row again, at the third turn of the same screw.** The
+sidebar's text column is what is left of 220px after the column's 12px padding, the row's 12px padding,
+the 30px avatar, the 10px gap and the `Free` badge: **about 88px**. `umngkmr@gmail.com` at the row's 11px
+measures more than that, and the row carries `break-all` — his own ruling of the previous test, which took
+the ellipsis off — so the address **wraps mid-word onto a second line**. Every character is on screen,
+which is why he wrote "shown full", and it reads as cut in half, which is why he wrote "but is cut off".
+
+He has now asked for the third treatment of the three, and it is the frame's own: **one line, and an
+ellipsis where it runs out** (`S3 Dashboard.dc.html` S3b draws `max-width:100px` with `text-overflow:
+ellipsis`). It is not a reversal of what he wanted before so much as the answer to what he has seen each
+time: the badge back (third test) left the address 88px, and 88px cannot hold it whole however it is
+drawn. **The whole address stays one click away and unbroken** — the menu the row opens is 240px wide and
+its header holds `umngkmr@gmail.com` on one line with room to spare, which the Fix run checks rather than
+assumes. The drawer at 390 has about 166px on that line, so it keeps showing the address whole and the
+truncation never fires there; the two rows stay one piece of code.
