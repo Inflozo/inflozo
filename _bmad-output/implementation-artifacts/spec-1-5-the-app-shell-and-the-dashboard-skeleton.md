@@ -1679,6 +1679,43 @@ before they were deployed, so R-82 asks for them again after CI published them.
 | the one user-visible copy change is really live | the throttled card's **"a moment ago, so we haven't sent another…"** is in the served chunk `/_next/static/chunks/1q3qy91ej38qa.js` |
 | **control** — the wording it replaced is gone | **PASSED** — "less than a minute ago, so we haven't sent another" appears in **no** chunk the sign-in page loads |
 
+### The fifth Fix run — 2026-09-06, the owner's ruling at question 8
+
+Executed against the **live deployment** after CI published it (R-82). One fixture user, created through
+the admin API and **deleted at the end**; keys read into the command's environment by variable name and
+never printed.
+
+| Check | Result |
+|---|---|
+| `pnpm check` | **green** — lint, typecheck, **73 tests, 73 pass, 0 fail** (70 + the three this ruling added) |
+| **control** on the new contract | **PASSED** — pointing `SIGN_OUT_FAILED_PATH` at `/sign-in?…=true` turned the suite **red**; tree restored and green again |
+| `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+| `python3 tools/doc-audit.py --check` twice | **PASS, 0 warnings** both times |
+| CI on `fbe71d75` (`GITHUB_TOKEN`) | run `34028402700` — `rls: success` · `check: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_6cxGc4qPHtBmECArcxiEWrJj8DTZ`, state **READY**, production, built from **`fbe71d75`** |
+
+**The ruling itself, on `https://app.inflozo.com` with a real signed-in session**
+
+| URL | Banner shown? | |
+|---|---|---|
+| `/?sign-out-failed=1` | **yes** | the ruling |
+| `/` | no | **control** |
+| `/?sign-out-failed=0` | no | **control** — the value is read, not the key's presence |
+| `/?sign-out-failed=true` | no | **control** |
+
+| The Banner as served | Result |
+|---|---|
+| its role | **`role="alert"`** |
+| its classes | `bg-danger-tint border-danger-line text-danger-text` — **the Kit's red strip**, the same one a failed project read uses; nothing new drawn |
+| its sentence | **"We couldn't sign you out just now. Try again in a moment."** — his words |
+| the fixture | **deleted**; census read afterwards: **2 users**, his own two accounts |
+
+**The half this cannot execute, stated rather than assumed.** Forcing the real GoTrue to be unreachable
+is not something to do to the production project, so the *writer* half — `signOut()` choosing
+`SIGN_OUT_FAILED_PATH` when `supabase.auth.signOut()` returns an error — is held by the round-trip test
+and its mutation control, not by a live failure. The *reader* half is what was executed above, on the
+real deployment, with three passing negative controls.
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
