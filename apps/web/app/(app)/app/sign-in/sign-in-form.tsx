@@ -128,7 +128,12 @@ export function SignInForm({
       aria-busy={passkeyPending || undefined}
       className={`relative z-10 flex w-full max-w-[440px] flex-col rounded-lg bg-surface shadow-lg ${
         sent ? 'items-center gap-5 p-[32px_24px] text-center tablet:p-[44px_36px]' : 'gap-[22px] p-[32px_24px] tablet:gap-6 tablet:p-[40px_36px]'
-      } ${passkeyPending ? 'opacity-40' : ''}`}
+      } ${
+        // S1c dims the card's CONTENTS to .4 and leaves the card and its shadow whole
+        // (`S1 Sign In.dc.html:131-141`); and a card at 40% must not still take a click while
+        // the OS sheet is up — a second ceremony or a magic link mid-ceremony (review, 2026-09-06).
+        passkeyPending ? 'pointer-events-none [&>*]:opacity-40' : ''
+      }`}
     >
       {sent ? (
         <>

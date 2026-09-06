@@ -1,6 +1,6 @@
 import { cache } from 'react'
-import { bothOn } from './flags-rule.ts'
-import { supabaseAdmin } from './supabase/server.ts'
+import { bothOn, rowEnabled, settingEnabled } from './flags-rule.ts'
+import { env, supabaseAdmin } from './supabase/server.ts'
 
 /**
  * Feature flags are ROWS in `feature_flags`, read server-side per request, defaulting to off
@@ -10,12 +10,17 @@ import { supabaseAdmin } from './supabase/server.ts'
  * TWO SWITCHES, NOT ONE, and both are read here (MEASUREMENTS §20). Ours is the row; Supabase's
  * is the project-level `passkeys_enabled`, reported by GoTrue's own public `/auth/v1/settings`.
  * If they disagree the user is offered a ceremony the platform refuses, so either one being off
- * takes the whole module away — the button, the divider, the Passkeys card, the nudge, and the
- * four server actions.
+ * takes the whole module away — the button, the divider, the Passkeys card, the nudge, and
+ * every passkey action.
  *
- * FAIL CLOSED. Any read that throws, 500s or answers something that is not `true` is off; the
- * decision itself is `flags-rule.ts`, where `node --test` reaches it. Nothing is logged but a
- * code — logs carry no user content (spine, Security floor).
+ * FAIL CLOSED. Any read that throws, 500s, answers something that is not `true` — or does not
+ * answer within `READ_TIMEOUT_MS` — is off; the decision and the two field mappings are
+ * `flags-rule.ts`, where `node --test` reaches them. Nothing is logged but a code — logs carry
+ * no user content (spine, Security floor).
+ *
+ * THE TIMEOUT IS PART OF FAIL-CLOSED: both reads sit on the sign-in page's render path, and a
+ * platform that hangs rather than errors would otherwise hang the page (review, 2026-09-06).
+ * ponytail: one constant for both reads; per-read budgets if either ever needs its own.
  *
  * `cache()` collapses the pair to one round trip per request: the sign-in page asks once, but
  * `/account` asks in the page and again in each action guard on the same request.
@@ -26,6 +31,8 @@ import { supabaseAdmin } from './supabase/server.ts'
  * DW-12 CLOSES HERE: the reader the ledger asked for is `supabaseAdmin()`, one cookie-less
  * client holding `SUPABASE_SECRET_KEY` for this one table.
  */
+const READ_TIMEOUT_MS = 3000
+
 export const passkeysEnabled = cache(async function passkeysEnabled(): Promise<boolean> {
   const [row, settings] = await Promise.all([ourRow(), supabaseSetting()])
   return bothOn(row, settings)
@@ -37,6 +44,7 @@ async function ourRow(): Promise<unknown> {
       .from('feature_flags')
       .select('enabled')
       .eq('key', 'passkeys')
+      .abortSignal(AbortSignal.timeout(READ_TIMEOUT_MS))
       .maybeSingle()
     if (error) {
       // `message` AS WELL AS `code`, and safely: this query carries NO user input — one literal
@@ -49,10 +57,11 @@ async function ourRow(): Promise<unknown> {
     }
     // `maybeSingle()` answers `null` for a missing row, which is off rather than an error: the
     // seed is part of the schema and its absence is still "not turned on".
-    return data?.enabled
+    return rowEnabled(data)
   } catch (error) {
-    // A missing key throws out of `env()`, and that must not take the sign-in page down with it.
-    console.error('flags: read threw', { code: (error as { code?: string })?.code })
+    // A missing key throws out of `env()`, and that must not take the sign-in page down with it;
+    // `name` carries the timeout (`TimeoutError`) and the missing-key `Error` apart.
+    console.error('flags: read threw', { name: (error as { name?: string })?.name })
     return undefined
   }
 }
@@ -64,17 +73,20 @@ async function ourRow(): Promise<unknown> {
  */
 async function supabaseSetting(): Promise<unknown> {
   try {
-    const response = await fetch(`${process.env.SUPABASE_URL}/auth/v1/settings`, {
-      headers: { apikey: process.env.SUPABASE_PUBLISHABLE_KEY ?? '' },
+    // `env()` and not `process.env`: a missing key is the loud "is not set" `server.ts`
+    // promises, caught below, not a fetch to `undefined/auth/v1/settings` (review, 2026-09-06).
+    const response = await fetch(`${env('SUPABASE_URL')}/auth/v1/settings`, {
+      headers: { apikey: env('SUPABASE_PUBLISHABLE_KEY') },
       cache: 'no-store',
+      signal: AbortSignal.timeout(READ_TIMEOUT_MS),
     })
     if (!response.ok) {
       console.error('flags: settings unreadable', { status: response.status })
       return undefined
     }
-    return ((await response.json()) as { passkeys_enabled?: unknown }).passkeys_enabled
+    return settingEnabled(await response.json())
   } catch (error) {
-    console.error('flags: settings unreachable', { code: (error as { code?: string })?.code })
+    console.error('flags: settings unreachable', { name: (error as { name?: string })?.name })
     return undefined
   }
 }

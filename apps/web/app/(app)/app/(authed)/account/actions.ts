@@ -108,7 +108,7 @@ export async function finishPasskeyRegistration(params: {
 
   // A first registration is the other way the nudge is answered — the offer has been taken, so
   // it is done, on every device.
-  await markNudgeDone()
+  await markNudgeDone(user.user_metadata)
   revalidatePath('/app/account')
   revalidatePath('/app')
   return { ok: true }
@@ -125,7 +125,7 @@ export async function finishPasskeyRegistration(params: {
 export async function dismissPasskeyNudge(): Promise<ActionResult> {
   const user = await ready()
   if (!user) return fail('passkeys_off')
-  const failed = await markNudgeDone()
+  const failed = await markNudgeDone(user.user_metadata)
   if (failed) return fail('passkey_failed')
   revalidatePath('/app')
   return { ok: true }
@@ -134,13 +134,14 @@ export async function dismissPasskeyNudge(): Promise<ActionResult> {
 /**
  * The metadata is READ AND WRITTEN BACK WHOLE rather than patched. Whether GoTrue merges `data`
  * into the existing metadata or replaces it is a claim about an external platform, and this
- * spread is correct under either — which is cheaper than proving which (standing rule 1).
+ * spread is correct under either — which is cheaper than proving which (standing rule 1). The
+ * metadata is the one `ready()` just verified, not a second `getUser()` whose failure would have
+ * been spread as nothing and written back as a wipe (review, 2026-09-06).
  */
-async function markNudgeDone(): Promise<boolean> {
+async function markNudgeDone(metadata: Record<string, unknown> | undefined): Promise<boolean> {
   const supabase = await supabaseServer()
-  const { data } = await supabase.auth.getUser()
   const { error } = await supabase.auth.updateUser({
-    data: { ...data.user?.user_metadata, [NUDGE_DONE]: new Date().toISOString() },
+    data: { ...metadata, [NUDGE_DONE]: new Date().toISOString() },
   })
   if (error) console.error('passkey: nudge dismiss failed', { status: error.status, code: error.code })
   return Boolean(error)

@@ -39,8 +39,37 @@ export function aaguidFromAuthData(bytes: Uint8Array | null | undefined): string
  * list has not caught up with reports one nothing matches; both are the same thing to a user,
  * and 2.2 is where a name can be changed.
  */
-export function nameFor(aaguid: string | null | undefined): string {
-  return (aaguid && AAGUID_NAMES[aaguid.toLowerCase()]) || 'Passkey'
+export function nameFor(aaguid: unknown): string {
+  // `unknown` because it crosses the action boundary from the browser: a hand-made POST must
+  // not throw here after a registration GoTrue has already accepted (review, 2026-09-06).
+  return (typeof aaguid === 'string' && AAGUID_NAMES[aaguid.toLowerCase()]) || 'Passkey'
+}
+
+/** One row of S12a's list, as the page and the card share it. */
+export type PasskeyRow = { id: string; name: string; createdAt: string }
+
+/**
+ * `auth.passkey.list()`'s answer as rows. The library TYPES it as a bare array and that is a
+ * claim about GoTrue's `GET /passkeys` that cannot be executed until Supabase's own switch is
+ * on — this story's Deploy phase — so the envelope is accepted either way, an array or an object
+ * carrying one, and a passkey without a `friendly_name` (a failed naming PATCH) still has a row
+ * (standing rule 1). Under `node --test` in `passkey-name.test.ts`, so the day the real shape is
+ * known there is a control to pin it with.
+ */
+export function passkeyRows(data: unknown): PasskeyRow[] {
+  const list = Array.isArray(data)
+    ? data
+    : ((data as { passkeys?: unknown } | null)?.passkeys ?? [])
+  if (!Array.isArray(list)) return []
+  return list
+    .filter((p): p is { id: string; friendly_name?: unknown; created_at?: unknown } =>
+      typeof p?.id === 'string',
+    )
+    .map((p) => ({
+      id: p.id,
+      name: (typeof p.friendly_name === 'string' && p.friendly_name) || 'Passkey',
+      createdAt: typeof p.created_at === 'string' ? p.created_at : '',
+    }))
 }
 
 /**

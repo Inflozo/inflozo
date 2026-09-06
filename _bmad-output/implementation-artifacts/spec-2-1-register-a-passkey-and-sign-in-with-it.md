@@ -2,8 +2,8 @@
 title: 'Story 2.1 — Register a passkey and sign in with it'
 type: 'feature'
 created: '2026-09-06'
-status: 'in-progress'
-review_loop_iteration: 0
+status: 'in-review'
+review_loop_iteration: 1
 baseline_commit: 'c2d6f365c86dd3e9c323847cccd2856b304da6b7'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -129,7 +129,7 @@ Supabase's project setting.
 **Execution:**
 - [x] `apps/web/package.json` -- add `@supabase/auth-js` 2.115.0 (direct, pinned); `pnpm install`; the spine's Stack row -- the deep import needs a direct dependency under pnpm
 - [x] `apps/web/lib/supabase/server.ts` -- `experimental.passkey` on the server client; `supabaseAdmin()` lazily, once, cookie-less -- the ceremony's HTTP half and the one privileged read
-- [x] `apps/web/lib/flags-rule.ts` + `apps/web/flags-rule.test.ts` -- `bothOn()` and its five cases -- the rule where `node --test` reaches it
+- [x] `apps/web/lib/flags-rule.ts` + `apps/web/flags-rule.test.ts` -- `bothOn()` and its cases -- the rule where `node --test` reaches it
 - [x] `apps/web/lib/flags.ts` -- the two reads, `cache()`d, fail-closed; close DW-12 in `deferred-work.md` -- the flag becomes a flag
 - [x] `apps/web/lib/passkey-aaguids.ts` + `apps/web/lib/passkey-name.ts` + `apps/web/passkey-name.test.ts` -- the list (source and hash in the header), the parser, the fallback -- FR-A2's auto-name
 - [x] `apps/web/app/(app)/app/sign-in/webauthn.ts` -- the one import site -- keeps the deep path in one file
@@ -152,6 +152,35 @@ Supabase's project setting.
 - Given the nudge shown, when "Not now" is pressed or a first passkey is registered, then it never appears again on any device for that user
 - Given the row turned off by one SQL line with no deploy, when the next request arrives, then the module is gone
 - Given `pnpm check`, `pnpm build` and `node --test`, then all green, and axe-core reports zero violations on `/sign-in` (flag on) and `/account`
+
+### Review Findings
+
+Code review of 2026-09-06 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier), the last against the live project. Every patch below is applied; the
+run that proves them is `## Verification` → *The review's run*.
+
+- [ ] [Review][Decision] Cancelling the OS passkey sheet on Sign In shows "No passkey on this device yet…" — the frozen matrix says "nothing said", and the browser gives the same `NotAllowedError` for a cancel and for "no passkey here", so the two cannot be told apart. Question 1 under `## Questions for the owner`.
+- [ ] [Review][Decision] `/account` caps its cards at 720px, a value that occurs nowhere in the frame (S12a's right column takes the room beside the 480px plan column) — the spec's own Ask First. Question 2 under `## Questions for the owner`; the page stays at 720 until ruled.
+- [x] [Review][Patch] A successful passkey sign-in showed the failure caption and restored the card before the dashboard arrived: a server action that `redirect`s REJECTS the awaited promise with a `NEXT_REDIRECT` error (Next 16.3.1, `server-action-reducer.js:241-262`, read) and the catch treated it as "no passkey" [apps/web/app/(app)/app/sign-in/passkey-button.tsx]
+- [x] [Review][Patch] Errors that are not the OS sheet's answer (`SecurityError` from an unlisted origin, a `TypeError` from a malformed challenge, a rejected action) were reported as "no passkey on this device" on Sign In and swallowed silently on the card; each now gets one failure sentence and a name-only log line [passkey-button.tsx · account/passkeys-card.tsx]
+- [x] [Review][Patch] A browser without WebAuthn showed its reason only after a press; the caption is up front and the control carries `aria-disabled` (UX-DR3: a greyed control shows its reason) [passkey-button.tsx · passkeys-card.tsx]
+- [x] [Review][Patch] S1c dims the card's contents, not the card and its shadow, and a card at 40% still took clicks while the OS sheet was up; `[&>*]:opacity-40 pointer-events-none` [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:131]
+- [x] [Review][Patch] `verifyAuthentication` answering without a `session` (typed nullable) redirected to `/` with no cookie set — now `passkey_failed` [apps/web/app/(app)/app/sign-in/actions.ts:155]
+- [x] [Review][Patch] `markNudgeDone` made a second `getUser()` and discarded its error, so a failed read would have been spread as nothing and the metadata written back as only the nudge key; it now takes the metadata `ready()` verified [apps/web/app/(app)/app/(authed)/account/actions.ts:139]
+- [x] [Review][Patch] "Not now" hid the banner before the action answered and ignored a refusal, so a failed dismissal vanished and came back next visit unexplained [apps/web/app/(app)/app/(authed)/passkey-nudge.tsx:36]
+- [x] [Review][Patch] Neither flag read had a timeout, so a hanging platform hung the sign-in page instead of failing closed; and the settings read bypassed `env()` (a missing key became a fetch to `undefined/auth/v1/settings`). `AbortSignal.timeout(3000)` on both, `env()` on both [apps/web/lib/flags.ts]
+- [x] [Review][Patch] The two wire-shape mappings (`enabled`, `passkeys_enabled`) and the `list()` envelope were unexecuted and untested — a wrong field name is a reader that is off for ever and every off-switch control still passes. `rowEnabled`/`settingEnabled` in `flags-rule.ts` and `passkeyRows` in `passkey-name.ts`, under `node --test` with the literal shapes the live project answered [apps/web/lib/flags-rule.ts · apps/web/lib/passkey-name.ts · the two test files]
+- [x] [Review][Patch] A failed `auth.passkey.list()` rendered the card empty — claiming no passkeys and offering "Add a passkey" to someone who has one; the card now says it could not load [apps/web/app/(app)/app/(authed)/account/page.tsx:70 · passkeys-card.tsx]
+- [x] [Review][Patch] `nameFor` threw on a non-string `aaguid` from a hand-made POST after GoTrue had already accepted the registration (nudge unmarked, no revalidate); it takes `unknown` and falls back [apps/web/lib/passkey-name.ts:42]
+- [x] [Review][Patch] Frame values: S1a's button label is 500 and the Kit's secondary is 600 (`font-medium`); the Email row's padding is 2px, not `py-px` [passkey-button.tsx · account/page.tsx:48]
+- [x] [Review][Patch] The dashboard read both switches on every render even after the nudge was answered; the read is skipped once `nudgeDone` [apps/web/app/(app)/app/(authed)/page.tsx:61]
+- [x] [Review][Patch] `aria-busy` on both ceremony buttons while the OS sheet is up, as the nudge's button already did [passkey-button.tsx · passkeys-card.tsx]
+- [x] [Review][Patch] Wording that restated a count or a wrong fact: "the four server actions" (there are five) → "every passkey action"; DW-12's "exactly one caller" → "called only from `flags.ts`"; "five cases" → "its cases"; the test constant `ICLOUD` for an AAGUID the list names "Apple Passwords"; the owner's test said a Mac's passkey reads "iCloud Keychain" — the shipped list says "Apple Passwords" [flags.ts · deferred-work.md · this spec · passkey-name.test.ts]
+- [x] [Review][Patch] `## Verification` now says the off-switch run proves fail-closed only — the on-switch is first exercised at Deploy — and that a `Secure` cookie cannot be walked over `http://localhost`, so the flag-on checks run on the deployed origin [this spec]
+- [x] [Review][Defer] The four actions' `passkeys_off` refusal has no repeatable control — a stale tab could still verify an assertion after the row is flipped off and only a hand-run curl would notice [apps/web/app/(app)/app/sign-in/actions.ts:131] — deferred, a scripted probe is a tool with a catalogue row; DW-32
+- [x] [Review][Defer] The named-AAGUID path (a passkey born "Apple Passwords") is observable only on the owner's device; a virtual authenticator reports the all-zero AAGUID [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx:56] — deferred, needs one real `getAuthenticatorData()` buffer as a fixture, which only the owner's first registration can give; DW-32
+
+Dismissed as noise (9): the hairline under the last passkey row (the frame draws it, `S12 Billing.dc.html:96`); "add a passkey" twice in the nudge (the frozen matrix's own words); `status` logged on `start*` and `code` on `verify*` (explained beside each); passkeys unusable on `localhost` and preview hosts (Design Notes already say so); `SUPABASE_SECRET_KEY` undocumented (server.ts's header and the Code Map's Vercel row); the migration's stale comment (the spec's Never: the frozen migration is not edited — SCHEMA.sql and DW-30 carry it); `flags.ts` logging `message` against the frozen `{ code }` (Change Log 5 is the record, and the query carries no user input); a click between hydration and the support check (now the one failure sentence); a zod schema at the action boundary (GoTrue verifies the credential; `aaguid` is guarded above).
 
 ## Spec Change Log
 
@@ -346,6 +375,14 @@ A Tab walk of `/app/account` reaches the shell's links and the account chip and 
 flag off the page has **no focusable control of its own**, which is correct, and is exactly why the
 keyboard proof of "Add a passkey" is a flag-on check below.
 
+Two things this off-switch run does NOT prove, said plainly for the Deploy runner (review,
+2026-09-06): a reader that is wrong is indistinguishable from a reader that is off, so the
+on-switch — the field names, the envelope, the button appearing — is first exercised by Deploy's
+`grep -c … → 1`; the mappings are now under `node --test` with the literal shapes the live project
+answered, which is the control this run can give. And the session cookie is `Secure`, so the
+flag-on walk of `/account` cannot run over `http://localhost` with a cookie-jar client: it runs on
+the deployed origin, or with hand-set cookies.
+
 ### What this run could not execute, and why
 
 Three things need a switch this phase is not allowed to flip. They are the **Deploy** run's and the
@@ -366,8 +403,45 @@ Three things need a switch this phase is not allowed to flip. They are the **Dep
    `/sign-in` and `/account` **with the flag on**, where the button and "Add a passkey" exist.
 
 The virtual authenticator reports the all-zero AAGUID, so it proves the **`Passkey` fallback** only;
-the named path (`iCloud Keychain`, `Google Password Manager`, `Windows Hello`) is the owner's own
+the named path (`Apple Passwords`, `Google Password Manager`, `Windows Hello`) is the owner's own
 device, and that is step 3 of his manual test.
+
+### The review's run (2026-09-06)
+
+The review's Real-infra verifier re-executed every claim above that this phase may execute, on
+the Dev commit, and each held with the same values — 17 PASS / 4 FAIL from `--check` (the 17 are
+the control), `passkeys_enabled: false`, the `feature_flags` read 200 with `SUPABASE_SECRET_KEY`
+and **401 `42501` with `SUPABASE_PUBLISHABLE_KEY`** (the negative control), the fixture user's
+`Max-Age=2592000; Secure; HttpOnly` cookie, and the user count 2 before and 2 after. Vercel,
+Resend, Dodo and the Ghost servers are not touched by this story and were not called. Four
+Code-Map claims were read or executed in the installed sources: `experimental.passkey` is asserted
+at the top of every `auth.passkey.*` method (executed: `list()` **threw** without it and returned
+an `AuthSessionMissingError` envelope with it); `verifyAuthentication` → `_saveSession` →
+`@supabase/ssr`'s `setAll`; the deep path exports the five names and resolves to the one pnpm
+copy; `list()` passes GoTrue's body through unchanged, so the envelope is not settled by source.
+
+After the patches, on the patched build (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
+`SUPABASE_SECRET_KEY` read by name from `tools/probe/.env`; Node 24.18.1):
+
+- `pnpm check` — **green**, exit 0; `cd apps/web && node --test '*.test.ts'` — **94 pass, 0 fail**
+  (the four new: the row's field name, GoTrue's `passkeys_enabled` against the Management API's
+  `passkey_enabled`, the list bare or wrapped, a non-string AAGUID).
+- `pnpm build` with the three keys unset — **green**; `/app`, `/app/account`, `/app/sign-in` all `ƒ`.
+- `next start` with the keys: `/app/sign-in` **200**, `Sign in with a passkey` **0**, `>or<` **0**,
+  `Make something gorgeous` **1**; `/app/account` signed out **307 → `/sign-in`**; no `flags:` line
+  logged — both reads answered, both `false`.
+- The same with `SUPABASE_SECRET_KEY` deliberately wrong: the page unchanged, the module absent, and
+  exactly `flags: read failed { code: undefined, message: 'Invalid API key' }` — fail-closed with the
+  timeouts and `env()` in place.
+- The same with `SUPABASE_URL` empty: **500**, `Error: SUPABASE_URL is not set` — the loud `env()`
+  now reached by the settings read too, where `process.env` had made it a fetch to
+  `undefined/auth/v1/settings`.
+- One harness fault, recorded because it produced a convincing wrong answer first: a curl carrying
+  `Host: app.inflozo.com` at `localhost` is answered **308** to the public domain by `proxy.ts`
+  before any page renders. Curl `localhost` bare.
+- Read, not asserted: Next 16.3.1's `server-action-reducer.js:241-262` — an action that redirects
+  rejects the caller's promise with `NEXT_REDIRECT` and navigates on its own — which is the first
+  patch's whole basis.
 
 ## Owner's manual test
 
@@ -383,7 +457,8 @@ then your phone.
 3. **URL:** https://app.inflozo.com/account · **Screen:** Account & Billing · **Do:** press **Add a passkey**
    and approve your Mac's prompt (Touch ID, or Chrome offering to save a passkey) · **See:** the page has an
    **Email** card with your address and "Magic links land here", and a **Passkeys** card. After you approve,
-   a row appears in it — a name like "iCloud Keychain" or "Google Password Manager" and "added Sep 6, 2026".
+   a row appears in it — a name like "Apple Passwords" (a Mac's own passkey store) or "Google Password
+   Manager" and "added Sep 6, 2026".
    Go back to the dashboard: the yellow line is gone.
 4. **URL:** https://app.inflozo.com/sign-in · **Screen:** Sign In · **Do:** avatar → Sign out, then press
    **Sign in with a passkey** and approve the prompt · **See:** the dashboard, straight away, with no email
@@ -395,3 +470,34 @@ then your phone.
    add one on the phone from Account settings too; the Passkeys card lists both.
 6. **Optional, say the word:** I turn the switch off with one line and no deploy. On your next page load the
    button, the card and the yellow line are all gone; one line turns them back on.
+
+## Questions for the owner
+
+**1. When you open the passkey prompt on the Sign In page and then cancel it, the page says "No passkey on this device yet — sign in with a magic link, then add one under Account settings." Is that what you want?**
+
+The story said a cancelled prompt should say nothing. It turns out the browser gives the website the
+exact same answer for "the person cancelled" and for "this device has no passkey" — on purpose, so a
+website cannot tell whether an account has a passkey. So the page cannot say nothing for one and
+something for the other; it has to pick one behaviour for both.
+
+*Example:* on your phone, with no passkey yet, you press **Sign in with a passkey** and Face ID appears
+and finds nothing. Today the page says the sentence above, which tells you what to do next. If it said
+nothing, you would be looking at the same page wondering whether the button worked.
+
+1. **Keep it as built — one sentence for both cases, the one that names the way in that always works. (RECOMMENDED)** — nobody is left wondering, and someone who cancelled on purpose reads one harmless line.
+2. **Say nothing in both cases** — quieter, but the person with no passkey gets no help at all.
+3. **A neutral sentence for both** — e.g. "Nothing was signed in. Try again, or use a magic link." Same mechanism as option 1, different words.
+
+**2. On the Account page, how wide should the Email and Passkeys cards be on a big screen?**
+
+The design draws this page with two columns: your plan and invoices on the left (that part comes with
+the billing work, much later) and Email · Passkeys on the right, filling the room beside it. Right now
+there is no left column, so the cards were capped at 720 pixels wide — a number the design never
+uses, which the story's own rules say to ask you about.
+
+*Example:* on a 1440-pixel-wide screen, the design's right column is about 870 pixels wide. Today's
+page shows the cards at 720. When the plan column arrives, cards at 870 would not move; cards at 720
+would.
+
+1. **The design's own width — the cards take the room beside where the plan column will be, about 870 pixels on a wide screen. (RECOMMENDED)** — nothing shifts later, and it is what the design draws.
+2. **Keep the 720-pixel cap** — a little narrower to read today; the cards widen when the plan column lands.

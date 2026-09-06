@@ -35,7 +35,10 @@ export function PasskeyNudge() {
           onClick={() =>
             startTransition(async () => {
               setGone(true)
-              await dismissPasskeyNudge()
+              // A refused dismissal would otherwise vanish now and be back on the next visit
+              // with nothing said; the banner stays, and the button is live again.
+              const result = await dismissPasskeyNudge()
+              if ('error' in result) setGone(false)
             })
           }
           className={`font-semibold underline underline-offset-2 ${ring}`}

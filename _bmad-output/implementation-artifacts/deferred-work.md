@@ -329,12 +329,12 @@ reason: The spine's Feature-flags row says flags are rows "read server-side per 
   file — `apps/web/lib/flags.ts` — and the decision belongs to the story that needs the flag on.
 closed: Story 2.1 dev (2026-09-06). The secret-key client won: `supabaseAdmin()` in
   `apps/web/lib/supabase/server.ts` — cookie-less, built lazily and once, never handed user input,
-  with exactly one caller. The `security definer` function would have been a migration plus a
+  called only from `lib/flags.ts` today. The `security definer` function would have been a migration plus a
   SCHEMA.sql change plus an RLS-TEST assertion plus a gate run for one boolean, while the key is
   already in production and unread, and the next two privileged server reads (2.6's purge, E3's
   Vault) want this same client. `passkeysEnabled()` now reads BOTH switches — our row and GoTrue's
   own `passkeys_enabled` — `cache()`d per request and fail-closed; the pure combinator is
-  `apps/web/lib/flags-rule.ts` with `apps/web/flags-rule.test.ts` on its five cases.
+  `apps/web/lib/flags-rule.ts` with `apps/web/flags-rule.test.ts` on its cases.
 
 ### DW-13: `@supabase/ssr`'s `cookieOptions.maxAge` is inert, and it fails silently
 
@@ -719,3 +719,24 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
   and the frames, never listed here — swaps each for the matching mark or lockup, keeps the background
   watermarks untouched by the owner's ruling, and lands the favicon and app icon. **Placed by the owner on 2026-09-06 as Story 1.6, "The new identity everywhere", at the end of
   Epic 1** (option 1 of the three put to him); this entry closes when that story is done.
+
+## Deferred from: code review of story-2.1 (2026-09-06)
+
+### DW-32: the passkey kill switch and the auto-name have no repeatable control beyond the owner's hands
+
+plain: Two things about passkeys can only be checked by a person today: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey". Both work as far as the review can see; neither has a check that runs itself, so a later story could break one without anything going red.
+status: open
+severity: low
+origin: Story 2.1 code review (2026-09-06), the Verification Gap layer
+location: apps/web/app/(app)/app/sign-in/actions.ts (`finishPasskeySignIn`'s flag guard) · apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx (`getAuthenticatorData()`)
+reason: (1) The four passkey actions refuse with `passkeys_off` when either switch is off, and that guard
+  is unreachable from `node --test` (`'use server'`); the spec's Deploy list names a hand-run curl. A stale
+  sign-in tab could still verify an assertion after the row is flipped off, and nothing repeatable would
+  say so. The fix is a scripted probe under `tools/probe/` (a tool, so a catalogue row) that posts to each
+  action with the row off and expects `passkeys_off` — re-run by 2.2, which edits the same files.
+  (2) The named-AAGUID path — `getAuthenticatorData()` → offset 37 → the list's name — is proved on a
+  synthetic buffer only; Playwright's virtual authenticator reports the all-zero AAGUID and proves the
+  `Passkey` fallback alone, so swapping the buffer for the attestation object would name every passkey
+  "Passkey" with every check green. The fix is one real `getAuthenticatorData()` buffer, base64, captured
+  from the owner's first registration on the deployed site, as a fixture in `passkey-name.test.ts`.
+  Closes when 2.2 lands both, or when the owner rules the manual test is control enough.

@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { AAGUID_NAMES } from './lib/passkey-aaguids.ts'
-import { addedLabel, aaguidFromAuthData, nameFor } from './lib/passkey-name.ts'
+import { addedLabel, aaguidFromAuthData, nameFor, passkeyRows } from './lib/passkey-name.ts'
 
 // The auto-name is the only thing in this story with no server to ask, so it is the only thing
 // a unit test can settle: a wrong offset gives every passkey the fallback name and nothing
@@ -16,7 +16,10 @@ function authData(aaguid: string, { at = true } = {}): Uint8Array {
   return bytes
 }
 
-const ICLOUD = 'fbfc3007-154e-4ecc-8c0b-6e020557d7bd'
+// The list's own name for this one is "Apple Passwords" (the managed iCloud Keychain is another
+// entry); the constant is named for what the list says, not for what a Mac shows.
+const APPLE_PASSWORDS = 'fbfc3007-154e-4ecc-8c0b-6e020557d7bd'
+const ICLOUD = APPLE_PASSWORDS
 
 test('the AAGUID is the 16 bytes at offset 37, read as a UUID', () => {
   assert.equal(aaguidFromAuthData(authData(ICLOUD)), ICLOUD)
@@ -61,4 +64,21 @@ test('the row’s second line is the frame’s own wording, in UTC', () => {
   // the last instant of a UTC day still reads as that day, whatever the runner's zone is
   assert.equal(addedLabel('2026-09-06T23:59:59Z'), 'added Sep 6, 2026')
   assert.equal(addedLabel('not a date'), 'added recently')
+})
+
+// `auth.passkey.list()`'s envelope, either way, and the fallbacks at the boundary.
+test('the list is accepted bare or wrapped, and a nameless passkey still has a row', () => {
+  const item = { id: 'pk_1', friendly_name: 'Apple Passwords', created_at: '2026-09-06T10:00:00Z' }
+  const bare = passkeyRows([item])
+  assert.deepEqual(bare, [{ id: 'pk_1', name: 'Apple Passwords', createdAt: '2026-09-06T10:00:00Z' }])
+  assert.deepEqual(passkeyRows({ passkeys: [item] }), bare)
+  assert.equal(passkeyRows([{ id: 'pk_2', created_at: 'x' }])[0]?.name, 'Passkey')
+  assert.deepEqual(passkeyRows(null), [])
+  assert.deepEqual(passkeyRows({ passkeys: 'nope' }), [])
+  assert.deepEqual(passkeyRows([{ friendly_name: 'no id' }]), [])
+})
+
+test('a non-string AAGUID from a hand-made POST is the fallback, never a throw', () => {
+  assert.equal(nameFor(42), 'Passkey')
+  assert.equal(nameFor({}), 'Passkey')
 })

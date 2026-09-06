@@ -21,7 +21,7 @@ import { sessionCookie } from './cookies.ts'
  * believes it, `getUser()` asks GoTrue whether the token is real.
  */
 
-function env(name: 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY' | 'SUPABASE_SECRET_KEY'): string {
+export function env(name: 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY' | 'SUPABASE_SECRET_KEY'): string {
   const value = process.env[name]
   // A missing key must fail loudly at the first call, not resolve to a client that 401s
   // every request and looks like a signed-out user.

@@ -152,16 +152,18 @@ export async function finishPasskeySignIn(params: {
   if (!(await passkeysEnabled())) return passkeyError('passkeys_off')
 
   const supabase = await supabaseServer()
-  const { error } = await supabase.auth.passkey.verifyAuthentication({
+  const { data, error } = await supabase.auth.passkey.verifyAuthentication({
     challengeId: params.challengeId,
     credential: params.credential,
   })
-  if (error) {
+  // `session` is typed nullable: a verify that answers without one has set no cookie, and a
+  // redirect to `/` would only bounce back here with nothing said (review, 2026-09-06).
+  if (error || !data?.session) {
     // An expired challenge and a tampered credential are the same sentence to the user and the
     // same log line here: a code and a status, never the credential (spine, Security floor).
     // `code` and not `status`: a verify can fail as GoTrue's `AuthError` OR as the library's
     // own `WebAuthnError`, and only the first carries an HTTP status.
-    console.error('passkey: verify failed', { code: error.code })
+    console.error('passkey: verify failed', { code: error?.code, session: Boolean(data?.session) })
     return passkeyError('passkey_failed')
   }
   redirect('/')

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import type { PasskeyListItem } from '@supabase/auth-js'
 import { Mail } from '@/components/kit/icons'
 import { passkeysEnabled } from '@/lib/flags'
+import { passkeyRows, type PasskeyRow } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
-import { PasskeysCard, type PasskeyRow } from './passkeys-card'
+import { PasskeysCard } from './passkeys-card'
 
 /* ─────────────────────────────────────── S12 Billing.dc.html — S12a, its RIGHT column.
 
@@ -34,7 +34,7 @@ export default async function AccountPage() {
   const passkeys = await passkeysEnabled()
   // `auth.passkey.list()` is asked for ONLY when the module is on: with the flag off the method
   // is not merely unused, it is a call the platform would refuse.
-  const rows = passkeys ? await listPasskeys() : []
+  const rows = passkeys ? await listPasskeys() : null
 
   return (
     <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6">
@@ -45,7 +45,7 @@ export default async function AccountPage() {
       <div className="flex max-w-[720px] flex-col gap-4">
         <section className="flex flex-col gap-[14px] rounded-lg border border-line bg-surface p-[20px_24px] shadow-sm">
           <h2 className="text-ui-dense font-semibold uppercase tracking-[0.04em] text-ink-soft">Email</h2>
-          <div className="flex items-center gap-3 py-px">
+          <div className="flex items-center gap-3 py-[2px]">
             <span className="shrink-0 text-ink-soft">
               <Mail size={16} />
             </span>
@@ -64,30 +64,17 @@ export default async function AccountPage() {
 
 /**
  * The list, through the user's OWN session — the passkeys are theirs and GoTrue scopes the call
- * to the bearer token. A read that fails is an empty card and a log line, never a page that
- * cannot render: the Email card above it is still true.
+ * to the bearer token. A read that fails is `null` — the card says it could not load, rather
+ * than claiming there are none and offering "Add a passkey" to someone who has one (review,
+ * 2026-09-06) — and a log line, never a page that cannot render: the Email card is still true.
+ * The envelope is `passkeyRows`'s, under test in `passkey-name.test.ts`.
  */
-async function listPasskeys(): Promise<PasskeyRow[]> {
+async function listPasskeys(): Promise<PasskeyRow[] | null> {
   const supabase = await supabaseServer()
   const { data, error } = await supabase.auth.passkey.list()
   if (error || !data) {
     console.error('passkey: list failed', { status: error?.status, code: error?.code })
-    return []
+    return null
   }
-  // The library TYPES this as a bare array (`AuthPasskeyListResponse`), and that is a claim
-  // about GoTrue's `GET /passkeys` that cannot be executed until Supabase's own switch is on —
-  // this story's Deploy phase. So the envelope is accepted either way rather than asserted: an
-  // array, or an object carrying one. Two lines, and no surface that renders empty because the
-  // response was wrapped (standing rule 1).
-  const list: PasskeyListItem[] = Array.isArray(data)
-    ? data
-    : ((data as { passkeys?: PasskeyListItem[] }).passkeys ?? [])
-
-  return list.map((passkey) => ({
-    id: passkey.id,
-    // A passkey registered before the naming PATCH landed, or one whose PATCH failed, still has
-    // a row to draw.
-    name: passkey.friendly_name || 'Passkey',
-    createdAt: passkey.created_at,
-  }))
+  return passkeyRows(data)
 }

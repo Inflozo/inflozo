@@ -50,14 +50,15 @@ export default async function Dashboard({
 
   const supabase = await supabaseServer()
   // The nudge costs ONE extra read on this page and it is the flag's, not the user's: whether it
-  // has been answered already rode in on `getUser()` above (`account/nudge.ts`).
+  // has been answered already rode in on `getUser()` above (`account/nudge.ts`) — and once it
+  // has been, the flag is not read at all (review, 2026-09-06).
   const [{ data, error }, { plan }, passkeys] = await Promise.all([
     supabase
       .from('projects')
       .select('id, name, style_pack, updated_at')
       .order('updated_at', { ascending: false }),
     resolveEntitlement(user.id),
-    passkeysEnabled(),
+    nudgeDone(user.user_metadata) ? false : passkeysEnabled(),
   ])
 
   const projects: Project[] = data ?? []
