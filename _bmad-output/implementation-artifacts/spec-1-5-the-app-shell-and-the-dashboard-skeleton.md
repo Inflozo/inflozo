@@ -1354,6 +1354,24 @@ asked, and the email line is given the whole width the row has rather than the f
 long address shrinks or wraps instead of ending in three dots. The phone's top bar is untouched — ☰,
 Inflozo and the search icon, with the account row inside ☰ — which is your ruling of 2026-09-05.
 
+**Ruled (owner, 2026-09-06): option 1 — "No stand-in: until Epic 2, the row is your initial, your email on
+the small grey line, and the Free tag — and the bold name line appears by itself the day you save a name."**
+
+What that binds for the Fix run:
+
+- **`secondLineOf()` becomes the whole row's text rule.** With no `display_name` the row is the avatar, the
+  address at the small size (11px ink-soft in the sidebar, the drawer's equivalent) and the plan badge at
+  `margin-left:auto`; with a `display_name` it is `S3b` exactly — name 13px/600 above, address small
+  beneath, badge at the end. One row, one code path, two columns, as it is today.
+- **The plan badge returns to the row**, in both the sidebar at 1440 and the drawer at 390, and stays on
+  the **Billing & plan** line inside the menu as well — the owner has now asked for it in both places, so
+  the "one badge per menu" note of 2026-09-06 is superseded for the row and stands for the menu.
+- **The address is not clipped.** No `max-width:100px` and no `truncate` on it: the row spends the column's
+  width less the avatar and the badge, and a long address shrinks or wraps rather than ending in an
+  ellipsis — his complaint of 2026-09-06 and the reason the badge came off in the first place.
+- **The export is not edited.** `S3b` and `S3d` draw the two-line chip with the fixture's name; the product
+  draws the line it has. R-74 stands and this is the record.
+
 **6. Sign out: a "are you sure?" popup first, or just tell you it is working?**
 
 Your words were *"no message or confirmation popup … no idea whether they are actually signing out"*,
@@ -1369,6 +1387,12 @@ sign-in screen you land on says **"You've been signed out."** at the top. Option
 1. **Tell you it is working, and confirm it happened: "Signing out…" on the button, then "You've been signed out." on the sign-in screen. No extra click. (RECOMMENDED)** — it answers "is anything happening?" without making you click twice every time; signing out by accident costs one magic link, so a guard rail is not worth the friction.
 2. Ask first — a confirm window, then the same two messages. Safest against a mis-tap on a phone, one extra tap every time.
 3. Just "Signing out…" and nothing on the sign-in screen — the smallest change, but nothing tells you it finished rather than failed.
+
+**Ruled (owner, 2026-09-06): option 1 — "Tell you it is working, and confirm it happened: 'Signing out…'
+on the button, then 'You've been signed out.' on the sign-in screen. No extra click."** No confirm window.
+The Fix run gives the Sign out row a pending state (the form's own status, so it needs no new state to go
+wrong) and the sign-in screen a one-line notice on arrival from a sign-out, in S1's voice and S1's
+components. The latency underneath it is finding 3's and is fixed with it.
 
 
 ## Owner's manual test
@@ -1642,3 +1666,29 @@ in `## Verification`, and **amends that spine line** with the date, the reason a
 Nothing about the deployment's shape changes — one region still, one deployment still serving both
 domains.
 
+
+**The region was moved on his word, 2026-09-06 — the setting is changed and the numbers before it are
+recorded here.** He ruled: *"Also try do the changes to move to fra1. If not possible from your side, I
+will do it."* Executed against the Vercel API with `VERCEL_TOKEN`:
+
+- **Before, from the owner's own city.** Five requests to `https://app.inflozo.com/sign-in` — a page the
+  function renders, so the region is in the measurement: TTFB **0.581 · 0.457 · 0.472 · 0.427 · 0.438 s**,
+  median **0.457 s**, every one served `bom1::iad1::…`. The marketing home for contrast, edge-cached and
+  never touching a function: median **0.230 s**, `bom1::…` with no function region at all.
+- **The change.** `PATCH /v9/projects/{VERCEL_PROJECT}` with `{"serverlessFunctionRegion": "fra1"}`. The
+  response carries `serverlessFunctionRegion = "fra1"` and both `resourceConfig.functionDefaultRegions`
+  and `defaultResourceConfig.functionDefaultRegions` = `["fra1"]`. Nothing else was touched: Fluid stays
+  on, the 300 s timeout, the standard memory and the elastic build machine are as they were.
+- **It applies on the next deployment, not retroactively** — CI deploys every push to `main` (DW-7), so
+  the commit carrying this record is the one that moves it.
+- **The control is the header, not the setting.** `x-vercel-id` must read `…::fra1::…` on an app page
+  after that deployment; until it does, the move has not happened whatever the project settings say
+  (standing rule: a result whose control did not pass is not a result). If a `--prebuilt` deploy turns out
+  to ignore the project setting, the fallback is `"regions": ["fra1"]` in `apps/web/vercel.json`, which is
+  read from the repository at deploy time.
+- **Propagated:** `ARCHITECTURE-SPINE.md` § Deferred — the "one region (`iad1`) until latency is a measured
+  complaint" bullet now names `fra1`, the complaint and the two APIs' readings. `MEASUREMENTS.md` and
+  `STRESS-TEST-R4.md` also say `iad1` and are **not** edited: both are `record`, and what they measured was
+  measured in `iad1`.
+- **Still to do in the Fix run:** the same five requests after the deployment, both medians in
+  `## Verification`, and the spine's bullet given the after-figure.
