@@ -2,10 +2,10 @@
 title: 'Story 2.1 — Register a passkey and sign in with it'
 type: 'feature'
 created: '2026-09-06'
-status: 'in-review'
+status: 'done'
 review_loop_iteration: 2
 baseline_commit: 'c2d6f365c86dd3e9c323847cccd2856b304da6b7'
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
