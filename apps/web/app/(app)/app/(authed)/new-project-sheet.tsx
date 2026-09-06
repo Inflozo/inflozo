@@ -111,8 +111,8 @@ function GreyedDoor({ door, pill }: { door: Door; pill?: string }) {
  * white on the resting gold is 3.61:1 and fails WCAG AA at this size, so the shade is the
  * frame's own next one down (4.74:1) and the hover goes one further to `marigold-text`
  * (5.54:1). Both values are the frame's, and globals.css carries them by name — no hex reaches
- * a .tsx, which is the token gate's whole point. Spec question 4 is the owner's to rule;
- * nothing about the card's behaviour turns on it.
+ * a .tsx, which is the token gate's whole point. THE OWNER RULED FOR THIS SHADE on 2026-09-06
+ * (spec question 4, option 1), so it is settled and not a placeholder.
  */
 const GoPro = () => (
   <Link

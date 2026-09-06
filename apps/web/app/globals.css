@@ -56,7 +56,8 @@
                                             darkens to #9E6800 on hover; white on #B87A00 is 3.61:1 and fails
                                             AA, so the frame's own hover shade (4.74:1) is the resting fill and
                                             the hover goes one step further to marigold-text (5.54:1). Both are
-                                            the frame's own values — spec 1.5 question 4, 2026-09-06 */
+                                            the frame's own values. RULED BY THE OWNER 2026-09-06 (spec 1.5
+                                            question 4, option 1): it stays as built */
   --color-mint: #1FA97A;
   --color-mint-text: #157A58;
   --color-mint-tint: #E4F5EE;

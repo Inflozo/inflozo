@@ -148,7 +148,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   there; the two are different frames and now read as the frames draw them. `marigold-solid` is the
   frame's own hover gold and not its resting one — the resting gold under white type is 3.61:1 and
   fails AA at this size, so the shade steps down one (4.74:1) and the hover goes one further to
-  `marigold-text` (5.54:1); **question 4 below is the owner's to rule** and no behaviour turns on it.
+  `marigold-text` (5.54:1). **Ruled by the owner on 2026-09-06 — question 4, option 1: it stays as built.**
   "Create project" drawn as the frame draws it disabled — `paper-sunk`, `ink-faint`, `aria-disabled`,
   the reasons being the pills. On Pro at 25 the pills and the block read "Pro includes 25 projects"
   and there is no Go Pro. Every figure from the plan table.
@@ -526,8 +526,9 @@ that is the whole of the departure: white on the resting gold measures **3.61:1*
 of 13.5px semibold text, so the button as drawn would have been the one axe-core violation in a story
 whose acceptance criteria say zero. Its own hover shade is **4.74:1** and passes, so it is the resting
 fill and the hover steps once more to `marigold-text` (**5.54:1**). Both values are the frame's own and
-neither was invented. The alternative — the frame's exact gold and a failing contrast check — is the
-owner's to take rather than a story's, and it is **question 4** below. Measured with the WCAG relative
+neither was invented. The alternative — the frame's exact gold and a failing contrast check — was the
+owner's to take rather than a story's, and it was put to him as **question 4** below; **he ruled on
+2026-09-06 for the deeper gold, so what is deployed is what stands.** Measured with the WCAG relative
 luminance formula and confirmed by axe-core on the deployed card, which reports nothing.
 
 **Why S3c's tile did NOT take the gold button too.** It was built as a marigold-tint pill on the reasoning
@@ -1013,7 +1014,7 @@ it, which is the rule working rather than a rule being described.
 | card radius · padding | 12 · 14/16 | `12px` · `14px 16px` ✓ |
 | button height · radius · padding | 38 · 12 · 0/18 | `38px` · `12px` · `18px` ✓ |
 | button type | 13.5px/600, white | `13.5px` · `600` · `rgb(255, 255, 255)` ✓ |
-| button fill | `#B87A00`, hover `#9E6800` | `rgb(158, 104, 0)` — **the frame's hover gold as the resting fill**, hover `marigold-text`. The frame's resting gold under white is 3.61:1 and fails AA; this is 4.74:1 and the hover 5.54:1. **Question 4 is the owner's** |
+| button fill | `#B87A00`, hover `#9E6800` | `rgb(158, 104, 0)` — **the frame's hover gold as the resting fill**, hover `marigold-text`. The frame's resting gold under white is 3.61:1 and fails AA; this is 4.74:1 and the hover 5.54:1. **Ruled by the owner, 2026-09-06 — question 4, option 1: it stays** |
 | axe on D4b, 1440 and 390 | — | **zero violations**, colour-contrast included |
 | S3c's tile in the grid | `marigold-tint` pill on `marigold-text` (`S3 :337`) | `rgb(255, 244, 214)` on `rgb(138, 97, 0)` — **unchanged**, as its own frame draws it |
 
@@ -1219,6 +1220,18 @@ does, and so would a customer reading it on a phone in daylight.
 Nothing is blocked by this: the card is built, deployed and working. It is here because a design value and
 an accessibility floor genuinely disagree, and that is yours to settle rather than mine (standing rule 6).
 
+**Ruled (owner, 2026-09-06): option 1 — "Keep it as built — the design's own deeper gold, which passes."**
+**No code changes**, because the deployed button already wears it: `marigold-solid` stays `#9E6800` at rest
+and `marigold-text` on hover, both the frame's own values, and D4b's card is otherwise the frame's exactly.
+The record of the departure lives in the token layer beside the value, in `DESIGN.md`'s `colors.*` entry, in
+this spec's Boundaries and in Design Notes; **`D4 Dashboard Sheets and Blocks.dc.html` is not edited** — it
+is the design authority (R-74) and a story never touches it.
+
+**What this ruling does NOT yet decide.** It settles this button. The same collision — a frame's colour that
+measures below 4.5:1 where it carries words — will recur in later epics, and whether "take the frame's own
+nearest passing shade" becomes a standing rule for all of them is a separate decision and is not made here.
+Until it is, a later story meeting the same fork stops and asks, as this one did.
+
 
 ## Owner's manual test
 
@@ -1233,7 +1246,7 @@ own account switched to Pro for a look — it is one row, and it is switched bac
 |---|---|---|
 | 1 · the New project window | Click "New project" on your computer | **Three** choices, not four. "Duplicate an existing project" is gone for good, and duplicating is on a card's ⋯ menu where you said it belongs. The other two greyed doors and their reasons stay — the starters are Epic 11 and connecting a site is Epic 3 |
 | 2 · the email cut off in the left column | Look at the bottom left of the dashboard | Your **whole email address**, not cut off with three dots, and **no "Free" tag beside it**. The tag has moved inside — click the row and it is on the "Billing & plan" line, exactly as it is on your phone |
-| 3 · the upgrade card | Create a project so you are at your limit, then click "New project" | The card behind the choices is now a **warm cream card with a solid gold "Go Pro — $15/mo" button**, instead of the pale pill it had. Nothing it does has changed — it was always refusing the second project and always said why; it now looks the way the design draws it. **Question 4 above is about the exact shade of that gold and is yours to rule** |
+| 3 · the upgrade card | Create a project so you are at your limit, then click "New project" | The card behind the choices is now a **warm cream card with a solid gold "Go Pro — $15/mo" button**, instead of the pale pill it had. Nothing it does has changed — it was always refusing the second project and always said why; it now looks the way the design draws it. The exact shade of that gold was question 4, and **you ruled on it — the deeper gold stays**, so there is nothing further to look at here |
 
 **Your earlier eight findings — what changed, and what to look at.** Numbered as you wrote them, not
 as the steps above. Finding 1 needed no change and is answered under `## Owner's test findings`.
@@ -1427,7 +1440,7 @@ a dashboard story's.
 |---|---|
 | 1 · the New project window | **The Duplicate door is gone**, on your ruling R-93 — three doors now, Blank canvas live and the other two greyed with their reasons. Duplicating is unchanged on a card's ⋯ menu, which is where you said it belongs and where this story had already built it. `epics.md`, the PRD's FR-B2 and Story 13.6 were amended the same day so the door does not quietly come back months from now. The drawing keeps four doors and is not edited (R-74) |
 | 2 · the email cut off, and the "FREE" tag | **The left column's account row is now the phone's row**, at the sidebar's size: the whole address on one line, wrapped rather than cut, and no plan badge. The badge was taking exactly the width the address needed — removing it gave the row back 195px of the column's 196. The badge still rides the **Billing & plan** line inside the menu, in both places. The two rows are now literally one piece of code, so they cannot drift apart again |
-| 3 · the upgrade card | **D4b's card, as D4b draws it**: the warm cream fill inside its gold hairline, and a solid gold 38px "Go Pro" button in place of the pale pill. Nothing it *does* changed — every behaviour you asked for was already live and is in `## Verification` — this was the card being quieter than its drawing. The dashboard tile beside your card keeps its pale pill, because that is what *its* drawing has. **One thing is yours to settle: question 4** — the design's exact gold is 3.6:1 under white text where the accessibility floor asks 4.5:1, so the button wears the design's own next shade down (4.7:1) until you rule otherwise |
+| 3 · the upgrade card | **D4b's card, as D4b draws it**: the warm cream fill inside its gold hairline, and a solid gold 38px "Go Pro" button in place of the pale pill. Nothing it *does* changed — every behaviour you asked for was already live and is in `## Verification` — this was the card being quieter than its drawing. The dashboard tile beside your card keeps its pale pill, because that is what *its* drawing has. One thing was yours to settle and you settled it: **question 4, option 1** — the design's exact gold is 3.6:1 under white text where the accessibility floor asks 4.5:1, so the button keeps the design's own next shade down (4.7:1), which is what is deployed |
 
 **Nothing else moved.** The delete window, the drawer, the search focus, the error page and the phone's
 account menu are exactly as your first test left them, and every one was re-run in this pass.
