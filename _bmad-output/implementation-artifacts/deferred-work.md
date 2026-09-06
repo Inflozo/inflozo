@@ -694,3 +694,20 @@ reason: The schema comment (2026-08-20) says Supabase's passkey API "carries no 
   decides whether the table is dropped by a new migration or kept for something the platform cannot hold;
   a comment beside the table in SCHEMA.sql records the finding in 2.1's Dev run. The frozen migration is
   not edited.
+
+### DW-31: the new Inflozo identity is in the export and nothing in the product uses it yet
+
+plain: Inflozo now has a proper logo — an icon mark ("Nest": three concentric rounded squares with a live core), the mark-and-wordmark lockups, a favicon and app icon, and a 2.9-second launch animation — and every logo the product shows today is still the old wordmark alone. Replacing them is its own story, not a fix inside another one; the huge faded background wordmarks (the Sign In page's watermark and any like it) stay as they are.
+status: open
+severity: medium
+origin: the owner, 2026-09-06 ("Down the line I would like all logos to be replaced with the new one. The huge background wordmarks can stay. Rest can be replaced. This will be done as a new/diff story.")
+location: _bmad-output/planning-artifacts/design/claude-design-export/Logo/export/Inflozo Logo/ (README.txt, assets/*.svg, Inflozo Logo.html)
+reason: The export's frames and the kit built from them (Story 1.3) draw the wordmark only — the shell's
+  top bar and sidebar, the account drawer, the Sign In card, the magic-link email, the marketing pages'
+  headers and the browser favicon. The new export carries five SVG marks (light, dark, mono, favicon-16,
+  app-icon), the lockup rules (mark height 1.85× the wordmark's cap height, clear space 0.28× the mark's
+  height, Bricolage Grotesque 800 at -0.035em) and the CSS-only animation with `prefers-reduced-motion`
+  respected. The replacement story inventories every place a logo is drawn — derived by grepping the app
+  and the frames, never listed here — swaps each for the matching mark or lockup, keeps the background
+  watermarks untouched by the owner's ruling, and lands the favicon and app icon. Where the story sits (its
+  epic and number) is the owner's call and is open.
