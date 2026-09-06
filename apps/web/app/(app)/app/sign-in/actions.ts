@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
-import { linkAlreadySent, retryAfterFrom, SEND_INTERVAL } from './resend-timer.ts'
+import { retryAfterFrom, SEND_INTERVAL, sentTooRecently } from './resend-timer.ts'
 import { SIGNED_OUT_PATH } from './signed-out.ts'
 
 /**
@@ -18,9 +18,16 @@ import { SIGNED_OUT_PATH } from './signed-out.ts'
 
 type Failure = 'bad_email' | 'send_failed'
 
+/**
+ * `throttled` is the difference between "we just sent one" and "one went out moments ago and we
+ * will not send another yet" — GoTrue's per-address 429. The card MUST NOT read the second as
+ * the first: the owner signed out and straight back in, was told a link was on its way, and no
+ * mail existed to arrive (his fourth test, finding 1). One field, because the card is otherwise
+ * the same card: same envelope, same address, same countdown.
+ */
 export type SendState =
   | { status: 'idle' }
-  | { status: 'sent'; email: string; retryAfter: number }
+  | { status: 'sent'; email: string; retryAfter: number; throttled?: boolean }
   | { status: 'error'; error: { code: Failure; message: string }; email: string }
 
 const messages: Record<Failure, string> = {
@@ -45,10 +52,16 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
 
   if (!error) return { status: 'sent', email, retryAfter: SEND_INTERVAL }
 
-  // Two different 429s, and only the per-address one means the link is on its way — the
-  // distinction lives in `resend-timer.ts` so `node --test` holds it.
-  if (linkAlreadySent(error)) {
-    return { status: 'sent', email, retryAfter: retryAfterFrom(error.message, SEND_INTERVAL) }
+  // Two different 429s, and only the per-address one is "too soon" rather than a failure — the
+  // distinction lives in `resend-timer.ts` so `node --test` holds it. Nothing was sent on this
+  // one, which is exactly what `throttled` carries to the card.
+  if (sentTooRecently(error)) {
+    return {
+      status: 'sent',
+      email,
+      retryAfter: retryAfterFrom(error.message, SEND_INTERVAL),
+      throttled: true,
+    }
   }
 
   // Logged without the address: logs carry no user content (spine, Security floor).

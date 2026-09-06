@@ -17,12 +17,15 @@ export type { ShellUser }
 
    Desktop: the account chip at the bottom of the sidebar opens a 240px popover UPWARDS.
    390: the account row at the bottom of the ☰ DRAWER opens the same menu, 280px, also upwards.
-   BOTH ROWS ARE NOW THE SAME ROW at two sizes, and the row is S3b's again: the owner's third
-   test (2026-09-06, finding 1) reversed his own finding 2 of that morning — the plan badge comes
-   back to the row in both columns and the address is still never clipped. What settles the
-   contradiction between the two is spec question 5, ruled option 1: there is NO stand-in name, so
-   with nothing in `display_name` the row is avatar · address on the small line · badge, and the
-   bold name line simply appears the day E2 lets someone save one.
+   BOTH ROWS ARE NOW THE SAME ROW at two sizes, and the row is S3b's — all of it, since his
+   FOURTH test (2026-09-06, finding 2): the plan badge at the end (his third test) AND the frame's
+   one line with an ellipsis where it runs out (his fourth). The badge back means ~88px for the
+   address in the 220px column, and no treatment fits `umngkmr@gmail.com` into 88px whole — the
+   `break-all` his third test left behind wrapped it mid-word, which is what he then reported. The
+   whole address is in the menu the row opens, one click away and unbroken. What settles the name
+   line is spec question 5, ruled option 1: there is NO stand-in name, so with nothing in
+   `display_name` the row is avatar · address on the small line · badge, and the bold name line
+   simply appears the day E2 lets someone save one.
 
    THE PHONE'S MENU MOVED OUT OF THE TOP BAR ON THE OWNER'S RULING (2026-09-05, spec question 2,
    option 1). The frames draw an avatar in the 390 top bar AND an account row in the drawer, and
@@ -30,9 +33,11 @@ export type { ShellUser }
    header avatar". They were not the same control — the top bar's opened the menu and the
    drawer's was a label — so removing the top one alone would have taken Account settings,
    Billing, Suggestions, Docs and Sign out off the phone. The ruling merges them instead: one
-   initial on a phone, inside ☰, and it is the trigger. His rider survives: the whole address,
-   never clipped to an ellipsis. (His other rider that day — no badge on the row — was reversed
-   by his third test; the paragraph above is the settled shape.)
+   initial on a phone, inside ☰, and it is the trigger. (His two riders that day — no badge on the
+   row, and the address never clipped — were reversed by his third and fourth tests in turn; the
+   paragraph above is the settled shape. The phone's row still shows the address whole, not
+   because it is treated differently but because 390 leaves it ~166px and the ellipsis never
+   fires.)
 
    KEYBOARD SHORTCUTS IS ABSENT, and the frame draws it. There is no editor yet and therefore
    nothing for the sheet to list — a control that could NEVER act here is absent, not greyed
@@ -151,12 +156,19 @@ export function AccountMenu({
           back after his finding 2 took it off — the address is on the 11px line now, not on the
           bold one, and it has the room.
 
-          NOT CLIPPED, in either state: no `max-width:100px` and no `truncate`, which is the
-          frame's own treatment and was his complaint. `break-all`, because an email has no
-          spaces to break at and `break-words` alone leaves it overflowing. No `aria-label`: the
-          visible text IS the accessible name (WCAG 2.5.3, Label in Name). The export is
-          untouched (R-74) — S3b draws the fixture's name and its ellipsis — and this is the
-          record of what the product draws instead. */}
+          ONE LINE, AND AN ELLIPSIS WHERE IT RUNS OUT — S3b's own treatment (`max-width:100px`,
+          `text-overflow: ellipsis`), and the owner's FOURTH test, finding 2. `break-all` was the
+          previous ruling and it did not clip: it wrapped `umngkmr@gmail.com` mid-word onto a
+          second line — "shown full but is cut off" — because the sidebar's text column is about
+          88px once the 220px column, its 12px padding, the row's 12px padding, the 30px avatar,
+          the 10px gap and the badge are taken out, and NO treatment fits that address into 88px
+          whole. So it truncates here, and the whole address is one click away in the menu's own
+          header below, which has ~162px and is deliberately left unbroken. The drawer at 390 has
+          ~166px on this same line, so the truncation never fires there — one piece of code, two
+          sizes. No `aria-label` and no `title`: the visible text IS the accessible name (WCAG
+          2.5.3, Label in Name), the full address is in the DOM for a screen reader either way,
+          and a tooltip is not a route to information — the menu is. The export is untouched
+          (R-74). */}
       <button
         type="button"
         popoverTarget={id}
@@ -168,11 +180,11 @@ export function AccountMenu({
         <Avatar user={user} size={dense ? 30 : 32} />
         <span className="flex min-w-0 flex-1 flex-col">
           {second ? (
-            <span className={`font-semibold break-all text-ink ${dense ? 'text-ui-dense' : 'text-ui'}`}>
+            <span className={`truncate font-semibold text-ink ${dense ? 'text-ui-dense' : 'text-ui'}`}>
               {name}
             </span>
           ) : null}
-          <span className="break-all text-helper-caption text-ink-soft">{second ?? name}</span>
+          <span className="truncate text-helper-caption text-ink-soft">{second ?? name}</span>
         </span>
         {/* The badge is on the row AND on the Billing & plan line inside the menu: he asked for
             it in both places, so the "one badge per menu" note of 2026-09-06 stands for the menu
@@ -197,9 +209,11 @@ export function AccountMenu({
           className={`mb-1 flex items-center border-b border-line p-[10px_12px] ${dense ? 'gap-[10px]' : 'gap-3'}`}
         >
           <Avatar user={user} size={dense ? 32 : 36} />
-          {/* The trigger's rule, again: no name → the address on the small line alone, and
-              nothing truncated — the header sat one click above the row with the address bold
-              and cut to an ellipsis, the complaint the row was reshaped for (review, 2026-09-06). */}
+          {/* The trigger's rule, again: no name → the address on the small line alone. THIS is
+              the copy that is never truncated, and since his fourth test it is the only one:
+              240px of menu leaves this line ~162px against the trigger row's ~88px, so the
+              address the row had to shorten is whole one click away. `break-all` rather than a
+              wrap, because an email has no spaces to break at. */}
           <span className="flex min-w-0 flex-col">
             {second ? (
               <span className={`font-semibold break-all text-ink ${dense ? 'text-ui-dense' : 'text-[15px]'}`}>

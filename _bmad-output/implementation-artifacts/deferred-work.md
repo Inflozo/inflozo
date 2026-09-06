@@ -531,3 +531,22 @@ reason: `ci.yml`'s `check` job runs `pnpm check` and `pnpm build`; `rls` runs th
   whether the owner ever sees a question, R-83/R-84) has no runner outside `core.hooksPath`. Adding a
   fourth job, or a step to `check`, is a one-line change to a workflow the owner rules over (DW-7 made CI
   the publishing gate), so it is recorded rather than applied by a story about the dashboard.
+
+### DW-22: no key in this repository can read whether an email was delivered
+
+plain: We can send email through Resend and prove the send was accepted, but nothing here can look at
+  Resend's own log to see whether a message reached an inbox, bounced, or was marked spam. Today only the
+  owner can answer that, by looking in his inbox.
+status: open
+severity: medium
+origin: Story 1.5 fourth Fix run (2026-09-06), the owner's fourth test, finding 1
+location: tools/probe/.env (`RESEND_API_KEY`) · apps/web/app/(app)/app/sign-in/actions.ts · Epic 12
+reason: Executed 2026-09-06: `GET https://api.resend.com/emails`, `/domains` and `/api-keys` with
+  `RESEND_API_KEY` each answer **403, `error code: 1010`** — it is a send-only key. (An earlier note in
+  spec-1-5 said 401; 403/1010 is what it answers.) So a story can prove GoTrue accepted the SMTP
+  hand-off (200) and can prove a refusal (429), but "did it arrive" leaves the repository and becomes a
+  line in `## Owner's manual test`. That is tolerable for one magic link and is NOT tolerable for **Epic
+  12**, which builds five or six transactional emails whose whole acceptance is delivery. The fix is one
+  credential — a Resend key with read access, beside the sending one — and it is the owner's to create,
+  so it is recorded rather than assumed.
+

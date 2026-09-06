@@ -69,8 +69,17 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   `secondLineOf()` and nothing else — **no `display_name`: avatar · the address on the 11px ink-soft
   line · the badge at `margin-left:auto`, and no bold line at all; with a `display_name`: S3b exactly,
   name 13px/600 above (14px in the drawer), address 11px beneath, badge at the end.** No stand-in name
-  is invented — *"the bold name line appears by itself the day you save a name"*. No `max-width:100px`
-  and no `truncate` in either state. The two columns stay one piece of code. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
+  is invented — *"the bold name line appears by itself the day you save a name"*. **AMENDED A THIRD
+  TIME BY THE OWNER, 2026-09-06 — his FOURTH test, finding 2, and this one closes the row: it takes
+  S3b's LAST treatment too — one line, and an ellipsis where it runs out.** *"The email is shown full
+  but is cut off. Can we do not cut it off and show … after cut off email."* Putting the badge back
+  left the address about 88px of the 220px column, `break-all` then wrapped `umngkmr@gmail.com`
+  mid-word onto a second line, and no treatment fits that address into 88px whole. So the row is
+  `truncate` — S3b's own `max-width:100px` / `text-overflow: ellipsis`, applied by the slot the row
+  actually has — and **the whole address moves one click away, into the menu's header, which is 240px
+  wide and is the copy that is never shortened**. At 390 the same line has ~166px, so the ellipsis
+  never fires there and the drawer keeps showing the address whole. The two columns stay one piece of
+  code. A **64px top bar** (`border-b line`, padding 0 24, gap 12): the search
   field first — 320×36, `rounded-sm`, hairline `line`, padding 0 10, the frame's magnifier at 15px,
   placeholder "Search projects…" 13px ink-soft-aa, and a mono "⌘K" chip (11px, `line` border, radius
   5px, padding 1/5); then at `margin-left:auto` the kit's `Button` coral 36 "New project" with the
@@ -272,6 +281,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 | Keyboard | Tab through the shell and a card | sidebar → search → New project → cards' ⋯ → chip; ⋯ opens with Enter, arrows move, Escape closes and returns focus; every confirm opens on Cancel | N/A |
 | Sign out | the menu's Sign out pressed | the row reads `Signing out…` while it runs, then `/sign-in?signed-out=1` shows the mint Banner "You've been signed out."; no confirm window (**the owner's third test, finding 2, question 6 option 1**) | a second press while it runs is refused (`aria-disabled`), so one click is one sign-out |
 | Signed out | any of these URLs | 307 to `/sign-in` (1.4's guard, unchanged) | N/A |
+| Sign out, then sign straight back in | a link asked for within the project's `smtp_max_frequency` (60 s) | **ADDED ON THE OWNER'S RULING, 2026-09-06 — question 7, option 1, from his fourth test, finding 1.** GoTrue answers `over_email_send_rate_limit` and **nothing is sent**, so the card must not say "Check your inbox ✨ … It's good for 15 minutes": it reads **"Just a moment"** and *"We sent a magic link to `<address>` less than a minute ago, so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below."* The envelope, the address in bold, the countdown and "Use a different email" are unchanged | the project-wide `over_request_rate_limit` is still a plain failure and still draws the error Banner — only the per-address 429 takes this card |
 
 </frozen-after-approval>
 
@@ -288,7 +298,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/components/shell/shell.tsx` (new, server) -- the sidebar and top bar at 1440 and the 60px bar at 390 (`tablet:` is the seam — S3 draws 1440 and 390 and the sidebar holds from `tablet` up); the nav via `next/link` with the active item from `usePathname` in a tiny client `NavLink`; the search form — its field a small client `SearchField` reading `useSearchParams` for its value (a layout receives no query) and owning ⌘K; the "New project" button that opens the sheet
 - `apps/web/lib/shell-user.ts` (new, pure) + `apps/web/shell-user.test.ts` -- `ShellUser`, `nameOf`, `secondLineOf`: question 5's rule where `node --test` reaches it (fourth review, 2026-09-06)
 - `apps/web/app/(app)/app/sign-in/signed-out.ts` (new, pure) -- `SIGNED_OUT` and `SIGNED_OUT_PATH`, the one key the action writes and the page reads (fourth review, 2026-09-06)
-- `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, up at 390 since the owner moved the phone's menu into ☰); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts`, its row a child component (`SignOut`) so `useFormStatus` has a form to read and the row can say `Signing out…`. The trigger row is `secondLineOf()` in both columns: no `display_name` → the address on the 11px line and the plan badge at the end; a `display_name` → S3b's two lines. Never clipped in either state
+- `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, up at 390 since the owner moved the phone's menu into ☰); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts`, its row a child component (`SignOut`) so `useFormStatus` has a form to read and the row can say `Signing out…`. The trigger row is `secondLineOf()` in both columns: no `display_name` → the address on the 11px line and the plan badge at the end; a `display_name` → S3b's two lines. **Since his fourth test both lines are `truncate`** — S3b's ellipsis, in the ~88px the 220px column leaves — and the menu's own header is the copy that is never shortened
 - `apps/web/components/shell/drawer.tsx` (new, client) -- the ☰ `<dialog>` at 390: nav, account row, close
 - `apps/web/app/(app)/app/(authed)/project-card.tsx` (new, server) + `placeholder.tsx` (new) -- the card and its wireframe with the pack's three colours as inline `style` (they are pack data, the site's system, never Tailwind classes)
 - `apps/web/app/(app)/app/(authed)/project-menu.tsx` (new, client) -- the ⋯ `popover="auto"` menu and the two S12c-shaped `<dialog>`s (rename, delete) with `useActionState` over the actions; the delete button's `aria-disabled` follows `matchesName`
@@ -296,6 +306,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/components/kit/icons.tsx` -- add the frames' own paths: `Projects` (four rects), `Globe`, `Image`, `Plus`, `MenuLines`, `Copy`, `Person`, `Card`, `Lightbulb`, `Book`, `Logout`, `AlertCircle`; `Search`, `X`, `Pencil`, `Trash`, `ChevronDown` already exist (`icons.tsx`)
 - `apps/web/components/kit/pack-cell.tsx:11` -- `PackCell` gains an optional `onEdit`; without it the pencil is not rendered (a dead "Edit Paper" button would be a lie; the editor is E6's). `/kit` keeps passing one so the gallery is unchanged
 - `apps/web/app/globals.css:80` + `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter -- `--shadow-modal: 0 12px 40px rgba(28,27,26,.25)` and its `elevation.modal` twin (`tokens.test.ts:47` requires the value to occur in the export; D4a and S12c carry it). Nothing else is added — see Design Notes for every hex that was mapped to an existing name instead. **Two colours joined it on 2026-09-06** (the owner's finding 3): `--color-marigold-tint-soft` and `--color-marigold-solid`, each with its `colors.*` twin in DESIGN.md, both values the export's own and both asserted by the same two token tests
+- `apps/web/app/(app)/app/sign-in/resend-timer.ts` · `actions.ts` · `sign-in-form.tsx` -- **1.4's files again, touched by this story's FOURTH Fix run on the owner's ruling at question 7, option 1**: `linkAlreadySent` is renamed **`sentTooRecently`** (the old name WAS the defect — it read a "too soon" 429 as "a link is waiting"), `SendState`'s sent branch carries `throttled?: boolean`, and the card swaps two lines when it is set. Nothing else moves: the send path, the countdown's arithmetic, the guard and the nonce are untouched, and `resend-timer.test.ts` follows the rename
 - `apps/web/app/(app)/app/sign-in/actions.ts:59` · `sign-in/page.tsx` · `sign-in/sign-in-form.tsx` -- **1.4's files, touched by this story's third Fix run only** (the owner's finding 2, question 6 option 1): `signOut()` redirects to `/sign-in?signed-out=1`; the page reads that one key beside `?error=link` and passes `signedOut`; the card draws the Kit's mint `Banner` "You've been signed out." above the headline while `state.status === 'idle'`. Nothing else in 1.4 moves — the guard, the nonce and the send path are untouched
 - `apps/web/app-routes.test.ts:33` -- already discovers every `page.tsx`; the new page is inside `(authed)` and needs no entry. `loading.tsx` is not a page
 - `apps/web/routing.ts:22-31` -- read-only: `app.inflozo.com/x` is rewritten to `/app/x`, so links are written as `/sites`, `/billing`… and `revalidatePath` takes `/app`
@@ -318,6 +329,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - [x] Verification -- every matrix row on the deployed site with fixture users, recorded below -- R-82
 - [x] **Fix run (2026-09-05)** -- the owner's eight findings: the centred delete confirm, the drawer's outside-tap and focus, the phone's account menu moved into ☰ per his ruling, the phone's search focus, and `app/(app)/app/error.tsx` -- his test of the deployed site, R-80
 - [x] **Third Fix run (2026-09-06)** -- the owner's third test: the account row back to S3b in both columns with the badge and no stand-in name (question 5), and Sign out saying `Signing out…` then "You've been signed out." on the card (question 6). His finding 3, the `fra1` region move, was executed and controlled on his ruling before this run -- his third test of the deployed site, R-80
+- [x] **Fourth Fix run (2026-09-06)** -- the owner's fourth test, two findings: the sign-in card made honest when GoTrue's per-address 429 means nothing was sent (his ruling at question 7 put 1.4's fix inside this story), and the account row given S3b's last treatment — one line, an ellipsis where it runs out, the whole address one click away in the menu -- his fourth test of the deployed site, R-80
 - [x] **Second Fix run (2026-09-06)** -- the owner's three findings: the Duplicate door removed from the New project sheet (R-93), the sidebar chip made the drawer's row — no plan badge, the whole address — and D4b's upgrade card brought back to the frame's warm tint and solid gold button -- his second test of the deployed site, R-80
 
 **Acceptance Criteria:**
@@ -588,6 +600,23 @@ departure lives; none needs the owner, because each keeps a rule the PRD already
    until E2, so the address was sitting on the 13px bold line where the badge crowded it. On the 11px
    line it fits with the badge beside it — 195px of the column's 196, measured. `secondLineOf()` is now
    the whole rule and the two columns are one piece of code, so this cannot drift again.
+
+9. **The row reversed a third time, and this one is the frame catching up rather than another swing.**
+   Entry 8 says the badge and the 11px line settled it; they did not, quite. With the badge back the
+   address has about 88px in the 220px column and `umngkmr@gmail.com` measures 115px at 11px — measured
+   in the row's own font, not estimated — so `break-all` wrapped it mid-word and he read that as cut in
+   half. The frame's own answer was the one treatment the row had never been given: `max-width:100px`
+   with `text-overflow: ellipsis`. So the row truncates and **the menu's header becomes the place the
+   whole address lives** — 153px of slot against the address's 115px, executed. Nothing about the two
+   columns being one piece of code changes; at 390 the same line has 156px and the ellipsis never fires.
+10. **A predicate's NAME carried the defect, so the fix is mostly a rename.** `linkAlreadySent` was true
+   for exactly one thing — GoTrue's per-address 429 — and that 429 says *too soon*, never *a link is
+   waiting for you*. The two are the same only while the earlier link is unused, and signing out and
+   straight back in is precisely when it is not. It is now `sentTooRecently`, the action carries
+   `throttled` to the card, and the card's two claims ("Check your inbox", "good for 15 minutes") are
+   swapped for what is true. Recorded here because it crosses a story boundary — the owner ruled at
+   question 7 that 1.4's few lines are fixed inside 1.5 rather than by reopening a closed story — and
+   because `spec-1-4`'s frozen matrix row and its S1b acceptance criterion were amended to point here.
 
 ## Design Notes
 
@@ -1437,6 +1466,68 @@ to deploy.
 
 Deployment: `inflozo-2ee1jlcmm-umangkagathara.vercel.app` (`dpl_7nnoxw4Ha6ySwybiBaj7yts3cyEV`)
 
+
+### The fourth Fix run — 2026-09-06, the owner's fourth test
+
+Executed against the **real Supabase project** (R-82) with the production build of this repository
+serving at `localhost:3101`, so a browser could drive the change before it existed anywhere to deploy;
+re-executed against `https://app.inflozo.com` after CI published it (the second table). Keys were read
+into each command's environment from `tools/probe/.env` by variable name and never printed. One fixture
+user, `story-1-5-fix4@inflozo.com`, was created through the admin API and **deleted at the end**.
+
+**The control first, because a result whose control did not pass is not a result.** A bare `<button>`
+and an unlabelled `<img>` planted on the dashboard axe had just called clean were reported immediately —
+`button-name(1)`, `image-alt(1)` — and the control was run with the menus CLOSED, since a modal
+`<dialog>` makes the rest of the document inert and axe skips inert content.
+
+**Gate and build**
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **green** — lint, typecheck, **65 tests in `apps/web`, 65 pass, 0 fail** |
+| `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+
+**Finding 1 — the defect reproduced on the live infrastructure, then the card checked against it**
+
+| Step | Result |
+|---|---|
+| `POST /auth/v1/otp` to the live Supabase project (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) | **`HTTP 200` in 3.58 s** — a link really left |
+| the same address again, **3 s later** | **`HTTP 429`**, `over_email_send_rate_limit`, *"For security purposes, you can only request this after 53 seconds."* — **nothing sent**, which is the whole finding |
+| the card after a first send, driven in the browser | `Check your inbox ✨` · "We sent a magic link to … **It's good for 15 minutes.**" · `Didn't get it? Resend in 1:00` — unchanged, and correct, because a link did leave |
+| the card after the **second** send inside the minute | **`Just a moment`** · "We sent a magic link to **umngkmr@gmail.com** less than a minute ago, **so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below.**" · `Didn't get it? Resend in 0:58` — the envelope, the address, the countdown and "Use a different email" unchanged |
+| axe-core on the throttled card | **zero violations** |
+| the predicate's own tests | `resend-timer.test.ts` follows the rename to `sentTooRecently`; the two-429 distinction is still the only thing it asserts, and it passes |
+
+**The half of finding 1 that could NOT be settled from this repository, stated rather than assumed.**
+Whether the *first* email of his sequence reached his inbox is a delivery question, and the delivery log
+is unreadable with the key the repository holds: `GET https://api.resend.com/emails`, `/domains` and
+`/api-keys` with `RESEND_API_KEY` all answer **`403`, `error code: 1010`** — a send-only key. (The
+earlier note in this spec said `401`; `403 / 1010` is what it answers today, executed 2026-09-06.) What
+*can* be said is executed: GoTrue answered **200**, which means the SMTP hand-off to Resend was accepted,
+and the two 429s explain his symptom completely — a countdown starting part-way through the minute is a
+refusal, not a send. **Two real magic links left for his own address during this run** (`RESEND_TEST_INBOX`
+is his), at the times the probe and the browser pass ran; step 19 of his test asks him to say whether
+they arrived, which is the only place that question can be answered.
+
+**Finding 2 — the account row, at 1440 and at 390**
+
+| Check | Result |
+|---|---|
+| the 1440 row's address line | `white-space: nowrap` · `overflow: hidden` · `text-overflow: ellipsis` — S3b's own treatment |
+| is it one line now | **height 17px**, one line; `clientWidth 77` against `scrollWidth 153`, so the ellipsis is doing the work the wrap used to |
+| **the owner's own address, measured in that row's own font** | `umngkmr@gmail.com` renders **115px** against a **77px** slot — so no treatment fits it whole there, which is why this is a truncation and not another attempt at fitting it |
+| the menu that row opens | 240px wide; its header line has a **153px** slot and the address measures **115px** → **whole, one line, `text-overflow: clip`, `scrollWidth == clientWidth`** — the address is one click away and unshortened, checked rather than assumed |
+| the row still fits its column | **195px** in the 196px content box, badge and all |
+| the badge, and no invented name | `Free` at the end; the only 600-weight text in the row is the initial and the badge |
+| **the other branch**, `display_name = "Umang Kagathara"` set through the REST API | the frame's two lines return — `Umang Kagathara` at **13px/600** above the address at **11px** `rgb(110, 106, 100)`, row height 56 — and both lines take the same ellipsis in the 77px slot. Cleared again, back to one line |
+| the 390 drawer row | the same code: address `11px`, `clientWidth 156 == scrollWidth 156` → **whole, the ellipsis never fires**; row 272px |
+| the phone's top bar | **zero** account triggers — his 2026-09-05 ruling, unchanged |
+| axe-core (WCAG 2.0/2.1 A + AA) — 1440 dashboard with the menu open, 1440 with a name, the 390 drawer with its menu | **zero violations each**; the positive control flagged `button-name(1)`, `image-alt(1)` |
+| no horizontal scroll at 390 | **none** |
+| console CSP violations | **2, both located at `http://localhost:3101/`** — the MARKETING home, which is DW-18 and Story 1.4's header. **Zero on any `/app` path.** On localhost there is no host split, so `signOut`'s `/sign-in` and `/` land on marketing there; on `app.inflozo.com` the proxy rewrites them onto the app, whose policy carries a nonce |
+| the fixture user | **deleted**. Census read afterwards: `projects: 0 · profiles: 2 · entitlements: 2` — his two accounts and **no project**. This run never touched the `projects` table and the fixture had none; the project that was there on 2026-09-06 was removed by his own testing, and there is no before-reading from this run to say more than that |
+
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
@@ -1704,6 +1795,13 @@ polite refusal of a second, the Go Pro pill. The Pro side (up to 25 projects, du
 proved by the Dev run with a throwaway account and recorded above; say the word if you would like your
 own account switched to Pro for a look — it is one row, and it is switched back the same way.
 
+**Your two findings of 2026-09-06 (your fourth test) — what changed, and what to look at first.**
+
+| Your finding | What to do | What you should see |
+|---|---|---|
+| 1 · no email after signing out and back in | Press **Sign out**, then straight away type your address and press "Send magic link". Do it a **second** time within the same minute | The first time: **"Check your inbox ✨"** and a link really does leave. The second time, inside the minute, the card no longer pretends: it says **"Just a moment"** and *"We sent a magic link to … less than a minute ago, so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below."* Wait for "Resend in 0:00", press **Resend**, and the real link arrives. **What you saw before was this second case wearing the first one's words** — nothing had been sent, and the card said one was on its way |
+| 2 · the email shown full but cut off | Look at the bottom left of the dashboard, then click that row | On the row: your address on **one line with … at the end** where it runs out — no more breaking across two lines. In the menu it opens: **your whole address, complete**, on the header line. That is the trade — the 220px column cannot hold `umngkmr@gmail.com` whole beside your initial and the Free tag, so it is shortened where it is tight and whole one click away. **On your phone it is not shortened at all** — the drawer's row is wider and the … never appears there |
+
 **Your three findings of 2026-09-06 (your third test) — what changed, and what to look at first.**
 
 | Your finding | What to do | What you should see |
@@ -1739,9 +1837,9 @@ would rather not see them until then, say so in your findings and it is changed 
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial with **your whole email on a small grey line beside it and the "Free" tag at the end** (your third test, finding 1 — the tag is back on the row and still on the Billing & plan line inside the menu); a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
+| 1 | https://app.inflozo.com/ | Dashboard, empty (S3b) | Sign in with your magic link as in 1.4 | — | Instead of the holding page: a left column with "Inflozo", Projects (highlighted), Sites, Assets, and at the bottom a round initial with **your email on a small grey line beside it and the "Free" tag at the end** (your third test, finding 1 — the tag is back on the row and still on the Billing & plan line inside the menu). **Since your fourth test that line is one line with … where it runs out**; the whole address is in the menu the row opens (step 3); a top bar with a "Search projects…" box and a red "New project" button; in the middle a small sketch of a page and "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." with a second red "New project" |
 | 2 | same | Dashboard | Click Sites, then Assets, then use the browser's Back | — | "This page could not be found" for both — expected until Epics 3 and 8 |
-| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and email, then Account settings, Billing & plan (with a "Free" tag — it is on this line **and** on the row you clicked, which is what you asked for), Suggestions, Docs, a line, Sign out. Press Escape to close it |
+| 3 | same | Account menu (S3d) | Click your initial at the bottom of the left column | — | A menu opens upward: your initial and **your whole email address, complete and on one line** — this is the copy that is never shortened (your fourth test, finding 2) — then Account settings, Billing & plan (with a "Free" tag — it is on this line **and** on the row you clicked, which is what you asked for), Suggestions, Docs, a line, Sign out. Press Escape to close it |
 | 4 | same | New project sheet (D4a) | Click "New project" | — | A white sheet over a dimmed dashboard: "New project", **three** choices — Blank canvas is selected; Start from a starter and Redesign one of my sites are greyed with a short reason under each. **"Duplicate an existing project" is gone** (your finding 1); below, "Style Pack" with one card, Paper; Cancel and a red "Create project" |
 | 5 | same | Dashboard (S3a) | Click "Create project" | — | The sheet closes and one card appears: a small wireframe on cream, "Untitled project", a "Sample content" tag and "Updated today" on the right |
 | 6 | same | At the cap (S3c · D4b) | Click "New project" again | — | The sheet opens with all **three** choices greyed, each with a "Free includes 1 project" pill, and a **cream card** saying "Free includes 1 project. Pro gives you 25." with a **solid gold "Go Pro — $15/mo" button** on it (your finding 3), and "Create project" greyed out. Press Cancel. Beside your card the grid still shows the dashed tile: ✦, "Upgrade to add more", the same sentence, and there the pale pill, because that is what its own drawing has |
@@ -1751,12 +1849,13 @@ would rather not see them until then, say so in your findings and it is changed 
 | 10 | same | Delete (redrawn on your word) | ⋯ → Delete | first `field notes`, then `Field Notes` | A window with a **red bin in a round pink disc at the top, centred**, "Delete Field Notes?" and "This project will be permanently deleted. This cannot be undone." centred under it, then "Type Field Notes to confirm", then **two equal buttons**, Cancel and a red Delete project. The cursor starts on Cancel. With `field notes` the red button stays faded and does nothing; with `Field Notes` exactly it goes solid, and pressing it removes the card — you are back on the empty dashboard |
 | 11 | same | Search | Create a project again (steps 4–5), rename it `Harbour Letter`, then type in the search box and press Enter | `harb` · then `zzz` | With `harb` the card stays; with `zzz` the grid says "No projects match “zzz”." Clear the box and press Enter to see the card again. ⌘K (Ctrl+K on Windows) jumps the cursor into the box |
 | 12 | same, on your phone | Dashboard at 390 | Open the address on your phone | — | A short top bar: ☰, "Inflozo" and a search icon — **and no initial beside it any more**; a full-width red "+ New project"; your card below it, one per row; nothing cut off, nothing scrolling sideways |
-| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, and at the bottom your initial with **your whole email address on a small grey line beside it, not cut off with three dots, and the "Free" tag at the end**; an ✕ to close. Nothing on the panel has a box drawn around it when it opens |
+| 13 | same, phone | Drawer | Tap ☰ | — | A white panel slides in from the left with Projects, Sites, Assets, and at the bottom your initial with **your whole email address on a small grey line beside it, not cut off, and the "Free" tag at the end** — the phone's row is wider than the computer's column, so the … of your fourth test never appears here; an ✕ to close. Nothing on the panel has a box drawn around it when it opens |
 | 14 | same, phone | The account menu, now inside ☰ | Tap ☰, then tap your initial at the bottom of the panel | — | The same menu as step 3 opens **upwards from that row**: your initial and email, Account settings, Billing & plan **with the "Free" tag**, Suggestions, Docs, a line, Sign out |
 | 15 | same, phone | Closing the panel | Tap ☰, then tap the greyed area to the right of the panel | — | The panel closes. Tapping inside it does not close it |
 | 16 | same, phone | Sheet and delete | Tap "+ New project", Cancel; then ⋯ → Delete on your card, Cancel | — | Both windows fill the width with a small margin and every button is reachable; the delete window's bin, title and two buttons are centred as in step 10 |
 | 17 | same, phone | Search | Tap the search icon in the top bar | — | The search box appears under the bar **with the cursor already in it** and the keyboard up — you can type straight away |
 | 18 | same | Sign out | Open the account menu (the chip at the bottom left on a computer, or ☰ → your initial on a phone) → Sign out | — | The row reads **"Signing out…"** while it works — no "are you sure?" window, which is what you chose — and then the Sign In card from 1.4 with a **green line above the headline: "You've been signed out."** Ask for a new link and the green line goes; it belongs to the sign-out, not to the page |
+| 19 | https://app.inflozo.com/sign-in | Sign in again, straight away (your fourth test, finding 1) | Right after step 18, type your address and press "Send magic link". Then press "Use a different email", type the **same** address and send again **within the same minute** | your own email address | The first send: **"Check your inbox ✨"**, "It's good for 15 minutes.", and "Resend in 1:00" counting down — **and the email should arrive**. The second send, inside the minute: **"Just a moment"** and "…less than a minute ago, so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below." **No email arrives for that one and the card no longer claims otherwise.** Wait for the countdown to reach 0:00, press **Resend**, and a real link is sent — sign in with it. **Please say whether the first email and the Resend email actually arrived**: whether Resend delivers to your inbox is the one half of this finding that cannot be checked from here — the key in the repository can send mail but is refused (`403`) when it is asked to read the delivery log |
 
 ## Owner's test findings
 
@@ -2087,3 +2186,14 @@ drawn. **The whole address stays one click away and unbroken** — the menu the 
 its header holds `umngkmr@gmail.com` on one line with room to spare, which the Fix run checks rather than
 assumes. The drawer at 390 has about 166px on that line, so it keeps showing the address whole and the
 truncation never fires there; the two rows stay one piece of code.
+
+### What the fourth Fix run did, 2026-09-06 — one line each
+
+| Your finding | What was done |
+|---|---|
+| 1 · no email, and a countdown starting at 35 seconds | **The card no longer says a link was sent when none was.** Signing out and straight back in inside a minute now reads **"Just a moment"** and says a link went out a moment ago, that another was not sent, and to ask again below — instead of "Check your inbox ✨ … good for 15 minutes" over a link you had just spent. Reproduced on the live Supabase first (200, then 429 three seconds later with *"…after 53 seconds"*), then checked against it. The mis-named predicate underneath it — `linkAlreadySent`, which was the defect in one word — is now `sentTooRecently`. It is Story 1.4's file, fixed here on **your ruling at question 7, option 1**; 1.4's own matrix row and acceptance criterion were amended to point at this story so it is never a mystery. **One half is still yours to answer:** whether the mail actually lands in your inbox cannot be read from here — the repository's Resend key can send but is refused (`403`) when asked to read the delivery log — so **step 19** of your test asks you to say whether it arrived |
+| 2 · the email shown full but cut off | **S3b's last treatment, and the row is now the frame's exactly: one line, with … where it runs out.** Your address measures 115px at that size and the column leaves it 77px — measured in the row's own font, not estimated — so no way of drawing it fits it whole there; `break-all` was making it wrap mid-word, which is what you saw. **The whole address moved one click away, into the menu's header**, which has 153px and does not shorten anything — checked, not assumed. Your phone is untouched: that row has 156px, the address fits, and the … never appears |
+
+**Nothing else moved.** The three-door New project sheet, the delete window, the ☰ drawer, the search
+focus, the app's error page, Sign out's `Signing out…` and the mint "You've been signed out." are exactly
+as your last three tests left them, and every one was re-run in this pass.

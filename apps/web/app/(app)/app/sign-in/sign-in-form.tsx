@@ -143,16 +143,25 @@ export function SignInForm({
             <path d="M71 2l1.7 4.6L77.3 8.3l-4.6 1.7L71 14.6l-1.7-4.6-4.6-1.7 4.6-1.7z" className="fill-coral" />
           </svg>
 
+          {/* S1b's words are true when a link really has just left. When GoTrue answers the
+              per-address 429 NOTHING WAS SENT, and the owner met that by signing out and straight
+              back in: the card said "Check your inbox" over a link he had just spent, so he
+              waited for mail that could never arrive (his fourth test, finding 1). The 429 branch
+              keeps the frame's shape — the same envelope, the same address in bold, the same
+              countdown below — and changes only the two lines that would otherwise be false. The
+              sparkle goes with them: nothing was sent, so there is nothing to celebrate. */}
           <div className="flex flex-col gap-2">
             <h1 className="font-display text-[26px] font-bold tracking-[-0.01em] tablet:text-[28px]">
-              Check your inbox ✨
+              {state.throttled ? 'Just a moment' : 'Check your inbox ✨'}
             </h1>
             <p className="text-ui leading-[1.55] text-ink-soft">
               We sent a magic link to
               <br />
               <strong className="font-semibold text-ink">{state.email}</strong>
               <br />
-              It&rsquo;s good for 15 minutes.
+              {state.throttled
+                ? 'less than a minute ago, so we haven’t sent another. If it isn’t in your inbox — or you’ve already used it — ask again below.'
+                : 'It’s good for 15 minutes.'}
             </p>
           </div>
 

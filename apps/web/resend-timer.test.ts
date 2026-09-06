@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { linkAlreadySent, mmss, retryAfterFrom, secondsLeft } from './app/(app)/app/sign-in/resend-timer.ts'
+import { mmss, retryAfterFrom, secondsLeft, sentTooRecently } from './app/(app)/app/sign-in/resend-timer.ts'
 
 // Beside the other four checks at the package root, where `node --test '*.test.ts'` finds
 // them — a test inside the route folder would exist and never run, which counts as missing.
@@ -17,12 +17,12 @@ test('secondsLeft counts down from the interval and floors at zero', () => {
   assert.equal(secondsLeft(sentAt, 60, sentAt - 5_000), 60)
 })
 
-test('only the per-address 429 means the link is already on its way', () => {
-  assert.equal(linkAlreadySent({ status: 429, code: 'over_email_send_rate_limit' }), true)
+test('only the per-address 429 means "too soon", and it never means "a link is waiting"', () => {
+  assert.equal(sentTooRecently({ status: 429, code: 'over_email_send_rate_limit' }), true)
   // the project-wide hourly cap is also a 429, and nothing was sent — that one is an error
-  assert.equal(linkAlreadySent({ status: 429, code: 'over_request_rate_limit' }), false)
-  assert.equal(linkAlreadySent({ status: 500, code: 'unexpected_failure' }), false)
-  assert.equal(linkAlreadySent({}), false)
+  assert.equal(sentTooRecently({ status: 429, code: 'over_request_rate_limit' }), false)
+  assert.equal(sentTooRecently({ status: 500, code: 'unexpected_failure' }), false)
+  assert.equal(sentTooRecently({}), false)
 })
 
 test('mmss is the frame’s m:ss, zero-padded on the seconds only', () => {
