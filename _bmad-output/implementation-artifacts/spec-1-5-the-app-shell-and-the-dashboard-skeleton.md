@@ -1029,6 +1029,35 @@ it, which is the rule working rather than a rule being described.
 | console CSP violations on the app host | **zero.** Two were recorded during the pass and both are located at `http://localhost:3000/` — the **marketing** page, which is **DW-18** and Story 1.4's header, not this story's. `curl -sI` on `/app/sign-in` returns `x-inflozo-policy: app-nonce` with `script-src 'self' 'nonce-…' 'strict-dynamic'`, locally and on `app.inflozo.com` alike |
 | every fixture user | **deleted**; `projects` rows left behind: **0** |
 
+**Re-executed against the deployed site.** The pass above drove a production build at `localhost`, which
+is not the real infrastructure R-82 asks for, so every one of its checks was run again — the same script,
+`BASE=https://app.inflozo.com` — against the published Fix commit.
+
+| On `https://app.inflozo.com` | Result |
+|---|---|
+| CI on `95023994` (`GITHUB_TOKEN`) | `check: success` · `rls: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_6gUut8sNChdVQL8DAyMB3Q2P4fTo`, state **READY**, built from `95023994` |
+| the deployed shape | `/sign-in` **200** · `/` signed out **307** · `inflozo.com` **200** · `/sites` **404** — unchanged by this run |
+| finding 1 — the doors | **3**: `Blank canvas` · `Start from a starter` · `Redesign one of my sites`; "Duplicate" absent from the sheet; the same three greyed with the plan pill at the cap |
+| finding 2 — the chip | `F / <address>`, no `Free`/`Pro`, `scrollWidth <= clientWidth` **true**, **195px** in the 196px column; the menu's row reads `Billing & plan / Free` |
+| finding 3 — the card | background `rgb(255, 253, 246)` · hairline `rgb(245, 227, 184)` · radius `12px` · padding `14px 16px`; the button `rgb(158, 104, 0)` on white, `38px`, radius `12px`, `13.5px`/`600`, padding-left `18px`. S3c's tile still `rgb(255, 244, 214)` on `rgb(138, 97, 0)` |
+| axe-core — S3b · S3d's popover · D4a · D4b at 1440, the drawer and D4b at 390 | **zero violations on every one** |
+| horizontal scroll at 390 | **none** |
+| **console CSP violations** | **zero** — which also identifies the two the local pass saw as the marketing page's (DW-18), not the app's |
+| every fixture user | **deleted**; `projects` rows left behind: **0** |
+
+**The earlier fixes, re-run on the same deployment, because two shell files and the token layer changed
+under them.** With a `pro_active` fixture, so the cap refused nothing.
+
+| Earlier finding | Result today |
+|---|---|
+| ⋯ → **Duplicate**, now the only route to a copy | `("Untitled project","untitled-project")` + `("Copy of Untitled project","copy-of-untitled-project")` — two rows, two names, two slugs |
+| the ⋯ menu itself | `Rename / Duplicate / Delete` |
+| the delete confirm (his finding 2, first test) | opens on **Cancel**, title `text-align: center`, dialog at x=490 in a 1440 viewport, and the two buttons **199px each** — equal, as he asked |
+| the ☰ drawer's outside tap (finding 4) | a click at (360, 400) with the panel open → `dialog.open` **false** |
+| the phone's search focus (finding 7) | tapping the magnifier leaves `document.activeElement` as the field named **`q`** |
+| the app's own error page (findings 3 and 8) | `app/(app)/app/error.tsx` present and unchanged |
+
 
 ## Questions for the owner
 
