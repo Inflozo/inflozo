@@ -276,6 +276,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 | Create, under cap | "New project" → D4a → Create project | insert; sheet closes; the new card "Untitled project" (or "… 2") is first; `updated_at` = now | insert fails → the kit's error Banner in the sheet, "We couldn't create that just now. Try again in a moment." |
 | Create, at cap (Free, 1) | "New project" with 1 project | the sheet opens as D4b: greyed doors with "Free includes 1 project" pills, the upgrade block, Create disabled; the grid already shows S3c's tile | `at_cap` from the action (race) → the open sheet flips to D4b |
 | Create, at cap (Pro, 25) | 25 projects | D4b with "Pro includes 25 projects", no Go Pro; no tile in the grid | as above |
+| Sign out fails | GoTrue unreachable when Sign out is pressed | the session is NOT cleared, so the success flag is withheld and the user lands back on the dashboard at `/?sign-out-failed=1` with the Kit's `error` Banner: "We couldn't sign you out just now. Try again in a moment." — the owner's ruling at question 8, option 1 | the Banner IS the error handling; the row shows nothing else and claims nothing happened |
 | Rename | ⋯ → Rename → "Field Notes" → Save | `name` updated, `slug` untouched, `updated_at` bumped by the trigger; the card re-sorts to first | blank or > 80 chars → the field's helper-caption sentence "Give it a name — up to 80 characters."; `aria-invalid`; nothing sent |
 | Duplicate, under cap | ⋯ → Duplicate | a new row "Copy of Field Notes", same pack and settings, fresh slug; first in the grid | insert fails → the kit's error Banner above the grid: "We couldn't duplicate that just now." |
 | Duplicate, at cap | Free with 1 | refused: the sheet opens as D4b (the same contextual prompt as create) | `{ code: 'at_cap' }` |
@@ -304,7 +305,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/lib/projects.ts` (new, pure) -- `nameSchema` (zod, trim, 1–80), `nextUntitled(names)`, `copyName(name)` (clamped to the schema's maximum), `slugify(name)`, `updatedLabel(updatedAt, now)` ("Updated today" / "Updated Aug 19", and "Updated Aug 19, 2025" for another year, `Intl.DateTimeFormat('en', …)`, UTC — `// ponytail: server UTC; the viewer's zone if "today" ever reads wrong at midnight`), `matchesName(typed, name)` (the typed value trimmed, then exact). `apps/web/projects.test.ts` holds each, including the 80-char edge, "Untitled project 2", the same-day and other-day labels, and that `slugify('Copy of Field Notes')` is `copy-of-field-notes`
 - `apps/web/components/shell/shell.tsx` (new, server) -- the sidebar and top bar at 1440 and the 60px bar at 390 (`tablet:` is the seam — S3 draws 1440 and 390 and the sidebar holds from `tablet` up); the nav via `next/link` with the active item from `usePathname` in a tiny client `NavLink`; the search form — its field a small client `SearchField` reading `useSearchParams` for its value (a layout receives no query) and owning ⌘K; the "New project" button that opens the sheet
 - `apps/web/lib/shell-user.ts` (new, pure) + `apps/web/shell-user.test.ts` -- `ShellUser`, `nameOf`, `secondLineOf`: question 5's rule where `node --test` reaches it (fourth review, 2026-09-06)
-- `apps/web/app/(app)/app/sign-in/signed-out.ts` (new, pure) -- `SIGNED_OUT` and `SIGNED_OUT_PATH`, the one key the action writes and the page reads (fourth review, 2026-09-06)
+- `apps/web/app/(app)/app/sign-in/signed-out.ts` (new, pure) -- the whole sign-out URL contract, BOTH halves: `SIGNED_OUT` / `SIGNED_OUT_PATH` / `isSignedOut`, the key the action writes and the sign-in page reads (fourth review, 2026-09-06), and `SIGN_OUT_FAILED` / `SIGN_OUT_FAILED_PATH` / `isSignOutFailed`, which lands on the DASHBOARD because a failed sign-out leaves the user signed in (the owner's ruling at question 8, 2026-09-06). Each half exports a VALUE and a READER, not just a key — the fifth review found `=true` on one side alone could take a sentence away with `tsc` and every test green. `apps/web/signed-out.test.ts` walks both round trips and asserts the two keys never read as each other
 - `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, up at 390 since the owner moved the phone's menu into ☰); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts`, its row a child component (`SignOut`) so `useFormStatus` has a form to read and the row can say `Signing out…`. The trigger row is `secondLineOf()` in both columns: no `display_name` → the address on the 11px line and the plan badge at the end; a `display_name` → S3b's two lines. **Since his fourth test both lines are `truncate`** — S3b's ellipsis, in the ~88px the 220px column leaves — and the menu's own header is the copy that is never shortened
 - `apps/web/components/shell/drawer.tsx` (new, client) -- the ☰ `<dialog>` at 390: nav, account row, close
 - `apps/web/app/(app)/app/(authed)/project-card.tsx` (new, server) + `placeholder.tsx` (new) -- the card and its wireframe with the pack's three colours as inline `style` (they are pack data, the site's system, never Tailwind classes)
@@ -337,6 +338,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - [x] **Fix run (2026-09-05)** -- the owner's eight findings: the centred delete confirm, the drawer's outside-tap and focus, the phone's account menu moved into ☰ per his ruling, the phone's search focus, and `app/(app)/app/error.tsx` -- his test of the deployed site, R-80
 - [x] **Third Fix run (2026-09-06)** -- the owner's third test: the account row back to S3b in both columns with the badge and no stand-in name (question 5), and Sign out saying `Signing out…` then "You've been signed out." on the card (question 6). His finding 3, the `fra1` region move, was executed and controlled on his ruling before this run -- his third test of the deployed site, R-80
 - [x] **Fourth Fix run (2026-09-06)** -- the owner's fourth test, two findings: the sign-in card made honest when GoTrue's per-address 429 means nothing was sent (his ruling at question 7 put 1.4's fix inside this story), and the account row given S3b's last treatment — one line, an ellipsis where it runs out, the whole address one click away in the menu -- his fourth test of the deployed site, R-80
+- [x] **Fifth Fix run (2026-09-06)** -- the owner's ruling at question 8, option 1: Sign out that FAILS now says so, on the dashboard, in the Kit's own error Banner -- the last branch of his question 6 rule that said nothing, R-80/R-83
 - [x] **Second Fix run (2026-09-06)** -- the owner's three findings: the Duplicate door removed from the New project sheet (R-93), the sidebar chip made the drawer's row — no plan badge, the whole address — and D4b's upgrade card brought back to the frame's warm tint and solid gold button -- his second test of the deployed site, R-80
 
 **Acceptance Criteria:**
@@ -449,7 +451,7 @@ frame draws, the hidden search-cancel button, duplicate names, the second `<nav>
 beside the first, `revalidatePath('/app')` — proved live, and an email-less account, dismissed for the
 third time).
 
-- [ ] [Review][Decision] Sign out that FAILS says nothing: `signOut()` withholds the flag and redirects to `/`, so the user watches `Signing out…`, lands back on the dashboard still signed in, and is told nothing — the one branch of the owner's own question 6 ruling that does not "say it happened" [apps/web/app/(app)/app/sign-in/actions.ts:93] — **question 8**
+- [x] [Review][Decision] Sign out that FAILS says nothing: `signOut()` withholds the flag and redirects to `/`, so the user watches `Signing out…`, lands back on the dashboard still signed in, and is told nothing — the one branch of the owner's own question 6 ruling that does not "say it happened" [apps/web/app/(app)/app/sign-in/actions.ts:93] — **question 8, ruled option 1 by the owner on 2026-09-06 and built in the fifth Fix run below**
 - [x] [Review][Patch] Duplicate had no in-flight guard — the double-submit the sheet's "Create project" was executed with (three `requestSubmit()` made three rows), and duplicate is ONE action for the whole grid, so two cards race each other exactly as one card raced itself; two queued duplicates both count before either inserts and Pro's 25 becomes 27. The ref is on the scope, not the button [apps/web/app/(app)/app/(authed)/project-menu.tsx:59]
 - [x] [Review][Patch] Closing the phone's search unmounted the field and left `?q` filtering the grid — "No projects match", or a subset of the user's own work, with nothing on screen to explain it and no way back but the browser's Back button [apps/web/components/shell/shell.tsx:301]
 - [x] [Review][Patch] The 429 → "Just a moment" mapping — the whole of the owner's fourth-test fix — was pinned by nothing: `sentTooRecently` is tested, but deleting `throttled: true` from the action left `pnpm check`, `next build` and the RLS gate green and the defect back. Extracted to `sentStateFor` in the pure module, the move `lib/shell-user.ts` made for the account row [apps/web/app/(app)/app/sign-in/resend-timer.ts:59]
@@ -656,6 +658,17 @@ departure lives; none needs the owner, because each keeps a rule the PRD already
    swapped for what is true. Recorded here because it crosses a story boundary — the owner ruled at
    question 7 that 1.4's few lines are fixed inside 1.5 rather than by reopening a closed story — and
    because `spec-1-4`'s frozen matrix row and its S1b acceptance criterion were amended to point here.
+
+11. **The sign-out contract gained a second key, and it lands on the dashboard rather than the sign-in
+   page.** The frozen Code Map named one key, `signed-out`, written by `signOut()` and read by S1's card.
+   The owner's ruling at question 8 adds its opposite — `sign-out-failed` — and it cannot go to
+   `/sign-in`, because the branch it describes is the one where the session was NOT cleared: that page
+   would bounce a still-signed-in user straight back and he would see a flicker instead of a sentence.
+   So it goes to `/`, the dashboard he is already being returned to, and draws the Kit's `error` Banner
+   above whichever of the three states renders. Both halves live in `sign-in/signed-out.ts` because they
+   are one contract, and each exports a value and a reader rather than a bare key — the fifth review
+   executed that a shared key alone still let `=true` on one side remove the sentence with `tsc`,
+   `node --test` and `next build` all green.
 
 ## Design Notes
 
@@ -1954,6 +1967,16 @@ unreachable at the exact moment you click.
 
 Nothing is blocked by this: the dashboard is built, deployed and working, and Sign out works. Option 1 is a
 few lines inside this same story.
+
+**Ruled (owner, 2026-09-06): option 1 — "Show a short red line at the top of your dashboard — *We
+couldn't sign you out just now. Try again in a moment.*"** `signOut()` now redirects to
+`/?sign-out-failed=1` instead of `/` when GoTrue returns an error, and the dashboard draws the Kit's
+`error` Banner above whichever of its three states renders. Nothing new is designed: it is the same red
+strip a failed project read already uses, `role="alert"` and all. **The success flag is still withheld**
+— withholding "it happened" and saying "it did not" are two different things, and the branch now does
+both. The key is `SIGN_OUT_FAILED` in `sign-in/signed-out.ts`, which already owned the other half of
+this contract, and it carries a VALUE and a READER for the reason the fifth review found: sharing the
+key alone let a one-character edit take the sentence away with every check green.
 
 ## Owner's manual test
 

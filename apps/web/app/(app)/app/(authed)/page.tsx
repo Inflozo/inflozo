@@ -7,6 +7,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
 import { filterProjects } from '@/lib/projects'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { isSignOutFailed, SIGN_OUT_FAILED } from '../sign-in/signed-out'
 import { NewProjectSheet } from './new-project-sheet'
 import { ProjectCard, type Project } from './project-card'
 import { DuplicateScope } from './project-menu'
@@ -35,9 +36,12 @@ export default async function Dashboard({
 }: {
   // A repeated key (`?q=a&q=b`) arrives as an ARRAY; `filterProjects` takes the first and is
   // under test for it (review, 2026-09-05).
-  searchParams: Promise<{ q?: string | string[] }>
+  searchParams: Promise<{ q?: string | string[]; [SIGN_OUT_FAILED]?: string | string[] }>
 }) {
-  const [{ q }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ q, [SIGN_OUT_FAILED]: signOutFailed }, user] = await Promise.all([
+    searchParams,
+    currentUser(),
+  ])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
@@ -64,6 +68,18 @@ export default async function Dashboard({
 
   return (
     <>
+      {/* Sign out that FAILED. It sits above whichever of the three states renders, because the
+          user arrived here from the account menu rather than from the grid, and it is the Kit's
+          own error Banner — the same red strip a failed read uses — so nothing new is drawn for
+          it (the owner's ruling at question 8, option 1, 2026-09-06). It says the attempt failed
+          and NOT that anything happened: the session is still live, which is the whole reason
+          this lands on the dashboard instead of the sign-in page. Like `?signed-out=1` it is a
+          hint on the URL that nothing depends on. */}
+      {isSignOutFailed(signOutFailed) ? (
+        <div className="p-[16px_20px] pb-0 tablet:p-6 tablet:pb-0">
+          <Banner kind="error">We couldn&rsquo;t sign you out just now. Try again in a moment.</Banner>
+        </div>
+      ) : null}
       {unread ? (
         <div className="flex flex-col gap-4 p-[16px_20px] tablet:p-6">
           <h1 className="sr-only">Projects</h1>

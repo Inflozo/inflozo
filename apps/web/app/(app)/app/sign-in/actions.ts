@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
 import { SEND_INTERVAL, sentStateFor } from './resend-timer.ts'
-import { SIGNED_OUT_PATH } from './signed-out.ts'
+import { SIGN_OUT_FAILED_PATH, SIGNED_OUT_PATH } from './signed-out.ts'
 
 /**
  * Sending the link is a POST that runs entirely on the server: the publishable key, the
@@ -80,10 +80,17 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
  * GoTrue unreachable is the one way this fails: `signOut()` then KEEPS the cookies and returns
  * the error, so the flag is withheld — the sign-in page would only bounce a still-signed-in
  * user back to the dashboard, and the card must not say it happened when it did not.
+ *
+ * IT USED TO SAY NOTHING AT ALL in that branch: the user watched `Signing out…`, landed back on
+ * the dashboard still signed in, and was told nothing — the one branch of his own question 6
+ * rule that did not "say it happened" (review, 2026-09-06). **The owner ruled question 8,
+ * option 1:** the dashboard shows the Kit's error Banner, the same red strip it already shows
+ * when the projects fail to load. Withholding the success flag and saying the attempt failed are
+ * two different things, and now it does both.
  */
 export async function signOut() {
   const supabase = await supabaseServer()
   const { error } = await supabase.auth.signOut()
   if (error) console.error('sign-out: failed', { code: error.code })
-  redirect(error ? '/' : SIGNED_OUT_PATH)
+  redirect(error ? SIGN_OUT_FAILED_PATH : SIGNED_OUT_PATH)
 }
