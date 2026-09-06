@@ -5,7 +5,7 @@ created: '2026-09-06'
 status: 'in-review'
 review_loop_iteration: 1
 baseline_commit: 'c2d6f365c86dd3e9c323847cccd2856b304da6b7'
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
@@ -555,3 +555,11 @@ would.
 the plan column will be, about 870 pixels on a wide screen."** Applied in the same review: at desktop the
 column is `100% - 504px`, the frame's own 480px column plus its 24px gap; full width below desktop, where
 the frame draws nothing and 390 is one column.
+
+## Owner's test findings
+
+You tested the deployed passkey work on `app.inflozo.com` on 2026-09-06. Recorded in your words:
+
+1. **"The banner with 'Sign in faster next time — add a passkey. Add a passkey Not now' Both these
+   buttons can be standard button designs and not just links. Add passkey as primary button and Not
+   now as secondary (muted design) button."** — the dashboard nudge (step 2 of the manual test).
