@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 3
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -743,6 +743,21 @@ Deployment: `inflozo-p3pavnpq3-umangkagathara.vercel.app` (`dpl_27Ftr4NiH4htjcYP
 | `input[type=password]` on that page | **0** |
 | the nonce, header and body from the **same** response | **15 scripts, 15 nonced, exactly one distinct nonce in the page, and it equals the header's**. (Compared across two requests it never matches — each response mints a fresh nonce, which is the point) |
 | `DELETE /auth/v1/admin/users/{id}` | `profiles` **[]**, `entitlements` **[]** — cascaded |
+
+**Deploy (2026-09-06)** — the push of the third Review commit (`8b95c285`), confirmed on the real stack
+(R-82; PRD §4, AD-26: production is the stack under test). No schema change since the last deploy, so
+nothing beyond app code to deploy.
+
+| Check | Result |
+|---|---|
+| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `8b95c285` — `check` ✓ `rls` ✓ `deploy` ✓ (run `34008998712`) |
+| Vercel deployments (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_2m64KuF6unbMLYSNDkYMGHQyqMZR`, state **READY**, built from `8b95c285` |
+| Aliases on that deployment | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`), plus the probe and account preview aliases |
+| `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present |
+| `curl -sI https://app.inflozo.com/` signed out | **307** → `/sign-in`, unchanged |
+| `curl -sI https://inflozo.com/` | **200** |
+
+Deployment: `inflozo-47810pd9u-umangkagathara.vercel.app` (`dpl_2m64KuF6unbMLYSNDkYMGHQyqMZR`)
 
 **The two matrix rows the first pass had not executed.** Both were run against `app.inflozo.com` with a
 fixture user holding **exactly 25 projects** and `entitlements.state = pro_active`.
