@@ -51,10 +51,26 @@ const item = `flex w-full items-center gap-[9px] rounded-sm p-[8px_12px] text-le
 /**
  * DUPLICATE IS ONE ACTION FOR THE WHOLE GRID, so its failure Banner sits above the grid rather
  * than inside whichever card was clicked (the story's matrix). Every card's Duplicate is still
- * a real `<form>` posting the id, so it works with JavaScript switched off; what the context
- * carries is the shared `formAction` and nothing else.
+ * a real `<form>` posting the id, so it works with JavaScript switched off.
+ *
+ * WHAT THE CONTEXT CARRIES IS THE ACTION ITSELF, and it has to be. The double-submit guard added
+ * on 2026-09-06 wrapped the dispatch in a plain client closure and passed THAT as the form's
+ * `action` — and React only enhances a form whose action is the Server Function's own dispatch,
+ * so with JavaScript off no action was emitted at all and Duplicate GET-ed the current URL with
+ * `?id=…`: a click that reloaded the page and duplicated nothing, which is precisely the
+ * degradation the third review closed and which this file and `projects/actions.ts:25` both still
+ * claimed was working (review, 2026-09-06). The guard moved to `onSubmit`, where the sheet's
+ * already lives — it is the browser's own event, so it simply does not run when there is no
+ * JavaScript, and then there is no double submit to guard against either.
  */
-const DuplicateContext = createContext<((formData: FormData) => void) | null>(null)
+type Duplicate = {
+  /** The server action's OWN dispatch, so the `<form>` is progressively enhanced. */
+  action: (formData: FormData) => void
+  /** Claims the in-flight slot. `false` means one is already running and this submit is refused. */
+  arm: () => boolean
+}
+
+const DuplicateContext = createContext<Duplicate | null>(null)
 
 export function DuplicateScope({ children }: { children: ReactNode }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(duplicateProject, null)
@@ -68,10 +84,10 @@ export function DuplicateScope({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!pending) inFlight.current = false
   }, [pending])
-  const guarded = (formData: FormData) => {
-    if (inFlight.current) return
+  const arm = () => {
+    if (inFlight.current) return false
     inFlight.current = true
-    action(formData)
+    return true
   }
   // The matrix's *Duplicate, at cap* row answers `at_cap` with the D4b sheet, the same
   // contextual prompt "New project" raises — and a card rendered under the cap can still meet
@@ -85,7 +101,7 @@ export function DuplicateScope({ children }: { children: ReactNode }) {
   const failed = error && error.code !== 'at_cap' ? error.message : null
 
   return (
-    <DuplicateContext value={guarded}>
+    <DuplicateContext value={{ action, arm }}>
       {failed ? <Banner kind="error">{failed}</Banner> : null}
       {children}
     </DuplicateContext>
@@ -104,6 +120,26 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
 
   const [renamed, renameAction, renaming] = useActionState<ActionResult | null, FormData>(renameProject, null)
   const [removed, deleteAction, removing] = useActionState<ActionResult | null, FormData>(deleteProject, null)
+  // THE SAME DOUBLE SUBMIT the sheet's "Create project" and the grid's Duplicate were both given
+  // a guard for, propagated to the two forms that were left without one (standing rule 3, review
+  // 2026-09-06). Both are `useActionState` forms with an Enter-submittable field, and React
+  // queues form actions while `pending` only turns true on the NEXT render — so a held Enter or a
+  // double click sends a second Delete whose "We couldn't delete that just now." arrives about a
+  // row that is already gone, and a second Rename that races the first. `onSubmit` and not the
+  // action, so the forms keep working with JavaScript off, where there is no double submit.
+  const busy = useRef(false)
+  useEffect(() => {
+    if (!renaming && !removing) busy.current = false
+  }, [renaming, removing])
+  const once = (event: { preventDefault: () => void }) => {
+    if (busy.current) {
+      event.preventDefault()
+      return false
+    }
+    busy.current = true
+    return true
+  }
+
   const [typed, setTyped] = useState('')
   // A result the dialog was CLOSED on is spent: reopened, it starts clean rather than with the
   // last attempt's sentence still on screen (review, 2026-09-05). Identity is enough — every
@@ -198,7 +234,16 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
             Duplicate
           </button>
         ) : (
-          <form action={duplicate} onSubmit={close}>
+          <form
+            action={duplicate.action}
+            onSubmit={(event) => {
+              if (!duplicate.arm()) {
+                event.preventDefault()
+                return
+              }
+              close()
+            }}
+          >
             <input type="hidden" name="id" value={id} />
             <button type="submit" className={`${item} text-ink hover:bg-paper`}>
               <span className="shrink-0 text-ink-soft">
@@ -243,7 +288,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
           Rename project
         </h2>
         {renameFailed ? <Banner kind="error">{renameFailed}</Banner> : null}
-        <form action={renameAction} className="flex flex-col gap-[18px]">
+        <form action={renameAction} onSubmit={once} className="flex flex-col gap-[18px]">
           <input type="hidden" name="id" value={id} />
           {/* `maxLength` is the schema's own number, so the 81st character cannot be typed or
               pasted and the matrix's "nothing sent" is true of it natively — the sentence still
@@ -299,7 +344,11 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
           onSubmit={(event) => {
             // The server re-checks the typed name and never trusts this; the guard is here so
             // a greyed button cannot be pressed into action by Enter.
-            if (!armed) event.preventDefault()
+            if (!armed) {
+              event.preventDefault()
+              return
+            }
+            once(event)
           }}
           className="flex flex-col gap-5"
         >

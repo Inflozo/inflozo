@@ -728,8 +728,17 @@ def check():
             # export has files but no designs, and "run the tool" would not fix that either; and
             # a self-check whose message is empty used to print the label and nothing else
             # (review, 2026-09-06).
+            # AN ASSERTION IS A SELF-CHECK however the tool exits, and keying this to the two
+            # shapes story-board.py happens to use missed the one failure category-prompts.py can
+            # actually produce under --check: `assert_tuple_vocab_matches_gate()` runs BEFORE the
+            # REFUSING branch (which --check never reaches at all, category-prompts.py:539) and
+            # raises, so the last stderr line is `AssertionError: <the drift>`, exit 1 — matching
+            # none of the tests above and reported as "STALE — run python3 tools/category-prompts.py",
+            # which regenerates the HTML and cannot fix a vocabulary drift. That is the same
+            # misdirection this branch was written to remove, three times over (review, 2026-09-06).
             last = (r.stderr.strip().splitlines() or [''])[-1]
-            own = r.returncode == 2 or 'SELF-CHECK' in last or last.startswith('REFUSING')
+            own = (r.returncode == 2 or 'SELF-CHECK' in last or last.startswith('REFUSING')
+                   or last.startswith('AssertionError'))
             fails.append(f'{tool}: {last or f"exited {r.returncode} with no message"}' if own else
                          f'STALE: {art} does not match {src} — run python3 tools/{tool}')
 

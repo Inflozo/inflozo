@@ -69,3 +69,28 @@ test("the email template's type= is one the confirm route accepts", () => {
     )
   }
 })
+
+/**
+ * THE SHELL OWNS THE `<main>`, and nothing watched it. `/kit` was changed from `<main>` to `<div>`
+ * for exactly this reason once `(authed)/layout.tsx` grew one — two nested `main` landmarks is
+ * axe's `region`/`landmark-unique` rule — and the change was verified by a hand-run axe pass that
+ * lives in no gate. The next page added under `(authed)` could wrap itself in one with lint,
+ * `tsc`, `node --test` and `next build` all green (review, 2026-09-06). This is the same class of
+ * invisible route-shape contract as the two tests above, so it lives in the same file.
+ *
+ * `sign-in/page.tsx` renders OUTSIDE the shell and therefore owns its own, which is why the rule
+ * is scoped to `(authed)` rather than to every page. `error.tsx` is not a page and is not walked
+ * here; it replaces the document and owns its own for the same reason.
+ */
+test('no page inside (authed) declares its own <main> — the shell is the only one', () => {
+  for (const page of pages()) {
+    if (!page.startsWith(`(authed)${'/'}`)) continue
+    assert.doesNotMatch(
+      readFileSync(join(APP, page), 'utf8'),
+      // anchored, and for the reason the force-static test above is: /kit's own comment explains
+      // why it is a `<div>` by quoting the `<main>` it gave up, and prose is not markup.
+      /^\s*(return\s+)?<main[\s>]/m,
+      `${page} declares a <main>, but the shell in (authed)/layout.tsx already does — two nested main landmarks. Use a <div>, as kit/page.tsx does.`,
+    )
+  }
+})

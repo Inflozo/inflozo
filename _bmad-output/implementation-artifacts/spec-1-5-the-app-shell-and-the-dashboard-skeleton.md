@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
-review_loop_iteration: 4
+review_loop_iteration: 5
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
@@ -289,7 +289,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 | Keyboard | Tab through the shell and a card | sidebar → search → New project → cards' ⋯ → chip; ⋯ opens with Enter, arrows move, Escape closes and returns focus; every confirm opens on Cancel | N/A |
 | Sign out | the menu's Sign out pressed | the row reads `Signing out…` while it runs, then `/sign-in?signed-out=1` shows the mint Banner "You've been signed out."; no confirm window (**the owner's third test, finding 2, question 6 option 1**) | a second press while it runs is refused (`aria-disabled`), so one click is one sign-out |
 | Signed out | any of these URLs | 307 to `/sign-in` (1.4's guard, unchanged) | N/A |
-| Sign out, then sign straight back in | a link asked for within the project's `smtp_max_frequency` (60 s) | **ADDED ON THE OWNER'S RULING, 2026-09-06 — question 7, option 1, from his fourth test, finding 1.** GoTrue answers `over_email_send_rate_limit` and **nothing is sent**, so the card must not say "Check your inbox ✨ … It's good for 15 minutes": it reads **"Just a moment"** and *"We sent a magic link to `<address>` less than a minute ago, so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below."* The envelope, the address in bold, the countdown and "Use a different email" are unchanged | the project-wide `over_request_rate_limit` is still a plain failure and still draws the error Banner — only the per-address 429 takes this card |
+| Sign out, then sign straight back in | a link asked for within the project's `smtp_max_frequency` (60 s) | **ADDED ON THE OWNER'S RULING, 2026-09-06 — question 7, option 1, from his fourth test, finding 1.** GoTrue answers `over_email_send_rate_limit` and **nothing is sent**, so the card must not say "Check your inbox ✨ … It's good for 15 minutes": it reads **"Just a moment"** and *"We sent a magic link to `<address>` a moment ago, so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below."* The envelope, the address in bold, the countdown and "Use a different email" are unchanged. **AMENDED BY THE FIFTH REVIEW, 2026-09-06:** the sentence was written here as *"less than a minute ago"*, a count beside a countdown derived from `SEND_INTERVAL`, which goes stale the day `smtp_max_frequency` moves or GoTrue answers "after 90 seconds" (standing rule 4). The shipped copy is **"a moment ago"** and this row was still quoting the wording it replaced — every other owner-driven change to a frozen row carries its amendment inline, and this one did not (review, 2026-09-06) | the project-wide `over_request_rate_limit` is still a plain failure and still draws the error Banner — only the per-address 429 takes this card |
 
 </frozen-after-approval>
 
@@ -468,6 +468,45 @@ third time).
 - [x] [Review][Patch] The menu header's slot is recorded as a fixed 153px/160px and re-measured at 154px — a figure that moves with the browser's font conditions and that nothing behavioural turns on, so it is written approximate (standing rule 4) [this spec]
 - [x] [Review][Defer] `pro_past_due` grants Pro indefinitely — the grace window has no reader anywhere in the app [apps/web/lib/entitlement.ts] — deferred, Epic 12 owns the Dodo reconciliation (DW-23)
 - [x] [Review][Defer] `projects.slug` carries no unique constraint, so `uniqueSlug`'s read-then-insert can collide between two overlapping requests [apps/web/lib/projects.ts:60] — deferred, it is a migration and DW-8 froze this epic's (DW-24)
+
+### Review Findings — sixth review, 2026-09-06, after the fifth Fix run
+
+Five layers over the whole diff since the baseline (`db959b18..f6c3743c`, the code last changed in
+`fbe71d75`), the Real-infra verifier on the live deployment: production is `dpl_3XAWxBXNxEBN5RnJtpDU1chvM2Pv`,
+READY, built from HEAD, CI green on HEAD, RLS refused every cross-user call with a passing positive
+control, and axe-core clean at 1440 and 390 with its planted control flagging `button-name(1)` and
+`image-alt(1)` at both widths. The Acceptance Auditor re-checked every patch the second, third, fourth
+and fifth reviews claim and found all of them present and none regressed. A mutation control turned the
+suite red before each new test was kept. **No finding is the owner's to decide — every question in
+`## Questions for the owner` is ruled, and this review raises none.** Five are deferred as work another
+epic owns (DW-25 … DW-29); thirteen were dismissed as noise, as already recorded, or as what the frames
+and the frozen Boundaries ask for (the greyed doors' `aria-disabled` exemption, the email-less account
+for the fourth time, the `?sign-out-failed=1` hint persisting on the URL exactly as `?signed-out=1` does,
+`ProjectMenu`'s render-time throw, `story-board.py --check` "rendering the board twice" — it renders the
+demo fixture and the real board, which are two different things, and the sheet's `failed` filter, which
+covers every code `createProject` can actually return).
+
+**The first finding is a functional regression that the fifth Fix run introduced, and the second is the
+gap that would have let it happen again.**
+
+- [x] [Review][Patch] **Sign out that fails can never be retried.** `inFlight.current` is set on every click and released by nothing, on a comment whose premise the owner's ruling at question 8 had just falsified: "the redirect replaces the document, so the ref never needs resetting" was true only while BOTH branches went to `/sign-in`, a different route group, so this component unmounted with the `(authed)` layout. The failure branch now lands on `/?sign-out-failed=1` — the dashboard, inside that same layout — and a server-action redirect is a soft navigation, so `AccountMenu` is never remounted and the ref stays `true` for good. The red Banner says "Try again in a moment" while the only control that can try is inert, and because `pending` is false again the row still reads "Sign out" and looks live. Both sibling guards already release exactly this way [apps/web/components/shell/account-menu.tsx:285]
+- [x] [Review][Patch] **Which path `signOut` picks was pinned by nothing.** `signed-out.test.ts` walks both constants and both readers, so inverting the ternary swapped the owner's two sentences with `tsc` and every test green: a successful sign-out would redirect to `/?sign-out-failed=1`, where the guard bounces the now-sessionless user to `/sign-in` with no banner at all, and a failure would go to `/sign-in`, which bounces a still-signed-in user straight back to the dashboard in silence — the exact "watched `Signing out…`, told nothing" defect questions 6 and 8 exist to close. `signOutPathFor(failed)` in the pure module, asserted through the readers so a rename cannot make it vacuous — the move `shell-user.ts` and `sentStateFor` each made [apps/web/app/(app)/app/sign-in/actions.ts:95]
+- [x] [Review][Patch] **Duplicate stopped working with JavaScript off, while two comments still said it did.** The fifth review's in-flight guard wrapped the dispatch in a plain client closure and passed that as the form's `action`; React only progressively enhances a form whose action is the Server Function's own dispatch, so with JS off no action was emitted and Duplicate GET-ed the current URL with `?id=…` — a click that reloads the page and duplicates nothing, the degradation the third review closed. The guard moved to `onSubmit`, where the sheet's already lives: it is the browser's own event, so it does not run when there is no JavaScript, and then there is no double submit either [apps/web/app/(app)/app/(authed)/project-menu.tsx:201]
+- [x] [Review][Patch] The phone still lost its search field on any load that ARRIVED with `?q`. The fifth review closed the close-button half; `searchOpen` still started `false`, so a refresh, a bookmark, a restored tab or a shared link at 390 rendered the filtered grid — or "No projects match …" — with no field on screen and nothing to clear it: the same dead end by the other door [apps/web/components/shell/shell.tsx:196]
+- [x] [Review][Patch] `arrowKeys`' wrap-around is the keyboard behaviour of every menu in the app and had no runnable check — dropping the `+ count` makes ArrowUp from the first item `items[-1].focus()`, a throw into `error.tsx`, with lint, `tsc`, `node --test` and `next build` all green. `nextIndex` extracted and `menu.test.ts` added, including the exhaustive "every answer is a real index" sweep [apps/web/lib/menu.ts:105]
+- [x] [Review][Patch] The double-submit guard reached Create, Duplicate and Sign out but not **Rename and Delete**, both `useActionState` forms with an Enter-submittable field — so a held Enter sends a second Delete whose "We couldn't delete that just now." arrives about a row that is already gone (standing rule 3: the finding had not reached its siblings) [apps/web/app/(app)/app/(authed)/project-menu.tsx:124]
+- [x] [Review][Patch] `error.tsx` replaces the whole document, OUTSIDE the shell's `<main>`, so its heading and both controls sat in no landmark at all — axe's `region` rule, the same one `/kit` was changed for. It is never on screen beside the shell, so there is still exactly one [apps/web/app/(app)/app/error.tsx:43]
+- [x] [Review][Patch] The one-`<main>`-per-document rule that `/kit` was changed for was verified by a hand-run axe pass that lives in no gate, so the next page under `(authed)` could undo it with everything green. A fourth case in `app-routes.test.ts`, in that file's own idiom — and anchored, because `/kit`'s comment quotes the `<main>` it gave up and prose is not markup [apps/web/app-routes.test.ts:85]
+- [x] [Review][Patch] `error.tsx` justified its own placement with "`revalidatePath` after a write re-renders the shell and the page together" — an assertion about a framework that nothing here executes, and the wrong one: every call is `revalidatePath(DASHBOARD)` at the default `'page'` scope, which does not revalidate the layout. Removed rather than restated, because the placement never needed it (standing rule 1) [apps/web/app/(app)/app/error.tsx:17]
+- [x] [Review][Patch] The gate still misdirected on the one failure `category-prompts.py --check` can actually produce: `assert_tuple_vocab_matches_gate()` runs before the `REFUSING` branch (which `--check` never reaches at all) and raises, so the last stderr line is `AssertionError: …` at exit 1 — matching none of the fifth review's tests and reported as "STALE — run python3 tools/category-prompts.py", which regenerates the HTML and cannot fix a vocabulary drift. An assertion is a self-check however the tool exits [tools/doc-audit.py:731]
+- [x] [Review][Patch] The frozen matrix's throttled-card row still quoted **"less than a minute ago"**, the wording the fifth review replaced for standing rule 4 — so the spec quoted copy the product does not ship, and every other owner-driven change to a frozen row carries its amendment inline. Amended in place [this spec]
+- [x] [Review][Patch] Three records carried three different numbers for one measurement: Change Log entry 9 said a fixed "153px of slot", the Verification tables ≈153 / re-measured 154 / 156, and the code beside the same markup ~162 and ~166. Nothing behavioural turns on it and it moves with the browser's font conditions, so both records now state the **relation** — the menu's header is the roomiest of the three slots because it is wider than the 220px column and spends none of it on an avatar or a badge (standing rule 4) [apps/web/components/shell/account-menu.tsx:39 · this spec]
+- [x] [Review][Defer] The dashboard's skeleton cannot fire on a cold load — the layout awaits its three reads above `loading.tsx` [apps/web/app/(app)/app/(authed)/layout.tsx] — deferred, the fix changes the shell's render shape (DW-25)
+- [x] [Review][Defer] The nav's unbuilt destinations land on Next's own unbranded 404, outside the shell [apps/web/components/shell/shell.tsx] — deferred, the owner accepted the 404s and each route's own epic replaces them (DW-26)
+- [x] [Review][Defer] The desktop search has no control that clears it [apps/web/components/shell/shell.tsx] — deferred, adding one departs from the frame and the copy is the owner's call (DW-27)
+- [x] [Review][Defer] `duplicateProject`'s column list is hand-maintained, so a column a later epic adds is silently dropped from every duplicate [apps/web/app/(app)/app/(authed)/projects/actions.ts] — deferred, the check has to read the migration (DW-28)
+- [x] [Review][Defer] `resolveEntitlement`'s "a failed read is Free" rule is reachable by no test [apps/web/lib/entitlement.ts] — deferred, closing it means this codebase's first mock (DW-29)
+
 
 ## Spec Change Log
 
@@ -648,8 +687,15 @@ departure lives; none needs the owner, because each keeps a rule the PRD already
    in the row's own font, not estimated — so `break-all` wrapped it mid-word and he read that as cut in
    half. The frame's own answer was the one treatment the row had never been given: `max-width:100px`
    with `text-overflow: ellipsis`. So the row truncates and **the menu's header becomes the place the
-   whole address lives** — 153px of slot against the address's 115px, executed. Nothing about the two
-   columns being one piece of code changes; at 390 the same line has 156px and the ellipsis never fires.
+   whole address lives** — the header line is the roomiest of the three slots, because the menu is wider
+   than the sidebar's 220px column and spends none of it on an avatar or a badge, and it was executed
+   against the owner's own address. Nothing about the two columns being one piece of code changes; at 390
+   the same line is the drawer's full width rather than a column, so the ellipsis never fires there.
+   **AMENDED BY THE SIXTH REVIEW, 2026-09-06:** this entry said "153px of slot", the Verification tables
+   said ≈153 / re-measured 154 / 156, and the code beside the same markup said ~162 and ~166 — three
+   records carrying different numbers for one measurement that moves with the browser's font conditions
+   and that nothing behavioural turns on. The fifth review made the tables approximate; the relation is
+   what is true at every size, so it is what both records now state (standing rule 4).
 10. **A predicate's NAME carried the defect, so the fix is mostly a rename.** `linkAlreadySent` was true
    for exactly one thing — GoTrue's per-address 429 — and that 429 says *too soon*, never *a link is
    waiting for you*. The two are the same only while the earlier link is unused, and signing out and
@@ -1715,6 +1761,69 @@ is not something to do to the production project, so the *writer* half — `sign
 `SIGN_OUT_FAILED_PATH` when `supabase.auth.signOut()` returns an error — is held by the round-trip test
 and its mutation control, not by a live failure. The *reader* half is what was executed above, on the
 real deployment, with three passing negative controls.
+
+### The sixth review — 2026-09-06, after the fifth Fix run
+
+Five layers over `db959b18..f6c3743c`; the Real-infra verifier ran against the live stack before any
+patch. Keys were read into each command's environment from `tools/probe/.env` by variable name and never
+printed. Three fixture users were created and **all three deleted**; the census before and after is
+identical.
+
+**Is production HEAD, and is it green**
+
+| Check | Result |
+|---|---|
+| the deployment serving `app.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_3XAWxBXNxEBN5RnJtpDU1chvM2Pv`, **READY**, production, `githubCommitSha` **`f6c3743c`** — HEAD, branch `main`; aliases `inflozo.com` · `www.inflozo.com` · **`app.inflozo.com`**. (The fifth Fix run's table names `dpl_6cxGc4…`/`fbe71d75`; that deployment is one commit behind and superseded — the recorded id was stale, the deployment was not) |
+| CI on HEAD (`GITHUB_TOKEN`) | run `34028599610`, head `f6c3743c` — `check: success` · `rls: success` · `deploy: success` |
+| the deployed shape | `/` signed out **307 → /sign-in** `x-inflozo-policy: app-nonce`; `/kit` **307**; `/sign-in` **200** with `script-src 'self' 'nonce-…' 'strict-dynamic'` and `strict-transport-security: max-age=63072000`; `inflozo.com` **200** `marketing-static`, no nonce; `/sites` `/assets` `/account` `/billing` `/suggestions` and `inflozo.com/docs` **404** each — expected; `x-vercel-id: bom1::fra1::…` (the `fra1` move holds) |
+| **negative control** — the guard is not decorative | **PASSED** — a forged `sb-…-auth-token` cookie still returned **307**; `/?sign-out-failed=1` signed out returned **307**, so the banner needs a real session |
+| `pnpm check` · `run-rls-gate.sh` · `doc-audit --check` | **exit 0** each — `apps/web` **73 pass, 0 fail** before this review's patches; the RLS gate **40 `PASS`, 0 `FAIL`**, no drift refusal |
+
+**The fifth Fix run's ruling, re-executed on `https://app.inflozo.com` with a real signed-in session**
+
+A fixture user was created through `POST /auth/v1/admin/users`, its link minted with `admin/generate_link`
+and the session taken through the **deployed** `/auth/confirm` (**303 → `/`**, auth cookie written).
+
+| URL | Banner shown? | |
+|---|---|---|
+| `/?sign-out-failed=1` | **yes** — `<div role="alert" class="… bg-danger-tint border-danger-line text-danger-text">`, "We couldn't sign you out just now. Try again in a moment." | the ruling |
+| `/` | no | **control** |
+| `/?sign-out-failed=0` | no | **control** — the value is read, not the key's presence |
+| `/?sign-out-failed=true` | no | **control** |
+
+The shell rendered on the same response (`Projects` · `Sites` · `Assets` · `New project`), so the banner
+sits above a working dashboard rather than replacing it.
+
+| Check | Result |
+|---|---|
+| **RLS**, B against A's project id | `select` · `PATCH` · `DELETE` → **200 `[]`** each; `INSERT` carrying A's `user_id` → **403 `42501`**; A's row unchanged afterwards |
+| **positive control** — the empties are RLS, not a broken query | **PASSED** — A's own JWT on the same id returned the row |
+| extra control — `entitlements` is select-only to `authenticated` | A's `PATCH` of its own row → **403 `42501`** |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A + AA) on the deployed dashboard | **1440: 0 violations**, 23 passes · **390: 0 violations**, 21 passes; no horizontal scroll and **zero** console CSP violations at either width |
+| **positive control** — axe is really looking | **PASSED** — a nameless `<button>` and an alt-less `<img>` planted into the page axe had just called clean produced **`button-name` + `image-alt` at both widths** |
+| the account row at 1440 | avatar · `truncate` 11px ink-soft address · `Free` at `ml-auto` — one line, no invented bold name line (`display_name` null), and the menu it opens is 240px, opens upward, carries the **whole** address in its header, and has **no** Keyboard shortcuts row |
+| the fixtures | **all three deleted**; census identical before and after — **2 users**, the owner's own two accounts, `projects` for them `[]` |
+
+**After this review's patches**
+
+| Command | Result |
+|---|---|
+| `pnpm check` (Node v24.18.1) | **green** — lint, typecheck, **79 tests, 79 pass, 0 fail** (73 + the six this review added) |
+| **control** on the new tests | **PASSED** — inverting `signOutPathFor`, dropping `nextIndex`'s `+ count`, and giving `/kit` back its `<main>` turned the suite **red, 5 fail**; tree restored and green again |
+| **control** on the `doc-audit.py` classifier | **PASSED** — over four fabricated failures it now answers "the tool's own" for exit 2, `REFUSING` and `AssertionError`, and "STALE" for a plain stale artifact; the expression it replaced answered **STALE** to the `AssertionError` case, which regenerates the HTML and cannot fix a vocabulary drift |
+| `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
+| `python3 tools/doc-audit.py --check` twice | **PASS, 0 warnings** both times |
+
+**Two limits stated rather than assumed.** The *writer* half of the sign-out-failed contract —
+`signOut()` choosing the failed path when GoTrue returns an error — is still held by the round-trip test
+and its mutation control, not by a live failure, because forcing the real GoTrue to be unreachable is not
+something to do to the production project; the *reader* half was executed above with three passing
+negative controls, and this review's `signOutPathFor` closes the one mutation that could have swapped the
+two silently. And `RESEND_API_KEY` remains send-only (`401 restricted_api_key`, controlled against no-key
+`401 missing_api_key` and bogus-key `400 validation_error`), so whether mail was delivered is unreadable
+from here — DW-22, unchanged. Dodo and the Ghost servers T1/T3 are correctly absent from
+`## Verification`: this story touches neither, and **no mock stands in for a real service anywhere in it.**
+
 
 ## Questions for the owner
 

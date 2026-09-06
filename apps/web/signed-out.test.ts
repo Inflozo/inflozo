@@ -9,6 +9,7 @@ import {
   SIGNED_OUT,
   SIGNED_OUT_PATH,
   SIGNED_OUT_VALUE,
+  signOutPathFor,
 } from './app/(app)/app/sign-in/signed-out.ts'
 
 // The whole point: what `signOut` REDIRECTS TO is what the page READS as signed out. Both sides
@@ -52,4 +53,22 @@ test('the two sign-out hints never collide', () => {
   assert.notEqual(SIGNED_OUT, SIGN_OUT_FAILED)
   assert.equal(isSignedOut(new URL(SIGN_OUT_FAILED_PATH, 'https://x').searchParams.get(SIGNED_OUT) ?? undefined), false)
   assert.equal(isSignOutFailed(new URL(SIGNED_OUT_PATH, 'https://x').searchParams.get(SIGN_OUT_FAILED) ?? undefined), false)
+})
+
+/**
+ * WHICH PATH THE ACTION PICKS, which is the half every assertion above walked straight past: the
+ * constants and the readers were pinned, so inverting `signOut`'s ternary swapped the owner's two
+ * sentences with `tsc` and this whole file still green (review, 2026-09-06). Asserted through the
+ * readers rather than against the constants, so a rename cannot make it vacuous.
+ */
+test('a failed sign-out lands on the dashboard, a successful one on the sign-in card', () => {
+  const failed = new URL(signOutPathFor(true), 'https://app.inflozo.com')
+  assert.equal(failed.pathname, '/')
+  assert.ok(isSignOutFailed(failed.searchParams.get(SIGN_OUT_FAILED) ?? undefined))
+  assert.equal(isSignedOut(failed.searchParams.get(SIGNED_OUT) ?? undefined), false)
+
+  const ok = new URL(signOutPathFor(false), 'https://app.inflozo.com')
+  assert.equal(ok.pathname, '/sign-in')
+  assert.ok(isSignedOut(ok.searchParams.get(SIGNED_OUT) ?? undefined))
+  assert.equal(isSignOutFailed(ok.searchParams.get(SIGN_OUT_FAILED) ?? undefined), false)
 })

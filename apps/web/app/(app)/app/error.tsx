@@ -15,9 +15,15 @@ import { ring } from '@/components/kit/greyed'
  *
  * It sits at the `/app` segment rather than inside `(authed)`, so it catches a throw in the
  * SHELL as well as in a page: the shell is `(authed)/layout.tsx`, a child of this segment, and
- * an `error.tsx` never catches its own segment's layout. `revalidatePath` after a write
- * re-renders the shell and the page together, so a boundary that covered only the page would
- * have missed half of the thing it exists for.
+ * an `error.tsx` never catches its own segment's layout. The shell is on screen for every one of
+ * those pages, so a boundary that covered only the page would have missed half of the thing it
+ * exists for. (This sentence used to justify itself with "`revalidatePath` after a write
+ * re-renders the shell and the page together" — an assertion about a framework that nothing here
+ * executes, and the wrong one: every call in `projects/actions.ts` is `revalidatePath(DASHBOARD)`
+ * at the default `'page'` scope, which does not revalidate the layout. Standing rule 1 — the
+ * claim is gone rather than restated, because the boundary's placement never needed it. If a
+ * later story has to refresh the shell itself — the plan badge after an upgrade is the one in
+ * sight — that call is the one that takes `'layout'`; review, 2026-09-06.)
  * ponytail: one boundary for the whole app host — it loses the sidebar while it is showing. A
  * second `error.tsx` inside `(authed)` keeps the shell for page-level throws; add it if a real
  * error turns out to be common enough that the sidebar is worth having on screen beside it.
@@ -38,8 +44,12 @@ export default function AppError({
     console.error('app: unhandled error', { digest: error.digest })
   }, [error])
 
+  // `<main>` and not a `<div>`: this boundary replaces the whole document, OUTSIDE the shell's
+  // own `<main>` in `(authed)/layout.tsx`, so without it the heading and both controls sit in no
+  // landmark at all — axe's `region` rule, the same one `/kit` was changed for (review,
+  // 2026-09-06). It is never on screen beside the shell, so there is still exactly one.
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-paper p-6 text-center">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-paper p-6 text-center">
       <span className="font-display text-[20px] font-extrabold tracking-[-0.02em] text-ink">Inflozo</span>
       <div className="flex max-w-[420px] flex-col gap-2">
         <h1 className="font-display text-[28px] font-bold tracking-[-0.01em] text-ink">
@@ -61,6 +71,6 @@ export default function AppError({
           Back to your projects
         </Link>
       </div>
-    </div>
+    </main>
   )
 }

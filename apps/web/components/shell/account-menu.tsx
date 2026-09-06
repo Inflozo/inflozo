@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
 import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
@@ -36,8 +36,8 @@ export type { ShellUser }
    initial on a phone, inside ☰, and it is the trigger. (His two riders that day — no badge on the
    row, and the address never clipped — were reversed by his third and fourth tests in turn; the
    paragraph above is the settled shape. The phone's row still shows the address whole, not
-   because it is treated differently but because 390 leaves it ~166px and the ellipsis never
-   fires.)
+   because it is treated differently but because the drawer's row is the sidebar's whole width
+   rather than a 220px column, which leaves the line more than the address needs.)
 
    KEYBOARD SHORTCUTS IS ABSENT, and the frame draws it. There is no editor yet and therefore
    nothing for the sheet to list — a control that could NEVER act here is absent, not greyed
@@ -163,9 +163,10 @@ export function AccountMenu({
           88px once the 220px column, its 12px padding, the row's 12px padding, the 30px avatar,
           the 10px gap and the badge are taken out, and NO treatment fits that address into 88px
           whole. So it truncates here, and the whole address is one click away in the menu's own
-          header below, which has ~162px and is deliberately left unbroken. The drawer at 390 has
-          ~166px on this same line, so the truncation never fires there — one piece of code, two
-          sizes. No `aria-label` and no `title`: the visible text IS the accessible name (WCAG
+          header below, which is the widest slot this address is ever given — no avatar and no
+          badge beside it — and is deliberately left unbroken. The drawer at 390 gives this same
+          line more than the address needs, so the truncation never fires there — one piece of
+          code, two sizes. No `aria-label` and no `title`: the visible text IS the accessible name (WCAG
           2.5.3, Label in Name), the full address is in the DOM for a screen reader either way,
           and a tooltip is not a route to information — the menu is. The export is untouched
           (R-74). */}
@@ -211,8 +212,9 @@ export function AccountMenu({
           <Avatar user={user} size={dense ? 32 : 36} />
           {/* The trigger's rule, again: no name → the address on the small line alone. THIS is
               the copy that is never truncated, and since his fourth test it is the only one:
-              240px of menu leaves this line ~162px against the trigger row's ~88px, so the
-              address the row had to shorten is whole one click away. `break-all` rather than a
+              the menu is wider than the sidebar's column AND spends none of it on an avatar or a
+              badge, so this line is always the roomiest of the three and the address the row had
+              to shorten is whole one click away. `break-all` rather than a
               wrap, because an email has no spaces to break at. */}
           <span className="flex min-w-0 flex-col">
             {second ? (
@@ -282,8 +284,22 @@ function SignOut({ dense, iconSize }: { dense: boolean; iconSize: number }) {
   const { pending } = useFormStatus()
   // `pending` turns true on the NEXT render, and React queues form actions — the sheet's
   // "Create project" made three rows from three submits in one tick before it got a ref
-  // (review, 2026-09-06). The redirect replaces the document, so the ref never needs resetting.
+  // (review, 2026-09-06).
+  //
+  // THE REF HAS TO BE RELEASED, and the comment that said otherwise was true only until the
+  // owner ruled question 8. It read "the redirect replaces the document, so the ref never needs
+  // resetting" — which held while BOTH branches went to `/sign-in`, a different route group, so
+  // this component unmounted with the `(authed)` layout. The failure branch now lands on
+  // `/?sign-out-failed=1`, the dashboard, INSIDE that same layout: a server-action redirect is a
+  // soft navigation, `AccountMenu` is never remounted, and the ref stayed `true` for good. The
+  // banner said "Try again in a moment" while the only control that can try was inert — and
+  // `pending` was false again, so the row still read "Sign out" and looked live (review,
+  // 2026-09-06). Both sibling guards already release exactly this way
+  // (`new-project-sheet.tsx`, `project-menu.tsx`); this one now does too.
   const inFlight = useRef(false)
+  useEffect(() => {
+    if (!pending) inFlight.current = false
+  }, [pending])
   return (
     <button
       type="submit"

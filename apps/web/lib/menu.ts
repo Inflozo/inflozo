@@ -102,8 +102,23 @@ export function arrowKeys(event: KeyboardEvent<HTMLElement>) {
     items[end > 0 ? items.length - 1 : 0].focus()
     return
   }
-  const at = items.indexOf(document.activeElement as HTMLElement)
-  // From nowhere in particular, Down opens on the first item and Up on the last.
-  const next = at < 0 ? (step > 0 ? 0 : items.length - 1) : (at + step + items.length) % items.length
-  items[next].focus()
+  // `step` is non-zero by here — a zero one either returned above or was End/Home, which did —
+  // but the ternary is what narrows `-1 | 0 | 1` to the two the arithmetic accepts.
+  const dir = step > 0 ? 1 : -1
+  items[nextIndex(items.length, items.indexOf(document.activeElement as HTMLElement), dir)].focus()
+}
+
+/**
+ * The arithmetic on its own, where `node --test` reaches it: everything above needs a DOM and
+ * there is no runner for one here, so the wrap-around was the keyboard behaviour of every menu in
+ * the app resting on a human clicking through it each story. Dropping the `+ count` silently
+ * makes ArrowUp from the first item `items[-1]`, i.e. `undefined.focus()` — a throw into
+ * `error.tsx` — with lint, `tsc`, `node --test` and `next build` all green (review, 2026-09-06).
+ * The split `plan.ts`, `shell-user.ts`, `sentStateFor` and `signOutPathFor` each made.
+ *
+ * `at < 0` is "focus is nowhere in particular": Down then opens on the first item, Up on the last.
+ */
+export function nextIndex(count: number, at: number, step: 1 | -1) {
+  if (at < 0) return step > 0 ? 0 : count - 1
+  return (at + step + count) % count
 }

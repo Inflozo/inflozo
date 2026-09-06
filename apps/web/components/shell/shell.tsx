@@ -193,13 +193,17 @@ export function Shell({
   const path = stripApp(here)
   const onDashboard = path === '/'
   const drawer = useRef<HTMLDialogElement>(null)
-  const [searchOpen, setSearchOpen] = useState(false)
   // The phone's field is the ONLY way to see or clear `?q`, and closing it used to unmount the
   // field and leave the filter running: a grid showing "No projects match" — or a subset of the
   // user's own work — with nothing on screen to explain it and no way back but the browser's
   // Back button (review, 2026-09-06). Closing the search closes the search: the filter goes with
   // the field it was typed into.
   const q = useSearchParams().get('q') ?? ''
+  // AND IT OPENS FOR A `?q` IT DID NOT TYPE. Closing the field was only half of that dead end:
+  // the state still started `false`, so a refresh, a bookmark, a restored tab or a shared link
+  // at 390 arrived at the filtered grid — or "No projects match …" — with no field on screen and
+  // nothing to clear it, which is the same trap by the other door (review, 2026-09-06).
+  const [searchOpen, setSearchOpen] = useState(Boolean(q))
   const router = useRouter()
 
   // ⌘K (and Ctrl+K) puts the cursor in the field, whichever of the two is on screen: only one

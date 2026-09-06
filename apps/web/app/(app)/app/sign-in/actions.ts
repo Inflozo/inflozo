@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
 import { SEND_INTERVAL, sentStateFor } from './resend-timer.ts'
-import { SIGN_OUT_FAILED_PATH, SIGNED_OUT_PATH } from './signed-out.ts'
+import { signOutPathFor } from './signed-out.ts'
 
 /**
  * Sending the link is a POST that runs entirely on the server: the publishable key, the
@@ -92,5 +92,5 @@ export async function signOut() {
   const supabase = await supabaseServer()
   const { error } = await supabase.auth.signOut()
   if (error) console.error('sign-out: failed', { code: error.code })
-  redirect(error ? SIGN_OUT_FAILED_PATH : SIGNED_OUT_PATH)
+  redirect(signOutPathFor(Boolean(error)))
 }

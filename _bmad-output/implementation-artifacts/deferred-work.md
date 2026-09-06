@@ -593,3 +593,88 @@ reason: `uniqueSlug` reads the taken slugs and then inserts, which is a read-the
   real fix is `unique (user_id, slug)` plus a retry on `23505`, and it is a migration — DW-8 froze the
   schema's migration for this epic, so it belongs to the story that next opens one rather than to a
   dashboard story reaching into a frozen file.
+
+## Deferred from: code review of story-1.5, sixth review (2026-09-06)
+
+### DW-25: the sign-in card has no skeleton on a cold load, because the shell's reads run above it
+
+plain: When you open the dashboard fresh, there is a moment where the page is blank instead of showing
+  the grey outline of the cards. The outline only appears when you move around inside the app, not on
+  the first load. Cosmetic, and only on a slow connection.
+status: open
+severity: low
+origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
+location: apps/web/app/(app)/app/(authed)/layout.tsx · apps/web/app/(app)/app/(authed)/loading.tsx
+reason: `loading.tsx` sits BELOW `(authed)/layout.tsx`, and that layout awaits `currentUser()`, the
+  `profiles` read and `resolveEntitlement` before it renders anything — so the skeleton covers client
+  navigations inside the group but not the first paint, which is a blank document for those round trips.
+  The comment on `loading.tsx` promises "skeleton cards, never a spinner" without that qualifier. The fix
+  is a Suspense boundary around the layout's own data, or moving those reads below it; both change the
+  shell's render shape, which is more than a review should do to a story the owner has already tested
+  four times. It costs nothing correctness-wise and the shell's reads are one round trip on `fra1`.
+
+### DW-26: the nav's unbuilt destinations land on Next's own unbranded 404, outside the shell
+
+plain: Sites, Assets, Account settings, Billing & plan, Suggestions and Docs are all drawn and clickable
+  but not built yet — that is expected. What is not ideal is where a click lands: a plain unstyled "404"
+  page with no sidebar and no way back except the browser's Back button.
+status: open
+severity: low
+origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
+location: apps/web/components/shell/shell.tsx (the nav) · no `not-found.tsx` exists under apps/web
+reason: The owner accepted the 404s explicitly — the spec's plain English says these "show 'not found'
+  until their own epics build them — expected, not a fault" — so this is not a defect against the story.
+  But it is the same unbranded-page class DW-17 and `error.tsx` were opened for, and a `not-found.tsx`
+  inside `(authed)` would render within the shell and keep the nav on screen. Deferred rather than
+  patched because each of those routes belongs to a later epic that will replace the 404 with the real
+  page anyway, and adding a branded interim 404 now is work those epics delete. If E3 or E4 slips far
+  enough that the owner meets these often, this is a fifteen-line file.
+
+### DW-27: the desktop search has no control that clears it
+
+plain: On a computer, once you have typed in the project search there is no × to clear it — you have to
+  select the text, delete it and press Enter. The phone has a close button that does clear it.
+status: open
+severity: low
+origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
+location: apps/web/components/shell/shell.tsx (`[&::-webkit-search-cancel-button]:hidden`) ·
+  apps/web/app/(app)/app/(authed)/page.tsx (the "No projects match" line)
+reason: The native cancel button is hidden deliberately — S3's frame draws no × in the field — and the
+  phone's toggle got a `router.replace` in the fifth review because closing it stranded the filter. The
+  desktop case is not stranded: the field is always visible with its text in it, so the state is legible
+  and Enter on an empty field clears it. Adding a × would depart from the frame (R-74), and a "Clear
+  search" link in the no-match line is a copy decision, which makes it the owner's rather than a
+  reviewer's. Worth raising with him when a later story touches the dashboard's empty states.
+
+### DW-28: `duplicateProject`'s column list is hand-maintained against the schema
+
+plain: Duplicating a project copies its settings by naming each one. When a later part of the product
+  adds a new setting, the copy will silently leave it behind unless someone remembers to add it here.
+status: open
+severity: medium
+origin: Story 1.5 sixth review (2026-09-06), Edge Case Hunter + Blind Hunter layers
+location: apps/web/app/(app)/app/(authed)/projects/actions.ts (`duplicateProject`'s select list)
+reason: The select list is spread straight into the insert, so a column added by E6 (the Style Pack
+  editor), E7 or E9 is dropped from every duplicate with no test, type or gate reacting — the duplicate
+  simply comes back with a default the original did not have. `linked_site_id`'s deliberate omission is
+  recorded in a comment; the omissions nobody intended are not checkable at all. The fix belongs with
+  whoever next widens `projects`: either derive the list from the update grant, or add a test that reads
+  the migration's insert grant and asserts every non-identity column is either copied or named as
+  deliberately not. Not done here because the check has to read `supabase/migrations/`, and this story's
+  own test file deliberately stops at `apps/web`.
+
+### DW-29: `resolveEntitlement`'s "a failed read is Free" rule is reachable by no test
+
+plain: If the billing lookup fails, the app is meant to treat you as being on the Free plan rather than
+  guessing. That rule is one character of code and nothing checks it.
+status: open
+severity: low
+origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
+location: apps/web/lib/entitlement.ts (`planFor(data?.state)`)
+reason: AD-28's degradation rule is the `?.` in `planFor(data?.state)`, inside a `cache()`d server module
+  that imports `next/headers` and is therefore outside `node --test`'s reach — the same wall that sent
+  `shell-user.ts`, `sentStateFor`, `signOutPathFor` and `nextIndex` into pure modules. `planFor(undefined)
+  === 'free'` IS asserted in `plan.test.ts`, so the rule is half-held; what is not held is that the
+  resolver passes `undefined` rather than throwing on a failed read. Closing it properly means a fake
+  Supabase client, which is the first mock in this codebase and cuts against R-82 — worth doing when E12
+  gives `resolveEntitlement` its second reader (the grace window, DW-23) and the branch count justifies it.

@@ -29,3 +29,22 @@ export const SIGN_OUT_FAILED_PATH = `/?${SIGN_OUT_FAILED}=${SIGN_OUT_FAILED_VALU
 /** What the dashboard asks of `searchParams[SIGN_OUT_FAILED]`. */
 export const isSignOutFailed = (value: string | string[] | undefined) =>
   value === SIGN_OUT_FAILED_VALUE
+
+/**
+ * WHICH OF THE TWO `signOut` TAKES, here rather than in the `'use server'` file, because that is
+ * the half `node --test` could not reach: `signed-out.test.ts` pinned both constants and both
+ * readers, so inverting the ternary in `actions.ts` swapped the owner's two sentences — a
+ * successful sign-out redirected to `/?sign-out-failed=1`, where the guard bounced the now
+ * sessionless user to `/sign-in` with no banner at all, and a failure sent a still-signed-in user
+ * to `/sign-in`, which bounced them straight back to the dashboard silently: the exact "watched
+ * `Signing out…`, told nothing" defect questions 6 and 8 exist to close — and every test stayed
+ * green, because both constants were untouched (review, 2026-09-06). The move `shell-user.ts`,
+ * `sentStateFor` and this module's own value+reader split each made, applied to the last half of
+ * this contract that a mutation could still take away in silence.
+ *
+ * Note the two path shapes are NOT interchangeable and neither is a typo for the other: this is
+ * a BROWSER destination, so it is written as the public path `/` that `proxy.ts` rewrites onto
+ * `/app`, while `revalidatePath` in `projects/actions.ts` addresses the internal route tree and
+ * is therefore `/app`.
+ */
+export const signOutPathFor = (failed: boolean) => (failed ? SIGN_OUT_FAILED_PATH : SIGNED_OUT_PATH)
