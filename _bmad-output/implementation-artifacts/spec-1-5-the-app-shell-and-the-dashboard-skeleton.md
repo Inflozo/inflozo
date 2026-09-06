@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 3
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -1417,6 +1417,21 @@ infrastructure R-82 asks for.
 | the fixture | **deleted**; census `projects 0 · profiles 2 · entitlements 2` — the owner's two accounts, his project gone by his own hand at 06:11 UTC (above) |
 
 The story stays **in review**: Deploy and the owner's own test follow, and Done is written on his word (R-80).
+
+**Deploy (2026-09-06)** — HEAD is `c9f95b48` (doc-only since `e378c7ba`; the app code is unchanged since
+that commit). Confirmed on the real stack (R-82; PRD §4, AD-26: production is the stack under test). No
+schema change in this story, so nothing beyond app code to deploy.
+
+| Check | Result |
+|---|---|
+| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `c9f95b48` — `CI` success (run `34016688058`) |
+| Vercel production deployments (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) | `dpl_25HuAxQhPJL3GCqLvgpbcM23PU7E`, state **READY**, built from `c9f95b48` |
+| Aliases on that deployment | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`), plus the probe and account preview aliases |
+| `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present |
+| `curl -sI https://app.inflozo.com/` signed out | **307** → `/sign-in`, unchanged |
+| `curl -sI https://inflozo.com/` | **200** |
+
+Deployment: `inflozo-2xdp0gy4d-umangkagathara.vercel.app` (`dpl_25HuAxQhPJL3GCqLvgpbcM23PU7E`)
 
 ## Questions for the owner
 
