@@ -313,8 +313,10 @@ def test_steps(t):
 
 
 # The two lines a question block is cut on, in one place: the ruling label, and an option.
+# The optional parenthetical is the owner's date — `Ruled (owner, 2026-09-05): option 1` is a label
+# with a colon even unbolded, and the colon must be seen past it (review, 2026-09-06).
 RULING_RE = re.compile(
-    r'\s*(\**)\s*(Answer|Answered|Ruled|Ruling|Decision)\b(\**\s*:?)\**\s*(.*)$', re.I)
+    r'\s*(\**)\s*(Answer|Answered|Ruled|Ruling|Decision)\b(\**\s*(?:\([^)]*\))?\s*:?)\**\s*(.*)$', re.I)
 OPTION_RE = re.compile(r'^\s*\d+[.)]\s+\S', re.M)      # .match() per line, .search() per block
 
 
@@ -1907,6 +1909,8 @@ def demo():
     assert answered('Answer: 1 — keep the projects.')
     # The label must LOOK like a label: bold OR a colon. A dash alone is prose (review, 2026-09-05).
     assert answered('**Ruled** — option 1') and not answered('Ruled — option 1')
+    # …and a date in brackets before the colon does not hide the colon (review, 2026-09-06)
+    assert answered('Ruled (owner, 2026-09-05): option 1') and not answered('Ruled (owner, 2026-09-05)')
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
     # …and the pill's explanation is rendered inside every story it flags, and only those
@@ -1977,8 +1981,13 @@ def main():
         # (2026-09-05), on the commit that fixed that very parser.
         try:
             demo()
-        except AssertionError as e:
-            print(f'story board: SELF-CHECK FAILED — {e or "an assertion in demo() did not hold"}',
+        except Exception as e:  # noqa: BLE001 — a crash in demo() is a failed self-check too
+            # Not only AssertionError: a KeyError in a fixture used to leave a bare traceback whose
+            # last line the gate did not recognise, so it said "STALE — run story-board.py", which
+            # cannot fix it (review, 2026-09-06). The traceback still goes first, for the reader.
+            import traceback; traceback.print_exc()
+            what = e if isinstance(e, AssertionError) else f'{type(e).__name__}: {e}'
+            print(f'story board: SELF-CHECK FAILED — {what or "an assertion in demo() did not hold"}',
                   file=sys.stderr)
             return 2
     out = render(real())

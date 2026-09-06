@@ -198,7 +198,8 @@ export function Shell({
     if (!onDashboard) return
     const onKey = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return
-      if (document.querySelector('dialog[open]')) return
+      // …nor under an open menu: the field would take focus and leave the popover orphaned.
+      if (document.querySelector('dialog[open], :popover-open')) return
       event.preventDefault()
       setSearchOpen(true)
       // after the mobile field has been rendered by the state change above

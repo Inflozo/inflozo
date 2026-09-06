@@ -495,3 +495,39 @@ reason: `S2 Onboarding.dc.html` draws **S2a First Run** — a full 1440 page, "L
   natural home, since its first card is "connect your Ghost site"), or a ruling records that First Run is
   deliberately not built and the dashboard's empty state S3b is the first-run experience. Story 1.5 fixes
   neither — it owns the dashboard, not the onboarding route.
+
+### DW-20: the four project actions' guards are consulted by no repeatable check
+
+plain: The dashboard refuses a second project on Free, refuses a delete unless the project's exact name is
+  typed, and refuses to touch another user's project. The rules themselves are tested automatically, but
+  nothing automatic checks that the code actually asks them before writing — a slip that skipped one of
+  them would pass every test and publish. Today a person proves it on the live site at every phase.
+status: open
+severity: medium
+origin: Story 1.5 third review (2026-09-06), Verification Gap layer
+location: apps/web/app/(app)/app/(authed)/projects/actions.ts (`createProject`, `duplicateProject`,
+  `renameProject`, `deleteProject`) · apps/web/plan.test.ts · apps/web/projects.test.ts
+reason: `atCap`, `matchesName`, `copyName` and `uniqueSlug` are pure and under `node --test`; the actions
+  that call them are `'use server'` modules that `node --test` cannot import, and no test posts to them.
+  Deleting the `matchesName` line from `deleteProject`, or inverting `atCap` in `createProject`, leaves
+  `pnpm check` and the RLS gate green (the gate sees policies, not application code). Each phase's live
+  pass — the spec's `## Verification` — is what holds it, by hand, with two fixture users. The repeatable
+  form is either a rerunnable probe in `tools/probe/` that posts to the four actions on a deployment and
+  asserts row counts (the `run-verify-all.py` pattern), or lifting each "decide, then write" into a pure
+  `decide*` that a test can reach. Same class as DW-16 (held by no repeatable check); Story 15.1's e2e
+  suite is the natural owner, and the probe is the cheaper interim.
+
+### DW-21: the documentation gate runs only in the local pre-commit hook, never in CI
+
+plain: The check that keeps the planning documents, the boards and the catalogue consistent runs on this
+  machine before each commit, and nowhere else. A commit made from a clone that has not installed the
+  hooks — or any tool that commits directly — publishes without it.
+status: open
+severity: low
+origin: Story 1.5 third review (2026-09-06), Verification Gap layer
+location: tools/hooks/pre-commit · .github/workflows/ci.yml
+reason: `ci.yml`'s `check` job runs `pnpm check` and `pnpm build`; `rls` runs the database gate; neither
+  runs `python3 tools/doc-audit.py --check`, so `story-board.py`'s self-check (the parser that decides
+  whether the owner ever sees a question, R-83/R-84) has no runner outside `core.hooksPath`. Adding a
+  fourth job, or a step to `check`, is a one-line change to a workflow the owner rules over (DW-7 made CI
+  the publishing gate), so it is recorded rather than applied by a story about the dashboard.

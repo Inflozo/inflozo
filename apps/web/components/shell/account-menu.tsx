@@ -122,6 +122,13 @@ export function AccountMenu({
   const iconSize = dense ? 15 : 16
   const name = nameOf(user)
   const second = secondLineOf(user)
+  // A client navigation inside a `popover="auto"` is an inside click and does not light-dismiss,
+  // so the menu is told to close as a row is followed — in BOTH variants; the sidebar's showed it
+  // only because every destination still 404s outside the shell (review, 2026-09-06).
+  const follow = () => {
+    menu.current?.hidePopover()
+    onNavigate?.()
+  }
 
   // The rect is read on the click, before the popover is shown — see lib/menu.ts. Both
   // variants open UPWARDS now: each sits at the bottom of its own column.
@@ -185,7 +192,7 @@ export function AccountMenu({
           </span>
         </div>
 
-        <Row href="/account" dense={dense} onNavigate={onNavigate} icon={<Person size={iconSize} />}>
+        <Row href="/account" dense={dense} onNavigate={follow} icon={<Person size={iconSize} />}>
           Account settings
         </Row>
         {/* The badge rides the Billing row in BOTH menus. The 390 frame drew it in the header
@@ -195,7 +202,7 @@ export function AccountMenu({
         <Row
           href="/billing"
           dense={dense}
-          onNavigate={onNavigate}
+          onNavigate={follow}
           icon={<Card size={iconSize} />}
           after={
             <span className="ml-auto shrink-0">
@@ -205,10 +212,10 @@ export function AccountMenu({
         >
           Billing &amp; plan
         </Row>
-        <Row href="/suggestions" dense={dense} onNavigate={onNavigate} icon={<Lightbulb size={iconSize} />}>
+        <Row href="/suggestions" dense={dense} onNavigate={follow} icon={<Lightbulb size={iconSize} />}>
           Suggestions
         </Row>
-        <Row href="https://inflozo.com/docs" dense={dense} onNavigate={onNavigate} icon={<Book size={iconSize} />}>
+        <Row href="https://inflozo.com/docs" dense={dense} onNavigate={follow} icon={<Book size={iconSize} />}>
           Docs
         </Row>
 

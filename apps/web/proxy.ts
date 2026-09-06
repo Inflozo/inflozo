@@ -8,7 +8,7 @@
 // file is beyond `node --test`. Keep it thin on purpose.
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { route } from './routing.ts'
+import { isApp as isAppPath, route } from './routing.ts'
 import { policy, policyName, requestHeaders } from './csp.ts'
 // `cookies.ts`, not `server.ts`: the leaf exists so this symbol is reachable without dragging
 // `next/headers` and the whole server client into the proxy bundle (review, 2026-09-05).
@@ -51,8 +51,7 @@ export async function proxy(req: NextRequest) {
   // An app request is one the app host rewrote, or — on localhost, which has no host split —
   // one that reaches the internal prefix directly. On both real hosts `/app/…` has already
   // redirected above, so this second clause can only be a local one.
-  const isApp =
-    decision.kind === 'rewrite' || pathname === '/app' || pathname.startsWith('/app/')
+  const isApp = decision.kind === 'rewrite' || isAppPath(pathname)
 
   // §18: emitting the header is free; READING the nonce costs prerendering. Marketing is
   // therefore given no nonce at all — not an unused one — so nothing downstream can read one.

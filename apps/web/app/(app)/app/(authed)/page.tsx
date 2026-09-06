@@ -67,7 +67,8 @@ export default async function Dashboard({
   return (
     <>
       {unread ? (
-        <div className="p-[16px_20px] tablet:p-6">
+        <div className="flex flex-col gap-4 p-[16px_20px] tablet:p-6">
+          <h1 className="sr-only">Projects</h1>
           <Banner kind="error">We couldn&rsquo;t load your projects just now. Try again in a moment.</Banner>
         </div>
       ) : /* S3b: the empty state is the FIRST-RUN state, and neither a search that matched

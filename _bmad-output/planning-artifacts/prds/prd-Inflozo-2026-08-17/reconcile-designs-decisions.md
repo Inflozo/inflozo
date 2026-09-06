@@ -1704,8 +1704,8 @@ product diverges from the drawing here on purpose.
   ("all four creation paths" → every path FR-B2 names) · ✅ `epics.md` the FR-B2 restatement · ✅
   `epics.md` Story 13.6 (heading, acceptance criteria and frame line) · ✅ `EXPERIENCE.md`
   § Information Architecture, the New Project Sheet row · ✅ Story 1.5's spec (Boundaries, the Design
-  Note, and the ruling under `## Questions for the owner`) · ⬜ `new-project-sheet.tsx` — the Fix run's,
-  with the owner's other two findings. **Deliberately not touched:** the export (R-74), `EXPERIENCE.md`
+  Note, and the ruling under `## Questions for the owner`) · ✅ `new-project-sheet.tsx` — the second Fix run,
+  2026-09-06, commit `95023994`, three doors and no Duplicate (ticked by the review of 2026-09-06). **Deliberately not touched:** the export (R-74), `EXPERIENCE.md`
   Appendix A's D4 prompt (the record of what was actually run against Claude Design) and
   `ux-designs/prototype/` (5b proves the export, and the export is unchanged).
 

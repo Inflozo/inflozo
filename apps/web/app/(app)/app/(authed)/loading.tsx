@@ -7,8 +7,10 @@
  */
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6" aria-hidden>
-      <div className="grid grid-cols-1 gap-[14px] tablet:grid-cols-3 tablet:gap-5">
+    <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6" aria-busy>
+      {/* The skeleton is decoration; this line is what a screen reader gets meanwhile. */}
+      <p className="sr-only">Loading projects…</p>
+      <div aria-hidden className="grid grid-cols-1 gap-[14px] tablet:grid-cols-3 tablet:gap-5">
         {[0, 1, 2].map((n) => (
           <div key={n} className="overflow-hidden rounded border border-line bg-surface">
             <div className="h-[150px] border-b border-line bg-paper-sunk tablet:aspect-[16/10] tablet:h-auto" />

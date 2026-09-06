@@ -84,6 +84,9 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
   const rename = useRef<HTMLDialogElement>(null)
   const remove = useRef<HTMLDialogElement>(null)
   const duplicate = useContext(DuplicateContext)
+  // Without the scope the Duplicate `<form>` would have no action and post a GET to `?id=…`, a
+  // click that reloads the page and duplicates nothing — so it is refused at render, loudly.
+  if (!duplicate) throw new Error('ProjectMenu must render inside DuplicateScope')
 
   const [renamed, renameAction, renaming] = useActionState<ActionResult | null, FormData>(renameProject, null)
   const [removed, deleteAction, removing] = useActionState<ActionResult | null, FormData>(deleteProject, null)
@@ -181,7 +184,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
             Duplicate
           </button>
         ) : (
-          <form action={duplicate ?? undefined} onSubmit={close}>
+          <form action={duplicate} onSubmit={close}>
             <input type="hidden" name="id" value={id} />
             <button type="submit" className={`${item} text-ink hover:bg-paper`}>
               <span className="shrink-0 text-ink-soft">
@@ -213,7 +216,13 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
       <dialog
         ref={rename}
         aria-labelledby={`rename-${id}-title`}
-        onClose={() => setRenamedSeen(renamed)}
+        onClose={(event) => {
+          setRenamedSeen(renamed)
+          // The field is uncontrolled, so a refused or abandoned edit stayed in it and the next
+          // open showed that instead of the name; `reset()` restores `defaultValue`, which React
+          // keeps at the current name (review, 2026-09-06).
+          event.currentTarget.querySelector('form')?.reset()
+        }}
         className={`${sheet} gap-[18px]`}
       >
         <h2 id={`rename-${id}-title`} className={title}>

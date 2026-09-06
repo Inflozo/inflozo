@@ -53,6 +53,9 @@ export function anchorTo(menu: HTMLElement, trigger: Element, { side, align }: P
  * platform's own behaviour and not ours to redo.
  */
 export function openMenu(menu: HTMLElement, trigger: Element, placement: Placement) {
+  // The trigger is a `popovertarget` TOGGLE: a second click closes the menu, and re-anchoring,
+  // re-arming and focusing into a menu that is about to hide is not opening it (review, 2026-09-06).
+  if (menu.matches(':popover-open')) return
   anchorTo(menu, trigger, placement)
   requestAnimationFrame(() => {
     // Now it is shown and has a height: a menu that would run off the bottom (a card's ⋯ in
@@ -66,8 +69,19 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     }
     menu.querySelector<HTMLElement>('a[href], button')?.focus()
   })
-  // Fixed coordinates do not follow a scroll, so the menu closes rather than floats away.
-  window.addEventListener('scroll', () => menu.hidePopover(), { once: true, capture: true, passive: true })
+  // Fixed coordinates do not follow a scroll, so the menu closes rather than floats away. The
+  // listener leaves WITH the menu: closed by Escape, an item or a click outside, it used to stay
+  // armed — one more per open — until the next scroll (review, 2026-09-06).
+  const onScroll = () => {
+    if (menu.matches(':popover-open')) menu.hidePopover()
+  }
+  const onToggle = (event: Event) => {
+    if ((event as ToggleEvent).newState !== 'closed') return
+    window.removeEventListener('scroll', onScroll, { capture: true })
+    menu.removeEventListener('toggle', onToggle)
+  }
+  window.addEventListener('scroll', onScroll, { once: true, capture: true, passive: true })
+  menu.addEventListener('toggle', onToggle)
 }
 
 /**

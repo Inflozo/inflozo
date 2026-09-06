@@ -11,7 +11,7 @@ export type Route =
   | { kind: 'pass' }
 
 // A path segment, never a prefix: `startsWith('/app')` ate /apply, which 308'd to /ly.
-const isApp = (pathname: string) => pathname === '/app' || pathname.startsWith('/app/')
+export const isApp = (pathname: string) => pathname === '/app' || pathname.startsWith('/app/')
 
 /**
  * The internal prefix off a path: `/app` → `/`, `/app/sites` → `/sites`, `/apply` untouched.

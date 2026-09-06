@@ -68,8 +68,9 @@ async function signedIn() {
  * The cap is counted and then written, rather than enforced by a trigger: the limit depends on
  * the plan, and the PRD asks for a CONTEXTUAL PROMPT at creation time, which is an application
  * answer and not a constraint violation.
- * ponytail: count-then-insert; a double submit is closed by the pending state, and a trigger on
- * projects reading entitlements is the upgrade if a race ever lands two.
+ * ponytail: count-then-insert; a double submit is refused by the sheet's form while an action is
+ * in flight (a label swap alone did not stop React queueing the second — review, 2026-09-06), and
+ * a trigger on projects reading entitlements is the upgrade if a race ever lands two.
  */
 async function names() {
   const user = await signedIn()
@@ -78,7 +79,11 @@ async function names() {
     supabase.from('projects').select('name, slug'),
     resolveEntitlement(user.id),
   ])
-  if (error || !data) return null
+  if (error || !data) {
+    // The callers log `code: undefined` for a failed pre-count; the code that failed is here.
+    console.error('projects: read failed', { code: error?.code })
+    return null
+  }
   return {
     user,
     supabase,

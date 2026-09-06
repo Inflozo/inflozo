@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
-review_loop_iteration: 2
+review_loop_iteration: 3
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
@@ -236,7 +236,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Land, no projects | signed in, zero rows | S3b: the shell, the illustration, the two sentences, "New project"; the account chip says Free | N/A |
+| Land, no projects | signed in, zero rows | S3b: the shell, the illustration, the two sentences, "New project"; the account chip says Free — **AMENDED BY THE OWNER, 2026-09-06 (finding 2): the chip carries no badge; "Free" is on the menu's Billing & plan row** | N/A |
 | Land, projects | rows exist | S3a: cards ordered by `updated_at desc`, each with placeholder · name · Sample content · "Updated today" / "Updated Aug 19" | N/A |
 | Create, under cap | "New project" → D4a → Create project | insert; sheet closes; the new card "Untitled project" (or "… 2") is first; `updated_at` = now | insert fails → the kit's error Banner in the sheet, "We couldn't create that just now. Try again in a moment." |
 | Create, at cap (Free, 1) | "New project" with 1 project | the sheet opens as D4b: greyed doors with "Free includes 1 project" pills, the upgrade block, Create disabled; the grid already shows S3c's tile | `at_cap` from the action (race) → the open sheet flips to D4b |
@@ -337,6 +337,33 @@ noise or as behaviour the frozen Boundaries themselves ask for.
 - [x] [Review][Patch] `demo()` pins neither `**Ruled** — option 1` (bold, dash) nor `Ruled — option 1` (plain, dash), the boundary the docstring describes [tools/story-board.py:1901]
 - [x] [Review][Patch] Two departures from the frozen Data boundary — `linked_site_id` not copied, the duplicate's name suffixed — are in Verification's table but not in the Spec Change Log [this spec]
 - [x] [Review][Patch] DW-17 does not mention the two `Failed to load resource` console lines every dashboard load logs from prefetching `/sites` and `/assets`; DW-18 writes "eight" where the live count is already ten [_bmad-output/implementation-artifacts/deferred-work.md]
+
+### Review Findings — third review, 2026-09-06, after the second Fix run
+
+Five layers over the whole diff since the baseline, the Real-infra verifier on the live deployment of
+HEAD (`c7cab9eb`, code last changed in `95023994`): every Verification claim re-executed and held on the
+real Supabase, Vercel, GitHub and both production domains, with a passed negative control. No finding is
+the owner's to decide; two are deferred as pre-existing; twelve were dismissed as noise, as behaviour the
+frozen Boundaries or the frames ask for, or as already recorded (DW-17's `not-found` half, the frame's own
+"Ten full sites", the matrix's own failure sentences, `/` on localhost, the Docs row's external address, an
+email-less account, `PLANS`' rows for later epics, Go Pro's 404 today, the Duplicate Banner's persistence,
+menu clipping at widths no trigger reaches, a viewport shorter than a menu, and the sheet mounting under a
+failed read the action re-checks anyway).
+
+- [x] [Review][Patch] "Create project" submitted again while the first is in flight makes a second project on Pro — the button's label swap closes nothing and React queues form actions; and `pending` alone cannot guard it, being state that turns true on the next render (executed: three `requestSubmit()` in one tick made three rows) [apps/web/app/(app)/app/(authed)/new-project-sheet.tsx:222]
+- [x] [Review][Patch] A race's `at_cap` result outlives the room a later delete makes — the sheet stayed D4b with `atCap` already false [apps/web/app/(app)/app/(authed)/new-project-sheet.tsx:142]
+- [x] [Review][Patch] The rename field keeps an abandoned or refused edit; reopened, it shows that instead of the project's name — the boundary says "prefilled" [apps/web/app/(app)/app/(authed)/project-menu.tsx:216]
+- [x] [Review][Patch] `openMenu` re-anchors, re-arms and focuses into a menu on the ⋯ toggle's closing click, and its `scroll` listener outlives every close but a scroll — one more armed per open [apps/web/lib/menu.ts:55]
+- [x] [Review][Patch] ⌘K under an open popover moves focus to the search field and leaves the menu orphaned [apps/web/components/shell/shell.tsx:201]
+- [x] [Review][Patch] The sidebar account popover does not close as one of its rows is followed — latent only while every destination 404s outside the shell [apps/web/components/shell/account-menu.tsx:188]
+- [x] [Review][Patch] A `ProjectMenu` rendered outside `DuplicateScope` degrades to a GET form posting `?id=…` — refused at render instead [apps/web/app/(app)/app/(authed)/project-menu.tsx:86]
+- [x] [Review][Patch] `names()` drops the pre-count's error, so the caller logs `code: undefined` [apps/web/app/(app)/app/(authed)/projects/actions.ts:81]
+- [x] [Review][Patch] The failed-read branch has no `<h1>`, and the skeleton is `aria-hidden` with nothing said in its place [apps/web/app/(app)/app/(authed)/page.tsx:69 · loading.tsx:10]
+- [x] [Review][Patch] `story-board.py`'s self-check catches only `AssertionError` and `doc-audit.py` keys on a string, so a crash in `demo()` still reads "STALE — run story-board.py" (executed: a `KeyError` now exits 2 with the SELF-CHECK line); and an unbolded `Ruled (owner, date): option 1` label's colon was not seen past the parenthetical [tools/story-board.py:1979 · tools/doc-audit.py:728]
+- [x] [Review][Patch] `proxy.ts` re-writes the `/app` segment predicate `routing.ts` already holds — now exported as `isApp` and reused [apps/web/proxy.ts:54]
+- [x] [Review][Patch] R-93's propagation ledger still showed `new-project-sheet.tsx` unticked though the change landed in `95023994`; and the Matrix's first row still said the chip carries Free — amended inline, as the Boundaries were [reconcile-designs-decisions.md:1707 · this spec]
+- [x] [Review][Defer] The four actions' guards — the cap, the typed name, the zero-row answer — are consulted by no repeatable check: the predicates are under `node --test`, the call path only by each phase's live pass [apps/web/app/(app)/app/(authed)/projects/actions.ts:107] — deferred, pre-existing (DW-20)
+- [x] [Review][Defer] `doc-audit.py --check` runs only in the local pre-commit hook; CI never runs it, so a clone without `core.hooksPath` publishes past it [.github/workflows/ci.yml] — deferred, pre-existing (DW-21)
 
 ## Spec Change Log
 
@@ -1059,6 +1086,48 @@ under them.** With a `pro_active` fixture, so the cap refused nothing.
 | the phone's search focus (finding 7) | tapping the magnifier leaves `document.activeElement` as the field named **`q`** |
 | the app's own error page (findings 3 and 8) | `app/(app)/app/error.tsx` present and unchanged |
 
+
+### The third review — 2026-09-06, after the second Fix run
+
+Five layers ran over the whole diff since the baseline (`db959b18..c7cab9eb`): Blind Hunter, Edge Case
+Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier, the last against the **live
+deployment** with keys read from `tools/probe/.env` by variable name and never printed. Every fixture user
+was deleted at the end of each pass; the census afterwards is the owner's two accounts and nothing else.
+
+**What the Real-infra verifier re-executed on the real services, before any patch**
+
+| Claim | Result |
+|---|---|
+| CI on HEAD `c7cab9eb` (`GITHUB_TOKEN`, `GET /repos/Inflozo/inflozo/actions/runs?head_sha=…`) | `check: success` · `rls: success` · `deploy: success` — and the same on `95023994` and `15326a26` |
+| production is HEAD (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`, `GET /v6/deployments?target=production`) | `dpl_6RiDathugApPubmVSJzVUdps7qPu`, **READY**, `githubCommitSha c7cab9eb`, aliases `inflozo.com` · `app.inflozo.com` · `www.inflozo.com` |
+| `https://app.inflozo.com/` signed out · `/sign-in` · `https://inflozo.com/` · `/sites` | **307 → `/sign-in`** with `x-inflozo-policy: app-nonce` · **200**, `script-src 'self' 'nonce-…' 'strict-dynamic'` · **200**, `marketing-static` · **404** |
+| two fixtures signed in through `/auth/confirm` on the app host | **303 → `/`**, session cookie set |
+| S3b · the chip (whole address, no Free/Pro, nothing with `scrollWidth > clientWidth`) · the menu's `Billing & plan Free` row | held |
+| D4a: three doors, "Duplicate" absent; create → `("Untitled project","untitled-project")`; the card; S3c's tile | held |
+| D4b at the cap: the sentence, three pills, `Go Pro — $15/mo` at `rgb(158,104,0)` 38px radius 12, Create `aria-disabled` with `aria-describedby="new-project-cap"` | held |
+| rename → `("Field Notes","untitled-project")` — slug untouched | held |
+| **RLS, the negative control** — B's own JWT and the publishable key against A's project id | `GET` **200 []** · `PATCH` **200 []** · `DELETE` **200 []** · `POST` with A's `user_id` **403 42501**; the positive control, A's JWT on the same path → `200 [{id…}]` |
+| delete: opens on **Cancel**; `field notes` → `aria-disabled`, a forced click leaves **1 row**; `Field Notes` → **0 rows**, S3b | held |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A+AA): S3b, S3d, D4a, D4b at 1440; S3a, the drawer, D4b at 390 | **zero violations each**; the control — an appended bare `<button>` — flagged `button-name` |
+| horizontal scroll at 1440 and 390 (dashboard, drawer, sheet) · console CSP violations on the app host · console errors | none · **0** · none |
+| `pnpm check` (Node 24) · `python3 tools/doc-audit.py --check` twice | exit 0, 63 tests pass · PASS both |
+
+**The patches, executed before they were committed** — a production build of this tree (`next build`,
+`next start -p 3005`; two stale servers from earlier sessions still held 3000 and 3001 and served old code,
+which a first run against 3001 exposed) against the **real Supabase**, one fixture, every check with its
+control where one exists.
+
+| Patch | Executed | Result |
+|---|---|---|
+| double submit | `pro_active` fixture; three `requestSubmit()` on the sheet's form in one tick | **one** row. Control: two submits each after the last settled → **two more** rows. Before the ref, the same three calls made **three** rows — the `pending`-only first draft of this patch failed this exact check |
+| `raced` spent on close | page at 0 projects, a row inserted by REST from "another tab", Create → `at_cap`, the sheet flipped to D4b; Escape; the row deleted through the UI; New project again | the sheet is **D4a** again — Create live, no `[role=button][aria-disabled]` |
+| rename field reset | type "Abandoned", Cancel, reopen; clear, Save (refused with the hint), Cancel, reopen | the field reads **`Untitled project`** both times and no hint remains |
+| ⋯ toggle and the scroll listener | click ⋯ (open, focus on Rename), click ⋯ again; open, Escape, then scroll; open, scroll | **closed** · no page error, still closed · the control: a scroll with the menu open still closes it |
+| ⌘K under a menu | ⋯ open, Ctrl+K | the menu **stays open** and the field is not focused; the control: Ctrl+K with nothing open focuses `q` |
+| account popover closes on a row | click the chip, click Account settings with navigation held back so the shell stays | `#account-menu` **not** `:popover-open` |
+| CSP · console · teardown | the whole pass | **0** violations, no errors; the fixture and its rows deleted; census: 2 users, 0 fixtures |
+| `story-board.py` self-check | a copy of the script with `demo()` raising `KeyError` | exit **2**, last stderr line `story board: SELF-CHECK FAILED — KeyError: 'fixture-missing'` |
+| the pure patches | `pnpm check` after every edit | lint, typecheck and 63 tests green; `tsc --noEmit` clean on `proxy.ts`'s import of `isApp` |
 
 ## Questions for the owner
 

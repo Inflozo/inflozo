@@ -131,15 +131,25 @@ const GoPro = () => (
 export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(createProject, null)
-  // A failure the sheet was CLOSED on is spent — reopened, no stale Banner (review, 2026-09-05).
-  // `raced` is not spent with it: at the cap the sheet is D4b however often it is reopened.
+  // A result the sheet was CLOSED on is spent — reopened, no stale Banner (review, 2026-09-05), and
+  // no stale D4b either: the `at_cap` action revalidated the page before answering, so the `atCap`
+  // PROP is the truth from then on, and a `raced` that outlived it kept the sheet at D4b after a
+  // delete had made room (review, 2026-09-06).
   const [seen, setSeen] = useState<ActionResult | null>(null)
+  // One submit at a time. A ref and not `pending`: `pending` is state and turns true on the NEXT
+  // render, so two submits in the same tick both read it false — executed, three `requestSubmit()`
+  // calls made three projects on Pro. The ref is set synchronously in the handler and released
+  // when the action has settled (review, 2026-09-06).
+  const inFlight = useRef(false)
 
   useEffect(() => {
     if (state && 'ok' in state) dialog.current?.close()
   }, [state])
+  useEffect(() => {
+    if (!pending) inFlight.current = false
+  }, [pending])
 
-  const raced = Boolean(state && 'error' in state && state.error.code === 'at_cap')
+  const raced = state !== seen && Boolean(state && 'error' in state && state.error.code === 'at_cap')
   const capped = atCap || raced
   const failed =
     state !== seen && state && 'error' in state && state.error.code === 'failed' ? state.error.message : null
@@ -219,7 +229,17 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
         </div>
       )}
 
-      <form action={action} className="flex items-center gap-[10px]">
+      <form
+        action={action}
+        // A second submit while the first is in flight is refused HERE, not by the button's label:
+        // the kit's `Button` is never `disabled` and React queues form actions rather than dropping
+        // them, so two quick clicks on Pro were two projects (review, 2026-09-06).
+        onSubmit={(event) => {
+          if (inFlight.current) event.preventDefault()
+          else inFlight.current = true
+        }}
+        className="flex items-center gap-[10px]"
+      >
         <div className="ml-auto">
           <Button variant="ghost" size={36} onClick={() => dialog.current?.close()}>
             Cancel
