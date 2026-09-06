@@ -5,7 +5,7 @@ created: '2026-09-06'
 status: 'in-review'
 review_loop_iteration: 2
 baseline_commit: 'c2d6f365c86dd3e9c323847cccd2856b304da6b7'
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
@@ -767,6 +767,32 @@ browser simply cannot add another. axe-core 4.12.1 on the `wcag2a · wcag2aa · 
 kind. The `emailCard: 0` in that run is what gave it away, and the fix is a fresh `magiclink` per context.
 And the card's heading is uppercased by CSS, so `innerText` returns `PASSKEYS`: a case-sensitive probe for
 `Passkeys` reported the card missing in **both** runs, including the one where it was plainly there.
+
+### The second Deploy run (2026-09-06)
+
+The second review's patches (the button weight, the wiring contracts, the nudge's redirect guard and
+`isRedirect` de-duplication, question 3's WebAuthn-hide) shipping to production. Both switches were
+already ON in production from the first Deploy run and are untouched by this one — this run confirms
+the app code, nothing else.
+
+- `GET /repos/Inflozo/inflozo/actions/runs?head_sha=…` (`GITHUB_TOKEN`) — the workflow run for HEAD
+  (`b682c695`) is **`completed` / `success`**.
+- `GET /v6/deployments?projectId=…&target=production` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) — two
+  production builds finished 2 seconds apart, `b682c695` (board-only, byte-identical app code) and
+  `8f59a6a7` (the WebAuthn-hide patch, the last app-code commit); `GET
+  /v2/deployments/{id}/aliases` shows **`8f59a6a7`'s build, `dpl_CL33LKwaBeK9QcH8UhsKbWFSjMKu`,
+  holds all three production aliases** (`app.inflozo.com`, `inflozo.com`, `www.inflozo.com`) — the
+  same "later build takes the alias" behaviour the second review recorded once already.
+  **Deployment: dpl_CL33LKwaBeK9QcH8UhsKbWFSjMKu (https://app.inflozo.com, https://inflozo.com)**.
+- `curl -I https://app.inflozo.com/sign-in` and `https://inflozo.com` — both **200**.
+- The button-weight patch, read off the served markup rather than grepped for the text alone:
+  `curl https://app.inflozo.com/sign-in`'s passkey `<button>` now carries **`font-medium` and no
+  `font-semibold`** — the exact duplicate class the second review found was overriding the frame's
+  500 weight is gone from what production actually serves, not merely from the source.
+
+Nothing else changed: the flags, the migration and `configure-supabase-auth.py`'s settings are all
+untouched since the first Deploy run, so the round trip and axe proofs recorded there and in the
+second review's run still describe production as it stands.
 
 ## Owner's manual test
 
