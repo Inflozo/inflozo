@@ -1673,6 +1673,30 @@ wrong) and the sign-in screen a one-line notice on arrival from a sign-out, in S
 components. The latency underneath it is finding 3's and is fixed with it.
 
 
+**7. Your fourth test's finding 1 is Story 1.4's code, and 1.4 is closed. Where should it be fixed?**
+
+The sign-in card that said "Check your inbox" when no email had been sent belongs to **Story 1.4 — Sign in
+with a magic link**, which you tested, passed and closed. You only reach it through **this** story's Sign
+out button.
+
+*Example:* you press Sign out, land on the sign-in card, type your address, and are told a link is on its
+way with a countdown starting at 35 seconds. Nothing was sent: Supabase allows one email a minute per
+address and refused, and the card reported the refusal as a success. The repair is a few lines in one
+file, `sign-in/actions.ts`.
+
+1. **Fix it inside Story 1.5, in the next Fix run. (RECOMMENDED)** — a few lines in one file, in a story
+   that is already open and already in front of you; it costs one more look at the same screen. The record
+   of why a sign-in fix lives under a dashboard story is written into this spec so it is never a mystery.
+2. Reopen Story 1.4 — the fix sits with the code it belongs to, but a finished story is reopened and the
+   whole loop runs again: dev, review, deploy and another test from you, for a change smaller than this
+   paragraph.
+3. A new small story of its own — the cleanest record and by far the most work: another create, dev,
+   review, deploy and test cycle, and one more thing for you to test, for a wording fix.
+
+**Ruled: 1** (owner, 2026-09-06) — *finding 1 is fixed inside Story 1.5, not by reopening Story 1.4.* The
+Fix run therefore touches `apps/web/app/(app)/app/sign-in/` as well as the shell, and the spec's Code Map
+and Verification carry both.
+
 ## Owner's manual test
 
 Your account is on the Free plan, so you will see the Free side of every screen — the one project, the
