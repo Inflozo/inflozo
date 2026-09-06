@@ -1528,6 +1528,33 @@ they arrived, which is the only place that question can be answered.
 | the fixture user | **deleted**. Census read afterwards: `projects: 0 · profiles: 2 · entitlements: 2` — his two accounts and **no project**. This run never touched the `projects` table and the fixture had none; the project that was there on 2026-09-06 was removed by his own testing, and there is no before-reading from this run to say more than that |
 
 
+**Re-executed against the deployed site.** The pass above drove a production build at `localhost:3101`,
+which is not the real infrastructure R-82 asks for, so the same script was run again with
+`BASE=https://app.inflozo.com` against the published Fix commit. The fixture there was
+`story-1-5-fix4-live@inflozo.com` — a **31-character** address, deliberately longer than the owner's
+17-character one, so the ellipsis can be seen firing where his will not.
+
+| On `https://app.inflozo.com` | Result |
+|---|---|
+| CI on `f6927f7e` (`GITHUB_TOKEN`) | run `34019221060` — `rls: success` · `check: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_2TjFrPyqWhfqgfYbegbhYtWVtAtc`, state **READY**, production, built from `f6927f7e` |
+| the deployed shape, unchanged by this run | `/sign-in` **200** `x-inflozo-policy: app-nonce` · `/` signed out **307 → /sign-in** · `inflozo.com` **200** `marketing-static` |
+| the region still holds | `x-vercel-id: bom1::fra1::…` on both app responses; `inflozo.com` answers from the edge with no function region — one deployment, both domains (AD-26) |
+| finding 2 — the 1440 row | one line, **height 17**, `text-overflow: ellipsis`, `clientWidth 77` against `scrollWidth 177` → truncated; the row **195px** in the 196px column; `Free` at the end; no invented name line |
+| finding 2 — **the owner's own address, measured live in that row's font** | **115px** against the **77px** slot — it cannot be whole there, which is what the truncation is for |
+| finding 2 — the menu the row opens | 240px; its header slot **160px**, `scrollWidth == clientWidth` → **whole and never shortened** (this long fixture address wraps to two lines there rather than being cut; the owner's 115px address sits on one) |
+| finding 2 — the other branch | `display_name = "Umang Kagathara"` through the REST API → the frame's two lines, `13px/600` above `11px`, row 56px, both taking the same ellipsis; cleared again, back to one line |
+| finding 2 — the 390 drawer row | the same code at 272px: slot **156px**. The 31-character fixture truncates there (177 > 156); **the owner's 115px address does not**, so his phone keeps showing it whole |
+| finding 2 — the phone's top bar | **zero** account triggers |
+| finding 1 — the first send | `Check your inbox ✨` · "…**It's good for 15 minutes.**" · `Resend in 1:00` — a link really left |
+| finding 1 — the second send, inside the minute | **`Just a moment`** · "We sent a magic link to **umngkmr@gmail.com** less than a minute ago, **so we haven't sent another. If it isn't in your inbox — or you've already used it — ask again below.**" · `Resend in 0:58` |
+| finding 1 — Sign out, unchanged | the row read `Signing out…` in flight and landed on `https://app.inflozo.com/sign-in?signed-out=1` |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A + AA) — the 1440 dashboard with the menu open, the same with a name, the 390 drawer and its menu, the throttled sign-in card | **zero violations on every one**; the positive control, planted with the menus closed, flagged `button-name(1)`, `image-alt(1)` |
+| **console CSP violations** | **zero** — which also confirms the local pass's two as the marketing paths' (DW-18): there is no host split on localhost |
+| no horizontal scroll at 390 | **none** |
+| the fixture user | **deleted**; census `projects: 0 · profiles: 2 · entitlements: 2` |
+
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
