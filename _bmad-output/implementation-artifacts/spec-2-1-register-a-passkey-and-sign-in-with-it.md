@@ -443,6 +443,51 @@ After the patches, on the patched build (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_K
   rejects the caller's promise with `NEXT_REDIRECT` and navigates on its own — which is the first
   patch's whole basis.
 
+### The Deploy run (2026-09-06)
+
+**App code:** the last app-code commit, `84d1eff5`, and HEAD, `3ebd41e4`, both built CI-green
+(`gh actions/runs`, both `completed`/`success`) and both Vercel production deployments read
+**READY** (`GET /v6/deployments?projectId=…`). `GET /v2/deployments/{id}/aliases` on the HEAD
+deployment (`dpl_B7w3PTtzjeFBeLMXEWx3tqRfSYWe`) lists `app.inflozo.com` and `inflozo.com` as its
+aliases; `curl -I https://app.inflozo.com/sign-in` and `https://inflozo.com` both **200**.
+**Deployment: dpl_B7w3PTtzjeFBeLMXEWx3tqRfSYWe (https://app.inflozo.com, https://inflozo.com)**.
+
+**Switch 1 — Supabase's own, `configure-supabase-auth.py` (`SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`):**
+`--apply` → `PATCH 402` on the plan-gated `sessions_inactivity_timeout` alone (as anticipated —
+not the passkey fields), retried without it, `PATCH 200`, 22 fields written. `--check` read back
+**21 PASS**, including `passkey_enabled = True`, `webauthn_rp_id = 'inflozo.com'`,
+`webauthn_rp_origins = 'https://app.inflozo.com'`, `webauthn_rp_display_name = 'Inflozo'`.
+Negative control: `--check --expect passkey_enabled=false` → **1 FAILED**, and it is exactly
+`passkey_enabled` — the tool tells a wrong value from a right one.
+
+**Switch 2 — the row, over the pooler (`SUPABASE_DB_URL`'s direct host has no IPv4 route from this
+machine; resolved instead through Supabase's transaction pooler, `aws-0-eu-central-1.pooler.supabase.com:6543`,
+read from `GET /v1/projects/{ref}/config/database/pooler`, same password, `psql` via the official
+`postgres:17` Docker image):** `update public.feature_flags set enabled = true where key =
+'passkeys'` → `UPDATE 1`; read back `select key, enabled from public.feature_flags` →
+`passkeys | t`. Both switches on.
+
+**The flag-on round trip, against the real production site, both switches on:**
+- `curl -s https://app.inflozo.com/sign-in | grep -c 'Sign in with a passkey'` → **1**; `>or<` → **1**
+  (both were **0** in the Dev/Review runs with the switches off).
+- A Playwright virtual authenticator (`WebAuthn.addVirtualAuthenticator`, `ctap2` · `internal` ·
+  resident key · user-verified · automatic presence) against `https://app.inflozo.com`, driving a
+  fixture user (`admin/generate_link` — a brand-new address returns `verification_type: 'signup'`,
+  not `'magiclink'`, and the confirm route accepts either): redeem the link → signed in at `/`;
+  `/account` → **Add a passkey** → the ceremony completes with no human present → the row appears
+  (`Passkey · added …`, the all-zero AAGUID's fallback name, as the spec's own note predicts for a
+  virtual authenticator) and the dashboard's nudge is gone; cookies cleared (a clean second
+  session, not reuse of the first); `/sign-in` → **Sign in with a passkey** → the same virtual
+  authenticator answers `get()` with no OS sheet a human would see → lands on `/` with a
+  `sb-…-auth-token` cookie set and **no email sent**. The fixture user was deleted afterwards
+  (`DELETE /auth/v1/admin/users/{id}`, HTTP 200); the live user count is **2 before and 2 after**.
+- axe-core 4.12.1, same Chromium, **flag on**: `/sign-in` signed-out and `/account` signed-in
+  (through the passkey session above), at 1440 and 390 — **0 violations** on all four.
+
+This is the on-switch proof the Dev and Review runs said they could not give: the field names, the
+envelope, and the button/card's actual appearance, executed rather than inferred from the
+off-switch control.
+
 ## Owner's manual test
 
 Everything below is on the live site, after the Deploy run has turned both switches on. Use your Mac first,
