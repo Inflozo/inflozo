@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 2
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -978,6 +978,29 @@ What that binds, for the Fix run:
   design authority under R-74 and is never touched by a story. Redrawing these two frames to match is a
   design pass of its own and is not this story's; say the word and it is scheduled separately.
 
+**3. You asked to take "Duplicate an existing project" out of the New project window. Should it stay out for good — including in the later story that finishes that window?**
+
+It is out of this story either way: the door goes, and duplicating stays where you said it belongs, on a
+project card's ⋯ menu. The open bit is **Story 13.6**, the story whose whole job is to finish that window.
+It is written today as *"all four creation paths"* — Starter · Blank canvas · Duplicate · Redesign — with a
+little picker inside the Duplicate door for choosing which project to copy. If nothing is said, that story
+will put the door back.
+
+*Example:* today the window lists four choices and three are greyed out. After this fix it lists three —
+Blank canvas (the one that works), Start from a starter, and Redesign one of my sites. When Story 13.6 is
+built, months from now, it either keeps listing three or goes back to four, and this is the moment to say
+which.
+
+1. **Out for good — three doors, and duplicating lives only on a project's ⋯ menu. (RECOMMENDED)** — one
+   way to do one thing, which is what you said; the window is shorter and the choice is easier; and
+   Story 13.6's wording is corrected now, while it is cheap, instead of the door quietly coming back.
+2. Out of this story only — Story 13.6 puts it back with its project picker, as the design draws it. The
+   window you see today is tidier, but the same complaint returns when 13.6 lands.
+3. Something else — tell me and it is written down.
+
+Whichever you pick, the design file is **not** edited: the drawing keeps four doors and this spec is the
+record that you ruled otherwise (R-74). Nothing is blocked by this question — the Fix run can start now.
+
 ## Owner's manual test
 
 Your account is on the Free plan, so you will see the Free side of every screen — the one project, the
@@ -1092,3 +1115,81 @@ it, and the browser records an error behind the scenes. Nothing on that page nee
 is visibly wrong; the moment a button or a form goes on it, that button would not work. Recorded as
 **DW-18** with the evidence. The header is Story 1.4's and the marketing pages are Epic 14's, so it is
 fixed there rather than inside a story about the dashboard.
+
+### The owner's second test — 2026-09-06, three findings
+
+He tested the redeployed dashboard on `app.inflozo.com` on 2026-09-06, after the Deploy commit `402ef996`.
+Read against the live database at the time of writing: his account is **Free with one project**
+(`Untitled project`, created 2026-09-06 00:56 UTC), so it is **at the cap right now** — which matters to
+finding 3 below. In his words:
+
+1. **"The New Project popup is different than what Claude Design has in S2a · onboarding screen. Is it
+   expected and is part of another story? If now, we need to fix it. Remove option of 'Duplicating a
+   project' as they can directly click on the three dots menu of a project and click duplicate."**
+2. **"The avatar row in sidebar of desktop still cuts off the email and show FREE. I want to remove the
+   Free/Pro plan and show full email. Just like we have in mobile."**
+3. **"When project limit is exhausted make necessary changes in the New Project popup - disable creations
+   and show the message why. Also add a prominent card to upgrade."**
+
+**Finding 1, first half — the frame he compared it to is not this window's frame, and that is the whole
+answer to "is it expected".** `S2a` is the **First Run** screen in `S2 Onboarding.dc.html`: a full page, not
+a popup, headed "Let's make your Ghost site gorgeous." with three large cards — *Connect your Ghost site*
+(marked Recommended), *Start from a starter*, *Blank canvas*. The New project window's frame is **`D4a`**
+in `D4 Dashboard Sheets and Blocks.dc.html`, which EXPERIENCE.md § Onboarding records as having been drawn
+*from* S2a plus B23a but is its own frame with its own four doors. So the built window is not meant to
+match S2a and never was. Measured against **D4a**, the differences are the ones already recorded above
+after his first test and each is another story's: the ten starters are **Epic 11**, the Duplicate door's
+project picker and the finished four-path window are **Story 13.6**, the Redesign door's "Connect a site"
+button is **Epic 3**, and the second Style Pack cell and the pencil that edits one are **Epic 6**. None of
+those is fixed here.
+
+**Finding 1, second half — removing the Duplicate door is this story's, and it overrides the frame.** The
+door is four lines of `DOORS` in `new-project-sheet.tsx`; taking it out is a deletion, not a build. What it
+costs is not code: **D4a's own caption is a design instruction** — *"All four doors stay drawn and each
+carries its reason. A door the customer can't open is still information about the product."* — and rulings
+R-33 and R-68 say the same thing generally (greyed with the reason, never hidden). The owner has ruled
+against it for this door, which is his to do; the record of the override lives here and **the export is not
+edited** (R-74). The one thing genuinely still open is whether **Story 13.6**, whose acceptance criteria say
+"all four paths" and draw a project picker inside the Duplicate door, keeps it out too — asked as
+question 3 above. It does not block the Fix run.
+
+**Finding 2 — this story's, and the smallest of the three.** The sidebar chip at 1440 was deliberately left
+as the frame draws it when the phone's row was fixed on his last ruling: `account-menu.tsx` truncates the
+name slot (which holds the email until Epic 2 sets a display name) and puts the plan badge at
+`margin-left:auto`. He now rules the other way for the desktop too. Removing the badge gives the row back
+roughly the width the badge was taking, which is what was pushing the address into an ellipsis, and the
+drawer's treatment — the whole address, wrapped rather than cut — is already written next door and is what
+this row becomes. The **plan badge is not lost**: the menu the chip opens carries it on the Billing & plan
+row, exactly as the phone's does since his last ruling.
+
+**Finding 3 — already built and already executed, with one part genuinely weaker than the frame.** Every
+behaviour he asks for is on the live site today and is in `## Verification` above: at the cap the window
+opens as **D4b** with all four doors greyed and a `Free includes 1 project` pill on each, no Style Pack row,
+the block reading `Free includes 1 project. Pro gives you 25.` and `Your project stays exactly as it is
+either way.`, **Create project drawn disabled** with that sentence as its spoken reason, and the dashboard
+grid carrying S3c's dashed **Upgrade to add more** tile beside his card. Since his account is at the cap as
+this is written, pressing "New project" shows it now. Two readings of the finding are therefore possible —
+he wrote it before creating his project and never reopened the window at the cap, or he saw it and did not
+find it prominent enough — and **one concrete gap sits underneath both**: `D4b` draws the call to action as
+a **solid gold button** (`#B87A00`, white text, 38px, radius 12, hover `#9E6800`) on a warm tinted card
+(`#FFFDF6` on a `#F5E3B8` hairline), and the build draws a **marigold-tint pill on white**, deliberately, to
+avoid a second gold button beside S3c's tile. Against the frame the built card is the quieter of the two,
+which is exactly the complaint. The Fix run brings that card back to D4b — the frame's warm tint and the
+frame's solid gold button — and no behaviour changes, because none of it is missing.
+
+**What is NOT fixed in this story, and where it goes.**
+
+| Not this story | Whose it is |
+|---|---|
+| The ten starters behind "Start from a starter" | **Epic 11** |
+| The project picker inside the Duplicate door, and the finished four-path window | **Story 13.6** |
+| The "Connect a site" button on the Redesign door | **Epic 3** |
+| A second Style Pack cell, "+ New pack" and the pencil that edits one | **Epic 6** |
+| The **First Run** screen S2a itself — three cards on first sign-in — which no story in `epics.md` owns | recorded as **DW-19**; a story has to claim it before Epic 3 or it is simply never built |
+
+**One thing found while answering finding 1, and it is not a defect of this story.** `S2a` — the First Run
+screen — is drawn in the export, is listed in `EXPERIENCE.md` § Onboarding, has a page of its own in both
+prototypes, and **is named by no story in `epics.md`**: the searches find `S2b·1`, `S2b·2` and `S2c` owned
+by Epic 3's stories and nothing anywhere claiming S2a. Recorded as **DW-19** rather than fixed, because
+deciding whether a first-run screen exists at all — and which epic builds it — is a planning decision, not
+a dashboard story's.

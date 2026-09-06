@@ -476,3 +476,22 @@ reason: The nonce is stamped into script tags PER REQUEST, so a prerendered page
   build-time hash allowlist, or make the two prerendered routes dynamic and pay §18's prerender cost.
   **Story 1.4's `## Verification` claim of "console 0 CSP violations" on both hosts did not hold for
   marketing** and should be re-read when this is picked up.
+
+### DW-19: the First Run screen S2a is drawn, is in the UX spine, and is named by no story
+
+plain: The very first screen a brand-new customer should see after signing up — the one offering "connect your Ghost site", "start from a starter" or "blank canvas" — is drawn and designed, but no piece of work anywhere is scheduled to build it. Unless a story claims it, new customers will land straight on an empty dashboard instead.
+status: open
+severity: medium
+origin: Story 1.5 owner test, second round (2026-09-06) — the owner compared the New project window to S2a, which surfaced this
+location: _bmad-output/planning-artifacts/epics.md · _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/S2 Onboarding.dc.html
+reason: `S2 Onboarding.dc.html` draws **S2a First Run** — a full 1440 page, "Let's make your Ghost site
+  gorgeous.", three cards (Connect your Ghost site · Recommended, Start from a starter, Blank canvas) and
+  the line "You can do all of this later." `EXPERIENCE.md` § Onboarding lists it as a surface reached from
+  first sign-in, and both `ux-designs/prototype/first-run.html` and `ux-designs/walkthrough/first-run.html`
+  render it. Grepping `epics.md` for it returns nothing: `S2b·1`, `S2b·2` and `S2c` are each named by an
+  Epic 3 story, S2a by none. `EXPERIENCE.md` records the New Project Sheet as drawn *from* S2a + B23a, which
+  is the likeliest explanation — the sheet may have been intended to absorb First Run — but nothing says so,
+  and standing rule 6 is flag, do not guess. The decision is whose: either an epic claims S2a (Epic 3 is the
+  natural home, since its first card is "connect your Ghost site"), or a ruling records that First Run is
+  deliberately not built and the dashboard's empty state S3b is the first-run experience. Story 1.5 fixes
+  neither — it owns the dashboard, not the onboarding route.
