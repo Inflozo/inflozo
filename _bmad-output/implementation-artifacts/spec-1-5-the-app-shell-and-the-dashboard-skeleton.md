@@ -1418,20 +1418,24 @@ infrastructure R-82 asks for.
 
 The story stays **in review**: Deploy and the owner's own test follow, and Done is written on his word (R-80).
 
-**Deploy (2026-09-06)** — HEAD is `c9f95b48` (doc-only since `e378c7ba`; the app code is unchanged since
-that commit). Confirmed on the real stack (R-82; PRD §4, AD-26: production is the stack under test). No
-schema change in this story, so nothing beyond app code to deploy.
+**Deploy (2026-09-06)** — this story's Deploy phase. HEAD going in was `c9f95b48` (doc-only since
+`e378c7ba`; the app code was already unchanged and unverified-as-deployed since that commit) — confirmed
+READY on the real stack before this phase's own commit (`48216169`, this spec's `owner_test: pending` and
+the story board) was pushed and gated in turn. No schema change in this story, so nothing beyond app code
+to deploy.
 
 | Check | Result |
 |---|---|
-| `gh run list --branch main` (`GITHUB_TOKEN`) | commit `c9f95b48` — `CI` success (run `34016688058`) |
-| Vercel production deployments (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) | `dpl_25HuAxQhPJL3GCqLvgpbcM23PU7E`, state **READY**, built from `c9f95b48` |
+| `gh run list --branch main` (`GITHUB_TOKEN`), commit `c9f95b48` | `CI` success (run `34016688058`) |
+| Vercel production deployment for `c9f95b48` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) | `dpl_25HuAxQhPJL3GCqLvgpbcM23PU7E`, state **READY** |
+| `gh run view` on this phase's own commit `48216169` (`GITHUB_TOKEN`) | `check: success` · `rls: success` · `deploy: success` (run `34016920015`) |
+| Vercel production deployment for `48216169` | `dpl_7nnoxw4Ha6ySwybiBaj7yts3cyEV`, state **READY**, built from `48216169` |
 | Aliases on that deployment | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`), plus the probe and account preview aliases |
 | `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present |
 | `curl -sI https://app.inflozo.com/` signed out | **307** → `/sign-in`, unchanged |
 | `curl -sI https://inflozo.com/` | **200** |
 
-Deployment: `inflozo-2xdp0gy4d-umangkagathara.vercel.app` (`dpl_25HuAxQhPJL3GCqLvgpbcM23PU7E`)
+Deployment: `inflozo-2ee1jlcmm-umangkagathara.vercel.app` (`dpl_7nnoxw4Ha6ySwybiBaj7yts3cyEV`)
 
 ## Questions for the owner
 
