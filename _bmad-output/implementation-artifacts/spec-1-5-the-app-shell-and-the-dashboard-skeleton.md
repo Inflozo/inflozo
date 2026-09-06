@@ -1814,6 +1814,26 @@ sits above a working dashboard rather than replacing it.
 | `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
 | `python3 tools/doc-audit.py --check` twice | **PASS, 0 warnings** both times |
 
+**The patched code published, and re-checked on the real stack** — the patches above were reviewed
+before they were deployed, so R-82 asks for them again after CI published them. One fixture user,
+created through the admin API and **deleted at the end** with both the projects it made.
+
+| Check | Result |
+|---|---|
+| CI on the Review commit `301ed036` (`GITHUB_TOKEN`) | run `34029632042` — `rls: success` · `check: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | alias `app.inflozo.com` → `dpl_3JDK3irkqv4rtS4mCSEomJ5AuTP4`, state **READY**, production, `githubCommitSha` **`301ed036`**; `inflozo.com` resolves to the same deployment — one deployment serves both |
+| the deployed shape, unchanged by this review | `/sign-in` **200** `x-inflozo-policy: app-nonce` · `/` signed out **307 → /sign-in** · `inflozo.com` **200** `marketing-static` |
+| the question-8 banner, still on the live site | `/?sign-out-failed=1` → **200, banner present**; `/` · `/?sign-out-failed=0` · `/?sign-out-failed=true` → **absent** each (three negative controls) |
+| **the retry patch, in the browser on the live site** | **HELD** — on `/?sign-out-failed=1`, in BOTH menu variants (1440 `#account-menu`, and 390 opened from ☰), Sign out has **no `aria-disabled` at rest** and a click issued a real **POST**; watched through the cycle it went `null / "Sign out"` → `aria-disabled="true" / "Signing out…"` |
+| the released ref, as SERVED | the client chunk `/_next/static/chunks/28mhopkx0xt31.js` carries it verbatim — `let{pending:n}=useFormStatus(),o=useRef(!1);useEffect(()=>{n||(o.current=!1)},[n])` beside `onClick:e=>{o.current&&e.preventDefault(),o.current=!0}`. Before the patch there was no `useEffect` at all |
+| **Duplicate's no-JS path, executed rather than read** | **HELD** — the served control is a real `<form method="POST">` carrying `$ACTION_REF_6`, `$ACTION_6:0`, `$ACTION_6:1`, `$ACTION_KEY` and the `id`, i.e. a progressively-enhanced Server Function form. **Replaying exactly those five fields as a plain multipart POST, with no JavaScript involved at all, returned 200 and the project count went 1 → 2** — `Copy of Untitled project` then rendered on the dashboard. Rename, Delete and Create project are the same shape (`$ACTION_REF_7/_8/_9`); Sign out is `$ACTION_ID_…`, unbound, in both variants |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A + AA) after the patches | **1440: 0 violations** (23 passes) · **390: 0 violations** (21 passes) |
+| **positive control** — axe is really looking | **PASSED** — a nameless `<button>` and an alt-less `<img>` planted in the same page returned exactly `button-name` and `image-alt`, critical, at both widths |
+| the fixture | **deleted**, with both projects it created; census identical before and after — `users 2 · projects 0 · profiles 2 · entitlements 2` |
+
+Two console 404s at 1440 are Next prefetching `/sites` and `/assets`, routes later epics own — the
+account menu's own comment records that as intended, and 390 had zero console errors.
+
 **Two limits stated rather than assumed.** The *writer* half of the sign-out-failed contract —
 `signOut()` choosing the failed path when GoTrue returns an error — is still held by the round-trip test
 and its mutation control, not by a live failure, because forcing the real GoTrue to be unreachable is not
