@@ -29,6 +29,10 @@ const sizes: Record<Size, string> = {
   32: 'h-8 px-[13px] text-control-label rounded-thumb',
 }
 
+/** The same look on something that is not a `<button>` — a link that acts as a button. */
+export const buttonClasses = (variant: Variant = 'secondary', size: Size = 36) =>
+  `inline-flex items-center justify-center gap-[7px] font-semibold transition-colors ${sizes[size]} ${variants[variant]} ${ring}`
+
 export function Button({
   variant = 'secondary',
   size = 36,
@@ -39,7 +43,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`inline-flex items-center justify-center gap-[7px] font-semibold transition-colors ${sizes[size]} ${variants[variant]} ${ring} ${className}`}
+      className={`${buttonClasses(variant, size)} ${className}`}
       {...rest}
     >
       {children}

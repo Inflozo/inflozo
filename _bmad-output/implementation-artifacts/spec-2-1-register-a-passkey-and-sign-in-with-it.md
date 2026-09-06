@@ -115,6 +115,13 @@ Supabase's project setting.
 - `apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx` (new, client) -- the rows (laptop glyph · name 13px/500 · "added Aug 2, 2026" in mono 11px ink-soft · 9px/0 · the `#F1EDE7` hairline), and "Add a passkey" — 34px, radius 12, 13px/500, `border-line`, drawn inline from the tokens because the Kit's sizes are 44/36/32 and 34 is the frame's (1.4's precedent for S1's 44px field). The ceremony: start → `deserializeCredentialCreationOptions` → `create()` → `serializeCredentialCreationResponse` + `aaguidFromAuthData(response.getAuthenticatorData())` (method absent → `null`) → finish; "Waiting for your device…" on the button while pending
 - `apps/web/app/(app)/app/(authed)/account/actions.ts` (new, `'use server'`) -- `startPasskeyRegistration()` → `{ challengeId, options }`; `finishPasskeyRegistration({ challengeId, credential, aaguid })` → `verifyRegistration` → `auth.passkey.update({ passkeyId: data.id, friendlyName: nameFor(aaguid) })` → `auth.updateUser({ data: { passkey_nudge_done_at } })` → `revalidatePath('/app/account')` (the internal path — `routing.ts:25`); `dismissPasskeyNudge()` → the same `updateUser` → `revalidatePath('/app')`. Each guarded by `passkeysEnabled()` and `currentUser()`; the result union `{ ok: true } | { error: { code, message } }` as `projects/actions.ts` shapes it
 - `apps/web/app/(app)/app/(authed)/page.tsx` + `passkey-nudge.tsx` (new, client) -- `passkeysEnabled() && !user.user_metadata?.passkey_nudge_done_at` → `<Banner kind="notice">` above the grid: "Sign in faster next time — add a passkey." · `BannerLink` to `/account` · a "Not now" button posting `dismissPasskeyNudge`. Zero extra calls on the dashboard: the fact rides `getUser()`'s own answer
+- `apps/web/components/kit/button.tsx` -- `buttonClasses(variant, size)` exported beside `Button`, which now
+  builds its own class string from it: the Kit's look on something that is not a `<button>`. Nothing else moved
+- `apps/web/app/(app)/app/(authed)/passkey-nudge.tsx` -- the nudge's two actions are the Kit's 32px buttons and
+  no longer underlined links (the owner's test, finding 1): **Add a passkey** is `buttonClasses('primary', 32)`
+  on a `next/link` — an ink fill, still an anchor, so it opens in a new tab and the browser shows its target —
+  and **Not now** is `<Button variant="secondary" size={32}>`, surface plus the hairline. The sentence and the
+  pair sit in a `flex flex-wrap` row, so 390 wraps the buttons under the sentence instead of clipping them
 - `apps/web/components/kit/icons.tsx` -- S12a's own paths: `Mail` (rect 2 4 20 16 + `M22 7l-10 6L2 7`), `Laptop` (rect 2 4 20 13 + `M8 21h8M12 17v4`), and the "Add a passkey" glyph read off `S12 Billing.dc.html:103` at Dev
 - `apps/web/app/globals.css` + `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` -- only if the card shadow `0 1px 2px rgba(28,27,26,.06)` and the row hairline `#F1EDE7` have no token yet (grep first): `--shadow-card` and `--color-line-soft` with their twins; `tokens.test.ts` requires each value in the export and both are (`S12 Billing.dc.html:75,87`)
 - `tools/probe/configure-supabase-auth.py:49` -- `settings()` gains `passkey_enabled: True`, `webauthn_rp_id: 'inflozo.com'`, `webauthn_rp_origins: 'https://app.inflozo.com'`, `webauthn_rp_display_name: 'Inflozo'` — field names read from `api.supabase.com/api/v1-json` on 2026-09-06 (`UpdateAuthConfigBody`, all four; `passkey_enabled` boolean, the rest strings); `--check` asserts them; the docstring's field list follows
@@ -226,6 +233,14 @@ Dismissed as noise (9): the hairline under the last passkey row (the frame draws
 8. **`addedLabel()` joined `passkey-name.ts`.** S12a's second line is "added Aug 2, 2026" and needed
    a formatter that the server's render and the client's re-render cannot disagree about; it is
    `updatedLabel`'s idiom (fixed locale, `timeZone: 'UTC'`) and is under `node --test` with it.
+
+9. **The nudge's two actions became buttons (the owner's test, 2026-09-06).** They were a `BannerLink` and an
+   underlined text button — the Kit's banner idiom. The owner's ruling on his test of the deployed story is
+   that they are standard buttons: primary for **Add a passkey**, secondary/muted for **Not now**. The nudge is
+   the one surface in this story that no frame draws (it is extrapolated), so this is the owner deciding an
+   open question about his own extrapolation, not a design pass over a frame. `buttonClasses` was exported from
+   the Kit's `Button` so the anchor can wear the same look without a second copy of the variant strings;
+   `BannerLink` is untouched and still the rule for a link inside a banner (the kit page uses it).
 
 ## Design Notes
 
@@ -488,6 +503,43 @@ This is the on-switch proof the Dev and Review runs said they could not give: th
 envelope, and the button/card's actual appearance, executed rather than inferred from the
 off-switch control.
 
+### The Fix run (2026-09-06)
+
+The owner's finding is a UI change on the dashboard nudge, so the proof is the nudge rendered by a **real
+production build talking to the real Supabase project** — both switches on, as production has them since the
+Deploy run — driven by a real signed-in session. No mocks (R-82). Keys read by name from `tools/probe/.env`
+(`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`); none printed.
+
+- `pnpm check` (`eslint .` · `tsc --noEmit` · `node --test` across the workspace) — **green, exit 0**.
+- `pnpm build` with the three keys set — **green**; `next start -p 3111`, and
+  `curl -s localhost:3111/app/sign-in | grep -c 'Sign in with a passkey'` → **1**: the build is reading the
+  live project and both switches are still on. (Port 3111, not 3100: a stale server from an earlier session
+  held 3100 and would have answered with the *old* build — the kind of control failure standing rule 2 names.)
+- A fixture user through `POST /auth/v1/admin/generate_link` (`verification_type: 'signup'`), the link
+  redeemed in real Chromium, landing signed in on the dashboard. Computed styles read off the two actions:
+
+  | action | element | background | text | border | height | radius | weight |
+  |---|---|---|---|---|---|---|---|
+  | **Add a passkey** | `A` (`href` → `/account`) | `rgb(28, 27, 26)` — `--color-ink` | `rgb(255,255,255)` | none | 32px | 10px | 600 |
+  | **Not now** | `BUTTON` | `rgb(255, 255, 255)` — `--color-surface` | `rgb(28, 27, 26)` | `1px rgb(231, 226, 219)` — `--color-line` | 32px | 10px | 600 |
+
+  A primary ink fill and a muted secondary, both the Kit's 32px size — the owner's finding, executed rather
+  than asserted. Screenshots at 1440 and 390 were taken and read; at 390 the pair wraps under the sentence.
+- Still true after the change, on the same session: a Tab walk reaches **Add a passkey** then **Not now** in
+  that order; pressing **Not now** dismisses the nudge, `GET /auth/v1/admin/users/{id}` shows
+  `user_metadata.passkey_nudge_done_at` written, and a reload does not bring the banner back — the once-only
+  fact still works through real GoTrue.
+- axe-core 4.12.1, same Chromium, `wcag2a · wcag2aa · wcag21a · wcag21aa`, the dashboard **with the nudge
+  shown**: **0 violations at 1440 and 0 at 390**.
+- The fixture user was deleted afterwards (`DELETE /auth/v1/admin/users/{id}` → **200**).
+- One harness correction, recorded because it produced a convincing wrong answer first: on `localhost` the app
+  lives under `/app` (the host rewrite only happens on `app.inflozo.com`), so the first run read the marketing
+  home and reported the nudge absent; and a screenshot taken at `domcontentloaded` catches the streamed shell
+  before paint, which reported `visible: false` for a banner that was in the DOM. Both were the harness.
+
+Nothing else in this story was touched: no server action, no flag read, no ceremony, no `/account` code, and
+`BannerLink` is unchanged and still the rule for a link inside a banner (the kit page uses it).
+
 ## Owner's manual test
 
 Everything below is on the live site, after the Deploy run has turned both switches on. Use your Mac first,
@@ -563,3 +615,10 @@ You tested the deployed passkey work on `app.inflozo.com` on 2026-09-06. Recorde
 1. **"The banner with 'Sign in faster next time — add a passkey. Add a passkey Not now' Both these
    buttons can be standard button designs and not just links. Add passkey as primary button and Not
    now as secondary (muted design) button."** — the dashboard nudge (step 2 of the manual test).
+
+**Fixed, 2026-09-06 (the Fix run).** The nudge's two actions are now the Kit's own buttons at its 32px size:
+**Add a passkey** a primary ink fill (still a link underneath, so it can be opened in a new tab) and **Not
+now** a secondary, muted button — surface with the hairline. Nothing else about the nudge changed: the same
+one sentence, the same marigold notice banner, the same once-per-user dismissal. Proved on a real build
+against the real project under `## Verification` → *The Fix run*. It goes back through Review and Deploy, and
+then it is yours to test again — step 2 of the manual test above is the one to look at.
