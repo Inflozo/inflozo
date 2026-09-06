@@ -126,6 +126,15 @@ create index on public.profiles (purge_after) where deleted_at is not null;
 
 -- FR-A3: passkeys are auto-named from the AAGUID and renameable. Supabase Auth's passkey
 -- API is Beta (§7.6 item 4) and carries no user-editable label, so the label is ours.
+--
+-- THAT PREMISE WAS FALSIFIED BY EXECUTION (Story 2.1, 2026-09-06, DW-30). The installed
+-- `@supabase/auth-js` 2.115.0 carries `friendly_name` on every passkey and a `PATCH
+-- /passkeys/{id}` that sets it (`dist/module/lib/types.d.ts:2404-2410,2438-2443`;
+-- `GoTrueClient.js:5668-5688`), so the platform DOES carry a user-editable label. Story 2.1
+-- writes the AAGUID auto-name there and WRITES NOTHING HERE: one store beats two that can
+-- disagree. The table therefore exists, is empty, and is still under RLS and the §10 loop below,
+-- which is why it stays for now — Story 2.2 (rename and revoke) drops it or repurposes it, and
+-- until then nothing in the app reads or writes it.
 create table public.passkey_labels (
   user_id       uuid not null references auth.users(id) on delete cascade,
   credential_id text not null,

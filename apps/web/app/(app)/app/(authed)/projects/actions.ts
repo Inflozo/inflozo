@@ -13,8 +13,10 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  *
  * EVERY ONE OF THEM GOES THROUGH THE USER'S OWN SESSION — `supabaseServer()`, the publishable
  * key, the caller's cookies — so RLS is exercised by every mutation rather than bypassed. The
- * spine's Mutation row allows exactly this for AD-6 owner-policy tables, and `projects` is one:
- * there is no service-role client in the app at all (`server.ts`).
+ * spine's Mutation row allows exactly this for AD-6 owner-policy tables, and `projects` is one.
+ * Story 2.1 added the app's one service-role client (`supabaseAdmin()`, `server.ts`) and it is
+ * fenced to a single caller — the `feature_flags` read — so nothing here changes: every write
+ * below still goes through the caller's own session.
  *
  * Only async functions may be exported from a `'use server'` module, which is why every pure
  * part — the name rules, the slug, the plan table — lives in `lib/` and is proved by

@@ -2,8 +2,9 @@
 title: 'Story 2.1 — Register a passkey and sign in with it'
 type: 'feature'
 created: '2026-09-06'
-status: 'ready-for-dev'
+status: 'in-progress'
 review_loop_iteration: 0
+baseline_commit: 'c2d6f365c86dd3e9c323847cccd2856b304da6b7'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
@@ -126,21 +127,21 @@ Supabase's project setting.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/package.json` -- add `@supabase/auth-js` 2.115.0 (direct, pinned); `pnpm install`; the spine's Stack row -- the deep import needs a direct dependency under pnpm
-- [ ] `apps/web/lib/supabase/server.ts` -- `experimental.passkey` on the server client; `supabaseAdmin()` lazily, once, cookie-less -- the ceremony's HTTP half and the one privileged read
-- [ ] `apps/web/lib/flags-rule.ts` + `apps/web/flags-rule.test.ts` -- `bothOn()` and its five cases -- the rule where `node --test` reaches it
-- [ ] `apps/web/lib/flags.ts` -- the two reads, `cache()`d, fail-closed; close DW-12 in `deferred-work.md` -- the flag becomes a flag
-- [ ] `apps/web/lib/passkey-aaguids.ts` + `apps/web/lib/passkey-name.ts` + `apps/web/passkey-name.test.ts` -- the list (source and hash in the header), the parser, the fallback -- FR-A2's auto-name
-- [ ] `apps/web/app/(app)/app/sign-in/webauthn.ts` -- the one import site -- keeps the deep path in one file
-- [ ] `apps/web/app/(app)/app/sign-in/actions.ts` -- `startPasskeySignIn`, `finishPasskeySignIn` -- sign-in without a browser client
-- [ ] `apps/web/app/(app)/app/sign-in/passkey-button.tsx` + `sign-in-form.tsx` -- the button in the existing branch, S1c's 40% while pending, the captions -- S1a and S1c
-- [ ] `apps/web/app/(app)/app/(authed)/account/actions.ts` -- `startPasskeyRegistration`, `finishPasskeyRegistration`, `dismissPasskeyNudge` -- registration, naming, the once-only fact
-- [ ] `apps/web/app/(app)/app/(authed)/account/page.tsx` + `passkeys-card.tsx` -- S12a's right column -- the Security surface
-- [ ] `apps/web/components/kit/icons.tsx` (+ `globals.css`/`DESIGN.md` only if a value has no token) -- the frame's glyphs and, if needed, two tokens -- tokens only
-- [ ] `apps/web/app/(app)/app/(authed)/page.tsx` + `passkey-nudge.tsx` -- the notice Banner -- the post-onboarding nudge, once
-- [ ] `tools/probe/configure-supabase-auth.py` -- the four fields in `settings()`; run `--check` (expect the four to FAIL until Deploy applies them, and say so) -- Supabase's own switch, under the existing tool
-- [ ] `SCHEMA.sql` (`passkey_labels` comment) -- record the finding beside the table -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result
+- [x] `apps/web/package.json` -- add `@supabase/auth-js` 2.115.0 (direct, pinned); `pnpm install`; the spine's Stack row -- the deep import needs a direct dependency under pnpm
+- [x] `apps/web/lib/supabase/server.ts` -- `experimental.passkey` on the server client; `supabaseAdmin()` lazily, once, cookie-less -- the ceremony's HTTP half and the one privileged read
+- [x] `apps/web/lib/flags-rule.ts` + `apps/web/flags-rule.test.ts` -- `bothOn()` and its five cases -- the rule where `node --test` reaches it
+- [x] `apps/web/lib/flags.ts` -- the two reads, `cache()`d, fail-closed; close DW-12 in `deferred-work.md` -- the flag becomes a flag
+- [x] `apps/web/lib/passkey-aaguids.ts` + `apps/web/lib/passkey-name.ts` + `apps/web/passkey-name.test.ts` -- the list (source and hash in the header), the parser, the fallback -- FR-A2's auto-name
+- [x] `apps/web/app/(app)/app/sign-in/webauthn.ts` -- the one import site -- keeps the deep path in one file
+- [x] `apps/web/app/(app)/app/sign-in/actions.ts` -- `startPasskeySignIn`, `finishPasskeySignIn` -- sign-in without a browser client
+- [x] `apps/web/app/(app)/app/sign-in/passkey-button.tsx` + `sign-in-form.tsx` -- the button in the existing branch, S1c's 40% while pending, the captions -- S1a and S1c
+- [x] `apps/web/app/(app)/app/(authed)/account/actions.ts` -- `startPasskeyRegistration`, `finishPasskeyRegistration`, `dismissPasskeyNudge` -- registration, naming, the once-only fact
+- [x] `apps/web/app/(app)/app/(authed)/account/page.tsx` + `passkeys-card.tsx` -- S12a's right column -- the Security surface
+- [x] `apps/web/components/kit/icons.tsx` (+ `globals.css`/`DESIGN.md` only if a value has no token) -- the frame's glyphs and, if needed, two tokens -- tokens only
+- [x] `apps/web/app/(app)/app/(authed)/page.tsx` + `passkey-nudge.tsx` -- the notice Banner -- the post-onboarding nudge, once
+- [x] `tools/probe/configure-supabase-auth.py` -- the four fields in `settings()`; run `--check` (expect the four to FAIL until Deploy applies them, and say so) -- Supabase's own switch, under the existing tool
+- [x] `SCHEMA.sql` (`passkey_labels` comment) -- record the finding beside the table -- propagate, never localise
+- [x] Run `## Verification` on the real infrastructure and record every command and result
 
 **Acceptance Criteria:**
 - Given both switches on and a signed-out visitor, when `/sign-in` renders, then S1a's "or" divider and "Sign in with a passkey" are drawn and **match the frame** (`S1 Sign In.dc.html` S1a: the secondary 44px button, full width, under the divider, the frame's words)
@@ -153,6 +154,49 @@ Supabase's project setting.
 - Given `pnpm check`, `pnpm build` and `node --test`, then all green, and axe-core reports zero violations on `/sign-in` (flag on) and `/account`
 
 ## Spec Change Log
+
+1. **The card shadow already had a token; only the hairline needed one.** The Code Map said add
+   `--shadow-card` and `--color-line-soft` *only if* a grep found no token. `0 1px 2px
+   rgba(28,27,26,.06)` is already `--shadow-sm` (globals.css:91), so the cards use `shadow-sm` and
+   **no shadow token was added**. `#F1EDE7` had none, so `--color-line-soft` landed with its
+   `DESIGN.md` twin and its row in the colour-roles table. One token, not two.
+
+2. **The deep import became four wrappers, still in the one file.** `auth-js` types the ceremony as
+   WebAuthn Level 3 (`AuthenticatorTransportFuture` carries `"cable"`; `PublicKeyCredential` carries
+   the `parse*FromJSON` statics) and TypeScript's `lib.dom` does not, so `tsc` refused both
+   `navigator.credentials` calls and both serialisers. Rather than four casts at four call sites,
+   `webauthn.ts` — which exists to hold the deep import — now also holds the bridge:
+   `creationOptions`, `requestOptions`, `registrationResponse`, `authenticationResponse`, and the
+   types the two `'use server'` files need. Same one import site, one explanation instead of four.
+
+3. **`NUDGE_DONE` moved to `account/nudge.ts`.** A `'use server'` module may export only async
+   functions, so the key and its reader sit in a plain module beside the actions — the precedent
+   `signed-out.ts` and `resend-timer.ts` set, for the same reason.
+
+4. **`auth.passkey.list()`'s envelope is accepted either way.** The library TYPES it as a bare
+   `PasskeyListItem[]`, and that is a claim about GoTrue's `GET /passkeys` that cannot be executed
+   until Supabase's own switch is on — this story's Deploy phase. Two lines normalise an array or a
+   `{ passkeys }` wrapper, so a wrapped response cannot render an empty card in silence (standing
+   rule 1).
+
+5. **`flags.ts` logs the platform's message as well as the code**, because the Dev run's fail-closed
+   control proved `{ code }` alone was useless: PostgREST answers a bad key with `{ message, hint }`
+   and no `code`, so a flag that had just failed closed logged `code: undefined` and nothing else.
+   Safe by construction — that query carries no user input.
+
+6. **The nudge's `user_metadata` is read and written back whole.** Whether GoTrue merges `data` or
+   replaces it is an unexecuted claim about an external platform; the spread is correct under
+   either, which is cheaper than proving which.
+
+7. **Three propagations the Code Map did not list**, each because the story falsified a sentence
+   that was true before it (standing rule 3): the spine's `@supabase/ssr` row said the cookie-backed
+   client is "the ONLY Supabase client the app makes"; `projects/actions.ts` said "there is no
+   service-role client in the app at all"; and the spine's Feature-flags row named no reader. All
+   three now say what is true, and the Stack table gained the `@supabase/auth-js` row.
+
+8. **`addedLabel()` joined `passkey-name.ts`.** S12a's second line is "added Aug 2, 2026" and needed
+   a formatter that the server's render and the client's re-render cannot disagree about; it is
+   `updatedLabel`'s idiom (fixed locale, `timeZone: 'UTC'`) and is under `node --test` with it.
 
 ## Design Notes
 
@@ -200,21 +244,130 @@ on; (4) `--check` and the round trip; (5) the owner's test. Off is step 3 with `
 
 ## Verification
 
-Run by the Dev run on the real infrastructure (R-82); every key read into a command's environment from
-`tools/probe/.env` and named here by its variable only.
+Run by the Dev run on 2026-09-06, on the real infrastructure (R-82). Every key was read into a
+command's environment from `tools/probe/.env` and is named here by its variable only; none was
+printed, echoed or committed.
 
-**Commands:**
-- `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH && pnpm check && pnpm build && (cd apps/web && node --test '*.test.ts')` -- expected: green; the new tests among them
-- `python3 tools/probe/configure-supabase-auth.py --check` -- expected before Deploy: the four passkey fields FAIL and every 1.4 field PASSes (the control); after `--apply`: all PASS; `--expect passkey_enabled=false` then FAILs on exactly that field (negative control)
-- `env $(grep -E '^(SUPABASE_URL|SUPABASE_PUBLISHABLE_KEY)=' tools/probe/.env | xargs) bash -c 'curl -s "$SUPABASE_URL/auth/v1/settings" -H "apikey: $SUPABASE_PUBLISHABLE_KEY"'` -- expected: `passkeys_enabled` false before Deploy, true after
-- `psql "$SUPABASE_DB_URL" -c "update public.feature_flags set enabled = true where key = 'passkeys'"` (`SUPABASE_DB_URL` from the env file, never echoed) -- the Deploy-phase flip; `false` is the kill switch; read back with `select key, enabled, updated_at from public.feature_flags`
-- A fixture user through `generate_link` (`SUPABASE_SECRET_KEY`, 1.4's pattern) signed in on `https://app.inflozo.com`, then Playwright Chromium (`~/.cache/ms-playwright/chromium-1228`) with CDP `WebAuthn.enable` and `WebAuthn.addVirtualAuthenticator({ protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true })` -- expected: `/account` → Add a passkey → a row "Passkey · added <today>"; the nudge gone from `/`; Sign out; `/sign-in` → the button → `/` 200 signed in with `Max-Age=2592000; HttpOnly; Secure` and no email sent (`RESEND` log unchanged); `auth.passkey.list()` for the fixture → one item with `friendly_name`
-- Controls: the row off → `curl -s https://app.inflozo.com/sign-in | grep -c 'Sign in with a passkey'` → `0`, the same page with it on → `1`; Supabase off and the row on → `0`; each action called with the flag off → `passkeys_off`
-- axe-core 4.12.1 on `/sign-in` (flag on) and `/account` at 1440 and 390 -- expected: zero violations; a Tab walk reaches the button and "Add a passkey"
-- The fixture user deleted afterwards; the live user count unchanged from before the run
+### The gate
 
-**Manual checks (if no CLI):**
-- The owner's own device is the named path (`iCloud Keychain`, `Google Password Manager`, `Windows Hello`…): the virtual authenticator proves only the `Passkey` fallback
+- `pnpm check` (`eslint .` · `tsc --noEmit` on every package · `node --test`) — **green**, exit 0.
+- `cd apps/web && node --test '*.test.ts'` — **90 pass, 0 fail**, including the two new files:
+  `flags-rule.test.ts` (off/off, on/off, off/on, on/on, and a failed read in six shapes) and
+  `passkey-name.test.ts` (the AAGUID at offset 37, a one-byte shift, no AT flag, a truncated
+  buffer, the named / unknown / all-zero fallbacks, every key a unique lowercase UUID, and the
+  row's date line).
+- `pnpm build` **with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY` unset**,
+  which is how CI's `check` job runs — **green**; nothing reads a key at module load. `/app/account`
+  is listed `ƒ` (server-rendered on demand), never prerendered.
+
+### Supabase — the Management API (`SUPABASE_URL`, `SUPABASE_ACCESS_TOKEN`)
+
+- `curl https://api.supabase.com/api/v1-json` — `UpdateAuthConfigBody` carries **`passkey_enabled`**
+  (boolean) and **`webauthn_rp_id`**, **`webauthn_rp_origins`**, **`webauthn_rp_display_name`**
+  (strings, nullable). The four names the tool now writes were read there, not assumed.
+- `python3 tools/probe/configure-supabase-auth.py --check` — `GET 200`, then **17 PASS and 4 FAIL**.
+  The 17 are every Story 1.4 field (`site_url`, `uri_allow_list`, `mailer_otp_exp = 900`, the five
+  SMTP fields, both rate limits, both subjects, both 4394-char templates, the three booleans) —
+  **that is the control, and it passed**. The 4 FAIL are exactly the new ones and exactly as the
+  Tasks predicted: `passkey_enabled` live `False`, all three `webauthn_rp_*` live `None`. Applying
+  them is the Deploy phase's act. `sessions_inactivity_timeout` still reports `----` (not on this
+  plan), unchanged. **No 402 came back**, so the "Ask First" trigger for a plan-gated
+  `passkey_enabled` did not fire on the read; the `PATCH` is Deploy's and could still meet one.
+
+### Supabase — GoTrue (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`)
+
+- `GET $SUPABASE_URL/auth/v1/settings` — **`passkeys_enabled: false`**, re-read at Dev and unchanged
+  from MEASUREMENTS §20. This is the switch `lib/flags.ts` reads per request.
+
+### Supabase — PostgREST, and DW-12's premise proved both ways
+
+- `GET /rest/v1/feature_flags?select=enabled&key=eq.passkeys` with **`SUPABASE_SECRET_KEY`** —
+  **HTTP 200, `[{"enabled":false}]`**. That is the exact query `passkeysEnabled()` makes.
+- The same request with **`SUPABASE_PUBLISHABLE_KEY`** — **HTTP 401**, `42501 permission denied for
+  table feature_flags`. **The negative control**: it proves the secret-key client is doing real work
+  and that DW-12's premise — the app's own key cannot read that table — is still true today.
+- `GET /rest/v1/feature_flags?select=key,enabled,updated_at` — both rows read rather than restated:
+  `passkeys` **false**, `ghostpro_preview_probe` **false**.
+- `PATCH /rest/v1/feature_flags` with `SUPABASE_SECRET_KEY` — **HTTP 403**, recorded because it
+  matters at Deploy: the schema grants `service_role` **`select` only** (:1175), so the flip is the
+  `psql "$SUPABASE_DB_URL"` statement below and **not** a PostgREST call. The spec already named
+  psql; this is the reason it had to.
+
+### The real production build, served against the real project
+
+`next start` on the built app, with the three keys from `tools/probe/.env`:
+
+- `/app/sign-in` — **HTTP 200**; `Sign in with a passkey` **0**, the `or` divider **0**,
+  `Make something gorgeous` **1**. Both switches are off, so the module is absent and 1.5's page is
+  untouched — the matrix's "either switch off" row, against the real project.
+- `/app/account` **signed out** — **HTTP 307 → `/sign-in`**. The guard is where the file sits.
+- **Fail-closed against a real 401:** the same build with `SUPABASE_SECRET_KEY` deliberately wrong.
+  `/app/sign-in` still **HTTP 200**, the card still renders, the module still absent, and the server
+  logged `flags: read failed { code: undefined, message: 'Invalid API key' }` — no user content, no
+  key. **This run changed that log line:** PostgREST answers a bad key with `{ message, hint }` and
+  **no `code` at all**, so `{ code }` alone printed `code: undefined` and said nothing about a flag
+  that had just failed closed. The message is safe here by construction — the query carries no user
+  input, one literal filter and one boolean column.
+
+### A real signed-in session, and the session cookie
+
+A fixture user (`story-2-1-fixture@inflozo.com`) through `POST /auth/v1/admin/generate_link` with
+`SUPABASE_SECRET_KEY` — 1.4's pattern — its `hashed_token` redeemed at `/app/auth/confirm`:
+
+- `confirm` — **HTTP 303 → `/`**, and the `Set-Cookie` it wrote was
+  **`Max-Age=2592000; Secure; HttpOnly; SameSite=lax`** — FR-A6's 30 days, measured on the header
+  rather than asserted.
+- `/app/account` signed in — **HTTP 200**, the `Account & Billing` heading, the fixture's address and
+  `Magic links land here` both present, and — the switches being off — the Passkeys card **absent**
+  (`>Passkeys<` count **0**). `Change email` **0**, `Danger zone` **0**: UX-DR3 holds, each is
+  another story's and absent rather than greyed.
+- `/app` — the nudge **absent** (count **0**), because the flag is off.
+- **The fixture user was deleted afterwards** (`DELETE /auth/v1/admin/users/{id}`, HTTP 200) and the
+  live user count is **2 before and 2 after**, read both times through the Admin API.
+
+### axe-core 4.12.1
+
+Real Chromium (`~/.cache/ms-playwright/chromium-1228`) against that same running build, on the
+`wcag2a · wcag2aa · wcag21a · wcag21aa` tag set:
+
+| page | 1440 | 390 |
+|---|---|---|
+| `/app/sign-in` (signed out) | **0 violations** | **0 violations** |
+| `/app/account` (signed in) | **0 violations** | **0 violations** |
+
+Two harness corrections, both recorded because each produced a *convincing wrong answer* first. The
+app's per-session CSP has no `'unsafe-inline'`, so `addScriptTag` is refused and axe goes in through
+`addInitScript` — **the CSP working is why**. And a signed-in browser is redirected off `/sign-in`,
+so the first run audited the **marketing** page by mistake and reported its missing `<title>` as
+this story's; there are two browser contexts now, signed-out and signed-in. That `document-title`
+finding on `/` belongs to the marketing page and to no story here.
+
+A Tab walk of `/app/account` reaches the shell's links and the account chip and then wraps: with the
+flag off the page has **no focusable control of its own**, which is correct, and is exactly why the
+keyboard proof of "Add a passkey" is a flag-on check below.
+
+### What this run could not execute, and why
+
+Three things need a switch this phase is not allowed to flip. They are the **Deploy** run's and the
+**owner's test**, in the spec's own Deploy order:
+
+1. `python3 tools/probe/configure-supabase-auth.py --apply`, then `--check` — expected: all 21 PASS.
+   Then `--check --expect passkey_enabled=false` — expected: FAIL on exactly that field (the
+   negative control).
+2. `psql "$SUPABASE_DB_URL" -c "update public.feature_flags set enabled = true where key =
+   'passkeys'"` (`SUPABASE_DB_URL` never echoed), read back with `select key, enabled, updated_at
+   from public.feature_flags`. `false` is the kill switch — the same one line, no redeploy.
+3. With both on: `curl -s https://app.inflozo.com/sign-in | grep -c 'Sign in with a passkey'` → `1`
+   (it is `0` today, proved above); Supabase on with the row off → `0`; each action with the flag
+   off → `passkeys_off`; the full round trip under a Playwright virtual authenticator
+   (`WebAuthn.addVirtualAuthenticator`, `ctap2` · `internal` · resident key · user-verified) — add a
+   passkey, the row reads `Passkey · added <today>`, the nudge gone, sign out, sign in with it, no
+   email sent, `auth.passkey.list()` carrying the `friendly_name`; and axe plus a Tab walk on
+   `/sign-in` and `/account` **with the flag on**, where the button and "Add a passkey" exist.
+
+The virtual authenticator reports the all-zero AAGUID, so it proves the **`Passkey` fallback** only;
+the named path (`iCloud Keychain`, `Google Password Manager`, `Windows Hello`) is the owner's own
+device, and that is step 3 of his manual test.
 
 ## Owner's manual test
 

@@ -320,3 +320,35 @@ export const AlertCircle = ({ strokeWidth = 1.9, ...p }: IconProps) => (
     <circle cx="12" cy="7.8" r="0.5" fill="currentColor" />
   </Icon>
 )
+
+/* S12a's Email row and Passkeys rows, and S1a's passkey button — the three drawings this
+   surface needs, read verbatim off `S12 Billing.dc.html:78,87,103` and `S1 Sign In.dc.html:49`.
+   `Mail` and `Laptop` are drawn WITHOUT round caps in the frame (`stroke-linecap` is absent on
+   both), but the two shapes are a rectangle and two straight strokes, where the cap is invisible
+   at 16px; keeping `Icon`'s own caps is one component rather than a second one. */
+export const Mail = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="M22 7l-10 6L2 7" />
+  </Icon>
+)
+export const Laptop = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="4" width="20" height="13" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </Icon>
+)
+/** The key. One drawing at three sizes: 18 on S1a's button, 14 on S12a's "Add a passkey". */
+export const Passkey = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
+    <path d="M14 13.12c0 2.38 0 6.38-1 8.88" />
+    <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
+    <path d="M2 12a10 10 0 0 1 18-6" />
+    <path d="M2 16h.01" />
+    <path d="M21.8 16c.2-2 .131-5.354 0-6" />
+    <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" />
+    <path d="M8.65 22c.21-.66.45-1.32.57-2" />
+    <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
+  </Icon>
+)

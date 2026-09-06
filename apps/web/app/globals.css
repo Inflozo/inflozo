@@ -40,6 +40,9 @@
   --color-ink-faint: #A8A29A;      /* rules, dividers and greyed text — never placeholder or hint text (2026-09-04) */
   --color-line: #E7E2DB;
   --color-line-faint: #EFEAE2;
+  --color-line-soft: #F1EDE7;    /* the hairline BETWEEN rows in a list — S12a's passkey rows and its
+                                    invoice rows (S12 Billing.dc.html:86,185); warmer and lighter than
+                                    `line`, which is the card's own border around them */
   --color-line-strong: #C9C2B8;
   --color-coral: #FF5941;          /* fills, outlines, carets */
   --color-coral-text: #C2381F;     /* wherever coral carries text, and the one focus ring */

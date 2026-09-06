@@ -313,7 +313,7 @@ reason: The `*-kit.js` token objects (`PACKS` in `a29-kit.js:1-40`, same in the 
 ### DW-12: nothing in the app can read `feature_flags`, so the one flag it has resolves to its seeded value
 
 plain: The on/off switches meant to be flippable without a redeploy cannot actually be read by the website yet; the one switch that exists is off, which is what it should be today, so nothing is broken — the story that first needs a switch ON has to build the reader.
-status: open
+status: closed
 severity: medium
 origin: Story 1.4 dev (2026-09-05), found while gating S1a's passkey button
 location: apps/web/lib/flags.ts · supabase/migrations/20260904120000_complete_schema.sql:1175
@@ -327,6 +327,14 @@ reason: The spine's Feature-flags row says flags are rows "read server-side per 
   `SUPABASE_SECRET_KEY` (or a narrow `security definer` function granted to `authenticated`, which
   would keep the secret key out of the app and is the smaller change). Whichever it is, it is one
   file — `apps/web/lib/flags.ts` — and the decision belongs to the story that needs the flag on.
+closed: Story 2.1 dev (2026-09-06). The secret-key client won: `supabaseAdmin()` in
+  `apps/web/lib/supabase/server.ts` — cookie-less, built lazily and once, never handed user input,
+  with exactly one caller. The `security definer` function would have been a migration plus a
+  SCHEMA.sql change plus an RLS-TEST assertion plus a gate run for one boolean, while the key is
+  already in production and unread, and the next two privileged server reads (2.6's purge, E3's
+  Vault) want this same client. `passkeysEnabled()` now reads BOTH switches — our row and GoTrue's
+  own `passkeys_enabled` — `cache()`d per request and fail-closed; the pure combinator is
+  `apps/web/lib/flags-rule.ts` with `apps/web/flags-rule.test.ts` on its five cases.
 
 ### DW-13: `@supabase/ssr`'s `cookieOptions.maxAge` is inert, and it fails silently
 

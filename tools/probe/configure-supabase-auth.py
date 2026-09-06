@@ -16,6 +16,11 @@ asserts each field, exiting non-zero on any miss. A setting that cannot be read 
 (standing rule: a result whose control did not pass is not a result), and `--expect key=value`
 deliberately breaks one expectation so a green run can be told from a run that checks nothing.
 
+The fields it writes are the sign-in flow's (site URL, the allow list, the 15-minute link, Resend
+as the SMTP sender, both templates and both subjects, the two rate limits, no passwords anywhere)
+and, since Story 2.1, the four that turn Supabase's own passkey switch on: `passkey_enabled` and
+the three `webauthn_rp_*`. `sessions_inactivity_timeout` is written with them and reported apart.
+
 `smtp_pass` is `$RESEND_API_KEY` and is NEVER printed, compared or read back — the API returns it
 masked, so it is written and then left alone. Every other field is compared by value.
 
@@ -72,6 +77,21 @@ def settings(template: str, sender: str) -> dict:
         'mailer_autoconfirm': False,
         'disable_signup': False,
         'external_email_enabled': True,
+        # SUPABASE'S HALF OF THE PASSKEY SWITCH (Story 2.1, FR-A2). There are two switches and
+        # this is the platform's: Inflozo's own `feature_flags.passkeys` row is the other, and
+        # the app reads BOTH per request (MEASUREMENTS §20). The four field names were read from
+        # api.supabase.com/api/v1-json on 2026-09-06 -- `UpdateAuthConfigBody` carries
+        # `passkey_enabled` (boolean) and the three `webauthn_rp_*` (strings) -- and the settings
+        # endpoint reports the result as `passkeys_enabled`, which is the name the app reads.
+        #
+        # THE RP ID IS THE APEX AND IS A ONE-WAY DOOR: a passkey is bound to its RP ID for ever,
+        # so `inflozo.com` covers any future host under it while the origin list stays exact at
+        # `app.inflozo.com`. Changing it once a passkey exists in production strands every one of
+        # them, which is why it is written here rather than typed into the dashboard twice.
+        'passkey_enabled': True,
+        'webauthn_rp_id': 'inflozo.com',
+        'webauthn_rp_origins': APP,
+        'webauthn_rp_display_name': 'Inflozo',
     }
 
 

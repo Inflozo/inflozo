@@ -6,8 +6,11 @@ import { ring } from '@/components/kit/greyed'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
 import { filterProjects } from '@/lib/projects'
+import { passkeysEnabled } from '@/lib/flags'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { isSignOutFailed, SIGN_OUT_FAILED } from '../sign-in/signed-out'
+import { nudgeDone } from './account/nudge'
+import { PasskeyNudge } from './passkey-nudge'
 import { NewProjectSheet } from './new-project-sheet'
 import { ProjectCard, type Project } from './project-card'
 import { DuplicateScope } from './project-menu'
@@ -46,12 +49,15 @@ export default async function Dashboard({
   if (!user) return null
 
   const supabase = await supabaseServer()
-  const [{ data, error }, { plan }] = await Promise.all([
+  // The nudge costs ONE extra read on this page and it is the flag's, not the user's: whether it
+  // has been answered already rode in on `getUser()` above (`account/nudge.ts`).
+  const [{ data, error }, { plan }, passkeys] = await Promise.all([
     supabase
       .from('projects')
       .select('id, name, style_pack, updated_at')
       .order('updated_at', { ascending: false }),
     resolveEntitlement(user.id),
+    passkeysEnabled(),
   ])
 
   const projects: Project[] = data ?? []
@@ -80,6 +86,9 @@ export default async function Dashboard({
           <Banner kind="error">We couldn&rsquo;t sign you out just now. Try again in a moment.</Banner>
         </div>
       ) : null}
+      {/* FR-A2's one-time offer, above the grid and above the three states below it, for the
+          same reason the strip above is: it is about the account, not about the projects. */}
+      {passkeys && !nudgeDone(user.user_metadata) ? <PasskeyNudge /> : null}
       {unread ? (
         <div className="flex flex-col gap-4 p-[16px_20px] tablet:p-6">
           <h1 className="sr-only">Projects</h1>

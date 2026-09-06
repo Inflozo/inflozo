@@ -25,6 +25,7 @@ colors:
   ink-faint: '#A8A29A — rules, dividers and disabled text; never placeholder or hint text, which moved to ink-soft-aa on 2026-09-04 (A7 item 10)'
   line: '#E7E2DB'
   line-faint: '#EFEAE2'
+  line-soft: '#F1EDE7'
   line-strong: '#C9C2B8'
   coral: '#FF5941'
   coral-text: '#C2381F'
@@ -282,7 +283,7 @@ value, and the text value is what carries a sentence.
 | `{colors.ink}` | primary text, primary buttons. `{colors.ink-deep}` for dark chrome and inverted surfaces |
 | `{colors.ink-soft}` | secondary text and labels. `{colors.ink-soft-aa}` where it carries a sentence |
 | `{colors.ink-faint}` | disabled text, rules and dividers — **never words a user must read**: placeholder and hint text take `{colors.ink-soft-aa}` (Calibration Set, 2026-09-04) |
-| `{colors.line}` | hairlines and dividers. `{colors.line-faint}` inside a card, `{colors.line-strong}` where a border must separate two lit surfaces |
+| `{colors.line}` | hairlines and dividers. `{colors.line-faint}` inside a card, `{colors.line-soft}` between the rows of a list inside one (S12a), `{colors.line-strong}` where a border must separate two lit surfaces |
 | `{colors.coral}` / `{colors.coral-text}` | THE accent — see above |
 | `{colors.coral-tint}` · `{colors.coral-tint-strong}` | selected backgrounds and accent washes |
 | `{colors.marigold}` / `{colors.marigold-text}` / `{colors.marigold-tint}` | Pro badges, celebration, a nudge that does not block |

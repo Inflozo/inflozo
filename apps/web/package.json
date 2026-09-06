@@ -10,6 +10,7 @@
     "test": "node --test '*.test.ts'"
   },
   "dependencies": {
+    "@supabase/auth-js": "2.115.0",
     "@supabase/ssr": "0.12.6",
     "@supabase/supabase-js": "2.115.0",
     "next": "16.3.1",

@@ -5,6 +5,7 @@ import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { sendMagicLink, type SendState } from './actions'
+import { PasskeyButton } from './passkey-button'
 import { BAD_EMAIL, parseEmail } from './email.ts'
 import { mmss, secondsLeft } from './resend-timer.ts'
 
@@ -47,6 +48,9 @@ export function SignInForm({
   // rather than read at the answer (review, 2026-09-05).
   const [walkedAway, setWalkedAway] = useState(false)
   const [clientError, setClientError] = useState<string | null>(null)
+  // S1c: the whole card at 40% while the OS sheet is up, and nothing of the sheet drawn — it
+  // is the operating system's window and not a surface of ours.
+  const [passkeyPending, setPasskeyPending] = useState(false)
   const [left, setLeft] = useState(0)
 
   const sent = state.status === 'sent' && !different
@@ -121,9 +125,10 @@ export function SignInForm({
       // R-74 for this card on his test (finding 4); 440 is the smallest step that fits it on one
       // line with the frame's 36px padding untouched. At 390 the card is `width:100%` inside the
       // page's 24px padding — the frame's own shape — so mobile still wraps, as the frame draws it.
+      aria-busy={passkeyPending || undefined}
       className={`relative z-10 flex w-full max-w-[440px] flex-col rounded-lg bg-surface shadow-lg ${
         sent ? 'items-center gap-5 p-[32px_24px] text-center tablet:p-[44px_36px]' : 'gap-[22px] p-[32px_24px] tablet:gap-6 tablet:p-[40px_36px]'
-      }`}
+      } ${passkeyPending ? 'opacity-40' : ''}`}
     >
       {sent ? (
         <>
@@ -277,21 +282,23 @@ export function SignInForm({
               {pending ? 'Sending…' : 'Send magic link'}
             </Button>
 
-            {/* S1a draws a passkey button and an "or" divider. Both are absent until
-                `feature_flags.passkeys` is on — a control that could never act here is absent,
-                not greyed (UX-DR3).
-                ONLY THE DIVIDER IS BUILT, and deliberately: `passkeysEnabled()` is a hardcoded
-                `false` (flags.ts, DW-12), so this branch is unreachable today, and a button that
-                did nothing when pressed is a worse thing to ship than no button — UX-DR3 again.
-                STORY 2.1 ADDS THE BUTTON HERE, INSIDE THIS BRANCH, with the ceremony behind it.
-                Flipping the flag without doing so leaves an "or" rule over empty space, which is
-                the one way this can go wrong (review, 2026-09-05). */}
+            {/* S1a draws a passkey button and an "or" divider. Both are absent unless BOTH
+                switches are on — our `feature_flags.passkeys` row and Supabase's own
+                `passkeys_enabled` (`lib/flags.ts`, MEASUREMENTS §20) — because a control that
+                could never act here is absent, not greyed (UX-DR3).
+                Story 2.1 put the button inside this branch, where the divider had been waiting
+                for it: an "or" rule over empty space was the one way flipping the flag could go
+                wrong (review, 2026-09-05), and it can no longer happen — the pair is one
+                condition. */}
             {passkeys ? (
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-line" />
-                <span className="text-control-label text-ink-soft">or</span>
-                <div className="h-px flex-1 bg-line" />
-              </div>
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-line" />
+                  <span className="text-control-label text-ink-soft">or</span>
+                  <div className="h-px flex-1 bg-line" />
+                </div>
+                <PasskeyButton onPending={setPasskeyPending} />
+              </>
             ) : null}
           </div>
         </>

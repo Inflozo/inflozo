@@ -1,6 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import type { ServerCredentialRequestOptions, ServerCredentialResponse } from './webauthn.ts'
+import { passkeysEnabled } from '@/lib/flags'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
 import { SEND_INTERVAL, sentStateFor } from './resend-timer.ts'
@@ -93,4 +95,74 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) console.error('sign-out: failed', { code: error.code })
   redirect(signOutPathFor(Boolean(error)))
+}
+
+/* ─────────────────────────────────────────────────────── S1a's passkey button — FR-A2
+
+   THE HTTP HALF OF THE CEREMONY RUNS HERE, and only `navigator.credentials.get()` runs in the
+   browser. `signInWithPasskey()` is the library's one-call helper and does both halves in one
+   process — which is a browser Supabase client, the one thing this app does not have. The
+   two-step methods split exactly where the app already splits: `startAuthentication` needs no
+   session at all, and `verifyAuthentication` SAVES one through the client's storage and fires
+   `SIGNED_IN` (`GoTrueClient.js:5605-5631`), which `@supabase/ssr` applies through our `setAll`
+   (`createServerClient.js:52-70`) — so the cookie lands with `sessionCookie()`'s 30 days,
+   `HttpOnly` and `Secure`, exactly as the magic link's does, with no second code path.
+
+   BOTH REFUSE WHEN THE FLAG IS OFF. An action that still acts with the switch off is not a
+   switch; the button is absent then, so nothing reaches these but a stale tab or a hand-made
+   POST. */
+
+type PasskeyFailure = 'passkeys_off' | 'passkey_failed'
+
+export type PasskeyStart =
+  | { ok: true; challengeId: string; options: ServerCredentialRequestOptions }
+  | { error: { code: PasskeyFailure; message: string } }
+
+export type PasskeyFinish = { error: { code: PasskeyFailure; message: string } }
+
+/** S1's voice, one sentence each, in P0-0's helper-caption slot under the button. */
+const PASSKEY_MESSAGES: Record<PasskeyFailure, string> = {
+  passkeys_off: 'Passkeys are switched off just now. Use a magic link instead.',
+  passkey_failed: "We couldn't sign you in with a passkey. Use a magic link instead.",
+}
+
+const passkeyError = (code: PasskeyFailure) => ({ error: { code, message: PASSKEY_MESSAGES[code] } })
+
+export async function startPasskeySignIn(): Promise<PasskeyStart> {
+  if (!(await passkeysEnabled())) return passkeyError('passkeys_off')
+
+  const supabase = await supabaseServer()
+  const { data, error } = await supabase.auth.passkey.startAuthentication()
+  if (error || !data) {
+    console.error('passkey: challenge failed', { status: error?.status, code: error?.code })
+    return passkeyError('passkey_failed')
+  }
+  return { ok: true, challengeId: data.challenge_id, options: data.options }
+}
+
+/**
+ * The credential the browser produced, verified. On success this REDIRECTS rather than
+ * returning: `redirect` throws, so nothing after it runs, and the client never has to decide
+ * where a signed-in user goes. `/` is the public path — `proxy.ts` rewrites it onto `/app`.
+ */
+export async function finishPasskeySignIn(params: {
+  challengeId: string
+  credential: ServerCredentialResponse
+}): Promise<PasskeyFinish> {
+  if (!(await passkeysEnabled())) return passkeyError('passkeys_off')
+
+  const supabase = await supabaseServer()
+  const { error } = await supabase.auth.passkey.verifyAuthentication({
+    challengeId: params.challengeId,
+    credential: params.credential,
+  })
+  if (error) {
+    // An expired challenge and a tampered credential are the same sentence to the user and the
+    // same log line here: a code and a status, never the credential (spine, Security floor).
+    // `code` and not `status`: a verify can fail as GoTrue's `AuthError` OR as the library's
+    // own `WebAuthnError`, and only the first carries an HTTP status.
+    console.error('passkey: verify failed', { code: error.code })
+    return passkeyError('passkey_failed')
+  }
+  redirect('/')
 }
