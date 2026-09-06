@@ -678,3 +678,19 @@ reason: AD-28's degradation rule is the `?.` in `planFor(data?.state)`, inside a
   resolver passes `undefined` rather than throwing on a failed read. Closing it properly means a fake
   Supabase client, which is the first mock in this codebase and cuts against R-82 — worth doing when E12
   gives `resolveEntitlement` its second reader (the grace window, DW-23) and the branch count justifies it.
+
+### DW-30: `passkey_labels` rests on a premise the installed library falsifies
+
+plain: The database has a small table for the names of your passkeys, built on the belief that Supabase could not store a name itself. It can. Nothing is broken, but two places for one name is how they end up disagreeing, and the story that builds rename (2.2) has to pick one.
+status: open
+severity: low
+origin: Story 2.1 create (2026-09-06), planning the auto-name
+location: supabase/migrations/20260904120000_complete_schema.sql:127-136 · SCHEMA.sql (`passkey_labels`) · epic-2-context.md
+reason: The schema comment (2026-08-20) says Supabase's passkey API "carries no user-editable label, so the
+  label is ours". Read in the installed source on 2026-09-06 — `@supabase/auth-js` 2.115.0,
+  `dist/module/lib/types.d.ts:2387-2390, 2438-2442` — every passkey carries `friendly_name` and
+  `auth.passkey.update({ passkeyId, friendlyName })` is `PATCH /passkeys/{id}` (max 120 chars). Story 2.1
+  therefore writes the AAGUID auto-name there and never touches `passkey_labels`. Story 2.2 (rename, revoke)
+  decides whether the table is dropped by a new migration or kept for something the platform cannot hold;
+  a comment beside the table in SCHEMA.sql records the finding in 2.1's Dev run. The frozen migration is
+  not edited.
