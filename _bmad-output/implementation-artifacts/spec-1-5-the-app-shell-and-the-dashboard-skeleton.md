@@ -5,7 +5,7 @@ created: '2026-09-05'
 status: 'in-review'
 baseline_commit: 'db959b1817cc6313c204f18a9f9a56593038a7d9'
 review_loop_iteration: 2
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md']
 ---
 
@@ -883,6 +883,21 @@ accounts, zero project rows):
 | ☰ at 390, then a 1024 viewport | still open; Escape closes |
 | axe-core A/AA — S3a, D4b at 1440, the drawer at 390 | zero each; the positive control reported `button-name`, `image-alt` |
 | `/` and `/kit` signed out · `/sign-in` · `inflozo.com` · console CSP violations signed in | 307 → `/sign-in` both · 200, `x-inflozo-policy: app-nonce` · 200 · zero |
+
+**Deploy (2026-09-06)** — confirming the push of the second Review commit (`b42d37fa`) built and published
+(PRD §4, AD-26: production is the stack under test). No schema change in this story since the last Deploy,
+so nothing beyond app code to confirm.
+
+| Check | Result |
+|---|---|
+| `gh run list --branch main` (`GITHUB_TOKEN`) | HEAD `b42d37fa` — `check` ✓ `rls` ✓ `deploy` ✓ |
+| Vercel deployments (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_AmtoTZCoEagCLPW7igNBnEEBy6Cj`, state **READY**, built from `b42d37fa` |
+| Aliases on that deployment | `inflozo.com`, `app.inflozo.com`, `www.inflozo.com` (→ `inflozo.com`), plus the probe and account preview aliases |
+| `curl -sI https://app.inflozo.com/sign-in` | **200**, the nonce CSP header present |
+| `curl -sI https://app.inflozo.com/` signed out | **307** → `/sign-in`, unchanged |
+| `curl -sI https://inflozo.com/` | **200** |
+
+Deployment: `inflozo-dwe1s98i8-umangkagathara.vercel.app` (`dpl_AmtoTZCoEagCLPW7igNBnEEBy6Cj`)
 
 ## Questions for the owner
 
