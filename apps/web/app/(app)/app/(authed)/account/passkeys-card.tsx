@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Laptop, Passkey } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
+import { isRedirect } from '@/lib/action-redirect'
 import { addedLabel, aaguidFromAuthData, type PasskeyRow } from '@/lib/passkey-name'
 import { browserSupportsWebAuthn, creationOptions, registrationResponse } from '../../sign-in/webauthn'
 import { finishPasskeyRegistration, startPasskeyRegistration } from './actions'
@@ -26,14 +27,9 @@ const ADD_FAILED = "We couldn't add that passkey just now. Try again in a moment
 /** The list could not be read: the card must not claim there are none (review, 2026-09-06). */
 const LIST_FAILED = "We couldn't load your passkeys just now. Refresh to try again."
 
-/** A redirecting server action REJECTS the awaited call — see `passkey-button.tsx`. */
-const isRedirect = (error: unknown) =>
-  typeof (error as { digest?: unknown })?.digest === 'string' &&
-  (error as { digest: string }).digest.startsWith('NEXT_REDIRECT')
-
 /** `passkeys` is `null` when the list could not be read — an empty card would be a lie. */
 export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
-  const [caption, setCaption] = useState<string | null>(passkeys ? null : LIST_FAILED)
+  const [caption, setCaption] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [supported, setSupported] = useState(true)
   // Up front, in the caption slot: a greyed control shows its reason (UX-DR3).
@@ -43,7 +39,14 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
     setCaption(NO_WEBAUTHN)
   }, [])
 
+  // DERIVED, not seeded into state: a later render whose list read failed must say so too. As
+  // initial state it was set once and a failed re-read then drew an empty card claiming the user
+  // has no passkeys — the exact lie the previous review patched, coming back on the second render
+  // (review, 2026-09-06). Whatever the ceremony has to say wins while it is saying it.
+  const shown = caption ?? (passkeys ? null : LIST_FAILED)
+
   async function add() {
+    let navigating = false
     if (busy || !supported) return
     setCaption(null)
     setBusy(true)
@@ -77,8 +80,14 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
       // there is nothing to say and nothing to set.
       if (finished && 'error' in finished) setCaption(finished.error.message)
     } catch (error) {
-      // The session ended and the action sent us to sign in: the navigation is running.
-      if (isRedirect(error)) return
+      // The session ended and the action sent us to sign in: the navigation is running, so
+      // `finally` must not put the button back to "Add a passkey" and invite a second press
+      // mid-navigation — `passkey-button.tsx`'s own guard, which this file lacked (review,
+      // 2026-09-06).
+      if (isRedirect(error)) {
+        navigating = true
+        return
+      }
       const name = error instanceof DOMException ? error.name : null
       // `excludeCredentials` is the server's, so an authenticator that already holds one for
       // this account refuses with `InvalidStateError` — the OS says so too, and this names it.
@@ -92,7 +101,7 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
       console.error('passkey: add threw', { name: name ?? typeof error })
       setCaption(ADD_FAILED)
     } finally {
-      setBusy(false)
+      if (!navigating) setBusy(false)
     }
   }
 
@@ -126,17 +135,17 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
         onClick={add}
         aria-busy={busy || undefined}
         aria-disabled={!supported || undefined}
-        aria-describedby={caption ? 'passkeys-caption' : undefined}
+        aria-describedby={shown ? 'passkeys-caption' : undefined}
         className={`inline-flex h-[34px] items-center gap-2 self-start rounded border border-line bg-surface px-[15px] text-ui-dense font-medium text-ink transition-colors hover:bg-paper ${ring}`}
       >
         <Passkey size={14} />
         {busy ? 'Waiting for your device…' : 'Add a passkey'}
       </button>
 
-      {caption ? (
+      {shown ? (
         // P0-0's helper-caption slot: one sentence, under the control, never a tooltip.
         <p id="passkeys-caption" role="status" className="text-helper-caption leading-[1.5] text-ink-soft">
-          {caption}
+          {shown}
         </p>
       ) : null}
     </section>

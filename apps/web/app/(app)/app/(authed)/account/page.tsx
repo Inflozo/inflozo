@@ -76,11 +76,22 @@ export default async function AccountPage() {
  * The envelope is `passkeyRows`'s, under test in `passkey-name.test.ts`.
  */
 async function listPasskeys(): Promise<PasskeyRow[] | null> {
-  const supabase = await supabaseServer()
-  const { data, error } = await supabase.auth.passkey.list()
-  if (error || !data) {
-    console.error('passkey: list failed', { status: error?.status, code: error?.code })
+  // WRAPPED, because this one can THROW rather than answer. `auth.passkey.*` asserts the
+  // `experimental.passkey` opt-in BEFORE its own try (`auth-js/lib/helpers.js:450-454`) and
+  // re-throws anything that is not an `AuthError`, so the single missing line in `server.ts`
+  // would take the whole `/account` render down — the Email card with it — instead of showing
+  // the card's "couldn't load" sentence. `server-wiring.test.ts` keeps that line honest; this
+  // keeps the page standing if it ever is not (review, 2026-09-06).
+  try {
+    const supabase = await supabaseServer()
+    const { data, error } = await supabase.auth.passkey.list()
+    if (error || !data) {
+      console.error('passkey: list failed', { status: error?.status, code: error?.code })
+      return null
+    }
+    return passkeyRows(data)
+  } catch (error) {
+    console.error('passkey: list threw', { name: (error as { name?: string })?.name })
     return null
   }
-  return passkeyRows(data)
 }

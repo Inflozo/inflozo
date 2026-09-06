@@ -4,7 +4,13 @@ import { AlertTriangle, CheckCircleSolid, InfoCircle, XCircleSolid } from './ico
 /* Editor Sidebar Kit.dc.html:238 — feedback banners: ONE ICON, ONE PLAIN SENTENCE, in the
    four colours, each with the hairline the frame draws as its own hex (:238-241). Sky informs,
    mint succeeds, marigold nudges without blocking, danger is serious. A LINK INSIDE TAKES SKY,
-   NEVER CORAL (DESIGN.md Don'ts). */
+   NEVER CORAL (DESIGN.md Don'ts) — `BannerLink` below is that rule and stays the default.
+
+   THE ONE EXCEPTION, and it is the owner's: a banner that ASKS FOR AN ANSWER may carry the Kit's
+   own 32px buttons instead — a primary for the way on and a secondary for the way out. He ruled
+   it on his test of story 2.1 for the passkey nudge (`(authed)/passkey-nudge.tsx`, 2026-09-06):
+   "Add passkey as primary button and Not now as secondary (muted design) button." A banner that
+   merely TELLS the user something keeps the sentence and `BannerLink`. */
 
 export type BannerKind = 'info' | 'success' | 'notice' | 'error'
 

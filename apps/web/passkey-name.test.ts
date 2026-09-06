@@ -81,4 +81,12 @@ test('the list is accepted bare or wrapped, and a nameless passkey still has a r
 test('a non-string AAGUID from a hand-made POST is the fallback, never a throw', () => {
   assert.equal(nameFor(42), 'Passkey')
   assert.equal(nameFor({}), 'Passkey')
+  // The list is an object literal, so a bare index reaches the PROTOTYPE: `'__proto__'` answered
+  // `Object.prototype` and `'constructor'` the `Object` function — both truthy, both returned from
+  // a function typed `: string`, and both then PATCHed to GoTrue as a passkey's `friendlyName`
+  // after a registration it had already accepted (review, 2026-09-06).
+  for (const key of ['__proto__', 'constructor', 'valueOf', 'hasOwnProperty', 'toString']) {
+    assert.equal(nameFor(key), 'Passkey', `${key} must not reach the prototype`)
+    assert.equal(typeof nameFor(key), 'string')
+  }
 })

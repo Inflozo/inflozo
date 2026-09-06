@@ -12,6 +12,13 @@ import { ring } from './greyed'
 
 type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | 'danger' | 'danger-outline'
 type Size = 44 | 36 | 32
+/* The Kit's own weight is 600. A FRAME MAY DRAW A DIFFERENT ONE, and it must be said HERE rather
+   than passed through `className`: both are plain utilities in the same `@layer utilities`, so the
+   class attribute's order is irrelevant and the stylesheet's decides — Tailwind emits font-weights
+   alphabetically, `font-medium` BEFORE `font-semibold`, so a caller's `font-medium` always loses.
+   Measured on the deployed site, not reasoned: S1a's button carried both classes and computed 600
+   (review, 2026-09-06). Typed, so a weight the Kit does not draw is a compile error. */
+type Weight = 'font-medium' | 'font-semibold'
 
 const variants: Record<Variant, string> = {
   coral: 'bg-coral-text text-surface hover:bg-coral-text-hover',
@@ -30,20 +37,21 @@ const sizes: Record<Size, string> = {
 }
 
 /** The same look on something that is not a `<button>` — a link that acts as a button. */
-export const buttonClasses = (variant: Variant = 'secondary', size: Size = 36) =>
-  `inline-flex items-center justify-center gap-[7px] font-semibold transition-colors ${sizes[size]} ${variants[variant]} ${ring}`
+export const buttonClasses = (variant: Variant = 'secondary', size: Size = 36, weight: Weight = 'font-semibold') =>
+  `inline-flex items-center justify-center gap-[7px] ${weight} transition-colors ${sizes[size]} ${variants[variant]} ${ring}`
 
 export function Button({
   variant = 'secondary',
   size = 36,
+  weight = 'font-semibold',
   children,
   className = '',
   ...rest
-}: Omit<ComponentProps<'button'>, 'disabled'> & { variant?: Variant; size?: Size }) {
+}: Omit<ComponentProps<'button'>, 'disabled'> & { variant?: Variant; size?: Size; weight?: Weight }) {
   return (
     <button
       type="button"
-      className={`${buttonClasses(variant, size)} ${className}`}
+      className={`${buttonClasses(variant, size, weight)} ${className}`}
       {...rest}
     >
       {children}

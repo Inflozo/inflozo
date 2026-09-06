@@ -464,7 +464,10 @@ version chips are mono; a gscan result reads `0 · 2` in mono.
 
 **Tooltips** — ink fill, white 12px, 6px radius, with a variant that carries a mono keyboard chip.
 
-**Feedback banners** — one icon, one plain sentence, in the four colours above.
+**Feedback banners** — one icon, one plain sentence, in the four colours above. A banner that
+merely TELLS keeps the sentence, with `BannerLink` for a link inside it. **A banner that ASKS FOR AN
+ANSWER may carry the Kit's own 32px buttons** — a primary for the way on, a secondary for the way
+out — the owner's ruling on his test of story 2.1, for the passkey nudge (2026-09-06).
 
 **Toast** — a bottom-centre pill: icon, message, action.
 
@@ -509,7 +512,9 @@ byte count exists. Never a spinner.
 - **Don't let a shape carry a signal on its own, any more than a colour may.** A moon badge, a
   hollow-versus-filled dot, a ✦ — each carries its word, or an accessible label where the layout
   genuinely cannot hold one. Same rule, same reason (`EXPERIENCE.md` § Accessibility Floor).
-- Don't use coral in a banner's link — that is sky.
+- Don't use coral in a banner's link — that is sky. (A banner that asks for an answer may carry the
+  Kit's 32px primary and secondary buttons instead of a link; the owner ruled that for the passkey
+  nudge on 2026-09-06. The sky rule still governs anything that is a link.)
 - **Don't use the 40% coral wash as a focus ring.** It is hover and selection only; keyboard focus is
   the solid coral-text ring, everywhere (Calibration Set, 2026-09-04).
 - **Don't set words in faint ink.** `{colors.ink-faint}` is for rules and dividers; a placeholder, a

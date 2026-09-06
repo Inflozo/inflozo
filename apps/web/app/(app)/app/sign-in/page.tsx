@@ -15,10 +15,12 @@ import { isSignedOut, SIGNED_OUT } from './signed-out'
    400 — the reason is in `sign-in-form.tsx` beside the class, and the sentence under the headline
    moved with it (finding 5).
 
-   The passkey button and its "or" divider are S1a's and are NOT drawn while `feature_flags.
-   passkeys` is off — absent, not greyed, because they could never act here today (UX-DR3).
-   Story 2.1 turns the flag on and wires them. S1c is this same card at 40% behind the OS
-   sheet and is 2.1's to reach. */
+   The passkey button and its "or" divider are S1a's and are NOT drawn unless BOTH switches are
+   on — our `feature_flags.passkeys` row AND Supabase's own project-level `passkeys_enabled`
+   (`lib/flags.ts`, MEASUREMENTS §20) — absent, not greyed, because with either off they could
+   never act (UX-DR3). Story 2.1 built both: the button and its ceremony live in
+   `passkey-button.tsx`, and S1c — this same card at 40% behind the OS sheet, with nothing of the
+   sheet drawn — is `sign-in-form.tsx`'s `passkeyPending`. */
 
 export const metadata: Metadata = {
   title: 'Sign in · Inflozo',

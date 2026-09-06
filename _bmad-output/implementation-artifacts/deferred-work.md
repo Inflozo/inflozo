@@ -722,14 +722,14 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
 
 ## Deferred from: code review of story-2.1 (2026-09-06)
 
-### DW-32: the passkey kill switch and the auto-name have no repeatable control beyond the owner's hands
+### DW-32: the passkey ceremony has no repeatable control — the kill switch, the auto-name, the round trip and the duplicate refusal are all proved by hand
 
-plain: Two things about passkeys can only be checked by a person today: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey". Both work as far as the review can see; neither has a check that runs itself, so a later story could break one without anything going red.
+plain: Four things about passkeys can only be checked by a person today: that turning the switch off really stops a sign-in that was already half-way through; that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey"; that the whole add-then-sign-in journey still works; and that adding a second passkey on a device that already has one is refused. All four work as far as the reviews can see. None has a check that runs itself, so a later story could break any of them without anything going red.
 status: open
 severity: low
 origin: Story 2.1 code review (2026-09-06), the Verification Gap layer
 location: apps/web/app/(app)/app/sign-in/actions.ts (`finishPasskeySignIn`'s flag guard) · apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx (`getAuthenticatorData()`)
-reason: (1) The four passkey actions refuse with `passkeys_off` when either switch is off, and that guard
+reason: (1) Every passkey action refuses with `passkeys_off` when either switch is off, and that guard
   is unreachable from `node --test` (`'use server'`); the spec's Deploy list names a hand-run curl. A stale
   sign-in tab could still verify an assertion after the row is flipped off, and nothing repeatable would
   say so. The fix is a scripted probe under `tools/probe/` (a tool, so a catalogue row) that posts to each
@@ -739,4 +739,38 @@ reason: (1) The four passkey actions refuse with `passkeys_off` when either swit
   `Passkey` fallback alone, so swapping the buffer for the attestation object would name every passkey
   "Passkey" with every check green. The fix is one real `getAuthenticatorData()` buffer, base64, captured
   from the owner's first registration on the deployed site, as a fixture in `passkey-name.test.ts`.
-  Closes when 2.2 lands both, or when the owner rules the manual test is control enough.
+  (3) **The round trip and the axe runs live in no file** (added by the 2026-09-06 review, Verification Gap
+  layer). The Deploy run's proof — a Playwright virtual authenticator registering, then signing in, against
+  `app.inflozo.com` — and every axe-core 4.12.1 sweep were driven from an improvised harness;
+  `grep -rln "addVirtualAuthenticator\|axe-core\|playwright"` over the repository finds nothing. Story 2.2
+  edits `passkeys-card.tsx` and `account/actions.ts`, and if it breaks the naming PATCH or the `aaguid`
+  hand-off the round trip can only be re-improvised, never re-run. The fix is `tools/probe/run-verify-passkeys.py`
+  in `run-verify-all.py`'s pattern, with its catalogue row — the same home (1) and (2) already picked.
+  (4) **`excludeCredentials` is an unexecuted claim about GoTrue** (added by the 2026-09-06 review, Acceptance
+  Auditor). The matrix's "same authenticator again -> `InvalidStateError` -> 'This device already has a
+  passkey for Inflozo'" rests on GoTrue populating `excludeCredentials` in its registration options; the
+  library types it only as an optional field and no run has ever attempted a second registration from one
+  authenticator. If GoTrue omits it, the card silently grows a duplicate row and `ALREADY_HERE`
+  (`passkeys-card.tsx`) is dead code, with every check green. One extra `create()` in the harness of (3)
+  settles it.
+  Closes when 2.2 lands them, or when the owner rules the manual test is control enough.
+
+### DW-33: two passkey paths lean on the platform to backstop them, and neither leaning has been executed
+
+plain: The passkey sign-in buttons can be pressed by anyone who is not signed in yet, and we rely on Supabase to stop somebody hammering them; we have never checked that it does. Separately, the Account page's request for your passkey list has no time limit, so a slow Supabase would leave that page hanging where every other similar read gives up after three seconds.
+status: open
+severity: low
+origin: Story 2.1 code review, second loop (2026-09-06) — Blind Hunter and Edge Case Hunter
+location: apps/web/app/(app)/app/sign-in/actions.ts (`startPasskeySignIn`, `finishPasskeySignIn`) ·
+  apps/web/app/(app)/app/(authed)/account/page.tsx (`listPasskeys`)
+reason: (1) The magic-link path next door carries a `SEND_INTERVAL` of its own AND two GoTrue rate limits
+  configured by `configure-supabase-auth.py`. The two passkey sign-in actions are reachable signed-out and
+  carry neither; the assumption is that GoTrue rate-limits its own `/passkeys/authentication/*` endpoints.
+  That is a claim about an external platform and standing rule 1 says it is a hypothesis until executed —
+  the execution is a burst of `startPasskeySignIn` calls against the deployed site, watching for a 429.
+  (2) `passkeysEnabled()`'s two reads were given `AbortSignal.timeout(3000)` by the first review precisely
+  because a platform that hangs rather than errors would hang the page. `auth.passkey.list()` sits on
+  `/account`'s render path with no equivalent, and the library exposes no signal to give it, so the honest
+  fix is a `Promise.race` that gives up on the render while the request runs on — worth doing only if the
+  blast radius (one signed-in page, not the signed-out sign-in page) ever justifies the half-measure.
+  Both are cheap to settle inside 2.2, which already opens these files.

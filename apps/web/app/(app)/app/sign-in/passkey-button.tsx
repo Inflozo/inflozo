@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/kit/button'
 import { Passkey } from '@/components/kit/icons'
+import { isRedirect } from '@/lib/action-redirect'
 import { finishPasskeySignIn, startPasskeySignIn } from './actions'
 import { authenticationResponse, browserSupportsWebAuthn, requestOptions } from './webauthn'
 
@@ -26,17 +27,6 @@ const NO_PASSKEY_HERE =
 const NO_WEBAUTHN = "This browser can't use passkeys."
 /** Anything that is neither the OS sheet's answer nor a server redirect: one honest sentence. */
 const PASSKEY_FAILED = "We couldn't sign you in with a passkey. Use a magic link instead."
-
-/**
- * A SERVER ACTION THAT REDIRECTS REJECTS THE AWAITED PROMISE. Next's action reducer navigates
- * on its own and rejects the caller with a `NEXT_REDIRECT` error so a render-time boundary can
- * handle it (`server-action-reducer.js:241-262`, read 2026-09-06); in an event handler there is
- * no boundary, so the rejection lands in `catch`. A successful sign-in used to be told "No passkey
- * on this device yet" for the instant before the dashboard arrived (review, 2026-09-06).
- */
-const isRedirect = (error: unknown) =>
-  typeof (error as { digest?: unknown })?.digest === 'string' &&
-  (error as { digest: string }).digest.startsWith('NEXT_REDIRECT')
 
 export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => void }) {
   const [caption, setCaption] = useState<Caption>(null)
@@ -114,9 +104,12 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
       <Button
         variant="secondary"
         size={44}
-        // `font-medium`: the frame draws this one label at 500 (`S1 Sign In.dc.html:49`) where
-        // the Kit's secondary is 600 — a value read off the frame, inside the same component.
-        className="w-full font-medium"
+        // The frame draws this one label at 500 (`S1 Sign In.dc.html:49`) where the Kit's
+        // secondary is 600. It goes through the Kit's own `weight`, NOT through `className`:
+        // passed as a class it lost to the Kit's `font-semibold` every time and the button
+        // shipped at 600 — measured on the deployed site (review, 2026-09-06).
+        weight="font-medium"
+        className="w-full"
         onClick={signIn}
         aria-busy={busy || undefined}
         aria-disabled={!supported || undefined}

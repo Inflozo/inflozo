@@ -42,7 +42,14 @@ export function aaguidFromAuthData(bytes: Uint8Array | null | undefined): string
 export function nameFor(aaguid: unknown): string {
   // `unknown` because it crosses the action boundary from the browser: a hand-made POST must
   // not throw here after a registration GoTrue has already accepted (review, 2026-09-06).
-  return (typeof aaguid === 'string' && AAGUID_NAMES[aaguid.toLowerCase()]) || 'Passkey'
+  if (typeof aaguid !== 'string') return 'Passkey'
+  // `Object.hasOwn` and NOT a bare index: the list is an object literal, so `'__proto__'` reached
+  // `Object.prototype` and `'constructor'` reached the `Object` FUNCTION — both truthy, both
+  // returned from a function typed `: string`, and both then sent to GoTrue as a `friendlyName`.
+  // Executed, not reasoned (review, 2026-09-06). The declared `Record<string, string>` is exactly
+  // what hides it from `tsc`.
+  const key = aaguid.toLowerCase()
+  return (Object.hasOwn(AAGUID_NAMES, key) && AAGUID_NAMES[key]) || 'Passkey'
 }
 
 /** One row of S12a's list, as the page and the card share it. */

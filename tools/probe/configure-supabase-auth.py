@@ -177,6 +177,27 @@ def main() -> int:
     want = settings(template, sender)
 
     if args.apply:
+        # THE ONE-WAY DOOR, GUARDED BEFORE IT IS WALKED THROUGH. A passkey is bound to its RP ID
+        # for ever: change `webauthn_rp_id` once credentials exist and every one of them is
+        # stranded, and putting the old value back does not bring them back. `--check` cannot see
+        # this, because it compares the live project to `settings()` — the very constant such a
+        # change would have edited — so it reports PASS on the edit that does the damage
+        # (review, 2026-09-06). The first write, when the project reports no RP ID at all, is
+        # free; a LATER write that differs stops here and asks (standing rule 6: flag, do not
+        # guess). `--expect webauthn_rp_id=<new>` is the deliberate way through, so the override
+        # that acknowledges the consequence is also the one that records it.
+        status, before = api('GET', ref, token)
+        if status != 200:
+            print(f'GET {status}: {json.dumps(before)[:400]}')
+            return 1
+        live_rp = before.get('webauthn_rp_id')
+        override = dict(o.partition('=')[::2] for o in args.expect).get('webauthn_rp_id')
+        if live_rp and live_rp != want['webauthn_rp_id'] and override != want['webauthn_rp_id']:
+            print(f'REFUSING to change webauthn_rp_id: live {live_rp!r} -> {want["webauthn_rp_id"]!r}')
+            print('  Every passkey already registered is bound to the live value and would be stranded.')
+            print(f'  If that is genuinely intended, say so: --expect webauthn_rp_id={want["webauthn_rp_id"]}')
+            return 1
+
         payload = {**want, **SOFT, 'smtp_pass': env('RESEND_API_KEY')}
         status, body = api('PATCH', ref, token, payload)
         if status == 402:

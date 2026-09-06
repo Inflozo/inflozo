@@ -3,7 +3,7 @@ title: 'Story 2.1 — Register a passkey and sign in with it'
 type: 'feature'
 created: '2026-09-06'
 status: 'in-review'
-review_loop_iteration: 1
+review_loop_iteration: 2
 baseline_commit: 'c2d6f365c86dd3e9c323847cccd2856b304da6b7'
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -186,6 +186,111 @@ run that proves them is `## Verification` → *The review's run*.
 - [x] [Review][Patch] `## Verification` now says the off-switch run proves fail-closed only — the on-switch is first exercised at Deploy — and that a `Secure` cookie cannot be walked over `http://localhost`, so the flag-on checks run on the deployed origin [this spec]
 - [x] [Review][Defer] The four actions' `passkeys_off` refusal has no repeatable control — a stale tab could still verify an assertion after the row is flipped off and only a hand-run curl would notice [apps/web/app/(app)/app/sign-in/actions.ts:131] — deferred, a scripted probe is a tool with a catalogue row; DW-32
 - [x] [Review][Defer] The named-AAGUID path (a passkey born "Apple Passwords") is observable only on the owner's device; a virtual authenticator reports the all-zero AAGUID [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx:56] — deferred, needs one real `getAuthenticatorData()` buffer as a fixture, which only the owner's first registration can give; DW-32
+
+#### Second loop — code review of 2026-09-06, after the owner's Fix
+
+Five layers again (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier), over the whole story since `baseline_commit`, with the switches now ON in production. The
+Real-infra layer re-executed every claim this phase may execute and **all of them held** — 21 PASS from
+`--check` with `passkey_enabled = True` and the three `webauthn_rp_*`, both negative controls firing,
+`passkeys_enabled: true` from GoTrue, the row `true` over the secret key and **401 `42501`** over the
+publishable one, the deployed button and divider each **1**, the nudge's two Kit buttons in the served
+markup, `/account` with `Change email` and `Danger zone` at **0**, and the live user count **2 before and
+2 after** a fixture that was deleted. Every patch below is applied; the run that proves them is
+`## Verification` → *The second review's run*.
+
+- [x] [Review][Patch] **S1a's button shipped at weight 600 against a frame that draws 500 — the first
+  review's own frame-value patch was inert.** `className="w-full font-medium"` on the Kit's `Button`,
+  which already emits `font-semibold`: both are plain utilities in the same `@layer utilities`, Tailwind
+  emits `font-medium` BEFORE `font-semibold`, and the later rule wins whatever the class attribute says.
+  The served markup carried both classes, so a grep said the patch had landed — **only a computed style
+  showed it had not**, measured in real Chromium against `https://app.inflozo.com/sign-in`. The Kit now
+  owns the weight (`buttonClasses(variant, size, weight)`, typed), the frame's exception goes through it,
+  and `kit-button.test.ts` fails on either half of the old shape [components/kit/button.tsx · passkey-button.tsx]
+- [x] [Review][Patch] `nameFor` reached the PROTOTYPE: the AAGUID list is an object literal, so a
+  hand-made POST with `aaguid: '__proto__'` returned `Object.prototype` and `'constructor'` returned the
+  `Object` **function** — from a function typed `: string`, then PATCHed to GoTrue as a `friendlyName`
+  after a registration it had already accepted. `Object.hasOwn`, and five prototype keys under
+  `node --test` [apps/web/lib/passkey-name.ts:42 · passkey-name.test.ts]
+- [x] [Review][Patch] `listPasskeys()` handled `{ data, error }` but not a THROW, and
+  `assertPasskeyExperimentalEnabled` throws a plain `Error` OUTSIDE the library's own try — so losing one
+  optional line in `server.ts` would take the whole `/account` render down, the Email card with it,
+  instead of showing the card's "couldn't load" sentence. Wrapped, and the line itself is now pinned by a
+  test [apps/web/app/(app)/app/(authed)/account/page.tsx:78]
+- [x] [Review][Patch] **Three contracts a fully green gate could not see, now read out of the files they
+  govern** (`app-routes.test.ts`'s idiom), each with its negative control executed: the flag reader's
+  `'passkeys'` literal is tied to the key a migration actually seeds — a typo there switched the whole
+  story off in production with the row reading `true` and every check green; the `experimental.passkey`
+  opt-in is asserted; and `supabaseAdmin()` — which bypasses RLS — is proved to be imported by
+  `lib/flags.ts` and nothing else, which until now was a sentence in a comment [apps/web/server-wiring.test.ts]
+- [x] [Review][Patch] The nudge was the ONE ceremony caller with no `NEXT_REDIRECT` guard, so an expired
+  session turned "Not now" into the dashboard's error boundary. It also hid the banner BEFORE the action
+  answered, which made `pending` unreachable (the row unmounted before "Not now…" could paint) and turned a
+  refusal into a banner that blinked away and came back with nothing said — the symptom the first review
+  meant to fix and only half did. It now waits for the answer, says its own sentence on a refusal (the
+  actions' `passkey_failed` says "couldn't ADD that passkey", a non-sequitur under "Not now"), and refuses a
+  second press while one is in flight [apps/web/app/(app)/app/(authed)/passkey-nudge.tsx]
+- [x] [Review][Patch] `isRedirect` was copy-pasted into two files and missing from the third; it is the
+  single most bug-prone line in the story and had no test. One `lib/action-redirect.ts`, three callers,
+  seven cases under `node --test` [apps/web/lib/action-redirect.ts · action-redirect.test.ts]
+- [x] [Review][Patch] The Passkeys card seeded `LIST_FAILED` into initial state, so a LATER render whose
+  list read failed drew an empty card claiming the user has no passkeys — the exact lie the first review
+  patched, returning on the second render. The caption is derived now, not stored
+  [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx]
+- [x] [Review][Patch] The card's `finally` restored `busy` during a redirect navigation, flipping the
+  button back to "Add a passkey" mid-flight and inviting a second press; `passkey-button.tsx`'s own
+  `navigating` guard, which this file lacked [passkeys-card.tsx]
+- [x] [Review][Patch] **`--check` cannot see a changed `webauthn_rp_id`, and that is a one-way door.** It
+  compares the live project to `settings()` — the very constant such an edit would have changed — so it
+  reports PASS on the change that strands every passkey already registered. `--apply` now refuses to
+  CHANGE a live RP ID unless `--expect webauthn_rp_id=<new>` says so deliberately; the first write, when
+  the project reports none, is untouched. Five cases exercised [tools/probe/configure-supabase-auth.py]
+- [x] [Review][Patch] `epic-2-context.md` — the file stories 2.2 to 2.6 are driven from — still said "the
+  flag reader does not exist yet (DW-12)", that 2.1 must still choose between two candidates, that only the
+  divider is built, and that the round trip is unexecuted. Every clause was false. Standing rule 3, and the
+  gate cannot see it [epic-2-context.md:29,31]
+- [x] [Review][Patch] `sign-in/page.tsx`'s header still named ONE switch in the future tense ("Story 2.1
+  turns the flag on and wires them… S1c is 2.1's to reach"); its sibling paragraph in `sign-in-form.tsx`
+  was rewritten at Dev and this one was not — and it is the file a reader opens first [sign-in/page.tsx:18]
+- [x] [Review][Patch] The Kit's banner says in as many words "A LINK INSIDE TAKES SKY, NEVER CORAL", and
+  the owner's fix put an ink-filled button in one. The code is right — he ruled it — but neither
+  `banner.tsx` nor `DESIGN.md`'s Don'ts carried the carve-out, so the next surface would read a rule the
+  product no longer follows. Both now say it: a banner that TELLS keeps the sentence and `BannerLink`; a
+  banner that ASKS FOR AN ANSWER may carry the Kit's 32px pair [components/kit/banner.tsx · DESIGN.md:467,512]
+- [x] [Review][Patch] DW-32 restated "the four passkey actions" — there are five, and the first review
+  patched that exact wording elsewhere in the same commit while missing this one. Standing rule 7: a
+  propagation list cannot audit itself [deferred-work.md]
+- [x] [Review][Patch] Two controls the Deploy run had in its hands and did not take, now named in the
+  Deploy checklist: the naming PATCH cannot fail visibly, because `nameFor`'s fallback and `passkeyRows`'s
+  fallback are the SAME string — a 4xx renders byte-identically to success — and AC 2 names the cookie
+  header, which was measured on the magic-link path and not on the passkey one [this spec]
+- [x] [Review][Patch] The owner's manual test step 6 described the kill switch as removing "the button,
+  the card and the yellow line", which is only the empty-state half: with the row off, someone who already
+  registered a passkey can no longer see it on `/account` and can no longer sign in with it. Step 6 now
+  says so [this spec]
+- [x] [Review][Defer] The round trip and every axe run were driven from a harness that exists in no file,
+  so the story's strongest evidence is single-use and 2.2 edits the same files — DW-32 (3). And
+  `excludeCredentials` is an unexecuted claim about GoTrue, which would make `ALREADY_HERE` dead code and
+  grow a duplicate row in silence — DW-32 (4)
+- [x] [Review][Defer] No measured rate limit on the two signed-out passkey actions, and no timeout on
+  `auth.passkey.list()` where both flag reads have one — DW-33
+- [ ] [Review][Decision] A browser without WebAuthn gets a normal-looking button that does nothing when
+  pressed, while assistive technology is told it is unavailable — see `## Questions for the owner` 3
+
+Dismissed as noise, second loop (9): the caption live regions being mounted with their text rather than
+standing empty (axe is green at AA and an always-mounted region costs a flex gap in both cards); the card's
+34px button "re-copying" the Kit's secondary (six of its eight properties differ from the Kit's 32px — the
+shared fragment is coincidence, not a variant); `import 'server-only'` on `server.ts` (the module imports
+`next/headers`, which is already a build-time error in a client boundary, and `server-only` is not a
+dependency); a missing `SUPABASE_SECRET_KEY` being indistinguishable from "off" (the log tells them apart by
+`name`, and the Deploy run's production `grep -c → 1` is the proof the key is present); the two uncached
+reads per signed-out render (`no-store` is deliberate — a cached switch is a switch that does not switch —
+and there is no measurement to trade it against); `webauthn.ts` living in the sign-in route folder (the Code
+Map placed it there deliberately, and it is one import); the AAGUID list carrying upstream oddities like
+"initial" (faithful transcription with its source commit in the header is the contract, and 2.2 adds rename);
+a metadata race on the whole-object write (no second writer of `user_metadata` exists in the app); and
+`markNudgeDone`'s boolean being discarded after a successful registration (it already logs, and failing a
+registration GoTrue accepted would be worse).
 
 Dismissed as noise (9): the hairline under the last passkey row (the frame draws it, `S12 Billing.dc.html:96`); "add a passkey" twice in the nudge (the frozen matrix's own words); `status` logged on `start*` and `code` on `verify*` (explained beside each); passkeys unusable on `localhost` and preview hosts (Design Notes already say so); `SUPABASE_SECRET_KEY` undocumented (server.ts's header and the Code Map's Vercel row); the migration's stale comment (the spec's Never: the frozen migration is not edited — SCHEMA.sql and DW-30 carry it); `flags.ts` logging `message` against the frozen `{ code }` (Change Log 5 is the record, and the query carries no user input); a click between hydration and the support check (now the one failure sentence); a zod schema at the action boundary (GoTrue verifies the credential; `aaguid` is guarded above).
 
@@ -421,6 +526,22 @@ The virtual authenticator reports the all-zero AAGUID, so it proves the **`Passk
 the named path (`Apple Passwords`, `Google Password Manager`, `Windows Hello`) is the owner's own
 device, and that is step 3 of his manual test.
 
+**Two controls the next Deploy run must take** (added by the second review, 2026-09-06 — both were
+within reach of the first Deploy run and neither was taken):
+
+4. **The naming PATCH cannot fail visibly, so it must be read back.** `nameFor`'s fallback and
+   `passkeyRows`'s fallback are the SAME string, `Passkey`, so a `PATCH /passkeys/{id}` that 4xx'd
+   renders byte-identically to one that succeeded — and the only registration ever executed used a
+   virtual authenticator, whose all-zero AAGUID produces that same string. That `data.id` is the UUID
+   `passkeyId` wants is a TYPE-level claim, never executed. So: after the fixture registers, either
+   `GET /passkeys` for that fixture and read `friendly_name` off the wire, or grep the deployment's log
+   for `passkey: naming failed` — and record which.
+5. **AC 2 names the cookie header, so read it on the passkey path.** `Max-Age=2592000; Secure;
+   HttpOnly; SameSite=lax` was measured on `/app/auth/confirm` — the magic-link path. The Deploy run
+   had a live passkey session in hand and recorded only "a `sb-…-auth-token` cookie set". Read the
+   `Set-Cookie` attributes on the passkey sign-in itself; the path is argued to be the same one, and
+   an argued path is not a measured one.
+
 ### The review's run (2026-09-06)
 
 The review's Real-infra verifier re-executed every claim above that this phase may execute, on
@@ -540,6 +661,73 @@ Deploy run — driven by a real signed-in session. No mocks (R-82). Keys read by
 Nothing else in this story was touched: no server action, no flag read, no ceremony, no `/account` code, and
 `BannerLink` is unchanged and still the rule for a link inside a banner (the kit page uses it).
 
+### The second review's run (2026-09-06)
+
+The review after the owner's Fix, with **both switches ON in production**, so unlike the Dev and first
+Review runs this one could execute the flag-**on** state. Keys read by name from `tools/probe/.env`
+(`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN`); none printed.
+
+**The real infrastructure, re-executed — every claim held.**
+
+- `configure-supabase-auth.py --check` — **21 PASS**, exit 0, including `passkey_enabled = True`,
+  `webauthn_rp_id = 'inflozo.com'`, `webauthn_rp_origins = 'https://app.inflozo.com'`,
+  `webauthn_rp_display_name = 'Inflozo'`. The 17 Story 1.4 fields are the control and all passed.
+  `sessions_inactivity_timeout` still `----` (not on this plan), stated not swallowed.
+- Negative control `--check --expect passkey_enabled=false` — **1 FAILED**, exit 1, and it is exactly
+  `passkey_enabled`. The tool still tells a wrong value from a right one.
+- `GET /auth/v1/settings` — **`passkeys_enabled: true`**; the only `passkey*`/`webauthn*` key in the
+  payload, which is what pins `settingEnabled` to GoTrue's spelling rather than the Management API's.
+- `GET /rest/v1/feature_flags` with `SUPABASE_SECRET_KEY` — **200**, `passkeys` **true**. Negative
+  control, the same request with `SUPABASE_PUBLISHABLE_KEY` — **401 `42501` permission denied**. DW-12's
+  premise still true; the row was read only, never written.
+- `https://app.inflozo.com/sign-in` — **200**, the button **1** and the divider **1**. `/account` signed
+  in — **200**, `Change email` **0**, `Danger zone` **0**. The deployed nudge's two actions are the Kit's
+  primary and secondary at 32px, in the served markup.
+- Vercel — the production alias is READY on `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`; CI
+  `completed/success` on both recent commits. **One correction to the Deploy record above:** the aliased
+  deployment is now `dpl_3BpT3pL79qKoeEKsHFs5taW9HUxL` at commit `48796dec`, not the
+  `dpl_B7w3PTtzjeFBeLMXEWx3tqRfSYWe` the Deploy run named — two builds finished 2s apart and the later
+  took the alias. `git diff 48796dec..HEAD` is `STORY-BOARD.html` alone, so the app code in production is
+  byte-identical to HEAD's; the next Deploy run names the current one.
+- No user was touched: the live count was **2 before and 2 after**, read through the Admin API both times.
+
+**The patched build, and the one measurement that changed a verdict.**
+
+- `pnpm check` — **green, exit 0**. `cd apps/web && node --test '*.test.ts'` — **101 pass, 0 fail** (94
+  before; the seven new are three wiring contracts, two `isRedirect` cases and two button-weight cases).
+- `pnpm build` with the three keys **unset**, as CI's `check` job runs — **green**; `/app`, `/app/account`
+  and `/app/sign-in` all `ƒ`, nothing prerendered, nothing read at module load.
+- **The frame weight, measured rather than grepped.** Real Chromium against the deployed
+  `https://app.inflozo.com/sign-in` **before** the patch: the passkey button carried BOTH `font-medium`
+  and `font-semibold` and computed **600**, where `S1 Sign In.dc.html:49` draws 500. The built stylesheet
+  says why — `.font-medium` at byte 32178, `.font-semibold` at byte 32366, same specificity, later wins.
+  A real production build with the keys, served and re-measured **after** the patch: the passkey button
+  emits one weight class and computes **500**, while "Send magic link" is unchanged at **600** — the
+  control that the change is scoped to the one label.
+- **The nudge, on a real signed-in session against the real project.** A fixture user through
+  `POST /auth/v1/admin/generate_link` (`verification_type: 'signup'`), redeemed in real Chromium, landing
+  on the dashboard. The restructured banner still draws the owner's two buttons exactly as the Fix run
+  measured them — **Add a passkey** an `A` at `rgb(28,27,26)` on white, 32px, radius 10; **Not now** a
+  `BUTTON` on `rgb(255,255,255)` with a 1px `rgb(231,226,219)` hairline, 32px, radius 10 — so the
+  `flex-col` wrapper the refusal sentence needed disturbed nothing.
+- **The once-only fact still reaches real GoTrue after the dismissal was reworked:** pressing **Not now**
+  removed the banner, `GET /auth/v1/admin/users/{id}` showed `user_metadata.passkey_nudge_done_at` written,
+  and a reload did not bring it back.
+- axe-core 4.12.1, same Chromium, `wcag2a · wcag2aa · wcag21a · wcag21aa`, the dashboard **with the nudge
+  shown**: **0 violations at 1440 and 0 at 390**.
+- The fixture was deleted (`DELETE /auth/v1/admin/users/{id}` → **200**) and the count read back at **2**.
+- Each of the three new wiring contracts was proved by its own negative control: the flag key retyped as
+  `'passkey'` → that test alone red; the `experimental.passkey` line deleted → that test alone red; a
+  second importer of `supabaseAdmin` added → that test alone red. The button-weight test was proved the
+  same way, and its second control is the original bug itself — the weight moved back into `className`
+  turns it red.
+- One harness correction, recorded because it wasted a run: `page.goto(…, { waitUntil: 'networkidle' })`
+  never settles on `/app`, and the first attempt died there **after** creating its fixture user, leaving a
+  third account behind. It was found and deleted immediately (count back to 2) and the harness now creates
+  the fixture inside a `try/finally` so the cleanup runs whatever the browser does. On localhost the app
+  also lives under `/app` — the host rewrite only happens on `app.inflozo.com` — which the Fix run had
+  already recorded.
+
 ## Owner's manual test
 
 Everything below is on the live site, after the Deploy run has turned both switches on. Use your Mac first,
@@ -566,7 +754,12 @@ then your phone.
    in with a magic link, then add one under Account settings." — and the magic link works as before. Then
    add one on the phone from Account settings too; the Passkeys card lists both.
 6. **Optional, say the word:** I turn the switch off with one line and no deploy. On your next page load the
-   button, the card and the yellow line are all gone; one line turns them back on.
+   button, the card and the yellow line are all gone; one line turns them back on. **Say plainly what that
+   means, because it is more than an empty page:** while it is off, a passkey you have already added still
+   exists on your device and in Supabase, but you cannot see it on the Account page and you cannot sign in
+   with it — the magic link is the way in until it goes back on. Nothing is deleted, and turning it back on
+   brings your passkey back exactly as it was. That is what a kill switch is for; it is worth knowing before
+   you ever need it.
 
 ## Questions for the owner
 
@@ -607,6 +800,31 @@ would.
 the plan column will be, about 870 pixels on a wide screen."** Applied in the same review: at desktop the
 column is `100% - 504px`, the frame's own 480px column plus its 24px gap; full width below desktop, where
 the frame draws nothing and 390 is one column.
+
+**3. On a browser too old to do passkeys at all, the "Sign in with a passkey" button still looks like a
+normal button — it just does nothing when pressed. What should it do instead?**
+
+The page already prints the reason underneath it — "This browser can't use passkeys." — before anyone
+presses anything, and the magic link above still works. But the button itself looks perfectly normal, so
+someone can press it and watch nothing happen. Screen readers are already told it is unavailable; eyes are
+not. Three separate checks in this review flagged the mismatch.
+
+Worth knowing before you spend time on it: this is **rare**. Every browser released since about 2019 can do
+passkeys, so in practice almost nobody will ever see this. The reason it is being asked at all is that two
+of your own rules point in different directions here — your rule says "a control that could never act is
+absent, not greyed", and the design kit deliberately has no greyed-out version of a full-size button.
+
+*Example:* someone opens the sign-in page in a very old browser on an old work laptop. They see the email
+box, an "or" line, and a "Sign in with a passkey" button with a small grey sentence under it saying the
+browser can't use passkeys. They press the button anyway. Nothing at all happens.
+
+1. **Hide the button on those browsers — and the "or" line with it — leaving just the email box and the one
+   sentence. (RECOMMENDED)** — this is your own existing rule ("a control that could never act is absent"),
+   it invents no new look, and nobody can press a button that does nothing. The sentence still explains why.
+2. **Keep the button but draw it visibly faded**, so it looks as unavailable as it is — this needs a new
+   faded-button look that your design kit does not currently have, which is why it is your call and not mine.
+3. **Leave it exactly as it is today** — the reason is already printed on screen, and the case is rare enough
+   that it may not be worth any change at all.
 
 ## Owner's test findings
 
