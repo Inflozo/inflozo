@@ -85,5 +85,8 @@ export async function proxy(req: NextRequest) {
 // app.inflozo.com every path the proxy sees is rewritten to /app/… (`routing.ts`), which would
 // send the root-served icons and the email's mark to a 404. Excluded here they are served by
 // Next's own static handling on both hosts; `routing.test.ts` covers `route()`, so the control
-// is the deployed curl in the story's Verification.
+// is the deployed curl in the story's Verification — and `routing.test.ts` reads this literal
+// back and runs it (review, 2026-09-06). It stays a literal here: Next extracts `config`
+// statically, so it cannot be imported from `routing.ts` — and the dots stay unescaped, as in
+// Next's own docs, so the text the test reads is the pattern Next runs.
 export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|apple-icon.png|brand/).*)'] }

@@ -36,7 +36,8 @@ const looks: Record<BannerKind, { box: string; icon: ReactNode }> = {
 /**
  * @param rowHeight The height in px of the caller's FIRST ROW, when that row is taller than a
  * line of the sentence — the 32px control row of the exception above is the one case. The icon
- * centres on it. Omit it and the icon centres on the sentence's own line box (12.5px × 1.5),
+ * centres on it. Omit it and the icon centres on the sentence's own line box (`1lh` of the
+ * row's 12.5px × 1.5, set once on the row so the two cannot drift — review, 2026-09-06),
  * which is what the hand-set `margin-top:1px` in `Editor Sidebar Kit.dc.html:238` approximated;
  * NEVER pass the height of a multi-line block, or the icon leaves the sentence it belongs to.
  */
@@ -51,11 +52,14 @@ export function Banner({
 }) {
   const { box, icon } = looks[kind]
   return (
-    <div role={kind === 'error' ? 'alert' : 'status'} className={`flex gap-[9px] rounded-thumb border p-[11px_13px] ${box}`}>
-      <span className="flex shrink-0 items-center" style={{ height: rowHeight ?? 'calc(12.5px * 1.5)' }}>
+    <div
+      role={kind === 'error' ? 'alert' : 'status'}
+      className={`flex gap-[9px] rounded-thumb border p-[11px_13px] text-[12.5px] leading-[1.5] ${box}`}
+    >
+      <span className="flex shrink-0 items-center" style={{ height: rowHeight ?? '1lh' }}>
         {icon}
       </span>
-      <span className="text-[12.5px] leading-[1.5]">{children}</span>
+      <span>{children}</span>
     </div>
   )
 }

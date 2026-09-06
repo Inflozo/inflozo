@@ -774,3 +774,34 @@ reason: (1) The magic-link path next door carries a `SEND_INTERVAL` of its own A
   fix is a `Promise.race` that gives up on the render while the request runs on — worth doing only if the
   blast radius (one signed-in page, not the signed-out sign-in page) ever justifies the half-measure.
   Both are cheap to settle inside 2.2, which already opens these files.
+
+## Deferred from: code review of spec-1-6-the-new-identity-everywhere (2026-09-06)
+
+### DW-34: the app's error page has never been rendered with the new lockup
+
+plain: The page that appears when something inside the app breaks now shows the new logo, but nobody has
+  ever made it appear on a screen to look — every other place the logo appears was measured in a real browser.
+status: open
+severity: low
+origin: Story 1.6 Dev (self-flagged) and code review (2026-09-06) — Acceptance Auditor, Verification Gap, Real-infra verifier
+location: apps/web/app/(app)/app/error.tsx (`<Lockup size={20} />`)
+reason: Two attempts to trip the boundary from outside failed (an RSC fetch fulfilled with a 500, and with a 200
+  carrying invalid flight; Next recovered and stayed on `/app`). `node --test` strips types but not JSX, so the
+  boundary cannot be rendered in a test, and a throwing route is a route change the story's Never forbids. The
+  node drawn is the same `Lockup` measured at 24.41px on five surfaces, and `pnpm build` compiles the page.
+  Closes when a story that owns a throwing path (or a dev-only `?throw=` behind a feature flag) renders it once
+  and runs axe on it, or when the owner rules code-and-build is control enough for a page that only shows on failure.
+
+### DW-35: Safari before version 26 shows no tab icon at all
+
+plain: The small logo in the browser tab is an SVG file. Safari only learned to show SVG tab icons in its 2025
+  release; anyone on an older Safari sees a blank tab icon, though the iPhone home-screen tile is unaffected.
+status: open
+severity: low
+origin: Story 1.6 code review (2026-09-06) — Blind Hunter; cited from caniuse `link-icon-svg` (Safari 3.1–18.7 not supported, 26.0+ supported)
+location: apps/web/app/icon.svg · apps/web/proxy.ts (the matcher exclusion would need the new file too)
+reason: Next's file convention accepts `app/icon.png` or `app/favicon.ico` beside `icon.svg`; a PNG rendered from
+  `favicon-16.svg` by the same headless-Chromium command as the two existing rasters, plus one more name in the
+  matcher and in `routing.test.ts`'s derived list, closes it. Not done in the review because the owner tests on
+  current Safari and the spec names `icon.svg` as the one favicon; do it the first time his test, or a user,
+  reports a blank tab.

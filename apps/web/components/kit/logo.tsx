@@ -34,8 +34,7 @@ export const Mark = ({ size, className }: { size: number; className?: string }) 
     height={size}
     viewBox="0 0 44 44"
     aria-hidden
-    className={className}
-    style={{ display: 'block', flexShrink: 0 }}
+    className={`block shrink-0 ${className ?? ''}`}
   >
     <rect
       x="2.5"

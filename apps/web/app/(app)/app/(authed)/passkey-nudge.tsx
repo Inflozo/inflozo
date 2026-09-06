@@ -30,6 +30,10 @@ const DISMISS_FAILED = "We couldn't put that away just now. Try again in a momen
  * `useTransition` and not `useActionState`: the row goes away because the server said so, and
  * until it does the button says what it is doing.
  */
+// The control row's height — the Kit's 32px buttons, the sentence's box and the Banner's icon row
+// are one fact, so it is written once (review, 2026-09-06).
+const ROW = 32
+
 export function PasskeyNudge() {
   const [pending, startTransition] = useTransition()
   // The action revalidates `/app`, so the banner leaves with the re-rendered tree; this holds it
@@ -65,19 +69,19 @@ export function PasskeyNudge() {
 
   return (
     <div className="p-[16px_20px] pb-0 tablet:p-6 tablet:pb-0">
-      <Banner kind="notice" rowHeight={32}>
+      <Banner kind="notice" rowHeight={ROW}>
         <span className="flex flex-col gap-2">
           <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {/* The sentence declares the control row's own height, so its line box is 32px
                 whether the buttons sit beside it (1440) or wrap below it (390) — that is what
                 keeps the icon level with it in both. */}
-            <span className="flex min-h-8 items-center">Sign in faster next time — add a passkey.</span>
+            <span className="flex items-center" style={{ minHeight: ROW }}>Sign in faster next time — add a passkey.</span>
             <span className="flex items-center gap-2">
-              <Link href="/account" className={buttonClasses('primary', 32)}>
+              <Link href="/account" className={buttonClasses('primary', ROW)}>
                 Add a passkey
               </Link>
               <Button
-                size={32}
+                size={ROW}
                 variant="secondary"
                 aria-busy={pending || undefined}
                 aria-disabled={pending || undefined}

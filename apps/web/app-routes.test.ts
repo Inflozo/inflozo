@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 // Two contracts a fully green gate cannot see, in `tokens.test.ts`'s idiom: both are READ out of
@@ -92,5 +92,19 @@ test('no page inside (authed) declares its own <main> — the shell is the only 
       /^\s*(return\s+)?<main[\s>]/m,
       `${page} declares a <main>, but the shell in (authed)/layout.tsx already does — two nested main landmarks. Use a <div>, as kit/page.tsx does.`,
     )
+  }
+})
+
+/*
+ * The template's mark is a PNG at an absolute inflozo.com URL (Story 1.6): Gmail strips SVG, so
+ * it cannot be inlined, and `alt=""` means a missing file shows as a blank cell, not an error.
+ * `identity.test.ts` proves the SVGs byte-identical but never looks at a PNG, and nothing else
+ * ties the URL in the email to a file under `public/` (review, 2026-09-06).
+ */
+test('every inflozo.com image the email template names is a file under public/', () => {
+  const srcs = [...readFileSync(TEMPLATE, 'utf8').matchAll(/src="https:\/\/inflozo\.com\/([^"]+)"/g)].map((m) => m[1])
+  assert.ok(srcs.length > 0, 'the template names no image on inflozo.com — the mark is gone from the email')
+  for (const path of srcs) {
+    assert.ok(existsSync(join('public', path)), `the email points at /${path}, which is not under public/ — the mark would be a blank cell in every sign-in email`)
   }
 })

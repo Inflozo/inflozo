@@ -2,8 +2,8 @@
 title: 'Story 1.6 — The new identity everywhere'
 type: 'feature'
 created: '2026-09-06'
-status: 'in-progress'
-review_loop_iteration: 0
+status: 'in-review'
+review_loop_iteration: 1
 baseline_commit: '039fe1fe8631f2f10ac32b001247cd51df0c1993'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
@@ -105,8 +105,8 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 - `apps/web/app/icon.svg` (new) -- `assets/favicon-16.svg`, byte-identical; Next's file convention emits the `<link>`. `apps/web/app/apple-icon.png` (new) -- `app-icon.svg` rendered at 180×180
 - `apps/web/public/brand/` (new) -- `mark-light.svg`, `mark-dark.svg`, `mark-mono.svg`, `app-icon.svg`, `favicon-16.svg` byte-identical, plus `mark-light@2x.png` (88×88) for the email
 - `apps/web/proxy.ts:84` -- the matcher `'/((?!_next/|favicon.ico).*)'`: on `app.inflozo.com` every other path is rewritten to `/app/…` (`routing.ts:41`), which would send `/icon.svg`, `/apple-icon.png` and `/brand/…` to a 404. **Extend the exclusion** to `_next/|favicon.ico|icon.svg|apple-icon.png|brand/`; `routing.test.ts` covers `route()`, so the control is the deployed curl
-- `apps/web/components/kit/banner.tsx:40-45` -- `Banner`: the icon wrapper `<span className="mt-px shrink-0">` becomes `flex shrink-0 items-center` with height `rowHeight ?? 'calc(12.5px * 1.5)'` (the sentence's own line box — the frame's `margin-top:1px` was the same alignment by eye, `Editor Sidebar Kit.dc.html:238`); new optional prop `rowHeight?: number` (px), documented as the control-row exception the file's header already records
-- `apps/web/app/(app)/app/(authed)/passkey-nudge.tsx:68-72` -- `<Banner kind="notice" rowHeight={32}>`, and the sentence span becomes `<span className="flex min-h-8 items-center">` so its line box is 32px whether or not the buttons wrap beside it; nothing else in the file moves
+- `apps/web/components/kit/banner.tsx:40-45` -- `Banner`: the icon wrapper `<span className="mt-px shrink-0">` becomes `flex shrink-0 items-center` with height `rowHeight ?? '1lh'` (the sentence's own line box, its type on the row since Change Log 4 — the frame's `margin-top:1px` was the same alignment by eye, `Editor Sidebar Kit.dc.html:238`); new optional prop `rowHeight?: number` (px), documented as the control-row exception the file's header already records
+- `apps/web/app/(app)/app/(authed)/passkey-nudge.tsx:68-72` -- `<Banner kind="notice" rowHeight={32}>`, and the sentence span becomes `<span className="flex items-center" style={{ minHeight: ROW }}>` (`ROW = 32`, Change Log 5) so its line box is 32px whether or not the buttons wrap beside it; nothing else in the file moves
 - `apps/web/app/layout.tsx` · `apps/web/app/(app)/app/layout.tsx` -- read-only: no `icons` metadata exists; the file convention supplies it. `apps/web/csp.ts:45` `img-src 'self' data: https:` already admits the PNG and the inline SVG
 - `apps/web/app/(app)/app/(authed)/kit/page.tsx` -- **not touched** (ponytail: the gallery is for Kit controls; the lockup is seen on every page)
 - `_bmad-output/planning-artifacts/design/claude-design-export/Logo/export/Inflozo Logo/` -- read-only: `README.txt` (the rules), `assets/` (the five SVGs), `Inflozo Logo.html` (the *i* construction and the three sizes the ratio was derived from)
@@ -124,7 +124,7 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 - [x] Verification -- the grep, the diff of the watermark, the measured banner, axe, the curls, on the deployed site -- R-82
 
 **Acceptance Criteria:**
-- Given `grep -rnE "font-extrabold|>Inflozo<" apps/web --include='*.tsx'` after the change, when it runs, then every hit is either inside `components/kit/logo.tsx` or the watermark at `sign-in/page.tsx`, and `git diff` of that page's watermark line is empty.
+- Given `grep -rnE ">\s*Inflozo\s*<" apps/web --include='*.tsx'` after the change (the rule it enforces is the frozen constraint — *the only literal display-weight "Inflozo" left is the watermark*; `font-extrabold` alone also matches the Kit page's type specimen and `<h1>`, Spec Change Log 3), when it runs, then every hit is inside `components/kit/logo.tsx`, the watermark at `sign-in/page.tsx` is CSS `content` and not a text node, and `git diff` of that page's watermark line is empty; `identity.test.ts` runs the same scan on every `pnpm check`.
 - Given `/`, `/sign-in`, `/account`, the ☰ drawer and the error page at 1440, 834 and 390, when they render, then each **matches its frame** (S3a/S3b, S1a, S3 · mobile, S3 · mobile — menu open, the S3 extrapolation) **with the lockup where the frame draws the wordmark** — mark 1.221× the type size, gap 0.28× the mark, 800 weight, −0.035em — and nothing else moved (R-74; the owner's DW-31 ruling recorded beside each substitution).
 - Given the lockup's mark, when its markup is diffed against `assets/mark-light.svg`, then the three `<rect>`s and the `viewBox` are byte-identical and only `<metadata>` is absent.
 - Given `curl -sI https://app.inflozo.com/icon.svg`, `…/apple-icon.png`, `…/brand/mark-light@2x.png` and the same three on `https://inflozo.com`, when they run, then each is `200` with the right `content-type`, and the served `icon.svg` bytes equal `favicon-16.svg`.
@@ -132,6 +132,27 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 - Given the dashboard with the nudge at 390 and 1440, when the icon's and the sentence's bounding boxes are measured in a real Chromium, then their vertical centres differ by ≤1px in both widths, including with the sentence wrapped under the buttons at 390; given a plain one-line `Banner`, the icon's centre equals the line's centre within 1px (the control: the pre-change nudge measures >5px apart).
 - Given every touched page at 1440, 834 and 390, when axe-core runs at `wcag2a · wcag2aa · wcag21a · wcag21aa`, then zero violations; the lockup's accessible name is "Inflozo" and the mark is not announced.
 - Given `pnpm check`, `pnpm build` and `node --test`, when they run, then green; given a push to `main`, then CI's `check` and `rls` are green and `deploy` publishes.
+
+### Review Findings
+
+Code review of 2026-09-06 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier), the last against the live project; 16 findings dismissed as noise. Every
+patch below is applied; the run that proves them is `## Verification` → *The review's run*.
+
+- [ ] [Review][Decision] The email draws the mark at 44px beside 22px type — twice the README's lockup ratio (≈27px) that the spec's "Always" binds every other surface to; the spec's own Code Map prescribed 44, so Dev followed it and the contradiction is inside the spec → **Questions for the owner, 2**
+- [ ] [Review][Decision] The favicon is ink on transparent, so on a dark browser tab strip it all but vanishes; the export ships no dark favicon cut and the SVG cannot carry a media query without breaking its byte-identity → **Questions for the owner, 3**
+- [x] [Review][Patch] The proxy matcher had no test — mistype `icon.svg` and every gate stays green while the app host 404s its favicon; `routing.test.ts` now reads the literal back and runs it, the excluded files derived from `app/` and `public/brand/` [apps/web/routing.test.ts · apps/web/proxy.ts:84]
+- [x] [Review][Patch] Nothing tied the email's `https://inflozo.com/brand/mark-light@2x.png` to a file under `public/` (`alt=""` hides a missing one as a blank cell) [apps/web/app-routes.test.ts]
+- [x] [Review][Patch] `tokens.test.ts` exempts the whole of `logo.tsx`, so the tittle's hex was pinned by nothing and the mark's `#1C1B1A` could drift from `--color-ink`; both are now read from the export's own rects [apps/web/identity.test.ts]
+- [x] [Review][Patch] The mark check was value-by-value, so two rects swapping attributes or a fourth rect passed; it is rect-by-rect with a count, and asserts it compared something [apps/web/identity.test.ts]
+- [x] [Review][Patch] The two rasters had no check at all; their IHDR sizes are asserted (88×88, 180×180) [apps/web/identity.test.ts]
+- [x] [Review][Patch] `Banner` restated the sentence's type (`calc(12.5px * 1.5)`) beside `text-[12.5px] leading-[1.5]`; the type sits once on the row and the icon box is `1lh` — measured identical [apps/web/components/kit/banner.tsx:56]
+- [x] [Review][Patch] The nudge wrote 32 four times (`rowHeight`, `min-h-8`, two buttons); one `ROW` constant [apps/web/app/(app)/app/(authed)/passkey-nudge.tsx:35]
+- [x] [Review][Patch] `Mark` set `display:block; flex-shrink:0` inline beside a `className` in a file whose siblings use the utilities [apps/web/components/kit/logo.tsx:38]
+- [x] [Review][Patch] The marketing page's comment called 35.7px "the export's STACKED lockup" while drawing the horizontal one — the stacked card is mark-above-word [apps/web/app/(marketing)/page.tsx:11]
+- [x] [Review][Patch] AC 1's grep matched the Kit page's type specimen and `<h1>` (Change Log 3 said so but the AC was left reading as failing); Design Notes still prescribed the `hidden tablet:inline-flex` pattern Change Log 1 replaced; the Verification "owed" list was stale the moment CI deployed the Dev push [this spec]
+- [x] [Review][Defer] The error page's lockup has never been rendered — verified by code and `pnpm build` only; the runner cannot test a `.tsx` boundary and a throwing route is a route change the story forbids [apps/web/app/(app)/app/error.tsx:54] — deferred, DW-34
+- [x] [Review][Defer] Safari before 26 draws no SVG favicon at all (caniuse `link-icon-svg`: "3.1 – 18.7 not supported", support from 26.0); there is no PNG or `.ico` fallback [apps/web/app/icon.svg] — deferred, DW-35
 
 ## Spec Change Log
 
@@ -153,6 +174,12 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
    Code Map rules `/kit` untouched. The frozen constraint — *the only literal display-weight
    "Inflozo" left in `apps/web` is the Sign In watermark* — holds exactly, and is now a test
    (`identity.test.ts`) rather than a grep run once.
+4. **The Banner's sentence type lives on the row** (Review, 2026-09-06). The Code Map put the default
+   icon-box height as `calc(12.5px * 1.5)` beside a sentence span carrying `text-[12.5px] leading-[1.5]`
+   — one fact in two places. The type is on the banner's row now and the box is `1lh`; measured in
+   Chromium the box is the same 18.75px and the icon-to-line offset is unchanged (0.38px).
+5. **The nudge's row height is one constant** (Review, 2026-09-06). `rowHeight`, the sentence's
+   `min-h`, and both buttons read `ROW = 32` instead of restating it.
 
 ## Design Notes
 
@@ -175,7 +202,8 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 ```
 
 The card's two sizes (20 → 22 at `tablet:`) cannot be one `style`, so `Lockup` takes `size` and an optional
-`className`; the card renders the 20px lockup with `tablet:hidden` and the 22px one with `hidden tablet:inline-flex`
+`className`; the card renders the 20px lockup with `tablet:hidden` and the 22px one with `max-tablet:hidden` (both
+media-query variants — Spec Change Log 1 records why a bare `hidden` lost to the component's own `inline-flex`)
 — two elements, the frame's two sizes, no CSS arithmetic (ponytail: a `calc()`-driven lockup if a third size appears).
 
 **The rasters, made once, recorded here.** With `PATH` holding Node 24 and the machine's Playwright
@@ -187,9 +215,9 @@ provenance.
 
 **The Banner's alignment, root cause.** `Banner` pins its icon to the top (`mt-px`) — right for a sentence, wrong
 under a 32px control row whose sentence `items-center` puts at 16px. `rowHeight` lets the one caller that carries
-controls (the owner's exception, `banner.tsx:8-12`) say so; the sentence's own `min-h-8` box makes the alignment
-hold when the buttons wrap below it at 390. The default `calc(12.5px * 1.5)` is the sentence's line box, so a plain
-banner's icon is centred on its first line — which is what `mt-px` was approximating.
+controls (the owner's exception, `banner.tsx:8-12`) say so; the sentence's own `minHeight: ROW` box makes the alignment
+hold when the buttons wrap below it at 390. The default is `1lh` of the row's type — the sentence's line box, set once
+(Change Log 4) — so a plain banner's icon is centred on its first line, which is what `mt-px` was approximating.
 
 **The email's word stays in the system stack.** Bricolage cannot be relied on in an inbox, so the lockup rule
 (800, −0.035em) is met only where the font is; the email keeps its `Trebuchet MS` word at 800/−0.02em beside the
@@ -298,19 +326,51 @@ once restored.
 **The gates:** `pnpm check` **exit 0** (lint, typecheck, and 104 tests across the four packages,
 `fail 0`), `pnpm build` **exit 0** with `/icon.svg` and `/apple-icon.png` in the route table.
 
-**Not executed in this phase, and owed:**
-- The six deployed-domain curls (`app.inflozo.com` and `inflozo.com` × `icon.svg`, `apple-icon.png`,
-  `brand/mark-light@2x.png`) — the proxy-matcher exclusion is the thing they control, and
-  `routing.test.ts` covers `route()` but not the matcher. **Deploy phase.**
-- The magic-link email seen in an inbox with the mark drawn. The template is live and carries the
-  `<img>`; the URL it points at 404s until this commit deploys. **Deploy phase, and the owner's
-  test step 3.**
-- **The error page was not rendered — the one matrix row without a passing test.** Two attempts to
-  trip the boundary from outside failed: the client navigation's RSC fetch fulfilled with a `500`,
-  and with a `200` carrying a body that is not valid flight. Next recovered from both and stayed on
-  `/app`. `error.tsx`'s lockup is therefore verified by code — it is `<Lockup size={20} />`, the same
-  node measured at 24.41px in the sidebar — and by `pnpm build`, not by a rendered page. **Flagged
-  for review**; the honest reading is that this row is untested, not that it passed.
+**Not executed in the Dev phase** (and what became of each at Review, below): the six deployed-domain
+curls; the magic-link email seen in an inbox; **the error page, which was not rendered** — two attempts
+to trip the boundary from outside failed (the client navigation's RSC fetch fulfilled with a `500`, and
+with a `200` carrying a body that is not valid flight; Next recovered from both and stayed on `/app`), so
+`error.tsx`'s lockup is verified by code — `<Lockup size={20} />`, the same node measured at 24.41px in
+the sidebar — and by `pnpm build`, not by a rendered page.
+
+### The review's run (2026-09-06, R-82)
+
+The Real-infra verifier re-executed the claims above against the live project, by the key's variable
+name, and the review's own patches were gated the same way:
+
+- **Supabase Management API** (`SUPABASE_ACCESS_TOKEN`): `configure-supabase-auth.py --check` → `GET 200`,
+  every field `PASS`, both templates 5284 chars; read back independently, both carry the `<img>` and are
+  byte-identical to the file. **Negative control:** `--check --expect mailer_otp_exp=901` → `FAIL … (live:
+  900)`, exit 1 — the checker can tell a miss from a pass.
+- **The six deployed-domain curls already hold** — the Dev push deployed through CI (DW-7), so the story
+  is live: `app.inflozo.com` and `inflozo.com` × `/icon.svg` (`image/svg+xml`), `/apple-icon.png`
+  (`image/png`), `/brand/mark-light@2x.png` (`image/png`) all **200**, and each body `cmp`s silent
+  against the file in the repo on both hosts. **Negative control for the matcher:** with no cookies,
+  `app.inflozo.com/kit` and `/account` → `307 → /sign-in` (the proxy still guards app paths) while
+  `/icon.svg` and `/brand/mark-light@2x.png` → 200 with no redirect (excluded). Both deployed pages carry
+  Next's `<link rel="icon" … type="image/svg+xml">` and `<link rel="apple-touch-icon" … 180x180>`.
+- **The email's prerequisite is met** — the PNG the template names now returns 200 with the right bytes —
+  so the mark drawn in a real inbox is the owner's test step 3, as planned; no review can see his inbox.
+- **The marks are the export's bytes** (`cmp` silent, five SVGs and `app/icon.svg`), the rasters are
+  180×180 and 88×88 (`file`), `identity.test.ts` green on Node 24. Ghost T1/T3 untouched — the story has
+  no Ghost surface. DNS healthy throughout (`dig @1.1.1.1`).
+- **The review's four new guards, each proved by its own control** (mutate → exactly that test red →
+  restore → green): `routing.test.ts` reads the proxy's matcher literal back and runs it — red when
+  `icon.svg|` is dropped from the matcher; `app-routes.test.ts` ties every `inflozo.com` image in the
+  template to a file under `public/` — red when the PNG is moved; `identity.test.ts` compares the mark
+  rect by rect (not value by value) — red when two rects swap `rx`; and pins the tittle to the core's
+  fill and `--color-ink` to the boundary's stroke — red when the tittle's hex is off by one; plus the two
+  PNGs' IHDR sizes.
+- **The Banner's one CSS change, measured in real Chromium** (`chromium-1228`): the icon box at `1lh` of
+  the row's 12.5px × 1.5 computes to **18.75px**, and the icon-to-first-line offset is **0.38px both
+  before (`calc(12.5px * 1.5)` on the box) and after** — the same number, so the Dev-phase measurements
+  above stand unchanged. The nudge's `ROW` constant changes no value (32 everywhere it was 32).
+- **The gates:** `pnpm check` exit 0 (typecheck, lint, 108 tests in `apps/web`, `fail 0`), `pnpm build`
+  exit 0 with `/icon.svg` and `/apple-icon.png` in the route table.
+- **Still without a rendered page: the error page.** The review could not add a `node --test` for a
+  `.tsx` boundary (the runner strips types, not JSX), and adding a route that throws is a route change
+  the story's Never forbids. Deferred as DW-34; the owner's test step 7 says the review checks it, and the
+  honest reading is that it is checked by code and build only.
 
 ## Questions for the owner
 
@@ -327,6 +387,29 @@ the logo is simply drawn.
 3. **On the marketing home page now**, in the placeholder that stands there until Epic 11 builds the real one.
 
 Ruled: option 1 — nowhere for now (owner, 2026-09-06). Nothing animates in this story; the animation waits for Epic 11.
+
+**2. How big should the mark be in the sign-in email?** Everywhere in the app the mark and the word follow the logo's
+rule: the mark is about 1.2 times the word's letter size, with a small gap. Example: in the sidebar the word is 20px
+tall and the mark is 24px. In the email the word is 22px, so the rule would give a 27px mark — but the email as built
+draws it at 44px, nearly twice the word, with a 12px gap. The spec asked for 44 and the code did what it asked, so this
+is a choice, not a bug. You can see the difference in your inbox at test step 3.
+
+1. **Follow the logo's rule (RECOMMENDED).** The email mark becomes 27px with an 8px gap, the same proportion as every
+   other place the logo appears. The image file already has enough pixels to look sharp at that size.
+2. **Keep 44px.** The email keeps the bigger mark as a header icon above the word, like a small app icon. The spec is
+   amended to say the email is the one deliberate exception to the rule.
+
+**3. Should there be a dark version of the browser-tab icon?** The tab icon (favicon) is the mark drawn in near-black
+ink on a transparent background. On a light tab bar it reads clearly; on a dark tab bar (dark mode in Chrome, Safari
+or Firefox) the ink is nearly invisible and only the red core shows. Example: the export has a "dark" mark for dark
+surfaces, but no dark cut of the *favicon*, and the favicon file must stay byte-identical to the export, so the fix
+is a design-side one, not a code one.
+
+1. **Leave it for now (RECOMMENDED).** Most browsers draw a light tile behind a favicon in dark mode anyway; if it
+   looks poor on your own devices, say so in your test and it becomes a small design request to Claude Design for a
+   dark favicon cut, added to the export the way the logo was.
+2. **Ask Claude Design for a dark favicon now**, before this story closes; the review adds it as a second icon file
+   with a dark-mode media query in the page head.
 
 ## Owner's manual test
 

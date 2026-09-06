@@ -62,16 +62,52 @@ test("the inlined mark is the export's drawing, attribute for attribute", () => 
   const rects = [...svg.matchAll(/<rect\s([^>]*?)\/?>/g)].map((m) => m[1])
   assert.ok(rects.length > 0, 'mark-light.svg draws no rects')
 
-  for (const attrs of rects) {
+  // Rect by rect, not value by value: a value found *somewhere* in the file would let two rects
+  // swap attributes or a fourth rect appear unnoticed (review, 2026-09-06).
+  const drawn = [...tsx.matchAll(/<rect\s([^>]*?)\/>/gs)].map((m) => m[1])
+  assert.equal(drawn.length, rects.length, `logo.tsx draws ${drawn.length} rects, the export ${rects.length}`)
+
+  let compared = 0
+  for (const [i, attrs] of rects.entries()) {
     for (const [, name, value] of attrs.matchAll(/([a-z-]+)="([^"]+)"/g)) {
       // JSX spells SVG's kebab-case attributes in camelCase; the VALUE is what must survive.
       const jsx = name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
+      compared++
       assert.ok(
-        tsx.includes(`${jsx}="${value}"`),
-        `logo.tsx is missing ${jsx}="${value}" — the mark was redrawn, and the README's dash rhythm (period = pathLength / 8) no longer closes`,
+        drawn[i].includes(`${jsx}="${value}"`),
+        `logo.tsx rect ${i + 1} is missing ${jsx}="${value}" — the mark was redrawn, and the README's dash rhythm (period = pathLength / 8) no longer closes`,
       )
     }
   }
+  assert.ok(compared > 0, 'no attribute was compared — the export\'s rects are not double-quoted any more')
+})
+
+test("the identity's two colours are the mark's own, in the tittle and in the ink token", () => {
+  const svg = readFileSync(join(ASSETS, 'mark-light.svg'), 'utf8')
+  const tsx = readFileSync(LOGO, 'utf8')
+  // The core's fill is the accent; the outer boundary's stroke is the ink. Read, not restated.
+  const accent = /<rect[^>]*fill="(#[0-9A-Fa-f]{6})"/.exec(svg)?.[1]
+  const ink = /<rect[^>]*stroke="(#[0-9A-Fa-f]{6})"/.exec(svg)?.[1]
+  assert.ok(accent && ink, 'mark-light.svg has no filled core or stroked boundary')
+
+  // The tittle is the core's colour beside it (logo.tsx's header) — `tokens.test.ts` exempts the
+  // whole file from the colour gate, so this is the only thing that holds the hex to the mark.
+  assert.ok(tsx.includes(`bg-[${accent}]`), `the tittle is not the mark's core colour ${accent}`)
+  // The word is `text-ink`; if the chrome's ink ever moves, the word and the mark split.
+  const token = /--color-ink:\s*(#[0-9A-Fa-f]{6})/.exec(readFileSync(join('app', 'globals.css'), 'utf8'))?.[1]
+  assert.equal(token?.toUpperCase(), ink.toUpperCase(), `--color-ink is ${token}, the mark's ink is ${ink} — the word and the mark no longer match`)
+})
+
+test('the two rasters exist at the sizes the email and the home screen ask for', () => {
+  // PNG: bytes 16–23 of the IHDR chunk are width and height, big-endian.
+  const size = (path: string) => {
+    const b = readFileSync(path)
+    assert.equal(b.toString('latin1', 1, 4), 'PNG', `${path} is not a PNG`)
+    return [b.readUInt32BE(16), b.readUInt32BE(20)]
+  }
+  // 44 CSS px at 2× in the email template; 180 is the apple-touch-icon size Next emits.
+  assert.deepEqual(size(join('public', 'brand', 'mark-light@2x.png')), [88, 88])
+  assert.deepEqual(size(join('app', 'apple-icon.png')), [180, 180])
 })
 
 test('no surface types the wordmark for itself', () => {
