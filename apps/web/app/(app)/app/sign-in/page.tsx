@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { currentUser } from '@/lib/supabase/server'
 import { passkeysEnabled } from '@/lib/flags'
 import { SignInForm } from './sign-in-form'
+import { SIGNED_OUT } from './signed-out'
 
 /* ─────────────────────────────────────────────────── S1 Sign In.dc.html — S1a and S1b
 
@@ -32,14 +33,14 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; 'signed-out'?: string }>
+  searchParams: Promise<{ error?: string; [SIGNED_OUT]?: string }>
 }) {
   // Already signed in — the sign-in page has nothing to offer, so it is not shown (matrix).
   if (await currentUser()) redirect('/')
 
   // `?signed-out=1` is set by `signOut` and says one sentence on arrival; `?error=link` is the
   // confirm route's. Neither is trusted for anything — each only chooses a sentence.
-  const { error, 'signed-out': signedOut } = await searchParams
+  const { error, [SIGNED_OUT]: signedOut } = await searchParams
 
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-paper px-6">

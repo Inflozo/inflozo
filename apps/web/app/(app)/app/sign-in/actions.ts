@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
 import { linkAlreadySent, retryAfterFrom, SEND_INTERVAL } from './resend-timer.ts'
+import { SIGNED_OUT_PATH } from './signed-out.ts'
 
 /**
  * Sending the link is a POST that runs entirely on the server: the publishable key, the
@@ -63,11 +64,18 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
  * the session is already gone whether or not the card reads it.
  *
  * The round trip to GoTrue used to be the slow half of his complaint. It is not the code that
- * changed — the function now runs in `fra1`, the database's own AWS region, on his ruling of the
- * same day (finding 3). Keep the await: signing out has to be true before the redirect says so.
+ * changed — on his ruling of the same day (finding 3) the Vercel project's function region was
+ * set to `fra1`, the database's own AWS region, through the Vercel API on 2026-09-06. That is a
+ * project setting, not a line in this repository; the spec's Verification holds the control
+ * (`x-vercel-id`). Keep the await: signing out has to be true before the redirect says so.
+ *
+ * GoTrue unreachable is the one way this fails: `signOut()` then KEEPS the cookies and returns
+ * the error, so the flag is withheld — the sign-in page would only bounce a still-signed-in
+ * user back to the dashboard, and the card must not say it happened when it did not.
  */
 export async function signOut() {
   const supabase = await supabaseServer()
-  await supabase.auth.signOut()
-  redirect('/sign-in?signed-out=1')
+  const { error } = await supabase.auth.signOut()
+  if (error) console.error('sign-out: failed', { code: error.code })
+  redirect(error ? '/' : SIGNED_OUT_PATH)
 }

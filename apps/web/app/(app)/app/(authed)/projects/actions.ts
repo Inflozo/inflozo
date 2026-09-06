@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { resolveEntitlement } from '@/lib/entitlement'
-import { atCap, capSentence } from '@/lib/plan'
+import { atCap, capSentence, type PlanId } from '@/lib/plan'
 import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
@@ -99,7 +99,7 @@ async function names() {
  * the page is re-rendered with the true one before the refusal is answered: the sheet then
  * opens as D4b and S3c's tile appears, rather than D4a with a live Create (review, 2026-09-05).
  */
-function refusedAtCap(plan: Parameters<typeof capSentence>[0]): ActionResult {
+function refusedAtCap(plan: PlanId): ActionResult {
   revalidatePath(DASHBOARD)
   return fail('at_cap', capSentence(plan))
 }

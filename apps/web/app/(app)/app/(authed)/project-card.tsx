@@ -13,12 +13,15 @@ import { ProjectMenu } from './project-menu'
  * THE CARD IS NOT A LINK. Opening a project is Story 5.1's — the editor and its URL scheme —
  * and a card that navigated nowhere would be the lie UX-DR3 forbids.
  */
+/** The columns the page selects — one type, so the `select(...)` and the card cannot drift. */
+export type Project = { id: string; name: string; style_pack: unknown; updated_at: string }
+
 export function ProjectCard({
   project,
   now,
   atCap,
 }: {
-  project: { id: string; name: string; style_pack: unknown; updated_at: string }
+  project: Project
   now: Date
   atCap: boolean
 }) {

@@ -286,6 +286,8 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - `apps/web/lib/style-pack.ts` (new, pure) -- the one zod schema for `projects.style_pack` (`{ preset: string }` today — the spine's rule (a): E6 owns the column and E1's placeholder reads it *through the same schema three epics early*), `PRESETS` with Paper's three values read off D4a's cell dots — surface `#FBF9F5`, accent `#D96C3F`, text `#232019` — and `placeholderFor(stylePack)` → `{ surface, accent, text }` falling back to Paper for a preset it does not know, so a card never renders empty when E6 widens the shape. Paper's accent is pack data, not a chrome token (`pack-cell.tsx:6`); DW-11 says E6 re-sources every pack from Appendix D, and this file is where that lands
 - `apps/web/lib/projects.ts` (new, pure) -- `nameSchema` (zod, trim, 1–80), `nextUntitled(names)`, `copyName(name)` (clamped to the schema's maximum), `slugify(name)`, `updatedLabel(updatedAt, now)` ("Updated today" / "Updated Aug 19", and "Updated Aug 19, 2025" for another year, `Intl.DateTimeFormat('en', …)`, UTC — `// ponytail: server UTC; the viewer's zone if "today" ever reads wrong at midnight`), `matchesName(typed, name)` (the typed value trimmed, then exact). `apps/web/projects.test.ts` holds each, including the 80-char edge, "Untitled project 2", the same-day and other-day labels, and that `slugify('Copy of Field Notes')` is `copy-of-field-notes`
 - `apps/web/components/shell/shell.tsx` (new, server) -- the sidebar and top bar at 1440 and the 60px bar at 390 (`tablet:` is the seam — S3 draws 1440 and 390 and the sidebar holds from `tablet` up); the nav via `next/link` with the active item from `usePathname` in a tiny client `NavLink`; the search form — its field a small client `SearchField` reading `useSearchParams` for its value (a layout receives no query) and owning ⌘K; the "New project" button that opens the sheet
+- `apps/web/lib/shell-user.ts` (new, pure) + `apps/web/shell-user.test.ts` -- `ShellUser`, `nameOf`, `secondLineOf`: question 5's rule where `node --test` reaches it (fourth review, 2026-09-06)
+- `apps/web/app/(app)/app/sign-in/signed-out.ts` (new, pure) -- `SIGNED_OUT` and `SIGNED_OUT_PATH`, the one key the action writes and the page reads (fourth review, 2026-09-06)
 - `apps/web/components/shell/account-menu.tsx` (new, client) -- the chip/avatar trigger and the S3d popover (`popover="auto"`, positioned from the trigger's rect on open — up at 1440, up at 390 since the owner moved the phone's menu into ☰); items as `next/link`s; Sign out as a form posting `signOut` from `sign-in/actions.ts`, its row a child component (`SignOut`) so `useFormStatus` has a form to read and the row can say `Signing out…`. The trigger row is `secondLineOf()` in both columns: no `display_name` → the address on the 11px line and the plan badge at the end; a `display_name` → S3b's two lines. Never clipped in either state
 - `apps/web/components/shell/drawer.tsx` (new, client) -- the ☰ `<dialog>` at 390: nav, account row, close
 - `apps/web/app/(app)/app/(authed)/project-card.tsx` (new, server) + `placeholder.tsx` (new) -- the card and its wireframe with the pack's three colours as inline `style` (they are pack data, the site's system, never Tailwind classes)
@@ -324,7 +326,7 @@ from the project's Style Pack, and the only pack that exists today is Paper.
 - Given the ⋯ trigger, when it opens, then the menu **matches S3c** — Rename, Duplicate, a rule, Delete in danger — and Rename and Delete open their S12c-shaped confirms with focus on Cancel; Delete stays disabled until the exact name is typed (FR-B3; EXPERIENCE.md § Destructive confirms).
 - Given a Free account with one project, when "New project" or ⋯ → Duplicate is used, then the sheet opens as **D4b** with "Free includes 1 project. Pro gives you 25." and Go Pro, Create disabled, and the grid shows **S3c's** upgrade tile; given a Pro account, the 26th is refused the same way without Go Pro (FR-B4, Appendix F.1).
 - Given "New project" under the cap, when the sheet opens, then it **matches D4a** with Blank canvas live and selected, the three other doors greyed with their reasons, Paper as the one Style Pack cell, and Create project inserts a row the card then shows.
-- Given the account chip, when it opens, then the popover **matches S3d** (desktop up, mobile down) with Keyboard shortcuts absent, and Sign out ends the session as in 1.4.
+- Given the account chip, when it opens, then the popover **matches S3d** (desktop up, mobile down — **amended by the owner's ruling at question 2, 2026-09-05: the phone's menu opens up from the ☰ drawer's account row, so both open up**) with Keyboard shortcuts absent, and Sign out ends the session as in 1.4 (**and since question 6, says `Signing out…` then "You've been signed out."**).
 - Given 390 wide, when the dashboard, the drawer, the dropdown, the sheet and both confirms render, then they **match S3 · mobile and S3 · mobile — menu open** and nothing scrolls sideways (UX-DR16).
 - Given two fixture users, when each exercises every action against the other's project id through the deployed site and the REST API, then nothing is visible or changed — RLS held, and `bash supabase/tests/run-rls-gate.sh` is green on every table the schema story created (the epic's exit).
 - Given every surface in every state at 1440, 834 and 390, when axe-core runs, then zero violations; Tab reaches every control with the one ring; the console shows zero CSP violations (NFR-5, NFR-3).
@@ -386,6 +388,33 @@ failed read the action re-checks anyway).
 - [x] [Review][Patch] R-93's propagation ledger still showed `new-project-sheet.tsx` unticked though the change landed in `95023994`; and the Matrix's first row still said the chip carries Free — amended inline, as the Boundaries were [reconcile-designs-decisions.md:1707 · this spec]
 - [x] [Review][Defer] The four actions' guards — the cap, the typed name, the zero-row answer — are consulted by no repeatable check: the predicates are under `node --test`, the call path only by each phase's live pass [apps/web/app/(app)/app/(authed)/projects/actions.ts:107] — deferred, pre-existing (DW-20)
 - [x] [Review][Defer] `doc-audit.py --check` runs only in the local pre-commit hook; CI never runs it, so a clone without `core.hooksPath` publishes past it [.github/workflows/ci.yml] — deferred, pre-existing (DW-21)
+
+### Review Findings — fourth review, 2026-09-06, after the third Fix run
+
+Five layers over the whole diff since the baseline (`db959b18..e8a67e26`, the code last changed in
+`50bb2579`), the third Fix run's 236 lines read first; the Real-infra verifier on the live deployment
+before any patch, every third-Fix-run claim re-executed and held with passed controls. No finding is the
+owner's to decide; none is deferred; four were dismissed as noise or as what the Boundaries ask for (the
+`?signed-out=1` hint outliving a refresh — it is a hint, the sentence is true of anyone on that page, and
+the app never sets it beside `?error=link`; "New project" during the skeleton's own instant; an
+email-less account; and the `SignOut`-inside-the-form dependency, which its own doc comment and DW-16's
+class already record).
+
+- [x] [Review][Patch] The S3d popover header still did what question 5 rejected — the address bold and `truncate`d when there is no `display_name`, one click above the row reshaped for exactly that complaint; it is `secondLineOf()`'s rule now, unclipped, in both variants [apps/web/components/shell/account-menu.tsx:203]
+- [x] [Review][Patch] `nameOf` / `secondLineOf` — the whole rule question 5 settled — lived in a `'use client'` file `node --test` cannot import; inverting one token put the address on both lines with a green gate. Moved to `lib/shell-user.ts` with `shell-user.test.ts` (null, empty, whitespace, set) [apps/web/lib/shell-user.ts]
+- [x] [Review][Patch] `signOut()` discarded the result of `supabase.auth.signOut()`: on a GoTrue error the library returns BEFORE removing the session (auth-js 2.115.0, `GoTrueClient.js:3427-3437`, read), so the cookies stay, `/sign-in?signed-out=1` bounces the still-signed-in user to the dashboard and the card would have claimed a sign-out that never happened. The error is logged (code only) and the flag withheld [apps/web/app/(app)/app/sign-in/actions.ts:75]
+- [x] [Review][Patch] The `signed-out` key was typed on both sides of the contract and pinned by nothing — a rename on one side loses the owner's sentence with `tsc`, `node --test` and `next build` all green. One constant, `sign-in/signed-out.ts`, imported by the action and the page [apps/web/app/(app)/app/sign-in/signed-out.ts]
+- [x] [Review][Patch] Sign out's double-press guard was `pending` alone — the mechanism the third review executed as insufficient for "Create project" (state that turns true on the next render, while React queues the second submit); an `inFlight` ref refuses the second click in the same tick [apps/web/components/shell/account-menu.tsx:273]
+- [x] [Review][Patch] `aria-disabled={pending}` emitted `aria-disabled="false"` on every resting render; the kit's convention is the attribute absent when it does not apply [apps/web/components/shell/account-menu.tsx:273]
+- [x] [Review][Patch] Four comments still taught the reversed rule beside the code that reverses it — the file header's "the plan badge leaves that row", `nameOf`'s "the email stands in the name slot", the Billing row's "no menu carries it twice", and the layout's "no second line" [apps/web/components/shell/account-menu.tsx:32 · :46 · :221 · apps/web/app/(app)/app/(authed)/layout.tsx:26]
+- [x] [Review][Patch] `isActive` matched a prefix, so `/sites` would light for `/sites-anything` — the same `/apply` → `/ly` shape `routing.ts:13` records having shipped; a segment now [apps/web/components/shell/shell.tsx:46]
+- [x] [Review][Patch] ⌘K chased the phone's field with a `requestAnimationFrame` the same file records as firing before React commits (the owner's finding 7); the field is focused by mounting there, and the desktop's is simply the visible one — the frame callback is gone [apps/web/components/shell/shell.tsx:203]
+- [x] [Review][Patch] The comment above `signOut()` asserted "the function now runs in `fra1`" as if the repository held it; it is a Vercel project setting made through the API, and the comment now says so and names the control [apps/web/app/(app)/app/sign-in/actions.ts:66]
+- [x] [Review][Patch] `loading.tsx` at `(authed)` announces "Loading projects…" for every child the group will hold; no consequence today (`/kit` is internal, Sites and Assets 404 statically) — recorded in the file with its upgrade path rather than a route-group move nothing yet needs [apps/web/app/(app)/app/(authed)/loading.tsx:7]
+- [x] [Review][Patch] `--color-marigold-tint-soft`'s comment named "the Kit's notice block" as a consumer; the notice Banner uses `marigold-tint` and nothing else reads the token [apps/web/app/globals.css:54]
+- [x] [Review][Patch] The page's `Row` type restated the card's `project` prop; one exported `Project` type keeps the `select(...)` and the card from drifting [apps/web/app/(app)/app/(authed)/project-card.tsx:18]
+- [x] [Review][Patch] `refusedAtCap(plan: Parameters<typeof capSentence>[0])` is `PlanId`, which the module already exports [apps/web/app/(app)/app/(authed)/projects/actions.ts:102]
+- [x] [Review][Patch] The acceptance criterion for S3d still read "desktop up, mobile down" — question 2's ruling reached the Design Notes and the code and not the criterion; amended inline, with question 6's sentence beside it [this spec]
 
 ## Spec Change Log
 
@@ -1313,6 +1342,62 @@ two scripts, `BASE=https://app.inflozo.com` — against the published Fix commit
 | **console CSP violations** | **zero** — which also identifies the local pass's as the marketing paths' (DW-18), since on localhost there is no host split and `signOut`'s `/sign-in` lands on marketing there |
 | the fixture user | **deleted**; census `projects: 1 · profiles: 2 · entitlements: 2` — the owner's two accounts and his one project |
 
+
+### The fourth review — 2026-09-06, after the third Fix run
+
+Five layers ran over the whole diff since the baseline (`db959b18..e8a67e26`, code last changed in
+`50bb2579`), the third Fix run's 236 lines read first: Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor and the Real-infra verifier, the last against the **live deployment** with keys read
+from `tools/probe/.env` by variable name and never printed. Every fixture user was deleted at the end of
+each pass.
+
+**What the Real-infra verifier re-executed on the real services, before any patch**
+
+| Claim | Result |
+|---|---|
+| CI on `50bb2579` and on HEAD `e8a67e26` (`GITHUB_TOKEN`) | run `34015251988` and run `34015515815`: `check: success` · `rls: success` · `deploy: success` |
+| production is HEAD (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) | `dpl_DXWJY31tLzzvRtLcPnPeWxf3DB6q`, **READY**, built from `e8a67e26` — two doc-only commits after the Fix, so the code serving is `50bb2579`'s; `serverlessFunctionRegion: fra1` |
+| `x-vercel-id` on `https://app.inflozo.com/sign-in` and `/` | `bom1::fra1::…` on both — the region holds |
+| the deployed shape | `/` signed out **307 → `/sign-in`** `app-nonce` · `/sign-in` **200**, `script-src 'self' 'nonce-…' 'strict-dynamic'` · `inflozo.com` **200** `marketing-static`, edge, no function region · `/sites` **404** |
+| `/sign-in?signed-out=1` with no session · `/sign-in` · `/sign-in?signed-out=0` | one `role="status"` "You've been signed out." on `mint-tint` · **none** · **none** — the value is read, not the key's presence |
+| finding 1 — the 1440 row, fixture with no `display_name` | `S | address | Free`, **195px**, address `11px rgb(110,106,100)`, `scrollWidth <= clientWidth` **true**, `clip`, badge's right edge 12px in, the only 600-weight text the initial and the badge |
+| finding 1 — the 390 drawer row · the top bar | the same at **272px** · **zero** account triggers; ☰ open focuses the DIALOG |
+| finding 1 — `display_name` set through REST, then cleared | `U | Umang Kagathara @13px | address @11px | Free`, initial `U`; cleared → one line again |
+| finding 2 — Sign out | `Signing out…` in flight; landed on `/sign-in?signed-out=1`; the mint `role="status"` card; no confirm window |
+| the untouched surface | three doors, no Duplicate (R-93); ⋯ `Rename / Duplicate / Delete`; the delete confirm centred at x=490, 199px buttons, focus on Cancel; the drawer's outside tap closes it; the phone's search focuses `q` |
+| **RLS, the negative control** (`SUPABASE_PUBLISHABLE_KEY` + each fixture's JWT) | B's JWT against A's project id **`200 []`**, B listing all → `[]`; the positive control, A's JWT → `[{"name":"Untitled project"}]` |
+| axe-core 4.12.1 (WCAG 2.0/2.1 A+AA): 1440 dashboard + menu with and without a name, the sign-in card with the notice, the delete confirm, the 390 drawer + menu | **zero violations each**; the control (drawer closed first) flagged `button-name(1)`, `image-alt(1)` |
+| console CSP violations on the app host · horizontal scroll at 1440 and 390 | **0** · none |
+| `pnpm check` (Node 24) · `python3 tools/doc-audit.py --check` | exit 0, 63 tests pass · PASS |
+| the fixtures | both deleted; census `projects 1 · profiles 2 · entitlements 2` |
+
+**The patches, executed before they were committed** — a production build of this tree (`pnpm build`,
+`next start -p 3005` with `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in its environment; the stale
+servers on 3000 and 3001 left alone) against the **real Supabase**, one fixture signed in through
+`/app/auth/confirm`, every check with its control where one exists. `pnpm check` after the patches: lint,
+typecheck and **65** tests green (`shell-user.test.ts` adds two).
+
+| Patch | Executed | Result |
+|---|---|---|
+| the popover header follows the row's rule | 1440 and 390, no `display_name` | one line only — the address at `11px`/`12px` `rgb(110,106,100)`, `text-overflow: clip`, `scrollWidth <= clientWidth`, no 600-weight text besides the initial. Control: `display_name` "Umang Kagathara" via REST → the name `13px/600` above and the address beneath; cleared afterwards |
+| `aria-disabled` absent at rest | the Sign out button at 1440 and 390 | `hasAttribute('aria-disabled')` **false**; in flight `{"text":"Signing out…","ariaDisabled":"true"}` read from the live button |
+| the double-press guard | `click(); click()` in one tick on the Sign out button, POSTs carrying `next-action` counted | **1** POST, landed on `/sign-in?signed-out=1`. Control: a single click → 1 POST, the pending state seen, the same landing |
+| ⌘K without the frame callback | `Control+K` at 1440; at 390 (one hidden field before, two after) | `document.activeElement` is `input[name="q"]` in both — the phone's field mounted and took focus itself. Control: with a ⋯ menu open the menu stays open and focus does not move |
+| `SIGNED_OUT` on both sides | `/app/sign-in?signed-out=1` with no session · `/app/sign-in` | the mint `role="status"` card · none |
+| `signOut()`'s error branch | not executable without an outage; the premise is **read** in auth-js 2.115.0 `GoTrueClient.js:3427-3437` — a non-4xx error is returned before `_removeSession()` runs | recorded, not asserted |
+| axe-core | 1440 popover open with and without a name, 390 drawer + menu | **zero violations each**; the planted control flagged `button-name(1)`, `image-alt(1)` |
+| CSP · console | the whole pass | **zero** violations on the app paths (the localhost ones are the marketing paths', DW-18, as every prior run recorded); the only console errors are the prefetch 404s of the five destinations later epics build (DW-17) |
+| the fixture | deleted; its rows `[]` | census **`projects 0 · profiles 2 · entitlements 2`** — see below |
+
+**The census read `projects 0` where `1` was expected, and it was run to ground rather than accepted.**
+The Supabase gateway log (`SUPABASE_ACCESS_TOKEN`, `edge_logs` through the management API — its own
+control: the query returns nothing unless both `iso_timestamp_start` and `iso_timestamp_end` are given)
+shows the fixture teardown from this machine at 06:10:50 UTC and the census `projects 1` at 06:10:51; then
+at **06:11:44** a `DELETE /rest/v1/projects` **204**, at 06:11:57 a `POST` 201 and at **06:12:05** a second
+`DELETE` 204, all from a **Vercel `fra1` function address** — the deployed site — while this machine was
+building and held no session there. The owner's account shows `last_sign_in_at` **06:11** today: he
+deleted his one project on `app.inflozo.com`, made another and deleted that, during the review. No fixture
+row remains anywhere; the `0` is his, not a leak.
 
 ## Questions for the owner
 

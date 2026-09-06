@@ -10,7 +10,8 @@ import { Globe, Image, MenuLines, Plus, Projects, Search, X } from '@/components
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
 import { stripApp } from '@/routing'
-import { AccountMenu, type ShellUser } from './account-menu'
+import { AccountMenu } from './account-menu'
+import type { ShellUser } from '@/lib/shell-user'
 
 /* ──────────────────────────────────────── S3 Dashboard.dc.html — the shell, 1440 and 390.
 
@@ -44,7 +45,8 @@ const NAV = [
  * path the router reports can differ by exactly that prefix. `stripApp` is `routing.ts`'s own
  * strip, so "am I on the dashboard" is one answer at both addresses and one function under test.
  */
-const isActive = (path: string, href: string) => (href === '/' ? path === '/' : path.startsWith(href))
+// A segment, never a prefix — `routing.ts:13` records `startsWith('/app')` eating /apply.
+const isActive = (path: string, href: string) => path === href || (href !== '/' && path.startsWith(`${href}/`))
 
 /** The one opener: the button is in the layout and the sheet is rendered by the page. */
 export const openNewProject = () => {
@@ -201,12 +203,12 @@ export function Shell({
       // …nor under an open menu: the field would take focus and leave the popover orphaned.
       if (document.querySelector('dialog[open], :popover-open')) return
       event.preventDefault()
+      // At 390 the field is focused BY BEING MOUNTED (`autoFocus`, see SearchField) — a
+      // `requestAnimationFrame` here fired before React committed it (the owner's finding 7).
+      // At 1440 the field is already on screen, so it is simply the visible one.
       setSearchOpen(true)
-      // after the mobile field has been rendered by the state change above
-      requestAnimationFrame(() => {
-        const fields = [...document.querySelectorAll<HTMLInputElement>('input[name="q"]')]
-        fields.find((field) => field.offsetParent !== null)?.focus()
-      })
+      const fields = [...document.querySelectorAll<HTMLInputElement>('input[name="q"]')]
+      fields.find((field) => field.offsetParent !== null)?.focus()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

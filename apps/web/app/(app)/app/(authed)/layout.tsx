@@ -22,9 +22,10 @@ export default async function AuthedLayout({ children }: { children: ReactNode }
 
   const supabase = await supabaseServer()
   const [{ data: profile, error: profileError }, { plan }] = await Promise.all([
-    // `profiles.display_name` is the chip's name. Nothing sets it until Epic 2, and until then
-    // the email stands in the name slot with no second line — the row itself exists from
-    // signup (the `auth.users` trigger), so this is a null column, not a missing row.
+    // `profiles.display_name` is the chip's bold line. Nothing sets it until Epic 2, and until
+    // then there is no bold line and the email sits on the small one (`lib/shell-user.ts`) —
+    // the row itself exists from signup (the `auth.users` trigger), so this is a null column,
+    // not a missing row.
     supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle(),
     resolveEntitlement(user.id),
   ])

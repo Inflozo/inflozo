@@ -8,7 +8,10 @@ import { ring } from '@/components/kit/greyed'
 import { Book, Card, Lightbulb, Logout, Person } from '@/components/kit/icons'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import type { PlanId } from '@/lib/plan'
+import { nameOf, secondLineOf, type ShellUser } from '@/lib/shell-user'
 import { signOut } from '@/app/(app)/app/sign-in/actions'
+
+export type { ShellUser }
 
 /* ───────────────────────────────────────────────── S3 Dashboard.dc.html — S3d, both halves.
 
@@ -27,9 +30,9 @@ import { signOut } from '@/app/(app)/app/sign-in/actions'
    header avatar". They were not the same control — the top bar's opened the menu and the
    drawer's was a label — so removing the top one alone would have taken Account settings,
    Billing, Suggestions, Docs and Sign out off the phone. The ruling merges them instead: one
-   initial on a phone, inside ☰, and it is the trigger. His two riders are here too — the row
-   shows the display name if there is one and OTHERWISE THE WHOLE EMAIL, never clipped to an
-   ellipsis, and the plan badge leaves that row because the menu it opens already carries it.
+   initial on a phone, inside ☰, and it is the trigger. His rider survives: the whole address,
+   never clipped to an ellipsis. (His other rider that day — no badge on the row — was reversed
+   by his third test; the paragraph above is the settled shape.)
 
    KEYBOARD SHORTCUTS IS ABSENT, and the frame draws it. There is no editor yet and therefore
    nothing for the sheet to list — a control that could NEVER act here is absent, not greyed
@@ -40,12 +43,6 @@ import { signOut } from '@/app/(app)/app/sign-in/actions'
    what `popover="auto"` buys — and a popover is in the top layer, so the drawer's menu still
    opens ABOVE the modal `<dialog>` it lives inside; `lib/menu.ts` supplies only the placement
    and the arrow keys. */
-
-export type ShellUser = { email: string; displayName: string | null }
-
-/** `profiles.display_name` while E2 sets it; until then the email stands in the name slot. */
-export const nameOf = (user: ShellUser) => user.displayName?.trim() || user.email
-export const secondLineOf = (user: ShellUser) => (user.displayName?.trim() ? user.email : null)
 
 /**
  * The frame's avatar is Orbit Weekly's brand — the fixture PUBLICATION's, worn by its favicon
@@ -200,25 +197,27 @@ export function AccountMenu({
           className={`mb-1 flex items-center border-b border-line p-[10px_12px] ${dense ? 'gap-[10px]' : 'gap-3'}`}
         >
           <Avatar user={user} size={dense ? 32 : 36} />
+          {/* The trigger's rule, again: no name → the address on the small line alone, and
+              nothing truncated — the header sat one click above the row with the address bold
+              and cut to an ellipsis, the complaint the row was reshaped for (review, 2026-09-06). */}
           <span className="flex min-w-0 flex-col">
-            <span className={`truncate font-semibold text-ink ${dense ? 'text-ui-dense' : 'text-[15px]'}`}>
-              {name}
-            </span>
             {second ? (
-              <span className={`truncate text-ink-soft ${dense ? 'text-helper-caption' : 'text-control-label'}`}>
-                {second}
+              <span className={`font-semibold break-all text-ink ${dense ? 'text-ui-dense' : 'text-[15px]'}`}>
+                {name}
               </span>
             ) : null}
+            <span className={`break-all text-ink-soft ${dense ? 'text-helper-caption' : 'text-control-label'}`}>
+              {second ?? name}
+            </span>
           </span>
         </div>
 
         <Row href="/account" dense={dense} onNavigate={follow} icon={<Person size={iconSize} />}>
           Account settings
         </Row>
-        {/* The badge rides the Billing row in BOTH menus. The 390 frame drew it in the header
-            instead, and the owner's ruling took it off the drawer's account row on the grounds
-            that "we are already showing it in the menu that opens along with Billing and Plan
-            row" — so the row he named is the one place it lives, and no menu carries it twice. */}
+        {/* The badge rides the Billing row in BOTH menus — the 390 frame drew it in the header
+            instead, and the owner named this row for it (2026-09-05). Since his third test it
+            is on the trigger row as well: he asked for it in both places. */}
         <Row
           href="/billing"
           dense={dense}
@@ -267,12 +266,17 @@ export function AccountMenu({
  */
 function SignOut({ dense, iconSize }: { dense: boolean; iconSize: number }) {
   const { pending } = useFormStatus()
+  // `pending` turns true on the NEXT render, and React queues form actions — the sheet's
+  // "Create project" made three rows from three submits in one tick before it got a ref
+  // (review, 2026-09-06). The redirect replaces the document, so the ref never needs resetting.
+  const inFlight = useRef(false)
   return (
     <button
       type="submit"
-      aria-disabled={pending}
+      aria-disabled={pending || undefined}
       onClick={(event) => {
-        if (pending) event.preventDefault()
+        if (inFlight.current) event.preventDefault()
+        inFlight.current = true
       }}
       className={`flex w-full items-center gap-[10px] rounded-sm text-left font-medium text-ink transition-colors hover:bg-paper ${
         dense ? 'p-[9px_12px] text-ui-dense' : 'p-[13px_12px] text-[15px]'

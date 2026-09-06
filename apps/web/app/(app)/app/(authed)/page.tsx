@@ -8,7 +8,7 @@ import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
 import { filterProjects } from '@/lib/projects'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { NewProjectSheet } from './new-project-sheet'
-import { ProjectCard } from './project-card'
+import { ProjectCard, type Project } from './project-card'
 import { DuplicateScope } from './project-menu'
 
 /* ───────────────────────────────────────── S3 Dashboard.dc.html — S3a, S3b and S3c.
@@ -30,8 +30,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-type Row = { id: string; name: string; style_pack: unknown; updated_at: string }
-
 export default async function Dashboard({
   searchParams,
 }: {
@@ -52,7 +50,7 @@ export default async function Dashboard({
     resolveEntitlement(user.id),
   ])
 
-  const projects: Row[] = data ?? []
+  const projects: Project[] = data ?? []
   // A FAILED READ IS NOT AN EMPTY ACCOUNT. `data ?? []` told a user with projects that they had
   // none — S3b's first-run illustration over their own work — and cleared `atCap` with it, so
   // the plan cap silently lifted at the same moment (review, 2026-09-05).

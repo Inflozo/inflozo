@@ -4,6 +4,10 @@
  * `Skeleton`: that one is the Layers row's shape, for a 280px sidebar.
  *
  * Three, because three is a row of the grid at 1440 and enough of one at 390.
+ *
+ * ponytail: this boundary covers every `(authed)` child, and today the dashboard is the only
+ * page with a shape (`/kit` is internal; Sites and Assets 404). The first sibling page that
+ * needs its own skeleton moves the dashboard and this file into their own route group.
  */
 export default function Loading() {
   return (
