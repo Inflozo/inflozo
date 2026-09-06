@@ -1690,5 +1690,17 @@ will do it."* Executed against the Vercel API with `VERCEL_TOKEN`:
   complaint" bullet now names `fra1`, the complaint and the two APIs' readings. `MEASUREMENTS.md` and
   `STRESS-TEST-R4.md` also say `iad1` and are **not** edited: both are `record`, and what they measured was
   measured in `iad1`.
-- **Still to do in the Fix run:** the same five requests after the deployment, both medians in
-  `## Verification`, and the spine's bullet given the after-figure.
+- **The control passed, 2026-09-06.** CI run for `6aa42505` **success**; Vercel production deployment
+  `dpl_6w6AwdwLATwnYgVzc2sNLcXAgo1N` **READY** for that commit. The same five requests to
+  `https://app.inflozo.com/sign-in` now answer `bom1::fra1::…` — **`fra1`, in the header, on the live
+  site**, which is the thing the setting alone did not prove. `https://app.inflozo.com/` still 307s to
+  `/sign-in`, also from `fra1`, and `https://inflozo.com/` still answers 200 from the edge with no
+  function region in its header — one deployment, both domains, unchanged (AD-26).
+- **After, same five requests, same machine:** TTFB **0.509 · 0.366 · 0.375 · 0.379 · 0.505 s**, median
+  **0.379 s** against the before-median of **0.457 s** — **78 ms off a page that never touches the
+  database**, which is purely his browser's trip to the compute being shorter (Mumbai → Frankfurt rather
+  than Mumbai → Washington). **The larger half is not in this figure and cannot be measured from outside
+  the session:** every dashboard render and every server action makes one or more calls to Supabase, and
+  those calls no longer cross the Atlantic at all — function and database are now in one AWS region. The
+  measurement of that half is the owner's next test of the dashboard and of Sign out, which is what
+  finding 2 is about.
