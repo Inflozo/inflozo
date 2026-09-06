@@ -1655,6 +1655,17 @@ client-level block. **DW-22's conclusion is unchanged** — no key here can read
 | `pnpm build` | route table unchanged — `○ /` · `○ /_not-found` · `ƒ /app` · `ƒ /app/auth/confirm` · `ƒ /app/kit` · `ƒ /app/sign-in` · `ƒ Proxy (Middleware)` |
 | `python3 tools/doc-audit.py --check` twice | **PASS, 0 warnings** both times |
 
+**The patched code published, and re-checked on the real stack** — the patches above were reviewed
+before they were deployed, so R-82 asks for them again after CI published them.
+
+| Check | Result |
+|---|---|
+| CI on the Review commit `7c620d6e` (`GITHUB_TOKEN`) | run `34020933470` — `rls: success` · `check: success` · `deploy: success` |
+| Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) | `dpl_DdRAgTZ3uBdojTtJfhVReTEreCcB`, state **READY**, production, built from **`7c620d6e`** |
+| the deployed shape, unchanged by this review | `/sign-in` **200** `x-inflozo-policy: app-nonce` · `/` signed out **307 → /sign-in** · `inflozo.com` **200** `marketing-static` |
+| the one user-visible copy change is really live | the throttled card's **"a moment ago, so we haven't sent another…"** is in the served chunk `/_next/static/chunks/1q3qy91ej38qa.js` |
+| **control** — the wording it replaced is gone | **PASSED** — "less than a minute ago, so we haven't sent another" appears in **no** chunk the sign-in page loads |
+
 ## Questions for the owner
 
 **1. When you press Tab through the dashboard, your account chip is reached with the left column rather than last. Is that right?**
