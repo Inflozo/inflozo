@@ -120,7 +120,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | Surface | Frame | Reached from | Purpose |
 |---|---|---|---|
 | **Dashboard** | `S3 Dashboard.dc.html` S3a · S3b empty · S3c Free | sign-in, logo | Project cards, asset meter, what's-new |
-| **New Project Sheet** | `D4 Dashboard Sheets and Blocks.dc.html` D4a · D4b Free at the cap *(from S2a + B23a)* | Dashboard "New project" | FR-B2's four paths: Starter · Blank · Duplicate · Redesign proposals |
+| **New Project Sheet** | `D4 Dashboard Sheets and Blocks.dc.html` D4a · D4b Free at the cap *(from S2a + B23a)* | Dashboard "New project" | FR-B2's creation paths: Starter · Blank · Redesign proposals. **Duplicate is not one of them** — owner ruling R-93 (2026-09-06) keeps duplicating on a project's ⋯ menu (FR-B3). D4a still draws the door; it is not built, and the export is not edited (R-74) |
 | **Account Menu** | S3d | avatar | Account settings · Billing · Suggestions · Docs · Shortcuts · Sign out |
 | **Notifications** | S3e + B21 | bell | Deploy outcomes, site health, compatibility notices, billing, library updates (FR-B7) |
 | **Sites** | `S11 Sites.dc.html` S11a · S11c Free | nav | Connected sites with health badges |

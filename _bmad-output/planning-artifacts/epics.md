@@ -63,7 +63,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 **FR-B · Projects & Dashboard**
 
 - **FR-B1** Dashboard project cards: a static Style-Pack-derived placeholder image, name, linked-site or sample-content badge, last-deploy chip, updated-at. Auto-captured thumbnails are deferred out of v1.
-- **FR-B2** Create project from Starter template, Blank canvas, Duplicate, or Redesign proposals; Style Pack chosen at creation.
+- **FR-B2** Create project from Starter template, Blank canvas, or Redesign proposals; Style Pack chosen at creation. Duplicate is **not** one of this surface's paths (owner, 2026-09-06, ruling **R-93**) — the capability stays on a project's ⋯ menu, FR-B3.
 - **FR-B3** Rename, duplicate, delete (type-name-to-confirm) on every project, with the live-theme warning and the snapshot-survives rule.
 - **FR-B4** Plan caps enforced at creation time with a contextual upgrade prompt (Free 1, Pro 25).
 - **FR-B5** A project targets at most one connected site at a time, switchable; unlinked projects render the bundled sample dataset.
@@ -7530,7 +7530,7 @@ is worse than none**
 
 **FRs:** FR-B1. · **Frame:** `S3 Dashboard.dc.html` S3a. · **Owner test:** yes.
 
-### Story 13.6: The New Project Sheet — all four creation paths
+### Story 13.6: The New Project Sheet — every creation path FR-B2 names
 
 As a user starting something new,
 I want every way in from one place,
@@ -7540,13 +7540,19 @@ So that starting is one decision rather than four routes.
 
 **Given** the "New project" action
 **When** the sheet opens
-**Then** it offers all four paths: **Starter template · Blank canvas · Duplicate of an existing project ·
-Redesign proposals** (for connected sites)
+**Then** it offers every path FR-B2 names: **Starter template · Blank canvas · Redesign proposals**
+(for connected sites)
+**And** **the Duplicate door is not built and does not return** — owner ruling **R-93** (2026-09-06):
+duplicating a project is an action on a project already in front of the user and lives on its ⋯ menu
+(FR-B3), so D4a's fourth door and the project picker inside it are deliberately not implemented
 **And** the **Style Pack is chosen at creation and is changeable anytime**
 **And** at the Free cap the sheet opens on the Upgrade Sheet path (UX-DR6)
-**And** the states match D4a and D4b at the Free cap.
+**And** the states match D4a and D4b at the Free cap **except that door**, which the export still draws
+and this story does not build — the export is never edited (R-74), and Story 1.5's spec is where the
+override was first recorded and executed.
 
-**FRs:** FR-B2. · **Frame:** `D4 Dashboard Sheets and Blocks.dc.html` D4a · D4b. · **Owner test:** yes.
+**FRs:** FR-B2. · **Frame:** `D4 Dashboard Sheets and Blocks.dc.html` D4a · D4b, less the Duplicate door
+(R-93). · **Owner test:** yes.
 
 ### Story 13.7: The connected-sites strip, the asset meter and what's new
 

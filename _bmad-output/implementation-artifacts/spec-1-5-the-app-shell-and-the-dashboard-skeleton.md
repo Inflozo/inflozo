@@ -115,12 +115,17 @@ from the project's Style Pack, and the only pack that exists today is Paper.
   carries its reason on a third line, 11.5px marigold-text with the frame's alert-circle at 12px:
   "Starters aren't here yet." · "Duplicate a project from its ⋯ menu." · "Connect a Ghost site first."
   (the frame's own sentence). The frame's own caption is the rule: *all four doors stay drawn and each
-  carries its reason.* Below a `line` rule (padding-top 18): **"Style Pack"** 12px/500 ink-soft with
+  carries its reason.* **AMENDED BY THE OWNER, 2026-09-06 — ruling R-93, and this is the renegotiation the
+  freeze above asks for: the Duplicate door is removed outright, not greyed.** Duplicating is an action on
+  a project already in front of the user and lives on its ⋯ menu (FR-B3), which is where this story built
+  it; three doors remain — Blank canvas live and selected, Start from a starter and Redesign one of my
+  sites greyed with their reasons. D4a's caption still governs the doors that *are* drawn. The export is
+  untouched (R-74) and FR-B2 is amended to match. Below a `line` rule (padding-top 18): **"Style Pack"** 12px/500 ink-soft with
   **"Change it any time, in any project."** 11px ink-soft at the right, and a three-column grid (gap 6)
   holding one cell — the kit's `PackCell` for **Paper**, active (the coral ring), "Ag" in Georgia,
   its three dots — with no pencil and no New pack cell (the pack editor is E6's). Footer: the kit's
   `Button` ghost 36 "Cancel" and `Button` coral 44 "Create project" (the frame's 14px/600 label).
-- **D4b, at the cap**: the same sheet with **all four doors greyed** (gap 9), each carrying a pill at
+- **D4b, at the cap**: the same sheet with **every door greyed** (gap 9 — the three R-93 leaves), each carrying a pill at
   the right instead of a reason — **"Free includes 1 project"** 11.5px marigold-text on marigold-tint,
   `rounded-pill`, padding 3/10; no Style Pack row; between the doors and the footer the **upgrade
   block** — `border marigold-line`, `surface`, `rounded`, padding 14/16, gap 13: **"Free includes 1
@@ -501,8 +506,9 @@ the same pair — so a real user's avatar takes the frame's other avatar treatme
 (Maya's portfolio's "M"). The only addition is `shadow-modal`, because the export draws every modal at
 .25 and the token layer had no name for it.
 
-**Why the doors are drawn and not dropped.** D4a's own caption is a design instruction: *all four
-doors stay drawn and each carries its reason.* The cut line makes three of them another epic's, so they
+**Why the doors are drawn and not dropped.** *(Amended 2026-09-06 by R-93: the Duplicate door is the one
+exception and is dropped, on the owner's ruling. What follows governs the three that remain.)* D4a's own
+caption is a design instruction: *all four doors stay drawn and each carries its reason.* The cut line makes three of them another epic's, so they
 are greyed in the frame's treatment with a one-sentence reason in the frame's slot — the reason is the
 product's way of saying "not here yet" (UX-DR3) and the frame's own sentence ("Connect a Ghost site
 first.") is reused where it is true today. Two controls that are absent rather than greyed — the
@@ -1000,6 +1006,36 @@ which.
 
 Whichever you pick, the design file is **not** edited: the drawing keeps four doors and this spec is the
 record that you ruled otherwise (R-74). Nothing is blocked by this question — the Fix run can start now.
+
+**Ruled (owner, 2026-09-06): option 1 — "Out for good — three doors, duplicating only on a project's ⋯
+menu."** Recorded as standing ruling **R-93** in `reconcile-designs-decisions.md` §A18, because it changes
+what a surface *does* and therefore belongs to the PRD rather than to a story (build-sequence standing
+rule 6: the PRD decides behaviour, the export decides what a surface is built from).
+
+What it binds:
+
+- **This story removes the door.** `DOORS` in `new-project-sheet.tsx` loses `Duplicate an existing
+  project`; the sheet lists **Blank canvas** (live, selected), **Start from a starter** and **Redesign one
+  of my sites**, each greyed with its reason as before. At the cap the same three carry the plan's pill.
+  Nothing else about the sheet changes.
+- **Duplicating is not lost and is not moved.** It is already on a project card's ⋯ menu, built and tested
+  in this story, and that is now its only entry point — which is the owner's reason: *"they can directly
+  click on the three dots menu of a project and click duplicate."*
+- **Story 13.6 does not put it back.** Its heading, its acceptance criteria and its frame line in
+  `epics.md` are amended to name the paths FR-B2 names and to say in as many words that D4a's fourth door
+  and the project picker inside it are deliberately not implemented.
+- **FR-B2 is amended, and it is the reason this needed a ruling rather than a fix.** The PRD listed
+  Duplicate as one of the creation paths, so removing the door alone would have left an approved decision
+  contradicting the built product — the case standing rule 6 says to stop and ask on. FR-B2 now names the
+  paths this surface offers and states where duplicating lives instead; FR-B3, which is where the ⋯ menu's
+  duplicate was defined all along, is untouched.
+- **The export is not edited.** `D4a` and `D4b` keep four doors, `EXPERIENCE.md` Appendix A keeps the
+  prompt they were drawn from exactly as it was run, and `ux-designs/prototype/` keeps showing the drawn
+  frame — all three are records of the design, and the design is unchanged. R-93 is the record that the
+  product diverges from it here, deliberately.
+
+Propagated the same day: `prd.md` FR-B2 and §8 E13 · `epics.md` FR-B2 and Story 13.6 · `EXPERIENCE.md`
+§ Information Architecture · this spec's Boundaries · `reconcile-designs-decisions.md` §A18.
 
 ## Owner's manual test
 

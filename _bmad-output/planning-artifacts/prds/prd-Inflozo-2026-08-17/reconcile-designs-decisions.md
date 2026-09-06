@@ -1680,6 +1680,37 @@ belongs in `packages/library`.
 
 ---
 
+## A18 · Step 7 — Story 1.5's owner test, one ruling on the New project sheet, 2026-09-06
+
+Taken during the owner's second test of the deployed dashboard. He compared the New project window with
+`S2a` — the First Run page, which is not that window's frame — and, having read the greyed Duplicate
+door's own reason line, ruled the door out: *"Remove option of 'Duplicating a project' as they can
+directly click on the three dots menu of a project and click duplicate."* Two approved decisions pointed
+the other way — D4a's caption (*all four doors stay drawn and each carries its reason*), which R-33 and
+R-68 generalise, and **FR-B2**, which lists Duplicate as one of the creation paths — so the scope of the
+removal went back to him in R-83's shape: this window only, or Story 13.6 too. He chose out for good.
+
+**R-93 — the New project sheet offers the paths FR-B2 names, and duplicating is not one of them.** The
+owner ruled *"Out for good — three doors, duplicating only on a project's ⋯ menu."* The **capability is
+untouched**: duplicate stays exactly where FR-B3 defines it, on a project card's ⋯ menu, built and tested
+in Story 1.5. What changes is that it is no longer a *creation path* — a duplicate is an action on a
+project already in front of the user, not a way to start from nothing — so the sheet lists Blank canvas,
+Start from a starter and Redesign one of my sites, and **Story 13.6 does not restore the fourth door or
+the project picker drawn inside it**. This is a behaviour ruling, so it lands in the PRD (build-sequence
+standing rule 6: the PRD decides what a surface does, the export decides what it is built from);
+**`D4a` and `D4b` keep four doors and are not edited** (R-74), and this ruling is the record that the
+product diverges from the drawing here on purpose.
+- Targets: ✅ `prd.md` FR-B2 (the path list, and where duplicating lives instead) · ✅ `prd.md` §8 E13
+  ("all four creation paths" → every path FR-B2 names) · ✅ `epics.md` the FR-B2 restatement · ✅
+  `epics.md` Story 13.6 (heading, acceptance criteria and frame line) · ✅ `EXPERIENCE.md`
+  § Information Architecture, the New Project Sheet row · ✅ Story 1.5's spec (Boundaries, the Design
+  Note, and the ruling under `## Questions for the owner`) · ⬜ `new-project-sheet.tsx` — the Fix run's,
+  with the owner's other two findings. **Deliberately not touched:** the export (R-74), `EXPERIENCE.md`
+  Appendix A's D4 prompt (the record of what was actually run against Claude Design) and
+  `ux-designs/prototype/` (5b proves the export, and the export is unchanged).
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
