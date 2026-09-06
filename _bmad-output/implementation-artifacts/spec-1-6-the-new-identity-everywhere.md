@@ -208,7 +208,7 @@ the logo is simply drawn.
 2. **On the Sign In page**, once, when the page loads. Every visitor sees it every time they sign in.
 3. **On the marketing home page now**, in the placeholder that stands there until Epic 11 builds the real one.
 
-*This spec is built on option 1. Ruling for 2 or 3 adds one task to Dev, nothing else moves.*
+Ruled: option 1 — nowhere for now (owner, 2026-09-06). Nothing animates in this story; the animation waits for Epic 11.
 
 ## Owner's manual test
 
