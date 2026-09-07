@@ -2,10 +2,10 @@
 title: 'Story 2.2 — See, rename and revoke my passkeys'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-review'
+status: 'done'
 baseline_commit: '51cfb9740508aa11da170bc5b85022e3745fd6c8'
 review_loop_iteration: 2
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
@@ -642,3 +642,5 @@ Proved on a real build against the real Supabase project under `## Verification`
 control: the same measurement against a build of the OLD code fails, which is how the numbers above were
 taken. It goes back through Review and Deploy, and then it is yours to test again — **step 5** of the
 manual test above is the one to look at, and it now says exactly what you should see.
+
+**Re-tested on app.inflozo.com, 2026-09-07 — passed.** No further findings.
