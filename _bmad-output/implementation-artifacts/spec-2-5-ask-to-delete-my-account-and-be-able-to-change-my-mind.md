@@ -2,9 +2,9 @@
 title: 'Story 2.5 — Ask to delete my account, and be able to change my mind'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'c6c35b8f0b049bbf3e5b9d1bb6b4aa8bb1790d18'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
@@ -422,6 +422,37 @@ reworded so it no longer restates a count.*
   (closed, dialog open), on `/restore` (both states) and on `/?restored=1`, at 1440 and 390, then all
   green and zero violations
 
+### Review Findings
+
+Code review 2026-09-07, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). The two Dev commits were already live — Vercel's production deployment on `3caaa7a9`
+— so the verifier drove the committed harness against `app.inflozo.com` four times and re-ran the local
+gates: every behavioural claim held on the deployed site, and the one failing step was the harness's own
+timing race. No decision for the owner; every patch applied in the review; nothing deferred.
+
+- [x] [Review][Patch] The confirm's sentence says "and 0 assets" for an account with projects and no assets — and for one whose asset count could not be read, because `countOf` answers 0 for a failed read [apps/web/app/(app)/app/(authed)/account/deletion-rule.ts:57] — the asset clause is now left out when the count is below one, with the test
+- [x] [Review][Patch] Cancel after typing the phrase left a confirm that REOPENED ARMED, one click from the irreversible thing [apps/web/app/(app)/app/(authed)/account/danger-card.tsx:120] — `onClose` clears the typed phrase; the harness's `rearm` step keeps it so
+- [x] [Review][Patch] The dialog's body sentence — the window, the counts, "cannot be undone" — was not announced with the dialog (only `aria-labelledby`) [apps/web/app/(app)/app/(authed)/account/danger-card.tsx:118] — `aria-describedby` on the `<dialog>`, an id on the `<p>`
+- [x] [Review][Patch] Restore after another tab (or a double press) had already restored answered `false` and said "The 14 days have ended and this account is being deleted" about a safe account [apps/web/app/(app)/app/(authed)/account/actions.ts:513] — a `false` re-reads `deleted_at`; not pending means restored, and it redirects like the first call
+- [x] [Review][Patch] Anything thrown inside the email step after the window opened would reach the error boundary and tell the user the deletion failed [apps/web/app/(app)/app/(authed)/account/actions.ts:490] — the whole step is fenced in a try/catch that logs
+- [x] [Review][Patch] A session with no address skipped the send silently, so the Deploy log could not tell a skip from a lost send [apps/web/app/(app)/app/(authed)/account/actions.ts:503] — one log line
+- [x] [Review][Patch] A refused send threw Resend's reason away and logged a bare status — what the owner would be debugging his inbox from [apps/web/lib/email.ts:63] — the envelope carries `name: message` (no address, no key) and the action logs it
+- [x] [Review][Patch] The snapshot list had no order, so two themes could swap places between the email and the page [apps/web/app/(app)/app/restore/page.tsx:60 · account/actions.ts:487] — `captured_at` descending in both reads
+- [x] [Review][Patch] `/restore` dropped both read errors: a transient profiles fault read as "not pending" and bounced the account to the door and back with no log line [apps/web/app/(app)/app/restore/page.tsx:47] — both reads log, as the account file's do
+- [x] [Review][Patch] A row whose OBJECT is gone answered 502 "Could not prepare that download", inviting retries that never succeed [apps/web/app/(app)/app/snapshots/[id]/download/route.ts:66] — Storage's `NoSuchKey` (read off the wire: HTTP 400, `statusCode "404"`) is a 404
+- [x] [Review][Patch] Every download was served as `theme.zip`, so a person with two sites choosing which original theme to keep got `theme.zip` and `theme (1).zip` [apps/web/app/(app)/app/snapshots/[id]/download/route.ts:61] — the signed URL names the file `<site>-<theme>.zip`
+- [x] [Review][Patch] `supabaseAdmin`'s docstring still said "the one read no session can make" while the test enforces two readers — propagate, never localise [apps/web/lib/supabase/server.ts:63] — the docstring names both and how a third is added
+- [x] [Review][Patch] The door test read the FIRST `.select(` in the layout, whichever table it belonged to [apps/web/server-wiring.test.ts:169] — anchored on `from('profiles')`
+- [x] [Review][Patch] Only the site title was proved escaped in the email; the theme name (a Ghost theme author's text) and the `sites: null` fallback were not [apps/web/deletion-email.test.ts:69] — both asserted
+- [x] [Review][Patch] The `least(…)` branch — a snapshot already due EARLIER keeps its date — had no control: both fixture snapshots were seeded with `purge_after` null, so a function stamping the deadline unconditionally passed [RLS-TEST.sql, the 2.5 block] — a second site of A's on a 3-day clock, asserted unchanged; restore asserted to clear EVERY snapshot of A's; `supabase/tests/rls.sql` re-copied, gate green
+- [x] [Review][Patch] AC 7 says each new assertion was seen to FAIL once and the Dev record held six of eighteen — seventeen breaks now executed in one container, each tripping its own assertion (`## Verification`, the review run); the two left are downstream of a recorded control and reachable only by a function that lies about its own outcome
+- [x] [Review][Patch] The harness's `frame` step measured at `load`, before the Suspense skeleton swapped the card in: `h: 0` on three of four live runs with every colour right [tools/probe/run-verify-account-deletion.py, `frame`] — waits for the button to be visible first
+- [x] [Review][Patch] The harness's one real send went to an address nobody opens and had no `--to`, which the sibling harness carries for exactly this (DW-22) [tools/probe/run-verify-account-deletion.py] — `--to ADDRESS` makes A that inbox, with the sibling's collision refusal; the catalogue row says so
+- [x] [Review][Patch] Three things the harness never observed where they render, so each could be deleted with every check green: the sentence with real counts (the fixture had no project), the server's own phrase check (`armed` proves the CLIENT blocked the POST), and `/restore`'s two guards (a source regex only) [tools/probe/run-verify-account-deletion.py] — five steps added: `sentence` (one project seeded), `rearm`, `server-phrase` (the captured server-action POST replayed with a wrong phrase must answer `wrong_phrase`), `restore-signed-out`, `restore-clean`
+- [x] [Review][Patch] Deploy step 4 read the log for `deletion: email sent` alone; the failure the unconfigured-send test exists for prints `email: not configured` [this spec, `## Verification`] — the step names both lines
+
+Dismissed as noise or as the spec's own decision, nine: re-guarding actions on `deleted_at` (a **Never**); a `null` from a missing profiles row (the row exists from signup); an unparseable `captured_at` or deadline reaching the fallback text (`captured_at` is `not null default now()`; the deadline is the function's own return); `deleted_at` set with `purge_after` null (one statement stamps both); naming the snapshots in the confirm sentence (the frozen sentence is the spec's, and `/restore` lists them the moment the window opens); the harness not being in CI (harnesses run at Deploy by hand, by design); the `window_closed` strip (it needs the deadline to pass between render and click; the page's no-button state is proved); "156 tests" versus the verifier's 159 (`apps/web` alone versus the whole repository); and a suggestion to re-document the deploy order that the record already carries.
+
 ## Spec Change Log
 
 1. **The migration's in-body comment had to come out of the body, and the gate is what said so.**
@@ -461,6 +492,34 @@ reworded so it no longer restates a count.*
    (the task list says "Run `## Verification` on the real infrastructure"). Restored from `HEAD` and
    re-applied anchored on the heading at the start of a line. Nothing in the frozen block, the
    owner's questions or his manual test was touched; all eleven `##` sections are present.
+
+8. **Review, 2026-09-07 — the sentence, the dialog and the restore each lost a way to lie.** `deletionSentence`
+   drops the asset clause below one asset (a failed count read as 0 and rendered "and 0 assets" on the
+   irreversible confirm); the confirm clears the typed phrase on close, because Cancel after typing it
+   reopened one click from deletion; and `restoreAccount` reads the profile before calling a `false` a
+   closed window — a second tab or a double press had restored it already, and "the 14 days have ended"
+   was a lie about a safe account. Each has its test or its harness step (`rearm`, `sentence`).
+9. **The download route names the file and honours a missing object.** Storage served every snapshot as
+   `theme.zip`; the signed URL now carries `download: <site>-<theme>.zip`, which is why the select gained
+   `theme_name, sites(title)` beyond the Code Map's `storage_path`. And `NoSuchKey` — executed against
+   the live bucket: HTTP 400 with `statusCode "404"` and that code — is a 404, not a 502 that invites retries.
+10. **The RLS block gained the control the migration's comment promised.** `least(…)` never lengthens a
+    snapshot's earlier FR-C6 clock, and nothing proved it: both fixture snapshots were seeded null. A's
+    second site now carries a snapshot three days out, asserted unchanged by the deletion; and the restore
+    assertion counts every snapshot of A's rather than one id. The gate's copy re-copied byte-for-byte.
+11. **AC 7 was met literally, not only in spirit.** The Dev run broke six clauses; the review broke every
+    assertion it could reach — seventeen, in one container, each tripping its own line (the table under
+    `## Verification`). Two remain unbroken by construction: "the second call moved the deadline" sits
+    behind "re-opened the window" and "a refused restore cleared the profile anyway" behind "answered true
+    after the deadline"; each needs a function that changes the row and reports the opposite, and neither
+    is a defect a real edit produces. Said here so the next reader does not count them as a gap.
+12. **The harness measures after the skeleton, and proves three more things where they render.** `frame`
+    read `h: 0` on three of four live runs — `loading.tsx` is a Suspense skeleton and the card was still
+    in the hidden streamed segment at `load` — so it waits for the button to be visible. And three claims
+    a source regex or a pure test alone was holding are now executed against the deployed site: the
+    sentence with a real project count, the server's own phrase check (the captured server-action POST
+    replayed with a wrong phrase), and `/restore` signed out and for a restored account. `--to` lands the
+    run's one real send in an inbox a human can open, as the sibling harness does.
 
 ## Design Notes
 
@@ -564,20 +623,88 @@ function body that `SCHEMA.sql` did not carry produced `SCHEMA DRIFT` with the f
 (Spec Change Log 1). That is the gate proving the migration and the architecture describe one
 database, not an assertion that they do.
 
+### Review run, 2026-09-07 — what the review executed, and what it found
+
+**On the deployed site.** Production was `dpl_2ZPeHBDXpNXquMbdebXKN1EkWvP6`, the Dev commit `3caaa7a9`, so
+the committed harness ran four times against `app.inflozo.com` (`PLAYWRIGHT_DIR` set by name; keys by
+name). Every step passed at least once and every step after `frame` passed on every run that reached it:
+`anon-rpc` 401 `42501` for both · `seeded` · `frame-390` · both account axe steps zero violations at 1440
+and 390 · `dialog-focus` (Cancel, and Escape/Cancel/backdrop each closed it) · `dialog-quiet` · `armed` ·
+`request` (landed on `/restore`; `purge_after - deleted_at` = 14 days; the snapshot equal and offered) ·
+`second-request` (200, `null`, deadline unmoved) · `other-user-rpc` (B's restore `false`, A untouched) ·
+`door` · `restore-page` (the seeded site's title, the captured date, one Download) · `download` (303 to a
+`/storage/v1/object/sign/site-snapshots/` URL whose GET returned the seeded bytes) · `download-other` 404 ·
+`download-signed-out` 303 `/sign-in` · `axe-restore` · `restore` (`/?restored=1`, the green sentence, both
+columns null on the profile and the snapshot) · `axe-restored` · `authed-rpc` (14 days) ·
+`magic-link-during` (a fresh link for pending A landed on `/restore`) · `past-deadline` ("being deleted",
+no Restore, `restore_account()` false) · `axe-past`. **`frame` failed three of four runs with `h: 0`** and
+every colour, radius, weight, size and padding right — the harness measuring at `load` before the
+Suspense skeleton swapped the card in (patched: it waits for the button). One run stalled at B's sign-in
+(`page.goto` 60 s) and the site answered `/sign-in` in under a second straight after — the transient the
+email-change harness already records. Cleanup held on every run: users 4 → 4, the bucket prefix empty,
+and an independent read afterwards found no `deletion-harness-*` user, no object, and no pending profile.
+
+| Command | Result |
+|---|---|
+| `pnpm check` (Node 24) | **exit 0** before and after the patches; `apps/web` 156 tests (the Dev figure), the three packages one each |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0** with the widened block: `PASS (2.5)` ×5, no drift |
+| `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` | **HTTP 200**; `RESEND_API_KEY` and `RESEND_FROM` listed by name, `production`, `encrypted`; nothing else changed |
+| `POST $SUPABASE_URL/rest/v1/rpc/restore_account` and `…/request_account_deletion`, publishable key, no bearer — the independent control | **HTTP 401, `42501`** for each |
+| `POST $SUPABASE_URL/storage/v1/object/sign/site-snapshots/<no such key>` with `SUPABASE_SECRET_KEY` | **HTTP 400**, `{"statusCode":"404","error":"not_found","code":"NoSuchKey"}` — the route's 404 branch is read off the wire, not guessed |
+| `GET https://api.vercel.com/v1/projects/{id}/deployments/{dpl}/runtime-logs` | **did not answer** from this machine (no headers after 60 s, twice) — the `deletion: email sent { id }` line is read in the Vercel dashboard at Deploy, step 4 below |
+
+**Every assertion in the RLS block, seen to FAIL — seventeen breaks, one container.** A scratch script
+applied the prelude and every migration once, ran `rls.sql` whole (PASS), then for each break replaced
+one function body (or one grant), ran the 2.5 block alone, and restored the real migration; the block
+passed again at the end. Each break tripped the line written for it:
+
+| The break | What failed |
+|---|---|
+| `request_account_deletion` returns null first | `returned null on an account with no window open` |
+| `deleted_at` set to null instead of `now()` | `deleted_at was not stamped` |
+| `interval '13 days'` | `purge_after (…) is not deleted_at (…) + 14 days` |
+| returns `deadline + interval '1 hour'` | `the function returned … but stored …` |
+| the snapshot update no longer sets `purge_after` | `A's snapshot purge_after is <NULL> and the account deadline is …` |
+| `download_offered_at` no longer set | `the snapshot was never marked as offered for download (FR-J13)` |
+| `purge_after = deadline` unconditionally (no `least`) — **the new control** | `a snapshot already due on … was moved to … by the deletion` |
+| `deleted_at is null` dropped from the `where` | `a second call re-opened the window and returned …` |
+| a second update stamping every OTHER profile | `A's deletion stamped B's profile` |
+| `where user_id = auth.uid()` dropped from the snapshot update | `A's deletion stamped B's snapshot` |
+| `restore_account` returns false first | `restore_account() answered false inside the window` |
+| the profile update no longer clears the columns | `restore left the profile stamped` |
+| the snapshot update removed | `restore left a snapshot's purge_after set (2 of them)` |
+| `purge_after > now()` removed | `restore_account() answered true after the deadline had passed` |
+| the snapshot update moved BEFORE the profile check | `a refused restore cleared the snapshot anyway` |
+| `grant execute … restore_account() to anon` | `anon executed restore_account() and got false` |
+| `grant execute … request_account_deletion() to anon` | `anon executed request_account_deletion() and got null` |
+
+A first attempt at "stamped B's profile" dropped `user_id = auth.uid()` from the profile update and the
+block failed for the WRONG reason — plpgsql refuses `RETURNING … INTO` over two rows — so it was
+replaced by the second statement above; a control that fails for another reason is not a control.
+
+**The patched harness against the UNPATCHED deployment — the review's own control.** Before the patches
+were pushed, the harness with its five new steps ran once more against the Dev code still live on
+`3caaa7a9`: **`rearm` FAILED** — `reopened after Cancel: aria-disabled=null, field holds "delete my
+account"` — which is the defect itself, executed; **`sentence` FAILED** (`the dialog says ""`: the body
+sentence had no id to read yet); and every other step PASSED, `frame` now at `h: 34` behind the wait,
+`server-phrase` answering `wrong_phrase` to the forged POST with no redirect, `restore-signed-out` a
+307 to `/sign-in`, `restore-clean` landing on `/`. Users 4 → 4, the prefix empty. The same harness
+against the patched deployment is the paragraph below.
+
 ### What the Deploy run must do, in this order
 
 1. ~~Apply the migration to the live database.~~ **DONE — the owner ran it in the Supabase SQL
    editor on 2026-09-07**, and the block above is the proof it behaves.
 2. ~~Re-run the anon control.~~ **DONE — HTTP 401 `42501` for both.**
 3. `python3 tools/probe/run-verify-account-deletion.py` against `app.inflozo.com` — every step PASS
-   or RECORD: `anon-rpc` · `seeded` · `frame` · `frame-390` · `dialog-focus` · `dialog-quiet` ·
-   `armed` · `axe-account-closed` · `axe-account-dialog` · `request` · `second-request` ·
-   `other-user-rpc` · `door` · `restore-page` · `download` · `download-other` ·
-   `download-signed-out` · `axe-restore` · `restore` · `axe-restored` · `authed-rpc` ·
-   `magic-link-during` · `past-deadline` · `axe-past` · cleanup (the object deleted before the
-   users, the prefix listed empty, the user count unchanged).
-4. Read the deployment's log for `deletion: email sent { id }` with a Resend id — the hand-off, and
-   the whole of what this repository can see.
+   or RECORD, in the order the harness's docstring lists them (the review added `sentence`, `rearm`,
+   `server-phrase`, `restore-signed-out` and `restore-clean`), then cleanup (the object deleted
+   before the users, the prefix listed empty, the user count unchanged). `--to <an inbox you can
+   open>` if the send is to be seen as well as logged.
+4. Read the deployment's log in the Vercel dashboard for `deletion: email sent { id }` with a Resend
+   id — the hand-off, and the whole of what this repository can see. `email: not configured` there
+   means the `RESEND_*` variables did not reach the deployment; `deletion: email failed { status,
+   reason }` carries Resend's own refusal.
 
 **Manual check (no CLI can make it).** Delivery is the owner's manual test step 5 (DW-22, a third
 time): `RESEND_API_KEY` is send-only, so no key here can look in an inbox.

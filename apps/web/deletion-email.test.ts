@@ -75,6 +75,17 @@ test('a site title is escaped — it is text somebody else controls', () => {
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt; &amp; &quot;Weekly&quot;/)
   // The plain-text half is not markup and is not escaped — it is read as characters.
   assert.ok(text.includes(nasty))
+
+  // The theme name is a Ghost theme author's text and goes through the same door; a snapshot
+  // whose site row is gone still names "your site" rather than throwing on `null`.
+  const theme = deletionEmail({
+    deadline: DEADLINE,
+    snapshots: [snapshot({ theme_name: '<b>x</b>', sites: null })],
+    restoreUrl: RESTORE,
+  })
+  assert.doesNotMatch(theme.html, /<b>x<\/b>/, 'a theme name went into the markup unescaped')
+  assert.match(theme.html, /&lt;b&gt;x&lt;\/b&gt;<\/span> &middot; your site/)
+  assert.match(theme.text, /<b>x<\/b> · your site/)
 })
 
 /**

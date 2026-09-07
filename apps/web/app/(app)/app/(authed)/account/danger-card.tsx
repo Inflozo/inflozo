@@ -107,8 +107,15 @@ export function DangerCard({ projects, assets }: { projects: number; assets: num
       <dialog
         ref={dialog}
         aria-labelledby="delete-account-title"
+        aria-describedby="delete-account-body"
         onClick={closeOnBackdrop}
-        onClose={() => setSeen(answered)}
+        // The typed phrase is spent with the dialog: Cancel after typing it must not leave a
+        // confirm that reopens already armed, one click from the irreversible thing (review,
+        // 2026-09-07). The harness's `rearm` step is what keeps this true.
+        onClose={() => {
+          setSeen(answered)
+          setTyped('')
+        }}
         className={`${sheet} gap-[18px]`}
       >
         <div className="flex items-start gap-3">
@@ -122,7 +129,7 @@ export function DangerCard({ projects, assets }: { projects: number; assets: num
             <h2 id="delete-account-title" className={title}>
               Delete your account?
             </h2>
-            <p className="text-ui-dense leading-[1.5] text-ink-soft">
+            <p id="delete-account-body" className="text-ui-dense leading-[1.5] text-ink-soft">
               {deletionSentence(projects, assets)}
             </p>
           </div>

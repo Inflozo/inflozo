@@ -3,6 +3,7 @@
 
     python3 tools/probe/run-verify-account-deletion.py --check   # plumbing only: no browser, no UI
     python3 tools/probe/run-verify-account-deletion.py           # the whole round trip (Deploy run)
+    python3 tools/probe/run-verify-account-deletion.py --to you@example.com   # A is an inbox you can open
 
 WHY IT EXISTS. Story 2.5 rests on claims about Postgres, PostgREST and Storage, and CLAUDE.md's
 first standing rule — cite or execute, never assert — makes each one a hypothesis until it is run
@@ -35,6 +36,13 @@ list gone stale — the sibling harness's own note):
   dialog-quiet   NOTHING left the browser while the confirm was opened and closed those three ways
   armed          the typed confirm, both halves: "delete my acc" leaves the red button
                  `aria-disabled` and Enter sends nothing; the phrase in full clears it
+  sentence       the dialog's body sentence, read off the deployed page for an account that holds
+                 ONE project and no assets: "Your 1 project, its full version history will be
+                 permanently deleted in N days." — the counts path and the dropped asset clause,
+                 observed where they render rather than only in the pure function
+  rearm          the phrase typed and the dialog CANCELLED: reopened, the field is empty and the
+                 red button is greyed again — a cancelled confirm must not reopen one click from
+                 the irreversible thing
   axe-account-closed · axe-account-dialog
                  axe-core at WCAG 2.1 AA over /account with the card closed and the confirm open,
                  each at 1440 AND 390, and no horizontal scroll
@@ -42,6 +50,10 @@ list gone stale — the sibling harness's own note):
                  the WIRE — PostgREST with the secret key — shows `deleted_at` set, `purge_after`
                  exactly fourteen days after it, the seeded snapshot's `purge_after` equal to the
                  account's, and `download_offered_at` stamped
+  server-phrase  the server action's own check, which the greyed button only mirrors: the POST the
+                 `request` step made is captured and REPLAYED with a wrong phrase in its body, and
+                 the action must answer `wrong_phrase` — the one guard on the irreversible action,
+                 reached the way a forged request would reach it
   second-request a SECOND call with A's own bearer while the window is open: `null`, and the
                  deadline unmoved. This is what stops a stale tab sending a second email
   other-user-rpc B, a real second session, calls `restore_account()`: `false`, and A's rows
@@ -53,10 +65,14 @@ list gone stale — the sibling harness's own note):
                  URL, and a GET of that URL returns the seeded bytes
   download-other B asks for A's snapshot: 404, and no URL is minted
   download-signed-out  no cookies at all: 303 to `/sign-in`
+  restore-signed-out   `/restore` with no cookies at all: a redirect to `/sign-in` — the page
+                 outside `(authed)` guards itself, executed rather than read out of its source
   axe-restore    axe-core over `/restore` before the deadline
   restore        Restore pressed: `/?restored=1` with the green sentence, both columns null on the
                  profile AND on the snapshot, and the dashboard usable again
   axe-restored   axe-core over `/?restored=1`
+  restore-clean  `/restore` opened by the restored account: straight back to `/`, never a page
+                 about a deletion that is not happening
   authed-rpc     A's OWN bearer calls `request_account_deletion()` directly: 200 and an ISO
                  timestamp fourteen days out. The window is re-opened for the two steps below
   magic-link-during  a fresh magic link for a PENDING A: it signs in to A's own user id and lands
@@ -67,6 +83,9 @@ list gone stale — the sibling harness's own note):
 
 WHAT IT CANNOT PROVE: that the email arrived. `RESEND_API_KEY` is send-only (DW-22, executed twice),
 so the app logs Resend's status and id and the owner's manual test step 5 is the delivery check.
+`--to ADDRESS` makes A that address, so the run's one real send lands in an inbox a human can open
+(the sibling harness's own escape hatch); without it A is a `deletion-harness-<stamp>@inflozo.com`
+address the owner's domain receives.
 
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
 (argv is world-readable in `ps`), and every command is recorded by the key's variable NAME.
@@ -343,6 +362,11 @@ const daysBetween = (later, earlier) =>
     //    radius 12, 13px/600, a `danger-line` border on `surface` with `danger-text` words and
     //    `danger-tint` on hover.
     const button = dangerButton(page)
+    // `loading.tsx` is a Suspense skeleton over every authed page and the account page awaits
+    // three reads before it renders, so at `load` the card can still be in the hidden streamed
+    // segment: computed styles intact, bounding box 0×0. Wait for the button to be VISIBLE before
+    // measuring (three of four review runs read `h: 0` — 2026-09-07).
+    await button.waitFor({ state: 'visible', timeout: NAV_TIMEOUT })
     const look = await button.evaluate((n) => {
       const s = getComputedStyle(n), r = n.getBoundingClientRect()
       return { h: Math.round(r.height), radius: s.borderTopLeftRadius, size: s.fontSize,
@@ -421,10 +445,33 @@ const daysBetween = (later, earlier) =>
       step('armed', greyed === 'true' && stillOpen && armed === null,
            `wrong phrase: aria-disabled=${JSON.stringify(greyed)}, dialog still open = ${stillOpen}; ` +
            `the phrase: aria-disabled=${JSON.stringify(armed)}`)
+
+      // The sentence the person is deciding on, with THIS account's counts: one project seeded by
+      // the Python half, no assets — so the asset clause must be absent, not "and 0 assets".
+      const body = (await page.locator('dialog[open] #delete-account-body').textContent({ timeout: 5000 }).catch(() => null)) || ''
+      const expected = `Your 1 project, its full version history will be permanently deleted in ${DAYS} days.`
+      step('sentence', body.startsWith(expected), `the dialog says ${JSON.stringify(body.slice(0, 120))}`)
+
+      // CANCELLED WITH THE PHRASE TYPED, then reopened: the field must be empty and the button
+      // greyed again. A confirm that reopens armed is one click from the irreversible thing.
+      await page.keyboard.press('Escape')
+      await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10000 })
+      await openConfirm(page)
+      const reopened = await dialogPrimary(page).getAttribute('aria-disabled')
+      const kept = await page.locator('dialog[open] #delete-account-confirm').inputValue()
+      step('rearm', reopened === 'true' && kept === '',
+           `reopened after Cancel: aria-disabled=${JSON.stringify(reopened)}, field holds ${JSON.stringify(kept)}`)
+      await page.locator('dialog[open] #delete-account-confirm').fill(PHRASE)
     })
     if (armedPosts !== 0) step('armed-quiet', false, `${armedPosts} POST(s) left the browser on a wrong phrase`)
 
-    // ── CONFIRMED. The wire is read straight afterwards: the deadline is a database fact.
+    // ── CONFIRMED. The wire is read straight afterwards: the deadline is a database fact. The
+    //    server-action POST itself is captured on the way out, for the replay two steps down.
+    let action = null
+    page.on('request', (r) => {
+      const h = r.headers()
+      if (!action && r.method() === 'POST' && h['next-action']) action = { url: r.url(), headers: h, body: r.postData() }
+    })
     await dialogPrimary(page).click()
     await page.waitForURL(/\/restore/, { timeout: 60000 }).catch(() => null)
     const landed = page.url()
@@ -438,6 +485,25 @@ const daysBetween = (later, earlier) =>
       `purge_after - deleted_at = ${gap} days (expected ${DAYS}); ` +
       `snapshot purge_after equal = ${snapshot.purge_after === profile.purge_after}, ` +
       `download_offered_at set = ${Boolean(snapshot.download_offered_at)}`)
+
+    // ── THE SERVER'S OWN PHRASE CHECK. The greyed button is a courtesy; this is the guard, and
+    //    it is reached here the way a forged request reaches it: the captured POST, replayed with
+    //    A's own cookies and a wrong phrase in its body. Deleting `matchesPhrase` from the action
+    //    is green under every local check — this is the one that would go red.
+    const forwarded = {}
+    for (const name of ['next-action', 'content-type', 'next-router-state-tree', 'accept', 'origin', 'referer']) {
+      if (action && action.headers[name]) forwarded[name] = action.headers[name]
+    }
+    const forgeable = Boolean(action && action.body && action.body.includes(PHRASE))
+    const forged = forgeable
+      ? await a.request.post(action.url, { headers: forwarded, data: action.body.split(PHRASE).join(PHRASE.slice(0, PHRASE.length - 4)) })
+      : null
+    const forgedText = forged ? await forged.text() : ''
+    step('server-phrase',
+      forgeable && forged.status() === 200 && forgedText.includes('wrong_phrase') && !forgedText.includes('NEXT_REDIRECT'),
+      forgeable
+        ? `replayed with a wrong phrase -> HTTP ${forged.status()}; answered wrong_phrase = ${forgedText.includes('wrong_phrase')}; redirected = ${forgedText.includes('NEXT_REDIRECT')}`
+        : `the server-action POST was not captured (next-action header seen = ${Boolean(action)}, body carries the phrase = ${Boolean(action && action.body && action.body.includes(PHRASE))})`)
 
     // ── A SECOND CALL IS NOT A SECOND WINDOW — the `null` that stops a second email.
     const aToken = await accessTokenOf(a, 'A')
@@ -509,6 +575,12 @@ const daysBetween = (later, earlier) =>
     step('download-signed-out',
       anonHop.status() === 303 && anonWhere.includes('/sign-in'),
       `no cookies -> HTTP ${anonHop.status()} to ${JSON.stringify(anonWhere)}`)
+    // The page outside `(authed)` guards itself: `signedIn()` is a page redirect, not a 303.
+    const anonPage = await anonContext.request.get(`${APP}/restore`, { maxRedirects: 0 })
+    const anonPageWhere = anonPage.headers()['location'] || ''
+    step('restore-signed-out',
+      [302, 303, 307, 308].includes(anonPage.status()) && anonPageWhere.includes('/sign-in'),
+      `/restore with no cookies -> HTTP ${anonPage.status()} to ${JSON.stringify(anonPageWhere)}`)
     await anonContext.close()
 
     await axeAt(page, 'restore')
@@ -531,6 +603,11 @@ const daysBetween = (later, earlier) =>
       `snapshot cleared = ${snapshotAfter.purge_after === null}`)
 
     await axeAt(page, 'restored')
+
+    // ── A RESTORED ACCOUNT AT /restore is sent home, never shown a deletion that is not happening.
+    await page.goto(`${APP}/restore`, { waitUntil: 'load' })
+    const cleanUrl = page.url()
+    step('restore-clean', !cleanUrl.includes('/restore'), `/restore for a clean account -> ${cleanUrl}`)
 
     // ── A's OWN bearer opens the window again, which is the second control the spec names and the
     //    setup for the two steps below.
@@ -621,6 +698,9 @@ def delete_phrase():
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument('--to', metavar='ADDRESS',
+                    help='make fixture user A this address, so the one real send of the run lands '
+                         'in an inbox a human can open (DW-22: no key here can read one)')
     ap.add_argument('--check', action='store_true',
                     help='plumbing only: keys present, playwright and axe resolvable, one real '
                          'admin create-read-delete and one Storage put-list-delete under a harness '
@@ -637,7 +717,8 @@ def main():
 
     admin = Admin(sb, secret)
     stamp = int(time.time())
-    a_email, b_email = f'deletion-harness-{stamp}@inflozo.com', f'deletion-harness-{stamp}-b@inflozo.com'
+    a_email = args.to or f'deletion-harness-{stamp}@inflozo.com'
+    b_email = f'deletion-harness-{stamp}-b@inflozo.com'
 
     swept = admin.sweep_stale_fixtures(FIXTURE)
     if swept:
@@ -648,6 +729,10 @@ def main():
         return 1
     before = len(users)
     print(f'  users before: {before}')
+    if args.to and any((u.get('email') or '').lower() == args.to.lower() for u in users):
+        print('  FAIL  --to names an address that already has an account, so the run would delete a real '
+              'one. Pick another address, or delete that user in the Supabase dashboard first.')
+        return 1
 
     created, key, failed = [], None, False
     try:
@@ -686,7 +771,17 @@ def main():
             print(f'  FAIL  could not seed the site_snapshots row: HTTP {status} {json.dumps(snapshot)[:200]}')
             return 1
         snapshot_id = snapshot[0]['id']
-        print('  fixture site, snapshot row and snapshot object seeded')
+
+        # ONE project and no assets, so the `sentence` step observes the counts path where it
+        # renders — with an empty account the dialog's fallback sentence would render either way.
+        status, project = rest(sb, secret, 'POST', '/projects',
+                               {'user_id': a_id, 'name': 'Deletion Harness',
+                                'slug': f'deletion-harness-{stamp}', 'style_pack': {}},
+                               prefer='return=representation')
+        if status not in (200, 201) or not project:
+            print(f'  FAIL  could not seed the projects row: HTTP {status} {json.dumps(project)[:200]}')
+            return 1
+        print('  fixture site, snapshot row, snapshot object and one project seeded')
 
         if args.check:
             pw, axe = playwright_dir(), axe_path()

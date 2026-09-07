@@ -170,7 +170,8 @@ test('the deletion window has a door, and it is the shell layout', () => {
   // half of it is reachable from a browser step without deleting a real account, so both are read
   // out of the source here — the column in the select, and the redirect after it.
   const layout = readFileSync(AUTHED_LAYOUT, 'utf8').replace(/\/\/[^\n]*/g, ' ')
-  const select = /\.select\('([^']*)'\)/.exec(layout)
+  // Anchored on the TABLE, so a select added earlier in the layout is not the one read here.
+  const select = /from\('profiles'\)\s*\.select\('([^']*)'\)/.exec(layout)
   assert.ok(select, `${AUTHED_LAYOUT}: the profiles select was not found — this test reads it, not restates it`)
   assert.ok(
     select[1].split(',').map((c) => c.trim()).includes('deleted_at'),

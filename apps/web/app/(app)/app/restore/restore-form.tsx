@@ -9,11 +9,12 @@ import { restoreAccount, type ActionResult } from '../(authed)/account/actions'
  * S1a's ONE ACTION, at its own size: a primary 44 across the full width of the card, the way the
  * sign-in card's is. FR-A5's "one-click Restore account".
  *
- * NO `once` GUARD AND NO `seen`. There is no dialog to close a result on, and `restore_account()`
- * is idempotent by construction — a second call after a successful first finds `deleted_at` null,
- * matches no row and answers `false`… which is a sentence about a window that has already closed.
- * React's own `useActionState` pending state is what stops the double press: the button reads
- * "Restoring…" and the form is already in flight, and the successful path redirects away.
+ * NO `once` GUARD AND NO `seen`. There is no dialog to close a result on, and a double press is
+ * harmless by construction rather than by a ref: `pending` flips only on the next render (the
+ * Danger card says why it guards), so a second press CAN queue a second call — which finds
+ * `deleted_at` already null and answers `false`, and `restoreAccount` reads the profile before
+ * calling that a closed window: not pending means restored, and it redirects the same way the
+ * first call did (review, 2026-09-07). The successful path always leaves this page.
  *
  * BOTH FAILURES ARE THE SAME RED STRIP. `restore_failed` says the call did not go through and to
  * try again; `window_closed` says the fourteen days have ended — and it is the one the page

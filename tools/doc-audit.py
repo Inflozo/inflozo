@@ -328,8 +328,12 @@ DOCS = [
   'Admin-API user count before and after so a leak is loud. It cannot prove the email arrived — '
   'DW-22, a third time — so the app logs Resend\'s status and id and the owner reads the inbox. Plus '
   'axe-core at WCAG 2.1 AA over /account closed and with the confirm open, /restore in both states '
-  'and /?restored=1, each at 1440 and 390. --check is the plumbing alone, including one real Storage '
-  'put-list-delete, and needs no browser and no deployment. Story 2.5.'),
+  'and /?restored=1, each at 1440 and 390. Since the review it also reads the dialog\'s sentence for '
+  'an account with one project, proves a cancelled confirm reopens disarmed, replays the captured '
+  'server-action POST with a wrong phrase to reach the server\'s own check, and visits /restore both '
+  'signed out and as a restored account; --to points the run\'s one real send at an inbox a human '
+  'can read. --check is the plumbing alone, including one real Storage put-list-delete, and needs no '
+  'browser and no deployment. Story 2.5.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

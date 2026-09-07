@@ -60,7 +60,10 @@ export async function supabaseServer() {
 }
 
 /**
- * THE ONE PRIVILEGED CLIENT, for the one read no session can make.
+ * THE ONE PRIVILEGED CLIENT, for the reads no session can make. Two so far, and
+ * `server-wiring.test.ts` names both: `lib/flags.ts` (the flag row) and, since Story 2.5, the
+ * snapshot download route, which mints a signed URL on a bucket that has no policy at all
+ * (AD-32) — a Storage read, never a user row. A third reader edits that list deliberately.
  *
  * `feature_flags` is granted to `service_role` alone (schema :1175) with RLS on and no policy,
  * and the spine requires the flag to be a ROW read per request rather than an env var that

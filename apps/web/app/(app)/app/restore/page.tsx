@@ -39,11 +39,14 @@ export default async function RestorePage() {
   const user = await signedIn()
   const supabase = await supabaseServer()
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('deleted_at, purge_after')
     .eq('user_id', user.id)
     .maybeSingle()
+  // Logged, as every read in the account file is: silently, a transient fault here would bounce
+  // a pending account between this page and the door with nothing saying why (review, 2026-09-07).
+  if (profileError) console.error('restore: profile read failed', { code: profileError.code })
 
   // Not pending — including a profiles read that failed, which must not strand a working account
   // on a page about deleting it. The layout is the door; this page only holds it open.
@@ -55,9 +58,15 @@ export default async function RestorePage() {
   // Only while there is still something to download. RLS scopes this to the caller.
   // ponytail: the restore page lists snapshots by a join; a denormalised site title the day sites
   // are renamed.
-  const { data: snapshots } = passed
-    ? { data: null }
-    : await supabase.from('site_snapshots').select('id, theme_name, captured_at, sites(title, url)')
+  const { data: snapshots, error: snapshotError } = passed
+    ? { data: null, error: null }
+    : await supabase
+        .from('site_snapshots')
+        .select('id, theme_name, captured_at, sites(title, url)')
+        // Newest first — PostgREST's default is heap order, which can swap two themes between
+        // the email and this page. The email reads in the same order.
+        .order('captured_at', { ascending: false })
+  if (snapshotError) console.error('restore: snapshot read failed', { code: snapshotError.code })
   const themes = (snapshots ?? []) as unknown as Snapshot[]
 
   return (

@@ -51,14 +51,16 @@ export const PURGE_WINDOW_DOC = '../../supabase/migrations/20260907150000_accoun
  *
  * THREE SHAPES AND NO MORE: many projects, exactly one, and an account with nothing in it — which
  * is also what a count that could not be read falls back to (`page.tsx`), because "0 projects"
- * would be a claim and "everything in your account" is true either way.
+ * would be a claim and "everything in your account" is true either way. The asset clause obeys the
+ * same rule: with no assets — or an asset count that could not be read — it is left out, because
+ * "and 0 assets" on the one irreversible confirm is a claim too (review, 2026-09-07).
  */
 export function deletionSentence(projects: number, assets: number, days = DELETION_WINDOW_DAYS): string {
   const tail = `Your live Ghost sites stay online. Until then, signing in restores everything — after that, it cannot be undone.`
   if (projects < 1) return `Everything in your account will be permanently deleted in ${days} days. ${tail}`
   const owned = projects === 1 ? 'Your 1 project, its' : `All ${projects} projects, their`
-  const stored = `${assets} ${assets === 1 ? 'asset' : 'assets'}`
-  return `${owned} full version history and ${stored} will be permanently deleted in ${days} days. ${tail}`
+  const stored = assets < 1 ? '' : ` and ${assets} ${assets === 1 ? 'asset' : 'assets'}`
+  return `${owned} full version history${stored} will be permanently deleted in ${days} days. ${tail}`
 }
 
 /**

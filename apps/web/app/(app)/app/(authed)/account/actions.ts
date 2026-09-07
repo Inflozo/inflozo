@@ -466,8 +466,15 @@ export async function requestDeletion(
     return fail('delete_failed')
   }
   // `null` = the window was ALREADY open. Nothing changed and nothing is sent; the page the user
-  // lands on states the deadline they already have.
-  if (deadline) await confirmByEmail(user.email, deadline as string)
+  // lands on states the deadline they already have. The whole email step is fenced: the deletion
+  // is committed by now, and nothing it does may reach the error boundary (review, 2026-09-07).
+  if (deadline) {
+    try {
+      await confirmByEmail(user.email, deadline as string)
+    } catch (thrown) {
+      console.error('deletion: email step threw', { message: String(thrown).slice(0, 200) })
+    }
+  }
 
   redirect(RESTORE_PATH)
 }
@@ -482,11 +489,17 @@ export async function requestDeletion(
  * block and a log line, never a failed deletion.
  */
 async function confirmByEmail(to: string | undefined, deadline: string) {
-  if (!to) return
+  if (!to) {
+    // Said out loud, so the Deploy run's log can tell a skipped send from a lost one.
+    console.error('deletion: email skipped, the session has no address')
+    return
+  }
   const supabase = await supabaseServer()
   const { data, error } = await supabase
     .from('site_snapshots')
     .select('id, theme_name, captured_at, sites(title, url)')
+    // Newest first, the order `/restore` lists them in — the email and the page must agree.
+    .order('captured_at', { ascending: false })
   if (error) console.error('deletion: snapshot read failed', { code: error.code })
 
   const sent = await sendEmail({
@@ -498,7 +511,7 @@ async function confirmByEmail(to: string | undefined, deadline: string) {
     }),
   })
   if (sent.ok) console.log('deletion: email sent', { id: sent.id })
-  else console.error('deletion: email failed', { status: sent.status })
+  else console.error('deletion: email failed', { status: sent.status, reason: sent.reason ?? null })
 }
 
 /**
@@ -512,7 +525,7 @@ export async function restoreAccount(
   _previous: ActionResult | null,
   _formData: FormData,
 ): Promise<ActionResult> {
-  await signedIn()
+  const user = await signedIn()
 
   const supabase = await supabaseServer()
   const { data: restored, error } = await supabase.rpc('restore_account')
@@ -520,7 +533,20 @@ export async function restoreAccount(
     console.error('deletion: restore failed', { code: error.code })
     return fail('restore_failed')
   }
-  if (restored === false) return fail('window_closed')
+  if (restored === false) {
+    // `false` is "no pending row inside the window", and that has TWO readings: the deadline
+    // passed, or the account was already restored — from another tab, or by a double press whose
+    // first half won. Only the first is a closed window; the second is a restore that happened,
+    // and telling that person "the 14 days have ended" would be a lie about a safe account
+    // (review, 2026-09-07). One read tells them apart.
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('deleted_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (profile && !profile.deleted_at) redirect(RESTORED_PATH)
+    return fail('window_closed')
+  }
 
   redirect(RESTORED_PATH)
 }

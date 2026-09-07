@@ -32,7 +32,7 @@ const ENDPOINT = 'https://api.resend.com/emails'
  */
 export const SEND_TIMEOUT_MS = 8_000
 
-export type Sent = { ok: true; id: string | null } | { ok: false; status: number }
+export type Sent = { ok: true; id: string | null } | { ok: false; status: number; reason?: string }
 
 export async function sendEmail({
   to,
@@ -60,8 +60,16 @@ export async function sendEmail({
       body: JSON.stringify({ from, to: [to], subject, html, text }),
       signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     })
-    if (!response.ok) return { ok: false, status: response.status }
-    const body = (await response.json().catch(() => null)) as { id?: string } | null
+    const body = (await response.json().catch(() => null)) as
+      | { id?: string; name?: string; message?: string }
+      | null
+    // A refusal keeps Resend's own reason — `validation_error`, `restricted_api_key`, an
+    // unverified sender — because a bare 4xx is what the owner would otherwise be debugging
+    // his inbox from (review, 2026-09-07). Still no address, no key, no body of ours.
+    if (!response.ok) {
+      const reason = [body?.name, body?.message].filter(Boolean).join(': ').slice(0, 200)
+      return reason ? { ok: false, status: response.status, reason } : { ok: false, status: response.status }
+    }
     return { ok: true, id: body?.id ?? null }
   } catch {
     // A timeout, a DNS failure, a socket reset. `status: 0` again: nothing was answered.

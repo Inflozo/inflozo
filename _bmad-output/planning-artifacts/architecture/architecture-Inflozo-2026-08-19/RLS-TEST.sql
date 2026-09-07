@@ -922,35 +922,47 @@ end $$;
 -- Asserted here as two tenants, exactly as every other surface in this file is.
 --
 -- What is proved: A's call stamps A's profile and A's snapshot with the SAME deadline, exactly
--- fourteen days after `deleted_at`, and leaves B's row and B's snapshot alone; a second call
--- returns null and does not move the deadline (which is how the action knows not to send a second
--- email); `restore_account()` clears both and answers true; with the deadline moved into the past
--- it answers false and clears NOTHING; and `anon` cannot execute either.
+-- fourteen days after `deleted_at`, and leaves B's row and B's snapshot alone; a snapshot of A's
+-- whose FR-C6 orphan clock is already due EARLIER keeps its earlier date (`least`, the branch the
+-- migration's comment promises — review, 2026-09-07); a second call returns null and does not move
+-- the deadline (which is how the action knows not to send a second email); `restore_account()`
+-- clears the profile and EVERY snapshot of A's and answers true; with the deadline moved into the
+-- past it answers false and clears NOTHING; and `anon` cannot execute either.
 
 reset role;
 
--- The fixture: one pre-Inflozo snapshot per tenant, and both profiles known-clean, so this block
--- is re-runnable on a hosted project where the users at the top of the file persist.
+-- The fixture: one pre-Inflozo snapshot per tenant, plus a second site of A's whose snapshot is
+-- already on the 90-day clock, and both profiles known-clean, so this block is re-runnable on a
+-- hosted project where the users at the top of the file persist.
 update public.profiles set deleted_at = null, purge_after = null
  where user_id in ('11111111-1111-1111-1111-111111111111',
                    '22222222-2222-2222-2222-222222222222');
+insert into public.sites(id,user_id,url) values
+  ('aaaaaaaa-0000-0000-0000-000000000003','11111111-1111-1111-1111-111111111111','https://a3.example')
+on conflict do nothing;
 delete from public.site_snapshots
- where id in ('aaaaaaaa-5555-0000-0000-000000000001','bbbbbbbb-5555-0000-0000-000000000002');
-insert into public.site_snapshots(id,user_id,site_id,storage_path,theme_name) values
+ where id in ('aaaaaaaa-5555-0000-0000-000000000001','aaaaaaaa-5555-0000-0000-000000000003',
+              'bbbbbbbb-5555-0000-0000-000000000002');
+insert into public.site_snapshots(id,user_id,site_id,storage_path,theme_name,purge_after) values
   ('aaaaaaaa-5555-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
    'aaaaaaaa-0000-0000-0000-000000000001',
-   'site-snapshots/11111111-1111-1111-1111-111111111111/aaaaaaaa-0000-0000-0000-000000000001/theme.zip','casper'),
+   'site-snapshots/11111111-1111-1111-1111-111111111111/aaaaaaaa-0000-0000-0000-000000000001/theme.zip','casper',null),
+  ('aaaaaaaa-5555-0000-0000-000000000003','11111111-1111-1111-1111-111111111111',
+   'aaaaaaaa-0000-0000-0000-000000000003',
+   'site-snapshots/11111111-1111-1111-1111-111111111111/aaaaaaaa-0000-0000-0000-000000000003/theme.zip','alto',
+   now() + interval '3 days'),
   ('bbbbbbbb-5555-0000-0000-000000000002','22222222-2222-2222-2222-222222222222',
    'bbbbbbbb-0000-0000-0000-000000000002',
-   'site-snapshots/22222222-2222-2222-2222-222222222222/bbbbbbbb-0000-0000-0000-000000000002/theme.zip','source');
+   'site-snapshots/22222222-2222-2222-2222-222222222222/bbbbbbbb-0000-0000-0000-000000000002/theme.zip','source',null);
 
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 
 do $$
 declare deadline timestamptz; again timestamptz; d timestamptz; p timestamptz;
-        snap_p timestamptz; snap_offered timestamptz;
+        snap_p timestamptz; snap_offered timestamptz; early timestamptz; early_after timestamptz;
 begin
+  select purge_after into early from public.site_snapshots where id = 'aaaaaaaa-5555-0000-0000-000000000003';
   deadline := public.request_account_deletion();
   if deadline is null then
     raise exception 'FAIL (2.5): request_account_deletion() returned null on an account with no window open';
@@ -975,6 +987,13 @@ begin
   end if;
   if snap_offered is null then
     raise exception 'FAIL (2.5): the snapshot was never marked as offered for download (FR-J13)';
+  end if;
+
+  -- `least(...)`: a snapshot already due BEFORE the deadline keeps its earlier date. A function
+  -- that stamped `purge_after = deadline` unconditionally would lengthen FR-C6's clock here.
+  select purge_after into early_after from public.site_snapshots where id = 'aaaaaaaa-5555-0000-0000-000000000003';
+  if early_after is distinct from early then
+    raise exception 'FAIL (2.5): a snapshot already due on % was moved to % by the deletion', early, early_after;
   end if;
 
   -- A SECOND CALL IS NOT A SECOND WINDOW. A stale tab pressing Delete again must not move the
@@ -1021,8 +1040,8 @@ begin
    where user_id = auth.uid() and (deleted_at is not null or purge_after is not null);
   if n <> 0 then raise exception 'FAIL (2.5): restore left the profile stamped'; end if;
   select count(*) into n from public.site_snapshots
-   where id = 'aaaaaaaa-5555-0000-0000-000000000001' and purge_after is not null;
-  if n <> 0 then raise exception 'FAIL (2.5): restore left the snapshot''s purge_after set'; end if;
+   where user_id = auth.uid() and purge_after is not null;
+  if n <> 0 then raise exception 'FAIL (2.5): restore left a snapshot''s purge_after set (% of them)', n; end if;
   raise notice 'PASS (2.5): restore_account() clears the profile and every snapshot, and answers true';
 end $$;
 

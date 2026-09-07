@@ -44,6 +44,11 @@ test('the sentence has three shapes and each says the window', () => {
 
   // The asset noun agrees with its count — the sentence is read by someone about to lose them.
   assert.match(deletionSentence(2, 1), / and 1 asset will be /)
+  // And with no assets — or an asset count that could not be read — the clause is LEFT OUT:
+  // "and 0 assets" would be a claim on the one irreversible confirm (review, 2026-09-07).
+  assert.match(deletionSentence(1, 0), /^Your 1 project, its full version history will be permanently deleted in 14 days\./)
+  assert.match(deletionSentence(3, 0), /^All 3 projects, their full version history will be permanently deleted in 14 days\./)
+  assert.doesNotMatch(deletionSentence(3, 0), /0 assets/)
 
   // Every shape carries the two clauses the frame's "This cannot be undone." became, because for
   // fourteen days it CAN be, and the user is deciding on this sentence.
