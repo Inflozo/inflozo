@@ -55,7 +55,7 @@ A user owns their account end to end: registers a passkey and signs in with it i
   email-change link opened on a signed-in browser lands on `/account?email=stale` with a red note (the sign-in page
   bounces signed-in visitors before it says a word). R-95: the PREVIOUS address is told when an email change is
   confirmed — Supabase's own `mailer_notifications_email_changed_enabled`, plain and unbranded until E12 (DW-39) —
-  and FR-P1 is now **seven** emails. Neither touches sessions, passkeys or deletion; nothing above changes for 2.4–2.6.
+  and FR-P1 became **seven** emails (eight since R-96, Story 2.5). Neither touches sessions, passkeys or deletion; nothing above changes for 2.4–2.6.
 - **What 2.3 left for 2.4, and what 2.4 did with it (2026-09-07)** — DW-38 is CLOSED: `signedIn()` is one export in
   `lib/supabase/server.ts`, imported by both actions files and pinned by `server-wiring.test.ts`. DW-14 stays open:
   2.4 did not need `sessions_inactivity_timeout` (a global logout is core GoTrue, not the paid session feature), so
@@ -82,7 +82,6 @@ A user owns their account end to end: registers a passkey and signs in with it i
   `profiles where deleted_at is not null and purge_after <= now()` on the index `:125`, deletes the Storage
   objects `site_snapshots.storage_path` names (bucket-prefixed; `snapshotObjectKey()` in
   `account/deletion-rule.ts` strips it — import it) BEFORE the rows, then the user; a restored account has
-  both columns null and is invisible to it. Two questions are open for the owner in 2.5's spec: the email
-  is FR-P1's eighth (not on its list of seven), and the Dodo auto-renew stop/resume is Epic 12's (nothing to
-  build against) — recommended answers assumed until he rules. DW-43: restore clears the 90-day orphan
+  both columns null and is invisible to it. The owner ruled both of 2.5's questions on 2026-09-07 (§A20): the email is FR-P1's
+  **eighth** (R-96) and the Dodo auto-renew stop/resume is Epic 12's (R-97, DW-42, cited by Story 12.5). DW-43: restore clears the 90-day orphan
   clock too; E3 re-stamps it.

@@ -997,6 +997,29 @@ reason: `_signOut` (`GoTrueClient.js:3415-3445`): when `/logout` fails with anyt
   cites this row; the fix, when the owner wants one, is the same for both call sites. Still unexecuted: it
   needs GoTrue to fail from the live site, which no real-infrastructure step can produce.
 
+### DW-42: FR-A5's two Dodo calls — stop auto-renew on a deletion request, offer resume on restore — are owed by Epic 12
+
+plain: When someone asks to delete their account, their card must never be charged again while the 14-day
+  countdown runs, and pressing Restore should offer to switch the subscription back on at the same price.
+  Nothing in the product talks to Dodo yet and nobody can buy a plan, so Story 2.5 could not build this;
+  the billing epic builds it with the rest of Dodo. Until then nobody can be charged, because nobody can pay.
+status: open
+severity: medium
+origin: Story 2.5 spec (2026-09-07), the owner's ruling R-97 on its question 2
+location: apps/web/app/(app)/app/(authed)/account/actions.ts (`requestDeletion`, `restoreAccount` — the two
+  places the calls attach) · apps/web/app/(app)/app/restore/page.tsx (where the resume offer and the "paid
+  period ended" sentence render) · epics.md Story 12.5 (the owning story, which cites this row)
+reason: FR-A5 (`prd.md:184`): "soft-delete stops the Dodo subscription's auto-renew immediately … restoring
+  within the window offers one-click resume of auto-renew at the same plan and price, and says plainly when
+  the paid period ended meanwhile — that account restores on Free, under FR-L3's over-limit rules". No
+  billing adapter, no `subscriptions` writer and no checkout exist (Epic 12; AD-28 widens
+  `resolveEntitlement` there). A Dodo call written now would be a hypothesis with no real subscription to
+  execute it against (R-82) and would be rebuilt inside the adapter. What 2.5 leaves for it: `requestDeletion`
+  runs `request_account_deletion()` and then sends the email — the stop call goes between them, keyed on
+  `subscriptions.dodo_subscription_id`; `restoreAccount` runs `restore_account()` — the resume offer is a
+  second step on `/restore` after it, reading `subscriptions.current_period_end` to say whether the paid
+  period ended. `entitlements` is untouched by 2.5, which is FR-A5's "retained at their current level".
+
 ### DW-43: restoring an account clears every snapshot's `purge_after`, the 90-day orphan clock included
 
 plain: When someone cancels their account deletion, the countdown on their archived original themes is

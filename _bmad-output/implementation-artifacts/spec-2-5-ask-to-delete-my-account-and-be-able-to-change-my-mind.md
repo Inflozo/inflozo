@@ -200,6 +200,10 @@ land in your inbox saying "Your Inflozo account will be deleted on Sep 21, 2026"
    to build, but a person who deletes and closes the tab has nothing in writing, and this contradicts
    FR-A5's own text and the story's acceptance criterion.
 
+Ruled: option 1 — the eighth email (owner, 2026-09-07). Recorded as **R-96** in
+`reconcile-designs-decisions.md` §A20; FR-P1 now says eight and names it (8). Nothing in the build moved:
+the spec was written on it.
+
 **2. Stopping your card being charged during the countdown cannot be built yet.** The story says
 auto-renew on your Dodo subscription stops the moment you ask to delete, and Restore offers to resume
 it. Today nothing in the product talks to Dodo, nobody can buy a plan, and no subscription exists to
@@ -217,10 +221,13 @@ Sep 20 — the promise is that Sep 20 never charges them.
 3. **Wait: park this story until Epic 12 is done.** The 14-day window and Restore then arrive months
    later, and Story 2.6's purge with them.
 
-*This spec is built on options 1 and 1. Ruling 1 on question 1 edits FR-P1 (seven → eight) and adds a
-ruling row to `reconcile-designs-decisions.md` in the Dev run; ruling 2 removes the email tasks and
-nothing else moves. Ruling 1 on question 2 is a ledger row; ruling 2 adds a Dodo task the reviewer
-cannot verify; ruling 3 stops the story here.*
+Ruled: option 1 — Epic 12 (owner, 2026-09-07). Recorded as **R-97** in §A20 and as **DW-42** on the
+ledger, which Story 12.5 now cites in its acceptance criteria; no Dodo call in this story.
+
+*Both ruled on 2026-09-07, the day the spec was written, on the options it was built on — so nothing in
+the Code Map or the Tasks moved. R-96 edited FR-P1 (seven → eight, the new (8)) and R-97 wrote DW-42 and
+one acceptance line in Story 12.5; both landed in the second Create commit, with the spine's `resend` row
+reworded so it no longer restates a count.*
 
 ## Code Map
 
@@ -338,11 +345,12 @@ cannot verify; ruling 3 stops the story here.*
   plumbing only. No key printed
 - `_bmad-output/implementation-artifacts/deferred-work.md` -- DW-22 gains one line (a third story meets
   the wall: the email's delivery is the owner's step 5); **DW-43** (new, at Create): restore clears
-  the snapshot's 90-day orphan clock, E3's to re-stamp; **DW-42** (Dev, on the owner's ruling of
-  question 2): FR-A5's two Dodo calls are Epic 12's obligation
+  the snapshot's 90-day orphan clock, E3's to re-stamp; **DW-42** (Create, on the owner's ruling R-97):
+  FR-A5's two Dodo calls are Epic 12's obligation, cited by Story 12.5
 - `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md:465` FR-P1 and
-  `reconcile-designs-decisions.md` §A19 -- on ruling 1 of question 1: seven → eight, the ruling row
-  (Dev run)
+  `reconcile-designs-decisions.md` §A20 -- DONE at Create on the owner's rulings: FR-P1 seven → eight with
+  the new (8), R-96 and R-97 recorded, `epics.md` Story 12.5 citing R-97, and the spine's `resend` row no
+  longer restating a count
 - read-only: `lib/supabase/server.ts` (`signedIn`, `currentUser`, `supabaseServer`, `supabaseAdmin` and
   its docstring's second-reader sentence), `lib/flags.ts:43-47` (the admin read with `abortSignal`),
   `kit/dialog.ts`, `kit/button.tsx` (`danger`, `buttonClasses`), `kit/banner.tsx`, `kit/icons.tsx`
@@ -376,8 +384,9 @@ cannot verify; ruling 3 stops the story here.*
 - [ ] Vercel production env -- `RESEND_API_KEY`, `RESEND_FROM` by name -- the send needs them
 - [ ] `tools/probe/run-verify-account-deletion.py` + its catalogue row -- the harness, controls first --
       R-82, re-runnable
-- [ ] `deferred-work.md` -- DW-22's line, DW-43 (Create); DW-42 and the PRD/ruling propagation on the
-      owner's rulings (Dev) -- propagate, never localise
+- [x] `deferred-work.md` + `prd.md` + `reconcile-designs-decisions.md` + `epics.md` -- DW-22's line, DW-42,
+      DW-43, FR-P1's (8), R-96, R-97 and Story 12.5's line, all landed at Create on the rulings of
+      2026-09-07 -- propagate, never localise
 - [ ] Run `## Verification` on the real infrastructure and record every command and result by variable
       name
 

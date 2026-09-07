@@ -1761,6 +1761,47 @@ owner's choice for now, and the two fields that would brand it are deliberately 
 
 ---
 
+## A20 · Step 7 — Story 2.5's Create, two rulings on account deletion, 2026-09-07
+
+Taken as Story 2.5 (ask to delete my account, and be able to change my mind) was planned. Both questions
+went to the owner in R-83's shape: the first because two approved documents contradicted each other, the
+second because an approved acceptance criterion had nothing to be built against. He ruled both the same
+day, on the options the spec had been built on, so nothing in the story's plan moved.
+
+**R-96 — the account-deletion confirmation is FR-P1's eighth email.** FR-P1 said *exactly seven* emails
+exist and named them; FR-A5 and Story 2.5's acceptance criteria say the 14-day window is confirmed by an
+email that states the deadline and offers the snapshots. The owner ruled option 1: *"Yes — it becomes the
+eighth email."* Sent once, at the moment the typed confirm opens the window, to the account's own
+address; it states the purge date, lists every retained snapshot with its site, links to Restore and says
+it is the only email about this. **A confirmation, not a nudge**: no reminder ever follows (FR-A5's own
+last sentence), so FR-P2 is untouched. It is Inflozo's own send through Resend's HTTP API on the sign-in
+email's shell — not a Supabase Auth template, because GoTrue has no event for it.
+- Targets: ✅ `prd.md` FR-P1 (seven → eight, the new **(8)**; (1)–(7) keep their numbers so every citation
+  in the repository stays true) · ✅ `ARCHITECTURE-SPINE.md`'s dependency row for `resend`, which restated
+  "six" — reworded to defer to FR-P1 rather than carry a count (standing rule: counts are derived) · ✅
+  Story 2.5's spec (Boundaries, the matrix, Code Map, and the ruling under `## Questions for the owner`) ·
+  ✅ `epic-2-context.md` · ⬜ `apps/web/lib/email.ts`, `lib/deletion-email.ts` and the harness (Story 2.5's
+  Dev run). **Deliberately not touched:** `FR-P2` (a confirmation is not a nudge); `MEASUREMENTS.md` §23c
+  and `VERIFY-AT-BUILD.md` item 37b (records); `tools/probe/configure-supabase-auth.py`, which pushes
+  GoTrue's templates and this is not one; `deferred-work.md` **DW-22**, which already says why delivery
+  stays the owner's manual step.
+
+**R-97 — FR-A5's two Dodo calls are Epic 12's, not Story 2.5's.** FR-A5 and the story say auto-renew
+stops the moment an account asks to be deleted, and that Restore offers resume at the same plan and
+price, saying plainly when the paid period ended meanwhile. Nothing exists to build against: no billing
+adapter, no `subscriptions` writer, no checkout — so nobody can hold a paid plan before Epic 12, and no
+real subscription could execute the call (R-82). The owner ruled option 1: *"Build it in Epic 12, where
+Dodo arrives."* Story 2.5 builds the window, the email, the page, the downloads and Restore; the two
+calls land with the adapter, tested against a real subscription. Nothing is lost meanwhile, because
+nobody can pay.
+- Targets: ✅ `deferred-work.md` **DW-42** (the obligation, in the owner's words and the developer's, with
+  the two attachment points in 2.5's code named) · ✅ `epics.md` Story 12.5 (one acceptance line naming
+  both calls and this ruling) · ✅ Story 2.5's spec (Never, and the ruling under `## Questions for the
+  owner`) · ✅ `epic-2-context.md`. **Deliberately not touched:** `prd.md` FR-A5 — the behaviour is
+  unchanged and still owed; only the story that delivers it moved.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

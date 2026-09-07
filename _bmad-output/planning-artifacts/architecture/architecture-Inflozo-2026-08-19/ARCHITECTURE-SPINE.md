@@ -449,7 +449,7 @@ project maintains its own documents, not how the product behaves.)*
 | `eslint-plugin-compat` | 7.0.2 | over the behaviour modules (FR-G7 — the registry is the count) |
 | `size-limit` + `@size-limit/file` | 13.0.3 | `size-limit` has **no engine of its own** and measures nothing without a preset; the `file` preset is required. Its default metric is **brotli**, which is what NFR-2's 40 KB number therefore means |
 | `web-features` | 3.35.0 | the data the Baseline floor resolves from; recomputed and diffed per §7.6 item 17 |
-| `resend` | 6.20.0 | **six** transactional emails + Supabase Auth SMTP — the sixth is FR-P1's renewal reminder, added by owner decision in Round 4 (AD-33's seventh cron) |
+| `resend` | 6.20.0 | as many transactional emails as FR-P1 names (the count lives there, not here — it has moved twice since this row was written, R-95 and R-96) + Supabase Auth SMTP; the renewal reminder was added by owner decision in Round 4 (AD-33's seventh cron) |
 | `dodopayments` | 2.47.0 | hosted checkout + webhooks, behind a swappable billing adapter |
 | Playwright | pinned in one container image, with fonts | the runner is part of the NFR-6(a) baseline |
 | Vercel | Pro | functions `maxDuration` 300 s / `memory` 2048 MB (AD-11); Cron for health checks and retention |

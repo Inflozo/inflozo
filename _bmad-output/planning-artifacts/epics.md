@@ -7368,7 +7368,10 @@ So that I am never surprised by a charge.
 resume, and **plan-limit meters**
 **And** cancelling stops auto-renew and states plainly when access ends
 **And** invoices match S12d and the page matches S12a
-**And** it is **fully usable at 390**, because it is one of the three things the Small Screen Notice offers.
+**And** it is **fully usable at 390**, because it is one of the three things the Small Screen Notice offers
+**And** **FR-A5's two Dodo calls land here with the adapter**: auto-renew stops the moment an account asks to be
+deleted, and Restore offers one-click resume at the same plan and price, saying plainly when the paid period
+ended meanwhile — deferred from Story 2.5 by ruling **R-97** (owner, 2026-09-07; `deferred-work.md` DW-42).
 
 **FRs:** FR-L4. · **Frame:** `S12 Billing.dc.html` S12a · S12d. · **Owner test:** yes.
 
