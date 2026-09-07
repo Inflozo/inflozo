@@ -85,3 +85,20 @@ A user owns their account end to end: registers a passkey and signs in with it i
   both columns null and is invisible to it. The owner ruled both of 2.5's questions on 2026-09-07 (§A20): the email is FR-P1's
   **eighth** (R-96) and the Dodo auto-renew stop/resume is Epic 12's (R-97, DW-42, cited by Story 12.5). DW-43: restore clears the 90-day orphan
   clock too; E3 re-stamps it.
+- **What 2.6 decided at Create (2026-09-07).** The purge is ONE route handler at AD-33's home,
+  `apps/web/app/api/cron/purge-accounts/route.ts`, scheduled `15 3 * * *` UTC in `apps/web/vercel.json`
+  (daily — legal on every Vercel plan) and guarded by Vercel's own `CRON_SECRET` bearer, compared with
+  `timingSafeEqual` and fail-closed when unset; `force-dynamic` and `no-store`, because a cached cron
+  response is skipped and unlogged (docs, read 2026-09-07). It is the THIRD `supabaseAdmin()` importer,
+  named in `server-wiring.test.ts`. Per due profile (`purge_after <= now()` on the index `:125`, `BATCH
+  = 25`): every object under `assets/{uid}/`, `site-snapshots/{uid}/`, `suggestion-images/{uid}/` and
+  `deploy-artifacts/{projectId}/` per project — a PREFIX walk over storage-js 2.115.0's `listV2`
+  (`lib/storage-drain.ts`, for E3 and E7 to import), not the rows' pointers, so `snapshotObjectKey()` is
+  NOT what 2.6 imports; then `suggestions` anonymised (`user_id` null, `anonymized_at`, `image_path`
+  null, `image_approved` false); then `auth.admin.deleteUser(uid)` (`DELETE /admin/users/{id}`), whose
+  cascade empties every table keyed to `auth.users`. No email, no migration, no lock; 500 whenever an
+  account failed, because Vercel neither retries nor alerts (DW-46). The harness
+  `run-verify-account-purge.py` calls the route on `inflozo.com` — the apex passes non-`/app` paths
+  through, as `*.vercel.app` does for Vercel's own call. Ledger: DW-44 (Vault secrets outlive the
+  `site_credentials` cascade — 3.1's trigger), DW-45 (`entitlements.restored_by` does not cascade —
+  E12's), DW-46 (a failed purge is only a red cron log until NFR-9's Sentry).

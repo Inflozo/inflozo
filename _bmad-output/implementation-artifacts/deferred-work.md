@@ -1045,3 +1045,57 @@ reason: One column carries two clocks. `request_account_deletion()` sets it to t
   restored user, or splits the column. Nothing writes `disconnected_at` today, so no row can be affected
   before then. Marked `-- ponytail:` beside the function.
 
+
+### DW-44: the Vault secrets a site's credentials point at outlive the account purge and the site disconnect
+
+plain: When an account is purged, the rows that remember where a site's Ghost keys are stored are removed, but
+  the keys themselves would stay in the locked store — nothing stores any yet, so nothing leaks today; the story
+  that first puts keys in the store must also take them out when their row goes.
+status: open
+severity: low
+origin: Story 2.6 spec (2026-09-07), the cascade analysis
+location: SCHEMA.sql:181-190 (`private.site_credentials.admin_key_vault_ref`, `staff_token_vault_ref` —
+  `vault.secrets(id)` by comment, no FK) · epics.md Story 3.1 (the server-side admin proxy and Vault credential
+  storage — the owner)
+reason: `private.site_credentials` cascades from both `sites` and `auth.users`, so FR-A5's purge and FR-C6's
+  disconnect each remove the row and leave the `vault.secrets` rows it referenced. A `before delete` trigger on
+  `private.site_credentials` that calls `vault`'s delete is the one home that serves every path — the purge,
+  disconnect, key rotation's re-encrypt (FR-C8) — rather than each caller remembering. Nothing writes Vault
+  before Story 3.1, so no secret can be orphaned before then; 3.1 lands the trigger with the first write and
+  proves it in the RLS gate (a credential row deleted → its secret gone).
+
+### DW-45: `entitlements.restored_by` is the one user reference that does not cascade, so purging that user is refused
+
+plain: One column records which staff account restored a customer's paid plan after a dispute. The database
+  keeps that account from ever being deleted while the record points at it — which would block the purge of
+  that one account (in practice the owner's own) with an error every day, not silently.
+status: open
+severity: low
+origin: Story 2.6 spec (2026-09-07), the cascade analysis
+location: SCHEMA.sql:590 (`restored_by uuid references auth.users(id)` — no `on delete`) ·
+  apps/web/app/api/cron/purge-accounts/route.ts (where the refusal is logged, `step: 'user'`) · epics.md
+  Epic 12 (FR-L2's dispute-restore path, which first writes the column)
+reason: Every other `references auth.users(id)` in the schema is `on delete cascade` or `on delete set
+  null`; this one is bare, so a `DELETE /admin/users/{id}` for a user named in any `restored_by` fails with
+  `23503` and the purge logs it and answers 500 until someone acts. The column is written only by the manual
+  dispute-restore action (FR-L2, Epic 12), so no row can carry it before then. E12 decides `on delete set
+  null` (the record survives, the name does not) when it first writes the column; the purge's spec makes a
+  refused delete an Ask First rather than nulling an audit column from a cron.
+
+### DW-46: a failed purge reaches nobody until NFR-9's Sentry lands — today it is one red line in Vercel's cron log
+
+plain: If the daily clean-up job fails, the only sign is a red entry in Vercel's log page that nobody is
+  emailed about. Until the error-alerting service the requirements name is set up, checking that page after a
+  deletion is the owner's job.
+status: open
+severity: medium
+origin: Story 2.6 spec (2026-09-07)
+location: apps/web/app/api/cron/purge-accounts/route.ts (answers 500 whenever an account failed, so the
+  invocation is red) · prd.md:493 (NFR-9: Sentry, app + server) · ARCHITECTURE-SPINE.md:328 (AD-29's
+  60/80/95% alarms)
+reason: Vercel neither retries a failed cron invocation nor alerts on one (docs, read 2026-09-07), and a purge
+  that fails quietly is the indefinite retention FR-A5 exists to prevent — the same class the spine names for
+  the renewal reminder ("the job that exists to prevent a surprise must not fail by surprise", AD-33). The
+  route's 500 is the whole alarm today. The story that lands Sentry (NFR-9) captures the purge's
+  `console.error` with the rest and closes this row; until then the Deploy and Review runs read the cron log
+  by hand and record it under `## Verification`.
