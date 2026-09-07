@@ -2,10 +2,10 @@
 title: 'Story 2.4 — End every session everywhere'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'a26f42efdb21386b5c89e809954bb831cf0cb69b'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 

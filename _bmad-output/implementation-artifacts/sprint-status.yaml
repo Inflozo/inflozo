@@ -54,7 +54,7 @@ development_status:
   2-1-register-a-passkey-and-sign-in-with-it: done
   2-2-see-rename-and-revoke-my-passkeys: done
   2-3-change-my-email-address-safely: done
-  2-4-end-every-session-everywhere: review
+  2-4-end-every-session-everywhere: done
   2-5-ask-to-delete-my-account-and-be-able-to-change-my-mind: backlog
   2-6-the-purge-the-cascade-and-the-anonymisation: backlog
   epic-2-retrospective: optional
