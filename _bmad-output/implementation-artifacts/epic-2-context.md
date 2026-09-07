@@ -68,3 +68,21 @@ A user owns their account end to end: registers a passkey and signs in with it i
   `GET /auth/v1/user` AT ONCE, not at the JWT's `exp`, and the bouncing response clears the cookies. Residuals on the
   ledger, both executed or read: DW-40 (a revoked token still satisfies PostgREST until `jwt_exp` = 60 minutes) and
   DW-41 (the client clears this device's cookies before returning most `/logout` failures — both sign-out actions).
+- **What 2.5 decided at Create (2026-09-07), for 2.6 to build on.** The window is TWO `security definer`
+  functions in `supabase/migrations/20260907150000_account_deletion_window.sql` — `request_account_deletion()`
+  (stamps `profiles.deleted_at`, `purge_after = deleted_at + interval '14 days'`, every snapshot's
+  `purge_after` and `download_offered_at`; returns the deadline, or `null` when the window was already open)
+  and `restore_account()` (clears both while `purge_after > now()`, else `false`) — because the two columns
+  are NOT client-writable (`:1223-1224`) and the secret key keeps its one reader for user rows. The door is
+  `(authed)/layout.tsx`: a pending profile is redirected to `/restore` (outside the group, self-guarded),
+  which lists `site_snapshots` with a Download answered by `GET /snapshots/{id}/download` — the SECOND
+  `supabaseAdmin()` importer, for `createSignedUrl` on the policy-less bucket (AD-13/AD-32). The
+  confirmation email is one `fetch` to Resend in `lib/email.ts` (no SDK; `RESEND_API_KEY`/`RESEND_FROM` added
+  to Vercel production in the Dev run — they were absent, read 2026-09-07). **2.6's purge** selects
+  `profiles where deleted_at is not null and purge_after <= now()` on the index `:125`, deletes the Storage
+  objects `site_snapshots.storage_path` names (bucket-prefixed; `snapshotObjectKey()` in
+  `account/deletion-rule.ts` strips it — import it) BEFORE the rows, then the user; a restored account has
+  both columns null and is invisible to it. Two questions are open for the owner in 2.5's spec: the email
+  is FR-P1's eighth (not on its list of seven), and the Dodo auto-renew stop/resume is Epic 12's (nothing to
+  build against) — recommended answers assumed until he rules. DW-43: restore clears the 90-day orphan
+  clock too; E3 re-stamps it.

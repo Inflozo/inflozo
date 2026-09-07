@@ -566,6 +566,10 @@ reason: Executed 2026-09-06 and RE-EXECUTED by the fifth review the same day: `G
   `run-verify-email-change.py` proves the HAND-OFF — `email_change_sent_at` moved, or did not — and
   cannot prove the email arrived, so FR-P1's email (2) is read by the owner and by nobody else. Its
   `--to` points that one real send at an inbox a human can open, which is the whole of the workaround.
+  Story 2.5 (Create, 2026-09-07) meets it a third time: the deletion confirmation email — FR-P1's eighth,
+  pending the owner's ruling on the story's question 1 — is sent by the app through `POST /emails` and the
+  harness can see the deletion, the rows, the page and the download but never the inbox; the app logs
+  Resend's status and id, and delivery is step 5 of that story's owner's manual test.
 
 
 ### DW-23: `pro_past_due` grants Pro for ever, because nothing expires the grace window
@@ -992,3 +996,25 @@ reason: `_signOut` (`GoTrueClient.js:3415-3445`): when `/logout` fails with anyt
   gone, so the retry lands on `/sign-in` through `signedIn()` with nothing said. Its comment now says so and
   cites this row; the fix, when the owner wants one, is the same for both call sites. Still unexecuted: it
   needs GoTrue to fail from the live site, which no real-infrastructure step can produce.
+
+### DW-43: restoring an account clears every snapshot's `purge_after`, the 90-day orphan clock included
+
+plain: When someone cancels their account deletion, the countdown on their archived original themes is
+  cleared too — including a separate, longer countdown that starts when a site is disconnected. Today
+  nothing starts that longer countdown, so nothing is wrong yet; the story that builds it (Epic 3) has to
+  set it again after a restore.
+status: open
+severity: low
+origin: Story 2.5 spec (2026-09-07), the `restore_account()` function
+location: supabase/migrations/20260907150000_account_deletion_window.sql (`restore_account`) ·
+  supabase/migrations/20260904120000_complete_schema.sql:199 (`site_snapshots.purge_after`, "FR-C6: 90 days
+  after disconnect; FR-A5: 14 days at delete")
+reason: One column carries two clocks. `request_account_deletion()` sets it to the EARLIER of the two
+  (`least(coalesce(purge_after, deadline), deadline)`), which is right on the way in; `restore_account()`
+  sets it to null, which is right for the 14-day clock and wrong for a 90-day clock that was already
+  running. Telling the two apart needs either a second column or a re-derivation from
+  `sites.disconnected_at`, and both belong to the story that first writes the 90-day clock (FR-C6, Epic 3):
+  it re-stamps `purge_after = disconnected_at + interval '90 days'` for every disconnected site of the
+  restored user, or splits the column. Nothing writes `disconnected_at` today, so no row can be affected
+  before then. Marked `-- ponytail:` beside the function.
+
