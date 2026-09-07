@@ -1118,3 +1118,41 @@ reason: The story's approach is reconciliation with no claim column and no attem
   — that the red log line already reports. The fix is a migration (a `purge_attempts` or `purge_failed_at`
   column skipped after N tries, or a bigger batch), which the spec's Ask First reserves; it lands the day a run
   is observed to starve or when NFR-9's Sentry (DW-46) turns the red line into an alert somebody reads.
+
+### DW-48: the ghost-admin verify route is verification scaffolding, and 3.2 removes it
+
+plain: Story 3.1 ships a small, password-protected back door whose only job is to prove on the live site that
+  keys go into the locked store and come out for one signed request. It is not a product feature, and the
+  next story — the connect screen, the first real user of the store — takes it out again so the app carries
+  no extra doors.
+status: open
+severity: low
+origin: Story 3.1 spec (2026-09-07), the deployed-proof decision
+location: apps/web/app/api/ghost-admin/verify/route.ts (to be created by 3.1) · tools/probe/run-verify-ghost-admin.py
+  (drives it) · epics.md Story 3.2 (the connect wizard — the story that removes it)
+reason: R-82 wants the round trip executed on the real infrastructure, and the module has no caller until 3.2's
+  connect action exists; a bearer-gated route is the one way to execute the Vercel → pooler hop and the
+  Vault write/decrypt/delete cycle from the deployed function, and it sidesteps this machine's sandbox, which
+  refuses direct writes to the live database (spec-2-5:583). Once the connect action is the caller, the
+  harness retargets at it and the route — five ops behind `CRON_SECRET`, one of which stores a key for a
+  caller-supplied `site_id` — is deleted rather than kept as a permanent privileged surface.
+
+### DW-49: the app's Postgres connection is the `postgres` user's, and a narrower role is owed at the next password rotation
+
+plain: The server reaches the encrypted key store with the database's main password, which is how Supabase's
+  own serverless guide connects. A purpose-made database account that can touch only the key store and the
+  audit log would limit what a leak of that one setting could do; it is the right change to make when the
+  password is next rotated, not before.
+status: open
+severity: low
+origin: Story 3.1 spec (2026-09-07), the connection decision
+location: apps/web/server/ghost-admin/db.ts (to be created by 3.1, `SUPABASE_DB_POOLER_URL`) ·
+  tools/probe/.env.example (`SUPABASE_DB_POOLER_URL`) · SCHEMA.sql (a role with `usage` on `vault` and
+  `private`, `select` on `vault.decrypted_secrets`, `execute` on `vault.create_secret`, `select, delete` on
+  `vault.secrets`, and `select, insert, update, delete` on `private.*` — nothing in `public` beyond `sites`)
+reason: The connection string in Vercel is the one secret that can decrypt every customer's Ghost key, which
+  is also true of the `postgres` password it carries. A dedicated role changes the blast radius of a leaked
+  URL from "the whole database" to "the key store and the audit log" — still severe, but bounded and
+  auditable. It needs a migration, a SCHEMA.sql block, an RLS-TEST assertion that the role holds nothing
+  else, and a password the owner sets in the dashboard, so it belongs with the rotation that has to happen
+  anyway rather than inside the story that first opens the connection.
