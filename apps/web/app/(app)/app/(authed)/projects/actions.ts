@@ -1,12 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, capSentence, type PlanId } from '@/lib/plan'
 import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
-import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
 /**
  * FR-B3's four writes, and FR-B4's cap in front of two of them.
@@ -53,17 +52,6 @@ const DASHBOARD = '/app'
 const idOf = (formData: FormData) => {
   const id = formData.get('id')
   return typeof id === 'string' && id ? id : null
-}
-
-/**
- * A session that ended between the render and the click. "Try again in a moment" could never
- * succeed — and through RLS the write reads as zero rows, a generic failure — so the answer is
- * the layout guard's, not a sentence (review, 2026-09-05). `redirect` throws, so it narrows.
- */
-async function signedIn() {
-  const user = await currentUser()
-  if (!user) redirect('/sign-in')
-  return user
 }
 
 /**

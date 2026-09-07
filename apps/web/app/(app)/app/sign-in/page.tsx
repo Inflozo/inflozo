@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { currentUser } from '@/lib/supabase/server'
 import { passkeysEnabled } from '@/lib/flags'
 import { SignInForm } from './sign-in-form'
-import { isSignedOut, SIGNED_OUT } from './signed-out'
+import { isSignedOut, isSignedOutEverywhere, SIGNED_OUT } from './signed-out'
 
 /* ─────────────────────────────────────────────────── S1 Sign In.dc.html — S1a and S1b
 
@@ -40,8 +40,10 @@ export default async function SignInPage({
   // Already signed in — the sign-in page has nothing to offer, so it is not shown (matrix).
   if (await currentUser()) redirect('/')
 
-  // `?signed-out=1` is set by `signOut` and says one sentence on arrival; `?error=link` is the
-  // confirm route's. Neither is trusted for anything — each only chooses a sentence.
+  // `?signed-out=1` is set by `signOut` and says one sentence on arrival; `?signed-out=all` is
+  // `signOutEverywhere`'s and says the other (Story 2.4 — ONE key, two values, so the two can
+  // never read as each other); `?error=link` is the confirm route's. Nothing is trusted for
+  // anything — each only chooses a sentence.
   const { error, [SIGNED_OUT]: signedOut } = await searchParams
 
   return (
@@ -63,6 +65,7 @@ export default async function SignInPage({
       <SignInForm
         linkError={error === 'link'}
         signedOut={isSignedOut(signedOut)}
+        signedOutEverywhere={isSignedOutEverywhere(signedOut)}
         passkeys={await passkeysEnabled()}
       />
 

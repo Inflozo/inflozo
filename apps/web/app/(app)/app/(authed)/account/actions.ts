@@ -5,10 +5,11 @@ import { redirect } from 'next/navigation'
 import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '../../sign-in/webauthn.ts'
 import { passkeysEnabled } from '@/lib/flags'
 import { nameFor } from '@/lib/passkey-name'
-import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { SEND_INTERVAL, sentStateFor } from '../../sign-in/resend-timer.ts'
 import { FIELD_REFUSALS, IN_USE, newEmailFor, SEND_FAILED } from './email-change-rule.ts'
 import { NUDGE_DONE } from './nudge.ts'
+import { SIGNED_OUT_EVERYWHERE_PATH } from '../../sign-in/signed-out.ts'
 import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey-name-rule.ts'
 
 /**
@@ -16,7 +17,7 @@ import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey
  *
  * Registration happens ONLY from a signed-in session, which is the whole reason the magic link
  * comes first: `startRegistration` and `verifyRegistration` both read the session from the same
- * cookies every other action does, and `currentUser()` is the guard, as always.
+ * cookies every other action does, and `signedIn()` is the guard, as always.
  *
  * The browser's half is `navigator.credentials.create()` and two serialisers; everything here
  * is HTTP, and no key and no credential is ever logged.
@@ -42,6 +43,7 @@ type Code =
   | 'in_use'
   | 'too_soon'
   | 'send_failed'
+  | 'sign_out_failed'
 
 export type RegisterStart =
   | { ok: true; challengeId: string; options: ServerCredentialCreationOptions }
@@ -64,6 +66,9 @@ const MESSAGES: Record<Code, string> = {
   in_use: IN_USE,
   too_soon: tooSoon(SEND_INTERVAL),
   send_failed: SEND_FAILED,
+  // FR-A6's one failure, in the confirm's own Banner. It says the attempt failed and claims
+  // nothing about the other devices, because nothing happened to them.
+  sign_out_failed: "We couldn't sign you out everywhere just now. Try again in a moment.",
 }
 
 /** S1b's sentence at the account's altitude: the seconds are GoTrue's, never a guess of ours. */
@@ -90,24 +95,14 @@ const idOf = (formData: FormData) => {
 const GONE = 404
 
 /**
- * THE SESSION, ON ITS OWN. A session that ended between the render and the click has one honest
- * answer and it is the sign-in page, not a sentence (`projects/actions.ts`'s own `signedIn`,
- * copied here rather than imported because an exported async function in a `'use server'` file
- * is a Server Action, and a guard is not one). `redirect` throws, so it narrows.
- *
- * `changeEmail` GUARDS ON THIS ALONE: there is no feature flag for changing an email, and
- * `ready()`'s passkey switch must never gate it — with passkeys off, the Email card is still
- * there and its button still has to work.
- */
-async function signedIn() {
-  const user = await currentUser()
-  if (!user) redirect('/sign-in')
-  return user
-}
-
-/**
  * BOTH GUARDS, IN THE ORDER THAT MATTERS, for the passkey actions alone. The flag first, because
- * an action that still acts with the switch off is not a switch; then the session, above.
+ * an action that still acts with the switch off is not a switch; then the session — `signedIn()`,
+ * which is `lib/supabase/server.ts`'s one export since Story 2.4 closed DW-38 (it stood copied
+ * here and in `projects/actions.ts`).
+ *
+ * `changeEmail` AND `signOutEverywhere` GUARD ON THE SESSION ALONE: neither has a feature flag,
+ * and `ready()`'s passkey switch must never gate either — with passkeys off, the Email card and
+ * the Sessions card are still there and their buttons still have to work.
  */
 async function ready() {
   if (!(await passkeysEnabled())) return null
@@ -357,4 +352,45 @@ export async function changeEmail(
   // and nothing on the client edits the card.
   revalidatePath('/app/account')
   return { ok: true }
+}
+
+/**
+ * FR-A6's OTHER HALF: end every session, including this device's — S12a's Sessions card.
+ *
+ * `{ scope: 'global' }` IS WRITTEN OUT AND IT IS NOT DECORATION. `auth-js` 2.115.0 defaults
+ * `signOut()` to exactly this scope (`GoTrueClient.js:3405`, `POST /logout?scope=global` at
+ * `GoTrueAdminApi.js:67-77`), which is how the avatar menu's ordinary Sign out came to end every
+ * session everywhere for three stories. Both scopes are now explicit and `signed-out.test.ts`
+ * reads them out of these two files, so neither can be dropped in a tidy-up.
+ *
+ * NOTHING OF OURS TRACKS SESSIONS. GoTrue owns them, the user's own cookie-backed client ends the
+ * user's own — no `supabaseAdmin()`, no table, no list. The other devices are not told: the guard
+ * cannot tell a revoked session from an absent one, so they simply arrive at `/sign-in`.
+ *
+ * A FAILURE IS SAID, NEVER CLAIMED. The redirect is OUTSIDE the try — `redirect()` throws by
+ * design and a catch would swallow it — so a `/logout` that failed leaves the dialog open with
+ * one red sentence and no navigation, and the other devices, which were not signed out, are not
+ * described as though they had been.
+ */
+export async function signOutEverywhere(
+  _previous: ActionResult | null,
+  _formData: FormData,
+): Promise<ActionResult> {
+  await signedIn()
+
+  try {
+    const supabase = await supabaseServer()
+    const { error } = await supabase.auth.signOut({ scope: 'global' })
+    if (error) {
+      console.error('sign-out everywhere: failed', { status: error.status, code: error.code })
+      return fail('sign_out_failed')
+    }
+  } catch (error) {
+    // `renamePasskey`'s reason: a Server Function that throws takes `/account` to the error
+    // boundary instead of leaving the dialog open with one sentence.
+    console.error('sign-out everywhere: threw', { name: (error as { name?: string })?.name })
+    return fail('sign_out_failed')
+  }
+
+  redirect(SIGNED_OUT_EVERYWHERE_PATH)
 }

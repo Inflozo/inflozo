@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { sessionCookie } from './cookies.ts'
 
 /**
@@ -97,3 +98,20 @@ export const currentUser = cache(async function currentUser() {
   const { data } = await (await supabaseServer()).auth.getUser()
   return data.user
 })
+
+/**
+ * THE SESSION, ON ITS OWN — the guard a server action runs before it acts. A session that ended
+ * between the render and the click has one honest answer and it is the sign-in page, not a
+ * sentence: "try again in a moment" could never succeed. `redirect` throws, so this narrows.
+ *
+ * IT LIVES HERE, and not in either actions file, because a `'use server'` module may export only
+ * async functions — every one of which becomes a Server Action, and a guard is not one. That is
+ * a reason not to EXPORT it from an actions file; it was taken as a reason to COPY it, and it
+ * stood in two of them until Story 2.4 (DW-38). This is a plain module, so one export serves
+ * both and a change to the guard cannot land on one caller and miss the other.
+ */
+export async function signedIn() {
+  const user = await currentUser()
+  if (!user) redirect('/sign-in')
+  return user
+}

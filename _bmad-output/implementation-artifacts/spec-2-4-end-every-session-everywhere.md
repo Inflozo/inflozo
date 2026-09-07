@@ -2,7 +2,8 @@
 title: 'Story 2.4 — End every session everywhere'
 type: 'feature'
 created: '2026-09-07'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'a26f42efdb21386b5c89e809954bb831cf0cb69b'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -171,20 +172,20 @@ execute, never assert).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `sign-in/signed-out.ts` + `apps/web/signed-out.test.ts` -- the second value, its reader, both round
+- [x] `sign-in/signed-out.ts` + `apps/web/signed-out.test.ts` -- the second value, its reader, both round
       trips, and the source-reading scope test -- the contract before anything reads it
-- [ ] `lib/supabase/server.ts` + `account/actions.ts` + `projects/actions.ts` + `server-wiring.test.ts` --
+- [x] `lib/supabase/server.ts` + `account/actions.ts` + `projects/actions.ts` + `server-wiring.test.ts` --
       `signedIn()` once, imported twice, pinned -- DW-38
-- [ ] `sign-in/actions.ts` -- `{ scope: 'local' }` on the ordinary Sign out -- FR-A6's "ordinary sessions
+- [x] `sign-in/actions.ts` -- `{ scope: 'local' }` on the ordinary Sign out -- FR-A6's "ordinary sessions
       persist until then"
-- [ ] `account/actions.ts` -- `signOutEverywhere`, the code and the sentence -- FR-A6's verb
-- [ ] `account/sessions-card.tsx` + `account/page.tsx` -- the card, the row, the button, the confirm -- S12a
-- [ ] `sign-in/page.tsx` + `sign-in-form.tsx` -- the other sentence -- say it happened
-- [ ] `tools/probe/run-verify-sign-out-everywhere.py` + its catalogue row -- the harness, control first --
+- [x] `account/actions.ts` -- `signOutEverywhere`, the code and the sentence -- FR-A6's verb
+- [x] `account/sessions-card.tsx` + `account/page.tsx` -- the card, the row, the button, the confirm -- S12a
+- [x] `sign-in/page.tsx` + `sign-in-form.tsx` -- the other sentence -- say it happened
+- [x] `tools/probe/run-verify-sign-out-everywhere.py` + its catalogue row -- the harness, control first --
       R-82, re-runnable
-- [ ] `deferred-work.md` -- DW-38 closed, DW-40's `jwt_exp` filled from the harness's (DW-14's line landed at Create)
+- [x] `deferred-work.md` -- DW-38 closed, DW-40's `jwt_exp` filled from the harness's (DW-14's line landed at Create)
       `jwt-exp` step -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result by variable name
+- [x] Run `## Verification` on the real infrastructure and record every command and result by variable name
 
 **Acceptance Criteria:**
 - Given a signed-in user on `/account` at 1440 and at 390, when the page renders, then a **Sessions** card
@@ -211,6 +212,17 @@ execute, never assert).
   `/sign-in?signed-out=all`, at 1440 and 390, then all green and zero violations
 
 ## Spec Change Log
+
+1. **One test beyond the Code Map, in `server-wiring.test.ts`** (Dev, 2026-09-07). Two matrix rows —
+   *Passkey switches off* and *Session ended before the click* — are visible only in the source: production
+   runs with both passkey switches ON, so no harness step can ever see a Sessions card moved inside the
+   `passkeys ? … : null` branch, and none can see the guard swapped from `signedIn()` to `ready()`. Either
+   would be green in every gate while taking sign-out-everywhere away from exactly the user whose passkeys
+   are off. The test asserts what stands immediately before `<SessionsCard`, and that `signOutEverywhere`
+   awaits `signedIn()` before `/logout`. Both halves were controlled — broken, seen to fail, restored.
+2. **`SESSION_MAX_AGE` is read by the harness, never retyped in it** (Dev, 2026-09-07). The
+   `magic-link-after` step asserts FR-A6's thirty days on the `Set-Cookie`, and reads the number out of
+   `apps/web/lib/supabase/cookies.ts`: a count written twice is a count that goes stale once.
 
 ## Design Notes
 
@@ -247,37 +259,82 @@ harness reads `jwt_exp` off the Management API so the number is a fact.
 
 ## Verification
 
-Run by the Dev run on the real infrastructure (R-82). Every key is read into a command's environment by
-name and never printed; record keys by variable name only.
+Run on the real infrastructure (R-82) by the Dev run, 2026-09-07. Every key was read into a command's
+environment by name and never printed; each is recorded below by its variable name only.
 
-**Commands:**
+**Ran at Dev, and what each returned:**
+
 - `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH && pnpm check` (repository root) --
-  expected: lint, `tsc` and `node --test` green, including the new tests in `signed-out.test.ts` and
-  `server-wiring.test.ts`
-- `pnpm build` -- expected: `✓ Compiled successfully`, `/app/account` still `ƒ`
-- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0 (no migration here; the gate proves nothing drifted)
-- `python3 tools/probe/run-verify-sign-out-everywhere.py --check` -- expected: exit 0 — keys present,
-  Playwright and axe resolved, one admin create-read-delete against the real project, user count unchanged
-- `python3 tools/probe/run-verify-sign-out-everywhere.py` (after Deploy, against `app.inflozo.com`) --
-  expected: every step PASS, exit 0. The steps, in this order:
-  - `control-local` -- **THE CONTROL, FIRST**: A1 (browser) and A2 (a second session for the same fixture
-    user, minted after A1 was redeemed) both signed in; A1's avatar menu Sign out → `/sign-in?signed-out=1`;
-    then A2's token at `GET /auth/v1/user` → **200** and A2's `/account` → 200. A run where A2 is signed out
-    here proves the old defect is still there and FAILS
-  - `frame` -- the Sessions button's height, radius, border and hover fill read off the deployed DOM as
-    computed styles against the tokens (`email-change`'s `frame` step, same numbers)
-  - `dialog-focus` -- the confirm opens with focus on Cancel; Escape closes it; no request left the browser
-  - `everywhere` -- A1 signed in again; primary pressed; A1 lands on `/sign-in?signed-out=all` with the
-    sentence; A1's former token → `session_not_found` (record the HTTP status); A2's token →
-    `session_not_found`; A2's `/account` → `/sign-in`, and the response that bounced it carried the
-    session cookies' deletion
-  - `jwt-exp` -- RECORD: `GET https://api.supabase.com/v1/projects/{ref}/config/auth` (`SUPABASE_ACCESS_TOKEN`)
-    → `jwt_exp`; written into DW-40
-  - `magic-link-after` -- a fresh magic link for A redeemed at `/auth/confirm` → signed in to A's own id, and
-    `Set-Cookie` on that response carries `Max-Age=2592000`
-  - `axe-*` -- axe-core at WCAG 2.1 AA over `/account` (closed; the confirm open) and `/sign-in?signed-out=all`,
-    at 1440 and 390 — zero violations, no horizontal scroll
-  - fixture user deleted; Admin-API count before == after
+  **exit 0**. `eslint .` clean, `tsc --noEmit` clean in every package, `node --test` **140 pass / 0 fail**
+  in `apps/web`. The seven new ones: the everywhere round trip through its reader; "nothing else reads as
+  signed out everywhere"; "an ordinary sign-out and an everywhere sign-out never read as each other"; the
+  two source-reading scope tests; "the session guard is one export, imported, and copied into neither
+  actions file"; and "the way out of every device does not hang on a way in"
+- `pnpm build` -- **exit 0**, `✓ Compiled successfully`; `/app/account` still `ƒ` and `/app/sign-in` still `ƒ`
+- `bash supabase/tests/run-rls-gate.sh` -- **exit 0**. No migration in this story; the gate proves the
+  `supabase/` copies have not drifted from the architecture originals and every RLS assertion still passes
+- `python3 tools/doc-audit.py --check` -- **PASS (0 warnings)**, after `tools/story-board.py` regenerated
+  the board. The new harness has its catalogue row
+- `python3 tools/probe/run-verify-sign-out-everywhere.py --check` -- **exit 0**, against the real Supabase
+  project (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_ACCESS_TOKEN`):
+  `playwright: resolved`, `axe-core: resolved`, `PASS admin round trip: create, read back (200)`,
+  `SESSION_MAX_AGE read from the app: 2592000`; users **4 before, 4 after** — no leak
+
+**THE STORY'S FOUNDING CLAIM, EXECUTED rather than reasoned** (standing rule 1). The Intent cites
+`GoTrueClient.js:3405` for the library's default; what the HOSTED GoTrue does with each scope was still a
+hypothesis. Two real sessions were minted for one fixture user the way the app's own confirm route does it
+(`POST /admin/generate_link` with `SUPABASE_SECRET_KEY`, then `POST /auth/v1/verify` with
+`SUPABASE_PUBLISHABLE_KEY` — each link minted immediately before redemption, because GoTrue keeps one per
+user), then `POST /auth/v1/logout?scope=…` from A1 with A1's own bearer token, asking `GET /auth/v1/user`
+for both tokens either side. Executed 2026-09-07:
+
+| scope | `POST /logout` (A1) | A1 after | A2 after |
+|---|---|---|---|
+| `local` | **HTTP 204** | `403 session_not_found` | **`200`** — still signed in |
+| `global` | **HTTP 204** | `403 session_not_found` | **`403 session_not_found`** |
+
+Both halves hold, and they hold **immediately**: a revoked session is refused at `GET /auth/v1/user` at
+once, not at the JWT's own `exp`. **The Ask First did not fire** — no revoked token answered 200, so the
+choice between a shorter `jwt_exp` and a session table of ours never arises and there is nothing to put to
+the owner. The fixture user was deleted and the Admin-API count returned to 4.
+
+- `GET https://api.supabase.com/v1/projects/{ref}/config/auth` (`SUPABASE_ACCESS_TOKEN`) -- **HTTP 200,
+  `jwt_exp = 3600`** (60 minutes), written into **DW-40**, which no longer carries a blank
+
+**Controls run, because a test that cannot fail is not a test** (standing rule 2). Each contract was broken,
+seen to fail with its own message, and restored:
+
+- `{ scope: 'local' }` dropped from `signOut`, as a tidy-up would -- *"the avatar menu's Sign out is
+  explicitly this device only"* FAILS
+- `signOutEverywhere`'s `'global'` swapped for `'local'` -- *"Sign out everywhere is explicitly every
+  device"* FAILS
+- `<SessionsCard />` moved inside `{passkeys ? … : null}` -- *"the way out of every device does not hang on
+  a way in"* FAILS
+- `signOutEverywhere`'s `signedIn()` swapped for `ready()` -- the same test FAILS on its guard assertion
+
+**Belongs to the Deploy run, not to Dev**, because it drives the deployed UI and this code is not yet on
+`app.inflozo.com`:
+
+- `python3 tools/probe/run-verify-sign-out-everywhere.py` (against `app.inflozo.com`) -- expected: every
+  step PASS, exit 0. Its steps, in order: `control-local` (**the control, and it runs first**: A1's ordinary
+  avatar-menu Sign out, after which A2 must STILL be signed in — a run where A2 is signed out has found the
+  pre-2.4 defect still deployed and FAILS, because signing every device out is also what the broken build
+  did), `frame`, `dialog-focus`, `everywhere`, `jwt-exp` (RECORD), `magic-link-after`, and `axe-*` over
+  `/account` closed, `/account` with the confirm open, and `/sign-in?signed-out=all`, each at 1440 and 390 —
+  zero violations and no horizontal scroll. Fixture user deleted; Admin-API count before == after
+
+**WHAT NO AUTOMATED STEP COVERS, said rather than left to be found.** Every matrix row but two has a
+covering step: four ran at Dev and passed (the two scopes, the guard, the card's unconditional render), and
+four are the harness's and run at Deploy against the deployed UI, which is where R-80 and R-82 put them.
+The two that have none:
+
+- *GoTrue unreachable or a 5xx* — it cannot be produced against real infrastructure, and a mock would not be
+  evidence (R-82). The branch is two lines (`if (error) → fail('sign_out_failed')`), the sentence is in
+  `MESSAGES`, and nothing redirects because the redirect is outside the try. The neighbouring unexecuted
+  claim about what the library does to THIS device's cookies on that path is already **DW-41**
+- *Double submit* — the `once` guard is client-side React, and this repository has no component test runner
+  (`node --test` over plain modules only). `email-card.tsx`'s identical guard is untested for the same
+  reason; adding a runner is not this story's
 
 **Manual checks (if no CLI):**
 - Playwright's Chromium at 1440 and 390: the card's row and button sit where the Email card's do; the

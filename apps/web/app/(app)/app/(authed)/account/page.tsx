@@ -6,6 +6,7 @@ import { withTimeout } from '@/lib/with-timeout'
 import { EmailCard } from './email-card'
 import { EMAIL_CHANGED, isEmailChanged, isEmailStale, pendingChange } from './email-change-rule'
 import { PasskeysCard } from './passkeys-card'
+import { SessionsCard } from './sessions-card'
 
 /* ─────────────────────────────────────── S12 Billing.dc.html — S12a, its RIGHT column.
 
@@ -29,7 +30,10 @@ import { PasskeysCard } from './passkeys-card'
    lands (the owner's ruling, question 2, 2026-09-06). Below desktop the frame draws nothing and
    the column is full width, as it is at 390.
 
-   The Passkeys card is absent entirely unless BOTH switches are on (`lib/flags.ts`). */
+   The Passkeys card is absent entirely unless BOTH switches are on (`lib/flags.ts`). THE
+   SESSIONS CARD IS NOT: 2.4 extrapolated it from the Email card beside it, because the frame
+   draws no sessions surface, and it renders whether or not the passkey switches are on — a way
+   out of every device must not hang on a way in. */
 
 export const metadata: Metadata = {
   title: 'Account · Inflozo',
@@ -69,6 +73,10 @@ export default async function AccountPage({
         />
 
         {passkeys ? <PasskeysCard passkeys={rows} /> : null}
+
+        {/* FR-A6's sign-out-everywhere. It sits under Passkeys and above where 2.5's Danger zone
+            will go, and it costs no read: GoTrue owns the sessions and nothing of ours lists them. */}
+        <SessionsCard />
       </div>
     </div>
   )

@@ -17,6 +17,20 @@ export const SIGNED_OUT_PATH = `/sign-in?${SIGNED_OUT}=${SIGNED_OUT_VALUE}`
 export const isSignedOut = (value: string | string[] | undefined) => value === SIGNED_OUT_VALUE
 
 /**
+ * THE SAME KEY, A SECOND VALUE — Story 2.4's sign-out-everywhere, which lands on the same card
+ * and says a different sentence. A second KEY would be a second thing to keep disjoint from the
+ * first; one key with two values is disjoint by construction, because a URL carries one value
+ * per key and each reader compares its own. `signed-out.test.ts` walks both round trips and
+ * asserts neither reads as the other.
+ */
+export const SIGNED_OUT_EVERYWHERE_VALUE = 'all'
+export const SIGNED_OUT_EVERYWHERE_PATH = `/sign-in?${SIGNED_OUT}=${SIGNED_OUT_EVERYWHERE_VALUE}`
+
+/** What the sign-in page asks of the same `searchParams[SIGNED_OUT]` for the everywhere sentence. */
+export const isSignedOutEverywhere = (value: string | string[] | undefined) =>
+  value === SIGNED_OUT_EVERYWHERE_VALUE
+
+/**
  * THE OTHER HALF, and it lands on the DASHBOARD rather than the sign-in page, because a failed
  * sign-out leaves the user signed IN — sending them to `/sign-in` would only bounce them back
  * (the owner's ruling at question 8, option 1, 2026-09-06). The session is still live, so this

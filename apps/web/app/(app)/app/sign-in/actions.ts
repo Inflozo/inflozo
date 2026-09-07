@@ -92,7 +92,13 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
  */
 export async function signOut() {
   const supabase = await supabaseServer()
-  const { error } = await supabase.auth.signOut()
+  // THIS DEVICE ONLY, AND IT HAS TO BE SAID. `auth-js` 2.115.0 DEFAULTS this call to
+  // `{ scope: 'global' }` (`GoTrueClient.js:3405`) — `POST /logout?scope=global`, every session
+  // the user has — so from Story 1.4 until Story 2.4 signing out on the laptop signed the phone
+  // out too, and FR-A6's "ordinary sessions persist" was not true. Ending every session is a
+  // separate, confirmed action (`account/actions.ts`'s `signOutEverywhere`), never this one.
+  // `signed-out.test.ts` reads both scopes out of the source so neither can go implicit again.
+  const { error } = await supabase.auth.signOut({ scope: 'local' })
   if (error) console.error('sign-out: failed', { code: error.code })
   redirect(signOutPathFor(Boolean(error)))
 }

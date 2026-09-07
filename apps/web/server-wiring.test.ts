@@ -3,13 +3,15 @@ import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-// THREE CONTRACTS A FULLY GREEN GATE CANNOT SEE, in `app-routes.test.ts`'s idiom: each is READ
-// out of the files it governs rather than restated here, so none can drift into a lie. All three
-// are Story 2.1's, and all three fail the same way — silently, with every check still green
-// (review, 2026-09-06).
+// CONTRACTS A FULLY GREEN GATE CANNOT SEE, in `app-routes.test.ts`'s idiom: each is READ out of
+// the files it governs rather than restated here, so none can drift into a lie. The first three
+// are Story 2.1's and all fail the same way — silently, with every check still green (review,
+// 2026-09-06); the last is Story 2.4's, and it failed that way for two stories.
 
 const SERVER = 'lib/supabase/server.ts'
 const FLAGS = 'lib/flags.ts'
+const ACCOUNT_PAGE = 'app/(app)/app/(authed)/account/page.tsx'
+const ACCOUNT_ACTIONS = 'app/(app)/app/(authed)/account/actions.ts'
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -82,5 +84,62 @@ test('the service-role client is imported by the flag reader and by nothing else
     [],
     `${importers.join(', ')} reaches supabaseAdmin(), which bypasses RLS. Only ${allowed.join(' and ')} may. ` +
       'If a new privileged read is genuinely wanted, add it here with its reason.',
+  )
+})
+
+test('the session guard is one export, imported, and copied into neither actions file', () => {
+  // DW-38: `signedIn()` stood written out in `account/actions.ts` and in `projects/actions.ts`,
+  // because a `'use server'` file may export only Server Actions and a guard is not one. That
+  // forbids EXPORTING it from an actions file, not copying it — and two copies are two things to
+  // remember. Story 2.4 moved it to this plain module; a copy reappearing is what this sees.
+  assert.match(
+    readFileSync(SERVER, 'utf8'),
+    /export async function signedIn\(/,
+    `${SERVER}: signedIn() is the one guard both actions files import (DW-38).`,
+  )
+  const copies = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => /async function signedIn\s*\(/.test(readFileSync(p, 'utf8')))
+    .filter((p) => p !== SERVER)
+  assert.deepEqual(
+    copies,
+    [],
+    `${copies.join(', ')} writes its own signedIn(). It belongs in ${SERVER} alone (DW-38) — ` +
+      'import it there rather than keeping a second copy the next change has to remember.',
+  )
+})
+
+test('the way out of every device does not hang on a way in', () => {
+  // Two of Story 2.4's matrix rows live only in the source, and no browser step can see either:
+  // production runs with the passkey switches ON, so a Sessions card moved inside the
+  // `passkeys ? … : null` branch would be green in every gate and every harness, and would take
+  // sign-out-everywhere away from exactly the user whose passkeys are off. And the action's guard
+  // is the session ALONE — never `ready()`, whose flag would refuse it for the same reason.
+  // JSX comments out (one names the flag in prose), then look at what stands IMMEDIATELY before
+  // the element: a standalone child follows `}` or `{`, a conditional one follows `?` or `&&`.
+  // Exact rather than a search of the whole file, where `const rows = passkeys ? …` far above
+  // would match any distance-blind pattern and report a branch that is not there.
+  const page = readFileSync(ACCOUNT_PAGE, 'utf8').replace(/\{\/\*[^]*?\*\/\}/g, ' ')
+  const at = page.indexOf('<SessionsCard')
+  assert.ok(at >= 0, `${ACCOUNT_PAGE}: the Sessions card is not rendered.`)
+  const before = page.slice(0, at).trimEnd()
+  assert.ok(
+    !/[?]$/.test(before) && !/&&$/.test(before),
+    `${ACCOUNT_PAGE}: the Sessions card is rendered conditionally (…${before.slice(-40)}). A way ` +
+      'OUT of every device must not disappear with the switch that offers a way in.',
+  )
+
+  const actions = readFileSync(ACCOUNT_ACTIONS, 'utf8').replace(/\s+/g, ' ')
+  const body = actions.slice(actions.indexOf('function signOutEverywhere'))
+  assert.match(
+    body,
+    /await signedIn\(\)[^]*auth\.signOut/,
+    `${ACCOUNT_ACTIONS}: signOutEverywhere must guard on signedIn() — the session alone — before ` +
+      'it calls /logout. A session that ended between the render and the click is the sign-in page.',
+  )
+  assert.doesNotMatch(
+    body.slice(0, body.indexOf('auth.signOut')),
+    /await ready\(\)/,
+    `${ACCOUNT_ACTIONS}: signOutEverywhere guards on ready(), whose passkey flag would refuse it.`,
   )
 })

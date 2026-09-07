@@ -28,10 +28,14 @@ const FIELD = 'email'
 export function SignInForm({
   linkError,
   signedOut,
+  signedOutEverywhere,
   passkeys,
 }: {
   linkError: boolean
+  /** The ordinary Sign out, this device only (`?signed-out=1`). */
   signedOut: boolean
+  /** Sign out everywhere, every device including the one being read on (`?signed-out=all`). */
+  signedOutEverywhere: boolean
   passkeys: boolean
 }) {
   const [state, formAction, pending] = useActionState<SendState, FormData>(sendMagicLink, {
@@ -250,6 +254,12 @@ export function SignInForm({
                   has been asked for, the last thing that happened is the send, not the sign-out. */}
               {signedOut && state.status === 'idle' ? (
                 <Banner kind="success">You&rsquo;ve been signed out.</Banner>
+              ) : null}
+              {/* THE OTHER SENTENCE, and it is a different one because a different thing
+                  happened: every device, not this one. Same slot, same green, same condition —
+                  the two values are disjoint (`signed-out.ts`), so only ever one shows. */}
+              {signedOutEverywhere && state.status === 'idle' ? (
+                <Banner kind="success">You&rsquo;ve been signed out on every device.</Banner>
               ) : null}
               {linkError ? (
                 <Banner kind="error">That link has expired or was already used. Ask for a new one.</Banner>

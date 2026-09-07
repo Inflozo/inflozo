@@ -280,6 +280,20 @@ DOCS = [
   'Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes.'),
  ('tools/probe/run-verify-ghostpro.py', 'tool', 'Ghost(Pro) probe',
   'Written and waiting for a Ghost(Pro) Starter trial. Blocks public launch.'),
+ ('tools/probe/run-verify-sign-out-everywhere.py', 'tool', 'Sign-out-everywhere harness',
+  "FR-A6's sign-out-everywhere, driven through the deployed UI on app.inflozo.com with TWO real "
+  'sessions for one user and read back off the wire: the Sessions button measured against the '
+  "frame's tokens, the confirm opening on Cancel and closing on Escape with nothing sent, the "
+  "primary pressed, and then both access tokens asked of GET /auth/v1/user directly. Its CONTROL "
+  'runs FIRST and is the ordinary avatar-menu Sign out: device A signs out and device B must STILL '
+  'be signed in — a run where B is signed out has found the pre-2.4 defect (auth-js defaults '
+  "signOut() to scope=global) still in place and fails, because signing every device out is also "
+  'what the broken build did. Records the project jwt_exp off the Management API for DW-40, and '
+  'proves a magic link after a global sign-out still signs in with the 30-day cookie — a global '
+  'sign-out ends sessions, never the account. Plus axe-core at WCAG 2.1 AA over /account closed '
+  'and with the confirm open, and over /sign-in?signed-out=all, each at 1440 and 390. Creates one '
+  'fixture user and deletes it, comparing the Admin-API user count before and after so a leak is '
+  'loud. --check is the plumbing alone and needs no browser and no deployment. Story 2.4.'),
  ('tools/probe/run-verify-email-change.py', 'tool', 'Email-change harness',
   "FR-A4's email change, driven through the deployed UI on app.inflozo.com and read back off the "
   'wire through the Admin API: the frame\'s button measured, the dialog\'s focus, a non-address '

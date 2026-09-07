@@ -896,7 +896,7 @@ reason: S1c is the frame's own drawing (`S1 Sign In.dc.html:131-141`) and R-74 m
 plain: The three lines that say "if nobody is signed in, go to the sign-in page" are written once in the
   projects actions file and once more in the account actions file. Nothing is wrong today; a change to
   one would have to be remembered in the other.
-status: open
+status: closed by Story 2.4 (2026-09-07)
 severity: low
 origin: Story 2.3 code review (2026-09-07) — Blind Hunter
 location: apps/web/app/(app)/app/(authed)/account/actions.ts (`signedIn`) · apps/web/app/(app)/app/(authed)/projects/actions.ts:63-67
@@ -905,6 +905,10 @@ reason: The stated reason for not importing it — an exported async function in
   `lib/supabase/server.ts` beside `currentUser()`, can export it once for both. Not done in the review
   because it edits `projects/actions.ts`, which is outside Story 2.3; do it in the next story that touches
   either file.
+  **Closed by Story 2.4 (2026-09-07):** `signedIn()` is one `export async function` in
+  `apps/web/lib/supabase/server.ts` beside `currentUser()`, and both actions files import it — the copies
+  are gone. `server-wiring.test.ts` reads the repository for `async function signedIn` and fails on any
+  file but that one, so the copy cannot come back unnoticed.
 
 ### DW-39: the "your email address was changed" notice is Supabase's plain default, not Inflozo's
 
@@ -945,9 +949,15 @@ reason: `getUser()` verifies with GoTrue, which checks the JWT's `session_id` cl
   and answers `session_not_found` once the row is gone — so every Inflozo page and every server action
   refuses the token immediately. PostgREST verifies only the signature and `exp`, so a token presented
   DIRECTLY to `/rest/v1` with the publishable key stays good for the remainder of `jwt_exp`. The number
-  is a hypothesis until the Dev run's `jwt-exp` harness step reads it off the Management API and writes it
-  here: `jwt_exp = ____` (fill at Dev). Shortening it is a trade against refresh traffic and is the owner's
-  call if he ever wants it; nothing in FR-A6 asks for it.
+  was a hypothesis until it was read: **`jwt_exp = 3600` (60 minutes)**, `GET
+  https://api.supabase.com/v1/projects/{ref}/config/auth` with `SUPABASE_ACCESS_TOKEN` → HTTP 200, executed
+  2026-09-07 (Story 2.4's Dev run; the harness's `jwt-exp` step re-reads it on every run, so the number
+  cannot go stale here). So the residual window is at most one hour from the token's issue, and only for a
+  token already stolen out of an `HttpOnly` cookie. The FRONT half was executed the same day and it holds:
+  a session revoked by `POST /logout?scope=global` is refused at `GET /auth/v1/user` **immediately** —
+  `403 session_not_found`, not at `exp` — so every Inflozo page and action stops accepting it at once.
+  Shortening `jwt_exp` is a trade against refresh traffic and is the owner's call if he ever wants it;
+  nothing in FR-A6 asks for it.
 
 ### DW-41: `signOut`'s failure comment says the cookies are kept; the installed client removes them on most failures
 
