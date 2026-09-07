@@ -269,12 +269,12 @@ no notification, no second client, no schema change.
 - [x] `app/api/cron/purge-accounts/route.ts` + `server-wiring.test.ts` + `lib/supabase/server.ts` --
       the route, and the third reader named where the second was -- FR-A5's purge
 - [x] `apps/web/vercel.json` -- the one `crons` entry -- AD-33's schedule beside its home
-- [ ] `tools/probe/.env.example` + Vercel production env + `tools/probe/.env` -- `CRON_SECRET` by name
-      in all three -- the door has a key before the door is deployed -- **TWO OF THREE.** The secret is
-      generated and in `tools/probe/.env`, and `tools/probe/.env.example:96-102` names it with its
-      command; the `POST /v10/projects/{VERCEL_PROJECT}/env` that puts it in Vercel `production` was
-      **refused by this machine's sandbox**, twice, and is Question 1 below. Deploy is blocked on it:
-      without the variable Vercel sends no bearer and the route answers 401 to Vercel's own cron
+- [x] `tools/probe/.env.example` + Vercel production env + `tools/probe/.env` -- `CRON_SECRET` by name
+      in all three -- the door has a key before the door is deployed -- **all three, 2026-09-07.** The
+      API write was refused by this machine's sandbox twice, so the owner added it in the Vercel
+      dashboard (Question 1, ruled): read back by name as `CRON_SECRET`, target `production`, type
+      `sensitive` — the dashboard's default, which is stricter than the API's `encrypted` in that the
+      value cannot be read back at all
 - [ ] `tools/probe/run-verify-account-purge.py` (the full run) -- against the deployed commit, controls
       first -- R-82, re-runnable, the epic's exit -- **the Review and Deploy runs'**, as `## Verification`
       assigns it: the route is not on the deployed commit yet, so there is nothing for it to call
@@ -336,9 +336,14 @@ no notification, no second client, no schema change.
   owner adds it in the dashboard from the value in `tools/probe/.env`. Until he does, the deployed
   route answers 401 to Vercel's own cron — fail-closed, so nothing breaks and nothing purges.
 - **The Dev push deployed the route** (Dev). CI's `deploy` job ran on the Dev commit, so
-  `/api/cron/purge-accounts` is live and answering 401 ahead of this story's Deploy phase. The
-  Deploy run therefore needs a **redeploy** after the owner adds the variable, because Vercel bakes
-  environment variables into a deployment — the current one cannot see a variable added after it.
+  `/api/cron/purge-accounts` is live and answering 401 ahead of this story's Deploy phase.
+- **HYPOTHESIS, NOT YET EXECUTED (standing rule 1): whether a deployment already built can see an
+  environment variable added afterwards.** Vercel's documentation says variables are applied to a
+  deployment at build time and a change needs a redeploy; this run asserted that in an earlier
+  draft and has now demoted it, because it was never executed here — the one call that would settle
+  it was refused by the sandbox. It costs nothing either way: the Deploy run redeploys, which is
+  the state the Deploy verification describes, and the Review run's harness reports a 401 on its
+  `purge` step if the claim is true and the redeploy has not happened yet.
 
 ## Design Notes
 
@@ -447,7 +452,10 @@ never printed; each is recorded by its variable name only. **The Dev run's resul
 | `pnpm build` | exit 0; `/api/cron/purge-accounts` listed as `ƒ` | **exit 0.** Next 16.3.1, compiled, TypeScript finished; the route table lists `ƒ /api/cron/purge-accounts` |
 | `python3 tools/doc-audit.py --check` (twice) | PASS, 0 warnings | first run **FAIL** on the two generated artifacts (expected — the new tool's catalogue row); after `python3 tools/story-board.py`, **`documentation gate: PASS (0 warning(s))`, exit 0**, twice |
 | `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` | names only; no `CRON_SECRET` before | **HTTP 200**, seven variables by name — `RESEND_FROM`, `RESEND_API_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `ENABLE_EXPERIMENTAL_COREPACK`, `DODO_WEBHOOK_SECRET`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL`. **No `CRON_SECRET`** |
-| `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` `{ key: 'CRON_SECRET', type: 'encrypted', target: ['production'] }` | HTTP 201, then the name reads back | **NOT RUN — refused by this machine's sandbox classifier, twice** (inline and as a script file). No workaround attempted. **Question 1** |
+| `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` `{ key: 'CRON_SECRET', type: 'encrypted', target: ['production'] }` | HTTP 201, then the name reads back | **NOT RUN — refused by this machine's sandbox classifier, twice** (inline and as a script file). No workaround attempted. **The owner added it in the dashboard instead** (Question 1, ruled) |
+| `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` again, after the owner's change | `CRON_SECRET` present, `production` | **HTTP 200** — eight variables now, `CRON_SECRET` among them: target `['production']`, type **`sensitive`** (the dashboard's default; unlike `encrypted` its value cannot be read back through the API at all, which is stricter and changes nothing about how the runtime receives it) |
+| `GET /rest/v1/profiles?deleted_at=not.is.null` with `SUPABASE_SECRET_KEY`, before touching the bearer | the safety precondition the harness re-checks | **HTTP 200, zero rows.** No account on the live project is pending, so none is due; the Review run's harness seeds its own and refuses to fire if it finds a stranger |
+| `curl -H "Authorization: Bearer $CRON_SECRET" https://inflozo.com/api/cron/purge-accounts` | 200 `{ purged: 0, failed: 0 }` if the running deployment can see a variable added after it was built | **NOT RUN — refused by this machine's sandbox classifier.** It is the **Review run's** call in any case (`run-verify-account-purge.py` makes it with its controls first), and the Deploy run's redeploy settles the question either way |
 | `python3 tools/probe/run-verify-account-purge.py --check` | exit 0; keys present; one admin create-read-delete; put → `list-v2` → delete in each of the four buckets; users before == after | **exit 0, all steps passed.** `users before: 5` → `users after: 5`. `PASS secret` · `PASS admin-round-trip: create, read back -> HTTP 200` · `PASS list-v2 assets` · `PASS list-v2 site-snapshots` · `PASS list-v2 suggestion-images` · `PASS list-v2 deploy-artifacts` — each `put -> HTTP 200; list-v2 -> HTTP 200 ['purge-check-<stamp>/deep/probe.bin']; delete -> HTTP 200; the prefix now lists 0` |
 | `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **run twice.** Before the Dev push: **HTTP 404** — but the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`; that is `routing.ts`'s pass-through executed. After the Dev push, which CI deployed: **HTTP/2 401**, `cache-control: no-store`, `x-matched-path: /api/cron/purge-accounts`. The door exists, is shut and is not cached — and it is shut **because `CRON_SECRET` is unset in Vercel**, which is the fail-closed branch of `authorized()` executed on production rather than reasoned about |
 | `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | **the Review and Deploy runs'** — nothing to call until the route is deployed and Question 1 is settled |
