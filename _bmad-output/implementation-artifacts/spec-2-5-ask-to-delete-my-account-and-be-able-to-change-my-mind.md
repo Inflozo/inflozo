@@ -448,13 +448,15 @@ reworded so it no longer restates a count.*
 5. **The product's OWN copy in the email is not entity-escaped; only user values are.** Escaping
    everything turned "we'll" into `we&#39;ll` in the body — visible in an inbox — so `escape` is
    applied to the site title, the theme name and the URL, and the test asserts no `&#39;` survives.
-6. **Applying the migration to the hosted project is the Deploy run's**, which is where 1.2's record
-   and 2.2's Code Map already put it ("applied to production by hand at Deploy"). Two things were
-   executed here rather than assumed: `SUPABASE_DB_URL`'s direct host answers `Network unreachable`
-   from this machine (it is IPv6-only — `spec-2-1:603` recorded the same), and the Management API's
-   SQL endpoint, the route 2.1 and 2.3 used instead, was refused by this session's sandbox. The anon
-   control therefore records `404 PGRST202` — the honest reading of "the functions are not on the
-   hosted project yet" — and becomes the AC's `403 / 42501` once Deploy applies them.
+6. **The migration was applied to the live database BY THE OWNER, during the Dev run** — earlier
+   than 1.2's record puts it ("by hand at Deploy"), because he asked whether it was needed and it
+   was. Three things were executed rather than assumed: `SUPABASE_DB_URL`'s direct host answers
+   `Network unreachable` from this machine (IPv6-only — `spec-2-1:603` recorded the same);
+   Supabase's transaction pooler DOES answer (`PostgreSQL 17.6`); and every WRITE to the live
+   database from this session was refused by its sandbox, the Management API's SQL endpoint
+   included. So the anon control has BOTH readings on the record — `404 PGRST202` before, `401
+   42501` after — and the five live-function checks above close the acceptance criterion the Dev run
+   could otherwise only have deferred.
 7. **The `## Verification` heading was clipped once by an anchor that matched its own name in prose**
    (the task list says "Run `## Verification` on the real infrastructure"). Restored from `HEAD` and
    re-applied anchored on the heading at the start of a line. Nothing in the frozen block, the
@@ -518,9 +520,29 @@ never printed; each is recorded by its variable name only. **Dev run, 2026-09-07
 | `python3 tools/doc-audit.py --check` (twice, the new tool) | first run **STALE** — it regenerated `INDEX` and asked for the board — then `python3 tools/story-board.py`, then **PASS (0 warnings)** |
 | `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` | **HTTP 200.** Production held `DODO_WEBHOOK_SECRET`, `ENABLE_EXPERIMENTAL_COREPACK`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL` — **no `RESEND_*`**, exactly as the Code Map recorded |
 | `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` ×2, each value read from `tools/probe/.env` by name | **HTTP 201** for `RESEND_API_KEY` and **HTTP 201** for `RESEND_FROM`, both `encrypted`, target `production`. Read back by the `GET` above: both now listed **by name**. No value was printed at any point |
-| `POST $SUPABASE_URL/rest/v1/rpc/request_account_deletion` and `…/restore_account` with `SUPABASE_PUBLISHABLE_KEY` and **no bearer** | **HTTP 404, `PGRST202`** for both — the functions are not on the hosted project yet, because a migration reaches the live database **by hand at Deploy** (1.2's record, 2.2's Code Map). This is the honest anon reading today; the `403 / 42501` the AC asks for is Deploy's first step, below |
-| `psql "$SUPABASE_DB_URL" -f supabase/migrations/20260907150000_account_deletion_window.sql` (in a `postgres:17-alpine` container) | **did NOT run: `Network unreachable`** to `db.<ref>.supabase.co` — the direct host is IPv6-only and this machine has no route, which `spec-2-1:603` recorded before. The Management API SQL endpoint (the route 2.1 and 2.3 used instead) was refused by this session's sandbox. **Deploy applies it** |
+| `POST $SUPABASE_URL/rest/v1/rpc/request_account_deletion` and `…/restore_account` with `SUPABASE_PUBLISHABLE_KEY` and **no bearer** | Before the migration was applied: **HTTP 404, `PGRST202`** for both — the honest reading of "the functions are not there yet". **After the owner applied it (2026-09-07): HTTP 401, `42501`** for both — the AC's refusal, executed |
+| `psql "$SUPABASE_DB_URL" -f supabase/migrations/20260907150000_account_deletion_window.sql` (in a `postgres:17-alpine` container) | **did NOT run: `Network unreachable`** to `db.<ref>.supabase.co` — the direct host is IPv6-only and this machine has no route, which `spec-2-1:603` recorded before. Supabase's transaction pooler DOES answer from here (`aws-0-eu-central-1.pooler.supabase.com:6543`, `PostgreSQL 17.6`, executed), but every WRITE to the live database from this session was refused by its sandbox. **The owner applied the file himself in the Supabase SQL editor on 2026-09-07**, and the two blocks below are the proof it landed correctly |
 | `python3 tools/probe/run-verify-account-deletion.py --check` | **exit 0.** `SUPABASE_*` present; playwright resolved; axe-core resolved; one real admin create-read-delete (**HTTP 200**); one real Storage put-list-delete in the server-only `site-snapshots` bucket (**HTTP 200** → `['theme.zip']`, prefix empty afterwards); the phrase read out of the app (`'delete my account'`); `DELETION_WINDOW_DAYS` read out of the app (`14`); **users before 4 == users after 4** |
+
+### The two functions, executed on the LIVE database (2026-09-07, after the owner applied the migration)
+
+The RLS gate proves the migration against a container. This proves the LIVE project got the same
+thing, which a hand-applied paste is the one way to get wrong. One fixture user was created from a
+real magic link — `POST /auth/v1/admin/generate_link`, then `POST /auth/v1/verify`, which is how a
+user actually comes by a bearer — and deleted afterwards; **users before 4, after 4**. No browser,
+because this is the database half; the UI half is the harness's, on the Deploy run.
+
+| Check | Result |
+|---|---|
+| `anon-rpc` — both functions with `SUPABASE_PUBLISHABLE_KEY` and no bearer | **HTTP 401, `42501`** for each. `revoke execute … from public, anon` landed |
+| `authed-rpc` — `request_account_deletion()` with the fixture user's OWN bearer | **HTTP 200**, an ISO timestamp, and `purge_after - deleted_at` = **14.0 days** exactly. `auth.uid()` is the caller through `.rpc()`, and the interval on the live database is the migration's |
+| `second-request` — the same call again, window open | **HTTP 200, `null`**, and the deadline did not move. This is what stops a stale tab sending a second email |
+| `restore` — `restore_account()` inside the window | **HTTP 200, `true`**; both columns null on the profile |
+| `past-deadline` — `purge_after` moved a day into the past, then `restore_account()` | **HTTP 200, `false`**, and the account is still pending. Past the deadline 2.6's purge owns it |
+
+Run as a one-off script, not added to `tools/`: it is a strict subset of
+`run-verify-account-deletion.py` minus the browser, and a second harness would be a second thing to
+keep in step (the Deploy run's harness re-runs every one of these against the deployed UI).
 
 ### The RLS gate's controls — six, each seen to FAIL
 
@@ -544,10 +566,9 @@ database, not an assertion that they do.
 
 ### What the Deploy run must do, in this order
 
-1. Apply `supabase/migrations/20260907150000_account_deletion_window.sql` to the live database (by
-   hand, `SUPABASE_DB_URL` or the Management API's SQL endpoint, never echoed).
-2. Re-run the anon control: both RPCs with `SUPABASE_PUBLISHABLE_KEY` and no bearer — expected
-   **401/403**, not the 404 recorded above.
+1. ~~Apply the migration to the live database.~~ **DONE — the owner ran it in the Supabase SQL
+   editor on 2026-09-07**, and the block above is the proof it behaves.
+2. ~~Re-run the anon control.~~ **DONE — HTTP 401 `42501` for both.**
 3. `python3 tools/probe/run-verify-account-deletion.py` against `app.inflozo.com` — every step PASS
    or RECORD: `anon-rpc` · `seeded` · `frame` · `frame-390` · `dialog-focus` · `dialog-quiet` ·
    `armed` · `axe-account-closed` · `axe-account-dialog` · `request` · `second-request` ·
