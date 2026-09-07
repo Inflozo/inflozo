@@ -351,16 +351,25 @@ def main():
             counts = {}
             for row in rows:
                 counts[f'{row.get("action")} {row.get("outcome")}'] = counts.get(f'{row.get("action")} {row.get("outcome")}', 0) + 1
+            # `detail` MUST come back as a JSON object. Executed on the live database 2026-09-07:
+            # a parameter cast with `::jsonb` stores a JSON *string* scalar, so `detail.status`
+            # reads undefined for ever and every assertion below quietly passes over nothing.
+            objects = all(isinstance(r.get('detail'), dict) for r in rows)
+            detail = lambda r: r.get('detail') if isinstance(r.get('detail'), dict) else {}
             denied = [r for r in rows if r.get('action') == 'admin_write' and r.get('outcome') == 'denied']
             error_401 = [r for r in rows if r.get('action') == 'admin_read' and r.get('outcome') == 'error'
-                         and (r.get('detail') or {}).get('status') == 401]
-            no_network = bool(denied) and all('status' not in (r.get('detail') or {}) for r in denied)
+                         and detail(r).get('status') == 401]
+            no_network = bool(denied) and all('status' not in detail(r) for r in denied)
             stamped = all(r.get('route') == audit_route() for r in rows)
+            leak = [r for r in rows if re.search(r'[0-9a-f]{16,}:[0-9a-f]{16,}', json.dumps(r, default=str))]
             run.step(f'{label} audit',
-                     counts.get('vault_decrypt ok', 0) >= 4 and counts.get('admin_read ok', 0) == 2
+                     objects and not leak
+                     and counts.get('vault_decrypt ok', 0) >= 4 and counts.get('admin_read ok', 0) == 2
                      and len(error_401) == 1 and len(denied) == 1 and no_network and stamped,
-                     f'{len(rows)} rows {json.dumps(counts)}; the denied write carries no status '
-                     f'(no network call) = {no_network}; every row stamped {audit_route()} = {stamped}')
+                     f'{len(rows)} rows {json.dumps(counts)}; every detail is a jsonb object = {objects}; '
+                     f'the denied write carries no status (no network call) = {no_network}; '
+                     f'every row stamped {audit_route()} = {stamped}; '
+                     f'rows that look like they hold a key = {len(leak)}')
 
         # ── The cascade: GoTrue deletes the user, Postgres cascades to sites and to the
         #    credentials rows, and DW-44's trigger takes both secrets with them.

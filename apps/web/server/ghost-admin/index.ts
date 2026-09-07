@@ -86,7 +86,7 @@ async function audit(row: {
   await sql()`
     insert into private.credential_audit (action, user_id, site_id, route, allowlist_item, outcome, detail)
     values (${row.action}, ${row.userId ?? null}, ${row.siteId ?? null}, ${row.route},
-            ${row.item ?? null}, ${row.outcome}, ${JSON.stringify(row.detail)}::jsonb)
+            ${row.item ?? null}, ${row.outcome}, ${sql().json(row.detail)})
   `
 }
 

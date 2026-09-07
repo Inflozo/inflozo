@@ -158,9 +158,11 @@ That is the same five clicks as `CRON_SECRET`.
 Run on the real infrastructure (R-82). Every key was read into a command's environment by its
 variable NAME and never printed; each is recorded here by that name only.
 
-**Deployment: `<filled once CI publishes this commit>`** — the production deployment serving
-`inflozo.com` and `app.inflozo.com`. Publishing happens from GitHub Actions (DW-7), so the Dev
-push is what deploys.
+**Deployment: `dpl_A3nB2fXkWZWFwP9Z63jDnLnmXWTN`** — commit `80fa5cdd`, state **READY**, serving
+`inflozo.com` and `app.inflozo.com`; read via `GET /v6/deployments?target=production` with
+**`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`**. Publishing happens from GitHub Actions (DW-7): the run for
+`80fa5cdd` finished **success** with `rls` **success**, `check` **success**, then `deploy` — so the
+RLS gate and `pnpm check` are green on CI's runner as well as on this machine.
 
 ### What ran on this machine, and what it returned
 
@@ -175,16 +177,32 @@ push is what deploys.
 | `python3 -c "…"` → `docker run --rm -e PGURL postgres:17-alpine psql "$PGURL" …` with **`SUPABASE_DB_POOLER_URL`** | **exit 0**, and it is the first execution of the derived URL: `current_user` = `postgres`, `PostgreSQL 17.6 on aarch64-unknown-linux-gnu`, `has_table_privilege(current_user, 'vault.secrets', 'DELETE')` = **t**, `has_table_privilege(current_user, 'private.site_credentials', 'INSERT')` = **t**. §21j's grant model holds and this connection is inside it |
 | `GET https://api.supabase.com/v1/projects/{ref}/config/database/pooler` with **`SUPABASE_ACCESS_TOKEN`** | **HTTP 403.** Story 2.1 read this route; this token no longer may. So the pooler host is **not** taken from it: it is the one this project has already reached and recorded (`aws-0-eu-central-1.pooler.supabase.com:6543`, spec-2-1:603 and spec-2-5:583), and the line above **executes** it rather than trusting the record |
 | `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with **`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`** | **HTTP 200**, eight variables **by name**: `CRON_SECRET`, `DODO_WEBHOOK_SECRET`, `ENABLE_EXPERIMENTAL_COREPACK`, `RESEND_API_KEY`, `RESEND_FROM`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL`. **`SUPABASE_DB_POOLER_URL` is absent**, exactly as the Boundaries predicted. No value was printed |
-| `python3 tools/probe/run-verify-ghost-admin.py --check` (before the push) | **exit 1, and correctly:** `keys` PASS (`CRON_SECRET`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_MAJOR`, `GHOST5_URL`, `GHOST5_ADMIN_API_KEY`, `GHOST5_MAJOR`, all by name); the allowlist read out of `admin-rule.ts` = `theme_upload, theme_activate, routes_upload, announcement_clear`; then `no-header`, `wrong-secret` and `grants` all **HTTP 404** — the route is not deployed yet, which is what this commit changes |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` (**before** the push) | **exit 1, and correctly:** `keys` PASS (`CRON_SECRET`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_MAJOR`, `GHOST5_URL`, `GHOST5_ADMIN_API_KEY`, `GHOST5_MAJOR`, all by name); the allowlist read out of `admin-rule.ts` = `theme_upload, theme_activate, routes_upload, announcement_clear`; then `no-header`, `wrong-secret` and `grants` all **HTTP 404** — the route is not deployed yet, which is what this commit changes |
+
+### What ran against the real infrastructure
+
+| Command | Result |
+|---|---|
+| `python3 tools/probe/run-verify-ghost-admin.py --check` (**after** the push, against `https://inflozo.com`) | `keys` **PASS**; `no-header` **PASS** — `POST` with no `Authorization` → **HTTP 401 `Unauthorized`**, `x-matched-path /api/ghost-admin/verify`, `cache-control: no-store`, so the 401 is **the route's** and not a platform's; `wrong-secret` **PASS** — a wrong bearer of the same shape → **401** the same way; `grants` **FAIL by design** → **HTTP 500 `{"code":"credential_store_unavailable","message":"SUPABASE_DB_POOLER_URL is not set"}`**. That 500 is itself the execution of the matrix's last row — *env unset → loud throw, never a 200* — from inside the deployed function |
+| the TypeScript mint driven straight at both Ghosts (`mintJwt`, `headers`, `adminUrl`, `ghostCode` from `admin-rule.ts`, keys **`GHOST6_ADMIN_API_KEY`** and **`GHOST5_ADMIN_API_KEY`**, run under `node` 24 and deleted afterwards) | **T1 `ghost6.inflozo.com`**: `GET /ghost/api/admin/config/` with **no** `Accept-Version` → **200, version 6.58.0**; with `Accept-Version: v6.0` → **200, 6.58.0**; a `kid` Ghost never issued → **401 `Unknown Admin API Key`** → `ghost_unknown_key`. **T3 `ghost5.inflozo.com`**: no header → **200, version 5.130.6**; `v5.0` → **200, 5.130.6**; bogus `kid` → **401 `Unknown Admin API Key`** → `ghost_unknown_key`. The mint written in TypeScript is the one both majors accept, the no-version case Story 3.2 validates in is executed on both, and §37's cause map is confirmed against the live servers |
+| the pooler's grant surface, read with **`SUPABASE_DB_POOLER_URL`** through the app's own `postgres` 3.4.9 | `current_user` **postgres**; EXECUTE on `vault.create_secret` **true**; SELECT on `vault.decrypted_secrets` **true**; DELETE on `vault.secrets` **true**; INSERT on `private.credential_audit` **true**; UPDATE on `public.sites` **true**; `site_credentials_drop_vault_secrets` present **0** — the trigger is not on the live database yet, which is the owner's Deploy step |
+| `select p.pronargs, p.pronargdefaults, pg_get_expr(p.proargdefaults, 0), p.prosecdef` for `vault.create_secret` | **READ IN ITS SOURCE, and it corrected the spec.** `supabase_vault` **0.3.1** ships `create_secret(new_secret text, new_name text DEFAULT NULL, new_description text DEFAULT '', new_key_id uuid DEFAULT NULL) RETURNS uuid`, `security definer` — **four** arguments with three defaults, not the three the docs' shape suggested. The app's three-positional-argument call resolves through the defaults and is unchanged; `PRELUDE.sql`'s stand-in was **wrong** and now models the four-argument signature, so the gate proves the call against the signature the live database actually has (the same divergence class as the storage-delete stand-in, caught before it cost anything) |
+| `GET /rest/v1/decrypted_secrets`, `/rest/v1/secrets` and `/rest/v1/site_credentials` with **`SUPABASE_SECRET_KEY`** | **404 all three** (`PGRST205`). §21j still holds after this story: the direct connection added **no** REST path to Vault, and `site_credentials` is not on the data API either |
 
 ### What needs the deployment, and what it is waiting on
 
 `SUPABASE_DB_POOLER_URL` is not in Vercel production and this session cannot put it there
 (**Question 1**; the same sandbox refusal 2.6 recorded for `CRON_SECRET`, spec-2-6:559). So on the
-deployed site the two 401 controls and the route's own plumbing can run, and `grants` — and
-therefore every step after it — cannot: it will answer `credential_store_unavailable`, which is the
-**loud failure the module promises** rather than a 200, and the harness stops there by design
+deployed site the two 401 controls and the route's own plumbing **ran and passed**, and `grants` —
+and therefore every step after it — **could not**: it answered `credential_store_unavailable`, the
+**loud failure the module promises** rather than a 200, and the harness stopped there by design
 instead of printing a cascade of failures that all mean one thing.
+
+**What is therefore still unexecuted, and only this:** the Vault round trip on the live project —
+`store`, the two `config/` calls *through the module*, the denied write's audit row, the bogus-key
+rotation, the audit rows and the cascade. Every hypothesis those steps rest on that does **not**
+need the Vercel-side variable has been executed above: the mint on both majors, the cause map, the
+pooler's grants, and the module's own env-unset failure from inside the deployed function.
 
 **Between Dev and Deploy** the code is live before the SQL is: CI deploys this commit, and
 `supabase/migrations/20260907200000_vault_secret_lifecycle.sql` is applied by the owner in the

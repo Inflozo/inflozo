@@ -36,7 +36,12 @@ export class AdminError extends Error implements AdminEnvelope {
  * .credential_audit.detail` is jsonb and would take a response body, a header or a key just as
  * happily. Every writer in `index.ts` builds its detail as this and nothing else.
  */
-export interface AuditDetail {
+// A `type` and not an `interface`, deliberately: only a type alias gets TypeScript's implicit
+// index signature, which is what lets it be handed to the driver's `sql.json()` — and `sql.json()`
+// is the only shape that stores a jsonb OBJECT. Executed on the live database 2026-09-07:
+// `${JSON.stringify(detail)}::jsonb` gives `jsonb_typeof = 'string'`, a JSON string scalar, so
+// `detail.status` would have read undefined for ever with every check green.
+export type AuditDetail = {
   status?: number
   ms: number
   ghost_type?: string

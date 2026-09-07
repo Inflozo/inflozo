@@ -113,12 +113,18 @@ alter table vault.secrets enable row level security;
 create view vault.decrypted_secrets as
   select id, name, description, secret, secret as decrypted_secret, created_at, updated_at
     from vault.secrets;
--- The POSITIONAL shape the docs give (read 2026-09-07): the secret, then an optional unique name,
--- then a description. Story 3.1 passes a null name on purpose — names are unique and a rotation
--- must not collide with the key it replaces.
+-- THE SIGNATURE READ OUT OF THE LIVE PROJECT'S CATALOGUE, not out of the docs and not from
+-- memory (2026-09-07, `supabase_vault` 0.3.1): FOUR arguments with THREE defaults —
+--   create_secret(new_secret text, new_name text DEFAULT NULL,
+--                 new_description text DEFAULT '', new_key_id uuid DEFAULT NULL) RETURNS uuid
+-- and it is SECURITY DEFINER there, which is how a caller with no INSERT on `vault.secrets` can
+-- still create one. A three-argument stand-in would have proved the app's three-positional-arg
+-- call against a signature the real database does not have — the same divergence class as the
+-- storage-delete one above, caught here before it could be found the expensive way.
 create or replace function vault.create_secret(
-  new_secret text, new_name text default null, new_description text default '')
-  returns uuid language sql as $$
+  new_secret text, new_name text default null, new_description text default '',
+  new_key_id uuid default null)
+  returns uuid language sql security definer as $$
   insert into vault.secrets (secret, name, description)
   values (new_secret, new_name, coalesce(new_description, ''))
   returning id $$;
