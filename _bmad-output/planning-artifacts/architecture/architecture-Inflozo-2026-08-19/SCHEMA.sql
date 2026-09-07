@@ -988,6 +988,34 @@ end $$;
 create trigger site_credentials_touch before update on private.site_credentials
   for each row execute function public.touch_updated_at();
 
+-- DW-44 (Story 3.1): the Vault secret behind a ref goes when the ref does — on the purge's
+-- cascade, on a disconnect, and on a rotation that replaces it. `security definer` because the
+-- cascade fires under GoTrue's role and only the owner and `service_role` may delete a secret
+-- (§21j); EXECUTE revoked from every client, so nothing but this trigger can reach it. The body
+-- is byte-identical to `supabase/migrations/20260907200000_vault_secret_lifecycle.sql` — the RLS
+-- gate diffs the two databases and pg_dump emits bodies verbatim.
+create or replace function private.drop_vault_secrets() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if tg_op = 'DELETE' then
+    delete from vault.secrets where id in (old.admin_key_vault_ref, old.staff_token_vault_ref);
+    return old;
+  end if;
+  if old.admin_key_vault_ref is distinct from new.admin_key_vault_ref then
+    delete from vault.secrets where id = old.admin_key_vault_ref;
+  end if;
+  if old.staff_token_vault_ref is distinct from new.staff_token_vault_ref then
+    delete from vault.secrets where id = old.staff_token_vault_ref;
+  end if;
+  return new;
+end $$;
+
+revoke execute on function private.drop_vault_secrets() from public, anon, authenticated;
+
+create trigger site_credentials_drop_vault_secrets
+  before update or delete on private.site_credentials
+  for each row execute function private.drop_vault_secrets();
+
 -- ============================================================================
 -- 11a. Table-level grants — the schema grants IN, and names every privilege  [R2-1]
 -- ============================================================================

@@ -1051,9 +1051,17 @@ reason: One column carries two clocks. `request_account_deletion()` sets it to t
 plain: When an account is purged, the rows that remember where a site's Ghost keys are stored are removed, but
   the keys themselves would stay in the locked store — nothing stores any yet, so nothing leaks today; the story
   that first puts keys in the store must also take them out when their row goes.
-status: open
+status: closed
 severity: low
 origin: Story 2.6 spec (2026-09-07), the cascade analysis
+closed: Story 3.1 Dev (2026-09-07) — `supabase/migrations/20260907200000_vault_secret_lifecycle.sql` lands
+  `private.drop_vault_secrets()` (`security definer`, `set search_path = ''`, EXECUTE revoked from `public`,
+  `anon`, `authenticated`) on `before update or delete of private.site_credentials`, and the identical block
+  is in `SCHEMA.sql` beside the touch trigger. Proved in the RLS gate against `PRELUDE.sql`'s `vault`
+  stand-in, on all THREE paths — the site deleted, the account deleted, and the ref replaced by a rotation —
+  each ending in `count(*) = 0` for the old secret; controlled by four runs with the trigger commented out,
+  in which each of the three paths fails on its own. Applied to the hosted database by the owner at Deploy,
+  which is when the `rotated` and `secret-gone` steps of `tools/probe/run-verify-ghost-admin.py` can pass.
 location: SCHEMA.sql:181-190 (`private.site_credentials.admin_key_vault_ref`, `staff_token_vault_ref` —
   `vault.secrets(id)` by comment, no FK) · epics.md Story 3.1 (the server-side admin proxy and Vault credential
   storage — the owner)

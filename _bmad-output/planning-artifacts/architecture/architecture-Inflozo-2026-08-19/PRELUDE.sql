@@ -88,3 +88,40 @@ create or replace function storage.foldername(name text) returns text[]
   language sql immutable as $$ select string_to_array(name, '/') $$;
 grant usage on schema storage to anon, authenticated, service_role;
 grant select, insert, update, delete on storage.objects to authenticated;
+
+-- ── `vault`, modelling MEASUREMENTS §21j rather than the extension. [Story 3.1]
+-- Supabase ships `supabase_vault` 0.3.1; a bare container has neither it nor pgsodium, and the
+-- gate must still be able to prove DW-44's trigger. What the trigger and `store()` actually
+-- depend on is a small surface, and these stand-ins are that surface WITH ITS GRANTS: probed
+-- live, `vault.secrets` and `vault.decrypted_secrets` are granted to `service_role` only
+-- (SELECT, DELETE) and answer 404 over PostgREST, which is what bounds a leaked API secret key
+-- to opaque references. A stand-in that granted them widely would prove the trigger against a
+-- permission model the real database does not have.
+--
+-- The secret is stored in the clear here and `decrypted_secret` is the same column: this models
+-- the SHAPE, never the cryptography. Nothing in the gate asserts anything about encryption, and
+-- a fake that pretended to encrypt would be a different lie.
+create schema if not exists vault;
+create table vault.secrets (
+  id uuid primary key default gen_random_uuid(),
+  name text unique,
+  description text not null default '',
+  secret text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now());
+alter table vault.secrets enable row level security;
+create view vault.decrypted_secrets as
+  select id, name, description, secret, secret as decrypted_secret, created_at, updated_at
+    from vault.secrets;
+-- The POSITIONAL shape the docs give (read 2026-09-07): the secret, then an optional unique name,
+-- then a description. Story 3.1 passes a null name on purpose — names are unique and a rotation
+-- must not collide with the key it replaces.
+create or replace function vault.create_secret(
+  new_secret text, new_name text default null, new_description text default '')
+  returns uuid language sql as $$
+  insert into vault.secrets (secret, name, description)
+  values (new_secret, new_name, coalesce(new_description, ''))
+  returning id $$;
+grant usage on schema vault to service_role;
+grant select, delete on vault.secrets to service_role;
+grant select on vault.decrypted_secrets to service_role;

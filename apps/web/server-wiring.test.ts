@@ -190,3 +190,133 @@ test('the deletion window has a door, and it is the shell layout', () => {
     `${AUTHED_LAYOUT}: nothing redirects a pending account to RESTORE_PATH (FR-A5).`,
   )
 })
+
+// ── Story 3.1's five. The Admin chokepoint (AD-10) is a directory boundary, and a directory
+//    boundary is exactly the kind of claim that is true on the day it is written and false two
+//    stories later with every gate green. Each of these is READ out of the tree.
+
+const GHOST_ADMIN = join('server', 'ghost-admin')
+const GHOST_ADMIN_DB = join(GHOST_ADMIN, 'db.ts')
+const GHOST_ADMIN_INDEX = join(GHOST_ADMIN, 'index.ts')
+const VERIFY_ROUTE = join('app', 'api', 'ghost-admin', 'verify', 'route.ts')
+
+/** Every source file under `server/ghost-admin/`, tests excluded (there are none in there). */
+function ghostAdminSources(): string[] {
+  return sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => p.startsWith(GHOST_ADMIN + '/'))
+}
+
+test('the postgres driver has exactly one importer, and it is db.ts', () => {
+  // The driver is the ONLY thing in the app that can decrypt a Ghost credential: `vault.*` is
+  // granted to service_role alone and answers 404 over PostgREST (§21j), which is what bounds a
+  // leaked API secret key to opaque references. A second direct connection anywhere would be a
+  // second thing that can decrypt, and nothing else in the codebase would say so.
+  const importers = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => /from\s*'postgres'|require\(\s*'postgres'\s*\)/.test(readFileSync(p, 'utf8')))
+    .filter((p) => p !== GHOST_ADMIN_DB)
+  assert.deepEqual(
+    importers,
+    [],
+    `${importers.join(', ')} imports the postgres driver. Only ${GHOST_ADMIN_DB} may (AD-10, DW-49).`,
+  )
+})
+
+test('the pooler URL has exactly one reader, and it is db.ts', () => {
+  // The connection string is the one secret that can decrypt every customer's Ghost key. A second
+  // reader is a second blast radius, and `process.env` makes one a one-line change.
+  const readers = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => /SUPABASE_DB_POOLER_URL/.test(readFileSync(p, 'utf8')))
+    .filter((p) => p !== GHOST_ADMIN_DB)
+  assert.deepEqual(
+    readers,
+    [],
+    `${readers.join(', ')} reads SUPABASE_DB_POOLER_URL. Only ${GHOST_ADMIN_DB} may.`,
+  )
+})
+
+test('no SQL outside server/ghost-admin names vault or the two private tables', () => {
+  // `supabaseAdmin()` cannot reach either schema, so a query naming them elsewhere is either dead
+  // or a new connection nobody declared. Written as the TEXT, because the failure this catches is
+  // a query string copied into a route, not an import.
+  // COMMENTS STRIPPED FIRST, the idiom the supabaseAdmin() contract above already uses: the verify
+  // route explains in prose why `vault.create_secret` can only be executed on the deployed
+  // function, and prose is not a query (executed 2026-09-07 — it failed on that sentence).
+  const named = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) =>
+      /vault\.|private\.site_credentials|private\.credential_audit/.test(
+        readFileSync(p, 'utf8').replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' '),
+      ),
+    )
+    .filter((p) => !p.startsWith(GHOST_ADMIN + '/'))
+  assert.deepEqual(
+    named,
+    [],
+    `${named.join(', ')} writes SQL naming vault or a private table. That belongs in ${GHOST_ADMIN}/ (AD-10).`,
+  )
+})
+
+test('the Admin chokepoint is imported by the routes named here and by nothing else', () => {
+  // AD-10 allows no third path: no Admin API call from a browser and no generic proxy endpoint.
+  // The module is a library that server actions and routes import, and this is that list.
+  //   - THE VERIFY ROUTE, Story 3.1's own: the module has no product caller until 3.2, and R-82
+  //     wants the Vault write, the decryption and both real Ghosts executed on the DEPLOYED
+  //     function rather than on a laptop that cannot write to the live database. It is bearer-
+  //     gated scaffolding and Story 3.2 DELETES it (DW-48).
+  // Story 3.2's connect action joins this list with its own reason.
+  const allowed = [VERIFY_ROUTE]
+  const importers = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => /from\s*'[^']*server\/ghost-admin(\/index\.ts)?'/.test(readFileSync(p, 'utf8')))
+    .filter((p) => !p.startsWith(GHOST_ADMIN + '/'))
+    .filter((p) => !allowed.includes(p))
+  assert.deepEqual(
+    importers,
+    [],
+    `${importers.join(', ')} imports the Admin chokepoint. Only ${allowed.join(' and ')} may — ` +
+      'add a new caller here with its reason, or it is a path AD-10 says does not exist.',
+  )
+})
+
+test('every log line in the chokepoint is one of the shapes that cannot carry a key', () => {
+  // The decrypted secret lives for the milliseconds between the select and the HMAC, and a
+  // `console.error('…', error)` anywhere in this directory would be enough to put a customer's
+  // Ghost key in Vercel's log for thirty days. So the SHAPE is asserted, not the intent: the
+  // message is a literal and the second argument is an object of `code`, `name` and `status`.
+  const shape = /^console\.error\('ghost-admin: [^']*', \{ (?:(?:code|name|status)(?::[^,}]*)?(?:, )?)+ \}\)$/
+  const offenders = ghostAdminSources().flatMap((path) =>
+    [...readFileSync(path, 'utf8').matchAll(/console\.[a-z]+\([^\n]*/g)]
+      .map((m) => m[0].trim())
+      .filter((line) => !shape.test(line))
+      .map((line) => `${path}: ${line}`),
+  )
+  assert.deepEqual(
+    offenders,
+    [],
+    'a log line under server/ghost-admin/ is not the allowed shape ' +
+      "console.error('ghost-admin: …', { code | name | status }). Nothing there may log an error object.",
+  )
+  // And the assertion is worth having only if it is looking at lines at all.
+  assert.ok(
+    ghostAdminSources().some((p) => /console\./.test(readFileSync(p, 'utf8'))),
+    'no console. line was found under server/ghost-admin/ — this test would pass over an empty set.',
+  )
+})
+
+test('the credential kinds are the two Vault holds, and content is not one of them', () => {
+  // `sites.content_key` is browser-safe by Ghost's design and is DELIVERED to the client on
+  // purpose (FR-C3). A `content` member here would quietly move it into Vault and break the
+  // canvas's live-content reads, with every other check still green.
+  const source = readFileSync(GHOST_ADMIN_INDEX, 'utf8')
+  const union = /export type CredentialKind = ([^\n]*)/.exec(source)
+  assert.ok(union, `${GHOST_ADMIN_INDEX}: CredentialKind was not found — this test reads it, not restates it`)
+  assert.deepEqual(
+    [...union[1].matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort(),
+    ['admin', 'staff'],
+    `${GHOST_ADMIN_INDEX}: CredentialKind is ${union[1].trim()}. Vault holds the Admin key and the Staff token; ` +
+      'the Content API key is a plain column and never a secret.',
+  )
+})

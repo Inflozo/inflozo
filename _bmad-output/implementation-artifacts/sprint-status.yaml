@@ -59,8 +59,8 @@ development_status:
   2-6-the-purge-the-cascade-and-the-anonymisation: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-the-server-side-admin-proxy-and-vault-credential-storage: ready-for-dev
+  epic-3: in-progress
+  3-1-the-server-side-admin-proxy-and-vault-credential-storage: in-progress
   3-2-the-connect-wizard-url-integration-guide-and-the-two-keys: backlog
   3-3-the-connect-time-probes-preview-only-code-injection-portal-a: backlog
   3-4-take-my-brand-from-my-site-in-one-click: backlog

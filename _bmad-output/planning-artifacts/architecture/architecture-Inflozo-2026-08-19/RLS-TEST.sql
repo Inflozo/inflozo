@@ -505,9 +505,15 @@ begin
   -- mutation: granting the pin guard to PUBLIC was NOT caught by the old form.
   -- Ask the real question instead. anon and authenticated inherit PUBLIC's grants, so testing those
   -- two covers a null ACL, an explicit grant to PUBLIC, and a direct grant to either role.
-  select string_agg(p.proname, ', ' order by p.proname) into bad
+  -- ⚠️ EXTENDED to `private` by Story 3.1, and it had to be: DW-44's `drop_vault_secrets()` is a
+  -- SECURITY DEFINER function that DELETES Vault secrets, and it lives in `private` — outside the
+  -- one schema this assertion looked at. `alter default privileges ... in schema private revoke
+  -- all on functions from anon, authenticated` (SCHEMA.sql :59) does not touch PUBLIC's default
+  -- EXECUTE grant, so the function was world-executable until its explicit revoke, with this
+  -- assertion green. Both schemas now, and the name is qualified so a failure says which.
+  select string_agg(n.nspname || '.' || p.proname, ', ' order by n.nspname, p.proname) into bad
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-  where n.nspname = 'public' and p.prorettype = 'trigger'::regtype
+  where n.nspname in ('public', 'private') and p.prorettype = 'trigger'::regtype
     and (has_function_privilege('anon', p.oid, 'EXECUTE')
       or has_function_privilege('authenticated', p.oid, 'EXECUTE'));
   if bad is not null then raise exception 'FAIL: trigger function(s) a client can execute: %', bad; end if;
@@ -611,11 +617,12 @@ begin
     ('custom_settings_key_frozen'),     -- AD-9's fourth frozen column
     ('edit_locks_takeover_advances'),   -- FR-D18's takeover must advance the generation
     ('auth_user_profile'),              -- a profiles row at signup
-    ('deploys_pin_leaves_a_slot')       -- FR-J7: a project cannot pin away its last free slot
+    ('deploys_pin_leaves_a_slot'),      -- FR-J7: a project cannot pin away its last free slot
+    ('site_credentials_drop_vault_secrets')  -- DW-44: a Vault secret dies with its ref (Story 3.1)
   ) as x(want)
   where not exists (select 1 from pg_trigger g where g.tgname = x.want and not g.tgisinternal);
   if bad is not null then raise exception 'FAIL: missing guard trigger(s): %', bad; end if;
-  raise notice 'PASS: the AD-9, FR-D18 and signup guards all exist';
+  raise notice 'PASS: the AD-9, FR-D18, signup and DW-44 guards all exist';
 end $$;
 
 -- ============================================================================
@@ -1106,3 +1113,89 @@ reset role;
 -- this one did.
 update public.profiles set deleted_at = null, purge_after = null
  where user_id = '11111111-1111-1111-1111-111111111111';
+
+-- ============================================================================
+-- Story 3.1 — DW-44: a Vault secret dies with the row that references it
+-- ============================================================================
+--
+-- `private.site_credentials` holds UUIDs into `vault.secrets`, and until this trigger existed
+-- NOTHING deleted the secret behind a ref that went away. The account purge, a disconnect and a
+-- key rotation each drop the ref, and each would have left a customer's Ghost Admin key
+-- encrypted-but-alive in the project's Vault for ever — invisible to every assertion in this
+-- file, because every assertion was about ROWS.
+--
+-- Three paths, one trigger, and all three are proved by COUNTING SECRETS rather than by reading
+-- the trigger's definition: a ref replaced (rotation), the site deleted (FR-C6 disconnect and the
+-- 90-day orphan purge), and the ACCOUNT deleted (FR-A5), which reaches the credentials row
+-- through two cascades and fires the trigger under the deleter's role — which is why the function
+-- is `security definer` and why that bit is asserted here too.
+--
+-- `vault` on a bare container is PRELUDE.sql's stand-in, modelling §21j's grants. The gate diffs
+-- only `public` and `private`, so the stand-in never enters the schema comparison.
+
+reset role;
+
+do $$
+declare
+  a    uuid = '44444444-4444-4444-4444-444444444444';
+  site uuid = 'aaaaaaaa-0000-0000-0000-000000000044';
+  r_admin uuid; r_staff uuid; r_new uuid; n int;
+begin
+  -- (0) The function is what the migration says it is. `security definer` is the load-bearing
+  --     word — an invoker function would raise 42501 inside GoTrue's cascade and take the whole
+  --     account deletion down with it — and a definer with an unpinned search_path is a hole.
+  select count(*) into n
+    from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
+   where ns.nspname = 'private' and p.proname = 'drop_vault_secrets'
+     and p.prosecdef
+     and p.proconfig is not null
+     and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%');
+  if n <> 1 then
+    raise exception 'FAIL (DW-44): private.drop_vault_secrets() is not a security definer with a pinned search_path';
+  end if;
+  raise notice 'PASS (DW-44): the vault-secret trigger function is security definer with a pinned search_path';
+
+  -- The fixture, re-runnable: its own account, its own site, two secrets it created itself.
+  delete from auth.users where id = a;
+  insert into auth.users(id) values (a);
+  insert into public.sites(id, user_id, url) values (site, a, 'https://vault-44.example');
+  select vault.create_secret('kid44:aa', null, 'site 44 admin') into r_admin;
+  select vault.create_secret('sid44:bb', null, 'site 44 staff') into r_staff;
+  insert into private.site_credentials(site_id, user_id, admin_key_vault_ref, staff_token_vault_ref)
+    values (site, a, r_admin, r_staff);
+  select count(*) into n from vault.secrets where id in (r_admin, r_staff);
+  if n <> 2 then
+    raise exception 'FAIL (DW-44): the fixture did not create two secrets (found %) — the assertions below would pass over nothing', n;
+  end if;
+
+  -- (1) ROTATION. Story 3.6 re-enters a key; `store()` replaces the ref and remembers nothing
+  --     about Vault, so the OLD secret has no other reference the moment the update commits.
+  select vault.create_secret('kid44:cc', null, 'site 44 admin') into r_new;
+  update private.site_credentials set admin_key_vault_ref = r_new where site_id = site;
+  select count(*) into n from vault.secrets where id = r_admin;
+  if n <> 0 then raise exception 'FAIL (DW-44): the replaced Admin key secret is still in the vault'; end if;
+  select count(*) into n from vault.secrets where id = r_new;
+  if n <> 1 then raise exception 'FAIL (DW-44): the rotation deleted the NEW secret as well as the old one'; end if;
+  raise notice 'PASS (DW-44): a rotation deletes the secret behind the ref it replaced, and only that one';
+
+  -- (2) THE SITE DELETED — FR-C6's disconnect and the 90-day orphan purge. `site_credentials`
+  --     cascades from `sites`, and BOTH kinds go, not just the one a caller happened to name.
+  delete from public.sites where id = site;
+  select count(*) into n from vault.secrets where id in (r_new, r_staff);
+  if n <> 0 then raise exception 'FAIL (DW-44): % secret(s) survived the site being deleted', n; end if;
+  raise notice 'PASS (DW-44): deleting a site takes both of its secrets out of the vault';
+
+  -- (3) THE ACCOUNT DELETED — FR-A5's purge, the path the trigger is `security definer` FOR: the
+  --     delete arrives through `auth.users`, under GoTrue's role, and reaches here by cascade.
+  insert into public.sites(id, user_id, url) values (site, a, 'https://vault-44.example');
+  select vault.create_secret('kid44:dd', null, 'site 44 admin') into r_admin;
+  select vault.create_secret('sid44:ee', null, 'site 44 staff') into r_staff;
+  insert into private.site_credentials(site_id, user_id, admin_key_vault_ref, staff_token_vault_ref)
+    values (site, a, r_admin, r_staff);
+  delete from auth.users where id = a;
+  select count(*) into n from vault.secrets where id in (r_admin, r_staff);
+  if n <> 0 then raise exception 'FAIL (DW-44): % secret(s) survived the account being deleted', n; end if;
+  select count(*) into n from public.sites where id = site;
+  if n <> 0 then raise exception 'FAIL (DW-44): the site row survived the account being deleted'; end if;
+  raise notice 'PASS (DW-44): deleting an account takes its sites'' secrets out of the vault';
+end $$;
