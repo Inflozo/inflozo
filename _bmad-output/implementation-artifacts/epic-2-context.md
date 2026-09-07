@@ -48,3 +48,19 @@ A user owns their account end to end: registers a passkey and signs in with it i
 - **On Epic 12:** 2.5 must stop Dodo auto-renew and offer resume, but no billing adapter or subscription code exists yet — the spec states what it builds against or flags the gap under Questions for the owner rather than inventing a Dodo call.
 - On Epics 3 and 7: nothing writes `site_snapshots` until deploy exists — 2.5 builds the listing against the table and proves it with a seeded row (R-82).
 - Process rulings binding every story: commit and push after every phase as `Story 2.<n> - <Phase> - <one line>`; the doc gate before every commit; review and owner test on the real Supabase, Resend and Vercel (keys in `tools/probe/.env`); every UI story carries an owner's manual test on the production domains; owner questions in plain English with an example, numbered options and a (RECOMMENDED) mark.
+
+## Since compiled — rulings landed by later stories (kept current by hand; the file says edit freely)
+
+- **R-94 and R-95 (owner, Story 2.3's review, 2026-09-07)** — `reconcile-designs-decisions.md` §A19. R-94: a stale
+  email-change link opened on a signed-in browser lands on `/account?email=stale` with a red note (the sign-in page
+  bounces signed-in visitors before it says a word). R-95: the PREVIOUS address is told when an email change is
+  confirmed — Supabase's own `mailer_notifications_email_changed_enabled`, plain and unbranded until E12 (DW-39) —
+  and FR-P1 is now **seven** emails. Neither touches sessions, passkeys or deletion; nothing above changes for 2.4–2.6.
+- **What 2.3 left for 2.4** — DW-38: `signedIn()` is copied in two `'use server'` files and the next story that
+  touches either moves it to one plain module. DW-14: `sessions_inactivity_timeout` is a paid Supabase setting and
+  2.4 is the first story that might want it — if it does, it is the owner's call (money), not an assumption.
+- **A fact read in the installed client, not yet executed** (`auth-js` 2.115.0, `GoTrueClient.js:3405-3445`):
+  `signOut()`'s DEFAULT scope is `'global'` — `POST /logout?scope=global` — so the avatar menu's Sign out from 1.4
+  has been ending every session everywhere all along. `getUser()` on a JWT whose `session_id` no longer exists
+  answers `session_not_found`, which the client maps to a missing session and clears the cookies
+  (`lib/fetch.js:82-86`, `GoTrueClient.js:2715-2718`). Both are hypotheses for 2.4's harness (standing rule 1).

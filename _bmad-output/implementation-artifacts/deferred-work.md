@@ -376,6 +376,9 @@ reason: `PATCH …/config/auth` answered `402 "User sessions can only be configu
   everywhere) is the first story that might want it; if it does, the choice is Supabase Pro or an
   application-level last-seen check, and the first one costs money, so it is the owner's call and should
   be put to him in that story rather than assumed here.
+  **Story 2.4 looked (Create, 2026-09-07): it does not need it.** Sign-out-everywhere is GoTrue's core
+  `POST /logout?scope=global`, not the paid session feature; no inactivity timeout is asked for and the
+  question about money stays unasked. Still open for any later story that wants idle sessions to end.
 
 ### DW-15: the dashboard placeholder's Paper colours are read off D4a's pack cell, because Appendix D names no hex
 
@@ -925,3 +928,43 @@ reason: The owner chose the plain default now rather than delaying the security 
   through the two field names above, in the pass where **E12** builds and brands the rest of FR-P1;
   its subject wants the product's voice too. Nothing is broken until then: the notice sends, and it says
   the true thing.
+
+### DW-40: after a global sign-out, a captured access token is still a valid signature until `jwt_exp`
+
+plain: When you sign out everywhere, Inflozo refuses the old sign-in on every page and action at once,
+  because each one asks Supabase whether the session still exists. But the token itself — a signed
+  ticket with an expiry — would still be accepted by Supabase's own data API if someone had copied it
+  out of a stolen cookie, until the ticket's own expiry passes. Nothing in the app ever hands that
+  ticket to a browser script, so the cookie has to be stolen first.
+status: open
+severity: low
+origin: Story 2.4 spec (2026-09-07), read in the installed client — `GoTrueClient.js:2714-2718`,
+  `lib/fetch.js:82-86` — and in the app's guard (`lib/supabase/server.ts` `currentUser()`, `proxy.ts:25-39`)
+location: the project's `jwt_exp` (Supabase Auth config); apps/web/lib/supabase/cookies.ts (`httpOnly: true`)
+reason: `getUser()` verifies with GoTrue, which checks the JWT's `session_id` claim against `auth.sessions`
+  and answers `session_not_found` once the row is gone — so every Inflozo page and every server action
+  refuses the token immediately. PostgREST verifies only the signature and `exp`, so a token presented
+  DIRECTLY to `/rest/v1` with the publishable key stays good for the remainder of `jwt_exp`. The number
+  is a hypothesis until the Dev run's `jwt-exp` harness step reads it off the Management API and writes it
+  here: `jwt_exp = ____` (fill at Dev). Shortening it is a trade against refresh traffic and is the owner's
+  call if he ever wants it; nothing in FR-A6 asks for it.
+
+### DW-41: `signOut`'s failure comment says the cookies are kept; the installed client removes them on most failures
+
+plain: The ordinary Sign out has a note saying that if Supabase cannot be reached, you stay signed in and
+  the dashboard shows a red line. Reading the library's actual code, that is only true when your ticket
+  had already expired; in the common case the library clears your sign-in AND reports the failure, so
+  the red line's page would bounce you to the sign-in page with nothing said. Not yet executed — it
+  needs Supabase to be unreachable from the live site.
+status: open
+severity: low
+origin: Story 2.4 spec (2026-09-07), read in the installed client
+location: apps/web/app/(app)/app/sign-in/actions.ts:82-97 (`signOut`, its comment, `signOutPathFor(Boolean(error))`)
+reason: `_signOut` (`GoTrueClient.js:3415-3445`): when `/logout` fails with anything other than 401/403/404 or a
+  missing session, it calls `removeCurrentSession()` BEFORE returning the error — the cookies are deleted
+  through `setAll` and the action then redirects to `/?sign-out-failed=1`, where the guard finds no session
+  and 307s to `/sign-in` without the owner's red line (his ruling at question 8, Story 1.5). The comment's
+  claim holds only on the OTHER path: an expired access token whose refresh fails inside `_useSession`
+  returns the error before any removal. A hypothesis until executed; the fix, if the owner wants one, is
+  for the action to read the cookies after the call and choose its landing from what is actually left —
+  1.4/1.5's file, so not changed by Story 2.4, which alters only that call's scope.
