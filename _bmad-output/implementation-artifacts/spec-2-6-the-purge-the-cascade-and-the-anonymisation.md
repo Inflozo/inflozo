@@ -2,7 +2,7 @@
 title: 'Story 2.6 — The purge, the cascade and the anonymisation'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-review'
+status: 'done'
 review_loop_iteration: 1
 baseline_commit: '868c19644344434056b7236fc8f499370e061bd2'
 owner_test: none
@@ -539,6 +539,13 @@ only value that has ever existed as far as any service is concerned.
 Run on the real infrastructure (R-82). Every key is read into a command's environment by name and
 never printed; each is recorded by its variable name only. **The Dev run's results are below.**
 
+**Deployment: `https://inflozo.com`** — Vercel deployment `dpl_JCUWqg6gQR53pioMfD9nWdf2uS1S`, commit
+`216b7903` (HEAD, the last Story 2.6 commit; no app code changed since the `1489654f` Review commit
+already verified above), `readyState: READY`, `target: production`, aliases `inflozo.com`,
+`app.inflozo.com`, `www.inflozo.com`; the deployment's own `crons` field reads `[{ path:
+/api/cron/purge-accounts, schedule: 15 3 * * * }]` — read via `GET /v13/deployments/{uid}` with
+`VERCEL_TOKEN`, `VERCEL_TEAM_ID`.
+
 **Commands:**
 
 *Run 2026-09-07 on commit `868c1964` + this working tree. Every key by variable name; no value printed.*
@@ -555,8 +562,8 @@ never printed; each is recorded by its variable name only. **The Dev run's resul
 | `curl -H "Authorization: Bearer $CRON_SECRET" https://inflozo.com/api/cron/purge-accounts` | 200 `{ purged: 0, failed: 0 }` if the running deployment can see a variable added after it was built | Dev run: **NOT RUN** (sandbox). **Review run: HTTP 200 `{"purged":0,"failed":0}`, `cache-control: no-store`** — the serving deployment was built after the variable was added (Spec Change Log). **Never by hand from now on:** outside the harness this call has no stranger-refusal control and would purge any real due account; the harness makes it, controls first |
 | `python3 tools/probe/run-verify-account-purge.py --check` | exit 0; keys present; one admin create-read-delete; put → `list-v2` → delete in each of the four buckets; users before == after | **exit 0, all steps passed.** `users before: 5` → `users after: 5`. `PASS secret` · `PASS admin-round-trip: create, read back -> HTTP 200` · `PASS list-v2 assets` · `PASS list-v2 site-snapshots` · `PASS list-v2 suggestion-images` · `PASS list-v2 deploy-artifacts` — each `put -> HTTP 200; list-v2 -> HTTP 200 ['purge-check-<stamp>/deep/probe.bin']; delete -> HTTP 200; the prefix now lists 0` |
 | `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **run twice.** Before the Dev push: **HTTP 404** — but the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`; that is `routing.ts`'s pass-through executed. After the Dev push, which CI deployed: **HTTP/2 401**, `cache-control: no-store`, `x-matched-path: /api/cron/purge-accounts`. The door exists, is shut and is not cached. *(Review correction: a call with no header is the `!header` branch whatever the secret is — this row never executed the unset-secret branch, whose evidence is the unit test; the harness's two controls are the production 401s.)* |
-| `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | Dev run: nothing deployed to call. **Review run: every step PASS, three times — the unpatched harness against the deployed Dev commit `61fa12d9` (the verifier's run), the patched harness against the same deployment, then the patched harness against the deployed Review commit `1489654f` (both below)**; the Deploy run runs it against its own deployment |
-| Deploy run: `vercel crons ls`, then one invocation in the runtime logs | the one job, `/api/cron/purge-accounts`, `15 3 * * *`; `vercel-cron/1.0`, status 200 | **the Deploy run's** |
+| `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | Dev run: nothing deployed to call. **Review run: every step PASS, three times — the unpatched harness against the deployed Dev commit `61fa12d9` (the verifier's run), the patched harness against the same deployment, then the patched harness against the deployed Review commit `1489654f` (both below)**. **Deploy run: every step PASS a fourth time, against the deployed commit `216b7903` above (below)** |
+| Deploy run: `vercel crons ls`, then one invocation in the runtime logs | the one job, `/api/cron/purge-accounts`, `15 3 * * *`; `vercel-cron/1.0`, status 200 | **`vercel` CLI not installed in this environment; no workaround attempted.** Confirmed instead via `GET /v13/deployments/{uid}` (above): the serving deployment's own `crons` field carries the one entry. **HYPOTHESIS, NOT YET EXECUTED (standing rule 1):** the schedule's next firing is 2026-09-08 03:15 UTC — no `vercel-cron/1.0` invocation exists yet to read from the runtime log, and none is asserted here. The owner can see it appear on the Vercel dashboard's Cron Jobs → View Logs page after that time, or trigger it on demand from there sooner |
 
 **Review run, 2026-09-07, on the deployed Dev commit `61fa12d9` (Vercel deployment `READY`, aliases
 `inflozo.com` and `app.inflozo.com`, its `crons` reading `[{ path: /api/cron/purge-accounts, schedule:
@@ -585,6 +592,18 @@ four buckets** — the story's central hypothesis — answering flat, full keys.
 `inflozo.com`: the apex's pass-through, with its `/app` control. Resend, Dodo and the Ghost servers
 T1/T3: **not touched, deliberately** — this story sends nothing (FR-A5, FR-P2) and compiles nothing.
 
+**Deploy run, 2026-09-07, on the deployed commit `216b7903` (Vercel deployment `dpl_JCUWqg6gQR53pioMfD9nWdf2uS1S`,
+`READY`, aliases `inflozo.com`, `app.inflozo.com`, `www.inflozo.com`, `target: production`).** Every
+key by variable name; no value printed.
+
+| Command | **What it returned** |
+|---|---|
+| CI run for commit `216b7903` (`gh run list --branch main`, `GITHUB_TOKEN`) | `completed`, `success` — `check` and `rls` both green, so `deploy` ran |
+| `GET /v6/deployments?projectId={VERCEL_PROJECT}&teamId={VERCEL_TEAM_ID}` with `VERCEL_TOKEN` | the serving deployment for `216b7903` is `dpl_JCUWqg6gQR53pioMfD9nWdf2uS1S`, `readyState: READY` |
+| `GET /v13/deployments/{uid}?teamId={VERCEL_TEAM_ID}` | `readyState READY`; `alias` includes `inflozo.com`, `app.inflozo.com`; `crons [{ path: /api/cron/purge-accounts, schedule: 15 3 * * * }]`; `target production` |
+| `python3 tools/probe/run-verify-account-purge.py` (full, patched, against `https://inflozo.com`) with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` | **exit 0, every step PASS:** `secret` · `users before: 5` · A, B, C created · 6 objects across 4 buckets · `seeded: the route would purge 1 account(s) within 15 min, exactly A; A's prefixes list {assets 1, site-snapshots 1, suggestion-images 1, deploy-artifacts 1} (HTTP [200]); C's vote_count is 1` · `no-header: 401 'Unauthorized', x-matched-path '/api/cron/purge-accounts', cache-control 'no-store'; A still there` · `wrong-secret: 401 'Unauthorized' …; A still there` · `purge: 200 {"purged": 1, "failed": 0}, cache-control 'no-store'` · `user-gone: 404` · `rows-gone: 25 cascade tables read, A left in none` (C's `vote_count` 1 → 0; `edit_locks` unprovable) · `objects-gone: every prefix of A's [] (HTTP [200])` · `anonymised: {"user_id": null, "anonymized_at": "2026-09-07T14:27:29…", "image_path": null, "image_approved": false}` · `others-untouched: B keeps its window and 1 object; C 200, 1 object, suggestion still C's` · `idempotent: 200 {"purged": 0, "failed": 0}` · `users after: 5` |
+
 **Manual checks (if no CLI):**
 - The Vercel dashboard's Cron Jobs page lists the job against the deployed commit, and its View Logs
-  shows the invocation above. No owner's test: `owner_test: none` — a background job with no screen.
+  shows the invocation once the 2026-09-08 03:15 UTC schedule fires (or the owner triggers it on
+  demand from that page). No owner's test: `owner_test: none` — a background job with no screen.
