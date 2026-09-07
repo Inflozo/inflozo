@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 09-07-2026
+last_updated: '2026-09-07'
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -53,7 +53,7 @@ development_status:
   epic-2: in-progress
   2-1-register-a-passkey-and-sign-in-with-it: done
   2-2-see-rename-and-revoke-my-passkeys: done
-  2-3-change-my-email-address-safely: ready-for-dev
+  2-3-change-my-email-address-safely: in-progress
   2-4-end-every-session-everywhere: backlog
   2-5-ask-to-delete-my-account-and-be-able-to-change-my-mind: backlog
   2-6-the-purge-the-cascade-and-the-anonymisation: backlog

@@ -2,7 +2,8 @@
 title: 'Story 2.3 — Change my email address safely'
 type: 'feature'
 created: '2026-09-07'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '4da178c8444aee8a942aeba007b830c567416316'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -133,16 +134,16 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `supabase/auth/email-change.html` -- the template, extrapolated from `magic-link.html` -- FR-P1 email (2), branded
-- [ ] `tools/probe/configure-supabase-auth.py` + its catalogue row -- the four new fields, written and read back; `--apply` on the live project, then `--check`, then the control `--expect mailer_secure_email_change_enabled=true` must FAIL -- one email, to the new address
-- [ ] `account/email-change-rule.ts` + `apps/web/email-change-rule.test.ts` -- the boundary, the pending rule, the URL contract, the derived lifetime -- under `node --test`
-- [ ] `components/kit/input.tsx` -- `type` and `autoComplete` on `TextInput` -- an email field in the Kit's own control
-- [ ] `account/actions.ts` -- `signedIn()`, `changeEmail`, the five codes and sentences -- FR-A4's verb
-- [ ] `account/email-card.tsx` + `account/page.tsx` -- the card lifted, the button, the dialog, the two banners, `searchParams` -- S12a
-- [ ] `app/auth/confirm/route.ts` -- the landing for `email_change`, decided before the cookie-carrying response exists -- the link's other end
-- [ ] `tools/probe/run-verify-email-change.py` + its catalogue row -- the harness -- R-82's round trip, re-runnable
-- [ ] `deferred-work.md` -- the DW-22 line -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result
+- [x] `supabase/auth/email-change.html` -- the template, extrapolated from `magic-link.html` -- FR-P1 email (2), branded
+- [x] `tools/probe/configure-supabase-auth.py` + its catalogue row -- the four new fields, written and read back; `--apply` on the live project, then `--check`, then the control `--expect mailer_secure_email_change_enabled=true` must FAIL -- one email, to the new address
+- [x] `account/email-change-rule.ts` + `apps/web/email-change-rule.test.ts` -- the boundary, the pending rule, the URL contract, the derived lifetime -- under `node --test`
+- [x] `components/kit/input.tsx` -- `type` and `autoComplete` on `TextInput` -- an email field in the Kit's own control
+- [x] `account/actions.ts` -- `signedIn()`, `changeEmail`, the five codes and sentences -- FR-A4's verb
+- [x] `account/email-card.tsx` + `account/page.tsx` -- the card lifted, the button, the dialog, the two banners, `searchParams` -- S12a
+- [x] `app/auth/confirm/route.ts` -- the landing for `email_change`, decided before the cookie-carrying response exists -- the link's other end
+- [x] `tools/probe/run-verify-email-change.py` + its catalogue row -- the harness -- R-82's round trip, re-runnable
+- [x] `deferred-work.md` -- the DW-22 line -- propagate, never localise
+- [x] Run `## Verification` on the real infrastructure and record every command and result
 
 **Acceptance Criteria:**
 - Given a signed-in user on `/account` at 1440 and at 390, when the page renders, then the Email card **matches the frame** (`S12 Billing.dc.html` S12a `:74-82`: the row unchanged, **Change email** at the row's end at 30px / radius 10 / 12px 500 / surface with the `line` border and `paper` on hover), the Passkeys card exactly as 2.2 left it, the plan column and the Danger zone still absent
@@ -157,6 +158,21 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 - Given `pnpm check`, `pnpm build`, `node --test` and axe-core on `/account` with the dialog closed, open, and with the pending banner showing, then all green and zero violations at 1440 and 390
 
 ## Spec Change Log
+
+1. **The harness's `email_change_new` token is the one in `action_link`, not `hashed_token`** (Dev,
+   2026-09-07). Design Notes listed "`generate_link` with `type: 'email_change_new'` and `new_email`
+   mints a redeemable token" as a hypothesis. It does — but `hashed_token` in that response is NOT
+   it: `POST /verify {type:'email_change', token_hash:<hashed_token>}` answered `403 otp_expired` on
+   a token minted seconds earlier, four times, while the `token` query param out of the same
+   response's `action_link` answered **200** with a session and landed the change. GoTrue looks the
+   hash up in `one_time_tokens` over EmailChangeTokenCurrent and EmailChangeTokenNew
+   (`verify.go:644-668`), and with `mailer_secure_email_change_enabled` false only the NEW one is
+   ever stored. **Nothing in the product changes** — the email carries `{{ .TokenHash }}`, which
+   GoTrue renders per message, and the confirm route's call shape is proved correct by the 200 —
+   but the harness would have reported a broken confirm route, so `run-verify-email-change.py`
+   reads `action_link` and records why beside the line.
+2. **`sessions_inactivity_timeout` is still the plan's, not the story's** — the `--apply` run
+   answered `402` for it, retried without it and wrote the other 26 fields. Unchanged from 1.4.
 
 ## Design Notes
 
@@ -212,6 +228,70 @@ the trap cannot be walked into.
 
 **Manual checks:**
 - The owner's inbox receives FR-P1's email (2) from `Inflozo <hello@inflozo.com>` with the subject "Confirm your new Inflozo email" (his manual test, step 4) — the delivery half DW-22 says no key here can read.
+
+### Ran at Dev, 2026-09-07 — the real services, by variable name, never by value
+
+**Supabase** (project `adasbmxypwvnxznzzxwp`, from `SUPABASE_URL`; `SUPABASE_ACCESS_TOKEN`,
+`SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `RESEND_FROM` in
+`tools/probe/.env`):
+
+- `curl https://api.supabase.com/api/v1-json` -> **all four field names PRESENT** in
+  `UpdateAuthConfigBody`: `mailer_subjects_email_change` (string),
+  `mailer_templates_email_change_content` (string), `mailer_secure_email_change_enabled` (boolean),
+  `mailer_notifications_email_changed_enabled` (boolean). Read in the source, not assumed.
+- `python3 tools/probe/configure-supabase-auth.py --apply` -> `PATCH 402` for
+  `sessions_inactivity_timeout` (a Pro-plan field, stated not swallowed), retried -> **`PATCH 200`,
+  26 fields written**, then `GET 200` and **every field PASS**, the four new ones among them:
+  `mailer_subjects_email_change = 'Confirm your new Inflozo email'`,
+  `mailer_templates_email_change_content = 5373 chars`,
+  `mailer_secure_email_change_enabled = False`, `mailer_notifications_email_changed_enabled = False`.
+  `smtp_pass` written by name only. Exit 0.
+- `python3 tools/probe/configure-supabase-auth.py --check --expect mailer_secure_email_change_enabled=true`
+  -> **exactly one `FAIL`**, `mailer_secure_email_change_enabled = True (live: False)`, exit **1**.
+  **THE CONTROL PASSED** — the read-back can fail, so the green run above is a result.
+- `python3 tools/probe/configure-supabase-auth.py --check` -> `OK`, exit 0, after every edit.
+
+**GoTrue, executed against the live project on two throwaway fixture users** (standing rule 1 — each
+of these was a hypothesis in Design Notes and is now a fact):
+
+- **`422 email_exists` BEFORE anything is sent.** A's own access token (a magic link redeemed
+  through `POST /verify`), then `PUT /auth/v1/user {email: B}` -> **HTTP 422, `error_code:
+  'email_exists'`**, and A's `email_change_sent_at` **did not move** and `new_email` stayed `''`.
+  This is FR-A4's "rejected upfront before any verification email is sent", read off the wire; it is
+  `run-verify-email-change.py`'s `in-use-wire` step and it printed `PASS`.
+- **`generate_link` with `type: 'email_change_new'` and `new_email` -> 200**, `verification_type:
+  'email_change_new'`, and the change recorded as `new_email` on the user.
+- **The confirm route's call shape redeems it**: `POST /verify {type:'email_change', token_hash}`
+  with the `action_link` token -> **200 with an `access_token`**, and the wire then showed
+  `email` = the new address with `new_email` cleared. With `hashed_token` from the same response it
+  answered `403 otp_expired` — see Spec Change Log 1; the finding is the harness's, not the app's.
+- **GoTrue's own `GET /verify?token=…&type=email_change` -> 303** with a session in the fragment and
+  the change landed, which is why the product uses its own route instead: no server can read a
+  fragment.
+- `python3 tools/probe/run-verify-email-change.py --check` -> playwright resolved, axe-core
+  resolved, `PASS admin round trip: create, read back (200)`, users before 4 / after 4, exit 0.
+  Every fixture user created in the runs above was deleted and the count returned to 4 each time.
+
+**The repository's own gates:**
+
+- `pnpm check` (Node 24.18.1 — memory `headless-browser-tooling`) -> lint, typecheck and
+  `node --test` all green: **127 tests pass, 0 fail** in `apps/web`, `email-change-rule.test.ts`
+  (9 tests) and `server-wiring.test.ts` among them.
+- `pnpm build` -> compiled, TypeScript green, `/app/account` and `/app/auth/confirm` both routed.
+- `python3 tools/doc-audit.py --check` -> `documentation gate: PASS (0 warning(s))`.
+
+**Resend** — not called at Dev: the one real send of this story happens inside the Deploy run of
+`run-verify-email-change.py`, and DW-22 means even then only the hand-off is readable here.
+**Vercel** — not called at Dev; the deployment is CI's, on the push (DW-7). **Dodo** and the Ghost
+test servers **T1/T3** — untouched by this story, and named here only to say so.
+
+### Still to run, at Deploy, against `app.inflozo.com`
+
+`python3 tools/probe/run-verify-email-change.py` — the eleven UI steps above (`frame`,
+`dialog-focus`, `bad-email`, `same`, `in-use-ui`, `send`, `too-soon`, `confirm`, `magic-link-new`,
+`axe-closed`, `axe-dialog`, `axe-pending`). They need the deployed site by construction: this
+story's whole surface is a signed-in page on `app.inflozo.com`, and the frame step reads computed
+styles off the deployed DOM. The wire control they depend on has already passed, above.
 
 ## Owner's manual test
 

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { Mail } from '@/components/kit/icons'
 import { passkeysEnabled, READ_TIMEOUT_MS } from '@/lib/flags'
 import { passkeyRows, type PasskeyRow } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/with-timeout'
+import { EmailCard } from './email-card'
+import { EMAIL_CHANGED, isEmailChanged, pendingChange } from './email-change-rule'
 import { PasskeysCard } from './passkeys-card'
 
 /* ─────────────────────────────────────── S12 Billing.dc.html — S12a, its RIGHT column.
@@ -11,9 +12,11 @@ import { PasskeysCard } from './passkeys-card'
    The frame draws one surface called "Account & Billing" in two columns: the plan, its meters
    and the invoices on the left, and Email · Passkeys · Danger zone on the right. THE LEFT COLUMN
    IS EPIC 12'S and the Danger zone is 2.5's; each is ABSENT rather than greyed, because neither
-   could act today (UX-DR3). So is Change email (2.3). The pencil and the bin at the end of every
-   passkey row LANDED WITH 2.2 and are drawn by `passkeys-card.tsx`. The heading is still the
-   frame's own — the surface it names is the one being built, one card at a time.
+   could act today (UX-DR3). The pencil and the bin at the end of every passkey row LANDED WITH
+   2.2 and are drawn by `passkeys-card.tsx`; CHANGE EMAIL landed with 2.3 and the whole Email
+   card now lives in `email-card.tsx`, because the frame's button opens a dialog and a dialog
+   needs a client. The heading is still the frame's own — the surface it names is the one being
+   built, one card at a time.
 
    Values are read off the frame and never rounded: the cards at `rounded-lg` with the frame's
    own `shadow-sm`, 20/24 padding, the label 13px/600 uppercase at 0.04em, the address 13px/500
@@ -33,8 +36,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function AccountPage() {
-  const user = await currentUser()
+export default async function AccountPage({
+  searchParams,
+}: {
+  // The confirm route's landing hint — a repeated key arrives as an ARRAY, which is not the
+  // value (`email-change-rule.ts`, and `(authed)/page.tsx`'s own shape).
+  searchParams: Promise<{ [EMAIL_CHANGED]?: string | string[] }>
+}) {
+  const [{ [EMAIL_CHANGED]: changed }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
@@ -50,18 +59,13 @@ export default async function AccountPage() {
       </h1>
 
       <div className="flex flex-col gap-4 desktop:max-w-[calc(100%-504px)]">
-        <section className="flex flex-col gap-[14px] rounded-lg border border-line bg-surface p-[20px_24px] shadow-sm">
-          <h2 className="text-ui-dense font-semibold uppercase tracking-[0.04em] text-ink-soft">Email</h2>
-          <div className="flex items-center gap-3 py-[2px]">
-            <span className="shrink-0 text-ink-soft">
-              <Mail size={16} />
-            </span>
-            <span className="flex min-w-0 flex-col gap-px">
-              <span className="break-all text-ui-dense font-medium text-ink">{user.email}</span>
-              <span className="text-helper-caption text-ink-soft">Magic links land here</span>
-            </span>
-          </div>
-        </section>
+        {/* A PENDING CHANGE IS SUPABASE'S OWN RECORD, not a table of ours: `new_email` and
+            `email_change_sent_at` ride in on the `getUser()` above, so the card costs no read. */}
+        <EmailCard
+          email={user.email}
+          pending={pendingChange(user, Date.now())}
+          justChanged={isEmailChanged(changed)}
+        />
 
         {passkeys ? <PasskeysCard passkeys={rows} /> : null}
       </div>

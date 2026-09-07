@@ -6,6 +6,9 @@ import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '
 import { passkeysEnabled } from '@/lib/flags'
 import { nameFor } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { BAD_EMAIL } from '../../sign-in/email.ts'
+import { SEND_INTERVAL, sentStateFor } from '../../sign-in/resend-timer.ts'
+import { IN_USE, newEmailFor, SAME_EMAIL, SEND_FAILED } from './email-change-rule.ts'
 import { NUDGE_DONE } from './nudge.ts'
 import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey-name-rule.ts'
 
@@ -29,7 +32,17 @@ import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey
  * public paths the browser sees (`routing.ts:25`, and the note in `signed-out.ts`).
  */
 
-type Code = 'passkeys_off' | 'passkey_failed' | 'bad_name' | 'rename_failed' | 'revoke_failed'
+type Code =
+  | 'passkeys_off'
+  | 'passkey_failed'
+  | 'bad_name'
+  | 'rename_failed'
+  | 'revoke_failed'
+  | 'bad_email'
+  | 'same_email'
+  | 'in_use'
+  | 'too_soon'
+  | 'send_failed'
 
 export type RegisterStart =
   | { ok: true; challengeId: string; options: ServerCredentialCreationOptions }
@@ -45,9 +58,24 @@ const MESSAGES: Record<Code, string> = {
   bad_name: PASSKEY_NAME_HINT,
   rename_failed: "We couldn't rename that passkey just now. Try again in a moment.",
   revoke_failed: "We couldn't remove that passkey just now. Try again in a moment.",
+  // FR-A4's five. The first three are the FIELD's own refusals and go in its helper-caption
+  // slot; the last two are the card's Banner. `too_soon` is composed at the point of failure
+  // from GoTrue's own remainder, so this entry is the fallback the composer replaces.
+  bad_email: BAD_EMAIL,
+  same_email: SAME_EMAIL,
+  in_use: IN_USE,
+  too_soon: tooSoon(SEND_INTERVAL),
+  send_failed: SEND_FAILED,
 }
 
-const fail = (code: Code) => ({ error: { code, message: MESSAGES[code] } })
+/** S1b's sentence at the account's altitude: the seconds are GoTrue's, never a guess of ours. */
+function tooSoon(seconds: number) {
+  return `We sent a link a moment ago. Try again in ${seconds} seconds.`
+}
+
+const fail = (code: Code, message?: string) => ({
+  error: { code, message: message ?? MESSAGES[code] },
+})
 
 /** The passkey the row's button posted — `passkeyIdSchema` says why it is a UUID. */
 const idOf = (formData: FormData) => {
@@ -64,16 +92,28 @@ const idOf = (formData: FormData) => {
 const GONE = 404
 
 /**
- * BOTH GUARDS, IN THE ORDER THAT MATTERS. The flag first, because an action that still acts
- * with the switch off is not a switch; then the session, because a session that ended between
- * the render and the click has one honest answer and it is the sign-in page, not a sentence
- * (`projects/actions.ts`'s `signedIn`). `redirect` throws, so it narrows.
+ * THE SESSION, ON ITS OWN. A session that ended between the render and the click has one honest
+ * answer and it is the sign-in page, not a sentence (`projects/actions.ts`'s own `signedIn`,
+ * copied here rather than imported because an exported async function in a `'use server'` file
+ * is a Server Action, and a guard is not one). `redirect` throws, so it narrows.
+ *
+ * `changeEmail` GUARDS ON THIS ALONE: there is no feature flag for changing an email, and
+ * `ready()`'s passkey switch must never gate it — with passkeys off, the Email card is still
+ * there and its button still has to work.
  */
-async function ready() {
-  if (!(await passkeysEnabled())) return null
+async function signedIn() {
   const user = await currentUser()
   if (!user) redirect('/sign-in')
   return user
+}
+
+/**
+ * BOTH GUARDS, IN THE ORDER THAT MATTERS, for the passkey actions alone. The flag first, because
+ * an action that still acts with the switch off is not a switch; then the session, above.
+ */
+async function ready() {
+  if (!(await passkeysEnabled())) return null
+  return signedIn()
 }
 
 export async function startPasskeyRegistration(): Promise<RegisterStart> {
@@ -254,4 +294,62 @@ async function markNudgeDone(metadata: Record<string, unknown> | undefined): Pro
   })
   if (error) console.error('passkey: nudge dismiss failed', { status: error.status, code: error.code })
   return Boolean(error)
+}
+
+/**
+ * FR-A4's EMAIL CHANGE, through Supabase's OWN `auth.updateUser({ email })` — no code of ours
+ * touches `auth.users` and nothing of ours stores a pending address: `new_email` and
+ * `email_change_sent_at` are the platform's record and arrive inside `getUser()`.
+ *
+ * THE UPFRONT "ALREADY IN USE" IS GoTrue's, not a lookup of ours. It refuses a duplicate with
+ * `422 email_exists` BEFORE it sends anything (`internal/api/user.go:135-139`, read in its source
+ * 2026-09-07), which is exactly what FR-A4 asks for — so `SUPABASE_SECRET_KEY` gains no second
+ * reader and no admin listing of every address happens on a keystroke.
+ *
+ * ONE EMAIL, TO THE NEW ADDRESS. The project's `mailer_secure_email_change_enabled` and
+ * `mailer_notifications_email_changed_enabled` are both false and are written and read back by
+ * `tools/probe/configure-supabase-auth.py`; with the first on, GoTrue mails BOTH addresses and
+ * the new one's link alone never lands the change (`verify.go:548-585`).
+ *
+ * WRAPPED, for `renamePasskey`'s reason: `auth-js` re-throws anything that is not an `AuthError`,
+ * and a Server Function that throws takes `/account` to the error boundary instead of leaving the
+ * dialog open with one sentence.
+ *
+ * NOTHING IS LOGGED BUT A STATUS AND A CODE — never an address, never a token, never a link.
+ */
+export async function changeEmail(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await signedIn()
+
+  // The boundary FIRST, so a non-address and the account's own address never reach the platform
+  // at all — the matrix's "nothing sent" is true of both. `email-change-rule.ts` holds it, and
+  // the dialog runs the same function at submit, so the two cannot say different things.
+  const asked = newEmailFor(user.email, formData.get('email'))
+  if ('code' in asked) return fail(asked.code)
+
+  try {
+    const supabase = await supabaseServer()
+    const { error } = await supabase.auth.updateUser({ email: asked.email })
+    if (error) {
+      // A second send inside `smtp_max_frequency`: NOTHING was sent, and the remainder in the
+      // sentence is GoTrue's own rather than our copy of the setting (`sentStateFor`).
+      const throttled = sentStateFor(error, SEND_INTERVAL)
+      if (throttled) return fail('too_soon', tooSoon(throttled.retryAfter))
+      // The address belongs to another account. GoTrue answered before it sent, so
+      // `email_change_sent_at` did not move — which is the harness's control for "no email".
+      if (error.code === 'email_exists') return fail('in_use')
+      console.error('email change: send failed', { status: error.status, code: error.code })
+      return fail('send_failed')
+    }
+  } catch (error) {
+    console.error('email change: threw', { name: (error as { name?: string })?.name })
+    return fail('send_failed')
+  }
+
+  // The INTERNAL path, as always: the pending banner is read off `getUser()` on the next render
+  // and nothing on the client edits the card.
+  revalidatePath('/app/account')
+  return { ok: true }
 }

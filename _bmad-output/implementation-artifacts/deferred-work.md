@@ -559,7 +559,10 @@ reason: Executed 2026-09-06 and RE-EXECUTED by the fifth review the same day: `G
   line in `## Owner's manual test`. That is tolerable for one magic link and is NOT tolerable for **Epic
   12**, which builds five or six transactional emails whose whole acceptance is delivery. The fix is one
   credential — a Resend key with read access, beside the sending one — and it is the owner's to create,
-  so it is recorded rather than assumed.
+  so it is recorded rather than assumed. Story 2.3 (2026-09-07) meets the same wall a second time:
+  `run-verify-email-change.py` proves the HAND-OFF — `email_change_sent_at` moved, or did not — and
+  cannot prove the email arrived, so FR-P1's email (2) is read by the owner and by nobody else. Its
+  `--to` points that one real send at an inbox a human can open, which is the whole of the workaround.
 
 
 ### DW-23: `pro_past_due` grants Pro for ever, because nothing expires the grace window

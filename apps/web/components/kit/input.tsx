@@ -20,6 +20,8 @@ export function TextInput({
   mono = false,
   error,
   greyed,
+  type = 'text',
+  autoComplete,
 }: Base & {
   /** Present when the field is inside a form that submits it. */
   name?: string
@@ -33,6 +35,9 @@ export function TextInput({
    * under the control, never a tooltip (P0-0). Danger-text, because it says something failed.
    */
   error?: string | null
+  /** `email` gives a phone the @ keyboard and the browser its own address suggestions. */
+  type?: 'text' | 'email'
+  autoComplete?: string
 }) {
   return (
     <div className="flex flex-col gap-[5px]">
@@ -42,7 +47,8 @@ export function TextInput({
       <input
         id={id}
         name={name}
-        type="text"
+        type={type}
+        autoComplete={autoComplete}
         defaultValue={defaultValue}
         placeholder={placeholder}
         maxLength={maxLength}

@@ -247,9 +247,11 @@ DOCS = [
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
  ('tools/probe/configure-supabase-auth.py', 'tool', 'Supabase Auth configuration',
   "Writes the live project's Auth settings — Resend as custom SMTP, the 15-minute OTP expiry, the "
-  'branded template, the site URL — and PROVES each one by reading it back; --expect breaks one '
-  'expectation on purpose so a green run can be told from a run that checks nothing. Never prints '
-  'smtp_pass. Story 1.4.'),
+  'branded sign-in template and the branded email-change template, the site URL, Supabase\'s own '
+  'passkey switch, and the two switches that keep an email change to ONE email sent to the new '
+  'address alone — and PROVES each one by reading it back; --expect breaks one expectation on '
+  'purpose so a green run can be told from a run that checks nothing. Never prints smtp_pass. '
+  'Stories 1.4, 2.1, 2.3.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
  ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
  ('tools/probe/run-verify-a33-cards.py', 'tool', 'Register probe · Koenig card selectors',
@@ -277,6 +279,19 @@ DOCS = [
   'Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes.'),
  ('tools/probe/run-verify-ghostpro.py', 'tool', 'Ghost(Pro) probe',
   'Written and waiting for a Ghost(Pro) Starter trial. Blocks public launch.'),
+ ('tools/probe/run-verify-email-change.py', 'tool', 'Email-change harness',
+  "FR-A4's email change, driven through the deployed UI on app.inflozo.com and read back off the "
+  'wire through the Admin API: the frame\'s button measured, the dialog\'s focus, a non-address '
+  'and the account\'s own address refused without a request leaving the browser, a fresh address '
+  'sent, the second send throttled with GoTrue\'s own seconds, the link redeemed in a browser with '
+  'no cookies, and a magic link to the new address landing in the same account — plus axe-core at '
+  'WCAG 2.1 AA in three states at 1440 and 390. Its CONTROL is read off the wire before the browser '
+  'starts: A\'s own access token, PUT /user with B\'s address, and email_change_sent_at compared '
+  'either side — FR-A4 asks for the refusal to happen BEFORE any verification email is sent, and '
+  'nothing in the DOM can see that. Creates fixture users A and B and deletes them, comparing the '
+  'Admin-API user count before and after so a leak is loud; --to points the run\'s one real send at '
+  'an inbox a human can read, because DW-22 says no key here can. --check is the plumbing alone and '
+  'needs no browser and no deployment. Story 2.3.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

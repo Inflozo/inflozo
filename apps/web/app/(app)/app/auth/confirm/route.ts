@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { sessionCookie } from '@/lib/supabase/cookies'
+import { EMAIL_CHANGED_PATH } from '../../(authed)/account/email-change-rule'
 
 /**
  * WHERE THE EMAIL'S BUTTON LANDS. It is a route handler and not a page because this is the one
@@ -20,7 +21,8 @@ import { sessionCookie } from '@/lib/supabase/cookies'
 // GoTrue's own list; anything else in the URL is not a link we sent. `email` is the one the
 // template carries (supabase/auth/magic-link.html) for a magic-link AND a signup token —
 // executed: `/auth/v1/verify` returned 200 for both (Spec Change Log 2). Narrowing this list to
-// the two "obvious" types would break every real link.
+// the two "obvious" types would break every real link. `email_change` is the one
+// supabase/auth/email-change.html carries (Story 2.3), and it lands somewhere else — below.
 const TYPES: readonly EmailOtpType[] = ['magiclink', 'signup', 'email', 'invite', 'recovery', 'email_change']
 
 export async function GET(request: NextRequest) {
@@ -28,8 +30,14 @@ export async function GET(request: NextRequest) {
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
 
+  // WHERE THIS LINK LANDS, DECIDED BEFORE THE RESPONSE THAT CARRIES THE COOKIES EXISTS. The
+  // client's `setAll` below writes the session onto the `home` object captured in its closure, so
+  // a redirect built AFTER `verifyOtp` would carry none of them: the user would arrive at
+  // /account signed out and be bounced to sign-in with nothing said. One `const`, above the
+  // client, and the trap cannot be walked into.
+  const landing = type === 'email_change' ? EMAIL_CHANGED_PATH : '/'
   // 303, not 307: the browser must GET the destination, and never re-send this URL.
-  const home = NextResponse.redirect(new URL('/', request.url), 303)
+  const home = NextResponse.redirect(new URL(landing, request.url), 303)
   // The token is never echoed — not into the URL, not into a log (matrix, Stale link).
   const stale = NextResponse.redirect(new URL('/sign-in?error=link', request.url), 303)
 
