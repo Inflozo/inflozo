@@ -1,22 +1,49 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Laptop, Passkey } from '@/components/kit/icons'
+import { useActionState, useEffect, useRef, useState } from 'react'
+import { Banner } from '@/components/kit/banner'
+import { Button } from '@/components/kit/button'
+import { openOnCancel, sheet, title } from '@/components/kit/dialog'
+import { Laptop, Passkey, Pencil, Trash } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
+import { TextInput } from '@/components/kit/input'
 import { isRedirect } from '@/lib/action-redirect'
 import { addedLabel, aaguidFromAuthData, type PasskeyRow } from '@/lib/passkey-name'
 import { browserSupportsWebAuthn, creationOptions, registrationResponse } from '../../sign-in/webauthn'
-import { finishPasskeyRegistration, startPasskeyRegistration } from './actions'
+import {
+  finishPasskeyRegistration,
+  renamePasskey,
+  revokePasskey,
+  startPasskeyRegistration,
+  type ActionResult,
+} from './actions'
+import { PASSKEY_NAME_MAX } from './passkey-name-rule'
 
-/* S12 Billing.dc.html:83-104 — the Passkeys card's rows and its "Add a passkey".
+/* S12 Billing.dc.html:83-104 — the Passkeys card: its rows, the pencil and the bin at the end of
+   every row, and its "Add a passkey".
 
-   Rename and revoke are 2.2's and are ABSENT, not greyed (UX-DR3): the frame draws a pencil and
-   a bin at the end of every row, and neither could act today.
+   THE TRAILING PAIR IS THE FRAME'S OWN (`:90-91`), read and never rounded: a 28×28 box at radius
+   8 with a 13px glyph, the pencil in ink-soft over a `paper` hover, the bin in danger over a
+   `danger-tint` hover. They are `<button>`s and the frame's `<div title="…">`s are not, because
+   the frame draws a look and the product owes a keyboard and a name — the aria-label carries the
+   passkey's own name, so a row of identical pencils is still N distinct controls to a screen
+   reader.
 
-   The button is drawn here from the tokens rather than from the Kit's `Button`, for the reason
-   S1's email field is: the frame's height is 34px and the Kit's three are 44 / 36 / 32. Same
-   border, same radius, same one ring — a size the Kit does not carry, not a second vocabulary
-   (1.4's precedent, and the frame's own value read never rounded). */
+   THE TWO DIALOGS ARE ONE PAIR FOR THE WHOLE CARD, not one pair per row: the card holds the row
+   whose button was pressed and both dialogs read it. N rows would otherwise put 2N modals in the
+   DOM to show one. `project-menu.tsx` is one card with one pair; this is the same shape at the
+   card's altitude.
+
+   NEITHER DIALOG HAS A FRAME. Both are extrapolated from where the project menu's were — S12c
+   through `components/kit/dialog.ts`, which is now where the sheet, the title and the
+   focus-on-Cancel live so the two cards cannot drift apart (R-74). The confirm is untyped: a
+   typed confirm is reserved for account and project delete (EXPERIENCE.md), and a revoked passkey
+   can be added again.
+
+   The "Add a passkey" button is drawn here from the tokens rather than from the Kit's `Button`,
+   for the reason S1's email field is: the frame's height is 34px and the Kit's three are 44 / 36
+   / 32. Same border, same radius, same one ring — a size the Kit does not carry, not a second
+   vocabulary (1.4's precedent, and the frame's own value read never rounded). */
 
 export type { PasskeyRow }
 
@@ -26,6 +53,9 @@ const NO_WEBAUTHN = "This browser can't use passkeys."
 const ADD_FAILED = "We couldn't add that passkey just now. Try again in a moment."
 /** The list could not be read: the card must not claim there are none (review, 2026-09-06). */
 const LIST_FAILED = "We couldn't load your passkeys just now. Refresh to try again."
+
+/** The 28×28 icon box the frame draws at the end of every row (`S12 Billing.dc.html:90-91`). */
+const rowButton = `inline-flex size-7 shrink-0 items-center justify-center rounded-sm transition-colors ${ring}`
 
 /** `passkeys` is `null` when the list could not be read — an empty card would be a lie. */
 export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
@@ -48,6 +78,60 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
   // has no passkeys — the exact lie the previous review patched, coming back on the second render
   // (review, 2026-09-06). Whatever the ceremony has to say wins while it is saying it.
   const shown = caption ?? (passkeys ? null : LIST_FAILED)
+
+  // ── Rename and revoke. The row whose button was pressed, and the two dialogs that read it.
+  const rename = useRef<HTMLDialogElement>(null)
+  const revoke = useRef<HTMLDialogElement>(null)
+  const [selected, setSelected] = useState<PasskeyRow | null>(null)
+
+  const [renamed, renameAction, renaming] = useActionState<ActionResult | null, FormData>(
+    renamePasskey,
+    null,
+  )
+  const [revoked, revokeAction, revoking] = useActionState<ActionResult | null, FormData>(
+    revokePasskey,
+    null,
+  )
+
+  // THE SAME DOUBLE SUBMIT `project-menu.tsx:130-143` guards, and per component because the ref
+  // closes over THIS card's two pending flags. React queues form actions and `pending` only turns
+  // true on the NEXT render, so a held Enter or a double click sends a second Rename that races
+  // the first, or a second Remove whose "We couldn't remove that…" arrives about a row already
+  // gone. `onSubmit` and not the action, so both forms keep working with JavaScript off — where
+  // there is no double submit to guard against.
+  const submitting = useRef(false)
+  useEffect(() => {
+    if (!renaming && !revoking) submitting.current = false
+  }, [renaming, revoking])
+  const once = (event: { preventDefault: () => void }) => {
+    if (submitting.current) {
+      event.preventDefault()
+      return
+    }
+    submitting.current = true
+  }
+
+  // A result the dialog was CLOSED on is spent: reopened, it starts clean rather than with the
+  // last attempt's sentence still on screen. Identity is enough — every call returns a new object.
+  const [renamedSeen, setRenamedSeen] = useState<ActionResult | null>(null)
+  const [revokedSeen, setRevokedSeen] = useState<ActionResult | null>(null)
+
+  // A dialog closes when its action succeeded, and stays open with its sentence when it did not.
+  // Nothing here edits the list: both actions revalidate `/app/account` and the row renames or
+  // leaves with the re-rendered tree.
+  useEffect(() => {
+    if (renamed && 'ok' in renamed) rename.current?.close()
+  }, [renamed])
+  useEffect(() => {
+    if (revoked && 'ok' in revoked) revoke.current?.close()
+  }, [revoked])
+
+  const renameError = renamed !== renamedSeen && renamed && 'error' in renamed ? renamed.error : null
+  // The field's own refusal goes in the field's helper-caption slot; anything else is a Banner
+  // above the form (`project-menu.tsx`'s split, which a review had to add there).
+  const nameError = renameError?.code === 'bad_name' ? renameError.message : null
+  const renameFailed = renameError && renameError.code !== 'bad_name' ? renameError.message : null
+  const revokeFailed = revoked !== revokedSeen && revoked && 'error' in revoked ? revoked.error.message : null
 
   async function add() {
     let navigating = false
@@ -137,6 +221,34 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
                   {addedLabel(passkey.createdAt)}
                 </span>
               </span>
+              {/* The frame's trailing pair (`:90-91`). The state is set and the dialog opened in
+                  the one handler: the click is a discrete event, so React flushes this render
+                  before the browser paints the open dialog, and `openOnCancel` finds the same
+                  Cancel button either way. */}
+              <span className="ml-auto flex gap-[2px]">
+                <button
+                  type="button"
+                  aria-label={`Rename ${passkey.name}`}
+                  onClick={() => {
+                    setSelected(passkey)
+                    openOnCancel(rename.current)
+                  }}
+                  className={`${rowButton} text-ink-soft hover:bg-paper`}
+                >
+                  <Pencil size={13} />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Remove ${passkey.name}`}
+                  onClick={() => {
+                    setSelected(passkey)
+                    openOnCancel(revoke.current)
+                  }}
+                  className={`${rowButton} text-danger hover:bg-danger-tint`}
+                >
+                  <Trash size={13} />
+                </button>
+              </span>
             </li>
           ))}
         </ul>
@@ -161,6 +273,97 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
           {shown}
         </p>
       ) : null}
+
+      {/* ── Rename. One field, right-aligned Cancel + primary, as every other form in the app. */}
+      <dialog
+        ref={rename}
+        aria-labelledby="rename-passkey-title"
+        onClose={(event) => {
+          setRenamedSeen(renamed)
+          // The field is uncontrolled, so a refused or abandoned edit stayed in it. `reset()`
+          // restores `defaultValue` AND clears the dirty flag, which is what lets the next row's
+          // name reach the field at all — one dialog serves every row (`project-menu.tsx`, whose
+          // per-card dialog needed this for the same-row case alone).
+          event.currentTarget.querySelector('form')?.reset()
+        }}
+        className={`${sheet} gap-[18px]`}
+      >
+        <h2 id="rename-passkey-title" className={title}>
+          Rename passkey
+        </h2>
+        {renameFailed ? <Banner kind="error">{renameFailed}</Banner> : null}
+        <form action={renameAction} onSubmit={once} className="flex flex-col gap-[18px]">
+          <input type="hidden" name="id" value={selected?.id ?? ''} />
+          {/* `maxLength` is the schema's own number, so the 121st character cannot be typed or
+              pasted and the matrix's "nothing sent" is true of it natively — the sentence still
+              belongs to the server, which never trusts the field. */}
+          <TextInput
+            id="rename-passkey"
+            name="name"
+            label="Name"
+            defaultValue={selected?.name ?? ''}
+            maxLength={PASSKEY_NAME_MAX}
+            error={nameError}
+          />
+          <div className="flex justify-end gap-[10px]">
+            <Button type="button" variant="secondary" size={36} data-cancel onClick={() => rename.current?.close()}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size={36}>
+              {renaming ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        </form>
+      </dialog>
+
+      {/* ── Revoke, S12c's shape as the owner centred it: the disc above, the title and sentence
+          under it, two equal halves at 44. UNTYPED — a typed confirm is account and project
+          delete only, and this one can be undone by adding the passkey again. */}
+      <dialog
+        ref={revoke}
+        aria-labelledby="revoke-passkey-title"
+        onClose={() => setRevokedSeen(revoked)}
+        className={`${sheet} gap-5`}
+      >
+        <div className="flex flex-col items-center gap-[14px] text-center">
+          <span
+            aria-hidden
+            className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-full bg-danger-tint text-danger ring-8 ring-danger-tint/50"
+          >
+            <Trash size={22} strokeWidth={1.7} />
+          </span>
+          <div className="flex min-w-0 flex-col gap-[6px]">
+            <h2 id="revoke-passkey-title" className={title}>
+              Remove this passkey?
+            </h2>
+            <p className="text-ui-dense leading-[1.5] text-ink-soft wrap-anywhere">
+              <span className="font-medium text-ink">{selected?.name}</span> will no longer sign you
+              in on that device. You can add it again later.
+            </p>
+          </div>
+        </div>
+
+        {revokeFailed ? <Banner kind="error">{revokeFailed}</Banner> : null}
+
+        <form action={revokeAction} onSubmit={once} className="grid grid-cols-2 gap-[10px]">
+          <input type="hidden" name="id" value={selected?.id ?? ''} />
+          {/* Cancel is first and holds the focus: this cuts a device off (EXPERIENCE.md
+              § Destructive confirms), and at 390 both are a full-width tap target. */}
+          <Button
+            type="button"
+            variant="secondary"
+            size={44}
+            data-cancel
+            className="w-full"
+            onClick={() => revoke.current?.close()}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" variant="danger" size={44} className="w-full">
+            {revoking ? 'Removing…' : 'Remove passkey'}
+          </Button>
+        </form>
+      </dialog>
     </section>
   )
 }

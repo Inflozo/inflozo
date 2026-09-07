@@ -10,9 +10,9 @@ import { PasskeysCard } from './passkeys-card'
    The frame draws one surface called "Account & Billing" in two columns: the plan, its meters
    and the invoices on the left, and Email · Passkeys · Danger zone on the right. THE LEFT COLUMN
    IS EPIC 12'S and the Danger zone is 2.5's; each is ABSENT rather than greyed, because neither
-   could act today (UX-DR3). So is Change email (2.3), and so are the pencil and the bin at the
-   end of every passkey row (2.2). The heading is still the frame's own — the surface it names is
-   the one being built, one card at a time.
+   could act today (UX-DR3). So is Change email (2.3). The pencil and the bin at the end of every
+   passkey row LANDED WITH 2.2 and are drawn by `passkeys-card.tsx`. The heading is still the
+   frame's own — the surface it names is the one being built, one card at a time.
 
    Values are read off the frame and never rounded: the cards at `rounded-lg` with the frame's
    own `shadow-sm`, 20/24 padding, the label 13px/600 uppercase at 0.04em, the address 13px/500
@@ -68,6 +68,10 @@ export default async function AccountPage() {
   )
 }
 
+// ponytail: a race, not a cancel — the request runs on; a real AbortSignal the day the library
+// exposes one for `passkey.list()`. The same ceiling `lib/flags.ts` gives its two reads.
+const LIST_TIMEOUT_MS = 3000
+
 /**
  * The list, through the user's OWN session — the passkeys are theirs and GoTrue scopes the call
  * to the bearer token. A read that fails is `null` — the card says it could not load, rather
@@ -84,7 +88,20 @@ async function listPasskeys(): Promise<PasskeyRow[] | null> {
   // keeps the page standing if it ever is not (review, 2026-09-06).
   try {
     const supabase = await supabaseServer()
-    const { data, error } = await supabase.auth.passkey.list()
+    // RACED, because the library exposes no `AbortSignal` for this call and a platform that
+    // HANGS rather than errors would hang this page — `passkeysEnabled()`'s two reads were given
+    // the same 3s ceiling by a review for exactly that (DW-33 (2)). The request is not cancelled,
+    // it is abandoned: the render gives up and the card says it could not load. `Promise.race`
+    // takes the first to settle, so a read that answers inside 3s is untouched by this.
+    const answered = await Promise.race([
+      supabase.auth.passkey.list(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), LIST_TIMEOUT_MS)),
+    ])
+    if (!answered) {
+      console.error('passkey: list timed out', { ms: LIST_TIMEOUT_MS })
+      return null
+    }
+    const { data, error } = answered
     if (error || !data) {
       console.error('passkey: list failed', { status: error?.status, code: error?.code })
       return null

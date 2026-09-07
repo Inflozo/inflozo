@@ -613,7 +613,7 @@ graph TB
 
 | FR domain | Epic | Lives in | Governed by |
 | --- | --- | --- | --- |
-| FR-A auth & accounts | E1, E2 | `apps/web/app/(app)/account`, Supabase Auth, `passkey_labels` | AD-6, AD-9, conventions (auth, feature flags) |
+| FR-A auth & accounts | E1, E2 | `apps/web/app/(app)/account`, Supabase Auth (passkey names and revocation are GoTrue's own `friendly_name` and `DELETE /passkeys/{id}` — `passkey_labels` was dropped by Story 2.2, DW-30) | AD-6, AD-9, conventions (auth, feature flags) |
 | FR-B projects & dashboard | E1 (cut line), E13 | `apps/web/app/(app)/dashboard`, `projects` | AD-6, AD-8, AD-25 |
 | FR-C sites & connections | E3 | `apps/web/server/ghost-admin`, `sites`, `site_credentials` | AD-7, AD-10, AD-23, AD-24 |
 | FR-D editor core | E5 | `apps/web/app/(app)/editor`, `packages/section-runtime` | AD-1, AD-3, AD-4, AD-15, AD-16, AD-21, AD-22 |

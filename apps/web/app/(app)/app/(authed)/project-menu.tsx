@@ -3,6 +3,7 @@
 import { createContext, useActionState, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
+import { openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Copy, Pencil, Trash } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
@@ -34,17 +35,13 @@ import { deleteProject, duplicateProject, renameProject, type ActionResult } fro
    a form with one field is right-aligned like every other form in the app.
 
    BOTH OPEN WITH FOCUS ON CANCEL (EXPERIENCE.md § Destructive confirms), which is why Cancel
-   carries `autoFocus` — a confirm whose primary action is irreversible never opens on it.
+   carries `data-cancel` and `openOnCancel` focuses it — a confirm whose primary action is
+   irreversible never opens on it, and `autoFocus` alone does not do it (see `kit/dialog.ts`).
 
    No wit on this surface: delete is a serious voice (Appendix H). */
 
-/* `m-auto` IS LOAD-BEARING. The user agent centres a modal `<dialog>` with `inset:0; margin:auto`,
-   and Tailwind's Preflight resets `margin:0` on `*` — so every dialog opened flush against the
-   top-left corner until this was here (executed, and visible in the D4b screenshot that found it). */
-const sheet =
-  'm-auto w-[460px] max-w-[calc(100vw-20px)] flex-col rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex'
-
-const title = 'font-display text-[20px] font-bold tracking-[-0.01em] text-ink'
+/* `sheet`, `title` and `openOnCancel` are `components/kit/dialog.ts` — the account page's two
+   dialogs need the same vocabulary and a second copy is how two dialogs stop matching. */
 
 const item = `flex w-full items-center gap-[9px] rounded-sm p-[8px_12px] text-left text-ui-dense font-medium transition-colors ${ring}`
 
@@ -157,18 +154,10 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
 
   const close = () => menu.current?.hidePopover()
 
-  /**
-   * EVERY CONFIRM OPENS WITH FOCUS ON CANCEL (EXPERIENCE.md § Destructive confirms), and the
-   * `autoFocus` prop alone does not do it: React applies it once at mount and does not leave
-   * the `autofocus` ATTRIBUTE in the DOM, so `showModal()` — which looks for that attribute —
-   * fell through to the first focusable control instead. Executed: the rename dialog opened on
-   * its name field. So the button says which one it is and the dialog is told, every time.
-   */
+  /** The menu is a popover and has to go before the modal opens; the rest is `kit/dialog.ts`. */
   const open = (dialog: HTMLDialogElement | null) => {
     close()
-    if (!dialog) return
-    dialog.showModal()
-    dialog.querySelector<HTMLElement>('[data-cancel]')?.focus()
+    openOnCancel(dialog)
   }
 
   const renameError = renamed !== renamedSeen && renamed && 'error' in renamed ? renamed.error : null

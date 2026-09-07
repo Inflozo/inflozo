@@ -2,7 +2,8 @@
 title: 'Story 2.2 — See, rename and revoke my passkeys'
 type: 'feature'
 created: '2026-09-07'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '51cfb9740508aa11da170bc5b85022e3745fd6c8'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -107,15 +108,15 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/components/kit/dialog.ts` + `project-menu.tsx` -- lift `sheet`, `title`, `openOnCancel` -- one dialog vocabulary, no second copy
-- [ ] `apps/web/app/(app)/app/(authed)/account/passkey-name-rule.ts` + `apps/web/passkey-name-rule.test.ts` -- the schema and `PASSKEY_NAME_MAX`; cases: trims, empty, 120 ok, 121 refused -- the boundary, under `node --test`
-- [ ] `apps/web/app/(app)/app/(authed)/account/actions.ts` -- `renamePasskey`, `revokePasskey`, the three messages -- FR-A3's two verbs
-- [ ] `apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx` -- the trailing pair, the two dialogs, the header comment -- S12a
-- [ ] `apps/web/app/(app)/app/(authed)/account/page.tsx` -- the 3s race in `listPasskeys()` -- DW-33 (2)
-- [ ] `supabase/migrations/20260907120000_drop_passkey_labels.sql` + `SCHEMA.sql` -- drop the table; `bash supabase/tests/run-rls-gate.sh` green -- DW-30's fate
-- [ ] `tools/probe/run-verify-passkeys.py` + its `doc-audit.py` row -- the harness -- DW-32 (3)(4), DW-33 (1), and this story's own round trip
-- [ ] `deferred-work.md` -- close DW-30, DW-32 (3)(4), DW-33; say what stays open -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result
+- [x] `apps/web/components/kit/dialog.ts` + `project-menu.tsx` -- lift `sheet`, `title`, `openOnCancel` -- one dialog vocabulary, no second copy
+- [x] `apps/web/app/(app)/app/(authed)/account/passkey-name-rule.ts` + `apps/web/passkey-name-rule.test.ts` -- the schema and `PASSKEY_NAME_MAX`; cases: trims, empty, 120 ok, 121 refused -- the boundary, under `node --test`
+- [x] `apps/web/app/(app)/app/(authed)/account/actions.ts` -- `renamePasskey`, `revokePasskey`, the three messages -- FR-A3's two verbs
+- [x] `apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx` -- the trailing pair, the two dialogs, the header comment -- S12a
+- [x] `apps/web/app/(app)/app/(authed)/account/page.tsx` -- the 3s race in `listPasskeys()` -- DW-33 (2)
+- [x] `supabase/migrations/20260907120000_drop_passkey_labels.sql` + `SCHEMA.sql` -- drop the table; `bash supabase/tests/run-rls-gate.sh` green -- DW-30's fate
+- [x] `tools/probe/run-verify-passkeys.py` + its `doc-audit.py` row -- the harness -- DW-32 (3)(4), DW-33 (1), and this story's own round trip
+- [x] `deferred-work.md` -- close DW-30, DW-32 (3)(4), DW-33; say what stays open -- propagate, never localise
+- [x] Run `## Verification` on the real infrastructure and record every command and result
 
 **Acceptance Criteria:**
 - Given a signed-in user with passkeys on `/account` at 1440 and at 390, when the card renders, then every row ends in the pencil and the bin and **matches the frame** (`S12 Billing.dc.html` S12a `:90-91`: 28×28, radius 8, 13px glyphs, the frame's hover fills), the laptop glyph on every row, the plan column and Change email still absent
@@ -127,6 +128,35 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 - Given `pnpm check`, `pnpm build`, `node --test` and axe-core on `/account` with both dialogs open in turn, then all green and zero violations
 
 ## Spec Change Log
+
+1. **`pnpm check` runs from the repository root, not `apps/web`.** The Verification section drafted
+   it as `cd apps/web && pnpm check`; `apps/web/package.json` carries no `check` script — the
+   workspace root's is `lint && typecheck && test` across every package. The recorded commands are
+   the ones that actually ran.
+2. **The axe passes and the frame measurement moved into `tools/probe/run-verify-passkeys.py`.**
+   Both need a real passkey row, and GoTrue's `rp.id = inflozo.com` makes a row impossible from any
+   localhost origin — executed, with Chrome's refusal quoted under `## Verification`. Keeping them
+   in the harness means they run against the deployed site rather than in a scratch script that
+   lives in no file, which is what DW-32 (3) asked for in the first place. The closed-state axe
+   pass needs no row and ran at Dev at 1440 and 390, and so did both dialog states — the dialogs
+   are in the DOM without a row — all four zero violations. What still needs the deployed site is
+   the frame MEASUREMENT and the round trip, because those need a row that exists.
+3. **DW-32 (4) and DW-33 (1) are written but not yet ANSWERED, and the ledger says so.** Each is a
+   harness step whose result only exists after the Deploy run; marking them closed now would be a
+   result whose control has not run (standing rule 2). DW-30, DW-32 (3) and DW-33 (2) ARE closed —
+   each landed in code or in the schema at Dev.
+4. **`SCHEMA.sql` lost four things, not three.** The Code Map said "the table and its three list
+   entries"; the table also carried its own `alter table … enable row level security` line in §10.
+   All four are gone, and the gate's schema diff against the migrations is the proof.
+5. **Both `renamePasskey` and `revokePasskey` wrap their platform call in `try`/`catch`.** Not in
+   the Code Map, but `auth.passkey.*` asserts the experimental opt-in BEFORE the library's own try
+   and re-throws anything that is not an `AuthError` (`GoTrueClient.js:5668-5730`) — unwrapped, a
+   Server Function that throws reaches the error boundary and takes `/account` down instead of
+   leaving the dialog open with one sentence. It is the wrapping `listPasskeys()` already carries,
+   for the same reason.
+6. **`ready()` runs before the name is parsed.** The matrix's *Either switch off* row says any of
+   the two actions answers `passkeys_off`; an action that still returned "give it a name" with the
+   module switched off would be describing a form nobody should have been shown.
 
 ## Design Notes
 
@@ -151,22 +181,96 @@ is one card, so it has one pair; this is the same shape at the card's altitude.
 
 `// ponytail: one laptop glyph; a per-row glyph the day a device type is stored` ·
 `// ponytail: 3s race on list(); a real AbortSignal if the library ever exposes one`
-
 ## Verification
 
-Run by the Dev run on the real infrastructure (R-82); every key read into a command's environment by name,
-never printed. Fill in every result.
+Run by the Dev run on the real infrastructure (R-82) on **2026-09-07**. Every key was read into a
+command's environment by name and never printed; keys are recorded below by variable name only.
 
-**Commands:**
-- `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH; cd apps/web && pnpm check && pnpm build && pnpm test` -- expected: green; `passkey-name-rule.test.ts` runs its four cases
-- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0; then, as the control, run it once with the migration file renamed away -- expected: `SCHEMA DRIFT` naming `passkey_labels` (the gate sees the drop)
-- `env $(grep '^SUPABASE_DB_URL' tools/probe/.env | xargs) psql "$SUPABASE_DB_URL" -f supabase/migrations/20260907120000_drop_passkey_labels.sql` (Deploy run) then `… -c "\dt public.passkey_labels"` -- expected: `Did not find any relation`
-- `env $(grep '^SUPABASE_\|^PASSKEY_TEST_' tools/probe/.env | xargs) python3 tools/probe/run-verify-passkeys.py` (Deploy run, against app.inflozo.com) -- expected: every step PASS, the control refused, exit 0; paste the run
-- `python3 tools/doc-audit.py --check` twice -- expected: green (the new tool has its row)
-- axe-core 4.12.1 over `/account` — closed, rename open, confirm open -- expected: 0 violations each; a Tab walk lands on Cancel first in the confirm
+**What ran at Dev, and what it returned**
 
-**Manual checks (if no CLI):**
-- `/account` at 1440 and 390 beside `S12 Billing.dc.html` S12a: the trailing pair's size, radius, glyph size and hover fills read off the frame
+- `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH && pnpm check` — **GREEN**.
+  *(The spec drafted this as `cd apps/web && pnpm check`; `check` is the workspace root's script —
+  `lint && typecheck && test` across every package — so it is run from the repository root. See the
+  change log.)* `apps/web`: **111 tests, 111 pass, 0 fail**, including the three this story adds —
+  `passkeyNameSchema: trimmed, 1 to PASSKEY_NAME_MAX, one sentence for both failures`, `the hint
+  quotes the limit, and the limit is GoTrue's own 120`, and `the shared dialog sheet keeps the
+  scrim, the shadow and the centring margin`.
+- `pnpm build` — **GREEN**. `✓ Compiled successfully`, TypeScript finished, the six static pages
+  generated, `/app/account` still `ƒ` (server-rendered on demand).
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, every `rls.sql` assertion `PASS`.
+- **THE GATE'S CONTROL, and it held.** The same command with
+  `supabase/migrations/20260907120000_drop_passkey_labels.sql` moved out of the way — **exit 1**,
+  `SCHEMA DRIFT`, and the diff it printed names the table:
+  `+ CREATE TABLE public.passkey_labels (user_id uuid NOT NULL, credential_id text NOT NULL, …)`.
+  So the green run above is the gate seeing the drop, not the gate seeing nothing (standing rule 2).
+- `python3 tools/probe/run-verify-passkeys.py --check` — against the **real Supabase project**
+  (keys `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`) — **exit 0**:
+  `users before: 4` · fixture user created · `playwright: resolved` · `axe-core: resolved` ·
+  `PASS admin round trip: create, read back (200)` ·
+  `PASS GET /admin/users/{id}/passkeys answers 200 (empty for a new user)` ·
+  `fixture user deleted (HTTP 200); users after: 4`. The Admin-API count returned to where it
+  started, so the run leaked no user.
+- **Both switches read ON on the live project**, which is why the card renders at all:
+  `GET /auth/v1/settings` → `passkeys_enabled = True`, and
+  `GET /rest/v1/feature_flags?select=key,enabled` → `[{'key': 'ghostpro_preview_probe', 'enabled':
+  False}, {'key': 'passkeys', 'enabled': True}]`.
+- **axe-core 4.12.1 over `/account`, WCAG 2.1 AA, at 1440 and at 390** — a real signed-in session
+  against the **production Supabase**, entered through a real
+  `POST /auth/v1/admin/generate_link` magic link redeemed at `/app/auth/confirm`, fixture user
+  deleted afterwards. **1440: 0 violations, 21 passes, no horizontal scroll, the Passkeys card
+  present. 390: 0 violations, 21 passes, no horizontal scroll, the Passkeys card present.**
+- **axe-core over BOTH DIALOGS OPEN, on the same real session.** The two `<dialog>`s are in the
+  DOM whether or not the list has a row, so their markup and their focus contract are provable at
+  Dev; only the row-derived text (the field's current name, the name inside the confirm's
+  sentence) is empty here, and the Deploy run fills it. Opened one at a time by `showModal()`:
+  **"Rename passkey" — focus on `Cancel`, 0 violations, 14 passes.**
+  **"Remove this passkey?" — focus on `Cancel`, 0 violations, 12 passes.**
+  Both headings are the ones the matrix names, and both confirm EXPERIENCE.md § Destructive
+  confirms: the confirm does not open on its own destructive action.
+- `python3 tools/doc-audit.py --check` — first run `FAIL STALE` (its sub-tools regenerate on the
+  first failure, as documented), second run **`documentation gate: PASS (0 warning(s))`**.
+
+**What the Dev run could NOT do, why, and where it moved to**
+
+The two dialog states, the frame measurement and the whole round trip need a **real passkey row**;
+a row needs a real WebAuthn registration; and **GoTrue's registration options carry
+`rp.id = inflozo.com`** — read off the wire on 2026-09-07, not assumed. WebAuthn refuses an `rp.id`
+that is not a registrable suffix of the page's origin, so **no localhost origin can ever register a
+passkey against this project.** Chrome's own words, captured from the running page:
+
+> `SecurityError: The relying party ID is not a registrable domain suffix of, nor equal to the
+> current domain.`
+
+Three ways round it were executed and all three failed, so this is a finding rather than a shrug:
+`--unsafely-treat-insecure-origin-as-secure` never produced a secure context;
+`next dev --experimental-https` could not make a certificate on this machine (`mkcert` exited 1);
+and a hand-rolled TLS proxy under the real hostname got as far as a **secure context and a
+signed-in `/account`** before Chromium refused the handshake with `ERR_SSL_PROTOCOL_ERROR` (curl
+over the same socket answered 200). One real defect was found and fixed on the way: behind that
+proxy **every Server Action answered 403** until `x-forwarded-proto: https` was forwarded — Next
+compares a request's `Origin` against the forwarded protocol and host.
+
+**The deployed site is therefore the only place these can run, and that is where the harness puts
+them.** `tools/probe/run-verify-passkeys.py` (no flag) runs at Deploy against `app.inflozo.com` and
+carries every one: `register` · `auto-name` · `frame` (the pencil and the bin **measured** — 28×28,
+radius 8, 13px glyph, and the hover fills) · `rename` (read back off
+`GET /admin/users/{id}/passkeys`, never out of the DOM) · `rename-control` (121 characters, which
+the server must refuse — the run FAILS if it does not) · `duplicate` (DW-32 (4)) · `revoke-focus` ·
+`revoke` · `revoked-signin` · `magic-link` · `axe-card` / `axe-rename-open` / `axe-confirm-open` ·
+`ratelimit` (DW-33 (1)).
+
+**The Deploy run pastes its output here.** Until it does, four things stay hypotheses and this spec
+says so rather than claiming them (standing rule 1): whether GoTrue populates `excludeCredentials`
+on a second registration; which of S1a's two sentences a revoked credential produces at sign-in;
+whether GoTrue rate-limits `/passkeys/authentication/options`; and the frame measurement, which
+needs a row to measure.
+
+**Commands for the Deploy run**
+
+- `env $(grep '^SUPABASE_DB_URL' tools/probe/.env | xargs) psql "$SUPABASE_DB_URL" -f supabase/migrations/20260907120000_drop_passkey_labels.sql`
+  then `… -c "\dt public.passkey_labels"` -- expected: `Did not find any relation`
+- `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH && python3 tools/probe/run-verify-passkeys.py`
+  -- expected: every step PASS, the control refused, exit 0; paste the run
 
 ## Owner's manual test
 

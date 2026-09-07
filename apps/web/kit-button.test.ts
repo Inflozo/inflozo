@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { sheet } from './components/kit/dialog.ts'
 
 // READ out of the files, not imported: `node --test` strips types but cannot load `.tsx`, which
 // is why every pure test in this repo lives on a `lib/*.ts`. The contract is still worth pinning.
@@ -37,5 +38,15 @@ test("a frame's own weight goes through the Kit, never through className", () =>
       null,
       `${PASSKEY}: className "${value}" carries a font-weight. It will lose to the Kit's own — pass \`weight\` instead.`,
     )
+  }
+})
+
+// THE DIALOG VOCABULARY, now that two cards share it (`components/kit/dialog.ts`). It is a plain
+// module, so unlike the two above it is IMPORTED rather than read — but the class string is still
+// what is pinned, because the sheet is the one place the modal's scrim, shadow and centring are
+// decided and a silent edit there moves every dialog in the app at once.
+test('the shared dialog sheet keeps the scrim, the shadow and the centring margin', () => {
+  for (const token of ['m-auto', 'shadow-modal', 'backdrop:bg-scrim', 'open:flex']) {
+    assert.ok(sheet.includes(token), `kit/dialog.ts: the sheet must keep ${token}.`)
   }
 })

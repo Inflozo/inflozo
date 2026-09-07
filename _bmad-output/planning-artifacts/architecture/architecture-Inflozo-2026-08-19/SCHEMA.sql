@@ -124,24 +124,16 @@ create table public.profiles (
 );
 create index on public.profiles (purge_after) where deleted_at is not null;
 
--- FR-A3: passkeys are auto-named from the AAGUID and renameable. Supabase Auth's passkey
--- API is Beta (§7.6 item 4) and carries no user-editable label, so the label is ours.
---
--- THAT PREMISE WAS FALSIFIED BY EXECUTION (Story 2.1, 2026-09-06, DW-30). The installed
+-- FR-A3: passkeys are auto-named from the AAGUID and renameable. THERE IS NO TABLE HERE, and
+-- that is the finding rather than an omission. `passkey_labels` existed until 2026-09-07 on the
+-- premise that "Supabase Auth's passkey API is Beta and carries no user-editable label, so the
+-- label is ours". EXECUTION FALSIFIED IT (Story 2.1, 2026-09-06, DW-30): the installed
 -- `@supabase/auth-js` 2.115.0 carries `friendly_name` on every passkey and a `PATCH
--- /passkeys/{id}` that sets it (`dist/module/lib/types.d.ts:2404-2410,2438-2443`;
--- `GoTrueClient.js:5668-5688`), so the platform DOES carry a user-editable label. Story 2.1
--- writes the AAGUID auto-name there and WRITES NOTHING HERE: one store beats two that can
--- disagree. The table therefore exists, is empty, and is still under RLS and the §10 loop below,
--- which is why it stays for now — Story 2.2 (rename and revoke) drops it or repurposes it, and
--- until then nothing in the app reads or writes it.
-create table public.passkey_labels (
-  user_id       uuid not null references auth.users(id) on delete cascade,
-  credential_id text not null,
-  label         text not null,
-  created_at    timestamptz not null default now(),
-  primary key (user_id, credential_id)
-);
+-- /passkeys/{id}` that sets it, max 120 characters (`dist/module/lib/types.d.ts:2404-2410,
+-- 2437-2442`; `GoTrueClient.js:5668-5730`). Story 2.1 writes the auto-name there; Story 2.2
+-- writes the rename there and revokes with `DELETE /passkeys/{id}`. The table never held a row
+-- and Story 2.2 dropped it (`supabase/migrations/20260907120000_drop_passkey_labels.sql`): one
+-- store beats two that can disagree, and nothing of ours now stores a credential id.
 
 -- ============================================================================
 -- 2. sites & connections — FR-C1..C8
@@ -781,7 +773,6 @@ grant  execute on function public.owns_project(uuid) to authenticated;
 -- ============================================================================
 
 alter table public.profiles                  enable row level security;
-alter table public.passkey_labels            enable row level security;
 alter table public.sites                     enable row level security;
 alter table private.site_credentials         enable row level security;  -- no policy: server-only (and off the data API, §0b)
 alter table public.site_snapshots            enable row level security;
@@ -818,7 +809,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'passkey_labels','sites','projects','project_templates',
+    'sites','projects','project_templates',
     'project_template_prefs','custom_templates','custom_settings','translation_overrides',
     'routes_config','assets','edit_locks','project_treatments'
   ] loop
@@ -1019,7 +1010,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'passkey_labels','project_templates','project_template_prefs',
+    'project_templates','project_template_prefs',
     'custom_templates','translation_overrides','routes_config','project_treatments'
   ] loop
     execute format('grant select, insert, update, delete on public.%I to authenticated', t);
@@ -1171,7 +1162,7 @@ begin
     'renewal_reminders',
     'suggestion_votes','projects','sites','custom_settings','custom_templates',
     'project_templates','project_template_prefs','translation_overrides','routes_config',
-    'project_treatments','passkey_labels'
+    'project_treatments'
   ] loop
     execute format('grant select, insert, update, delete on public.%I to service_role', t);
   end loop;

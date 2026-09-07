@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '../../sign-in/webauthn.ts'
 import { passkeysEnabled } from '@/lib/flags'
 import { nameFor } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { NUDGE_DONE } from './nudge.ts'
+import { PASSKEY_NAME_HINT, passkeyNameSchema } from './passkey-name-rule.ts'
 
 /**
  * S12a'S PASSKEYS CARD, and the dashboard nudge that points at it — FR-A2's registration half.
@@ -18,11 +20,17 @@ import { NUDGE_DONE } from './nudge.ts'
  * The browser's half is `navigator.credentials.create()` and two serialisers; everything here
  * is HTTP, and no key and no credential is ever logged.
  *
+ * RENAME AND REVOKE are FR-A3's other half and live here too (Story 2.2). Both go to Supabase's
+ * OWN passkey store through the user's own cookie-backed client — `PATCH /passkeys/{id}` and
+ * `DELETE /passkeys/{id}` — never `supabaseAdmin()`: GoTrue scopes both to the bearer token, and
+ * THAT is the ownership check. Nothing of ours re-checks it, because nothing of ours knows which
+ * passkeys are whose — `passkey_labels` was dropped in the same story (DW-30).
+ *
  * `revalidatePath` addresses the INTERNAL route tree — `/app/account` and `/app` — not the
  * public paths the browser sees (`routing.ts:25`, and the note in `signed-out.ts`).
  */
 
-type Code = 'passkeys_off' | 'passkey_failed'
+type Code = 'passkeys_off' | 'passkey_failed' | 'bad_name' | 'rename_failed' | 'revoke_failed'
 
 export type RegisterStart =
   | { ok: true; challengeId: string; options: ServerCredentialCreationOptions }
@@ -34,9 +42,24 @@ export type ActionResult = { ok: true } | { error: { code: Code; message: string
 const MESSAGES: Record<Code, string> = {
   passkeys_off: 'Passkeys are switched off just now.',
   passkey_failed: "We couldn't add that passkey just now. Try again in a moment.",
+  // The field's own refusal, in the field's own slot — composed from the limit it quotes.
+  bad_name: PASSKEY_NAME_HINT,
+  rename_failed: "We couldn't rename that passkey just now. Try again in a moment.",
+  revoke_failed: "We couldn't remove that passkey just now. Try again in a moment.",
 }
 
 const fail = (code: Code) => ({ error: { code, message: MESSAGES[code] } })
+
+/**
+ * The passkey the row's button posted. A UUID, because that is what GoTrue mints and the only
+ * shape `PATCH`/`DELETE /passkeys/{id}` can mean — a hand-made POST is refused here rather than
+ * sent upstream as a path segment.
+ */
+const PASSKEY_ID = z.uuid()
+const idOf = (formData: FormData) => {
+  const parsed = PASSKEY_ID.safeParse(formData.get('id'))
+  return parsed.success ? parsed.data : null
+}
 
 /**
  * BOTH GUARDS, IN THE ORDER THAT MATTERS. The flag first, because an action that still acts
@@ -69,10 +92,11 @@ export async function startPasskeyRegistration(): Promise<RegisterStart> {
  * three can fail in a way the user must hear about.
  *
  * THE NAME IS SUPABASE'S OWN `friendly_name`, set by `PATCH /passkeys/{id}` in this same action
- * (DW-30). `passkey_labels` is not written: the schema comment that justified it said the
- * platform carried no user-editable label, and the installed 2.115.0 does
- * (`auth-js/dist/module/lib/types.d.ts:2404-2410,2438-2443`). One store beats two that can
- * disagree; 2.2 decides the table's fate.
+ * (DW-30). The schema comment that justified `passkey_labels` said the platform carried no
+ * user-editable label, and the installed 2.115.0 does
+ * (`auth-js/dist/module/lib/types.d.ts:2404-2410,2437-2442`). One store beats two that can
+ * disagree, so Story 2.2 DROPPED that table — `renamePasskey` below writes to the same
+ * `friendly_name` this line does.
  *
  * `aaguid` arrives from the browser because that is the only place it exists — it is inside the
  * attestation the authenticator just produced. It is turned into a name and DROPPED: nothing of
@@ -111,6 +135,87 @@ export async function finishPasskeyRegistration(params: {
   await markNudgeDone(user.user_metadata)
   revalidatePath('/app/account')
   revalidatePath('/app')
+  return { ok: true }
+}
+
+/**
+ * FR-A3's RENAME. `useActionState`'s `(previous, FormData)` signature, so the dialog's `<form>`
+ * is the action's own dispatch and is progressively enhanced (`projects/actions.ts:130` is the
+ * pattern, and the reason: a client closure passed as `action` emits no action at all with
+ * JavaScript off).
+ *
+ * THE GUARD RUNS BEFORE THE FIELD IS READ. With either switch off the module does not exist, and
+ * an action that still answers "give it a name" would be describing a form nobody should have.
+ *
+ * WRAPPED, because `auth.passkey.*` can THROW rather than answer: the experimental opt-in is
+ * asserted BEFORE the library's own try, and anything that is not an `AuthError` is re-thrown
+ * (`auth-js/lib/helpers.js:450-454`, `GoTrueClient.js:5668-5730`). Unwrapped, a Server Function
+ * that throws reaches the error boundary and takes `/account` down instead of leaving the dialog
+ * open with one sentence — the same wrapping `listPasskeys()` carries, for the same reason.
+ */
+export async function renamePasskey(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await ready()
+  if (!user) return fail('passkeys_off')
+
+  const id = idOf(formData)
+  const parsed = passkeyNameSchema.safeParse(formData.get('name'))
+  if (!parsed.success) return fail('bad_name')
+  if (!id) return fail('rename_failed')
+
+  try {
+    const supabase = await supabaseServer()
+    const { error } = await supabase.auth.passkey.update({
+      passkeyId: id,
+      friendlyName: parsed.data,
+    })
+    // An id that is not this user's — or not there at all — is GoTrue's 404, and it is the same
+    // sentence: the row is gone and the next render says so. No name and no id is logged.
+    if (error) {
+      console.error('passkey: rename failed', { status: error.status, code: error.code })
+      return fail('rename_failed')
+    }
+  } catch (error) {
+    console.error('passkey: rename threw', { name: (error as { name?: string })?.name })
+    return fail('rename_failed')
+  }
+
+  revalidatePath('/app/account')
+  return { ok: true }
+}
+
+/**
+ * FR-A3's REVOKE. THE SESSION IS NOT TOUCHED: removing a credential removes a way IN, not the
+ * way the user is already here, so nothing signs anybody out — sign-out-everywhere is 2.4.
+ *
+ * `delete` ANSWERS WITH NO BODY (`noResolveJson`, `GoTrueClient.js:5712-5722`), so `data` is
+ * `null` on success and `!data` must never be read as a failure here. `error` alone decides.
+ */
+export async function revokePasskey(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await ready()
+  if (!user) return fail('passkeys_off')
+
+  const id = idOf(formData)
+  if (!id) return fail('revoke_failed')
+
+  try {
+    const supabase = await supabaseServer()
+    const { error } = await supabase.auth.passkey.delete({ passkeyId: id })
+    if (error) {
+      console.error('passkey: revoke failed', { status: error.status, code: error.code })
+      return fail('revoke_failed')
+    }
+  } catch (error) {
+    console.error('passkey: revoke threw', { name: (error as { name?: string })?.name })
+    return fail('revoke_failed')
+  }
+
+  revalidatePath('/app/account')
   return { ok: true }
 }
 

@@ -277,6 +277,18 @@ DOCS = [
   'Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes.'),
  ('tools/probe/run-verify-ghostpro.py', 'tool', 'Ghost(Pro) probe',
   'Written and waiting for a Ghost(Pro) Starter trial. Blocks public launch.'),
+ ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
+  "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
+  'authenticator: register, the name it is born with, rename, revoke, and what the revoked '
+  'credential does at sign-in — each read back off the wire through the Admin API rather than out '
+  'of the DOM. Its CONTROL is a 121-character rename, which the server must refuse; a run whose '
+  'control passes proves nothing. Creates its own fixture user from a generated magic link and '
+  'deletes it afterwards, comparing the Admin-API user count before and after, so a leak is loud. '
+  '--check is the plumbing alone — keys present, Playwright resolvable, one real create-read-delete '
+  'against Supabase — and needs no browser and no deployment. Also records whether GoTrue '
+  'rate-limits /passkeys/authentication/options under a burst of 30. Closes DW-32 (3) and (4) and '
+  "DW-33 (1). Playwright is resolved from the machine, not this repository; PLAYWRIGHT_DIR "
+  'overrides. Story 2.2.'),
  ('tools/probe/report-template.html', 'tool', 'Decision-sheet template',
   'Copy it, replace the findings array, change nothing else.'),
  ('planning-artifacts/INDEX.md', 'live', 'Document index (for AI)',

@@ -689,8 +689,8 @@ reason: AD-28's degradation rule is the `?.` in `planFor(data?.state)`, inside a
 
 ### DW-30: `passkey_labels` rests on a premise the installed library falsifies
 
-plain: The database has a small table for the names of your passkeys, built on the belief that Supabase could not store a name itself. It can. Nothing is broken, but two places for one name is how they end up disagreeing, and the story that builds rename (2.2) has to pick one.
-status: open
+plain: The database had a small table for the names of your passkeys, built on the belief that Supabase could not store a name itself. It can. The table was empty and unused, so Story 2.2 deleted it — one place for one name.
+status: closed
 severity: low
 origin: Story 2.1 create (2026-09-06), planning the auto-name
 location: supabase/migrations/20260904120000_complete_schema.sql:127-136 · SCHEMA.sql (`passkey_labels`) · epic-2-context.md
@@ -702,6 +702,13 @@ reason: The schema comment (2026-08-20) says Supabase's passkey API "carries no 
   decides whether the table is dropped by a new migration or kept for something the platform cannot hold;
   a comment beside the table in SCHEMA.sql records the finding in 2.1's Dev run. The frozen migration is
   not edited.
+closed: Story 2.2 Dev (2026-09-07) — DROPPED. `supabase/migrations/20260907120000_drop_passkey_labels.sql`
+  removes the table; `SCHEMA.sql` loses it, its RLS line and its three list memberships and keeps the
+  finding as a comment where the table used to be; `ARCHITECTURE-SPINE.md`'s FR-A row and
+  `epic-2-context.md` say so. The table never held a row: 2.1 wrote the auto-name to Supabase's
+  `friendly_name` and 2.2 writes the user's rename to the same field. `run-rls-gate.sh` is green, and
+  its control — the same run with the migration file moved away — reports `SCHEMA DRIFT` naming
+  `passkey_labels`, which is the proof the gate can see the drop.
 
 ### DW-31: the new Inflozo identity is in the export and nothing in the product uses it yet
 
@@ -724,7 +731,7 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
 
 ### DW-32: the passkey ceremony has no repeatable control — the kill switch, the auto-name, the round trip and the duplicate refusal are all proved by hand
 
-plain: Four things about passkeys can only be checked by a person today: that turning the switch off really stops a sign-in that was already half-way through; that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey"; that the whole add-then-sign-in journey still works; and that adding a second passkey on a device that already has one is refused. All four work as far as the reviews can see. None has a check that runs itself, so a later story could break any of them without anything going red.
+plain: Four things about passkeys could only be checked by a person. Story 2.2 built a harness that checks the whole add-rename-revoke-sign-in journey by itself, and that one is done. The harness also ASKS the second-passkey question — is adding a second passkey on a device that already has one refused? — but the answer only arrives when the story deploys. The last two are still by hand: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey".
 status: open
 severity: low
 origin: Story 2.1 code review (2026-09-06), the Verification Gap layer
@@ -754,10 +761,26 @@ reason: (1) Every passkey action refuses with `passkeys_off` when either switch 
   (`passkeys-card.tsx`) is dead code, with every check green. One extra `create()` in the harness of (3)
   settles it.
   Closes when 2.2 lands them, or when the owner rules the manual test is control enough.
+partly closed: Story 2.2 Dev (2026-09-07). **(3) is CLOSED**: `tools/probe/run-verify-passkeys.py`
+  (catalogue row added) drives register -> auto-name -> rename -> revoke -> the revoked credential at
+  sign-in -> the magic link, through the deployed UI with a Chrome virtual authenticator, reading every
+  result back off the wire through `GET /admin/users/{id}/passkeys` rather than out of the DOM; its
+  control is a 121-character rename the server must refuse, so a green run is not a run that checks
+  nothing (standing rule 2). Its `--check` mode — keys, Playwright, one real create-read-delete against
+  Supabase — ran green at Dev time; the full run is the Deploy phase's, because it drives the UI this
+  story is deploying. **(4) IS ASKED BUT NOT YET ANSWERED**: the harness's `duplicate` step makes a second
+  `create()` on the same authenticator and records whether GoTrue populates `excludeCredentials` or the
+  card silently grows a second row. Until the Deploy run prints it, `excludeCredentials` remains the
+  unexecuted claim the review named, so (4) stays open and closes on that line in `## Verification`.
+  **(1) and (2) STAY OPEN.** (1) — the kill switch mid-ceremony — needs a post to a Server Function,
+  whose action id is a build artifact the harness cannot address; it is still the hand-run curl in 2.1's
+  Deploy list. (2) — the named-AAGUID path — needs a REAL `getAuthenticatorData()` buffer as a fixture,
+  because a virtual authenticator reports the all-zero AAGUID and can only ever prove the `Passkey`
+  fallback; the harness RECORDS the name the row is born with, which is that fallback, and says so.
 
 ### DW-33: two passkey paths lean on the platform to backstop them, and neither leaning has been executed
 
-plain: The passkey sign-in buttons can be pressed by anyone who is not signed in yet, and we rely on Supabase to stop somebody hammering them; we have never checked that it does. Separately, the Account page's request for your passkey list has no time limit, so a slow Supabase would leave that page hanging where every other similar read gives up after three seconds.
+plain: The passkey sign-in buttons can be pressed by anyone who is not signed in yet, and we relied on Supabase to stop somebody hammering them without ever checking that it does; Story 2.2 built the check but it runs when the story deploys, so the answer is not in yet. Separately, the Account page's request for your passkey list had no time limit, so a slow Supabase would have left that page hanging where every other similar read gives up after three seconds; it now gives up after three seconds too — that half is done.
 status: open
 severity: low
 origin: Story 2.1 code review, second loop (2026-09-06) — Blind Hunter and Edge Case Hunter
@@ -774,6 +797,18 @@ reason: (1) The magic-link path next door carries a `SEND_INTERVAL` of its own A
   fix is a `Promise.race` that gives up on the render while the request runs on — worth doing only if the
   blast radius (one signed-in page, not the signed-out sign-in page) ever justifies the half-measure.
   Both are cheap to settle inside 2.2, which already opens these files.
+partly closed: Story 2.2 Dev (2026-09-07). **(2) is CLOSED IN CODE**: `listPasskeys()` in
+  `apps/web/app/(app)/app/(authed)/account/page.tsx` races the call against a 3s `setTimeout` — the same
+  `READ_TIMEOUT_MS` ceiling `lib/flags.ts` gives its two reads — and answers `null`, which the card
+  already renders as "We couldn't load your passkeys just now." It is a race and not a cancel, because
+  the library exposes no `AbortSignal` for `passkey.list()`; the `ponytail:` line beside it says so.
+  **(1) STAYS OPEN UNTIL THE DEPLOY RUN**, because a check that has not run is not a result (standing
+  rule 2). The check itself is written: the `ratelimit` step of `tools/probe/run-verify-passkeys.py`:
+  30 posts to `/auth/v1/passkeys/authentication/options` — the endpoint `startPasskeySignIn` itself calls —
+  recording the first status ≠ 200. It hits GoTrue DIRECTLY with `SUPABASE_PUBLISHABLE_KEY` rather than
+  through the Server Function, deliberately: the claim under test is GoTrue's own limit on that endpoint,
+  and going through the action would measure Vercel's egress IP instead of a caller's. It closes when the
+  Deploy run records the number under the spec's `## Verification`.
 
 ## Deferred from: code review of spec-1-6-the-new-identity-everywhere (2026-09-06)
 
