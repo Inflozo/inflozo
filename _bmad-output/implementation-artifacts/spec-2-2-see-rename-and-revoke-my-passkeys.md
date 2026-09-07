@@ -5,7 +5,7 @@ created: '2026-09-07'
 status: 'in-review'
 baseline_commit: '51cfb9740508aa11da170bc5b85022e3745fd6c8'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
@@ -417,3 +417,12 @@ On the live site, after the Deploy run. You need at least one passkey from Story
 6. **URL:** https://app.inflozo.com/account · **Do:** press the bin on your last remaining passkey and
    remove it · **See:** the card shows only "Add a passkey". You are still signed in, and the magic link
    is the way in until you add one again. (Add it back afterwards.)
+
+## Owner's test findings
+
+Tested on app.inflozo.com on 2026-09-07. One finding.
+
+1. **The passkey sign-in failure message is too small and easy to miss.** The message "We couldn't
+   sign you in with a passkey. Use a magic link instead." is small and easy to miss. Make it like the
+   "You have been signed out" message at the top of the sign-in screen, but in red, with an error
+   icon. If there is already a message showing at the top, replace it with the new one.
