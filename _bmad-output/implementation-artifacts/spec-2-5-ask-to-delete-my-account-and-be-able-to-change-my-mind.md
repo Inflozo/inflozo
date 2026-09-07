@@ -691,6 +691,19 @@ sentence had no id to read yet); and every other step PASSED, `frame` now at `h:
 307 to `/sign-in`, `restore-clean` landing on `/`. Users 4 → 4, the prefix empty. The same harness
 against the patched deployment is the paragraph below.
 
+**The patched harness against the PATCHED deployment.** The review commit `0486e4ac` went through CI
+(`check`, `rls` and `deploy` all green — read from the Actions API by `GITHUB_TOKEN`) and Vercel's
+production deployment `dpl_9omK8yBjgRXA46Z8BjtBvdeXZta6` reached READY on it (read by `VERCEL_TOKEN`).
+The harness then ran once against it: **every step PASSED** — the twenty-four the Dev run named and
+the five the review added — `RESULT: all steps passed`, exit 0. The two controls turned: `sentence`
+read `"Your 1 project, its full version history will be permanently deleted in 14 days. …"` with no
+asset clause, and `rearm` read `aria-disabled="true", field holds ""` after Cancel. `frame` measured
+`h: 34` with every token right; `server-phrase` answered `wrong_phrase` to the forged POST; the
+download's 303 led to a signed URL whose GET returned the seeded bytes. Users 4 → 4, the object
+deleted before the users, the prefix listing 0. The Deploy run's step 3 is therefore already
+executed once on the code that will be deployed; step 4 — the Resend id in the deployment's log — is
+the Deploy run's, and the owner's step 5 is the inbox.
+
 ### What the Deploy run must do, in this order
 
 1. ~~Apply the migration to the live database.~~ **DONE — the owner ran it in the Supabase SQL
