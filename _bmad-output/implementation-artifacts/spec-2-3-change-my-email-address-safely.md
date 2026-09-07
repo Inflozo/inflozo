@@ -2,10 +2,10 @@
 title: 'Story 2.3 — Change my email address safely'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-review'
+status: 'done'
 baseline_commit: '4da178c8444aee8a942aeba007b830c567416316'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
@@ -483,6 +483,10 @@ if your inbox is `you@gmail.com`, then `you+inflozo@gmail.com` arrives in the sa
     the same way and open the link · **See:** the green message with your original address, and the
     "Your email address was changed" note now arriving at `you+inflozo@gmail.com`, the address you are
     leaving this time.
+
+## Owner's test findings
+
+Tested on app.inflozo.com on 2026-09-07. Passed — no findings.
 
 ## Questions for the owner
 
