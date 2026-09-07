@@ -415,6 +415,28 @@ email to GoTrue for a `-new@inflozo.com` fixture address; delivery stays the own
 story's whole surface is a signed-in page on `app.inflozo.com`, and the frame step reads computed
 styles off the deployed DOM. The wire control they depend on has already passed, above.
 
+### Ran at Deploy, 2026-09-07 — CI, the production Vercel deployment, and the harness against it
+
+- CI run `34092122787` (`gh run list`, `GITHUB_TOKEN`) for `da6d5c23`, HEAD — **green** (`check` and `rls`
+  both passed, `deploy` ran).
+- Vercel API (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`), `GET /v6/deployments` — the newest
+  production deployment carries `githubCommitSha = da6d5c235377f70dc3638bb9ccc4b95938b6a057` (HEAD) and
+  `readyState = READY`. `Deployment: dpl_GcWMpFxB3Uw1YeZvTV2i7wkA8yqH`
+  (`inflozo-oqd0uc4db-umangkagathara.vercel.app`).
+- `curl -I https://app.inflozo.com/account` -> `307` to `/sign-in`, `x-matched-path: /app/account`,
+  `server: Vercel` — the production alias is serving this deployment.
+- `python3 tools/probe/run-verify-email-change.py --check` -> plumbing green, admin round trip `PASS`,
+  users before/after 4, exit 0.
+- `python3 tools/probe/run-verify-email-change.py` against `app.inflozo.com` -> **every step PASS, exit
+  0**: `in-use-wire`, `magic-link-home`, `signed-in`, `frame`, `axe-closed`, `dialog-focus`, `axe-dialog`,
+  `bad-email`, `same`, `in-use-ui`, `send`, `axe-pending`, `too-soon` (58s), `dialog-reset`, `confirm`
+  (the product's own `pkce_` token), `confirm-once`, `stale-signed-in`, `stale-signed-out`,
+  `magic-link-new` — all PASS. Fixture users deleted, count 4 before and after, no strays.
+
+**Resend** — three real sends handed to GoTrue for `-new@inflozo.com` fixture addresses during the run
+above; delivery is DW-22's unreadable half and remains the owner's manual-test step 4.
+**Dodo**, **T1/T3** — untouched, as at Dev and Review.
+
 ## Owner's manual test
 
 On the live site, after the Deploy run. You need a second address you can read — a Gmail alias works:
