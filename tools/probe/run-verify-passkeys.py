@@ -147,11 +147,13 @@ class Admin:
         users = self.users()
         return None if users is None else len(users)
 
-    def sweep_stale_fixtures(self):
+    def sweep_stale_fixtures(self, pattern=r'^passkey-harness-\d+@inflozo\.com$'):
         """A run killed mid-browser leaves a confirmed `passkey-harness-*` user behind, and the
-        next run's before/after count would still balance. Delete them first, and say so."""
+        next run's before/after count would still balance. Delete them first, and say so.
+        `pattern` is the sibling harness's way in (`run-verify-email-change.py`), one sweep for
+        both rather than two regexes that drift apart."""
         users = self.users() or []
-        stale = [u for u in users if re.match(r'^passkey-harness-\d+@inflozo\.com$', u.get('email') or '')]
+        stale = [u for u in users if re.match(pattern, u.get('email') or '')]
         for u in stale:
             self.call('DELETE', f'/admin/users/{u["id"]}', {})
         return len(stale)
@@ -513,14 +515,21 @@ def hex_to_rgb(hex_colour):
     return 'rgb(' + ', '.join(str(int(h[i:i + 2], 16)) for i in (0, 2, 4)) + ')'
 
 
-def tokens_rgb():
-    """The four token values the `frame` step asserts, read out of the token layer as
-    `getComputedStyle` will report them. Retyping a hex here is how a frame value goes stale."""
+PASSKEY_TOKENS = {'paper': 'paper', 'dangerTint': 'danger-tint', 'inkSoft': 'ink-soft', 'danger': 'danger'}
+
+
+def tokens_rgb(names=PASSKEY_TOKENS):
+    """The token values a `frame` step asserts — `{key: css token name}` — read out of the token
+    layer as `getComputedStyle` will report them. Retyping a hex here is how a frame value goes
+    stale. The default is this harness's four; `run-verify-email-change.py` passes its own three.
+    A token that is not in `globals.css` is a named failure, not a traceback mid-run."""
     css = open(os.path.join(HERE, '..', '..', 'apps', 'web', 'app', 'globals.css')).read()
     def token(name):
-        return hex_to_rgb(re.search(rf'--color-{name}:\s*(#[0-9A-Fa-f]{{6}})', css).group(1))
-    return {'paper': token('paper'), 'dangerTint': token('danger-tint'),
-            'inkSoft': token('ink-soft'), 'danger': token('danger')}
+        found = re.search(rf'--color-{name}:\s*(#[0-9A-Fa-f]{{6}})', css)
+        if not found:
+            sys.exit(f'  FAIL  --color-{name} is not in globals.css; the frame step has no token to compare')
+        return hex_to_rgb(found.group(1))
+    return {key: token(name) for key, name in names.items()}
 
 
 def name_max():

@@ -6,9 +6,8 @@ import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '
 import { passkeysEnabled } from '@/lib/flags'
 import { nameFor } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
-import { BAD_EMAIL } from '../../sign-in/email.ts'
 import { SEND_INTERVAL, sentStateFor } from '../../sign-in/resend-timer.ts'
-import { IN_USE, newEmailFor, SAME_EMAIL, SEND_FAILED } from './email-change-rule.ts'
+import { FIELD_REFUSALS, IN_USE, newEmailFor, SEND_FAILED } from './email-change-rule.ts'
 import { NUDGE_DONE } from './nudge.ts'
 import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey-name-rule.ts'
 
@@ -61,8 +60,7 @@ const MESSAGES: Record<Code, string> = {
   // FR-A4's five. The first three are the FIELD's own refusals and go in its helper-caption
   // slot; the last two are the card's Banner. `too_soon` is composed at the point of failure
   // from GoTrue's own remainder, so this entry is the fallback the composer replaces.
-  bad_email: BAD_EMAIL,
-  same_email: SAME_EMAIL,
+  ...FIELD_REFUSALS,
   in_use: IN_USE,
   too_soon: tooSoon(SEND_INTERVAL),
   send_failed: SEND_FAILED,
@@ -340,6 +338,10 @@ export async function changeEmail(
       // The address belongs to another account. GoTrue answered before it sent, so
       // `email_change_sent_at` did not move — which is the harness's control for "no email".
       if (error.code === 'email_exists') return fail('in_use')
+      // GoTrue refused the ADDRESS itself (`email_address_invalid`: a shape zod passed and its
+      // validator did not). Nothing was sent and trying again would not help, so it is the
+      // field's sentence, not the Banner's (review, 2026-09-07).
+      if (error.code === 'email_address_invalid') return fail('bad_email')
       console.error('email change: send failed', { status: error.status, code: error.code })
       return fail('send_failed')
     }

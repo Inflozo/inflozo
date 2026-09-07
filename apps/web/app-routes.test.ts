@@ -12,6 +12,9 @@ import { join } from 'node:path'
 const APP = 'app/(app)/app'
 const ROUTE = join(APP, 'auth/confirm/route.ts')
 const TEMPLATE = '../../supabase/auth/magic-link.html'
+const TEMPLATES = '../../supabase/auth'
+/** Every email template the project pushes (`configure-supabase-auth.py` reads the same files). */
+const templates = () => readdirSync(TEMPLATES).filter((f) => f.endsWith('.html')).map((f) => join(TEMPLATES, f))
 
 /** Every `page.tsx` under `app/(app)/app`, relative to it. */
 function pages(dir = ''): string[] {
@@ -53,21 +56,41 @@ test('no page under /app re-declares force-static, which empties the cookie stor
   }
 })
 
-test("the email template's type= is one the confirm route accepts", () => {
+/** The `type=` values a template's links carry — in the href, and again in the pasteable URL. */
+const typesSentBy = (template: string) =>
+  new Set([...readFileSync(template, 'utf8').matchAll(/[?&](?:amp;)?type=([a-z_]+)/g)].map((m) => m[1]))
+
+test("every email template's type= is one the confirm route accepts", () => {
   const declared = /const TYPES: readonly EmailOtpType\[\] = \[([^\]]*)\]/.exec(readFileSync(ROUTE, 'utf8'))
   assert.ok(declared, 'TYPES was not found in route.ts — this test reads the list rather than restating it')
   const accepted = [...declared[1].matchAll(/'([a-z_]+)'/g)].map((m) => m[1])
 
-  // `&amp;type=email` in the href, and again in the pasteable URL under the button.
-  const sent = [...readFileSync(TEMPLATE, 'utf8').matchAll(/[?&](?:amp;)?type=([a-z_]+)/g)].map((m) => m[1])
-  assert.ok(sent.length > 0, 'the template carries no type= at all — every link would 303 to ?error=link')
-
-  for (const type of new Set(sent)) {
-    assert.ok(
-      accepted.includes(type),
-      `the template sends type=${type}, which the confirm route does not accept: every real sign-in link — and every first-ever sign-up — would 303 to /sign-in?error=link and nobody could get in.`,
-    )
+  const found = templates()
+  assert.ok(found.length >= 2, `expected the sign-in and email-change templates under supabase/auth, got ${found}`)
+  for (const template of found) {
+    const sent = typesSentBy(template)
+    assert.ok(sent.size > 0, `${template} carries no type= at all — every link it sends would 303 to ?error=link`)
+    for (const type of sent) {
+      assert.ok(
+        accepted.includes(type),
+        `${template} sends type=${type}, which the confirm route does not accept: every link it sends would 303 to /sign-in?error=link.`,
+      )
+    }
   }
+})
+
+/*
+ * ACCEPTED IS NOT ENOUGH FOR THE EMAIL-CHANGE TEMPLATE. The confirm route lands `email_change` on
+ * /account?email=changed and everything else on /; `type=email` — the sibling's value, the natural
+ * copy — is in TYPES too, so the test above stays green while the real link lands on the
+ * dashboard with no banner (Story 2.3 review, 2026-09-07). The route's own branch value is read
+ * out of route.ts rather than restated here.
+ */
+test('the email-change template sends the one type the confirm route lands on /account', () => {
+  const branch = /type === '([a-z_]+)' \? EMAIL_CHANGED_PATH/.exec(readFileSync(ROUTE, 'utf8'))
+  assert.ok(branch, 'route.ts no longer branches its landing on a type — this test reads that literal')
+  const sent = typesSentBy(join(TEMPLATES, 'email-change.html'))
+  assert.deepEqual([...sent], [branch[1]], `email-change.html sends type=${[...sent]}; the route lands only type=${branch[1]} on /account?email=changed`)
 })
 
 /**

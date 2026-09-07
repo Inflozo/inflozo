@@ -1,4 +1,4 @@
-import { parseEmail } from '../../sign-in/email.ts'
+import { BAD_EMAIL, parseEmail } from '../../sign-in/email.ts'
 
 /**
  * THE EMAIL-CHANGE BOUNDARY AND THE URL CONTRACT, in one plain module beside the actions —
@@ -16,11 +16,15 @@ export const SAME_EMAIL = "That's already your address."
 export const IN_USE = 'That email is already in use on another account.'
 export const SEND_FAILED = "We couldn't send that link just now. Try again in a moment."
 
+/** The two refusals `newEmailFor` can make, keyed by its codes: the dialog says them at the
+ *  submit and `actions.ts`'s `MESSAGES` spreads them, so neither side keeps its own copy. */
+export const FIELD_REFUSALS = { bad_email: BAD_EMAIL, same_email: SAME_EMAIL } as const
+
 /**
  * How long the link in the email is good for, in seconds: the project's `mailer_otp_exp`, which
  * `tools/probe/configure-supabase-auth.py` writes and reads back. It is the ONE number the
  * pending banner is time-boxed by, and `email-change-rule.test.ts` reads it out of that file
- * rather than restating it, so the two cannot drift (standing rule 4).
+ * rather than restating it, so the two cannot drift (counts are derived, never restated).
  *
  * ponytail: a constant mirroring a setting; a settings read the day the app has one.
  */

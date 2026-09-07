@@ -7,9 +7,8 @@ import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/di
 import { ring } from '@/components/kit/greyed'
 import { Mail } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
-import { BAD_EMAIL } from '../../sign-in/email'
 import { changeEmail, type ActionResult } from './actions'
-import { EMAIL_CHANGED, newEmailFor, SAME_EMAIL } from './email-change-rule'
+import { EMAIL_CHANGED, FIELD_REFUSALS, newEmailFor } from './email-change-rule'
 
 /* S12 Billing.dc.html:74-82 — the Email card, and the frame's own "Change email" at the end of
    the row. The row itself is the one this card was lifted from `page.tsx` with: the glyph, the
@@ -34,9 +33,9 @@ import { EMAIL_CHANGED, newEmailFor, SAME_EMAIL } from './email-change-rule'
 /** The three the FIELD owns; anything else is the Banner above the form (`passkeys-card.tsx`). */
 const FIELD_CODES = new Set(['bad_email', 'same_email', 'in_use'])
 
-/* The two the client can refuse on its own, from the SAME modules the action reads them from —
-   a `'use server'` file exports only async functions, so `MESSAGES` itself cannot come over. */
-const REFUSALS = { bad_email: BAD_EMAIL, same_email: SAME_EMAIL }
+/* The two the client can refuse on its own are `FIELD_REFUSALS`, the ONE map `actions.ts`'s
+   `MESSAGES` also spreads — a `'use server'` file exports only async functions, so the map lives
+   in the plain module and the card and the action agree by construction (review, 2026-09-07). */
 
 export function EmailCard({
   email,
@@ -85,7 +84,7 @@ export function EmailCard({
     const asked = newEmailFor(email, new FormData(event.currentTarget).get('email'))
     if ('code' in asked) {
       event.preventDefault()
-      setClientError(REFUSALS[asked.code])
+      setClientError(FIELD_REFUSALS[asked.code])
       return
     }
     setClientError(null)
@@ -159,7 +158,11 @@ export function EmailCard({
           </p>
         </div>
         {bannerError ? <Banner kind="error">{bannerError}</Banner> : null}
-        <form action={sendAction} onSubmit={guard} className="flex flex-col gap-[18px]">
+        {/* `noValidate`, as `sign-in-form.tsx` has beside its own `type="email"`: without it the
+            browser's constraint validation stops the submit event for `maya` and shows its own
+            bubble — a tooltip, which P0-0 forbids — and `guard()` never runs. Executed on the
+            deployed site by the harness's `bad-email` step (review, 2026-09-07). */}
+        <form action={sendAction} onSubmit={guard} noValidate className="flex flex-col gap-[18px]">
           <TextInput
             id="change-email"
             name="email"

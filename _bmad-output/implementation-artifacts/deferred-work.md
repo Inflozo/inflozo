@@ -885,3 +885,38 @@ reason: S1c is the frame's own drawing (`S1 Sign In.dc.html:131-141`) and R-74 m
   the dimmed contents while the ceremony runs, which is what "the OS window is the only thing in focus"
   means to a screen reader anyway, and axe does not audit an inert subtree. Do it in the first story that
   reopens the sign-in card, or when the owner asks for it.
+
+## Deferred from: code review of spec-2-3-change-my-email-address-safely (2026-09-07)
+
+### DW-38: `signedIn()` lives in two `'use server'` files
+
+plain: The three lines that say "if nobody is signed in, go to the sign-in page" are written once in the
+  projects actions file and once more in the account actions file. Nothing is wrong today; a change to
+  one would have to be remembered in the other.
+status: open
+severity: low
+origin: Story 2.3 code review (2026-09-07) — Blind Hunter
+location: apps/web/app/(app)/app/(authed)/account/actions.ts (`signedIn`) · apps/web/app/(app)/app/(authed)/projects/actions.ts:63-67
+reason: The stated reason for not importing it — an exported async function in a `'use server'` file is a
+  Server Action — justifies not exporting it from EITHER actions file, not copying it: a plain module,
+  `lib/supabase/server.ts` beside `currentUser()`, can export it once for both. Not done in the review
+  because it edits `projects/actions.ts`, which is outside Story 2.3; do it in the next story that touches
+  either file.
+
+### DW-39: the old address is never told when an account's email changes
+
+plain: When a user moves their account to a new email address, only the new address gets an email. The
+  old address hears nothing — so if someone else is using the account (a stolen laptop still signed in;
+  sessions last 30 days) and moves it to their own address, the real owner finds out only when a magic link
+  to their old address opens a brand-new, empty account. Most services send the old address a short "your
+  email was changed" note for exactly this reason.
+status: open — awaiting the owner's ruling (spec 2.3, `## Questions for the owner`, Question 2)
+severity: medium
+origin: Story 2.3 code review (2026-09-07) — Blind Hunter
+location: tools/probe/configure-supabase-auth.py (`mailer_notifications_email_changed_enabled: False`) · supabase/auth/ (no template for the notice) · PRD FR-P1 (the six-email count)
+reason: The story turned the switch off deliberately — FR-P1 counts exactly six emails and the PRD's words
+  are "re-verification of the new address" — and the spec's frozen Boundaries name a second email in this
+  flow as Ask First. GoTrue sends the notice from `verify.go:632-637` when the switch is on, with its own
+  template, which would need branding like the other two. Epic 12 builds and brands every remaining
+  transactional email and is where a seventh belongs if the owner wants it; the review's recommendation is
+  to decide it there. The risk is recorded here so that the decision is traceable and never silent.

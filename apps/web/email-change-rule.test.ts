@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import {
   EMAIL_CHANGED,
@@ -87,7 +87,7 @@ test('nothing else reads as a just-changed email', () => {
 })
 
 /**
- * THE LIFETIME IS DERIVED, NOT RESTATED (standing rule 4). `LINK_LIFETIME_S` is a copy of the
+ * THE LIFETIME IS DERIVED, NOT RESTATED (counts are derived, never restated). `LINK_LIFETIME_S` is a copy of the
  * live project's `mailer_otp_exp`, and the day someone changes that setting the banner would
  * silently outlive or underlive the link it describes. The source is read here.
  */
@@ -99,4 +99,34 @@ test('LINK_LIFETIME_S is the mailer_otp_exp configure-supabase-auth.py writes', 
   const written = /'mailer_otp_exp':\s*(\d+)/.exec(tool)
   assert.ok(written, 'configure-supabase-auth.py no longer writes mailer_otp_exp')
   assert.equal(LINK_LIFETIME_S, Number(written[1]))
+})
+
+// And the emails say the same number in words: "good for 15 minutes" is written in each template
+// by hand, and a changed `mailer_otp_exp` would leave every email lying about its own link
+// (review, 2026-09-07). Both templates, because the sign-in one carries the same sentence.
+test('every auth template names the minutes the link is actually good for', () => {
+  const dir = new URL('../../supabase/auth/', import.meta.url)
+  const templates = readdirSync(dir).filter((f) => f.endsWith('.html'))
+  assert.ok(templates.length >= 2, `expected both templates under supabase/auth, got ${templates}`)
+  for (const file of templates) {
+    const minutes = [...readFileSync(new URL(file, dir), 'utf8').matchAll(/(\d+) minutes/g)].map((m) => Number(m[1]))
+    assert.ok(minutes.length > 0, `${file} never says how long its link is good for`)
+    for (const m of minutes) assert.equal(m, LINK_LIFETIME_S / 60, `${file} says ${m} minutes; the link is good for ${LINK_LIFETIME_S / 60}`)
+  }
+})
+
+/**
+ * `changeEmail` GUARDS ON THE SESSION ALONE. There is no feature flag for changing an email, and
+ * the sibling actions' first line — `const user = await ready(); if (!user) return fail(…)` — is
+ * the natural copy that would put FR-A4 behind the passkey kill switch with every check green:
+ * `node --test` cannot import a `'use server'` file, and the harness runs with whatever the flag
+ * row is at Deploy (review, 2026-09-07). So the action's source is read, `server-wiring.test.ts`'s
+ * idiom, and the guard it calls is pinned.
+ */
+test('changeEmail is guarded by the session and never by the passkey switch', () => {
+  const source = readFileSync(new URL('./app/(app)/app/(authed)/account/actions.ts', import.meta.url), 'utf8')
+  const body = /export async function changeEmail\([\s\S]*?\n}\n/.exec(source)
+  assert.ok(body, 'changeEmail was not found in actions.ts')
+  assert.match(body[0], /await signedIn\(\)/, 'changeEmail must guard with signedIn()')
+  assert.doesNotMatch(body[0], /ready\(\)|passkeysEnabled/, 'changeEmail must not be gated by the passkey switch')
 })
