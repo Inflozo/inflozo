@@ -394,6 +394,32 @@ name, and the review's own patches were gated the same way:
   the story's Never forbids. Deferred as DW-34; the owner's test step 7 says the review checks it, and the
   honest reading is that it is checked by code and build only.
 
+### The Deploy run (2026-09-07)
+
+CI for HEAD (`6b6d5444`, board-only) is `completed`/`success`
+(`GET /repos/Inflozo/inflozo/actions/runs?head_sha=…`, `GITHUB_TOKEN`). The production alias is held
+by `dpl_2rdo8eaqcmhsWMdyDiL68sjFsHmc`, built from `3c6740e1` — the last app-code commit, `readyState:
+READY` (`GET /v13/deployments/get?url=app.inflozo.com`, `VERCEL_TOKEN`/`VERCEL_TEAM_ID`); the two
+board-only commits after it produced byte-identical app code and did not take the alias, the same
+"later build takes the alias only when app code changed" behaviour recorded in spec 2.1's second run.
+
+**Deployment: dpl_2rdo8eaqcmhsWMdyDiL68sjFsHmc (https://app.inflozo.com, https://inflozo.com)**.
+
+- The six deployed-domain curls, re-run fresh for this Deploy phase (not reused from the review's
+  run): `icon.svg`, `apple-icon.png` and `brand/mark-light@2x.png` on both `app.inflozo.com` and
+  `inflozo.com` — all **200** with the right `content-type`, and every body `cmp`s silent against the
+  repo file (`apps/web/app/icon.svg`, `apps/web/app/apple-icon.png`,
+  `apps/web/public/brand/mark-light@2x.png`).
+- **Negative control for the matcher, re-run:** no cookies, `app.inflozo.com/kit` and `/account` →
+  **307 → /sign-in**; `/icon.svg` and `/brand/mark-light@2x.png` → **200**, no redirect.
+- `curl https://app.inflozo.com/sign-in` carries Next's
+  `<link rel="icon" href="/icon.svg?…" type="image/svg+xml">` and
+  `<link rel="apple-touch-icon" href="/apple-icon.png?…" sizes="180x180">`.
+- `git diff -- "apps/web/app/(app)/app/sign-in/page.tsx"` is still empty — the watermark is untouched
+  on the deployed commit, same as Dev's control.
+- Owed to the owner, not to this run: the magic-link email in a real inbox (test step 3) and the
+  error page (never rendered — DW-34).
+
 ## Questions for the owner
 
 **1. Where, if anywhere, should the launch animation play?** The logo export includes a 2.9-second animation (the
