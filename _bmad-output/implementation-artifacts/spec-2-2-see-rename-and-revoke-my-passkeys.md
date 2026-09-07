@@ -5,7 +5,7 @@ created: '2026-09-07'
 status: 'in-review'
 baseline_commit: '51cfb9740508aa11da170bc5b85022e3745fd6c8'
 review_loop_iteration: 2
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
 
@@ -499,6 +499,21 @@ serving `app.inflozo.com` and `inflozo.com` (AD-26).
 - `deferred-work.md` — DW-32 (4) and DW-33 (1) closed on the lines above; DW-32 (1) and (2) stay open
   (unrelated to this run — the kill-switch curl and the real AAGUID fixture); DW-33 as a whole is now
   closed.
+
+**Second deploy run, 2026-09-07, after the Fix run and second review.** No schema change this round —
+the second review's own record says so, and `passkey_labels` was already dropped from production at
+the first Deploy run above. Nothing for the owner to apply by hand.
+
+- `git push` landed `3627a7bf` on `main`. CI (`GET /repos/Inflozo/inflozo/actions/runs?head_sha=…`,
+  `GITHUB_TOKEN`, read-only) — run `34085153825`, all three jobs `success`: `check`, `rls`, `deploy`.
+- **Deployment:** `dpl_3RSZCamfXcmBoQvpxz4nVJrTowpd` (`inflozo-prp7qw519-umangkagathara.vercel.app`),
+  commit `3627a7bf` — `readyState: READY` (`GET /v13/deployments/{id}`, `VERCEL_TOKEN`), `target:
+  production`, aliased to `inflozo.com`, `app.inflozo.com` and `www.inflozo.com` — this is the build
+  now serving both domains (AD-26).
+
+This is the build the owner tests next: the keyboard-submit fix (Enter in the rename field or Space on
+Save no longer closes the dialog mid-save), the anchored stacking-banner fix and the empty-name-at-submit
+guard are all live at `app.inflozo.com/account` and `/sign-in`, alongside the Fix run's banner change below.
 
 ### The Fix run (2026-09-07)
 
