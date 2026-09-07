@@ -433,6 +433,28 @@ at Deploy against the deployed UI, which is where R-80 and R-82 put them. The tw
 - Playwright's Chromium at 1440 and 390: the card's row and button sit where the Email card's do; the
   primary reads "Signing out…" while the action runs
 
+### Ran at Deploy, 2026-09-07 — CI, the production Vercel deployment, and the harness against it
+
+- CI run `34104825110` (`gh run list`, `GITHUB_TOKEN`) for `12623333`, HEAD — **green** (`check` and `rls`
+  both passed, `deploy` ran).
+- Vercel API (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`), `GET /v6/deployments` — the newest
+  production deployment carries `githubCommitSha = 12623333a8baf2a97f7670058cb800276e718513` (HEAD) and
+  `readyState = READY`. `Deployment: dpl_Dqb3qKqodHp5PfToioiZYDWbDQN1`
+  (`inflozo-8ueakzegc-umangkagathara.vercel.app`).
+- `curl -I https://app.inflozo.com/account` -> `307` to `/sign-in`, `x-matched-path` on the redirect
+  target, `server: Vercel` — the production alias is serving this deployment.
+- `python3 tools/probe/run-verify-sign-out-everywhere.py --check` -> plumbing green, admin round trip
+  `PASS`, `SESSION_MAX_AGE` read as `2592000`, users before/after 4, exit 0.
+- `python3 tools/probe/run-verify-sign-out-everywhere.py` against `app.inflozo.com` -> **every step PASS,
+  exit 0**: `signed-in-a1`, `signed-in-a2`, `control-local` (A2 still 200 at `/user` and at `/account`),
+  `frame`, `frame-390`, `axe-account-closed`, `axe-account-dialog`, `dialog-focus` (Escape, Cancel and the
+  backdrop), `dialog-quiet`, `everywhere` (A1 -> `?signed-out=all`, A1's former token and A2's token both
+  `403 session_not_found`, A2's `/account` -> `/sign-in`), `rest-residual` (RECORD **200**),
+  `axe-signed-out-all`, `jwt-exp` (RECORD **3600**), `magic-link-after` (`Max-Age=2592000`). Fixture user
+  deleted, users 4 before and after, no strays.
+
+**Resend, Dodo, T1/T3** — untouched, as at Dev and Review.
+
 ## Owner's manual test
 
 On the live site, after the Deploy run. You need **two devices** — your laptop and your phone — both signed
