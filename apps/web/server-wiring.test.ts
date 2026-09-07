@@ -12,6 +12,8 @@ const SERVER = 'lib/supabase/server.ts'
 const FLAGS = 'lib/flags.ts'
 const ACCOUNT_PAGE = 'app/(app)/app/(authed)/account/page.tsx'
 const ACCOUNT_ACTIONS = 'app/(app)/app/(authed)/account/actions.ts'
+const AUTHED_LAYOUT = 'app/(app)/app/(authed)/layout.tsx'
+const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -70,7 +72,12 @@ test('the service-role client is imported by the flag reader and by nothing else
   // decision that edits this list, never an import that slips in.
   // The IMPORT, not the mention: `projects/actions.ts` names `supabaseAdmin()` in a comment that
   // explains why it does not use it, and prose is not a caller.
-  const allowed = [join('lib', 'flags.ts')]
+  // The SECOND privileged reader, added by Story 2.5 with its reason: the `site-snapshots` bucket
+  // has NO Storage policy at all by design (AD-32) — "a snapshot the client could write defeats
+  // FR-J13's whole purpose" — so the service role is its only reader and the download route mints
+  // the signed URL with it. It never touches a user ROW: whose snapshot it is has already been
+  // answered by RLS on the user's own client, one call earlier in the same file.
+  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) =>
@@ -152,5 +159,27 @@ test('the way out of every device does not hang on a way in', () => {
     body.slice(0, body.indexOf('auth.signOut')),
     /await ready\(\)/,
     `${ACCOUNT_ACTIONS}: signOutEverywhere guards on ready(), whose passkey flag would refuse it.`,
+  )
+})
+
+test('the deletion window has a door, and it is the shell layout', () => {
+  // FR-A5 offers Restore *on signing in*, so a pending account must not reach any page under the
+  // shell. That is ONE `if` in a layout, and deleting it is green under eslint, `tsc --noEmit`,
+  // `node --test` and `next build`: the app would simply work normally for an account whose rows
+  // Story 2.6 is about to remove, and the work done meanwhile would be purged in silence. Neither
+  // half of it is reachable from a browser step without deleting a real account, so both are read
+  // out of the source here — the column in the select, and the redirect after it.
+  const layout = readFileSync(AUTHED_LAYOUT, 'utf8').replace(/\/\/[^\n]*/g, ' ')
+  const select = /\.select\('([^']*)'\)/.exec(layout)
+  assert.ok(select, `${AUTHED_LAYOUT}: the profiles select was not found — this test reads it, not restates it`)
+  assert.ok(
+    select[1].split(',').map((c) => c.trim()).includes('deleted_at'),
+    `${AUTHED_LAYOUT}: the profiles select is '${select[1]}' and does not read deleted_at. ` +
+      'Without it the door never closes and a deleted account keeps using the app until it is purged.',
+  )
+  assert.match(
+    layout.replace(/\s+/g, ' '),
+    /if \(profile\?\.deleted_at\) redirect\(RESTORE_PATH\)/,
+    `${AUTHED_LAYOUT}: nothing redirects a pending account to RESTORE_PATH (FR-A5).`,
   )
 })

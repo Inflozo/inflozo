@@ -309,6 +309,27 @@ DOCS = [
   'Admin-API user count before and after so a leak is loud; --to points the run\'s one real send at '
   'an inbox a human can read, because DW-22 says no key here can. --check is the plumbing alone and '
   'needs no browser and no deployment. Story 2.3.'),
+ ('tools/probe/run-verify-account-deletion.py', 'tool', 'Account-deletion harness',
+  "FR-A5's 14-day deletion window, driven through the deployed UI on app.inflozo.com and read back "
+  'off the wire: the Danger zone button measured against the frame\'s tokens at 1440 and at 390, the '
+  'confirm opening on Cancel and closing on Escape, on Cancel and on a backdrop click with nothing '
+  'sent, a wrong phrase leaving the red button aria-disabled with Enter sending nothing, the phrase '
+  'typed and the deadline read straight out of PostgREST as deleted_at + the app\'s own '
+  'DELETION_WINDOW_DAYS, the shell\'s door closing on / and /account, the snapshot listed with its '
+  'site and downloaded through a 303 to a short-lived Storage signed URL whose bytes are compared '
+  'with the seeded ones, Restore clearing both columns on the profile AND the snapshot, and — with '
+  'purge_after moved into the past by the secret key, the one state no browser could reach in '
+  'fourteen days — the page saying "being deleted" while restore_account() answers false. Its '
+  'CONTROLS run first and alongside: both functions called with NO bearer must be refused, B\'s real '
+  "session calling restore_account() must not touch A's rows, and B asking for A's snapshot must be "
+  '404 rather than a 403 that confirms the id exists. Creates fixture users A and B, a sites row, a '
+  'site_snapshots row and one object in the server-only site-snapshots bucket, then deletes the '
+  'object BEFORE the users and lists the prefix to prove nothing outlived the account, comparing the '
+  'Admin-API user count before and after so a leak is loud. It cannot prove the email arrived — '
+  'DW-22, a third time — so the app logs Resend\'s status and id and the owner reads the inbox. Plus '
+  'axe-core at WCAG 2.1 AA over /account closed and with the confirm open, /restore in both states '
+  'and /?restored=1, each at 1440 and 390. --check is the plumbing alone, including one real Storage '
+  'put-list-delete, and needs no browser and no deployment. Story 2.5.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

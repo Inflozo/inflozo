@@ -551,7 +551,8 @@ plain: We can send email through Resend and prove the send was accepted, but not
 status: open
 severity: medium
 origin: Story 1.5 fourth Fix run (2026-09-06), the owner's fourth test, finding 1
-location: tools/probe/.env (`RESEND_API_KEY`) · apps/web/app/(app)/app/sign-in/actions.ts · Epic 12
+location: tools/probe/.env (`RESEND_API_KEY`) · apps/web/app/(app)/app/sign-in/actions.ts ·
+  apps/web/lib/email.ts (Story 2.5, the app's own sender) · Epic 12
 reason: Executed 2026-09-06 and RE-EXECUTED by the fifth review the same day: `GET
   https://api.resend.com/emails`, `/domains` and `/api-keys` with `RESEND_API_KEY` each answer **401,
   `restricted_api_key`, "This API key is restricted to only send emails"** — it is a send-only key. (The
@@ -567,9 +568,12 @@ reason: Executed 2026-09-06 and RE-EXECUTED by the fifth review the same day: `G
   cannot prove the email arrived, so FR-P1's email (2) is read by the owner and by nobody else. Its
   `--to` points that one real send at an inbox a human can open, which is the whole of the workaround.
   Story 2.5 (Create, 2026-09-07) meets it a third time: the deletion confirmation email — FR-P1's eighth,
-  pending the owner's ruling on the story's question 1 — is sent by the app through `POST /emails` and the
+  the owner's ruling R-96 the same day — is sent by the app through `POST /emails` and the
   harness can see the deletion, the rows, the page and the download but never the inbox; the app logs
-  Resend's status and id, and delivery is step 5 of that story's owner's manual test.
+  Resend's status and id, and delivery is step 5 of that story's owner's manual test. Its Dev run
+  (2026-09-07) is the first send the APP makes rather than GoTrue: `apps/web/lib/email.ts` is the one
+  `fetch`, and `deletion: email sent { id }` in the deployment's log is the whole of the hand-off this
+  repository can see.
 
 
 ### DW-23: `pro_past_due` grants Pro for ever, because nothing expires the grace window

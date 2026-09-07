@@ -1564,3 +1564,70 @@ create policy suggestion_images_owner_write on storage.objects for insert to aut
 create policy suggestion_images_owner_manage on storage.objects for delete to authenticated
   using (bucket_id = 'suggestion-images'
          and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- ============================================================================
+-- 13. Story 2.5 — FR-A5's soft-delete window has two writers
+-- ============================================================================
+--
+-- `profiles.deleted_at` and `profiles.purge_after` are declared in §1 and, until this story,
+-- nothing wrote them. They are not client-writable either — §11 grants `authenticated` UPDATE on
+-- `display_name, autosave_enabled, updated_at` alone, which is right and stays — so the window is
+-- owned by two `security definer` functions in `provision_entitlement`'s shape.
+--
+-- `interval '14 days'` is written ONCE, in the migration this block mirrors
+-- (`supabase/migrations/20260907150000_account_deletion_window.sql`), and `apps/web/
+-- deletion-rule.test.ts` reads it back so the app's `DELETION_WINDOW_DAYS` cannot drift from it.
+-- Both functions touch `auth.uid()`'s rows and no others; the profile and its snapshots move in
+-- one transaction, which two PostgREST writes could not. `freeze_columns('is_admin')` binds that
+-- column alone, so neither update trips it.
+
+create or replace function public.request_account_deletion() returns timestamptz
+language plpgsql security definer set search_path = public as $$
+declare deadline timestamptz;
+begin
+  update public.profiles
+     set deleted_at  = now(),
+         purge_after = now() + interval '14 days',
+         updated_at  = now()
+   where user_id = auth.uid()
+     and deleted_at is null
+  returning purge_after into deadline;
+
+  if deadline is null then
+    return null;
+  end if;
+
+  update public.site_snapshots
+     set purge_after         = least(coalesce(purge_after, deadline), deadline),
+         download_offered_at = coalesce(download_offered_at, now())
+   where user_id = auth.uid();
+
+  return deadline;
+end $$;
+
+create or replace function public.restore_account() returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  update public.profiles
+     set deleted_at  = null,
+         purge_after = null,
+         updated_at  = now()
+   where user_id = auth.uid()
+     and deleted_at is not null
+     and purge_after > now();
+
+  if not found then
+    return false;
+  end if;
+
+  update public.site_snapshots
+     set purge_after = null
+   where user_id = auth.uid();
+
+  return true;
+end $$;
+
+revoke execute on function public.request_account_deletion() from public, anon;
+revoke execute on function public.restore_account() from public, anon;
+grant  execute on function public.request_account_deletion() to authenticated;
+grant  execute on function public.restore_account() to authenticated;

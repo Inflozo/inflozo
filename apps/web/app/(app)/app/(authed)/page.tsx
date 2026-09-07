@@ -9,6 +9,7 @@ import { filterProjects } from '@/lib/projects'
 import { passkeysEnabled } from '@/lib/flags'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { isSignOutFailed, SIGN_OUT_FAILED } from '../sign-in/signed-out'
+import { isRestored, RESTORED, RESTORED_SENTENCE } from './account/deletion-rule'
 import { nudgeDone } from './account/nudge'
 import { PasskeyNudge } from './passkey-nudge'
 import { NewProjectSheet } from './new-project-sheet'
@@ -39,9 +40,13 @@ export default async function Dashboard({
 }: {
   // A repeated key (`?q=a&q=b`) arrives as an ARRAY; `filterProjects` takes the first and is
   // under test for it (review, 2026-09-05).
-  searchParams: Promise<{ q?: string | string[]; [SIGN_OUT_FAILED]?: string | string[] }>
+  searchParams: Promise<{
+    q?: string | string[]
+    [SIGN_OUT_FAILED]?: string | string[]
+    [RESTORED]?: string | string[]
+  }>
 }) {
-  const [{ q, [SIGN_OUT_FAILED]: signOutFailed }, user] = await Promise.all([
+  const [{ q, [SIGN_OUT_FAILED]: signOutFailed, [RESTORED]: restored }, user] = await Promise.all([
     searchParams,
     currentUser(),
   ])
@@ -85,6 +90,14 @@ export default async function Dashboard({
       {isSignOutFailed(signOutFailed) ? (
         <div className="p-[16px_20px] pb-0 tablet:p-6 tablet:pb-0">
           <Banner kind="error">We couldn&rsquo;t sign you out just now. Try again in a moment.</Banner>
+        </div>
+      ) : null}
+      {/* FR-A5's way BACK, said where the user lands: `restoreAccount` redirects here and this is
+          the sentence. Same slot and the same URL-hint shape as the strip above — a value and a
+          reader in `deletion-rule.ts`, both under test, so neither can silently stop matching. */}
+      {isRestored(restored) ? (
+        <div className="p-[16px_20px] pb-0 tablet:p-6 tablet:pb-0">
+          <Banner kind="success">{RESTORED_SENTENCE}</Banner>
         </div>
       ) : null}
       {/* FR-A2's one-time offer, above the grid and above the three states below it, for the

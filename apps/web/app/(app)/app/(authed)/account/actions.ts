@@ -2,11 +2,24 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '../../sign-in/webauthn.ts'
+import { deletionEmail, type Snapshot } from '@/lib/deletion-email'
+import { sendEmail } from '@/lib/email'
 import { passkeysEnabled } from '@/lib/flags'
 import { nameFor } from '@/lib/passkey-name'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
+import { APP } from '@/routing'
 import { SEND_INTERVAL, sentStateFor } from '../../sign-in/resend-timer.ts'
+import {
+  DELETE_FAILED,
+  matchesPhrase,
+  RESTORE_FAILED,
+  RESTORE_PATH,
+  RESTORED_PATH,
+  WINDOW_CLOSED,
+  WRONG_PHRASE,
+} from './deletion-rule.ts'
 import { FIELD_REFUSALS, IN_USE, newEmailFor, SEND_FAILED } from './email-change-rule.ts'
 import { NUDGE_DONE } from './nudge.ts'
 import { SIGNED_OUT_EVERYWHERE_PATH } from '../../sign-in/signed-out.ts'
@@ -44,6 +57,10 @@ type Code =
   | 'too_soon'
   | 'send_failed'
   | 'sign_out_failed'
+  | 'wrong_phrase'
+  | 'delete_failed'
+  | 'restore_failed'
+  | 'window_closed'
 
 export type RegisterStart =
   | { ok: true; challengeId: string; options: ServerCredentialCreationOptions }
@@ -69,6 +86,12 @@ const MESSAGES: Record<Code, string> = {
   // FR-A6's one failure, in the confirm's own Banner. It says the attempt failed and claims
   // nothing about the other devices, because nothing happened to them.
   sign_out_failed: "We couldn't sign you out everywhere just now. Try again in a moment.",
+  // FR-A5's four, all from `deletion-rule.ts` so the dialog, the restore page and this map cannot
+  // each keep their own copy of a sentence about the one irreversible thing in the product.
+  wrong_phrase: WRONG_PHRASE,
+  delete_failed: DELETE_FAILED,
+  restore_failed: RESTORE_FAILED,
+  window_closed: WINDOW_CLOSED,
 }
 
 /** S1b's sentence at the account's altitude: the seconds are GoTrue's, never a guess of ours. */
@@ -397,4 +420,107 @@ export async function signOutEverywhere(
   }
 
   redirect(SIGNED_OUT_EVERYWHERE_PATH)
+}
+
+/* ────────────────────────────────────────────────────────────── FR-A5, Story 2.5
+   The Danger zone's two verbs. Everything that decides anything lives in the database:
+   `request_account_deletion()` and `restore_account()` are `security definer` functions, proved
+   in `RLS-TEST.sql` before either was called from here, and they are the ONLY writers of
+   `profiles.deleted_at` and `profiles.purge_after` — the column grant deliberately does not
+   include them, and no `supabaseAdmin()` goes near a user row. */
+
+/** What the dialog posts. The server re-checks the phrase and never trusts the greyed button. */
+const confirmSchema = z.object({ confirm: z.string() })
+
+/** FR-P1's eighth email points here, and the host is `routing.ts`'s, never a second literal. */
+const RESTORE_URL = `https://${APP}${RESTORE_PATH}`
+
+/**
+ * FR-A5: OPEN THE WINDOW. Nothing is deleted on this call — the function stamps a deadline
+ * fourteen days out, the browser lands on `/restore`, and Story 2.6's cron does the removing on
+ * the date. Until then every page under the shell sends this account back to `/restore`
+ * (`(authed)/layout.tsx`), which is what "signing in restores everything" means.
+ *
+ * THE PHRASE IS CHECKED HERE TOO. `danger-card.tsx` greys the button with the same function, and
+ * that is a courtesy: this is the check (`project-menu.tsx:336`'s rule).
+ *
+ * THE EMAIL IS NON-FATAL AND IS SENT ONLY WHEN THIS CALL OPENED THE WINDOW. The function answers
+ * `null` for a window already open, so a second tab cannot send a second message about the same
+ * deadline; and a send that fails does NOT undo the deletion, because the deadline is on the page
+ * the browser is about to land on and FR-A5's promise is the window, not the mail. The status is
+ * logged either way, which is the whole of what the harness can see (DW-22).
+ */
+export async function requestDeletion(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await signedIn()
+
+  const asked = confirmSchema.safeParse({ confirm: formData.get('confirm') })
+  if (!asked.success || !matchesPhrase(asked.data.confirm)) return fail('wrong_phrase')
+
+  const supabase = await supabaseServer()
+  const { data: deadline, error } = await supabase.rpc('request_account_deletion')
+  if (error) {
+    console.error('deletion: request failed', { code: error.code })
+    return fail('delete_failed')
+  }
+  // `null` = the window was ALREADY open. Nothing changed and nothing is sent; the page the user
+  // lands on states the deadline they already have.
+  if (deadline) await confirmByEmail(user.email, deadline as string)
+
+  redirect(RESTORE_PATH)
+}
+
+/**
+ * The one email, composed and sent. Separate from the action above only so the action reads as the
+ * two database calls it is; it is not reused and is not exported (a `'use server'` file's exports
+ * are all Server Actions).
+ *
+ * THE SNAPSHOT READ GOES THROUGH THE USER'S OWN CLIENT, so `site_snapshots_owner_read` scopes it —
+ * the email can never name another account's themes. A read that fails is an email with no theme
+ * block and a log line, never a failed deletion.
+ */
+async function confirmByEmail(to: string | undefined, deadline: string) {
+  if (!to) return
+  const supabase = await supabaseServer()
+  const { data, error } = await supabase
+    .from('site_snapshots')
+    .select('id, theme_name, captured_at, sites(title, url)')
+  if (error) console.error('deletion: snapshot read failed', { code: error.code })
+
+  const sent = await sendEmail({
+    to,
+    ...deletionEmail({
+      deadline,
+      snapshots: (data ?? []) as unknown as Snapshot[],
+      restoreUrl: RESTORE_URL,
+    }),
+  })
+  if (sent.ok) console.log('deletion: email sent', { id: sent.id })
+  else console.error('deletion: email failed', { status: sent.status })
+}
+
+/**
+ * FR-A5's OTHER HALF, and it is one click. `restore_account()` answers `true` only while the
+ * deadline is still ahead: once it has passed, 2.6's purge owns the account and a `false` comes
+ * back, which the restore page says in its red Banner rather than pretending the account is safe.
+ *
+ * The redirect is OUTSIDE any try, as `signOutEverywhere`'s is — `redirect()` throws by design.
+ */
+export async function restoreAccount(
+  _previous: ActionResult | null,
+  _formData: FormData,
+): Promise<ActionResult> {
+  await signedIn()
+
+  const supabase = await supabaseServer()
+  const { data: restored, error } = await supabase.rpc('restore_account')
+  if (error) {
+    console.error('deletion: restore failed', { code: error.code })
+    return fail('restore_failed')
+  }
+  if (restored === false) return fail('window_closed')
+
+  redirect(RESTORED_PATH)
 }

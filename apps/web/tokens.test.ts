@@ -106,6 +106,17 @@ const PACK_DATA = join('lib', 'style-pack.ts')
  */
 const IDENTITY = join('components', 'kit', 'logo.tsx')
 
+/*
+ * THE THIRD, and it is the email one (Story 2.5). FR-P1's eighth email is composed by
+ * `lib/deletion-email.ts`, and an email client has neither custom properties nor a stylesheet it
+ * can be trusted with — `supabase/auth/magic-link.html` already carries the same five values
+ * inline for exactly that reason, and this module is that template as a function. So the literals
+ * stay, and the test BELOW turns them from an exemption into a checked copy: each one must be a
+ * token's own value in the theme, so the day a token moves this fails rather than quietly sending
+ * the old paper colour to an inbox.
+ */
+const EMAIL = join('lib', 'deletion-email.ts')
+
 test('no .ts or .tsx under apps/web carries a colour literal', () => {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -119,10 +130,11 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
   // The ONE exempt path, not any path ending in it: `endsWith` would have exempted a future
   // `components/lib/style-pack.ts` too, which is the habit the name was chosen against
   // (review, 2026-09-06).
-  const exempt = [PACK_DATA, IDENTITY].map((p) => join(process.cwd(), p))
+  const named = [PACK_DATA, IDENTITY, EMAIL]
+  const exempt = named.map((p) => join(process.cwd(), p))
   // An exemption cannot outlive the file it names.
   for (const [i, f] of exempt.entries()) {
-    assert.ok(all.includes(f), `${[PACK_DATA, IDENTITY][i]} is gone — delete its exemption with it`)
+    assert.ok(all.includes(f), `${named[i]} is gone — delete its exemption with it`)
   }
   const files = all.filter((f) => !exempt.includes(f))
   assert.ok(files.some((f) => f.endsWith('.tsx')), 'found no .tsx to scan')
@@ -134,6 +146,26 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
     return hits ? [`${f}: ${[...new Set(hits)].join(' ')}`] : []
   })
   assert.deepEqual(offenders, [], 'the tokens are the only colour vocabulary')
+})
+
+/**
+ * THE EMAIL'S EXEMPTION, PAID FOR. `lib/deletion-email.ts` may write hexes because an inbox has no
+ * token layer — but every one of them must still BE a token's value, or the one email the product
+ * sends itself would drift away from the product it is about, silently and for ever. The values
+ * are read out of the module and looked up in the theme; neither side is restated here.
+ */
+test('every colour the deletion email writes is a token value in the theme', () => {
+  const source = readFileSync(join(process.cwd(), EMAIL), 'utf8')
+  const written = [...new Set(source.match(/#[0-9A-Fa-f]{6}\b/g) ?? [])]
+  assert.ok(written.length > 0, `${EMAIL} carries no colour at all — delete its exemption with them`)
+  const values = new Set(tokens.filter((t) => t.name.startsWith('--color-')).map((t) => t.value))
+  for (const hex of written) {
+    assert.ok(
+      values.has(hex),
+      `${EMAIL} writes ${hex}, which is no --color-* value in the theme. An email cannot read a ` +
+        'custom property, so the value is copied — and a copy that is not checked is a copy that drifts.',
+    )
+  }
 })
 
 test('every face the theme names is a face layout.tsx loads', () => {

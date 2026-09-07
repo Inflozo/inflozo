@@ -3,6 +3,7 @@ import { passkeysEnabled, READ_TIMEOUT_MS } from '@/lib/flags'
 import { passkeyRows, type PasskeyRow } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/with-timeout'
+import { DangerCard } from './danger-card'
 import { EmailCard } from './email-card'
 import { EMAIL_CHANGED, isEmailChanged, isEmailStale, pendingChange } from './email-change-rule'
 import { PasskeysCard } from './passkeys-card'
@@ -12,8 +13,10 @@ import { SessionsCard } from './sessions-card'
 
    The frame draws one surface called "Account & Billing" in two columns: the plan, its meters
    and the invoices on the left, and Email · Passkeys · Danger zone on the right. THE LEFT COLUMN
-   IS EPIC 12'S and the Danger zone is 2.5's; each is ABSENT rather than greyed, because neither
-   could act today (UX-DR3). The pencil and the bin at the end of every passkey row LANDED WITH
+   IS EPIC 12'S and is ABSENT rather than greyed, because it could not act today (UX-DR3); the
+   DANGER ZONE LANDED WITH 2.5 and is `danger-card.tsx`, for the reason the Email card moved out
+   of here — the frame's button opens a dialog and a dialog needs a client. The pencil and the bin
+   at the end of every passkey row LANDED WITH
    2.2 and are drawn by `passkeys-card.tsx`; CHANGE EMAIL landed with 2.3 and the whole Email
    card now lives in `email-card.tsx`, because the frame's button opens a dialog and a dialog
    needs a client. The heading is still the frame's own — the surface it names is the one being
@@ -51,7 +54,15 @@ export default async function AccountPage({
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
-  const passkeys = await passkeysEnabled()
+  const supabase = await supabaseServer()
+  // The two counts S12c's sentence is composed from. HEAD requests — `count: 'exact', head: true`
+  // sends no rows at all — and RLS scopes both, so neither carries a `where` of ours.
+  // ponytail: counts on the sentence are two HEAD requests; one view the day the page needs a third.
+  const [passkeys, projects, assets] = await Promise.all([
+    passkeysEnabled(),
+    countOf(supabase, 'projects'),
+    countOf(supabase, 'assets'),
+  ])
   // `auth.passkey.list()` is asked for ONLY when the module is on: with the flag off the method
   // is not merely unused, it is a call the platform would refuse.
   const rows = passkeys ? await listPasskeys() : null
@@ -74,12 +85,34 @@ export default async function AccountPage({
 
         {passkeys ? <PasskeysCard passkeys={rows} /> : null}
 
-        {/* FR-A6's sign-out-everywhere. It sits under Passkeys and above where 2.5's Danger zone
-            will go, and it costs no read: GoTrue owns the sessions and nothing of ours lists them. */}
+        {/* FR-A6's sign-out-everywhere. It sits under Passkeys and above the Danger zone, and it
+            costs no read: GoTrue owns the sessions and nothing of ours lists them. */}
         <SessionsCard />
+
+        {/* FR-A5's way out, last on the surface as the frame draws it, and unconditional for the
+            reason the Sessions card is: leaving must not depend on a feature flag. */}
+        <DangerCard projects={projects} assets={assets} />
       </div>
     </div>
   )
+}
+
+/**
+ * How much this account holds, for S12c's sentence alone. Through the user's own session, so RLS
+ * scopes it; a count that could not be READ is 0 and a log line, which `deletionSentence` renders
+ * as "Everything in your account" — true whatever the account holds, and never a page that will
+ * not render because a meter failed.
+ */
+async function countOf(
+  supabase: Awaited<ReturnType<typeof supabaseServer>>,
+  table: 'projects' | 'assets',
+): Promise<number> {
+  const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
+  if (error) {
+    console.error('account: count failed', { table, code: error.code })
+    return 0
+  }
+  return count ?? 0
 }
 
 /**

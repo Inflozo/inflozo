@@ -911,3 +911,179 @@ begin
   end if;
   raise notice 'PASS: storage is not PostgREST-exposed (db_schemas = %)', coalesce(nullif(exposed, ''), 'unset locally');
 end $$;
+
+-- ============================================================================
+-- Story 2.5 — FR-A5's soft-delete window, before anything in the app calls it
+-- ============================================================================
+--
+-- `request_account_deletion()` and `restore_account()` are `security definer`, which is the whole
+-- reason they need this: a definer function runs as its OWNER and RLS does not constrain it, so
+-- "it only ever touches auth.uid()'s rows" is a claim about the WHERE clause and nothing else.
+-- Asserted here as two tenants, exactly as every other surface in this file is.
+--
+-- What is proved: A's call stamps A's profile and A's snapshot with the SAME deadline, exactly
+-- fourteen days after `deleted_at`, and leaves B's row and B's snapshot alone; a second call
+-- returns null and does not move the deadline (which is how the action knows not to send a second
+-- email); `restore_account()` clears both and answers true; with the deadline moved into the past
+-- it answers false and clears NOTHING; and `anon` cannot execute either.
+
+reset role;
+
+-- The fixture: one pre-Inflozo snapshot per tenant, and both profiles known-clean, so this block
+-- is re-runnable on a hosted project where the users at the top of the file persist.
+update public.profiles set deleted_at = null, purge_after = null
+ where user_id in ('11111111-1111-1111-1111-111111111111',
+                   '22222222-2222-2222-2222-222222222222');
+delete from public.site_snapshots
+ where id in ('aaaaaaaa-5555-0000-0000-000000000001','bbbbbbbb-5555-0000-0000-000000000002');
+insert into public.site_snapshots(id,user_id,site_id,storage_path,theme_name) values
+  ('aaaaaaaa-5555-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
+   'aaaaaaaa-0000-0000-0000-000000000001',
+   'site-snapshots/11111111-1111-1111-1111-111111111111/aaaaaaaa-0000-0000-0000-000000000001/theme.zip','casper'),
+  ('bbbbbbbb-5555-0000-0000-000000000002','22222222-2222-2222-2222-222222222222',
+   'bbbbbbbb-0000-0000-0000-000000000002',
+   'site-snapshots/22222222-2222-2222-2222-222222222222/bbbbbbbb-0000-0000-0000-000000000002/theme.zip','source');
+
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+
+do $$
+declare deadline timestamptz; again timestamptz; d timestamptz; p timestamptz;
+        snap_p timestamptz; snap_offered timestamptz;
+begin
+  deadline := public.request_account_deletion();
+  if deadline is null then
+    raise exception 'FAIL (2.5): request_account_deletion() returned null on an account with no window open';
+  end if;
+
+  select deleted_at, purge_after into d, p from public.profiles where user_id = auth.uid();
+  if d is null then raise exception 'FAIL (2.5): deleted_at was not stamped'; end if;
+  -- EXACTLY, not within a tolerance: `now()` is transaction-stable, so the two expressions in the
+  -- function body are the same instant. A tolerance here would pass a function that computed the
+  -- deadline from a second clock.
+  if p is distinct from d + interval '14 days' then
+    raise exception 'FAIL (2.5): purge_after (%) is not deleted_at (%) + 14 days', p, d;
+  end if;
+  if p is distinct from deadline then
+    raise exception 'FAIL (2.5): the function returned % but stored %', deadline, p;
+  end if;
+
+  select purge_after, download_offered_at into snap_p, snap_offered
+    from public.site_snapshots where id = 'aaaaaaaa-5555-0000-0000-000000000001';
+  if snap_p is distinct from deadline then
+    raise exception 'FAIL (2.5): A''s snapshot purge_after is % and the account deadline is %', snap_p, deadline;
+  end if;
+  if snap_offered is null then
+    raise exception 'FAIL (2.5): the snapshot was never marked as offered for download (FR-J13)';
+  end if;
+
+  -- A SECOND CALL IS NOT A SECOND WINDOW. A stale tab pressing Delete again must not move the
+  -- date the user is looking at, and the null is what tells the action to send no second email.
+  again := public.request_account_deletion();
+  if again is not null then
+    raise exception 'FAIL (2.5): a second call re-opened the window and returned %', again;
+  end if;
+  select purge_after into p from public.profiles where user_id = auth.uid();
+  if p is distinct from deadline then
+    raise exception 'FAIL (2.5): the second call moved the deadline from % to %', deadline, p;
+  end if;
+
+  raise notice 'PASS (2.5): request_account_deletion() stamps the profile and its snapshot 14 days out, once';
+end $$;
+
+reset role;
+
+-- B is a different tenant and the function is a definer: this is the assertion that its WHERE
+-- clause, and not RLS, is what keeps the two apart.
+do $$
+declare n int;
+begin
+  select count(*) into n from public.profiles
+   where user_id = '22222222-2222-2222-2222-222222222222'
+     and (deleted_at is not null or purge_after is not null);
+  if n <> 0 then raise exception 'FAIL (2.5): A''s deletion stamped B''s profile'; end if;
+  select count(*) into n from public.site_snapshots
+   where id = 'bbbbbbbb-5555-0000-0000-000000000002'
+     and (purge_after is not null or download_offered_at is not null);
+  if n <> 0 then raise exception 'FAIL (2.5): A''s deletion stamped B''s snapshot'; end if;
+  raise notice 'PASS (2.5): B''s profile and B''s snapshot were untouched by A''s deletion';
+end $$;
+
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+
+do $$
+declare cleared boolean; n int;
+begin
+  cleared := public.restore_account();
+  if not cleared then raise exception 'FAIL (2.5): restore_account() answered false inside the window'; end if;
+  select count(*) into n from public.profiles
+   where user_id = auth.uid() and (deleted_at is not null or purge_after is not null);
+  if n <> 0 then raise exception 'FAIL (2.5): restore left the profile stamped'; end if;
+  select count(*) into n from public.site_snapshots
+   where id = 'aaaaaaaa-5555-0000-0000-000000000001' and purge_after is not null;
+  if n <> 0 then raise exception 'FAIL (2.5): restore left the snapshot''s purge_after set'; end if;
+  raise notice 'PASS (2.5): restore_account() clears the profile and every snapshot, and answers true';
+end $$;
+
+reset role;
+
+-- The deadline moved into the PAST, as the owner: from here 2.6's purge owns the account, and
+-- restore must refuse rather than clear a state the purge may already be halfway through.
+update public.profiles
+   set deleted_at = now() - interval '15 days', purge_after = now() - interval '1 day'
+ where user_id = '11111111-1111-1111-1111-111111111111';
+update public.site_snapshots
+   set purge_after = now() - interval '1 day'
+ where id = 'aaaaaaaa-5555-0000-0000-000000000001';
+
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+
+do $$
+declare cleared boolean; n int;
+begin
+  cleared := public.restore_account();
+  if cleared then raise exception 'FAIL (2.5): restore_account() answered true after the deadline had passed'; end if;
+  select count(*) into n from public.profiles
+   where user_id = auth.uid() and deleted_at is not null and purge_after is not null;
+  if n <> 1 then raise exception 'FAIL (2.5): a refused restore cleared the profile anyway'; end if;
+  select count(*) into n from public.site_snapshots
+   where id = 'aaaaaaaa-5555-0000-0000-000000000001' and purge_after is not null;
+  if n <> 1 then raise exception 'FAIL (2.5): a refused restore cleared the snapshot anyway'; end if;
+  raise notice 'PASS (2.5): past the deadline restore_account() answers false and clears nothing';
+end $$;
+
+reset role;
+
+-- Neither function is anon's. `revoke execute … from public, anon` is what makes this 42501 —
+-- without it a definer function is granted to PUBLIC by default. The claim is not "it would find
+-- no row"; it is "it cannot be called at all", so the subject is cleared first: an errant EXECUTE
+-- would then change nothing and this block would fail for the RIGHT reason.
+set request.jwt.claim.sub = '';
+set role anon;
+
+do $$
+declare answered text;
+begin
+  begin
+    answered := public.request_account_deletion()::text;
+    raise exception 'FAIL (2.5): anon executed request_account_deletion() and got %', coalesce(answered, 'null');
+  exception when insufficient_privilege then
+    null;
+  end;
+  begin
+    answered := public.restore_account()::text;
+    raise exception 'FAIL (2.5): anon executed restore_account() and got %', coalesce(answered, 'null');
+  exception when insufficient_privilege then
+    null;
+  end;
+  raise notice 'PASS (2.5): anon cannot execute either deletion-window function (42501)';
+end $$;
+
+reset role;
+
+-- The fixture's own tidy-up: leave A as an account with no window open, so a re-run starts where
+-- this one did.
+update public.profiles set deleted_at = null, purge_after = null
+ where user_id = '11111111-1111-1111-1111-111111111111';

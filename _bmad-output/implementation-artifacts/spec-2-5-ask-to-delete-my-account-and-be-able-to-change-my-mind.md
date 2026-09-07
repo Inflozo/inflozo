@@ -2,7 +2,8 @@
 title: 'Story 2.5 — Ask to delete my account, and be able to change my mind'
 type: 'feature'
 created: '2026-09-07'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'c6c35b8f0b049bbf3e5b9d1bb6b4aa8bb1790d18'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -364,30 +365,30 @@ reworded so it no longer restates a count.*
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `supabase/migrations/20260907150000_account_deletion_window.sql` + `SCHEMA.sql` + `RLS-TEST.sql` +
+- [x] `supabase/migrations/20260907150000_account_deletion_window.sql` + `SCHEMA.sql` + `RLS-TEST.sql` +
       `supabase/tests/rls.sql` -- the two functions and their proof, control first (break one assertion,
       see the gate go red, restore it) -- the 14 days become a database fact before anything calls them
-- [ ] `account/deletion-rule.ts` + `apps/web/deletion-rule.test.ts` -- the phrase, the sentence, the date,
+- [x] `account/deletion-rule.ts` + `apps/web/deletion-rule.test.ts` -- the phrase, the sentence, the date,
       the object key, the URL contract, and the interval read back from the migration -- the contract
       before anything reads it
-- [ ] `lib/deletion-email.ts` + `lib/email.ts` + `apps/web/deletion-email.test.ts` -- the email and its
+- [x] `lib/deletion-email.ts` + `lib/email.ts` + `apps/web/deletion-email.test.ts` -- the email and its
       transport -- FR-P1's eighth (question 1)
-- [ ] `account/actions.ts` -- `requestDeletion` and `restoreAccount` -- the two verbs
-- [ ] `account/danger-card.tsx` + `account/page.tsx` -- S12a's Danger zone and S12c's confirm -- the
+- [x] `account/actions.ts` -- `requestDeletion` and `restoreAccount` -- the two verbs
+- [x] `account/danger-card.tsx` + `account/page.tsx` -- S12a's Danger zone and S12c's confirm -- the
       frames
-- [ ] `(authed)/layout.tsx` + `server-wiring.test.ts` -- the door, pinned -- FR-A5's "on signing in"
-- [ ] `restore/page.tsx` + `restore/restore-form.tsx` + `app-routes.test.ts` -- the window's one page --
+- [x] `(authed)/layout.tsx` + `server-wiring.test.ts` -- the door, pinned -- FR-A5's "on signing in"
+- [x] `restore/page.tsx` + `restore/restore-form.tsx` + `app-routes.test.ts` -- the window's one page --
       the deadline, the downloads, Restore
-- [ ] `snapshots/[id]/download/route.ts` + `server-wiring.test.ts` -- the signed URL, and the second
+- [x] `snapshots/[id]/download/route.ts` + `server-wiring.test.ts` -- the signed URL, and the second
       privileged reader named -- AD-13
-- [ ] `(authed)/page.tsx` -- "Welcome back" -- say it happened
-- [ ] Vercel production env -- `RESEND_API_KEY`, `RESEND_FROM` by name -- the send needs them
-- [ ] `tools/probe/run-verify-account-deletion.py` + its catalogue row -- the harness, controls first --
+- [x] `(authed)/page.tsx` -- "Welcome back" -- say it happened
+- [x] Vercel production env -- `RESEND_API_KEY`, `RESEND_FROM` by name -- the send needs them
+- [x] `tools/probe/run-verify-account-deletion.py` + its catalogue row -- the harness, controls first --
       R-82, re-runnable
 - [x] `deferred-work.md` + `prd.md` + `reconcile-designs-decisions.md` + `epics.md` -- DW-22's line, DW-42,
       DW-43, FR-P1's (8), R-96, R-97 and Story 12.5's line, all landed at Create on the rulings of
       2026-09-07 -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result by variable
+- [x] Run `## Verification` on the real infrastructure and record every command and result by variable
       name
 
 **Acceptance Criteria:**
@@ -422,6 +423,42 @@ reworded so it no longer restates a count.*
   green and zero violations
 
 ## Spec Change Log
+
+1. **The migration's in-body comment had to come out of the body, and the gate is what said so.**
+   `pg_dump` emits a plpgsql function body VERBATIM, comments included, so a `--` line inside
+   `request_account_deletion` that `SCHEMA.sql` did not also carry is SCHEMA DRIFT: the gate refused
+   the run and printed the four lines as a diff (executed, 2026-09-07). The comment now sits above
+   the `create or replace`, where it says the same thing and the two files still describe one
+   database. The migration says this in a sentence, so the next function does not learn it twice.
+2. **`deletion-rule.ts` imports `matchesName` by RELATIVE path, not `@/lib/projects`.** `node --test`
+   strips types but does not read tsconfig `paths`, so the `@/` the Code Map wrote would have
+   resolved under `next build` and thrown `ERR_MODULE_NOT_FOUND` the moment `deletion-rule.test.ts`
+   imported the module. Every other plain module a test reaches is relative with its extension
+   (`email-change-rule.ts` → `../../sign-in/email.ts`); this one now is too, with the reason beside it.
+3. **`tokens.test.ts` gained a third exemption AND a new test, which the Code Map did not foresee.**
+   `lib/deletion-email.ts` must write hexes — an inbox has no token layer, which is why
+   `supabase/auth/magic-link.html` writes the same five — and the standing "no colour literal in any
+   `.ts`/`.tsx`" gate refused the file. Rather than exempt it and stop there, the exemption is paid
+   for: a new test reads every hex out of the module and asserts each IS a `--color-*` value in the
+   theme, so the copy cannot drift from the product it is about.
+4. **`deletion-email.test.ts` also holds `sendEmail`'s unconfigured path**, which the Code Map left
+   to the matrix alone. It is the "Resend fails or is unconfigured" row and the one branch of it
+   reachable without a network — and the guarantee it protects is that a completed deletion is never
+   turned into an error page by a send that failed.
+5. **The product's OWN copy in the email is not entity-escaped; only user values are.** Escaping
+   everything turned "we'll" into `we&#39;ll` in the body — visible in an inbox — so `escape` is
+   applied to the site title, the theme name and the URL, and the test asserts no `&#39;` survives.
+6. **Applying the migration to the hosted project is the Deploy run's**, which is where 1.2's record
+   and 2.2's Code Map already put it ("applied to production by hand at Deploy"). Two things were
+   executed here rather than assumed: `SUPABASE_DB_URL`'s direct host answers `Network unreachable`
+   from this machine (it is IPv6-only — `spec-2-1:603` recorded the same), and the Management API's
+   SQL endpoint, the route 2.1 and 2.3 used instead, was refused by this session's sandbox. The anon
+   control therefore records `404 PGRST202` — the honest reading of "the functions are not on the
+   hosted project yet" — and becomes the AC's `403 / 42501` once Deploy applies them.
+7. **The `## Verification` heading was clipped once by an anchor that matched its own name in prose**
+   (the task list says "Run `## Verification` on the real infrastructure"). Restored from `HEAD` and
+   re-applied anchored on the heading at the start of a line. Nothing in the frozen block, the
+   owner's questions or his manual test was touched; all eleven `##` sections are present.
 
 ## Design Notes
 
@@ -468,50 +505,61 @@ browser's patience`
 
 ## Verification
 
-Run on the real infrastructure (R-82). Every key is read into a command's environment by name and
-never printed; each is recorded by its variable name only. The Dev run fills in what each returned.
+Run on the real infrastructure (R-82). Every key was read into a command's environment by name and
+never printed; each is recorded by its variable name only. **Dev run, 2026-09-07.**
 
-**Commands:**
-- `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH && pnpm check` (repository root) --
-  expected: exit 0; `eslint`, `tsc --noEmit` and `node --test` green, the new tests among them
-  (`deletion-rule`, `deletion-email`, the door in `server-wiring`, the self-guarded page in
-  `app-routes`)
-- `pnpm build` -- expected: exit 0; `/app/restore`, `/app/snapshots/[id]/download` and `/app/account`
-  all `ƒ`
-- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0 with the new block's PASS lines; **the
-  control**: `deleted_at is null` removed from `request_account_deletion`'s `where` → the "second call
-  keeps the deadline" assertion FAILS and the gate exits non-zero; restored, green again
-- `python3 tools/doc-audit.py --check` (twice after the new tool) -- expected: PASS
-- `env $(grep -E '^VERCEL_' tools/probe/.env | xargs) python3 …` `GET /v9/projects/{id}/env` -- expected:
-  `RESEND_API_KEY production` and `RESEND_FROM production` listed by name after the Dev run's `POST`
-- `env $(grep -E '^SUPABASE_' tools/probe/.env | xargs) curl -s -o /dev/null -w '%{http_code}' -X POST
-  "$SUPABASE_URL/rest/v1/rpc/request_account_deletion" -H "apikey: $SUPABASE_PUBLISHABLE_KEY"` with NO
-  bearer -- expected: **401/403**, the anon control on the hosted project; the same with a fixture
-  user's own bearer -- expected: **200** and an ISO timestamp fourteen days out
-- `python3 tools/probe/run-verify-account-deletion.py --check` -- expected: keys present, Playwright
-  and axe resolved, one admin create-read-delete, one Storage put-list-delete under a harness prefix,
-  users before == after
-- `python3 tools/probe/run-verify-account-deletion.py` (after Deploy, against `app.inflozo.com`) --
-  expected, each step PASS or RECORD: `anon-rpc` (the control above) · `other-user-rpc` (B calls
-  `restore_account()`: false, A's rows untouched) · `frame` (the `:109` button's computed height, radius,
-  border and label colours against the tokens at 1440) · `frame-390` · `dialog-focus` (focus on
-  Cancel; Escape, Cancel, backdrop each close under a POST counter at 0) · `armed` (wrong phrase: Enter
-  sends nothing, `aria-disabled` present; the phrase: `aria-disabled` gone) · `request` (lands on
-  `/restore`; PostgREST with the secret key shows `deleted_at`, `purge_after = deleted_at + 14 days`,
-  the snapshot's `purge_after` equal, `download_offered_at` set) · `door` (`/` and `/account` → `/restore`)
-  · `restore-page` (the date sentence, the seeded snapshot's site title and captured date) · `download`
-  (Download → 303 → a `/storage/v1/object/sign/site-snapshots/` URL → GET 200 with the seeded bytes) ·
-  `download-other` (B, A's id → 404) · `download-signed-out` (no cookies → 303 `/sign-in`) · `restore`
-  (→ `/?restored=1`, the green sentence, both columns null on profiles and the snapshot) · `past-deadline`
-  (`purge_after` moved into the past by the secret key: `/restore` says "being deleted", no Restore
-  button; `restore_account()` → false) · `magic-link-during` (a fresh magic link for a pending A lands
-  on `/restore`) · `axe-*` (WCAG 2.1 AA over `/account` closed and open, `/restore` in both states,
-  `/?restored=1`, at 1440 and 390) · cleanup: the object deleted, the prefix listed empty, both users
-  deleted, count unchanged
+### What ran here, and what it returned
 
-**Manual checks (if no CLI):**
-- The app's log line for the Deploy run's real send: `deletion: email sent { id }` with a Resend id —
-  the hand-off. Delivery is the owner's step 5 (DW-22).
+| Command | Result |
+|---|---|
+| `export PATH=…/node/v24.18.1/bin:$PATH && pnpm check` (repository root) | **exit 0.** `eslint`, `tsc --noEmit` and `node --test` green — **156 tests, 156 pass, 0 fail**, the new ones among them: `deletion-rule` (7), `deletion-email` (5, including the unconfigured send), the door in `server-wiring`, the self-guarded page in `app-routes`, and the email's colours in `tokens` |
+| `pnpm build` | **exit 0.** `/app/restore`, `/app/snapshots/[id]/download` and `/app/account` all `ƒ` |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, with the block's five PASS lines: the stamp and its snapshot fourteen days out *once*; B's profile and snapshot untouched; `restore_account()` clearing both and answering true; past the deadline answering false and clearing nothing; `anon` refused `42501` |
+| `python3 tools/doc-audit.py --check` (twice, the new tool) | first run **STALE** — it regenerated `INDEX` and asked for the board — then `python3 tools/story-board.py`, then **PASS (0 warnings)** |
+| `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` | **HTTP 200.** Production held `DODO_WEBHOOK_SECRET`, `ENABLE_EXPERIMENTAL_COREPACK`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL` — **no `RESEND_*`**, exactly as the Code Map recorded |
+| `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` ×2, each value read from `tools/probe/.env` by name | **HTTP 201** for `RESEND_API_KEY` and **HTTP 201** for `RESEND_FROM`, both `encrypted`, target `production`. Read back by the `GET` above: both now listed **by name**. No value was printed at any point |
+| `POST $SUPABASE_URL/rest/v1/rpc/request_account_deletion` and `…/restore_account` with `SUPABASE_PUBLISHABLE_KEY` and **no bearer** | **HTTP 404, `PGRST202`** for both — the functions are not on the hosted project yet, because a migration reaches the live database **by hand at Deploy** (1.2's record, 2.2's Code Map). This is the honest anon reading today; the `403 / 42501` the AC asks for is Deploy's first step, below |
+| `psql "$SUPABASE_DB_URL" -f supabase/migrations/20260907150000_account_deletion_window.sql` (in a `postgres:17-alpine` container) | **did NOT run: `Network unreachable`** to `db.<ref>.supabase.co` — the direct host is IPv6-only and this machine has no route, which `spec-2-1:603` recorded before. The Management API SQL endpoint (the route 2.1 and 2.3 used instead) was refused by this session's sandbox. **Deploy applies it** |
+| `python3 tools/probe/run-verify-account-deletion.py --check` | **exit 0.** `SUPABASE_*` present; playwright resolved; axe-core resolved; one real admin create-read-delete (**HTTP 200**); one real Storage put-list-delete in the server-only `site-snapshots` bucket (**HTTP 200** → `['theme.zip']`, prefix empty afterwards); the phrase read out of the app (`'delete my account'`); `DELETION_WINDOW_DAYS` read out of the app (`14`); **users before 4 == users after 4** |
+
+### The RLS gate's controls — six, each seen to FAIL
+
+A result whose control did not pass is not a result. Each break was applied to the function, the
+gate (or the block on its own, in one container) re-run, and the file restored; **every one exited
+non-zero** and named its own assertion:
+
+| The break | What failed |
+|---|---|
+| `deleted_at is null` dropped from `request_account_deletion`'s `where` — **the control the spec names** | `FAIL (2.5): a second call re-opened the window and returned 2026-09-21 …` (**exit 3**) |
+| `interval '14 days'` → `'13 days'` | `FAIL (2.5): purge_after (…) is not deleted_at (…) + 14 days` |
+| `where user_id = auth.uid()` dropped from the snapshot update | `FAIL (2.5): A's deletion stamped B's snapshot` |
+| `restore_account`'s snapshot update removed | `FAIL (2.5): restore left the snapshot's purge_after set` |
+| `restore_account`'s `purge_after > now()` removed | `FAIL (2.5): restore_account() answered true after the deadline had passed` |
+| `grant execute … to anon` added back | `FAIL (2.5): anon executed request_account_deletion() and got null` |
+
+And the **schema-diff** half of the gate bit for real while this was written: a comment INSIDE the
+function body that `SCHEMA.sql` did not carry produced `SCHEMA DRIFT` with the four lines as a diff
+(Spec Change Log 1). That is the gate proving the migration and the architecture describe one
+database, not an assertion that they do.
+
+### What the Deploy run must do, in this order
+
+1. Apply `supabase/migrations/20260907150000_account_deletion_window.sql` to the live database (by
+   hand, `SUPABASE_DB_URL` or the Management API's SQL endpoint, never echoed).
+2. Re-run the anon control: both RPCs with `SUPABASE_PUBLISHABLE_KEY` and no bearer — expected
+   **401/403**, not the 404 recorded above.
+3. `python3 tools/probe/run-verify-account-deletion.py` against `app.inflozo.com` — every step PASS
+   or RECORD: `anon-rpc` · `seeded` · `frame` · `frame-390` · `dialog-focus` · `dialog-quiet` ·
+   `armed` · `axe-account-closed` · `axe-account-dialog` · `request` · `second-request` ·
+   `other-user-rpc` · `door` · `restore-page` · `download` · `download-other` ·
+   `download-signed-out` · `axe-restore` · `restore` · `axe-restored` · `authed-rpc` ·
+   `magic-link-during` · `past-deadline` · `axe-past` · cleanup (the object deleted before the
+   users, the prefix listed empty, the user count unchanged).
+4. Read the deployment's log for `deletion: email sent { id }` with a Resend id — the hand-off, and
+   the whole of what this repository can see.
+
+**Manual check (no CLI can make it).** Delivery is the owner's manual test step 5 (DW-22, a third
+time): `RESEND_API_KEY` is send-only, so no key here can look in an inbox.
 
 ## Owner's manual test
 

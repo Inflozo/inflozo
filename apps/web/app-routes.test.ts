@@ -33,14 +33,22 @@ function pages(dir = ''): string[] {
 // than merely customary.
 const PUBLIC = [join('sign-in', 'page.tsx')]
 
+// A SECOND LIST, AND IT IS NOT THE FIRST. `/restore` is for someone who IS signed in — FR-A5's
+// deletion window — but it cannot live inside `(authed)`, because that layout is what redirects a
+// pending account here and a layout cannot read its own path: inside the group the redirect would
+// loop. So it sits outside and carries its own guard, and this list is the promise that it does.
+// A page belongs here only when both are true, and the test below is what makes the second one
+// checked rather than remembered.  [Story 2.5]
+const SELF_GUARDED = [join('restore', 'page.tsx')]
+
 test('every page under /app is inside the (authed) group, or named as public here', () => {
   const found = pages()
   assert.ok(found.length >= 3, `expected the app's pages to be found, got ${found.length}`)
   for (const page of found) {
-    if (PUBLIC.includes(page)) continue
+    if (PUBLIC.includes(page) || SELF_GUARDED.includes(page)) continue
     assert.ok(
       page.startsWith(`(authed)${'/'}`),
-      `${page} sits under /app but not inside (authed) — it would ship with no sign-in guard at all. Move it, or add it to PUBLIC with its reason.`,
+      `${page} sits under /app but not inside (authed) — it would ship with no sign-in guard at all. Move it, or add it to PUBLIC (or SELF_GUARDED) with its reason.`,
     )
   }
 })
@@ -52,6 +60,26 @@ test('no page under /app re-declares force-static, which empties the cookie stor
       // anchored: /kit's own comment quotes the export it replaced, and prose is not a config
       /^export const dynamic\s*=\s*'force-static'/m,
       `${page}: a page-level segment config beats the layout's, and under force-static Next hands every server component an EMPTY cookie store — the guard then 307s a SIGNED-IN visitor back to /sign-in, with no error and the route table still reading the same (Spec Change Log 12).`,
+    )
+  }
+})
+
+/*
+ * THE EXEMPTION ABOVE IS NOT A HOLE. A page skipped by the group test must guard itself, and
+ * `await signedIn()` is the one guard the app has (`lib/supabase/server.ts`, DW-38) — it redirects
+ * to /sign-in and narrows, so a page that has it cannot render for a stranger. Deleting that line
+ * is green under eslint, `tsc`, `node --test` and `next build`, and `/restore` would then tell
+ * anyone at all that an account is being deleted.  [Story 2.5]
+ */
+test('every page outside (authed) that is not public guards itself', () => {
+  assert.ok(SELF_GUARDED.length > 0, 'SELF_GUARDED is empty — remove it rather than leaving an unused exemption')
+  for (const page of SELF_GUARDED) {
+    assert.ok(pages().includes(page), `${page} is named in SELF_GUARDED but no such page exists`)
+    const source = readFileSync(join(APP, page), 'utf8').replace(/\/\/[^\n]*|\/\*[^]*?\*\//g, ' ')
+    assert.match(
+      source,
+      /await signedIn\(/,
+      `${page} sits outside (authed) and never calls await signedIn() — it would render for anyone.`,
     )
   }
 })
