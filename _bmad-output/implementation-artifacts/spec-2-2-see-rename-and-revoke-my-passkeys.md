@@ -102,7 +102,10 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 - `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql:128-144,821,1022,1174` -- the table, its comment and its three list entries go; `RLS-TEST.sql` never named it (grepped 2026-09-07), so `supabase/tests/rls.sql` is untouched
 - `tools/probe/run-verify-passkeys.py` (new, tool → a `doc-audit.py` catalogue row at `:263`'s shape) -- Playwright (memory: `headless-browser-tooling`) with `WebAuthn.addVirtualAuthenticator` against `app.inflozo.com` under a session it obtains as 2.1's Deploy run did — a fixture user, `POST /auth/v1/admin/generate_link` with `SUPABASE_SECRET_KEY`, the `hashed_token` redeemed at `/app/auth/confirm`, the user deleted afterwards with the Admin-API user count read before and after: register → `GET /passkeys` carries the row → rename through the UI → `friendly_name` read back off the wire → a second `create()` on the same authenticator (DW-32 (4)) → revoke through the UI → `GET /passkeys` no longer lists it → sign in with the revoked credential fails → the magic-link session is still `200` on `/app/account`; a burst of 30 `startPasskeySignIn` posts recording the first status ≠ 200 (DW-33 (1)); **control:** rename to a 121-char name through the action must be refused. Exit non-zero on any step
 - `_bmad-output/implementation-artifacts/deferred-work.md` -- DW-30 `status: closed` (dropped); DW-32 (3) and (4) closed, (1) and (2) stay open with a line saying so; DW-33 (1) and (2) closed
-- `apps/web/app/(app)/app/sign-in/passkey-button.tsx` · `sign-in/actions.ts` -- read-only: the revoked-credential path lands on their existing captions; nothing to add
+- `apps/web/app/(app)/app/sign-in/passkey-button.tsx` -- **the Fix run's file (the owner's finding 1).** WAS read-only. Now: the local `caption` state is gone and an attempt's answer goes UP through a new `onError` prop — `NO_PASSKEY_HERE`, `PASSKEY_FAILED` and both server-action messages. `NO_WEBAUTHN` is not an attempt's answer and stays in P0-0's helper-caption slot, which the component now renders INSTEAD of the offer rather than beside it (one state fewer: `supported` already carried it). `aria-describedby` on the button goes with the caption — the banner is `role="alert"` and announces itself
+- `apps/web/app/(app)/app/sign-in/sign-in-form.tsx` -- **the Fix run's file.** `passkeyError` state, handed to `PasskeyButton` as `onError` and drawn as `<Banner kind="error">` at the top of the card; the three existing banners move into that ternary's else branch, so the passkey sentence REPLACES them rather than stacking (the owner's own words). `guard()` clears it on a send, so it never outlives what answered it
+- `apps/web/passkey-banner.test.ts` (new) -- the wiring pinned by source assertion, `kit-button.test.ts`'s idiom and for its reason (`node --test` cannot load `.tsx`): the two sentences reach `onError`, `NO_WEBAUTHN` does not, the Banner is `kind="error"`, and the other three sit in the else branch. Its control ran — all three tests FAIL against the pre-Fix files
+- `apps/web/app/(app)/app/sign-in/actions.ts` -- read-only: the revoked-credential path lands on its existing sentences; nothing to add
 - `EXPERIENCE.md:131,298,482-486` · `epics.md:757-770` · PRD FR-A3 (`prd.md:182`) · `auth-js/dist/module/lib/types.d.ts:2404-2447` -- the rows that bind
 
 ## Tasks & Acceptance
@@ -118,6 +121,13 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 - [x] `deferred-work.md` -- close DW-30, DW-32 (3)(4), DW-33; say what stays open -- propagate, never localise
 - [x] Run `## Verification` on the real infrastructure and record every command and result
 
+**The Fix run (the owner's test finding 1):**
+- [x] `apps/web/app/(app)/app/sign-in/passkey-button.tsx` -- an attempt's answer leaves the caption and goes up through `onError` -- the sentence he could not see
+- [x] `apps/web/app/(app)/app/sign-in/sign-in-form.tsx` -- `passkeyError` drawn as the Kit's `error` Banner at the top, replacing the other three -- "like the 'You have been signed out' message ... but in red, with an error icon"
+- [x] `apps/web/passkey-banner.test.ts` -- the wiring pinned, and its control run against the pre-Fix files
+- [x] `tools/probe/run-verify-passkeys.py` -- `revoked-signin` now asserts the BANNER (role, `danger-tint`, an icon), not any `<p>` -- a step that read a `<p>` would pass for the very caption he asked to be replaced
+- [x] Re-run `## Verification` on the real infrastructure (R-82), with a control
+
 **Acceptance Criteria:**
 - Given a signed-in user with passkeys on `/account` at 1440 and at 390, when the card renders, then every row ends in the pencil and the bin and **matches the frame** (`S12 Billing.dc.html` S12a `:90-91`: 28×28, radius 8, 13px glyphs, the frame's hover fills), the laptop glyph on every row, the plan column and Change email still absent
 - Given the pencil pressed, when a valid name is saved, then `GET /passkeys` carries it as `friendly_name` and the row shows it after the re-render
@@ -126,6 +136,7 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 - Given either switch off, when either action is posted, then `passkeys_off`; given no session, then the sign-in redirect
 - Given the new migration applied, when `run-rls-gate.sh` runs, then it is green and `passkey_labels` exists in neither database
 - Given `pnpm check`, `pnpm build`, `node --test` and axe-core on `/account` with both dialogs open in turn, then all green and zero violations
+- **(the owner's test, finding 1)** Given a passkey sign-in that fails, when the card answers, then the sentence is the Kit's `error` Banner at the top of the card — `role="alert"`, the `danger-tint` fill, the `danger-line` hairline, `danger-text` words and the `XCircleSolid` icon in `danger` — and it REPLACES whichever of the three banners was there; nothing is left in the helper-caption slot under the button, and axe is still clean at 1440 and 390
 
 ### Review Findings
 
@@ -199,6 +210,23 @@ Real-infra verifier). No decision for the owner. Every patch applied in the revi
 10. **Backdrop click now closes every dialog**, as the matrix's *Cancel / Escape / backdrop* row
     promised and a native modal `<dialog>` does not do on its own — `closeOnBackdrop` in
     `kit/dialog.ts`, on the project menu's two dialogs as well so the vocabulary stays one.
+11. **The owner's test, finding 1: the sentence moved, the sentence did not change.** The matrix's
+    *Revoke, then that device signs in* row is frozen and still says exactly what it said — the
+    sign-in fails with one of S1a's two existing sentences, and the Deploy run pinned which one
+    ("We couldn't sign you in with a passkey. Use a magic link instead."). What the owner's test
+    found is that it was said in a **11px grey helper-caption at the bottom of the card**
+    (measured: `rgb(110, 106, 100)`, no icon, 656px down the viewport) with the mint "You've been
+    signed out." banner still sitting above it. It is now the Kit's `error` Banner at the TOP of
+    the card, and it replaces whatever banner was there — his own words, and the Kit already owns
+    both halves, so no new vocabulary. The three OTHER captions in this product's passkey code are
+    untouched: `/account`'s card keeps its own, and "This browser can't use passkeys." keeps this
+    card's, because it is not an attempt's answer — it is shown before anything is pressed and
+    explains the absent button it replaces, and a red alert on arrival would misdescribe a page
+    whose magic link works perfectly. A routine call, recorded here rather than asked (CLAUDE.md).
+    Worth saying that the move lands INSIDE the spine rather than beside it: `EXPERIENCE.md:296`
+    already rules the feedback banner — "one icon, one plain sentence … danger is serious" — and
+    `:285` scopes the helper-caption slot to a **greyed control showing its reason**, which is what
+    "This browser can't use passkeys." is and what a failed attempt is not. Nothing was amended.
 
 ## Design Notes
 
@@ -220,6 +248,12 @@ result lands under `## Verification` and, where it changes a sentence, in the ma
 **Why one dialog pair per card.** A `<dialog>` per row is N×2 modals in the DOM for no reason; the card
 keeps `{ id, name }` of the row whose button was pressed and the two dialogs read it. `project-menu.tsx`
 is one card, so it has one pair; this is the same shape at the card's altitude.
+
+**Where a sentence is said is a decision, and there are now two answers on one card** (the Fix run).
+An attempt's ANSWER goes to the card's banner slot: the user pressed something, is waiting, and a
+12.5px line at the far end of the card is not where a waited-for answer belongs — the owner proved
+that by missing it. A sentence that explains an ABSENCE stays where the absent thing was. The split is
+the one the Kit already draws, and it is why `NO_WEBAUTHN` did not move.
 
 `// ponytail: one laptop glyph; a per-row glyph the day a device type is stored` ·
 `// ponytail: 3s race on list(); a real AbortSignal if the library ever exposes one`
@@ -389,6 +423,73 @@ serving `app.inflozo.com` and `inflozo.com` (AD-26).
   (unrelated to this run — the kill-switch curl and the real AAGUID fixture); DW-33 as a whole is now
   closed.
 
+### The Fix run (2026-09-07)
+
+The owner's finding is a UI change on the SIGN-IN card, so the proof is that card rendered by a **real
+production build talking to the real Supabase project** — both switches on, as production has them — and
+driven in real Chromium. No mocks (R-82). Keys read by name from `tools/probe/.env` (`SUPABASE_URL`,
+`SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`); none printed.
+
+**How the failure is produced without a device, and it is the real one.** GoTrue's authentication options
+carry `rp.id = inflozo.com`, so on `localhost` the browser refuses the assertion with a `SecurityError`
+before any OS sheet — which is `passkey-button.tsx`'s generic branch and therefore *exactly* the sentence
+the owner named. The server action really ran (`POST` → 200 off the real project) and the browser really
+refused: `console.error` recorded `passkey: sign-in threw {name: SecurityError}`. Nothing is stubbed.
+
+- `pnpm check` (`eslint .` · `tsc --noEmit` · `node --test` across the workspace) — **green, exit 0**.
+  `apps/web`: **118 tests, 118 pass, 0 fail** — 115 before, plus this run's three.
+- `pnpm --filter web build` — **green**, `✓ Compiled successfully`; `/app/sign-in` still `ƒ`. Started as
+  `next start -p 3112` with the three keys; `curl … /app/sign-in | grep -c 'Sign in with a passkey'` →
+  **1**, so the build is reading the live project and both switches are still on.
+- **The banner, measured off the running page** (`/app/sign-in?signed-out=1`, so the owner's own
+  reference banner is on the card first — mint `rgb(228, 245, 238)`, 12.5px):
+
+  | | measured | the token, read out of `globals.css` |
+  |---|---|---|
+  | `role` | `alert` | (the caption was `status`) |
+  | background | `rgb(253, 236, 236)` | `danger-tint` `#FDECEC` ✔ |
+  | words | `rgb(196, 56, 60)` | `danger-text` `#C4383C` ✔ |
+  | hairline | `rgb(245, 198, 201)` | `danger-line` `#F5C6C9` ✔ |
+  | icon | `rgb(229, 72, 77)`, 14×14 | `danger` `#E5484D` ✔ (`XCircleSolid`) |
+  | size · radius | 12.5px · 10px | the same as his reference banner |
+  | position | **first drawn child of the card** | the top, where he asked for it |
+
+  The sentence in it: **"We couldn't sign you in with a passkey. Use a magic link instead."** — one
+  `role="alert"` in the card and no other. "You've been signed out." is **gone** (count 0): it was
+  replaced, not stacked. `#passkey-caption` is **absent** and no `p.text-helper-caption` remains.
+- **THE CONTROL, and it held** (standing rule 2). The same script, against a **build of the pre-Fix
+  files** (`git checkout` of the two, rebuilt, `next start -p 3113`): `form [role="alert"]` never
+  appeared — **timeout after 30s, RESULT: FAILED**. What that build showed instead, measured:
+  `P`, `role="status"`, **`font-size: 11px`**, `color: rgb(110, 106, 100)` (`ink-soft`), **no icon**,
+  transparent, **656px down the viewport** — with "You've been signed out." **still on the card above
+  it**. That is the owner's finding, in numbers, and it is what changed.
+- `node --test passkey-banner.test.ts` — **3 pass**. Its own control: the same three tests against the
+  pre-Fix files — **3 fail**. A test that cannot fail is not a test.
+- **axe-core 4.12.1, WCAG 2.1 AA, over the sign-in card WITH THE RED BANNER SHOWN** — **1440: 0
+  violations, 24 passes, no horizontal scroll. 390: 0 violations, 24 passes, no horizontal scroll.**
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, 72 `PASS` assertions. No SQL changed in this run;
+  it is re-run because `## Verification` is refreshed as a whole.
+- `python3 tools/probe/run-verify-passkeys.py --check` — against the **real Supabase project** —
+  **exit 0**: `users before: 4` … `PASS admin round trip` · `PASS GET /admin/users/{id}/passkeys` ·
+  `fixture user deleted (HTTP 200); users after: 4`. No user leaked.
+- `python3 tools/doc-audit.py --check` — **PASS**.
+
+**The harness's `revoked-signin` step changed with the product, and had to.** It read `page.locator('p')`,
+which would have passed for the very caption the finding asks to be replaced — a control that does not
+control. It now locates `[role="alert"]`, requires the magic-link sentence inside it, and asserts the
+banner's background against the `danger-tint` token and the presence of its icon. It runs at Deploy.
+
+**One thing this run found that is NOT this story's, executed rather than assumed.** Holding the card in
+**S1c** (the frame's own state: the whole card's contents at `opacity: 0.4` while the OS sheet is up —
+confirmed `0.4` on the running page) makes axe report **1 `color-contrast` violation over 9 nodes,
+serious** — the headline, the label, the field, the sentence, the banner: everything, because everything
+is at 40%. S1c is Story 2.1's and it is drawn from the frame (R-74); nothing in this Fix touches it, and
+the state is transient and `pointer-events-none`. It is recorded as **DW-37** rather than fixed here.
+
+**What is still the Deploy run's.** The round trip on `app.inflozo.com` — and `revoked-signin` in
+particular, which now proves the banner on the deployed site through a genuinely revoked credential
+rather than through a `SecurityError` on localhost.
+
 ## Owner's manual test
 
 On the live site, after the Deploy run. You need at least one passkey from Story 2.1; two is better
@@ -410,9 +511,13 @@ On the live site, after the Deploy run. You need at least one passkey from Story
    again, then **Remove passkey** · **See:** the window closes and the row is gone. You are still signed in.
 5. **URL:** https://app.inflozo.com/sign-in on the phone whose passkey you just removed · **Do:** avatar →
    Sign out, then press **Sign in with a passkey** and approve Face ID · **See:** it does not sign you in.
-   Under the button, one of two sentences: "No passkey on this device yet — sign in with a magic link, then
-   add one under Account settings." or "We couldn't sign you in with a passkey. Use a magic link instead."
-   Either is right; which one appears is written down by the Dev run. The magic link works as always. Add the phone's passkey again from Account settings if you
+   **This is the one you asked to be changed.** At the **top of the card**, in the same place and the same
+   shape as the "You've been signed out." message but **red, with a red error icon**, one sentence:
+   "We couldn't sign you in with a passkey. Use a magic link instead." (On a device that never had a
+   passkey it says the other sentence — "No passkey on this device yet — sign in with a magic link, then
+   add one under Account settings." — in the same red message.) The green "You've been signed out." message
+   you arrived with is **replaced** by it, not pushed down. Nothing small and grey is left at the bottom of
+   the card. The magic link works as always. Add the phone's passkey again from Account settings if you
    want it back.
 6. **URL:** https://app.inflozo.com/account · **Do:** press the bin on your last remaining passkey and
    remove it · **See:** the card shows only "Add a passkey". You are still signed in, and the magic link
@@ -426,3 +531,22 @@ Tested on app.inflozo.com on 2026-09-07. One finding.
    sign you in with a passkey. Use a magic link instead." is small and easy to miss. Make it like the
    "You have been signed out" message at the top of the sign-in screen, but in red, with an error
    icon. If there is already a message showing at the top, replace it with the new one.
+
+**Fixed, 2026-09-07 (the Fix run).** You were right about the size: measured on a real build of the code
+you tested, that sentence was **11px** grey text with **no icon**, sitting **656px down the page** at the
+very bottom of the card, while the green "You've been signed out." message stayed above it. It is now the
+same message component as that green one — same 12.5px size, same rounded box, same icon slot — in red:
+the `danger-tint` fill, the `danger-line` hairline, `danger-text` words and a red ✕ icon, at the **top of
+the card**, and it **replaces** whichever message was already there rather than adding to it. It is also
+now a `role="alert"`, so a screen reader announces it instead of leaving it to be noticed.
+
+The same move applies to the other sentence a failed passkey sign-in can give ("No passkey on this device
+yet…") and to any error the server sends back, because they are all answers to the same press. One
+sentence deliberately did **not** move: "This browser can't use passkeys.", which appears on arrival on an
+old browser and explains why the passkey button is missing — a red alert for that would overstate a page
+whose magic link works perfectly. That was a routine call, not one for you.
+
+Proved on a real build against the real Supabase project under `## Verification` → *The Fix run*, with a
+control: the same measurement against a build of the OLD code fails, which is how the numbers above were
+taken. It goes back through Review and Deploy, and then it is yours to test again — **step 5** of the
+manual test above is the one to look at, and it now says exactly what you should see.

@@ -11,25 +11,38 @@ import { authenticationResponse, browserSupportsWebAuthn, requestOptions } from 
 
    THE BROWSER'S ONLY JOB IS `navigator.credentials.get()`. The challenge comes from a server
    action and the assertion goes back to one; there is no Supabase client here and no key of any
-   kind. The three sentences below are the matrix's, in P0-0's helper-caption slot under the
-   button — never a toast, never a dialog.
+   kind.
+
+   WHERE THE SENTENCES GO, and the two are not the same slot (the owner's test of 2.2, finding 1).
+   Everything a sign-in ATTEMPT answers — the OS sheet's "nothing here", a server action's error,
+   an outright failure — goes UP to the card's own banner slot through `onError`, where it is the
+   Kit's red error banner with its icon, in the place "You've been signed out." appears and
+   replacing whatever was there. It read as a 12.5px grey caption under the button and the owner
+   missed it. What stays here in P0-0's helper-caption slot is the ONE sentence that is not an
+   attempt's answer: "This browser can't use passkeys." It is shown before anything is pressed,
+   it explains the absence of the button it replaces, and a red alert on arrival for a page whose
+   magic link works perfectly would be a lie about the seriousness of it.
 
    ponytail: a button, because S1a draws one. Conditional UI — the passkey offered inside the
    email field's own autofill — is the upgrade if the owner ever wants the button gone; it needs
    `mediation: 'conditional'` and an `autocomplete="username webauthn"` on the field, and nothing
    else here changes. */
 
-type Caption = string | null
-
-/** The matrix's three, verbatim. A cancelled sheet says nothing at all. */
+/** The matrix's three. A cancelled sheet says nothing at all. The first two are the banner's. */
 const NO_PASSKEY_HERE =
   'No passkey on this device yet — sign in with a magic link, then add one under Account settings.'
-const NO_WEBAUTHN = "This browser can't use passkeys."
 /** Anything that is neither the OS sheet's answer nor a server redirect: one honest sentence. */
 const PASSKEY_FAILED = "We couldn't sign you in with a passkey. Use a magic link instead."
+/** Not an attempt's answer: the reason the offer above it is missing. Stays a caption. */
+const NO_WEBAUTHN = "This browser can't use passkeys."
 
-export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => void }) {
-  const [caption, setCaption] = useState<Caption>(null)
+export function PasskeyButton({
+  onPending,
+  onError,
+}: {
+  onPending: (pending: boolean) => void
+  onError: (message: string | null) => void
+}) {
   const [busy, setBusy] = useState(false)
 
   // `browserSupportsWebAuthn()` reads `window`, so it cannot run in the render the server
@@ -41,30 +54,30 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
   // looked ordinary to the eye while `aria-disabled` told a screen reader it was unavailable.
   const [supported, setSupported] = useState(true)
   useEffect(() => {
-    if (browserSupportsWebAuthn()) return
-    setSupported(false)
-    setCaption(NO_WEBAUTHN)
+    if (!browserSupportsWebAuthn()) setSupported(false)
   }, [])
 
   async function signIn() {
     let navigating = false
     if (busy) return
+    // First, so that every path below — the unsupported one included — leaves no stale banner
+    // from the attempt before it.
+    onError(null)
     // ASKED AT THE CLICK, not read off state: `supported` is `true` for the one paint before the
     // effect above runs, so a press inside that instant would otherwise reach `navigator
     // .credentials` on a browser that has none and report the generic failure sentence instead of
-    // the true reason.
+    // the true reason. The sentence is the caption's, not the banner's — the offer is withdrawn
+    // in the same breath, and the caption is what takes its place.
     if (!browserSupportsWebAuthn()) {
       setSupported(false)
-      setCaption(NO_WEBAUTHN)
       return
     }
-    setCaption(null)
     setBusy(true)
     onPending(true)
     try {
       const started = await startPasskeySignIn()
       if ('error' in started) {
-        setCaption(started.error.message)
+        onError(started.error.message)
         return
       }
 
@@ -80,7 +93,7 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
         credential: authenticationResponse(credential),
       })
       // Success REDIRECTS from the server (which REJECTS, below), so a value here is a failure.
-      if (finished && 'error' in finished) setCaption(finished.error.message)
+      if (finished && 'error' in finished) onError(finished.error.message)
     } catch (error) {
       // The sign-in worked and the dashboard is on its way: say nothing and stay at 40% until
       // it lands — `finally` must not restore the card for a navigation that is already running.
@@ -98,11 +111,11 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
       // `TypeError` from a malformed challenge — is a failure, and is logged by its name only.
       if (name === 'AbortError') return
       if (name === 'NotAllowedError') {
-        setCaption(NO_PASSKEY_HERE)
+        onError(NO_PASSKEY_HERE)
         return
       }
       console.error('passkey: sign-in threw', { name: name ?? typeof error })
-      setCaption(PASSKEY_FAILED)
+      onError(PASSKEY_FAILED)
     } finally {
       if (!navigating) {
         setBusy(false)
@@ -111,44 +124,39 @@ export function PasskeyButton({ onPending }: { onPending: (pending: boolean) => 
     }
   }
 
-  return (
+  // The offer, or the one sentence that replaces it — never both, and never neither.
+  return supported ? (
     <>
-      {supported ? (
-        <>
-          {/* S1a's "or" rule belongs to the button, not to the form: the two are ONE offer, so
-              when the offer is withdrawn the rule goes with it. Held together here, a divider
-              over empty space — the one way the spec says this can go wrong — cannot happen. */}
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-line" />
-            <span className="text-control-label text-ink-soft">or</span>
-            <div className="h-px flex-1 bg-line" />
-          </div>
-          <Button
-            variant="secondary"
-            size={44}
-            // The frame draws this one label at 500 (`S1 Sign In.dc.html:49`) where the Kit's
-            // secondary is 600. It goes through the Kit's own `weight`, NOT through `className`:
-            // passed as a class it lost to the Kit's `font-semibold` every time and the button
-            // shipped at 600 — measured on the deployed site (review, 2026-09-06).
-            weight="font-medium"
-            className="w-full"
-            onClick={signIn}
-            aria-busy={busy || undefined}
-            aria-describedby={caption ? 'passkey-caption' : undefined}
-          >
-            {/* The frame's own 18px key. The Kit's secondary 44 is the vocabulary the surface is
-                built from. */}
-            <Passkey size={18} />
-            {busy ? 'Waiting for your device…' : 'Sign in with a passkey'}
-          </Button>
-        </>
-      ) : null}
-      {/* The sentence stays when the offer goes: it is the whole reason the offer is missing. */}
-      {caption ? (
-        <p id="passkey-caption" role="status" className="text-helper-caption leading-[1.5] text-ink-soft">
-          {caption}
-        </p>
-      ) : null}
+      {/* S1a's "or" rule belongs to the button, not to the form: the two are ONE offer, so
+          when the offer is withdrawn the rule goes with it. Held together here, a divider
+          over empty space — the one way the spec says this can go wrong — cannot happen. */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-line" />
+        <span className="text-control-label text-ink-soft">or</span>
+        <div className="h-px flex-1 bg-line" />
+      </div>
+      <Button
+        variant="secondary"
+        size={44}
+        // The frame draws this one label at 500 (`S1 Sign In.dc.html:49`) where the Kit's
+        // secondary is 600. It goes through the Kit's own `weight`, NOT through `className`:
+        // passed as a class it lost to the Kit's `font-semibold` every time and the button
+        // shipped at 600 — measured on the deployed site (review, 2026-09-06).
+        weight="font-medium"
+        className="w-full"
+        onClick={signIn}
+        aria-busy={busy || undefined}
+      >
+        {/* The frame's own 18px key. The Kit's secondary 44 is the vocabulary the surface is
+            built from. */}
+        <Passkey size={18} />
+        {busy ? 'Waiting for your device…' : 'Sign in with a passkey'}
+      </Button>
     </>
+  ) : (
+    // The sentence stays when the offer goes: it is the whole reason the offer is missing.
+    <p id="passkey-caption" role="status" className="text-helper-caption leading-[1.5] text-ink-soft">
+      {NO_WEBAUTHN}
+    </p>
   )
 }

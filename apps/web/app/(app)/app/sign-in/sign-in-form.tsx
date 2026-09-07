@@ -52,6 +52,13 @@ export function SignInForm({
   // S1c: the whole card at 40% while the OS sheet is up, and nothing of the sheet drawn — it
   // is the operating system's window and not a surface of ours.
   const [passkeyPending, setPasskeyPending] = useState(false)
+  // WHAT A PASSKEY ATTEMPT ANSWERED, held HERE and not in the button, because the owner's test
+  // of 2.2 (finding 1) moved it out of the 12.5px caption under the button and into this card's
+  // own banner slot — "make it like the 'You have been signed out' message at the top, but in
+  // red, with an error icon", which is exactly the Kit's `error` banner. It is lifted rather
+  // than copied so that "if there is already a message showing at the top, replace it with the
+  // new one" is one branch below and cannot be got wrong twice.
+  const [passkeyError, setPasskeyError] = useState<string | null>(null)
   const [left, setLeft] = useState(0)
 
   const sent = state.status === 'sent' && !different
@@ -110,6 +117,9 @@ export function SignInForm({
       return
     }
     setClientError(null)
+    // A send is the newest thing that happened, so a passkey attempt's banner from before it
+    // stops speaking for the card — otherwise it would outrank the send's own answer below.
+    setPasskeyError(null)
   }
 
   const fieldError =
@@ -225,15 +235,28 @@ export function SignInForm({
               working and this says it finished. Mint, `role="status"`, one sentence in S1's
               voice, in the Kit's own component. Only while the card is untouched: once a link
               has been asked for, the last thing that happened is the send, not the sign-out. */}
-          {signedOut && state.status === 'idle' ? (
-            <Banner kind="success">You&rsquo;ve been signed out.</Banner>
-          ) : null}
-          {linkError ? (
-            <Banner kind="error">That link has expired or was already used. Ask for a new one.</Banner>
-          ) : null}
-          {state.status === 'error' && state.error.code === 'send_failed' ? (
-            <Banner kind="error">{state.error.message}</Banner>
-          ) : null}
+          {/* THE PASSKEY ATTEMPT'S ANSWER OUTRANKS ALL THREE and does not stack with them: the
+              owner asked for "if there is already a message showing at the top, replace it with
+              the new one" (his test of 2.2, finding 1). It is the newest thing that happened,
+              and it is cleared by the next attempt or by a send (`guard`), so the card never
+              keeps a stale one. `Banner kind="error"` is `role="alert"`, so it also announces
+              itself — which the caption's `role="status"` did not do for a message the user was
+              waiting on. */}
+          {passkeyError ? (
+            <Banner kind="error">{passkeyError}</Banner>
+          ) : (
+            <>
+              {signedOut && state.status === 'idle' ? (
+                <Banner kind="success">You&rsquo;ve been signed out.</Banner>
+              ) : null}
+              {linkError ? (
+                <Banner kind="error">That link has expired or was already used. Ask for a new one.</Banner>
+              ) : null}
+              {state.status === 'error' && state.error.code === 'send_failed' ? (
+                <Banner kind="error">{state.error.message}</Banner>
+              ) : null}
+            </>
+          )}
 
           <div className="flex flex-col gap-2.5">
             {/* S1a draws the word alone at 20/22px; the LOGO is this card's one departure from
@@ -304,7 +327,9 @@ export function SignInForm({
                 owner ruled must lose the whole offer and keep only the sentence (question 3,
                 2026-09-06). Holding the pair in one component makes the rule and the button one
                 thing, so neither can outlive the other. */}
-            {passkeys ? <PasskeyButton onPending={setPasskeyPending} /> : null}
+            {passkeys ? (
+              <PasskeyButton onPending={setPasskeyPending} onError={setPasskeyError} />
+            ) : null}
           </div>
         </>
       )}

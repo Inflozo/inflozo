@@ -855,3 +855,27 @@ reason: The disambiguator the row already shows is the added date (`addedLabel`)
   two `waitForFunction`s change with it. Not done in the review because the harness had eight other patches
   in the same pass and this one is cosmetic until two rows really share a name; do it with DW-32 (2), which
   is the story that gives rows real names.
+
+## Deferred from: the owner's test of spec-2-2-see-rename-and-revoke-my-passkeys (2026-09-07)
+
+### DW-37: the sign-in card at 40% (S1c) fails contrast while the OS sheet is up
+
+plain: While the phone or laptop is asking for Face ID, the whole sign-in card fades to 40% — that is what
+  the design draws, so the operating system's own window is the only thing in focus. An accessibility
+  checker reads that faded card as text that is too pale to read: the headline, the label, the email field,
+  every sentence on it. Nothing is broken and nothing on the card can be pressed while it is faded, but
+  someone who needs high contrast has a few seconds of a card they cannot read.
+status: open
+severity: low
+origin: Story 2.2 Fix run (2026-09-07) — executed, not inferred: the card held in S1c on a real build,
+  `opacity: 0.4` confirmed on the running page, axe-core 4.12.1 at WCAG 2.1 AA reporting
+  1 `color-contrast` violation over 9 nodes, impact serious
+location: apps/web/app/(app)/app/sign-in/sign-in-form.tsx (the `passkeyPending ? 'pointer-events-none
+  [&>*]:opacity-40' : ''` branch) · `S1 Sign In.dc.html` S1c
+reason: S1c is the frame's own drawing (`S1 Sign In.dc.html:131-141`) and R-74 makes the frame the
+  authority, so dimming it less is not this story's call — and the story that owns S1c is 2.1, which is
+  done. It is the same shape as the watermark exception already recorded in `sign-in/page.tsx`: a state
+  axe cannot see the intent of. The candidate fix costs nothing visually — `aria-hidden` plus `inert` on
+  the dimmed contents while the ceremony runs, which is what "the OS window is the only thing in focus"
+  means to a screen reader anyway, and axe does not audit an inert subtree. Do it in the first story that
+  reopens the sign-in card, or when the owner asks for it.

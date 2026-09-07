@@ -30,8 +30,10 @@ WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
   revoke         Remove passkey; the id leaves `GET /passkeys`; the row goes; the SAME SESSION
                  still renders /account — a revoke signs nobody out
   revoked-signin the revoked credential at /sign-in: still signed out AND one of S1a's two
-                 sentences on the page (both name the magic link) — a button that did nothing
-                 would otherwise pass
+                 sentences (both name the magic link) IN THE CARD'S RED ERROR BANNER — a
+                 `role="alert"` with an icon and the `danger-tint` background. The owner's finding
+                 1 of 2.2 moved it there out of the grey caption under the button, so reading any
+                 <p> would now pass for the very thing he asked to be changed
   magic-link     a magic link minted AFTER the first was redeemed still signs the user in. Minted
                  then, not up front: GoTrue keeps ONE such token per user, so minting two at the
                  start invalidated the first (executed 2026-09-07 — the deployed confirm route
@@ -398,12 +400,28 @@ const names = (page) =>
     await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
     await page.waitForTimeout(6000)
     const signedIn = !page.url().includes('/sign-in')
-    const said = (await page.locator('p').allTextContents()).filter((t) => /passkey/i.test(t))
     // Both of S1a's sentences point at the magic link; a button that did nothing shows neither,
     // and "still on /sign-in" alone would have passed for it.
+    //
+    // WHERE it is said is now part of the assertion (the owner's finding 1 of 2.2): the card's
+    // own error banner at the top, not the 12.5px grey caption under the button. So the alert is
+    // located, and its background is compared to the `danger-tint` TOKEN and its icon looked for
+    // — a step that read any <p> would pass for exactly the caption the finding asked to be
+    // replaced, which is a control that does not control (standing rule 2).
+    const alerts = page.locator('[role="alert"]')
+    const said = await alerts.allTextContents()
     const sentence = said.some((t) => /magic link/i.test(t))
-    step('revoked-signin', !signedIn && sentence,
-         `still on ${page.url()}; S1a's sentence shown=${sentence}; the page said ${JSON.stringify(said)}`)
+    const look = sentence
+      ? await alerts.filter({ hasText: /magic link/i }).first().evaluate((el) => ({
+          bg: getComputedStyle(el).backgroundColor,
+          icon: !!el.querySelector('svg'),
+        }))
+      : { bg: null, icon: false }
+    const red = look.bg === TOKENS.dangerTint && look.icon
+    step('revoked-signin', !signedIn && sentence && red,
+         `still on ${page.url()}; S1a's sentence in the red banner=${sentence && red}; ` +
+         `banner ${JSON.stringify(look)} vs danger-tint ${TOKENS.dangerTint}; ` +
+         `the alerts said ${JSON.stringify(said)}`)
 
     // ── the magic link still works — minted NOW, after the first was redeemed (docstring)
     await page.goto(await magicLink(), { waitUntil: 'networkidle' })
