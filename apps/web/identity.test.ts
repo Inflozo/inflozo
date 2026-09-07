@@ -41,12 +41,24 @@ test('every mark the export ships is served byte-identical', () => {
     )
   }
 
-  // Next's file convention serves this one at /icon.svg, so it is the export's cut of it.
-  assert.deepEqual(
-    readFileSync(join('app', 'icon.svg')),
-    readFileSync(join(ASSETS, 'favicon-16.svg')),
-    'app/icon.svg has drifted from the export\'s favicon-16.svg',
+  // Next's file convention serves this one at /icon.svg, so it is the export's cut of it — plus
+  // ONE `<style>` for dark tab strips (owner, 2026-09-07, Story 1.6 question 3): the geometry is
+  // the export's byte for byte, and the two colours are the Dark section's, read from mark-dark.svg.
+  const icon = readFileSync(join('app', 'icon.svg'), 'utf8')
+  const styles = icon.match(/<style>.*?<\/style>/gs) ?? []
+  assert.equal(styles.length, 1, 'app/icon.svg carries other than exactly one <style>')
+  assert.equal(
+    icon.replace(styles[0], ''),
+    readFileSync(join(ASSETS, 'favicon-16.svg'), 'utf8'),
+    'app/icon.svg without its dark-mode style has drifted from the export\'s favicon-16.svg',
   )
+  const dark = readFileSync(join(ASSETS, 'mark-dark.svg'), 'utf8')
+  const darkInk = /stroke="(#[0-9A-Fa-f]{6})"/.exec(dark)?.[1]
+  const darkCore = /<rect[^>]*fill="(#[0-9A-Fa-f]{6})"/.exec(dark)?.[1]
+  assert.ok(darkInk && darkCore, 'mark-dark.svg has no stroke or filled core')
+  assert.ok(styles[0].includes('prefers-color-scheme:dark'), 'the favicon style is not a dark-mode media query')
+  assert.ok(styles[0].includes(`stroke:${darkInk}`), `the dark favicon's ink is not mark-dark's ${darkInk}`)
+  assert.ok(styles[0].includes(`fill:${darkCore}`), `the dark favicon's core is not mark-dark's ${darkCore}`)
 })
 
 test("the inlined mark is the export's drawing, attribute for attribute", () => {

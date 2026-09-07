@@ -2,4 +2,4 @@
   <title>Inflozo favicon</title>
   <rect x="3.25" y="3.25" width="37.5" height="37.5" rx="5.4" fill="none" stroke="#1C1B1A" stroke-width="4.5" stroke-dasharray="13.112 4.371" stroke-dashoffset="10.689"></rect>
   <rect x="16" y="16" width="12" height="12" rx="1.91" fill="#C2381F"></rect>
-</svg>
+<style>@media (prefers-color-scheme:dark){rect:nth-of-type(1){stroke:#F7F5F2}rect:nth-of-type(2){fill:#FF5941}}</style></svg>

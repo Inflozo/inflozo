@@ -3,7 +3,7 @@ title: 'Story 1.6 — The new identity everywhere'
 type: 'feature'
 created: '2026-09-06'
 status: 'in-review'
-review_loop_iteration: 1
+review_loop_iteration: 2
 baseline_commit: '039fe1fe8631f2f10ac32b001247cd51df0c1993'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md']
@@ -38,6 +38,8 @@ the caller's height, and the nudge declares that height.
 - The marks are the export's own SVGs: `Logo/export/Inflozo Logo/assets/*.svg`, inlined or copied byte-for-byte
   into `public/`. The only thing dropped when inlining is the `<metadata>` C2PA manifest (provenance bytes, not
   drawing), and the comment beside the component says so. Nothing is redrawn, re-radiused or rescaled by hand.
+  (Owner, 2026-09-07, question 3: `app/icon.svg` is `favicon-16.svg` plus one `<style>` that swaps to the export's
+  Dark-section colours under `prefers-color-scheme: dark`; geometry untouched, `identity.test.ts` holds it.)
 - The lockup obeys the README: mark height 1.85× the wordmark's cap height — **1.221× the font-size**, derived from
   the export's own lockups (43.6px mark at 35.7px type, 52.3 at 42.9, 101.6 at 83.2, every one 1.221) — gap and clear
   space 0.28× the mark's height, Bricolage Grotesque 800, tracking −0.035em, never below 600, never positive tracking.
@@ -83,7 +85,7 @@ the caller's height, and the nudge declares that height.
 | Marketing placeholder | `inflozo.com/` | The lockup at 35.7px (the export's "stacked" size) centred on paper, replacing `<p>Inflozo</p>` | — |
 | Favicon | any page, both hosts | `<link rel="icon" href="/icon.svg">` emitted by Next's file convention; `GET /icon.svg` on `app.inflozo.com` and `inflozo.com` is 200 `image/svg+xml`, the bytes of `favicon-16.svg` | the proxy matcher excludes it, or the app host rewrites it to `/app/icon.svg` and 404s — the curl in Verification is the control |
 | App icon | "Add to Home Screen" on iOS / Android | `/apple-icon.png`, 180×180, the filled tile rendered from `app-icon.svg` | same exclusion, same curl |
-| Magic-link email | a sign-in link sent by Supabase via Resend | The header row shows the mark (`<img>` 44×44 from `https://inflozo.com/brand/mark-light@2x.png`, `alt=""`) beside "Inflozo" in the template's existing system stack; `--check` reads both templates back byte-identical to the file | Gmail strips SVG, hence PNG; an image blocked by the client leaves the word, which is the whole name |
+| Magic-link email | a sign-in link sent by Supabase via Resend | The header row shows the mark (`<img>` 27×27 with an 8px gap — the README's ratio at 22px type; owner, 2026-09-07, question 2, superseding the 44×44 first written here — from `https://inflozo.com/brand/mark-light@2x.png`, `alt=""`) beside "Inflozo" in the template's existing system stack; `--check` reads both templates back byte-identical to the file | Gmail strips SVG, hence PNG; an image blocked by the client leaves the word, which is the whole name |
 | Banner, plain sentence | `<Banner kind="info">One sentence</Banner>` | Icon centred on the first line (a 14px icon in an 18.75px line box: 2.4px above and below — today's `mt-px` was the hand-set guess for the same thing) | — |
 | Banner, control row | the nudge: sentence + two 32px buttons | The nudge passes `rowHeight={32}` and wraps its sentence in a 32px-tall box; the icon's vertical centre and the sentence's are equal within 1px at 390 and 1440, wrapped or not | — |
 | Banner, nudge failed | "Not now" refused | The caption appears on a second line; the icon stays on the first row's centre, not the block's | — |
@@ -100,9 +102,9 @@ supabase/auth/magic-link.html`, 2026-09-06.** Seven draws plus the watermark:
 - `apps/web/app/(app)/app/sign-in/page.tsx:58-61` -- **read-only**: the watermark. Stays byte-identical; the AC diffs it
 - `apps/web/app/(app)/app/error.tsx:53` -- the 20px wordmark `span` -- becomes `<Lockup size={20} />` (no link: the page's own button is the way out)
 - `apps/web/app/(marketing)/page.tsx` -- `<p>Inflozo</p>`, Story 1.1's placeholder until Epic 11 -- becomes a centred `<Lockup size={35.7} />` on paper; `metadata.title` "Inflozo"
-- `supabase/auth/magic-link.html:41` -- the header `div` "Inflozo" -- becomes a table row: `<img src="https://inflozo.com/brand/mark-light@2x.png" width="44" height="44" alt="" style="display:block">` then the same word `div`; inline styles only. `tools/probe/configure-supabase-auth.py --apply` pushes it, `--check` proves it (spec 1.4's Verification is the pattern); `apps/web/app-routes.test.ts:62`'s `type=` scan is untouched by a header row
+- `supabase/auth/magic-link.html:41` -- the header `div` "Inflozo" -- becomes a table row: `<img src="https://inflozo.com/brand/mark-light@2x.png" width="27" height="27" alt="" style="display:block">` (27 = 1.221 × 22, gap 8 = 0.28 × 27; owner's ruling on question 2) then the same word `div`; inline styles only. `tools/probe/configure-supabase-auth.py --apply` pushes it, `--check` proves it (spec 1.4's Verification is the pattern); `apps/web/app-routes.test.ts:62`'s `type=` scan is untouched by a header row
 - `apps/web/components/kit/logo.tsx` (new, server-safe, no hooks) -- `Mark({ size, className })`: the `<svg viewBox="0 0 44 44">` and its three `<rect>`s copied verbatim from `assets/mark-light.svg`, `aria-hidden`, `<metadata>` dropped with the comment saying why. `Lockup({ size, href?, className? })`: `inline-flex items-center` with `gap: 0.28 × mark`, `Mark` at `1.221 × size`, the wordmark span `font-display font-extrabold tracking-[-0.035em] leading-none` at `size`, its *i* the export's span construction (`Inflozo Logo.html`, the horizontal lockups: `scaleY(0.809)`, `transform-origin:50% 82.86%`, tittle `0.16em` at `left:.12em; top:.13em`). The tittle is the identity's accent `#C2381F` — the mark's own core colour, not a chrome token, so it is written as the hex beside the mark's, the way `style-pack.ts` keeps pack colours out of the chrome tokens. With `href` it is a `next/link` wearing `ring` from `shell.tsx`; without, a `span`
-- `apps/web/app/icon.svg` (new) -- `assets/favicon-16.svg`, byte-identical; Next's file convention emits the `<link>`. `apps/web/app/apple-icon.png` (new) -- `app-icon.svg` rendered at 180×180
+- `apps/web/app/icon.svg` (new) -- `assets/favicon-16.svg` plus one `<style>` for dark tab strips (question 3); Next's file convention emits the `<link>`. `apps/web/app/apple-icon.png` (new) -- `app-icon.svg` rendered at 180×180
 - `apps/web/public/brand/` (new) -- `mark-light.svg`, `mark-dark.svg`, `mark-mono.svg`, `app-icon.svg`, `favicon-16.svg` byte-identical, plus `mark-light@2x.png` (88×88) for the email
 - `apps/web/proxy.ts:84` -- the matcher `'/((?!_next/|favicon.ico).*)'`: on `app.inflozo.com` every other path is rewritten to `/app/…` (`routing.ts:41`), which would send `/icon.svg`, `/apple-icon.png` and `/brand/…` to a 404. **Extend the exclusion** to `_next/|favicon.ico|icon.svg|apple-icon.png|brand/`; `routing.test.ts` covers `route()`, so the control is the deployed curl
 - `apps/web/components/kit/banner.tsx:40-45` -- `Banner`: the icon wrapper `<span className="mt-px shrink-0">` becomes `flex shrink-0 items-center` with height `rowHeight ?? '1lh'` (the sentence's own line box, its type on the row since Change Log 4 — the frame's `margin-top:1px` was the same alignment by eye, `Editor Sidebar Kit.dc.html:238`); new optional prop `rowHeight?: number` (px), documented as the control-row exception the file's header already records
@@ -139,8 +141,8 @@ Code review of 2026-09-06 — five layers (Blind Hunter, Edge Case Hunter, Verif
 Auditor, Real-infra verifier), the last against the live project; 16 findings dismissed as noise. Every
 patch below is applied; the run that proves them is `## Verification` → *The review's run*.
 
-- [ ] [Review][Decision] The email draws the mark at 44px beside 22px type — twice the README's lockup ratio (≈27px) that the spec's "Always" binds every other surface to; the spec's own Code Map prescribed 44, so Dev followed it and the contradiction is inside the spec → **Questions for the owner, 2**
-- [ ] [Review][Decision] The favicon is ink on transparent, so on a dark browser tab strip it all but vanishes; the export ships no dark favicon cut and the SVG cannot carry a media query without breaking its byte-identity → **Questions for the owner, 3**
+- [x] [Review][Decision] The email draws the mark at 44px beside 22px type — twice the README's lockup ratio (≈27px) that the spec's "Always" binds every other surface to; the spec's own Code Map prescribed 44, so Dev followed it and the contradiction is inside the spec → **Ruled (owner, 2026-09-07): option 1, the ratio** — 27×27 with an 8px gap, pushed to both templates and read back [supabase/auth/magic-link.html:51]
+- [x] [Review][Decision] The favicon is ink on transparent, so on a dark browser tab strip it all but vanishes; the export ships no dark favicon cut and the SVG cannot carry a media query without breaking its byte-identity → **Ruled (owner, 2026-09-07): use the export's own Dark section** — `icon.svg` keeps the export's geometry byte for byte and gains one `<style>` that swaps to the Dark section's ink and core under `prefers-color-scheme: dark`; measured in Chromium [apps/web/app/icon.svg]
 - [x] [Review][Patch] The proxy matcher had no test — mistype `icon.svg` and every gate stays green while the app host 404s its favicon; `routing.test.ts` now reads the literal back and runs it, the excluded files derived from `app/` and `public/brand/` [apps/web/routing.test.ts · apps/web/proxy.ts:84]
 - [x] [Review][Patch] Nothing tied the email's `https://inflozo.com/brand/mark-light@2x.png` to a file under `public/` (`alt=""` hides a missing one as a blank cell) [apps/web/app-routes.test.ts]
 - [x] [Review][Patch] `tokens.test.ts` exempts the whole of `logo.tsx`, so the tittle's hex was pinned by nothing and the mark's `#1C1B1A` could drift from `--color-ink`; both are now read from the export's own rects [apps/web/identity.test.ts]
@@ -180,6 +182,16 @@ patch below is applied; the run that proves them is `## Verification` → *The r
    Chromium the box is the same 18.75px and the icon-to-line offset is unchanged (0.38px).
 5. **The nudge's row height is one constant** (Review, 2026-09-06). `rowHeight`, the sentence's
    `min-h`, and both buttons read `ROW = 32` instead of restating it.
+6. **The email mark follows the README's ratio** (owner, 2026-09-07, question 2). The frozen matrix's
+   44×44 `<img>` was twice the ratio every other surface obeys; it is 27×27 (1.221 × 22px) with an
+   8px gap (0.28 × 27). The 88px PNG still covers 2× at that size. Pushed with `--apply`, read back
+   with `--check`: both templates 5542 chars, byte-identical to the file.
+7. **The favicon carries the export's dark treatment** (owner, 2026-09-07, question 3). He pointed at
+   the export's *Dark* section — the mark on a dark surface in the README's dark colours — rather than
+   at either option offered. `app/icon.svg` is `favicon-16.svg` byte for byte plus one `<style>`:
+   under `prefers-color-scheme: dark` the boundary's stroke becomes the Dark section's ink and the
+   core its accent, both read from `mark-dark.svg` by the test, never typed. Colour is not geometry,
+   so the README's dash rhythm is untouched; `public/brand/favicon-16.svg` stays the unmodified file.
 
 ## Design Notes
 
@@ -367,6 +379,16 @@ name, and the review's own patches were gated the same way:
   above stand unchanged. The nudge's `ROW` constant changes no value (32 everywhere it was 32).
 - **The gates:** `pnpm check` exit 0 (typecheck, lint, 108 tests in `apps/web`, `fail 0`), `pnpm build`
   exit 0 with `/icon.svg` and `/apple-icon.png` in the route table.
+- **The second loop (2026-09-07), after the owner's two rulings.** Supabase Management API
+  (`SUPABASE_ACCESS_TOKEN`): `--apply` → `PATCH 200` (the plan's `sessions_inactivity_timeout` refusal
+  stated, as before), `--check` → `GET 200`, every field `PASS`, both templates **5542 chars, byte-identical**
+  to the resized file. The favicon rendered as an `<img>` in real Chromium — a separate SVG document,
+  as a tab strip loads it — and sampled: **light** stroke `rgb(28,27,26)` = `#1C1B1A`, core
+  `rgb(194,56,31)` = `#C2381F`; **dark** (`colorScheme: 'dark'`) stroke `rgb(247,245,242)` = `#F7F5F2`,
+  core `rgb(255,89,65)` = `#FF5941` — the Dark section's colours, the export's geometry. Controls for
+  the new guard: the dark core off by one hex → red; `rx="5.4"` → `"5.5"` → red; restored → green.
+  That an SVG favicon honours `prefers-color-scheme` in the tab strip itself is the documented
+  technique and is executed here only as an `<img>`; the owner's test step 1 is the tab.
 - **Still without a rendered page: the error page.** The review could not add a `node --test` for a
   `.tsx` boundary (the runner strips types, not JSX), and adding a route that throws is a route change
   the story's Never forbids. Deferred as DW-34; the owner's test step 7 says the review checks it, and the
@@ -399,6 +421,9 @@ is a choice, not a bug. You can see the difference in your inbox at test step 3.
 2. **Keep 44px.** The email keeps the bigger mark as a header icon above the word, like a small app icon. The spec is
    amended to say the email is the one deliberate exception to the rule.
 
+Ruled: option 1 — follow the logo's rule (owner, 2026-09-07). The email mark is 27px with an 8px gap; live in both
+templates.
+
 **3. Should there be a dark version of the browser-tab icon?** The tab icon (favicon) is the mark drawn in near-black
 ink on a transparent background. On a light tab bar it reads clearly; on a dark tab bar (dark mode in Chrome, Safari
 or Firefox) the ink is nearly invisible and only the red core shows. Example: the export has a "dark" mark for dark
@@ -411,6 +436,10 @@ is a design-side one, not a code one.
 2. **Ask Claude Design for a dark favicon now**, before this story closes; the review adds it as a second icon file
    with a dark-mode media query in the page head.
 
+Ruled: neither as offered — the owner pointed at the export's own *Dark* section (after *Small sizes*, before
+*Specification*), which draws the mark in the README's dark colours (owner, 2026-09-07). The tab icon now switches to
+those colours in dark mode, geometry untouched (Change Log 7). Nothing was asked of Claude Design.
+
 ## Owner's manual test
 
 Before you start, the Deploy run will have cleared your account's "not now" answer to the passkey line, so the
@@ -418,7 +447,8 @@ yellow line shows again for step 5.
 
 1. **URL:** https://app.inflozo.com/sign-in · **Screen:** Sign In · **Do:** look at the card and the browser tab ·
    **See:** at the top of the card, the Nest mark — three nested rounded squares with a red centre — sits beside the
-   word "Inflozo". The huge faded "Inflozo" behind the card is unchanged. The tab shows the small mark as its icon.
+   word "Inflozo". The huge faded "Inflozo" behind the card is unchanged. The tab shows the small mark as its icon;
+   switch your Mac to dark mode (System Settings → Appearance) and the tab icon turns light-on-dark, then switch back.
 2. **URL:** https://app.inflozo.com/ · **Screen:** Dashboard (Mac) · **Do:** sign in with a magic link · **See:**
    the same mark-and-word at the top of the left sidebar. Click it: it takes you to the dashboard.
 3. **Your inbox** · **Screen:** the "Your Inflozo sign-in link" email from step 2 · **Do:** open it · **See:** the
