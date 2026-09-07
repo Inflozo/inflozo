@@ -346,7 +346,13 @@ against `app.inflozo.com` rather than `--check` alone. Every key by its variable
 - `pnpm check` (root, Node 24.18.1) -> lint, typecheck and `node --test` green: **130 tests pass, 0
   fail** in `apps/web` (the three added by the review among them), the three packages 1 each.
 
-**Dodo**, **T1/T3** — untouched, as at Dev. **Resend** — the two `send` steps above each handed one real
+- **After the review commit `def46235` was published by CI** (run green at 11:46, `app.inflozo.com`
+  serving it): `python3 tools/probe/run-verify-email-change.py` -> **every step PASS, exit 0** —
+  `bad-email` now "0 POST(s); the field said \"Enter an email address like you@example.com\"", the
+  `confirm` step again on the product's own `pkce_` token, `too-soon` naming 56 seconds, users before
+  4 / after 4. The Deploy run has, in effect, already happened once; Deploy re-runs it for the record.
+
+**Dodo**, **T1/T3** — untouched, as at Dev. **Resend** — the three `send` steps above each handed one real
 email to GoTrue for a `-new@inflozo.com` fixture address; delivery stays the owner's step 4 (DW-22).
 
 ### Still to run, at Deploy, against `app.inflozo.com`
