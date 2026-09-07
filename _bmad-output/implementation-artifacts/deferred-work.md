@@ -1164,3 +1164,66 @@ reason: The connection string in Vercel is the one secret that can decrypt every
   auditable. It needs a migration, a SCHEMA.sql block, an RLS-TEST assertion that the role holds nothing
   else, and a password the owner sets in the dashboard, so it belongs with the rotation that has to happen
   anyway rather than inside the story that first opens the connection.
+
+## Deferred from: code review of spec-3-1-the-server-side-admin-proxy-and-vault-credential-storage (2026-09-07)
+
+### DW-50: the app's line to the key store is encrypted but the far end is not verified
+
+plain: The server's connection to the key store is scrambled, but the server does not check that the far end
+  is really Supabase's; checking needs Supabase's own certificate bundled into the app, and that belongs
+  with the next password rotation, alongside the narrower database account.
+status: open
+severity: medium
+origin: Story 3.1 code review (2026-09-07), the Blind Hunter layer — executed by the review
+location: apps/web/server/ghost-admin/db.ts (`ssl: 'require'`) · MEASUREMENTS.md §21j (the 2026-09-07 re-probe)
+reason: postgres.js 3.4.9 sets `rejectUnauthorized: false` for `ssl: 'require'` (`src/connection.js`, read
+  2026-09-07). Executed from the app's own driver against the transaction pooler: `'require'` connects;
+  `'verify-full'` fails `SELF_SIGNED_CERT_IN_CHAIN`, because the pooler's chain ends in Supabase's own CA,
+  which is not in Node's bundle. Verifying means shipping that CA (`ssl: { ca, rejectUnauthorized: true }`,
+  the certificate from the dashboard's database settings) and the harness re-running `grants` after the
+  change; `pg_stat_ssl` cannot observe the client leg through the pooler, so the driver's own handshake is
+  the proof. It rides with DW-49's rotation, which touches the same setting.
+
+### DW-51: the Admin chokepoint can only send JSON bodies, and a theme upload is a file
+
+plain: The one door Inflozo talks to a Ghost site through can only send text-shaped requests today; uploading
+  a theme, which the deploy in Epic 7 needs, sends a file, so the door will need to learn that shape then.
+status: open
+severity: low
+origin: Story 3.1 code review (2026-09-07), the Edge Case Hunter layer
+location: apps/web/server/ghost-admin/index.ts (`fetchWithKey`, the `payload` / `Content-Type` lines) ·
+  apps/web/server/ghost-admin/admin-rule.ts (`ADMIN_WRITES.theme_upload`)
+reason: `fetchWithKey` serialises every body with `JSON.stringify` and sends `Content-Type: application/json`;
+  `theme_upload` is `POST themes/upload/` with `multipart/form-data`. The allowlist item exists, the
+  transport does not. The story that first executes the upload (Epic 7) extends the body handling — a
+  `FormData` passed through untouched with no `Content-Type` set — and proves it against T1 and T3.
+
+### DW-52: a Ghost that is down, rate-limited or answering 404 reads as "Ghost refused"
+
+plain: When a Ghost site is down for maintenance or is rate-limiting, Inflozo would currently tell the user
+  that Ghost refused it, which is the wrong story; the stories that make the real reads and writes will
+  see those answers and can name them properly.
+status: open
+severity: low
+origin: Story 3.1 code review (2026-09-07), the Blind Hunter and Edge Case Hunter layers
+location: apps/web/server/ghost-admin/admin-rule.ts (`ghostCode`)
+reason: `ghostCode` names the two 401 causes (§37), a redirect, and folds everything else — 403, 404, 422,
+  429, 5xx — into `ghost_refused`. AD-24 wants one row per cause, and a 503 wants "try again later"
+  while a 403 wants "the integration lacks permission". This story executes only `GET config/` and the
+  denials, so it has seen none of those statuses; 3.3 (settings reads, the 501-on-Ghost-5 / 403-on-Ghost-6
+  themes difference already noted) and Epic 7 (the writes) split them as they execute them.
+
+### DW-53: the audit log's `outcome` column accepts any text
+
+plain: The audit log's "what happened" column takes any word; only the app's code keeps it to ok, denied or
+  error. A one-line database rule would make the log itself refuse anything else.
+status: open
+severity: low
+origin: Story 3.1 code review (2026-09-07), the Real-infra verifier — pre-existing, from the 2026-09-04 schema
+location: SCHEMA.sql (`private.credential_audit.outcome text not null`, the values in a comment only) ·
+  apps/web/server/ghost-admin/index.ts (`audit()`'s `outcome` union)
+reason: `action` is an enum and the three labels the code inserts were confirmed on the live catalogue;
+  `outcome` has no check constraint, so the TypeScript union is its only guard. The frozen 2026-09-04
+  migration cannot change, so it is a new migration (`alter table … add constraint … check (outcome in
+  ('ok','denied','error'))`) with its SCHEMA.sql line and gate assertion, in the next story that touches
+  the table.

@@ -113,6 +113,15 @@ test('the announcement clear may touch the three announcement settings and nothi
 test('the URL builder only ever addresses the Admin API', () => {
   assert.equal(adminUrl('https://ghost6.inflozo.com', 'config/'), 'https://ghost6.inflozo.com/ghost/api/admin/config/')
   assert.equal(adminUrl('https://ghost6.inflozo.com/', '/settings/'), 'https://ghost6.inflozo.com/ghost/api/admin/settings/')
+  // A subdirectory install keeps its path: Ghost supports `https://example.com/blog`.
+  assert.equal(adminUrl('https://example.com/blog', 'config/'), 'https://example.com/blog/ghost/api/admin/config/')
+  assert.throws(() => adminUrl('https://example.com/blog', '../../content/posts/'), (e: AdminError) => e.code === 'path_not_admin')
+  // A dot segment the allowlist's `[^/]+` would admit: `themes/../activate/` is not an activate.
+  for (const dotted of ['themes/../activate/', 'themes/./activate/', '.', '..']) {
+    assert.throws(() => adminUrl('https://ghost6.inflozo.com', dotted), (e: AdminError) => e.code === 'path_not_admin', dotted)
+  }
+  // `sites.url` is client-writable: one that is not a URL is refused, not thrown as a TypeError.
+  assert.throws(() => adminUrl('not a url', 'config/'), (e: AdminError) => e.code === 'site_url_invalid')
 
   // P5: no Content API call from the server, EVER — and a traversal is how it would happen by
   // accident. `URL` resolution plus one prefix check refuses that, an absolute path and another
@@ -143,6 +152,8 @@ test('a 401 is told apart by its cause, and "expired" is not one of them', () =>
   assert.equal(ghostCode(401, ghostError(invalid)), 'ghost_bad_signature')
   assert.equal(ghostCode(401, undefined), 'ghost_unauthorized')
   assert.equal(ghostCode(403, ghostError({ errors: [{ type: 'NoPermissionError' }] })), 'ghost_refused')
+  // A redirect is answered, never followed: an http:// site's upgrade must not read as a refusal.
+  assert.equal(ghostCode(301, undefined), 'ghost_redirected')
   assert.equal(ghostError({}), undefined)
   assert.equal(ghostError('not json'), undefined)
 

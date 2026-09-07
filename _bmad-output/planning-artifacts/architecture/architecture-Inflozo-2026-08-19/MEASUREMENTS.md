@@ -1355,6 +1355,27 @@ yields references, billing PII and full `public` read, not the Ghost admin secre
 but not immediate site-takeover. The AD-10 decrypt chokepoint holds. Watch item: `pgsodium` is being
 replaced under `supabase_vault`; re-probe on the vault major bump.
 
+**Re-probed 2026-09-07 (Story 3.1 Dev and Review), through the transaction pooler as `postgres`,
+read-only, and by the REST control again:**
+
+    vault.create_secret: FOUR arguments, THREE defaults — (new_secret text, new_name text DEFAULT NULL,
+      new_description text DEFAULT '', new_key_id uuid DEFAULT NULL) RETURNS uuid, SECURITY DEFINER,
+      owner supabase_admin (supabase_vault 0.3.1). The docs' three-positional shape resolves through
+      the defaults; the gate's stand-in in PRELUDE.sql models the four.
+    vault.secrets: relrowsecurity f, no policies, owner supabase_admin.
+      grants: postgres DELETE,SELECT,REFERENCES,TRUNCATE; service_role DELETE,SELECT; nobody else.
+    roles: postgres rolbypassrls t (not superuser); supabase_auth_admin rolbypassrls f and holds no
+      grant on vault.secrets — so a trigger deleting a secret on GoTrue's cascade must run as its
+      owner (DW-44's `security definer`), and the gate proves that under a probe role with no vault grant.
+    private.credential_audit.action is the enum (admin_write, admin_read, vault_decrypt, …);
+      `outcome` is free text with no check constraint (DW-53).
+    (secret key) GET /rest/v1/decrypted_secrets, /secrets, /site_credentials -> 404 PGRST205, all three;
+      /rest/v1/sites -> 200 (positive control). Now a step of tools/probe/run-verify-ghost-admin.py.
+    pooler TLS from the app's driver (postgres.js 3.4.9): ssl 'require' connects but does not verify
+      the chain (the driver sets rejectUnauthorized false for it); ssl 'verify-full' fails
+      SELF_SIGNED_CERT_IN_CHAIN — the pooler's certificate chains to Supabase's own CA (DW-50).
+      pg_stat_ssl through the pooler reports the backend leg (ssl f), never the client leg.
+
 ### 21k. The compiler as an injection channel — beyond AD-5 (5.2 item 1). Three findings, executed.
 Run against the real pipeline (`tools/stress/compile.js`, the decided AD-4/AD-5/R2-5 ordering).
 `full()` = renderSection then the R2-5 user-text substitution pass, i.e. what actually ships.

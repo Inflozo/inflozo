@@ -109,7 +109,8 @@ create table vault.secrets (
   secret text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now());
-alter table vault.secrets enable row level security;
+-- No RLS: the live table has it OFF and carries no policy (relrowsecurity f, read through the
+-- pooler 2026-09-07); its protection is the grant list below, and the stand-in matches that.
 create view vault.decrypted_secrets as
   select id, name, description, secret, secret as decrypted_secret, created_at, updated_at
     from vault.secrets;

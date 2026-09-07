@@ -22,7 +22,16 @@ import { AdminError } from './admin-rule.ts'
  *
  * LAZY AND ONCE. `next build` runs with no environment at all, so a client built at module load
  * would fail the build rather than the request; and one client per invocation would open a pooler
- * connection per call. `max: 1` because a serverless function serves one request at a time.
+ * connection per call. `max: 1`: the project runs Fluid Compute (`resourceConfig.fluid: true`,
+ * read from the Vercel API 2026-09-07), so one instance CAN serve concurrent invocations, and
+ * they queue on this single connection — safe and serialised; nothing inside a `begin` block may
+ * call `sql()` or it waits on itself. ponytail: raise `max` when a queue is measured.
+ *
+ * `ssl: 'require'` ENCRYPTS BUT DOES NOT VERIFY THE CHAIN — postgres.js sets
+ * `rejectUnauthorized: false` for it — and `'verify-full'` was executed from this driver on
+ * 2026-09-07 and failed `SELF_SIGNED_CERT_IN_CHAIN`: the pooler's certificate chains to
+ * Supabase's own CA, not to Node's bundle. Verifying it means bundling that CA (DW-50), owed with
+ * DW-49 at the next credential rotation.
  *
  * ponytail: the URL is the `postgres` user's — the platform's own serverless shape — and a role
  * holding only `vault` and `private` grants is owed at the next password rotation (DW-49).

@@ -45,6 +45,7 @@ export type AuditDetail = {
   status?: number
   ms: number
   ghost_type?: string
+  reason?: 'missing' // written by the decrypt CTE in SQL for a site with no key, and by nothing else
 }
 
 /**
@@ -148,13 +149,27 @@ export function permitted(method: string, path: string, body: unknown, item?: st
  * origin alike, none of which a string join would have caught.
  */
 export function adminUrl(siteUrl: string, path: string): string {
-  const base = new URL('/ghost/api/admin/', siteUrl)
+  // RELATIVE TO THE SITE'S PATH, not to its origin: Ghost supports a subdirectory install
+  // (`https://example.com/blog`), and `new URL('/ghost/…', siteUrl)` threw the `/blog` away on
+  // every call (review, 2026-09-07). `sites.url` is client-writable, so one that is not a URL
+  // is refused here rather than escaping as a TypeError.
+  let base: URL
+  try {
+    base = new URL('ghost/api/admin/', siteUrl.replace(/\/?$/, '/'))
+  } catch {
+    throw new AdminError({ code: 'site_url_invalid', message: 'That site address is not a URL.' })
+  }
   const relative = path.replace(/^\/+/, '')
   const url = new URL(relative, base)
   // The prefix check refuses a traversal, an absolute path and another origin. The second
   // refuses a path that RE-ENTERS the API root: `/ghost/api/content/settings/` resolves inside
   // the admin base and would still put `/content/` in the URL (found by the test, 2026-09-07).
-  if (!url.href.startsWith(base.href) || /(^|\/)ghost\/api\//.test(relative)) {
+  // The third refuses a dot segment the allowlist's `[^/]+` would admit (`themes/../activate/`).
+  if (
+    !url.href.startsWith(base.href) ||
+    /(^|\/)ghost\/api\//.test(relative) ||
+    /(^|\/)\.\.?(\/|$)/.test(relative)
+  ) {
     throw new AdminError({
       code: 'path_not_admin',
       message: 'That is not an Admin API path.',
@@ -191,6 +206,9 @@ export function headers(jwt: string, major?: number): Record<string, string> {
  * our bug and must never be shown to the user as theirs.
  */
 export function ghostCode(status: number, error?: { type?: string; code?: string; message?: string }): string {
+  // A redirect is answered, never followed (`redirect: 'manual'` in `fetchWithKey`): an `http://`
+  // site upgrading to https would have dropped the bearer and read as Ghost refusing the key.
+  if (status >= 300 && status < 400) return 'ghost_redirected'
   if (status !== 401) return 'ghost_refused'
   if (error?.code === 'UNKNOWN_ADMIN_API_KEY' || /unknown admin api key/i.test(error?.message ?? '')) {
     return 'ghost_unknown_key'
@@ -199,7 +217,10 @@ export function ghostCode(status: number, error?: { type?: string; code?: string
   return 'ghost_unauthorized'
 }
 
-/** Ghost's error envelope is `{ errors: [{ message, type, code }] }`; only `type` is ever kept. */
+/**
+ * Ghost's error envelope is `{ errors: [{ message, type, code }] }`. `type` is the only field
+ * that reaches an audit row; `code` and `message` feed `ghostCode` and go no further.
+ */
 export function ghostError(body: unknown): { type?: string; code?: string; message?: string } | undefined {
   const errors = (body as { errors?: unknown })?.errors
   return Array.isArray(errors) ? (errors[0] as { type?: string; code?: string; message?: string }) : undefined

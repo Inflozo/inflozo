@@ -1176,10 +1176,31 @@ begin
   if n <> 0 then raise exception 'FAIL (DW-44): the replaced Admin key secret is still in the vault'; end if;
   select count(*) into n from vault.secrets where id = r_new;
   if n <> 1 then raise exception 'FAIL (DW-44): the rotation deleted the NEW secret as well as the old one'; end if;
+  select count(*) into n from vault.secrets where id = r_staff;
+  if n <> 1 then raise exception 'FAIL (DW-44): rotating the Admin key deleted the untouched Staff token secret'; end if;
   raise notice 'PASS (DW-44): a rotation deletes the secret behind the ref it replaced, and only that one';
+
+  -- (1b) THE REMOVE PATH — `remove()` nulls a ref — AND THE DEFINER CONTROL (review, 2026-09-07).
+  --      The update runs under a probe role holding UPDATE on the credentials row and NOTHING on
+  --      `vault` (bypassrls, as service_role is, so the row is reachable at all). With `security
+  --      definer` the trigger deletes as its owner; with `security invoker` this statement raises
+  --      42501 — the one thing step (0)'s catalogue bit cannot show.
+  execute 'create role dw44_probe bypassrls';
+  execute 'grant usage on schema private to dw44_probe';
+  execute 'grant select, update on private.site_credentials to dw44_probe';
+  execute 'set role dw44_probe';
+  update private.site_credentials set staff_token_vault_ref = null where site_id = site;
+  execute 'reset role';
+  execute 'drop owned by dw44_probe';
+  execute 'drop role dw44_probe';
+  select count(*) into n from vault.secrets where id = r_staff;
+  if n <> 0 then raise exception 'FAIL (DW-44): the removed Staff token secret is still in the vault'; end if;
+  raise notice 'PASS (DW-44): nulling a ref deletes its secret, under a role that may not touch the vault itself';
 
   -- (2) THE SITE DELETED — FR-C6's disconnect and the 90-day orphan purge. `site_credentials`
   --     cascades from `sites`, and BOTH kinds go, not just the one a caller happened to name.
+  select vault.create_secret('sid44:ff', null, 'site 44 staff') into r_staff;
+  update private.site_credentials set staff_token_vault_ref = r_staff where site_id = site;
   delete from public.sites where id = site;
   select count(*) into n from vault.secrets where id in (r_new, r_staff);
   if n <> 0 then raise exception 'FAIL (DW-44): % secret(s) survived the site being deleted', n; end if;

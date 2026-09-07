@@ -2,9 +2,9 @@
 title: 'Story 3.1 — The server-side Admin proxy and Vault credential storage'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '929494bd17cbd0c5444fac2164898f924b3bbee3'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -122,7 +122,318 @@ driven by a Python harness against the real Vault and both Ghost test servers (R
   functions, and proves the three paths — site deleted, user deleted, ref replaced — each ending in
   `count(*) = 0` for the old secret; `supabase/tests/prelude.sql` and `rls.sql` are re-copied
   byte-identical. **Applied to the hosted database by the owner in the SQL editor at Deploy**, as 2.5's
-  was; between Dev and Deploy the code is live before the trigger is, and `## Questions for the owner
+  was; between Dev and Deploy the code is live before the trigger is, and `## Verification` says so.
+- **The proof is deployed, not local (R-82).** `apps/web/app/api/ghost-admin/verify/route.ts`, `POST`,
+  `authorized()` from `purge-rule.ts` on `CRON_SECRET` **before any other statement** (401, fail-closed,
+  `force-dynamic`, `no-store`), one zod body, five ops — `grants` (`current_user`,
+  `has_table_privilege(current_user, 'vault.secrets', 'DELETE')`), `store`, `call`, `audit` (the site's
+  rows, `detail` included — it holds no secret), `secret-exists` (a count on `vault.secrets`) — and it
+  returns **refs and statuses only, never a secret**. `tools/probe/run-verify-ghost-admin.py` drives it in
+  the 2.6 harness's shape: creates a throwaway GoTrue user and a `sites` row over REST with
+  `SUPABASE_SECRET_KEY`, runs the 401 controls **first**, then per Ghost (T1 6.58.0 and T3 5.130.6,
+  keys by name): `store` → `call GET config/` with no version (200, `version`) → `PATCH sites.ghost_version`
+  → `call` again (200 with `Accept-Version`) → `call POST posts/` (refused, no network) → `store` a
+  **bogus** key of the right shape → `call` (401 from Ghost, `ghost_unknown_key`) → `store` the real key
+  again (rotation: the bogus ref gone, the new one present) → `audit` (decrypt ok ×n, read ok, read error
+  401, write denied) → delete the user through GoTrue → `secret-exists` **false** (the cascade path) →
+  `users before == after`. Every step PASS or FAIL, non-zero exit on any FAIL. It is verification
+  scaffolding: **3.2 removes the route** once the connect action is the caller (DW-48).
+
+**Ask First:**
+- Any fifth key in `ADMIN_WRITES`, or a body guard loosened — the allowlist bounds Inflozo, not the
+  credential, and every added write widens a radius Ghost cannot narrow (AD-10, R-22).
+- A second Postgres connection, a second reader of `SUPABASE_DB_POOLER_URL`, or any `vault.` /
+  `private.` SQL outside `server/ghost-admin/`.
+- Any RPC or view in `public` that reads `vault.decrypted_secrets`.
+- Keeping the verify route beyond 3.2, or widening it beyond the five ops.
+- Any change to `vault.*` grants on the live project, or any read of `vault.decrypted_secrets` from a
+  context that is not `call`.
+
+**Never:**
+- No Admin API call from a browser, and no generic browser-facing proxy endpoint — callers are server
+  actions and routes, and the module is a library they import (AD-10: no third path).
+- No Content API call from the server (P5): the module builds `/ghost/api/admin/` URLs only, asserted.
+- No `supabaseAdmin()` for Vault or `private.*`; no `NEXT_PUBLIC_*`; no key, JWT, header or body in
+  any log or thrown error; no `codeinjection_*` payload stored.
+- No `content` kind — the Content API key is not a secret and never enters Vault.
+- No edit to the frozen 2026-09-04 migration; no hand-edit to generated files.
+- Not this story: 3.2's wizard and `GET /admin/config/` version floor, 3.3's probes, 3.4's settings read,
+  3.5's disconnect, 3.6's Manage keys, 3.7's health cron, E7's staff-token request and the four writes
+  themselves. No screen, no email, no notification.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| Store an admin key | `store({ siteId, userId, kind: 'admin', secret: 'kid:hex' })` | one Vault secret, `admin_key_vault_ref` set, `admin_key_rotated_at = now()`, `sites.credentials_present.admin = true`; returns `{ ref }` | N/A |
+| Store again (rotation) | same site, a second key | new ref; the **old secret row is gone** (trigger); `rotated_at` advanced | N/A |
+| Malformed credential | no `:`, or a non-hex secret | refused before Vault and network | `credential_malformed` |
+| Call with a stored key | `call({ siteId, method: 'GET', path: 'config/' })` | 200, `body.version`; audit `vault_decrypt ok` + `admin_read ok { status: 200, ms }` | N/A |
+| Call, version unknown | `sites.ghost_version` null | no `Accept-Version` header; T1 and T3 both answer 200 (executed by the harness) | N/A |
+| Call, no admin ref | row missing or ref null | no network; audit `vault_decrypt error { reason: 'missing' }` | `credential_missing` |
+| Non-GET without an item | `POST posts/` | no network; audit `admin_write denied` | `write_not_allowed` |
+| Non-GET, wrong item | `POST posts/` as `theme_upload` | same | `write_not_allowed` |
+| Guarded body | `PUT settings/` as `announcement_clear` with a `title` key | same | `write_not_allowed` |
+| Ghost refuses the key | a regenerated / bogus key | `{ ok: false, status: 401 }`; audit `admin_read error { status: 401, ghost_type }`; the stored key untouched | `ghost_unknown_key` |
+| Ghost unreachable | DNS, TLS, or > 15 s | audit `admin_read error { ms }` | `ghost_unreachable` |
+| Pooler unreachable / env unset | first use with no `SUPABASE_DB_POOLER_URL` or a refused connection | loud throw; never a 200 | `credential_store_unavailable` |
+| Remove the staff token | `remove({ siteId, kind: 'staff' })` | ref null, secret gone, `credentials_present.staff = false`, `staff_token_rotated_at` set | N/A |
+| Site deleted / user purged | `delete from public.sites` · GoTrue `DELETE /admin/users/{id}` | cascade → trigger → **both** secrets gone | N/A |
+| Verify route, no header / wrong bearer | `POST /api/ghost-admin/verify` | 401 `Unauthorized`, `no-store`, before any DB read | N/A |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `apps/web/server/ghost-admin/admin-rule.ts` -- **new, pure**: `parseCredential`, `mintJwt(credential, now)`,
+  `ADMIN_WRITES` (the four-item literal, read date beside it), `permitted(method, path, body, item)`,
+  `adminUrl(siteUrl, path)`, `headers(jwt, major?)`, the `AuditDetail` type and the Ghost-cause → code map.
+  Node `crypto` only. The shape `purge-rule.ts` set: everything `node --test` can reach lives here.
+- `apps/web/server/ghost-admin/db.ts` -- **new**: `sql()` — the lazy, once-built `postgres` client with the
+  options above; the only importer of `postgres`, the only reader of `SUPABASE_DB_POOLER_URL`.
+- `apps/web/server/ghost-admin/index.ts` -- **new**: `store`, `remove`, `call` (decrypt → audit → allowlist →
+  mint → fetch with `AbortSignal.timeout(15_000)` → audit), and `fetchWithKey` (the explicit-key variant
+  `call` delegates to, which 3.2 uses to validate before a site row exists — `site_id` null on its audit
+  row). All SQL here and in `db.ts`; parameterised, never interpolated.
+- `apps/web/server/ghost-admin/verify-queries.ts` -- **new** (Dev): the verify route's three READS — `grants`,
+  `auditRows`, `secretExists` — moved out of the route because the wiring contract forbids SQL naming `vault.` or a
+  `private` table outside this directory. DW-48 scaffolding; 3.2 deletes it with the route.
+- `apps/web/ghost-admin.test.ts` -- **new** (Review): the ORDER inside the chokepoint without a pooler — a malformed
+  credential is `credential_malformed` out of both `store` and `fetchWithKey`, never `credential_store_unavailable`
+  or `ghost_unreachable`.
+- `apps/web/ghost-admin-rule.test.ts` -- **new**: the mint verified with `createHmac` (`kid` in the header,
+  `aud`, `exp − iat === 300`), `ADMIN_WRITES` exact membership, the three denials, `GET` needs no item,
+  `adminUrl` never yields `/content/`, the cause map, `parseCredential` refusals.
+- `apps/web/server-wiring.test.ts:80` -- the `allowed` idiom to copy for four new contracts: `postgres` import
+  → `db.ts` only; `SUPABASE_DB_POOLER_URL` → `db.ts` only; `vault.` / `private.` SQL → `server/ghost-admin/`
+  only; importers of `server/ghost-admin/index.ts` → the verify route only, with its reason; every
+  `console.` line under `server/ghost-admin/` matches the allowed shape.
+- `apps/web/app/api/ghost-admin/verify/route.ts` -- **new**: bearer first (`authorized` from
+  `app/api/cron/purge-accounts/purge-rule.ts:35`), `export const dynamic = 'force-dynamic'`, `NO_STORE`,
+  one zod discriminated union over the five ops; header names **E3 · FR-C3 · AD-7 · AD-10 · DW-48**.
+- `apps/web/app/api/cron/purge-accounts/route.ts` -- the route shape to mirror (bearer, no-store, 500 on any
+  failure, the `failure()` helper that never logs an address or a key).
+- `apps/web/lib/flags.ts:52` -- `AbortSignal.timeout` on a platform read, and the one-code log line.
+- `apps/web/lib/supabase/server.ts:5-33` -- `env()`'s loud-throw shape; `supabaseAdmin()` is **not** used here.
+- `apps/web/package.json` -- `"postgres": "3.4.9"`; lockfile by `pnpm install` (Node 24 on `PATH`).
+- `apps/web/next.config.ts` -- untouched unless the bundler refuses the driver (`serverExternalPackages`).
+- `supabase/migrations/20260907200000_vault_secret_lifecycle.sql` -- **new**: the function, the revokes, the
+  trigger `site_credentials_drop_vault_secrets`. Comments **outside** the body (pg_dump emits bodies
+  verbatim and the gate diffs them — 2.5's lesson).
+- `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql:181-190` -- the table;
+  append the identical trigger block after `:988` (`site_credentials_touch`).
+- `…/PRELUDE.sql` -- the `vault` stand-in, beside the `storage` one; `…/RLS-TEST.sql:104` the existing
+  `site_credentials` fixture (its `gen_random_uuid()` ref matches nothing — fine under the trigger);
+  `:483` (5c's table list), `:608-616` (the guard-trigger literal gains `site_credentials_drop_vault_secrets`),
+  5d (`nspname in ('public','private')`). Then `cp` both into `supabase/tests/`.
+- `supabase/tests/run-rls-gate.sh` -- unchanged; it applies every migration and diffs the two schemas.
+- `tools/probe/run-verify-ghost-admin.py` -- **new**, in `run-verify-account-purge.py`'s shape (docstring
+  naming every step, `--check`, `--url`, keys by name, users before/after, own rows cleaned) + its row in
+  `tools/doc-audit.py:247-266`.
+- `tools/probe/.env.example:76` -- `SUPABASE_DB_POOLER_URL=` with the derivation comment.
+- `_bmad-output/implementation-artifacts/deferred-work.md` -- DW-44 closed by the Dev run; **DW-48** (the verify
+  route is scaffolding; 3.2 removes it and retargets the harness at the connect action) and **DW-49** (the
+  pooler URL is the `postgres` user's; a narrower role with `vault` + `private` grants at the next
+  password rotation) added at Create.
+- `_bmad-output/implementation-artifacts/epic-3-context.md` -- the "Vault, and the connection 3.1 must choose"
+  bullet rewritten with the decision, at Create.
+- Executed facts this rests on: `MEASUREMENTS.md` §21j (Vault grants, 404 over REST), §37 (401 causes,
+  keys never expire), the JWT as `tools/probe/run-verify-all.py:37-44` mints it; the pooler from this
+  machine `spec-2-1:603`, `spec-2-5:583`.
+
+## Tasks & Acceptance
+
+**Execution:**
+- [x] `apps/web/server/ghost-admin/admin-rule.ts` + `apps/web/ghost-admin-rule.test.ts` -- the mint, the
+      allowlist literal, the denials, the URL builder, the cause map -- the contract green before anything
+      connects to anything
+- [x] `apps/web/package.json` + lockfile -- `postgres@3.4.9` -- the only new dependency
+- [x] `apps/web/server/ghost-admin/db.ts` + `index.ts` -- the lazy connection and `store` / `remove` / `call` /
+      `fetchWithKey` with their audit rows -- the chokepoint
+- [x] `apps/web/server-wiring.test.ts` -- the five new read-from-the-tree contracts -- the chokepoint enforced,
+      not described
+- [x] `supabase/migrations/20260907200000_vault_secret_lifecycle.sql` + `SCHEMA.sql` + `PRELUDE.sql` +
+      `RLS-TEST.sql` + the two `supabase/tests/` copies -- DW-44's trigger, the `vault` stand-in and the three
+      path proofs -- `bash supabase/tests/run-rls-gate.sh` green, and red with the trigger commented out (the
+      control)
+- [x] `apps/web/app/api/ghost-admin/verify/route.ts` -- the five ops behind the bearer -- the deployed proof
+- [x] `tools/probe/run-verify-ghost-admin.py` + its `doc-audit.py` row + `tools/probe/.env.example` --
+      the harness and the env name -- R-82, re-runnable
+- [ ] `tools/probe/.env` (`SUPABASE_DB_POOLER_URL`, derived) + Vercel production (the owner, at Deploy) -- read
+      back by name, never printed -- **half done:** in `tools/probe/.env` and executed from this machine; **absent from Vercel
+      production** (Question 1, unruled at Review)
+- [x] `deferred-work.md` (DW-44 closed at Dev) + `epic-3-context.md` -- propagate, never localise
+- [ ] Run `## Verification` on the real infrastructure and record every command and result by variable name -- **everything that
+      does not need the Vercel variable ran, twice (Dev and Review); the Vault round trip on the live project waits on it**
+
+**Acceptance Criteria:**
+- Given a stored Ghost credential, when any Admin API call is made through `call`, then a JWT is minted for
+  that request alone (`exp − iat = 300`, `aud: /admin/`, `kid` from the stored key), the request goes to
+  `<site url>/ghost/api/admin/<path>` and nowhere else, and a `vault_decrypt` row and an `admin_read` /
+  `admin_write` row exist in `private.credential_audit` for it, neither carrying the key
+- Given the Admin API key and the Staff Access Token, when they are stored, then each is a `vault.secrets`
+  row referenced from `private.site_credentials`, and no `apps/web` code path outside
+  `server/ghost-admin/` can name either table (asserted), so neither can reach a client
+- Given `sites.content_key`, when this story is done, then it is unchanged — a plain column under the owner's
+  SELECT, never in Vault (the `kind` union has no `content` member, asserted)
+- Given the two Ghost APIs, when the module builds a URL, then it is always `/ghost/api/admin/` (asserted),
+  and `ADMIN_WRITES` has exactly `theme_upload`, `theme_activate`, `routes_upload`, `announcement_clear`
+  (asserted by deep-equal) — a `POST posts/` is refused with no network call whether it names no item, the
+  wrong item, or a guarded body
+- Given the deployed verify route with `SUPABASE_DB_POOLER_URL` in production, when the harness runs
+  against T1 and T3, then every step passes in the docstring's order: the two 401 controls first; `grants`
+  reads `DELETE` on `vault.secrets` true; `store` returns a ref; `call GET config/` is 200 with `version`,
+  with no `Accept-Version` and then with `v6.0` / `v5.0`; `POST posts/` is `write_not_allowed` with an
+  `admin_write denied` row; the bogus key answers 401 `ghost_unknown_key`; re-storing the real key leaves
+  the bogus ref **absent** and the new one present; deleting the throwaway user through GoTrue leaves
+  `secret-exists` **false**; users before == after; and no response body anywhere contains a `kid:secret`
+- Given the RLS gate, when it runs, then `site_credentials_drop_vault_secrets` exists on a `security
+  definer` function no client may execute, and a secret referenced by a credentials row is gone after the
+  site is deleted, after the user is deleted, and after the ref is replaced — and the gate is **red** with
+  the trigger removed
+- Given the module's source, when the never-log test reads every `console.` line under
+  `server/ghost-admin/`, then each matches `console.error('ghost-admin: …', { code | name | status })` and
+  nothing else
+
+### Review Findings
+
+Review 1, 2026-09-07 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier) over the diff `929494bd..ec51423d`. Every patch below is applied and checked in this review's commit;
+every defer has its ledger row.
+
+- [x] [Review][Patch] The spec lost everything from the DW-44 bullet to `## Design Notes` in the first Dev commit (the frozen block never closed, the matrix, Code Map, Tasks, Acceptance Criteria and Design Notes gone, Question 1's heading glued into a bullet so the board could not surface it) — restored from the Create baseline `929494bd`, byte-identical inside the frozen block [spec]
+- [x] [Review][Patch] A malformed credential was minted INSIDE the fetch try, so `credential_malformed` came out as `ghost_unreachable` with an `admin_read error` row [apps/web/server/ghost-admin/index.ts `fetchWithKey`]
+- [x] [Review][Patch] `store()` wrote any string into Vault; `parseCredential` now refuses before Vault (the matrix row *Malformed credential*) [index.ts `store`]
+- [x] [Review][Patch] `decrypt()` inner-joined `site_credentials`, so a site with no credentials row wrote no `vault_decrypt error` row (the matrix row *Call, no admin ref*, AD-10 F10) — left join [index.ts `decrypt`]
+- [x] [Review][Patch] `remove()`, the `staff` kind and the route's sixth op (`remove`, added at Dev outside the five the Ask-First named) were executed nowhere — harness steps `staff-removed`, `malformed`, `credential-missing`; the gate's null-ref path (1b) [tools/probe/run-verify-ghost-admin.py, RLS-TEST.sql]
+- [x] [Review][Patch] The importer contract matched `…/ghost-admin'` and `/index.ts'` only (an import of `db.ts` — the decrypting connection — from anywhere passed), and the driver contract matched single quotes only — both widened, each proved red by a mutant [apps/web/server-wiring.test.ts]
+- [x] [Review][Patch] The gate's three DW-44 paths ran as the container superuser, so `security definer` was asserted as a catalogue bit and never load-bearing — step (1b) nulls a ref under a probe role holding SELECT/UPDATE on the credentials row and nothing on `vault`; **the control run with `security invoker` in the migration and SCHEMA.sql is red at (1b): `permission denied for schema vault`** [RLS-TEST.sql]
+- [x] [Review][Patch] `store()` took `userId` on trust; it is now checked against `sites` inside the transaction (`site_not_found`) [index.ts `store`]
+- [x] [Review][Patch] `adminUrl` resolved against the origin and threw a subdirectory install's path away (`https://example.com/blog`), admitted dot segments the allowlist's `[^/]+` lets through (`themes/../activate/`), and let a client-written `sites.url` that is not a URL escape as a TypeError — `site_url_invalid` [apps/web/server/ghost-admin/admin-rule.ts `adminUrl`]
+- [x] [Review][Patch] A GET with a body made `fetch` throw and read as `ghost_unreachable`; redirects were followed with the bearer — no body on GET, `redirect: 'manual'`, 3xx → `ghost_redirected` [index.ts `fetchWithKey`, admin-rule.ts `ghostCode`]
+- [x] [Review][Patch] `write-denied` executed one of the three denials the matrix names; `allowlist()` restated a count (`len(names) != 4`); `config-versioned` implied it could see the header (Ghost answers 200 to `v99.0` and `nonsense` on both majors — executed) — three denial steps, the count derived, the step's wording corrected [run-verify-ghost-admin.py]
+- [x] [Review][Patch] The §21j 404 control was a hand run — now the `vault-off-rest` step of `--check`, with `/rest/v1/sites` as its positive control (PASS on the live project) [run-verify-ghost-admin.py]
+- [x] [Review][Patch] `PRELUDE.sql`'s stand-in enabled RLS on `vault.secrets`; the live table has it off with no policy (read through the pooler) — removed, so the stand-in models what is there [PRELUDE.sql, supabase/tests/prelude.sql]
+- [x] [Review][Patch] `.env.example` offered the Management API's pooler route as a derivation; it answered 403 to this token at Dev — the dashboard is the only source now [tools/probe/.env.example]
+- [x] [Review][Patch] `epic-3-context.md` still listed DW-44 as open and named neither DW-49 nor DW-50 [epic-3-context.md]
+- [x] [Review][Patch] `AuditDetail` claimed to be "the whole guard" while the decrypt CTE writes `reason`; `ghostError`'s docstring said only `type` is kept — the type carries `reason?: 'missing'`, the sentence says what happens [admin-rule.ts]
+- [x] [Review][Patch] The rotation proof did not assert the untouched Staff secret survived (an over-deleting trigger passed step 1) [RLS-TEST.sql]
+- [x] [Review][Patch] A 2xx with a non-JSON body raised an uncaught `ValueError` before the harness's cleanup [run-verify-ghost-admin.py `call_route`]
+- [x] [Review][Patch] `db.ts` rested `max: 1` on "a serverless function serves one request at a time" — the project runs Fluid Compute (`resourceConfig.fluid: true`, read from the Vercel API), so invocations queue on the one connection; and `ssl: 'require'` does not verify the chain — both facts executed and written beside the options; the verification itself is DW-50 [apps/web/server/ghost-admin/db.ts]
+- [x] [Review][Patch] `vault.create_secret`'s four-argument signature (read from the live catalogue at Dev) had reached `PRELUDE.sql` and nothing else; the frozen Boundaries still say three — recorded in the change log below and propagated to `MEASUREMENTS.md` §21j with the rest of the 2026-09-07 re-probe [MEASUREMENTS.md, this spec]
+- [x] [Review][Patch] The Verification header named deployment `dpl_A3nB…` / `80fa5cdd`; production is at `ec51423d` (`dpl_AaSWiAY35KeizJu6mAksWXmY2vzT`, READY, CI `check` · `rls` · `deploy` success) — the review section below says so [spec]
+- [x] [Review][Defer] The pooler's TLS chain is not verified (`'verify-full'` fails `SELF_SIGNED_CERT_IN_CHAIN` — Supabase's own CA) [db.ts] — deferred, **DW-50**, rides with DW-49's rotation
+- [x] [Review][Defer] `fetchWithKey` serialises every body as JSON; `theme_upload` is multipart [index.ts] — deferred, **DW-51**, Epic 7 executes the upload
+- [x] [Review][Defer] `ghostCode` folds 404, 429 and 5xx into `ghost_refused` [admin-rule.ts] — deferred, **DW-52**, 3.3 and E7 see those statuses
+- [x] [Review][Defer] `private.credential_audit.outcome` is free text with no check constraint [SCHEMA.sql:748] — deferred, pre-existing, **DW-53**
+
+Dismissed as noise or by design, ten: a denied write decrypts first (the frozen Code Map's order; the decrypt supplies
+the audit row's `user_id`); a second paste of the migration errors on the duplicate trigger (loud and harmless, and
+migrations apply once); a unique index on the refs (every ref is minted by one `store`); `remove()` on a site with no
+row answers `removed` (idempotent); `call()` on a disconnected site (3.5 removes the credentials on disconnect); an
+audit insert failing after Ghost accepted a write surfaces as `credential_store_unavailable` (by design — an
+unrecorded call must not look like success); a malformed `SUPABASE_DB_POOLER_URL` throwing from the driver's
+constructor (the route's envelope catches it); the harness not being in CI (R-82's harnesses run by phase); no
+`admin_read` row beside the decrypt row when `adminUrl` refuses a path (Inflozo's own path, not a Ghost call); and the
+verify route's `Accept-Version` being unobservable from outside (executed: both Ghosts ignore an unsupported value).
+
+## Spec Change Log
+
+- **2026-09-07, Review 1.** The file as committed at `80fa5cdd` and `ec51423d` had lost lines 124–368 of the Create
+  baseline (the tail of the DW-44 bullet through `## Design Notes`, the frozen block's closing tag included); restored
+  from `929494bd`. The frozen block is byte-identical to the baseline again; nothing in it was rewritten.
+- **2026-09-07, Review 1 — the frozen text overtaken by execution, recorded here rather than edited there:**
+  (a) `vault.create_secret` has FOUR arguments with three defaults (`new_secret, new_name, new_description,
+  new_key_id`) — the Boundaries say three, the docs' shape; the app's three-positional call resolves through the
+  defaults and `PRELUDE.sql` models the four. (b) The verify route carries a sixth op, `remove`, which the Dev added
+  outside the Ask-First's five; the review kept it because it is the one way to execute `remove()` and the `staff`
+  kind on the live project (harness step `staff-removed`), and the whole route is DW-48 scaffolding that 3.2 deletes.
+  (c) `ssl: 'require'` encrypts without verifying the chain, and `'verify-full'` fails against the pooler's
+  Supabase-CA certificate — DW-50. (d) Fluid Compute is on for the project, so `max: 1` serialises concurrent
+  invocations rather than matching one-request-per-instance.
+- **2026-09-07, Review 1 — codes added beside AD-24's:** `site_not_found` (a `store` for a site that is not the
+  caller's), `site_url_invalid` (a `sites.url` that is not a URL), `ghost_redirected` (a 3xx, answered and never
+  followed). Each is Inflozo's, one per cause, and none carries a credential.
+
+## Design Notes
+
+**Why not `supabaseAdmin()`.** It is the right client for `public.*` and Storage and the wrong one here:
+PostgREST cannot see `vault` or `private`, by design and by execution (§21f, §21j). The
+alternative — a `security definer` RPC in `public` granted to `service_role` — would let a leaked API
+secret key decrypt every customer's Ghost key over REST, which is exactly the leak §21j proved
+*bounded*. A direct connection keeps decryption behind a second secret that nothing but this module
+holds. The cost is one dependency and one env var; the module's importer list stays as short as
+`supabaseAdmin()`'s.
+
+**The mint, as executed** (`run-verify-all.py:37-44`, in TypeScript):
+
+```ts
+export function mintJwt(credential: string, now = Date.now()): string {
+  const { kid, secret } = parseCredential(credential)            // throws credential_malformed
+  const b64 = (s: string) => Buffer.from(s).toString('base64url')
+  const iat = Math.floor(now / 1000)
+  const head = b64(JSON.stringify({ alg: 'HS256', typ: 'JWT', kid }))
+  const body = b64(JSON.stringify({ iat, exp: iat + 300, aud: '/admin/' }))
+  const sig = createHmac('sha256', Buffer.from(secret, 'hex')).update(`${head}.${body}`).digest('base64url')
+  return `${head}.${body}.${sig}`
+}
+```
+
+**The allowlist, as code.** One literal, one test on `Object.keys`, one `permitted()`:
+
+```ts
+export const ADMIN_WRITES = {                       // read at docs.ghost.org/admin-api, <date>
+  theme_upload:       { method: 'POST', path: /^themes\/upload\/?$/ },
+  theme_activate:     { method: 'PUT',  path: /^themes\/[^/]+\/activate\/?$/ },
+  routes_upload:      { method: 'POST', path: /^settings\/routes\/yaml\/?$/ },
+  announcement_clear: { method: 'PUT',  path: /^settings\/?$/, keys: ['announcement_content', 'announcement_visibility', 'announcement_background'] },
+} as const
+```
+
+**The trigger (DW-44), the one home for every path:**
+
+```sql
+create or replace function private.drop_vault_secrets() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if tg_op = 'DELETE' then
+    delete from vault.secrets where id in (old.admin_key_vault_ref, old.staff_token_vault_ref);
+    return old;
+  end if;
+  if old.admin_key_vault_ref is distinct from new.admin_key_vault_ref then
+    delete from vault.secrets where id = old.admin_key_vault_ref;
+  end if;
+  if old.staff_token_vault_ref is distinct from new.staff_token_vault_ref then
+    delete from vault.secrets where id = old.staff_token_vault_ref;
+  end if;
+  return new;
+end $$;
+```
+
+**Decrypt in one round trip**, the audit row in the same statement so a decryption can never go unrecorded:
+
+```sql
+with cred as (
+  select s.url, s.ghost_version, s.user_id, c.admin_key_vault_ref as ref, v.decrypted_secret
+  from public.sites s
+  join private.site_credentials c on c.site_id = s.id
+  left join vault.decrypted_secrets v on v.id = c.admin_key_vault_ref
+  where s.id = $1
+), logged as (
+  insert into private.credential_audit (action, user_id, site_id, route, outcome, detail)
+  select 'vault_decrypt', user_id, $1, $2,
+         case when decrypted_secret is null then 'error' else 'ok' end,
+         case when decrypted_secret is null then '{"reason":"missing"}'::jsonb else '{}'::jsonb end
+  from cred
+)
+select url, ghost_version, user_id, decrypted_secret from cred
+```
+
+**ponytail:** the connection is the `postgres` user's, the platform's own serverless shape; a role holding only
+`vault` and `private` grants when the password is next rotated (DW-49). No connection cache across
+invocations beyond the module singleton; a pooled client the day cold starts are measured to cost something.
+
+## Questions for the owner
 
 ### Question 1 — one setting to add in Vercel, and the story cannot be proved without it
 
@@ -163,6 +474,30 @@ variable NAME and never printed; each is recorded here by that name only.
 **`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`**. Publishing happens from GitHub Actions (DW-7): the run for
 `80fa5cdd` finished **success** with `rls` **success**, `check` **success**, then `deploy` — so the
 RLS gate and `pnpm check` are green on CI's runner as well as on this machine.
+
+### Review 1, 2026-09-07 — what the review ran, and what it returned
+
+The review ran on the real infrastructure again (R-82) and executed what the Dev run could not or did not.
+Keys by variable NAME only; nothing printed; nothing changed in Vercel or on the live database.
+
+| Command | Result |
+|---|---|
+| `GET /v9/projects/{VERCEL_PROJECT}/env` and `/v6/deployments?target=production&limit=1` with **`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`** | the same eight names, **`SUPABASE_DB_POOLER_URL` still absent** — Question 1 is unruled; production is `dpl_AaSWiAY35KeizJu6mAksWXmY2vzT` at **`ec51423d`**, READY, CI `check` · `rls` · `deploy` all success. `GET /v9/projects/{VERCEL_PROJECT}`: `resourceConfig.fluid` **true** |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` (`https://inflozo.com`), before and after the harness patches | `keys` PASS · `no-header` PASS (401, `x-matched-path`, `no-store`) · `wrong-secret` PASS · **`vault-off-rest` PASS** (the new step: `/rest/v1/{decrypted_secrets,secrets,site_credentials}` → 404 ×3 with **`SUPABASE_SECRET_KEY`**, `/rest/v1/sites` → 200) · `grants` **FAIL by design**, `credential_store_unavailable` from inside the deployed function. Exit 1, correctly |
+| the TypeScript mint straight at both Ghosts (**`GHOST6_ADMIN_API_KEY`**, **`GHOST5_ADMIN_API_KEY`**, node 24, script deleted) | **T1** and **T3**: no `Accept-Version` → 200 (6.58.0 / 5.130.6); `v6.0` / `v5.0` → 200; **control (c)** a `kid` never issued → 401 `Unknown Admin API Key` → `ghost_unknown_key`; **control (d), new** the real `kid` with a wrong secret → 401 `Invalid token: invalid signature` → `ghost_bad_signature`; and `Accept-Version: v99.0`, `v1.0`, `nonsense` → **200 on both**, so the header is not observable from outside (the harness step now says so) |
+| read-only catalogue through the pooler with **`SUPABASE_DB_POOLER_URL`** (`docker run … postgres:17-alpine psql`) | `current_user` postgres, `rolbypassrls` t; `vault.secrets` `relrowsecurity` **f**, no policies, owner `supabase_admin`, grants `postgres` DELETE/SELECT/REFERENCES/TRUNCATE and `service_role` DELETE/SELECT only; `supabase_auth_admin` no grant, no bypassrls; `vault.create_secret` 4 args / 3 defaults / definer; `credential_action` enum carries `admin_write, admin_read, vault_decrypt`; `outcome` is unconstrained text (DW-53); `site_credentials`, `credential_audit`, `vault.secrets` all **0 rows**; trigger **absent** (the owner's Deploy step) |
+| the pooler's TLS from the app's own driver (`postgres` 3.4.9, **`SUPABASE_DB_POOLER_URL`**) | `ssl: 'require'` **connects**; `ssl: 'verify-full'` **fails `SELF_SIGNED_CERT_IN_CHAIN`** — DW-50. `pg_stat_ssl` through the pooler reports the backend leg only |
+| `bash supabase/tests/run-rls-gate.sh` after the review's patches | **exit 0, 82 PASS notices**, five of them DW-44: definer + pinned `search_path`; rotation deletes only the replaced secret (and the Staff secret survives it — new); **(1b) nulling a ref deletes its secret under a probe role holding SELECT/UPDATE on the credentials row and nothing on `vault`** — new; site deleted; account deleted |
+| **the control:** `security invoker` in the migration and `SCHEMA.sql`, step (0) softened to a notice, gate re-run | **exit 3** at (1b): `ERROR: permission denied for schema vault`. The definer bit is load-bearing and the proof now shows it; files restored, copies byte-identical, migration untouched |
+| `pnpm check` (Node 24) | **exit 0**; `apps/web` **187/187** — the two new `ghost-admin.test.ts` order tests among them, which fail twice against the pre-patch module (control run) |
+| two mutants against `server-wiring.test.ts` — `lib/zz-mutant-db.ts` importing `@/server/ghost-admin/db`, and a double-quoted `import postgres from "postgres"` | **each turned its own contract red** (`not ok 10` the importer list; `not ok 7` the driver), then removed; the widened regexes catch what the first ones let through |
+
+**What is still unexecuted, and only this:** the Vault round trip on the live project — `store`, `credential-missing`,
+`malformed`, the two `config/` calls through the module, the three denials' audit rows, `bogus-key`, `rotated`,
+`staff-removed`, `audit`, `user-gone`, `secret-gone` — every one of them a harness step that runs the moment
+`SUPABASE_DB_POOLER_URL` is in Vercel production (Question 1) and, for `rotated`, `staff-removed` and
+`secret-gone`, the migration is applied (Deploy). The review leaves the story **in review** on that account:
+its code is patched and every proof that does not need the variable has run twice.
 
 ### What ran on this machine, and what it returned
 

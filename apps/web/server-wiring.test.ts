@@ -214,7 +214,7 @@ test('the postgres driver has exactly one importer, and it is db.ts', () => {
   // second thing that can decrypt, and nothing else in the codebase would say so.
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
-    .filter((p) => /from\s*'postgres'|require\(\s*'postgres'\s*\)/.test(readFileSync(p, 'utf8')))
+    .filter((p) => /from\s*['"]postgres['"]|(?:require|import)\(\s*['"]postgres['"]\s*\)/.test(readFileSync(p, 'utf8')))
     .filter((p) => p !== GHOST_ADMIN_DB)
   assert.deepEqual(
     importers,
@@ -267,10 +267,14 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     function rather than on a laptop that cannot write to the live database. It is bearer-
   //     gated scaffolding and Story 3.2 DELETES it (DW-48).
   // Story 3.2's connect action joins this list with its own reason.
+  // ANY module in the directory counts, not only the index: `db.ts` hands out the decrypting
+  // connection and `verify-queries.ts` reads the audit table, and an import of either from an
+  // unlisted file is the same third path (review, 2026-09-07 — the first regex matched the index
+  // alone).
   const allowed = [VERIFY_ROUTE]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
-    .filter((p) => /from\s*'[^']*server\/ghost-admin(\/index\.ts)?'/.test(readFileSync(p, 'utf8')))
+    .filter((p) => /from\s*['"][^'"]*server\/ghost-admin(\/[a-z-]+(\.ts)?)?['"]/.test(readFileSync(p, 'utf8')))
     .filter((p) => !p.startsWith(GHOST_ADMIN + '/'))
     .filter((p) => !allowed.includes(p))
   assert.deepEqual(

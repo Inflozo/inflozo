@@ -359,11 +359,13 @@ DOCS = [
   "(x-matched-path and no-store, so a platform 401 cannot pass for it). Then `grants` reads "
   "current_user and DELETE on vault.secrets from inside the Vercel function — the first execution "
   'of "a Vercel function reaches the transaction pooler", which nothing in this project had done. '
-  'Then, per Ghost (T1 6.58.0 and T3 5.130.6): the real Admin key into Vault; GET config/ with no '
+  'Then, per Ghost (T1 6.58.0 and T3 5.130.6): the real Admin key into Vault, and a malformed one '
+  'refused before it; GET config/ with no '
   'Accept-Version (the shape Story 3.2 validates in) and then with it; POST posts/ refused with '
   'write_not_allowed and an audit row proving no network call was made; a key whose kid Ghost never '
   'issued answering 401 ghost_unknown_key (§37 — keys do not expire); the real key stored again, '
-  'which must leave the bogus secret gone and the new one present (DW-44 on the live project); and '
+  'which must leave the bogus secret gone and the new one present (DW-44 on the live project); a '
+  'token-shaped secret stored as the staff kind and removed again (the remove path); and '
   'the audit rows read back with their detail. Then GoTrue deletes the throwaway user and both '
   "secrets must be gone — the cascade path — and every response body this run received is swept for "
   'the keys it sent. --check is the keys, the two 401 controls and grants, and stores nothing. '

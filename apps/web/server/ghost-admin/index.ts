@@ -8,6 +8,7 @@ import {
   headers,
   majorOf,
   mintJwt,
+  parseCredential,
   permitted,
 } from './admin-rule.ts'
 import { sql } from './db.ts'
@@ -108,8 +109,20 @@ export async function store(args: {
   route: string
 }): Promise<{ ref: string }> {
   const column = COLUMNS[args.kind]
+  // REFUSED BEFORE VAULT: a credential that cannot sign is a typo, and a typo stored in Vault
+  // would come back out as `ghost_unreachable` on every call (found by the review, 2026-09-07).
+  parseCredential(args.secret)
   return withStore(args.route, async () => {
     const ref = await sql().begin(async (tx) => {
+      // THE SITE MUST BE THE CALLER'S. `user_id` on the credentials row is what the audit trail
+      // and the purge cascade key on, so it is checked against `sites` rather than taken on
+      // trust from a caller (review, 2026-09-07).
+      const [site] = await tx<{ id: string }[]>`
+        select id from public.sites where id = ${args.siteId} and user_id = ${args.userId}
+      `
+      if (!site) {
+        throw new AdminError({ code: 'site_not_found', message: 'That site is not one of yours.' })
+      }
       const [created] = await tx<{ id: string }[]>`
         select vault.create_secret(${args.secret}, null, ${`site ${args.siteId} ${args.kind}`}) as id
       `
@@ -160,7 +173,10 @@ export async function remove(args: {
 /**
  * DECRYPT AND LOG IN ONE STATEMENT, so a decryption can never go unrecorded: the audit insert is
  * a CTE over the same read, not a second call that an early return or a thrown error could skip.
- * A missing row and a null ref are the same answer — no secret — and both write the `error` row.
+ * A missing credentials row and a null ref are the same answer — no secret — and both write the
+ * `error` row (hence the LEFT joins: an inner join on `site_credentials` wrote nothing for a
+ * site that never had a key — found by the review, 2026-09-07). A site that does not exist at
+ * all has no `user_id` to attribute a row to, and writes none.
  */
 async function decrypt(siteId: string, kind: CredentialKind, route: string) {
   const column = COLUMNS[kind]
@@ -171,7 +187,7 @@ async function decrypt(siteId: string, kind: CredentialKind, route: string) {
     with cred as (
       select s.url, s.ghost_version, s.user_id, v.decrypted_secret
       from public.sites s
-      join private.site_credentials c on c.site_id = s.id
+      left join private.site_credentials c on c.site_id = s.id
       left join vault.decrypted_secrets v on v.id = c.${client(column.ref)}
       where s.id = ${siteId}
     ), logged as (
@@ -260,6 +276,13 @@ export async function fetchWithKey(args: {
   }
 
   const url = adminUrl(args.siteUrl, args.path)
+  // MINTED OUTSIDE THE TRY BELOW: a `credential_malformed` must stay its own code. Inside it,
+  // the catch would have logged it as "ghost unreachable" and thrown that (review, 2026-09-07).
+  const jwt = mintJwt(args.credential)
+  // A GET carries no body (fetch throws a TypeError for one, which the catch below would have
+  // called "ghost unreachable"), and a redirect is ANSWERED, never followed: the bearer must not
+  // be re-sent to wherever a 3xx points (review, 2026-09-07).
+  const payload = method === 'GET' || args.body === undefined ? undefined : JSON.stringify(args.body)
   const started = Date.now()
   let status = 0
   let body: unknown
@@ -268,10 +291,11 @@ export async function fetchWithKey(args: {
     const response = await fetch(url, {
       method,
       headers: {
-        ...headers(mintJwt(args.credential), args.major),
-        ...(args.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...headers(jwt, args.major),
+        ...(payload === undefined ? {} : { 'Content-Type': 'application/json' }),
       },
-      body: args.body === undefined ? undefined : JSON.stringify(args.body),
+      body: payload,
+      redirect: 'manual',
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
     status = response.status

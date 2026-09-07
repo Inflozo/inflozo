@@ -32,21 +32,35 @@ here in the order the run prints them:
                  401 (deployment protection on a preview URL) cannot pass for it — and
                  `cache-control: no-store`
   wrong-secret   the same call with a wrong bearer of the same shape: 401 from the route
+  vault-off-rest §21j re-executed: `GET /rest/v1/{decrypted_secrets,secrets,site_credentials}` with
+                 the secret key -> 404 all three, `/rest/v1/sites` -> 200 (the positive control):
+                 the bound the design rests on — a leaked API key yields refs, not keys
   grants         `current_user` and `has_table_privilege(current_user, 'vault.secrets', 'DELETE')`
                  read from inside the deployed function: THE FIRST EXECUTION of "the Vercel
                  function reaches the pooler". Everything after it depends on this answering.
   then, for T1 (Ghost 6.58.0) and T3 (Ghost 5.130.6) in turn, against one site row each:
+  credential-missing  `call GET config/` BEFORE any key is stored: 500 `credential_missing`, and
+                 the audit step below finds the `vault_decrypt error {reason: missing}` row it left
   store          the real Admin API key into Vault -> a ref, and `credentials_present.admin` true
+  malformed      a "key" with no colon stored: 500 `credential_malformed` and NO ref — refused
+                 before Vault, with the real key beneath it untouched (the next step proves it)
   config-no-version  `call GET config/` with `sites.ghost_version` still null: 200 and a `version`,
                  with NO `Accept-Version` header — the shape Story 3.2 validates in, before any
                  version is known
-  config-versioned   `ghost_version` set, the same call again: 200, `Accept-Version: v6.0`/`v5.0`
-  write-denied   `call POST posts/` with no allowlist item: refused with `write_not_allowed`, and
-                 the audit row proves NO NETWORK CALL happened (no `status` in its detail)
+  config-versioned   `ghost_version` set, the same call again: 200. `Accept-Version: v6.0`/`v5.0`
+                 is sent by construction and is NOT observable from outside: both Ghosts answer
+                 200 to any value of that header (`v99.0`, `nonsense` — executed 2026-09-07), so
+                 this step proves the versioned path runs, not the header's value
+  write-denied   `call POST posts/` refused with `write_not_allowed` THREE ways — no item, the
+                 wrong item (read from the allowlist), and `PUT settings/` as `announcement_clear`
+                 with a guarded body — and each audit row proves NO NETWORK CALL happened (no
+                 `status` in its detail)
   bogus-key      a key of the right shape whose `kid` Ghost never issued, stored and called: 401
                  with `ghost_unknown_key` (§37 — a regenerated key, not an "expired" one)
   rotated        the real key stored again: the BOGUS secret is gone from the vault and the new
                  one is there — DW-44's replace path, on the live project
+  staff-removed  a token-shaped secret stored as `kind: 'staff'` and removed again: the secret
+                 gone (DW-44's remove path) and `credentials_present.staff` back to false
   audit          the site's rows read back: `vault_decrypt ok` per decryption, two `admin_read ok`,
                  one `admin_read error` at 401, one `admin_write denied`, and no `detail` anywhere
                  that contains a `kid:secret`
@@ -124,8 +138,8 @@ def allowlist():
     source = open(ADMIN_RULE, encoding='utf-8').read()
     block = re.search(r'export const ADMIN_WRITES = \{(.*?)\n\} as const', source, re.S)
     names = re.findall(r'^\s{2}([a-z_]+):', block.group(1), re.M) if block else []
-    if len(names) != 4:
-        sys.exit(f'  FAIL  admin-rule.ts should carry four ADMIN_WRITES items; read {names}')
+    if not names:
+        sys.exit('  FAIL  ADMIN_WRITES could not be read out of admin-rule.ts')
     return names
 
 
@@ -150,7 +164,11 @@ def call_route(url, secret, payload):
     try:
         with _opener.open(req, timeout=120) as r:
             raw = r.read()
-            return r.status, (json.loads(raw) if raw else None), {k.lower(): v for k, v in r.headers.items()}
+            head = {k.lower(): v for k, v in r.headers.items()}
+            try:
+                return r.status, (json.loads(raw) if raw else None), head
+            except ValueError:
+                return r.status, raw.decode('utf-8', 'replace')[:300], head
     except urllib.error.HTTPError as e:
         raw = e.read()
         head = {k.lower(): v for k, v in e.headers.items()}
@@ -230,6 +248,16 @@ def main():
     run.step('wrong-secret', route_401(status, body, head, path),
              f'a wrong bearer of the same shape -> HTTP {status} {json.dumps(body)[:80]}')
 
+    # ── §21j, THE BOUND THE DESIGN RESTS ON, re-executed every run rather than remembered.
+    off_api = {}
+    for table in ('decrypted_secrets', 'secrets', 'site_credentials'):
+        st, _ = rest(sb, secret, 'GET', f'/{table}?limit=1')
+        off_api[table] = st
+    st_sites, _ = rest(sb, secret, 'GET', '/sites?limit=1')
+    run.step('vault-off-rest', all(v == 404 for v in off_api.values()) and st_sites == 200,
+             f'GET /rest/v1/{{decrypted_secrets,secrets,site_credentials}} -> {json.dumps(off_api)}; '
+             f'the positive control /rest/v1/sites -> {st_sites}')
+
     # ── The pooler, from inside the deployed function.
     status, body, _ = call_route(route, cron_secret, {'op': 'grants'})
     granted = isinstance(body, dict) and body.get('may_delete') is True
@@ -292,6 +320,13 @@ def main():
                 st, bd, _ = call_route(route, cron_secret, payload)
                 return st, run.watch(bd)
 
+            # No key yet: the read must fail as `credential_missing` and STILL leave an audit row
+            # behind (AD-10 F10 — the log is the only control that detects; review, 2026-09-07).
+            st, bd = op({'op': 'call', 'siteId': site_id, 'method': 'GET', 'path': 'config/'})
+            run.step(f'{label} credential-missing',
+                     st == 500 and isinstance(bd, dict) and bd.get('code') == 'credential_missing',
+                     f'call before any key is stored -> HTTP {st} {json.dumps(bd)[:120]}')
+
             st, bd = op({'op': 'store', 'siteId': site_id, 'userId': user_id, 'kind': 'admin', 'secret': key})
             real_ref = bd.get('ref') if isinstance(bd, dict) else None
             _, flags = rest(sb, secret, 'GET', f'/sites?id=eq.{site_id}&select=credentials_present')
@@ -299,6 +334,13 @@ def main():
             run.step(f'{label} store', st == 200 and bool(real_ref) and present.get('admin') is True,
                      f'HTTP {st}, ref {"present" if real_ref else "absent"}, '
                      f'credentials_present {json.dumps(present)}')
+
+            st, bd = op({'op': 'store', 'siteId': site_id, 'userId': user_id, 'kind': 'admin',
+                         'secret': 'not-a-ghost-key'})
+            run.step(f'{label} malformed',
+                     st == 500 and isinstance(bd, dict) and bd.get('code') == 'credential_malformed'
+                     and 'ref' not in bd,
+                     f'a key with no colon -> HTTP {st} {json.dumps(bd)[:120]} (refused before Vault: no ref)')
 
             st, bd = op({'op': 'call', 'siteId': site_id, 'method': 'GET', 'path': 'config/'})
             run.step(f'{label} config-no-version',
@@ -314,14 +356,25 @@ def main():
             run.step(f'{label} config-versioned',
                      st == 200 and isinstance(bd, dict) and bd.get('status') == 200
                      and bd.get('version') == reported,
-                     f'ghost_version now {reported}, so Accept-Version v{major}.0 -> '
+                     f'ghost_version now {reported}, so Accept-Version v{major}.0 by construction -> '
                      f'HTTP {st}, Ghost {bd.get("status") if isinstance(bd, dict) else "?"}')
 
-            st, bd = op({'op': 'call', 'siteId': site_id, 'method': 'POST', 'path': 'posts/',
-                         'body': {'posts': [{'title': 'this must never be created'}]}})
-            run.step(f'{label} write-denied',
-                     st == 500 and isinstance(bd, dict) and bd.get('code') == 'write_not_allowed',
-                     f'POST posts/ -> HTTP {st} {json.dumps(bd)[:140]}')
+            # THE THREE DENIALS the matrix names, each with no network call: no item, the wrong
+            # item (read out of the allowlist, never retyped), and a guarded body.
+            denials = [
+                ('no item', {}),
+                ('wrong item', {'item': allowlist()[0]}),
+                ('guarded body', {'method': 'PUT', 'path': 'settings/', 'item': 'announcement_clear',
+                                  'body': {'settings': [{'key': 'announcement_content', 'value': ''},
+                                                        {'key': 'title', 'value': 'this must never be set'}]}}),
+            ]
+            for why, extra in denials:
+                payload = {'op': 'call', 'siteId': site_id, 'method': 'POST', 'path': 'posts/',
+                           'body': {'posts': [{'title': 'this must never be created'}]}, **extra}
+                st, bd = op(payload)
+                run.step(f'{label} write-denied ({why})',
+                         st == 500 and isinstance(bd, dict) and bd.get('code') == 'write_not_allowed',
+                         f'{payload["method"]} {payload["path"]} -> HTTP {st} {json.dumps(bd)[:120]}')
 
             st, bd = op({'op': 'store', 'siteId': site_id, 'userId': user_id, 'kind': 'admin', 'secret': BOGUS})
             bogus_ref = bd.get('ref') if isinstance(bd, dict) else None
@@ -346,6 +399,24 @@ def main():
                         ' — expected before the owner applies 20260907200000_vault_secret_lifecycle.sql'))
             refs[label] = new_ref
 
+            # The staff kind and `remove`, which no product story calls until 3.6 / E7: a
+            # token-SHAPED secret (never minted, never sent to a Ghost) in, and out again.
+            STAFF = '1' * 24 + ':' + 'cd' * 32
+            st, bd = op({'op': 'store', 'siteId': site_id, 'userId': user_id, 'kind': 'staff', 'secret': STAFF})
+            staff_ref = bd.get('ref') if isinstance(bd, dict) else None
+            st2, _ = op({'op': 'remove', 'siteId': site_id, 'kind': 'staff'})
+            _, staff_gone = op({'op': 'secret-exists', 'ref': staff_ref})
+            _, flags = rest(sb, secret, 'GET', f'/sites?id=eq.{site_id}&select=credentials_present')
+            present = flags[0]['credentials_present'] if isinstance(flags, list) and flags else {}
+            run.step(f'{label} staff-removed',
+                     st == 200 and bool(staff_ref) and st2 == 200 and staff_gone == {'exists': False}
+                     and present.get('staff') is False and present.get('admin') is True,
+                     f'staff stored (HTTP {st}) then removed (HTTP {st2}): the secret '
+                     f'{"is gone" if staff_gone == {"exists": False} else "SURVIVED"}, '
+                     f'credentials_present {json.dumps(present)}'
+                     + ('' if staff_gone == {'exists': False} else
+                        ' — expected before the owner applies 20260907200000_vault_secret_lifecycle.sql'))
+
             _, bd = op({'op': 'audit', 'siteId': site_id})
             rows = bd.get('rows', []) if isinstance(bd, dict) else []
             counts = {}
@@ -359,14 +430,17 @@ def main():
             denied = [r for r in rows if r.get('action') == 'admin_write' and r.get('outcome') == 'denied']
             error_401 = [r for r in rows if r.get('action') == 'admin_read' and r.get('outcome') == 'error'
                          and detail(r).get('status') == 401]
+            missing = [r for r in rows if r.get('action') == 'vault_decrypt' and r.get('outcome') == 'error'
+                       and detail(r).get('reason') == 'missing']
             no_network = bool(denied) and all('status' not in detail(r) for r in denied)
             stamped = all(r.get('route') == audit_route() for r in rows)
             leak = [r for r in rows if re.search(r'[0-9a-f]{16,}:[0-9a-f]{16,}', json.dumps(r, default=str))]
             run.step(f'{label} audit',
                      objects and not leak
-                     and counts.get('vault_decrypt ok', 0) >= 4 and counts.get('admin_read ok', 0) == 2
-                     and len(error_401) == 1 and len(denied) == 1 and no_network and stamped,
+                     and counts.get('vault_decrypt ok', 0) >= 6 and counts.get('admin_read ok', 0) == 2
+                     and len(error_401) == 1 and len(denied) == 3 and len(missing) == 1 and no_network and stamped,
                      f'{len(rows)} rows {json.dumps(counts)}; every detail is a jsonb object = {objects}; '
+                     f'the decrypt before any key was stored left its error row = {len(missing) == 1}; '
                      f'the denied write carries no status (no network call) = {no_network}; '
                      f'every row stamped {audit_route()} = {stamped}; '
                      f'rows that look like they hold a key = {len(leak)}')
