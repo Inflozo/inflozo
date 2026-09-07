@@ -269,7 +269,7 @@ no notification, no second client, no schema change.
 - [x] `app/api/cron/purge-accounts/route.ts` + `server-wiring.test.ts` + `lib/supabase/server.ts` --
       the route, and the third reader named where the second was -- FR-A5's purge
 - [x] `apps/web/vercel.json` -- the one `crons` entry -- AD-33's schedule beside its home
-- [~] `tools/probe/.env.example` + Vercel production env + `tools/probe/.env` -- `CRON_SECRET` by name
+- [ ] `tools/probe/.env.example` + Vercel production env + `tools/probe/.env` -- `CRON_SECRET` by name
       in all three -- the door has a key before the door is deployed -- **TWO OF THREE.** The secret is
       generated and in `tools/probe/.env`, and `tools/probe/.env.example:96-102` names it with its
       command; the `POST /v10/projects/{VERCEL_PROJECT}/env` that puts it in Vercel `production` was
