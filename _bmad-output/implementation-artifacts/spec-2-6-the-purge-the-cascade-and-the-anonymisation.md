@@ -332,7 +332,13 @@ no notification, no second client, no schema change.
   apex's OWN Next app answering, with the app's CSP header, while the control
   `https://inflozo.com/app/account` is a 308 to `app.inflozo.com`. That is `routing.ts`'s
   pass-through claim executed. The 401 is the Deploy run's, and `## Verification` says so.
-- **`CRON_SECRET` did not reach Vercel `production`** (Dev). See Question 1.
+- **`CRON_SECRET` did not reach Vercel `production`** (Dev). See Question 1, and its ruling: the
+  owner adds it in the dashboard from the value in `tools/probe/.env`. Until he does, the deployed
+  route answers 401 to Vercel's own cron — fail-closed, so nothing breaks and nothing purges.
+- **The Dev push deployed the route** (Dev). CI's `deploy` job ran on the Dev commit, so
+  `/api/cron/purge-accounts` is live and answering 401 ahead of this story's Deploy phase. The
+  Deploy run therefore needs a **redeploy** after the owner adds the variable, because Vercel bakes
+  environment variables into a deployment — the current one cannot see a variable added after it.
 
 ## Design Notes
 
@@ -418,6 +424,14 @@ Variables** → **Add New**. Name: `CRON_SECRET`. Value: the long random word I 
 
 *(Option 1 keeps the password out of the chat entirely, which is why it is recommended.)*
 
+**Ruled (owner, 2026-09-07): option 2, with a condition — he adds it in the Vercel dashboard
+himself, and the value is copied out of `tools/probe/.env` rather than pasted into the chat.** The
+file carries the copy instruction in a box directly above the line. The value was rotated once
+before he copied it, after a `sed` in the Dev run printed the first one to the session transcript;
+that first value never left this machine — the Vercel write it was generated for is the one the
+sandbox refused — so nothing anywhere needs updating, and the line in `tools/probe/.env` is the
+only value that has ever existed as far as any service is concerned.
+
 ## Verification
 
 Run on the real infrastructure (R-82). Every key is read into a command's environment by name and
@@ -435,7 +449,7 @@ never printed; each is recorded by its variable name only. **The Dev run's resul
 | `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` | names only; no `CRON_SECRET` before | **HTTP 200**, seven variables by name — `RESEND_FROM`, `RESEND_API_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `ENABLE_EXPERIMENTAL_COREPACK`, `DODO_WEBHOOK_SECRET`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL`. **No `CRON_SECRET`** |
 | `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` `{ key: 'CRON_SECRET', type: 'encrypted', target: ['production'] }` | HTTP 201, then the name reads back | **NOT RUN — refused by this machine's sandbox classifier, twice** (inline and as a script file). No workaround attempted. **Question 1** |
 | `python3 tools/probe/run-verify-account-purge.py --check` | exit 0; keys present; one admin create-read-delete; put → `list-v2` → delete in each of the four buckets; users before == after | **exit 0, all steps passed.** `users before: 5` → `users after: 5`. `PASS secret` · `PASS admin-round-trip: create, read back -> HTTP 200` · `PASS list-v2 assets` · `PASS list-v2 site-snapshots` · `PASS list-v2 suggestion-images` · `PASS list-v2 deploy-artifacts` — each `put -> HTTP 200; list-v2 -> HTTP 200 ['purge-check-<stamp>/deep/probe.bin']; delete -> HTTP 200; the prefix now lists 0` |
-| `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **HTTP 404** — the route is not on the deployed commit, so the 401 is the **Deploy run's**. What this DID execute is the pass-through: the 404 is the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`. `routing.ts`'s claim holds |
+| `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **run twice.** Before the Dev push: **HTTP 404** — but the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`; that is `routing.ts`'s pass-through executed. After the Dev push, which CI deployed: **HTTP/2 401**, `cache-control: no-store`, `x-matched-path: /api/cron/purge-accounts`. The door exists, is shut and is not cached — and it is shut **because `CRON_SECRET` is unset in Vercel**, which is the fail-closed branch of `authorized()` executed on production rather than reasoned about |
 | `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | **the Review and Deploy runs'** — nothing to call until the route is deployed and Question 1 is settled |
 | Deploy run: `vercel crons ls`, then one invocation in the runtime logs | the one job, `/api/cron/purge-accounts`, `15 3 * * *`; `vercel-cron/1.0`, status 200 | **the Deploy run's** |
 
