@@ -101,4 +101,12 @@ A user owns their account end to end: registers a passkey and signs in with it i
   `run-verify-account-purge.py` calls the route on `inflozo.com` — the apex passes non-`/app` paths
   through, as `*.vercel.app` does for Vercel's own call. Ledger: DW-44 (Vault secrets outlive the
   `site_credentials` cascade — 3.1's trigger), DW-45 (`entitlements.restored_by` does not cascade —
-  E12's), DW-46 (a failed purge is only a red cron log until NFR-9's Sentry).
+  E12's), DW-46 (a failed purge is only a red cron log until NFR-9's Sentry). **Review (2026-09-07):** the
+  loop over the due accounts is `runPurge(deps, due)` in `purge-rule.ts`, pure over a four-method `PurgeDeps`
+  and executed under `node --test` (one failure never stops the rest — the source-reading assertion for it
+  was inert); `drainPrefix` refuses an empty prefix (the whole bucket); the harness derives the cascade
+  table list from the migrations, deletes its own suggestion rows (six orphans were on the live board),
+  proves its 401s came from the route, and looks fifteen minutes ahead before pressing the button. Ledger:
+  DW-47 (BATCH permanently failing accounts would starve the rest). `edit_locks` is unreadable by the
+  service role by design (schema `:1160` grants the server-written tables only) — the cascade still empties
+  it in Postgres, the harness names it unprovable.

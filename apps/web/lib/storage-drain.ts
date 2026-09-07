@@ -34,7 +34,7 @@ export interface DrainBucket {
 /**
  * A listing that never empties is a bug — a prefix whose objects the service role cannot delete,
  * or a `remove` that answers 200 and removes nothing — and a bug must stop, not spin for the
- * function's whole 300 seconds. At the 1000-object default this is a million objects.
+ * function's whole 300 seconds. At the 1000-object default this is a hundred thousand objects.
  */
 export const MAX_ROUNDS = 100
 
@@ -53,6 +53,12 @@ function drainFailure(what: string, prefix: string, error: unknown): Error {
  * because a partly drained prefix must leave the account's ROWS alone and be due again tomorrow.
  */
 export async function drainPrefix(bucket: DrainBucket, prefix: string, limit = 1000): Promise<number> {
+  // An empty prefix — or `/`, which is what an empty id becomes — is not a prefix, it is the
+  // WHOLE BUCKET, and this walker would remove every user's objects in it. Refused here, in the
+  // one function every purge routes through, rather than in each caller (review, 2026-09-07).
+  if (!prefix.replace(/\/+$/, '')) {
+    throw drainFailure('drain', prefix, { message: 'an empty prefix would walk the whole bucket' })
+  }
   let removed = 0
   for (let round = 0; round < MAX_ROUNDS; round += 1) {
     const { data, error } = await bucket.listV2({ prefix, limit })

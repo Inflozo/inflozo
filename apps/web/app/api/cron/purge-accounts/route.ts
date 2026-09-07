@@ -1,11 +1,11 @@
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { drainPrefix } from '@/lib/storage-drain'
-import { BATCH, authorized, prefixesFor } from './purge-rule'
+import { BATCH, authorized, runPurge, type PurgeDeps } from './purge-rule'
 
 /**
- * FR-A5's LAST SENTENCE, once a day: the account whose fourteen days ran out is removed for good.
- * Story 2.5 opened the window and holds the door; nothing closed it, and an account pending for
- * ever is exactly the indefinite retention FR-A5 forbids.
+ * FR-A5's LAST SENTENCE, once a day (Epic 2, Story 2.6): the account whose fourteen days ran out
+ * is removed for good. Story 2.5 opened the window and holds the door; nothing closed it, and an
+ * account pending for ever is exactly the indefinite retention FR-A5 forbids.
  *
  * AD-33's ONE CRON FOR EPIC 2, at the home the spine names (`:354-359`), scheduled in
  * `apps/web/vercel.json` beside it. Vercel invokes it with `GET` on the production deployment URL
@@ -23,19 +23,22 @@ import { BATCH, authorized, prefixesFor } from './purge-rule'
  *
  * THEN GOTRUE, NOT SQL. `DELETE /admin/users/{id}` is the one documented way to remove a user,
  * the client is already in the app, and the Postgres cascade off `auth.users` fires under any
- * deleter — every `references auth.users(id) on delete cascade` in the schema empties itself.
- * A `security definer` function would be a migration for a job the service role already can do.
+ * deleter — every `references auth.users(id) on delete cascade` in the schema empties itself
+ * (executed on the live project by the harness's `rows-gone` step, 2026-09-07). A `security
+ * definer` function would be a migration for a job the service role already can do.
  *
  * THE THIRD PRIVILEGED READER, and `server-wiring.test.ts` names it: this route acts for NOBODY,
  * so no session could make its reads, and `deleteUser` is an admin-API call by definition.
  *
  * 500 WHENEVER ANYTHING FAILED. Vercel neither retries a cron nor alerts on one, so the red line
  * in its log is the only alarm that exists until NFR-9's Sentry lands (DW-46); a 200 that hides a
- * failed account is a purge that quietly became retention. Each account is its own `try`: one
- * failure never stops the rest, and a failed account is simply still due tomorrow.
+ * failed account is a purge that quietly became retention. The loop itself is `runPurge()` in
+ * `purge-rule.ts`, pure over `PurgeDeps`, so "each account is its own try" is EXECUTED under
+ * `node --test` rather than read off this file; this route only builds the deps and answers.
  *
  * ponytail: no lock and no claim column — an overlapping run meets empty listings, an idempotent
- * update and a 404; a claim column the day two runs are observed to cost something.
+ * update and a 404; a claim column the day two runs are observed to cost something (DW-47 names
+ * the day BATCH permanently failing accounts would starve the rest).
  */
 
 /** A cached cron response is skipped and never logged (Vercel docs) — a purge that did not run. */
@@ -71,24 +74,15 @@ export async function GET(request: Request) {
     return Response.json({ purged: 0, failed: 1 }, { status: 500, headers: NO_STORE })
   }
 
-  let purged = 0
-  let failed = 0
-  for (const { user_id: userId } of due ?? []) {
-    try {
-      const { data: projects, error: projectsError } = await admin
-        .from('projects')
-        .select('id')
-        .eq('user_id', userId)
-      if (projectsError) throw failure('projects', projectsError)
-
-      for (const [bucket, prefix] of prefixesFor(userId, (projects ?? []).map((p) => p.id))) {
-        await drainPrefix(admin.storage.from(bucket), prefix).catch((cause: Error) => {
-          // The walker knows the prefix; only the loop knows which bucket it belongs to.
-          throw Object.assign(cause, { bucket })
-        })
-      }
-
-      const { error: anonError } = await admin
+  const deps: PurgeDeps = {
+    async projectIds(userId) {
+      const { data, error } = await admin.from('projects').select('id').eq('user_id', userId)
+      if (error) throw failure('projects', error)
+      return (data ?? []).map((p) => p.id)
+    },
+    drain: (bucket, prefix) => drainPrefix(admin.storage.from(bucket), prefix),
+    async anonymise(userId) {
+      const { error } = await admin
         .from('suggestions')
         .update({
           user_id: null,
@@ -97,25 +91,14 @@ export async function GET(request: Request) {
           image_approved: false,
         })
         .eq('user_id', userId)
-      if (anonError) throw failure('suggestions', anonError)
-
-      const { error: userError } = await admin.auth.admin.deleteUser(userId)
-      if (userError) throw failure('user', userError)
-
-      purged += 1
-      console.log('purge: account removed', { userId })
-    } catch (thrown) {
-      const e = (thrown ?? {}) as { step?: string; bucket?: string; code?: string; message?: string }
-      console.error('purge: failed', {
-        userId,
-        step: e.step ?? 'unknown',
-        bucket: e.bucket,
-        code: e.code,
-        message: e.message,
-      })
-      failed += 1
-    }
+      if (error) throw failure('suggestions', error)
+    },
+    async deleteUser(userId) {
+      const { error } = await admin.auth.admin.deleteUser(userId)
+      if (error) throw failure('user', error)
+    },
   }
 
+  const { purged, failed } = await runPurge(deps, (due ?? []).map((row) => row.user_id))
   return Response.json({ purged, failed }, { status: failed ? 500 : 200, headers: NO_STORE })
 }

@@ -2,8 +2,8 @@
 title: 'Story 2.6 — The purge, the cascade and the anonymisation'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-progress'
-review_loop_iteration: 0
+status: 'in-review'
+review_loop_iteration: 1
 baseline_commit: '868c19644344434056b7236fc8f499370e061bd2'
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
@@ -275,9 +275,10 @@ no notification, no second client, no schema change.
       dashboard (Question 1, ruled): read back by name as `CRON_SECRET`, target `production`, type
       `sensitive` — the dashboard's default, which is stricter than the API's `encrypted` in that the
       value cannot be read back at all
-- [ ] `tools/probe/run-verify-account-purge.py` (the full run) -- against the deployed commit, controls
-      first -- R-82, re-runnable, the epic's exit -- **the Review and Deploy runs'**, as `## Verification`
-      assigns it: the route is not on the deployed commit yet, so there is nothing for it to call
+- [x] `tools/probe/run-verify-account-purge.py` (the full run) -- against the deployed commit, controls
+      first -- R-82, re-runnable, the epic's exit -- **the Review run's, executed 2026-09-07** against the
+      deployed Dev commit with the patched harness, every step PASS (`## Verification`); the Deploy run
+      runs it once more against its own deployment
 - [x] `deferred-work.md` + `epic-2-context.md` -- DW-44, DW-45, DW-46 and the Create line, landed at
       Create -- propagate, never localise
 - [x] Run `## Verification` on the real infrastructure and record every command and result by variable
@@ -307,6 +308,64 @@ no notification, no second client, no schema change.
   — the mechanism executed, not assumed
 - Given `pnpm check`, `pnpm build` and `doc-audit --check`, then all green, and `next build` lists
   `/api/cron/purge-accounts` as `ƒ`
+
+### Review Findings
+
+*Review run 2026-09-07, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). Every claim held on the real infrastructure; 19 patches applied, 1 deferred to the
+ledger, 10 dismissed as noise, no decision for the owner.*
+
+- [x] [Review][Patch] The "each account is its own try" assertion was inert — a missing match returned
+      -1 and still passed — and the loop ran under no executing test [apps/web/purge.test.ts:183] — the
+      loop is now `runPurge(deps, due)` in `purge-rule.ts`, pure over a four-method `PurgeDeps`, with
+      four executing tests: the order inside one account, one failure never stopping the rest, a refused
+      drain leaving the rows alone and naming its bucket, nothing due
+- [x] [Review][Patch] Every harness run left two suggestion rows on the live ideas board — six orphans
+      were found [tools/probe/run-verify-account-purge.py, `finally`] — deleted by id in `finally`, and any
+      stale one swept by body text at the start and after cleanup; the six were swept on the first patched run
+- [x] [Review][Patch] `--check` seeded the whole fixture and a DUE account on the live project, while its
+      docstring, `--help` and catalogue row called it plumbing alone [harness] — `--check` now creates one
+      user and seeds nothing the route would purge
+- [x] [Review][Patch] C's `vote_count` was asserted to have been 1 without a read [harness `rows-gone`] —
+      `seeded` reads it and requires 1
+- [x] [Review][Patch] The 401 controls could not tell the route's 401 from a platform's [harness
+      `no-header`, `wrong-secret`] — body `Unauthorized` and `x-matched-path` naming the route required
+- [x] [Review][Patch] `objects-gone` read an errored listing as an empty one, and only `assets` had a
+      positive control [harness] — HTTP 200 required per bucket; `seeded` lists all four of A's prefixes
+      and requires exactly one object in each; the bucket set is checked against the app's
+- [x] [Review][Patch] The stranger check looked at now only [harness `seeded`] — fifteen minutes ahead,
+      so a real deadline passing mid-run stops the run
+- [x] [Review][Patch] `call_route` followed redirects with the bearer [harness] — redirects disabled; a
+      3xx is a FAIL
+- [x] [Review][Patch] The `--check` probe keys were never registered for cleanup [harness] — every key
+      is registered before its put
+- [x] [Review][Patch] `buckets()` matched any quoted lowercase string with a trailing comment and
+      accepted three or more [harness] — reads the `USER_BUCKETS` block; exactly three plus one
+- [x] [Review][Patch] The cascade table list was restated, not derived [harness `rows-gone`] — read out of
+      `supabase/migrations/*.sql` in order with drops honoured: 26 columns derived, 25 tables read with A
+      in none; `edit_locks` answers 403 to the service role by design (the schema grants that role the
+      server-written tables only, `:1160`) and is printed as unprovable, never hidden
+- [x] [Review][Patch] The `secret` step was printed under `--check` only [harness] — both modes
+- [x] [Review][Patch] An empty id would make a prefix `/`, and `/` is the whole bucket
+      [apps/web/lib/storage-drain.ts] — refused before anything is listed; tested for `''`, `/`, `//`
+- [x] [Review][Patch] The "nothing sends mail" regex saw only a path ending in `email`
+      [apps/web/purge.test.ts] — any import or require whose specifier mentions `mail` or `resend`
+- [x] [Review][Patch] Nothing proved `CRON_PATH` is where `route.ts` sits [apps/web/purge.test.ts] —
+      `existsSync(join('app', CRON_PATH, 'route.ts'))`
+- [x] [Review][Patch] `no-store` was proven on the 401 only [harness `purge`] — checked on the 200 too
+- [x] [Review][Patch] Three comments: "a million objects" is a hundred thousand
+      [apps/web/lib/storage-drain.ts], "300 seconds" was uncited [purge-rule.ts], the route header did
+      not name Story 2.6 [route.ts]
+- [x] [Review][Patch] `.env.example` said "put the SAME value here", and its one-liner printed the secret
+      onto the screen — the event that forced a rotation in the Dev run [tools/probe/.env.example] —
+      generate straight into the gitignored file; the template never carries a value
+- [x] [Review][Patch] The record: the bare-curl 401 was attributed to the unset-secret branch, the
+      full-run task said the route was not deployed, two Verification rows read NOT RUN though the
+      review could execute them, the redeploy hypothesis had its evidence, and "the logged line is
+      unchanged" was wrong [this spec] — corrected in `## Verification` and the Spec Change Log
+- [x] [Review][Defer] BATCH permanently failing accounts would starve every account behind them
+      [apps/web/app/api/cron/purge-accounts/route.ts] — deferred, **DW-47**: the frozen approach retries
+      tomorrow with no claim column; the fix is a migration the Ask First reserves
 
 ## Spec Change Log
 
@@ -344,6 +403,43 @@ no notification, no second client, no schema change.
   it was refused by the sandbox. It costs nothing either way: the Deploy run redeploys, which is
   the state the Deploy verification describes, and the Review run's harness reports a 401 on its
   `purge` step if the claim is true and the redeploy has not happened yet.
+- **SETTLED FOR PRODUCTION, BY TIMING** (Review, 2026-09-07). `CRON_SECRET`'s `updatedAt` in Vercel
+  is 13:51:11Z; the deployment serving `inflozo.com` was created 13:56:53Z — the Dev push, which CI
+  built with `vercel pull --environment=production` after the owner's change — and the bearer call
+  answered **200 `{ purged: 0, failed: 0 }`** with `cache-control: no-store`. The narrower claim
+  ("a deployment built BEFORE the variable sees it") was never executed and no longer matters here:
+  every later push rebuilds with the variable present. The same 200 is the runtime reading a
+  **`sensitive`** variable, so that claim is executed too.
+- **The bare `curl -si` 401 was attributed to the wrong branch** (Review). A call with no
+  `Authorization` header is `authorized()`'s `!header` branch whatever the secret is; the
+  unset-secret branch's evidence is the unit test, and the production 401s are the harness's two
+  controls — no header, wrong bearer — each with body `Unauthorized` and `x-matched-path` naming the
+  route, so a 401 from anything in front of the route cannot pass for them.
+- **The cascade HELD, and `sync_vote_count` fired inside it** (Review). `rows-gone` reads every
+  public table whose column `references auth.users(id) on delete cascade` — derived from the applied
+  migrations, drops honoured — and found A in none of the 25 the service role can read; C's
+  `vote_count` went from 1 (read after the vote was seeded) to 0. `edit_locks` is the 26th and answers
+  403 to the service role: the schema grants that role the server-written tables only (`:1160`), the
+  edit lock is the client's, and the cascade is Postgres's and needs no grant — the harness names it
+  unprovable rather than hiding it.
+- **The loop is pure, and executed** (Review). "Each account is its own try" was asserted by reading
+  the route's source, and the assertion could not fail: `indexOf` of a missing `try {` is -1, which is
+  less than any index. The loop is now `runPurge(deps, due)` in `purge-rule.ts` over a four-method
+  `PurgeDeps` (`projectIds`, `drain`, `anonymise`, `deleteUser`) that the route builds from
+  `supabaseAdmin()`; `purge.test.ts` drives it with a stub whose second of three accounts is refused
+  and asserts `{ purged: 2, failed: 1 }` with the third reached. The route keeps the due query, the
+  deps and the response; nothing on the wire changed (the patched harness passed every step against
+  the deployed Dev commit before the review commit was pushed).
+- **`drainPrefix` refuses an empty prefix** (Review). An empty id would make `prefixesFor` emit `/`,
+  and `listV2({ prefix: '/' })` is every user's objects; the guard lives in the one walker every
+  purge routes through. Ids come from uuid columns and cannot be empty; the guard is against the day
+  a caller passes something else.
+- **"The logged line is unchanged" was wrong** (Review): the catch adds `bucket` to it, which is the
+  point of attaching the name. Nothing else about the line moved.
+- **DW-47** (Review): BATCH permanently failing accounts at the head of the oldest-first queue would
+  starve every account behind them, and today that is a red log line (DW-46) and nothing else. The
+  frozen approach — reconciliation, no claim column, "still due tomorrow" — is right for the
+  one-off failures the matrix names; the fix is a migration the Ask First reserves.
 
 ## Design Notes
 
@@ -455,11 +551,27 @@ never printed; each is recorded by its variable name only. **The Dev run's resul
 | `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` `{ key: 'CRON_SECRET', type: 'encrypted', target: ['production'] }` | HTTP 201, then the name reads back | **NOT RUN — refused by this machine's sandbox classifier, twice** (inline and as a script file). No workaround attempted. **The owner added it in the dashboard instead** (Question 1, ruled) |
 | `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` again, after the owner's change | `CRON_SECRET` present, `production` | **HTTP 200** — eight variables now, `CRON_SECRET` among them: target `['production']`, type **`sensitive`** (the dashboard's default; unlike `encrypted` its value cannot be read back through the API at all, which is stricter and changes nothing about how the runtime receives it) |
 | `GET /rest/v1/profiles?deleted_at=not.is.null` with `SUPABASE_SECRET_KEY`, before touching the bearer | the safety precondition the harness re-checks | **HTTP 200, zero rows.** No account on the live project is pending, so none is due; the Review run's harness seeds its own and refuses to fire if it finds a stranger |
-| `curl -H "Authorization: Bearer $CRON_SECRET" https://inflozo.com/api/cron/purge-accounts` | 200 `{ purged: 0, failed: 0 }` if the running deployment can see a variable added after it was built | **NOT RUN — refused by this machine's sandbox classifier.** It is the **Review run's** call in any case (`run-verify-account-purge.py` makes it with its controls first), and the Deploy run's redeploy settles the question either way |
+| `curl -H "Authorization: Bearer $CRON_SECRET" https://inflozo.com/api/cron/purge-accounts` | 200 `{ purged: 0, failed: 0 }` if the running deployment can see a variable added after it was built | Dev run: **NOT RUN** (sandbox). **Review run: HTTP 200 `{"purged":0,"failed":0}`, `cache-control: no-store`** — the serving deployment was built after the variable was added (Spec Change Log). **Never by hand from now on:** outside the harness this call has no stranger-refusal control and would purge any real due account; the harness makes it, controls first |
 | `python3 tools/probe/run-verify-account-purge.py --check` | exit 0; keys present; one admin create-read-delete; put → `list-v2` → delete in each of the four buckets; users before == after | **exit 0, all steps passed.** `users before: 5` → `users after: 5`. `PASS secret` · `PASS admin-round-trip: create, read back -> HTTP 200` · `PASS list-v2 assets` · `PASS list-v2 site-snapshots` · `PASS list-v2 suggestion-images` · `PASS list-v2 deploy-artifacts` — each `put -> HTTP 200; list-v2 -> HTTP 200 ['purge-check-<stamp>/deep/probe.bin']; delete -> HTTP 200; the prefix now lists 0` |
-| `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **run twice.** Before the Dev push: **HTTP 404** — but the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`; that is `routing.ts`'s pass-through executed. After the Dev push, which CI deployed: **HTTP/2 401**, `cache-control: no-store`, `x-matched-path: /api/cron/purge-accounts`. The door exists, is shut and is not cached — and it is shut **because `CRON_SECRET` is unset in Vercel**, which is the fail-closed branch of `authorized()` executed on production rather than reasoned about |
-| `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | **the Review and Deploy runs'** — nothing to call until the route is deployed and Question 1 is settled |
+| `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **run twice.** Before the Dev push: **HTTP 404** — but the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`; that is `routing.ts`'s pass-through executed. After the Dev push, which CI deployed: **HTTP/2 401**, `cache-control: no-store`, `x-matched-path: /api/cron/purge-accounts`. The door exists, is shut and is not cached. *(Review correction: a call with no header is the `!header` branch whatever the secret is — this row never executed the unset-secret branch, whose evidence is the unit test; the harness's two controls are the production 401s.)* |
+| `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | Dev run: nothing deployed to call. **Review run: every step PASS, twice — the unpatched harness against the deployed Dev commit `61fa12d9` (the verifier's run), then the patched harness against the same deployment (below)**; the Deploy run runs it against its own deployment |
 | Deploy run: `vercel crons ls`, then one invocation in the runtime logs | the one job, `/api/cron/purge-accounts`, `15 3 * * *`; `vercel-cron/1.0`, status 200 | **the Deploy run's** |
+
+**Review run, 2026-09-07, on the deployed Dev commit `61fa12d9` (Vercel deployment `READY`, aliases
+`inflozo.com` and `app.inflozo.com`, its `crons` reading `[{ path: /api/cron/purge-accounts, schedule:
+15 3 * * * }]`, plan `pro`).** Every key by variable name; no value printed.
+
+| Command | **What it returned** |
+|---|---|
+| `export PATH=…/node/v24.18.1/bin:$PATH && pnpm check` (root), after the patches | **exit 0**; `apps/web` all tests pass, `purge.test.ts`'s fifteen among them (four of them execute `runPurge`) |
+| `pnpm build` (`apps/web`) | **exit 0**; `ƒ /api/cron/purge-accounts` |
+| `GET /v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` | eight names; `CRON_SECRET` target `production`, type `sensitive`, `updatedAt` 13:51:11Z |
+| `GET /v6/deployments?projectId=…` | the serving deployment `createdAt` 13:56:53Z, sha `61fa12d9`, `READY` — built after the variable |
+| `curl -si https://inflozo.com/api/cron/purge-accounts` · the same with `Bearer not-the-secret-but-the-same-shape` | **401** each, body `Unauthorized`, `cache-control: no-store`, `x-matched-path: /api/cron/purge-accounts` |
+| `env $(grep '^CRON_SECRET=' tools/probe/.env \| xargs) sh -c 'curl … -H "Authorization: Bearer $CRON_SECRET" …'` | **200 `{"purged":0,"failed":0}`**, `no-store` (zero accounts pending, read first) |
+| `GET /rest/v1/edit_locks?select=user_id&limit=1` with `SUPABASE_SECRET_KEY` | **403** — the one cascade table the service role cannot read (by design, schema `:1160`); `deploy_jobs` 200 |
+| `python3 tools/probe/run-verify-account-purge.py --check` (patched) | **exit 0.** `PASS secret` · `swept 6 stale purge-harness suggestion row(s)` · `users before: 5` · one user created · `PASS admin-round-trip` · `PASS list-v2` in `assets`, `site-snapshots`, `suggestion-images`, `deploy-artifacts` (put 200 → list-v2 200 `['purge-check-<stamp>/deep/probe.bin']` → delete 200 → the prefix lists 0) · `users after: 5` |
+| `python3 tools/probe/run-verify-account-purge.py` (patched, full) | **exit 0, every step PASS:** `secret` · `users before: 5` · A, B, C created · 6 objects across 4 buckets · `seeded: the route would purge 1 account(s) within 15 min, exactly A; A's prefixes list {assets 1, site-snapshots 1, suggestion-images 1, deploy-artifacts 1} (HTTP [200]); C's vote_count is 1` · `no-header: 401 'Unauthorized', x-matched-path '/api/cron/purge-accounts', cache-control 'no-store'; A still there` · `wrong-secret: 401 'Unauthorized' …; A still there` · `purge: 200 {"purged": 1, "failed": 0}, cache-control 'no-store'` · `user-gone: 404` · `rows-gone: 25 cascade tables read, A left in none` (vote_count 1 → 0; `edit_locks` unprovable) · `objects-gone: every prefix of A's [] (HTTP [200])` · `anonymised: {"user_id": null, "anonymized_at": "2026-09-07T14:15:09…", "image_path": null, "image_approved": false}` · `others-untouched: B keeps its window and 1 object; C 200, 1 object, suggestion still C's` · `idempotent: 200 {"purged": 0, "failed": 0}` · `users after: 5` |
 
 **What was executed against the real services, and what it proved.** Supabase (`SUPABASE_URL`,
 `SUPABASE_SECRET_KEY`): three GoTrue admin users created and deleted with the count balanced; rows

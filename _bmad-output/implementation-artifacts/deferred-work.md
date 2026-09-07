@@ -1099,3 +1099,22 @@ reason: Vercel neither retries a failed cron invocation nor alerts on one (docs,
   route's 500 is the whole alarm today. The story that lands Sentry (NFR-9) captures the purge's
   `console.error` with the rest and closes this row; until then the Deploy and Review runs read the cron log
   by hand and record it under `## Verification`.
+
+### DW-47: a batch of permanently failing accounts would starve every account behind them
+
+plain: The daily clean-up takes the 25 accounts whose deadline passed longest ago and retries a failed one
+  the next day. If 25 accounts ever fail every single day — a systemic fault, not a normal one — the accounts
+  behind them are never reached, and every day's run is red. Today that is only a red log line (DW-46).
+status: open
+severity: medium
+origin: Story 2.6 code review (2026-09-07)
+location: apps/web/app/api/cron/purge-accounts/route.ts (`.order('purge_after').limit(BATCH)`) ·
+  apps/web/app/api/cron/purge-accounts/purge-rule.ts (`BATCH = 25`; no attempt column, no lock —
+  marked `ponytail:`) · spec-2-6 Boundaries ("a failed account is simply still due tomorrow")
+reason: The story's approach is reconciliation with no claim column and no attempt counter, and a failed account
+  stays at the head of the oldest-first queue by construction. That is right for the one-off failures the matrix
+  names (a transient refusal, an overlapping run's 404) and wrong only when BATCH accounts fail permanently at
+  once, which needs a systemic cause — a bucket policy change, a non-cascading foreign key (DW-45) on many rows
+  — that the red log line already reports. The fix is a migration (a `purge_attempts` or `purge_failed_at`
+  column skipped after N tries, or a bigger batch), which the spec's Ask First reserves; it lands the day a run
+  is observed to starve or when NFR-9's Sentry (DW-46) turns the red line into an alert somebody reads.
