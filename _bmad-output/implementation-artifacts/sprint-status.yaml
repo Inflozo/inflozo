@@ -53,7 +53,7 @@ development_status:
   epic-2: in-progress
   2-1-register-a-passkey-and-sign-in-with-it: done
   2-2-see-rename-and-revoke-my-passkeys: done
-  2-3-change-my-email-address-safely: backlog
+  2-3-change-my-email-address-safely: ready-for-dev
   2-4-end-every-session-everywhere: backlog
   2-5-ask-to-delete-my-account-and-be-able-to-change-my-mind: backlog
   2-6-the-purge-the-cascade-and-the-anonymisation: backlog
