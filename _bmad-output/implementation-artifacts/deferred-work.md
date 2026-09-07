@@ -731,7 +731,7 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
 
 ### DW-32: the passkey ceremony has no repeatable control — the kill switch, the auto-name, the round trip and the duplicate refusal are all proved by hand
 
-plain: Four things about passkeys could only be checked by a person. Story 2.2 built a harness that checks the whole add-rename-revoke-sign-in journey by itself, and that one is done. The harness also ASKS the second-passkey question — is adding a second passkey on a device that already has one refused? — but the answer only arrives when the story deploys. The last two are still by hand: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey".
+plain: Four things about passkeys could only be checked by a person. Story 2.2 built a harness that checks the whole add-rename-revoke-sign-in journey by itself, and that one is done. It also asked the second-passkey question — is adding a second passkey on a device that already has one refused? — and on the deployed site, yes, it is. The last two are still by hand: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey".
 status: open
 severity: low
 origin: Story 2.1 code review (2026-09-06), the Verification Gap layer
@@ -768,10 +768,10 @@ partly closed: Story 2.2 Dev (2026-09-07). **(3) is CLOSED**: `tools/probe/run-v
   control is a 121-character rename the server must refuse, so a green run is not a run that checks
   nothing (standing rule 2). Its `--check` mode — keys, Playwright, one real create-read-delete against
   Supabase — ran green at Dev time; the full run is the Deploy phase's, because it drives the UI this
-  story is deploying. **(4) IS ASKED BUT NOT YET ANSWERED**: the harness's `duplicate` step makes a second
-  `create()` on the same authenticator and records whether GoTrue populates `excludeCredentials` or the
-  card silently grows a second row. Until the Deploy run prints it, `excludeCredentials` remains the
-  unexecuted claim the review named, so (4) stays open and closes on that line in `## Verification`.
+  story is deploying. **(4) IS NOW CLOSED**: Story 2.2 Deploy (2026-09-07) — the harness's `duplicate`
+  step made a second `create()` on the same authenticator against `app.inflozo.com` and it was
+  REFUSED, the card showing "This device already has a passkey for Inflozo." GoTrue does populate
+  `excludeCredentials`; `ALREADY_HERE` (`passkeys-card.tsx`) is live code, not dead code.
   **(1) and (2) STAY OPEN.** (1) — the kill switch mid-ceremony — needs a post to a Server Function,
   whose action id is a build artifact the harness cannot address; it is still the hand-run curl in 2.1's
   Deploy list. (2) — the named-AAGUID path — needs a REAL `getAuthenticatorData()` buffer as a fixture,
@@ -780,8 +780,8 @@ partly closed: Story 2.2 Dev (2026-09-07). **(3) is CLOSED**: `tools/probe/run-v
 
 ### DW-33: two passkey paths lean on the platform to backstop them, and neither leaning has been executed
 
-plain: The passkey sign-in buttons can be pressed by anyone who is not signed in yet, and we relied on Supabase to stop somebody hammering them without ever checking that it does; Story 2.2 built the check but it runs when the story deploys, so the answer is not in yet. Separately, the Account page's request for your passkey list had no time limit, so a slow Supabase would have left that page hanging where every other similar read gives up after three seconds; it now gives up after three seconds too — that half is done.
-status: open
+plain: The passkey sign-in buttons can be pressed by anyone who is not signed in yet, and we relied on Supabase to stop somebody hammering them without ever checking that it does; Story 2.2 checked it on the deployed site and Supabase does. Separately, the Account page's request for your passkey list had no time limit, so a slow Supabase would have left that page hanging where every other similar read gives up after three seconds; it now gives up after three seconds too.
+status: closed
 severity: low
 origin: Story 2.1 code review, second loop (2026-09-06) — Blind Hunter and Edge Case Hunter
 location: apps/web/app/(app)/app/sign-in/actions.ts (`startPasskeySignIn`, `finishPasskeySignIn`) ·
@@ -802,13 +802,10 @@ partly closed: Story 2.2 Dev (2026-09-07). **(2) is CLOSED IN CODE**: `listPassk
   `READ_TIMEOUT_MS` ceiling `lib/flags.ts` gives its two reads — and answers `null`, which the card
   already renders as "We couldn't load your passkeys just now." It is a race and not a cancel, because
   the library exposes no `AbortSignal` for `passkey.list()`; the `ponytail:` line beside it says so.
-  **(1) STAYS OPEN UNTIL THE DEPLOY RUN**, because a check that has not run is not a result (standing
-  rule 2). The check itself is written: the `ratelimit` step of `tools/probe/run-verify-passkeys.py`:
-  30 posts to `/auth/v1/passkeys/authentication/options` — the endpoint `startPasskeySignIn` itself calls —
-  recording the first status ≠ 200. It hits GoTrue DIRECTLY with `SUPABASE_PUBLISHABLE_KEY` rather than
-  through the Server Function, deliberately: the claim under test is GoTrue's own limit on that endpoint,
-  and going through the action would measure Vercel's egress IP instead of a caller's. It closes when the
-  Deploy run records the number under the spec's `## Verification`.
+  **(1) IS NOW CLOSED**: Story 2.2 Deploy (2026-09-07) — the `ratelimit` step's 30 posts to
+  `/auth/v1/passkeys/authentication/options` against the live project got a first non-200 (429) on
+  call 12 of 30. GoTrue does rate-limit that endpoint on its own; the passkey sign-in actions'
+  reliance on the platform's own limit holds.
 
 ## Deferred from: code review of spec-1-6-the-new-identity-everywhere (2026-09-06)
 

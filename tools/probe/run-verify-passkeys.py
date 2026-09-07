@@ -282,6 +282,10 @@ const names = (page) =>
                  glyph: g && g.getAttribute('width') }
       })
       await el.hover()
+      // globals.css's --duration-fast (160ms) animates the hover fill in; reading the computed
+      // style right after hover() catches the transition at ~0 and sees transparent, not the
+      // fill it is animating toward — waiting past the duration reads the settled value instead.
+      await page.waitForTimeout(220)
       box.hover = await el.evaluate((n) => getComputedStyle(n).backgroundColor)
       return box
     }

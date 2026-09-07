@@ -301,11 +301,13 @@ the server must refuse — the run FAILS if it does not) · `duplicate` (DW-32 (
 `revoke` · `revoked-signin` · `magic-link` · `axe-card` / `axe-rename-open` / `axe-confirm-open` ·
 `ratelimit` (DW-33 (1)).
 
-**The Deploy run pastes its output here.** Until it does, four things stay hypotheses and this spec
-says so rather than claiming them (standing rule 1): whether GoTrue populates `excludeCredentials`
-on a second registration; which of S1a's two sentences a revoked credential produces at sign-in;
-whether GoTrue rate-limits `/passkeys/authentication/options`; and the frame measurement, which
-needs a row to measure.
+**The Deploy run's output is below, under its own heading.** All four were hypotheses until then
+(standing rule 1): GoTrue does populate `excludeCredentials` on a second registration (refused); a
+revoked credential at sign-in produces the second of S1a's two sentences, "We couldn't sign you in
+with a passkey. Use a magic link instead."; GoTrue does rate-limit
+`/passkeys/authentication/options` (429 on call 12 of 30); and the frame measurement matches the
+tokens exactly, once the harness itself was fixed to read the hover fill after its 160ms transition
+settles rather than mid-animation.
 
 **Review run, 2026-09-07 (R-82), on the real infrastructure** — every command by key name, none printed.
 
@@ -339,6 +341,53 @@ needs a row to measure.
   then `… -c "\dt public.passkey_labels"` -- expected: `Did not find any relation`
 - `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH && python3 tools/probe/run-verify-passkeys.py`
   -- expected: every step PASS, the control refused, exit 0; paste the run
+
+**Deploy run, 2026-09-07.**
+
+**Deployment:** `dpl_7uXLXN7FYKDy4sqMQy38NxLFCVh5` (`inflozo-59graeoto-umangkagathara.vercel.app`), commit
+`2e5fb9d0` — `readyState: READY`, read from `GET /v6/deployments` (`VERCEL_TOKEN`); CI's `check` and `rls`
+jobs both `success` for that commit (`GITHUB_TOKEN`, read-only), so `deploy` ran and this is the build
+serving `app.inflozo.com` and `inflozo.com` (AD-26).
+
+- **Migration applied by the owner**, no CLI or CI touching production (1.2's record): the owner ran
+  `drop table public.passkey_labels;` in the Supabase SQL Editor. Confirmed dropped from this session —
+  `GET /rest/v1/passkey_labels?limit=1` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) went from **200 `[]`** at
+  Review to **404** now; PostgREST has no route left for a table that no longer exists.
+- `python3 tools/probe/run-verify-passkeys.py` (no flag), against the deployed `app.inflozo.com`, real
+  Supabase project (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`) —
+  **first run: RESULT: FAILED.** `users before: 4` … `users after: 4` (no leak); every step passed except
+  `frame`, which measured both buttons' hover fill as `rgba(0, 0, 0, 0)` against the tokens' `paper` /
+  `dangerTint`. **This was the harness, not the product**, found by execution: `globals.css` sets
+  `--default-transition-duration: var(--duration-fast)` = **160ms**, and the harness read
+  `getComputedStyle(...).backgroundColor` immediately after `el.hover()` — at the transition's start,
+  not its end, which is a transparent background animating toward the fill rather than the fill itself.
+  Fixed in `tools/probe/run-verify-passkeys.py`'s `measure()`: a 220ms wait (past the 160ms duration)
+  between `hover()` and the read.
+- **Second run, after the fix: `RESULT: all steps passed`.** `users before: 4` … `fixture user deleted
+  (HTTP 200); users after: 4` (no leak, control held — standing rule 2).
+  - `signed-in`, `register` (id is a UUID) — PASS.
+  - `frame` — **PASS**: pencil `28×28, radius 8px, glyph 13, colour rgb(110, 106, 100), hover
+    rgb(247, 245, 242)`; bin `28×28, radius 8px, glyph 13, colour rgb(229, 72, 77), hover
+    rgb(253, 236, 236)` — both match the tokens (`inkSoft`/`paper`, `danger`/`dangerTint`) exactly.
+  - `axe-card`, `axe-rename-open`, `axe-confirm-open` — zero violations at WCAG 2.1 AA, each.
+  - `rename` — `friendly_name` off `GET /admin/users/{id}/passkeys` reads back `"Harness MacBook"`.
+  - `rename-control` — 121 characters sent; dialog stayed open; the field said "Give it a name — up to
+    120 characters."; the name on the wire was unchanged.
+  - `duplicate` (**DW-32 (4), now answered**) — REFUSED: a second `create()` on the same virtual
+    authenticator was rejected and the card showed "This device already has a passkey for Inflozo."
+    **GoTrue does populate `excludeCredentials`**; `ALREADY_HERE` in `passkeys-card.tsx` is live code.
+  - `revoke-focus` — focus on Cancel. `revoke` — the id came off the wire, `GET /passkeys` list dropped
+    to 0, the same session still rendered `/account` (200) — the current session survives a revoke.
+  - `revoked-signin` — the authenticator still held the deleted credential; the sign-in attempt stayed
+    on `/sign-in` and showed **"We couldn't sign you in with a passkey. Use a magic link instead."**
+    (the second of S1a's two sentences, resolving the matrix's open question).
+  - `magic-link` — the magic link still signed in, landing on `/account` (200).
+  - `ratelimit` (**DW-33 (1), now answered**) — a burst of 30 `startPasskeySignIn`-shaped posts to
+    `/auth/v1/passkeys/authentication/options` got its first non-200 as **429 on call 12 of 30**.
+    **GoTrue does rate-limit this endpoint on its own.**
+- `deferred-work.md` — DW-32 (4) and DW-33 (1) closed on the lines above; DW-32 (1) and (2) stay open
+  (unrelated to this run — the kill-switch curl and the real AAGUID fixture); DW-33 as a whole is now
+  closed.
 
 ## Owner's manual test
 
