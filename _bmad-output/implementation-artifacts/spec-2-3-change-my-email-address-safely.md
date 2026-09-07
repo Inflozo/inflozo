@@ -379,6 +379,35 @@ against `app.inflozo.com` rather than `--check` alone. Every key by its variable
 **Dodo**, **T1/T3** — untouched, as at Dev. **Resend** — the three `send` steps above each handed one real
 email to GoTrue for a `-new@inflozo.com` fixture address; delivery stays the owner's step 4 (DW-22).
 
+### Ran at Review, 2026-09-07 — the owner's two rulings, executed against the live project and site
+
+- `python3 tools/probe/configure-supabase-auth.py --apply` -> `PATCH 200`, then **every field PASS**
+  including **`mailer_notifications_email_changed_enabled = True`** (R-95) and
+  `mailer_secure_email_change_enabled = False`; `sessions_inactivity_timeout` reported apart as ever.
+- **Two controls, each failing exactly its own field**, which is what makes the green run above a
+  result: `--check --expect mailer_secure_email_change_enabled=true` -> `1 FAILED`, exit 1; `--check
+  --expect mailer_notifications_email_changed_enabled=false` -> `1 FAILED`, exit 1. Plain `--check`
+  -> `OK`, exit 0.
+- **GoTrue's own source, read rather than assumed** (`master`, fetched 2026-09-07): the notice is sent
+  to the OLD address alone — `templatemailer.go:433-441`, whose recipient argument is `oldEmail` — only
+  after `ConfirmEmailChange` succeeds and only when the address really differs, and a failed send is
+  logged rather than failing the request (`verify.go:633-639`). Its default subject and body are
+  `templatemailer.go:137` and `:73-77`, which is the unbranded copy DW-39 now owns.
+- `pnpm check` (root, Node 24.18.1) -> **133 tests pass, 0 fail** — the three R-94 tests among them,
+  including the one that reads the confirm route's own dead-link branch out of its source. `pnpm build`
+  -> compiled, `/app/account` and `/app/auth/confirm` both routed.
+- `python3 tools/probe/run-verify-email-change.py` against the deployed review commit -> **every step
+  PASS, exit 0**, the two new ones among them: **`stale-signed-in`** — the link the `confirm` step had
+  just spent, opened again on the signed-in browser, landed on `/account?email=stale` and the card said
+  *"That link has expired or was already used. Press Change email to get a new one."* — and
+  **`stale-signed-out`** — the same spent link with no cookies still landed on `/sign-in?error=link`
+  with the sign-in page's own sentence. Users before 4 / after 4, no strays.
+- **One harness defect found by executing it and fixed** (not a product fault): the first run against
+  the brand-new deployment died at `page.goto('/account')` — Playwright's 30s default with
+  `waitUntil: 'networkidle'` against a cold authed render — leaving every later step unrun. Every
+  navigation now waits for `load` with a 60s ceiling, which still waits for the stylesheets the
+  `frame` step measures. Re-run twice after the change: all steps PASS both times.
+
 ### Still to run, at Deploy, against `app.inflozo.com`
 
 `python3 tools/probe/run-verify-email-change.py` — the UI steps above, `frame` through

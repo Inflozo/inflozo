@@ -146,6 +146,15 @@ const MGMT = process.env.SB_MGMT_TOKEN                // the Management API's to
 const REF = process.env.SB_REF
 const TEMPLATE_HREF = process.env.TEMPLATE_HREF       // the email-change template's own link, unrendered
 
+/* `load`, NOT `networkidle`, AND A MINUTE TO DO IT IN. Executed 2026-09-07, minutes after the
+   review's own deployment went live: the FIRST authed render on a cold deployment took longer than
+   Playwright's 30s default with `networkidle`, and the run died at `page.goto('/account')` with
+   every assertion after it unrun — a failure that says nothing about the product, on exactly the
+   run this harness exists for (Deploy always meets a fresh deployment). `load` still waits for the
+   stylesheets the `frame` step measures against, and every step here asserts through a locator
+   that does its own waiting, so nothing is weakened by not demanding network quiet. */
+const NAV_TIMEOUT = 60000
+
 const steps = []
 const step = (name, ok, detail) => { steps.push({ name, ok, detail }); return ok }
 const record = (name, detail) => steps.push({ name, ok: null, detail })
@@ -236,6 +245,7 @@ const dialogBanner = (page) =>
 ;(async () => {
   const browser = await chromium.launch()
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  context.setDefaultNavigationTimeout(NAV_TIMEOUT)
   const page = await context.newPage()
 
   // Every POST the page makes. "Nothing left the browser" is the matrix's own promise for a
@@ -253,12 +263,12 @@ const dialogBanner = (page) =>
     //    because the card strips `?email=changed` once it has said its sentence.
     const homeChain = []
     page.on('framenavigated', (f) => { if (f === page.mainFrame()) homeChain.push(f.url()) })
-    await page.goto(CONFIRM_1, { waitUntil: 'networkidle' })
+    await page.goto(CONFIRM_1, { waitUntil: 'load' })
     const home = new URL(page.url())
     step('magic-link-home',
       home.pathname === '/' && !homeChain.some((u) => u.includes('email=changed')),
       `chain ${JSON.stringify(homeChain)}`)
-    await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
+    await page.goto(`${APP}/account`, { waitUntil: 'load' })
     step('signed-in', await page.locator('h1', { hasText: 'Account' }).count() > 0,
          `landed on ${page.url()}`)
 
@@ -376,12 +386,13 @@ const dialogBanner = (page) =>
     // ── the link's other end, in a browser that has never had a cookie — THE REAL LINK
     const real = await realEmailChangeLink()
     const fresh = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  fresh.setDefaultNavigationTimeout(NAV_TIMEOUT)
     const other = await fresh.newPage()
     // Every URL the redirect chain lands on: the client strips `?email=changed` off the address
     // bar once it has said the sentence, so reading page.url() afterwards would miss it.
     const seen = []
     other.on('framenavigated', (f) => { if (f === other.mainFrame()) seen.push(f.url()) })
-    await other.goto(real.href, { waitUntil: 'networkidle' })
+    await other.goto(real.href, { waitUntil: 'load' })
     const landed = seen.some((u) => u.includes('/account?email=changed'))
     const green = await other.locator('[role="status"]', { hasText: 'Your email is now' })
       .first().textContent({ timeout: 20000 }).catch(() => null)
@@ -393,7 +404,7 @@ const dialogBanner = (page) =>
       `email on the wire=${JSON.stringify(afterConfirm.email)}, new_email left=${JSON.stringify(afterConfirm.newEmail)}`)
 
     // ── the green sentence is a URL hint, not state: a reload says it no more
-    await other.reload({ waitUntil: 'networkidle' })
+    await other.reload({ waitUntil: 'load' })
     const againGreen = await other.locator('[role="status"]', { hasText: 'Your email is now' }).count()
     step('confirm-once', againGreen === 0 && !other.url().includes('email=changed'),
          `after reload: banners=${againGreen}, url=${other.url()}`)
@@ -403,7 +414,7 @@ const dialogBanner = (page) =>
     //    owner ruled on (R-94): the sentence must be said on the Account page, because /sign-in
     //    sends a signed-in visitor to the dashboard before it renders a word.
     const staleFrom = homeChain.length
-    await page.goto(real.href, { waitUntil: 'networkidle' })
+    await page.goto(real.href, { waitUntil: 'load' })
     const staleLanded = homeChain.slice(staleFrom).some((u) => u.includes('/account?email=stale'))
     const red = await page.locator('[role="alert"]', { hasText: 'That link has expired' })
       .first().textContent({ timeout: 20000 }).catch(() => null)
@@ -413,8 +424,9 @@ const dialogBanner = (page) =>
 
     // ── and the half that did NOT change: no session, so the sign-in page still says it
     const anon = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  anon.setDefaultNavigationTimeout(NAV_TIMEOUT)
     const anonPage = await anon.newPage()
-    await anonPage.goto(real.href, { waitUntil: 'networkidle' })
+    await anonPage.goto(real.href, { waitUntil: 'load' })
     const anonSaid = await anonPage.locator('[role="alert"]', { hasText: 'That link has expired' })
       .first().textContent({ timeout: 20000 }).catch(() => null)
     step('stale-signed-out',
@@ -427,8 +439,8 @@ const dialogBanner = (page) =>
     //    would show the same card and is exactly the defect this step exists to see.
     await fresh.clearCookies()
     const link = await magicLink(EMAIL_NEW)
-    await other.goto(link.url, { waitUntil: 'networkidle' })
-    const back = await other.goto(`${APP}/account`, { waitUntil: 'networkidle' })
+    await other.goto(link.url, { waitUntil: 'load' })
+    const back = await other.goto(`${APP}/account`, { waitUntil: 'load' })
     const shown = await other.locator('section', { hasText: 'Email' }).first().textContent().catch(() => null)
     step('magic-link-new',
       link.id === USER_ID && back.status() === 200 && !other.url().includes('/sign-in') && (shown || '').includes(EMAIL_NEW),
