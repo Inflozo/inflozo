@@ -722,6 +722,18 @@ the Deploy run's, and the owner's step 5 is the inbox.
 **Manual check (no CLI can make it).** Delivery is the owner's manual test step 5 (DW-22, a third
 time): `RESEND_API_KEY` is send-only, so no key here can look in an inbox.
 
+### Deploy run, 2026-09-07
+
+`Deployment: dpl_AZuHyjfEfBeYG1a8ahy1YfG7Pt4t` (`inflozo-gmydasz7x-umangkagathara.vercel.app`) — the
+CI run for `159f5e31` (`git log` HEAD, no app-code change since the review's `0486e4ac`) completed
+`success` (`GET /repos/Inflozo/inflozo/actions/runs?head_sha=159f5e31…` with `GITHUB_TOKEN`), so
+`deploy` ran; `GET /v6/deployments` with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` shows it `READY` for
+`VERCEL_PROJECT`'s `production` target, and `GET /v13/deployments/{id}` shows its `alias` carrying
+`app.inflozo.com` and `inflozo.com`. The migration, the RLS gate, the harness against
+`app.inflozo.com`, and the Resend-log read are already executed above under the review run — the same
+code is what this deployment now serves, so nothing there needed re-running. The owner's manual test
+below is the one thing this run leaves open.
+
 ## Owner's manual test
 
 On the live site, after the Deploy run. **Use a throwaway account** — sign in with an address you can
