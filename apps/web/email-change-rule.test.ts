@@ -5,7 +5,10 @@ import {
   EMAIL_CHANGED,
   EMAIL_CHANGED_PATH,
   EMAIL_CHANGED_VALUE,
+  EMAIL_STALE_PATH,
+  EMAIL_STALE_VALUE,
   isEmailChanged,
+  isEmailStale,
   LINK_LIFETIME_S,
   newEmailFor,
   pendingChange,
@@ -84,6 +87,45 @@ test('nothing else reads as a just-changed email', () => {
   assert.equal(isEmailChanged('1'), false)
   assert.equal(isEmailChanged('true'), false)
   assert.equal(isEmailChanged([EMAIL_CHANGED_VALUE, EMAIL_CHANGED_VALUE]), false)
+})
+
+/**
+ * THE DEAD LINK'S ROUND TRIP (R-94, the owner on this story's review). One key carries both
+ * sentences, so the two values must land on the same page and must NOT read as each other — a
+ * stale link showing "Your email is now …" would be the worst sentence in the product.
+ */
+test('the path a dead link lands on is the one the account page reads as stale', () => {
+  const url = new URL(EMAIL_STALE_PATH, 'https://app.inflozo.com')
+  assert.equal(url.pathname, '/account')
+  assert.ok(isEmailStale(url.searchParams.get(EMAIL_CHANGED) ?? undefined))
+})
+
+test('the two values on the one key never read as each other', () => {
+  assert.notEqual(EMAIL_CHANGED_VALUE, EMAIL_STALE_VALUE)
+  assert.equal(isEmailChanged(EMAIL_STALE_VALUE), false)
+  assert.equal(isEmailStale(EMAIL_CHANGED_VALUE), false)
+  assert.equal(isEmailStale(undefined), false)
+  assert.equal(isEmailStale([EMAIL_STALE_VALUE, EMAIL_STALE_VALUE]), false)
+  // And the card must strip the ONE key both ride on, or a reload repeats whichever it was.
+  assert.equal(new URL(EMAIL_STALE_PATH, 'https://x').searchParams.has(EMAIL_CHANGED), true)
+  assert.equal(new URL(EMAIL_CHANGED_PATH, 'https://x').searchParams.has(EMAIL_CHANGED), true)
+})
+
+/**
+ * AND THE ROUTE MUST ACTUALLY BRANCH TO IT. `route.ts` is a route handler `node --test` cannot
+ * import (it reaches for `next/server` and the request), so its source is read the way
+ * `server-wiring.test.ts` reads the server client's: the stale landing is one `if` that a
+ * tidying edit could delete, leaving a signed-in user on the dashboard with nothing said —
+ * which is the exact defect R-94 exists to close.
+ */
+test('the confirm route lands a dead email-change link on the account page', () => {
+  const route = readFileSync(new URL('./app/(app)/app/auth/confirm/route.ts', import.meta.url), 'utf8')
+  assert.match(route, /EMAIL_STALE_PATH/, 'route.ts no longer knows where a dead email-change link lands')
+  assert.match(
+    route.replace(/\s+/g, ' '),
+    /if \(type === 'email_change'\) \{ const \{ data \} = await supabase\.auth\.getUser\(\) if \(data\.user\) return/,
+    'the dead-link branch must ask getUser() and land a signed-in browser on EMAIL_STALE_PATH',
+  )
 })
 
 /**

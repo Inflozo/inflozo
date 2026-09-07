@@ -8,7 +8,7 @@ import { ring } from '@/components/kit/greyed'
 import { Mail } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { changeEmail, type ActionResult } from './actions'
-import { EMAIL_CHANGED, FIELD_REFUSALS, newEmailFor } from './email-change-rule'
+import { EMAIL_CHANGED, FIELD_REFUSALS, newEmailFor, STALE_LINK } from './email-change-rule'
 
 /* S12 Billing.dc.html:74-82 — the Email card, and the frame's own "Change email" at the end of
    the row. The row itself is the one this card was lifted from `page.tsx` with: the glyph, the
@@ -24,9 +24,13 @@ import { EMAIL_CHANGED, FIELD_REFUSALS, newEmailFor } from './email-change-rule'
    `components/kit/dialog.ts`, so the sheet, the display title and the focus-on-Cancel are the
    one vocabulary and cannot drift apart.
 
-   TWO BANNERS AND THEY SAY DIFFERENT THINGS. The green one is a URL HINT and not state: the
-   confirm route lands on `/account?email=changed`, this card says the sentence once and strips
-   the key, so a reload cannot show it again about a change that is long done. The blue one IS
+   THREE BANNERS AND THEY SAY DIFFERENT THINGS. The green one and the red one are URL HINTS and
+   not state: the confirm route lands on `/account?email=changed` when the link worked and
+   `?email=stale` when it was too old or already spent (R-94), this card says the one sentence
+   and strips the key, so a reload cannot show it again about a link that is long dealt with.
+   THE RED ONE IS HERE RATHER THAN ON THE SIGN-IN PAGE because that page redirects a signed-in
+   visitor to the dashboard before it renders a word, and the browser the email is opened on is
+   usually a signed-in one. The blue one IS
    state — Supabase's own `new_email`, still inside its link's lifetime — and it leaves on its
    own when the link expires unopened. */
 
@@ -41,11 +45,14 @@ export function EmailCard({
   email,
   pending,
   justChanged,
+  staleLink,
 }: {
   email: string | undefined
   /** Supabase's own pending change, while its link is still good. Never a store of ours. */
   pending: { email: string } | null
   justChanged: boolean
+  /** The confirm route could not redeem the link it was opened with (R-94). */
+  staleLink: boolean
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [sent, sendAction, sending] = useActionState<ActionResult | null, FormData>(changeEmail, null)
@@ -53,12 +60,13 @@ export function EmailCard({
   // The green sentence has been said; take the key off the URL so a reload is not a second
   // announcement. `replaceState` and not a router push: nothing navigates, and the App Router
   // reads the stripped URL for its next refresh.
+  // Either sentence — the green one or the red one — is said once; both ride on the one key.
   useEffect(() => {
-    if (!justChanged) return
+    if (!justChanged && !staleLink) return
     const url = new URL(window.location.href)
     url.searchParams.delete(EMAIL_CHANGED)
     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
-  }, [justChanged])
+  }, [justChanged, staleLink])
 
   // `passkeys-card.tsx:96-131`, both halves and for both reasons. React queues form actions and
   // `sending` only turns true on the NEXT render, so a held Enter or a double click sends two
@@ -111,6 +119,8 @@ export function EmailCard({
           Your email is now <span className="font-medium break-all">{email}</span>.
         </Banner>
       ) : null}
+
+      {staleLink ? <Banner kind="error">{STALE_LINK}</Banner> : null}
 
       <div className="flex items-center gap-3 py-[2px]">
         <span className="shrink-0 text-ink-soft">

@@ -903,20 +903,25 @@ reason: The stated reason for not importing it — an exported async function in
   because it edits `projects/actions.ts`, which is outside Story 2.3; do it in the next story that touches
   either file.
 
-### DW-39: the old address is never told when an account's email changes
+### DW-39: the "your email address was changed" notice is Supabase's plain default, not Inflozo's
 
-plain: When a user moves their account to a new email address, only the new address gets an email. The
-  old address hears nothing — so if someone else is using the account (a stolen laptop still signed in;
-  sessions last 30 days) and moves it to their own address, the real owner finds out only when a magic link
-  to their old address opens a brand-new, empty account. Most services send the old address a short "your
-  email was changed" note for exactly this reason.
-status: open — awaiting the owner's ruling (spec 2.3, `## Questions for the owner`, Question 2)
-severity: medium
-origin: Story 2.3 code review (2026-09-07) — Blind Hunter
-location: tools/probe/configure-supabase-auth.py (`mailer_notifications_email_changed_enabled: False`) · supabase/auth/ (no template for the notice) · PRD FR-P1 (the six-email count)
-reason: The story turned the switch off deliberately — FR-P1 counts exactly six emails and the PRD's words
-  are "re-verification of the new address" — and the spec's frozen Boundaries name a second email in this
-  flow as Ask First. GoTrue sends the notice from `verify.go:632-637` when the switch is on, with its own
-  template, which would need branding like the other two. Epic 12 builds and brands every remaining
-  transactional email and is where a seventh belongs if the owner wants it; the review's recommendation is
-  to decide it there. The risk is recorded here so that the decision is traceable and never silent.
+plain: When a user moves their account to a new email address, the address they are leaving now gets a
+  short note saying so — the owner's ruling R-95, so that nobody can move an account in silence while
+  holding a stolen session. That note is Supabase's own built-in one: unbranded, no Inflozo mark, and it
+  ends "contact support immediately", which names a support channel the product does not yet have. Every
+  other email Inflozo sends is branded. This one is the exception until Epic 12 fixes it.
+status: open
+severity: low
+origin: Story 2.3 code review (2026-09-07) — Blind Hunter raised the risk; the owner ruled the notice ON
+  (R-95, `reconcile-designs-decisions.md` §A19), which turned the question into this branding job
+location: tools/probe/configure-supabase-auth.py (`mailer_notifications_email_changed_enabled: True`, and
+  the two fields deliberately NOT written: `mailer_subjects_email_changed_notification`,
+  `mailer_templates_email_changed_notification_content`) · supabase/auth/ (no template for it yet) ·
+  PRD FR-P1 (7)
+reason: The owner chose the plain default now rather than delaying the security notice for a template
+  (question 2, option 2: "unbranded ... until Epic 12 brands it"). GoTrue's default is
+  `templatemailer.go:73-77` — "Your email address was changed", `{{ .OldEmail }}` and `{{ .Email }}`, and
+  the support sentence. The job is one template beside `magic-link.html` and `email-change.html`, pushed
+  through the two field names above, in the pass where **E12** builds and brands the rest of FR-P1;
+  its subject wants the product's voice too. Nothing is broken until then: the notice sends, and it says
+  the true thing.

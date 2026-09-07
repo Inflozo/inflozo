@@ -51,13 +51,19 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
   the new address. Nothing changes until you open it."; the field "New email"; the primary
   **Send link**. The field's own refusals go in its helper-caption slot; a send that failed goes in
   a `Banner kind="error"` above the form (`passkeys-card.tsx`'s split).
-- **One email, to the new address, and no other** (FR-P1 is exactly six and this is (2)): the
-  project's `mailer_secure_email_change_enabled` is **false** and
-  `mailer_notifications_email_changed_enabled` is **false**, both written and read back by
-  `configure-supabase-auth.py` — with secure change on, GoTrue mails BOTH addresses and the new
-  address's link alone never lands the change (`verify.go:548-585`); with the notification on, the
-  old address gets a seventh email (`verify.go:632-637`). Read in the source; executed by the
-  harness.
+- **Two emails: the link to the new address, and the notice to the old one.**
+  `mailer_secure_email_change_enabled` is **false** — with secure change on, GoTrue mails BOTH
+  addresses and the new address's link alone never lands the change (`verify.go:548-585`) — and
+  `mailer_notifications_email_changed_enabled` is **true**, both written and read back by
+  `configure-supabase-auth.py`. Read in the source; executed by the harness.
+  **AMENDED BY THE OWNER, 2026-09-07, ruling R-95** (this story's review, question 2 — the human
+  renegotiating what this block froze). It read *"One email, to the new address, and no other (FR-P1
+  is exactly six and this is (2))"*, and the notice was off. He ruled it **on**: the address an
+  account is moving away from is told, so a change made from a stolen 30-day session cannot happen
+  in silence. **FR-P1 is now seven and the notice is its (7)**; it is GoTrue's own plain default
+  template, sent to the old address alone after the change lands (`templatemailer.go:433-441`),
+  non-fatally (`verify.go:633-639`), and **E12 brands it** (DW-39). Nothing in this story sends it
+  and no template of ours is pushed for it.
 - The template is `supabase/auth/email-change.html`, extrapolated from `magic-link.html` (a
   transactional email is not a drawn surface): the same header, the same ink button, the same
   fifteen minutes, the link
@@ -84,7 +90,9 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 - Any second reader of `SUPABASE_SECRET_KEY` (an admin lookup of `auth.users` is the fallback if
   GoTrue does not answer `email_exists` before sending — stop and ask before building it).
 - A second email in this flow (to the old address, or a "changed" notice), a route change, or any
-  control on the Sign In page.
+  control on the Sign In page. **ASKED AND RULED, 2026-09-07:** the "changed" notice to the old
+  address is **on** (R-95, above); the confirm route's failure path gained one branch for a dead
+  email-change link (R-94, the matrix row below). The Sign In page is untouched either way.
 - Turning `mailer_secure_email_change_enabled` back on.
 
 **Never:**
@@ -106,7 +114,9 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 | Already in use | an address on another account | `PUT /user` → `422 email_exists`; **no email sent** (`email_change_sent_at` stays as it was) | field slot: "That email is already in use on another account." |
 | Too soon | a second send inside `smtp_max_frequency` | `429 over_email_send_rate_limit`; nothing sent | Banner: "We sent a link a moment ago. Try again in N seconds." — N from GoTrue's message (`retryAfterFrom`) |
 | Send fails | any other error, a throw, or the session ended | dialog stays open / redirect to sign-in | Banner: "We couldn't send that link just now. Try again in a moment." |
-| Link opened, any device | `/auth/confirm?token_hash=…&type=email_change` | `verifyOtp` → session cookies for that browser → **303 `/account?email=changed`**; the card shows the new address with `Banner kind="success"`: "Your email is now **new@x**." (once — it is a URL hint, not state) | expired, used, forged → `/sign-in?error=link`, the existing sentence |
+| Link opened, any device | `/auth/confirm?token_hash=…&type=email_change` | `verifyOtp` → session cookies for that browser → **303 `/account?email=changed`**; the card shows the new address with `Banner kind="success"`: "Your email is now **new@x**." (once — it is a URL hint, not state); GoTrue then mails the OLD address its "your email address was changed" notice (R-95) | see the next row |
+| Link dead, browser SIGNED IN | expired, already used, or forged, with a live session | **303 `/account?email=stale`**; the card shows `Banner kind="error"`: "That link has expired or was already used. Press Change email to get a new one." (once — a URL hint on the same key) | — (R-94: `/sign-in` would send this browser to the dashboard before it said a word) |
+| Link dead, browser SIGNED OUT | the same, with no session | **303 `/sign-in?error=link`**, the existing sentence — unchanged | — |
 | Link expired, unopened | 15 minutes pass | the info banner leaves the card on the next render; the old address is untouched; **Change email** works as before | — |
 | Change email again while pending, after the interval | a different `other@x` | GoTrue replaces the pending address; the earlier link is dead; the banner names `other@x` | — |
 | Magic link after the change | sign in with `new@x` | lands in the same account | a magic link to the **old** address now creates a fresh account (FR-A1: sign-up is sign-in) — by design, said in the owner's test |
@@ -123,7 +133,7 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 - `apps/web/app/(app)/app/(authed)/account/email-card.tsx` (new, client) -- the Email card LIFTED from `page.tsx` verbatim (the row, the `Mail` glyph, "Magic links land here") plus: the frame's button at `:80` drawn from tokens (`h-[30px] px-[13px] rounded-thumb text-control-label font-medium border border-line bg-surface hover:bg-paper` + `ring`); `justChanged` → the success Banner above the row; `pending` → the info Banner under it; ONE `<dialog>` from `kit/dialog.ts` (`sheet`, `title`, `openOnCancel`, `closeOnBackdrop`), `aria-labelledby`, `onClose` → `form.reset()` and mark the result seen; `useActionState(changeEmail, null)`; the `once` guard and the "seen" pattern copied from `passkeys-card.tsx:96-131` (per component by construction — the ref closes over this card's `pending`); a client `guard()` that runs `newEmailFor` at submit so bad/same never round-trip and `in_use` always does; the split: `bad_email | same_email | in_use` → the field's `error`, `too_soon | send_failed` → the Banner
 - `apps/web/app/(app)/app/(authed)/account/page.tsx` -- takes `searchParams: Promise<{ [EMAIL_CHANGED]?: string | string[] }>` (`(authed)/page.tsx:37-47`'s shape); renders `<EmailCard email={user.email} pending={pendingChange(user, Date.now())} justChanged={isEmailChanged(...)} />`; the header comment's "So is Change email (2.3)" becomes what is true
 - `apps/web/components/kit/input.tsx` -- `TextInput` gains `type?: 'text' | 'email'` (default `'text'`) and `autoComplete?: string`, passed through; nothing else moves
-- `apps/web/app/(app)/app/auth/confirm/route.ts` -- `const landing = type === 'email_change' ? EMAIL_CHANGED_PATH : '/'` computed **after** `type` is parsed and **before** `home` is built, because `setAll` writes the session cookies onto THAT response object — a redirect built afterwards would carry no cookies and land a signed-out user on the sign-in page. `TYPES` already lists `email_change`; the comment says which template sends it
+- `apps/web/app/(app)/app/auth/confirm/route.ts` -- ALSO the dead link's landing (R-94): on the failure path, `type === 'email_change'` asks `getUser()` and a browser with a live session gets a FRESH `303` to `EMAIL_STALE_PATH` rather than `stale` — `/sign-in` renders its sentence only for a browser with no session (`sign-in/page.tsx:41`), and a new response object because `home` may carry sign-out cookies `verifyOtp` wrote on its way to failing. And `const landing = type === 'email_change' ? EMAIL_CHANGED_PATH : '/'` computed **after** `type` is parsed and **before** `home` is built, because `setAll` writes the session cookies onto THAT response object — a redirect built afterwards would carry no cookies and land a signed-out user on the sign-in page. `TYPES` already lists `email_change`; the comment says which template sends it
 - `supabase/auth/email-change.html` (new) -- `magic-link.html`'s skeleton: preheader "Confirm your new Inflozo email address. The link is good for 15 minutes."; heading "Confirm your new email"; body "You asked to move your Inflozo account to **{{ .NewEmail }}**. Open the link below from any device to finish. It is good for 15 minutes. If you didn't ask for this, ignore this email — nothing changes until you do."; the button "Confirm new email" and the paste line, both to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change`; the head comment records which GoTrue lines say this file is sent to the new address alone with the new address's token (`templatemailer.go:257-280`)
 - `tools/probe/configure-supabase-auth.py` -- `settings()` takes both templates; adds `mailer_subjects_email_change: 'Confirm your new Inflozo email'`, `mailer_templates_email_change_content`, `mailer_secure_email_change_enabled: False`, `mailer_notifications_email_changed_enabled: False` (field names read from `api.supabase.com/api/v1-json` `UpdateAuthConfigBody`, 2026-09-07); the docstring's "both templates" becomes "the three"; its `doc-audit.py` row at `:248` gains the email-change template and "Stories 1.4, 2.1, 2.3"
 - `tools/probe/run-verify-email-change.py` (new, tool → a `doc-audit.py` row at `:280`'s shape) -- Playwright against `app.inflozo.com`, importing `Admin`, `load_env`, `playwright_dir`, `axe_path`, `tokens_rgb` from `run-verify-passkeys.py` through `importlib.import_module('run-verify-passkeys')` rather than copying them; TWO fixtures `email-change-harness-<ts>-a@inflozo.com` and `-b@`, swept by that prefix, the user count read before and after; A signed in through `generate_link magiclink` redeemed at `/auth/confirm`; the steps in `## Verification`. `--check` is plumbing only. No key printed; keys reach the browser half through its environment
@@ -144,6 +154,8 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 - [x] `tools/probe/run-verify-email-change.py` + its catalogue row -- the harness -- R-82's round trip, re-runnable
 - [x] `deferred-work.md` -- the DW-22 line -- propagate, never localise
 - [x] Run `## Verification` on the real infrastructure and record every command and result
+- [x] **R-94** (owner, at the review) -- `STALE_LINK` · `EMAIL_STALE_VALUE`/`_PATH`/`isEmailStale` · the route's failure branch · the card's third banner · the round-trip and branch tests · the harness's two `stale-*` steps -- a dead link says so where the button that fixes it is
+- [x] **R-95** (owner, at the review) -- `mailer_notifications_email_changed_enabled: True` with its own `--expect …=false` control · PRD FR-P1 six → seven with a new **(7)** · the ruling record `A19` · DW-39 rewritten as E12's branding job -- the old address is told
 
 **Acceptance Criteria:**
 - Given a signed-in user on `/account` at 1440 and at 390, when the page renders, then the Email card **matches the frame** (`S12 Billing.dc.html` S12a `:74-82`: the row unchanged, **Change email** at the row's end at 30px / radius 10 / 12px 500 / surface with the `line` border and `paper` on hover), the Passkeys card exactly as 2.2 left it, the plan column and the Danger zone still absent
@@ -155,6 +167,8 @@ banner. The change lands only when that link is opened (`verify.go:546-630`).
 - Given the new address's link opened in a browser with no session, when the confirm route redeems it, then that browser is signed in, lands on `/account?email=changed`, sees the green banner with the new address, and the Admin API shows `email` = the new address and no `new_email`
 - Given a magic link minted for the new address after the change, when it is redeemed, then it signs in to the same user id
 - Given the live project's Auth config, when `configure-supabase-auth.py --check` runs, then every field passes including the four new ones, and `--expect mailer_secure_email_change_enabled=true` fails
+- Given an email-change link that is expired or already used, when it is opened on a browser **with** a live session, then it lands on `/account?email=stale` and the Email card shows the red "That link has expired or was already used. Press Change email to get a new one."; when it is opened on a browser **without** one, then it lands on `/sign-in?error=link` with the sign-in page's own sentence, exactly as before (R-94)
+- Given a confirmed email change, when GoTrue has landed it, then the **previous** address is sent the "your email address was changed" notice, and the live project's `mailer_notifications_email_changed_enabled` reads back `true` with `--expect mailer_notifications_email_changed_enabled=false` failing (R-95)
 - Given `pnpm check`, `pnpm build`, `node --test` and axe-core on `/account` with the dialog closed, open, and with the pending banner showing, then all green and zero violations at 1440 and 390
 
 ### Review Findings
@@ -164,8 +178,8 @@ Real-infra verifier). The verifier ran the whole harness against the deployed De
 passed and `bad-email` failed on a real defect. Two decisions for the owner, under `## Questions for the
 owner`; every patch applied in the review; one item deferred.
 
-- [ ] [Review][Decision] A stale or already-used email-change link opened on a browser that is signed in lands on the dashboard with nothing said — the sign-in page bounces signed-in visitors before its sentence renders — Question 1
-- [ ] [Review][Decision] The old address is never told when the email changes, so a stolen 30-day session can move the account silently; FR-P1's six-email count is why — Question 2, and the risk is recorded as DW-39 either way
+- [x] [Review][Decision] A stale or already-used email-change link opened on a browser that is signed in lands on the dashboard with nothing said — the sign-in page bounces signed-in visitors before its sentence renders — Question 1, **ruled option 1 (R-94)**: it lands on the Account page with the red note, built and executed in this review
+- [x] [Review][Decision] The old address is never told when the email changes, so a stolen 30-day session can move the account silently; FR-P1's six-email count is why — Question 2, **ruled option 2 (R-95)**: the notice is on, unbranded, FR-P1 is seven, and DW-39 is now E12's branding job
 - [x] [Review][Patch] The dialog's form had no `noValidate` beside a `type="email"` field, so for `maya` the browser's own bubble ran and `guard()` never did — no field sentence, a tooltip P0-0 forbids [apps/web/app/(app)/app/(authed)/account/email-card.tsx] — executed on the deployed site (`bad-email`: 0 POSTs, the field said `null`) and reproduced in Chromium (no `novalidate` → the submit event never fires); one attribute, `sign-in-form.tsx`'s own
 - [x] [Review][Patch] GoTrue's own refusal of an address (`email_address_invalid`) said "try again in a moment" in the Banner for an address that will never be accepted [apps/web/app/(app)/app/(authed)/account/actions.ts] — the field's sentence
 - [x] [Review][Patch] The two field refusals were restated in the card as `REFUSALS` beside the action's `MESSAGES` [apps/web/app/(app)/app/(authed)/account/email-change-rule.ts] — one `FIELD_REFUSALS` map in the plain module, spread by both
@@ -197,16 +211,23 @@ owner`; every patch applied in the review; one item deferred.
    GoTrue renders per message, and the confirm route's call shape is proved correct by the 200 —
    but the harness would have reported a broken confirm route, so `run-verify-email-change.py`
    reads `action_link` and records why beside the line.
-2. **`sessions_inactivity_timeout` is still the plan's, not the story's** — the `--apply` run
+2. **The owner's two rulings at the review changed the story's shape** (Review, 2026-09-07). **R-94**
+   added a landing this story did not have: a dead email-change link on a signed-in browser lands on
+   `/account?email=stale` with a red note, because `/sign-in` renders its sentence only for a browser
+   with no session. **R-95** amended the frozen Boundaries and the PRD: the notice to the old address is
+   ON, unbranded, and FR-P1 is seven rather than six. Both are recorded in
+   `reconcile-designs-decisions.md` §A19 with their target lists, and both are executed below.
+3. **`sessions_inactivity_timeout` is still the plan's, not the story's** — the `--apply` run
    answered `402` for it, retried without it and wrote the other 26 fields. Unchanged from 1.4.
 
 ## Design Notes
 
-**Routine calls made here, not the owner's** (each one line, as CLAUDE.md asks). *One email, to the new
-address:* the PRD's own words are "re-verification of the new address" and FR-P1 counts exactly six
-emails; GoTrue's default secure change would mail both addresses and demand two clicks, and its
-"changed" notice would be a seventh email, so both switches go off and the template names the new
-address so a wrong-hands recipient can see what they are being asked to confirm. *No table of ours:*
+**Routine calls made here, not the owner's** (each one line, as CLAUDE.md asks). *The link to the new
+address:* the PRD's own words are "re-verification of the new address"; GoTrue's default secure change
+would mail both addresses and demand two clicks, so that switch goes off and the template names the new
+address so a wrong-hands recipient can see what they are being asked to confirm. *The notice to the old
+address is NOT a routine call and was not made here* — it was the owner's, at the review (R-95), and it
+is FR-P1's seventh email. *No table of ours:*
 `new_email` and `email_change_sent_at` are the platform's own record of a pending change and arrive
 inside `getUser()` for free; a column would be a migration that can disagree with it. *The landing is
 `/account` and the banner is a URL hint:* `signed-out.ts` already proved the shape, and a hint that is
@@ -238,6 +259,7 @@ the trap cannot be walked into.
 **Commands** (R-82 — the real project, the real domains; every key by its variable name, never printed):
 - `python3 tools/probe/configure-supabase-auth.py --apply` (it reads `tools/probe/.env` itself — an `env $(…)` prefix cannot carry `RESEND_FROM`'s space, its docstring says) -- expected: `PATCH 200`, then every field `PASS`, the four new ones among them
 - `python3 tools/probe/configure-supabase-auth.py --check --expect mailer_secure_email_change_enabled=true` -- expected: exactly one `FAIL`, that field — the control
+- `python3 tools/probe/configure-supabase-auth.py --check --expect mailer_notifications_email_changed_enabled=false` -- expected: exactly one `FAIL`, that field — **R-95's own control**, because a switch written `true` needs a control of its own; the other one proves nothing about it
 - `pnpm check` from the repository root (it is a root script — lint, typecheck, `node --test` across the workspace; Node 24 on PATH — memory `headless-browser-tooling`) and `cd apps/web && pnpm build` -- expected: green; `email-change-rule.test.ts`, `app-routes.test.ts` and `server-wiring.test.ts` among the passes
 - `python3 tools/probe/run-verify-email-change.py --check` -- expected: keys present, Playwright and axe resolved, the Admin API's create-read-delete round trip `PASS`
 - `python3 tools/probe/run-verify-email-change.py` (after Deploy, against `app.inflozo.com`) -- each step `PASS` or `RECORD`, exit 0:
@@ -250,6 +272,8 @@ the trap cannot be walked into.
   - `dialog-reset` — Cancel after the refused send, reopen: an empty field and no sentence left
   - `confirm` — **the product's own token**: the `email_change_token_new` GoTrue stored for the `send` step, read out of `auth.one_time_tokens` through the Management API and rendered into the template's own href → opened in a NEW context → lands on `/account?email=changed` signed in, the success banner, `email` = the new address, `new_email` absent
   - `confirm-once` — reload: the green banner is gone and `email=changed` is off the URL
+  - `stale-signed-in` — the link the `confirm` step just spent, opened again on A's signed-in browser: `/account?email=stale` and the red note (**R-94**)
+  - `stale-signed-out` — the same spent link on a browser with no cookies: still `/sign-in?error=link` and the sign-in page's own sentence
   - `magic-link-new` — a magic link minted for the new address is minted for A's user id and signs in to A
   - `magic-link-home` — the ordinary magic link that signs A in lands on `/`, never on `/account?email=changed`
   - `axe-closed` · `axe-dialog` · `axe-pending` — axe-core WCAG 2.1 AA at 1440 and 390, zero violations
@@ -391,12 +415,23 @@ if your inbox is `you@gmail.com`, then `you+inflozo@gmail.com` arrives in the sa
    signed in, with a green message "Your email is now you+inflozo@gmail.com." and the Email card
    showing the new address; the blue note is gone. Reload: the green message is gone, the address
    stays.
-7. **URL:** https://app.inflozo.com/sign-in · **Do:** avatar → Sign out; ask for a magic link to
+7. **Check your OLD inbox** (your original address) · **See:** a second email, subject "Your email
+   address was changed", saying the account moved from your old address to the new one and to contact
+   support if it was not you. **This one is plain and unbranded on purpose** — it is Supabase's own
+   default, it is the seventh email the product sends, and Epic 12 brands it with the rest. It is your
+   ruling from this review (R-95), and it exists so that nobody can move your account in silence.
+8. **URL:** the same link from step 6, opened a second time · **See:** the Account page with a red
+   message: "That link has expired or was already used. Press Change email to get a new one." — the
+   link works once, and this is your other ruling from this review (R-94). Try it on your phone too,
+   where you are signed in.
+9. **URL:** https://app.inflozo.com/sign-in · **Do:** avatar → Sign out; ask for a magic link to
    `you+inflozo@gmail.com` and open it · **See:** your own dashboard and projects. (Do not ask for a
    magic link to your **old** address unless you want a brand-new empty account: that address is
    free again, and signing in creates one — that is how sign-in has always worked.)
-8. **URL:** https://app.inflozo.com/account · **Do:** change the email back to your original address
-   the same way and open the link · **See:** the green message with your original address.
+10. **URL:** https://app.inflozo.com/account · **Do:** change the email back to your original address
+    the same way and open the link · **See:** the green message with your original address, and the
+    "Your email address was changed" note now arriving at `you+inflozo@gmail.com`, the address you are
+    leaving this time.
 
 ## Questions for the owner
 
@@ -419,6 +454,11 @@ dashboard. Nothing tells you the link was too old or that you should press **Cha
    dashboard with nothing said.
 3. Like 1, but the red note is on the dashboard rather than the Account page.
 
+**Ruled:** option 1 (owner, 2026-09-07) — recorded as **R-94** in `reconcile-designs-decisions.md` §A19
+and built in this review. The confirm route asks `getUser()` on the failure path; a signed-in browser
+lands on `/account?email=stale` with the red note, a signed-out one still gets the sign-in sentence. Two
+harness steps prove both halves against the deployed site.
+
 ### Question 2 — Your old address is never told when your email changes
 
 **In plain English:** this story sends exactly one email, to the **new** address, because the product
@@ -437,3 +477,9 @@ Monday while signed in; the thief changes the account's email on Tuesday; today 
 2. Turn the notice on now: the old address gets Supabase's plain, unbranded "your email has been
    changed" email until Epic 12 brands it. Seven emails, and FR-P1's count changes today.
 3. Turn it on now **and** add a story to this epic to brand it before 2.3 is done.
+
+**Ruled:** option 2 (owner, 2026-09-07) — recorded as **R-95** in `reconcile-designs-decisions.md` §A19.
+The switch is on in the live project and read back; **FR-P1 now says seven** and the notice is its (7);
+the frozen Boundaries above carry the amendment; **DW-39 is no longer a question** but the branding job
+E12 inherits. Read in GoTrue's source, not assumed: the notice goes to the old address alone, only after
+the change lands, and a failure to send it is logged rather than losing the change.

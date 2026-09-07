@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { sessionCookie } from '@/lib/supabase/cookies'
-import { EMAIL_CHANGED_PATH } from '../../(authed)/account/email-change-rule'
+import { EMAIL_CHANGED_PATH, EMAIL_STALE_PATH } from '../../(authed)/account/email-change-rule'
 
 /**
  * WHERE THE EMAIL'S BUTTON LANDS. It is a route handler and not a page because this is the one
@@ -57,7 +57,18 @@ export async function GET(request: NextRequest) {
   })
 
   const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })
-  // Expired, already used, or forged — all one answer to the user, and one that says what to
-  // do next rather than what went wrong.
-  return error ? stale : home
+  if (!error) return home
+
+  // Expired, already used, or forged. ONE ANSWER, IN THE PLACE THAT CAN SAY IT (R-94, the owner
+  // on this story's review): `/sign-in` says the sentence only to a browser with no session,
+  // because `sign-in/page.tsx:41` sends a signed-in visitor to the dashboard before it renders —
+  // and the browser someone opens the email on is usually the one they are already signed in on.
+  // So a dead EMAIL-CHANGE link lands on the Account page, beside the button that mints a new
+  // one. A fresh response object, not `home`: `home` may carry sign-out cookies `verifyOtp`
+  // wrote through `setAll` on its way to failing, and this user's session is still good.
+  if (type === 'email_change') {
+    const { data } = await supabase.auth.getUser()
+    if (data.user) return NextResponse.redirect(new URL(EMAIL_STALE_PATH, request.url), 303)
+  }
+  return stale
 }

@@ -248,8 +248,9 @@ DOCS = [
  ('tools/probe/configure-supabase-auth.py', 'tool', 'Supabase Auth configuration',
   "Writes the live project's Auth settings — Resend as custom SMTP, the 15-minute OTP expiry, the "
   'branded sign-in template and the branded email-change template, the site URL, Supabase\'s own '
-  'passkey switch, and the two switches that keep an email change to ONE email sent to the new '
-  'address alone — and PROVES each one by reading it back; --expect breaks one expectation on '
+  'passkey switch, and the two switches around an email change: secure-change OFF so the new '
+  'address\'s link alone lands it, and the changed-notice ON so the OLD address is told (R-95) '
+  '— and PROVES each one by reading it back; --expect breaks one expectation on '
   'purpose so a green run can be told from a run that checks nothing. Never prints smtp_pass. '
   'Stories 1.4, 2.1, 2.3.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),

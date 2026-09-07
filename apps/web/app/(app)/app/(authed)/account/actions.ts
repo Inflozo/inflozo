@@ -304,10 +304,13 @@ async function markNudgeDone(metadata: Record<string, unknown> | undefined): Pro
  * 2026-09-07), which is exactly what FR-A4 asks for — so `SUPABASE_SECRET_KEY` gains no second
  * reader and no admin listing of every address happens on a keystroke.
  *
- * ONE EMAIL, TO THE NEW ADDRESS. The project's `mailer_secure_email_change_enabled` and
- * `mailer_notifications_email_changed_enabled` are both false and are written and read back by
- * `tools/probe/configure-supabase-auth.py`; with the first on, GoTrue mails BOTH addresses and
- * the new one's link alone never lands the change (`verify.go:548-585`).
+ * TWO EMAILS, AND THIS ACTION SENDS NEITHER ITSELF. The link goes to the NEW address, because
+ * `mailer_secure_email_change_enabled` is written false — with it on, GoTrue mails BOTH addresses
+ * and the new one's link alone never lands the change (`verify.go:548-585`). And when the change
+ * is later CONFIRMED, GoTrue mails the OLD address a "your email address was changed" notice,
+ * because `mailer_notifications_email_changed_enabled` is written true: the owner's ruling R-95
+ * (2026-09-07), so a stolen session cannot move an account in silence. Both switches are written
+ * and read back by `tools/probe/configure-supabase-auth.py`; nothing here decides either.
  *
  * WRAPPED, for `renamePasskey`'s reason: `auth-js` re-throws anything that is not an `AuthError`,
  * and a Server Function that throws takes `/account` to the error boundary instead of leaving the

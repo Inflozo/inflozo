@@ -1711,6 +1711,56 @@ product diverges from the drawing here on purpose.
 
 ---
 
+## A19 · Step 7 — Story 2.3's review, two rulings on the email change, 2026-09-07
+
+Taken during the code review of Story 2.3 (change my email address safely). Both questions went to the
+owner in R-83's shape and both were his to answer: the first because the story's own matrix promised a
+sentence the product could not deliver in the common case, the second because the story's frozen
+Boundaries listed a second email in this flow under **Ask First**.
+
+**R-94 — a dead email-change link lands on the Account page and says so there.** The review found that
+an expired or already-used link redirects to `/sign-in?error=link`, where the sentence renders only for
+a browser with NO session — `sign-in/page.tsx:41` sends a signed-in visitor to the dashboard before the
+page renders a word — and the browser someone opens the email on is usually one they are already signed
+in on. The owner ruled option 1: *"A stale email-change link lands on the Account page with a red note:
+'That link has expired or was already used. Press Change email to get a new one.'"* So the confirm route
+asks `getUser()` on the failure path and, for `type=email_change` with a live session, lands
+`/account?email=stale`; a signed-out browser still gets the sign-in page's own sentence, unchanged. The
+red note is a URL hint like the green one, on the same key, said once and then stripped.
+- Targets: ✅ `apps/web/app/(app)/app/auth/confirm/route.ts` (the branch) · ✅ `account/email-change-rule.ts`
+  (`STALE_LINK`, `EMAIL_STALE_VALUE`, `EMAIL_STALE_PATH`, `isEmailStale`) · ✅ `account/email-card.tsx`
+  (the third banner, and the strip that covers both values) · ✅ `account/page.tsx` · ✅
+  `apps/web/email-change-rule.test.ts` (the round trip, the two values never reading as each other, and
+  the route's own branch read out of its source) · ✅ `tools/probe/run-verify-email-change.py`
+  (`stale-signed-in` re-opens the link the `confirm` step just spent, `stale-signed-out` proves the
+  sign-in sentence still answers a cookie-less browser) · ✅ Story 2.3's spec (the matrix row, the
+  Boundaries, `## Owner's manual test` step 7, and the ruling under `## Questions for the owner`)
+
+**R-95 — the previous address is told when an account's email changes; FR-P1 grows a seventh email.**
+The review raised that with one email in this flow, a change made from a stolen 30-day session (FR-A6)
+is silent to the person losing the account, and that the story had turned Supabase's own notice off to
+keep FR-P1 at six. The owner ruled option 2: *"Turn the notice on now: the old address gets Supabase's
+plain, unbranded 'your email has been changed' email until Epic 12 brands it. Seven emails, and FR-P1's
+count changes today."* This **renegotiates the story's frozen Boundaries**, which is what
+`<frozen-after-approval>` reserves for the human, and it is a behaviour ruling, so it lands in the PRD
+(build-sequence standing rule 6). Read in GoTrue's source rather than assumed: the notice goes to the
+OLD address alone (`templatemailer.go:433-441`, the recipient argument is `oldEmail`), only after the
+change is confirmed and only when the address really differs, and a failed send is logged rather than
+failing the request (`verify.go:633-639`). **No template is pushed for it** — the plain default is the
+owner's choice for now, and the two fields that would brand it are deliberately left unwritten.
+- Targets: ✅ `prd.md` FR-P1 (six → seven, the new **(7)**; (1)–(6) keep their numbers so every citation
+  in the repository stays true) · ✅ `tools/probe/configure-supabase-auth.py`
+  (`mailer_notifications_email_changed_enabled: True`, written and read back, with its own `--expect …
+  =false` control) · ✅ `tools/doc-audit.py`'s catalogue row · ✅ `account/actions.ts`'s header · ✅
+  `supabase/auth/email-change.html`'s header · ✅ `deferred-work.md` **DW-39** (rewritten from a question
+  into the branding job E12 inherits, naming the default's "contact support immediately" as the sentence
+  that most needs replacing) · ✅ Story 2.3's spec (Boundaries, the matrix, Design Notes, `## Verification`
+  and `## Owner's manual test`) · **Deliberately not touched:** `FR-P2` — a security notice on a
+  confirmed change is not a nudge and its two carve-outs are about nudges; `MEASUREMENTS.md` §23c and
+  `VERIFY-AT-BUILD.md` item 37b, which call the renewal reminder FR-P1's *sixth* and remain true.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

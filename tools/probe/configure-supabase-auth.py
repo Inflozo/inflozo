@@ -20,8 +20,8 @@ The fields it writes are the sign-in flow's (site URL, the allow list, the 15-mi
 as the SMTP sender, the three templates and their subjects, the two rate limits, no passwords
 anywhere); since Story 2.1, the four that turn Supabase's own passkey switch on: `passkey_enabled`
 and the three `webauthn_rp_*`; and since Story 2.3, the email-change template and the two switches
-that keep FR-P1 at exactly six emails. `sessions_inactivity_timeout` is written with them and
-reported apart.
+that decide how many emails an email change sends and to whom. `sessions_inactivity_timeout` is
+written with them and reported apart.
 
 `smtp_pass` is `$RESEND_API_KEY` and is NEVER printed, compared or read back — the API returns it
 masked, so it is written and then left alone. Every other field is compared by value.
@@ -36,14 +36,29 @@ Two pitfalls, both executed rather than assumed (2026-09-05, against the live pr
     the same sentence; and its link carries `type=email`, the generic verification type, which
     `/auth/v1/verify` returned 200 for on a `magiclink` token AND on a `signup` token.
 
-And two switches that are written OFF and matter as much as anything written on (Story 2.3, read in
-GoTrue's source 2026-09-07). `mailer_secure_email_change_enabled` DEFAULTS TO TRUE
+And two switches around an email change that matter as much as anything else written here (Story
+2.3, read in GoTrue's source 2026-09-07 and again at the review).
+
+`mailer_secure_email_change_enabled` is **written FALSE** and DEFAULTS TO TRUE
 (`internal/conf/configuration.go:662`): with it on, an email change mails BOTH addresses and the new
 address's link alone never lands the change (`internal/api/verify.go:548-585`) — two emails and a
-flow the product does not draw. `mailer_notifications_email_changed_enabled` would add a "your email
-changed" notice to the old address (`verify.go:632-637`), a seventh email where FR-P1 counts exactly
-six. Both are false here, written and read back, and `--expect mailer_secure_email_change_enabled=true`
-is the control that proves the read-back can fail.
+flow the product does not draw.
+
+`mailer_notifications_email_changed_enabled` is **written TRUE**, and that is the owner's ruling
+**R-95** on Story 2.3's review (2026-09-07), which took FR-P1 from six user-facing emails to seven.
+It is the security notice: when a change is CONFIRMED, GoTrue mails the OLD address alone
+(`internal/mailer/templatemailer/templatemailer.go:433-441` — the recipient argument is `oldEmail`),
+so someone who moved the account while holding a stolen session cannot do it in silence. It fires
+only after the change lands and only when the address really differs, and a failure to send is
+logged rather than failing the request (`internal/api/verify.go:633-639`). NO TEMPLATE IS PUSHED
+FOR IT: the owner chose Supabase's plain default — "Your email address was changed", body
+`templatemailer.go:73-77` — until Epic 12 brands it (DW-39), and the two fields that would brand it
+(`mailer_subjects_email_changed_notification`,
+`mailer_templates_email_changed_notification_content`) are deliberately not written here.
+
+Both are read back, and each has its own control: `--expect mailer_secure_email_change_enabled=true`
+and `--expect mailer_notifications_email_changed_enabled=false` must each FAIL, which is what proves
+the read-back can fail at all.
 """
 import argparse
 import json
@@ -90,11 +105,13 @@ def settings(template: str, email_change_template: str, sender: str) -> dict:
         # api.supabase.com/api/v1-json's `UpdateAuthConfigBody` on 2026-09-07.
         'mailer_subjects_email_change': EMAIL_CHANGE_SUBJECT,
         'mailer_templates_email_change_content': email_change_template,
-        # ONE EMAIL, TO THE NEW ADDRESS, AND NO OTHER. See the docstring: the first defaults to
-        # TRUE and would mail both addresses for a change the new address's link could then never
-        # complete; the second would put a seventh email in a six-email product.
+        # TWO EMAILS AND NO MORE: the link to the new address, and — since the owner's ruling
+        # R-95 — the notice to the OLD one. See the docstring. The first switch defaults to TRUE
+        # and would mail both addresses for a change the new address's link could then never
+        # complete; the second is FR-P1's seventh email, GoTrue's own unbranded default template,
+        # sent to the old address alone once the change has landed.
         'mailer_secure_email_change_enabled': False,
-        'mailer_notifications_email_changed_enabled': False,
+        'mailer_notifications_email_changed_enabled': True,
         # no password exists anywhere in this product (FR-A1), and sign-up is sign-in
         'mailer_autoconfirm': False,
         'disable_signup': False,

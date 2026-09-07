@@ -4,7 +4,7 @@ import { passkeyRows, type PasskeyRow } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { withTimeout } from '@/lib/with-timeout'
 import { EmailCard } from './email-card'
-import { EMAIL_CHANGED, isEmailChanged, pendingChange } from './email-change-rule'
+import { EMAIL_CHANGED, isEmailChanged, isEmailStale, pendingChange } from './email-change-rule'
 import { PasskeysCard } from './passkeys-card'
 
 /* ─────────────────────────────────────── S12 Billing.dc.html — S12a, its RIGHT column.
@@ -65,6 +65,7 @@ export default async function AccountPage({
           email={user.email}
           pending={pendingChange(user, Date.now())}
           justChanged={isEmailChanged(changed)}
+          staleLink={isEmailStale(changed)}
         />
 
         {passkeys ? <PasskeysCard passkeys={rows} /> : null}

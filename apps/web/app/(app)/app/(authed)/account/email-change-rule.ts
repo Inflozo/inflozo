@@ -15,6 +15,13 @@ export const SAME_EMAIL = "That's already your address."
 /** GoTrue's `422 email_exists`, refused BEFORE anything is sent (`user.go:135-139`). */
 export const IN_USE = 'That email is already in use on another account.'
 export const SEND_FAILED = "We couldn't send that link just now. Try again in a moment."
+/**
+ * A LINK THAT IS TOO OLD OR ALREADY SPENT, said where the button that fixes it is. The owner's
+ * own words (R-94, 2026-09-07): the sign-in page cannot say this to a signed-in browser, because
+ * it redirects one to the dashboard before it renders (`sign-in/page.tsx:41`), and the browser a
+ * user opens the email on is usually the one they are already signed in on.
+ */
+export const STALE_LINK = 'That link has expired or was already used. Press Change email to get a new one.'
 
 /** The two refusals `newEmailFor` can make, keyed by its codes: the dialog says them at the
  *  submit and `actions.ts`'s `MESSAGES` spreads them, so neither side keeps its own copy. */
@@ -79,5 +86,14 @@ export const EMAIL_CHANGED = 'email'
 export const EMAIL_CHANGED_VALUE = 'changed'
 export const EMAIL_CHANGED_PATH = `/account?${EMAIL_CHANGED}=${EMAIL_CHANGED_VALUE}`
 
+/**
+ * THE SAME KEY'S OTHER VALUE, for a link that did not work (R-94). One key and two values rather
+ * than a second key: the card strips the key once it has said its sentence, and one strip cannot
+ * miss a key it does not know about.
+ */
+export const EMAIL_STALE_VALUE = 'stale'
+export const EMAIL_STALE_PATH = `/account?${EMAIL_CHANGED}=${EMAIL_STALE_VALUE}`
+
 /** What the account page asks of `searchParams[EMAIL_CHANGED]`. A repeated key is an array. */
 export const isEmailChanged = (value: string | string[] | undefined) => value === EMAIL_CHANGED_VALUE
+export const isEmailStale = (value: string | string[] | undefined) => value === EMAIL_STALE_VALUE

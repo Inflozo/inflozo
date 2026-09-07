@@ -13,9 +13,13 @@
     reason the sibling gives: an email client has neither custom properties nor a trustworthy
     <style> block.
 
-    THIS FILE IS SENT TO THE NEW ADDRESS AND TO IT ALONE, with the new address's own token.
+    THIS FILE IS SENT TO THE NEW ADDRESS AND TO IT ALONE, with the new address's own token. It is
+    the only message this template ever sends; the OLD address hears about the change from
+    GoTrue's own unbranded "your email address was changed" notice AFTER the change lands, which
+    is a different template entirely and is the owner's ruling R-95 (2026-09-07) — Epic 12 brands
+    it (DW-39), and nothing about this file changes when it does.
     GoTrue picks the template by action and, when `mailer_secure_email_change_enabled` is false,
-    sends exactly one message, to `NewEmail`, carrying the `email_change_new` token
+    sends exactly one message from HERE, to `NewEmail`, carrying the `email_change_new` token
     (`internal/mailer/templatemailer/templatemailer.go:257-280`). With that switch ON it mails
     BOTH addresses and the new address's link alone never lands the change
     (`internal/api/verify.go:548-585`) — which is why `tools/probe/configure-supabase-auth.py`

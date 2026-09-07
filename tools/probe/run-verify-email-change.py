@@ -41,6 +41,10 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, exiting non-zero if any step fai
                  `generate_link` token proved the route once (Spec Change Log 1) but never the
                  product's own token; this does (review, 2026-09-07)
   confirm-once   reload: the green banner is gone and `email=changed` is off the URL — a hint, not state
+  stale-signed-in  THE SAME LINK OPENED AGAIN, now spent, on the browser that IS signed in: lands on
+                 /account?email=stale with the red note, never on the dashboard in silence (R-94)
+  stale-signed-out the same spent link on a browser with NO session: still /sign-in?error=link with
+                 the sign-in page's own sentence — the half R-94 deliberately did not change
   magic-link-new a magic link for the NEW address answers with A's OWN user id and signs in to A —
                  not a fresh sign-up wearing the same address
   magic-link-home the ordinary magic link that signs A in lands on `/`, never on `/account?email=changed`
@@ -393,6 +397,30 @@ const dialogBanner = (page) =>
     const againGreen = await other.locator('[role="status"]', { hasText: 'Your email is now' }).count()
     step('confirm-once', againGreen === 0 && !other.url().includes('email=changed'),
          `after reload: banners=${againGreen}, url=${other.url()}`)
+
+    // ── THE SAME LINK, OPENED AGAIN. It is spent now, which is one of the two ways a real link
+    //    dies (the other is 15 minutes), and this browser is signed in — the common case the
+    //    owner ruled on (R-94): the sentence must be said on the Account page, because /sign-in
+    //    sends a signed-in visitor to the dashboard before it renders a word.
+    const staleFrom = homeChain.length
+    await page.goto(real.href, { waitUntil: 'networkidle' })
+    const staleLanded = homeChain.slice(staleFrom).some((u) => u.includes('/account?email=stale'))
+    const red = await page.locator('[role="alert"]', { hasText: 'That link has expired' })
+      .first().textContent({ timeout: 20000 }).catch(() => null)
+    step('stale-signed-in',
+      staleLanded && !page.url().includes('/sign-in') && (red || '').includes('Press Change email'),
+      `chain ${JSON.stringify(homeChain.slice(staleFrom))}; the card said ${JSON.stringify(red)}`)
+
+    // ── and the half that did NOT change: no session, so the sign-in page still says it
+    const anon = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const anonPage = await anon.newPage()
+    await anonPage.goto(real.href, { waitUntil: 'networkidle' })
+    const anonSaid = await anonPage.locator('[role="alert"]', { hasText: 'That link has expired' })
+      .first().textContent({ timeout: 20000 }).catch(() => null)
+    step('stale-signed-out',
+      anonPage.url().includes('/sign-in') && (anonSaid || '').includes('Ask for a new one'),
+      `landed on ${anonPage.url()}; the card said ${JSON.stringify(anonSaid)}`)
+    await anon.close()
 
     // ── a magic link for the NEW address signs in to the SAME account: GoTrue's answer names
     //    the user it minted for, and it must be A — a fresh sign-up wearing the new address
