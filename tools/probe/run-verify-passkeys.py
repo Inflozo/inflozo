@@ -18,15 +18,24 @@ WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
                  authenticator reports the all-zero AAGUID, so `Passkey` is the honest answer
                  and DW-32 (2) stays open for a real one)
   rename         the pencil, a new name, Save; the new name read back OFF THE WIRE
-  rename-control THE CONTROL: 121 characters must be REFUSED by the server. A run whose control
-                 passes proves nothing (standing rule 2), so this failing fails the run
+  rename-control THE CONTROL: one character over the platform's ceiling must be REFUSED by the
+                 server, with the field's own sentence. The value is set past `maxLength` from
+                 script — Playwright's `fill` types through Chromium's editing pipeline and
+                 HONOURS `maxlength` (executed 2026-09-07: 121 became 120) — so what is proved is
+                 the action's refusal, not the field's. A run whose control passes proves nothing
+                 (standing rule 2), so this failing fails the run
   duplicate      DW-32 (4): a second `create()` on the same authenticator — does GoTrue populate
                  `excludeCredentials`, or does the card silently grow a second row?
   revoke-focus   the confirm opens with focus on Cancel (EXPERIENCE.md § Destructive confirms)
   revoke         Remove passkey; the id leaves `GET /passkeys`; the row goes; the SAME SESSION
                  still renders /account — a revoke signs nobody out
-  revoked-signin the revoked credential at /sign-in: which of S1a's two sentences appears
-  magic-link     the magic link still signs the user in afterwards
+  revoked-signin the revoked credential at /sign-in: still signed out AND one of S1a's two
+                 sentences on the page (both name the magic link) — a button that did nothing
+                 would otherwise pass
+  magic-link     a magic link minted AFTER the first was redeemed still signs the user in. Minted
+                 then, not up front: GoTrue keeps ONE such token per user, so minting two at the
+                 start invalidated the first (executed 2026-09-07 — the deployed confirm route
+                 answered `/sign-in?error=link` for it)
   axe-*          axe-core 4.12.1 at WCAG 2.1 AA over /account in three states — the card closed,
                  the rename dialog open, the revoke confirm open. THEY LIVE HERE and not in a
                  scratch script because the two dialog states need a passkey row, a row needs a
@@ -40,7 +49,14 @@ NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, nev
 (argv is visible in `ps`), and every command is recorded by the key's variable NAME.
 
 THE FIXTURE USER IS CREATED AND DELETED HERE. The Admin-API user count is read before and after,
-so a run that leaks a user says so. Cleanup runs even when a step fails.
+so a run that leaks a user says so — and a count that could not be read FAILS the run, because it
+is the cleanup's control. Any `passkey-harness-*` user a killed earlier run left behind is deleted
+first. Cleanup runs even when a step fails.
+
+THE FRAME'S VALUES ARE DERIVED, NOT RETYPED: the hover fills and glyph colours the `frame` step
+asserts are read out of `apps/web/app/globals.css` (the token layer, Story 1.3; `DESIGN.md:51`
+records `danger-tint` as #FDECEC where S12 draws #FDEBEC — both export values, the token rules),
+and the name ceiling out of `account/passkey-name-rule.ts`.
 
 Playwright is not a dependency of this repository — it is resolved from the machine (see
 PLAYWRIGHT_DIR below), because this is a Deploy-run tool and not a CI gate.
@@ -67,7 +83,10 @@ AXE_CANDIDATES = [
 def load_env():
     """`tools/probe/.env`, by NAME. Values go into subprocess environments and nowhere else."""
     out = {}
-    for line in open(os.path.join(HERE, '.env')):
+    path = os.path.join(HERE, '.env')
+    if not os.path.exists(path):
+        return out
+    for line in open(path):
         m = re.match(r'^([A-Z0-9_]+)=(.*)$', line.rstrip('\n'))
         if m and m.group(2).strip():
             out[m.group(1)] = m.group(2).strip()
@@ -94,20 +113,40 @@ class Admin:
                 return r.status, (json.loads(raw) if raw else {})
         except urllib.error.HTTPError as e:
             raw = e.read()
-            return e.code, (json.loads(raw) if raw else {})
+            try:
+                return e.code, (json.loads(raw) if raw else {})
+            except ValueError:
+                return e.code, {}
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError):
+            return 0, {}
 
-    def user_count(self):
-        """Every user, paged. Small by construction today; the point is before-vs-after."""
-        total, page = 0, 1
+    def users(self):
+        """Every user, paged until an EMPTY page — not until a short one, because a `per_page`
+        GoTrue caps below what was asked would otherwise end the count on page one. `None` if any
+        page failed: the caller treats that as a failed control, never as zero."""
+        out, page = [], 1
         while True:
             status, body = self.call('GET', f'/admin/users?page={page}&per_page=200')
             if status != 200:
                 return None
             users = body.get('users', [])
-            total += len(users)
-            if len(users) < 200:
-                return total
+            if not users:
+                return out
+            out.extend(users)
             page += 1
+
+    def user_count(self):
+        users = self.users()
+        return None if users is None else len(users)
+
+    def sweep_stale_fixtures(self):
+        """A run killed mid-browser leaves a confirmed `passkey-harness-*` user behind, and the
+        next run's before/after count would still balance. Delete them first, and say so."""
+        users = self.users() or []
+        stale = [u for u in users if re.match(r'^passkey-harness-\d+@inflozo\.com$', u.get('email') or '')]
+        for u in stale:
+            self.call('DELETE', f'/admin/users/{u["id"]}', {})
+        return len(stale)
 
 
 def resolve(candidates):
@@ -138,17 +177,28 @@ const SB = process.env.SB_URL.replace(/\/$/, '')
 const SECRET = process.env.SB_SECRET
 const USER_ID = process.env.FIXTURE_USER_ID
 const CONFIRM_1 = process.env.CONFIRM_URL_1
-const CONFIRM_2 = process.env.CONFIRM_URL_2
+const TOKENS = JSON.parse(process.env.TOKENS_RGB)   // { paper, dangerTint, inkSoft, danger } as rgb()
+const NAME_MAX = Number(process.env.NAME_MAX)
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const steps = []
 const step = (name, ok, detail) => { steps.push({ name, ok, detail }); return ok }
 const record = (name, detail) => steps.push({ name, ok: null, detail })
 
-const admin = async (path) => {
+const admin = async (path, init = {}) => {
   const r = await fetch(`${SB}/auth/v1${path}`, {
-    headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}` },
+    ...init,
+    headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}`, 'Content-Type': 'application/json' },
   })
   return { status: r.status, body: await r.json().catch(() => null) }
+}
+// A magic link, minted HERE and only when it is about to be redeemed — see the docstring.
+const magicLink = async () => {
+  const { status, body } = await admin('/admin/generate_link', {
+    method: 'POST', body: JSON.stringify({ type: 'magiclink', email: process.env.FIXTURE_EMAIL }),
+  })
+  if (status !== 200 || !body || !body.hashed_token) throw new Error(`generate_link answered HTTP ${status}`)
+  return `${APP}/auth/confirm?token_hash=${body.hashed_token}&type=magiclink`
 }
 // The list the app itself reads, read independently over the admin API — the wire, not the DOM.
 const passkeys = async () => {
@@ -210,15 +260,20 @@ const names = (page) =>
     await page.getByRole('button', { name: 'Add a passkey' }).click()
     await page.waitForSelector('[aria-label^="Rename "]', { timeout: 20000 })
     let wire = await passkeys()
-    step('register', wire.status === 200 && wire.list.length === 1,
-         `GET /admin/users/{id}/passkeys -> ${wire.status}, ${wire.list.length} passkey(s)`)
-    record('auto-name', `born as friendly_name=${JSON.stringify(wire.list[0] && wire.list[0].friendly_name)}`)
     const id = wire.list[0] && wire.list[0].id
+    // The id's SHAPE is asserted because `passkeyIdSchema` (the action's boundary) is `z.uuid()`
+    // on the claim that GoTrue mints UUIDs — a claim about a platform, executed here.
+    step('register', wire.status === 200 && wire.list.length === 1 && UUID.test(String(id)),
+         `GET /admin/users/{id}/passkeys -> ${wire.status}, ${wire.list.length} passkey(s), id is a UUID=${UUID.test(String(id))}`)
+    record('auto-name', `born as friendly_name=${JSON.stringify(wire.list[0] && wire.list[0].friendly_name)}`)
 
     // ── the frame, MEASURED. `S12 Billing.dc.html:90-91` draws a 28x28 box at radius 8 with a
-    //    13px glyph, the pencil over a #F7F5F2 hover and the bin over #FDEBEC. Computed styles
-    //    and not a grep of the class attribute: a class that loses to another class is still in
-    //    the markup, which is how S1a's button shipped at the wrong weight (2.1's review).
+    //    13px glyph, the pencil in ink-soft over a `paper` hover and the bin in danger over a
+    //    `danger-tint` hover — asserted against the TOKENS read out of globals.css, because the
+    //    token is what the frame is built from (R-74; `danger-tint` is #FDECEC by DESIGN.md:51
+    //    where the frame's own pixel is #FDEBEC). Computed styles and not a grep of the class
+    //    attribute: a class that loses to another class is still in the markup, which is how
+    //    S1a's button shipped at the wrong weight (2.1's review).
     const measure = async (selector) => {
       const el = page.locator(selector).first()
       const box = await el.evaluate((n) => {
@@ -234,8 +289,10 @@ const names = (page) =>
     const bin = await measure('[aria-label^="Remove "]')
     step('frame',
       pencil.w === 28 && pencil.h === 28 && pencil.radius === '8px' && pencil.glyph === '13' &&
-      bin.w === 28 && bin.h === 28 && bin.radius === '8px' && bin.glyph === '13',
-      `pencil ${JSON.stringify(pencil)} · bin ${JSON.stringify(bin)}`)
+      pencil.colour === TOKENS.inkSoft && pencil.hover === TOKENS.paper &&
+      bin.w === 28 && bin.h === 28 && bin.radius === '8px' && bin.glyph === '13' &&
+      bin.colour === TOKENS.danger && bin.hover === TOKENS.dangerTint,
+      `pencil ${JSON.stringify(pencil)} · bin ${JSON.stringify(bin)} · tokens ${JSON.stringify(TOKENS)}`)
 
     await axe(page, 'card')
 
@@ -258,30 +315,54 @@ const names = (page) =>
     step('rename', (wire.list[0] || {}).friendly_name === NEW,
          `friendly_name off the wire = ${JSON.stringify((wire.list[0] || {}).friendly_name)}`)
 
-    // ── rename-control: 121 characters must be refused BY THE SERVER. `fill` sets the value
-    //    directly, so `maxLength` does not truncate it and what is proved is the action's own
-    //    refusal, not the field's.
+    // ── rename-control: one over the ceiling must be refused BY THE SERVER. NOT `fill`: it types
+    //    through Chromium's editing pipeline and honours `maxlength` (executed 2026-09-07 — 121
+    //    became 120 and the control would have failed for the wrong reason). The value is set
+    //    from script, past the attribute, so what is proved is the action's own refusal.
     await page.locator('[aria-label^="Rename "]').first().click()
-    await page.fill('#rename-passkey', 'x'.repeat(121))
+    await page.waitForSelector('dialog[open] #rename-passkey')
+    await page.$eval('#rename-passkey', (el, n) => {
+      el.value = 'x'.repeat(n)
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+    }, NAME_MAX + 1)
+    const sent = await page.$eval('#rename-passkey', (el) => el.value.length)
     await page.getByRole('button', { name: 'Save' }).click()
-    await page.waitForTimeout(2500)
+    const refusal = await page.locator('#rename-passkey-error').textContent({ timeout: 15000 }).catch(() => null)
     const stillOpen = await page.locator('dialog[open] #rename-passkey').count() > 0
-    const refusal = await page.locator('#rename-passkey-error').textContent().catch(() => null)
     wire = await passkeys()
-    step('rename-control', stillOpen && (wire.list[0] || {}).friendly_name === NEW,
-         `dialog still open=${stillOpen}, said ${JSON.stringify(refusal)}, ` +
+    step('rename-control',
+         sent === NAME_MAX + 1 && stillOpen && Boolean(refusal) && refusal.includes(String(NAME_MAX)) &&
+         (wire.list[0] || {}).friendly_name === NEW,
+         `sent ${sent} characters; dialog still open=${stillOpen}; the field said ${JSON.stringify(refusal)}; ` +
          `name on the wire unchanged=${(wire.list[0] || {}).friendly_name === NEW}`)
     await page.locator('dialog[open] [data-cancel]').click()
 
     // ── duplicate (DW-32 (4)): a second create() on the SAME authenticator
     await page.getByRole('button', { name: 'Add a passkey' }).click()
-    await page.waitForTimeout(4000)
+    // The outcome is a caption (refused) or a second row (not refused); wait for either rather
+    // than for a fixed number of seconds, so a slow ceremony is not recorded as a refusal.
+    await page.waitForFunction(
+      () => document.querySelector('#passkeys-caption') ||
+            document.querySelectorAll('[aria-label^="Rename "]').length > 1,
+      null, { timeout: 20000 },
+    ).catch(() => null)
     const after = await passkeys()
     const caption = await page.locator('#passkeys-caption').textContent().catch(() => null)
     record('duplicate',
       after.list.length === 1
         ? `REFUSED — GoTrue populates excludeCredentials; the card said ${JSON.stringify(caption)}`
         : `NOT refused — ${after.list.length} passkeys now exist; ALREADY_HERE is dead code`)
+    // Whatever GoTrue did, the steps below reason about ONE credential: any extra row is removed
+    // through the same bin the product draws, so `revoked-signin` cannot pass or fail on a
+    // credential the harness never revoked.
+    for (const extra of (await names(page)).filter((n) => n !== NEW)) {
+      const rows = (await names(page)).length
+      await page.locator(`[aria-label="Remove ${extra}"]`).first().click()
+      await page.waitForSelector('dialog[open]')
+      await page.getByRole('button', { name: 'Remove passkey' }).click()
+      await page.waitForFunction((n) => document.querySelectorAll('[aria-label^="Rename "]').length === n,
+                                 rows - 1, { timeout: 20000 })
+    }
 
     // ── revoke: focus first, then the act
     await page.locator(`[aria-label="Remove ${NEW}"]`).click()
@@ -298,7 +379,7 @@ const names = (page) =>
       NEW, { timeout: 20000 },
     )
     wire = await passkeys()
-    const gone = !wire.list.some((p) => p.id === id)
+    const gone = Boolean(id) && !wire.list.some((p) => p.id === id)
     // The same session must still render /account: a revoke is not a sign-out.
     const reload = await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
     const sessionHeld = reload.status() === 200 && !page.url().includes('/sign-in')
@@ -313,13 +394,15 @@ const names = (page) =>
     await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
     await page.waitForTimeout(6000)
     const signedIn = !page.url().includes('/sign-in')
-    const said = await page.locator('p').allTextContents()
-    step('revoked-signin', !signedIn,
-         `still on ${page.url()}; the page said ${JSON.stringify(
-            said.filter((t) => /passkey/i.test(t)))}`)
+    const said = (await page.locator('p').allTextContents()).filter((t) => /passkey/i.test(t))
+    // Both of S1a's sentences point at the magic link; a button that did nothing shows neither,
+    // and "still on /sign-in" alone would have passed for it.
+    const sentence = said.some((t) => /magic link/i.test(t))
+    step('revoked-signin', !signedIn && sentence,
+         `still on ${page.url()}; S1a's sentence shown=${sentence}; the page said ${JSON.stringify(said)}`)
 
-    // ── the magic link still works
-    await page.goto(CONFIRM_2, { waitUntil: 'networkidle' })
+    // ── the magic link still works — minted NOW, after the first was redeemed (docstring)
+    await page.goto(await magicLink(), { waitUntil: 'networkidle' })
     const back = await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
     step('magic-link', back.status() === 200 && !page.url().includes('/sign-in'),
          `magic link landed on ${page.url()} (${back.status()})`)
@@ -333,7 +416,7 @@ const names = (page) =>
 '''
 
 
-def run_browser(env_names, cfg):
+def run_browser(cfg):
     pw = playwright_dir()
     if not pw:
         print('  FAIL  playwright is not on this machine. Set PLAYWRIGHT_DIR to a playwright')
@@ -345,7 +428,10 @@ def run_browser(env_names, cfg):
         open(script, 'w').write(BROWSER_JS)
         # SECRETS GO IN THE ENVIRONMENT, never in argv: argv is world-readable in `ps`.
         child = dict(os.environ, PW_DIR=pw, APP_URL=APP, AXE_PATH=axe_path() or '', **cfg)
-        proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=600)
+        try:
+            proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 600s'}]
     for line in proc.stdout.splitlines():
         if line.startswith('@@RESULT@@'):
             return json.loads(line[len('@@RESULT@@'):])
@@ -358,7 +444,7 @@ def burst(url, publishable, n=30):
     """DW-33 (1). The endpoint `startPasskeySignIn` calls, hit directly with the publishable key —
     the claim under test is GoTrue's OWN limit on `/passkeys/authentication/*`, and going through
     the server action would measure Vercel's egress IP instead of a caller's."""
-    first = None
+    first, errors = None, 0
     for i in range(n):
         req = urllib.request.Request(
             f'{url.rstrip("/")}/auth/v1/passkeys/authentication/options',
@@ -371,10 +457,32 @@ def burst(url, publishable, n=30):
         except urllib.error.HTTPError as e:
             status = e.code
         except Exception:
-            status = 0
+            errors += 1
+            continue
         if status != 200 and first is None:
             first = (i + 1, status)
-    return first
+    return first, errors
+
+
+def hex_to_rgb(hex_colour):
+    h = hex_colour.lstrip('#')
+    return 'rgb(' + ', '.join(str(int(h[i:i + 2], 16)) for i in (0, 2, 4)) + ')'
+
+
+def tokens_rgb():
+    """The four token values the `frame` step asserts, read out of the token layer as
+    `getComputedStyle` will report them. Retyping a hex here is how a frame value goes stale."""
+    css = open(os.path.join(HERE, '..', '..', 'apps', 'web', 'app', 'globals.css')).read()
+    def token(name):
+        return hex_to_rgb(re.search(rf'--color-{name}:\s*(#[0-9A-Fa-f]{{6}})', css).group(1))
+    return {'paper': token('paper'), 'dangerTint': token('danger-tint'),
+            'inkSoft': token('ink-soft'), 'danger': token('danger')}
+
+
+def name_max():
+    rule = open(os.path.join(HERE, '..', '..', 'apps', 'web', 'app', '(app)', 'app', '(authed)',
+                             'account', 'passkey-name-rule.ts')).read()
+    return int(re.search(r'PASSKEY_NAME_MAX = (\d+)', rule).group(1))
 
 
 def main():
@@ -394,8 +502,14 @@ def main():
 
     admin = Admin(env['SUPABASE_URL'], env['SUPABASE_SECRET_KEY'])
     email = f'passkey-harness-{int(time.time())}@inflozo.com'
+    swept = admin.sweep_stale_fixtures()
+    if swept:
+        print(f'  swept {swept} stale passkey-harness-* user(s) an earlier run left behind')
     before = admin.user_count()
     print(f'  users before: {before}')
+    if before is None:
+        print('  FAIL  the Admin-API user count could not be read, so the cleanup has no control.')
+        return 1
 
     status, created = admin.call('POST', '/admin/users',
                                  {'email': email, 'email_confirm': True})
@@ -419,21 +533,22 @@ def main():
                   f'GET /admin/users/{{id}}/passkeys answers {status} (empty for a new user)')
             failed = not ok or status != 200 or not pw or not axe
         else:
-            links = []
-            for _ in range(2):
-                status, link = admin.call('POST', '/admin/generate_link',
-                                          {'type': 'magiclink', 'email': email})
-                if status != 200 or not link.get('hashed_token'):
-                    print(f'  FAIL  generate_link answered HTTP {status}')
-                    return 1
-                links.append(f'{APP}/auth/confirm?token_hash={link["hashed_token"]}&type=magiclink')
+            # ONE link here. The second is minted by the browser half right before it is used:
+            # GoTrue keeps one such token per user, so two minted together leave the first dead.
+            status, link = admin.call('POST', '/admin/generate_link',
+                                      {'type': 'magiclink', 'email': email})
+            if status != 200 or not link.get('hashed_token'):
+                print(f'  FAIL  generate_link (the first link) answered HTTP {status}')
+                return 1
 
-            steps = run_browser(env, {
+            steps = run_browser({
                 'SB_URL': env['SUPABASE_URL'],
                 'SB_SECRET': env['SUPABASE_SECRET_KEY'],
                 'FIXTURE_USER_ID': user_id,
-                'CONFIRM_URL_1': links[0],
-                'CONFIRM_URL_2': links[1],
+                'FIXTURE_EMAIL': email,
+                'CONFIRM_URL_1': f'{APP}/auth/confirm?token_hash={link["hashed_token"]}&type=magiclink',
+                'TOKENS_RGB': json.dumps(tokens_rgb()),
+                'NAME_MAX': str(name_max()),
             })
             for s in steps:
                 mark = 'RECORD' if s['ok'] is None else ('PASS' if s['ok'] else 'FAIL')
@@ -441,16 +556,19 @@ def main():
                 if s['ok'] is False:
                     failed = True
 
-            hit = burst(env['SUPABASE_URL'], env['SUPABASE_PUBLISHABLE_KEY'])
+            hit, errors = burst(env['SUPABASE_URL'], env['SUPABASE_PUBLISHABLE_KEY'])
             print('  RECORD ratelimit: ' + (
                 f'the first status ≠ 200 was {hit[1]} on call {hit[0]} of 30'
-                if hit else 'all 30 calls answered 200 — GoTrue did NOT rate-limit this burst'))
+                if hit else 'every answered call was 200 — GoTrue did NOT rate-limit this burst')
+                + (f'; {errors} call(s) raised a network error and are not statuses' if errors else ''))
     finally:
         status, _ = admin.call('DELETE', f'/admin/users/{user_id}', {})
         after = admin.user_count()
-        leaked = before is not None and after is not None and after != before
         print(f'  fixture user deleted (HTTP {status}); users after: {after}')
-        if leaked:
+        if after is None:
+            print('  FAIL  the Admin-API user count could not be read after cleanup — unverified.')
+            failed = True
+        elif after != before:
             print('  FAIL  the user count did not return to where it started — a user leaked.')
             failed = True
 

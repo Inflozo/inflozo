@@ -23,3 +23,12 @@ export const passkeyNameSchema = z
   .trim()
   .min(1, PASSKEY_NAME_HINT)
   .max(PASSKEY_NAME_MAX, PASSKEY_NAME_HINT)
+
+/**
+ * THE OTHER HALF OF THE BOUNDARY: the passkey the row's button posted. A UUID, because that is
+ * what GoTrue mints (read off the wire by the harness's `register` step, which asserts it) and the
+ * only shape `PATCH`/`DELETE /passkeys/{id}` can mean — a hand-made POST is refused at the action
+ * rather than sent upstream as a path segment with the user's bearer token. Here and not in
+ * `actions.ts` so `node --test` can hold it (review, 2026-09-07).
+ */
+export const passkeyIdSchema = z.uuid()

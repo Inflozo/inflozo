@@ -3,7 +3,7 @@
 import { createContext, useActionState, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
-import { openOnCancel, sheet, title } from '@/components/kit/dialog'
+import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Copy, Pencil, Trash } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
@@ -263,6 +263,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
       {/* ── Rename */}
       <dialog
         ref={rename}
+        onClick={closeOnBackdrop}
         aria-labelledby={`rename-${id}-title`}
         onClose={(event) => {
           setRenamedSeen(renamed)
@@ -304,6 +305,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
       {/* ── Delete, S12c's shape, centred */}
       <dialog
         ref={remove}
+        onClick={closeOnBackdrop}
         aria-labelledby={`delete-${id}-title`}
         onClose={() => setRemovedSeen(removed)}
         className={`${sheet} gap-5`}

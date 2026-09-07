@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Mail } from '@/components/kit/icons'
-import { passkeysEnabled } from '@/lib/flags'
+import { passkeysEnabled, READ_TIMEOUT_MS } from '@/lib/flags'
 import { passkeyRows, type PasskeyRow } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { withTimeout } from '@/lib/with-timeout'
 import { PasskeysCard } from './passkeys-card'
 
 /* ─────────────────────────────────────── S12 Billing.dc.html — S12a, its RIGHT column.
@@ -68,10 +69,6 @@ export default async function AccountPage() {
   )
 }
 
-// ponytail: a race, not a cancel — the request runs on; a real AbortSignal the day the library
-// exposes one for `passkey.list()`. The same ceiling `lib/flags.ts` gives its two reads.
-const LIST_TIMEOUT_MS = 3000
-
 /**
  * The list, through the user's OWN session — the passkeys are theirs and GoTrue scopes the call
  * to the bearer token. A read that fails is `null` — the card says it could not load, rather
@@ -90,15 +87,13 @@ async function listPasskeys(): Promise<PasskeyRow[] | null> {
     const supabase = await supabaseServer()
     // RACED, because the library exposes no `AbortSignal` for this call and a platform that
     // HANGS rather than errors would hang this page — `passkeysEnabled()`'s two reads were given
-    // the same 3s ceiling by a review for exactly that (DW-33 (2)). The request is not cancelled,
-    // it is abandoned: the render gives up and the card says it could not load. `Promise.race`
-    // takes the first to settle, so a read that answers inside 3s is untouched by this.
-    const answered = await Promise.race([
-      supabase.auth.passkey.list(),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), LIST_TIMEOUT_MS)),
-    ])
+    // the same ceiling by a review for exactly that (DW-33 (2)), and it is THE SAME CONSTANT, not
+    // a copy. The request is not cancelled, it is abandoned: the render gives up and the card
+    // says it could not load. `withTimeout` is under `node --test`; this line is not.
+    // ponytail: a race, not a cancel — a real AbortSignal the day the library exposes one.
+    const answered = await withTimeout(supabase.auth.passkey.list(), READ_TIMEOUT_MS)
     if (!answered) {
-      console.error('passkey: list timed out', { ms: LIST_TIMEOUT_MS })
+      console.error('passkey: list timed out', { ms: READ_TIMEOUT_MS })
       return null
     }
     const { data, error } = answered

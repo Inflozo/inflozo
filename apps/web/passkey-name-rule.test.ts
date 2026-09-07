@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   PASSKEY_NAME_HINT,
   PASSKEY_NAME_MAX,
+  passkeyIdSchema,
   passkeyNameSchema,
 } from './app/(app)/app/(authed)/account/passkey-name-rule.ts'
 
@@ -33,4 +34,11 @@ test('passkeyNameSchema: trimmed, 1 to PASSKEY_NAME_MAX, one sentence for both f
 test('the hint quotes the limit, and the limit is GoTrue\'s own 120', () => {
   assert.equal(PASSKEY_NAME_MAX, 120)
   assert.ok(PASSKEY_NAME_HINT.includes(String(PASSKEY_NAME_MAX)))
+})
+
+test('passkeyIdSchema: a UUID passes, and a hand-made path fragment never reaches the wire', () => {
+  assert.equal(passkeyIdSchema.safeParse('2f1c4b8e-9d3a-4c6b-8e2f-1a5d7c9b3e01').success, true)
+  for (const bad of ['', 'not-a-uuid', 'x/../../user', '2f1c4b8e-9d3a-4c6b-8e2f-1a5d7c9b3e01/x']) {
+    assert.equal(passkeyIdSchema.safeParse(bad).success, false, `must refuse ${JSON.stringify(bad)}`)
+  }
 })

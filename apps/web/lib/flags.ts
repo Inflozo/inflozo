@@ -31,7 +31,7 @@ import { env, supabaseAdmin } from './supabase/server.ts'
  * DW-12 CLOSES HERE: the reader the ledger asked for is `supabaseAdmin()`, one cookie-less
  * client holding `SUPABASE_SECRET_KEY` for this one table.
  */
-const READ_TIMEOUT_MS = 3000
+export const READ_TIMEOUT_MS = 3000
 
 export const passkeysEnabled = cache(async function passkeysEnabled(): Promise<boolean> {
   const [row, settings] = await Promise.all([ourRow(), supabaseSetting()])

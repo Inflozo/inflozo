@@ -2,13 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { z } from 'zod'
 import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '../../sign-in/webauthn.ts'
 import { passkeysEnabled } from '@/lib/flags'
 import { nameFor } from '@/lib/passkey-name'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { NUDGE_DONE } from './nudge.ts'
-import { PASSKEY_NAME_HINT, passkeyNameSchema } from './passkey-name-rule.ts'
+import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey-name-rule.ts'
 
 /**
  * S12a'S PASSKEYS CARD, and the dashboard nudge that points at it — FR-A2's registration half.
@@ -50,16 +49,19 @@ const MESSAGES: Record<Code, string> = {
 
 const fail = (code: Code) => ({ error: { code, message: MESSAGES[code] } })
 
-/**
- * The passkey the row's button posted. A UUID, because that is what GoTrue mints and the only
- * shape `PATCH`/`DELETE /passkeys/{id}` can mean — a hand-made POST is refused here rather than
- * sent upstream as a path segment.
- */
-const PASSKEY_ID = z.uuid()
+/** The passkey the row's button posted — `passkeyIdSchema` says why it is a UUID. */
 const idOf = (formData: FormData) => {
-  const parsed = PASSKEY_ID.safeParse(formData.get('id'))
+  const parsed = passkeyIdSchema.safeParse(formData.get('id'))
   return parsed.success ? parsed.data : null
 }
+
+/**
+ * GoTrue answers 404 for an id that is gone or not this user's (executed 2026-09-07:
+ * `{"error_code":"validation_failed","msg":"Passkey not found"}` on both PATCH and DELETE). The
+ * matrix's *stale id* row promises "the next render drops the row", and a render only happens if
+ * something revalidates — so a 404 revalidates, and still says the sentence.
+ */
+const GONE = 404
 
 /**
  * BOTH GUARDS, IN THE ORDER THAT MATTERS. The flag first, because an action that still acts
@@ -175,6 +177,7 @@ export async function renamePasskey(
     // sentence: the row is gone and the next render says so. No name and no id is logged.
     if (error) {
       console.error('passkey: rename failed', { status: error.status, code: error.code })
+      if (error.status === GONE) revalidatePath('/app/account')
       return fail('rename_failed')
     }
   } catch (error) {
@@ -208,6 +211,7 @@ export async function revokePasskey(
     const { error } = await supabase.auth.passkey.delete({ passkeyId: id })
     if (error) {
       console.error('passkey: revoke failed', { status: error.status, code: error.code })
+      if (error.status === GONE) revalidatePath('/app/account')
       return fail('revoke_failed')
     }
   } catch (error) {

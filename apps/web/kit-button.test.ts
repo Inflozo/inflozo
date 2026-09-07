@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { sheet } from './components/kit/dialog.ts'
+import { sheet, title } from './components/kit/dialog.ts'
 
 // READ out of the files, not imported: `node --test` strips types but cannot load `.tsx`, which
 // is why every pure test in this repo lives on a `lib/*.ts`. The contract is still worth pinning.
@@ -48,5 +48,18 @@ test("a frame's own weight goes through the Kit, never through className", () =>
 test('the shared dialog sheet keeps the scrim, the shadow and the centring margin', () => {
   for (const token of ['m-auto', 'shadow-modal', 'backdrop:bg-scrim', 'open:flex']) {
     assert.ok(sheet.includes(token), `kit/dialog.ts: the sheet must keep ${token}.`)
+  }
+})
+
+// The lift itself: `project-menu.tsx` owes its dialogs to `kit/dialog.ts` and carries no copy of
+// the sheet, the title or the `showModal()` ceremony — a re-copy is how two dialogs stop matching.
+test('the project menu imports the dialog vocabulary and keeps no copy of it', () => {
+  const menu = readFileSync('app/(app)/app/(authed)/project-menu.tsx', 'utf8')
+  assert.match(menu, /from '@\/components\/kit\/dialog'/)
+  for (const copied of ['shadow-modal', 'backdrop:bg-scrim', 'showModal(', 'font-display text-[20px]']) {
+    assert.ok(!menu.includes(copied), `project-menu.tsx: ${copied} belongs in kit/dialog.ts only.`)
+  }
+  for (const token of ['font-display', 'text-[20px]', 'text-ink']) {
+    assert.ok(title.includes(token), `kit/dialog.ts: the title must keep ${token}.`)
   }
 })

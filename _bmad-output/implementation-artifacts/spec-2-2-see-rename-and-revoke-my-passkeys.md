@@ -2,9 +2,9 @@
 title: 'Story 2.2 — See, rename and revoke my passkeys'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '51cfb9740508aa11da170bc5b85022e3745fd6c8'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
@@ -127,6 +127,31 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 - Given the new migration applied, when `run-rls-gate.sh` runs, then it is green and `passkey_labels` exists in neither database
 - Given `pnpm check`, `pnpm build`, `node --test` and axe-core on `/account` with both dialogs open in turn, then all green and zero violations
 
+### Review Findings
+
+Code review 2026-09-07, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). No decision for the owner. Every patch applied in the review; one item deferred.
+
+- [x] [Review][Patch] The harness minted two magic links up front and GoTrue keeps one per user, so the Deploy run would have failed at `signed-in` against a correct product [tools/probe/run-verify-passkeys.py] — executed against the deployed confirm route: the first link answered `/sign-in?error=link`. The second link is now minted by the browser half right before the `magic-link` step
+- [x] [Review][Patch] The harness's control could not reach the server: Playwright's `fill` honours `maxlength` (executed: 121 became 120), so `rename-control` would have failed for the wrong reason [tools/probe/run-verify-passkeys.py] — the value is set from script past the attribute; the step waits for the field's sentence and asserts it quotes the ceiling
+- [x] [Review][Patch] `revoked-signin` passed for any page still on `/sign-in`, a button that did nothing included [tools/probe/run-verify-passkeys.py] — one of S1a's two sentences must be on the page
+- [x] [Review][Patch] A user count that could not be read silently skipped the leak check; paging stopped on a short page, not an empty one; stale `passkey-harness-*` users from a killed run were never swept [tools/probe/run-verify-passkeys.py]
+- [x] [Review][Patch] `revoke`'s "id gone" was vacuously true with no id; the id's UUID shape (the boundary's premise) was never asserted [tools/probe/run-verify-passkeys.py]
+- [x] [Review][Patch] `duplicate` waited a fixed 4s and, if GoTrue did not refuse, left a second credential that `revoked-signin` would then reason about [tools/probe/run-verify-passkeys.py] — waits for the caption or the second row, and removes any extra row through the bin
+- [x] [Review][Patch] `frame` measured the hover fills and glyph colours but never asserted them, and its comment quoted the frame's `#FDEBEC` where the token is `#FDECEC` [tools/probe/run-verify-passkeys.py] — asserted against the tokens read out of `globals.css` (DESIGN.md:51 rules the token); the name ceiling is read out of `passkey-name-rule.ts`
+- [x] [Review][Patch] Harness robustness: network and non-JSON answers, a 600s node timeout and a missing `.env` were tracebacks that skipped cleanup; `burst()` counted a network error as a status [tools/probe/run-verify-passkeys.py]
+- [x] [Review][Patch] The catalogue row said the harness "closes DW-32 (4) and DW-33 (1)" while the ledger in the same commit says both wait for the Deploy run [tools/doc-audit.py:289]
+- [x] [Review][Patch] The 3s ceiling on `listPasskeys()` was a second copy of `lib/flags.ts`'s constant, left its timer pending on every fast read, and had no test [apps/web/app/(app)/app/(authed)/account/page.tsx] — `lib/with-timeout.ts` under `node --test` with mock timers, importing the now-exported `READ_TIMEOUT_MS`
+- [x] [Review][Patch] The passkey-id guard lived in a `'use server'` file no test can load and the harness only ever posts real ids [apps/web/app/(app)/app/(authed)/account/actions.ts:58] — `passkeyIdSchema` moved beside the name rule and pinned: `x/../../user` and `''` refused
+- [x] [Review][Patch] A 404 on rename or revoke (the *stale id* row) showed the sentence but nothing revalidated, so the row the matrix promised would leave stayed [apps/web/app/(app)/app/(authed)/account/actions.ts] — 404 (executed against GoTrue: `validation_failed "Passkey not found"`) revalidates and still says the sentence
+- [x] [Review][Patch] The matrix promises Cancel / Escape / backdrop close either dialog, and a native modal `<dialog>` does not close on a backdrop click [apps/web/components/kit/dialog.ts] — `closeOnBackdrop` (geometry, so the sheet's own padding does not count) on all four dialogs, the project menu's included
+- [x] [Review][Patch] The card's comment claimed both forms work with JavaScript off; the dialogs open by `showModal()` and the id is set by a click handler [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx:100]
+- [x] [Review][Patch] `kit/dialog.ts` cited "standing rule 3" by number; CLAUDE.md says cite the words [apps/web/components/kit/dialog.ts:6]
+- [x] [Review][Patch] Nothing pinned that `project-menu.tsx` keeps no copy of the lifted sheet, or the `title` tokens [apps/web/kit-button.test.ts]
+- [x] [Review][Defer] Two rows born with the fallback name `Passkey` are two identical `Rename Passkey` controls to a screen reader [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx] — deferred, DW-36; the disambiguator is the added date, and it changes the harness's locators, so it is done with DW-32 (2)
+
+**Dismissed as noise** (twelve): a token change to `#FDEBEC` (DESIGN.md:51 rules `danger-tint` `#FDECEC`); the `once` ref sticking after a throw or redirect (the card unmounts either way); a stale `renamedSeen` when Cancel wins a race with Save (no sentence is shown for a success); quoted `.env` values; a shared `load_env`; a Node-version check; a recovery note in the drop migration; a `deleteSucceeded` helper; recording the `--check` response shape; `burst()` after a browser failure; a `passkeys_off` rate-limit path; treating `DELETE` 404 as success (the matrix says the sentence).
+
 ## Spec Change Log
 
 1. **`pnpm check` runs from the repository root, not `apps/web`.** The Verification section drafted
@@ -157,6 +182,23 @@ revoke is a confirm that opens on Cancel. The name lives in Supabase's `friendly
 6. **`ready()` runs before the name is parsed.** The matrix's *Either switch off* row says any of
    the two actions answers `passkeys_off`; an action that still returned "give it a name" with the
    module switched off would be describing a form nobody should have been shown.
+7. **Review, 2026-09-07 — two harness defects that would have failed the Deploy run against a
+   correct product, both found by execution.** GoTrue keeps ONE magic-link token per user, so the two
+   links the Python half minted up front left the first dead (`/sign-in?error=link` off the deployed
+   confirm route); and Playwright's `fill` honours `maxlength` (121 became 120), so the control's
+   121 characters never reached the server. The second link is now minted right before it is used,
+   and the control sets the value from script past the attribute. Neither is visible to `--check`,
+   which is why Dev's green `--check` could not see them.
+8. **The `frame` step asserts the hover fills and glyph colours against the TOKENS, derived from
+   `globals.css`.** The AC says "the frame's hover fills"; the frame's bin hover pixel is `#FDEBEC`
+   and the token `danger-tint` is `#FDECEC` — DESIGN.md:51 rules the token, and both are export
+   values (F-110). The card is built from the token, so the token is what is measured.
+9. **The stale-id row's "the next render drops the row" needed a revalidate.** GoTrue's 404 on an
+   unknown id is now executed (`validation_failed`, "Passkey not found", on both PATCH and DELETE);
+   both actions revalidate on it and still say the sentence.
+10. **Backdrop click now closes every dialog**, as the matrix's *Cancel / Escape / backdrop* row
+    promised and a native modal `<dialog>` does not do on its own — `closeOnBackdrop` in
+    `kit/dialog.ts`, on the project menu's two dialogs as well so the vocabulary stays one.
 
 ## Design Notes
 
@@ -264,6 +306,32 @@ says so rather than claiming them (standing rule 1): whether GoTrue populates `e
 on a second registration; which of S1a's two sentences a revoked credential produces at sign-in;
 whether GoTrue rate-limits `/passkeys/authentication/options`; and the frame measurement, which
 needs a row to measure.
+
+**Review run, 2026-09-07 (R-82), on the real infrastructure** — every command by key name, none printed.
+
+- `pnpm check` — **GREEN**, `apps/web`: **115 tests, 115 pass** (the review added `passkeyIdSchema`,
+  `withTimeout` ×2 and the project-menu lift test). `pnpm --filter web build` — **GREEN**,
+  `/app/account` still `ƒ`. `bash supabase/tests/run-rls-gate.sh` — **exit 0**; its control (the drop
+  migration moved aside) — **exit 1, `SCHEMA DRIFT` naming `passkey_labels`**, file restored, tree clean.
+- `python3 tools/probe/run-verify-passkeys.py --check` — **exit 0** before and after the review's patches;
+  `users before: 4 … users after: 4`.
+- **GoTrue's hypotheses, executed without a browser** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+  `SUPABASE_PUBLISHABLE_KEY`; a fixture user minted by `generate_link`, redeemed at `POST /auth/v1/verify`,
+  deleted afterwards, count 4 → 4): `PATCH /passkeys/<random uuid>` → **404**
+  `validation_failed "Passkey not found"`; `DELETE /passkeys/<random uuid>` → **404**, same body;
+  `PATCH` with a 121-character `friendly_name` → **400** `"friendly_name must be 120 characters or less"`
+  (so the ceiling is the platform's, executed); the session survived both failures (`GET /user` → 200).
+  **Negative control held:** the same `PATCH` and `DELETE` with the publishable key only → **401**
+  `no_authorization`. Whether GoTrue answers 404 or 403 for ANOTHER user's real id still needs two users
+  with passkeys — the Deploy run's.
+- **Two hypotheses the harness itself rested on, falsified by execution and fixed** (change log 7):
+  `generate_link` twice for one user → the first `token_hash` answered **`303 /sign-in?error=link`** at the
+  deployed confirm route and the second `303 /`; Playwright `fill` of 121 characters into a
+  `maxlength=120` field → **120** in the field (`$eval` setting `.value` → 121).
+- Both switches still ON: `passkeys_enabled = True`; `feature_flags.passkeys = true`. `passkey_labels`
+  still exists in production (`GET /rest/v1/passkey_labels?limit=1` → 200 `[]`), as expected before Deploy.
+  `https://app.inflozo.com/account` signed out → **307** to `/sign-in`; the deployed site is pre-Deploy for
+  this story, so the pencil and the bin were not looked for there.
 
 **Commands for the Deploy run**
 

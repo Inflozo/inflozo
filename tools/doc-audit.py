@@ -286,8 +286,8 @@ DOCS = [
   'deletes it afterwards, comparing the Admin-API user count before and after, so a leak is loud. '
   '--check is the plumbing alone — keys present, Playwright resolvable, one real create-read-delete '
   'against Supabase — and needs no browser and no deployment. Also records whether GoTrue '
-  'rate-limits /passkeys/authentication/options under a burst of 30. Closes DW-32 (3) and (4) and '
-  "DW-33 (1). Playwright is resolved from the machine, not this repository; PLAYWRIGHT_DIR "
+  'rate-limits /passkeys/authentication/options under a burst of 30. Closes DW-32 (3); ASKS DW-32 (4) '
+  "and DW-33 (1), which close on the Deploy run's recorded answer. Playwright is resolved from the machine, not this repository; PLAYWRIGHT_DIR "
   'overrides. Story 2.2.'),
  ('tools/probe/report-template.html', 'tool', 'Decision-sheet template',
   'Copy it, replace the findings array, change nothing else.'),

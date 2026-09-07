@@ -840,3 +840,21 @@ reason: Next's file convention accepts `app/icon.png` or `app/favicon.ico` besid
   matcher and in `routing.test.ts`'s derived list, closes it. Not done in the review because the owner tests on
   current Safari and the spec names `icon.svg` as the one favicon; do it the first time his test, or a user,
   reports a blank tab.
+
+## Deferred from: code review of spec-2-2-see-rename-and-revoke-my-passkeys (2026-09-07)
+
+### DW-36: two passkeys with the same name are two identical controls to a screen reader
+
+plain: Each passkey row's pencil and bin are announced as "Rename <name>" and "Remove <name>". Two passkeys
+  that were both born with the fallback name "Passkey" — the common case until a real device name is known
+  (DW-32 (2)) — therefore sound identical to someone using a screen reader, though they look identical on
+  screen too. Nothing is broken; a user renames one and the two are distinct again.
+status: open
+severity: low
+origin: Story 2.2 code review (2026-09-07) — Blind Hunter
+location: apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx (the two `aria-label`s) · tools/probe/run-verify-passkeys.py (`names()`, and the exact-match waits on `Rename ${n}`)
+reason: The disambiguator the row already shows is the added date (`addedLabel`), so the fix is to append it
+  to both labels — one line each — but the harness locates rows by the exact label, so its `names()` and the
+  two `waitForFunction`s change with it. Not done in the review because the harness had eight other patches
+  in the same pass and this one is cosmetic until two rows really share a name; do it with DW-32 (2), which
+  is the story that gives rows real names.

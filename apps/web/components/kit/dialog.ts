@@ -3,7 +3,7 @@
  * extrapolated from it (R-74): a 460px sheet, the display title, Cancel + primary in the footer.
  * These three lived in `project-menu.tsx` and are here because a second card now needs them —
  * imported by both, never copied, so a change to the sheet cannot land on one dialog and miss
- * the other (standing rule 3).
+ * the other (propagate, never localise).
  *
  * A plain module and not a component: what is shared is the vocabulary, not a wrapper. A
  * `<Dialog>` component would have to carry every dialog's differing body, footer and form, and
@@ -30,4 +30,19 @@ export function openOnCancel(dialog: HTMLDialogElement | null) {
   if (!dialog) return
   dialog.showModal()
   dialog.querySelector<HTMLElement>('[data-cancel]')?.focus()
+}
+
+/**
+ * A CLICK ON THE BACKDROP CLOSES THE DIALOG — the matrices promise "Cancel / Escape / backdrop"
+ * and a native modal `<dialog>` does the first two on its own but not the third. The `::backdrop`
+ * is the dialog element itself as far as events go, so the test is GEOMETRY, not `target`: a click
+ * whose point lies outside the sheet's box is a click on the backdrop. Testing `target ===
+ * currentTarget` would also close on the sheet's own 26px padding, which is not what anyone meant.
+ * Goes on the `<dialog>` as `onClick`; `closedby="any"` would do it natively but is not yet in
+ * every browser the product supports (review, 2026-09-07).
+ */
+export function closeOnBackdrop(event: { clientX: number; clientY: number; currentTarget: HTMLDialogElement }) {
+  const { left, right, top, bottom } = event.currentTarget.getBoundingClientRect()
+  const { clientX: x, clientY: y } = event
+  if (x < left || x > right || y < top || y > bottom) event.currentTarget.close()
 }

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
-import { openOnCancel, sheet, title } from '@/components/kit/dialog'
+import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { Laptop, Passkey, Pencil, Trash } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
 import { TextInput } from '@/components/kit/input'
@@ -97,8 +97,8 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
   // closes over THIS card's two pending flags. React queues form actions and `pending` only turns
   // true on the NEXT render, so a held Enter or a double click sends a second Rename that races
   // the first, or a second Remove whose "We couldn't remove that…" arrives about a row already
-  // gone. `onSubmit` and not the action, so both forms keep working with JavaScript off — where
-  // there is no double submit to guard against.
+  // gone. `onSubmit` and not a wrapper around the action, so the action stays a plain Server
+  // Function reference and React's own dispatch handles it (`project-menu.tsx`'s shape).
   const submitting = useRef(false)
   useEffect(() => {
     if (!renaming && !revoking) submitting.current = false
@@ -278,6 +278,7 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
       <dialog
         ref={rename}
         aria-labelledby="rename-passkey-title"
+        onClick={closeOnBackdrop}
         onClose={(event) => {
           setRenamedSeen(renamed)
           // The field is uncontrolled, so a refused or abandoned edit stayed in it. `reset()`
@@ -322,6 +323,7 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
       <dialog
         ref={revoke}
         aria-labelledby="revoke-passkey-title"
+        onClick={closeOnBackdrop}
         onClose={() => setRevokedSeen(revoked)}
         className={`${sheet} gap-5`}
       >
