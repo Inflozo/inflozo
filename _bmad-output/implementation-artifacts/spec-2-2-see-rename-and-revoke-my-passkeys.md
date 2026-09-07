@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-07'
 status: 'in-review'
 baseline_commit: '51cfb9740508aa11da170bc5b85022e3745fd6c8'
-review_loop_iteration: 1
+review_loop_iteration: 2
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
@@ -161,6 +161,26 @@ Real-infra verifier). No decision for the owner. Every patch applied in the revi
 - [x] [Review][Patch] Nothing pinned that `project-menu.tsx` keeps no copy of the lifted sheet, or the `title` tokens [apps/web/kit-button.test.ts]
 - [x] [Review][Defer] Two rows born with the fallback name `Passkey` are two identical `Rename Passkey` controls to a screen reader [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx] — deferred, DW-36; the disambiguator is the added date, and it changes the harness's locators, so it is done with DW-32 (2)
 
+**Second review, 2026-09-07, after the Fix run** — the same five layers over the whole diff since the
+baseline, the Fix run's two files and its test read for the first time. No decision for the owner.
+
+- [x] [Review][Patch] A keyboard-activated submit closed the dialog: Enter in the rename field or Space on Save fires a click at (0,0), which `closeOnBackdrop`'s geometry reads as outside the sheet — executed in Chromium (`click target=save x=0 y=0 detail=0 outside=true`). The mouse-driven harness could never see it [apps/web/components/kit/dialog.ts:44] — a click whose target is not the `<dialog>` itself is never the backdrop; pinned in `kit-button.test.ts`; the harness now renames with Enter and keeps the mouse for the control
+- [x] [Review][Patch] The test that claims the three banners sit inside the passkey ternary's else branch captured the OUTER `sent` ternary instead — hoisting "You've been signed out." above the red banner left it green (executed by three layers) [apps/web/passkey-banner.test.ts:72]
+- [x] [Review][Patch] A passkey attempt's banner survived a rejected send: `guard()` returned on a bad address before clearing it, so the red banner at the top and the red field sentence stood together [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:114-122]
+- [x] [Review][Patch] A result that arrived after a backdrop click closed the dialog mid-flight was shown on the NEXT open, for another row [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx:122-127]
+- [x] [Review][Patch] The frozen matrix says an empty name sends nothing; the form posted it and let the server say the sentence [apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx:296] — the shared schema is checked at the submit, `sign-in-form.tsx`'s `guard()` shape
+- [x] [Review][Patch] `revoked-signin` waited a fixed 6s for a banner it can wait FOR, and never asserted that nothing was left in the caption slot — a regression showing both would pass [tools/probe/run-verify-passkeys.py:401]
+- [x] [Review][Patch] `ratelimit`'s burst of 30 sits on the edge of GoTrue's window: today's harness burst was all 200 and a 60-call burst right after got 429 on call 4 (55 of 60), so the step could record "did NOT rate-limit" against a platform that does; "of 30" was also hardcoded [tools/probe/run-verify-passkeys.py:465] — 60 calls, the count derived; the DW-33 line says the limit is a window
+- [x] [Review][Patch] Four comments say the old caption was 12.5px; `globals.css` says 11px and the Fix measured 11px [apps/web/app/(app)/app/sign-in/passkey-button.tsx:20 · sign-in-form.tsx:56 · passkey-banner.test.ts:8 · tools/probe/run-verify-passkeys.py:407]
+- [x] [Review][Patch] `id="passkey-caption"` is referenced by nothing since `aria-describedby` went [apps/web/app/(app)/app/sign-in/passkey-button.tsx:158]
+- [x] [Review][Patch] The sign-in actions' comment still says the sentences go "in P0-0's helper-caption slot under the button" [apps/web/app/(app)/app/sign-in/actions.ts:123]
+- [x] [Review][Patch] The signed-out banner's comment block sits above the passkey ternary and describes a banner three lines lower [apps/web/app/(app)/app/sign-in/sign-in-form.tsx:233-237]
+- [x] [Review][Patch] The catalogue row says the harness "ASKS DW-32 (4) and DW-33 (1), which close on the Deploy run's recorded answer"; both closed on 2026-09-07 [tools/doc-audit.py:289]
+- [x] [Review][Patch] The frozen *Always* says the error envelope lands "in the helper-caption slot"; the Code Map and the matrix say a Banner above the form, and the code does the latter — recorded in the change log, no code change
+- [x] [Review][Patch] Three `next-server` processes from earlier runs of this story were still listening on 3100, 3121 and 3122 (≈13–23h); a local check that landed on one saw 500s and no banner and would have read as a product failure — killed, recorded under `## Verification`
+
+**Dismissed as noise, second review** (fourteen): `role="status"` on a caption mounted with its text (2.1's second loop already ruled it); scrolling the banner into view at 390 (the owner's step 5 re-test is the control for that); scoping `[role="alert"]` tighter in the harness (the token check on the matched element already refuses the field slot); rewriting 2.1's frozen matrix for a sentence that moved but did not change (change log 11 is the record); an empty `## Questions for the owner` (the section exists only when a decision is his); a "gone" sentence on 404 (the frozen matrix says the sentence, dismissed once already); the empty hidden id (twice — no dialog opens without a row's click, and the schema refuses it); `kit-button.test.ts`'s name; the `onError(null)` ordering comment; the mint banner reappearing for the length of a second attempt; a send resolving during a ceremony (the card is `pointer-events-none` while pending); a non-6-hex token tripping `.group(1)` (a traceback is still a non-zero exit); the second, empty `role="alert"` the harness lists (Next's route announcer).
+
 **Dismissed as noise** (twelve): a token change to `#FDEBEC` (DESIGN.md:51 rules `danger-tint` `#FDECEC`); the `once` ref sticking after a throw or redirect (the card unmounts either way); a stale `renamedSeen` when Cancel wins a race with Save (no sentence is shown for a success); quoted `.env` values; a shared `load_env`; a Node-version check; a recovery note in the drop migration; a `deleteSucceeded` helper; recording the `--check` response shape; `burst()` after a browser failure; a `passkeys_off` rate-limit path; treating `DELETE` 404 as success (the matrix says the sentence).
 
 ## Spec Change Log
@@ -227,6 +247,27 @@ Real-infra verifier). No decision for the owner. Every patch applied in the revi
     already rules the feedback banner — "one icon, one plain sentence … danger is serious" — and
     `:285` scopes the helper-caption slot to a **greyed control showing its reason**, which is what
     "This browser can't use passkeys." is and what a failed attempt is not. Nothing was amended.
+12. **Second review, 2026-09-07 — a keyboard submit closed the dialog, found by execution.** A
+    form's implicit submission (Enter in the field) and a Space on Save both fire a click at
+    `(0,0)` on the button; `closeOnBackdrop` read that point as outside the sheet and closed the
+    dialog on the very submit it was meant to show the answer to. Chromium showed it in a
+    standalone page (`target=save x=0 y=0 detail=0`), the deployed site showed it through the
+    harness's new `rename-keyboard` record (`still open right after Enter = false` on the
+    pre-patch build), and the patched build keeps the dialog open. Only a click whose target is
+    the `<dialog>` itself is now the backdrop; every dialog in the app shares the fix.
+13. **The matrix's "nothing sent" for an empty name is now true of the form, not only of the
+    field's `maxLength`.** Emptiness is refused at the submit with the action's own sentence
+    (`sign-in-form.tsx`'s `guard()` shape); the ceiling stays the server's on purpose, so the
+    121-character control still reaches the action and proves ITS refusal (standing rule 2).
+14. **The frozen *Always* row says the error envelope lands "in the helper-caption slot"; the Code
+    Map, the matrix and the code put a failed rename or revoke in a Banner above the form and only
+    the field's own refusal in the caption.** The three agree with `project-menu.tsx`'s split, which
+    a review had to add there; the *Always* row is the odd one out and is read as "the field's
+    sentence in the field's slot". Recorded, not amended — the block is frozen.
+15. **GoTrue's rate limit on `/passkeys/authentication/options` is a rolling window of roughly
+    thirty calls, not a call number.** The Deploy run saw 429 on call 12 of 30; this review's
+    harness burst of 30 saw thirty 200s and a 60-call burst right after saw 429 on call 4; the
+    harness now bursts 60 and saw 429 on call 31. DW-33 (1)'s closing line says so.
 
 ## Design Notes
 
@@ -368,6 +409,42 @@ settles rather than mid-animation.
   still exists in production (`GET /rest/v1/passkey_labels?limit=1` → 200 `[]`), as expected before Deploy.
   `https://app.inflozo.com/account` signed out → **307** to `/sign-in`; the deployed site is pre-Deploy for
   this story, so the pencil and the bin were not looked for there.
+
+**Second review, 2026-09-07 (R-82), after the Fix run — on the real infrastructure**, every key by name.
+
+- **Which build is live:** `GET https://api.vercel.com/v6/deployments?limit=5` (`VERCEL_TOKEN`) — newest
+  production deployment `READY` at commit `610cf15f`, the Fix commit. The deployed site is therefore the
+  Fix run's build and PRE-dates this review's patches.
+- `pnpm check` — **GREEN**, `apps/web`: **118 tests, 118 pass** before the patches and after them (the
+  review widened two existing tests rather than adding files). `pnpm --filter web build` — **GREEN**,
+  `/app/account` and `/app/sign-in` both `ƒ`. `bash supabase/tests/run-rls-gate.sh` — **exit 0, 72 PASS**
+  (the Real-infra layer; no SQL changed).
+- **The regex control:** the test's else-branch capture, run against a copy of `sign-in-form.tsx` with
+  "You've been signed out." hoisted above the passkey ternary — the OLD regex still found the words
+  (green for a stacked banner); the anchored regex does not. A test that cannot fail is not a test.
+- **The keyboard defect, executed three ways.** (1) A standalone `<dialog>` in Chromium: Enter in the
+  field and Space on Save each fire `click target=save x=0 y=0 detail=0 outside=true`; a real mouse
+  click inside reads `detail=1 outside=false`. (2) `python3 tools/probe/run-verify-passkeys.py` against
+  the deployed pre-patch `app.inflozo.com` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+  `SUPABASE_PUBLISHABLE_KEY`) — **`RESULT: all steps passed`, `users before: 4 … users after: 4`**, with
+  the new records: `rename-keyboard: the rename dialog is still open right after Enter = false` (the
+  defect, on production), `revoked-signin … captions under the button still saying it=0`,
+  `ratelimit: the first status ≠ 200 was 429 on call 31 of 60`. (3) The PATCHED build as `next start
+  -p 3140` with the three keys, a real session through `generate_link` redeemed at the local confirm
+  route, fixture user created and deleted (200/200): Enter in the rename field → **dialog still open
+  right after, and still open once the server answered** (the empty-id refusal in its Banner); a
+  blank name → **0 POSTs**, the field said "Give it a name — up to 120 characters."; a mouse click on
+  the backdrop of a freshly opened dialog → **closed**, the event logged as `target: DIALOG, self:
+  true, x: 5, y: 5`. One probe run saw a backdrop click about 3.5s after a refused submit reach nothing
+  at all while a later, slower run saw the same click close the dialog; not reproduced and not
+  attributed — noted, not claimed.
+- **The rate-limit window, executed:** the harness's 30-burst → all 200; a 60-burst straight after →
+  `{200: 5, 429: 55}`, first 429 on call 4; the widened harness → 429 on call 31 of 60.
+- **Housekeeping found by execution:** three `next-server` processes from earlier runs of this story
+  were still listening on 3100, 3121 and 3122 (cwd `apps/web`, 13–23h old); a local check that landed
+  on one saw 500s and no banner. Killed; the review's own server on 3140 was stopped and its port
+  confirmed closed.
+- `python3 tools/doc-audit.py --check` — twice, second run **PASS**.
 
 **Commands for the Deploy run**
 

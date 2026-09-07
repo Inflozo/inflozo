@@ -120,7 +120,8 @@ export type PasskeyStart =
 
 export type PasskeyFinish = { error: { code: PasskeyFailure; message: string } }
 
-/** S1's voice, one sentence each, in P0-0's helper-caption slot under the button. */
+/** S1's voice, one sentence each, said in the card's red error Banner at the top (the owner's test
+ *  of 2.2, finding 1 — `passkey-button.tsx` hands them up through `onError`). */
 const PASSKEY_MESSAGES: Record<PasskeyFailure, string> = {
   passkeys_off: 'Passkeys are switched off just now. Use a magic link instead.',
   passkey_failed: "We couldn't sign you in with a passkey. Use a magic link instead.",

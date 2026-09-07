@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionState, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
@@ -17,7 +17,7 @@ import {
   startPasskeyRegistration,
   type ActionResult,
 } from './actions'
-import { PASSKEY_NAME_MAX } from './passkey-name-rule'
+import { PASSKEY_NAME_HINT, PASSKEY_NAME_MAX } from './passkey-name-rule'
 
 /* S12 Billing.dc.html:83-104 — the Passkeys card: its rows, the pencil and the bin at the end of
    every row, and its "Add a passkey".
@@ -118,18 +118,40 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
 
   // A dialog closes when its action succeeded, and stays open with its sentence when it did not.
   // Nothing here edits the list: both actions revalidate `/app/account` and the row renames or
-  // leaves with the re-rendered tree.
+  // leaves with the re-rendered tree. A failure that lands on a dialog ALREADY CLOSED — a backdrop
+  // click while "Saving…" — is spent on arrival, or the next open, for another row, would have
+  // shown it (second review, 2026-09-07).
   useEffect(() => {
-    if (renamed && 'ok' in renamed) rename.current?.close()
+    if (!renamed) return
+    if ('ok' in renamed) rename.current?.close()
+    else if (!rename.current?.open) setRenamedSeen(renamed)
   }, [renamed])
   useEffect(() => {
-    if (revoked && 'ok' in revoked) revoke.current?.close()
+    if (!revoked) return
+    if ('ok' in revoked) revoke.current?.close()
+    else if (!revoke.current?.open) setRevokedSeen(revoked)
   }, [revoked])
+
+  // The matrix says an empty name sends NOTHING, so emptiness is asked at the submit with the
+  // action's own sentence — `sign-in-form.tsx`'s `guard()` shape. ONLY emptiness: the ceiling is
+  // the server's on purpose, because the harness's control sets 121 characters past `maxLength`
+  // and must reach the action to prove ITS refusal; a client check on length would have made that
+  // control pass for the wrong reason (standing rule 2).
+  const [clientNameError, setClientNameError] = useState<string | null>(null)
+  const guardRename = (event: FormEvent<HTMLFormElement>) => {
+    if (String(new FormData(event.currentTarget).get('name') ?? '').trim() === '') {
+      event.preventDefault()
+      setClientNameError(PASSKEY_NAME_HINT)
+      return
+    }
+    setClientNameError(null)
+    once(event)
+  }
 
   const renameError = renamed !== renamedSeen && renamed && 'error' in renamed ? renamed.error : null
   // The field's own refusal goes in the field's helper-caption slot; anything else is a Banner
   // above the form (`project-menu.tsx`'s split, which a review had to add there).
-  const nameError = renameError?.code === 'bad_name' ? renameError.message : null
+  const nameError = clientNameError ?? (renameError?.code === 'bad_name' ? renameError.message : null)
   const renameFailed = renameError && renameError.code !== 'bad_name' ? renameError.message : null
   const revokeFailed = revoked !== revokedSeen && revoked && 'error' in revoked ? revoked.error.message : null
 
@@ -281,6 +303,7 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
         onClick={closeOnBackdrop}
         onClose={(event) => {
           setRenamedSeen(renamed)
+          setClientNameError(null)
           // The field is uncontrolled, so a refused or abandoned edit stayed in it. `reset()`
           // restores `defaultValue` AND clears the dirty flag, which is what lets the next row's
           // name reach the field at all — one dialog serves every row (`project-menu.tsx`, whose
@@ -293,7 +316,7 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
           Rename passkey
         </h2>
         {renameFailed ? <Banner kind="error">{renameFailed}</Banner> : null}
-        <form action={renameAction} onSubmit={once} className="flex flex-col gap-[18px]">
+        <form action={renameAction} onSubmit={guardRename} className="flex flex-col gap-[18px]">
           <input type="hidden" name="id" value={selected?.id ?? ''} />
           {/* `maxLength` is the schema's own number, so the 121st character cannot be typed or
               pasted and the matrix's "nothing sent" is true of it natively — the sentence still

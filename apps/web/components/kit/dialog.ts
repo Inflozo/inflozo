@@ -40,8 +40,21 @@ export function openOnCancel(dialog: HTMLDialogElement | null) {
  * currentTarget` would also close on the sheet's own 26px padding, which is not what anyone meant.
  * Goes on the `<dialog>` as `onClick`; `closedby="any"` would do it natively but is not yet in
  * every browser the product supports (review, 2026-09-07).
+ *
+ * BUT THE TARGET IS CHECKED FIRST: a click activated from the KEYBOARD — Enter in the field (the
+ * form's implicit submission fires a click on the default button), Space on Save — arrives with
+ * `clientX = clientY = 0`, which the geometry alone reads as "outside the sheet", and the dialog
+ * closed on the very submit it was meant to show the result of. Executed in Chromium (second
+ * review, 2026-09-07: `target=save x=0 y=0 detail=0`). Only a click whose target is the `<dialog>`
+ * itself can be the backdrop; a click on anything inside it is never one.
  */
-export function closeOnBackdrop(event: { clientX: number; clientY: number; currentTarget: HTMLDialogElement }) {
+export function closeOnBackdrop(event: {
+  clientX: number
+  clientY: number
+  target: EventTarget | null
+  currentTarget: HTMLDialogElement
+}) {
+  if (event.target !== event.currentTarget) return
   const { left, right, top, bottom } = event.currentTarget.getBoundingClientRect()
   const { clientX: x, clientY: y } = event
   if (x < left || x > right || y < top || y > bottom) event.currentTarget.close()

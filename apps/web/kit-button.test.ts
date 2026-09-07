@@ -62,4 +62,12 @@ test('the project menu imports the dialog vocabulary and keeps no copy of it', (
   for (const token of ['font-display', 'text-[20px]', 'text-ink']) {
     assert.ok(title.includes(token), `kit/dialog.ts: the title must keep ${token}.`)
   }
+  // A keyboard-activated submit is a click at (0,0) on the button; only a click whose target is
+  // the <dialog> itself may be read as the backdrop (executed, second review 2026-09-07).
+  const dialog = readFileSync('components/kit/dialog.ts', 'utf8')
+  assert.match(
+    dialog,
+    /if \(event\.target !== event\.currentTarget\) return[\s\S]*?getBoundingClientRect/,
+    'kit/dialog.ts: closeOnBackdrop must refuse a click on a child before it measures geometry.',
+  )
 })

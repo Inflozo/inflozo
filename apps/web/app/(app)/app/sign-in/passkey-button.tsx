@@ -17,7 +17,7 @@ import { authenticationResponse, browserSupportsWebAuthn, requestOptions } from 
    Everything a sign-in ATTEMPT answers — the OS sheet's "nothing here", a server action's error,
    an outright failure — goes UP to the card's own banner slot through `onError`, where it is the
    Kit's red error banner with its icon, in the place "You've been signed out." appears and
-   replacing whatever was there. It read as a 12.5px grey caption under the button and the owner
+   replacing whatever was there. It read as an 11px grey caption under the button and the owner
    missed it. What stays here in P0-0's helper-caption slot is the ONE sentence that is not an
    attempt's answer: "This browser can't use passkeys." It is shown before anything is pressed,
    it explains the absence of the button it replaces, and a red alert on arrival for a page whose
@@ -155,7 +155,7 @@ export function PasskeyButton({
     </>
   ) : (
     // The sentence stays when the offer goes: it is the whole reason the offer is missing.
-    <p id="passkey-caption" role="status" className="text-helper-caption leading-[1.5] text-ink-soft">
+    <p role="status" className="text-helper-caption leading-[1.5] text-ink-soft">
       {NO_WEBAUTHN}
     </p>
   )

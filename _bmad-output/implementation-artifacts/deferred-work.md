@@ -805,7 +805,10 @@ partly closed: Story 2.2 Dev (2026-09-07). **(2) is CLOSED IN CODE**: `listPassk
   **(1) IS NOW CLOSED**: Story 2.2 Deploy (2026-09-07) — the `ratelimit` step's 30 posts to
   `/auth/v1/passkeys/authentication/options` against the live project got a first non-200 (429) on
   call 12 of 30. GoTrue does rate-limit that endpoint on its own; the passkey sign-in actions'
-  reliance on the platform's own limit holds.
+  reliance on the platform's own limit holds. **The limit is a rolling window of roughly thirty
+  calls, not a fixed call number** (second review, 2026-09-07): a harness burst of 30 saw thirty
+  200s, and a 60-call burst straight after saw 429 on call 4 and on 55 of 60. The harness now
+  bursts wider than the window and derives the count it prints.
 
 ## Deferred from: code review of spec-1-6-the-new-identity-everywhere (2026-09-06)
 

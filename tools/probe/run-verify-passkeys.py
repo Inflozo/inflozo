@@ -17,7 +17,10 @@ WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
   auto-name      what `friendly_name` the row is BORN with (recorded, not asserted — a virtual
                  authenticator reports the all-zero AAGUID, so `Passkey` is the honest answer
                  and DW-32 (2) stays open for a real one)
-  rename         the pencil, a new name, Save; the new name read back OFF THE WIRE
+  rename         the pencil, a new name, ENTER in the field; the new name read back OFF THE WIRE.
+                 The keyboard on purpose: an implicit submission is a click at (0,0) on Save, which
+                 the backdrop handler once read as outside the sheet and closed the dialog on
+                 (second review, 2026-09-07). The control below keeps the mouse, so both roads run
   rename-control THE CONTROL: one character over the platform's ceiling must be REFUSED by the
                  server, with the field's own sentence. The value is set past `maxLength` from
                  script — Playwright's `fill` types through Chromium's editing pipeline and
@@ -45,7 +48,10 @@ WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
                  localhost origin can ever produce one (executed 2026-09-07: Chrome refuses with
                  "The relying party ID is not a registrable domain suffix of ... the current
                  domain"). The deployed site is the only place these three can run
-  ratelimit      DW-33 (1): 30 posts to `/passkeys/authentication/options`, the first status ≠ 200
+  ratelimit      DW-33 (1): a burst of posts to `/passkeys/authentication/options` WIDER than
+                 GoTrue's window, the first status ≠ 200. 30 sat on the window's edge: one run
+                 saw 429 on call 12, the next saw thirty 200s and a 60-call burst straight after
+                 saw 429 on call 4 (second review, 2026-09-07). Recorded, never asserted
 
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
 (argv is visible in `ps`), and every command is recorded by the key's variable NAME.
@@ -311,7 +317,11 @@ const names = (page) =>
     record('rename-focus', `the rename dialog opens on Cancel = ${renameOnCancel}`)
     await axe(page, 'rename-open')
     await page.fill('#rename-passkey', NEW)
-    await page.getByRole('button', { name: 'Save' }).click()
+    // ENTER, not Save: the implicit submission's click lands at (0,0) (docstring). Recorded so a
+    // dialog that closes on the keystroke before the action answers is loud, not silent.
+    await page.keyboard.press('Enter')
+    const openAfterEnter = await page.locator('dialog[open] #rename-passkey').count() > 0
+    record('rename-keyboard', `the rename dialog is still open right after Enter = ${openAfterEnter}`)
     await page.waitForFunction(
       (n) => [...document.querySelectorAll('[aria-label^="Rename "]')]
         .some((e) => e.getAttribute('aria-label') === `Rename ${n}`),
@@ -398,13 +408,16 @@ const names = (page) =>
     await context.clearCookies()
     await page.goto(`${APP}/sign-in`, { waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
-    await page.waitForTimeout(6000)
+    // Wait FOR the banner, not for a clock: a slow ceremony failed the step for timing (second
+    // review, 2026-09-07). The 15s is the ceiling, not the wait.
+    await page.locator('[role="alert"]', { hasText: /magic link/i }).first()
+      .waitFor({ timeout: 15000 }).catch(() => null)
     const signedIn = !page.url().includes('/sign-in')
     // Both of S1a's sentences point at the magic link; a button that did nothing shows neither,
     // and "still on /sign-in" alone would have passed for it.
     //
     // WHERE it is said is now part of the assertion (the owner's finding 1 of 2.2): the card's
-    // own error banner at the top, not the 12.5px grey caption under the button. So the alert is
+    // own error banner at the top, not the 11px grey caption under the button. So the alert is
     // located, and its background is compared to the `danger-tint` TOKEN and its icon looked for
     // — a step that read any <p> would pass for exactly the caption the finding asked to be
     // replaced, which is a control that does not control (standing rule 2).
@@ -418,8 +431,12 @@ const names = (page) =>
         }))
       : { bg: null, icon: false }
     const red = look.bg === TOKENS.dangerTint && look.icon
-    step('revoked-signin', !signedIn && sentence && red,
+    // And NOTHING left in the caption slot under the button: the finding asked for the sentence to
+    // move, and a regression that says it in both places would otherwise pass.
+    const captionLeft = await page.locator('form p.text-helper-caption', { hasText: /passkey|magic link/i }).count()
+    step('revoked-signin', !signedIn && sentence && red && captionLeft === 0,
          `still on ${page.url()}; S1a's sentence in the red banner=${sentence && red}; ` +
+         `captions under the button still saying it=${captionLeft}; ` +
          `banner ${JSON.stringify(look)} vs danger-tint ${TOKENS.dangerTint}; ` +
          `the alerts said ${JSON.stringify(said)}`)
 
@@ -462,10 +479,15 @@ def run_browser(cfg):
     return [{'name': 'browser', 'ok': False, 'detail': f'node exited {proc.returncode} with no result'}]
 
 
-def burst(url, publishable, n=30):
+BURST = 60
+
+
+def burst(url, publishable, n=BURST):
     """DW-33 (1). The endpoint `startPasskeySignIn` calls, hit directly with the publishable key —
     the claim under test is GoTrue's OWN limit on `/passkeys/authentication/*`, and going through
-    the server action would measure Vercel's egress IP instead of a caller's."""
+    the server action would measure Vercel's egress IP instead of a caller's. WIDER THAN THE WINDOW:
+    30 was its edge — executed 2026-09-07, all 200 from the harness and 55 of 60 as 429 a moment
+    later — so whether a 30-burst saw the limit depended on what ran before it."""
     first, errors = None, 0
     for i in range(n):
         req = urllib.request.Request(
@@ -580,7 +602,7 @@ def main():
 
             hit, errors = burst(env['SUPABASE_URL'], env['SUPABASE_PUBLISHABLE_KEY'])
             print('  RECORD ratelimit: ' + (
-                f'the first status ≠ 200 was {hit[1]} on call {hit[0]} of 30'
+                f'the first status ≠ 200 was {hit[1]} on call {hit[0]} of {BURST}'
                 if hit else 'every answered call was 200 — GoTrue did NOT rate-limit this burst')
                 + (f'; {errors} call(s) raised a network error and are not statuses' if errors else ''))
     finally:

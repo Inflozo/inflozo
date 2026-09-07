@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 /* WHERE A PASSKEY ATTEMPT'S ANSWER IS SAID, pinned in the two files that decide it.
  *
  * The owner's test of Story 2.2 (finding 1): "We couldn't sign you in with a passkey. Use a magic
- * link instead." was a 12.5px grey helper-caption under the button and he missed it. It is now the
+ * link instead." was an 11px grey helper-caption under the button and he missed it. It is now the
  * card's own red error banner at the top — the Kit's `error` kind, which is `role="alert"` with the
  * `XCircleSolid` icon on `danger-tint` — replacing whatever banner was there.
  *
@@ -68,8 +68,12 @@ test('the card says it in the red banner, and it replaces the others', () => {
     `${FORM}: the sentence is a Kit error Banner, and the ternary's ELSE branch is what it replaces.`,
   )
   // "If there is already a message showing at the top, replace it with the new one" — so the
-  // other three live inside that else branch and cannot stack above or below it.
-  const elseBranch = /\) : \(\s*<>([\s\S]*?)<\/>\s*\)\}/.exec(source)
+  // other three live inside THAT else branch and cannot stack above or below it. Anchored on the
+  // passkey Banner: the bare `) : (<>` matched the outer `sent` ternary first, whose fragment holds
+  // all three wherever they sit, and a hoisted signed-out banner left this green (second review,
+  // 2026-09-07, executed).
+  const elseBranch =
+    /<Banner kind="error">\{passkeyError\}<\/Banner>\s*\) : \(\s*<>([\s\S]*?)<\/>\s*\)\}/.exec(source)
   assert.ok(elseBranch, `${FORM}: the three other banners must sit in the else branch.`)
   for (const other of ['signed out', 'linkError', 'send_failed']) {
     assert.ok(

@@ -53,7 +53,7 @@ export function SignInForm({
   // is the operating system's window and not a surface of ours.
   const [passkeyPending, setPasskeyPending] = useState(false)
   // WHAT A PASSKEY ATTEMPT ANSWERED, held HERE and not in the button, because the owner's test
-  // of 2.2 (finding 1) moved it out of the 12.5px caption under the button and into this card's
+  // of 2.2 (finding 1) moved it out of the 11px caption under the button and into this card's
   // own banner slot — "make it like the 'You have been signed out' message at the top, but in
   // red, with an error icon", which is exactly the Kit's `error` banner. It is lifted rather
   // than copied so that "if there is already a message showing at the top, replace it with the
@@ -110,6 +110,11 @@ export function SignInForm({
       event.preventDefault()
       return
     }
+    // A submit is the newest thing that happened, so a passkey attempt's banner from before it
+    // stops speaking for the card — otherwise it would outrank the send's own answer below.
+    // BEFORE the address is checked: a rejected address left the red banner at the top and the
+    // red sentence under the field standing together (second review, 2026-09-07).
+    setPasskeyError(null)
     const value = new FormData(event.currentTarget).get('email')
     if (!parseEmail(value)) {
       event.preventDefault()
@@ -117,9 +122,6 @@ export function SignInForm({
       return
     }
     setClientError(null)
-    // A send is the newest thing that happened, so a passkey attempt's banner from before it
-    // stops speaking for the card — otherwise it would outrank the send's own answer below.
-    setPasskeyError(null)
   }
 
   const fieldError =
@@ -230,11 +232,6 @@ export function SignInForm({
         </>
       ) : (
         <>
-          {/* "There is no message … user has no idea whether they are actually signing out" — the
-              owner's third test, finding 2, ruled at question 6 option 1: the row says it is
-              working and this says it finished. Mint, `role="status"`, one sentence in S1's
-              voice, in the Kit's own component. Only while the card is untouched: once a link
-              has been asked for, the last thing that happened is the send, not the sign-out. */}
           {/* THE PASSKEY ATTEMPT'S ANSWER OUTRANKS ALL THREE and does not stack with them: the
               owner asked for "if there is already a message showing at the top, replace it with
               the new one" (his test of 2.2, finding 1). It is the newest thing that happened,
@@ -246,6 +243,11 @@ export function SignInForm({
             <Banner kind="error">{passkeyError}</Banner>
           ) : (
             <>
+              {/* "There is no message … user has no idea whether they are actually signing out" —
+                  the owner's third test, finding 2, ruled at question 6 option 1: the row says it
+                  is working and this says it finished. Mint, `role="status"`, one sentence in S1's
+                  voice, in the Kit's own component. Only while the card is untouched: once a link
+                  has been asked for, the last thing that happened is the send, not the sign-out. */}
               {signedOut && state.status === 'idle' ? (
                 <Banner kind="success">You&rsquo;ve been signed out.</Banner>
               ) : null}
