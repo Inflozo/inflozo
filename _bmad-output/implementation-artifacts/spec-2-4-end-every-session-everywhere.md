@@ -2,9 +2,9 @@
 title: 'Story 2.4 — End every session everywhere'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'a26f42efdb21386b5c89e809954bb831cf0cb69b'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
@@ -211,6 +211,31 @@ execute, never assert).
 - Given `pnpm check`, `pnpm build`, and axe-core on `/account` (closed, dialog open) and on
   `/sign-in?signed-out=all`, at 1440 and 390, then all green and zero violations
 
+### Review Findings
+
+Code review 2026-09-07, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). The Dev commit was already live — CI green and Vercel's production deployment READY on
+its sha — so the verifier ran the whole harness against `app.inflozo.com` and re-executed the founding claim
+over raw HTTP: every behavioural claim held, and the committed harness itself crashed at `everywhere`. No
+decision for the owner; every patch applied in the review; nothing deferred.
+
+- [x] [Review][Patch] The harness cannot finish its Deploy run: Playwright's `Response.headersArray()` returns a Promise and two places used it synchronously, so `everywhere` threw `headers.filter is not a function` and `everywhere`, `axe-signed-out-all`, `jwt-exp` and `magic-link-after` never ran [tools/probe/run-verify-sign-out-everywhere.py:338,368] — executed on the deployed site: exit 1 as committed, every step PASS once awaited
+- [x] [Review][Patch] `sessions-card.tsx` copies half of the `seen` pattern its comment claims — the effect that spends a result arriving after the dialog was closed is missing, so Escape mid-flight followed by a `/logout` failure reopens on the stale red sentence [apps/web/app/(app)/app/(authed)/account/sessions-card.tsx:36-54] — `email-card.tsx:81-85`'s effect added
+- [x] [Review][Patch] DW-41 governs `signOutEverywhere` too and neither the ledger's `location` nor the action's comment says so: the installed `_signOut` removes THIS device's session before returning most errors, so on a 5xx the dialog's "try again" is followed by a bounce to `/sign-in` through `signedIn()` [apps/web/app/(app)/app/(authed)/account/actions.ts:370-374] — the comment cites DW-41, DW-41 names both call sites, and 1.4's older paragraph in `sign-in/actions.ts` carries one pointer to it
+- [x] [Review][Patch] DW-38's `status: closed by Story 2.4 (…)` is not the ledger's closed shape, so the story board draws it as an amber open pill and leaves it out of the closed count [_bmad-output/implementation-artifacts/deferred-work.md] — `status: closed` plus a `closed:` line, as every other closed entry
+- [x] [Review][Patch] `epic-2-context.md`, loaded by 2.5 and 2.6, still tells them DW-38 is open and the two GoTrue facts are hypotheses [_bmad-output/implementation-artifacts/epic-2-context.md] — both bullets now say what 2.4 executed
+- [x] [Review][Patch] The "way out of every device" test looks only at the character before `<SessionsCard`, so a formatter's `{passkeys ? (` and a fragment `<>…<SessionsCard /></>` both gate the card with the test green; and the DW-38 copy detector misses `const signedIn = async () =>` [apps/web/server-wiring.test.ts:102,112-131] — brace depth at `<SessionsCard` must equal brace depth at `<EmailCard`; the detector matches both spellings; each controlled
+- [x] [Review][Patch] DW-40 says the harness's `jwt-exp` step means "the number cannot go stale here", but the step is a RECORD that compares nothing; a 200 without the field would print `undefined seconds (NaN minutes)`; and the `User-Agent: curl/8.5.0` that keeps Cloudflare from answering 1010 is copied without its reason [tools/probe/run-verify-sign-out-everywhere.py:357-363] — the step prints the number or says it was not read, the ledger says the step REPORTS it, the header's reason is cited
+- [x] [Review][Patch] DW-40's back half — a revoked token still answers PostgREST until `exp` — was asserted, never executed [_bmad-output/implementation-artifacts/deferred-work.md] — executed in this review (`GET /rest/v1/profiles` with the revoked token → 200) and now a `rest-residual` RECORD step in the harness so it is re-executed on every run
+- [x] [Review][Patch] "30 days" is hand-typed in the card's caption while the harness refuses to retype it [apps/web/app/(app)/app/(authed)/account/sessions-card.tsx:73] — derived from `SESSION_MAX_AGE`, which `cookies.ts` exports free of `next/headers`
+- [x] [Review][Patch] Owner's manual test step 3 says "The Cancel button has the focus ring": after a mouse click Chromium leaves focus on Cancel with `:focus-visible` false, so the owner would report a missing ring against a control that works [spec, ## Owner's manual test] — reworded to what he can see: the space bar closes the window
+- [x] [Review][Patch] AC 2 names Cancel, Escape and a backdrop click and the harness proved Escape alone; AC 1 names 390 and the frame was measured at 1440 alone [tools/probe/run-verify-sign-out-everywhere.py:306-320,284-302] — `dialog-focus` now closes by Escape, Cancel and a backdrop click under the POST counter; a `frame-390` step reads the button at the row's end, unclipped, at 390
+- [x] [Review][Patch] The harness's docstring and catalogue row name seven steps and the run prints more; the spec's "four ran at Dev … four are the harness's" is a restated count [tools/probe/run-verify-sign-out-everywhere.py:15-43] — the docstring lists the steps as the run prints them and the spec says it in words
+- [x] [Review][Patch] The card's "progressively enhanced" comment is hollow — the form lives in a `<dialog>` only `showModal()` opens, so nothing reaches it without script [apps/web/app/(app)/app/(authed)/account/sessions-card.tsx:107-109] — the comment says the real reason (React's form action carries the result back; `once` sits on its submit)
+- [x] [Review][Patch] Nothing pins the failure branch: delete `if (error) → fail('sign_out_failed')` and a 5xx from `/logout` falls through to the redirect and the sign-in card claims every device was signed out, with every gate green [apps/web/app/(app)/app/(authed)/account/actions.ts:383-386] — a source-reading test in `signed-out.test.ts` pins the `if (error)` branch's `fail('sign_out_failed')` after `auth.signOut` and before `redirect(` — its first version was satisfied by the catch block's sentence with the branch deleted, caught by its own control and tightened
+- [x] [Review][Patch] `project_ref()` calls `.group(1)` on a `None` match for a non-`supabase.co` URL — a traceback instead of a FAIL [tools/probe/run-verify-sign-out-everywhere.py:93-95]
+- [x] [Review][Patch] `run_browser` catches a timeout but not a missing `node`, so `FileNotFoundError` escapes as a traceback [tools/probe/run-verify-sign-out-everywhere.py:405-408]
+
 ## Spec Change Log
 
 1. **One test beyond the Code Map, in `server-wiring.test.ts`** (Dev, 2026-09-07). Two matrix rows —
@@ -223,6 +248,23 @@ execute, never assert).
 2. **`SESSION_MAX_AGE` is read by the harness, never retyped in it** (Dev, 2026-09-07). The
    `magic-link-after` step asserts FR-A6's thirty days on the `Set-Cookie`, and reads the number out of
    `apps/web/lib/supabase/cookies.ts`: a count written twice is a count that goes stale once.
+3. **The harness could not finish its Deploy run as committed** (Review, 2026-09-07). Playwright's
+   `Response.headersArray()` is a Promise; two places read it synchronously and `everywhere` threw. Both
+   awaited; the unpatched run (exit 1) is the control, the patched run passed every step on the deployed site.
+4. **The harness proves what the ACs name, not less** (Review, 2026-09-07). `dialog-focus` closes the confirm
+   by Escape, by Cancel and by a backdrop click under the one POST counter (the AC names three closers);
+   `frame-390` measures the button at the row's end and unclipped at 390 (the AC names both widths);
+   `rest-residual` executes DW-40's back half on every run; the docstring lists the steps as the run prints them.
+5. **The source tests strengthened** (Review, 2026-09-07). The "way out" test compares BRACE DEPTH at
+   `<SessionsCard` with `<EmailCard` — the trailing-character check passed a formatter's `? (` and a
+   fragment; the DW-38 detector matches `const signedIn =` too; and a new test pins the `if (error)` branch's
+   `fail('sign_out_failed')` after `auth.signOut` and before `redirect(` — its first version was satisfied by
+   the catch block's sentence with the branch deleted, which its own control caught. Every control under
+   `## Verification`: broken, seen to fail, restored.
+6. **The card** (Review, 2026-09-07). The `seen` pattern's other half — a failure landing after the dialog was
+   closed is spent — copied from `email-card.tsx`; the caption's thirty days derived from `SESSION_MAX_AGE`
+   rather than typed. DW-41 propagated to `signOutEverywhere`'s comment and ledger row; DW-38's status line
+   put in the ledger's closed shape; `epic-2-context.md` told what 2.4 executed.
 
 ## Design Notes
 
@@ -312,21 +354,72 @@ seen to fail with its own message, and restored:
   a way in"* FAILS
 - `signOutEverywhere`'s `signedIn()` swapped for `ready()` -- the same test FAILS on its guard assertion
 
-**Belongs to the Deploy run, not to Dev**, because it drives the deployed UI and this code is not yet on
-`app.inflozo.com`:
+**Ran at Review, 2026-09-07 (R-82), on the real infrastructure.** The Dev commit was already live — CI green
+and Vercel's production deployment READY on its sha — so the review drove the deployed UI as well as the real
+Supabase; every key by its variable name, none printed.
+
+- `pnpm check` **exit 0** (141 pass / 0 fail with the review's one new test), `pnpm build` **exit 0**,
+  `bash supabase/tests/run-rls-gate.sh` **exit 0**, `python3 tools/doc-audit.py --check` **PASS** — the Dev
+  claims re-executed and held
+- The founding claim re-executed OVER RAW HTTP, independently of the harness (`SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`): two sessions minted for one fixture user with distinct
+  `session_id` claims; `POST /auth/v1/logout?scope=local` → **204**, A1 `403 session_not_found`, A2 **200**;
+  A1 signed back in, `?scope=global` → **204**, A1′ and A2 both `403 session_not_found`. The Dev table holds
+  row for row. **Two negative controls:** a garbage bearer at `GET /auth/v1/user` → `403 bad_jwt` (whoami can
+  say no); `POST /logout` with the already-revoked bearer → `403 session_not_found`, not 204 (the 204s were
+  not unconditional)
+- `jwt_exp = 3600` off the Management API (`SUPABASE_ACCESS_TOKEN`) again, and it equals the minted JWT's own
+  `exp − iat` — a derived cross-check, not a restated number
+- **DW-40's back half executed for the first time:** the token GoTrue had just refused answered
+  `GET /rest/v1/profiles?select=user_id` **200** with the user's own row (a live token 200 too, the control).
+  The ledger's wording was accurate; it is now a fact, and the harness's `rest-residual` step
+- **The committed harness could not finish** — `FAIL threw: headers.filter is not a function`, exit 1, after
+  `dialog-quiet`: Playwright's `Response.headersArray()` returns a Promise and two places read it
+  synchronously. That run is the control for the fix; the fixture was still cleaned, users 4 → 4
+- The harness as patched in this review, against `app.inflozo.com`: **every step PASS, exit 0, users 4 → 4** —
+  `signed-in-a1`, `signed-in-a2`, `control-local` (A1 → `?signed-out=1` with "You've been signed out.", A2
+  still 200 at `/user` and at `/account`), `frame` (h 30, radius 10px, 12px/500, padding 13px, `line` border,
+  `surface` fill, `paper` on hover, off the DOM), `frame-390` (h 30, the button's right edge = the row's right
+  edge, 345 of 390, unclipped), `axe-account-closed`, `axe-account-dialog`, `dialog-focus` (focus on Cancel;
+  closed by Escape, by Cancel and by the backdrop), `dialog-quiet` (zero POSTs through all three),
+  `everywhere` (A1 → `?signed-out=all` with "You've been signed out on every device.", 0 auth cookies left,
+  A1's former token and A2's token both `403 session_not_found`, A2's `/account` → `/sign-in` with 1
+  session-cookie deletion on the way), `rest-residual` (RECORD **200**), `axe-signed-out-all`, `jwt-exp`
+  (RECORD **3600**), `magic-link-after` (minted for A, `/account` 200, `Max-Age=2592000`)
+- A direct fetch as the disjointness control on the live site: `/sign-in?signed-out=all` carries "signed out
+  on every device" and not the ordinary sentence, `?signed-out=1` the reverse, bare `/sign-in` neither
+
+**Controls run at the review** (standing rule 2), each broken, seen to fail with its own message, restored:
+
+- `<SessionsCard />` inside `{passkeys ? … : null}`, inside `{passkeys && …}`, inside a formatter's
+  `{passkeys ? ( … ) : null}`, and inside a fragment beside the Passkeys card — the last two were GREEN under
+  the Dev test; all four FAIL *"the way out of every device does not hang on a way in"*
+- `const signedIn = async () => null` appended to `projects/actions.ts` — FAILS *"the session guard is one
+  export, imported, and copied into neither actions file"*
+- the `if (error) → fail('sign_out_failed')` block deleted from `signOutEverywhere`, and separately the
+  redirect moved above it — both FAIL *"a /logout that fails is said, never claimed"*. **The test's own first
+  version did not:** it looked for any `fail('sign_out_failed')` after `auth.signOut`, and the catch block's
+  satisfied it with the branch gone — a test that cannot fail is not a test, so it now pins the `if (error)`
+  branch itself
+- the committed harness, its two `await`s missing — `FAIL threw`, exit 1: the control for the harness fix
+
+**Belonged to the Deploy run when Dev wrote this**, and now re-executes there on the review commit:
 
 - `python3 tools/probe/run-verify-sign-out-everywhere.py` (against `app.inflozo.com`) -- expected: every
-  step PASS, exit 0. Its steps, in order: `control-local` (**the control, and it runs first**: A1's ordinary
-  avatar-menu Sign out, after which A2 must STILL be signed in — a run where A2 is signed out has found the
-  pre-2.4 defect still deployed and FAILS, because signing every device out is also what the broken build
-  did), `frame`, `dialog-focus`, `everywhere`, `jwt-exp` (RECORD), `magic-link-after`, and `axe-*` over
-  `/account` closed, `/account` with the confirm open, and `/sign-in?signed-out=all`, each at 1440 and 390 —
-  zero violations and no horizontal scroll. Fixture user deleted; Admin-API count before == after
+  step PASS, exit 0. Its steps, in the order it prints them: `signed-in-a1`, `signed-in-a2`, `control-local`
+  (**the control, and it runs first of the behaviour**: A1's ordinary avatar-menu Sign out, after which A2
+  must STILL be signed in — a run where A2 is signed out has found the pre-2.4 defect still deployed and
+  FAILS, because signing every device out is also what the broken build did), `frame`, `frame-390`,
+  `axe-account-closed`, `axe-account-dialog`, `dialog-focus` (Escape, Cancel and the backdrop), `dialog-quiet`,
+  `everywhere`, `rest-residual` (RECORD), `axe-signed-out-all`, `jwt-exp` (RECORD), `magic-link-after` — the
+  axe steps zero violations and no horizontal scroll at 1440 and 390. Fixture user deleted; Admin-API count
+  before == after. **Executed at the review against the Dev deployment (below); the Deploy run re-executes
+  it on the review commit**
 
 **WHAT NO AUTOMATED STEP COVERS, said rather than left to be found.** Every matrix row but two has a
-covering step: four ran at Dev and passed (the two scopes, the guard, the card's unconditional render), and
-four are the harness's and run at Deploy against the deployed UI, which is where R-80 and R-82 put them.
-The two that have none:
+covering step — the source-reading tests at Dev (the two scopes, the guard, the card's unconditional
+render, and since the review the failure branch's sentence standing before its redirect), and the harness
+at Deploy against the deployed UI, which is where R-80 and R-82 put them. The two that have none:
 
 - *GoTrue unreachable or a 5xx* — it cannot be produced against real infrastructure, and a mock would not be
   evidence (R-82). The branch is two lines (`if (error) → fail('sign_out_failed')`), the sentence is in
@@ -358,8 +451,10 @@ in to the same Inflozo account.
    then go to https://app.inflozo.com/account and press **Sign out everywhere** · **See:** a window titled
    "Sign out everywhere?" with one sentence — "Every device signed in to your account will be signed out,
    including this one. Sign in again wherever you need to." — and two buttons, **Cancel** and **Sign out
-   everywhere**. The Cancel button has the focus ring. Press **Cancel** · **See:** the window closes and
-   nothing else happens.
+   everywhere**. Press the **space bar** once — Cancel already has the focus, though the ring around it
+   shows only when the window was opened from the keyboard, so you may not see one · **See:** the window
+   closes and nothing else happens. (Escape, the Cancel button and a click on the grey area outside the
+   window all do the same.)
 4. **URL:** the same · **Do:** press **Sign out everywhere** again, then the dark **Sign out everywhere**
    button in the window · **See:** it reads "Signing out…" for a moment, then the sign-in page with the
    green "You've been signed out on every device."

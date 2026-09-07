@@ -283,12 +283,14 @@ DOCS = [
  ('tools/probe/run-verify-sign-out-everywhere.py', 'tool', 'Sign-out-everywhere harness',
   "FR-A6's sign-out-everywhere, driven through the deployed UI on app.inflozo.com with TWO real "
   'sessions for one user and read back off the wire: the Sessions button measured against the '
-  "frame's tokens, the confirm opening on Cancel and closing on Escape with nothing sent, the "
+  "frame's tokens at 1440 and re-measured at the row's end at 390, the confirm opening on Cancel and "
+  'closing on Escape, on Cancel and on a backdrop click with nothing sent, the '
   "primary pressed, and then both access tokens asked of GET /auth/v1/user directly. Its CONTROL "
   'runs FIRST and is the ordinary avatar-menu Sign out: device A signs out and device B must STILL '
   'be signed in — a run where B is signed out has found the pre-2.4 defect (auth-js defaults '
   "signOut() to scope=global) still in place and fails, because signing every device out is also "
-  'what the broken build did. Records the project jwt_exp off the Management API for DW-40, and '
+  'what the broken build did. Records the project jwt_exp off the Management API and the revoked '
+  "token's answer at /rest/v1 for DW-40, and "
   'proves a magic link after a global sign-out still signs in with the 30-day cookie — a global '
   'sign-out ends sessions, never the account. Plus axe-core at WCAG 2.1 AA over /account closed '
   'and with the confirm open, and over /sign-in?signed-out=all, each at 1440 and 390. Creates one '

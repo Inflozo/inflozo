@@ -6,6 +6,7 @@ import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Laptop } from '@/components/kit/icons'
+import { SESSION_MAX_AGE } from '@/lib/supabase/cookies'
 import { signOutEverywhere, type ActionResult } from './actions'
 
 /* S12 Billing.dc.html — S12a. THE FRAME DRAWS NO SESSIONS SURFACE, so this card is extrapolated
@@ -42,6 +43,13 @@ export function SessionsCard() {
     if (!signingOut) submitting.current = false
   }, [signingOut])
   const [seen, setSeen] = useState<ActionResult | null>(null)
+  // THE OTHER HALF, `email-card.tsx:81-85`: a result that lands AFTER the dialog was closed —
+  // Escape while "Signing out…" was in flight — is spent on arrival, because `onClose` has already
+  // run with the previous one and the next open would start with this one. Only a failure can
+  // arrive: success threw a redirect and this component is gone (review, 2026-09-07).
+  useEffect(() => {
+    if (answered && !dialog.current?.open) setSeen(answered)
+  }, [answered])
   const once = (event: { preventDefault: () => void }) => {
     if (submitting.current) {
       event.preventDefault()
@@ -67,10 +75,12 @@ export function SessionsCard() {
           <span className="text-ui-dense font-medium text-ink">
             Every device you&rsquo;re signed in on
           </span>
-          {/* FR-A6's thirty days, said where the user can see it — the cookie's own `Max-Age`
-              (`lib/supabase/cookies.ts`), rolling from each visit. */}
+          {/* FR-A6's thirty days, said where the user can see it and DERIVED from the cookie's own
+              `Max-Age` (`lib/supabase/cookies.ts`, a plain module the client can import) rather
+              than typed here beside it — a number written twice is a number that goes stale once.
+              Rolling from each visit. */}
           <span className="text-helper-caption text-ink-soft">
-            Each stays signed in for 30 days from its last visit
+            Each stays signed in for {SESSION_MAX_AGE / 86_400} days from its last visit
           </span>
         </span>
         {/* The frame's own button (`:80`), at the row's end as it draws it. */}
@@ -104,9 +114,10 @@ export function SessionsCard() {
 
         {failure ? <Banner kind="error">{failure.message}</Banner> : null}
 
-        {/* A `<form>` with the action as its own dispatch, so it is progressively enhanced
-            (`projects/actions.ts:130`'s reason: a client closure passed as `action` emits no
-            action at all with JavaScript off). No field, so no `noValidate` is needed. */}
+        {/* A `<form>` with the action as its own dispatch, `email-card.tsx`'s shape: React's form
+            action carries the `useActionState` result back and `once` sits on its submit. Not
+            progressive enhancement — the dialog only opens through `showModal()`, so nothing
+            reaches this form without script. No field, so no `noValidate` is needed. */}
         <form action={signOutAction} onSubmit={once} className="flex justify-end gap-[10px]">
           <Button
             type="button"

@@ -146,3 +146,33 @@ test('Sign out everywhere is explicitly every device', () => {
       'swapped with the ordinary one would leave every other device signed in.',
   )
 })
+
+/**
+ * THE FAILURE BRANCH IS PINNED THE SAME WAY. Delete `if (error) return fail('sign_out_failed')` and
+ * a `/logout` that answered 5xx falls through to the redirect: the sign-in card says every device
+ * was signed out while every other device is still signed in — with eslint, tsc, the build and the
+ * whole harness green, because none of them can make the real GoTrue fail (review, 2026-09-07).
+ */
+test('a /logout that fails is said, never claimed', () => {
+  const source = readFileSync(new URL('./app/(app)/app/(authed)/account/actions.ts', import.meta.url), 'utf8')
+  // The function alone (`email-change-rule.test.ts`'s slice), whitespace collapsed.
+  const fn = /export async function signOutEverywhere\([\s\S]*?\n}\n/.exec(source)
+  assert.ok(fn, 'signOutEverywhere was not found in actions.ts')
+  const body = fn[0].replace(/\s+/g, ' ')
+  // THE `if (error)` BRANCH ITSELF, not any `fail('sign_out_failed')` in the function: the catch
+  // block returns the same sentence for a throw, and a first version of this test was satisfied by
+  // that one alone with the error branch deleted (its own control, review, 2026-09-07).
+  const call = /const \{ error \} = await supabase\.auth\.signOut\(/.exec(body)
+  assert.ok(call, 'signOutEverywhere must read `error` off auth.signOut')
+  const after = body.slice(call.index)
+  const branch = /if \(error\) \{[^]*?return fail\('sign_out_failed'\)/.exec(after)
+  assert.ok(
+    branch,
+    "signOutEverywhere must `return fail('sign_out_failed')` when auth.signOut answers an error: a " +
+      '/logout that failed leaves the dialog open with the sentence and never lands on the everywhere one.',
+  )
+  assert.ok(
+    after.indexOf('redirect(') > branch.index,
+    'the redirect must stand after the failure branch, never before it',
+  )
+})

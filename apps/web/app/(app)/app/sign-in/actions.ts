@@ -82,6 +82,9 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
  * GoTrue unreachable is the one way this fails: `signOut()` then KEEPS the cookies and returns
  * the error, so the flag is withheld — the sign-in page would only bounce a still-signed-in
  * user back to the dashboard, and the card must not say it happened when it did not.
+ * (READ WITH DW-41: the installed client REMOVES the cookies before returning most failures, so
+ * the paragraph above holds only for an expired token whose refresh fails. Not executed; the
+ * branch is 1.4/1.5's and Story 2.4 changed this call's scope alone.)
  *
  * IT USED TO SAY NOTHING AT ALL in that branch: the user watched `Signing out…`, landed back on
  * the dashboard still signed in, and was told nothing — the one branch of his own question 6

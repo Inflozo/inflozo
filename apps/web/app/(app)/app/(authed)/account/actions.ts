@@ -369,8 +369,12 @@ export async function changeEmail(
  *
  * A FAILURE IS SAID, NEVER CLAIMED. The redirect is OUTSIDE the try — `redirect()` throws by
  * design and a catch would swallow it — so a `/logout` that failed leaves the dialog open with
- * one red sentence and no navigation, and the other devices, which were not signed out, are not
- * described as though they had been.
+ * one red sentence and no navigation OF OURS, and the other devices, which were not signed out,
+ * are not described as though they had been. What the LIBRARY did to THIS device on the way is
+ * DW-41's: `_signOut` (`GoTrueClient.js:3427-3438`) removes the current session before it returns
+ * any error but a 401/403/404, so the cookies may already be gone and the retry lands on
+ * `/sign-in` through `signedIn()` with nothing said. Read in the client, not executed — the same
+ * shape as the ordinary Sign out's, and the same fix when the owner wants one (review, 2026-09-07).
  */
 export async function signOutEverywhere(
   _previous: ActionResult | null,

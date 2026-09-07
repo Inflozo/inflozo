@@ -99,7 +99,8 @@ test('the session guard is one export, imported, and copied into neither actions
   )
   const copies = sources()
     .map((p) => p.replace(/^\.\//, ''))
-    .filter((p) => /async function signedIn\s*\(/.test(readFileSync(p, 'utf8')))
+    // Written as a function OR as a const — `const signedIn = async () =>` is the same copy.
+    .filter((p) => /async function signedIn\s*\(|\b(?:const|let|var)\s+signedIn\s*=/.test(readFileSync(p, 'utf8')))
     .filter((p) => p !== SERVER)
   assert.deepEqual(
     copies,
@@ -115,18 +116,28 @@ test('the way out of every device does not hang on a way in', () => {
   // `passkeys ? … : null` branch would be green in every gate and every harness, and would take
   // sign-out-everywhere away from exactly the user whose passkeys are off. And the action's guard
   // is the session ALONE — never `ready()`, whose flag would refuse it for the same reason.
-  // JSX comments out (one names the flag in prose), then look at what stands IMMEDIATELY before
-  // the element: a standalone child follows `}` or `{`, a conditional one follows `?` or `&&`.
-  // Exact rather than a search of the whole file, where `const rows = passkeys ? …` far above
-  // would match any distance-blind pattern and report a branch that is not there.
+  // JSX comments out (one names the flag in prose), then BRACE DEPTH from the page's `return (`:
+  // a conditional child sits inside a `{ … }` expression and a standalone one does not, and the
+  // Email card — the one this card is extrapolated from, rendered for everyone — is the standalone
+  // the depth is compared against. The first version looked at the character before the element
+  // (`?` or `&&`) and was evadable: a formatter's `? (` and a fragment's `/>` both stood before a
+  // gated card and passed. Depth catches the ternary, the `&&`, the parenthesised ternary and the
+  // fragment alike (review, 2026-09-07, each of the four controlled).
   const page = readFileSync(ACCOUNT_PAGE, 'utf8').replace(/\{\/\*[^]*?\*\/\}/g, ' ')
-  const at = page.indexOf('<SessionsCard')
-  assert.ok(at >= 0, `${ACCOUNT_PAGE}: the Sessions card is not rendered.`)
-  const before = page.slice(0, at).trimEnd()
-  assert.ok(
-    !/[?]$/.test(before) && !/&&$/.test(before),
-    `${ACCOUNT_PAGE}: the Sessions card is rendered conditionally (…${before.slice(-40)}). A way ` +
-      'OUT of every device must not disappear with the switch that offers a way in.',
+  const render = page.slice(page.indexOf('function AccountPage'))
+  const from = render.indexOf('return (')
+  assert.ok(from >= 0, `${ACCOUNT_PAGE}: AccountPage's JSX return was not found.`)
+  const depthAt = (element: string) => {
+    const at = render.indexOf(element)
+    assert.ok(at >= 0, `${ACCOUNT_PAGE}: ${element} is not rendered.`)
+    const before = render.slice(from, at)
+    return (before.match(/\{/g) ?? []).length - (before.match(/\}/g) ?? []).length
+  }
+  assert.equal(
+    depthAt('<SessionsCard'),
+    depthAt('<EmailCard'),
+    `${ACCOUNT_PAGE}: the Sessions card is rendered inside an expression the Email card is not — ` +
+      'conditionally. A way OUT of every device must not disappear with the switch that offers a way in.',
   )
 
   const actions = readFileSync(ACCOUNT_ACTIONS, 'utf8').replace(/\s+/g, ' ')

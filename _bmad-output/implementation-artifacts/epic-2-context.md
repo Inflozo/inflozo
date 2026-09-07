@@ -56,11 +56,15 @@ A user owns their account end to end: registers a passkey and signs in with it i
   bounces signed-in visitors before it says a word). R-95: the PREVIOUS address is told when an email change is
   confirmed — Supabase's own `mailer_notifications_email_changed_enabled`, plain and unbranded until E12 (DW-39) —
   and FR-P1 is now **seven** emails. Neither touches sessions, passkeys or deletion; nothing above changes for 2.4–2.6.
-- **What 2.3 left for 2.4** — DW-38: `signedIn()` is copied in two `'use server'` files and the next story that
-  touches either moves it to one plain module. DW-14: `sessions_inactivity_timeout` is a paid Supabase setting and
-  2.4 is the first story that might want it — if it does, it is the owner's call (money), not an assumption.
-- **A fact read in the installed client, not yet executed** (`auth-js` 2.115.0, `GoTrueClient.js:3405-3445`):
-  `signOut()`'s DEFAULT scope is `'global'` — `POST /logout?scope=global` — so the avatar menu's Sign out from 1.4
-  has been ending every session everywhere all along. `getUser()` on a JWT whose `session_id` no longer exists
-  answers `session_not_found`, which the client maps to a missing session and clears the cookies
-  (`lib/fetch.js:82-86`, `GoTrueClient.js:2715-2718`). Both are hypotheses for 2.4's harness (standing rule 1).
+- **What 2.3 left for 2.4, and what 2.4 did with it (2026-09-07)** — DW-38 is CLOSED: `signedIn()` is one export in
+  `lib/supabase/server.ts`, imported by both actions files and pinned by `server-wiring.test.ts`. DW-14 stays open:
+  2.4 did not need `sessions_inactivity_timeout` (a global logout is core GoTrue, not the paid session feature), so
+  the money question was never asked.
+- **Executed by 2.4 (2026-09-07), no longer hypotheses** (`auth-js` 2.115.0, `GoTrueClient.js:3405-3445`):
+  `signOut()`'s DEFAULT scope is `'global'`, so the avatar menu's Sign out from 1.4 had ended every session
+  everywhere until 2.4 made it `{ scope: 'local' }` and gave the everywhere action `{ scope: 'global' }` — both
+  explicit, both read out of the source by `signed-out.test.ts`. On the hosted GoTrue `POST /auth/v1/logout?scope=local`
+  → 204 with the other session still 200; `?scope=global` → 204 with every session `403 session_not_found` at
+  `GET /auth/v1/user` AT ONCE, not at the JWT's `exp`, and the bouncing response clears the cookies. Residuals on the
+  ledger, both executed or read: DW-40 (a revoked token still satisfies PostgREST until `jwt_exp` = 60 minutes) and
+  DW-41 (the client clears this device's cookies before returning most `/logout` failures — both sign-out actions).

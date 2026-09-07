@@ -12,11 +12,16 @@ response bouncing such a device carries the cookie deletions; that a magic link 
 afterwards, with the 30-day cookie. Each is executed here, against `app.inflozo.com` and the real
 Supabase project.
 
-WHAT IT PROVES, each step PASS, FAIL or RECORD, exiting non-zero if any step fails:
+WHAT IT PROVES, each step PASS, FAIL or RECORD, exiting non-zero if any step fails. The steps are
+named here in the order the run prints them (a docstring that names fewer than the run prints is a
+list gone stale — review, 2026-09-07):
 
-  control-local  THE CONTROL, AND IT RUNS FIRST. Two real sessions for one user — A1 in a browser,
-                 A2 in a second browser context — and A1 presses the avatar menu's ORDINARY Sign
-                 out. A1 must land on `/sign-in?signed-out=1`, and A2 must still be signed in: its
+  signed-in-a1   A1 redeemed the link the Python half minted and `/account` rendered
+  signed-in-a2   A2, a SECOND real session for the same user in its own browser context, minted only
+                 now: its link names A's user id, `/account` is 200, `GET /auth/v1/user` is 200
+  control-local  THE CONTROL, AND IT RUNS FIRST OF THE BEHAVIOUR. Two real sessions for one user —
+                 A1 in a browser, A2 in a second browser context — and A1 presses the avatar menu's
+                 ORDINARY Sign out. A1 must land on `/sign-in?signed-out=1`, and A2 must still be signed in: its
                  access token 200 at `GET /auth/v1/user` and its `/account` still rendering. A run
                  where A2 is signed out here has found the pre-2.4 defect still in place — the
                  library's default scope is `global` — and FAILS. Without this step a green
@@ -27,20 +32,29 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, exiting non-zero if any step fai
                  because a class that loses to another class is still in the markup (2.1's review).
                  The geometry is `S12 Billing.dc.html:80`'s own, the colours are the TOKENS, read
                  out of globals.css by the sibling's `tokens_rgb` and never retyped here
-  dialog-focus   the confirm opens with focus on Cancel (EXPERIENCE.md § Destructive confirms),
-                 Escape closes it, and NOTHING left the browser while it was open
+  frame-390      the same button at 390, where the column is full width: still 30px, at the row's
+                 END, and inside the viewport — the AC's "nothing clipped", measured
+  axe-account-closed · axe-account-dialog · axe-signed-out-all
+                 axe-core at WCAG 2.1 AA over /account (the card closed, and the confirm open) and
+                 over /sign-in?signed-out=all, each at 1440 AND 390, and no horizontal scroll
+  dialog-focus   the confirm opens with focus on Cancel (EXPERIENCE.md § Destructive confirms), and
+                 Escape, the Cancel button and a click on the backdrop EACH close it — the three
+                 closers the AC names, not one of them
+  dialog-quiet   NOTHING left the browser while the confirm was open and closed those three ways
   everywhere     the primary pressed: A1 lands on `/sign-in?signed-out=all` with its own sentence,
                  A1's cookies are gone, A1's FORMER token and A2's token BOTH answer
                  `session_not_found` at `GET /auth/v1/user`, and A2's next `/account` lands on
                  `/sign-in` with the bouncing response carrying the session cookies' deletion
+  rest-residual  RECORD: A1's revoked token presented DIRECTLY to `GET /rest/v1/profiles` — DW-40's
+                 back half, executed on every run rather than asserted: PostgREST checks the
+                 signature and `exp`, never the session row, so it still answers 200 until `exp`
   jwt-exp        RECORD: the project's `jwt_exp` off the Management API. DW-40 names the window in
                  which a captured access token would still satisfy PostgREST's signature check, and
-                 that number belongs in the ledger as a fact rather than a guess
+                 that number belongs in the ledger as a fact rather than a guess. A RECORD compares
+                 with nothing: the ledger's copy is stale the day this prints a different number
   magic-link-after  a fresh magic link for A, redeemed at `/auth/confirm`: it signs in to A's OWN
                  user id — a global sign-out ends sessions, never the account — and the response
                  that lands it carries `Max-Age=2592000`, FR-A6's thirty days
-  axe-*          axe-core at WCAG 2.1 AA over /account (the card closed, and the confirm open) and
-                 over /sign-in?signed-out=all, each at 1440 AND 390
 
 WHAT IT CANNOT PROVE: what the OTHER device is told, because it is told nothing — the guard cannot
 tell a revoked session from an absent one, and no frame draws a sentence for it. `everywhere`
@@ -92,7 +106,10 @@ COOKIES_TS = os.path.join(HERE, '..', '..', 'apps', 'web', 'lib', 'supabase', 'c
 
 def project_ref(url):
     """`https://<ref>.supabase.co` -> `<ref>`, the Management API's project id."""
-    return re.match(r'https://([a-z0-9]+)\.supabase\.co', url).group(1)
+    found = re.match(r'https://([a-z0-9]+)\.supabase\.co', url)
+    if not found:
+        sys.exit('  FAIL  SUPABASE_URL is not an https://<ref>.supabase.co URL; the project ref cannot be derived')
+    return found.group(1)
 
 
 def session_max_age():
@@ -184,9 +201,12 @@ const accessTokenOf = async (context, whose) => {
 /* THE COOKIE DELETIONS, off the wire. `proxy.ts` calls `getUser()` on every request; when GoTrue
    refuses a revoked session the client clears the session through our own `setAll`, and THAT is
    what makes the other device forget. Read off the responses rather than the jar, because the jar
-   afterwards cannot say whether the server did it or the redirect simply never carried them. */
-const deletionCookies = (headers) =>
-  headers.filter((h) => h.name.toLowerCase() === 'set-cookie')
+   afterwards cannot say whether the server did it or the redirect simply never carried them.
+   Playwright's `Response.headersArray()` is a PROMISE, and read without `await` it is an object
+   with no `.filter` — as committed, the run threw at exactly this step (review, 2026-09-07). */
+const deletionCookies = async (response) =>
+  (await response.headersArray())
+    .filter((h) => h.name.toLowerCase() === 'set-cookie')
     .filter((h) => /^sb-.+-auth-token/.test(h.value) && /Max-Age=0|Expires=Thu, 01 Jan 1970/i.test(h.value))
 
 // axe-core at WCAG 2.1 AA, at BOTH widths — the cards go one column at 390 and a violation that
@@ -301,23 +321,53 @@ const openConfirm = async (page) => {
       look.hover === TOKENS.paper,
       `${JSON.stringify(look)} vs tokens ${JSON.stringify(TOKENS)}`)
 
+    // ── at 390 the frame draws nothing and the column is full width (`page.tsx`); the button must
+    //    still be the frame's 30px, sit at the row's END and lie inside the viewport — the AC's
+    //    "nothing clipped", measured rather than hoped (review, 2026-09-07).
+    await page.setViewportSize({ width: 390, height: 900 })
+    const narrow = await button.evaluate((n) => {
+      const b = n.getBoundingClientRect(), row = n.parentElement.getBoundingClientRect()
+      return { h: Math.round(b.height), width: Math.round(b.width), right: Math.round(b.right),
+               rowRight: Math.round(row.right), viewport: window.innerWidth,
+               clipped: b.left < 0 || b.right > window.innerWidth }
+    })
+    step('frame-390',
+      narrow.h === 30 && narrow.width > 0 && !narrow.clipped && Math.abs(narrow.rowRight - narrow.right) <= 1,
+      JSON.stringify(narrow))
+    await page.setViewportSize({ width: 1440, height: 900 })
+
     await axeAt(page, 'account-closed')
 
-    // ── the confirm opens on Cancel, Escape closes it, and nothing was sent
+    // ── the confirm opens on Cancel; Escape, the Cancel button and a click on the backdrop EACH
+    //    close it (the AC names all three — the first version proved Escape alone, review,
+    //    2026-09-07); and nothing was sent while it was open, all three closers under the one counter.
     const idlePosts = await sent(async () => {
       await openConfirm(page)
       await axeAt(page, 'account-dialog')
       const onCancel = await page.evaluate(() =>
         document.activeElement !== null && document.activeElement.hasAttribute('data-cancel'))
-      await page.keyboard.press('Escape')
-      await page.waitForFunction(() => !document.querySelector('dialog[open]'),
-                                 null, { timeout: 10000 }).catch(() => null)
-      const closed = await page.locator('dialog[open]').count() === 0
-      step('dialog-focus', onCancel && closed,
-           `focus was on Cancel = ${onCancel}; Escape closed it = ${closed}`)
+      const closers = {
+        escape: () => page.keyboard.press('Escape'),
+        cancel: () => page.locator('dialog[open] [data-cancel]').click(),
+        // The `::backdrop` is the <dialog> itself for hit-testing, and `kit/dialog.ts` closes on a
+        // click whose point lies outside the 460px sheet: the viewport's corner is one.
+        backdrop: () => page.mouse.click(4, 4),
+      }
+      const closedBy = {}
+      for (const [name, close] of Object.entries(closers)) {
+        if (name !== 'escape') await openConfirm(page)
+        await close()
+        await page.waitForFunction(() => !document.querySelector('dialog[open]'),
+                                   null, { timeout: 10000 }).catch(() => null)
+        closedBy[name] = await page.locator('dialog[open]').count() === 0
+        // A closer that did not close leaves a modal over the button the next one needs: force it.
+        if (!closedBy[name]) await page.evaluate(() => document.querySelector('dialog[open]')?.close())
+      }
+      step('dialog-focus', onCancel && Object.values(closedBy).every(Boolean),
+           `focus was on Cancel = ${onCancel}; closed by ${JSON.stringify(closedBy)}`)
     })
     if (idlePosts !== 0) step('dialog-quiet', false, `${idlePosts} POST(s) left the browser while the confirm was merely open`)
-    else step('dialog-quiet', true, 'nothing left the browser while the confirm was open and cancelled')
+    else step('dialog-quiet', true, 'nothing left the browser while the confirm was open and closed three ways')
 
     // ── EVERYWHERE. A1's own token is read BEFORE it is revoked: afterwards the cookies are gone
     //    and there would be nothing left to ask GoTrue about.
@@ -335,7 +385,7 @@ const openConfirm = async (page) => {
     const a2Dead = await whoami(a2Token)
     const from = bounced.length
     const a2Bounced = await second.goto(`${APP}/account`, { waitUntil: 'load' })
-    const cleared = bounced.slice(from).flatMap((r) => deletionCookies(r.headersArray()))
+    const cleared = (await Promise.all(bounced.slice(from).map(deletionCookies))).flat()
     step('everywhere',
       everywhereLanding.includes('signed-out=all') &&
       (everywhereSaid || '').includes('signed out on every device') &&
@@ -350,26 +400,42 @@ const openConfirm = async (page) => {
       `A2 /account -> ${a2Bounced && a2Bounced.status()} at ${second.url()}, ` +
       `${cleared.length} session cookie deletion(s) on the way`)
 
+    // ── DW-40's BACK half, executed rather than asserted: PostgREST checks the signature and `exp`
+    //    and never the session row, so the token GoTrue just refused should still be good at
+    //    `/rest/v1` until `exp`. A RECORD — the day this answers 401 the residual is closed.
+    const rest = await fetch(`${SB}/rest/v1/profiles?select=user_id&limit=1`, {
+      headers: { apikey: PUBLISHABLE, Authorization: `Bearer ${a1Token}` },
+    })
+    record('rest-residual', `A1's revoked token at GET /rest/v1/profiles -> HTTP ${rest.status}` +
+      (rest.status === 200 ? ' — still accepted until its exp; DW-40 stands' : ' — refused; DW-40 can close'))
+
     await axeAt(page, 'signed-out-all')
 
     // ── DW-40's number, read rather than guessed: how long a captured token would still satisfy
-    //    a signature check at PostgREST, which never asks GoTrue whether the session exists.
+    //    a signature check at PostgREST, which never asks GoTrue whether the session exists. The
+    //    `User-Agent` is load-bearing: api.supabase.com sits behind Cloudflare and answers
+    //    `403 error code: 1010` to a library's default one — `configure-supabase-auth.py`'s
+    //    executed pitfall — so curl's is sent, as there. A 200 whose body carries no integer
+    //    `jwt_exp` is SAID, not printed as `undefined seconds` (review, 2026-09-07).
     const config = await fetch(`https://api.supabase.com/v1/projects/${REF}/config/auth`, {
       headers: { Authorization: `Bearer ${MGMT}`, 'User-Agent': 'curl/8.5.0' },
     })
     const auth = await config.json().catch(() => null)
-    record('jwt-exp', config.status === 200 && auth
-      ? `jwt_exp = ${auth.jwt_exp} seconds (${Math.round(auth.jwt_exp / 60)} minutes) — DW-40's window`
-      : `the Management API answered HTTP ${config.status}; jwt_exp not read`)
+    const jwtExp = config.status === 200 && auth && Number.isInteger(auth.jwt_exp) ? auth.jwt_exp : null
+    record('jwt-exp', jwtExp !== null
+      ? `jwt_exp = ${jwtExp} seconds (${Math.round(jwtExp / 60)} minutes) — DW-40's window`
+      : `jwt_exp NOT read: the Management API answered HTTP ${config.status}` +
+        (config.status === 200 ? ' with no integer jwt_exp in the body' : ''))
 
     // ── and the account is untouched: a fresh magic link signs A back in, with the 30-day cookie
     const afterLink = await magicLink()
-    const setCookies = []
-    const collect = (r) => setCookies.push(...r.headersArray().filter((h) => h.name.toLowerCase() === 'set-cookie'))
+    const headers = []   // promises — `headersArray()` again, see `deletionCookies`
+    const collect = (r) => headers.push(r.headersArray())
     page.on('response', collect)
     await page.goto(afterLink.url, { waitUntil: 'load' })
     const backOn = await page.goto(`${APP}/account`, { waitUntil: 'load' })
     page.off('response', collect)
+    const setCookies = (await Promise.all(headers)).flat().filter((h) => h.name.toLowerCase() === 'set-cookie')
     const thirtyDays = setCookies.filter((h) => /^sb-.+-auth-token/.test(h.value) &&
                                                 new RegExp(`Max-Age=${MAX_AGE}\\b`).test(h.value))
     step('magic-link-after',
@@ -406,6 +472,8 @@ def run_browser(cfg):
             proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=900)
         except subprocess.TimeoutExpired:
             return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 900s'}]
+        except FileNotFoundError:
+            return [{'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'}]
     for line in proc.stdout.splitlines():
         if line.startswith('@@RESULT@@'):
             return json.loads(line[len('@@RESULT@@'):])

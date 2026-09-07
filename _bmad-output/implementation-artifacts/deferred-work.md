@@ -896,7 +896,7 @@ reason: S1c is the frame's own drawing (`S1 Sign In.dc.html:131-141`) and R-74 m
 plain: The three lines that say "if nobody is signed in, go to the sign-in page" are written once in the
   projects actions file and once more in the account actions file. Nothing is wrong today; a change to
   one would have to be remembered in the other.
-status: closed by Story 2.4 (2026-09-07)
+status: closed
 severity: low
 origin: Story 2.3 code review (2026-09-07) — Blind Hunter
 location: apps/web/app/(app)/app/(authed)/account/actions.ts (`signedIn`) · apps/web/app/(app)/app/(authed)/projects/actions.ts:63-67
@@ -905,10 +905,12 @@ reason: The stated reason for not importing it — an exported async function in
   `lib/supabase/server.ts` beside `currentUser()`, can export it once for both. Not done in the review
   because it edits `projects/actions.ts`, which is outside Story 2.3; do it in the next story that touches
   either file.
-  **Closed by Story 2.4 (2026-09-07):** `signedIn()` is one `export async function` in
+closed: Story 2.4 dev (2026-09-07). `signedIn()` is one `export async function` in
   `apps/web/lib/supabase/server.ts` beside `currentUser()`, and both actions files import it — the copies
-  are gone. `server-wiring.test.ts` reads the repository for `async function signedIn` and fails on any
-  file but that one, so the copy cannot come back unnoticed.
+  are gone. `server-wiring.test.ts` reads the repository for a `signedIn` written as a function or as a
+  const and fails on any file but that one, so the copy cannot come back unnoticed. (The status line's
+  shape corrected by the review, 2026-09-07: the story board derives "closed" from `status: closed` and
+  this `closed:` field, and had drawn the entry as an open amber pill.)
 
 ### DW-39: the "your email address was changed" notice is Supabase's plain default, not Inflozo's
 
@@ -948,12 +950,17 @@ location: the project's `jwt_exp` (Supabase Auth config); apps/web/lib/supabase/
 reason: `getUser()` verifies with GoTrue, which checks the JWT's `session_id` claim against `auth.sessions`
   and answers `session_not_found` once the row is gone — so every Inflozo page and every server action
   refuses the token immediately. PostgREST verifies only the signature and `exp`, so a token presented
-  DIRECTLY to `/rest/v1` with the publishable key stays good for the remainder of `jwt_exp`. The number
-  was a hypothesis until it was read: **`jwt_exp = 3600` (60 minutes)**, `GET
+  DIRECTLY to `/rest/v1` with the publishable key stays good for the remainder of `jwt_exp`. **That back
+  half was executed 2026-09-07 (Story 2.4's review) and holds:** the token GoTrue had just refused with
+  `403 session_not_found` answered `GET /rest/v1/profiles?select=user_id` **200** with the user's own row,
+  and the harness's `rest-residual` step re-executes it on every run — the day it prints a refusal, this
+  row can close. The number was a hypothesis until it was read: **`jwt_exp = 3600` (60 minutes)**, `GET
   https://api.supabase.com/v1/projects/{ref}/config/auth` with `SUPABASE_ACCESS_TOKEN` → HTTP 200, executed
-  2026-09-07 (Story 2.4's Dev run; the harness's `jwt-exp` step re-reads it on every run, so the number
-  cannot go stale here). So the residual window is at most one hour from the token's issue, and only for a
-  token already stolen out of an `HttpOnly` cookie. The FRONT half was executed the same day and it holds:
+  2026-09-07 (Story 2.4's Dev run, and again at its review, where it also equalled the minted JWT's own
+  `exp − iat`). The harness's `jwt-exp` step re-reads and REPORTS it on every run and compares it with
+  nothing, so a run that prints a different number is this row gone stale — update it from the run. So the
+  residual window is at most one hour from the token's issue, and only for a token already stolen out of an
+  `HttpOnly` cookie. The FRONT half was executed the same day and it holds:
   a session revoked by `POST /logout?scope=global` is refused at `GET /auth/v1/user` **immediately** —
   `403 session_not_found`, not at `exp` — so every Inflozo page and action stops accepting it at once.
   Shortening `jwt_exp` is a trade against refresh traffic and is the owner's call if he ever wants it;
@@ -969,7 +976,9 @@ plain: The ordinary Sign out has a note saying that if Supabase cannot be reache
 status: open
 severity: low
 origin: Story 2.4 spec (2026-09-07), read in the installed client
-location: apps/web/app/(app)/app/sign-in/actions.ts:82-97 (`signOut`, its comment, `signOutPathFor(Boolean(error))`)
+location: apps/web/app/(app)/app/sign-in/actions.ts:82-97 (`signOut`, its comment, `signOutPathFor(Boolean(error))`) ·
+  apps/web/app/(app)/app/(authed)/account/actions.ts (`signOutEverywhere`'s `sign_out_failed` path — Story 2.4's
+  review, 2026-09-07)
 reason: `_signOut` (`GoTrueClient.js:3415-3445`): when `/logout` fails with anything other than 401/403/404 or a
   missing session, it calls `removeCurrentSession()` BEFORE returning the error — the cookies are deleted
   through `setAll` and the action then redirects to `/?sign-out-failed=1`, where the guard finds no session
@@ -978,3 +987,8 @@ reason: `_signOut` (`GoTrueClient.js:3415-3445`): when `/logout` fails with anyt
   returns the error before any removal. A hypothesis until executed; the fix, if the owner wants one, is
   for the action to read the cookies after the call and choose its landing from what is actually left —
   1.4/1.5's file, so not changed by Story 2.4, which alters only that call's scope.
+  **Story 2.4's `signOutEverywhere` has the same shape (review, 2026-09-07):** on any `/logout` error but a
+  401/403/404 the dialog stays open saying "try again in a moment" while THIS device's cookies may already be
+  gone, so the retry lands on `/sign-in` through `signedIn()` with nothing said. Its comment now says so and
+  cites this row; the fix, when the owner wants one, is the same for both call sites. Still unexecuted: it
+  needs GoTrue to fail from the live site, which no real-infrastructure step can produce.
