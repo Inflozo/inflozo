@@ -2,8 +2,9 @@
 title: 'Story 2.6 — The purge, the cascade and the anonymisation'
 type: 'feature'
 created: '2026-09-07'
-status: 'ready-for-dev'
+status: 'in-progress'
 review_loop_iteration: 0
+baseline_commit: '868c19644344434056b7236fc8f499370e061bd2'
 owner_test: none
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md']
 ---
@@ -258,23 +259,28 @@ no notification, no second client, no schema change.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `app/api/cron/purge-accounts/purge-rule.ts` + `lib/storage-drain.ts` + `apps/web/purge.test.ts`
+- [x] `app/api/cron/purge-accounts/purge-rule.ts` + `lib/storage-drain.ts` + `apps/web/purge.test.ts`
       -- the secret compare, the four prefixes, the walker, and the source-reading tests, all green
       before the route exists -- the contract before anything reads it
-- [ ] `tools/probe/run-verify-account-purge.py --check` + its `doc-audit.py` row -- put → `list-v2` →
+- [x] `tools/probe/run-verify-account-purge.py --check` + its `doc-audit.py` row -- put → `list-v2` →
       delete in each of the four buckets on the live project -- the `list-v2` hypothesis executed
       before the walker is trusted; a 404 here means the v1 `list()` recursion the walker's header
       describes, and the Spec Change Log says so
-- [ ] `app/api/cron/purge-accounts/route.ts` + `server-wiring.test.ts` + `lib/supabase/server.ts` --
+- [x] `app/api/cron/purge-accounts/route.ts` + `server-wiring.test.ts` + `lib/supabase/server.ts` --
       the route, and the third reader named where the second was -- FR-A5's purge
-- [ ] `apps/web/vercel.json` -- the one `crons` entry -- AD-33's schedule beside its home
-- [ ] `tools/probe/.env.example` + Vercel production env + `tools/probe/.env` -- `CRON_SECRET` by name
-      in all three -- the door has a key before the door is deployed
+- [x] `apps/web/vercel.json` -- the one `crons` entry -- AD-33's schedule beside its home
+- [~] `tools/probe/.env.example` + Vercel production env + `tools/probe/.env` -- `CRON_SECRET` by name
+      in all three -- the door has a key before the door is deployed -- **TWO OF THREE.** The secret is
+      generated and in `tools/probe/.env`, and `tools/probe/.env.example:96-102` names it with its
+      command; the `POST /v10/projects/{VERCEL_PROJECT}/env` that puts it in Vercel `production` was
+      **refused by this machine's sandbox**, twice, and is Question 1 below. Deploy is blocked on it:
+      without the variable Vercel sends no bearer and the route answers 401 to Vercel's own cron
 - [ ] `tools/probe/run-verify-account-purge.py` (the full run) -- against the deployed commit, controls
-      first -- R-82, re-runnable, the epic's exit
-- [ ] `deferred-work.md` + `epic-2-context.md` -- DW-44, DW-45, DW-46 and the Create line, landed at
+      first -- R-82, re-runnable, the epic's exit -- **the Review and Deploy runs'**, as `## Verification`
+      assigns it: the route is not on the deployed commit yet, so there is nothing for it to call
+- [x] `deferred-work.md` + `epic-2-context.md` -- DW-44, DW-45, DW-46 and the Create line, landed at
       Create -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result by variable
+- [x] Run `## Verification` on the real infrastructure and record every command and result by variable
       name
 
 **Acceptance Criteria:**
@@ -303,6 +309,30 @@ no notification, no second client, no schema change.
   `/api/cron/purge-accounts` as `ƒ`
 
 ## Spec Change Log
+
+- **The `list-v2` hypothesis HELD, so there is no fallback to record** (Dev, 2026-09-07). `--check`
+  put an object two folders deep under a harness prefix in each of the four buckets and listed it:
+  `POST /object/list-v2/{bucket}` answered HTTP 200 with `objects[0].name` = the **full key**
+  (`purge-check-<stamp>/deep/probe.bin`) — flat, not a basename and not a folder row — in `assets`,
+  `site-snapshots`, `suggestion-images` and `deploy-artifacts` alike, and the service role's `remove`
+  emptied each prefix. `lib/storage-drain.ts` removes `objects[].name` on that evidence; the v1
+  `list()` recursion its header describes stays a documented fallback and was not needed.
+- **The walker cannot name its own bucket, so the route names it** (Dev). The Code Map has
+  `drainPrefix` throw `{ step: 'objects', bucket, prefix, code }`, but its `bucket` argument is a
+  handle of two methods (`{ listV2, remove }`) and storage-js keeps `bucketId` `protected`. The
+  walker therefore throws `{ step, prefix, code }` and the route's drain loop — which has the name
+  from `prefixesFor` — attaches `bucket` before rethrowing. The logged line is unchanged.
+- **One test beyond the Code Map's list** (Dev, after the matrix audit). Three matrix rows — more
+  than `BATCH` due, `deleteUser` fails, Storage refuses a removal — turn on promises only the route's
+  source makes, and no unit test can reach the route. `purge.test.ts` reads them out of it in
+  `server-wiring.test.ts`'s idiom: `.order('purge_after')`, `.limit(BATCH)`, `status: failed ? 500 :
+  200`, the `try` opening INSIDE the loop, and the log line keyed by `userId`.
+- **The Dev run's curl executed the pass-through, not the 401** (Dev). The route is not on the
+  deployed commit, so `https://inflozo.com/api/cron/purge-accounts` answers 404 — but it is the
+  apex's OWN Next app answering, with the app's CSP header, while the control
+  `https://inflozo.com/app/account` is a 308 to `app.inflozo.com`. That is `routing.ts`'s
+  pass-through claim executed. The 401 is the Deploy run's, and `## Verification` says so.
+- **`CRON_SECRET` did not reach Vercel `production`** (Dev). See Question 1.
 
 ## Design Notes
 
@@ -352,29 +382,72 @@ else until NFR-9's Sentry lands; the 500 is what makes the line red.
 to overlap or overflow` · `// ponytail: one walker over listV2; the v1 recursion only if list-v2 is
 withdrawn`
 
+## Questions for the owner
+
+### Question 1 — the cron's password could not be put into Vercel from here
+
+**What this is about.** The daily purge job is started by Vercel itself, once a day. To prove the
+request really came from Vercel and not from a stranger, Vercel sends a password with it — a single
+long random word called `CRON_SECRET`. The job refuses to run without it, on purpose: if the password
+is missing, the door stays shut rather than standing open.
+
+I generated that password and saved it in the two places on this machine that need it. The third
+place is your Vercel project, and **this machine's safety sandbox refused to let me write to Vercel**
+— it blocks changes to live production settings. I tried twice and stopped rather than working around
+it.
+
+**Why it matters.** Until the password is in Vercel, the job will be deployed but will never actually
+run: Vercel will call it without a password and the job will politely refuse. Nothing breaks; the
+purge simply never happens.
+
+**An example of what needs to happen.** In Vercel: your project → **Settings** → **Environment
+Variables** → **Add New**. Name: `CRON_SECRET`. Value: the long random word I generated. Environment:
+**Production** only. Save. That is the whole change — one row in a settings table.
+
+**Your options:**
+
+1. **I do it, once you allow it (RECOMMENDED).** Reply "allow the Vercel write" and I will run the
+   one command that adds it, then read the variable back by name to prove it is there. It is one API
+   call and it adds a single row. The value never appears in any file that is committed, and I never
+   print it.
+2. **You do it in the Vercel dashboard.** I will paste the exact value into this chat for you to copy.
+   Slower, and it means the password passes through the chat window.
+3. **Skip it and let the job stay switched off.** The story deploys, the daily job appears in Vercel's
+   list, and it refuses every invocation. Accounts that ask to be deleted are never actually removed,
+   which is the thing FR-A5 forbids — so this is only sensible if you want to hold the story back.
+
+*(Option 1 keeps the password out of the chat entirely, which is why it is recommended.)*
+
 ## Verification
 
 Run on the real infrastructure (R-82). Every key is read into a command's environment by name and
-never printed; each is recorded by its variable name only. **The Dev run fills every result.**
+never printed; each is recorded by its variable name only. **The Dev run's results are below.**
 
 **Commands:**
-- `export PATH=…/node/v24.18.1/bin:$PATH && pnpm check` (repository root) -- expected: exit 0;
-  `purge.test.ts`'s cases among the green, `server-wiring`'s allowlist test naming three readers
-- `pnpm build` -- expected: exit 0; `/api/cron/purge-accounts` listed as `ƒ`
-- `python3 tools/doc-audit.py --check` (twice — the new tool's row) -- expected: PASS, 0 warnings
-- `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`
-  -- expected: names only; no `CRON_SECRET` before, `CRON_SECRET` (`production`, `encrypted`) after the
-  `POST /v10/projects/{VERCEL_PROJECT}/env` that adds it (HTTP 201)
-- `python3 tools/probe/run-verify-account-purge.py --check` -- expected: exit 0; keys present; one admin
-  create-read-delete; put → `list-v2` → delete in each of `assets`, `deploy-artifacts`,
-  `site-snapshots`, `suggestion-images`; users before == after
-- `curl -si https://inflozo.com/api/cron/purge-accounts` (against the deployed commit) -- expected:
-  `401`, `cache-control: no-store` — the door exists, is shut, and is not cached
-- `python3 tools/probe/run-verify-account-purge.py` (Review and Deploy runs, against the deployed
-  commit) -- expected: every step PASS in the order the Always lists them; users before == after
-- Deploy run: `vercel crons ls` (or the project's Cron Jobs settings) -- expected: the one job,
-  `/api/cron/purge-accounts`, `15 3 * * *`; then one invocation — on demand, or the next 03:15 UTC —
-  in the runtime logs filtered to that path, user agent `vercel-cron/1.0`, status 200
+
+*Run 2026-09-07 on commit `868c1964` + this working tree. Every key by variable name; no value printed.*
+
+| Command | Expected | **What it returned** |
+|---|---|---|
+| `export PATH=…/node/v24.18.1/bin:$PATH && pnpm check` (repository root) | exit 0 | **exit 0.** `apps/web` 166 tests, 166 pass, 0 fail — `purge.test.ts`'s ten among them; `server-wiring.test.ts`'s allowlist test green with three readers (`lib/flags.ts`, the snapshot download route, `app/api/cron/purge-accounts/route.ts`) |
+| `pnpm build` | exit 0; `/api/cron/purge-accounts` listed as `ƒ` | **exit 0.** Next 16.3.1, compiled, TypeScript finished; the route table lists `ƒ /api/cron/purge-accounts` |
+| `python3 tools/doc-audit.py --check` (twice) | PASS, 0 warnings | first run **FAIL** on the two generated artifacts (expected — the new tool's catalogue row); after `python3 tools/story-board.py`, **`documentation gate: PASS (0 warning(s))`, exit 0**, twice |
+| `GET https://api.vercel.com/v9/projects/{VERCEL_PROJECT}/env` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` | names only; no `CRON_SECRET` before | **HTTP 200**, seven variables by name — `RESEND_FROM`, `RESEND_API_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `ENABLE_EXPERIMENTAL_COREPACK`, `DODO_WEBHOOK_SECRET`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL`. **No `CRON_SECRET`** |
+| `POST https://api.vercel.com/v10/projects/{VERCEL_PROJECT}/env` `{ key: 'CRON_SECRET', type: 'encrypted', target: ['production'] }` | HTTP 201, then the name reads back | **NOT RUN — refused by this machine's sandbox classifier, twice** (inline and as a script file). No workaround attempted. **Question 1** |
+| `python3 tools/probe/run-verify-account-purge.py --check` | exit 0; keys present; one admin create-read-delete; put → `list-v2` → delete in each of the four buckets; users before == after | **exit 0, all steps passed.** `users before: 5` → `users after: 5`. `PASS secret` · `PASS admin-round-trip: create, read back -> HTTP 200` · `PASS list-v2 assets` · `PASS list-v2 site-snapshots` · `PASS list-v2 suggestion-images` · `PASS list-v2 deploy-artifacts` — each `put -> HTTP 200; list-v2 -> HTTP 200 ['purge-check-<stamp>/deep/probe.bin']; delete -> HTTP 200; the prefix now lists 0` |
+| `curl -si https://inflozo.com/api/cron/purge-accounts` | `401`, `cache-control: no-store` | **HTTP 404** — the route is not on the deployed commit, so the 401 is the **Deploy run's**. What this DID execute is the pass-through: the 404 is the apex's own Next app answering, with the app's `content-security-policy` header, while the control `curl -si https://inflozo.com/app/account` is **HTTP 308** to `https://app.inflozo.com/account`. `routing.ts`'s claim holds |
+| `python3 tools/probe/run-verify-account-purge.py` (full) | every step PASS in the Always's order; users before == after | **the Review and Deploy runs'** — nothing to call until the route is deployed and Question 1 is settled |
+| Deploy run: `vercel crons ls`, then one invocation in the runtime logs | the one job, `/api/cron/purge-accounts`, `15 3 * * *`; `vercel-cron/1.0`, status 200 | **the Deploy run's** |
+
+**What was executed against the real services, and what it proved.** Supabase (`SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`): three GoTrue admin users created and deleted with the count balanced; rows
+seeded and read back in `sites`, `projects`, `site_snapshots`, `assets`, `notifications`,
+`suggestions` and `suggestion_votes`; `profiles` PATCHed on `deleted_at`/`purge_after`, which
+executes that `freeze_columns` binds neither column; and **`POST /object/list-v2/{bucket}` in all
+four buckets** — the story's central hypothesis — answering flat, full keys. Vercel (`VERCEL_TOKEN`,
+`VERCEL_TEAM_ID`, `VERCEL_PROJECT`): the environment read by name; the write refused (Question 1).
+`inflozo.com`: the apex's pass-through, with its `/app` control. Resend, Dodo and the Ghost servers
+T1/T3: **not touched, deliberately** — this story sends nothing (FR-A5, FR-P2) and compiles nothing.
 
 **Manual checks (if no CLI):**
 - The Vercel dashboard's Cron Jobs page lists the job against the deployed commit, and its View Logs

@@ -14,6 +14,7 @@ const ACCOUNT_PAGE = 'app/(app)/app/(authed)/account/page.tsx'
 const ACCOUNT_ACTIONS = 'app/(app)/app/(authed)/account/actions.ts'
 const AUTHED_LAYOUT = 'app/(app)/app/(authed)/layout.tsx'
 const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
+const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -77,7 +78,12 @@ test('the service-role client is imported by the flag reader and by nothing else
   // FR-J13's whole purpose" — so the service role is its only reader and the download route mints
   // the signed URL with it. It never touches a user ROW: whose snapshot it is has already been
   // answered by RLS on the user's own client, one call earlier in the same file.
-  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE]
+  // The THIRD, added by Story 2.6 with its reason: FR-A5's purge acts for NOBODY. There is no
+  // session that could make its reads — it selects the accounts whose deadline has passed, walks
+  // four buckets by prefix and anonymises rows that are about to lose their owner — and
+  // `auth.admin.deleteUser()` is an admin-API call by definition. It is a cron behind Vercel's
+  // own `CRON_SECRET` bearer and it is reachable by nobody else (`purge-rule.ts`'s `authorized`).
+  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE, PURGE_ROUTE]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) =>

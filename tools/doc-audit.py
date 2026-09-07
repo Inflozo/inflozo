@@ -334,6 +334,24 @@ DOCS = [
   'signed out and as a restored account; --to points the run\'s one real send at an inbox a human '
   'can read. --check is the plumbing alone, including one real Storage put-list-delete, and needs no '
   'browser and no deployment. Story 2.5.'),
+ ('tools/probe/run-verify-account-purge.py', 'tool', 'Account-purge harness',
+  "FR-A5's purge — AD-33's one cron for Epic 2 — called on the deployed route and read back off "
+  'the wire. Seeds three fixture users: A due (purge_after yesterday), B pending but not due, C '
+  'never deleted; A with a row in every table the cascade must empty, a suggestion carrying an '
+  'approved image, a vote on C\'s suggestion, and one object in EACH of the four buckets, the '
+  'assets one nested two folders deep. Its CONTROLS run first: the route called with no '
+  'Authorization header and then with a wrong bearer must each answer 401 with A untouched, so a '
+  'green purge proves the bearer is what let it through. Then the real bearer: 200 {"purged": 1, '
+  '"failed": 0}, A\'s GoTrue user 404, every one of A\'s rows gone, every prefix listing empty, C\'s '
+  'vote_count decremented by sync_vote_count firing inside the cascade, A\'s suggestion still there '
+  'with user_id null and anonymized_at set and the image dropped, B and C untouched, and a second '
+  'call {"purged": 0, "failed": 0}. It REFUSES to call the route if the route\'s own due query '
+  'selects any account this run did not create, so a real pending account stops the run rather than '
+  'being purged by a test. --check is the plumbing alone — keys, one admin create-read-delete, and '
+  'one put -> list-v2 -> delete under a harness prefix in each of the four buckets, which is also '
+  'the first execution of the list-v2 hypothesis lib/storage-drain.ts rests on — and needs no '
+  'deployment. --url points a Review run at a deployment URL; it defaults to the apex, which '
+  'routing.ts passes through to the same handler Vercel invokes. Story 2.6.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

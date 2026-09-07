@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "node --version && pnpm --version && pnpm -w check && next build",
+  "crons": [{ "path": "/api/cron/purge-accounts", "schedule": "15 3 * * *" }],
   "git": {
     "deploymentEnabled": {
       "main": false
