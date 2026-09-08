@@ -126,10 +126,16 @@ test('no surface types the wordmark for itself', () => {
   // The word is DRAWN in exactly two places: the lockup, and the Sign In watermark, which is CSS
   // `content` and deliberately not a text node. A third is a surface that has grown its own
   // logo — which is what Story 1.6 existed to end.
+  //
+  // ONE THING THAT IS NOT A WORDMARK: the name the customer types into Ghost Admin, drawn in the
+  // frame's mono code chip on the connect wizard's step 3 (`S2 Onboarding.dc.html:97`). It is a
+  // VALUE to copy, not the identity — and it is exempted by its own markup rather than by its
+  // file, so the same file drawing a real wordmark is still caught (Story 3.2).
   const offenders = walk(process.cwd()).flatMap((file) => {
     const rel = file.slice(process.cwd().length + 1)
     if (rel === LOGO || rel === WATERMARK) return []
-    const drawn = readFileSync(file, 'utf8').match(/>\s*Inflozo\s*</g)
+    const source = readFileSync(file, 'utf8').replace(/<span[^>]*font-mono[^>]*>\s*Inflozo\s*<\/span>/g, ' ')
+    const drawn = source.match(/>\s*Inflozo\s*</g)
     return drawn ? [rel] : []
   })
 

@@ -4,13 +4,16 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   atCap,
+  atSiteCap,
   capSentence,
   goProLabel,
   includesProjects,
+  includesSites,
   PLANS,
   PRICE,
   planFor,
   planName,
+  siteCapSentence,
 } from './lib/plan.ts'
 
 // Appendix F.1 is the sole definition of Free/Pro gating, and the resolver's third column —
@@ -83,4 +86,34 @@ test('atCap: refuses AT the cap and not below it, on both plans', () => {
   // And the two plans really do differ, so a single shared number could not satisfy both.
   assert.equal(atCap('free', 1), true)
   assert.equal(atCap('pro', 1), false)
+})
+
+// Story 3.2: the same two shapes one row down the plan table. Sites and projects are DIFFERENT
+// numbers on the same plan, so a predicate that read the wrong column would let a Free account
+// connect as many sites as it may make projects — and on Free those numbers happen to agree,
+// which is exactly how such a bug survives a test that only tries Free.
+test('atSiteCap: refuses AT the site cap and not below it, on both plans', () => {
+  for (const plan of ['free', 'pro'] as const) {
+    const cap = PLANS[plan].sites
+    assert.equal(atSiteCap(plan, 0), false, `${plan}: an account with no site is never at the cap`)
+    assert.equal(atSiteCap(plan, cap - 1), false, `${plan}: one below the cap still connects`)
+    assert.equal(atSiteCap(plan, cap), true, `${plan}: the cap itself refuses`)
+  }
+  // The two plans really differ, so one shared number could not satisfy both.
+  assert.equal(atSiteCap('free', 1), true)
+  assert.equal(atSiteCap('pro', 1), false)
+  // And it is the SITES column, not the projects one — the two agree on Free and not on Pro.
+  assert.notEqual(PLANS.pro.sites, PLANS.pro.projects)
+  assert.equal(atSiteCap('pro', PLANS.pro.sites), true)
+  assert.equal(atCap('pro', PLANS.pro.sites), false)
+})
+
+test('S11c’s sentence pluralises from the number, never from a typed string', () => {
+  assert.equal(includesSites('free'), 'Free includes 1 site')
+  assert.equal(includesSites('pro'), `Pro includes ${PLANS.pro.sites} sites`)
+  assert.equal(siteCapSentence('free'), `Free includes 1 site. Pro connects up to ${PLANS.pro.sites}.`)
+  // On Pro there is nothing further to sell, so it is the first clause and nothing more.
+  assert.equal(siteCapSentence('pro'), `Pro includes ${PLANS.pro.sites} sites.`)
+  assert.match(includesSites('free'), / 1 site$/)
+  assert.match(includesSites('pro'), /s$/)
 })

@@ -1,0 +1,211 @@
+/**
+ * THE CONNECT WIZARD'S PURE HALF (FR-C1, FR-C2) — the address normaliser, the version floor, the
+ * card's two labels, and the one table that turns a code into a sentence. No `fetch`, no Supabase,
+ * no environment, so `node --test` reaches every branch; `sites/actions.ts` next door does the
+ * reaching. The shape `admin-rule.ts` set for Story 3.1 and `purge-rule.ts` for 2.6.
+ *
+ * THE 4.x REFUSAL IS PROVED HERE AND NOWHERE ELSE. No Ghost 4 server exists — T1 is 6.58.0 and T3
+ * is 5.130.6 (MEASUREMENTS §38, "not executed, and cannot be") — so the floor is executed against
+ * an injected version string rather than against a server, and that is the whole reason it is a
+ * pure function instead of an `if` inside the action.
+ */
+
+/** The floor FR-C2 names: 5.x and 6.x accepted, 4.x and older refused with a friendly sentence. */
+export const MIN_GHOST_MAJOR = 5
+
+/**
+ * WHAT THE CUSTOMER TYPED, AS AN ORIGIN. Scheme defaults to https, host lowercased, path and
+ * trailing slash dropped — so `orbitweekly.com`, `https://orbitweekly.com/` and
+ * `https://OrbitWeekly.com` are one row under `unique (user_id, url)` rather than three.
+ *
+ * `http://` IS KEPT WHEN IT IS TYPED. It is warned, never rewritten: both test Ghosts answer 403
+ * on plain http to the admin API (§38c), so a connect against one fails with Ghost's own answer
+ * instead of Inflozo quietly connecting to a different address than the one the user gave.
+ *
+ * The PUBLIC url is a different value and lives in `site_settings.public_url` — read from
+ * `GET /admin/site/` at connect. On Ghost(Pro) the two differ by design (EXPERIENCE.md:113).
+ */
+export function normaliseSiteUrl(input: string | null | undefined): string | null {
+  const typed = (input ?? '').trim()
+  // A space is the "orbit weekly" row of the matrix: not a URL, and `new URL` would encode it
+  // into one rather than refuse it.
+  if (!typed || /\s/.test(typed)) return null
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(typed) ? typed : `https://${typed}`
+  let url: URL
+  try {
+    url = new URL(withScheme)
+  } catch {
+    return null
+  }
+  // `ftp://`, `javascript:` and `file://` are not site addresses, and `adminUrl` would happily
+  // build one out of any of them.
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+  // A bare word is a typo, not a host. `localhost` is refused with it, deliberately: a Ghost the
+  // browser's Content-key check could reach is not one Vercel's function can.
+  if (!url.hostname.includes('.')) return null
+  return `${url.protocol}//${url.host.toLowerCase()}`
+}
+
+/** The warning's condition, read off what was TYPED — the field says so before Connect is pressed. */
+export const isPlainHttp = (input: string | null | undefined): boolean =>
+  /^http:\/\//i.test((input ?? '').trim())
+
+/** The host on its own, for the sentences that name it. Never throws: a bad address has no host. */
+export function hostOf(input: string | null | undefined): string {
+  const origin = normaliseSiteUrl(input)
+  return origin ? new URL(origin).host : (input ?? '').trim()
+}
+
+export type VersionVerdict =
+  | { ok: true; major: number; minor: number }
+  | { ok: false; code: 'ghost_too_old' | 'ghost_unreachable'; major?: number; minor?: number }
+
+/**
+ * `GET /admin/config/` answers the full three-part version (`6.58.0`, `5.130.6` — 3.1's harness
+ * executed both); `GET /admin/site/` answers two parts, which is why the stored value comes from
+ * `config/`. A Ghost that answers NO version is refused as unreachable rather than accepted: it is
+ * not a Ghost this product knows how to deploy to, and guessing would be the wrong kind of kind.
+ */
+export function versionVerdict(version: string | null | undefined): VersionVerdict {
+  const found = /^(\d+)\.(\d+)/.exec((version ?? '').trim())
+  if (!found) return { ok: false, code: 'ghost_unreachable' }
+  const major = Number(found[1])
+  const minor = Number(found[2])
+  if (major < MIN_GHOST_MAJOR) return { ok: false, code: 'ghost_too_old', major, minor }
+  return { ok: true, major, minor }
+}
+
+/** S11a's version chip: `6.58.0` -> "Ghost 6.58". Absent while nothing has been read. */
+export function ghostLabel(version: string | null | undefined): string | null {
+  const found = /^(\d+)\.(\d+)/.exec((version ?? '').trim())
+  return found ? `Ghost ${found[1]}.${found[2]}` : null
+}
+
+const AGO: [Intl.RelativeTimeFormatUnit, number][] = [
+  ['year', 31_536_000],
+  ['month', 2_592_000],
+  ['day', 86_400],
+  ['hour', 3_600],
+  ['minute', 60],
+]
+
+/**
+ * S11a's "Checked 2 minutes ago", and "Checked just now" for the minute after a connect. `now` is
+ * the caller's one clock for the whole render, so two cards a millisecond apart never disagree —
+ * the argument `updatedLabel` makes in `lib/projects.ts`.
+ */
+export function checkedLabel(at: string | Date | null | undefined, now: Date): string {
+  if (!at) return 'Not checked yet'
+  const when = at instanceof Date ? at : new Date(at)
+  if (Number.isNaN(when.getTime())) return 'Not checked yet'
+  const seconds = Math.max(0, Math.round((now.getTime() - when.getTime()) / 1000))
+  if (seconds < 60) return 'Checked just now'
+  const format = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+  for (const [unit, size] of AGO) {
+    if (seconds >= size) return `Checked ${format.format(-Math.floor(seconds / size), unit)}`
+  }
+  return 'Checked just now'
+}
+
+/**
+ * THE CODES → SENTENCES TABLE, AND IT LIVES HERE AND NOWHERE ELSE. The action answers a code and
+ * a subject; the wizard renders the sentence. Two copies of a refusal sentence is how a refusal
+ * drifts from the one the owner read and approved.
+ *
+ * "EXPIRED" APPEARS IN NONE OF THEM, and `connect-rule.test.ts` asserts it: Ghost's `api_keys`
+ * has no expiry column (MEASUREMENTS §37), so a 401 is a key REGENERATED or an integration
+ * removed. Telling a customer their key expired sends them looking for a setting Ghost has not got.
+ *
+ * `at_cap` is deliberately absent: its sentence is Appendix F.1's, derived from `PLANS` by
+ * `siteCapSentence()` in `lib/plan.ts`, and a second copy here could disagree with the pill.
+ */
+export const CONNECT_MESSAGES = {
+  url_invalid: () => "That doesn't look like a site address — try `https://yoursite.com`.",
+  content_key_unknown: () => "Ghost doesn't recognise this Content API key.",
+  credential_malformed: () =>
+    'An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id, a colon, then a long secret.',
+  ghost_unknown_key: () =>
+    "Ghost said no — this Admin API key doesn't match your site. Copy the whole key from the " +
+    'Inflozo integration and try again.',
+  // Inflozo mis-signing its own JWT is OUR bug and must never be shown as the user's (§37).
+  ghost_bad_signature: () =>
+    "Something went wrong on our side while signing in to your Ghost. It isn't your key — please try again.",
+  ghost_unauthorized: () => 'Ghost refused this Admin API key. Copy it again from the Inflozo integration.',
+  ghost_unreachable: (host: string) =>
+    `We couldn't reach ${host}. Check the address — it's your Ghost site's own.`,
+  ghost_redirected: () =>
+    'Your site sent us somewhere else. Connect with the address your site actually uses.',
+  ghost_too_old: (version: string) =>
+    `Your site runs Ghost ${version}. Inflozo needs Ghost ${MIN_GHOST_MAJOR} or newer — please update Ghost, then connect.`,
+  // DW-52: every Ghost answer the map above does not name — the 403 a plain-http address gets,
+  // a 429, a 5xx. The status is in the sentence so a support reply has something to work from.
+  ghost_refused: (status: string) =>
+    `Ghost refused the connection (HTTP ${status}). Check the address and the keys.`,
+  already_connected: (host: string) => `${host} is already connected.`,
+  credential_store_unavailable: () =>
+    "We couldn't save your key just now. Nothing was connected — try again in a moment.",
+  connect_failed: () => "We couldn't connect that site just now. Try again in a moment.",
+} as const
+
+export type MessageCode = keyof typeof CONNECT_MESSAGES
+
+/** Every code the connect action can answer with. `at_cap`'s sentence comes from `lib/plan.ts`. */
+export type ConnectCode = MessageCode | 'at_cap'
+
+/** Which of S2b·2's three fields a refusal belongs under; everything else is the form's banner. */
+export type ConnectField = 'url' | 'admin_key' | 'content_key'
+
+/**
+ * WHAT `connectSite` ANSWERS, AND IT LIVES HERE RATHER THAN BESIDE THE ACTION. A `'use server'`
+ * module may export only async functions — every export becomes a Server Action — so a constant
+ * or a type exported from `sites/actions.ts` silently strips EVERY export from it and the wizard's
+ * import of the action itself fails to resolve (executed under `next build`, 2026-09-08). The
+ * same rule that put `signedIn()` in `lib/supabase/server.ts` (DW-38) puts these three here.
+ */
+export type ConnectResult =
+  | { ok: true }
+  | { error: { code: ConnectCode; message: string; field?: ConnectField } }
+
+/**
+ * The ceiling on each of the three fields, and it is the field's own `maxLength` so the form
+ * refuses the character the action would. A Ghost Admin key is 24 hex + ':' + 64 hex and a Content
+ * key is 26 hex; the cap is generous rather than exact, because the SHAPE is `parseCredential`'s
+ * to judge and a length check that disagreed with it would refuse a real key with the wrong
+ * sentence.
+ */
+export const CONNECT_MAX = 300
+
+/**
+ * @param subject the host for the codes that name one, the version for `ghost_too_old`, and the
+ * HTTP status for `ghost_refused`. One parameter, because the table is one lookup and a
+ * per-code argument list would be a second thing to keep in step with it.
+ */
+export const connectMessage = (code: MessageCode, subject = ''): string => CONNECT_MESSAGES[code](subject)
+
+/**
+ * The `http://` warning, under the URL field as it is typed. It is a WARNING and not a refusal:
+ * the site may genuinely be plain http, and Ghost's own 403 is the honest answer if it is (§38c).
+ */
+export const HTTP_WARNING =
+  "Most Ghost sites use https:// — use that if yours does. Without HTTPS the editor can't load your live content."
+
+/**
+ * FR-C3's honesty rule and the spine's blast-radius rule, in one sentence each, in the
+ * helper-caption slot above Connect (S2b·2 :136-138). §21m executed it: the stored key reads
+ * every member's email address and can publish posts. Ghost offers no narrower credential, so
+ * informed consent is the only lever there is.
+ */
+export const ADMIN_KEY_CONSENT =
+  "Your Admin API key lets Inflozo read everything Ghost Admin can — members' email addresses " +
+  'included. Inflozo only ever writes your theme and your routes file.'
+
+/** The wizard's two steps. Step 1 is the guide, step 2 the three fields (S2b·1 / S2b·2). */
+export type Step = 'integration' | 'keys'
+
+/**
+ * `?step=` off a Next `searchParams`, which hands a REPEATED key (`?step=a&step=b`) over as an
+ * array — the shape `filterProjects` was fixed for. Anything that is not `keys` is step 1, so a
+ * hand-typed value lands on the guide rather than on an empty form.
+ */
+export const stepOf = (value: string | string[] | undefined): Step =>
+  (Array.isArray(value) ? value[0] : value) === 'keys' ? 'keys' : 'integration'

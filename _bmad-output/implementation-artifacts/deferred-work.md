@@ -1140,7 +1140,10 @@ plain: Story 3.1 ships a small, password-protected back door whose only job is t
   keys go into the locked store and come out for one signed request. It is not a product feature, and the
   next story — the connect screen, the first real user of the store — takes it out again so the app carries
   no extra doors.
-status: open
+status: closed by Story 3.2 (Dev, 2026-09-08) — `app/api/ghost-admin/verify/route.ts` and
+  `server/ghost-admin/verify-queries.ts` are deleted, `server-wiring.test.ts` names the connect action as the
+  chokepoint's only importer, and `tools/probe/run-verify-ghost-admin.py` drives the product instead. DW-54
+  records the three proofs that left with the route.
 severity: low
 origin: Story 3.1 spec (2026-09-07), the deployed-proof decision
 location: apps/web/app/api/ghost-admin/verify/route.ts (to be created by 3.1) · tools/probe/run-verify-ghost-admin.py
@@ -1246,10 +1249,16 @@ plain: Story 3.1 proved three things on the live site through its temporary back
 status: open
 severity: low
 origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"
-location: tools/probe/run-verify-ghost-admin.py (the retargeted harness) · apps/web/ghost-admin-rule.test.ts
-  (`write-denied` as a unit contract) · supabase/tests (the trigger under the RLS gate)
+location: tools/probe/run-verify-ghost-admin.py (the retargeted harness — its docstring names the steps it
+  now runs, and these three are not among them) · apps/web/ghost-admin-rule.test.ts (`permitted()`'s three
+  denials as a unit contract) · supabase/tests (the trigger under the RLS gate)
 reason: R-82 wants every claim executed on the real infrastructure. With DW-48 honoured, `write-denied`
   has no product caller until Epic 7's deploy path makes the first allowed write (and can then be driven
   by asking for one outside the list); `rotated` has none until Story 3.6's Manage keys re-pastes a key;
   `staff-removed` none until Epic 7 stores and removes the Staff Access Token. Each of those stories
   adds the matching step back to its own harness and closes its third of this entry.
+  CONFIRMED AT 3.2's DEV (2026-09-08): the route is gone and the rewritten harness's docstring lists
+  `first-run · keys-step · http-warned · malformed · bogus-key · content-wrong-key · connect · audit ·
+  already-connected · at-cap · axe · user-gone · secret-gone · no-secret-leak` — none of them a write, a
+  rotation or a staff removal. `secret-gone` still exercises DW-44's CASCADE path live, so it is only the
+  replace and remove paths that are now gate-only.

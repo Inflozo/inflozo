@@ -59,9 +59,15 @@ test("frame-ancestors and form-action are 'self' on both policies", () => {
   }
 })
 
-test('connect-src names the Ghost origins on the app host and nowhere else', () => {
+test('connect-src is self and https on the app host, and nowhere else', () => {
+  // Story 3.2: the customer's Ghost is the origin the browser checks the Content API key against,
+  // and it is never a stored one — it is being typed. `https:` is the narrowest value that makes
+  // FR-C2's browser-side check possible for every customer.
   const app = directives(policy(APP, N))
-  assert.equal(app['connect-src'], `'self' https://ghost5.inflozo.com https://ghost6.inflozo.com`)
+  assert.equal(app['connect-src'], `'self' https:`)
+  // `http:` stays out: mixed content would block it anyway and the field warns before Connect.
+  assert.ok(!app['connect-src'].includes('http:'), "connect-src must not admit plain http")
+  assert.ok(!app['connect-src'].includes('*'), "connect-src must not be widened to a wildcard")
   assert.equal(directives(policy(MARKETING, ''))['connect-src'], undefined)
 })
 

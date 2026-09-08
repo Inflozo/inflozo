@@ -83,10 +83,16 @@ test('the proxy matcher leaves the root-served identity files alone and still se
 
   const icons = readdirSync('app').filter((f) => /^(icon|apple-icon)\./.test(f))
   assert.ok(icons.length > 0, 'no metadata icon under app/')
-  const brand = readdirSync(join('public', 'brand'))
-  assert.ok(brand.length > 0, 'public/brand is empty')
+  // EVERY FOLDER UNDER `public/`, derived rather than listed: Story 3.2 added `public/connect/`
+  // for the wizard's screenshot and a hand list would have shipped it 404ing on the app host with
+  // every check green — the same failure the identity files had (counts and membership are
+  // derived, never restated). A file added to a folder already excluded is covered by this too.
+  const served = readdirSync('public', { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) => readdirSync(join('public', entry.name)).map((f) => `/${entry.name}/${f}`))
+  assert.ok(served.length > 0, 'public/ has no served folders — this loop would assert nothing')
 
-  for (const path of [...icons.map((f) => `/${f}`), ...brand.map((f) => `/brand/${f}`), '/favicon.ico', '/_next/static/x.js']) {
+  for (const path of [...icons.map((f) => `/${f}`), ...served, '/favicon.ico', '/_next/static/x.js']) {
     assert.ok(!matcher.test(path), `${path} is inside the matcher — the app host would rewrite it to /app${path}`)
   }
   for (const path of ['/', '/sites', '/apply', '/sign-in', '/branding']) {

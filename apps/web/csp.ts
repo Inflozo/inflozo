@@ -14,9 +14,23 @@
 
 import { APP } from './routing.ts'
 
-/** The connected Ghost origins a session may talk to. Today the two test servers; the
- *  session's real list arrives with Epic 3, which is why this is per-request already. */
-const GHOST_ORIGINS = 'https://ghost5.inflozo.com https://ghost6.inflozo.com'
+/**
+ * WHERE THE APP HOST'S SCRIPTS MAY CONNECT. `'self' https:` since Story 3.2, and the two test
+ * Ghosts that stood here before it are gone with the placeholder's promise that "the session's
+ * real list arrives with Epic 3".
+ *
+ * A STORED LIST CANNOT SERVE THE CONNECT MOMENT. FR-C2 verifies the Content API key from the
+ * BROWSER, direct to the customer's Ghost — and at that moment the origin being checked is by
+ * definition not stored yet, and it can be any host on the public web. Enumerating stored origins
+ * per request would also put a database read on every navigation for a second-line control:
+ * `script-src` with a nonce and `'strict-dynamic'` is what stops an injected script from running
+ * at all, and `img-src` is already `https:`.
+ *
+ * `http:` IS LEFT OUT ON PURPOSE. A page served over https cannot fetch a plain-http origin
+ * anyway (mixed content), the connect screen warns the moment the field says `http://`, and both
+ * test Ghosts answer 403 on plain http to the admin API regardless (MEASUREMENTS §38c).
+ */
+const APP_CONNECT = "'self' https:"
 
 /**
  * `host` is the raw Host header. `nonce` is the per-request value the app host stamps into
@@ -43,7 +57,7 @@ export function policy(host: string, nonce: string, dev = false): string {
     // both, and neither is ours to stamp.
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: https:`,
-    ...(app ? [`connect-src 'self' ${GHOST_ORIGINS}`] : []),
+    ...(app ? [`connect-src ${APP_CONNECT}`] : []),
     // No `font-src`: next/font self-hosts all three faces, so `default-src 'self'` already
     // covers them and a second directive saying the same thing is one more thing to drift.
     // NOT 'none': AD-21's editing canvas is a same-origin iframe of this very host.

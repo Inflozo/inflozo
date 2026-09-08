@@ -69,3 +69,26 @@ export const capSentence = (plan: PlanId): string =>
 
 /** S3c's and D4b's call to action, priced from the table. */
 export const goProLabel = (): string => `Go Pro — $${PRICE.monthly}/mo`
+
+/**
+ * FR-C's cap, beside FR-B4's. Sites and projects are two different numbers on the same plan row
+ * and each is counted where it is enforced — `atCap` in the project actions, this in the connect
+ * action — so a copied predicate cannot enforce the wrong column (Story 3.2).
+ */
+export const atSiteCap = (plan: PlanId, count: number): boolean => count >= PLANS[plan].sites
+
+/** S11c's first clause: "Free includes 1 site", "Pro includes 10 sites". */
+export const includesSites = (plan: PlanId): string => {
+  const n = PLANS[plan].sites
+  return `${planName(plan)} includes ${n} site${n === 1 ? '' : 's'}`
+}
+
+/**
+ * S11c's sentence in full, and the banner the connect action answers `at_cap` with:
+ * "Free includes 1 site. Pro connects up to 10." On Pro there is nothing further to sell, so it
+ * is the first clause and nothing more — `capSentence`'s own shape, one row down the plan table.
+ */
+export const siteCapSentence = (plan: PlanId): string =>
+  plan === 'free'
+    ? `${includesSites('free')}. Pro connects up to ${PLANS.pro.sites}.`
+    : `${includesSites('pro')}.`

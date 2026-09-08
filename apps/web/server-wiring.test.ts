@@ -13,6 +13,7 @@ const FLAGS = 'lib/flags.ts'
 const ACCOUNT_PAGE = 'app/(app)/app/(authed)/account/page.tsx'
 const ACCOUNT_ACTIONS = 'app/(app)/app/(authed)/account/actions.ts'
 const AUTHED_LAYOUT = 'app/(app)/app/(authed)/layout.tsx'
+const CONNECT_ACTIONS = join('app', '(app)', 'app', '(authed)', 'sites', 'actions.ts')
 const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
 const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
 const MIGRATIONS = '../../supabase/migrations'
@@ -83,7 +84,13 @@ test('the service-role client is imported by the flag reader and by nothing else
   // four buckets by prefix and anonymises rows that are about to lose their owner — and
   // `auth.admin.deleteUser()` is an admin-API call by definition. It is a cron behind Vercel's
   // own `CRON_SECRET` bearer and it is reachable by nobody else (`purge-rule.ts`'s `authorized`).
-  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE, PURGE_ROUTE]
+  // The FOURTH, added by Story 3.2 with its reason: `authenticated` may insert only
+  // `(id, user_id, url, title, favicon_url)` on `sites` and update only `(title, favicon_url,
+  // updated_at)` — schema :1040, :1198 — so every other column the connect wizard writes
+  // (`ghost_version`, `content_key`, `site_settings`, `settings_read_at`, `disconnected_at`) is
+  // SERVER-ASSERTED by AD-7 and cannot go through the caller's own session. The read that decides
+  // the cap and finds an existing record still does (RLS scopes it); only the write is privileged.
+  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE, PURGE_ROUTE, CONNECT_ACTIONS]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) =>
@@ -198,7 +205,6 @@ test('the deletion window has a door, and it is the shell layout', () => {
 const GHOST_ADMIN = join('server', 'ghost-admin')
 const GHOST_ADMIN_DB = join(GHOST_ADMIN, 'db.ts')
 const GHOST_ADMIN_INDEX = join(GHOST_ADMIN, 'index.ts')
-const VERIFY_ROUTE = join('app', 'api', 'ghost-admin', 'verify', 'route.ts')
 
 /** Every source file under `server/ghost-admin/`, tests excluded (there are none in there). */
 function ghostAdminSources(): string[] {
@@ -262,16 +268,16 @@ test('no SQL outside server/ghost-admin names vault or the two private tables', 
 test('the Admin chokepoint is imported by the routes named here and by nothing else', () => {
   // AD-10 allows no third path: no Admin API call from a browser and no generic proxy endpoint.
   // The module is a library that server actions and routes import, and this is that list.
-  //   - THE VERIFY ROUTE, Story 3.1's own: the module has no product caller until 3.2, and R-82
-  //     wants the Vault write, the decryption and both real Ghosts executed on the DEPLOYED
-  //     function rather than on a laptop that cannot write to the live database. It is bearer-
-  //     gated scaffolding and Story 3.2 DELETES it (DW-48).
-  // Story 3.2's connect action joins this list with its own reason.
+  //   - THE CONNECT ACTION, Story 3.2's: the first PRODUCT caller. It validates a key the customer
+  //     has just typed with `fetchWithKey` on `GET config/` — against a site that has no row yet,
+  //     so the audit row carries a null `site_id` — and then `store`s it. It is the caller
+  //     DW-48 was waiting for: Story 3.1's bearer-gated verify route stood here until this
+  //     existed, and 3.2 deleted it rather than keep a permanent privileged surface that stored a
+  //     credential for any `site_id` a caller named.
   // ANY module in the directory counts, not only the index: `db.ts` hands out the decrypting
-  // connection and `verify-queries.ts` reads the audit table, and an import of either from an
-  // unlisted file is the same third path (review, 2026-09-07 — the first regex matched the index
-  // alone).
-  const allowed = [VERIFY_ROUTE]
+  // connection, and an import of it from an unlisted file is the same third path (review,
+  // 2026-09-07 — the first regex matched the index alone).
+  const allowed = [CONNECT_ACTIONS]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => /from\s*['"][^'"]*server\/ghost-admin(\/[a-z-]+(\.ts)?)?['"]/.test(readFileSync(p, 'utf8')))
