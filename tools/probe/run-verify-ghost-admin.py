@@ -174,6 +174,13 @@ list gone stale — the sibling harness's own note):
   axe-brand-picker  axe-core over S2c WITH THE CARDS DRAWN, at 1440 and 390 — `axe-brand` runs
                  before any project exists, so the radio cards, their `:has(:checked)` coral and
                  their stacking at 390 had never been looked at
+  brand-atcap-picker  THE OWNER'S QUESTION 4 RULING (2026-09-08, option 1): at the cap AND with a
+                 choice to offer, the ticked card is the project for THIS SITE — the one labelled
+                 "This site's project" — and not the one worked on most recently, so the tick and
+                 the label sit on one card. The state is a DOWNGRADE, the only way to be at the cap
+                 with more than one project (Pro with 2, then Free, which includes 1); the
+                 entitlement is put back in a `finally`. The step prints the row the pre-ruling
+                 rule would have ticked, so it says whether it discriminated
   brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
                  `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
                  is the guard rather than an `.eq('user_id')`. The second account's real site id
@@ -1656,6 +1663,45 @@ const shoot = async (page, name) => {
       `name, slug and a null linked_site_id intact — while "${made.name}" kept its own binding to ` +
       `the site. Still ${afterPick.length} projects: a chooser, never a factory`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+
+    // ── THE OWNER'S QUESTION 4 RULING (2026-09-08, option 1), EXECUTED: at the cap, with a choice
+    //    to offer, the card already TICKED is the project for THIS SITE — the one carrying the
+    //    "This site's project" label — and not the one worked on most recently. Before the ruling
+    //    those could be two different cards, which is what he was shown and settled.
+    //    THE STATE IS A DOWNGRADE, and it is the only way to be at the cap WITH more than one
+    //    project: this account is Pro with 2, and Free includes 1. The entitlement is flipped
+    //    through the service role, as `pro-connect-t3` flips it the other way, and put back in a
+    //    `finally` so nothing after this step inherits a plan it did not ask for.
+    try {
+      await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'free' })
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await offer().click()
+      await s2cHeading(page).waitFor()
+      // The cards are drawn in the page's own `updated_at desc, id desc` order, so the FIRST one
+      // is what the pre-ruling rule would have ticked. Reading it is what makes this a
+      // discriminator rather than a tautology: if the two are the same row, the step says so.
+      const order = await page.locator('input[name="project_id"]')
+        .evaluateAll((els) => els.map((el) => el.value))
+      const tickedAtCap = await page.locator('input[name="project_id"]:checked').getAttribute('value')
+      // THE TICK AND THE LABEL ON THE SAME CARD, which is the whole of what he ruled — read off
+      // the label element that CONTAINS the checked radio, not off two separate locators.
+      const tickedCard = await page.locator('label:has(input[name="project_id"]:checked)').innerText()
+      const cappedCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
+      step('brand-atcap-picker',
+        order.length === 2 && tickedAtCap === made.id
+        && tickedCard.includes(SAY.brand_this_site) && tickedCard.includes(made.name)
+        && cappedCaption,
+        `downgraded to Free with ${order.length} projects — at the cap AND with a choice, which no ` +
+        `other step reaches: the ticked card is ${JSON.stringify(made.name)}, the project for THIS ` +
+        `SITE (${tickedAtCap === made.id}), and it is the same card that carries ` +
+        `${JSON.stringify(SAY.brand_this_site)} (${tickedCard.includes(SAY.brand_this_site)}) — the ` +
+        `owner's Question 4 ruling, where the pre-ruling rule would have ticked the first card in ` +
+        `${JSON.stringify(order)}, ${order[0] === made.id ? 'which is the SAME row here' : 'a DIFFERENT row'}. ` +
+        `The caption names it too = ${cappedCaption}`)
+    } finally {
+      await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'pro_active' })
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    }
 
     // ── THE SEARCH HE ASKED FOR (finding 5, amended): the shell's own field, on Sites, matching a
     //    site by its TITLE or its ADDRESS. It is the dashboard's field with a different noun, so

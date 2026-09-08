@@ -414,10 +414,18 @@ test('one rule decides which project wears the brand, and the second press makes
   assert.equal(brandTarget(false, [mine, made], site)?.id, 'p1')
   assert.equal(brandTarget(false, [made], 'another-site'), undefined, 'linked elsewhere is not linked here')
 
-  // AT THE CAP: the most recently updated, whatever it is linked to — the owner's Question 1
-  // ruling (option 1, 2026-09-08), and `updated_at desc` is the order the caller reads in.
-  assert.equal(brandTarget(true, [mine, made], site)?.id, 'p2')
+  // AT THE CAP, WITH A PROJECT FOR THIS SITE: that one — the owner's QUESTION 4 ruling
+  // (option 1, 2026-09-08). `mine` is first here, which is what `updated_at desc` gives after the
+  // customer worked on it most recently, and the ruling says the tick belongs on the card marked
+  // "This site's project" rather than on that one. Before the ruling this returned `p2`.
+  assert.equal(brandTarget(true, [mine, made], site)?.id, 'p1')
+  // AT THE CAP WITH NOTHING LINKED TO THIS SITE: the most recently updated, which is the owner's
+  // Question 1 ruling and the only branch where the two sides of the cap still differ.
+  assert.equal(brandTarget(true, [mine], site)?.id, 'p2')
   assert.equal(brandTarget(true, [], site), undefined, 'no projects is never at a cap worth naming')
+  // ONE ROW ON BOTH SIDES OF THE CAP whenever this site has a project: the cap decides only what
+  // happens when it does NOT, so a downgrade can never move the brand to a different project.
+  assert.equal(brandTarget(true, [mine, made], site)?.id, brandTarget(false, [mine, made], site)?.id)
 })
 
 test('the patch carries the brand beside everything Story 3.3 wrote, and loses none of it', () => {

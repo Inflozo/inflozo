@@ -283,12 +283,18 @@ export const brandPath = (siteId: string) => `/sites/brand?site=${siteId}`
  * `lib/plan.ts`'s own header is the argument: three copies of a paywall predicate disagreed and
  * nothing failed, because nothing executed the comparison.
  *
- * AT THE CAP it is the most recently updated project — the owner's Question 1 ruling, and the
- * dashboard's own order. WITH ROOM it is the project already made for this site, and only when
- * there is none is one made: that is what "seeding is idempotent" means when the offer never
- * retires. Without this the second press of a permanently-visible link inserted a SECOND project
- * with the same name for the same site, on every plan with room (review, 2026-09-08) — against
- * the matrix's own "Re-run → seeding again writes the same pack".
+ * THE PROJECT FOR THIS SITE WINS WHENEVER THERE IS ONE — the owner's **Question 4** ruling
+ * (2026-09-08), and it is the same row on both sides of the cap. With room that is what
+ * "seeding is idempotent" means when the offer never retires: without it, the second press of a
+ * permanently-visible link inserted a SECOND project with the same name for the same site, on
+ * every plan with room (review, 2026-09-08). AT THE CAP it is now that row too, where before it
+ * was always the most recently updated one — which meant the ticked card and the card marked
+ * "This site's project" could be two different cards, against AC 6 and against his Question 3
+ * words. He ruled the tick and the label sit together.
+ *
+ * ONLY WHEN THIS SITE HAS NO PROJECT do the two sides differ, and then Question 1 decides: at the
+ * cap the most recently updated project (the dashboard's own order), with room none at all, which
+ * is what makes one.
  *
  * It takes the cap as a boolean rather than a plan so this module keeps importing nothing;
  * `atCap` stays the one place the comparison itself lives.
@@ -298,7 +304,7 @@ export function brandTarget<T extends { id: string; linked_site_id?: string | nu
   projects: T[],
   siteId: string,
 ): T | undefined {
-  return capped ? projects[0] : projects.find((row) => row.linked_site_id === siteId)
+  return projects.find((row) => row.linked_site_id === siteId) ?? (capped ? projects[0] : undefined)
 }
 
 /**

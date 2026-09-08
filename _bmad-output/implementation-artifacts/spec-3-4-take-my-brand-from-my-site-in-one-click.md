@@ -103,8 +103,13 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 - **THE OWNER RULED THE AT-CAP PATH (Question 1, option 1, 2026-09-08), and the screen says which
   project it will brand BEFORE the press, not after.** S2c counts the caller's projects against
   `atCap` at render: with room, the helper caption under **Use your brand** says a project will be
-  made for the site; at the cap it names the project that will be branded instead — the most
-  recently updated one (`updated_at desc`, the dashboard's own order). The form carries that
+  made for the site; at the cap it names the project that will be branded instead — **the project
+  for this site where there is one, and otherwise the most recently updated** (`updated_at desc`,
+  the dashboard's own order). *(The first half of that is his **Question 4** ruling, 2026-09-08 —
+  this clause is his renegotiation of this block. Before it, the cap always took the most recently
+  updated row, so the ticked card and the card labelled "This site's project" could differ, against
+  AC 6. One row now wears the brand on both sides of the cap whenever this site has a project, so a
+  downgrade cannot move it.)* The form carries that
   decision as a hidden field — the project's id, or empty for "make one" — and **`useBrand`
   re-counts and refuses a decision that has gone stale**, redirecting back to S2c so the caption is
   true again rather than silently rebranding a project the screen did not name. `refusedAtCap`
@@ -280,6 +285,11 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   Style Packs are — with the project this site is already on **pre-selected**; and when a different
   card is chosen and pressed, then the brand lands on **that** project and nothing else about it
   moves, and the project count is unchanged
+- Given that caller is **also at the project cap** — a downgrade, the only way to be at the cap with
+  more than one project — when S2c is opened, then the **same** card is pre-selected: the project
+  for this site, carrying the "This site's project" label, and not the most recently updated one
+  (the owner's **Question 4** ruling, 2026-09-08). The cap decides only which project is named when
+  this site has none
 - Given a caller with **exactly one project**, when S2c is opened, then **no cards are drawn** — a
   chooser with one option is a step and not a choice (the owner's B1)
 - Given the chooser, when JavaScript is off, then it still posts: the cards are real radio inputs
@@ -305,8 +315,11 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 Second review, 2026-09-08 — five layers (blind hunter, edge-case hunter, verification-gap,
 acceptance auditor, real-infra), 20 findings after dedup, 8 dismissed with reasons.
 
-- [ ] [Review][Decision] **At the cap with several projects, the pre-selected card is not the site's
-      project** — `brandTarget` returns the most recently updated row (Question 1) while AC 6 and the
+- [x] [Review][Decision] **RULED — option 1 (owner, 2026-09-08).** At the cap with several projects,
+      the pre-selected card is now the site's own project on both sides of the cap; `brandTarget`
+      falls back to the most recently updated row only when this site has no project. Executed as
+      `brand-atcap-picker`. *(As raised:)* the pre-selected card was not the site's
+      project — `brandTarget` returns the most recently updated row (Question 1) while AC 6 and the
       Question 3 ruling both say the project this site is already on is pre-selected, so the ticked
       card and the card marked "This site's project" can differ. Two of the owner's own rulings point
       at different cards; put to him as **Question 4** rather than guessed (standing rule 6). Only
@@ -582,23 +595,25 @@ card should already be ticked when the screen opens?
 Nothing is broken either way — every card is there and you can tick whichever you like before
 pressing. This is only about which one is ticked **for** you if you press without looking.
 
+**Ruled: option 1** (owner, 2026-09-08). The project that belongs to the site is the one already
+ticked, so the tick and the "This site's project" label sit on the same card. `brandTarget` now
+prefers the project linked to this site on **both** sides of the cap, and falls back to the most
+recently updated one only when this site has no project at all — which is the only branch where
+Question 1 still decides. Executed on the live site as **`brand-atcap-picker`**.
+
 1. **"Ghost6" — the project that belongs to this site. (RECOMMENDED)** It is the card already
    labelled "This site's project", so the tick and the label sit together and the screen reads as
    one sentence. It is also what your Question 3 ruling asked for in your own words — "the project
    this site is already on **pre-selected**" — and it means pressing without looking refreshes the
    colour on the site's own project, which is what the button appears to offer.
-2. **"Field Notes" — the project you worked on most recently.** *This is what is built today.* It
-   is your Question 1 ruling applied exactly as written: at the limit, the brand goes onto the most
-   recently updated project. The cost is that the ticked card and the card marked "This site's
-   project" can be two different cards, which looks like a mistake even though it is not.
+2. **"Field Notes" — the project you worked on most recently.** *This is what was built before the
+   ruling.* It is your Question 1 ruling applied exactly as written: at the limit, the brand goes
+   onto the most recently updated project. The cost is that the ticked card and the card marked
+   "This site's project" can be two different cards, which looks like a mistake even though it is
+   not.
 3. **Nothing is ticked — you must pick a card before the button works.** No default can ever be
    wrong. But it turns one press into two for everybody who reaches this screen, and it is the one
    shape that does not work the same way as every other screen in the app.
-
-**Where it stands:** the code does option 2 today, because Question 1's words are the older ruling
-and I would not overwrite one of yours with another without asking. Say the number and it is a
-one-line change. **Nothing else in the story depends on it**, and you will not meet it in your own
-test — your account would have to be on Pro with all 25 projects used.
 
 
 ## Owner's manual test
@@ -698,7 +713,8 @@ variable; no value is printed.
   decision posted at the cap writes nothing — the paywall's own half of `useBrand`'s guard, and
   the matrix's "cap changed under the page"), **`brand-picker-js-off`** (the chooser read off a
   fresh server document, real radios inside the posting form) and **`axe-brand-picker`** (axe with
-  the cards drawn). Axe reports zero violations at 1440 and 390 on both S2c states. **This story
+  the cards drawn) — and the ruling's own **`brand-atcap-picker`** (downgraded to Free with two
+  projects: at the cap AND with a choice, the ticked card is the project for this site). Axe reports zero violations at 1440 and 390 on both S2c states. **This story
   writes to no Ghost** — the only step that ever did, `injection-live`, is 3.3's and is unchanged
 - `git grep -n 'announcement_clear'` -- expected: `admin-rule.ts` and its test only; no caller
 
