@@ -1232,6 +1232,47 @@ production's newest deployment **`dpl_6DvXAdwJrvcdBqe1A3PBE2YsphG7`** is **READY
   words and drawing), `s2b1`, `s2b2`, `s11a`, `s11b`. S2b·1, S2b·2, S11a and S11b still match their frames
   on everything except the three departures his test ruled, which are listed in Design Notes.
 
+### Review 2, 2026-09-08 — after the Fix, on the real infrastructure, every key by name, no value printed
+
+- **Real-infra verifier, before any patch (HEAD `9e8b6de1`, Vercel production `dpl_E2e4FDNcHyx55xaHYPmcycQzgMft`
+  READY at that commit; the last `apps/web` change was the Fix's `ab31141c`).** Every claim above re-executed and
+  held with its control: `--check` PASS (404 ×3, `/rest/v1/sites` 200); **T1** `config/` with the key and no
+  `Accept-Version` → 200 `6.58.0` = `GHOST6_VERSION`, `site/` with no credential → 200; **T3** → 200 `5.130.6`,
+  `site/` → 200; **Content API** `settings/` with `Accept-Version: v5.0` and `Origin: https://app.inflozo.com` →
+  200 with `access-control-allow-origin: *` on both, the key's last character changed → 401 on both; **plain http
+  with the real key → 301 `Location: https://…` on both**, no header → 403, an unissued kid → 401; **Supabase**
+  `site_credentials?limit=1` → 404 `PGRST205`, `sites?limit=1` → 200; CI run 34191997391 (`ab31141c`) and
+  34192464041 (`9e8b6de1`) `check`/`rls`/`deploy` all success; `/sites` → 307 `/sign-in`, the screenshot → 200
+  `image/png` 29032 bytes, the deleted route → 404 (a made-up path → the same 404 as control). **The 32-step
+  harness re-run: all PASS, exit 0**, the sheet `520×677.6875 at (460, 111.15625)` at both steps as the Fix
+  recorded, users 5 → 5, 177 bodies swept. **One thing the record did not say:** the live project holds one
+  `sites` row that is not the harness's — created 2026-09-08T04:42Z, before the Test-phase commits, `6.58.0`,
+  `{admin, content} true` — the owner's own T1 connect from his manual test; it is his, not a stray.
+- **Unit gates on the patched tree:** `pnpm check` exit 0 — **201** tests in `apps/web` (200 + the tally test);
+  `node --test` over the seven story files green; `pnpm build` exit 0 with `ƒ /app/sites` and
+  `ƒ /app/sites/connect`; `doc-audit --check` PASS twice; `--check` on the harness PASS with the two sentences it
+  now evaluates in addition (`url_invalid`, `ghost_unreachable`).
+- **Harness run 1 on the first review commit** (`aa696a6b`; CI 34193712487 success, Vercel
+  `dpl_36iZs6UCxDKhcnUtxAz4xaMK9FN2` READY at it): **33 of 34 PASS**. The one FAIL was `same-size`'s "screenshot
+  served" control — my `loading="lazy"` patch left the picture still loading the instant the sheet opened. The
+  measurement itself held at both widths (`520×677.6875` twice at 1440; `370×601.65625` twice at 390). The lazy
+  attribute was reverted; standing rule 2 the other way round — a control that caught the reviewer.
+- **Harness run 2 on the reverted build** (`05011e23`; CI 34194095262 `check`/`rls`/`deploy` success, Vercel
+  `dpl_A4Z71L9cMsgryDF6Zz3AN1jqPYsp` READY at it) — **all 34 steps PASS, exit 0**: `keys · vault-off-rest ·
+  first-run · sites-bar · axe-empty · same-size · find-link · handshake · keys-step · http-warned · js-off ·
+  http-connect · malformed · not-a-url · unreachable · bogus-key · content-wrong-key · connect · card · dialog ·
+  sheet-submit · sheet-reopen · at-cap · re-adopt · pro-connect-t3 · search · audit · axe-sites · axe-sheet ·
+  axe-connect · axe-keys · user-gone · secret-gone · no-secret-leak`. **What this review added, each on the live
+  site:** `not-a-url` — "orbit weekly" answered under the URL field, 0 rows, the audit grew by 0 (no Ghost
+  call); `unreachable` — `https://nonexistent.inflozo.com` answered with the host in the banner, 0 rows;
+  `connect` typed T1 as the bare host `ghost6.inflozo.com` and the row stores `https://ghost6.inflozo.com`;
+  `same-size` identical boxes at 1440 AND 390 with the screenshot served; `handshake` Back is
+  `<a href="/sites">`; `audit` asserts the 301 by status — 9 rows, errors at `[301, 401]`, every row stamped
+  `sites/connect`, none holding a key. Everything the Fix proved still holds (T1 `6.58.0`, T3 `5.130.6` through
+  the sheet on Pro, the cap sentence, re-adoption with the old secret dropped, the card's boxes, the bar, the
+  search, axe zero at 1440 and 390 over all five surfaces); 181 bodies swept with no key; both secrets gone
+  with the account (`[0,0]`); users 5 → 5.
+
 ### Deploy run, 2026-09-08
 
 `Deployment: dpl_8nyQmkWSC14nhLMpeELCd8K6EKff` (`inflozo-kjzbpcfsq-umangkagathara.vercel.app`) — the CI
