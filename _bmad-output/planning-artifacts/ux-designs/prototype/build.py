@@ -514,7 +514,12 @@ page('sites', 'Sites', 'Dashboard and account',
             anchor='free')
      + lift('S11 Sites', caption='S11c ·', capt='S11c · free plan — one site + upgrade ghost slot')
      + nodraw('Sites with none, and disconnecting',
-              'Sites with no connection shows the connect card as the whole page. Disconnecting keeps the '
+              'Sites with no connection shows an <b>empty screen</b> in S3b&rsquo;s shape &mdash; a drawing, '
+              '&ldquo;One handshake and you&rsquo;re in.&rdquo; and a centred <b>Connect site</b> that opens '
+              'S11b. It read &ldquo;the connect card as the whole page&rdquo; until the owner&rsquo;s test of '
+              'Story 3.2 amended it (finding 7, 2026-09-08; EXPERIENCE.md &sect; State Patterns &rarr; Sites). '
+              'The full-page handshake did not go &mdash; it is where <b>Connect site</b> leads with JavaScript '
+              'off. Disconnecting keeps the '
               'site&rsquo;s <b>pre-Inflozo snapshot</b> — it is bound to the site record, not the URL, so it '
               'survives disconnect, reconnect and project deletion, and the backup gate re-fires on reconnect '
               'because consent is per site.',

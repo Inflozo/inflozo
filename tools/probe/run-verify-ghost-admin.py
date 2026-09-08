@@ -25,12 +25,29 @@ list gone stale — the sibling harness's own note):
                  secret key -> 404 all three, `/rest/v1/sites` -> 200 as the positive control. A
                  leaked API key yields references, not keys
   then, in the browser, as one throwaway account that starts on the Free plan:
-  first-run      `/sites` with nothing connected IS S2b·1: the handshake headline, "1/2", three
-                 numbered steps, the integration screenshot really served (not a 404 behind an
-                 <img>), Back and "Done — next" — which is a LINK, so it is followed, not clicked
+  first-run      `/sites` with nothing connected is an EMPTY SCREEN — the owner's finding 7: his
+                 own title and subtitle (read from the app, not retyped), a drawing, and TWO
+                 "Connect site" buttons, the bar's and the centred one. No handshake and no key
+                 field is on this route any more
+  sites-bar      THE TOP BAR IS THE SHELL'S, like Projects' (his finding 5, amended): 64px with a
+                 1px rule, the field placeholdered "Search sites…" — the frame's own (S11a :52) —
+                 "Connect site" as its only other control, and NO BELL anywhere (Story 13.4's,
+                 ruled out of this story at Question 4)
+  axe-empty      axe over the empty screen, at 1440 and 390
+  same-size      the empty screen's own button opens S11b, and the sheet's box is THE SAME at both
+                 steps. Measured before the fix: 520×665.7 then 520×608.5, a 57px shrink that swept
+                 the sheet's top edge 28.6px down and uncovered the card behind it — his findings
+                 1 and 2, which were one cause
+  find-link      "Where do I find these?" is an `<a href="?step=integration">` with no border and no
+                 chevron, above the fields and on the right (his finding 3 — a departure from the
+                 frame, which draws a bordered box that reads as a dropdown)
+  handshake      `/sites/connect`, where the "Connect site" LINK goes with JavaScript off, IS
+                 S2b·1: "1/2", three numbered steps, the integration screenshot really served (not
+                 a 404 behind an <img>), Back and "Done — next" — a LINK, so it is followed
   keys-step      "Done — next" lands on S2b·2: the three fields the frame draws, all three
                  `required`, and NO fourth. The Staff Access Token is not asked for here and the
-                 page is read to prove it
+                 page is read to prove it; and the page card is ONE SIZE at both steps (it was
+                 480×694.7 then 560×661 before the fix)
   http-warned    `http://…` typed into the API URL: the app's own HTTP_WARNING appears UNDER THE
                  FIELD as it is typed, before anything is submitted
   js-off         the keys form is PROGRESSIVELY ENHANCED — `method=post`, an `action` attribute that
@@ -54,6 +71,9 @@ list gone stale — the sibling harness's own note):
                  the row with `ghost_version`, `content_key`, `site_settings.public_url` and
                  `credentials_present {content,admin} = true, staff = false`; the pooler shows a
                  `private.site_credentials` row and a live `vault.secrets` row behind its ref
+  card           the card the owner finalised (his findings 4 and 6), read off the rendered boxes:
+                 the address carries the new-tab glyph, and "Connected" has left the pills' line to
+                 sit just above "Checked …" and closer to it than to the pills
   dialog         S11a's "Connect site" is a LINK to /sites/connect that JavaScript turns into S11b:
                  the sheet opens with its title pair and the handshake, Escape closes it, and no
                  POST left the page (Cancel, Escape and the backdrop all send nothing)
@@ -69,6 +89,9 @@ list gone stale — the sibling harness's own note):
                  writes that until Story 3.5), `/sites` is the handshake again, and reconnecting
                  RE-ADOPTS the record — same id, `disconnected_at` cleared, a NEW vault ref, the
                  OLD secret gone (DW-44's replace path, live — the `rotated` proof DW-54 deferred)
+  search         the shell's field on Sites, on the deployed page: the title of one site leaves one
+                 card, the ADDRESS of the other leaves one, and a word that matches neither leaves
+                 none with the app's own "No sites match …"
   pro-connect-t3 the service role flips the entitlement row to `pro_active` (no billing exists
                  until Epic 12), and T3 is connected THROUGH THE SHEET with a trailing-slash
                  address: the row stores the typed origin without it, the public url as Ghost
@@ -82,7 +105,7 @@ list gone stale — the sibling harness's own note):
   axe-sites · axe-sheet · axe-connect · axe-keys
                  axe-core at WCAG 2.1 AA over `/sites` with the cards, the open sheet,
                  `/sites/connect` and `/sites/connect?step=keys`, each at 1440 AND 390, and no
-                 horizontal scroll
+                 horizontal scroll (`axe-empty` above covers the empty screen)
   user-gone      `GET /auth/v1/admin/users/{id}` -> 404 after GoTrue deletes the throwaway user
   secret-gone    both sites' refs are gone from the vault — the CASCADE path of DW-44's trigger:
                  auth.users -> sites -> site_credentials -> the trigger, under GoTrue's role
@@ -102,8 +125,9 @@ driver (3.4.9) — `vault` and `private` answer 404 over PostgREST by design (§
 other way to see them, and reading them beside the UI steps is what lets "the card says Connected"
 and "there is a secret behind the ref" be one assertion.
 
---shots DIR saves each surface at 1440, 834 and 390 (`s2b1`, `s2b2`, `s11a`, `s11b`) — the frame
-comparison the spec's Review owes, re-takeable at Deploy — and asserts nothing extra.
+--shots DIR saves each surface at 1440, 834 and 390 (`s11-empty`, `s2b1`, `s2b2`, `s11a`, `s11b`) —
+the frame comparison the spec's Review owes, re-takeable at Deploy — and asserts nothing extra. The
+empty screen has no frame: it is the owner's finding 7, extrapolated from S3b (R-74).
 
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
 (argv is world-readable in `ps`), and every command is recorded by the key's variable NAME.
@@ -164,7 +188,7 @@ def app_text():
     no-op on 24 and the switch on 22.6+), both modules import nothing, and a wording change in
     either moves this run with it. `%s` stands where the app puts the host."""
     script = (
-        f"import {{ connectMessage, HTTP_WARNING }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
+        f"import {{ connectMessage, HTTP_WARNING, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
         f"import {{ siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
         "console.log(JSON.stringify({"
         " credential_malformed: connectMessage('credential_malformed'),"
@@ -173,6 +197,9 @@ def app_text():
         " ghost_redirected: connectMessage('ghost_redirected'),"
         " already_connected: connectMessage('already_connected', '%s'),"
         " http_warning: HTTP_WARNING,"
+        " empty_title: SITES_EMPTY.title,"
+        " empty_sub: SITES_EMPTY.sub,"
+        " no_match: SITES_EMPTY.noMatch('zzznomatch'),"
         " at_cap: siteCapSentence('free') }))")
     try:
         proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
@@ -305,7 +332,13 @@ const fill = async (page, url, adminKey, contentKey) => {
 const submit = (page) => page.locator(`${WIZARD} button[type="submit"]`).click()
 const errorAt = (page, field) => page.locator(`#s2b-${field}-error`)
 const sheet = (page) => page.locator('dialog[open]')
-const opener = (page) => page.locator('a[href="/sites/connect"]', { hasText: 'Connect site' })
+/* TWO of these are drawn on the empty screen — the top bar's and the centred one, as Projects
+   draws both (UX-DR6) — and one of the two is hidden behind the `tablet:` seam on the list. So
+   the locator is the VISIBLE ones: `.count()` is then "how many can be pressed here". */
+const opener = (page) => page.locator('a[href="/sites/connect"]:visible', { hasText: 'Connect site' })
+const bar = (page) => page.locator('div:has(> form[role="search"])').first()
+const boxOf = async (locator) => (await locator.boundingBox()) || { x: -1, y: -1, width: -1, height: -1 }
+const same = (a, b) => Math.abs(a - b) < 0.5
 
 /* `--shots`: each surface at the three widths the spec names, for the frame comparison. Assertion-free. */
 const SHOTS = process.env.SHOTS_DIR || ''
@@ -345,20 +378,100 @@ const shoot = async (page, name) => {
   try {
     await page.goto(CONFIRM, { waitUntil: 'load' })
 
-    // ── `/sites` WITH NOTHING CONNECTED IS S2b·1 (EXPERIENCE.md:318).
+    // ── `/sites` WITH NOTHING CONNECTED IS AN EMPTY SCREEN — the owner's finding 7 (2026-09-08),
+    //    and the words and the drawing are his rulings at Questions 5 and 6. It used to BE the
+    //    handshake (EXPERIENCE.md:318, amended with this story); the handshake is now behind the
+    //    button, in the sheet, and at `/sites/connect` for a browser with no JavaScript.
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await page.waitForSelector('text=First, a quick handshake.')
-    const shot = page.locator('img[src="/connect/integration.png"]')
+    await page.getByText(SAY.empty_title).waitFor()
+    const drawing = await page.locator('main svg[aria-hidden="true"]').count()
+    const openers = await opener(page).count()
+    step('first-run',
+      await says(page, SAY.empty_sub) && drawing >= 1 && openers === 2
+      && (await page.getByText('First, a quick handshake.').count()) === 0
+      && (await page.locator('#s2b-api-url').count()) === 0,
+      `the empty screen: ${JSON.stringify(SAY.empty_title)} over ${JSON.stringify(SAY.empty_sub)}, a drawing ` +
+      `(${drawing} aria-hidden svg), ${openers} "Connect site" buttons (the bar's and the centred one, as ` +
+      `Projects draws both), and NO handshake and NO key fields on this route any more`)
+
+    // ── THE TOP BAR IS THE SHELL'S, as Projects' is (his finding 5, amended): the field on the
+    //    left, "Connect site" on the right, the frame's 1px rule under both — and NO BELL, which
+    //    is Story 13.4's and which he ruled out of this story at Question 4.
+    const field = page.locator('input[name="q"]:visible')
+    const placeholder = await field.getAttribute('placeholder').catch(() => null)
+    const rule = await bar(page).evaluate((el) => {
+      const s = getComputedStyle(el)
+      return { border: s.borderBottomWidth, height: el.getBoundingClientRect().height }
+    }).catch(() => ({ border: 'none', height: 0 }))
+    const inBar = await bar(page).locator('a, button').count()
+    const bells = await page.locator('[aria-label*="otification" i], [aria-label*="ell" i]').count()
+    step('sites-bar',
+      placeholder === 'Search sites…' && rule.border === '1px' && Math.round(rule.height) === 64
+      && inBar === 1 && bells === 0,
+      `a ${Math.round(rule.height)}px bar with a ${rule.border} rule under it, the field placeholder ` +
+      `${JSON.stringify(placeholder)} — the frame's own (S11a :52) — ${inBar} control beside it ` +
+      `("Connect site"), and ${bells} bells anywhere on the page (Story 13.4's, ruled out at Question 4)`)
+    await axeAt(page, 'empty')
+    await shoot(page, 's11-empty')
+
+    // ── THE EMPTY SCREEN'S BUTTON OPENS THE SHEET (the last line of his finding 7), and the sheet
+    //    IS ONE SIZE AT BOTH STEPS (his findings 1 and 2). Measured on the deployed site before
+    //    the fix: 520×665.7 at step 1, 520×608.5 at step 2 — it shrank 57px and its top edge swept
+    //    28.6px down the page, which is the card he saw appear behind it. Both panes now share one
+    //    grid cell, so the box cannot move.
+    await opener(page).last().click()
+    await page.waitForSelector('dialog[open] #connect-site-title')
+    const shot = page.locator('dialog[open] img[src="/connect/integration.png"]')
     // The picture is served, not a broken <img> behind an alt: the app host rewrites every path
     // it sees onto /app/…, so a public/ folder outside the proxy matcher would 404 in silence.
     const shotOk = await shot.evaluate((img) => img.complete && img.naturalWidth > 0).catch(() => false)
+    const box1 = await boxOf(sheet(page))
+    await sheet(page).locator('a[href="?step=keys"]').click()
+    await page.waitForSelector('dialog[open] #s2b-content-key')
+    const box2 = await boxOf(sheet(page))
+    step('same-size',
+      shotOk && same(box1.width, box2.width) && same(box1.height, box2.height)
+      && same(box1.x, box2.x) && same(box1.y, box2.y),
+      `the empty screen's own button opened the sheet with the integration screenshot served = ${shotOk}; ` +
+      `the box is ${box1.width}×${box1.height} at (${box1.x}, ${box1.y}) at step 1 and ` +
+      `${box2.width}×${box2.height} at (${box2.x}, ${box2.y}) at step 2 — nothing behind it is uncovered`)
+
+    // ── "Where do I find these?" IS A LINK, NOT A DROPDOWN (his finding 3). The frame draws a
+    //    bordered box with a chevron (S2 Onboarding.dc.html:135-138) and he read it as a select
+    //    that would not open. It is now his words as a subtle link at the top right of the step,
+    //    above the fields — a deliberate departure from the frame, and still the same
+    //    `<a href="?step=integration">` that works with JavaScript off.
+    const find = sheet(page).getByText('Where do I find these?')
+    const shape = await find.evaluate((el) => {
+      const a = el.closest('a')
+      const s = a ? getComputedStyle(a) : null
+      return { tag: a ? 'A' : el.tagName, href: a ? a.getAttribute('href') : null,
+               border: s ? s.borderTopWidth : 'n/a', chevrons: a ? a.querySelectorAll('svg').length : -1 }
+    })
+    const findBox = await boxOf(find)
+    const urlBox = await boxOf(sheet(page).locator('#s2b-api-url'))
+    step('find-link',
+      shape.tag === 'A' && shape.href === '?step=integration' && shape.border === '0px'
+      && shape.chevrons === 0 && findBox.y < urlBox.y && findBox.x > box2.x + box2.width / 2,
+      `it is an <${shape.tag} href=${JSON.stringify(shape.href)}> with a ${shape.border} border and ` +
+      `${shape.chevrons} chevrons — a link, not the frame's bordered box — sitting above the fields ` +
+      `(y ${Math.round(findBox.y)} < ${Math.round(urlBox.y)}) and on the right of the step`)
+    await page.keyboard.press('Escape')
+    await sheet(page).waitFor({ state: 'detached' }).catch(() => {})
+
+    // ── THE FULL-PAGE PAIR, which is where the "Connect site" LINK goes with JavaScript off.
+    await page.goto(`${APP}/sites/connect`, { waitUntil: 'load' })
+    await page.waitForSelector('text=First, a quick handshake.')
     const numbered = await page.locator('ol li').count()
-    const nextLink = page.locator('a[href="?step=keys"]', { hasText: 'Done — next' })
-    step('first-run',
-      (await page.locator('text=1/2').count()) > 0 && numbered === 3 && shotOk
-      && (await nextLink.count()) === 1 && (await page.locator('text=Back').count()) > 0,
-      `the handshake card with "1/2", ${numbered} numbered steps, the integration screenshot ` +
-      `served = ${shotOk}, Back, and "Done — next" as a link`)
+    const nextLink = page.locator('a[href="?step=keys"]:visible', { hasText: 'Done — next' })
+    const pageShot = await page.locator('img[src="/connect/integration.png"]')
+      .evaluate((img) => img.complete && img.naturalWidth > 0).catch(() => false)
+    const pageBox1 = await boxOf(page.locator('main div.bg-surface').first())
+    step('handshake',
+      (await page.locator('text=1/2').count()) > 0 && numbered === 3 && pageShot
+      && (await nextLink.count()) === 1 && (await page.getByText('Back', { exact: true }).count()) > 0,
+      `S2b·1 on its own route: "1/2", ${numbered} numbered steps, the screenshot served = ${pageShot}, ` +
+      `Back (to /sites) and "Done — next" as a link`)
     await shoot(page, 's2b1')
 
     await nextLink.click()
@@ -367,10 +480,16 @@ const shoot = async (page, name) => {
     const fields = await page.locator(`${WIZARD} input:not([type="hidden"])`).count()
     const required = await page.locator(`${WIZARD} input[required]`).count()
     const token = await page.locator('text=/staff access token/i').count()
+    // The full-page pair jumped the same way the sheet did — 480×694.7 then 560×661, because the
+    // frame draws step 1 at 480 and step 2 at 560. One card, one size, both steps (finding 1).
+    const pageBox2 = await boxOf(page.locator('main div.bg-surface').first())
     step('keys-step',
-      fields === 3 && required === 3 && token === 0 && (await page.locator('text=Where do I find these?').count()) === 1,
+      fields === 3 && required === 3 && token === 0 && (await page.locator('text=Where do I find these?').count()) === 1
+      && same(pageBox1.width, pageBox2.width) && same(pageBox1.height, pageBox2.height),
       `S2b·2 shows ${fields} fields (API URL, Admin API key, Content API key), ${required} of them required, ` +
-      `"Where do I find these?" below them, and mentions the Staff Access Token ${token} times (FR-C1: never here)`)
+      `"Where do I find these?" at the top right, and mentions the Staff Access Token ${token} times ` +
+      `(FR-C1: never here); the page card is ${pageBox1.width}×${pageBox1.height} at step 1 and ` +
+      `${pageBox2.width}×${pageBox2.height} at step 2`)
     await shoot(page, 's2b2')
 
     // ── The `http://` warning, as the field is typed into and before anything is submitted.
@@ -485,6 +604,24 @@ const shoot = async (page, name) => {
       `the browser is on ${page.url()} showing ${JSON.stringify(card.replace(/\s+/g, ' ').trim())}`)
     await shoot(page, 's11a')
 
+    // ── THE CARD THE OWNER FINALISED (his findings 4 and 6). The address carries the new-tab
+    //    glyph; "Connected" left the pills' line and sits just above "Checked …", closer to it
+    //    than to the pills. Read off the rendered boxes, not off the class attribute: the
+    //    complaint was about what he saw.
+    const first = cardOf('Connected').first()
+    const arrow = await first.locator('a[target="_blank"] svg').count()
+    const pillBox = await boxOf(first.getByText(`Ghost ${short(T1.version)}`))
+    const connBox = await boxOf(first.getByText('Connected', { exact: true }))
+    const checkBox = await boxOf(first.getByText('Checked just now'))
+    const pillGap = connBox.y - (pillBox.y + pillBox.height)
+    const stateGap = checkBox.y - (connBox.y + connBox.height)
+    step('card',
+      arrow === 1 && pillGap > 0 && stateGap >= 0 && stateGap < pillGap,
+      `the address carries ${arrow} new-tab glyph; the pills line ends at y ` +
+      `${Math.round(pillBox.y + pillBox.height)}, "Connected" starts at ${Math.round(connBox.y)} and ` +
+      `"Checked just now" at ${Math.round(checkBox.y)} — so Connected is BELOW the pills and just above ` +
+      `Checked, ${Math.round(stateGap)}px from it against ${Math.round(pillGap)}px from the pills`)
+
     // ── S11b: the same pair behind S11a's button. The opener is a LINK to /sites/connect that
     //    JavaScript turns into the sheet; Escape closes it and nothing is sent either way.
     const opened = await sent(async () => {
@@ -527,9 +664,13 @@ const shoot = async (page, name) => {
     await opener(page).first().click()
     await page.waitForSelector('dialog[open] #connect-site-title')
     const reopened = await sheet(page).innerText().catch(() => '')
+    // Both panes are always in the DOM — that is what makes the box one size — so "no fields"
+    // is a VISIBILITY question, not a presence one.
+    const fieldsShown = await sheet(page).locator('#s2b-api-url').isVisible()
     step('sheet-reopen',
-      !reopened.includes('is already connected') && reopened.includes('1/2') && (await sheet(page).locator('#s2b-api-url').count()) === 0,
-      `reopened: at the handshake ("1/2"), no fields, and no sentence from the last attempt = ${!reopened.includes('is already connected')}`)
+      !reopened.includes('is already connected') && reopened.includes('1/2') && fieldsShown === false,
+      `reopened: at the handshake ("1/2"), the keys pane hidden (visible = ${fieldsShown}), and no sentence ` +
+      `from the last attempt = ${!reopened.includes('is already connected')}`)
     await page.keyboard.press('Escape')
     await sheet(page).waitFor({ state: 'detached' }).catch(() => {})
 
@@ -550,9 +691,13 @@ const shoot = async (page, name) => {
     //    it here; with no active site, `/sites` is the handshake again.
     const detached = await patch(`/sites?id=eq.${t1SiteId}`, { disconnected_at: new Date().toISOString() })
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await page.waitForSelector('text=First, a quick handshake.')
-    await page.locator('a[href="?step=keys"]').first().click()
-    await page.waitForSelector('#s2b-content-key')
+    // …and with no active site `/sites` is the EMPTY SCREEN again, so the handshake is reached
+    // the way the owner asked for it: press "Connect site" and the two steps open in the sheet.
+    await page.getByText(SAY.empty_title).waitFor()
+    await opener(page).last().click()
+    await page.waitForSelector('dialog[open] a[href="?step=keys"]')
+    await sheet(page).locator('a[href="?step=keys"]').click()
+    await page.waitForSelector('dialog[open] #s2b-content-key')
     await fill(page, T1.url, T1.adminKey, T1.contentKey)
     await submit(page)
     await page.waitForSelector('text=Connected')
@@ -562,7 +707,8 @@ const shoot = async (page, name) => {
       detached.status === 200 && readopted.length === 1 && readopted[0].id === t1SiteId
       && readopted[0].disconnected_at === null && Boolean(ref1b) && ref1b !== ref1
       && (await secretsBehind(ref1)) === 0 && (await secretsBehind(ref1b)) === 1,
-      `the record was disconnected (HTTP ${detached.status}), /sites became the handshake, and reconnecting ` +
+      `the record was disconnected (HTTP ${detached.status}), /sites became the empty screen, and reconnecting ` +
+      `through the sheet its own button opens ` +
       `re-adopted it: same id = ${readopted[0] && readopted[0].id === t1SiteId}, disconnected_at cleared, a NEW ` +
       `vault ref = ${Boolean(ref1b) && ref1b !== ref1}, secrets behind the old ref ${await secretsBehind(ref1)}, ` +
       `behind the new ${await secretsBehind(ref1b)} (the trigger dropped the replaced one)`)
@@ -603,6 +749,31 @@ const shoot = async (page, name) => {
       `public_url ${(row3.site_settings || {}).public_url}, a vault secret behind its ref = ${(await secretsBehind(ref3)) === 1}; ` +
       `the sheet closed on success (${sheetLeft} left open) and the second card reads ` +
       `${JSON.stringify(card3.replace(/\s+/g, ' ').trim())}`)
+
+    // ── THE SEARCH HE ASKED FOR (finding 5, amended): the shell's own field, on Sites, matching a
+    //    site by its TITLE or its ADDRESS. It is the dashboard's field with a different noun, so
+    //    what is proved here is the match and the empty answer, on the deployed page.
+    const searchFor = async (text) => {
+      await page.fill('input[name="q"]:visible', text)
+      await page.keyboard.press('Enter')
+      await page.waitForURL((u) => u.searchParams.get('q') === text)
+      // `next/form` navigates on the client, so the grid re-renders a beat after the URL moves.
+      await page.waitForTimeout(800)
+      return page.locator('article').count()
+    }
+    const byTitle = await searchFor(pub1.title || 'Ghost6')
+    const byAddress = await searchFor(new URL(T3.url).host)
+    const byNothing = await searchFor('zzznomatch')
+    // `no_match` was evaluated from the app as `noMatch('zzznomatch')`, which is the word just
+    //    searched for — so the sentence on screen is the app's own, whole.
+    const emptyAnswer = await page.getByText(SAY.no_match).isVisible().catch(() => false)
+    step('search',
+      byTitle === 1 && byAddress === 1 && byNothing === 0 && emptyAnswer,
+      `two cards, then one: searching the title ${JSON.stringify(pub1.title)} left ${byTitle} card, ` +
+      `searching the address ${JSON.stringify(new URL(T3.url).host)} left ${byAddress}, and a word that ` +
+      `matches nothing left ${byNothing} with the app's own "No sites match …" = ${emptyAnswer}`)
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
 
     // ── The audit trail, through the pooler: three connects, each `config/` with a NULL site_id
     //    and each `site/` carrying the id; the bogus key at 401; the plain-http call at 301.

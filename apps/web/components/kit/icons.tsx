@@ -134,6 +134,16 @@ export const LinkOff = (p: IconProps) => (
     <line x1="3" y1="3" x2="21" y2="21" />
   </Icon>
 )
+/* The card's address opens in a new tab and says so (the owner's finding 4, 2026-09-08). The
+   export draws this glyph — `P0-2 Icon Slot and Picker.dc.html:111`, `title="external"` — so it is
+   lifted, not invented; only the stroke follows the Kit's 1.5 rather than the picker grid's 2. */
+export const ExternalLink = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </Icon>
+)
 export const Upload = (p: IconProps) => (
   <Icon {...p}>
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

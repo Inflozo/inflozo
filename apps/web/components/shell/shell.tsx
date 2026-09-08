@@ -4,10 +4,12 @@ import Form from 'next/form'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { Button } from '@/components/kit/button'
+import { Button, buttonClasses } from '@/components/kit/button'
+import { openOnCancel } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Globe, Image, MenuLines, Plus, Projects, Search, X } from '@/components/kit/icons'
 import { Lockup } from '@/components/kit/logo'
+import { CONNECT_SITE_DIALOG } from '@/lib/connect-rule'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
 import { stripApp } from '@/routing'
@@ -31,8 +33,11 @@ import type { ShellUser } from '@/lib/shell-user'
    option 1 — see account-menu.tsx, which carries the rest of that ruling).
 
    The shell lives in `(authed)/layout.tsx`, so every later authenticated surface is inside it
-   by where its file sits. The search field and "New project" belong to the DASHBOARD and are
-   drawn only there: on any other surface they would be controls with nothing to act on. */
+   by where its file sits. TWO SURFACES CARRY A TOP BAR and `BARS` below is the whole of the
+   difference between them: Projects searches projects and offers "New project", Sites searches
+   sites and offers "Connect site" (the owner's finding 5 on Story 3.2 — "make it similar to
+   Projects page"). Every other surface has neither, because there it would be a control with
+   nothing to act on. */
 
 const NAV = [
   { href: '/', label: 'Projects', Icon: Projects },
@@ -81,6 +86,48 @@ export function NewProjectButton({ look }: { look: 'bar' | 'empty' | 'mobile' })
 }
 
 /**
+ * S11a's "Connect site", in NewProjectButton's own three sizes: the top bar's 36, the empty
+ * screen's centred 44, and 390's full-width 48 in the body. It is an `<a href="/sites/connect">`
+ * and not a `<button>`: with JavaScript the click opens the sheet `sites/page.tsx` renders, and
+ * without it the link IS the destination — the full-page handshake pair. `openOnCancel` rather
+ * than `showModal()`, so the sheet opens with focus on its way out (kit/dialog.ts).
+ */
+export function ConnectSiteButton({ look }: { look: 'bar' | 'empty' | 'mobile' }) {
+  const open = (event: MouseEvent<HTMLAnchorElement>) => {
+    // A modified click is the user asking for a new tab, and the full page is what should open.
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+    const sheet = document.getElementById(CONNECT_SITE_DIALOG)
+    if (!(sheet instanceof HTMLDialogElement) || sheet.open) return
+    event.preventDefault()
+    openOnCancel(sheet)
+  }
+  return (
+    <a
+      href="/sites/connect"
+      onClick={open}
+      className={
+        look === 'mobile'
+          ? `inline-flex h-12 w-full items-center justify-center gap-[7px] rounded bg-coral-text text-[15px] font-semibold text-surface transition-colors hover:bg-coral-text-hover ${ring}`
+          : buttonClasses('coral', look === 'bar' ? 36 : 44)
+      }
+    >
+      <Plus size={look === 'bar' ? 14 : 15} />
+      Connect site
+    </a>
+  )
+}
+
+/**
+ * THE TWO SURFACES WITH A TOP BAR, and everything that differs between them. `what` is the noun
+ * the field's label, its placeholder and the phone's button all read from, so a third surface is
+ * a row here rather than a branch in four places.
+ */
+const BARS: Record<string, { what: string; action: ReactNode }> = {
+  '/': { what: 'projects', action: <NewProjectButton look="bar" /> },
+  '/sites': { what: 'sites', action: <ConnectSiteButton look="bar" /> },
+}
+
+/**
  * The search is a GET form and that is the whole of its state: the field is in the layout and
  * the cards are in the page, and the URL is the one thing both already share, so `?q=` needs
  * no client state and no context. Enter searches.
@@ -92,7 +139,18 @@ export function NewProjectButton({ look }: { look: 'bar' | 'empty' | 'mobile' })
  * on screen with the results under it (review, 2026-09-05). The action is the path the router
  * reports, so it is right on both hosts.
  */
-function SearchField({ id, wide, focused = false }: { id: string; wide: boolean; focused?: boolean }) {
+function SearchField({
+  id,
+  wide,
+  what,
+  focused = false,
+}: {
+  id: string
+  wide: boolean
+  /** "projects" or "sites" — the label and the placeholder are composed from it, never typed. */
+  what: string
+  focused?: boolean
+}) {
   const q = useSearchParams().get('q') ?? ''
   const pathname = usePathname()
   return (
@@ -105,7 +163,7 @@ function SearchField({ id, wide, focused = false }: { id: string; wide: boolean;
     >
       <Search size={15} className="shrink-0 text-ink-soft" />
       <label htmlFor={id} className="sr-only">
-        Search projects
+        Search {what}
       </label>
       <input
         id={id}
@@ -120,7 +178,7 @@ function SearchField({ id, wide, focused = false }: { id: string; wide: boolean;
         // nowhere (the owner's finding 7). `autoFocus` runs on mount, which is exactly when
         // the field exists, and mount is what the tap causes.
         autoFocus={focused}
-        placeholder="Search projects…"
+        placeholder={`Search ${what}…`}
         className="min-w-0 flex-1 bg-transparent text-ui-dense text-ink caret-coral outline-none placeholder:text-ink-soft-aa [&::-webkit-search-cancel-button]:hidden"
       />
       <kbd
@@ -188,7 +246,8 @@ export function Shell({
   // addresses (see the note above `isActive`).
   const here = usePathname()
   const path = stripApp(here)
-  const onDashboard = path === '/'
+  // The surface's own bar, or none. Sites got one on the owner's finding 5 (Story 3.2).
+  const bar = BARS[path]
   const drawer = useRef<HTMLDialogElement>(null)
   // The phone's field is the ONLY way to see or clear `?q`, and closing it used to unmount the
   // field and leave the filter running: a grid showing "No projects match" — or a subset of the
@@ -202,13 +261,16 @@ export function Shell({
   // nothing to clear it, which is the same trap by the other door (review, 2026-09-06).
   const [searchOpen, setSearchOpen] = useState(Boolean(q))
   const router = useRouter()
+  // The effect below depends on WHETHER there is a bar, not on which one: a boolean, so moving
+  // between the two surfaces that have one does not tear the listener down and put it back.
+  const hasBar = Boolean(bar)
 
   // ⌘K (and Ctrl+K) puts the cursor in the field, whichever of the two is on screen: only one
   // is ever visible, so "the visible one" is unambiguous and needs no width test here.
   // Lower-cased, because Shift or Caps Lock reports `K`; and not under a modal, where the
   // field would be inert and, at 390, mount behind it (review, 2026-09-05).
   useEffect(() => {
-    if (!onDashboard) return
+    if (!hasBar) return
     const onKey = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return
       // …nor under an open menu: the field would take focus and leave the popover orphaned.
@@ -223,7 +285,7 @@ export function Shell({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onDashboard])
+  }, [hasBar])
 
   /**
    * `showModal()` hands focus to the first focusable thing inside the panel, which is the
@@ -304,10 +366,10 @@ export function Shell({
           </button>
           <Wordmark size={19} />
           <div className="ml-auto flex items-center">
-            {onDashboard ? (
+            {bar ? (
               <button
                 type="button"
-                aria-label="Search projects"
+                aria-label={`Search ${bar.what}`}
                 aria-expanded={searchOpen}
                 onClick={() => {
                   if (searchOpen && q) router.replace(here)
@@ -320,19 +382,18 @@ export function Shell({
             ) : null}
           </div>
         </header>
-        {onDashboard && searchOpen ? (
+        {bar && searchOpen ? (
           <div className="border-b border-line p-[10px_12px] tablet:hidden">
-            <SearchField id="q-mobile" wide focused />
+            <SearchField id="q-mobile" wide what={bar.what} focused />
           </div>
         ) : null}
 
-        {/* ── the 64px top bar at 1440. The dashboard's own controls, so only there. */}
-        {onDashboard ? (
+        {/* ── the 64px top bar at 1440, on the surfaces that have one: the field on the left, the
+            surface's own action on the right, the frame's rule under both (S3a :49, S11a :49). */}
+        {bar ? (
           <div className="hidden h-16 shrink-0 items-center gap-3 border-b border-line px-6 tablet:flex">
-            <SearchField id="q" wide={false} />
-            <div className="ml-auto">
-              <NewProjectButton look="bar" />
-            </div>
+            <SearchField id="q" wide={false} what={bar.what} />
+            <div className="ml-auto">{bar.action}</div>
           </div>
         ) : null}
 

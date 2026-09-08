@@ -4,7 +4,6 @@ import { startTransition, useActionState, useState, type ChangeEvent, type FormE
 import { Banner } from '@/components/kit/banner'
 import { Button, buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
-import { ChevronDown } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import {
   ADMIN_KEY_CONSENT,
@@ -22,10 +21,22 @@ import { connectSite } from './actions'
 /* ───────── S2 Onboarding.dc.html — S2b·1 (:78-102) and S2b·2 (:110-142), and the same pair
    inside S11b (S11 Sites.dc.html:131-155).
 
-   ONE COMPONENT, BOTH STEPS, TWO SHAPES. The page renders it as the frame's card — 480 wide at
-   step 1, 560 at step 2 — and `connect-dialog.tsx` renders it inside S11b's 520 sheet, which
-   supplies its own title pair and ✕. Nothing about the steps themselves differs, so nothing about
-   them is written twice.
+   ONE COMPONENT, BOTH STEPS, TWO SHAPES. The page renders it as the frame's card and
+   `connect-dialog.tsx` renders it inside S11b's 520 sheet, which supplies its own title pair and
+   ✕. Nothing about the steps themselves differs, so nothing about them is written twice.
+
+   BOTH STEPS ARE ALWAYS DRAWN, ONE OVER THE OTHER, AND THAT IS WHAT MAKES THE BOX ONE SIZE (the
+   owner's findings 1 and 2, 2026-09-08). Measured on the deployed site before the fix: the sheet
+   was 520×665.7 at step 1 and 520×608.5 at step 2, so pressing "Done — next" shrank it by 57px
+   and swept its top edge 28.6px DOWN the page — which is the card he saw appear behind it, in the
+   band the sheet stopped covering. The full-page pair jumped the same way, 480×694.7 to 560×661,
+   because the frame draws step 1 at 480 and step 2 at 560. Both panes now share one grid cell, so
+   the box is the taller of the two at every width and in both variants and NOTHING moves between
+   the steps; the page card takes S2b·2's 560 for both. A measured `min-height` would have been one
+   number per variant per breakpoint, stale the first time a sentence changed. The hidden pane is
+   `invisible` (it must still take its space) and `inert`, so it is out of the tab order, out of
+   the accessibility tree and out of axe's — a scripts-off browser gets all three from the
+   attribute, with no script to run.
 
    THE STEP ANCHOR IS ONE ELEMENT WITH BOTH BEHAVIOURS. "Done — next", "Back" and "Where do I find
    these?" are `<a href="?step=…">`, so the pair works with JavaScript off — two ordinary pages a
@@ -61,6 +72,9 @@ const STEPS = [
 ]
 
 const bar = 'h-1 flex-1 rounded-[2px]'
+
+/** The two panes share one grid cell; the one that is not the step keeps its space, invisibly. */
+const pane = 'col-start-1 row-start-1 flex flex-col'
 
 function Progress({ step }: { step: Step }) {
   return (
@@ -155,142 +169,165 @@ export function ConnectWizard({
     startTransition(() => action(data))
   }
 
-  const cancelling = variant === 'dialog' && step === 'integration'
-  const primary = step === 'keys' ? 'Connect' : 'Done — next'
+  const onKeys = step === 'keys'
+  const cancelling = variant === 'dialog'
 
-  const body =
-    step === 'integration' ? (
-      <>
-        <Progress step="integration" />
-        {variant === 'page' ? (
-          <Heading
-            title="First, a quick handshake."
-            sub="Inflozo talks to Ghost through a custom integration. Takes about a minute."
-          />
-        ) : null}
-        <ol role="list" className="flex list-none flex-col gap-[14px]">
-          {STEPS.map((content, at) => (
-            <li key={at} className="flex items-baseline gap-3">
-              <span
-                aria-hidden
-                className="flex size-[22px] shrink-0 translate-y-[3px] items-center justify-center rounded-full bg-coral-tint text-control-label font-semibold text-coral-text"
-              >
-                {at + 1}
-              </span>
-              <span className="text-ui leading-[1.5]">{content}</span>
-            </li>
-          ))}
-        </ol>
-        {/* The frame draws a placeholder box here and names what belongs in it; this is the
-            owner's own screenshot of the saved integration, which is what step 3 describes.
-            Width and height are on the element so the card does not reflow as it loads. */}
-        <img
-          src="/connect/integration.png"
-          width={644}
-          height={408}
-          alt="The saved Inflozo integration in Ghost Admin, showing its API URL, Admin API key and Content API key"
-          className="w-full rounded-thumb border border-line"
+  /* THE OWNER'S FINDING 3: A SUBTLE LINK, NOT A DROPDOWN. The frame draws a bordered box with a
+     chevron (`S2 Onboarding.dc.html:135-138`) and he read it as a select that would not open. His
+     test outranks the frame (R-80 as amended) and the export is never edited (R-74), so the
+     departure lives here: his own words, as a link, at the top right of the step — under the
+     sheet's title in the dialog, beside "Now paste the three keys." on the page — dropping to its
+     own line below `tablet`, as he asked. It is still the same `<a href="?step=integration">` the
+     "Back" control is, so it still works with JavaScript off. */
+  const findLink = (
+    <a
+      href="?step=integration"
+      onClick={go('integration')}
+      className={`self-start rounded-sm text-ui-dense font-medium text-ink-soft underline decoration-line underline-offset-4 transition-colors hover:text-ink hover:decoration-ink-soft tablet:self-auto ${ring}`}
+    >
+      Where do I find these?
+    </a>
+  )
+
+  const integration = (
+    <>
+      <Progress step="integration" />
+      {variant === 'page' ? (
+        <Heading
+          title="First, a quick handshake."
+          sub="Inflozo talks to Ghost through a custom integration. Takes about a minute."
         />
-        <div className="flex items-center justify-between gap-3">
-          {cancelling ? (
-            <Button variant="ghost" size={36} data-cancel onClick={onCancel}>
-              Cancel
-            </Button>
-          ) : (
-            <a href={backHref} className={`rounded-sm text-ui font-medium text-ink-soft ${ring}`}>
-              Back
-            </a>
-          )}
-          <a href="?step=keys" onClick={go('keys')} className={buttonClasses('primary', 44)}>
-            {primary}
+      ) : null}
+      <ol role="list" className="flex list-none flex-col gap-[14px]">
+        {STEPS.map((content, at) => (
+          <li key={at} className="flex items-baseline gap-3">
+            <span
+              aria-hidden
+              className="flex size-[22px] shrink-0 translate-y-[3px] items-center justify-center rounded-full bg-coral-tint text-control-label font-semibold text-coral-text"
+            >
+              {at + 1}
+            </span>
+            <span className="text-ui leading-[1.5]">{content}</span>
+          </li>
+        ))}
+      </ol>
+      {/* The frame draws a placeholder box here and names what belongs in it; this is the
+          owner's own screenshot of the saved integration, which is what step 3 describes.
+          Width and height are on the element so the card does not reflow as it loads. */}
+      <img
+        src="/connect/integration.png"
+        width={644}
+        height={408}
+        alt="The saved Inflozo integration in Ghost Admin, showing its API URL, Admin API key and Content API key"
+        className="w-full rounded-thumb border border-line"
+      />
+      <div className="mt-auto flex items-center justify-between gap-3">
+        {cancelling ? (
+          <Button variant="ghost" size={36} data-cancel onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : (
+          <a href={backHref} className={`rounded-sm text-ui font-medium text-ink-soft ${ring}`}>
+            Back
           </a>
-        </div>
-      </>
-    ) : (
-      <>
-        <Progress step="keys" />
-        {variant === 'page' ? (
+        )}
+        <a href="?step=keys" onClick={go('keys')} className={buttonClasses('primary', 44)}>
+          Done — next
+        </a>
+      </div>
+    </>
+  )
+
+  const keys = (
+    <>
+      <Progress step="keys" />
+      {variant === 'page' ? (
+        <div className="flex flex-col gap-2 tablet:flex-row tablet:items-baseline tablet:justify-between tablet:gap-6">
           <Heading
             title="Now paste the three keys."
             sub="They're right on the Inflozo integration you just made — copy each one across."
           />
-        ) : null}
-        {banner ? <Banner kind="error">{banner}</Banner> : null}
-        <form action={action} onSubmit={onSubmit} className="flex flex-col gap-[22px]">
-          <TextInput
-            id="s2b-api-url"
-            name="url"
-            label="API URL"
-            placeholder="https://orbitweekly.com"
-            maxLength={CONNECT_MAX}
-            size={44}
-            mono
-            required
-            value={typed.url}
-            onChange={edit}
-            error={fieldError('url')}
-            hint={warning}
-          />
-          <TextInput
-            id="s2b-admin-key"
-            name="admin_key"
-            label="Admin API key"
-            placeholder="65a3f…:9c2b41d8e0f…"
-            maxLength={CONNECT_MAX}
-            size={44}
-            mono
-            required
-            value={typed.admin_key}
-            onChange={edit}
-            error={fieldError('admin_key')}
-          />
-          <TextInput
-            id="s2b-content-key"
-            name="content_key"
-            label="Content API key"
-            placeholder="8d41c0a97b…"
-            maxLength={CONNECT_MAX}
-            size={44}
-            mono
-            // The three fields are the frame's three and "paste the three keys" is the heading: none
-            // is optional, and `required` says so with or without JavaScript (review, 2026-09-08).
-            required
-            value={typed.content_key}
-            onChange={edit}
-            error={fieldError('content_key')}
-          />
-          <a
-            href="?step=integration"
-            onClick={go('integration')}
-            className={`flex items-center justify-between rounded-sm border border-line p-[12px_14px] text-ui-dense font-medium text-ink transition-colors hover:bg-paper ${ring}`}
-          >
-            <span>Where do I find these?</span>
-            <ChevronDown size={16} className="text-ink-soft" />
+          {findLink}
+        </div>
+      ) : (
+        <div className="flex tablet:justify-end">{findLink}</div>
+      )}
+      {banner ? <Banner kind="error">{banner}</Banner> : null}
+      <form action={action} onSubmit={onSubmit} className="flex flex-1 flex-col gap-[22px]">
+        <TextInput
+          id="s2b-api-url"
+          name="url"
+          label="API URL"
+          placeholder="https://orbitweekly.com"
+          maxLength={CONNECT_MAX}
+          size={44}
+          mono
+          required
+          value={typed.url}
+          onChange={edit}
+          error={fieldError('url')}
+          hint={warning}
+        />
+        <TextInput
+          id="s2b-admin-key"
+          name="admin_key"
+          label="Admin API key"
+          placeholder="65a3f…:9c2b41d8e0f…"
+          maxLength={CONNECT_MAX}
+          size={44}
+          mono
+          required
+          value={typed.admin_key}
+          onChange={edit}
+          error={fieldError('admin_key')}
+        />
+        <TextInput
+          id="s2b-content-key"
+          name="content_key"
+          label="Content API key"
+          placeholder="8d41c0a97b…"
+          maxLength={CONNECT_MAX}
+          size={44}
+          mono
+          // The three fields are the frame's three and "paste the three keys" is the heading: none
+          // is optional, and `required` says so with or without JavaScript (review, 2026-09-08).
+          required
+          value={typed.content_key}
+          onChange={edit}
+          error={fieldError('content_key')}
+        />
+        {/* FR-C3's honesty rule, in the helper-caption slot above Connect (S2b·2 :136-138).
+            Ghost offers no narrower credential, so saying so plainly is the only lever. */}
+        <p className="text-helper-caption leading-[1.5] text-ink-soft">{ADMIN_KEY_CONSENT}</p>
+        <div className="mt-auto flex items-center justify-between gap-3">
+          <a href="?step=integration" onClick={go('integration')} className={`rounded-sm text-ui font-medium text-ink-soft ${ring}`}>
+            Back
           </a>
-          {/* FR-C3's honesty rule, in the helper-caption slot above Connect (S2b·2 :136-138).
-              Ghost offers no narrower credential, so saying so plainly is the only lever. */}
-          <p className="text-helper-caption leading-[1.5] text-ink-soft">{ADMIN_KEY_CONSENT}</p>
-          <div className="flex items-center justify-between gap-3">
-            <a href="?step=integration" onClick={go('integration')} className={`rounded-sm text-ui font-medium text-ink-soft ${ring}`}>
-              Back
-            </a>
-            <Button type="submit" variant="primary" size={44}>
-              {checking || pending ? 'Connecting…' : primary}
-            </Button>
-          </div>
-        </form>
-      </>
-    )
+          <Button type="submit" variant="primary" size={44}>
+            {checking || pending ? 'Connecting…' : 'Connect'}
+          </Button>
+        </div>
+      </form>
+    </>
+  )
+
+  const body = (
+    <div className="grid">
+      <div className={`${pane} gap-6 ${onKeys ? 'invisible' : ''}`} inert={onKeys}>
+        {integration}
+      </div>
+      <div className={`${pane} gap-[22px] ${onKeys ? '' : 'invisible'}`} inert={!onKeys}>
+        {keys}
+      </div>
+    </div>
+  )
 
   if (variant === 'dialog') return body
   return (
-    <div
-      // The frame's own card, both widths and both gaps: 480/24 at step 1, 560/22 at step 2.
-      // Full width below `tablet`, where 390 has no room for either.
-      className={`flex w-full flex-col rounded-lg bg-surface p-6 shadow-md tablet:p-9 ${
-        step === 'keys' ? 'gap-[22px] tablet:w-[560px]' : 'gap-6 tablet:w-[480px]'
-      }`}
-    >
+    // S2b·2's 560 card for BOTH steps and its 36px padding — one width, because one box that does
+    // not change is what the owner asked for (finding 1). Full width below `tablet`, where 390 has
+    // no room for either.
+    <div className="flex w-full flex-col rounded-lg bg-surface p-6 shadow-md tablet:w-[560px] tablet:p-9">
       {body}
     </div>
   )

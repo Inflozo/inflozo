@@ -7,6 +7,7 @@ import {
   checkedLabel,
   CONNECT_MESSAGES,
   connectMessage,
+  filterSites,
   ghostLabel,
   hostOf,
   HTTP_WARNING,
@@ -14,6 +15,7 @@ import {
   isPlainHttp,
   MIN_GHOST_MAJOR,
   normaliseSiteUrl,
+  SITES_EMPTY,
   stepOf,
   versionVerdict,
   type MessageCode,
@@ -238,4 +240,46 @@ test('a store that fails undoes the row it just made, so no site is half-connect
   }
   // And the undo's own failure is not silent: a row it could not remove says Connected with no key.
   assert.match(compensation, /undo failed/, `${ACTIONS}: a compensating write that fails must be logged`)
+})
+
+/* The owner's findings 5 and 7 (2026-09-08): the Sites search, and the empty screen's own words. */
+
+test('the Sites search matches a title or an address, and survives a repeated ?q', () => {
+  const rows = [
+    { title: 'Orbit Weekly', url: 'https://orbitweekly.com', site_settings: { public_url: 'https://orbitweekly.com/' } },
+    { title: null, url: 'https://ghost5.inflozo.com', site_settings: null },
+    { title: 'Field Notes', url: 'https://fieldnotes.example', site_settings: { public_url: 'https://notes.example/' } },
+  ]
+  const shownFor = (q: string | string[] | undefined) => filterSites(rows, q).shown.map((r) => r.url)
+
+  // No query is every row, in the order given — never a filter that quietly reorders the grid.
+  assert.deepEqual(shownFor(undefined), rows.map((r) => r.url))
+  assert.deepEqual(shownFor('   '), rows.map((r) => r.url))
+  // BY TITLE, case-insensitively, on a substring.
+  assert.deepEqual(shownFor('orbit'), ['https://orbitweekly.com'])
+  assert.deepEqual(shownFor('FIELD'), ['https://fieldnotes.example'])
+  // BY ADDRESS: the host as the card prints it, and the whole address as the browser shows it.
+  assert.deepEqual(shownFor('ghost5'), ['https://ghost5.inflozo.com'])
+  assert.deepEqual(shownFor('https://ghost5.inflozo.com'), ['https://ghost5.inflozo.com'])
+  // A title-less row is findable by the host the card falls back to.
+  assert.deepEqual(filterSites(rows, 'inflozo').shown.map((r) => r.title), [null])
+  // THE PUBLIC url is searched too — on Ghost(Pro) it is the address the customer knows.
+  assert.deepEqual(shownFor('notes.example'), ['https://fieldnotes.example'])
+  assert.deepEqual(shownFor('nothing here'), [])
+  // `?q=a&q=b` arrives as an ARRAY; the first is taken, as `filterProjects` does (schema of the
+  // dashboard's own 500 on 2026-09-05).
+  assert.equal(filterSites(rows, ['orbit', 'field']).query, 'orbit')
+  assert.deepEqual(shownFor(['orbit', 'field']), ['https://orbitweekly.com'])
+  // The query comes back TRIMMED, because it is what "No sites match …" prints.
+  assert.equal(filterSites(rows, '  orbit  ').query, 'orbit')
+  assert.match(SITES_EMPTY.noMatch('orbit'), /No sites match/)
+})
+
+test("the empty Sites screen says what the owner ruled, and borrows the handshake's own words", () => {
+  // Question 5, option 3 (owner, 2026-09-08). The words are asserted here so a rewrite has to
+  // pass his ruling, and so the deployed-site harness can read them instead of retyping them.
+  assert.equal(SITES_EMPTY.title, "One handshake and you're in.")
+  assert.equal(SITES_EMPTY.sub, 'Connect your Ghost site — it takes about a minute.')
+  // They borrow the handshake's word and its "about a minute", so the two screens agree.
+  assert.match(SITES_EMPTY.sub, /about a minute/)
 })

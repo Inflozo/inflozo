@@ -11,14 +11,16 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.m
 
 ## In plain English
 
-After this story a customer can connect their own Ghost site to Inflozo: they open **Sites**, follow
-three numbered, screenshotted steps to create one "Inflozo" integration in Ghost Admin, paste the site
-address and the two keys that integration shows, and press Connect. Inflozo checks the Admin key against
-the real site on the server, checks the Content key from the browser, refuses a site older than Ghost 5
-with a friendly "please update Ghost", and then shows the site on the Sites page as **Connected** with its
-Ghost version. The Staff Access Token is not asked for — that comes at first deploy — so the site is
-connected in the "partially credentialed" state the product treats as normal, and the same two steps open
-in a window from the Sites page's **Connect site** button for the next site.
+After this story a customer can connect their own Ghost site to Inflozo: they open **Sites**, which says
+"One handshake and you're in." over a drawing until something is connected, and press **Connect site** —
+from the empty screen or from the top bar, which searches sites the way the Projects bar searches
+projects. A window opens with three numbered, screenshotted steps for making one "Inflozo" integration in
+Ghost Admin, and then three fields for the site address and the two keys that integration shows. Inflozo
+checks the Admin key against the real site on the server, checks the Content key from the browser, refuses
+a site older than Ghost 5 with a friendly "please update Ghost", and then shows the site on the Sites page
+as a card: its address with a new-tab arrow, its Ghost version, and **Connected** just above when it was
+last checked. The Staff Access Token is not asked for — that comes at first deploy — so the site is
+connected in the "partially credentialed" state the product treats as normal.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -135,11 +137,15 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
 ## Code Map
 
 - `apps/web/app/(app)/app/(authed)/sites/page.tsx` -- **new**: S11a when there are active sites (read
-  through the user's own session, `disconnected_at is null`, newest first), S2b inline when there are
-  none; `metadata` like the dashboard's (`page.tsx:32-35`); the search field and "New project" are the
-  dashboard's alone (`shell.tsx:30-35`). The card: letter disc, title, public url as a link
-  (`site_settings.public_url`, fallback `url`), "Connected", "Ghost {major.minor}", "Checked {relative}"
-  from `settings_read_at`; the ⋯ button **absent** (3.5), "n projects" from `projects.linked_site_id`.
+  through the user's own session, `disconnected_at is null`, newest first), and — **at Fix, the owner's
+  finding 7** — an EMPTY SCREEN in S3b's shape when there are none: the browser-meets-plug drawing
+  (Question 6), `SITES_EMPTY.title` / `.sub` (Question 5) and a centred **Connect site** that opens the
+  sheet. `?step=` no longer means anything here; the full-page handshake is `/sites/connect`. `metadata`
+  like the dashboard's (`page.tsx:32-35`); the top bar is the shell's, on both surfaces (finding 5).
+  The card: letter disc, title, public url as a link (`site_settings.public_url`, fallback `url`) **with
+  the new-tab glyph** (finding 4), then the metadata pills alone on their line — "Ghost {major.minor}",
+  "n projects" from `projects.linked_site_id` — then "Connected" and "Checked {relative}" from
+  `settings_read_at` as one close pair (finding 6, DW-57); the ⋯ button **absent** (3.5).
 - `apps/web/app/(app)/app/(authed)/sites/connect/page.tsx` -- **new**: the full-page pair on its own
   route so the JS-off **Connect site** link has a destination; renders `ConnectWizard` with `step` from
   `?step=`.
@@ -148,10 +154,24 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   `useActionState(connectSite)` on the keys form (`new-project-sheet.tsx:1-12` is the pattern, `Banner`
   for the form-level message, `TextInput`'s `error` prop for field errors — `input.tsx:13-40`); the URL
   field warns on `http://` as typed; on submit with JS the Content check runs first (`content-check.ts`)
-  and a 401 blocks. Mono inputs (`mono`), the 4px progress bars, "1/2" / "2/2" in mono.
+  and a 401 blocks. Mono inputs (`mono`), the 4px progress bars, "1/2" / "2/2" in mono. **At Fix
+  (findings 1, 2 and 3):** both steps are drawn into ONE grid cell — the hidden one `invisible` and
+  `inert` — so the box is one size at every width and in both variants, the page card is S2b·2's 560 at
+  both steps, and "Where do I find these?" is a subtle link at the top right of step 2 rather than the
+  frame's bordered chevron row (`ChevronDown` is no longer imported).
 - `apps/web/app/(app)/app/(authed)/sites/connect-dialog.tsx` -- **new, client**: S11b — a `<dialog>`
-  (`kit/dialog.ts` `sheet`, `openOnCancel`, `closeOnBackdrop`) around `ConnectWizard`; the opener is an
-  `<a href="/sites/connect">` styled as S11a's coral button (`:57`) whose click opens the dialog instead.
+  (`kit/dialog.ts` `closeOnBackdrop`) around `ConnectWizard`, capped at the viewport now that its height
+  is the taller step's. **At Fix (finding 5) the opener left this file for the shell**, where the top
+  bar is: `ConnectSiteDialog` carries `id={CONNECT_SITE_DIALOG}` and the shell's button finds it by that
+  id and opens it with `openOnCancel` — the dashboard's own split (`shell.tsx`'s button,
+  `new-project-sheet.tsx`'s dialog). Every open is a fresh wizard (`key`, bumped on close).
+- `apps/web/components/shell/shell.tsx` -- **at Fix, the owner's finding 5**: `BARS` is the table of the
+  surfaces that carry a top bar — `/` searches projects and offers "New project", `/sites` searches sites
+  and offers `ConnectSiteButton` — and the 64px bar, the phone's search toggle and ⌘K all read it, so
+  Sites gets Projects' bar and no third branch is added. `ConnectSiteButton` is an
+  `<a href="/sites/connect">` in `NewProjectButton`'s three sizes. **No bell** (Question 4, UX-DR3).
+- `apps/web/components/kit/icons.tsx` -- **at Fix, finding 4**: `ExternalLink`, the export's own glyph
+  (`P0-2 Icon Slot and Picker.dc.html:111`, `title="external"`) at the Kit's 1.5 stroke.
 - `apps/web/app/(app)/app/(authed)/sites/content-check.ts` -- **new, client, pure fetch**:
   `checkContentKey(url, key)` → `'ok' | 'unknown_key' | 'unreachable' | 'skipped_http'`;
   `AbortSignal.timeout(10_000)`; never throws.
@@ -160,7 +180,10 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   content, `signedIn`); zod schema over the three fields; `normaliseSiteUrl`; entitlement + count;
   existing-row lookup; `fetchWithKey` twice; `supabaseAdmin()` insert/update; `store()`; compensating
   delete; `revalidatePath('/app/sites')`; `redirect('/sites')` on success.
-- `apps/web/lib/connect-rule.ts` + `apps/web/connect-rule.test.ts` -- **new, pure**: `normaliseSiteUrl`
+- `apps/web/lib/connect-rule.ts` + `apps/web/connect-rule.test.ts` -- **at Fix**: `filterSites` (the
+  search, over the title and both addresses — findings 5), `SITES_EMPTY` (the empty screen's words, so
+  the harness reads the app's own rather than retyping them) and `CONNECT_SITE_DIALOG` (the id the shell
+  and the page share). **New, pure**: `normaliseSiteUrl`
   (refuses non-URLs and non-http(s) schemes), `isPlainHttp`, `versionVerdict(version)` →
   `{ ok, major, minor }` | `ghost_too_old` | `unreachable`, `connectMessage(code, host)` — the I/O
   matrix's sentences, one per code, and `ghost_refused` for any other non-2xx from Ghost.
@@ -184,7 +207,14 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   naming what it shows; it sits under step 3, the step it illustrates.
 - `apps/web/app/(app)/app/(authed)/layout.tsx` -- unchanged; `/sites` is inside the guard by where its
   file sits. `app-routes.test.ts` walks every `page.tsx` — the new pages are guarded by construction.
-- `tools/probe/run-verify-ghost-admin.py` -- **rewritten**, `run-verify-account-deletion.py:196-340`'s
+- `tools/probe/run-verify-ghost-admin.py` -- **at Fix**, four steps added and three retargeted:
+  `first-run` is the empty screen, `sites-bar` reads the shell's bar (the 64px box, its 1px rule, the
+  "Search sites…" placeholder, one control beside the field, zero bells), `same-size` measures the
+  sheet's box at BOTH steps, `find-link` reads the link's tag, href, border and position, `handshake`
+  is the full-page pair at `/sites/connect`, `card` reads the card's own boxes for findings 4 and 6,
+  `search` drives the field on the deployed page, and `axe-empty` covers the new screen; `re-adopt`
+  reaches the wizard through the empty screen's button, and `sheet-reopen` asks whether the fields are
+  VISIBLE rather than present, because both panes are always in the DOM now. **Originally rewritten**, `run-verify-account-deletion.py:196-340`'s
   shape: Python mints a throwaway GoTrue user and its magic link (`generate_link`), a Node/Playwright
   half signs in and drives `/sites` on the deployed app (`PW_DIR`, `AXE_PATH` as there), and reads the
   pooler **read-only** through `apps/web/node_modules/postgres` (3.4.9, already installed) for
@@ -202,9 +232,13 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   was measured with no key). §37 the 401 causes; §21m the blast radius; §21j Vault over REST.
 - `_bmad-output/implementation-artifacts/deferred-work.md:491` DW-19 (First Run — Question 1), `:1134`
   DW-48 (closed at Dev), **DW-54** (added at Create: the three live proofs whose driver leaves with the
-  route, and where each is re-driven).
+  route, and where each is re-driven), **DW-57** (added at Fix: the card's layout is the owner's, and
+  3.3, 3.5 and 3.7 inherit it rather than the frame's).
 - `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:107-117` (the
-  surfaces and their frames), `:318` (Sites with none), `:697-716` (J1 steps 3–5).
+  surfaces and their frames), **`:318` Sites with none — AMENDED at Fix to the owner's empty screen,
+  with the old wording quoted and the finding cited**, `:697-716` (J1 steps 3–5). The same sentence in
+  `ux-designs/prototype/build.py` (5b's `nodraw` annotation for Sites, regenerated) and in
+  `implementation-artifacts/epic-3-context.md` moved with it — propagate, never localise.
 - `supabase/` -- **no migration**: no schema change in this story. `bash supabase/tests/run-rls-gate.sh`
   still runs at Verification because the harness's cascade proof depends on 3.1's trigger.
 
@@ -226,20 +260,54 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
 - [x] `deferred-work.md` (DW-48 closed, DW-54's status) + `epic-3-context.md` -- propagate, never localise
 - [x] Run `## Verification` on the real infrastructure and record every command and result by variable name
 
+**Fix run, 2026-09-08 — the owner's seven test findings, each inside this story (R-80 as amended):**
+- [x] Findings 1 and 2 -- `connect-wizard.tsx` + `connect-dialog.tsx` -- both steps in ONE grid cell, the
+      page card one width -- the box cannot change size or move, so nothing behind it is uncovered
+- [x] Finding 3 -- `connect-wizard.tsx` -- "Where do I find these?" as a subtle link at the top right,
+      its own line below `tablet` -- the frame's bordered chevron row is gone
+- [x] Finding 4 -- `components/kit/icons.tsx` + `sites/page.tsx` -- `ExternalLink`, the export's own
+      glyph, beside the card's address
+- [x] Finding 5 (amended) -- `components/shell/shell.tsx` + `lib/connect-rule.ts` -- Sites gets Projects'
+      top bar: the rule, "Search sites…" matching a title or an address (`filterSites`, pure and tested),
+      **Connect site** on the right. No bell — Question 4, ruled to Story 13.4
+- [x] Finding 6 -- `sites/page.tsx` -- the pills keep their line, "Connected" moves just above
+      "Checked …" and closer to it; one card component, so every card; **DW-57** binds 3.3, 3.5 and 3.7
+- [x] Finding 7 -- `sites/page.tsx` + `sites/connect/page.tsx` -- `/sites` with nothing connected is an
+      empty screen (Questions 5 and 6); the full-page handshake stays at `/sites/connect` for the no-JS
+      link; `EXPERIENCE.md:318`, `epic-3-context.md` and 5b's annotation amended with it
+- [x] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- the harness follows the
+      surfaces it drives, with a measured step per finding -- R-82, re-runnable
+- [x] Re-run `## Verification` on the real infrastructure and record it
+
 **Acceptance Criteria:**
 - Given a signed-in account with no site, when it opens `/sites` at 1440, 834 and 390, then the page is
-  S2b·1 and **matches the frame** (`S2 Onboarding.dc.html:78-102`: the 480 card, the two 4px bars with
-  one coral, "1/2" mono, the 26px display headline, three 22px numbered discs in coral-tint, the
-  screenshot box, "Back" and the 44px ink "Done — next"); "Done — next" leads to S2b·2 and **matches the
-  frame** (`:110-142`: 560 card, both bars coral, "2/2", three 44px mono fields with the frame's labels
-  and placeholders, the "Where do I find these?" row, "Back" and "Connect"); with JavaScript off the same
-  two pages work and the form still submits
+  the **empty screen** — the browser-meets-plug drawing, `SITES_EMPTY.title` as the `<h1>`, `.sub` under
+  it, and a centred **Connect site** — over the shell's own top bar, and **no handshake and no key field
+  is on that route**; pressing either **Connect site** opens S11b (the owner's finding 7)
+- Given `/sites/connect` at 1440, 834 and 390 — where **Connect site** leads with JavaScript off — then
+  step 1 is S2b·1 and **matches the frame** (`S2 Onboarding.dc.html:78-102`: the two 4px bars with one
+  coral, "1/2" mono, the 26px display headline, three 22px numbered discs in coral-tint, the screenshot,
+  "Back" to `/sites` and the 44px ink "Done — next"); "Done — next" leads to S2b·2 and **matches the
+  frame** (`:110-142`: both bars coral, "2/2", three 44px mono fields with the frame's labels and
+  placeholders, "Back" and "Connect"); with JavaScript off the same two pages work and the form still
+  submits. **Two departures the owner's test ruled** (R-80 as amended): the card is S2b·2's 560 at BOTH
+  steps rather than the frame's 480 then 560, and "Where do I find these?" is a subtle link at the top
+  right rather than the frame's bordered chevron row (`:135-138`)
+- Given the connect sheet at any width, when "Done — next" is pressed, then the dialog's box is the same
+  size and in the same place as it was — measured, not asserted — so nothing behind it is uncovered
+  (his findings 1 and 2: it was 520×665.7 then 520×608.5 before the fix)
+- Given the Sites top bar, then it is the shell's own — 64px with a 1px rule, the field placeholdered
+  "Search sites…" matching a site's title or its address, **Connect site** as its only other control —
+  and **no bell is drawn on any surface in this story** (his finding 5 as amended, ruled at Question 4)
 - Given the T1 keys, when Connect is pressed, then `private.credential_audit` shows an `admin_read` row
   for `config/` with `site_id` null and then rows for `site/` with the new `site_id`; `sites` has one row
   with `ghost_version` `6.58.0`, `content_key`, `site_settings.public_url = 'https://ghost6.inflozo.com/'`,
   `credentials_present = {content: true, admin: true, staff: false}`; a `vault.secrets` row exists behind
-  `admin_key_vault_ref`; the browser is on `/sites` showing the card, which **matches the frame**
-  (`S11 Sites.dc.html:61`) minus the ⋯ button; and no response body carried a `kid:secret`
+  `admin_key_vault_ref`; the browser is on `/sites` showing the card, which matches the frame
+  (`S11 Sites.dc.html:61`) minus the ⋯ button **and with the owner's own three changes to it**: the
+  new-tab glyph on the address, the metadata pills alone on their line, and "Connected" just above
+  "Checked …" and closer to it than to the pills (his findings 4 and 6, DW-57); and no response body
+  carried a `kid:secret`
 - Given a connected site, when **Connect site** is pressed with JavaScript on, then S11b opens and
   **matches the frame** (`:131-155`: 520 card, the title pair, ✕, "Cancel" and "Done — next"), Cancel and
   Esc close it with nothing sent; with JavaScript off the same button is a link to `/sites/connect`
@@ -418,6 +486,34 @@ Free).
   make yet (a disconnected record, a Pro entitlement) made by the service role; `--shots DIR` for the frame
   comparison.
 
+- **2026-09-08, Fix — the owner's seven test findings, and the frozen text two of them overtake.** The
+  frozen I/O matrix's last row says "`/sites` **is** S2b·1; `?step=keys` is S2b·2 (EXPERIENCE.md:318)" and
+  the frozen Boundaries name S2b·1 and S2b·2 "full-page under the shell when the account has no site". **His
+  test outranks both** (R-80 as amended, and the same rule that made "Where do I find these?" a link rather
+  than the frame's box): `/sites` with nothing connected is now the empty screen of his finding 7, and the
+  full-page pair moved to `/sites/connect` — which the frozen Boundaries already required to exist, for the
+  no-JavaScript link. Nothing else in the frozen block moves: the same two steps, the same three fields, the
+  same server action, the same codes and sentences. Recorded here rather than edited there, as Review 1's
+  corrections were. `EXPERIENCE.md:318` itself IS amended, because it is a live spine and not a frozen
+  intent, and 5b's annotation and `epic-3-context.md` moved with it.
+- **2026-09-08, Fix — the height jump was one bug behind two findings, and it was measured before it was
+  fixed.** His finding 2 ("momentarily … I can see the project grid card in background") was triaged at the
+  Test run as *probably* finding 1's height change and marked "to be reproduced before anything is changed".
+  It was: a throwaway account with one site, on `app.inflozo.com`, reported the sheet at **520×665.7** at
+  step 1 and **520×608.5** at step 2 — a 57.2px shrink that swept the top edge **28.6px down the page**, and
+  the card behind sits exactly there. One cause, two findings, one fix: both panes share a grid cell, so the
+  box is the taller of the two and cannot move. The same measurement found the full-page pair jumping
+  480×694.7 → 560×661, which is why the page card is now one width.
+- **2026-09-08, Fix — routine calls taken rather than asked.** (a) The two panes are always in the DOM,
+  the hidden one `invisible` (it must keep its space) and `inert` (out of the tab order, out of the
+  accessibility tree, out of axe's, with no script needed) — a measured `min-height` would have been one
+  number per variant per breakpoint, stale the first time a sentence changed. (b) `ConnectSiteButton` moved
+  into `shell.tsx` beside `NewProjectButton` and the sheet stayed on the page, which is the split the
+  dashboard already uses; the two now share `CONNECT_SITE_DIALOG` rather than a component. (c) The sheet is
+  capped at `100dvh - 20px` and scrolls, because one box the size of the taller step could otherwise outgrow
+  a short viewport. (d) `SITES_EMPTY` lives in `lib/connect-rule.ts` so the harness reads the app's own
+  words instead of retyping them — Review 1's rule for every sentence it asserts.
+
 ## Design Notes
 
 **Why `connect-src 'self' https:`.** `csp.ts:17-19` kept the two test Ghosts as a stand-in "until the
@@ -494,39 +590,83 @@ the second-site path needs Pro; Story 3.5's Disconnect and Epic 12's billing do 
 which is the same license the account-deletion harness uses to seed its fixtures — every claim about what the
 USER can do still goes through the user's own session in the browser.
 
+**Three departures from the frame, all the owner's, all at his test (R-80 as amended; the export itself is
+never edited, R-74).** They are written here, in the files' own comments and in `DW-57` so a later story
+cannot "correct" them back. (1) **"Where do I find these?" is a link**, not the bordered chevron row the
+frame draws (`S2 Onboarding.dc.html:135-138`) — he read that row as a dropdown that would not open; his
+words stay the link's words. (2) **The card puts "Connected" just above "Checked …"**, not on the pills'
+line (`S11 Sites.dc.html:70-75`), and the pair sits closer together than the card's other rows. (3) **The
+connect card is one width and one height at both steps**, not 480 then 560 — the frame draws two boxes and
+he pressed one button between them.
+
+**Why both steps are always drawn.** The sheet shrank 57px between step 1 and step 2 (measured on the
+deployed site before the fix, §Spec Change Log), and a modal `<dialog>` is centred, so half of that came off
+each edge and the page behind showed through in the band it stopped covering — his findings 1 and 2, one
+cause. The fix is structural rather than numeric: both panes occupy the same CSS grid cell, so the box is
+always the taller of the two, at every width, in the sheet and on the page, and however the sentences
+change. The pane that is not the step is `invisible` — it must still take its space, which `hidden` would
+not — and `inert`, which removes it from the tab order and from the accessibility tree without a line of
+script, so a scripts-off browser gets the same behaviour. `innerText` and axe both skip a `visibility:
+hidden` subtree, which is why the harness asks whether the fields are VISIBLE rather than present.
+
+**The Sites top bar is the shell's, and that is the whole of finding 5.** The shell's field already posted
+to whatever page it was drawn on and ⌘K already found whichever copy was visible; only the word "projects"
+and a `path === '/'` gate were hard-wired. `BARS` replaces the gate with a table of the surfaces that have a
+bar — the noun for the label, the placeholder and the phone's button, and the surface's own action — so
+Sites is a row rather than a branch in four places, and a third surface is a row too. **No bell**: it is
+Story 13.4's, on every top bar at once when there is a feed behind it, and the owner ruled it out of this
+story at Question 4. `filterSites` is `filterProjects`'s twin, pure and tested, matching a site's title or
+its address because the card shows both.
+
 ## Owner's manual test
 
 On the live site after the Deploy run. You will make one test integration on your Ghost 6 test server
-and can delete it afterwards.
+and can delete it afterwards. **Rewritten at the Fix run for the screens your seven findings changed** —
+steps 1, 2, 8, 10 and 12 are the new ones.
 
-1. **URL:** https://app.inflozo.com/sites · **Screen:** Sites, first visit · **Do:** look · **See:** no list
-   — a white card "First, a quick handshake." with "1/2", three numbered steps, the screenshot you supplied of the
-   Inflozo integration with its keys, "Back" and a black "Done — next".
-2. **URL:** https://ghost6.inflozo.com/ghost/#/settings/integrations · **Screen:** Ghost Admin · **Do:**
+1. **URL:** https://app.inflozo.com/sites · **Screen:** Sites, first visit · **Do:** look · **See:** no
+   handshake now — a drawing of a browser window meeting a plug, **"One handshake and you're in."** under
+   it, then "Connect your Ghost site — it takes about a minute.", then a coral **Connect site**. Above it
+   all, a bar like the Projects one: a search box saying **Search sites…**, another **Connect site** on the
+   right, a hairline under both. **No bell** — that arrives with the notifications centre (Story 13.4).
+2. **Do:** press the middle **Connect site** · **See:** a window opens with "Connect your Ghost site — Same
+   quick handshake as onboarding.", "1/2", three numbered steps and the screenshot you supplied. **Do:**
+   press **Done — next**, and watch the window's edges · **See:** the window does **not** change size and
+   does **not** move, and nothing behind it appears. Press **Back**: same again.
+3. **Do:** on step 2, look at the top right, under the window's title · **See:** **Where do I find these?**
+   as a plain underlined link — not a box with a chevron. Press it: it goes back to step 1. Press **Cancel**
+   or Escape to close the window.
+4. **URL:** https://ghost6.inflozo.com/ghost/#/settings/integrations · **Screen:** Ghost Admin · **Do:**
    Add custom integration → name it `Inflozo owner test` → Save · **See:** an API URL, an Admin API key
    and a Content API key. Keep this tab open.
-3. **URL:** https://app.inflozo.com/sites · **Do:** press **Done — next** · **See:** "Now paste the three
-   keys." with three fields: API URL, Admin API key, Content API key, and "Where do I find these?" below.
-4. **Do:** type `ghost6.inflozo.com` in API URL, `abc` in Admin API key, the real Content API key, press
-   **Connect** · **See:** under Admin API key: "An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id,
-   a colon, then a long secret." Nothing connected.
-5. **Do:** paste the real Admin API key; in Content API key change the last character; press **Connect** ·
+5. **URL:** https://app.inflozo.com/sites · **Do:** **Connect site** → **Done — next** → type
+   `ghost6.inflozo.com` in API URL, `abc` in Admin API key, the real Content API key, press **Connect** ·
+   **See:** under Admin API key: "An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id, a colon, then
+   a long secret." Nothing connected.
+6. **Do:** paste the real Admin API key; in Content API key change the last character; press **Connect** ·
    **See:** under Content API key, almost instantly: "Ghost doesn't recognise this Content API key."
-6. **Do:** paste the correct Content API key; press **Connect** · **See:** the Sites page with one card:
-   `Ghost6 · ghost6.inflozo.com · Connected · Ghost 6.58 · Checked just now`. The address is a link that
-   opens your site.
-7. **Do:** press **Connect site** (top right) · **See:** a window "Connect your Ghost site — Same quick
-   handshake as onboarding." with the same steps. Press **Cancel**: it closes.
-8. **Do:** Connect site again → Done — next → type `http://ghost5.inflozo.com` · **See:** under the field,
-   as you type: "Most Ghost sites use https:// — use that if yours does. Without HTTPS the editor can't
-   load your live content." Change it to `https://ghost5.inflozo.com`, paste that server's own keys (make
-   a test integration there the same way), press **Connect** · **See:** on a Free account: "Free includes
-   1 site. Pro connects up to 10." and no second card. On Pro: a second card `Ghost5 · … · Ghost 5.130`.
-9. **Do:** Connect site → Done — next → `ghost6.inflozo.com` with its keys again → Connect · **See:**
-   "ghost6.inflozo.com is already connected."
-10. **Do:** on your phone, open https://app.inflozo.com/sites · **See:** the same card, one column, the
-    Connect site button full width; the connect window's fields stay usable.
-11. Cleanup, optional: in Ghost Admin, delete the `Inflozo owner test` integration. The card stays
+7. **Do:** paste the correct Content API key; press **Connect** · **See:** the window closes and the Sites
+   page shows one card.
+8. **Do:** look at the card · **See:** the name, and under it the address with a small **new-tab arrow**
+   after it — press it and your site opens in a new tab. Then a line with **Ghost 6.58** and **0 projects**
+   and nothing else on it. Then, at the bottom, green **Connected** with **Checked just now** directly
+   beneath it, the two closer together than anything else on the card.
+9. **Do:** in the top bar's search box type `ghost6` and press Enter · **See:** the card stays. Type
+   `zzz` and press Enter · **See:** "No sites match “zzz”." Clear the box and press Enter to get it back.
+   (Searching the address works too: try `inflozo.com`.)
+10. **Do:** press **Connect site** in the top bar → **Done — next** → type `http://ghost5.inflozo.com` ·
+    **See:** under the field, as you type: "Most Ghost sites use https:// — use that if yours does. Without
+    HTTPS the editor can't load your live content." Change it to `https://ghost5.inflozo.com`, paste that
+    server's own keys (make a test integration there the same way), press **Connect** · **See:** on a Free
+    account: "Free includes 1 site. Pro connects up to 10." and no second card. On Pro: a second card
+    `Ghost5 · … · Ghost 5.130`, laid out exactly like the first.
+11. **Do:** Connect site → Done — next → `ghost6.inflozo.com` with its keys again → Connect · **See:**
+    "ghost6.inflozo.com is already connected."
+12. **Do:** on your phone, open https://app.inflozo.com/sites · **See:** the same card, one column, a
+    **Connect site** button full width above it, and the magnifying glass in the top bar opens a search box
+    that says **Search sites…**. Open the connect window and press **Done — next** · **See:** it still does
+    not jump.
+13. Cleanup, optional: in Ghost Admin, delete the `Inflozo owner test` integration. The card stays
     "Connected" until Story 3.7's daily check exists — expected.
 
 ## Owner's test findings
@@ -540,6 +680,14 @@ is needed.**
 **One part of one finding is not this story's**: the notifications bell that finding 5's amendment asks for
 belongs to **Story 13.4** (Epic 13, the notifications centre), and it is not built here. **Question 4** puts
 that to the owner. The triage for each finding is on the finding.
+
+**All seven were fixed at the Fix run, 2026-09-08**, and each has a step in the deployed-site harness that
+would fail if it came back: 1 and 2 → `same-size` (measured before the fix at 520×665.7 then 520×608.5, and
+one box after it); 3 → `find-link`; 4 and 6 → `card`; 5 → `sites-bar` and `search`; 7 → `first-run` and
+`axe-empty`. Three of them are deliberate departures from the frame and are recorded in Design Notes, in
+the files' own comments and in **DW-57**, so a later story does not put the frame's version back. See the
+Fix entries in the Spec Change Log for the frozen text his findings overtake, and for the routine calls
+taken rather than asked.
 
 1. **Can we make both the windows same size?**
 
@@ -920,6 +1068,54 @@ alone, in `connect-rule.test.ts`, with `4.48.0` and `4.0.0` injected.
   surfaces; both secrets gone with the account (`[0,0]`), 159 bodies swept with no key in any, users 5 → 5.
   **The frames beside the built pages** at 1440 / 834 / 390 (`--shots`) match S2b·1, S2b·2, S11a and S11b as
   in run 2. This is the run the review rests on.
+
+### Fix run, 2026-09-08 — the owner's seven findings
+
+Node 24 on `PATH` (`export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH`). Every key is named by
+its variable and no value was printed.
+
+**The findings reproduced on the deployed site BEFORE anything was changed** — his finding 2 was triaged at
+the Test run as *probably* finding 1 and marked "to be reproduced at Fix before anything is changed", so it
+was. A throwaway GoTrue account (`fix32-repro-*@inflozo.com`, deleted at the end, its site row cascading
+with it) was given one `sites` row through the service role — no Ghost connect needed to make the card that
+puts "Connect site" on the page — signed in on `https://app.inflozo.com` from a generated magic link, and
+Playwright measured the sheet's own `getBoundingClientRect` at each step:
+
+| | step 1 | step 2 | |
+|---|---|---|---|
+| the sheet (S11b) | 520 × **665.7** at (460, **117.2**) | 520 × **608.5** at (460, **145.8**) | shrinks 57.2px; its top edge sweeps 28.6px DOWN |
+| the page card | **480** × 694.7 | **560** × 661 | 80px wider, 33.7px shorter |
+
+The card behind sat at y 80, height 145 — exactly the band the sheet's top edge crossed. **One cause, two
+findings**, and the fix is structural rather than numeric: both panes share one CSS grid cell.
+
+**The gates, all green:**
+- `pnpm check` (root: `eslint .`, `tsc --noEmit` in every package, `node --test '*.test.ts'`) --
+  **PASS**, exit 0: **200** tests in `apps/web` (198 at Review + the two the Fix adds), 0 failures, plus
+  one per core package.
+- `node --test connect-rule.test.ts` -- **PASS**, 11/11. The two new ones: `filterSites` matches by title,
+  by host, by whole address and by the PUBLIC url, is case-insensitive, returns every row in order for an
+  empty or blank query, takes the first of a repeated `?q=` and trims the query it hands back for
+  "No sites match …"; and the empty screen's words are the owner's Question 5 ruling, asserted verbatim.
+- `pnpm build` (`next build`) -- **PASS**. Route table unchanged and both routes still dynamic and inside
+  the guard: `ƒ /app/sites` and `ƒ /app/sites/connect`; `/api/ghost-admin/verify` still absent.
+- `python3 tools/doc-audit.py --check` (twice) -- **PASS**, 0 warnings. The harness row's description
+  rewritten for the steps it gained; `INDEX.md`/`INDEX.html` regenerated by the first run, as designed.
+- `bash supabase/tests/run-rls-gate.sh` -- **PASS**, exit 0. No schema change in this run; re-run because
+  it is what CI runs and because the harness's cascade proof depends on DW-44's trigger — all five DW-44
+  assertions green, including "deleting an account takes its sites' secrets out of the vault".
+- `python3 tools/probe/run-verify-ghost-admin.py --check` -- **PASS** against the live Supabase project
+  (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`). §21j re-executed rather than remembered: `GET
+  /rest/v1/{decrypted_secrets,secrets,site_credentials}` → **404, 404, 404** with the positive control
+  `GET /rest/v1/sites` → **200**. Every key present by name; playwright, axe-core and the app's own
+  `postgres` driver resolve; the audit route the app stamps is still `sites/connect`; and the app's own
+  sentences evaluate — including the two this run adds, `SITES_EMPTY.title` = "One handshake and you're
+  in." and `.sub` = "Connect your Ghost site — it takes about a minute.", which are the owner's Question 5
+  ruling read out of `lib/connect-rule.ts` rather than retyped in the harness.
+
+**The deployed site — the browser half.** _Recorded below once this Fix commit's CI deployment is READY;
+the harness drives `https://app.inflozo.com` and cannot run against code that is not deployed (DW-7: CI
+publishes, the push does not)._
 
 ### Deploy run, 2026-09-08
 

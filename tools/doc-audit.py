@@ -357,7 +357,13 @@ DOCS = [
   'the transaction pooler. Story 3.1 drove a bearer-gated verify route because the Admin chokepoint '
   'had no product caller; Story 3.2 built that caller — the connect wizard — deleted the route '
   '(DW-48) and retargeted this harness at the product. One throwaway Free account signs in from a '
-  'generated magic link and drives /sites: the handshake page IS S2b·1 with the integration '
+  'generated magic link and drives /sites: with nothing connected the page is the EMPTY SCREEN the '
+  "owner asked for at his test (finding 7, 2026-09-08) — his own title and subtitle, read out of "
+  'the app rather than retyped, a drawing and two "Connect site" buttons — over the shell top bar '
+  'Sites now shares with Projects, whose field says "Search sites…" and which carries no bell '
+  '(Story 13.4\'s). Its button opens S11b, and the sheet is measured at BOTH steps: one box, '
+  'because a box that shrank 57px between them was findings 1 and 2. "Where do I find these?" is a '
+  'link, not the frame\'s bordered box (finding 3). /sites/connect is S2b·1 with the integration '
   'screenshot really served, "Done — next" is a link to S2b·2 with three fields and no Staff Access '
   'Token, an http:// address warns under the field as it is typed, a malformed Admin key is refused '
   'before Vault and before the network, a kid Ghost never issued answers ghost_unknown_key (§37 — '
@@ -366,7 +372,10 @@ DOCS = [
   'its ghost_version, content_key, site_settings.public_url and credentials_present, the pooler a '
   'private.site_credentials row and a live vault.secrets row behind its ref, and '
   'private.credential_audit an admin_read for config/ with a NULL site_id and then one for site/ '
-  "carrying the new id. The same address again answers already_connected; T3 on the Free account "
+  'carrying the new id. The card is read off its rendered boxes for the layout the owner finalised '
+  '(findings 4 and 6): the new-tab glyph on the address, and "Connected" below the pills and just '
+  'above "Checked …". The shell\'s field on Sites finds a site by its title and by its address. '
+  "The same address again answers already_connected; T3 on the Free account "
   "answers Appendix F.1's own cap sentence, composed from PLANS rather than typed here. axe-core at "
   'WCAG 2.1 AA over both surfaces at 1440 and 390. Then GoTrue deletes the user and the secret must '
   'be gone — the cascade path of DW-44 — and every response body the run received is swept for the '

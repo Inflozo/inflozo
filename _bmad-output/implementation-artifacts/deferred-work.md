@@ -1320,3 +1320,24 @@ reason: The frozen Boundaries chose an origin on purpose — `unique (user_id, u
   the day the rule admits one. Doing it needs a decision on what "one record" means for `example.com` and
   `example.com/blog` (two sites, or a typo?), which is the owner's; ask him when a customer with a
   subdirectory install appears, or at Manage keys (3.6) where the URL is shown read-only.
+
+### DW-57: the Sites card's layout is the owner's, not the frame's, and the later stories inherit it
+
+plain: The card on the Sites page no longer looks like the drawing it came from. The owner tested Story 3.2 on
+  the live site and asked for three changes to it: the address carries a "opens in a new tab" arrow; the green
+  **Connected** left the line it shared with the two grey pills (Ghost 6.58, 0 projects) and sits just above
+  "Checked 5 minutes ago"; and those two sit closer together than anything else on the card. He asked for it
+  "for all site cards" — one component draws every card, so that is already true. What this entry exists for is
+  the stories that add MORE to this card: they must add to what is there now, not put back what the frame draws.
+status: open
+severity: medium
+origin: Story 3.2 owner's test (2026-09-08, findings 4 and 6) — his test outranks the frame, R-80 as amended
+location: apps/web/app/(app)/app/(authed)/sites/page.tsx (the one card component, and the comment at the top of
+  the file that records the departure) · `S11 Sites.dc.html:61-76` is the frame it departs from
+reason: Three stories still add to this card and each would otherwise read the frame and undo the owner's
+  layout: **3.3** the Preview-only chip, **3.5** the ⋯ menu (Re-check · Reconnect · Manage keys · Disconnect)
+  and S11c's Free-cap ghost slot, **3.7** the health badges and "Reconnect needed". Every one of them puts
+  something on the pills' line or beside the state, which is exactly where he moved things from. The rule for
+  each: the pills' line carries METADATA only, the state line carries the connection's state and its timestamp,
+  and the ⋯ button goes at the top right of the header row where the frame draws it. The export is never
+  edited (R-74), so this entry and the file's own comment are where the departure lives.

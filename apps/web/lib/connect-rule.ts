@@ -132,6 +132,51 @@ export function checkedLabel(at: string | Date | null | undefined, now: Date): s
 }
 
 /**
+ * THE SITES SEARCH (the owner's finding 5, 2026-09-08). The shell's field is drawn on Sites as it is
+ * on Projects and posts `?q=` to whatever page it sits on, so this is `filterProjects`'s twin — the
+ * repeated-key array included — and it lives here because the match is over what the CARD shows:
+ * the title, and the address under it. Both the raw url and the host are matched, so "orbitweekly",
+ * "orbitweekly.com" and "https://orbitweekly.com" all find the same card.
+ */
+export function filterSites<
+  T extends { title: string | null; url: string; site_settings: { public_url?: string } | null },
+>(rows: readonly T[], q: string | string[] | undefined): { query: string; shown: T[] } {
+  const raw = Array.isArray(q) ? q[0] : q
+  const query = raw?.trim() ?? ''
+  const needle = query.toLowerCase()
+  const shown = query
+    ? rows.filter((row) => {
+        const publicUrl = row.site_settings?.public_url || row.url
+        return [row.title || hostOf(row.url), row.url, publicUrl, hostOf(publicUrl)].some((field) =>
+          field.toLowerCase().includes(needle),
+        )
+      })
+    : [...rows]
+  return { query, shown }
+}
+
+/**
+ * S11a WITH NOTHING CONNECTED — the owner's finding 7, and the words he ruled at Question 5. No
+ * frame draws this screen: the export has S11a, S11b and S11c and no empty state, so it is
+ * extrapolated from the nearest one that has, S3b's Projects empty screen (R-74). Here rather than
+ * in the page so the harness can read the app's own sentences instead of retyping them.
+ */
+export const SITES_EMPTY = {
+  title: "One handshake and you're in.",
+  sub: 'Connect your Ghost site — it takes about a minute.',
+  /** "No sites match …", the Projects grid's own answer to a search that found nothing. */
+  noMatch: (query: string) => `No sites match “${query}”.`,
+} as const
+
+/**
+ * The connect sheet's dialog id. S11a's "Connect site" sits in the SHELL's top bar (the owner's
+ * finding 5) and the sheet is rendered by the page, so the DOM is the only thing the two share —
+ * one constant rather than two string literals a rename could separate (`NEW_PROJECT_DIALOG`'s
+ * own argument, `lib/projects.ts`).
+ */
+export const CONNECT_SITE_DIALOG = 'connect-site-sheet'
+
+/**
  * THE CODES → SENTENCES TABLE, AND IT LIVES HERE AND NOWHERE ELSE. The action answers a code and
  * a subject; the wizard renders the sentence. Two copies of a refusal sentence is how a refusal
  * drifts from the one the owner read and approved.
