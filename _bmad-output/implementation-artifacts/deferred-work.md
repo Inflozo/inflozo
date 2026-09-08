@@ -1650,6 +1650,14 @@ reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sit
   the class the old wrapper never saw. The note line names the method now, so the next occurrence
   says which one it was. Still open: whether the hang is the deployment, the platform or the
   network, and the control that would answer it is still the one that cannot be driven.
+  A THIRD MANIFESTATION, and it is why the retry was NOT widened again (2026-09-08): one run timed
+  out after 30s on `locator.waitFor` — the S2c heading after the real T1 connect — with 0 navigation
+  retries, so no wrapped method was involved at all; the next run passed the same step. The retry
+  deliberately stops at `goto`, `waitForURL` and `reload`, because a `locator.waitFor` is an
+  ASSERTION nearly everywhere else in the harness and retrying those would hide real failures rather
+  than ride over a hang. So the observed class is now "a page or a wait on the deployed app
+  occasionally makes no progress for 30-60s", which is wider than what is mitigated, and a red run
+  must still be read before it is believed.
 
 ### DW-69: two presses of "Use your brand" in flight together can still make two projects
 

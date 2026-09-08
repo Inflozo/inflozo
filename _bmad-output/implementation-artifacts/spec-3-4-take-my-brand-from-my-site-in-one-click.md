@@ -939,3 +939,43 @@ project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPA
 `SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
 Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
 story's path** and were not called.
+
+## Fix record 2 — the owner's Question 4 ruling, executed (R-82)
+
+Run 2026-09-08 against CI's deployment of **`909f87b4`** on `app.inflozo.com` (`rls` ✔ `check` ✔
+`deploy` ✔, production `READY` on that sha through the Vercel API by `VERCEL_TOKEN`), T1 and T3 as
+above. **63 steps, 0 failures** — the review's 62 plus **`brand-atcap-picker`**. `pnpm check` exit 0
+with 229 tests (`brandTarget`'s block gained three assertions rather than a new test); `pnpm build`
+exit 0 with `ƒ /app/sites/brand` still dynamic inside the guard; `doc-audit --check` PASS on the
+second pass; no migration.
+
+**The change is one line and it is a simplification.** `brandTarget` was
+`capped ? projects[0] : projects.find(linked)`; it is now
+`projects.find(linked) ?? (capped ? projects[0] : undefined)`. The project for this site wins on
+**both** sides of the cap, and the cap decides only what happens when this site has no project —
+which is the one branch where Question 1 still rules. A consequence worth naming: **a downgrade can
+no longer move the brand to a different project**, because the target no longer depends on the plan
+whenever the binding exists.
+
+**`brand-atcap-picker`, in the run's own words.** The only state that reaches "at the cap AND with a
+choice" is a **downgrade** — Pro with two projects, then Free, which includes one — so the step
+flips the entitlement through the service role as `pro-connect-t3` already does, and puts it back in
+a `finally`. Downgraded to Free with 2 projects: the ticked card is **"Ghost6"**, the project for
+this site, and it is **the same card that carries "This site's project"** — the tick and the label
+on one card, which is what he ruled. The caption names it too.
+
+**The control that makes it a control.** The step prints the row the **pre-ruling** rule would have
+ticked — the first card in the page's own `updated_at desc, id desc` order — and the run answered
+**"a DIFFERENT row"**. Had the two been the same row, the step would have said so rather than
+claiming a proof it had not made; a chooser test that cannot tell the old rule from the new one is
+not evidence for either.
+
+**One run failed before this one, and it did not recur.** Run 1 against this deployment timed out
+after 30s on `s2cHeading(page).waitFor()` — the S2c heading after the real T1 connect — with
+**0 navigation retries**, so nothing the DW-68 wrapper covers was involved. Run 2 passed the same
+step and every other one. Nothing between the last green deployment and this one touches connect
+(`f81beb7e` is spec and harness only; `909f87b4` changes `brandTarget`), so it is recorded as a
+**third manifestation of the DW-68 family — this time a locator wait rather than a navigation** —
+and the retry was deliberately **not** widened to cover `locator.waitFor`, because a locator wait is
+an assertion nearly everywhere else in this file and retrying those would hide real failures. The
+cause remains open and no claim is made about it.
