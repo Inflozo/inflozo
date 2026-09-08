@@ -445,10 +445,53 @@ and none is recorded here.
 | `python3 tools/probe/run-verify-ghost-admin.py --check` | **RESULT: all steps passed.** `keys` PASS (every variable by name), `vault-off-rest` PASS (§21j re-executed), `settings-keys` PASS, and the new **`brand-keys` PASS** against both live Ghosts — `{"T1": {…, "navigation": "json-string"}, "T3": {…, "navigation": "json-string"}}`. Playwright, axe-core and the `postgres` driver all resolved. It starts no browser, so it proves none of the UI steps |
 | `git grep -n 'announcement_clear' -- apps/web packages tools` | `admin-rule.ts:103` and its test only. **No caller** — this story added no Admin write and `ADMIN_WRITES` is unchanged |
 
-**Real services this Dev run touched:** Ghost **T1** (6.58.0) and **T3** (5.130.6) over the Admin
-API, read-only, with `GHOST6_ADMIN_API_KEY` / `GHOST5_ADMIN_API_KEY`; the live **Supabase** project
-over PostgREST for `vault-off-rest`'s control (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`). **This story
-writes to no Ghost:** the only step that ever did is 3.3's `injection-live` and it is unchanged.
-Resend and Dodo are not on this story's path. **Vercel is the one service still owed a result** —
-the full browser run drives `app.inflozo.com`, so it runs against the deployment this Dev commit
-produces, and its record is appended below.
+### The full harness, on the deployed site — `python3 tools/probe/run-verify-ghost-admin.py`
+
+Run against **`app.inflozo.com`** serving CI's deployment of `6588fe8c` (`rls` ✔ `check` ✔ `deploy` ✔),
+with **T1** `ghost6.inflozo.com` 6.58.0 and **T3** `ghost5.inflozo.com` 5.130.6.
+**RESULT: all steps passed — 55 steps, 0 failures**, every step in the docstring in order. The
+story's own eight, in the run's own words:
+
+| Step | What the deployed site answered |
+|---|---|
+| `brand-keys` | Both majors carry all seven keys, and `navigation` is `"json-string"` on **both** — the live container is the string, not the array |
+| `connect` | T1 connected from a bare host, the row complete, and the browser landed on **`/sites/brand?site=3ce18c3b…`** — S2c naming the site it just read, not the list |
+| `brand-screen` | The accent `#FF1A75` **captioned as the hex** and really painted on the swatch; the menu `["Home","About"]` drawn as **2 text pills with 0 links**; "Your site today", "Fonts stay yours", "Your homepage, already wearing your brand.", both buttons, and the caption saying a project will be **made** |
+| `brand-js-off` | `[{"method":"post","action":true,"encoded":1,"site":1,"decision":1,"submits":1},{…,"decision":0,…}]` — **both** forms progressively enhanced, exactly one carrying the hidden decision |
+| `axe-brand` | **Zero violations** at WCAG 2.1 AA, 1440 and 390; no horizontal scroll |
+| `brand-skip` | **0 projects written**, the browser back on `/sites`, and the card still carrying "Use this site's brand" — the offer survives a skip |
+| `brand-seed` | 1 project named **"Ghost6"** (the site's own Ghost title), slug `ghost6`, **`linked_site_id` set**, `style_pack.brand.accent` `#FF1A75` equal to the site's; the card reads **"1 project"**; the dashboard card's three wireframe blocks compute to `["rgb(231, 226, 219)", "rgb(255, 26, 117)", "rgb(231, 226, 219)"]` — **the accent is painted** |
+| `brand-atcap` | At the Free cap the caption **named** the project ("…put your brand on “Ghost6”.") and no longer promised a new one; pressing it left **1** project, the same row, **name, slug and `linked_site_id` untouched** — the owner's Question 1 ruling, live |
+| `brand-none` | With the brand stripped: **0 offer links** and the route renders the **not-found** page — as does a `?site=` that is not the caller's, RLS returning no row |
+
+Every pre-existing step still passes, including the ones this story moved through S2c (`re-adopt`,
+`pro-connect-t3`), `ownership`, `audit` and `injection-live` — which confirms again that **this
+story writes to no Ghost**: `injection-live` is 3.3's and is unchanged.
+
+**Three defects the run found, all three in the harness and none in the product** — recorded because
+"a result whose control did not pass is not a result":
+
+1. A block-scoped `const same` shadowed the module-level `same()` helper, putting every earlier step
+   in the same block into its temporal dead zone. Renamed, and a scan for that whole class of
+   shadowing is in the file's own tooling now.
+2. `Boolean(form.getAttribute('action'))` called four wired forms unwired: React emits `action=""`,
+   and the empty string **is** the progressive enhancement. `notices-js-off` next door had the
+   idiom (`!== null`) and this had copied the idea without it.
+3. `brand-js-off` read the DOM S2c was reached by — a client-side redirect, built from an RSC
+   payload, which carries neither `method="POST"` nor the `$ACTION_*` fields, because React emits
+   those only when it renders on the **server**. It now fetches S2c as a fresh document, which is
+   what a scripts-off browser is served. Both other js-off steps already did.
+
+**One measured fact about the product, and it is not this story's:** a page in `(authed)` that calls
+`notFound()` renders the not-found page but answers **HTTP 200**, because `(authed)/loading.tsx` is a
+Suspense boundary over the whole group and the status is committed before the page component runs.
+It is true of every authed route, the pages are `robots: noindex`, and the fix is the route-group
+split `loading.tsx`'s own `ponytail:` note already names. Recorded as **DW-67**; `brand-none`
+asserts the page the customer sees and records the status beside it.
+
+**Real services this story touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); and the **Vercel** production deployment serving `app.inflozo.com`.
+**Resend and Dodo are not on this story's path** and were not called.

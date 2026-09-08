@@ -99,7 +99,8 @@ list gone stale — the sibling harness's own note):
                  answers a hex and nothing else), the menu as text pills with NO links, "Fonts
                  stay yours", the homepage caption, both buttons, and the caption under **Use your
                  brand** saying a project will be MADE — this account has none yet
-  brand-js-off   both S2c controls are `<form action={serverAction}>`: method=post, an action
+  brand-js-off   both S2c controls are `<form action={serverAction}>`, read off S2c fetched as a
+                 FRESH DOCUMENT because that is what a scripts-off browser is served: method=post, an action
                  attribute, React's encoded `$ACTION_*` hidden fields, one hidden `site_id` and one
                  submit each, and exactly one carrying the hidden `project_id` — the decision the
                  caption states. (The Sites card's offer is a LINK and needs no form to work with
@@ -148,9 +149,13 @@ list gone stale — the sibling harness's own note):
                  `linked_site_id` — and makes no second project
   brand-none     a card that offers nothing is not drawn (UX-DR3): with the brand taken off the
                  row through the service role (no Ghost here can answer without an accent, a logo
-                 AND a menu), the card draws no offer link and `/sites/brand?site=…` answers 404 —
-                 as does a `?site=` naming a row that is not the caller's, because RLS returns no
-                 row and no row is a 404. The brand is put back afterwards
+                 AND a menu), the card draws no offer link and `/sites/brand?site=…` renders the
+                 NOT-FOUND page — as does a `?site=` naming a row that is not the caller's,
+                 because RLS returns no row and no row is not found. The assertion is the page the
+                 customer SEES, because the HTTP status on these routes is 200: `(authed)/
+                 loading.tsx` is a Suspense boundary over the whole group, so the shell has
+                 streamed and the status is committed before `notFound()` throws. Measured, not
+                 excused — DW-67. The brand is put back afterwards
   dialog         S11a's "Connect site" is a LINK to /sites/connect that JavaScript turns into S11b:
                  the sheet opens with its title pair and the handshake, Escape closes it, and no
                  POST left the page (Cancel, Escape and the backdrop all send nothing)
@@ -969,9 +974,22 @@ const shoot = async (page, name) => {
     // ── BOTH CONTROLS ARE FORMS, so S2c works with JavaScript off — the same wiring `js-off`
     //    asserts for the keys form. (The Sites card's offer is a LINK and needs no form to work
     //    without scripts; it is asserted where it is drawn, in `brand-seed`.)
+    // A SCRIPTS-OFF BROWSER IS SERVED THE SERVER'S HTML, so that is what this reads: S2c fetched
+    // as a FRESH DOCUMENT. React emits `method="POST"` and the encoded `$ACTION_*` fields only
+    // when it renders on the SERVER — S2c was reached by the connect action's own client-side
+    // redirect, whose DOM is built from an RSC payload and carries neither, so the first version
+    // of this step read `method: ""` and `encoded: 0` off two forms that are perfectly wired
+    // (executed, runs 2-4). `js-off` and `notices-js-off` both read a document `goto` fetched,
+    // and this had copied their question without their setup.
+    await page.goto(landedOn, { waitUntil: 'load' })
+    await s2cHeading(page).waitFor()
     const brandForms = await page.locator('main form').evaluateAll((forms) => forms.map((f) => ({
       method: (f.getAttribute('method') || '').toLowerCase(),
-      action: Boolean(f.getAttribute('action')),
+      // `!== null`, NEVER a truthiness test: React emits `action=""` — the empty string means
+      // "post to this page", which is exactly the progressive enhancement being asserted, and
+      // `Boolean('')` called all four of these unwired (executed, run 2). `notices-js-off` next
+      // door had it right and this copied the idea without the idiom.
+      action: f.getAttribute('action') !== null,
       encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
       site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
       decision: f.querySelectorAll('input[type="hidden"][name="project_id"]').length,
@@ -985,7 +1003,8 @@ const shoot = async (page, name) => {
       `${brandForms.length} form(s) on S2c and ${brandWired.length} of them progressively enhanced: ` +
       `method=post, an action attribute, React's encoded $ACTION_* hidden fields, one hidden ` +
       `site_id and one submit each. Exactly one carries the hidden project_id — the decision the ` +
-      `caption states, which useBrand re-counts and refuses if it has gone stale`)
+      `caption states, which useBrand re-counts and refuses if it has gone stale. Read: ` +
+      `${JSON.stringify(brandForms)}`)
 
     await axeAt(page, 'brand')
     await shoot(page, 's2c')
@@ -1152,17 +1171,20 @@ const shoot = async (page, name) => {
     await page.waitForURL((u) => u.pathname === '/sites')
     await page.waitForSelector('text=Connected')
     const afterCap = await projectsOf()
-    const same = afterCap[0] || {}
+    // NOT `same`: that name is a module-level helper up in the wizard's locators, and a
+    // block-scoped const of the same name put every earlier step in this try block into its
+    // temporal dead zone — `same-size` threw before this step was ever reached (executed, run 1).
+    const rebranded = afterCap[0] || {}
     step('brand-atcap',
-      namedIt && !stillCreate && afterCap.length === 1 && same.id === made.id
-      && same.name === made.name && same.slug === made.slug
-      && same.linked_site_id === made.linked_site_id
-      && ((same.style_pack || {}).brand || {}).accent === brandRead.accent,
+      namedIt && !stillCreate && afterCap.length === 1 && rebranded.id === made.id
+      && rebranded.name === made.name && rebranded.slug === made.slug
+      && rebranded.linked_site_id === made.linked_site_id
+      && ((rebranded.style_pack || {}).brand || {}).accent === brandRead.accent,
       `at the Free cap of 1 the caption NAMED the project it would brand ` +
       `(${JSON.stringify(SAY.brand_will_brand.replace('%s', made.name))}) = ${namedIt}, and no longer ` +
       `promised a new one = ${!stillCreate}; pressing it left ${afterCap.length} project — the same ` +
-      `row (${same.id === made.id}) with its name, slug and linked_site_id untouched ` +
-      `(${same.name === made.name && same.slug === made.slug && same.linked_site_id === made.linked_site_id}) ` +
+      `row (${rebranded.id === made.id}) with its name, slug and linked_site_id untouched ` +
+      `(${rebranded.name === made.name && rebranded.slug === made.slug && rebranded.linked_site_id === made.linked_site_id}) ` +
       `and style_pack.brand written again, idempotently`)
 
     // ── A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3), and the route that would draw it 404s.
@@ -1174,19 +1196,41 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
     const offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
-    const direct = await page.goto(`${APP}${offerHref}`, { waitUntil: 'load' })
-    const notFound = direct ? direct.status() : 0
-    // A `?site=` naming a STRANGER's row is the same 404 — RLS answers with no row, not an error.
-    const forgedSite = await page.goto(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`,
-                                       { waitUntil: 'load' })
-    const foreign404 = forgedSite ? forgedSite.status() : 0
+    /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders Next's own 404
+       page — but the HTTP STATUS on these routes is 200, and that is measured rather than
+       excused: `(authed)/loading.tsx` is a Suspense boundary over EVERY page in the group, so
+       the shell streams and the status line is committed before the page component ever runs.
+       It is a property of the route group and not of this story — every `(authed)` page that
+       404s does it — so the assertion is the page the customer sees, and the status is RECORDED
+       beside it (DW-67). */
+    const rendered = async (url) => {
+      const r = await page.goto(url, { waitUntil: 'load' })
+      // A LOCATOR THAT WAITS ON ITSELF, never `innerText` the instant `load` fires — the same
+      // Suspense boundary that commits the 200 means the SKELETON is what is on screen at `load`,
+      // and run 4 read the skeleton and reported "not the not-found page" about a page that had
+      // not rendered yet. Racing the two possible outcomes also makes a failure say which it saw.
+      const saw = await Promise.race([
+        page.getByText('could not be found', { exact: false }).first()
+          .waitFor({ timeout: 20000 }).then(() => 'not-found').catch(() => null),
+        s2cHeading(page).waitFor({ timeout: 20000 }).then(() => 'S2c').catch(() => null),
+      ])
+      return { status: r ? r.status() : 0, saw }
+    }
+    const direct = await rendered(`${APP}${offerHref}`)
+    // A `?site=` naming a row that is not the caller's is the SAME answer — RLS returns no row,
+    // and no row and no such site are indistinguishable, which is the point.
+    const forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
     await patchSettings(t1SiteId, { brand: brandKept })
     step('brand-none',
-      stripped.status === 200 && offerGone === 0 && notFound === 404 && foreign404 === 404,
+      stripped.status === 200 && offerGone === 0
+      && direct.saw === 'not-found' && forgedSite.saw === 'not-found',
       `with the brand taken off the row (HTTP ${stripped.status}) the card draws ${offerGone} offer ` +
-      `link(s) and ${offerHref} answers HTTP ${notFound}; a ?site= naming a row that is not the ` +
-      `caller's answers HTTP ${foreign404} — RLS returns no row, and no row is a 404. The brand ` +
-      `was put back afterwards`)
+      `link(s), and ${offerHref} rendered ${JSON.stringify(direct.saw)}; a ?site= naming a ` +
+      `row that is not the caller's rendered ${JSON.stringify(forgedSite.saw)} — RLS returns no row, ` +
+      `and no row is not found. Both answer HTTP ${direct.status}/${forgedSite.status} rather than ` +
+      `404: (authed)/loading.tsx is a Suspense boundary over the whole group, so the shell has ` +
+      `streamed and the status is committed before notFound() throws — a property of the route ` +
+      `group, not of this story (DW-67). The brand was put back afterwards`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
 

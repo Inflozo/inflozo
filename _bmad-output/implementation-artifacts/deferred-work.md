@@ -1569,3 +1569,24 @@ also: `projects.style_pack.brand` is a key Story 3.4 put in a column **E6 owns**
   (Story 6.1) inherits it and decides whether a pack that carries a site brand shows it, offers to clear
   it, or re-derives the pack from it. Only `placeholderFor` reads it today, for the dashboard card's
   accent; every other field is stored for the epic that uses it.
+
+### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
+
+plain: When you open a link to something that is not yours or no longer exists — say a brand screen for
+  a site whose brand has gone — Inflozo shows you the "not found" page, which is right. But the invisible
+  status code the browser receives says 200 (success) rather than 404. A person sees the correct page;
+  a search engine, a monitor or a script would be told the page was fine.
+status: open
+severity: low
+origin: Story 3.4 Dev harness (2026-09-08), step `brand-none` — measured, not reasoned
+location: apps/web/app/(app)/app/(authed)/loading.tsx (the Suspense boundary over the whole group) ·
+  apps/web/app/(app)/app/(authed)/sites/brand/page.tsx (`notFound()`) — and every other `(authed)` page
+  that calls `notFound()`, which is the point: it is a property of the route group
+reason: `loading.tsx` puts a Suspense boundary over EVERY page in `(authed)`, so Next streams the shell
+  and commits the status line before the page component runs — `notFound()` then renders the not-found
+  page into an already-successful response. It is not this story's to fix: the same is true of every
+  authed route, the pages themselves are `robots: noindex` so nothing indexes them, and the fix is the
+  one `loading.tsx`'s own `ponytail:` note already names — move the dashboard and its skeleton into their
+  own route group so the boundary stops covering pages that have no skeleton. The story that gives a
+  second `(authed)` page its own loading shape takes it. Until then `brand-none` asserts the page the
+  customer sees and RECORDS the status beside it, rather than asserting a code the shell already sent.
