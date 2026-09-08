@@ -95,8 +95,9 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
 **Ask First:**
 - Any Admin API path beyond `config/` and `settings/`; any non-GET; any change to `ADMIN_WRITES`.
 - Any new `sites` column or migration — this story needs none.
-- Any **write to a test Ghost's settings** from the harness (Question 1). Until he rules, the
-  harness reads only.
+- Any write to a test Ghost beyond the one the owner ruled: the **harness** may set and unset the
+  Site-footer code injection on T1 and T3 and must restore what it found (Question 1, ruled option 1
+  and widened to both servers, 2026-09-08). Any other write, on any server, is his again.
 - Storing, logging or returning any part of a `codeinjection_*` value, for any reason.
 
 **Never:**
@@ -180,10 +181,14 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
   `announcement_*` keys — §15h item 21 was measured with a staff token), `probe-selfhosted`
   (`capability` `full`, source `probe`, `site_settings` filled), `no-payload-leak` (no
   `codeinjection` key anywhere in `sites`, and neither payload in the rendered `/sites` HTML),
-  `injection-notice` · `portal-question` · `plan-question` · `preview-notice` (each seeded on the
-  throwaway user's own row through the service role — 3.2's `disconnected_at` fixture precedent —
-  then driven in the browser on the deployed site, answered, and read back), and `axe-notices` at
-  1440 and 390. The docstring names every step, in order.
+  `injection-live` (**the owner's ruling, 2026-09-08**: the harness reads T1's and T3's current
+  `codeinjection_foot`, writes `<!-- inflozo probe -->` with its own JWT — never through the product,
+  whose allowlist denies every non-GET — connects, asserts `site_settings.code_injection` is true and
+  the notice is on the card, then **restores the exact prior value in a `finally`, on failure too**,
+  and re-asserts it), `injection-notice` · `portal-question` · `plan-question` · `preview-notice`
+  (each seeded on the throwaway user's own row through the service role — 3.2's `disconnected_at`
+  fixture precedent — then driven in the browser on the deployed site, answered, and read back), and
+  `axe-notices` at 1440 and 390. The docstring names every step, in order.
 - `tools/doc-audit.py:355-362` -- the harness row's description follows its new subject; same path,
   no new row.
 - `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` --
@@ -209,7 +214,7 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
       answer actions -- a probe failure never fails a connect
 - [ ] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` + `page.tsx` -- the chip on the state
       line and the four blocks -- B15 from the frame, DW-57 respected
-- [ ] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- the nine new steps --
+- [ ] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- every new step its docstring names --
       R-82, re-runnable
 - [ ] `MEASUREMENTS.md` §39 + `deferred-work.md` (DW-54, DW-57, the new B15 entry) +
       `epic-3-context.md` -- propagate, never localise
@@ -245,6 +250,9 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
   file outside `probe-rule.ts` mentions `codeinjection`
 - Given the deployed site, when `tools/probe/run-verify-ghost-admin.py` runs against T1 and T3, then
   every step in its docstring passes in order and axe reports zero violations at both widths
+- Given `injection-live`, when it finishes — passing, failing or interrupted — then both test Ghosts'
+  `codeinjection_foot` is byte-identical to what the step found, re-read and asserted after the
+  restore (the owner's ruling, 2026-09-08)
 
 ## Spec Change Log
 
@@ -307,6 +315,13 @@ about two seconds, on a test server, nothing a visitor would see.
 *Nothing waits on this answer* — the build goes ahead with the read-only version, and option 1 or 3
 adds the step afterwards.
 
+**Ruled: option 1 (owner, 2026-09-08), and widened — "feel free to use ghost6 also if you need
+that."** So the harness may set and unset code injection on **both** test Ghosts, T1
+(`ghost6.inflozo.com`) and T3 (`ghost5.inflozo.com`), and must restore each box to exactly what it
+found, every time, including on failure. It is the first sanctioned write to a test Ghost in this
+project: it is the harness's own, never the product's — `ADMIN_WRITES` is untouched and
+`permitted()` still denies every non-GET the app could make.
+
 ## Owner's manual test
 
 On the live site after the Deploy run. You will change one setting on one of your Ghost test servers
@@ -364,8 +379,10 @@ variable; no value is printed.
 - `python3 tools/probe/run-verify-ghost-admin.py --check` -- expected: every step in the docstring
   passes in order against **T1 `GHOST6_*` and T3 `GHOST5_*`** and the deployed `app.inflozo.com`,
   including the new `decrypt-path`, `settings-keys`, `probe-selfhosted`, `no-payload-leak`,
-  `injection-notice`, `portal-question`, `plan-question`, `preview-notice` and `axe-notices`; axe
-  reports zero violations at 1440 and 390
+  `injection-live`, `injection-notice`, `portal-question`, `plan-question`, `preview-notice` and
+  `axe-notices`; axe reports zero violations at 1440 and 390. **`injection-live` writes to T1 and T3
+  and restores them** (the owner's ruling): the Dev and Review records state, for each server, the
+  value found, the value written and the value restored
 
 **Manual checks (if no CLI):**
 - `private.credential_audit`, read through the pooler (`SUPABASE_DB_POOLER_URL`, read-only): a
