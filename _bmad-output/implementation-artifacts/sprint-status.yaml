@@ -62,7 +62,7 @@ development_status:
   epic-3: in-progress
   3-1-the-server-side-admin-proxy-and-vault-credential-storage: done
   3-2-the-connect-wizard-url-integration-guide-and-the-two-keys: done
-  3-3-the-connect-time-probes-preview-only-code-injection-portal-a: backlog
+  3-3-the-connect-time-probes-preview-only-code-injection-portal-a: ready-for-dev
   3-4-take-my-brand-from-my-site-in-one-click: backlog
   3-5-my-sites-their-caps-and-disconnecting-one: backlog
   3-6-manage-keys-and-a-partially-credentialed-site-as-an-ordinary: backlog
