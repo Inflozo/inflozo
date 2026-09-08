@@ -4,7 +4,7 @@ import { Button } from '@/components/kit/button'
 import { hostOf } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap } from '@/lib/plan'
-import { BRAND_COPY, hasBrand } from '@/lib/probe-rule'
+import { BRAND_COPY, brandTarget, hasBrand, imageUrl } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { skipBrand, useBrand } from '../actions'
 
@@ -54,16 +54,16 @@ export default async function BrandOffer({
 }: {
   // A repeated key (`?site=a&site=b`) arrives as an ARRAY; every other page in this epic takes
   // the first, and so does this one.
-  searchParams: Promise<{ site?: string | string[] }>
+  searchParams: Promise<{ site?: string | string[]; failed?: string | string[] }>
 }) {
-  const [{ site }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ site, failed }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
   const siteId = Array.isArray(site) ? site[0] : site
   if (!siteId) notFound()
 
   const supabase = await supabaseServer()
-  const [{ data: row }, { data: projects }, { plan }] = await Promise.all([
+  const [{ data: row }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
     // THE CALLER'S OWN SESSION. A `?site=` naming a stranger's row returns no row through RLS —
     // and a malformed id returns none either, because PostgREST refuses the filter. Both are the
     // same 404, which is the point. A DISCONNECTED record is not a site (FR-C6).
@@ -74,8 +74,14 @@ export default async function BrandOffer({
       .is('disconnected_at', null)
       .maybeSingle<Row>(),
     // `updated_at desc` is the dashboard's own order, so "the project you most recently worked
-    // on" means the same thing on both screens.
-    supabase.from('projects').select('id, name').order('updated_at', { ascending: false }),
+    // on" means the same thing on both screens — and `id` breaks the tie, because two projects
+    // saved in the same millisecond let this page and `useBrand` name different rows and the
+    // press then bounced back here for ever (review, 2026-09-08).
+    supabase
+      .from('projects')
+      .select('id, name, linked_site_id')
+      .order('updated_at', { ascending: false })
+      .order('id', { ascending: false }),
     resolveEntitlement(user.id),
   ])
 
@@ -85,14 +91,29 @@ export default async function BrandOffer({
   // Sites card carries no link to it.
   if (!row || !hasBrand(brand)) notFound()
 
+  // A COUNT THAT COULD NOT BE READ IS NOT A COUNT OF ZERO. Falling back to `[]` printed "we'll
+  // make a project" and then `useBrand` — whose own read succeeded — refused the stale decision
+  // and sent the customer straight back here (review, 2026-09-08). `app/error.tsx` is the screen
+  // for a page that cannot answer.
+  if (projectsError) throw projectsError
   const rows = projects ?? []
-  // At the cap the brand goes onto the project the customer most recently worked on; with room a
-  // project is made for the site. Either way the caption below says which, before the press.
-  const target = atCap(plan, rows.length) ? rows[0] : undefined
-  const caption = target ? BRAND_COPY.willBrand(target.name) : BRAND_COPY.willCreate
+  // At the cap the brand goes onto the project the customer most recently worked on; with room it
+  // goes onto the project already made for this site, and only when there is none is one made.
+  // `brandTarget` is that rule, shared with `useBrand` so the caption and the write cannot drift.
+  const capped = atCap(plan, rows.length)
+  const target = brandTarget(capped, rows, row.id)
+  const caption = !target
+    ? BRAND_COPY.willCreate
+    : capped
+      ? BRAND_COPY.willBrand(target.name)
+      : BRAND_COPY.willRebrand(target.name)
 
   const host = hostOf(row.site_settings?.public_url || row.url)
   const title = row.title || host
+  // https-only, RE-VALIDATED HERE: `brandOf` wrote it, but this reads it back out of a jsonb
+  // column and it goes into an `<img src>` — `style-pack.ts` takes the same position on the
+  // accent it reads back out of `style_pack`.
+  const logo = imageUrl(brand.logo)
 
   return (
     <div className="flex flex-1 items-center justify-center p-[16px_20px] tablet:p-6">
@@ -113,11 +134,11 @@ export default async function BrandOffer({
             </h2>
 
             <div className="flex items-center gap-[14px]">
-              {brand.logo ? (
+              {logo ? (
                 // The customer's own logo, https-only. `alt=""` — the site's name is the line
                 // beside it, and a screen reader reading it twice is worse than not at all.
                 <img
-                  src={brand.logo}
+                  src={logo}
                   alt=""
                   width={48}
                   height={48}
@@ -128,7 +149,9 @@ export default async function BrandOffer({
                   aria-hidden
                   className="flex size-12 shrink-0 items-center justify-center rounded-thumb bg-ink font-display text-[22px] font-bold text-paper"
                 >
-                  {title.slice(0, 1).toUpperCase()}
+                  {/* `Array.from` and not `slice(0, 1)`: a Ghost title starting with an emoji is
+                      a surrogate PAIR, and half of one renders as the replacement character. */}
+                  {(Array.from(title)[0] ?? '').toUpperCase()}
                 </span>
               )}
               <div className="flex min-w-0 flex-col gap-[2px]">
@@ -166,9 +189,14 @@ export default async function BrandOffer({
                     </li>
                   ))}
                 </ul>
-                <p className="text-[11.5px] leading-[1.5] text-ink-soft">{BRAND_COPY.fonts}</p>
               </div>
             ) : null}
+
+            {/* THE FRAME NESTS THIS UNDER Navigation and always draws a menu; a real site need
+                not have one, and the sentence is about FONTS. It is one of the elements the
+                story's own acceptance criterion enumerates, so it stays whatever else is
+                readable (review, 2026-09-08). */}
+            <p className="text-[11.5px] leading-[1.5] text-ink-soft">{BRAND_COPY.fonts}</p>
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-paper p-6 tablet:p-8">
@@ -218,6 +246,14 @@ export default async function BrandOffer({
           <p id="brand-caption" className="text-center text-helper-caption text-ink-soft">
             {caption}
           </p>
+          {/* The matrix's "insert fails → the page says so". `useBrand` redirects back here with
+              the flag rather than returning a value, so the message survives scripts off — the
+              same shape `recheckPlan` uses on the Sites page. */}
+          {failed ? (
+            <p role="status" className="text-center text-helper-caption text-coral-text">
+              {BRAND_COPY.failed}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

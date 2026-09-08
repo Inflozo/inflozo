@@ -92,6 +92,10 @@ list gone stale — the sibling harness's own note):
                  `private.site_credentials` row and a live `vault.secrets` row behind its ref —
                  and STORY 3.4 MOVED WHERE IT LANDS: the browser is on `/sites/brand?site={id}`,
                  S2c, naming the site it just read, because T1's settings carry a brand
+  browser-js     the embedded Playwright script PARSES, checked before a key is read or a byte is
+                 spent. The script is a Python string until node reads it, so no test in the
+                 repository can see it; a redeclaration or a temporal dead zone in it has twice
+                 surfaced only in the middle of a live run (2026-09-08, Dev and Review)
   brand-screen   STORY 3.4: S2c on the deployed site (`S2 Onboarding.dc.html:150-196`), asserted
                  against the ROW the probe just wrote — the heading and its sub-line naming the
                  host, "Your site today", the accent swatch really painted in the row's accent and
@@ -106,6 +110,14 @@ list gone stale — the sibling harness's own note):
                  caption states. (The Sites card's offer is a LINK and needs no form to work with
                  scripts off; it is asserted where it is drawn, in `brand-seed`.)
   axe-brand      axe-core over S2c at 1440 and 390
+  brand-rerun    THE OFFER TAKEN A SECOND TIME, WITH ROOM — the only state in this run where a
+                 second press could make a SECOND project for one site, and until the review of
+                 2026-09-08 it did. It runs after `pro-connect-t3` because every brand step above
+                 it is on a FREE account whose cap of 1 the first press fills, which sends every
+                 later press down the at-cap branch. On Pro the caption names the project already
+                 made for this site rather than promising a new one, and the press leaves the
+                 same single row: FR-C4's "re-runnable" and the matrix's "seeding again writes
+                 the same pack"
   brand-skip     **Skip** writes NOTHING — no project, and no note that it was pressed — the
                  browser returns to `/sites`, and the card still carries the offer link, so it can
                  be taken later. The card itself is unchanged: its title and address as
@@ -142,6 +154,14 @@ list gone stale — the sibling harness's own note):
                  to the site's; the Sites card's tally turns into the app's own "1 project"; and
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
+  brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
+                 `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
+                 is the guard rather than an `.eq('user_id')`. The second account's real site id
+                 is opened as `/sites/brand?site=` (not found) and then forged into S2c's own
+                 **Use your brand** and **Skip** forms and submitted from the fixture's session:
+                 the caller's projects are byte-identical afterwards and none is linked to the
+                 stranger's site. The acceptance criterion says "when the page is opened OR
+                 EITHER ACTION IS POSTED" and only the page had ever been asked
   brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
                  owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
                  will brand before the press, and pressing it writes `style_pack.brand` onto that
@@ -150,8 +170,9 @@ list gone stale — the sibling harness's own note):
   brand-none     a card that offers nothing is not drawn (UX-DR3): with the brand taken off the
                  row through the service role (no Ghost here can answer without an accent, a logo
                  AND a menu), the card draws no offer link and `/sites/brand?site=…` renders the
-                 NOT-FOUND page — as does a `?site=` naming a row that is not the caller's,
-                 because RLS returns no row and no row is not found. The assertion is the page the
+                 NOT-FOUND page — as does a `?site=` naming a row NO ACCOUNT carries. (The
+                 stranger's row is a different question and `brand-ownership` asks it.) The
+                 brand is restored in a `finally`. The assertion is the page the
                  customer SEES, because the HTTP status on these routes is 200: `(authed)/
                  loading.tsx` is a Suspense boundary over the whole group, so the shell has
                  streamed and the status is committed before `notFound()` throws. Measured, not
@@ -374,6 +395,8 @@ def app_text():
         " brand_offer: BRAND_COPY.offer,"
         " brand_will_create: BRAND_COPY.willCreate,"
         " brand_will_brand: BRAND_COPY.willBrand('%s'),"
+        " brand_will_rebrand: BRAND_COPY.willRebrand('%s'),"
+        " brand_failed: BRAND_COPY.failed,"
         " one_project: projectsLabel(1),"
         " at_cap: siteCapSentence('free') }))")
     try:
@@ -1149,14 +1172,18 @@ const shoot = async (page, name) => {
       saidCreate && seeded.length === 1 && made.linked_site_id === t1SiteId
       && seededBrand.accent === brandRead.accent && made.name === pub1.title
       && Boolean(made.slug) && tally.includes(SAY.one_project)
-      && painted.includes(rgbOf(brandRead.accent)),
+      // THE LAST BLOCK, not any of them: `includes` over three wireframe blocks stayed green
+      // through the bug it exists to catch — the accent painted on the wrong one (review,
+      // 2026-09-08). `placeholder.tsx` paints the button, which is the block the frame's
+      // mini homepage ends with.
+      && painted[painted.length - 1] === rgbOf(brandRead.accent),
       `the caption said a project would be made = ${saidCreate}; pressing "${SAY.brand_use}" wrote ` +
       `${seeded.length} project named ${JSON.stringify(made.name)} — the site's own Ghost title — ` +
       `slug ${JSON.stringify(made.slug)}, linked_site_id = the site = ${made.linked_site_id === t1SiteId} ` +
       `(FR-B5's first writer), style_pack.brand.accent ${seededBrand.accent} equal to the site's ` +
       `${brandRead.accent}; the Sites card now reads ${JSON.stringify(SAY.one_project)} = ` +
       `${tally.includes(SAY.one_project)}, and the dashboard card's wireframe blocks compute to ` +
-      `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} among them`)
+      `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} on the LAST of them`)
 
     // ── AT THE CAP, WHICH THE SEED ABOVE JUST PUT THIS FREE ACCOUNT AT (F.1: Free includes 1
     //    project). THE OWNER RULED THIS PATH (Question 1, option 1, 2026-09-08) and asked the
@@ -1192,10 +1219,15 @@ const shoot = async (page, name) => {
     //    seeded on the fixture's OWN row through the service role and then put back — the same
     //    idiom as the Portal and plan questions below.
     const brandKept = brandRead
-    const stripped = await patchSettings(t1SiteId, { brand: undefined })
+    // RESTORED IN A `finally`, WHICH IS THIS FILE'S OWN IDIOM (`injection-live` restores exactly
+    // what it found, passing or failing). A throw between the strip and the restore left the row
+    // stripped for every step after it — and every one of them reaches S2c (review, 2026-09-08).
+    let stripped, offerGone, direct, forgedSite
+    try {
+    stripped = await patchSettings(t1SiteId, { brand: undefined })
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
-    const offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
+    offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
     /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders Next's own 404
        page — but the HTTP STATUS on these routes is 200, and that is measured rather than
        excused: `(authed)/loading.tsx` is a Suspense boundary over EVERY page in the group, so
@@ -1216,18 +1248,22 @@ const shoot = async (page, name) => {
       ])
       return { status: r ? r.status() : 0, saw }
     }
-    const direct = await rendered(`${APP}${offerHref}`)
-    // A `?site=` naming a row that is not the caller's is the SAME answer — RLS returns no row,
-    // and no row and no such site are indistinguishable, which is the point.
-    const forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
-    await patchSettings(t1SiteId, { brand: brandKept })
+    direct = await rendered(`${APP}${offerHref}`)
+    // A site id NO ROW ANYWHERE CARRIES. It is not the cross-account question — that one needs a
+    // row a DIFFERENT account really owns, and it is asked in `brand-ownership` below, where the
+    // fixture for it exists (review, 2026-09-08: this step used to claim the stranger's row and
+    // forge a nonexistent uuid, which RLS never had to refuse).
+    forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
+    } finally {
+      await patchSettings(t1SiteId, { brand: brandKept })
+    }
     step('brand-none',
       stripped.status === 200 && offerGone === 0
       && direct.saw === 'not-found' && forgedSite.saw === 'not-found',
       `with the brand taken off the row (HTTP ${stripped.status}) the card draws ${offerGone} offer ` +
-      `link(s), and ${offerHref} rendered ${JSON.stringify(direct.saw)}; a ?site= naming a ` +
-      `row that is not the caller's rendered ${JSON.stringify(forgedSite.saw)} — RLS returns no row, ` +
-      `and no row is not found. Both answer HTTP ${direct.status}/${forgedSite.status} rather than ` +
+      `link(s), and ${offerHref} rendered ${JSON.stringify(direct.saw)}; a ?site= naming a row that ` +
+      `does not exist rendered ${JSON.stringify(forgedSite.saw)} (the STRANGER'S row is ` +
+      `brand-ownership's). Both answer HTTP ${direct.status}/${forgedSite.status} rather than ` +
       `404: (authed)/loading.tsx is a Suspense boundary over the whole group, so the shell has ` +
       `streamed and the status is committed before notFound() throws — a property of the route ` +
       `group, not of this story (DW-67). The brand was put back afterwards`)
@@ -1374,6 +1410,38 @@ const shoot = async (page, name) => {
       `the sheet closed on success (${sheetLeft} left open), the connect landed on ${t3Landed} — ` +
       `S2c for T3 (Story 3.4) — and after Skip the second card reads ` +
       `${JSON.stringify(card3.replace(/\s+/g, ' ').trim())}`)
+
+    // ── THE OFFER TAKEN A SECOND TIME, WITH ROOM. Every other brand step above ran on a FREE
+    //    account whose cap is 1, so the first press filled it and every later press took the
+    //    at-cap branch — the one branch where a second press could insert a SECOND project for
+    //    the same site was unreachable, and it was the branch that did (review, 2026-09-08).
+    //    `pro-connect-t3` has just flipped this account to `pro_active`: one project, 25 allowed.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const beforeRerun = await projectsOf()
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const saidRebrand = await says(page, SAY.brand_will_rebrand.replace('%s', beforeRerun[0].name))
+    const promisedNew = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForSelector('text=Connected')
+    const afterRerun = await projectsOf()
+    const tallyRerun = await cardOf('Connected').first().innerText().catch(() => '')
+    step('brand-rerun',
+      beforeRerun.length === 1 && saidRebrand && !promisedNew
+      && afterRerun.length === 1 && afterRerun[0].id === beforeRerun[0].id
+      && afterRerun[0].slug === beforeRerun[0].slug && afterRerun[0].name === beforeRerun[0].name
+      && tallyRerun.includes(SAY.one_project),
+      `on PRO with ${beforeRerun.length} project and 25 allowed — room to spare — the offer link is ` +
+      `still on the card and the caption NAMED the project for this site ` +
+      `(${JSON.stringify(SAY.brand_will_rebrand.replace('%s', beforeRerun[0].name))}) = ${saidRebrand}, ` +
+      `and did NOT promise a new one = ${!promisedNew}; pressing "${SAY.brand_use}" a second time left ` +
+      `${afterRerun.length} project — the SAME row, same name, same slug — and the card still reads ` +
+      `${JSON.stringify(SAY.one_project)}. FR-C4's "re-runnable", and the matrix's "seeding again ` +
+      `writes the same pack": the offer never retires, so this is the only thing that keeps a press ` +
+      `from being a project factory`)
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
 
     // ── THE SEARCH HE ASKED FOR (finding 5, amended): the shell's own field, on Sites, matching a
     //    site by its TITLE or its ADDRESS. It is the dashboard's field with a different noun, so
@@ -1526,6 +1594,52 @@ const shoot = async (page, name) => {
       `the fixture's own session (forged = ${forged}); the row is byte-identical afterwards = ` +
       `${foreignAfter === foreignBefore} (${foreignAfter}). The service role bypasses RLS, so ` +
       `.eq('user_id') in the action is the only thing that refused it.`)
+
+    // ── THE SAME QUESTION, ASKED OF STORY 3.4's TWO ACTIONS, because its acceptance criterion
+    //    says "when the page is opened OR EITHER ACTION IS POSTED" and only the page had ever
+    //    been asked — with a uuid no row anywhere carries, which RLS never had to refuse
+    //    (review, 2026-09-08). These two write `projects` through the CALLER'S OWN session, so
+    //    the guard is RLS itself rather than an `.eq()`: a stranger's site id reads back no row
+    //    and `useBrand` throws `notFound()` before it can decide anything.
+    const foreignPage = await rendered(`${APP}/sites/brand?site=${foreignId}`)
+    const projectsBefore = await projectsOf()
+    // The forge is made on S2c ITSELF — the fixture's own, legitimately on screen — so both hidden
+    // fields and React's `$ACTION_*` are the real ones and only the site id is a stranger's.
+    const forgeBrand = async (label) => {
+      await page.goto(`${APP}${offerHref}`, { waitUntil: 'load' })
+      await s2cHeading(page).waitFor()
+      return page.evaluate(([id, name]) => {
+        const button = [...document.querySelectorAll('button[type="submit"]')]
+          .find((b) => b.textContent.trim() === name)
+        if (!button) return false
+        button.form.querySelector('input[name="site_id"]').value = id
+        button.click()
+        return true
+      }, [foreignId, label])
+    }
+    const forgedUse = await forgeBrand(SAY.brand_use)
+    await page.waitForLoadState('networkidle').catch(() => {})
+    const afterUse = await projectsOf()
+    const forgedSkip = await forgeBrand(SAY.brand_skip)
+    await page.waitForLoadState('networkidle').catch(() => {})
+    const afterForgedSkip = await projectsOf()
+    // NOT A RE-READ COMPARED WITH ITSELF: nothing may now be LINKED to the stranger's site, which
+    // is the one row `useBrand` could have written if RLS had let it through.
+    const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
+    step('brand-ownership',
+      foreignPage.saw === 'not-found' && forgedUse && forgedSkip
+      && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
+      && JSON.stringify(afterUse) === JSON.stringify(projectsBefore)
+      && JSON.stringify(afterForgedSkip) === JSON.stringify(projectsBefore) && linkedToForeign === 0,
+      `/sites/brand?site= a row a DIFFERENT account owns rendered ${JSON.stringify(foreignPage.saw)} — ` +
+      `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
+      `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
+      `submitted from the fixture's session. The caller still has ${afterUse.length} project, ` +
+      `byte-identical to the ${projectsBefore.length} it had before ` +
+      `(${JSON.stringify(afterUse) === JSON.stringify(projectsBefore)}), and ${linkedToForeign} of them ` +
+      `is linked to the stranger's site — the one row a press could have written. These two write ` +
+      `through the caller's OWN session, so RLS is the guard and not an .eq() — the acceptance ` +
+      `criterion's "or either action is posted", executed`)
 
     // ── B15, THE PREVIEW-ONLY NOTICE (`B Missing Surfaces.dc.html:1188-1225`), on the deployed
     //    card at the three widths the spec names — and then its own Re-check plan, which is the
@@ -1782,6 +1896,25 @@ def main():
           f'{", ".join(k for k in needed if env.get(k))}'
           + (f'; MISSING: {", ".join(missing)}' if missing else ''))
     if missing:
+        print('  RESULT: FAILED')
+        return 1
+
+    # ── THE BROWSER SCRIPT PARSES, and this costs a second before anything is spent. It has now
+    #    bitten this file twice, both times only in the middle of a live run: a block-scoped `const
+    #    same` that put every earlier step in its temporal dead zone (Dev, 2026-09-08), and a
+    #    redeclared `afterSkip` in a step added by the review the same day. Neither is reachable by
+    #    any test the repository has — the script is a Python STRING until node reads it — and both
+    #    are what `node --check` answers instantly.
+    with tempfile.TemporaryDirectory() as work:
+        probe = os.path.join(work, 'syntax.mjs')
+        open(probe, 'w').write(BROWSER_JS)
+        parsed = subprocess.run(['node', '--check', probe], capture_output=True, text=True)
+    js_ok = parsed.returncode == 0
+    print(f'  {"PASS" if js_ok else "FAIL"}  browser-js: the embedded Playwright script parses'
+          + ('' if js_ok else ' — ' + next((l.strip() for l in parsed.stderr.splitlines()
+                                             if 'Error' in l), 'see below')))
+    if not js_ok:
+        print(parsed.stderr.strip()[-600:])
         print('  RESULT: FAILED')
         return 1
 

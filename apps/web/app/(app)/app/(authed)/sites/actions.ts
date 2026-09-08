@@ -18,7 +18,7 @@ import {
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
-import { hasBrand } from '@/lib/probe-rule'
+import { brandTarget, hasBrand } from '@/lib/probe-rule'
 import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
@@ -70,6 +70,11 @@ const SITES_URL = '/sites'
 const RECHECK = (siteId: string) => `${SITES_URL}?recheck=${siteId}`
 /** FR-C4's S2c, on its own route so the connect wizard's redirect has somewhere to land. */
 const BRAND = (siteId: string) => `${SITES_URL}/brand?site=${siteId}`
+/* The matrix's "insert fails → THE PAGE SAYS SO". `recheckPlan` → `RECHECK(siteId)` is the
+   file's own precedent: a server action that must speak to the customer redirects to a screen
+   that reads the reason out of the URL, which is also the only shape that survives scripts off
+   (review, 2026-09-08 — every failure branch here used to `return` in silence). */
+const BRAND_FAILED = (siteId: string) => `${BRAND(siteId)}&failed=1`
 
 const fail = (code: ConnectCode, message: string, field?: ConnectField): ConnectResult => ({
   error: { code, message, ...(field ? { field } : {}) },
@@ -371,11 +376,17 @@ export async function connectSite(
 /** The site id, as a form field: absent or malformed is not a site of anyone's. */
 const SiteId = z.object({ site_id: z.string().uuid() })
 
-async function siteOf(formData: FormData): Promise<{ userId: string; siteId: string } | null> {
+async function siteOf(
+  formData: FormData,
+  // WHICH action refused, because the log line is the only record a refusal leaves. Story 3.3's
+  // four share the default; the brand pair names itself, so a bad `site_id` on **Use your brand**
+  // is not indistinguishable from a Portal or plan refusal in production (review, 2026-09-08).
+  where = 'notice action',
+): Promise<{ userId: string; siteId: string } | null> {
   const user = await signedIn()
   const parsed = SiteId.safeParse({ site_id: formData.get('site_id') ?? '' })
   if (!parsed.success) {
-    console.error('sites: notice action refused', { code: 'site_id_invalid' })
+    console.error(`sites: ${where} refused`, { code: 'site_id_invalid' })
     return null
   }
   return { userId: user.id, siteId: parsed.data.site_id }
@@ -523,7 +534,12 @@ export async function recheckPlan(formData: FormData): Promise<void> {
    author (AD-7); these two only COPY it onto a project. */
 
 /** What S2c needs to know about the site it is offering, read through RLS. */
-type BrandSite = { id: string; title: string | null; url: string; site_settings: { brand?: unknown } | null }
+type BrandSite = {
+  id: string
+  title: string | null
+  url: string
+  site_settings: { brand?: unknown; public_url?: string } | null
+}
 
 /**
  * THE OFFER IS A LINK AND THE SEED IS IDEMPOTENT. Pressing **Use your brand** twice writes the
@@ -542,14 +558,14 @@ type BrandSite = { id: string; title: string | null; url: string; site_settings:
  * page's count can be one tab out of date, so the answer is to re-render, not to act.
  */
 export async function useBrand(formData: FormData): Promise<void> {
-  const at = await siteOf(formData)
+  const at = await siteOf(formData, 'use brand')
   if (!at) return
   // The screen's own decision: a project id, or empty for "make one". A field that is not there
   // at all is a crafted post, not a press.
   const chosen = formData.get('project_id')
   if (typeof chosen !== 'string') {
     console.error('sites: use brand refused', { code: 'decision_missing' })
-    return
+    redirect(BRAND_FAILED(at.siteId))
   }
 
   const supabase = await supabaseServer()
@@ -563,8 +579,14 @@ export async function useBrand(formData: FormData): Promise<void> {
       .maybeSingle<BrandSite>()
       .then(({ data }) => data),
     // `updated_at desc` IS THE DASHBOARD'S OWN ORDER, so "the project you most recently worked on"
-    // means on this screen exactly what it means on that one.
-    supabase.from('projects').select('id, name, slug, style_pack').order('updated_at', { ascending: false }),
+    // means on this screen exactly what it means on that one. `id` breaks the tie: two projects
+    // saved in the same millisecond gave the page and this action different first rows, and the
+    // press then bounced back to S2c for ever (review, 2026-09-08).
+    supabase
+      .from('projects')
+      .select('id, name, slug, style_pack, linked_site_id')
+      .order('updated_at', { ascending: false })
+      .order('id', { ascending: false }),
     resolveEntitlement(at.userId),
   ])
 
@@ -576,10 +598,15 @@ export async function useBrand(formData: FormData): Promise<void> {
   if (!hasBrand(brand)) redirect(SITES_URL)
   if (projectsError || !projects) {
     console.error('sites: use brand read failed', { code: projectsError?.code })
-    return
+    redirect(BRAND_FAILED(site.id))
   }
 
-  const target = atCap(plan, projects.length) ? projects[0] : undefined
+  // ONE RULE, SHARED WITH THE CAPTION S2c PRINTED (`brandTarget`): at the cap the most recently
+  // updated project, with room the project already made for THIS site — and only when there is
+  // none is one made. The offer link never retires, so without the second half a second press
+  // inserted a second project for the same site (review, 2026-09-08).
+  const capped = atCap(plan, projects.length)
+  const target = brandTarget(capped, projects, site.id)
   // THE DECISION THE SCREEN PRINTED, RE-MADE. Both directions matter: a caption that said "we'll
   // make one" while the cap has since filled, and a caption that named a project while room has
   // since appeared. Either way nothing is written and S2c is re-rendered with the true sentence.
@@ -592,7 +619,14 @@ export async function useBrand(formData: FormData): Promise<void> {
     // AT THE CAP: the brand goes onto the project the caption named and NOTHING ELSE about it
     // moves — not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. The
     // pack is merged rather than replaced, so a preset E6 has since written survives.
-    const pack = (target.style_pack ?? defaultStylePack()) as Record<string, unknown>
+    // NOT `?? defaultStylePack()`: `projects.style_pack` is in the caller's own UPDATE grant
+    // (schema `:1202`), so a pack that is not an object is a thing the column can hold — and
+    // spreading a string yields its characters, indexed, which is not a pack any more.
+    const prev = target.style_pack
+    const pack = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : defaultStylePack()) as Record<
+      string,
+      unknown
+    >
     const { data, error } = await supabase
       .from('projects')
       .update({ style_pack: { ...pack, brand } })
@@ -600,13 +634,16 @@ export async function useBrand(formData: FormData): Promise<void> {
       .select('id')
     if (error || !data?.length) {
       console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
-      return
+      redirect(BRAND_FAILED(site.id))
     }
   } else {
     // WITH ROOM: a project for the site, named after it. `lib/projects.ts`'s own rules give it its
     // name and slug — a Ghost title longer than the field allows is clamped, a site with no title
     // falls back to its host, and a host that slugs to nothing falls back to "Untitled project".
-    const named = (site.title ?? '').trim().slice(0, NAME_MAX).trim() || hostOf(site.url).slice(0, NAME_MAX)
+    // The SAME host S2c showed the customer — `public_url` where Ghost gave one, which on
+    // Ghost(Pro) is not the admin domain the row's `url` holds.
+    const shown = hostOf(site.site_settings?.public_url || site.url)
+    const named = (site.title ?? '').trim().slice(0, NAME_MAX).trim() || shown.slice(0, NAME_MAX)
     const name = named || nextUntitled(projects.map((row) => row.name))
     const { error } = await supabase.from('projects').insert({
       user_id: at.userId,
@@ -619,7 +656,7 @@ export async function useBrand(formData: FormData): Promise<void> {
     })
     if (error) {
       console.error('sites: use brand insert failed', { code: error.code })
-      return
+      redirect(BRAND_FAILED(site.id))
     }
   }
 
@@ -635,6 +672,6 @@ export async function useBrand(formData: FormData): Promise<void> {
  * and both work with JavaScript off.
  */
 export async function skipBrand(formData: FormData): Promise<void> {
-  await siteOf(formData)
+  await siteOf(formData, 'skip brand')
   redirect(SITES_URL)
 }

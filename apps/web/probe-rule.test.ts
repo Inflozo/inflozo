@@ -5,6 +5,7 @@ import {
   announcementOf,
   BRAND_COPY,
   brandOf,
+  brandTarget,
   capabilityOf,
   hasBrand,
   injectionFlag,
@@ -377,10 +378,45 @@ test('a card that offers nothing is not drawn — a TITLE is not a brand', () =>
   assert.equal(hasBrand(brand({ accent_color: '#FF1A75' })), true, 'an accent alone')
   assert.equal(hasBrand(brand({ logo: 'https://x.example/l.png' })), true, 'a logo alone')
   assert.equal(hasBrand(brand({ navigation: '[{"label":"Home","url":"/"}]' })), true, 'a menu alone')
-  // And it is asked of a jsonb column, so it survives whatever is in one.
+  // And it is asked of a jsonb column, so it survives whatever is in one. IT NARROWS TO `Brand`,
+  // so it refuses anything S2c would then dereference: a record with no `nav` ARRAY (the page maps
+  // over it), and a `logo` that is a string but not an `https:` URL (the page puts it in an
+  // `<img src>`) — review, 2026-09-08.
   for (const junk of [null, undefined, 'brand', 42, [], {}, { accent: 'red' }, { nav: 'x' }]) {
     assert.equal(hasBrand(junk), false, `${JSON.stringify(junk)} offers nothing`)
   }
+  assert.equal(hasBrand({ accent: '#fff' }), false, 'no nav array: S2c would throw on brand.nav')
+  assert.equal(hasBrand({ accent: '#fff', nav: [] }), true, 'an accent with the array present')
+  assert.equal(
+    hasBrand({ accent: null, logo: 'javascript:alert(1)', nav: [] }),
+    false,
+    'a logo that is a string but not an https: URL offers nothing and reaches no src',
+  )
+  assert.equal(hasBrand({ accent: null, logo: '', nav: [] }), false, "Ghost's own unset logo (§40)")
+})
+
+test('one rule decides which project wears the brand, and the second press makes no second project', () => {
+  // THE CAPTION AND THE WRITE READ THE SAME FUNCTION. `S2c` prints what `brandTarget` returns and
+  // `useBrand` re-makes the same call at the press; two copies of it disagreeing is how the page
+  // promised a new project and rebranded an old one.
+  const site = 'site-1'
+  const made = { id: 'p1', name: 'Ghost6', linked_site_id: site }
+  const mine = { id: 'p2', name: 'Field Notes', linked_site_id: null }
+
+  // WITH ROOM AND NOTHING LINKED: one is made. The matrix's "Use your brand, no project".
+  assert.equal(brandTarget(false, [], site), undefined)
+  assert.equal(brandTarget(false, [mine], site), undefined, 'a project of mine is not this site’s')
+
+  // WITH ROOM AND THE OFFER PRESSED AGAIN: the project already made for this site, never a second
+  // one. The offer link never retires, so this is the whole of "seeding is idempotent" — and
+  // without it a Pro account collected one "Ghost6" per press (review, 2026-09-08).
+  assert.equal(brandTarget(false, [mine, made], site)?.id, 'p1')
+  assert.equal(brandTarget(false, [made], 'another-site'), undefined, 'linked elsewhere is not linked here')
+
+  // AT THE CAP: the most recently updated, whatever it is linked to — the owner's Question 1
+  // ruling (option 1, 2026-09-08), and `updated_at desc` is the order the caller reads in.
+  assert.equal(brandTarget(true, [mine, made], site)?.id, 'p2')
+  assert.equal(brandTarget(true, [], site), undefined, 'no projects is never at a cap worth naming')
 })
 
 test('the patch carries the brand beside everything Story 3.3 wrote, and loses none of it', () => {
@@ -414,6 +450,11 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
     if (typeof value !== 'string') continue
     assert.ok(!/burnt orange/i.test(value), `BRAND_COPY.${key} names a colour Ghost never said`)
   }
-  // The owner's Question 1 ruling: the caption names the project BEFORE the press.
+  // The owner's Question 1 ruling: the caption names the project BEFORE the press — in both
+  // sentences that name one, the cap's and the second press's.
   assert.ok(BRAND_COPY.willBrand('Field Notes').includes('Field Notes'))
+  assert.ok(BRAND_COPY.willRebrand('Ghost6').includes('Ghost6'))
+  assert.ok(!BRAND_COPY.willRebrand('Ghost6').includes('limit'), 'room to spare is not a limit')
+  // The matrix's "insert fails → the page says so" has a sentence to say it with.
+  assert.ok(BRAND_COPY.failed.length > 0)
 })

@@ -258,6 +258,50 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 
 ## Spec Change Log
 
+**Review, 2026-09-08.** Fourteen findings from five layers, all patched inside the story; no
+behaviour was added that the frozen sections did not already promise, and one change is put to the
+owner as **Question 3** because Boundaries' own "Ask First" names it.
+
+- **The seed was not idempotent below the cap** — the one defect that reached the customer. The
+  offer link never retires, and `useBrand`'s `else` branch inserted unconditionally, so a second
+  press with room made a **second project** for the same site: same name, slug `ghost6-2`, the same
+  `linked_site_id`, and the card's tally climbing. It contradicted Boundaries' "Seeding is
+  idempotent", the matrix's **Re-run** row and the function's own docstring. The rule is now one
+  pure function, `brandTarget` — at the cap the most recently updated project (the owner's
+  Question 1 ruling, unchanged), with room **the project already made for this site**, and only
+  when there is none is one made. S2c's caption and `useBrand`'s write read the same function, and
+  `probe-rule.test.ts` holds every branch. **Question 3** is the owner's word on it.
+- **A failed seed said nothing.** The matrix says "insert fails → the page says so"; all four
+  failure branches logged a code and returned, so the press looked like a dead button. Each now
+  redirects to `/sites/brand?site=…&failed=1` and S2c prints one line — the shape `recheckPlan`
+  already uses, and the only one that survives scripts off.
+- **The cross-account claim was not executed.** `brand-none` forged a uuid **no account carries**,
+  which RLS never had to refuse, while the acceptance criterion says "the page is opened **or
+  either action is posted**". New step **`brand-ownership`**: the second account's real site id,
+  opened as a page and then forged into S2c's own **Use your brand** and **Skip** forms.
+- **New step `brand-rerun`**, after `pro-connect-t3`: the only state in the run with room to spare,
+  and the branch that carried the defect above. Every brand step before it runs on a Free account
+  whose cap of 1 the first press fills.
+- **`hasBrand` narrowed wider than it checked** — `nav` was never required to be an array (S2c then
+  threw on `brand.nav.length`) and `logo` was any string, not an `https:` URL, though the page puts
+  it in an `<img src>`. Both closed, and `imageUrl` is exported so S2c re-validates the logo it
+  reads back out of the column, as `style-pack.ts` re-validates the accent.
+- **Nine smaller ones, each one line:** `id` breaks the `updated_at` tie in both queries (a shared
+  millisecond made the page and the action name different rows and the press bounce for ever); the
+  page no longer treats a failed projects read as a count of zero; the at-cap merge no longer
+  assumes `style_pack` is an object (it is in the caller's own UPDATE grant); `brand-none` restores
+  the fixture in a `finally`; `siteOf`'s log code names the brand actions; **"Fonts stay yours"**
+  left the navigation block, so it survives a site with no menu (AC 2 enumerates it); the initial
+  tile takes a whole code point, not half a surrogate pair; `brand-seed` asserts the accent on the
+  block the placeholder paints rather than on any of three; and the created project is named from
+  the host S2c actually showed.
+- **Dismissed, with the reason:** `skipBrand` does not 404 for a stranger's row — the same criterion
+  says "nothing is read", and 404ing would require reading; it writes nothing, which is the
+  substance. `skipBrand` stays a form (Boundaries freezes both buttons as forms). A probe cannot
+  wipe a stored brand with nulls — `site-probe.ts` returns before `probePatch` on a failed or
+  unreadable read. Connect's landing and S2c's 404 cannot diverge: both call the same `hasBrand` on
+  the same value.
+
 ## Design Notes
 
 **Why the brand rides the probe and not a new call.** FR-C4 says "on the same read" and Story 3.3
@@ -352,6 +396,37 @@ Epic 3 closes on 3.5–3.8 as planned.
    planned and visible on the board now — but it could not actually be built until Epics 4 and 5 are
    done, so Epic 3 would still not close.
 
+### Question 3 — you press "Use your brand" a second time. Should Inflozo make a second project?
+
+The review found that it did. Boundaries says pressing the offer twice should write the same brand
+onto the same project — but the code only did that when you were **at your project limit**. With
+room to spare it made a **brand-new project every single press**.
+
+For example, on Pro (25 projects allowed): you connect `ghost6.inflozo.com` and press **Use your
+brand** — you get a project called "Ghost6". The link stays on the site's card for ever, because
+"skippable and re-runnable" means it never goes away. You press it again next week to refresh the
+colour. Before the fix: a **second** "Ghost6". Press it five times, five "Ghost6"s, and the card
+reads "5 projects".
+
+I have fixed it the way option 1 describes, because a project factory is not defensible and your
+Boundaries already said "pressing it twice writes the same pack twice". But your spec's **Ask
+First** list says *"any change to what Use your brand does with an existing project"* is yours, so
+here it is. **You can change it at your test — nothing else depends on it.**
+
+1. **The second press puts your brand on the project Inflozo already made for that site, and the
+   screen says so before you press: "We'll put your brand on "Ghost6", the project for this site."
+   (RECOMMENDED)** — *this is what is built and proved now.* One site keeps one project, refreshing
+   the brand is one press, and the screen never promises something different from what it does. At
+   your project limit nothing changes: it still names the project you most recently worked on, as
+   you ruled at Question 1.
+2. **The second press does nothing and the screen says the site already has a project, with a link
+   to open it.** Safest — it can never change a project you have since styled by hand — but
+   "re-runnable" then stops meaning anything, and there is no way to pick the colour up again after
+   you change it in Ghost.
+3. **Leave the link off the card once a site has a project**, so there is no second press at all.
+   Fewest moving parts, but the offer disappears from a card for a reason nothing on screen
+   explains, and you could never take the brand again.
+
 ## Owner's manual test
 
 On the live site after the Deploy run. **The new screen appears when a site is connected**, so you
@@ -389,7 +464,14 @@ need a site that is not connected yet, and you will need a menu and an accent co
 10. **URL:** https://app.inflozo.com/ · **Screen:** your dashboard · **See:** the project's card, and
     the little wireframe drawing on it is painted in **your orange**, not the default.
 11. **URL:** https://app.inflozo.com/sites · **See:** the site's card now reads **1 project**.
-12. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
+12. **Press the offer link a SECOND time** — this is **Question 3** above, and it is the thing the
+    review fixed. **Do:** press the "use this site's brand" link on the card again · **See:** under
+    **Use your brand**, a line naming the project it will use — either *"We'll put your brand on
+    "Ghost6", the project for this site."* or, if you are at your project limit, the "you're at your
+    project limit" version. **Do:** press **Use your brand** · **See:** back on the Sites page, the
+    card still reads **1 project** — **not 2**. Then tell me whether option 1 in Question 3 is what
+    you want, or one of the others.
+13. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
     `Inflozo owner test` integration if you want to.
 
 **What you cannot test yet, and why.** Your Ghost announcement bar is **not** copied into Inflozo and
@@ -410,13 +492,17 @@ variable; no value is printed.
 - `pnpm build` (`next build`) -- expected: `ƒ /app/sites/brand` present, dynamic, inside the guard
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS, 0 warnings, no new catalogue row
 - `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, schema unchanged (no migration)
-- `python3 tools/probe/run-verify-ghost-admin.py --check` -- expected: the keys present by name, and
-  playwright, axe and the postgres driver resolvable. It starts no browser, so it proves none of the
-  UI steps
+- `python3 tools/probe/run-verify-ghost-admin.py --check` -- expected: the keys present by name,
+  **`browser-js` PASS** (the review added it: the embedded Playwright script parses, checked before
+  a key is read), and playwright, axe and the postgres driver resolvable. It starts no browser, so
+  it proves none of the UI steps
 - `python3 tools/probe/run-verify-ghost-admin.py` -- expected: every step in the docstring passes in
   order against **T1 `GHOST6_*` and T3 `GHOST5_*`** and the deployed `app.inflozo.com`, including
-  `brand-keys`, `brand-screen`, `brand-seed`, `brand-skip`, `brand-js-off`, `brand-none` and
-  `axe-brand`; axe reports zero violations at 1440 and 390. **This story writes to no Ghost** — the
+  `brand-keys`, `brand-screen`, `brand-seed`, `brand-atcap`, `brand-skip`, `brand-js-off`,
+  `brand-none` and `axe-brand`, plus the review's two — **`brand-rerun`** (the offer pressed a
+  second time on Pro, where there is room: one project before and one after) and
+  **`brand-ownership`** (a second account's real site id forged into S2c's own two forms); axe
+  reports zero violations at 1440 and 390. **This story writes to no Ghost** — the
   only step that ever did, `injection-live`, is 3.3's and is unchanged
 - `git grep -n 'announcement_clear'` -- expected: `admin-rule.ts` and its test only; no caller
 

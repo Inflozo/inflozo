@@ -143,8 +143,15 @@ const ACCENT = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 export const isAccent = (value: unknown): value is string =>
   typeof value === 'string' && ACCENT.test(value)
 
-/** An `https:` URL, or null. Not `isHttpUrl`'s question: this one becomes an `<img src>`. */
-function imageUrl(value: unknown): string | null {
+/**
+ * An `https:` URL, or null. Not `isHttpUrl`'s question: this one becomes an `<img src>`.
+ *
+ * EXPORTED FOR THE SAME REASON `isAccent` IS: `style-pack.ts` re-validates the accent it reads
+ * back out of a jsonb column rather than trusting it, and S2c reads the logo back out of one too
+ * (review, 2026-09-08). A value that crosses into an attribute is checked where it crosses,
+ * every time, not only where it was first stored.
+ */
+export function imageUrl(value: unknown): string | null {
   if (typeof value !== 'string' || value === '') return null
   try {
     return new URL(value).protocol === 'https:' ? value : null
@@ -200,8 +207,14 @@ export function brandOf(settings: Record<string, unknown>): Brand {
  * It takes `unknown` because the other two read it back out of a jsonb column.
  */
 export function hasBrand(brand: unknown): brand is Brand {
-  if (!isRecord(brand)) return false
-  return isAccent(brand.accent) || typeof brand.logo === 'string' || navOf(brand.nav).length > 0
+  // IT NARROWS TO `Brand`, SO IT CHECKS WHAT `Brand` PROMISES. Two things it used not to, and
+  // both reach an attribute on S2c (review, 2026-09-08): `nav` must be the array the page maps
+  // over — an accent on its own satisfied the predicate and then threw on `brand.nav.length` —
+  // and `logo` must be an `https:` URL, not merely a string, because the page puts it straight
+  // into an `<img src>`. `brandOf` is the column's only author today and always writes both, so
+  // this is the boundary holding rather than a bug being fixed; the boundary is the point.
+  if (!isRecord(brand) || !Array.isArray(brand.nav)) return false
+  return isAccent(brand.accent) || imageUrl(brand.logo) !== null || navOf(brand.nav).length > 0
 }
 
 /**
@@ -231,7 +244,35 @@ export const BRAND_COPY = {
   offer: 'Use this site’s brand',
   willCreate: 'We’ll make a project for this site and put your brand on it.',
   willBrand: (name: string) => `You’re at your project limit, so we’ll put your brand on “${name}”.`,
+  /** The offer taken a SECOND time, with room to spare: the project for this site already exists. */
+  willRebrand: (name: string) => `We’ll put your brand on “${name}”, the project for this site.`,
+  /** The matrix's "insert fails → the page says so", in the voice `COULD_NOT` already speaks. */
+  failed: 'We couldn’t save that just now. Try again in a moment.',
 } as const
+
+/**
+ * WHICH PROJECT WEARS THE BRAND — one rule, because S2c prints it in the caption and `useBrand`
+ * re-makes it at the press, and two copies of it is how the caption and the write drift apart.
+ * `lib/plan.ts`'s own header is the argument: three copies of a paywall predicate disagreed and
+ * nothing failed, because nothing executed the comparison.
+ *
+ * AT THE CAP it is the most recently updated project — the owner's Question 1 ruling, and the
+ * dashboard's own order. WITH ROOM it is the project already made for this site, and only when
+ * there is none is one made: that is what "seeding is idempotent" means when the offer never
+ * retires. Without this the second press of a permanently-visible link inserted a SECOND project
+ * with the same name for the same site, on every plan with room (review, 2026-09-08) — against
+ * the matrix's own "Re-run → seeding again writes the same pack".
+ *
+ * It takes the cap as a boolean rather than a plan so this module keeps importing nothing;
+ * `atCap` stays the one place the comparison itself lives.
+ */
+export function brandTarget<T extends { id: string; linked_site_id?: string | null }>(
+  capped: boolean,
+  projects: T[],
+  siteId: string,
+): T | undefined {
+  return capped ? projects[0] : projects.find((row) => row.linked_site_id === siteId)
+}
 
 /**
  * THE THEME-NAME PREFIX FR-J10 FREEZES AT FIRST DEPLOY — `inflozo-{project-slug}`. At CONNECT
