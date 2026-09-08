@@ -731,3 +731,19 @@ alone, in `connect-rule.test.ts`, with `4.48.0` and `4.0.0` injected.
   surfaces; both secrets gone with the account (`[0,0]`), 159 bodies swept with no key in any, users 5 → 5.
   **The frames beside the built pages** at 1440 / 834 / 390 (`--shots`) match S2b·1, S2b·2, S11a and S11b as
   in run 2. This is the run the review rests on.
+
+### Deploy run, 2026-09-08
+
+`Deployment: dpl_8nyQmkWSC14nhLMpeELCd8K6EKff` (`inflozo-kjzbpcfsq-umangkagathara.vercel.app`) — the CI
+run for `4b36e0dc` (`git log` HEAD; the two commits since the review's `6597d223` touched only the spec,
+`deferred-work.md` and the harness, no `apps/web` change) completed `success` (`gh run list --branch main`
+with `GITHUB_TOKEN`: `check` and `rls` both passed, `deploy` ran), and `GET /v6/deployments` with
+`VERCEL_TOKEN` and `VERCEL_TEAM_ID` shows it `READY` for `VERCEL_PROJECT`'s `production` target;
+`GET /v13/deployments/{id}` shows its `alias` carrying `app.inflozo.com`, `www.inflozo.com` and
+`inflozo.com`. A live sanity check from this machine: `https://app.inflozo.com/sites` → 307 to
+`/sign-in` (the guard, unchanged), `https://app.inflozo.com/connect/integration.png` → 200
+`image/png` 29032 bytes (the file), `https://app.inflozo.com/api/ghost-admin/verify` → 404 (the
+deleted route). The harness's Harness run 5 above already exercised all 28 steps against
+`app.inflozo.com` on the code this deployment now serves — the same code, since neither commit since
+touched `apps/web` — so nothing there needed re-running. The owner's manual test below is the one
+thing this run leaves open.
