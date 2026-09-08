@@ -700,3 +700,32 @@ project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPA
 `SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
 Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
 story's path** and were not called.
+
+## Fix record — the owner's Question 3 ruling, executed (R-82)
+
+Run 2026-09-08 against CI's deployment of **`1bf541bd`** on `app.inflozo.com` (`rls` ✔ `check` ✔
+`deploy` ✔), T1 and T3 as above. **59 steps, 0 failures** — the review's 58 plus **`brand-picker`**.
+**1 navigation retry** (DW-68), reported rather than smoothed away.
+
+`pnpm check` exit 0 with **229 tests**; `pnpm build` exit 0 with `ƒ /app/sites/brand` still dynamic
+inside the guard; `doc-audit --check` PASS twice; no migration, so the RLS gate is untouched.
+
+**`brand-picker`, in the run's own words.** With two projects the second press **asked** — *"You
+already put your brand on “Ghost6”. Apply it again?"* and *"Which project?"* — and drew **2 cards**,
+pre-selected on the project this site is already on. The two wireframes computed to
+`["rgb(217, 108, 63)", "rgb(255, 26, 117)"]`: **the site's accent on the branded card and the default
+on the fresh one, two distinct colours**, so the drawings really do tell the projects apart. That is
+the assertion that matters for the owner's ask, and it is read off the rendered page with
+`getComputedStyle`, not off a class name. Choosing **"Field Notes"** put the brand on **that** row
+and changed nothing else about it — name, slug and a null `linked_site_id` intact — while "Ghost6"
+kept its own binding to the site. **Still 2 projects: a chooser, never a factory.**
+
+The step also asserts the two drawings are **`new Set(thumbs).size === 2`**, which is the control
+that matters here: a chooser whose pictures all matched would be telling the customer nothing, and
+that is precisely the failure FR-B1 warns about ("a wrong thumbnail is worse than none"). Today the
+colours differ because one project wears the site's accent and the other Paper's; when E6 gives
+projects genuinely different Style Packs the same drawing gets more informative on its own, with no
+further work — `placeholder.tsx`'s own note says packs look alike until then.
+
+`brand-rerun` still passes beside it with **one** project and **no cards drawn** — the owner's B1,
+executed: a chooser with a single option is a step and not a choice.
