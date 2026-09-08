@@ -25,6 +25,7 @@ export function TextInput({
   label,
   name,
   defaultValue,
+  value,
   placeholder,
   maxLength,
   mono = false,
@@ -34,11 +35,20 @@ export function TextInput({
   size = 36,
   type = 'text',
   autoComplete,
+  required,
   onChange,
 }: Base & {
   /** Present when the field is inside a form that submits it. */
   name?: string
   defaultValue?: string
+  /**
+   * A CONTROLLED value, with `onChange` — for a form whose action can refuse: React resets the
+   * form after every action, so an uncontrolled field loses what was typed on a refusal (the
+   * connect wizard, review 2026-09-08). Leave it out and the field is the DOM's, as the Kit's are.
+   */
+  value?: string
+  /** The browser's own "fill this in", with or without JavaScript. */
+  required?: boolean
   placeholder?: string
   /** The schema's own maximum, so the field refuses the character the action would refuse. */
   maxLength?: number
@@ -75,6 +85,8 @@ export function TextInput({
         autoComplete={autoComplete}
         onChange={onChange}
         defaultValue={defaultValue}
+        value={value}
+        required={required}
         placeholder={placeholder}
         maxLength={maxLength}
         readOnly={Boolean(greyed)}

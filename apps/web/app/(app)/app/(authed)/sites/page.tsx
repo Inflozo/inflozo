@@ -49,7 +49,7 @@ export default async function Sites({
   if (!user) return null
 
   const supabase = await supabaseServer()
-  const [{ data, error }, { data: projects }] = await Promise.all([
+  const [{ data, error }, { data: projects, error: projectsError }] = await Promise.all([
     supabase
       .from('sites')
       .select('id, title, url, ghost_version, site_settings, settings_read_at')
@@ -63,6 +63,9 @@ export default async function Sites({
   // A FAILED READ IS NOT AN EMPTY ACCOUNT — the dashboard's own finding (review, 2026-09-05):
   // `data ?? []` would show someone with a connected site the first-run handshake instead.
   const unread = Boolean(error)
+  // A failed tally is no tally: the pill is absent rather than stating "0 projects" as a fact
+  // (review, 2026-09-08). Logged without the id: logs carry no user content.
+  if (projectsError) console.error('sites: projects read failed', { code: projectsError.code })
   const linked = new Map<string, number>()
   for (const project of projects ?? []) {
     const id = project.linked_site_id
@@ -97,7 +100,11 @@ export default async function Sites({
           needs the page's name above the cards' own <h2>s (the dashboard's finding). */}
       <h1 className="sr-only">Sites</h1>
       <div className="flex tablet:justify-end">
-        <ConnectSiteButton />
+        {/* KEYED ON THE NUMBER OF CARDS. A connect made from the sheet redirects to this same route,
+            which re-renders in place — so the sheet stayed open over the new card with the keys
+            still in its fields. One more card remounts the button and its dialog closed (review,
+            2026-09-08); `connect-dialog.tsx` says the same from its side. */}
+        <ConnectSiteButton key={sites.length} />
       </div>
       <div className="grid grid-cols-1 gap-[14px] tablet:grid-cols-3 tablet:gap-5">
         {sites.map((site) => {
@@ -141,9 +148,11 @@ export default async function Sites({
                     {version}
                   </span>
                 ) : null}
-                <span className="rounded-pill border border-line px-2 py-[2px] text-helper-caption text-ink-soft">
-                  {projectCount} project{projectCount === 1 ? '' : 's'}
-                </span>
+                {projectsError ? null : (
+                  <span className="rounded-pill border border-line px-2 py-[2px] text-helper-caption text-ink-soft">
+                    {projectCount} project{projectCount === 1 ? '' : 's'}
+                  </span>
+                )}
               </div>
               <span className="text-helper-caption text-ink-soft">
                 {checkedLabel(site.settings_read_at, now)}

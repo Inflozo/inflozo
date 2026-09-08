@@ -2823,5 +2823,25 @@ a 401 with that message. The app's CSP is the only thing that could block it (`c
 An `http://` site address therefore fails at validation with Ghost's own 403 (the chokepoint's `ghost_refused`
 family), which is why 3.2 warns the moment the field says `http://` rather than after Connect.
 
+**(c) corrected, 2026-09-08 (Story 3.2's code review, the Real-infra verifier): the 403 above was measured with
+NO credential, and that is not the request the wizard makes.** Re-executed with the request shape `fetchWithKey`
+sends — the JWT minted from the real Admin key, `redirect` not followed (`urllib` with the redirect handler
+disabled, cross-checked with `curl` without `-L`), keys `GHOST6_ADMIN_API_KEY` / `GHOST5_ADMIN_API_KEY` by name:
+
+    GET http://ghost6.inflozo.com/ghost/api/admin/config/   Authorization: Ghost <jwt>   -> 301  Location: https://ghost6.inflozo.com/ghost/api/admin/config/
+    GET http://ghost5.inflozo.com/ghost/api/admin/config/   Authorization: Ghost <jwt>   -> 301  Location: https://ghost5.inflozo.com/ghost/api/admin/config/
+      body "Moved Permanently. Redirecting to https://…" — Express's redirect, issued by Ghost once the key authenticates
+    the same with no header                                                              -> 403  (the shape (c) had measured)
+    the same with `Authorization: Ghost garbage`                                         -> 400
+    the same with a well-formed JWT whose kid Ghost never issued                         -> 401  Unknown Admin API Key
+    a client that FOLLOWED the 301 read HTTP 200 with the full config body — a probe that forgets
+      `redirect: manual` would "prove" plain http works
+
+So the answer is decided by authentication, and a plain-http address with a valid key is a REDIRECT, which the
+chokepoint answers as `ghost_redirected` ("Your site sent us somewhere else. Connect with the address your site
+actually uses.") and never follows (`redirect: 'manual'`, 3.1's review) — the audit row carries `status: 301`.
+No row is written either way; the warning under the field still comes first. 3.2's harness step `http-connect`
+executes this shape through the deployed wizard.
+
 **Not executed, and cannot be:** a Ghost 4.x — no server exists (T1 is 6, T3 is 5). The "please update
 Ghost" refusal is proved on the version rule alone (`lib/connect-rule.ts`) with `4.48.0` injected.

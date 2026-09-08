@@ -18,9 +18,11 @@ export const MIN_GHOST_MAJOR = 5
  * trailing slash dropped — so `orbitweekly.com`, `https://orbitweekly.com/` and
  * `https://OrbitWeekly.com` are one row under `unique (user_id, url)` rather than three.
  *
- * `http://` IS KEPT WHEN IT IS TYPED. It is warned, never rewritten: both test Ghosts answer 403
- * on plain http to the admin API (§38c), so a connect against one fails with Ghost's own answer
- * instead of Inflozo quietly connecting to a different address than the one the user gave.
+ * `http://` IS KEPT WHEN IT IS TYPED. It is warned, never rewritten: both test Ghosts answer a
+ * plain-http admin call that carries a key with a 301 to https (§38c as corrected at Review,
+ * 2026-09-08 — the 403 there was measured with no key at all), which `fetchWithKey` never follows
+ * (`redirect: 'manual'`), so a connect against one fails with `ghost_redirected`'s sentence instead
+ * of Inflozo quietly connecting to a different address than the one the user gave.
  *
  * The PUBLIC url is a different value and lives in `site_settings.public_url` — read from
  * `GET /admin/site/` at connect. On Ghost(Pro) the two differ by design (EXPERIENCE.md:113).
@@ -43,12 +45,34 @@ export function normaliseSiteUrl(input: string | null | undefined): string | nul
   // A bare word is a typo, not a host. `localhost` is refused with it, deliberately: a Ghost the
   // browser's Content-key check could reach is not one Vercel's function can.
   if (!url.hostname.includes('.')) return null
+  // AN IP LITERAL IS NOT A SITE ADDRESS EITHER. `10.0.0.1`, `127.0.0.1`, `169.254.169.254` and
+  // `[::1]` all pass the dot test; refusing them keeps the function's fetch on public names, for
+  // the same reason `localhost` is refused, and loses nothing — a Ghost on a bare IP has no
+  // certificate the browser's own Content-key check would trust (review, 2026-09-08).
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname) || url.hostname.startsWith('[')) return null
   return `${url.protocol}//${url.host.toLowerCase()}`
 }
 
 /** The warning's condition, read off what was TYPED — the field says so before Connect is pressed. */
 export const isPlainHttp = (input: string | null | undefined): boolean =>
   /^http:\/\//i.test((input ?? '').trim())
+
+/**
+ * WHAT GHOST ANSWERED, CHECKED BEFORE IT BECOMES A LINK. `GET /admin/site/`'s `url` goes into
+ * `site_settings.public_url` and onto the card's address as its `href`, and `icon` becomes
+ * `favicon_url`; neither is trusted to be a URL because Ghost sent it (review, 2026-09-08). The
+ * value is kept AS SENT — the public url carries its trailing slash (§38a) and is not normalised —
+ * and only refused when it is not an http(s) URL at all.
+ */
+export const isHttpUrl = (value: unknown): value is string => {
+  if (typeof value !== 'string') return false
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'https:' || protocol === 'http:'
+  } catch {
+    return false
+  }
+}
 
 /** The host on its own, for the sentences that name it. Never throws: a bad address has no host. */
 export function hostOf(input: string | null | undefined): string {
@@ -118,12 +142,16 @@ export function checkedLabel(at: string | Date | null | undefined, now: Date): s
  *
  * `at_cap` is deliberately absent: its sentence is Appendix F.1's, derived from `PLANS` by
  * `siteCapSentence()` in `lib/plan.ts`, and a second copy here could disagree with the pill.
+ *
+ * NO BACKTICKS. The spec's matrix writes its two examples in Markdown code spans; the sentence the
+ * customer reads is plain text under a field, where a backtick is a stray character (review,
+ * 2026-09-08).
  */
 export const CONNECT_MESSAGES = {
-  url_invalid: () => "That doesn't look like a site address — try `https://yoursite.com`.",
+  url_invalid: () => "That doesn't look like a site address — try https://yoursite.com.",
   content_key_unknown: () => "Ghost doesn't recognise this Content API key.",
   credential_malformed: () =>
-    'An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id, a colon, then a long secret.',
+    'An Admin API key looks like 65a3f…:9c2b41d8e0f… — an id, a colon, then a long secret.',
   ghost_unknown_key: () =>
     "Ghost said no — this Admin API key doesn't match your site. Copy the whole key from the " +
     'Inflozo integration and try again.',
@@ -137,8 +165,9 @@ export const CONNECT_MESSAGES = {
     'Your site sent us somewhere else. Connect with the address your site actually uses.',
   ghost_too_old: (version: string) =>
     `Your site runs Ghost ${version}. Inflozo needs Ghost ${MIN_GHOST_MAJOR} or newer — please update Ghost, then connect.`,
-  // DW-52: every Ghost answer the map above does not name — the 403 a plain-http address gets,
-  // a 429, a 5xx. The status is in the sentence so a support reply has something to work from.
+  // DW-52: every Ghost answer the map above does not name — a 403, a 429, a 5xx. (Plain http is
+  // NOT one of them: Ghost answers it with a 301, which is `ghost_redirected` — §38c as corrected
+  // at Review.) The status is in the sentence so a support reply has something to work from.
   ghost_refused: (status: string) =>
     `Ghost refused the connection (HTTP ${status}). Check the address and the keys.`,
   already_connected: (host: string) => `${host} is already connected.`,
@@ -184,7 +213,8 @@ export const connectMessage = (code: MessageCode, subject = ''): string => CONNE
 
 /**
  * The `http://` warning, under the URL field as it is typed. It is a WARNING and not a refusal:
- * the site may genuinely be plain http, and Ghost's own 403 is the honest answer if it is (§38c).
+ * the site may genuinely be plain http, and Ghost's own answer — a 301 to https that is never
+ * followed, so `ghost_redirected` (§38c as corrected at Review) — is the honest one if it is.
  */
 export const HTTP_WARNING =
   "Most Ghost sites use https:// — use that if yours does. Without HTTPS the editor can't load your live content."

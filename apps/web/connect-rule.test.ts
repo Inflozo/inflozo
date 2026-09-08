@@ -10,6 +10,7 @@ import {
   ghostLabel,
   hostOf,
   HTTP_WARNING,
+  isHttpUrl,
   isPlainHttp,
   MIN_GHOST_MAJOR,
   normaliseSiteUrl,
@@ -54,8 +55,9 @@ test('the address is normalised to an origin, and a typo is refused rather than 
   for (const typed of ['ghost6.inflozo.com', 'https://Ghost6.Inflozo.com', 'https://ghost6.inflozo.com/ghost/', '  ghost6.inflozo.com  ']) {
     assert.equal(normaliseSiteUrl(typed), 'https://ghost6.inflozo.com', typed)
   }
-  // `http://` is KEPT: it is warned, not rewritten, and Ghost's own 403 is the honest answer
-  // (§38c). Silently upgrading it would connect to an address the customer did not give.
+  // `http://` is KEPT: it is warned, not rewritten, and Ghost's own answer — a 301 the chokepoint
+  // never follows, `ghost_redirected` (§38c as corrected at Review) — is the honest one. Silently
+  // upgrading it would connect to an address the customer did not give.
   assert.equal(normaliseSiteUrl('http://ghost5.inflozo.com'), 'http://ghost5.inflozo.com')
   assert.equal(isPlainHttp('http://ghost5.inflozo.com'), true)
   assert.equal(isPlainHttp('https://ghost5.inflozo.com'), false)
@@ -63,6 +65,17 @@ test('the address is normalised to an origin, and a typo is refused rather than 
   // Not a site address at all.
   for (const bad of ['', '   ', 'ftp://example.com', 'javascript:alert(1)', 'localhost', 'orbitweekly', 'https://']) {
     assert.equal(normaliseSiteUrl(bad), null, bad)
+  }
+  // Nor is an IP literal, over either scheme: the function's fetch stays on public names (review,
+  // 2026-09-08), and a Ghost on a bare IP has no certificate for the browser's own check anyway.
+  for (const ip of ['127.0.0.1', 'http://10.0.0.1', 'https://169.254.169.254/', 'https://[::1]/', 'http://[fe80::1]:2368']) {
+    assert.equal(normaliseSiteUrl(ip), null, ip)
+  }
+  // What Ghost answers is checked before it becomes a link or an <img>, and kept as sent.
+  assert.equal(isHttpUrl('https://ghost6.inflozo.com/'), true)
+  assert.equal(isHttpUrl('http://example.com/blog/'), true)
+  for (const bad of ['javascript:alert(1)', 'ghost6.inflozo.com', '', null, undefined, 42, 'data:text/html,x']) {
+    assert.equal(isHttpUrl(bad), false, String(bad))
   }
   // A port survives, because a self-hosted Ghost may carry one.
   assert.equal(normaliseSiteUrl('https://example.com:2368/'), 'https://example.com:2368')
@@ -80,12 +93,14 @@ test('every code the wizard can answer with has a sentence, and none of them say
     assert.doesNotMatch(sentence, /expire/i, `${code} tells the user a key expired; keys never do`)
   }
   // The matrix's sentences, by value — the ones the owner reads on his own test.
-  assert.equal(connectMessage('url_invalid'), "That doesn't look like a site address — try `https://yoursite.com`.")
+  assert.equal(connectMessage('url_invalid'), "That doesn't look like a site address — try https://yoursite.com.")
   assert.equal(connectMessage('content_key_unknown'), "Ghost doesn't recognise this Content API key.")
   assert.equal(
     connectMessage('credential_malformed'),
-    'An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id, a colon, then a long secret.',
+    'An Admin API key looks like 65a3f…:9c2b41d8e0f… — an id, a colon, then a long secret.',
   )
+  // Plain text under a field: the matrix's code spans are Markdown, not characters (review, 2026-09-08).
+  for (const code of codes) assert.doesNotMatch(connectMessage(code, 'x'), /`/, `${code} carries a backtick`)
   assert.equal(
     connectMessage('ghost_unreachable', 'nonexistent.inflozo.com'),
     "We couldn't reach nonexistent.inflozo.com. Check the address — it's your Ghost site's own.",
@@ -209,4 +224,18 @@ test('a store that fails undoes the row it just made, so no site is half-connect
   assert.match(compensation, /\.delete\(\)/, `${ACTIONS}: a failed store leaves the row it just inserted behind`)
   assert.match(compensation, /disconnected_at: existing\.disconnected_at/,
     `${ACTIONS}: a failed store on a RE-ADOPTED record must restore it, not delete a kept record`)
+  // "AS IT WAS" MEANS EVERY COLUMN the connect writes before `store()` runs, not the stamp alone
+  // (review, 2026-09-08): the columns are read out of the two writes above the store, so a column
+  // added to either without a line in the restore fails here.
+  const before = source.slice(0, from)
+  const written = new Set(
+    [...before.matchAll(/^\s+(title|favicon_url|ghost_version|content_key|credentials_present|site_settings|settings_read_at|disconnected_at):/gm)].map((m) => m[1]),
+  )
+  assert.ok(written.size >= 8, `${ACTIONS}: expected the connect to write the sites columns before store(); found ${[...written].join(', ')}`)
+  for (const column of written) {
+    assert.match(compensation, new RegExp(`${column}: existing\\.${column}`),
+      `${ACTIONS}: a failed store on a RE-ADOPTED record must put \`${column}\` back`)
+  }
+  // And the undo's own failure is not silent: a row it could not remove says Connected with no key.
+  assert.match(compensation, /undo failed/, `${ACTIONS}: a compensating write that fails must be logged`)
 })

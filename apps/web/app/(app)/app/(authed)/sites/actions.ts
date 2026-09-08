@@ -8,6 +8,7 @@ import {
   CONNECT_MESSAGES,
   connectMessage,
   hostOf,
+  isHttpUrl,
   normaliseSiteUrl,
   versionVerdict,
   type ConnectCode,
@@ -33,8 +34,10 @@ import { AdminError } from '@/server/ghost-admin/admin-rule'
  * any key at all — executed with NO key at all on both majors (MEASUREMENTS §38a) — so it is read
  * only AFTER `config/` has passed, for the public url, the title and the icon.
  *
- * `Accept-Version` IS NOT SENT on either call: the version is what `config/` is being asked for,
- * and both majors answer 200 without the header (3.1's harness, `config-no-version`).
+ * `Accept-Version` IS NOT SENT on `config/`: the version is what that call is asked for, and both
+ * majors answer 200 without the header (3.1's harness, `config-no-version`). `site/` is read after
+ * it with `v{major}.0`, as every later call will be — the harness's `connect` steps execute that
+ * on both majors.
  *
  * THE ROW IS THE SERVER'S. `authenticated` may insert only `(id, user_id, url, title, favicon_url)`
  * on `sites` (schema :1040) — `ghost_version`, `content_key`, `site_settings` and `disconnected_at`
@@ -108,7 +111,14 @@ export async function connectSite(
     admin_key: formData.get('admin_key') ?? '',
     content_key: formData.get('content_key') ?? '',
   })
-  if (!parsed.success) return fail('url_invalid', connectMessage('url_invalid'), 'url')
+  if (!parsed.success) {
+    // `maxLength` on each field refuses the character first, so only a crafted post gets here —
+    // and it is answered under the field it came in, not under the URL (review, 2026-09-08).
+    const at = parsed.error.issues[0]?.path[0]
+    if (at === 'admin_key') return fail('credential_malformed', connectMessage('credential_malformed'), 'admin_key')
+    if (at === 'content_key') return fail('connect_failed', connectMessage('connect_failed'))
+    return fail('url_invalid', connectMessage('url_invalid'), 'url')
+  }
 
   const typed = parsed.data.url
   const adminKey = parsed.data.admin_key.trim()
@@ -125,7 +135,11 @@ export async function connectSite(
   // whether this address is one of them already.
   const supabase = await supabaseServer()
   const [{ data: rows, error: readError }, { plan }] = await Promise.all([
-    supabase.from('sites').select('id, url, site_settings, credentials_present, disconnected_at'),
+    // Every column the two writes below touch is read here, so a store that fails on a RE-ADOPTED
+    // record can put the whole record back as it was (review, 2026-09-08).
+    supabase
+      .from('sites')
+      .select('id, url, title, favicon_url, ghost_version, content_key, site_settings, credentials_present, settings_read_at, disconnected_at'),
     resolveEntitlement(user.id),
   ])
   if (readError || !rows) return logged('read', readError?.code)
@@ -137,10 +151,10 @@ export async function connectSite(
   // THE CAP IS ENFORCED HERE, server-side, and re-adopting counts: a disconnected record coming
   // back is a site becoming active. S11c's ghost slot is Story 3.5's; the sentence is F.1's.
   const active = rows.filter((row) => !row.disconnected_at).length
-  if (atSiteCap(plan, active)) {
-    revalidatePath(SITES)
-    return fail('at_cap', siteCapSentence(plan))
-  }
+  if (atSiteCap(plan, active)) return fail('at_cap', siteCapSentence(plan))
+  // ponytail: count-then-write, as the project cap is; two different addresses double-submitted
+  // inside one round trip can land two on Free — a trigger reading entitlements is the upgrade if
+  // it ever does.
 
   // ── The Admin key, against the real Ghost. `siteId` is null: there is no row yet, and the
   //    audit row is still written (AD-10 F10 — the log is the only control here that detects).
@@ -182,7 +196,6 @@ export async function connectSite(
     // flips it, in the same transaction that puts the key in Vault, so the flag can never claim a
     // key the site has not got. `staff` is carried forward untouched — it is Epic 7's to write.
     credentials_present: { content: Boolean(contentKey), admin: false, staff: present.staff === true },
-    settings_read_at: new Date().toISOString(),
     disconnected_at: null,
   }
 
@@ -206,7 +219,12 @@ export async function connectSite(
       .insert({ user_id: user.id, url, title: host, ...connection })
       .select('id')
       .maybeSingle<{ id: string }>()
-    if (error || !data) return logged('insert', error?.code)
+    if (error || !data) {
+      // The same address submitted twice inside one round trip: the second insert meets
+      // `unique (user_id, url)`, which is the first's success and not a failure (review, 2026-09-08).
+      if (error?.code === '23505') return fail('already_connected', connectMessage('already_connected', host))
+      return logged('insert', error?.code)
+    }
     siteId = data.id
   }
 
@@ -224,14 +242,19 @@ export async function connectSite(
       siteId,
       userId: user.id,
     })
-    const read = (site.body as { site?: { url?: string; title?: string; icon?: string } })?.site
+    const read = (site.body as { site?: { url?: unknown; title?: unknown; icon?: unknown } })?.site
     if (site.ok && read) {
       await admin
         .from('sites')
         .update({
-          title: read.title || host,
-          favicon_url: read.icon || null,
-          site_settings: { ...previousSettings, public_url: read.url || url },
+          title: typeof read.title === 'string' && read.title ? read.title : host,
+          // CHECKED BEFORE EITHER BECOMES A LINK OR AN <img>: Ghost's answer is not a URL because
+          // Ghost sent it (review, 2026-09-08). The public url is kept as sent, slash and all (§38a).
+          favicon_url: isHttpUrl(read.icon) ? read.icon : null,
+          site_settings: { ...previousSettings, public_url: isHttpUrl(read.url) ? read.url : url },
+          // Stamped WITH the read it names, so the card can only say "Checked just now" about a
+          // read that happened; a read that failed leaves it as it was (review, 2026-09-08).
+          settings_read_at: new Date().toISOString(),
         })
         .eq('id', siteId)
         .eq('user_id', user.id)
@@ -252,14 +275,25 @@ export async function connectSite(
     await store({ siteId, userId: user.id, kind: 'admin', secret: adminKey, route: ROUTE })
   } catch (thrown) {
     if (existing) {
-      // A record Inflozo KEPT (FR-C6) is put back as it was, never deleted.
-      await admin
-        .from('sites')
-        .update({ disconnected_at: existing.disconnected_at })
-        .eq('id', siteId)
-        .eq('user_id', user.id)
+      // A record Inflozo KEPT (FR-C6) is put back AS IT WAS — every column the two writes above
+      // touched, not only the disconnect stamp (review, 2026-09-08) — and never deleted.
+      const kept = {
+        title: existing.title,
+        favicon_url: existing.favicon_url,
+        ghost_version: existing.ghost_version,
+        content_key: existing.content_key,
+        credentials_present: existing.credentials_present,
+        site_settings: existing.site_settings,
+        settings_read_at: existing.settings_read_at,
+        disconnected_at: existing.disconnected_at,
+      }
+      const { error: undo } = await admin.from('sites').update(kept).eq('id', siteId).eq('user_id', user.id)
+      if (undo) console.error('sites: connect undo failed', { code: undo.code })
     } else {
-      await admin.from('sites').delete().eq('id', siteId).eq('user_id', user.id)
+      const { error: undo } = await admin.from('sites').delete().eq('id', siteId).eq('user_id', user.id)
+      // Logged, because a row this could not remove renders "Connected" with no key behind it and
+      // answers `already_connected` to every retry (review, 2026-09-08).
+      if (undo) console.error('sites: connect undo failed', { code: undo.code })
     }
     if (thrown instanceof AdminError) return refused(thrown.code, host)
     return logged('store', (thrown as { name?: string })?.name)

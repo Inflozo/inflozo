@@ -87,15 +87,22 @@ test('the proxy matcher leaves the root-served identity files alone and still se
   // for the wizard's screenshot and a hand list would have shipped it 404ing on the app host with
   // every check green — the same failure the identity files had (counts and membership are
   // derived, never restated). A file added to a folder already excluded is covered by this too.
+  // A file placed directly in `public/` (a `robots.txt`, an `og.png`) is served from the root and
+  // is in the same danger, so it is walked too (review, 2026-09-08).
   const served = readdirSync('public', { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .flatMap((entry) => readdirSync(join('public', entry.name)).map((f) => `/${entry.name}/${f}`))
+    .flatMap((entry) =>
+      entry.isDirectory()
+        ? readdirSync(join('public', entry.name)).map((f) => `/${entry.name}/${f}`)
+        : [`/${entry.name}`],
+    )
   assert.ok(served.length > 0, 'public/ has no served folders — this loop would assert nothing')
 
   for (const path of [...icons.map((f) => `/${f}`), ...served, '/favicon.ico', '/_next/static/x.js']) {
     assert.ok(!matcher.test(path), `${path} is inside the matcher — the app host would rewrite it to /app${path}`)
   }
-  for (const path of ['/', '/sites', '/apply', '/sign-in', '/branding']) {
+  // `/sites/connect` is Story 3.2's own route and `connect/` is its exclusion: the one must stay
+  // inside the matcher while the other stays out (review, 2026-09-08).
+  for (const path of ['/', '/sites', '/sites/connect', '/apply', '/sign-in', '/branding']) {
     assert.ok(matcher.test(path), `${path} escaped the proxy — no rewrite, no CSP, no session refresh`)
   }
 })

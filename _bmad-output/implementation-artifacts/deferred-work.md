@@ -1146,8 +1146,9 @@ status: closed by Story 3.2 (Dev, 2026-09-08) — `app/api/ghost-admin/verify/ro
   records the three proofs that left with the route.
 severity: low
 origin: Story 3.1 spec (2026-09-07), the deployed-proof decision
-location: apps/web/app/api/ghost-admin/verify/route.ts (to be created by 3.1) · tools/probe/run-verify-ghost-admin.py
-  (drives it) · epics.md Story 3.2 (the connect wizard — the story that removes it)
+location: apps/web/app/api/ghost-admin/verify/route.ts (created by 3.1, deleted by 3.2) ·
+  tools/probe/run-verify-ghost-admin.py (drove it; drives the wizard since 3.2) · epics.md Story 3.2 (the connect
+  wizard — the story that removed it)
 reason: R-82 wants the round trip executed on the real infrastructure, and the module has no caller until 3.2's
   connect action exists; a bearer-gated route is the one way to execute the Vercel → pooler hop and the
   Vault write/decrypt/delete cycle from the deployed function, and it sidesteps this machine's sandbox, which
@@ -1240,25 +1241,59 @@ reason: `action` is an enum and the three labels the code inserts were confirmed
 
 ### DW-54: three of the key store's live proofs lose their driver with the verify route
 
-plain: Story 3.1 proved three things on the live site through its temporary back door — that Inflozo
+plain: Story 3.1 proved four things on the live site through its temporary back door — that Inflozo
   refuses to make any change to a Ghost site outside its four allowed ones, that swapping a key removes
-  the old one from the locked store, and that removing the deploy-time token removes it too. Story 3.2
-  takes that back door out, as planned, and nothing in the product yet presses those three buttons —
-  so until later stories do, those three are proved by the local tests and the database gate only, not
-  on the deployed site.
-status: open
+  the old one from the locked store, that removing the deploy-time token removes it too, and that a stored
+  key can be taken back out of the locked store and used to sign one request. Story 3.2 takes that back
+  door out, as planned. Its own harness now presses the second button for real (reconnecting a disconnected
+  site swaps the key); nothing in the product yet presses the other three — so until later stories do,
+  those are proved by the local tests and the database gate only, not on the deployed site.
+status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); `write-denied`, `staff-removed` and the
+  decrypt path remain
 severity: low
-origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"
+origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"; the decrypt path added by
+  3.2's code review (2026-09-08, Edge Case Hunter)
 location: tools/probe/run-verify-ghost-admin.py (the retargeted harness — its docstring names the steps it
-  now runs, and these three are not among them) · apps/web/ghost-admin-rule.test.ts (`permitted()`'s three
-  denials as a unit contract) · supabase/tests (the trigger under the RLS gate)
+  runs; `re-adopt` is the one that rotates a key) · apps/web/ghost-admin-rule.test.ts (`permitted()`'s three
+  denials as a unit contract) · apps/web/server/ghost-admin/index.ts (`call()` — the decrypt path — and
+  `remove()`, neither with a product caller) · supabase/tests (the trigger under the RLS gate)
 reason: R-82 wants every claim executed on the real infrastructure. With DW-48 honoured, `write-denied`
   has no product caller until Epic 7's deploy path makes the first allowed write (and can then be driven
-  by asking for one outside the list); `rotated` has none until Story 3.6's Manage keys re-pastes a key;
-  `staff-removed` none until Epic 7 stores and removes the Staff Access Token. Each of those stories
-  adds the matching step back to its own harness and closes its third of this entry.
-  CONFIRMED AT 3.2's DEV (2026-09-08): the route is gone and the rewritten harness's docstring lists
-  `first-run · keys-step · http-warned · malformed · bogus-key · content-wrong-key · connect · audit ·
-  already-connected · at-cap · axe · user-gone · secret-gone · no-secret-leak` — none of them a write, a
-  rotation or a staff removal. `secret-gone` still exercises DW-44's CASCADE path live, so it is only the
-  replace and remove paths that are now gate-only.
+  by asking for one outside the list); `staff-removed` none until Epic 7 stores and removes the Staff
+  Access Token; and the DECRYPT path — `call()` reading `vault.decrypted_secrets` and signing with what it
+  read, the `vault_decrypt` audit row with it — none until Story 3.3's settings read, the first product
+  call made with a stored key rather than a typed one. Each of those stories adds the matching step to its
+  own harness and closes its part of this entry.
+  CONFIRMED AT 3.2's DEV (2026-09-08): the route is gone and the harness's docstring lists what it runs —
+  none of them a write, a staff removal or a decryption.
+  AMENDED AT 3.2's REVIEW (2026-09-08): `rotated` is driven live again, one story early — the harness's
+  `re-adopt` step marks its own fixture's site disconnected through the service role (Story 3.5's Disconnect
+  does not exist), reconnects it, and reads a NEW `admin_key_vault_ref` with the old secret gone and the new
+  one present: DW-44's replace path on the live project. `secret-gone` still exercises the CASCADE path. So
+  it is the write-denial, the staff removal and the decryption that are gate-only until Epic 7, Epic 7 and
+  Story 3.3.
+
+## Deferred from: code review of spec-3-2-the-connect-wizard-url-integration-guide-and-the-two-keys (2026-09-08)
+
+- DW-54 (above, amended): the decrypt path — `call()` reading `vault.decrypted_secrets` and signing with it —
+  has no product caller until Story 3.3's settings read, so it runs on no infrastructure between the verify
+  route's deletion and 3.3; `rotated`, by contrast, is driven live again by 3.2's `re-adopt` step.
+- DW-55 (below): a Ghost installed under a path cannot connect, by the approved contract.
+
+### DW-55: a Ghost installed under a path cannot be connected
+
+plain: Ghost can live at an address like `https://example.com/blog` rather than at the root of a domain. The
+  connect wizard keeps only the root part of whatever is typed — the approved rule, so that the same site typed
+  three ways is one record — so such a site would be looked for at `https://example.com` and refused with
+  "Ghost refused the connection (HTTP 404)". Nobody has asked for one yet.
+status: open
+severity: low
+origin: Story 3.2 code review (2026-09-08) — Edge Case Hunter
+location: apps/web/lib/connect-rule.ts (`normaliseSiteUrl` drops the path) · apps/web/server/ghost-admin/admin-rule.ts
+  (`adminUrl`, which keeps a subdirectory, from 3.1's review) · spec-3-2 Boundaries ("normalised to an origin …
+  no path")
+reason: The frozen Boundaries chose an origin on purpose — `unique (user_id, url)` and one record per site
+  however it is spelled — and 3.1's `adminUrl` already resolves relative to a path, so the chokepoint is ready
+  the day the rule admits one. Doing it needs a decision on what "one record" means for `example.com` and
+  `example.com/blog` (two sites, or a typo?), which is the owner's; ask him when a customer with a
+  subdirectory install appears, or at Manage keys (3.6) where the URL is shown read-only.

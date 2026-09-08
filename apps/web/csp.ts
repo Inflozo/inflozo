@@ -28,7 +28,8 @@ import { APP } from './routing.ts'
  *
  * `http:` IS LEFT OUT ON PURPOSE. A page served over https cannot fetch a plain-http origin
  * anyway (mixed content), the connect screen warns the moment the field says `http://`, and both
- * test Ghosts answer 403 on plain http to the admin API regardless (MEASUREMENTS §38c).
+ * test Ghosts send a plain-http admin call that carries a key on to https with a 301, which the
+ * chokepoint never follows (MEASUREMENTS §38c as corrected at Review, 2026-09-08).
  */
 const APP_CONNECT = "'self' https:"
 

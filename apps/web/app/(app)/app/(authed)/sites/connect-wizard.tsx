@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useRef, useState, type FormEvent, type MouseEvent } from 'react'
+import { useActionState, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button, buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
@@ -103,7 +103,15 @@ export function ConnectWizard({
   onCancel?: () => void
 }) {
   const [state, action, pending] = useActionState<ConnectResult | null, FormData>(connectSite, null)
-  const [warning, setWarning] = useState<string | null>(null)
+  // THE THREE VALUES ARE STATE, NOT THE DOM'S. React 19 resets a form after its action returns —
+  // `requestFormReset` runs for every action, a refusal included — so uncontrolled fields emptied
+  // on every server-side refusal and the customer re-pasted all three to fix one (review,
+  // 2026-09-08; the sign-in form met the same thing). Controlled fields keep what was typed, and
+  // nothing typed is ever echoed back by the server to do it.
+  const [typed, setTyped] = useState({ url: '', admin_key: '', content_key: '' })
+  const edit = (event: ChangeEvent<HTMLInputElement>) =>
+    setTyped((values) => ({ ...values, [event.target.name]: event.target.value }))
+  const warning = isPlainHttp(typed.url) ? HTTP_WARNING : null
   const [contentError, setContentError] = useState<string | null>(null)
   const [checking, setChecking] = useState(false)
   // The submit that follows a passed browser check. A ref and not state: it is set and read
@@ -117,7 +125,9 @@ export function ConnectWizard({
   const banner = error && !error.field ? error.message : null
 
   const go = (next: Step) => (event: MouseEvent<HTMLAnchorElement>) => {
-    if (!onStep) return
+    // A modified click is the user asking for a new tab, and the page is what should open there
+    // — the opener's own rule (`connect-dialog.tsx`).
+    if (!onStep || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
     event.preventDefault()
     onStep(next)
   }
@@ -140,6 +150,9 @@ export function ConnectWizard({
       setContentError(connectMessage('content_key_unknown'))
       return
     }
+    // The sheet may have closed, or Back been pressed, during the check: `requestSubmit` on a
+    // detached form does nothing and the flag would have skipped the next check (review, 2026-09-08).
+    if (!form.isConnected) return
     verified.current = true
     form.requestSubmit()
   }
@@ -214,9 +227,11 @@ export function ConnectWizard({
             maxLength={CONNECT_MAX}
             size={44}
             mono
+            required
+            value={typed.url}
+            onChange={edit}
             error={fieldError('url')}
             hint={warning}
-            onChange={(event) => setWarning(isPlainHttp(event.target.value) ? HTTP_WARNING : null)}
           />
           <TextInput
             id="s2b-admin-key"
@@ -226,6 +241,9 @@ export function ConnectWizard({
             maxLength={CONNECT_MAX}
             size={44}
             mono
+            required
+            value={typed.admin_key}
+            onChange={edit}
             error={fieldError('admin_key')}
           />
           <TextInput
@@ -236,6 +254,11 @@ export function ConnectWizard({
             maxLength={CONNECT_MAX}
             size={44}
             mono
+            // The three fields are the frame's three and "paste the three keys" is the heading: none
+            // is optional, and `required` says so with or without JavaScript (review, 2026-09-08).
+            required
+            value={typed.content_key}
+            onChange={edit}
             error={fieldError('content_key')}
           />
           <a

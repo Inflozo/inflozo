@@ -30,7 +30,8 @@ export async function checkContentKey(siteUrl: string, key: string): Promise<Con
   if (!origin || !key.trim()) return 'unreachable'
   // A page served over https cannot fetch a plain-http origin at all (mixed content), and the
   // CSP does not admit `http:` either — so the check is SKIPPED rather than reported as a
-  // refusal, and Ghost's own 403 answers the connect instead (§38c).
+  // refusal, and Ghost's own answer to the server's call — a 301 to https, never followed, so
+  // `ghost_redirected` (§38c as corrected at Review, 2026-09-08) — answers the connect instead.
   if (isPlainHttp(siteUrl)) return 'skipped_http'
 
   try {

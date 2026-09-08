@@ -20,17 +20,24 @@ import { ConnectWizard } from './connect-wizard'
    the way out) and `closeOnBackdrop` (a native `<dialog>` does Escape and Cancel, not the backdrop).
 
    Escape, Cancel, ✕ and the backdrop all close it with NOTHING SENT: the wizard's own form is the
-   only thing that posts, and closing resets the step so a reopened sheet starts at the handshake. */
+   only thing that posts. EVERY OPEN IS A FRESH WIZARD — `key={opens}` remounts it, so a reopened
+   sheet starts at the handshake with no last-attempt banner, field error or typed key in it (the
+   sibling sheet's finding, review 2026-09-05; here, review 2026-09-08). A SUCCESSFUL connect closes
+   it from the outside: the action redirects to `/sites`, the page re-renders with one more card,
+   and `sites/page.tsx` keys this component on the number of cards, so the open sheet is unmounted
+   rather than left standing over the list with the keys still in it (review, 2026-09-08). */
 
 export function ConnectSiteButton() {
   const dialog = useRef<HTMLDialogElement>(null)
   const [step, setStep] = useState<Step>('integration')
+  const [opens, setOpens] = useState(0)
 
   const open = (event: MouseEvent<HTMLAnchorElement>) => {
     // A modified click is the user asking for a new tab, and the full page is what should open.
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
     event.preventDefault()
     setStep('integration')
+    setOpens((n) => n + 1)
     openOnCancel(dialog.current)
   }
 
@@ -73,7 +80,7 @@ export function ConnectSiteButton() {
             <X size={16} />
           </button>
         </div>
-        <ConnectWizard variant="dialog" step={step} onStep={setStep} onCancel={close} />
+        <ConnectWizard key={opens} variant="dialog" step={step} onStep={setStep} onCancel={close} />
       </dialog>
     </>
   )

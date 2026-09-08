@@ -2,8 +2,8 @@
 title: 'Story 3.2 — The connect wizard: URL, integration guide, and the two keys'
 type: 'feature'
 created: '2026-09-08'
-status: 'in-progress'
-review_loop_iteration: 0
+status: 'in-review'
+review_loop_iteration: 1
 baseline_commit: '3a530ebcec1adc5584999bbb52ca62374859c5f8'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -198,7 +198,8 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   (the row itself stays; same path, no new row).
 - `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` §38
   (appended at Create, 2026-09-08) -- `GET /admin/site/` with no key; Content API CORS and `Accept-Version`;
-  plain http → 403 on both Ghosts. §37 the 401 causes; §21m the blast radius; §21j Vault over REST.
+  plain http → a 301 to https on both Ghosts when the call carries a key (corrected at Review — §38c's 403
+  was measured with no key). §37 the 401 causes; §21m the blast radius; §21j Vault over REST.
 - `_bmad-output/implementation-artifacts/deferred-work.md:491` DW-19 (First Run — Question 1), `:1134`
   DW-48 (closed at Dev), **DW-54** (added at Create: the three live proofs whose driver leaves with the
   route, and where each is re-driven).
@@ -223,7 +224,344 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
 - [x] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- the harness retargeted at the
       deployed wizard -- R-82, re-runnable
 - [x] `deferred-work.md` (DW-48 closed, DW-54's status) + `epic-3-context.md` -- propagate, never localise
-- [x] Run `## Verification
+- [x] Run `## Verification` on the real infrastructure and record every command and result by variable name
+
+**Acceptance Criteria:**
+- Given a signed-in account with no site, when it opens `/sites` at 1440, 834 and 390, then the page is
+  S2b·1 and **matches the frame** (`S2 Onboarding.dc.html:78-102`: the 480 card, the two 4px bars with
+  one coral, "1/2" mono, the 26px display headline, three 22px numbered discs in coral-tint, the
+  screenshot box, "Back" and the 44px ink "Done — next"); "Done — next" leads to S2b·2 and **matches the
+  frame** (`:110-142`: 560 card, both bars coral, "2/2", three 44px mono fields with the frame's labels
+  and placeholders, the "Where do I find these?" row, "Back" and "Connect"); with JavaScript off the same
+  two pages work and the form still submits
+- Given the T1 keys, when Connect is pressed, then `private.credential_audit` shows an `admin_read` row
+  for `config/` with `site_id` null and then rows for `site/` with the new `site_id`; `sites` has one row
+  with `ghost_version` `6.58.0`, `content_key`, `site_settings.public_url = 'https://ghost6.inflozo.com/'`,
+  `credentials_present = {content: true, admin: true, staff: false}`; a `vault.secrets` row exists behind
+  `admin_key_vault_ref`; the browser is on `/sites` showing the card, which **matches the frame**
+  (`S11 Sites.dc.html:61`) minus the ⋯ button; and no response body carried a `kid:secret`
+- Given a connected site, when **Connect site** is pressed with JavaScript on, then S11b opens and
+  **matches the frame** (`:131-155`: 520 card, the title pair, ✕, "Cancel" and "Done — next"), Cancel and
+  Esc close it with nothing sent; with JavaScript off the same button is a link to `/sites/connect`
+- Given each row of the I/O matrix, when it is exercised, then the named code and sentence appear in the
+  named slot and no `sites` row exists afterwards unless the row says one does
+- Given the Free plan with one active site, when a second connect is attempted, then the action answers
+  `at_cap` and the banner reads exactly `siteCapSentence('free')`
+- Given the source tree, when `node --test` runs, then the verify route is gone, `sites/actions.ts` is
+  the chokepoint's only importer and the second `supabaseAdmin()` importer, no file outside
+  `server/ghost-admin/` names `vault.` or `private.`, and the app host's policy carries
+  `connect-src 'self' https:` while the marketing host carries none
+- Given the deployed site, when `tools/probe/run-verify-ghost-admin.py` runs against T1 and T3, then every
+  step in its docstring passes in order, `user-gone` and `secret-gone` included, and axe reports zero
+  violations at both widths
+
+### Review Findings
+
+Review 1, 2026-09-08 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier) over the diff `3a530ebc..156f5d08`, plus the harness driven against the deployed site
+(`## Verification`, Review 1). Every patch below is applied in this review's commits; every defer has its
+ledger row; the one decision is Question 3 under `## Questions for the owner`.
+
+- [ ] [Review][Decision] The consent line names two writes ("your theme and your routes file") while the
+      frozen Boundaries say "Inflozo's four writes are named in the same breath" — Question 3, the owner's
+      [apps/web/lib/connect-rule.ts `ADMIN_KEY_CONSENT`]
+- [x] [Review][Patch] The Dev commit truncated the spec from the last task line to the end of `## Questions
+      for the owner` — the Acceptance Criteria, the change log, the Design Notes, the owner's manual test and
+      both rulings — and spliced the Verification record into the task line, so the board showed no test and
+      no rulings (R-80, R-83); restored from `3a530ebc`, frozen block byte-identical [spec]
+- [x] [Review][Patch] §38c's "plain http → 403" was measured with no key: with the key both Ghosts answer a
+      301 the chokepoint never follows, so the customer reads `ghost_redirected`'s sentence — five comments
+      corrected, §38c amended, the harness's `http-connect` step executes the wizard's own shape
+      [apps/web/lib/connect-rule.ts, sites/content-check.ts, csp.ts, MEASUREMENTS §38c]
+- [x] [Review][Patch] React 19 resets a form after every action, a refusal included, so all three fields
+      emptied on every server-side refusal (the owner's test step 5 would have needed everything re-pasted) —
+      the values are state, the fields controlled; `malformed` asserts they survive
+      [sites/connect-wizard.tsx, components/kit/input.tsx]
+- [x] [Review][Patch] Nothing closed S11b after a successful connect: the action redirects to the route the
+      sheet lives on, the page re-renders in place and the sheet stayed open with the keys in it — the page
+      keys the button on the number of cards; `pro-connect-t3` proves it [sites/page.tsx, sites/connect-dialog.tsx]
+- [x] [Review][Patch] A reopened sheet showed the last attempt's banner, field error and typed keys — a fresh
+      wizard per open; `sheet-reopen` [sites/connect-dialog.tsx]
+- [x] [Review][Patch] The harness counted every form on the page (9 fields, three submit buttons — the shell's
+      two Sign-out forms and Next's hidden action inputs) and could not pass on a correct page — locators
+      scoped to the wizard's form [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] T3 never went through the product (the Free fixture met the cap first), S11b's in-sheet
+      flow, a script-less post, a plain-http connect, FR-C6's re-adoption of a disconnected record and axe on
+      S2b·2 and the open sheet were executed nowhere — steps `js-off`, `http-connect`, `dialog`, `sheet-submit`,
+      `sheet-reopen`, `re-adopt`, `pro-connect-t3`, `axe-sheet`, `axe-keys`; the two fixture states no UI can
+      make yet (a disconnected record, a Pro entitlement) are made by the service role
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The harness restated the cap sentence's shape, hardcoded the version floor and typed the
+      warning's opening words — `connectMessage`, `HTTP_WARNING` and `siteCapSentence` are evaluated through
+      Node from the app's own modules [tools/probe/run-verify-ghost-admin.py `app_text`]
+- [x] [Review][Patch] `connect` asserted two of the card's five labels — now the title and address from
+      `GET /admin/site/`, the address's `href`, `settings_read_at` and "Checked just now"
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] A `store()` failure on a re-adopted record restored only `disconnected_at` — every column
+      the two writes touch is read first and put back, and the undo's own failure is logged
+      [sites/actions.ts, connect-rule.test.ts]
+- [x] [Review][Patch] `GET /admin/site/`'s `url` and `icon` became a link and an `<img>` unchecked — `isHttpUrl`
+      [apps/web/lib/connect-rule.ts, sites/actions.ts]
+- [x] [Review][Patch] IP literals (`127.0.0.1`, `10.0.0.1`, `169.254.169.254`, `[::1]`) passed the address rule
+      the way `localhost` does not — refused [apps/web/lib/connect-rule.ts `normaliseSiteUrl`]
+- [x] [Review][Patch] An empty Content API key connected the site silently with `content: false` and no
+      sentence — `required` on all three fields, with or without JavaScript; `keys-step` counts them
+      [sites/connect-wizard.tsx]
+- [x] [Review][Patch] `settings_read_at` was stamped at insert, before the read it names — stamped with the
+      `site/` read [sites/actions.ts]
+- [x] [Review][Patch] A field over 300 characters was answered as a bad address under the URL, and the same
+      address double-submitted met `unique (user_id, url)` and was told the connect failed — answered under its
+      own field; `23505` is `already_connected` [sites/actions.ts]
+- [x] [Review][Patch] `requestSubmit()` after the browser check on a form that had been detached (sheet
+      closed, Back pressed) left the flag set and skipped the next check; a modified click on a step anchor in
+      the sheet swallowed the new-tab intent [sites/connect-wizard.tsx]
+- [x] [Review][Patch] A failed `projects` read made every card say "0 projects" as a fact — logged, pill
+      absent [sites/page.tsx]
+- [x] [Review][Patch] `revalidatePath` on the `at_cap` refusal alone — removed; the cap's count-then-write race
+      carries the project cap's own `ponytail:` note [sites/actions.ts]
+- [x] [Review][Patch] The comment said `Accept-Version` is sent on neither call; `site/` sends `v{major}.0`
+      [sites/actions.ts]
+- [x] [Review][Patch] Two sentences carried Markdown backticks into plain text under a field — removed; every
+      sentence is asserted backtick-free [apps/web/lib/connect-rule.ts, connect-rule.test.ts]
+- [x] [Review][Patch] `/sites/connect` was not asserted to stay inside the proxy matcher, and a file placed
+      directly under `public/` was not walked [apps/web/routing.test.ts]
+- [x] [Review][Patch] DW-48's location still read "to be created by 3.1"; DW-54 restated the harness's step list
+      (already drifted), named neither the decrypt path nor that `re-adopt` now drives `rotated` live
+      [deferred-work.md]
+- [x] [Review][Patch] `sprint-status.yaml`'s `last_updated` lost its quotes at Dev [sprint-status.yaml]
+- [x] [Review][Patch] The harness re-deleted a user its cascade step had already proved gone
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Defer] A Ghost installed under a path (`https://example.com/blog`) cannot connect: the frozen
+      Boundaries normalise the address to an origin, though `adminUrl` would keep the path — DW-55
+      [apps/web/lib/connect-rule.ts `normaliseSiteUrl`] — deferred, the approved contract
+- [x] [Review][Defer] The decrypt path — `call()` reading `vault.decrypted_secrets` and signing with it — has
+      no product caller until Story 3.3's settings read, so between the route's deletion and 3.3 it runs on no
+      infrastructure — DW-54 [apps/web/server/ghost-admin/index.ts `call`] — deferred, 3.3's
+
+Dismissed (4): the Sites grid's three columns at 834 (the dashboard's own convention; the app frames are
+drawn at 1440 only); S11b's two-word step-3 difference from S2b·1 and the Kit's 36/44 button heights against
+the frame's 38/40 (the Kit governs, as on every surface); a `select 1` on the pooler in `--check` (the full run
+executes it and cleans up either way); `resolveEntitlement` throwing (it does not — a failed read resolves to
+Free).
+
+## Spec Change Log
+
+- **2026-09-08, Dev — reconstructed at Review from the code's own comments, because the Dev commit lost this
+  log with the rest of the tail (next entry).** (1) A `'use server'` module may export only async functions, so
+  the result and code types the Code Map placed beside the action (`ActionResult`'s shape in `actions.ts`) live
+  in `lib/connect-rule.ts` as `ConnectResult`, `ConnectCode` and `ConnectField`: `pnpm check` was green with
+  them in `actions.ts` and `next build` was not (the wizard's import of the action failed to resolve).
+  (2) Outside the Code Map, each for the frame's sake: `kit/input.tsx` gained `size` (S2b·2's 44px field),
+  `hint` (the http warning — marigold, `role="status"`) and `onChange`; `proxy.ts`'s matcher excludes `connect/`
+  and `routing.test.ts` walks every folder under `public/` so the screenshot is served on the app host;
+  `identity.test.ts` exempts the mono `Inflozo` chip the frame draws at `S2 Onboarding.dc.html:97`;
+  `connect-dialog.tsx` draws S11b's own 520 box rather than `kit/dialog.ts`'s 460 `sheet`; `content-check.ts`
+  imports `connect-rule.ts` by relative path so `node --test` reaches it. (3) The harness's steps are its
+  docstring's, not the Code Map's plan: `grants` is proved by `connect` itself, and `write-denied`, `rotated`
+  and `staff-removed` left with the route (DW-54).
+- **2026-09-08, Review 1.** The file as committed at `156f5d08` had lost everything from the last task line
+  to the end of `## Questions for the owner` — the Acceptance Criteria, this log, the Design Notes, the
+  owner's manual test and both of his rulings — and the Verification record was spliced into the task line.
+  Restored from `3a530ebc`; the frozen block is byte-identical to the baseline again; nothing in it was
+  rewritten.
+- **2026-09-08, Review 1 — the frozen text overtaken by execution, recorded here rather than edited there:**
+  (a) **Plain http is a 301, not a 403.** §38c measured `GET http://…/ghost/api/admin/config/` with no
+  credential; the wizard's call carries the key, and with it both Ghosts answer `301 Location: https://…`
+  (Express's redirect, once the key authenticates), which `fetchWithKey` never follows (`redirect: 'manual'`).
+  The matrix's plain-http row therefore ends in `ghost_redirected`'s sentence — "Your site sent us somewhere
+  else. Connect with the address your site actually uses." — not `ghost_refused`'s; no row either way. The
+  verifier isolated the cause: no header → 403, `Authorization: Ghost garbage` → 400, an unissued kid → 401,
+  the real key → 301. §38c carries the correction; the harness's `http-connect` step executes the wizard's
+  own shape. (b) The matrix's two code spans (`https://yoursite.com`, `65a3f…:9c2b41d8e0f…`) are Markdown;
+  the sentences carry no backticks. (c) `settings_read_at` is stamped by the `site/` read, not at insert — a
+  read that failed leaves it as it was and the card says "Not checked yet". (d) `Accept-Version` is absent on
+  `config/` only; `site/` carries `v{major}.0`, as every later call will. (e) The Content API key is
+  `required` on the form, with or without JavaScript — "paste the three keys" means three; a crafted post
+  without one still connects with `content: false`, the partially credentialed state, and Manage keys (3.6)
+  is where it is added. (f) An IP literal is refused as an address, beside `localhost` and for the same
+  reason.
+- **2026-09-08, Review 1 — behaviour the Dev build lacked, added:** the wizard's three values are React state
+  (React 19 resets a form after its action, a refusal included, so uncontrolled fields emptied on every
+  server-side refusal); the sheet is a fresh wizard on every open and is closed on a successful connect by
+  the page keying the button on the number of cards; a `store()` failure on a re-adopted record restores every
+  column the connect wrote; `GET /admin/site/`'s `url` and `icon` are checked to be http(s) URLs before they
+  become a link or an `<img>`; a field over the ceiling is answered under its own field; a double-submitted
+  address that meets `unique (user_id, url)` is `already_connected`; the projects tally is absent, not
+  "0 projects", when its read fails.
+- **2026-09-08, Review 1 — the harness:** locators scoped to the wizard's form (the shell's two Sign-out forms
+  and Next's hidden action inputs made `form input` count 9 and `form button[type="submit"]` match three —
+  executed, run 1); the app's sentences evaluated through Node from `lib/connect-rule.ts` and `lib/plan.ts`
+  rather than parsed or retyped; steps added — `js-off`, `http-connect`, `dialog`, `sheet-submit`,
+  `sheet-reopen`, `re-adopt`, `pro-connect-t3`, `axe-sheet`, `axe-keys` — the two fixture states no UI can
+  make yet (a disconnected record, a Pro entitlement) made by the service role; `--shots DIR` for the frame
+  comparison.
+
+## Design Notes
+
+**Why `connect-src 'self' https:`.** `csp.ts:17-19` kept the two test Ghosts as a stand-in "until the
+session's real list arrives with Epic 3". The list cannot serve the connect moment: the origin being
+checked is by definition not stored yet, and it can be any host on the public web. Enumerating stored
+origins per request would also put a database read on every navigation for a directive that is a
+second-line control — `script-src` with a nonce and `'strict-dynamic'` is what stops an injected script
+from running at all, and `img-src` is already `https:`. `https:` is the narrowest value that makes the
+FR's browser check possible for every customer; `http:` is left out on purpose (mixed content would block
+it anyway, and the warning says so). The comment in `csp.ts` records this so the placeholder's promise
+does not outlive it.
+
+**Insert, then store, then compensate.** `store()` needs a `site_id` and checks the row is the caller's
+(`index.ts:118-125`), so the row must exist first. The pair is not one transaction — `store` owns its own
+`sql().begin` and the row is written by `supabaseAdmin()` — so a `store` failure deletes the row it just
+made and answers "Nothing was connected". Reusing 3.1's tested `store` unchanged is worth the one
+compensating delete. `// ponytail: insert then store with a compensating delete; one transaction inside
+server/ghost-admin if credential_audit ever shows the pair half-done.`
+
+**The public url's home.** `site_settings` is the jsonb 3.3 fills from `GET /admin/settings/`;
+`public_url` sits beside those keys, read from `GET /admin/site/` at connect and by 3.7 daily. No column,
+no migration; the card and every later "View site" read `site_settings.public_url ?? url`.
+
+**The step anchor, once.** The wizard renders `<a href="?step=keys">` for "Done — next" and
+`<a href="?step=integration">` for "Back" / "Where do I find these?"; when the dialog supplies `onStep`,
+the click is intercepted and the step is local state. One element, both behaviours, no duplicate markup.
+
+**JavaScript off and the Content key.** The browser check is the point of the FR — it proves the path the
+editor will use. Without JavaScript nothing can run it, so the key is stored unchecked and the editor's
+content-source pill (E5) is where a wrong one shows. The server does not repeat the check: a server-side
+200 would prove the wrong thing (no CORS, no mixed content, no browser).
+
+**The codes → sentences table** lives in `connectMessage()` and nowhere else; the UI passes a code and a
+host. `ghost_refused` covers any Ghost answer the map does not name (a 403, a 429, a 5xx — plain http is
+`ghost_redirected` since Review 1, §38c corrected) —
+"Ghost refused the connection (HTTP 403). Check the address and the keys." — DW-52 stands.
+
+**The harness after the route.** `grants` is proved by `connect` itself (a stored key on the deployed site
+is the pooler hop). `write-denied` stays a unit contract (`ghost-admin-rule.test.ts`) until E7's deploy path
+makes a live write; `rotated` re-drives on Manage keys (3.6); `staff-removed` on E7's decline/removal. DW-54
+records the three so nobody believes they are still executed live.
+
+**The consent line** (helper-caption slot above Connect, S2b·2 `:136-138`): "Your Admin API key lets
+Inflozo read everything Ghost Admin can — members' email addresses included. Inflozo only ever writes your
+theme and your routes file." FR-C3's honesty rule and the spine's blast-radius rule, in one sentence each.
+
+**The three values are state (Review 1).** React 19 resets a form after its action returns — `requestFormReset`
+runs for every action, a refusal included — so the wizard's uncontrolled fields emptied on every server-side
+refusal, and the owner's test step 5 ("paste the real Admin API key; change the last character of the Content
+key") would have meant re-pasting all three. The values are `useState` and the fields controlled; nothing typed
+is ever echoed back by the server to achieve it (the sign-in form's `defaultValue` pattern echoes an email; a key
+is not an email, and the harness's `no-secret-leak` sweep would have caught one).
+
+**The sheet closes from outside (Review 1).** A connect made from S11b redirects to `/sites`, the very route the
+sheet lives on; Next re-renders it in place, and an imperatively opened `<dialog>` stayed open over the new card
+with the keys still in its fields. `sites/page.tsx` keys the button on the number of cards, so one more card
+remounts it closed — no signal from the action, no effect in the dialog, one attribute. Every open is a fresh
+wizard for the same reason (`key={opens}`): the sibling sheet's "no stale banner" finding.
+
+**What Ghost answers is checked (Review 1).** `GET /admin/site/`'s `url` becomes the card's `href` and `icon`
+becomes `favicon_url`; `isHttpUrl` refuses anything that is not an http(s) URL, and the value is otherwise kept
+as sent — the public url carries its trailing slash (§38a). An IP literal typed as the address is refused beside
+`localhost`: the function's fetch stays on public names, and a Ghost on a bare IP has no certificate the
+browser's own Content-key check would trust.
+
+**Plain http is a redirect (Review 1).** With a key, both Ghosts answer a plain-http admin call with a 301 to
+https; the chokepoint never follows a redirect with a bearer, so the customer reads `ghost_redirected`'s
+sentence, the audit row carries `status: 301`, and no row is written. The warning under the field still comes
+first, as it is typed.
+
+**Two fixture states the harness makes itself (Review 1).** FR-C6's re-adoption needs a disconnected record and
+the second-site path needs Pro; Story 3.5's Disconnect and Epic 12's billing do not exist. The harness sets
+`disconnected_at` and `entitlements.state` through the service role on its own throwaway user and nothing else,
+which is the same license the account-deletion harness uses to seed its fixtures — every claim about what the
+USER can do still goes through the user's own session in the browser.
+
+## Owner's manual test
+
+On the live site after the Deploy run. You will make one test integration on your Ghost 6 test server
+and can delete it afterwards.
+
+1. **URL:** https://app.inflozo.com/sites · **Screen:** Sites, first visit · **Do:** look · **See:** no list
+   — a white card "First, a quick handshake." with "1/2", three numbered steps, the screenshot you supplied of the
+   Inflozo integration with its keys, "Back" and a black "Done — next".
+2. **URL:** https://ghost6.inflozo.com/ghost/#/settings/integrations · **Screen:** Ghost Admin · **Do:**
+   Add custom integration → name it `Inflozo owner test` → Save · **See:** an API URL, an Admin API key
+   and a Content API key. Keep this tab open.
+3. **URL:** https://app.inflozo.com/sites · **Do:** press **Done — next** · **See:** "Now paste the three
+   keys." with three fields: API URL, Admin API key, Content API key, and "Where do I find these?" below.
+4. **Do:** type `ghost6.inflozo.com` in API URL, `abc` in Admin API key, the real Content API key, press
+   **Connect** · **See:** under Admin API key: "An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id,
+   a colon, then a long secret." Nothing connected.
+5. **Do:** paste the real Admin API key; in Content API key change the last character; press **Connect** ·
+   **See:** under Content API key, almost instantly: "Ghost doesn't recognise this Content API key."
+6. **Do:** paste the correct Content API key; press **Connect** · **See:** the Sites page with one card:
+   `Ghost6 · ghost6.inflozo.com · Connected · Ghost 6.58 · Checked just now`. The address is a link that
+   opens your site.
+7. **Do:** press **Connect site** (top right) · **See:** a window "Connect your Ghost site — Same quick
+   handshake as onboarding." with the same steps. Press **Cancel**: it closes.
+8. **Do:** Connect site again → Done — next → type `http://ghost5.inflozo.com` · **See:** under the field,
+   as you type: "Most Ghost sites use https:// — use that if yours does. Without HTTPS the editor can't
+   load your live content." Change it to `https://ghost5.inflozo.com`, paste that server's own keys (make
+   a test integration there the same way), press **Connect** · **See:** on a Free account: "Free includes
+   1 site. Pro connects up to 10." and no second card. On Pro: a second card `Ghost5 · … · Ghost 5.130`.
+9. **Do:** Connect site → Done — next → `ghost6.inflozo.com` with its keys again → Connect · **See:**
+   "ghost6.inflozo.com is already connected."
+10. **Do:** on your phone, open https://app.inflozo.com/sites · **See:** the same card, one column, the
+    Connect site button full width; the connect window's fields stay usable.
+11. Cleanup, optional: in Ghost Admin, delete the `Inflozo owner test` integration. The card stays
+    "Connected" until Story 3.7's daily check exists — expected.
+
+## Questions for the owner
+
+### Question 1 — the very first screen a new customer sees (DW-19)
+
+The design has a screen called **First Run** — "Let's make your Ghost site gorgeous." with three cards:
+*Connect your Ghost site (Recommended)*, *Start from a starter*, *Blank canvas* — shown once after the
+first sign-in. It is drawn and in the walkthrough, but no story builds it, so today a new customer lands on
+the empty Projects page. **Example:** Maya signs up, clicks her magic link, and sees the three cards; she
+presses Connect and is on this story's handshake. Nothing in this story depends on the answer.
+
+1. **Its own small story at the end of Epic 3, after auto-brand (3.4) exists** — so the Recommended door
+   leads all the way through connect → your brand → a project, and the starter door can say "not yet" with
+   a reason until Epic 11. **(RECOMMENDED)**
+2. **Inside this story now** — the Connect card works; the other two are greyed with one line each.
+3. **Not built** — the empty Projects page is the first screen, and the ledger records that decision.
+
+**Ruled: option 1 (owner, 2026-09-08).** Story 3.8 "First Run — the three doors after the first sign-in" is
+added to `epics.md` after 3.7 and to `sprint-status.yaml` as backlog; DW-19 is closed by that ruling.
+
+### Question 2 — screenshots of Ghost Admin for the handshake steps
+
+Step 1 shows real screenshots of Ghost Admin (Settings → Integrations → Add custom integration → the new
+integration's keys). Taking them needs a login to ghost6.inflozo.com's admin, and there is none in
+`tools/probe/.env` — only API keys, which cannot open the admin screens. **Example:** a picture of the
+Integrations page with the "Add custom integration" button, cropped, so the customer sees exactly where
+to click. Until they exist the build shows the design's grey placeholder box, so Dev is not blocked.
+
+1. **You add a staff login for the test server to `tools/probe/.env`** as `GHOST6_ADMIN_EMAIL` and
+   `GHOST6_ADMIN_PASSWORD` — an Administrator user made for this, not your own — and Dev captures the
+   three pictures with a headless browser, re-capturable whenever Ghost's admin changes. **(RECOMMENDED)**
+2. **You take the three screenshots yourself** on ghost6.inflozo.com and tell me where you put them.
+3. **Ship with the placeholder box** and revisit when Ghost Admin's look is final for launch.
+
+**Ruled: option 2 (owner, 2026-09-08).** The screenshot is at
+`_bmad-output/planning-artifacts/design/CustomIntegrationScreen.png` — one picture of the saved integration
+showing its keys, which is what step 3 describes; the Code Map and Tasks now name it.
+
+### Question 3 — what the consent line promises about writes (Review 1)
+
+The sentence above Connect reads: "Your Admin API key lets Inflozo read everything Ghost Admin can — members'
+email addresses included. Inflozo only ever writes your theme and your routes file." Inflozo's allowed writes
+are four: upload a theme, activate it, upload the routes file, and — only when you say yes on the auto-brand
+card (Story 3.4) — switch off Ghost's own announcement bar. The spec's rules say "the four writes are named in
+the same breath"; the sentence names two things. Nothing in this story waits on the answer. **Example:** Maya
+reads the line, connects, and later the auto-brand card asks "turn Ghost's bar off?" — she was not told at
+connect that Inflozo could.
+
+1. **Keep the sentence as it is** — "your theme" covers uploading and activating it, and the announcement bar
+   is asked about separately, at the moment it happens, with its own yes/no (Story 3.4). Nothing changes.
+   **(RECOMMENDED)**
+2. **Name all four now** — "Inflozo only ever writes your theme, your routes file and — if you say so later —
+   switches off Ghost's announcement bar." One clause longer, on a screen that already asks for a lot.
+3. **Name three** — "your theme, its activation and your routes file" — and leave the bar to Story 3.4's card.
+
+## Verification
 
 Run at Dev on 2026-09-08, Node 24 on `PATH` (`export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH`).
 Every key is named by its variable and no value was printed.
@@ -281,9 +619,8 @@ Every key is named by its variable and no value was printed.
 
 **What Dev could not execute, and where it runs.** The whole browser half needs the story deployed —
 `python3 tools/probe/run-verify-ghost-admin.py` against `https://app.inflozo.com` is the Deploy run,
-and its docstring names every step in order: `first-run · keys-step · http-warned · malformed ·
-bogus-key · content-wrong-key · connect · audit · already-connected · at-cap · axe-sites ·
-axe-connect · user-gone · secret-gone · no-secret-leak`. It creates one throwaway Free account,
+and its docstring names every step in the order the run prints them (the Review's record below is the
+run's own output). It creates one throwaway Free account,
 connects T1 for real, reads `private.credential_audit`, `private.site_credentials` and `vault.secrets`
 read-only through the transaction pooler (`SUPABASE_DB_POOLER_URL`), and deletes the account again
 with the Admin-API user count as its control.
@@ -292,10 +629,52 @@ with the Admin-API user count as its control.
 `GET /admin/site/` answers with no key at all on both majors and its `version` is two parts, so
 `config/`'s three-part one is what is stored; the Content API `settings` read answers 200 with
 `access-control-allow-origin: *` and the preflight allows `accept-version`; a Content key Ghost never
-issued is a 401 `Unknown Content API Key`; plain http to the admin API is 403 on both. What is **not**
+issued is a 401 `Unknown Content API Key`; plain http to the admin API is a 301 to https when the call carries
+a key — 403 only with none, which is the shape §38c had measured (corrected at Review). What is **not**
 executed and cannot be: a Ghost 4.x — no such server exists, so the refusal is proved on the rule
 alone, in `connect-rule.test.ts`, with `4.48.0` and `4.0.0` injected.
 
 **Manual checks (owed at Review, not done here):**
 - The three frames beside the built pages at 1440 / 834 / 390 (screenshots in the Review's findings).
 - Owner's test above on the production domain, after Deploy.
+
+**Review 1, 2026-09-08 — executed on the real infrastructure, every key by name, no value printed.**
+
+- **Real-infra verifier, from this machine.** `run-verify-ghost-admin.py --check` PASS (every key present by
+  name; §21j re-executed: 404 ×3 with `/rest/v1/sites` 200). **T1** `GET /ghost/api/admin/config/` with the
+  key and no `Accept-Version` → 200, `version` `6.58.0` = `GHOST6_VERSION`; `GET /ghost/api/admin/site/` with
+  no credential → 200, `url https://ghost6.inflozo.com/`, `title Ghost6`, `icon null`. **T3** the same → 200
+  `5.130.6` = `GHOST5_VERSION`; `site/` → 200 `https://ghost5.inflozo.com/`, `Ghost5`, `null`. **Content API**
+  `GET /ghost/api/content/settings/?key=…` with `Accept-Version: v5.0` and `Origin: https://app.inflozo.com`
+  → 200 with `access-control-allow-origin: *` on both; the key's last character changed → 401 `Unknown Content
+  API Key` on both with the CORS header still `*` (the control the browser check relies on). **Negative
+  controls:** an unissued kid → 401 `UNKNOWN_ADMIN_API_KEY` on both; **plain http with the real key → 301
+  `Location: https://…` on both, not the 403 §38c recorded** — no header → 403, `Authorization: Ghost garbage`
+  → 400, so the answer is decided by authentication and the redirect is what the wizard's own call meets.
+  **Supabase** `GET /rest/v1/sites?limit=1` → 200 `[]`; `/rest/v1/site_credentials?limit=1` → 404 `PGRST205`.
+  **Deploy state:** CI run 34178929268 for `156f5d08` succeeded (`GH_TOKEN` from `GITHUB_TOKEN`); Vercel
+  production's newest deployment `READY` at `156f5d08` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`);
+  `https://app.inflozo.com/sites` → 307 `/sign-in` (the guard; a made-up path → 404 as control),
+  `/api/ghost-admin/verify` → 404, `/connect/integration.png` → 200 `image/png`, 29032 bytes = the file.
+  Unit gates: 58/58 across the seven story test files; `pnpm check` exit 0, 198 web tests.
+- **Harness run 1** (the Dev commit's harness against the deployed Dev build): `first-run` PASS, `keys-step`
+  FAIL — 9 fields counted (the shell's two Sign-out forms and Next's hidden action inputs), `http-warned`
+  PASS, then `browser` FAIL: `form button[type="submit"]` resolved to three elements. The product was right;
+  the harness was not. Fixture deleted, users 5 → 5.
+- **Harness run 2** (locators scoped to the wizard's form, a `dialog` step and `--shots`; still the Dev
+  build): **all steps passed** — `first-run · keys-step · http-warned · malformed · bogus-key ·
+  content-wrong-key · connect · dialog · audit · already-connected · at-cap · axe-sites · axe-connect ·
+  user-gone · secret-gone · no-secret-leak`. T1 connected for real: `ghost_version 6.58.0`, `public_url
+  https://ghost6.inflozo.com/`, `credentials_present {admin: true, staff: false, content: true}`, one
+  `vault.secrets` row behind the ref; 3 audit rows (`config/` with a null `site_id`, `site/` with the id, the
+  bogus key at 401), all stamped `sites/connect`, none holding a key; the sheet opened from the link and
+  closed on Escape with 0 POSTs; the cap answered "Free includes 1 site. Pro connects up to 10." with no
+  second row; axe zero violations at 1440 and 390 on both surfaces; 123 response bodies swept, no key in
+  any; the secret gone with the account, users 5 → 5. **The frames beside the built pages** at 1440 / 834 /
+  390 (`--shots`): S2b·1, S2b·2, S11a and S11b match — the 480 / 560 cards and the 520 sheet, the two bars
+  and mono counters, the coral-tint discs, the served screenshot, the three mono fields with the frame's
+  labels and placeholders, "Where do I find these?", the consent line, "Back" / "Done — next" / "Connect",
+  the sheet's title pair and ✕, the card's disc, title, mono address, "Connected", version and projects
+  pills and "Checked just now". At 834 the Sites grid keeps the dashboard's three columns and the address
+  truncates — the dashboard's own shape, the app frames drawn at 1440 only; left as is.
+- **Harness run 3** — the patched build, after this review's first commit deployed: recorded below.
