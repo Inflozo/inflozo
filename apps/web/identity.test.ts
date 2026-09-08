@@ -134,7 +134,9 @@ test('no surface types the wordmark for itself', () => {
   const offenders = walk(process.cwd()).flatMap((file) => {
     const rel = file.slice(process.cwd().length + 1)
     if (rel === LOGO || rel === WATERMARK) return []
-    const source = readFileSync(file, 'utf8').replace(/<span[^>]*font-mono[^>]*>\s*Inflozo\s*<\/span>/g, ' ')
+    // The chip and nothing looser: a mono span that is not also the frame's bordered paper chip is
+    // still a drawn wordmark (review 2, 2026-09-08).
+    const source = readFileSync(file, 'utf8').replace(/<span[^>]*rounded-thumb[^>]*font-mono[^>]*>\s*Inflozo\s*<\/span>/g, ' ')
     const drawn = source.match(/>\s*Inflozo\s*</g)
     return drawn ? [rel] : []
   })

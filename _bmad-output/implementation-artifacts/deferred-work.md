@@ -1143,7 +1143,7 @@ plain: Story 3.1 ships a small, password-protected back door whose only job is t
 status: closed by Story 3.2 (Dev, 2026-09-08) — `app/api/ghost-admin/verify/route.ts` and
   `server/ghost-admin/verify-queries.ts` are deleted, `server-wiring.test.ts` names the connect action as the
   chokepoint's only importer, and `tools/probe/run-verify-ghost-admin.py` drives the product instead. DW-54
-  records the three proofs that left with the route.
+  records the proofs that left with the route and which story re-drives each.
 severity: low
 origin: Story 3.1 spec (2026-09-07), the deployed-proof decision
 location: apps/web/app/api/ghost-admin/verify/route.ts (created by 3.1, deleted by 3.2) ·
@@ -1239,7 +1239,7 @@ reason: `action` is an enum and the three labels the code inserts were confirmed
   ('ok','denied','error'))`) with its SCHEMA.sql line and gate assertion, in the next story that touches
   the table.
 
-### DW-54: three of the key store's live proofs lose their driver with the verify route
+### DW-54: the key store's live proofs lose their driver with the verify route, and each later story re-drives one
 
 plain: Story 3.1 proved four things on the live site through its temporary back door — that Inflozo
   refuses to make any change to a Ghost site outside its four allowed ones, that swapping a key removes
@@ -1279,6 +1279,55 @@ reason: R-82 wants every claim executed on the real infrastructure. With DW-48 h
   has no product caller until Story 3.3's settings read, so it runs on no infrastructure between the verify
   route's deletion and 3.3; `rotated`, by contrast, is driven live again by 3.2's `re-adopt` step.
 - DW-55 (below): a Ghost installed under a path cannot connect, by the approved contract.
+
+## Deferred from: code review 2 of spec-3-2-the-connect-wizard-url-integration-guide-and-the-two-keys (2026-09-08)
+
+- DW-58 (below): a public name that resolves to a private address passes the address rule, so the connect
+  action's fetch is not confined to the public web; a resolver check is a network hop the rule was built to avoid.
+- DW-59 (below): the connect action's write → store → compensate sequence, its `site/` guards, the Sites page's
+  failed-read banner are pinned by source-text tests only; no executed test makes `store()` fail.
+
+### DW-58: the address rule is a shape check, and a name resolving to a private range still passes it
+
+plain: The connect screen refuses obvious non-addresses — a bare word, `localhost`, a raw IP number — before
+  it calls anything. But a real domain name can be pointed at an internal address by whoever owns it, and the
+  rule cannot tell, so Inflozo's server would then try to reach that internal address on the customer's word.
+  On Vercel's functions there is little behind such an address to reach, which is why this is recorded and
+  not fixed today.
+status: open
+severity: low
+origin: Story 3.2 code review 2 (2026-09-08), Blind Hunter and Edge Case Hunter
+location: apps/web/lib/connect-rule.ts (`normaliseSiteUrl` — refuses `localhost`, IP literals and non-http(s)
+  schemes; its comment names this entry) · apps/web/server/ghost-admin/index.ts (`fetchWithKey`, `redirect:
+  'manual'`, one timeout; two calls per connect attempt)
+reason: The refusal of IP literals was added at Review 1 with the comment "keeps the function's fetch on public
+  names", which overclaims: `10.0.0.1.nip.io` or any customer-controlled record resolves past the rule. A
+  `dns.lookup` before the fetch would close it at the cost of a resolver round trip on every connect and a
+  false refusal for sites behind split-horizon DNS; the honest fix is a rate limit on `connectSite` plus the
+  resolver check, together, when the product runs somewhere with an internal network worth protecting
+  (a self-hosted deploy, or Vercel's private networking if it is ever attached). Until then the comment says
+  what the rule is — a shape check — and this entry says what it is not.
+
+### DW-59: the connect action's failure branches are pinned by source text, not executed
+
+plain: The code that undoes a half-made connection (the key could not be stored, so the site row is removed
+  or put back as it was), the checks on what Ghost answers before it becomes a link, and the "we couldn't load
+  your sites" screen are all real, but the only automatic tests that watch them read the code as text and look
+  for the right words. Nothing runs them with a failure injected, because the file cannot be loaded outside
+  Next. Extracting the sequence into a plain function that takes its collaborators as arguments — the shape
+  Story 2.6's purge used — would let a test run it with a store that fails.
+status: open
+severity: low
+origin: Story 3.2 code review 2 (2026-09-08), Verification Gap Reviewer
+location: apps/web/app/(app)/app/(authed)/sites/actions.ts (the `store()` catch; the `site/` read's `isHttpUrl`
+  guards; `settings_read_at` stamped with the read) · apps/web/app/(app)/app/(authed)/sites/page.tsx (the
+  `unread` banner) · apps/web/connect-rule.test.ts (the two source-text tests that stand in)
+reason: The harness proves every success path on the live site and cannot make Vault fail there; the
+  source-text tests catch a column dropped from the restore but not the branches swapped. The extraction is
+  the right shape and it is not free — the action is 300 lines with two clients and a redirect — so it lands
+  when a later story touches the same writes (3.5's Disconnect, 3.7's daily check, 3.6's Manage keys), and
+  that story's spec names it. The project tally, by contrast, was lifted into `lib/connect-rule.ts` and tested
+  at this review.
 
 ### DW-56: the authed shell renders content that is not visible without JavaScript
 

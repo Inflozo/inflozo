@@ -3,7 +3,7 @@ title: 'Story 3.2 — The connect wizard: URL, integration guide, and the two ke
 type: 'feature'
 created: '2026-09-08'
 status: 'in-review'
-review_loop_iteration: 1
+review_loop_iteration: 2
 baseline_commit: '3a530ebcec1adc5584999bbb52ca62374859c5f8'
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -289,8 +289,9 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   coral, "1/2" mono, the 26px display headline, three 22px numbered discs in coral-tint, the screenshot,
   "Back" to `/sites` and the 44px ink "Done — next"); "Done — next" leads to S2b·2 and **matches the
   frame** (`:110-142`: both bars coral, "2/2", three 44px mono fields with the frame's labels and
-  placeholders, "Back" and "Connect"); with JavaScript off the same two pages work and the form still
-  submits. **Two departures the owner's test ruled** (R-80 as amended): the card is S2b·2's 560 at BOTH
+  placeholders, "Back" and "Connect"); with JavaScript off the same two pages are reached by links and the
+  form is wired to post the server action natively — proved on the live site as wiring (`js-off`); whether
+  the authed shell paints it visibly without scripts is DW-56's, a shell question. **Two departures the owner's test ruled** (R-80 as amended): the card is S2b·2's 560 at BOTH
   steps rather than the frame's 480 then 560, and "Where do I find these?" is a subtle link at the top
   right rather than the frame's bordered chevron row (`:135-138`)
 - Given the connect sheet at any width, when "Done — next" is pressed, then the dialog's box is the same
@@ -316,7 +317,7 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
 - Given the Free plan with one active site, when a second connect is attempted, then the action answers
   `at_cap` and the banner reads exactly `siteCapSentence('free')`
 - Given the source tree, when `node --test` runs, then the verify route is gone, `sites/actions.ts` is
-  the chokepoint's only importer and the second `supabaseAdmin()` importer, no file outside
+  the chokepoint's only importer and is on the `supabaseAdmin()` importer list with its reason, no file outside
   `server/ghost-admin/` names `vault.` or `private.`, and the app host's policy carries
   `connect-src 'self' https:` while the marketing host carries none
 - Given the deployed site, when `tools/probe/run-verify-ghost-admin.py` runs against T1 and T3, then every
@@ -419,6 +420,65 @@ ledger row; the one decision is Question 3 under `## Questions for the owner`.
       it); the visibility gate is shell-wide and predates Epic 3 — DW-56 [components/shell or the layout] —
       deferred, a shell question the owner rules on
 
+**Review 2, 2026-09-08 — the same five layers over the diff `3a530ebc..9e8b6de1` (the Fix included), the
+Real-infra verifier re-executing every claim in `## Verification` and the 32-step harness on the deployed
+site (all green before any patch). Every patch below is applied in this review's commit; the two defers have
+their ledger rows; no decision is open.**
+
+- [x] [Review][Patch] The audit step never asserted the 301 its docstring, its detail and §38c all claim it
+      reads — a Ghost answering plain http with 403 would have passed; `at('301')` asserted
+      [tools/probe/run-verify-ghost-admin.py `audit`]
+- [x] [Review][Patch] Three I/O-matrix rows were proved on the rule alone and never on the deployed site —
+      "Not a URL", "Unreachable host", "Bare host typed" — against an AC that says every row is exercised;
+      steps `not-a-url` (no Ghost call, by the audit count) and `unreachable`, and `connect` now types T1 as a
+      bare host and asserts the stored origin [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] "the dialog's box is the same size at any width — measured" was measured at 1440 only;
+      `same-size` measures at 390 too. `handshake` asserted "Back" by text, not `href="/sites"`
+      [tools/probe/run-verify-ghost-admin.py `same-size`, `handshake`]
+- [x] [Review][Patch] Escape could close the sheet — unmounting the wizard — while the browser's Content-key
+      check was still awaited, and the connect was then dispatched from a wizard the customer had cancelled;
+      an `alive` ref stops it [sites/connect-wizard.tsx]
+- [x] [Review][Patch] A `config/` body whose `version` is not a string would have thrown on `.trim()` outside
+      every catch; a non-string is now "no version" [sites/actions.ts]
+- [x] [Review][Patch] The cosmetic write after `GET site/` could fail silently, leaving "Not checked yet" after a
+      read that happened; logged by code [sites/actions.ts]
+- [x] [Review][Patch] An over-long Content key was answered as "try again" in the banner while the comment and
+      Review 1's log said "under its own field"; `content_key_malformed`, under the field
+      [sites/actions.ts, lib/connect-rule.ts]
+- [x] [Review][Patch] The "n projects" tally was new logic no test executed; `projectCounts` and `projectsLabel`
+      lifted into `lib/connect-rule.ts` and tested [sites/page.tsx, connect-rule.test.ts]
+- [x] [Review][Patch] The screenshot was fetched on every Sites visit for a sheet that is closed; `loading="lazy"`.
+      `backHref`'s default and comment described a caller finding 7 removed [sites/connect-wizard.tsx]
+- [x] [Review][Patch] `written.size >= 8` was a literal count beside the list it counts — the set is now one
+      list and the writes must equal it. The wordmark test's exemption matched any mono span, not the frame's
+      chip — tightened. `/connect` (no slash) asserted inside the proxy and the exclusions documented as
+      static prefixes [connect-rule.test.ts, identity.test.ts, routing.test.ts, proxy.ts]
+- [x] [Review][Patch] DW-54's status was restated in four places with the pre-amendment trio and 3.6 as
+      `rotated`'s re-driver; the epic context and the AC counted `supabaseAdmin()` importers ("second" — the
+      test says fourth); the catalogue row said "both surfaces"; the harness docstring said `/sites` is the
+      handshake again and listed `search` before `pro-connect-t3` — every one reworded to derive or point at
+      the list [deferred-work.md DW-48/DW-54, epic-3-context.md, tools/doc-audit.py, the harness, this spec]
+- [x] [Review][Patch] The no-JS promise was restated as proved while DW-56 records it cannot be driven; the AC
+      and the epic context now say what is proved (the wiring) and what is DW-56's [this spec, epic-3-context.md]
+- [x] [Review][Patch] The owner's manual test step 5 showed the sentence with backticks the screen does not
+      carry [this spec]. `GHOST5_MAJOR`/`GHOST6_MAJOR` lost their only reader with the old harness
+      [tools/probe/.env.example]
+- [x] [Review][Patch] `credentials_present` is written by the action and the frozen Boundaries do not name it
+      (they name `store()` flipping `.admin`); recorded in the change log rather than edited in [this spec]
+- [x] [Review][Defer] A public name resolving to a private range passes the address rule, which is a shape
+      check — DW-58 [lib/connect-rule.ts `normaliseSiteUrl`] — deferred, the rule's comment now says so
+- [x] [Review][Defer] The store-failure compensation, the `site/` guards and the failed-read banner are pinned
+      by source-text tests only — DW-59 [sites/actions.ts, sites/page.tsx] — deferred, extraction lands with
+      the next story that touches the writes
+
+Dismissed at Review 2 (10): a missing `version` answered as unreachable (the frozen contract says so); the
+`config/` call on a re-adopt carrying a null `site_id` (the contract, and the audit's own shape); a Pro
+customer refused at the cap during an entitlement read failure (AD-28 degrades a failed read to Free, by
+design, on every surface); §38c's record naming the tool rather than a literal command (the verifier re-ran
+it from the record); the harness's pinned `GHOST*_VERSION` (3.1's pattern — an upgraded test Ghost SHOULD
+fail it); `call()`/`remove()` without a live driver (DW-54, Review 1); the `search` step's 800ms settle;
+"Checked yesterday" untested; `TextInput`'s prop union; the spec not being in the diff.
+
 Dismissed (4): the Sites grid's three columns at 834 (the dashboard's own convention; the app frames are
 drawn at 1440 only); S11b's two-word step-3 difference from S2b·1 and the Kit's 36/44 button heights against
 the frame's 38/40 (the Kit governs, as on every surface); a `select 1` on the pooler in `--check` (the full run
@@ -513,6 +573,17 @@ Free).
   capped at `100dvh - 20px` and scrolls, because one box the size of the taller step could otherwise outgrow
   a short viewport. (d) `SITES_EMPTY` lives in `lib/connect-rule.ts` so the harness reads the app's own
   words instead of retyping them — Review 1's rule for every sentence it asserts.
+
+- **2026-09-08, Review 2 — after the Fix.** Every claim in `## Verification` re-executed green by the
+  Real-infra verifier and the harness all green on the deployed Fix before any patch. Behaviour added: a
+  cancelled sheet no longer dispatches a connect its pending browser check was holding; a non-string
+  `version` is "no version"; the `site/` cosmetic write logs its failure; an over-long Content key is
+  `content_key_malformed` under its own field (a new sentence, backtick-free like the rest); the screenshot
+  loads lazily. **Recorded against the frozen text rather than edited there:** the action writes
+  `credentials_present` — `{content, admin: false, staff}` at the row, `store()` flipping `.admin` in the
+  same transaction as the Vault write — which the Boundaries' column list did not name; the AC's `content:
+  true` implied it and `epic-3-context.md` records it. The harness gained `not-a-url`, `unreachable`, the
+  bare-host connect, the 390 measurement, the Back `href` and the 301 assertion. DW-58 and DW-59 opened.
 
 ## Design Notes
 
@@ -641,7 +712,7 @@ steps 1, 2, 8, 10 and 12 are the new ones.
    and a Content API key. Keep this tab open.
 5. **URL:** https://app.inflozo.com/sites · **Do:** **Connect site** → **Done — next** → type
    `ghost6.inflozo.com` in API URL, `abc` in Admin API key, the real Content API key, press **Connect** ·
-   **See:** under Admin API key: "An Admin API key looks like `65a3f…:9c2b41d8e0f…` — an id, a colon, then
+   **See:** under Admin API key: "An Admin API key looks like 65a3f…:9c2b41d8e0f… — an id, a colon, then
    a long secret." Nothing connected.
 6. **Do:** paste the real Admin API key; in Content API key change the last character; press **Connect** ·
    **See:** under Content API key, almost instantly: "Ghost doesn't recognise this Content API key."

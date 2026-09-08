@@ -83,6 +83,7 @@ const Fields = z.object({
 const FIELD_OF: Partial<Record<ConnectCode, ConnectField>> = {
   url_invalid: 'url',
   credential_malformed: 'admin_key',
+  content_key_malformed: 'content_key',
   ghost_unknown_key: 'admin_key',
   ghost_unauthorized: 'admin_key',
 }
@@ -116,7 +117,7 @@ export async function connectSite(
     // and it is answered under the field it came in, not under the URL (review, 2026-09-08).
     const at = parsed.error.issues[0]?.path[0]
     if (at === 'admin_key') return fail('credential_malformed', connectMessage('credential_malformed'), 'admin_key')
-    if (at === 'content_key') return fail('connect_failed', connectMessage('connect_failed'))
+    if (at === 'content_key') return fail('content_key_malformed', connectMessage('content_key_malformed'), 'content_key')
     return fail('url_invalid', connectMessage('url_invalid'), 'url')
   }
 
@@ -169,7 +170,10 @@ export async function connectSite(
       userId: user.id,
     })
     if (!config.ok) return refused(config.code ?? 'ghost_refused', String(config.status))
-    version = (config.body as { config?: { version?: string } })?.config?.version
+    // A string or nothing: a body whose `version` is some other shape is refused as no version at
+    // all rather than thrown on (`.trim()` on a number, outside every catch — review, 2026-09-08).
+    const raw = (config.body as { config?: { version?: unknown } })?.config?.version
+    version = typeof raw === 'string' ? raw : undefined
   } catch (thrown) {
     if (thrown instanceof AdminError) return refused(thrown.code, host)
     return logged('validate', (thrown as { name?: string })?.name)
@@ -244,7 +248,7 @@ export async function connectSite(
     })
     const read = (site.body as { site?: { url?: unknown; title?: unknown; icon?: unknown } })?.site
     if (site.ok && read) {
-      await admin
+      const { error: cosmetic } = await admin
         .from('sites')
         .update({
           title: typeof read.title === 'string' && read.title ? read.title : host,
@@ -258,6 +262,9 @@ export async function connectSite(
         })
         .eq('id', siteId)
         .eq('user_id', user.id)
+      // Not fatal either, but not silent: a card saying "Not checked yet" after a read that
+      // happened needs a line to be found from (review, 2026-09-08).
+      if (cosmetic) console.error('sites: connect site-write failed', { code: cosmetic.code })
     }
   } catch (thrown) {
     console.error('sites: connect site-read failed', {

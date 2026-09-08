@@ -1,6 +1,6 @@
 'use client'
 
-import { startTransition, useActionState, useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
+import { startTransition, useActionState, useEffect, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button, buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
@@ -102,14 +102,14 @@ function Heading({ title, sub }: { title: string; sub: string }) {
 export function ConnectWizard({
   step,
   variant = 'page',
-  backHref = '/',
+  backHref = '/sites',
   onStep,
   onCancel,
 }: {
   step: Step
   /** `page` draws the frame's card; `dialog` renders bare, inside S11b's own sheet. */
   variant?: 'page' | 'dialog'
-  /** Where step 1's "Back" goes on the page: `/sites` from the connect route, `/` from Sites. */
+  /** Where step 1's "Back" goes on the page — Sites, the one place the page variant is reached from. */
   backHref?: string
   /** Supplied by the dialog only: the step becomes local state and the anchors stop navigating. */
   onStep?: (next: Step) => void
@@ -128,6 +128,11 @@ export function ConnectWizard({
   const warning = isPlainHttp(typed.url) ? HTTP_WARNING : null
   const [contentError, setContentError] = useState<string | null>(null)
   const [checking, setChecking] = useState(false)
+  // The browser check can take up to ten seconds, and Escape can close the sheet — unmounting this
+  // wizard — while it is still awaited. A connect must not be dispatched from a wizard the customer
+  // has already cancelled (review 2, 2026-09-08).
+  const alive = useRef(true)
+  useEffect(() => () => { alive.current = false }, [])
 
   const error = state && 'error' in state ? state.error : null
   const fieldError = (field: ConnectField) =>
@@ -159,6 +164,7 @@ export function ConnectWizard({
     setContentError(null)
     setChecking(true)
     const verdict = await checkContentKey(String(data.get('url') ?? ''), String(data.get('content_key') ?? ''))
+    if (!alive.current) return
     setChecking(false)
     // Only Ghost saying "I do not know this key" is the user's to fix here; everything else lets
     // the submit through, so the SERVER's answer is what the customer reads.
@@ -219,6 +225,9 @@ export function ConnectWizard({
         width={644}
         height={408}
         alt="The saved Inflozo integration in Ghost Admin, showing its API URL, Admin API key and Content API key"
+        // The sheet is rendered closed on every Sites visit and this pane is hidden on step 2, so
+        // the picture is fetched when it is looked at (review 2, 2026-09-08).
+        loading="lazy"
         className="w-full rounded-thumb border border-line"
       />
       <div className="mt-auto flex items-center justify-between gap-3">

@@ -102,7 +102,9 @@ test('the proxy matcher leaves the root-served identity files alone and still se
   }
   // `/sites/connect` is Story 3.2's own route and `connect/` is its exclusion: the one must stay
   // inside the matcher while the other stays out (review, 2026-09-08).
-  for (const path of ['/', '/sites', '/sites/connect', '/apply', '/sign-in', '/branding']) {
+  // …and `connect/` is a PREFIX for the screenshot's folder: `/connect` itself, with no slash, is a
+  // page path and stays inside (review 2, 2026-09-08).
+  for (const path of ['/', '/sites', '/sites/connect', '/connect', '/apply', '/sign-in', '/branding']) {
     assert.ok(matcher.test(path), `${path} escaped the proxy — no rewrite, no CSP, no session refresh`)
   }
 })

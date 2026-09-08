@@ -89,5 +89,7 @@ export async function proxy(req: NextRequest) {
 // in the story's Verification — and `routing.test.ts` reads this literal back, walks every folder
 // under `public/`, and runs it (review, 2026-09-06). It stays a literal here: Next extracts
 // `config` statically, so it cannot be imported from `routing.ts` — and the dots stay unescaped,
-// as in Next's own docs, so the text the test reads is the pattern Next runs.
+// as in Next's own docs, so the text the test reads is the pattern Next runs. Each excluded folder
+// is a PREFIX reserved for static files: a page route must never be placed under `brand/` or
+// `connect/`, because it would escape the proxy — no rewrite, no CSP, no session refresh.
 export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|apple-icon.png|brand/|connect/).*)'] }

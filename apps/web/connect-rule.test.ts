@@ -7,6 +7,8 @@ import {
   checkedLabel,
   CONNECT_MESSAGES,
   connectMessage,
+  projectCounts,
+  projectsLabel,
   filterSites,
   ghostLabel,
   hostOf,
@@ -230,10 +232,13 @@ test('a store that fails undoes the row it just made, so no site is half-connect
   // (review, 2026-09-08): the columns are read out of the two writes above the store, so a column
   // added to either without a line in the restore fails here.
   const before = source.slice(0, from)
+  // The columns are the schema's server-asserted set plus the three the client may write; the
+  // set is one list, and what the action writes must be exactly it (review 2, 2026-09-08).
+  const COLUMNS = ['title', 'favicon_url', 'ghost_version', 'content_key', 'credentials_present', 'site_settings', 'settings_read_at', 'disconnected_at']
   const written = new Set(
-    [...before.matchAll(/^\s+(title|favicon_url|ghost_version|content_key|credentials_present|site_settings|settings_read_at|disconnected_at):/gm)].map((m) => m[1]),
+    [...before.matchAll(new RegExp(`^\\s+(${COLUMNS.join('|')}):`, 'gm'))].map((m) => m[1]),
   )
-  assert.ok(written.size >= 8, `${ACTIONS}: expected the connect to write the sites columns before store(); found ${[...written].join(', ')}`)
+  assert.deepEqual([...written].sort(), [...COLUMNS].sort(), `${ACTIONS}: the connect writes a different set of sites columns before store() than the restore knows`)
   for (const column of written) {
     assert.match(compensation, new RegExp(`${column}: existing\\.${column}`),
       `${ACTIONS}: a failed store on a RE-ADOPTED record must put \`${column}\` back`)
@@ -282,4 +287,16 @@ test("the empty Sites screen says what the owner ruled, and borrows the handshak
   assert.equal(SITES_EMPTY.sub, 'Connect your Ghost site — it takes about a minute.')
   // They borrow the handshake's word and its "about a minute", so the two screens agree.
   assert.match(SITES_EMPTY.sub, /about a minute/)
+})
+
+test('the card tallies projects per site and pluralises the pill', () => {
+  const counts = projectCounts([
+    { linked_site_id: 'a' }, { linked_site_id: 'a' }, { linked_site_id: 'b' }, { linked_site_id: null },
+  ])
+  assert.deepEqual([...counts.entries()], [['a', 2], ['b', 1]])
+  assert.equal(projectsLabel(counts.get('a') ?? 0), '2 projects')
+  assert.equal(projectsLabel(counts.get('b') ?? 0), '1 project')
+  assert.equal(projectsLabel(counts.get('c') ?? 0), '0 projects')
+  // A malformed Content key is answered under its own field, with its own sentence.
+  assert.match(connectMessage('content_key_malformed'), /Content API key/)
 })

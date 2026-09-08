@@ -377,14 +377,13 @@ DOCS = [
   'above "Checked …". The shell\'s field on Sites finds a site by its title and by its address. '
   "The same address again answers already_connected; T3 on the Free account "
   "answers Appendix F.1's own cap sentence, composed from PLANS rather than typed here. axe-core at "
-  'WCAG 2.1 AA over both surfaces at 1440 and 390. Then GoTrue deletes the user and the secret must '
+  'WCAG 2.1 AA over every surface it drives at 1440 and 390. Then GoTrue deletes the user and the secret must '
   'be gone — the cascade path of DW-44 — and every response body the run received is swept for the '
   'keys it typed. Its CONTROLS: §21j re-executed over PostgREST (vault and the private table 404, '
   '/rest/v1/sites 200) and the Admin-API user count before and after. --check is the keys, that '
   'control, and whether playwright, axe and the postgres driver resolve; it creates nothing and '
-  'needs no deployment. DW-54 records the three Story 3.1 proofs — write-denied, rotated and '
-  'staff-removed — that lost their driver with the route and are unit contracts until Epic 7 and '
-  'Story 3.6 re-drive them. Story 3.2.'),
+  'needs no deployment. DW-54 records the Story 3.1 proofs that lost their driver with the route '
+  'and which story re-drives each; `re-adopt` here already re-drives the key rotation. Story 3.2.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

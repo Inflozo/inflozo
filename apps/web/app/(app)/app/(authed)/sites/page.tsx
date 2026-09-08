@@ -3,7 +3,7 @@ import { Banner } from '@/components/kit/banner'
 import { ring } from '@/components/kit/greyed'
 import { ExternalLink } from '@/components/kit/icons'
 import { ConnectSiteButton } from '@/components/shell/shell'
-import { checkedLabel, filterSites, ghostLabel, hostOf, SITES_EMPTY } from '@/lib/connect-rule'
+import { checkedLabel, filterSites, ghostLabel, hostOf, projectCounts, projectsLabel, SITES_EMPTY } from '@/lib/connect-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { ConnectSiteDialog } from './connect-dialog'
 
@@ -82,11 +82,7 @@ export default async function Sites({
   // A failed tally is no tally: the pill is absent rather than stating "0 projects" as a fact
   // (review, 2026-09-08). Logged without the id: logs carry no user content.
   if (projectsError) console.error('sites: projects read failed', { code: projectsError.code })
-  const linked = new Map<string, number>()
-  for (const project of projects ?? []) {
-    const id = project.linked_site_id
-    if (id) linked.set(id, (linked.get(id) ?? 0) + 1)
-  }
+  const linked = projectCounts(projects ?? [])
 
   const { query, shown } = filterSites(sites, q)
 
@@ -210,7 +206,7 @@ export default async function Sites({
                         ) : null}
                         {projectsError ? null : (
                           <span className="rounded-pill border border-line px-2 py-[2px] text-helper-caption text-ink-soft">
-                            {projectCount} project{projectCount === 1 ? '' : 's'}
+                            {projectsLabel(projectCount)}
                           </span>
                         )}
                       </div>

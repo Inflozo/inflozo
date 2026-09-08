@@ -46,9 +46,11 @@ export function normaliseSiteUrl(input: string | null | undefined): string | nul
   // browser's Content-key check could reach is not one Vercel's function can.
   if (!url.hostname.includes('.')) return null
   // AN IP LITERAL IS NOT A SITE ADDRESS EITHER. `10.0.0.1`, `127.0.0.1`, `169.254.169.254` and
-  // `[::1]` all pass the dot test; refusing them keeps the function's fetch on public names, for
+  // `[::1]` all pass the dot test; refusing them keeps the function's fetch off a bare address, for
   // the same reason `localhost` is refused, and loses nothing — a Ghost on a bare IP has no
-  // certificate the browser's own Content-key check would trust (review, 2026-09-08).
+  // certificate the browser's own Content-key check would trust (review, 2026-09-08). A public
+  // NAME that resolves to a private range still passes — this is a shape check, not a resolver —
+  // and DW-58 records what that is worth on Vercel's function (review 2, 2026-09-08).
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname) || url.hostname.startsWith('[')) return null
   return `${url.protocol}//${url.host.toLowerCase()}`
 }
@@ -156,6 +158,20 @@ export function filterSites<
 }
 
 /**
+ * S11a's "n projects" pill: how many projects link each site (FR-B5, at most one site per project,
+ * so the tally is over `projects.linked_site_id`). Here rather than in the page so it is under test
+ * before the first story writes that column (review 2, 2026-09-08).
+ */
+export function projectCounts(projects: readonly { linked_site_id: string | null }[]): Map<string, number> {
+  const linked = new Map<string, number>()
+  for (const { linked_site_id: id } of projects) if (id) linked.set(id, (linked.get(id) ?? 0) + 1)
+  return linked
+}
+
+/** "1 project", "2 projects", "0 projects". */
+export const projectsLabel = (count: number): string => `${count} project${count === 1 ? '' : 's'}`
+
+/**
  * S11a WITH NOTHING CONNECTED — the owner's finding 7, and the words he ruled at Question 5. No
  * frame draws this screen: the export has S11a, S11b and S11c and no empty state, so it is
  * extrapolated from the nearest one that has, S3b's Projects empty screen (R-74). Here rather than
@@ -197,6 +213,10 @@ export const CONNECT_MESSAGES = {
   content_key_unknown: () => "Ghost doesn't recognise this Content API key.",
   credential_malformed: () =>
     'An Admin API key looks like 65a3f…:9c2b41d8e0f… — an id, a colon, then a long secret.',
+  // Only a crafted post reaches this (`maxLength` refuses the character first); it is still
+  // answered under its own field rather than as a "try again" banner (review, 2026-09-08).
+  content_key_malformed: () =>
+    "That doesn't look like a Content API key — copy it again from the Inflozo integration.",
   ghost_unknown_key: () =>
     "Ghost said no — this Admin API key doesn't match your site. Copy the whole key from the " +
     'Inflozo integration and try again.',

@@ -35,7 +35,7 @@ list gone stale — the sibling harness's own note):
                  ruled out of this story at Question 4)
   axe-empty      axe over the empty screen, at 1440 and 390
   same-size      the empty screen's own button opens S11b, and the sheet's box is THE SAME at both
-                 steps. Measured before the fix: 520×665.7 then 520×608.5, a 57px shrink that swept
+                 steps, at 1440 and again at 390. Measured before the fix: 520×665.7 then 520×608.5, a 57px shrink that swept
                  the sheet's top edge 28.6px down and uncovered the card behind it — his findings
                  1 and 2, which were one cause
   find-link      "Where do I find these?" is an `<a href="?step=integration">` with no border and no
@@ -43,7 +43,8 @@ list gone stale — the sibling harness's own note):
                  frame, which draws a bordered box that reads as a dropdown)
   handshake      `/sites/connect`, where the "Connect site" LINK goes with JavaScript off, IS
                  S2b·1: "1/2", three numbered steps, the integration screenshot really served (not
-                 a 404 behind an <img>), Back and "Done — next" — a LINK, so it is followed
+                 a 404 behind an <img>), Back — an `<a href="/sites">` — and "Done — next" — a
+                 LINK, so it is followed
   keys-step      "Done — next" lands on S2b·2: the three fields the frame draws, all three
                  `required`, and NO fourth. The Staff Access Token is not asked for here and the
                  page is read to prove it; and the page card is ONE SIZE at both steps (it was
@@ -61,11 +62,18 @@ list gone stale — the sibling harness's own note):
                  sites row — refused before Vault and before the network — and the other two
                  fields KEEP what was typed (React resets a form after its action; the values
                  are state)
+  not-a-url      `orbit weekly` as the address: `url_invalid`'s sentence UNDER THE URL FIELD, no
+                 row, and the audit shows no Ghost call was made for it (the I/O matrix's "Not a
+                 URL" row, on the deployed site)
+  unreachable    `https://nonexistent.inflozo.com`: the deployed function's own fetch fails and
+                 `ghost_unreachable`'s sentence names the host, no row (the matrix's "Unreachable
+                 host" row)
   bogus-key      a key of the right shape whose `kid` Ghost never issued: `ghost_unknown_key`'s
                  sentence under the field (§37 — a regenerated key, never an "expired" one), no row
   content-wrong-key  the Content API key with one character changed: the browser's own check (§38b)
                  answers 401 and the submit NEVER LEAVES THE PAGE — counted, not assumed
-  connect        T1's real keys: the browser lands on `/sites` showing the card, whose title and
+  connect        T1's real keys, its address typed as a BARE HOST (the matrix's "Bare host typed"
+                 row — the row stores the https origin): the browser lands on `/sites` showing the card, whose title and
                  address are what `GET /admin/site/` answers with no key (§38a), the address a
                  link to the PUBLIC url, "Checked just now" stamped by that read; the wire shows
                  the row with `ghost_version`, `content_key`, `site_settings.public_url` and
@@ -86,20 +94,22 @@ list gone stale — the sibling harness's own note):
                  evaluated from the app's `siteCapSentence('free')` rather than typed here, and no
                  second row
   re-adopt       FR-C6: the service role marks T1's record disconnected (nothing in the product
-                 writes that until Story 3.5), `/sites` is the handshake again, and reconnecting
+                 writes that until Story 3.5), `/sites` is the EMPTY SCREEN again, its button opens
+                 the sheet, and reconnecting
                  RE-ADOPTS the record — same id, `disconnected_at` cleared, a NEW vault ref, the
                  OLD secret gone (DW-44's replace path, live — the `rotated` proof DW-54 deferred)
-  search         the shell's field on Sites, on the deployed page: the title of one site leaves one
-                 card, the ADDRESS of the other leaves one, and a word that matches neither leaves
-                 none with the app's own "No sites match …"
   pro-connect-t3 the service role flips the entitlement row to `pro_active` (no billing exists
                  until Epic 12), and T3 is connected THROUGH THE SHEET with a trailing-slash
                  address: the row stores the typed origin without it, the public url as Ghost
                  sends it, `ghost_version` from config/, a secret behind its ref; the sheet CLOSES
                  on success and the second card shows "Ghost 5.x"
+  search         the shell's field on Sites, on the deployed page: the title of one site leaves one
+                 card, the ADDRESS of the other leaves one, and a word that matches neither leaves
+                 none with the app's own "No sites match …"
   audit          `private.credential_audit` read through the pooler: one `admin_read ok` for
                  `config/` with a NULL `site_id` per connect and one for `site/` carrying the id;
-                 the bogus key's `admin_read error` at 401 and the plain-http one at 301; every
+                 the bogus key's `admin_read error` at 401 and the plain-http one at 301 — BOTH
+                 asserted by status; every
                  row stamped with the action's own route; and no `detail` anywhere holding a
                  `kid:secret`
   axe-sites · axe-sheet · axe-connect · axe-keys
@@ -195,6 +205,8 @@ def app_text():
         " ghost_unknown_key: connectMessage('ghost_unknown_key'),"
         " content_key_unknown: connectMessage('content_key_unknown'),"
         " ghost_redirected: connectMessage('ghost_redirected'),"
+        " url_invalid: connectMessage('url_invalid'),"
+        " ghost_unreachable: connectMessage('ghost_unreachable', '%s'),"
         " already_connected: connectMessage('already_connected', '%s'),"
         " http_warning: HTTP_WARNING,"
         " empty_title: SITES_EMPTY.title,"
@@ -271,6 +283,8 @@ const patch = async (path, body) => {
   return { status: r.status, body: await r.json().catch(() => null) }
 }
 const rowsOf = async (select = 'id') => (await wire(`/sites?user_id=eq.${USER_ID}&select=${select}`)).body || []
+/* The fixture's audit rows, by id: a step that must make NO Ghost call proves it by the count. */
+const readAudit = () => sql`select id from private.credential_audit where user_id = ${USER_ID}`
 
 const admin = async (path, init = {}) => {
   const r = await fetch(`${SB}/auth/v1${path}`, {
@@ -436,12 +450,23 @@ const shoot = async (page, name) => {
     await sheet(page).locator('a[href="?step=keys"]').click()
     await page.waitForSelector('dialog[open] #s2b-content-key')
     const box2 = await boxOf(sheet(page))
+    // …and at 390, where the sheet is the viewport's width and the owner's step 12 looks
+    // (review 2, 2026-09-08): back to step 1, measure, forward, measure.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await sheet(page).locator('a[href="?step=integration"]', { hasText: 'Back' }).click()
+    await page.waitForSelector('dialog[open] a[href="?step=keys"]:visible')
+    const narrow1 = await boxOf(sheet(page))
+    await sheet(page).locator('a[href="?step=keys"]').click()
+    await page.waitForSelector('dialog[open] #s2b-content-key')
+    const narrow2 = await boxOf(sheet(page))
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const sameBox = (a, b) => same(a.width, b.width) && same(a.height, b.height) && same(a.x, b.x) && same(a.y, b.y)
     step('same-size',
-      shotOk && same(box1.width, box2.width) && same(box1.height, box2.height)
-      && same(box1.x, box2.x) && same(box1.y, box2.y),
+      shotOk && sameBox(box1, box2) && sameBox(narrow1, narrow2),
       `the empty screen's own button opened the sheet with the integration screenshot served = ${shotOk}; ` +
       `the box is ${box1.width}×${box1.height} at (${box1.x}, ${box1.y}) at step 1 and ` +
-      `${box2.width}×${box2.height} at (${box2.x}, ${box2.y}) at step 2 — nothing behind it is uncovered`)
+      `${box2.width}×${box2.height} at (${box2.x}, ${box2.y}) at step 2 at 1440, and ` +
+      `${narrow1.width}×${narrow1.height} then ${narrow2.width}×${narrow2.height} at 390 — nothing behind it is uncovered`)
 
     // ── "Where do I find these?" IS A LINK, NOT A DROPDOWN (his finding 3). The frame draws a
     //    bordered box with a chevron (S2 Onboarding.dc.html:135-138) and he read it as a select
@@ -474,11 +499,12 @@ const shoot = async (page, name) => {
     const pageShot = await page.locator('img[src="/connect/integration.png"]')
       .evaluate((img) => img.complete && img.naturalWidth > 0).catch(() => false)
     const pageBox1 = await boxOf(page.locator('main div.bg-surface').first())
+    const backHref = await page.locator('a:visible', { hasText: /^Back$/ }).first().getAttribute('href').catch(() => null)
     step('handshake',
       (await page.locator('text=1/2').count()) > 0 && numbered === 3 && pageShot
-      && (await nextLink.count()) === 1 && (await page.getByText('Back', { exact: true }).count()) > 0,
+      && (await nextLink.count()) === 1 && backHref === '/sites',
       `S2b·1 on its own route: "1/2", ${numbered} numbered steps, the screenshot served = ${pageShot}, ` +
-      `Back (to /sites) and "Done — next" as a link`)
+      `Back is <a href=${JSON.stringify(backHref)}> and "Done — next" is a link`)
     await shoot(page, 's2b1')
 
     await nextLink.click()
@@ -562,6 +588,29 @@ const shoot = async (page, name) => {
       `the field says what a key looks like; the wire shows ${afterMalformed.length} sites rows; the URL ` +
       `and Content key fields kept what was typed = ${keptUrl === T1.url && keptContent === T1.contentKey}`)
 
+    // ── NOT A URL: "orbit weekly" is a typo, not a site that did not answer, and the two never
+    //    share a sentence — under the URL field, and no Ghost call made (review 2, 2026-09-08).
+    const auditBeforeTypo = (await readAudit()).length
+    await fill(page, 'orbit weekly', T1.adminKey, T1.contentKey)
+    await submit(page)
+    await errorAt(page, 'api-url').waitFor()
+    const afterTypo = await rowsOf()
+    const auditAfterTypo = (await readAudit()).length
+    step('not-a-url',
+      await says(page, SAY.url_invalid) && afterTypo.length === 0 && auditAfterTypo === auditBeforeTypo,
+      `url_invalid's sentence is under the URL field, the wire shows ${afterTypo.length} sites rows, and the ` +
+      `audit grew by ${auditAfterTypo - auditBeforeTypo} rows — Ghost was never called`)
+
+    // ── UNREACHABLE: a host that does not exist. The browser's own check fails and lets the
+    //    submit through, and the deployed function's fetch is what answers, naming the host.
+    await fill(page, 'https://nonexistent.inflozo.com', T1.adminKey, T1.contentKey)
+    await submit(page)
+    await page.waitForSelector("text=We couldn't reach nonexistent.inflozo.com", { timeout: 45000 })
+    const afterUnreachable = await rowsOf()
+    step('unreachable',
+      await says(page, SAY.ghost_unreachable.replace('%s', 'nonexistent.inflozo.com')) && afterUnreachable.length === 0,
+      `ghost_unreachable's sentence names the host in the banner and the wire shows ${afterUnreachable.length} sites rows`)
+
     // ── A key of the right shape whose `kid` Ghost never issued (§37).
     await fill(page, T1.url, BOGUS, T1.contentKey)
     await submit(page)
@@ -585,7 +634,9 @@ const shoot = async (page, name) => {
     // ── T1, for real. The card's title and address are what `GET /admin/site/` answers (§38a),
     //    the address is a link to the PUBLIC url, and "Checked just now" is stamped by that read.
     const pub1 = await publicSite(T1)
-    await fill(page, T1.url, T1.adminKey, T1.contentKey)
+    // Typed as a BARE HOST — the matrix's "Bare host typed" row: normalised to the https origin
+    // before anything is called, and that origin is what the row stores (review 2, 2026-09-08).
+    await fill(page, T1.url.replace(/^https:\/\//, ''), T1.adminKey, T1.contentKey)
     await submit(page)
     await page.waitForSelector('text=Connected')
     const rows = await rowsOf('*')
@@ -597,13 +648,13 @@ const shoot = async (page, name) => {
     const card = await cardOf('Connected').first().innerText().catch(() => '')
     const href = await cardOf('Connected').first().locator('a[target="_blank"]').getAttribute('href').catch(() => null)
     step('connect',
-      rows.length === 1 && row.ghost_version === T1.version && Boolean(row.content_key)
+      rows.length === 1 && row.url === T1.url && row.ghost_version === T1.version && Boolean(row.content_key)
       && row.title === pub1.title && (row.site_settings || {}).public_url === pub1.url && href === pub1.url
       && Boolean(row.settings_read_at) && present.content === true && present.admin === true
       && present.staff === false && Boolean(ref1) && (await secretsBehind(ref1)) === 1
       && card.includes('Connected') && card.includes(`Ghost ${short(T1.version)}`) && card.includes('Checked just now')
       && page.url().replace(/\?.*$/, '') === `${APP}/sites`,
-      `${rows.length} row: ghost_version ${row.ghost_version}, content_key stored = ${Boolean(row.content_key)}, ` +
+      `${rows.length} row: url ${row.url} from a bare host, ghost_version ${row.ghost_version}, content_key stored = ${Boolean(row.content_key)}, ` +
       `title ${JSON.stringify(row.title)} and site_settings.public_url ${(row.site_settings || {}).public_url} ` +
       `both as GET /admin/site/ answers them, the card's address links there = ${href === pub1.url}, ` +
       `settings_read_at set = ${Boolean(row.settings_read_at)}, credentials_present ${JSON.stringify(present)}, ` +
@@ -695,7 +746,7 @@ const shoot = async (page, name) => {
     // ── FR-C6: a DISCONNECTED record is RE-ADOPTED in place — same id, `disconnected_at` cleared,
     //    the key re-stored and the OLD secret dropped by the trigger (DW-44's replace path, live).
     //    Nothing in the product writes `disconnected_at` until Story 3.5, so the service role sets
-    //    it here; with no active site, `/sites` is the handshake again.
+    //    it here; with no active site, `/sites` is the empty screen again.
     const detached = await patch(`/sites?id=eq.${t1SiteId}`, { disconnected_at: new Date().toISOString() })
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     // …and with no active site `/sites` is the EMPTY SCREEN again, so the handshake is reached
@@ -802,7 +853,7 @@ const shoot = async (page, name) => {
     step('audit',
       beforeRow.length === 3 && withRow.length === 3
       && withRow.filter((r) => r.site_id === t1SiteId).length === 2 && withRow.some((r) => r.site_id === t3SiteId)
-      && at('401').length >= 1 && errs.length >= 2 && stamped && objects && leak.length === 0,
+      && at('401').length >= 1 && at('301').length >= 1 && errs.length >= 2 && stamped && objects && leak.length === 0,
       `${audit.length} rows: ${beforeRow.length} admin_read ok with a NULL site_id (config/, one per connect), ` +
       `${withRow.length} with a site_id (site/: T1 twice, T3 once), ${errs.length} admin_read error(s) at ` +
       `status ${JSON.stringify(httpStatuses)} (the bogus key at 401 and the plain-http attempt — its status ` +
