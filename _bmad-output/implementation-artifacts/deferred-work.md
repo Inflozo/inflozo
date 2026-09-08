@@ -1590,6 +1590,13 @@ reason: `loading.tsx` puts a Suspense boundary over EVERY page in `(authed)`, so
   own route group so the boundary stops covering pages that have no skeleton. The story that gives a
   second `(authed)` page its own loading shape takes it. Until then `brand-none` asserts the page the
   customer sees and RECORDS the status beside it, rather than asserting a code the shell already sent.
+  AND THE PAGE ITSELF IS NEXT'S DEFAULT, not Inflozo's (found at the Story 3.4 review, 2026-09-08).
+  There is no `not-found.tsx` anywhere in `apps/web`, so every `notFound()` in the app renders the
+  framework's own unstyled 404 — outside the shell and outside the export's vocabulary — while
+  `M9 404` is drawn in the design export and has been since the marketing pass. The harness proves it
+  by asserting Next's own string rather than any sentence the app owns. The same story takes both:
+  they are one route-group question, and a real `not-found.tsx` is the thing that makes the status
+  assertion worth writing.
 
 ### DW-68: an authed page on the deployed site occasionally sends no response for 60 seconds
 
@@ -1625,3 +1632,41 @@ reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sit
   The story that next has a reason to open Vercel's runtime logs for a hung invocation takes this;
   giving the harness a way to sign in against an arbitrary deployment URL would also make the missing
   control runnable, and that is probably the first move.
+  AMENDED AT THE SECOND REVIEW (2026-09-08), and the amendment matters: the retry above wrapped
+  `page.goto` AND NOTHING ELSE. Four consecutive full runs in the review window failed three times —
+  in `pro-connect-t3`, in `search` and in `brand-atcap` — and every one of the three was a
+  `waitForURL` after a form submission, which the wrapper never saw, so `navRetries` stayed 0 and the
+  run died rather than riding over the hang the retry exists for. The reported "1 navigation retry"
+  was therefore a SUBSET, not a count. The wrapper now covers `goto`, `waitForURL` and `reload`
+  through one helper, and the count prints from the `finally` so a run that hung and then FAILED
+  still says what it cost — at the end of the `try` it printed only on the runs that did not need it.
+  None of the three failures was ever an assertion: the affected steps pass whenever they are
+  reached, and the four runs between them executed every step in the docstring. The open question is
+  unchanged and no claim is made about the cause; what changed is that the mitigation now covers the
+  class the entry describes, and that a red run is once again evidence of something rather than
+  weather.
+
+### DW-69: two presses of "Use your brand" in flight together can still make two projects
+
+plain: Inflozo now makes sure that pressing "Use your brand" twice puts the colour on the project it
+  already made, instead of making a second one. But it works that out by looking first and writing
+  second. If two presses happen at the very same instant — a double click, or a page that retried —
+  both can look, both can see no project yet, and both can make one. You would end up with two
+  projects for one site, and possibly one more than your plan allows.
+status: open
+severity: low
+origin: Story 3.4 Review 2 (2026-09-08) — reasoned from the code, not observed on the live site
+location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`useBrand`, the read-then-write around
+  `brandTarget`) · supabase/migrations/20260904120000_complete_schema.sql:221,230
+  (`projects.linked_site_id`, a plain index)
+reason: The idempotence the story ships is real and is proved on the live site (`brand-rerun`,
+  `brand-picker`), but it is a property of the APPLICATION and not of the schema: `linked_site_id`
+  carries a plain index, and the column comment's "FR-B5: at most one" is a sentence rather than a
+  constraint. The same race walks past `atCap`, because the cap is re-counted in the same
+  read-then-write. The structural fix is a partial unique index —
+  `projects (linked_site_id) where linked_site_id is not null` — plus catching `23505` and re-running
+  `brandTarget`, and that is A MIGRATION, which this story's own "Ask First" list reserves to the
+  owner. It is left open rather than smuggled in. The window is a few hundred milliseconds on a
+  button most customers press once, which is why it is `low` and not `medium`; the story that next
+  writes a migration on `projects` should take it, and E6 is the obvious candidate since it owns the
+  column beside it.

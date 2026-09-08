@@ -5,7 +5,7 @@ import { ProjectThumb } from '../../placeholder'
 import { hostOf } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap } from '@/lib/plan'
-import { BRAND_COPY, brandTarget, hasBrand, imageUrl } from '@/lib/probe-rule'
+import { BRAND_COPY, brandTarget, hasBrand, imageUrl, isAccent, navOf } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { skipBrand, useBrand } from '../actions'
 
@@ -32,11 +32,13 @@ import { skipBrand, useBrand } from '../actions'
    JavaScript off — `site-notices.tsx` is the pattern, and there is no client component here.
 
    THE CAPTION UNDER **Use your brand** IS THE OWNER'S RULING (Question 1, option 1, 2026-09-08):
-   the screen says WHICH project will wear the brand before the press, not after. With room it
-   says one will be made; at the project cap it names the one that will be branded instead. The
-   decision rides in a hidden field and `useBrand` re-counts it, so a cap filled in another tab
-   sends the customer back here with a true sentence rather than rebranding a project this screen
-   never named. */
+   the screen says WHICH project will wear the brand before the press, not after. With nothing to
+   brand yet it says one will be made; at the project cap it names the one that will be branded
+   instead; and where a project for this site already exists it ASKS instead of telling, which is
+   his Question 3 ruling and is true whether or not there are cards to choose from. The decision
+   rides in a hidden field and `useBrand` re-counts it, so a cap filled in another tab sends the
+   customer back here with a true sentence rather than rebranding a project this screen never
+   named. */
 
 export const metadata: Metadata = {
   title: 'Use your site’s brand · Inflozo',
@@ -113,22 +115,30 @@ export default async function BrandOffer({
   // on its own, so a customer who touches nothing gets the behaviour the owner already approved
   // at Question 1 — the chooser only lets him overrule it.
   const choosing = Boolean(target) && rows.length > 1
+  // THREE CAPTIONS, AND THE CARDS DO NOT CHANGE WHICH ONE IS PRINTED. Nothing to brand yet says
+  // so; at the cap the sentence NAMES the project (Question 1); otherwise the brand is going onto
+  // a project that already exists, and that is a SECOND press, which asks (Question 3). The code
+  // used to tie the asking to the cards as well, so the one-project customer — every Free
+  // customer — was told rather than asked, against the owner's own words and against step 12 of
+  // his manual test (review, 2026-09-08). `choosing` now decides the cards and nothing else.
   const caption = !target
     ? BRAND_COPY.willCreate
-    : choosing
-      ? capped
-        ? BRAND_COPY.atLimitPick
-        : BRAND_COPY.alreadyOn(target.name)
-      : capped
-        ? BRAND_COPY.willBrand(target.name)
-        : BRAND_COPY.willRebrand(target.name)
+    : capped
+      ? BRAND_COPY.willBrand(target.name)
+      : BRAND_COPY.alreadyOn(target.name)
 
   const host = hostOf(row.site_settings?.public_url || row.url)
   const title = row.title || host
-  // https-only, RE-VALIDATED HERE: `brandOf` wrote it, but this reads it back out of a jsonb
-  // column and it goes into an `<img src>` — `style-pack.ts` takes the same position on the
-  // accent it reads back out of `style_pack`.
+  // RE-VALIDATED HERE, ALL THREE: `brandOf` wrote them, but this reads them back out of a jsonb
+  // column and each one crosses into an attribute — `style-pack.ts` takes the same position on
+  // the accent it reads back out of `style_pack`. `hasBrand` is an OR, so a record admitted on
+  // its logo alone carried an UNCHECKED accent into two inline `style` attributes and an
+  // unchecked menu into JSX, where a non-string label throws in render rather than being dropped
+  // (review, 2026-09-08 — the file's own rule is "checked where it crosses, every time", and it
+  // was being applied to one of the three values this screen renders).
   const logo = imageUrl(brand.logo)
+  const accent = isAccent(brand.accent) ? brand.accent : null
+  const nav = navOf(brand.nav)
 
   return (
     <div className="flex flex-1 items-center justify-center p-[16px_20px] tablet:p-6">
@@ -175,7 +185,7 @@ export default async function BrandOffer({
               </div>
             </div>
 
-            {brand.accent ? (
+            {accent ? (
               <div className="flex flex-col gap-[10px]">
                 <h3 className="text-ui-dense text-ink-soft">{BRAND_COPY.accent}</h3>
                 <div className="flex items-center gap-[10px]">
@@ -183,19 +193,19 @@ export default async function BrandOffer({
                       `#rgb`/`#rrggbb` in `brandOf` before it was ever stored. */}
                   <span
                     aria-hidden
-                    style={{ background: brand.accent }}
+                    style={{ background: accent }}
                     className="size-7 shrink-0 rounded-full shadow-hairline-inset"
                   />
-                  <span className="font-mono text-ui font-medium text-ink">{brand.accent}</span>
+                  <span className="font-mono text-ui font-medium text-ink">{accent}</span>
                 </div>
               </div>
             ) : null}
 
-            {brand.nav.length > 0 ? (
+            {nav.length > 0 ? (
               <div className="flex flex-col gap-[10px]">
                 <h3 className="text-ui-dense text-ink-soft">{BRAND_COPY.navigation}</h3>
                 <ul className="flex list-none flex-wrap gap-[6px] p-0">
-                  {brand.nav.map((item, index) => (
+                  {nav.map((item, index) => (
                     <li
                       key={`${item.url}-${index}`}
                       className="rounded-pill border border-line bg-surface px-[10px] py-[3px] text-control-label font-medium text-ink"
@@ -232,8 +242,8 @@ export default async function BrandOffer({
               <div className="mt-[10px] h-[26px] w-[80%] rounded-[3px] bg-ink" />
               <div className="h-[8px] w-[60%] rounded-[2px] bg-line-strong" />
               <div
-                style={brand.accent ? { background: brand.accent } : undefined}
-                className={`mt-2 h-5 w-[74px] rounded-[5px] ${brand.accent ? '' : 'bg-line-strong'}`}
+                style={accent ? { background: accent } : undefined}
+                className={`mt-2 h-5 w-[74px] rounded-[5px] ${accent ? '' : 'bg-line-strong'}`}
               />
             </div>
             <p className="text-center text-ui-dense text-ink-soft">{BRAND_COPY.homepage}</p>
@@ -244,6 +254,18 @@ export default async function BrandOffer({
           <p id="brand-caption" className="text-center text-helper-caption text-ink-soft">
             {caption}
           </p>
+
+          {/* The matrix's "insert fails → the page says so". `useBrand` redirects back here with
+              the flag rather than returning a value, so the message survives scripts off — the
+              same shape `recheckPlan` uses on the Sites page. ABOVE the buttons and not below
+              them: it arrives with the document rather than as a later change, so a live region
+              is not announced for it, and it is the reason the customer is being asked to press
+              again (review, 2026-09-08). */}
+          {failed ? (
+            <p role="status" className="text-center text-helper-caption text-coral-text">
+              {BRAND_COPY.failed}
+            </p>
+          ) : null}
 
           <div className="flex flex-wrap items-center justify-center gap-[14px]">
             <form action={useBrand} className="contents">
@@ -310,14 +332,6 @@ export default async function BrandOffer({
               </Button>
             </form>
           </div>
-          {/* The matrix's "insert fails → the page says so". `useBrand` redirects back here with
-              the flag rather than returning a value, so the message survives scripts off — the
-              same shape `recheckPlan` uses on the Sites page. */}
-          {failed ? (
-            <p role="status" className="text-center text-helper-caption text-coral-text">
-              {BRAND_COPY.failed}
-            </p>
-          ) : null}
         </div>
       </div>
     </div>

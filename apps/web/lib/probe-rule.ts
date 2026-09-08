@@ -226,9 +226,10 @@ export function hasBrand(brand: unknown): brand is Brand {
  * swatch is captioned with the hex in mono — the card's own idiom for a machine value. Naming a
  * colour would be asserting what was not read.
  *
- * THE THREE SENTENCES THE FRAME DOES NOT DRAW are the offer link on the Sites card and the two
- * captions under **Use your brand** — the owner's ruling at Question 1 (2026-09-08) asks the
- * screen to say WHICH project it will brand before the press, not after.
+ * THE SENTENCES THE FRAME DOES NOT DRAW are the offer link on the Sites card and the captions
+ * under **Use your brand** — the owner's ruling at Question 1 (2026-09-08) asks the screen to say
+ * WHICH project it will brand before the press, not after, and his Question 3 ruling makes a
+ * second press ask rather than tell.
  */
 export const BRAND_COPY = {
   title: 'Nice site. Want to keep the vibe?',
@@ -243,21 +244,38 @@ export const BRAND_COPY = {
   /** The Sites card's offer — a link, never a Banner: a Banner tells or asks, this offers. */
   offer: 'Use this site’s brand',
   willCreate: 'We’ll make a project for this site and put your brand on it.',
+  /** At the cap the brand goes onto a project that already exists, so the caption NAMES it before
+      the press — the owner's Question 1 ruling, and it says so whether or not cards are drawn. */
   willBrand: (name: string) => `You’re at your project limit, so we’ll put your brand on “${name}”.`,
-  /** The offer taken a SECOND time, with room to spare: the project for this site already exists. */
-  willRebrand: (name: string) => `We’ll put your brand on “${name}”, the project for this site.`,
   /* THE OWNER'S QUESTION 3 RULING (2026-09-08): a second press SAYS what it already did and ASKS,
      rather than telling — and where there is more than one project it lets the customer pick
-     which one, from cards carrying each project's own wireframe. These three sentences are that
-     screen; `willRebrand` above is what it says when there is only one project and so no choice. */
+     which one, from cards carrying each project's own wireframe.
+
+     THE ASKING IS NOT CONDITIONAL ON THE CARDS. His B1 scoped the CARDS to "more than one
+     project"; the sentence he wrote is what a second press says, and a review found the code had
+     tied both to the same count, so the one-project customer — the Free customer — was still told
+     rather than asked, while his own manual test step 12 expected the question (review,
+     2026-09-08). There are now three captions and no fourth: none yet → `willCreate`, at the cap →
+     `willBrand` (which NAMES the project, Question 1), otherwise → `alreadyOn`, which asks. */
   alreadyOn: (name: string) => `You already put your brand on “${name}”. Apply it again?`,
-  atLimitPick: 'You’re at your project limit, so your brand goes onto a project you already have.',
   whichProject: 'Which project?',
   /** The card for the project this site's brand is already on, so the chooser says which is which. */
   thisSite: 'This site’s project',
   /** The matrix's "insert fails → the page says so", in the voice `COULD_NOT` already speaks. */
   failed: 'We couldn’t save that just now. Try again in a moment.',
 } as const
+
+/**
+ * S2c'S OWN URL, IN ONE PLACE. The Sites card's offer link and the two redirects out of
+ * `connectSite`/`useBrand` are the same address, and it was written out at both — one rename and
+ * the card's link and the actions' redirects drift apart with nothing failing (review,
+ * 2026-09-08; standing rule 7). It lives here rather than in `sites/actions.ts` because a
+ * `'use server'` module may export only async functions.
+ *
+ * It is the BROWSER's path — what `proxy.ts` rewrites onto the internal `/app/sites/brand` — and
+ * so it is not `revalidatePath`'s argument.
+ */
+export const brandPath = (siteId: string) => `/sites/brand?site=${siteId}`
 
 /**
  * WHICH PROJECT WEARS THE BRAND — one rule, because S2c prints it in the caption and `useBrand`

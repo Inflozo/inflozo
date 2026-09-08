@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
-review_loop_iteration: 1
+review_loop_iteration: 2
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -171,14 +171,21 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   row or no brand, renders the frame from `BRAND_COPY`, posts to the two actions. `robots: noindex`,
   `title: '… · Inflozo'` — `sites/connect/page.tsx` is the pattern for the route's shape, its
   centring and its metadata. It also counts the caller's projects (`atCap`, `lib/plan.ts:47`) to
-  compose the button's caption and the hidden decision field.
+  compose the button's caption and the hidden decision field. Every value it reads back out of the
+  jsonb column and puts into an attribute — the accent, the logo and the menu — is **re-validated
+  here**, not trusted from the write: `hasBrand` is an OR, so a record admitted on its logo alone
+  carried an unchecked accent into an inline `style` (review 2, 2026-09-08).
 - `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- `connectSite`'s tail (`:327-330`): the
   redirect becomes `/sites/brand?site={siteId}` when the freshly probed row has a brand, `/sites`
   otherwise. **Two new exports** (a `'use server'` module may export only async functions — the
   file's own header at `:70-77` records why they live here): `useBrand(formData)` and
-  `skipBrand(formData)`, each `signedIn()`, each scoped `.eq('user_id', user.id)`, each
-  `revalidatePath` on `SITES` and `DASHBOARD` and redirecting. `useBrand` re-counts against `atCap`
-  and refuses a stale decision (Boundaries, the owner's Question 1 ruling).
+  `skipBrand(formData)`, each `signedIn()`, and each reading and writing through the caller's own
+  session so that **RLS is the guard rather than an `.eq('user_id', …)` we remembered** — which is
+  what `brand-ownership` executes. `useBrand` re-counts against `atCap`, refuses a stale decision
+  (Boundaries, the owner's Question 1 ruling) and `revalidatePath`s `SITES` and `DASHBOARD` before
+  redirecting; `skipBrand` writes nothing at all, so it revalidates nothing and only redirects.
+  (Review 2, 2026-09-08: this paragraph described `.eq('user_id')` filters and a `skipBrand`
+  revalidate that were deliberately not built — propagate, never localise.)
 - `apps/web/app/(app)/app/(authed)/placeholder.tsx` -- **`ProjectThumb`** beside `Placeholder`: the
   dashboard card's wireframe at **64×44**, the size `design-picker.tsx` draws a mini diagram at
   (`Editor Sidebar Kit.dc.html:71`), painted from the same `placeholderFor`. It is the owner's
@@ -292,6 +299,80 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   every step in its docstring passes in order, `brand-keys` included
 - Given `ADMIN_WRITES`, when this story is finished, then it is **unchanged** and
   `announcement_clear` has still never been called
+
+### Review Findings
+
+Second review, 2026-09-08 — five layers (blind hunter, edge-case hunter, verification-gap,
+acceptance auditor, real-infra), 20 findings after dedup, 8 dismissed with reasons.
+
+- [ ] [Review][Decision] **At the cap with several projects, the pre-selected card is not the site's
+      project** — `brandTarget` returns the most recently updated row (Question 1) while AC 6 and the
+      Question 3 ruling both say the project this site is already on is pre-selected, so the ticked
+      card and the card marked "This site's project" can differ. Two of the owner's own rulings point
+      at different cards; put to him as **Question 4** rather than guessed (standing rule 6). Only
+      reachable on Pro at 25 projects. `apps/web/lib/probe-rule.ts` (`brandTarget`)
+- [x] [Review][Patch] The second press told rather than asked wherever there was one project — the
+      owner's Question 3 sentence was tied to the cards, though his B1 scoped only the cards, and his
+      own manual test step 12 expected the question [apps/web/app/(app)/app/(authed)/sites/brand/page.tsx]
+- [x] [Review][Patch] `atLimitPick` named no project, against AC 4 — and was the one caption no step
+      and no criterion ever reached; the three captions are now `willCreate` / `willBrand` /
+      `alreadyOn` and `willRebrand` and `atLimitPick` are gone [apps/web/lib/probe-rule.ts]
+- [x] [Review][Patch] S2c painted `brand.accent` into two inline `style` attributes and mapped the raw
+      `nav` array, while re-validating the logo one line above and while `style-pack.ts` re-validates
+      the same accent — `hasBrand` is an OR, so a record admitted on its logo alone carried both
+      unchecked [apps/web/app/(app)/app/(authed)/sites/brand/page.tsx:131]
+- [x] [Review][Patch] The DW-68 retry wrapped `page.goto` only; the review's own four full runs failed
+      three times, every one on a `waitForURL` after a form submission, so the run died with
+      `navRetries` at 0. Now `goto`, `waitForURL` and `reload` through one helper
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The retry count printed at the end of the `try`, so the run that most needed it
+      — one that hung and then failed — never printed it. Moved into the `finally`
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The cap's own half of `useBrand`'s guard was asserted nowhere: every step posts
+      a real project id, so an empty decision at the cap — the body S2c itself emits — was never
+      executed, and AC 5's stale decision had no proof at any level. New step **`brand-stale`**
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] AC 8 ("given the chooser, when JavaScript is off") and axe were both asserted on
+      the one S2c state that has no chooser — both run before any project exists. New steps
+      **`brand-picker-js-off`** and **`axe-brand-picker`** [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The `updated_at, id` tiebreak was added to S2c and `useBrand` while both claim
+      parity with "the dashboard's own order", which still ordered on one column — the tie case is
+      exactly what the tiebreak is for [apps/web/app/(app)/app/(authed)/page.tsx]
+- [x] [Review][Patch] The offer URL was written out twice, in `sites/actions.ts` and in the Sites
+      card; one rename would have drifted them apart with nothing failing (standing rule 7). One
+      `brandPath` [apps/web/lib/probe-rule.ts]
+- [x] [Review][Patch] The failure line rendered after both buttons; a `role="status"` already present
+      at first paint is not announced, and it is the reason the customer is being asked to press again
+      [apps/web/app/(app)/app/(authed)/sites/brand/page.tsx]
+- [x] [Review][Patch] **The owner's manual test could not be performed.** Step 13 told him to make a
+      second project, which Free's cap of 1 forbids, and never said the chooser needs Pro or how to
+      get there; step 12's expected sentence was the chooser's, which a one-project account never
+      sees. Steps 12–15 rewritten, with the Pro switch offered as step 1's idiom already does
+- [x] [Review][Patch] The Code Map described an implementation deliberately not built — `.eq('user_id',
+      user.id)` filters where RLS is the guard, and a `revalidatePath` in `skipBrand`, which writes
+      nothing; `## Verification` named neither `brand-picker` nor the new steps
+- [x] [Review][Defer] Two presses in flight can still make two projects for one site and walk past the
+      cap — the idempotence is the application's, not the schema's; the fix is a partial unique index,
+      which is a migration and so the owner's ("Ask First") — deferred as **DW-69**
+- [x] [Review][Defer] Every `notFound()` in the app renders Next's own unstyled 404 — there is no
+      `not-found.tsx` anywhere in `apps/web` — while `M9 404` is drawn in the export. One route-group
+      question with the HTTP-200 finding; folded into **DW-67**, deferred, pre-existing
+- [x] [Review][Defer] The harness fails roughly three runs in four on the DW-68 hang, so a red run is
+      not by itself a regression. Measured across four consecutive full runs; **DW-68** amended with
+      what the retry did and did not cover
+
+**Dismissed, with the reason.** `skipBrand` could be a link rather than a form — Boundaries freezes
+both controls as forms, and it is the second time this has been raised. `connectSite`'s second
+`sites` read is deliberate and its comment says why (a failed probe still leaves a previous probe's
+brand — the FR-C6 re-adopt path). `ProjectThumb` duplicating `Placeholder` — two drawings at two
+sizes, chosen deliberately and recorded in the file. The chooser appearing only on a second press —
+that is Question 1's ruled behaviour, not an omission. `useBrand` returning silently on an
+unparseable `site_id` — a crafted post is not a press, and it is `recheckPlan`'s existing shape. The
+connect redirect's false branch being unexecuted — both sides call the same `hasBrand` on the same
+value, which is the reason already recorded in the first review's dismissals. `brand-keys` making
+`--check` depend on the live Ghosts — that is standing rule 1 being executed, and it is why the step
+exists. "25 allowed" in a run's detail line — a log sentence, not a count anything derives from,
+though the phrase was dropped where it cost nothing.
 
 ## Spec Change Log
 
@@ -485,6 +566,41 @@ ruled at Question 1.
    Fewest moving parts, but the offer disappears from a card for a reason nothing on screen
    explains, and you could never take the brand again.
 
+### Question 4 — at your project limit, with several projects, which card should already be ticked?
+
+This one only happens on **Pro**, and only when you have filled it: 25 projects, all of them used,
+and you press "use this site's brand" on a site whose project already exists. Inflozo shows you a
+card for each project and ticks one of them for you before you choose.
+
+Two things you have already ruled point at **different cards**, and I did not want to pick for you.
+
+For example: you have 25 projects. One of them, "Ghost6", is the project for `ghost6.inflozo.com` —
+you made it months ago and have not touched it since. Yesterday you were working on "Field Notes",
+which has nothing to do with that site. You press the brand link on the Ghost6 card today. Which
+card should already be ticked when the screen opens?
+
+Nothing is broken either way — every card is there and you can tick whichever you like before
+pressing. This is only about which one is ticked **for** you if you press without looking.
+
+1. **"Ghost6" — the project that belongs to this site. (RECOMMENDED)** It is the card already
+   labelled "This site's project", so the tick and the label sit together and the screen reads as
+   one sentence. It is also what your Question 3 ruling asked for in your own words — "the project
+   this site is already on **pre-selected**" — and it means pressing without looking refreshes the
+   colour on the site's own project, which is what the button appears to offer.
+2. **"Field Notes" — the project you worked on most recently.** *This is what is built today.* It
+   is your Question 1 ruling applied exactly as written: at the limit, the brand goes onto the most
+   recently updated project. The cost is that the ticked card and the card marked "This site's
+   project" can be two different cards, which looks like a mistake even though it is not.
+3. **Nothing is ticked — you must pick a card before the button works.** No default can ever be
+   wrong. But it turns one press into two for everybody who reaches this screen, and it is the one
+   shape that does not work the same way as every other screen in the app.
+
+**Where it stands:** the code does option 2 today, because Question 1's words are the older ruling
+and I would not overwrite one of yours with another without asking. Say the number and it is a
+one-line change. **Nothing else in the story depends on it**, and you will not meet it in your own
+test — your account would have to be on Pro with all 25 projects used.
+
+
 ## Owner's manual test
 
 On the live site after the Deploy run. **The new screen appears when a site is connected**, so you
@@ -523,23 +639,31 @@ need a site that is not connected yet, and you will need a menu and an accent co
     the little wireframe drawing on it is painted in **your orange**, not the default.
 11. **URL:** https://app.inflozo.com/sites · **See:** the site's card now reads **1 project**.
 12. **Press the offer link a SECOND time** — this is **Question 3**, your own ruling. **Do:** press
-    the "use this site's brand" link on the card again · **See:** *"You already put your brand on
-    “Ghost6”. Apply it again?"* and the two buttons. Because you have **one** project, there are no
-    cards to choose from — that is your B1. **Do:** press **Use your brand** · **See:** the Sites
-    page, and the card still reads **1 project** — **not 2**.
-13. **Now the chooser, with something to choose.** **URL:** https://app.inflozo.com/ · **Do:** make a
-    second project (**New project**), call it anything · **Do:** go back to
-    https://app.inflozo.com/sites and press the brand link again · **See:** the same question, and
-    under it **one card per project** — each with a small wireframe drawing **painted in that
-    project's own colours**, its name beside it, and the card for this site's project **already
-    selected** and outlined in coral. The site's project wears **your orange**; the new one wears the
-    default. **Do:** click the other card, then **Use your brand** · **See:** the Sites page. **Do:**
-    open https://app.inflozo.com/ · **See:** the project you picked is now the one wearing your
-    orange, and the other one kept its own. Nothing was renamed, and there are still **2 projects**.
+    the "use this site's brand" link on the card again · **See:** the line under **Use your brand**
+    no longer promises a new project. On the **Free** plan, which includes **one** project, you have
+    just used it, so the line names that project and says why: *"You're at your project limit, so
+    we'll put your brand on “Ghost6”."* Because you have one project there are **no cards to choose
+    from** — that is your B1. **Do:** press **Use your brand** · **See:** the Sites page, and the
+    card still reads **1 project** — **not 2**.
+13. **Now the chooser, with something to choose. This step needs the Pro plan**, because Free
+    includes one project and a chooser needs two — there is no billing to go through and nothing to
+    pay. **Do:** tell me when you are at this step and I will switch your account to Pro for the
+    test and back again afterwards (one line, your data, on your say-so). Then: **URL:**
+    https://app.inflozo.com/ · **Do:** make a second project (**New project**), call it anything ·
+    **Do:** go back to https://app.inflozo.com/sites and press the brand link again · **See:** this
+    time the screen **asks** — *"You already put your brand on “Ghost6”. Apply it again?"* — and
+    under it *"Which project?"* with **one card per project**: each with a small wireframe drawing
+    **painted in that project's own colours**, its name beside it, and the card for this site's
+    project **already selected** and outlined in coral. The site's project wears **your orange**;
+    the new one wears the default. **Do:** click the other card, then **Use your brand** · **See:**
+    the Sites page. **Do:** open https://app.inflozo.com/ · **See:** the project you picked is now
+    the one wearing your orange, and the other one kept its own. Nothing was renamed, and there are
+    still **2 projects**.
 14. **Do:** on your phone, open the brand screen once more · **See:** the cards stack, the drawings
     stay legible, and you can tap one.
 15. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
-    `Inflozo owner test` integration if you want to, and the spare project you made in step 13.
+    `Inflozo owner test` integration if you want to, and the spare project you made in step 13; tell
+    me and I will put your account back on Free.
 
 **What you cannot test yet, and why.** Your Ghost announcement bar is **not** copied into Inflozo and
 Inflozo does **not** offer to switch it off — that is Question 2 above. Both settings are already
@@ -566,11 +690,16 @@ variable; no value is printed.
 - `python3 tools/probe/run-verify-ghost-admin.py` -- expected: every step in the docstring passes in
   order against **T1 `GHOST6_*` and T3 `GHOST5_*`** and the deployed `app.inflozo.com`, including
   `brand-keys`, `brand-screen`, `brand-seed`, `brand-atcap`, `brand-skip`, `brand-js-off`,
-  `brand-none` and `axe-brand`, plus the review's two — **`brand-rerun`** (the offer pressed a
-  second time on Pro, where there is room: one project before and one after) and
-  **`brand-ownership`** (a second account's real site id forged into S2c's own two forms); axe
-  reports zero violations at 1440 and 390. **This story writes to no Ghost** — the
-  only step that ever did, `injection-live`, is 3.3's and is unchanged
+  `brand-none` and `axe-brand`, plus the first review's two — **`brand-rerun`** (the offer pressed
+  a second time on Pro, where there is room: one project before and one after) and
+  **`brand-ownership`** (a second account's real site id forged into S2c's own two forms) — the
+  Fix's **`brand-picker`** (the chooser: a card per project, each in its own colours, and the one
+  chosen is the one written) and **the second review's three**: **`brand-stale`** (an empty
+  decision posted at the cap writes nothing — the paywall's own half of `useBrand`'s guard, and
+  the matrix's "cap changed under the page"), **`brand-picker-js-off`** (the chooser read off a
+  fresh server document, real radios inside the posting form) and **`axe-brand-picker`** (axe with
+  the cards drawn). Axe reports zero violations at 1440 and 390 on both S2c states. **This story
+  writes to no Ghost** — the only step that ever did, `injection-live`, is 3.3's and is unchanged
 - `git grep -n 'announcement_clear'` -- expected: `admin-rule.ts` and its test only; no caller
 
 **Manual checks (if no CLI):**

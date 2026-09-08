@@ -18,7 +18,7 @@ import {
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
-import { brandTarget, hasBrand } from '@/lib/probe-rule'
+import { brandPath, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
@@ -68,8 +68,11 @@ const DASHBOARD = '/app'
    its route does too. */
 const SITES_URL = '/sites'
 const RECHECK = (siteId: string) => `${SITES_URL}?recheck=${siteId}`
-/** FR-C4's S2c, on its own route so the connect wizard's redirect has somewhere to land. */
-const BRAND = (siteId: string) => `${SITES_URL}/brand?site=${siteId}`
+/** FR-C4's S2c, on its own route so the connect wizard's redirect has somewhere to land. ONE
+    definition, in `probe-rule.ts` beside the sentence the card's link prints: the Sites card wrote
+    the same address out a second time, and one rename would have drifted them apart with nothing
+    failing (review, 2026-09-08; standing rule 7). */
+const BRAND = brandPath
 /* The matrix's "insert fails → THE PAGE SAYS SO". `recheckPlan` → `RECHECK(siteId)` is the
    file's own precedent: a server action that must speak to the customer redirects to a screen
    that reads the reason out of the URL, which is also the only shape that survives scripts off

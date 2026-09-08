@@ -2,7 +2,15 @@ import type { ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
-import { BRAND_COPY, hasBrand, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY } from '@/lib/probe-rule'
+import {
+  BRAND_COPY,
+  brandPath,
+  hasBrand,
+  INJECTION_COPY,
+  PLAN_COPY,
+  PORTAL_COPY,
+  PREVIEW_COPY,
+} from '@/lib/probe-rule'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
@@ -115,7 +123,7 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
     <div className="flex flex-col gap-[10px]">
       {brand ? (
         <a
-          href={`/sites/brand?site=${site.id}`}
+          href={brandPath(site.id)}
           className={`self-start rounded-sm text-ui-dense font-medium text-coral-text underline-offset-2 hover:underline ${ring}`}
         >
           {BRAND_COPY.offer}

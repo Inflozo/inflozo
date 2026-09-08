@@ -61,7 +61,12 @@ export default async function Dashboard({
     supabase
       .from('projects')
       .select('id, name, style_pack, updated_at')
-      .order('updated_at', { ascending: false }),
+      .order('updated_at', { ascending: false })
+      // `id` BREAKS THE TIE, and it is here because S2c and `useBrand` say "the dashboard's own
+      // order" and then order by two columns: two projects saved in the same millisecond made the
+      // three readers disagree about which one is "the project you most recently worked on", which
+      // is the row the brand lands on (review, 2026-09-08 — propagate, never localise).
+      .order('id', { ascending: false }),
     resolveEntitlement(user.id),
     nudgeDone(user.user_metadata) ? false : passkeysEnabled(),
   ])

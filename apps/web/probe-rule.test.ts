@@ -5,6 +5,7 @@ import {
   announcementOf,
   BRAND_COPY,
   brandOf,
+  brandPath,
   brandTarget,
   capabilityOf,
   hasBrand,
@@ -450,17 +451,25 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
     if (typeof value !== 'string') continue
     assert.ok(!/burnt orange/i.test(value), `BRAND_COPY.${key} names a colour Ghost never said`)
   }
-  // The owner's Question 1 ruling: the caption names the project BEFORE the press — in both
-  // sentences that name one, the cap's and the second press's.
+  // The owner's Question 1 ruling: at the cap the caption NAMES the project before the press, and
+  // it is the only sentence that mentions the limit.
   assert.ok(BRAND_COPY.willBrand('Field Notes').includes('Field Notes'))
-  assert.ok(BRAND_COPY.willRebrand('Ghost6').includes('Ghost6'))
-  assert.ok(!BRAND_COPY.willRebrand('Ghost6').includes('limit'), 'room to spare is not a limit')
-  // THE OWNER'S QUESTION 3 RULING: a second press SAYS what it already did, and ASKS.
+  assert.ok(BRAND_COPY.willBrand('Field Notes').includes('limit'))
+  // THE OWNER'S QUESTION 3 RULING: a second press SAYS what it already did, and ASKS — and it is
+  // the sentence for EVERY second press with room, not only the ones that draw cards, because his
+  // B1 scoped the cards and not the question (review, 2026-09-08).
   assert.ok(BRAND_COPY.alreadyOn('Ghost6').includes('Ghost6'))
   assert.ok(BRAND_COPY.alreadyOn('Ghost6').trimEnd().endsWith('?'), 'it asks rather than tells')
+  assert.ok(!BRAND_COPY.alreadyOn('Ghost6').includes('limit'), 'room to spare is not a limit')
   assert.ok(BRAND_COPY.whichProject.endsWith('?'))
-  assert.ok(BRAND_COPY.atLimitPick.includes('limit'))
   assert.ok(BRAND_COPY.thisSite.length > 0)
+  // THREE CAPTIONS AND NO FOURTH: a sentence nothing prints is a sentence nothing can be wrong
+  // about, and `atLimitPick` was one — it rendered only at the cap WITH cards, which no step and
+  // no criterion ever reached, and it was the one caption that named no project.
+  assert.ok(!('atLimitPick' in BRAND_COPY) && !('willRebrand' in BRAND_COPY))
   // The matrix's "insert fails → the page says so" has a sentence to say it with.
   assert.ok(BRAND_COPY.failed.length > 0)
+  // ONE OFFER URL. The Sites card's link and the two redirects are the same address, and it was
+  // typed out in both places (review, 2026-09-08).
+  assert.equal(brandPath('abc'), '/sites/brand?site=abc')
 })

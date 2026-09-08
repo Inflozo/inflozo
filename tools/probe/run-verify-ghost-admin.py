@@ -164,6 +164,16 @@ list gone stale — the sibling harness's own note):
                  brand on THAT row and changes nothing else about it, and the count stays at two.
                  The two wireframes are read with getComputedStyle and asserted DISTINCT: a
                  chooser whose pictures all match would be telling the customer nothing
+  brand-picker-js-off  THE CHOOSER'S OWN progressive enhancement, read off S2c fetched as a FRESH
+                 DOCUMENT while the cards are on it — one real `<input type="radio"
+                 name="project_id">` per card, INSIDE the method=post form that carries the hidden
+                 `site_id` and the submit button, exactly one pre-checked and no leftover hidden
+                 decision field. `brand-js-off` above runs when the account has NO projects, so
+                 the document it reads has no chooser in it and the criterion "given the chooser,
+                 when JavaScript is off" was being recorded against the one screen without one
+  axe-brand-picker  axe-core over S2c WITH THE CARDS DRAWN, at 1440 and 390 — `axe-brand` runs
+                 before any project exists, so the radio cards, their `:has(:checked)` coral and
+                 their stacking at 390 had never been looked at
   brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
                  `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
                  is the guard rather than an `.eq('user_id')`. The second account's real site id
@@ -177,6 +187,14 @@ list gone stale — the sibling harness's own note):
                  will brand before the press, and pressing it writes `style_pack.brand` onto that
                  row and changes NOTHING else — not its name, not its `slug`, not its
                  `linked_site_id` — and makes no second project
+  brand-stale    THE CAP IS WHAT REFUSES, and this is the only step that executes it: at the Free
+                 cap the hidden decision is blanked in the DOM — the exact body S2c emits before
+                 any project exists, and what a second tab that filled the cap leaves behind — and
+                 the press writes NOTHING, returning to S2c with the TRUE caption naming the
+                 project. Every other step presses a real button and so posts a real project id,
+                 which takes the other half of `useBrand`'s guard; the paywall's own half was
+                 resting on a line nothing asserted, and the matrix's "cap changed under the page"
+                 row had no proof at any level
   brand-none     a card that offers nothing is not drawn (UX-DR3): with the brand taken off the
                  row through the service role (no Ghost here can answer without an accent, a logo
                  AND a menu), the card draws no offer link and `/sites/brand?site=…` renders the
@@ -405,12 +423,10 @@ def app_text():
         " brand_offer: BRAND_COPY.offer,"
         " brand_will_create: BRAND_COPY.willCreate,"
         " brand_will_brand: BRAND_COPY.willBrand('%s'),"
-        " brand_will_rebrand: BRAND_COPY.willRebrand('%s'),"
         # The owner's Question 3 ruling (2026-09-08): the second press asks, and where there is
         # more than one project it offers cards carrying each project's own wireframe.
         " brand_already_on: BRAND_COPY.alreadyOn('%s'),"
         " brand_which_project: BRAND_COPY.whichProject,"
-        " brand_at_limit_pick: BRAND_COPY.atLimitPick,"
         " brand_this_site: BRAND_COPY.thisSite,"
         " brand_failed: BRAND_COPY.failed,"
         " one_project: projectsLabel(1),"
@@ -689,17 +705,27 @@ const shoot = async (page, name) => {
      A run that needed retries is a run that says so. DW-68 carries the open question.
      ponytail: a counted retry, not a re-plumbing. Delete it the day the cause is known. */
   let navRetries = 0
-  const rawGoto = page.goto.bind(page)
-  page.goto = async (url, opts) => {
-    try {
-      return await rawGoto(url, opts)
-    } catch (e) {
-      if (!/Timeout .* exceeded/.test(String(e && e.message))) throw e
-      navRetries += 1
-      console.log(`  note: navigation to ${url} timed out; retrying once (retry ${navRetries})`)
-      return await rawGoto(url, opts)
+  /* IT WRAPS EVERY WAY THIS RUN NAVIGATES, NOT ONLY `goto`. The first version wrapped `goto`
+     alone, and the review's own four consecutive runs then failed three times — every one of
+     them on a `waitForURL` after a form submission, which the wrapper never saw, so `navRetries`
+     stayed 0 and the run died rather than riding over the hang it was written for. The class
+     DW-68 describes is wider than one method (review, 2026-09-08). `waitForURL` and `reload` are
+     both safe to repeat: the first resolves at once if the navigation has since landed, and the
+     second is a fresh GET of a page this run only ever reads. */
+  const retrying = (name) => {
+    const raw = page[name].bind(page)
+    page[name] = async (...args) => {
+      try {
+        return await raw(...args)
+      } catch (e) {
+        if (!/Timeout .* exceeded/.test(String(e && e.message))) throw e
+        navRetries += 1
+        console.log(`  note: page.${name}(${args[0] ?? ''}) timed out; retrying once (retry ${navRetries})`)
+        return await raw(...args)
+      }
     }
   }
+  for (const name of ['goto', 'waitForURL', 'reload']) retrying(name)
 
   // Every POST the page makes, and every body it received. The first is how "nothing left the
   // browser" is PROVED rather than assumed; the second is the no-secret-leak sweep's input.
@@ -1260,6 +1286,35 @@ const shoot = async (page, name) => {
       `(${rebranded.name === made.name && rebranded.slug === made.slug && rebranded.linked_site_id === made.linked_site_id}) ` +
       `and style_pack.brand written again, idempotently`)
 
+    // ── THE CAP IS WHAT REFUSES, NOT MERELY A STALE DECISION — and this is the ONLY step that
+    //    executes it. `useBrand`'s guard reads `chosen === '' ? Boolean(target) : !picked`, so an
+    //    EMPTY decision at the cap is refused and no project can be made past F.1's limit; every
+    //    other step presses a real button and so always posts a real project id, which takes the
+    //    other half of that ternary. The review found the paywall resting on a line nothing
+    //    asserted (2026-09-08). It is also the only proof of the matrix's "cap changed under the
+    //    page" row: nothing written, and back on S2c with the true caption.
+    //    The hidden field is blanked in the DOM, which is exactly the stale post a second tab
+    //    produces — the page said "we'll make one" before the cap filled.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    await page.evaluate(() => {
+      document.querySelector('input[type="hidden"][name="project_id"]').value = ''
+    })
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites/brand')
+    await s2cHeading(page).waitFor()
+    const afterStale = await projectsOf()
+    const trueCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
+    step('brand-stale',
+      afterStale.length === 1 && afterStale[0].id === made.id && trueCaption,
+      `at the Free cap, a press carrying an EMPTY decision — the body S2c itself emits before any ` +
+      `project exists, and what a second tab that filled the cap leaves behind — wrote nothing: ` +
+      `${afterStale.length} project, still the same row (${afterStale[0].id === made.id}), and the ` +
+      `browser is back on S2c with the TRUE caption naming it = ${trueCaption} rather than the ` +
+      `promise it was posted with. The cap refuses, not just the staleness`)
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+
     // ── A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3), and the route that would draw it 404s.
     //    No Ghost here can produce a site with no accent, no logo and no menu, so the state is
     //    seeded on the fixture's OWN row through the service role and then put back — the same
@@ -1474,7 +1529,7 @@ const shoot = async (page, name) => {
     const beforeRerun = await projectsOf()
     await offer().click()
     await s2cHeading(page).waitFor()
-    const saidRebrand = await says(page, SAY.brand_will_rebrand.replace('%s', beforeRerun[0].name))
+    const saidRebrand = await says(page, SAY.brand_already_on.replace('%s', beforeRerun[0].name))
     const promisedNew = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
     await page.waitForURL((u) => u.pathname === '/sites')
@@ -1488,9 +1543,9 @@ const shoot = async (page, name) => {
     step('brand-rerun',
       beforeRerun.length === 1 && saidRebrand && !promisedNew
       && afterRerun.length === 1 && sameRow && tallyRerun.includes(SAY.one_project),
-      `on PRO with ${beforeRerun.length} project and 25 allowed — room to spare — the offer link is ` +
-      `still on the card and the caption NAMED the project for this site ` +
-      `(${JSON.stringify(SAY.brand_will_rebrand.replace('%s', beforeRerun[0].name))}) = ${saidRebrand}, ` +
+      `on PRO with ${beforeRerun.length} project and room to spare — the offer link is ` +
+      `still on the card and the caption ASKED, naming the project for this site ` +
+      `(${JSON.stringify(SAY.brand_already_on.replace('%s', beforeRerun[0].name))}) = ${saidRebrand}, ` +
       `and did NOT promise a new one = ${!promisedNew}; pressing "${SAY.brand_use}" a second time left ` +
       `${afterRerun.length} project — the same row, name and slug = ${sameRow} — and T1's card reads ` +
       `${JSON.stringify(SAY.one_project)} = ${tallyRerun.includes(SAY.one_project)}. FR-C4's ` +
@@ -1524,6 +1579,39 @@ const shoot = async (page, name) => {
     // the customer apart rather than repeating one picture.
     const thumbs = await cards.locator('span[aria-hidden] > span:last-child > span:nth-child(2)')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor))
+    // ── THE CHOOSER'S OWN JS-OFF READ AND ITS OWN AXE PASS, HERE BECAUSE THIS IS THE ONLY STATE
+    //    THAT HAS A CHOOSER IN IT. `brand-js-off` and `axe-brand` both run on the FIRST S2c visit,
+    //    when the account has no projects — so the document they read carries the hidden
+    //    `project_id` and no cards, and "given the chooser, when JavaScript is off, then it still
+    //    posts" was recorded as executed against the one screen with no chooser (review,
+    //    2026-09-08). A scripts-off browser is served the SERVER's HTML, so this re-fetches S2c as
+    //    a fresh document, as `brand-js-off` does.
+    await page.goto(page.url(), { waitUntil: 'load' })
+    await s2cHeading(page).waitFor()
+    const pickerOff = await page.locator('main form').evaluateAll((forms) => forms.map((f) => ({
+      method: (f.getAttribute('method') || '').toLowerCase(),
+      action: f.getAttribute('action') !== null,
+      encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
+      site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
+      radios: f.querySelectorAll('input[type="radio"][name="project_id"]').length,
+      checked: f.querySelectorAll('input[type="radio"][name="project_id"]:checked').length,
+      hidden: f.querySelectorAll('input[type="hidden"][name="project_id"]').length,
+      submits: f.querySelectorAll('button[type="submit"]').length,
+    })))
+    // THE RADIOS MUST BE IN THE FORM THE BUTTON SUBMITS, which is what `querySelectorAll` from the
+    // form element asks — the Kit's presentational `RadioCards` would put `role="radio"` on
+    // buttons and post nothing, and this is the assertion that would catch that swap.
+    const pf = pickerOff.find((f) => f.radios > 0) || {}
+    step('brand-picker-js-off',
+      pf.method === 'post' && pf.action === true && pf.encoded > 0 && pf.site === 1
+      && pf.radios === cardCount && pf.checked === 1 && pf.hidden === 0 && pf.submits === 1,
+      `the chooser, in the document a scripts-off browser is served: ${pf.radios} real ` +
+      `<input type="radio" name="project_id"> — one per card (${pf.radios === cardCount}) — INSIDE ` +
+      `the method=post form that carries the hidden site_id and the submit button, with exactly ` +
+      `${pf.checked} pre-checked and ${pf.hidden} leftover hidden decision fields. It posts with ` +
+      `no JavaScript at all, which is the owner's A1 shape and the only one that does`)
+    await axeAt(page, 'brand-picker')
+
     // PICK THE OTHER ONE and press: the brand must land on the card that was chosen, not on the
     // one the rule would have picked on its own.
     await page.locator(`input[name="project_id"][value="${secondId}"]`).check()
@@ -1944,13 +2032,15 @@ const shoot = async (page, name) => {
       `${bodies.length} response bodies scanned for the ${typed.length} keys this run typed; ` +
       `${leaked.length === 0 ? 'none appeared' : 'A KEY CAME BACK IN A RESPONSE'}`)
 
-    // WHAT THE RUN COST IN RETRIES, always printed — a clean run says zero and a run that rode
-    // over the 2026-09-08 navigation timeouts says how many (DW-68). A retry that is not
-    // reported is a retry that hides a hang.
-    console.log(`  note: navigation retries this run: ${navRetries}`)
   } catch (error) {
     step('browser', false, `${error && error.message ? error.message : error}`)
   } finally {
+    // WHAT THE RUN COST IN RETRIES, always printed — a clean run says zero and a run that rode
+    // over the 2026-09-08 navigation timeouts says how many (DW-68). A retry that is not
+    // reported is a retry that hides a hang, and IN THE `finally` because the run that most needs
+    // the number is the one that hung and then FAILED — at the end of the `try` it printed only
+    // on the runs that did not need it (review, 2026-09-08).
+    console.log(`  note: navigation retries this run: ${navRetries}`)
     await sql.end({ timeout: 5 }).catch(() => {})
     await browser.close()
     process.stdout.write('\n@@RESULT@@' + JSON.stringify(steps) + '\n')
