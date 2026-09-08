@@ -5,7 +5,7 @@ created: '2026-09-08'
 status: 'in-review'
 review_loop_iteration: 1
 baseline_commit: '3a530ebcec1adc5584999bbb52ca62374859c5f8'
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -528,6 +528,72 @@ and can delete it afterwards.
     Connect site button full width; the connect window's fields stay usable.
 11. Cleanup, optional: in Ghost Admin, delete the `Inflozo owner test` integration. The card stays
     "Connected" until Story 3.7's daily check exists — expected.
+
+## Owner's test findings
+
+Tested on app.inflozo.com on 2026-09-08. **Six findings, and all six are this story's own surfaces** —
+the two connect screens and the connected-site card, both built here. **Nothing belongs to a later
+story and nothing needs a sub-story**; the triage is on each one. They are fixed in this story, by the
+Fix run (R-80 as amended).
+
+1. **Can we make both the windows same size?**
+
+   *What was seen:* the connect sheet's two steps are different heights, so the box jumps when you press
+   **Done — next**. Both are S11b's 520 wide, so it is the height. Most of the difference is the
+   screenshot you supplied — 644×408 rendered across the sheet, against the frame's 130px placeholder
+   box (`S11 Sites.dc.html:149`).
+
+   *Whose:* **this story's** — `connect-wizard.tsx`, `connect-dialog.tsx`, and the screenshot this story
+   added on your Question 2 ruling. The full-page pair has the same complaint by construction: the frame
+   draws step 1 at 480 wide and step 2 at 560, so that jump gets fixed with it.
+
+2. **Momentarily when I click next to navigate to the second window — I can see the project grid card in
+   background.**
+
+   *Whose:* **this story's** — `connect-dialog.tsx`. The step change is local state inside an open sheet,
+   so nothing behind it should move at all. **To be reproduced on the deployed site at Fix before
+   anything is changed:** the likely cause is finding 1's height jump uncovering the cards through the
+   40% scrim, but a guess here would repair the wrong thing.
+
+3. **In 2nd window — "Where do I find these?" looks like a dropdown. But it should be a subtle link at the
+   top near title on right. On mobile it should appear below the title. Then remove the existing dropdown.**
+
+   *Whose:* **this story's** — `connect-wizard.tsx`. It is a **deliberate departure from the frame**, which
+   draws exactly the bordered box with a chevron that reads as a dropdown
+   (`S2 Onboarding.dc.html:135-138`). Your test outranks the frame (R-80 as amended); the export itself is
+   never edited (R-74); the departure is written into the spec's rules at Fix so a later story does not
+   "correct" it back to the box. Your words stay the link's words: "Where do I find these?".
+
+   *One routine call taken rather than asked:* in the sheet the wizard draws no heading of its own — the
+   sheet's own title "Connect your Ghost site" sits above it — so the link goes at the top right of step
+   2's body, which lands directly under that title; on the full page it goes at the right of "Now paste
+   the three keys.". Below `tablet` it drops to its own line under the title, as you asked.
+
+4. **Add a new tab arrow icon near the website URL in connected sites card.**
+
+   *Whose:* **this story's** — `sites/page.tsx`. The kit has no external-link icon yet, so one is added to
+   `components/kit/icons.tsx` in the same Tabler line the rest are drawn in, rather than inlined on the
+   card.
+
+5. **Add a top border below the connect site button just like we have in projects page.**
+
+   *Whose:* **this story's** — `sites/page.tsx`. This one moves the surface **towards** the frame, not away
+   from it: S11a draws a 64px bar with `border-bottom:1px solid #E7E2DB` above the grid
+   (`S11 Sites.dc.html:49`), and the build dropped the whole bar because the search field and the bell
+   inside it belong to the dashboard. The rule comes back; the search field and the bell stay out.
+
+6. **Move the green connected status just above the bottom "Checked 5 minutes ago". And keep the meta data
+   pills (Ghost 6.58, 0 projects) in their existing line only. Gap between "Checked 5 minutes ago" and green
+   "connected" should be less. Finalise this card design for all site cards on that page.**
+
+   *Whose:* **this story's** — `sites/page.tsx`. One card component draws every card on the page, so
+   "for all site cards" is satisfied by changing it once. Also a **deliberate departure from the frame**,
+   which puts Connected on the same line as the two pills (`S11 Sites.dc.html:70-75`), recorded for the
+   same reason as finding 3.
+
+   *And it binds the later stories that add to this card*, so they inherit this layout and not the frame's:
+   the ⋯ menu and the Free-cap ghost slot (3.5), the Preview-only chip (3.3), the health badges and
+   "Reconnect needed" (3.7). Written into `deferred-work.md` at Fix so it cannot be missed.
 
 ## Questions for the owner
 
