@@ -558,7 +558,19 @@ const rowsOf = async (select = 'id') => (await wire(`/sites?user_id=eq.${USER_ID
    SERVICE ROLE, like every other wire read here — what a USER may do is still only ever driven
    through that user's own session, in the browser. */
 const projectsOf = async () => (await wire(
-  `/projects?user_id=eq.${USER_ID}&select=id,name,slug,style_pack,linked_site_id&order=updated_at.desc`)).body || []
+  // `id` BREAKS THE TIE, as it does in S2c, in `useBrand` and on the dashboard: two rows with the
+  // same `updated_at` come back in an arbitrary order, and a step that compares two reads of this
+  // list then fails on the ORDER rather than on a change. Propagated here at the second review
+  // (2026-09-08) — the app's three readers were fixed and the harness's own reader was missed,
+  // which is standing rule 7 exactly ("a propagation list cannot audit itself").
+  `/projects?user_id=eq.${USER_ID}&select=id,name,slug,style_pack,linked_site_id&order=updated_at.desc,id.desc`)).body || []
+/* THE SAME LIST, KEYED BY ID: what `brand-ownership` actually asks is "did anything about the
+   caller's projects change", which is a question about the ROWS and not about the order PostgREST
+   returned them in. Sorting by id before comparing makes the assertion say what it means, and the
+   step prints both sides when they differ so a real change names itself rather than hiding behind
+   a boolean (review 2, 2026-09-08 — this comparison failed once on a run where nothing had
+   written, and a boolean could not say why). */
+const projectsById = (rows) => JSON.stringify([...rows].sort((a, b) => (a.id < b.id ? -1 : 1)))
 /* A hex as `getComputedStyle` reports it, so "the card is painted in the site's accent" is read
    off the RENDERED card rather than off the class attribute. */
 const rgbOf = (hex) => {
@@ -1831,14 +1843,18 @@ const shoot = async (page, name) => {
     step('brand-ownership',
       foreignPage.saw === 'not-found' && forgedUse && forgedSkip
       && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
-      && JSON.stringify(afterUse) === JSON.stringify(projectsBefore)
-      && JSON.stringify(afterForgedSkip) === JSON.stringify(projectsBefore) && linkedToForeign === 0,
+      && projectsById(afterUse) === projectsById(projectsBefore)
+      && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
       `/sites/brand?site= a row a DIFFERENT account owns rendered ${JSON.stringify(foreignPage.saw)} — ` +
       `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
       `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
       `submitted from the fixture's session. The caller still has ${afterUse.length} project, ` +
       `byte-identical to the ${projectsBefore.length} it had before ` +
-      `(${JSON.stringify(afterUse) === JSON.stringify(projectsBefore)}), and ${linkedToForeign} of them ` +
+      `(${projectsById(afterUse) === projectsById(projectsBefore)}` +
+      // A DIFFERENCE NAMES ITSELF. A boolean here cost the review a run it could not explain.
+      `${projectsById(afterUse) === projectsById(projectsBefore) ? '' :
+         `; before=${projectsById(projectsBefore)} afterUse=${projectsById(afterUse)} ` +
+         `afterSkip=${projectsById(afterForgedSkip)}`}), and ${linkedToForeign} of them ` +
       `is linked to the stranger's site — the one row a press could have written. These two write ` +
       `through the caller's OWN session, so RLS is the guard and not an .eq() — the acceptance ` +
       `criterion's "or either action is posted", executed`)

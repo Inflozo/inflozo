@@ -858,3 +858,68 @@ further work — `placeholder.tsx`'s own note says packs look alike until then.
 
 `brand-rerun` still passes beside it with **one** project and **no cards drawn** — the owner's B1,
 executed: a chooser with a single option is a step and not a choice.
+
+## Review 2 record — what was executed, and what each service answered (R-82)
+
+Run 2026-09-08 against **CI's deployment of `46d1553c`** on `app.inflozo.com` (`rls` ✔ `check` ✔
+`deploy` ✔ — confirmed through the Vercel API by `VERCEL_TOKEN`, production `READY` on that sha),
+with **T1** `ghost6.inflozo.com` 6.58.0 and **T3** `ghost5.inflozo.com` 5.130.6, and the live
+Supabase project over PostgREST, GoTrue and the transaction pooler. Every key named by its variable;
+no value printed or recorded.
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **exit 0.** 229 tests in `apps/web`, 1 in each of the three packages. `tokens.test.ts` still finds `style-pack.ts` the one place a colour literal lives |
+| `pnpm build` | **exit 0**, `ƒ /app/sites/brand` still dynamic inside the `(authed)` guard |
+| `python3 tools/doc-audit.py --check` (twice) | first run regenerated `STORY-BOARD.html` and failed on it, second **PASS, 0 warnings** — the documented behaviour of the sub-tools, not a fault |
+| `bash supabase/tests/run-rls-gate.sh` | untouched: **no migration** in this review, and DW-69 says why the one it wanted was not written |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **all steps passed**, `browser-js` included — it caught nothing this time, which is what a green parse gate looks like |
+| `python3 tools/probe/run-verify-ghost-admin.py` | **62 steps, 0 failures**, every step in the docstring in order — the Fix's 59 plus **`brand-stale`**, **`brand-picker-js-off`** and **`axe-brand-picker`**. **1 navigation retry** (DW-68), reported |
+| Ghost `GET /admin/settings/` on T1 and T3 | re-executed independently of the harness with `GHOST6_ADMIN_API_KEY` / `GHOST5_ADMIN_API_KEY`, integration key alone: **200 / 200**, all seven brand keys present, `navigation` a **JSON string on both majors** — byte-for-byte MEASUREMENTS §40. **Negative control:** the same call with the key's secret half zeroed → **401 Unauthorized**, so the 200s prove authentication and not a cached route |
+| The boundary, executed against the app's own modules | `placeholderFor({brand:{accent:'#FF1A75'}})` → `#FF1A75`; **negative control** `accent:'red;background:url(x)'` → Paper's `#D96C3F`, the injection never reaching the inline `style`; `preset:'__proto__'` → `#D96C3F`; `imageUrl('data:image/svg+xml,…')` and `imageUrl('javascript:…')` → `null`; `navOf('{{{')` → `[]` |
+| `git grep -n 'announcement_clear'` | `admin-rule.ts` and its test only. **No caller**; `ADMIN_WRITES` unchanged |
+
+### The three steps this review added, in the run's own words
+
+| Step | What the deployed site answered |
+|---|---|
+| `brand-stale` | At the Free cap, a press carrying an **empty decision** — the body S2c itself emits before any project exists, and what a second tab that filled the cap leaves behind — wrote **nothing**: 1 project, the same row, and the browser back on S2c with the **true** caption naming it. The paywall's own half of `useBrand`'s guard, executed for the first time; every other step presses a real button and so posts a real project id |
+| `brand-picker-js-off` | The chooser in the document a scripts-off browser is served: **2 real `<input type="radio" name="project_id">`, one per card, inside the `method=post` form** carrying the hidden `site_id` and the submit button, exactly **1** pre-checked and **0** leftover hidden decision fields. AC 8 had been recorded against the one S2c state that has no chooser |
+| `axe-brand-picker` | **Zero violations** at WCAG 2.1 AA, 1440 and 390, with the cards drawn; no horizontal scroll. `axe-brand` runs before any project exists, so the radio cards had never been looked at |
+
+Two pre-existing steps changed their answer, and both are the patches landing: `brand-rerun` now
+reads the caption that **asks** ("You already put your brand on “Ghost6”. Apply it again?") where it
+used to read one that told, and `brand-atcap` still reads the sentence that **names** the project —
+which is now the only caption that mentions the limit.
+
+### Controls, including the one that failed
+
+- **`brand-ownership` failed on run 1 and the failure was the harness's own.** The step compares two
+  reads of the caller's projects and compared them **in PostgREST's order**, so a list that came
+  back in a different order failed an assertion whose subject is the rows. Nothing had written:
+  `linkedToForeign` was 0 and the count was unchanged on the same run. Two things changed rather
+  than one — `projectsOf` gained the `id` tiebreak the app's three readers were given this review
+  (standing rule 7: the propagation list missed the harness's own reader), and the comparison is now
+  keyed by id **and prints both sides when they differ**, because a boolean cost this review a run it
+  could not explain. Run 2 passed.
+- **THE DW-68 WIDENING PROVED ITSELF, on a run rather than on an argument.** Run 2 hung on
+  `page.waitForURL((u) => u.pathname === '/sites')`, retried once and passed — a `waitForURL`, which
+  is precisely the class the old `goto`-only wrapper never saw and which killed **three of the four**
+  full runs the real-infra layer executed before it was widened. The note line names the method now,
+  so the next occurrence says which one.
+- **The negative control on the Ghost read** (a zeroed key → 401) and **the boundary's negative
+  controls** (a hostile accent, a `data:` logo, an unparseable menu) are in the table above; each was
+  executed rather than reasoned.
+- **What is still NOT settled, and no claim is made about it:** whether the DW-68 hang is this
+  deployment's, the platform's or the network's. The control that would answer it — the same run
+  against the previous deployment — still cannot be driven, because the harness cannot sign in
+  against a preview URL. The pass above should be read as "every assertion held", not as "the hang is
+  gone".
+
+**Real services this review touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
+Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
+story's path** and were not called.

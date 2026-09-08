@@ -1645,6 +1645,11 @@ reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sit
   unchanged and no claim is made about the cause; what changed is that the mitigation now covers the
   class the entry describes, and that a red run is once again evidence of something rather than
   weather.
+  THE WIDENING THEN PROVED ITSELF ON A RUN RATHER THAN ON AN ARGUMENT: the very next full run hung
+  on `page.waitForURL((u) => u.pathname === '/sites')`, retried once and passed — a `waitForURL`,
+  the class the old wrapper never saw. The note line names the method now, so the next occurrence
+  says which one it was. Still open: whether the hang is the deployment, the platform or the
+  network, and the control that would answer it is still the one that cannot be driven.
 
 ### DW-69: two presses of "Use your brand" in flight together can still make two projects
 
