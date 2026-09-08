@@ -633,3 +633,14 @@ a seeded live step. Both are stated in the owner's manual test rather than gloss
 gone into Vault, so there is no way to make the next call fail on demand. It is the same `probeSite`
 catch `probe-failure` executes one caller earlier, and `sites/actions.ts` wraps the call in a second
 try of its own so a throw on the way in cannot fail a connect either.
+
+### Deploy run, 2026-09-08 — after Review
+
+`Deployment: dpl_47ZCtMFJWVaRmUi1utZXZNLxfmHa` (`inflozo-evq2aue7o-umangkagathara.vercel.app`). CI run
+`34204446072` for HEAD `53a81095` (`GITHUB_TOKEN`, via the GitHub API): `check`, `rls` and `deploy` all
+`success`. `GET /v13/deployments/{id}` with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` shows it `READY` for
+`VERCEL_PROJECT`'s `production` target, its `meta.githubCommitSha` matching `53a81095` exactly, and its
+`alias` carrying `app.inflozo.com`, `www.inflozo.com` and `inflozo.com`. No schema change in this story
+(Code Map: "No migration in this story"), so no re-run of `run-rls-gate.sh` is owed beyond the gate
+already green in the Dev record and the `rls` job's own pass on this commit. The owner's manual test
+below, against this deployment, is the one thing this run leaves open.
