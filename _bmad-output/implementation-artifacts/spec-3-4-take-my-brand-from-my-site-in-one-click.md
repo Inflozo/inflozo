@@ -295,6 +295,13 @@ owner as **Question 3** because Boundaries' own "Ask First" names it.
   tile takes a whole code point, not half a surrogate pair; `brand-seed` asserts the accent on the
   block the placeholder paints rather than on any of three; and the created project is named from
   the host S2c actually showed.
+- **One thing the review could not settle, and did not pretend to: DW-68.** Seven consecutive full
+  harness runs each lost exactly one navigation to an authed route to a 60-second timeout, at a
+  different place every time, while PostgREST, GoTrue, the pooler, the edge and DNS all measured
+  healthy in the same window. The harness now retries a timed-out navigation **once** and prints the
+  count with the result — a run that rode over a hang says so, and the clean run below says **1**.
+  The control that would settle whether it is this deployment cannot be run today, so no claim is
+  made either way.
 - **Dismissed, with the reason:** `skipBrand` does not 404 for a stranger's row — the same criterion
   says "nothing is read", and 404ing would require reading; it writes nothing, which is the
   substance. `skipBrand` stays a form (Boundaries freezes both buttons as forms). A probe cannot
@@ -581,3 +588,55 @@ asserts the page the customer sees and records the status beside it.
 project over PostgREST and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
 `SUPABASE_DB_POOLER_URL`); and the **Vercel** production deployment serving `app.inflozo.com`.
 **Resend and Dodo are not on this story's path** and were not called.
+
+
+## Review record — what was executed, and what each service answered (R-82)
+
+Run 2026-09-08 against **CI's deployment of `f796a6e8`** on `app.inflozo.com` (`rls` ✔ `check` ✔
+`deploy` ✔), with **T1** `ghost6.inflozo.com` 6.58.0 and **T3** `ghost5.inflozo.com` 5.130.6, and the
+live Supabase project over PostgREST and the transaction pooler. Every key named by its variable; no
+value printed or recorded.
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **exit 0.** 229 tests in `apps/web` (228 + `brandTarget`'s), 1 in each of the three packages. `tokens.test.ts` caught a hex in a comment the review had written and the comment was reworded — the guard doing its job |
+| `node --test probe-rule.test.ts style-pack.test.ts` | **31 pass, 0 fail** — the new `brandTarget` block holds all four of its branches, and `hasBrand` now refuses a record with no `nav` array and a `logo` that is a string but not `https:` |
+| `pnpm build` | **exit 0**, `ƒ /app/sites/brand` still dynamic inside the `(authed)` guard |
+| `python3 tools/doc-audit.py --check` (twice) | **PASS, 0 warnings** |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, 82 PASS, 0 FAIL. **No migration** — the review added none |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **all steps passed**, including the review's new **`browser-js`** and `brand-keys` against both live Ghosts |
+| `python3 tools/probe/run-verify-ghost-admin.py` | **58 steps, 0 failures**, every step in the docstring in order — 55 from Dev plus `browser-js`, `brand-rerun` and `brand-ownership`. **It reports 1 navigation retry** (DW-68), and that is recorded rather than smoothed away |
+| `git grep -n 'announcement_clear'` | `admin-rule.ts` and its test only. **No caller**; `ADMIN_WRITES` unchanged |
+
+### The two steps the review added, in the run's own words
+
+| Step | What the deployed site answered |
+|---|---|
+| `brand-rerun` | On **Pro** with 1 project and 25 allowed — room to spare, the state no earlier step could reach — the caption named the project for this site rather than promising a new one, and pressing **Use your brand** a second time left **1 project**, the same row, name and slug, with the card still reading "1 project". This is the defect, gone |
+| `brand-ownership` | `/sites/brand?site=` a row a **different account** owns rendered the not-found page; that id forged into S2c's own **Use your brand** and **Skip** forms and submitted from the fixture's session wrote nothing — the caller's projects byte-identical, and **0** linked to the stranger's site. The acceptance criterion's "or either action is posted", executed for the first time |
+
+### Controls, including the one that failed
+
+- **The new `brand-seed` assertion was wrong before it was right.** The review first asserted the
+  accent on the **last** wireframe block; run 1 failed and printed the three computed colours, and
+  `placeholder.tsx` says the accent is the **middle** one. Corrected against the source, and it now
+  also asserts the accent is on **no other** block.
+- **`brand-rerun` was proved to fail.** Run 1 of the review, against the pre-fix deployment, is the
+  negative control: the second press made a second project and the step said so.
+- **`browser-js` was proved to fail.** A deliberate redeclaration makes `--check` exit non-zero with
+  the SyntaxError named; restoring the file makes it pass. It caught a real redeclaration in the
+  review's own new step before a single live run was spent on it.
+- **A hypothesis was disproved and its change reverted.** "The streamed `load` event never fires" led
+  to navigating on `commit`; run 6 then timed out on `commit` too, so the change was taken back out
+  rather than left in as unjustified machinery. DW-68 carries the open question.
+- **The control that would have settled DW-68 could not be run** — the harness cannot sign in against
+  a preview URL, so `--url` at the previous deployment dies at the first browser step. No claim is
+  made about whether the hang is this deployment's, and none should be read into the pass.
+
+**Real services this review touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
+Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
+story's path** and were not called.

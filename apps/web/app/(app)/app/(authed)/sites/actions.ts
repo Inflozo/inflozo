@@ -546,8 +546,14 @@ type BrandSite = {
  * same pack twice, and nothing anywhere records that it was pressed — FR-C4 asks for "skippable
  * and re-runnable", and a `brand_seeded_at` column would give a third state (used vs skipped) that
  * no screen in this epic shows.
- * ponytail: the offer is a link; the seed is idempotent. A column when a screen needs to tell
- * skipped from used.
+ *
+ * AND `linked_site_id` IS WHAT MAKES THAT TRUE WITHOUT A COLUMN. The binding FR-B5 already asks
+ * for is the identity "the project for this site", so `brandTarget` finds it and the second press
+ * updates rather than inserts. Without it the sentence above was false on every plan with room:
+ * the link never retires, so each press made another project with the same name for the same site
+ * (review, 2026-09-08 — `brand-rerun` is the step that now executes it).
+ * ponytail: the offer is a link; the seed is idempotent, keyed on the binding rather than on a
+ * column. A column when a screen needs to tell skipped from used.
  *
  * THE OWNER RULED THE AT-CAP PATH (Question 1, option 1, 2026-09-08) AND THE SCREEN SAYS WHICH
  * PROJECT IT WILL BRAND BEFORE THE PRESS. S2c counts the caller's projects and prints, under the
@@ -616,9 +622,12 @@ export async function useBrand(formData: FormData): Promise<void> {
   }
 
   if (target) {
-    // AT THE CAP: the brand goes onto the project the caption named and NOTHING ELSE about it
-    // moves — not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. The
-    // pack is merged rather than replaced, so a preset E6 has since written survives.
+    // ONTO THE PROJECT THE CAPTION NAMED, and NOTHING ELSE about it moves — not its name, not
+    // its `slug` (FR-J10 freezes that), not its `linked_site_id`. Two ways to be here and the
+    // write is the same: AT THE CAP the most recently updated project (the owner's Question 1
+    // ruling), or WITH ROOM the project already made for this site — the second press of an
+    // offer that never retires. The pack is merged rather than replaced, so a preset E6 has
+    // since written survives.
     // NOT `?? defaultStylePack()`: `projects.style_pack` is in the caller's own UPDATE grant
     // (schema `:1202`), so a pack that is not an object is a thing the column can hold — and
     // spreading a string yields its characters, indexed, which is not a pack any more.

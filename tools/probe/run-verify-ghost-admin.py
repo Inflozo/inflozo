@@ -658,6 +658,33 @@ const shoot = async (page, name) => {
   context.setDefaultNavigationTimeout(NAV_TIMEOUT)
   const page = await context.newPage()
 
+  /* ONE RETRY ON A NAVIGATION THAT TIMED OUT, AND IT IS COUNTED SO IT CANNOT HIDE.
+     Seven review runs on 2026-09-08 each lost exactly one navigation out of ~50 to the 60s
+     timeout, every time on an AUTHED route (`/sites`, `/sites/connect`, S2c, the not-found
+     path), every time at a different point, and never twice in the same place. Everything
+     measurable was healthy at the time: PostgREST 0.25s, GoTrue 0.2-0.8s, the transaction
+     pooler 152ms with 19 backends and nothing idle-in-transaction, the edge answering /sites
+     in 0.35s ten times in a row, no rate-limit or challenge header, and the local DNS stub
+     resolving 150/150. The control that would have settled whether it is this deployment —
+     the same run against the previous one — CANNOT be driven: a preview URL cannot carry the
+     magic-link sign-in, so it failed at the first browser step and proves nothing.
+     So this is NOT a diagnosis, it is a retry: `waitUntil` and every timeout are unchanged, a
+     second attempt is made only after a timeout, and `navRetries` is printed with the result.
+     A run that needed retries is a run that says so. DW-68 carries the open question.
+     ponytail: a counted retry, not a re-plumbing. Delete it the day the cause is known. */
+  let navRetries = 0
+  const rawGoto = page.goto.bind(page)
+  page.goto = async (url, opts) => {
+    try {
+      return await rawGoto(url, opts)
+    } catch (e) {
+      if (!/Timeout .* exceeded/.test(String(e && e.message))) throw e
+      navRetries += 1
+      console.log(`  note: navigation to ${url} timed out; retrying once (retry ${navRetries})`)
+      return await rawGoto(url, opts)
+    }
+  }
+
   // Every POST the page makes, and every body it received. The first is how "nothing left the
   // browser" is PROVED rather than assumed; the second is the no-secret-leak sweep's input.
   let posts = 0
@@ -1172,18 +1199,21 @@ const shoot = async (page, name) => {
       saidCreate && seeded.length === 1 && made.linked_site_id === t1SiteId
       && seededBrand.accent === brandRead.accent && made.name === pub1.title
       && Boolean(made.slug) && tally.includes(SAY.one_project)
-      // THE LAST BLOCK, not any of them: `includes` over three wireframe blocks stayed green
-      // through the bug it exists to catch — the accent painted on the wrong one (review,
-      // 2026-09-08). `placeholder.tsx` paints the button, which is the block the frame's
-      // mini homepage ends with.
-      && painted[painted.length - 1] === rgbOf(brandRead.accent),
+      // THE MIDDLE BLOCK AND ONLY IT — `placeholder.tsx` paints the middle of three in its button
+      // row and leaves the outer two `bg-line`. `includes` over the three stayed green through
+      // the bug it exists to catch, the accent painted on the wrong block; and the first run of
+      // this assertion said LAST, which is what reading the row rather than the component gets
+      // you (review, 2026-09-08 — executed, then corrected against the source).
+      && painted[1] === rgbOf(brandRead.accent)
+      && painted.filter((c) => c === rgbOf(brandRead.accent)).length === 1,
       `the caption said a project would be made = ${saidCreate}; pressing "${SAY.brand_use}" wrote ` +
       `${seeded.length} project named ${JSON.stringify(made.name)} — the site's own Ghost title — ` +
       `slug ${JSON.stringify(made.slug)}, linked_site_id = the site = ${made.linked_site_id === t1SiteId} ` +
       `(FR-B5's first writer), style_pack.brand.accent ${seededBrand.accent} equal to the site's ` +
       `${brandRead.accent}; the Sites card now reads ${JSON.stringify(SAY.one_project)} = ` +
       `${tally.includes(SAY.one_project)}, and the dashboard card's wireframe blocks compute to ` +
-      `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} on the LAST of them`)
+      `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} on the MIDDLE one and ` +
+      `on no other (${painted.filter((c) => c === rgbOf(brandRead.accent)).length} of 3)`)
 
     // ── AT THE CAP, WHICH THE SEED ABOVE JUST PUT THIS FREE ACCOUNT AT (F.1: Free includes 1
     //    project). THE OWNER RULED THIS PATH (Question 1, option 1, 2026-09-08) and asked the
@@ -1222,12 +1252,12 @@ const shoot = async (page, name) => {
     // RESTORED IN A `finally`, WHICH IS THIS FILE'S OWN IDIOM (`injection-live` restores exactly
     // what it found, passing or failing). A throw between the strip and the restore left the row
     // stripped for every step after it — and every one of them reaches S2c (review, 2026-09-08).
-    let stripped, offerGone, direct, forgedSite
-    try {
-    stripped = await patchSettings(t1SiteId, { brand: undefined })
-    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await page.waitForSelector('text=Connected')
-    offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
+    /* DECLARED OUTSIDE THE `try` BELOW ON PURPOSE: `brand-ownership` asks the same question of a
+       row a DIFFERENT account owns, hundreds of lines further down, and a `const` inside that try
+       is scoped to it — which is how the review's own first run threw `rendered is not defined`
+       after 48 steps. Same family as the `const same` shadowing Dev hit: a helper lives at the
+       level every step that needs it can see. `node --check` cannot see this one — it is valid
+       syntax — so the rule is the placement, not a check. */
     /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders Next's own 404
        page — but the HTTP STATUS on these routes is 200, and that is measured rather than
        excused: `(authed)/loading.tsx` is a Suspense boundary over EVERY page in the group, so
@@ -1248,12 +1278,19 @@ const shoot = async (page, name) => {
       ])
       return { status: r ? r.status() : 0, saw }
     }
-    direct = await rendered(`${APP}${offerHref}`)
-    // A site id NO ROW ANYWHERE CARRIES. It is not the cross-account question — that one needs a
-    // row a DIFFERENT account really owns, and it is asked in `brand-ownership` below, where the
-    // fixture for it exists (review, 2026-09-08: this step used to claim the stranger's row and
-    // forge a nonexistent uuid, which RLS never had to refuse).
-    forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
+
+    let stripped, offerGone, direct, forgedSite
+    try {
+      stripped = await patchSettings(t1SiteId, { brand: undefined })
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await page.waitForSelector('text=Connected')
+      offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
+      direct = await rendered(`${APP}${offerHref}`)
+      // A site id NO ROW ANYWHERE CARRIES. It is not the cross-account question — that one needs a
+      // row a DIFFERENT account really owns, and it is asked in `brand-ownership` below, where the
+      // fixture for it exists (review, 2026-09-08: this step used to claim the stranger's row and
+      // forge a nonexistent uuid, which RLS never had to refuse).
+      forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
     } finally {
       await patchSettings(t1SiteId, { brand: brandKept })
     }
@@ -1427,18 +1464,21 @@ const shoot = async (page, name) => {
     await page.waitForURL((u) => u.pathname === '/sites')
     await page.waitForSelector('text=Connected')
     const afterRerun = await projectsOf()
-    const tallyRerun = await cardOf('Connected').first().innerText().catch(() => '')
+    // NOT `cardOf('Connected').first()`: `pro-connect-t3` has connected T3, so there are TWO
+    // cards saying Connected and the first is not necessarily T1's (executed, review run 1).
+    const tallyRerun = await cardOf(pub1.title || 'Ghost6').first().innerText().catch(() => '')
+    const sameRow = afterRerun[0] && beforeRerun[0] && afterRerun[0].id === beforeRerun[0].id
+      && afterRerun[0].slug === beforeRerun[0].slug && afterRerun[0].name === beforeRerun[0].name
     step('brand-rerun',
       beforeRerun.length === 1 && saidRebrand && !promisedNew
-      && afterRerun.length === 1 && afterRerun[0].id === beforeRerun[0].id
-      && afterRerun[0].slug === beforeRerun[0].slug && afterRerun[0].name === beforeRerun[0].name
-      && tallyRerun.includes(SAY.one_project),
+      && afterRerun.length === 1 && sameRow && tallyRerun.includes(SAY.one_project),
       `on PRO with ${beforeRerun.length} project and 25 allowed — room to spare — the offer link is ` +
       `still on the card and the caption NAMED the project for this site ` +
       `(${JSON.stringify(SAY.brand_will_rebrand.replace('%s', beforeRerun[0].name))}) = ${saidRebrand}, ` +
       `and did NOT promise a new one = ${!promisedNew}; pressing "${SAY.brand_use}" a second time left ` +
-      `${afterRerun.length} project — the SAME row, same name, same slug — and the card still reads ` +
-      `${JSON.stringify(SAY.one_project)}. FR-C4's "re-runnable", and the matrix's "seeding again ` +
+      `${afterRerun.length} project — the same row, name and slug = ${sameRow} — and T1's card reads ` +
+      `${JSON.stringify(SAY.one_project)} = ${tallyRerun.includes(SAY.one_project)}. FR-C4's ` +
+      `"re-runnable", and the matrix's "seeding again ` +
       `writes the same pack": the offer never retires, so this is the only thing that keeps a press ` +
       `from being a project factory`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
@@ -1829,6 +1869,11 @@ const shoot = async (page, name) => {
     step('no-secret-leak', leaked.length === 0,
       `${bodies.length} response bodies scanned for the ${typed.length} keys this run typed; ` +
       `${leaked.length === 0 ? 'none appeared' : 'A KEY CAME BACK IN A RESPONSE'}`)
+
+    // WHAT THE RUN COST IN RETRIES, always printed — a clean run says zero and a run that rode
+    // over the 2026-09-08 navigation timeouts says how many (DW-68). A retry that is not
+    // reported is a retry that hides a hang.
+    console.log(`  note: navigation retries this run: ${navRetries}`)
   } catch (error) {
     step('browser', false, `${error && error.message ? error.message : error}`)
   } finally {
@@ -1862,6 +1907,13 @@ def run_browser(cfg):
             return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 1200s'}]
         except FileNotFoundError:
             return [{'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'}]
+    # THE BROWSER'S OWN NOTES REACH THE OUTPUT ON A PASSING RUN TOO. Everything but the result
+    # line used to be discarded unless the run failed, so the navigation-retry count added on
+    # 2026-09-08 was invisible in exactly the case that matters — a run that passed only because
+    # it retried. A retry that is not reported is a retry that hides a hang (DW-68).
+    for line in proc.stdout.splitlines():
+        if line.lstrip().startswith('note:'):
+            print(f'  {line.strip()}')
     for line in proc.stdout.splitlines():
         if line.startswith('@@RESULT@@'):
             return json.loads(line[len('@@RESULT@@'):])

@@ -1590,3 +1590,38 @@ reason: `loading.tsx` puts a Suspense boundary over EVERY page in `(authed)`, so
   own route group so the boundary stops covering pages that have no skeleton. The story that gives a
   second `(authed)` page its own loading shape takes it. Until then `brand-none` asserts the page the
   customer sees and RECORDS the status beside it, rather than asserting a code the shell already sent.
+
+### DW-68: an authed page on the deployed site occasionally sends no response for 60 seconds
+
+plain: While checking Story 3.4 against the live site, the test browser sometimes sat waiting a whole
+  minute for a page that normally arrives in under a second — always a page you have to be signed in
+  to see, always a different one, and never the same one twice. Everything else was fast at that
+  moment. The test now tries the page once more and says out loud that it had to, so the problem
+  cannot hide; nobody has yet found what causes it.
+status: open
+severity: medium
+origin: Story 3.4 Review (2026-09-08) — seven consecutive full harness runs against app.inflozo.com,
+  each losing exactly one navigation out of roughly fifty
+location: tools/probe/run-verify-ghost-admin.py (the counted `page.goto` retry and the `note:` lines) ·
+  the deployed Next.js app on Vercel, every `(authed)` route
+reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sites/connect`, S2c, and the
+  not-found path — at a different point every time, with a 60s navigation timeout and no response
+  headers at all. What was measured healthy in the same window, so that none of it is the cause:
+  PostgREST 0.25s, GoTrue `/auth/v1/settings` 0.2-0.8s and its admin route 0.45s, the transaction
+  pooler `select 1` in 152ms with 19 backends and nothing idle-in-transaction, the edge answering
+  `/sites` ten times in a row at 0.35s with no rate-limit or challenge header, and the machine's DNS
+  stub resolving 150 of 150. Unauthenticated routes never hung; only routes whose render calls GoTrue
+  and Supabase did — but both of those answer fast from outside, so that correlation is a clue and
+  not a diagnosis.
+  THE CONTROL THAT WOULD SETTLE IT CANNOT BE RUN as things stand: the same harness pointed at the
+  PREVIOUS deployment with `--url` dies at the first browser step, because a preview URL cannot carry
+  the magic-link sign-in the fixture uses. So whether this is the deployment, the platform or the
+  network is genuinely OPEN, and no claim is made either way (standing rule: flag, do not guess).
+  What was changed is only what could be justified: one retry after a navigation timeout, `waitUntil`
+  and every timeout otherwise untouched, the count printed with the result and forwarded even on a
+  passing run — a run that rode over a hang says so. A first attempt to fix it by navigating to
+  `commit` instead of `load` was REVERTED when run 6 timed out on `commit` too, which disproved the
+  "streamed `load` never fires" hypothesis it rested on.
+  The story that next has a reason to open Vercel's runtime logs for a hung invocation takes this;
+  giving the harness a way to sign in against an arbitrary deployment URL would also make the missing
+  control runnable, and that is probably the first move.
