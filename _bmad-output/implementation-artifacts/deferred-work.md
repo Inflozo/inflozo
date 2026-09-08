@@ -1060,8 +1060,12 @@ closed: Story 3.1 Dev (2026-09-07) — `supabase/migrations/20260907200000_vault
   is in `SCHEMA.sql` beside the touch trigger. Proved in the RLS gate against `PRELUDE.sql`'s `vault`
   stand-in, on all THREE paths — the site deleted, the account deleted, and the ref replaced by a rotation —
   each ending in `count(*) = 0` for the old secret; controlled by four runs with the trigger commented out,
-  in which each of the three paths fails on its own. Applied to the hosted database by the owner at Deploy,
-  which is when the `rotated` and `secret-gone` steps of `tools/probe/run-verify-ghost-admin.py` can pass.
+  in which each of the three paths fails on its own. **Applied to the hosted database by the owner and
+  verified at Story 3.1 Deploy (2026-09-08)** — the live `pg_get_functiondef` is byte-identical to the
+  migration, `security definer`, `search_path` pinned, EXECUTE `f` for `anon` and `authenticated` — and the
+  `rotated`, `staff-removed` and `secret-gone` steps of `tools/probe/run-verify-ghost-admin.py` **pass on the
+  deployed site against both Ghosts**, with the vault left at 0 rows where the pre-migration run left 8
+  orphans.
 location: SCHEMA.sql:181-190 (`private.site_credentials.admin_key_vault_ref`, `staff_token_vault_ref` —
   `vault.secrets(id)` by comment, no FK) · epics.md Story 3.1 (the server-side admin proxy and Vault credential
   storage — the owner)

@@ -2,7 +2,7 @@
 title: 'Story 3.1 — The server-side Admin proxy and Vault credential storage'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-review'
+status: 'done'
 baseline_commit: '929494bd17cbd0c5444fac2164898f924b3bbee3'
 review_loop_iteration: 1
 owner_test: none
@@ -259,12 +259,12 @@ driven by a Python harness against the real Vault and both Ghost test servers (R
 - [x] `apps/web/app/api/ghost-admin/verify/route.ts` -- the five ops behind the bearer -- the deployed proof
 - [x] `tools/probe/run-verify-ghost-admin.py` + its `doc-audit.py` row + `tools/probe/.env.example` --
       the harness and the env name -- R-82, re-runnable
-- [ ] `tools/probe/.env` (`SUPABASE_DB_POOLER_URL`, derived) + Vercel production (the owner, at Deploy) -- read
-      back by name, never printed -- **half done:** in `tools/probe/.env` and executed from this machine; **absent from Vercel
-      production** (Question 1, unruled at Review)
+- [x] `tools/probe/.env` (`SUPABASE_DB_POOLER_URL`, derived) + Vercel production (the owner) -- read
+      back by name, never printed -- **done:** in `tools/probe/.env` and executed from this machine, and in Vercel
+      production since the owner ruled Question 1 (option 1, 2026-09-08); the deployed function reads it
 - [x] `deferred-work.md` (DW-44 closed at Dev) + `epic-3-context.md` -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result by variable name -- **everything that
-      does not need the Vercel variable ran, twice (Dev and Review); the Vault round trip on the live project waits on it**
+- [x] Run `## Verification` on the real infrastructure and record every command and result by variable name -- ran at Dev,
+      at Review and again at Deploy; **at Deploy every step of the harness passed, the three trigger-dependent ones included**
 
 **Acceptance Criteria:**
 - Given a stored Ghost credential, when any Admin API call is made through `call`, then a JWT is minted for
@@ -473,11 +473,15 @@ full harness runs against that deployment.
 Run on the real infrastructure (R-82). Every key was read into a command's environment by its
 variable NAME and never printed; each is recorded here by that name only.
 
-**Deployment: `dpl_A3nB2fXkWZWFwP9Z63jDnLnmXWTN`** — commit `80fa5cdd`, state **READY**, serving
-`inflozo.com` and `app.inflozo.com`; read via `GET /v6/deployments?target=production` with
-**`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`**. Publishing happens from GitHub Actions (DW-7): the run for
-`80fa5cdd` finished **success** with `rls` **success**, `check` **success**, then `deploy` — so the
-RLS gate and `pnpm check` are green on CI's runner as well as on this machine.
+**Deployment: `dpl_2VbaoUt63r9BwfgY16sMJBYkHcRP`** — commit `c52c3787` (HEAD at Deploy), state
+**READY**, `target: production`, aliases `inflozo.com`, `app.inflozo.com`, `www.inflozo.com`; read via
+`GET /v6/deployments?target=production` and `GET /v13/deployments/{uid}` with **`VERCEL_TOKEN`**,
+**`VERCEL_TEAM_ID`**. Publishing happens from GitHub Actions (DW-7): the CI run for `c52c3787`
+finished **success** with `check` **success**, `rls` **success**, then `deploy` **success** — so the
+RLS gate and `pnpm check` are green on CI's runner as well as on this machine. (The Dev and Review
+runs recorded below ran against the earlier production deployments `dpl_A3nB2fXkWZWFwP9Z63jDnLnmXWTN`
+at `80fa5cdd`, `dpl_AaSWiAY35KeizJu6mAksWXmY2vzT` at `ec51423d` and
+`dpl_4d5b6nfU7zPvEBZ6BMpMjwU5DWdw` at `441131de`; no app code changed after `441131de`.)
 
 ### Review 1, 2026-09-07 — what the review ran, and what it returned
 
@@ -506,10 +510,30 @@ Keys by variable NAME only; nothing printed; nothing changed in Vercel or on the
 | `python3 tools/probe/run-verify-ghost-admin.py` (full, T1 6.58.0 and T3 5.130.6) | **Every step PASS except the five that need the migration, which FAIL exactly as predicted.** Per Ghost: `credential-missing` (500 `credential_missing`, and its `vault_decrypt error {reason: missing}` row found by `audit`) · `store` (ref, `credentials_present.admin` true) · `malformed` (500 `credential_malformed`, no ref) · `config-no-version` 200 with the version · `config-versioned` 200 · `write-denied` ×3 (no item, wrong item, guarded body — each `write_not_allowed`, each audit row without a `status`, so no network call) · `bogus-key` (`{ok: false, status: 401, code: ghost_unknown_key}`) · `audit` (13 rows: 6 `vault_decrypt ok`, 1 `vault_decrypt error`, 2 `admin_read ok`, 1 `admin_read error` at 401, 3 `admin_write denied`; every `detail` a jsonb object; every row stamped `api/ghost-admin/verify`; **no row that looks like a key**). Once: `user-gone` 404 · `no-secret-leak` (34 response bodies, neither key appeared) · users **5 before, 5 after**. **FAIL, expected until Deploy:** `rotated` ×2 (the bogus secret survived the re-store), `staff-removed` ×2 (the secret survived `remove`; `credentials_present.staff` did flip to false), `secret-gone` (both refs still in the vault after the account went) |
 | **DW-44 observed on the live project:** after the cascade, `vault.secrets` held **8** orphans — per Ghost the real key twice, the bogus one, the staff-shaped one — with `site_credentials` at 0 rows | swept through the pooler with **`SUPABASE_DB_POOLER_URL`** after the count and the description shape (`^site <uuid> (admin|staff)$`) were checked: `DELETE 8`, vault rows **0**. The trigger, once applied, is what makes this sweep unnecessary; the harness docstring says so |
 
-**What is still unexecuted, and only this:** the three trigger-dependent steps — `rotated`, `staff-removed`,
+**Closed at Deploy — see the Deploy section below.** As at the end of Review: **what is still unexecuted, and only this:** the three trigger-dependent steps — `rotated`, `staff-removed`,
 `secret-gone` — which pass the moment the owner applies `20260907200000_vault_secret_lifecycle.sql` in the SQL
 editor at Deploy and the harness is re-run. Everything else the story claims has now run on the deployed site
 against both real Ghosts. The story stays **in review** until then; Done is the owner's after Deploy.
+
+### Deploy, 2026-09-08 — the migration on the live database, and the whole harness green
+
+Deploy for this story is two things: the app code (already published by CI on the push) and the one
+schema change. Keys by variable NAME only; no value printed.
+
+| Command | Result |
+|---|---|
+| `GET /v6/deployments?target=production` and `GET /v13/deployments/{uid}` with **`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`** | production is **`dpl_2VbaoUt63r9BwfgY16sMJBYkHcRP`** at **`c52c3787`**, `readyState` **READY**, `target` production, aliases `inflozo.com`, `app.inflozo.com`, `www.inflozo.com`. The `## Verification` header above records it |
+| `GET /repos/Inflozo/inflozo/actions/runs` and the run's jobs with **`GITHUB_TOKEN`** | the CI run for `c52c3787` **success**: `check` success, `rls` success, `deploy` success (DW-7's shape — nothing publishes past a red gate) |
+| the live catalogue read through the pooler with **`SUPABASE_DB_POOLER_URL`** (`docker run … postgres:17-alpine psql`) — `pg_get_triggerdef`, `pg_get_functiondef`, `prosecdef`, `proconfig`, `has_function_privilege` | **the migration is already applied** — the owner ran `20260907200000_vault_secret_lifecycle.sql` in the SQL editor. `site_credentials_drop_vault_secrets` is `BEFORE DELETE OR UPDATE ON private.site_credentials FOR EACH ROW`; `private.drop_vault_secrets()` is `SECURITY DEFINER` with `search_path` pinned to `''` and a body **byte-identical to the migration's**; `has_function_privilege` for `authenticated` and `anon` is **f** for both. This session therefore **verified rather than re-applied**, so nothing was written to production DDL from here. (There is no `supabase_migrations.schema_migrations` table on this project — it does not exist, executed — so applied-ness is read from the catalogue, which is the stronger read anyway) |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, and the five DW-44 notices among the passes: the trigger function is `security definer` with a pinned `search_path`; a rotation deletes the replaced secret **and only that one**; nulling a ref deletes its secret **under a role that may not touch the vault itself**; deleting a site takes both of its secrets; deleting an account takes its sites' secrets |
+| `python3 tools/probe/run-verify-ghost-admin.py` (full, against `https://inflozo.com`, T1 6.58.0 and T3 5.130.6) | **exit 0 — `RESULT: all steps passed`.** Every step of Review's run passes again, and **the three that were failing by prediction now pass**: `rotated` (T1 and T3 — the bogus ref gone, the new one there), `staff-removed` (T1 and T3 — the staff secret gone from the vault, `credentials_present.staff` false), `secret-gone` (`{"T1": false, "T3": false}` — both refs gone from the vault after the throwaway account was deleted). Also `grants` `{"who": "postgres", "may_delete": true}`; `vault-off-rest` 404 ×3 with `/rest/v1/sites` 200; `audit` 13 rows per Ghost with **0 rows that look like a key**; `no-secret-leak` over 34 response bodies; users **5 before, 5 after** |
+| the vault swept for orphans after the run, with **`SUPABASE_DB_POOLER_URL`** | **nothing to sweep.** `vault.secrets` **0**, `private.site_credentials` **0**, `public.sites` **0**, `auth.users` **5** — where the same run at Review left **8** orphans that had to be deleted by hand. That difference *is* DW-44's trigger working on the live database |
+
+**So the story's last three unexecuted steps are executed, and DW-44 is closed on the real project as
+well as in the gate.** No app code and no SQL changed at Deploy; the only edits in this commit are this
+record, the two task boxes, `deferred-work.md`'s DW-44 note and `sprint-status.yaml`. The story carries
+`owner_test: none` — it has no screen — so it goes to **done** on this commit, per the loop's rule for a
+story with nothing for the owner to look at.
 
 ### What ran on this machine, and what it returned
 
