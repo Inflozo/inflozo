@@ -138,13 +138,24 @@ list gone stale — the sibling harness's own note):
   plan-question  `plan_ask` seeded true, the ONLY question FR-C8 allows, answered "No — themes are
                  restricted": `capability` `preview_only` with source `user_declared`, `plan_ask`
                  cleared
+  notices-js-off  EVERY control this story adds is a `<form action={serverAction}>`, asserted where
+                 all of them are on screen at once — Got it, both answers of each question, B15's
+                 Re-check plan, and the second card's own notice: `method=post`, an `action`
+                 attribute, React's encoded `$ACTION_*` hidden fields, one hidden site_id and one
+                 submit each. The same wiring `js-off` asserts for the keys form; the shell's own
+                 no-JS paint is DW-56
   axe-notices    axe-core over `/sites` with EVERY block on screen at once — the code-injection
                  notice, both questions and B15 — at 1440 and 390
   preview-notice  B15 (`B Missing Surfaces.dc.html:1188-1225`) on the deployed card: its sky panel
                  and cause sentence, "What clears this" with both routes out (Publisher or higher,
                  and self-hosted), and Export theme zip / Ship it ABSENT because neither path
-                 exists in any epic (UX-DR3). The chip sits on the card's STATE line beside
-                 "Connected" at 1440, 834 and 390 — DW-57, read off the rendered boxes. Then
+                 exists in any epic (UX-DR3, DW-60). The chip is on the card's STATE line at 1440,
+                 834 and 390 — below the metadata pills, above "Checked …" — and BESIDE
+                 "Connected" wherever the card can hold both, which at 834 it cannot: the shell's
+                 220px sidebar and the three-column grid leave about 139px, against 78 for
+                 "Connected" and 109 for the chip, and the two metadata pills already stack there
+                 for the same reason. Read off the rendered boxes at each width, because that is
+                 what the owner looks at (DW-57; spec Question 2 puts the 834 wrap to him). Then
                  **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
                  back to `full`/`probe`
   audit          `private.credential_audit` read through the pooler: one `admin_read ok` for
@@ -518,6 +529,23 @@ const shoot = async (page, name) => {
   })
   const sent = async (fn) => { const before = posts; await fn(); return posts - before }
 
+  /* WAIT FOR THE DATABASE, NEVER FOR THE DOM TO BLINK. A `<form action={serverAction}>` button's
+     click resolves the moment the POST leaves, and React detaches and re-renders the row while the
+     action is still running — so a `waitFor({ state: 'hidden' })` can resolve on the re-render
+     rather than on the write. Run 2 of Story 3.3's Dev harness caught exactly that: "Got it" had
+     visibly gone from the card while `code_injection_notice_shown_at` was still null, and the next
+     step's navigation was racing the same POST. Every one of the four answer actions below waits
+     on the row it wrote. */
+  const until = async (read, deadline = 20000) => {
+    const stop = Date.now() + deadline
+    for (;;) {
+      const value = await read()
+      if (value) return value
+      if (Date.now() > stop) return null
+      await page.waitForTimeout(300)
+    }
+  }
+
   const [T1, T3] = GHOSTS
   const short = (v) => v.split('.').slice(0, 2).join('.')
   let t1SiteId = null
@@ -849,8 +877,10 @@ const shoot = async (page, name) => {
     // "Got it" is on screen once: it is the only block showing at this point (portal read cleanly,
     // no plan_ask, capability full), so the button's own name is the whole locator.
     await page.getByRole('button', { name: SAY.injection_dismiss }).first().click()
-    await page.getByText(SAY.injection_body).waitFor({ state: 'hidden' }).catch(() => {})
-    const stampedRow = (await rowsOf('id,code_injection_notice_shown_at')).find((r) => r.id === t1SiteId) || {}
+    const stampedAt = await until(async () =>
+      ((await rowsOf('id,code_injection_notice_shown_at')).find((r) => r.id === t1SiteId) || {})
+        .code_injection_notice_shown_at)
+    const stampedRow = { code_injection_notice_shown_at: stampedAt }
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
     const backAfterReload = await page.getByText(SAY.injection_body).isVisible().catch(() => false)
@@ -1054,8 +1084,10 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.getByText(SAY.portal_body).waitFor()
     await page.getByRole('button', { name: SAY.portal_yes }).first().click()
-    await page.getByText(SAY.portal_body).waitFor({ state: 'hidden' }).catch(() => {})
-    const portalAnswered = (await settingsOfT1()).site_settings || {}
+    const portalAnswered = (await until(async () => {
+      const settings = (await settingsOfT1()).site_settings || {}
+      return settings.portal_button_source === 'declared' ? settings : null
+    })) || {}
     step('portal-question',
       seedPortal.status === 200 && portalAnswered.portal_button === true
       && portalAnswered.portal_button_source === 'declared',
@@ -1070,8 +1102,10 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.getByText(SAY.plan_body).waitFor()
     await page.getByRole('button', { name: SAY.plan_preview }).first().click()
-    await page.getByText(SAY.plan_body).waitFor({ state: 'hidden' }).catch(() => {})
-    const planned = await settingsOfT1()
+    const planned = (await until(async () => {
+      const row = await settingsOfT1()
+      return row.capability_source === 'user_declared' ? row : null
+    })) || {}
     step('plan-question',
       seedPlan.status === 200 && planned.capability === 'preview_only'
       && planned.capability_source === 'user_declared' && (planned.site_settings || {}).plan_ask === undefined,
@@ -1085,6 +1119,32 @@ const shoot = async (page, name) => {
     await patch(`/sites?id=eq.${t1SiteId}`, { code_injection_notice_shown_at: null })
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.getByText(SAY.preview_title).waitFor()
+
+    // ── EVERY CONTROL THIS STORY ADDS IS A FORM, and this is that assertion made where all of them
+    //    are on screen at once: the code-injection notice's Got it, both answers of each question,
+    //    and B15's Re-check plan — plus the second card's own notice. Same shape `js-off` asserts
+    //    for the keys form: `method=post`, an `action` attribute that posts to the page, and the
+    //    encoded `$ACTION_*` hidden fields a scripts-off POST carries to reach the server action.
+    //    None of these is a client component and none of them holds state; the shell's own no-JS
+    //    paint is DW-56 and not this story's.
+    const NOTICE_FORM = 'article form:has(input[name="site_id"])'
+    const noticeForms = await page.locator(NOTICE_FORM).evaluateAll((forms) =>
+      forms.map((f) => ({
+        method: (f.getAttribute('method') || '').toLowerCase(),
+        action: f.getAttribute('action') !== null,
+        encoded: [...f.querySelectorAll('input[type="hidden"]')].some((i) => i.name.startsWith('$ACTION')),
+        site: [...f.querySelectorAll('input[name="site_id"]')].length,
+        submits: f.querySelectorAll('button[type="submit"]').length,
+      })))
+    const wired = noticeForms.filter((f) => f.method === 'post' && f.action && f.encoded
+                                            && f.site === 1 && f.submits === 1)
+    step('notices-js-off',
+      noticeForms.length >= 6 && wired.length === noticeForms.length,
+      `${noticeForms.length} notice control(s) on the two cards — Got it, both answers of each question and ` +
+      `Re-check plan — and ${wired.length} of them are progressively-enhanced server actions: method=post, an ` +
+      `action attribute, React's encoded $ACTION_* hidden fields, exactly one hidden site_id and one submit ` +
+      `each. No client component, no state (the shell's own no-JS paint is DW-56).`)
+
     await axeAt(page, 'notices')
 
     // ── B15, THE PREVIEW-ONLY NOTICE (`B Missing Surfaces.dc.html:1188-1225`), on the deployed
@@ -1096,35 +1156,56 @@ const shoot = async (page, name) => {
     await page.getByText(SAY.preview_title).waitFor()
     const t1Card = page.locator('article', { hasText: SAY.preview_title }).first()
     const widths = []
+    let placed = true
     for (const width of [1440, 834, 390]) {
       await page.setViewportSize({ width, height: 1200 })
       const chipBox = await boxOf(t1Card.getByText(SAY.preview_chip, { exact: true }))
       const stateBox = await boxOf(t1Card.getByText('Connected', { exact: true }))
       const pillBox = await boxOf(t1Card.getByText(`Ghost ${short(T1.version)}`))
-      // DW-57: the chip is on the STATE line beside "Connected", NOT on the pills' line. Read off
-      // the rendered boxes, because that is what the owner looked at.
-      widths.push(`${width}: chip y ${Math.round(chipBox.y)} vs Connected ${Math.round(stateBox.y)} vs ` +
-                  `pills ${Math.round(pillBox.y)}`)
-      if (Math.abs(chipBox.y - stateBox.y) > 6 || chipBox.y <= pillBox.y) widths.push(`${width}: OFF THE STATE LINE`)
+      const checkBox = await boxOf(t1Card.getByText('Checked', { exact: false }).first())
+      const inner = Math.round((await boxOf(t1Card)).width - 36)
+      // DW-57 IS THE RULE AND THIS IS IT: the chip is on the STATE line — below the metadata
+      // pills, never on them, and above the "Checked …" timestamp the state line ends with.
+      const onStateLine = chipBox.y > pillBox.y && chipBox.y <= checkBox.y
+      // BESIDE "Connected" WHEREVER THE CARD CAN HOLD BOTH, and it cannot at 834: the shell's
+      // 220px sidebar plus the three-column grid leave the card about 139px of content, and
+      // "Connected" and the chip measure 78 and 109 (measured with the app's own fonts,
+      // 2026-09-08). The two metadata PILLS already stack there for the same reason, which is
+      // the layout the owner tested and accepted at 3.2 — so the chip wraps with them rather
+      // than the story quietly re-flowing his card. Question 2 in the spec puts it to him.
+      const beside = Math.abs(chipBox.y - stateBox.y) <= 6
+      const fits = inner >= 195
+      widths.push(`${width}: card ${inner}px, chip y ${Math.round(chipBox.y)} · Connected ` +
+                  `${Math.round(stateBox.y)} · pills ${Math.round(pillBox.y)} · Checked ` +
+                  `${Math.round(checkBox.y)} — on the state line = ${onStateLine}, beside Connected = ${beside}` +
+                  `${fits ? '' : ' (the card is too narrow for both, as it is for the two pills)'}`)
+      if (!onStateLine || (fits && !beside)) placed = false
     }
     await page.setViewportSize({ width: 1440, height: 900 })
     await shoot(page, 'b15')
+    // `innerText` is the RENDERED text, so the frame's uppercase "What clears this" comes back
+    // upper-cased by CSS rather than by the copy — matched case-insensitively for that reason
+    // (run 3 of the Dev harness failed on exactly this, and it was the harness, not the product).
     const b15 = await t1Card.innerText()
-    const clears = SAY.preview_clears.every((line) => b15.includes(line))
+    const said = (text) => b15.toLowerCase().includes(text.toLowerCase())
+    const clears = SAY.preview_clears.every((line) => said(line))
     const absent = !/Export theme zip|Ship it/i.test(b15)
     // Re-check plan: the same probe, re-run, on a site that is really self-hosted.
     await page.getByRole('button', { name: SAY.preview_recheck }).first().click()
-    await page.getByText(SAY.preview_title).waitFor({ state: 'hidden' }).catch(() => {})
-    const cleared = await settingsOfT1()
+    const cleared = (await until(async () => {
+      const row = await settingsOfT1()
+      return row.capability === 'full' ? row : null
+    })) || {}
     step('preview-notice',
-      !widths.some((w) => w.includes('OFF THE STATE LINE')) && b15.includes(SAY.preview_title)
-      && b15.includes(SAY.preview_clears_title) && clears && absent
+      placed && said(SAY.preview_title) && said(SAY.preview_clears_title) && clears && absent
       && cleared.capability === 'full' && cleared.capability_source === 'probe',
-      `B15 on the deployed card: the sky panel's own sentence, ${JSON.stringify(SAY.preview_clears_title)} with ` +
+      `B15 on the deployed card: the sky panel's own cause sentence = ${said(SAY.preview_title)}, ` +
+      `${JSON.stringify(SAY.preview_clears_title)} with ` +
       `both routes out present = ${clears} (Publisher or higher, and self-hosted), and Export theme zip / ` +
-      `Ship it ABSENT = ${absent} (UX-DR3 — neither path exists until E11 and E7). The chip sat on the STATE ` +
-      `line beside Connected at every width — ${widths.join(' · ')}. Then Re-check plan re-ran the probe and ` +
-      `a self-hosted Ghost cleared itself: capability ${cleared.capability}, source ${cleared.capability_source}`)
+      `Ship it ABSENT = ${absent} (UX-DR3 — neither path exists until E11 and E7). The chip was on the STATE ` +
+      `line at every width, and beside Connected wherever the card could hold both — ${widths.join(' | ')}. ` +
+      `Then Re-check plan re-ran the probe and a self-hosted Ghost cleared itself: capability ` +
+      `${cleared.capability}, source ${cleared.capability_source}`)
 
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')

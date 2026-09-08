@@ -219,7 +219,7 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
       R-82, re-runnable
 - [x] `MEASUREMENTS.md` §39 + `deferred-work.md` (DW-54, DW-57, the new B15 entry) +
       `epic-3-context.md` -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result by
+- [x] Run `## Verification` on the real infrastructure and record every command and result by
       variable name, no value printed
 
 **Acceptance Criteria:**
@@ -323,6 +323,39 @@ found, every time, including on failure. It is the first sanctioned write to a t
 project: it is the harness's own, never the product's — `ADMIN_WRITES` is untouched and
 `permitted()` still denies every non-GET the app could make.
 
+### Question 2 — on a tablet, the blue "Preview-only" tag drops onto its own line. Leave it, or make the cards wider there?
+
+On a laptop and on a phone, the blue **Preview-only** tag sits right next to the green **Connected**
+on the site's card, which is where you asked for the connection's state to live. On a **tablet held
+sideways** (around 834 pixels wide) it drops onto a line of its own, just underneath Connected.
+
+The reason is width, not a mistake. At that size the page shows the left menu (220px) *and* three
+cards side by side, so each card is only about 139 pixels wide inside. "Connected" needs 78 and the
+tag needs 109 — 187 in a 139-pixel card. The two grey tags you already have there (**Ghost 6.58**
+and **0 projects**) stack for exactly the same reason today, and have since you tested Story 3.2.
+
+**Example:** on an iPad in landscape, one card reads
+
+    Ghost 6.58
+    0 projects
+    ● Connected
+    ◦ Preview-only
+    Checked just now
+
+instead of `● Connected  ◦ Preview-only` on one line.
+
+1. **Leave it — the tag wraps on a tablet and nowhere else (RECOMMENDED).** Nothing changes. It is
+   still on the state line, under the grey tags and above "Checked …", and it reads fine. This is
+   also how your grey tags already behave at that width.
+2. **Show two cards side by side on a tablet instead of three.** Each card gets about 250 pixels, so
+   everything fits on one line at every size. It changes the Sites page you already approved, and
+   every future card (3.5's ⋯ menu, 3.7's health badge) gets more room too.
+3. **Make the tag smaller on tablets only** — a shorter word or a tighter pill. It would fit, but
+   the same tag would look different on different devices, which usually reads as a bug.
+
+*Nothing waits on this answer.* The build went ahead with option 1, and the automatic test records
+the measured width at each size so switching to option 2 later is one line and one re-run.
+
 ## Owner's manual test
 
 On the live site after the Deploy run. You will change one setting on one of your Ghost test servers
@@ -390,3 +423,107 @@ variable; no value is printed.
   `vault_decrypt` row and two `admin_read` rows per probe, `detail` carrying no secret
 - The real services this story touched, named in the Dev record: the live Supabase project, the
   deployed Vercel production build on `app.inflozo.com`, and Ghost T1 (6.58.0) and T3 (5.130.6)
+
+### Dev record — 2026-09-08, on the real infrastructure (R-82)
+
+Node 24 on `PATH`. Every key read by variable name from `tools/probe/.env`; **no value printed,
+committed or logged**.
+
+**The real services this story hit, and what each returned.**
+
+| Service | Reached as | What it answered |
+|---|---|---|
+| **Ghost T1** `ghost6.inflozo.com` 6.58.0 | `GHOST6_ADMIN_API_KEY` (integration), `GHOST6_STAFF_ACCESS_TOKEN` (harness only) | `GET /admin/config/` 200, no `hostSettings`, `version 6.58.0`. `GET /admin/settings/` 200, `{meta, settings:[{key,value}]}`, 117 rows, all six probe keys present. `PUT /admin/settings/` **403 NoPermissionError** on the integration key, 200 on the staff token. |
+| **Ghost T3** `ghost5.inflozo.com` 5.130.6 | `GHOST5_ADMIN_API_KEY`, `GHOST5_STAFF_ACCESS_TOKEN` | the same, with 99 settings rows and `PUT /admin/settings/` **501 NotImplementedError** on the integration key. |
+| **Supabase** (live project) | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (PostgREST), `SUPABASE_DB_POOLER_URL` (read-only) | §21j re-executed: `decrypted_secrets`, `secrets`, `site_credentials` → **404**, `/rest/v1/sites` → **200**. The pooler read `private.credential_audit` (25 rows for the fixture), `private.site_credentials` and `vault.secrets`. |
+| **Vercel** production | `app.inflozo.com` | CI run `34198786021` — `check` success, `rls` success, `deploy` success. Every UI step below ran against that deployment, not a preview. |
+| **Resend · Dodo** | — | **not touched.** This story sends no email and takes no payment; naming them would be a claim with nothing behind it. |
+
+**Commands and results.**
+
+- `pnpm check` (`eslint .` · `tsc --noEmit` · `node --test '*.test.ts'`) — **exit 0**, 212 tests in
+  `apps/web` plus 3 in the packages, including `probe-rule` (10 tests) and the two `server-wiring`
+  importer lists.
+- `node --test probe-rule.test.ts` — **10/10**, every matrix row that is a parsing question,
+  including the **synthesised, unobserved** Ghost(Pro) Starter payload and the flag-off branch.
+- `pnpm build` (`next build`) — **exit 0**; `ƒ /app/sites` still dynamic, inside the guard.
+- `python3 tools/doc-audit.py --check` (twice) — **PASS, 0 warnings**, no new catalogue row.
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, schema unchanged (this story adds no migration);
+  DW-44's five trigger assertions still green.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **all steps passed**.
+- `python3 tools/probe/run-verify-ghost-admin.py` — **`RESULT: all steps passed`** against the
+  deployed `app.inflozo.com`, T1 and T3: every step its docstring names, in order, and not one FAIL
+  line in the transcript. axe-core reports **zero violations at WCAG 2.1 AA at 1440 and 390** on all
+  six surfaces, `axe-notices` included. The fixture user count returned to where it started (5 → 5)
+  and both vault secrets were gone after the cascade.
+
+**What the new steps proved, in their own words.**
+
+- `settings-keys` — the **integration** key answers all six keys on both majors. §15h item 21 had
+  measured the announcement three with a staff token; this was the hypothesis the story had to
+  execute, and it held (§39).
+- `decrypt-path` — **2 `vault_decrypt` rows, both ok, and 3 `admin_read` ok rows carrying the site
+  id** after one connect: `site/` from the connect action plus `config/` and `settings/` from the
+  probe on the **stored** key. Before this story nothing in the product decrypted at all. **DW-54's
+  third gap is closed.**
+- `probe-selfhosted` — `capability full` / `capability_source probe`; `site_settings.code_injection
+  true`, `portal_button false` with source `probe` (Ghost answers a real boolean, so no question),
+  `announcement.visibility "[\"visitors\"]"` stored as the JSON **string** Ghost sends, and Story
+  3.2's `public_url` still beside them.
+- `no-payload-leak` — the `sites` rows name `codeinjection` **false**, hold the marker **false**; the
+  rendered `/sites` HTML holds it **false**; none of the 275 response bodies held it.
+- `injection-notice` — the sky notice was on the card, **Got it** stamped
+  `code_injection_notice_shown_at`, and after a full reload it did not return.
+- `re-adopt` — the re-probe wrote `code_injection true` again and **the dismissed notice still did
+  not return**: that is the "not after a re-probe" half of the acceptance criterion, proved where the
+  re-probe actually happens.
+- `portal-question` / `plan-question` — each seeded on the fixture's own row through the service
+  role, driven on the deployed card, answered, and read back: `portal_button true` / source
+  `declared`, and `capability preview_only` / source `user_declared` with `plan_ask` cleared. Neither
+  answer ever writes `probe`.
+- `preview-notice` — B15's cause sentence, **What clears this** with both routes out (Publisher or
+  higher; self-hosted), and **Export theme zip / Ship it absent** (UX-DR3, DW-60). Measured card
+  widths and chip placement: **1440 — card 341px, chip beside Connected; 834 — card 139px, chip on
+  the state line but wrapped below Connected; 390 — card 314px, beside Connected.** Then **Re-check
+  plan** re-ran the probe and the self-hosted Ghost cleared itself: `capability full`, source
+  `probe` — the matrix's "Re-check plan" row, live.
+- `notices-js-off` — **7 controls, 7 progressively-enhanced server actions**: Got it, both answers
+  of each question, B15's Re-check plan and the second card's own notice, each `method=post` with an
+  `action` attribute, React's encoded `$ACTION_*` hidden fields, one hidden `site_id` and one submit.
+  No client component and no state anywhere in `site-notices.tsx`.
+- `audit` — 25 rows: 3 `admin_read ok` with a null `site_id`, **11** with one (3 `site/` + 8 probe
+  reads over 3 connects and one Re-check), **8 `vault_decrypt` rows all ok**, the bogus key at 401
+  and the plain-http attempt at 301, every row stamped `sites/connect`, and **0 rows that look like
+  they hold a key**.
+- `injection-live` — **the owner's ruling executed on both servers.** T1: found `null`, the
+  integration key then saw `<!-- inflozo probe -->`, restored to `null`. T3: identical. Written with
+  `GHOST6_STAFF_ACCESS_TOKEN` / `GHOST5_STAFF_ACCESS_TOKEN`, restored in a `finally`.
+
+**Three things this Dev run found, and where each went.**
+
+1. **The `PUT /admin/settings/` refusal.** The integration key — the only credential the product
+   holds — cannot write settings (403 on Ghost 6, 501 on Ghost 5, the same major split as
+   `GET /admin/themes/`). So `injection-live` signs its one sanctioned write with the **harness's
+   own** staff token. The product's allowlist is untouched and `permitted()` still denies every
+   non-GET. Recorded as §39(d).
+2. **Ghost normalises an empty code-injection box to `null`** and will not answer `""` again once
+   anything has been written. The restore is therefore asserted on the box's *content* — the same
+   string, or both empty — which is also the only distinction the product can make (`injectionFlag`
+   treats `""`, `null` and absent alike). Recorded as §39(e).
+3. **The chip wraps at 834 and cannot not.** The shell's 220px sidebar plus the three-column grid
+   leave the card 139px; "Connected" is 78 and the chip 109. The two metadata pills already stack
+   there, and have since the owner tested 3.2. The chip stays on the **state line** at every width —
+   DW-57's actual rule — and the harness asserts *that*, recording the measured width and reporting
+   "beside Connected" separately. **Question 2** puts the choice to the owner; nothing waits on it.
+
+**Two harness bugs this run caught, both fixed, neither the product's.** A `waitFor({state:
+'hidden'})` resolved on React's re-render while the server action's POST was still in flight — every
+answer step now waits on the row it wrote (`until`). And `innerText` returns *rendered* text, so the
+CSS-uppercased "What clears this" never matched the copy — matched case-insensitively now. Both are
+the sibling harness's own lesson: a step that fails is the harness until proved otherwise.
+
+**What could not be executed, and why.** No Ghost(Pro) site exists (⛔ §4 T4, deferred to the launch
+gate), so `capabilityOf`'s Preview-only branch runs against a **synthesised** payload in a unit test
+that says so in its own name, and B15 is driven on a **seeded** row. No Ghost hides `portal_button`
+— both test servers answer a real boolean — so the Portal question is likewise a unit contract plus
+a seeded live step. Both are stated in the owner's manual test rather than glossed.
