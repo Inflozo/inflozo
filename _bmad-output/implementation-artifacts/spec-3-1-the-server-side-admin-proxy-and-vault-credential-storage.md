@@ -462,6 +462,10 @@ That is the same five clicks as `CRON_SECRET`.
 3. **Give me a Vercel token that the sandbox will let me use.** Fastest in future stories, but it
    hands an automated session the ability to change production settings, which I do not recommend.
 
+**Ruled: option 1 (owner, 2026-09-08).** The owner added `SUPABASE_DB_POOLER_URL` to Vercel production by hand; read back
+by name (target `production`, type `sensitive`). This commit re-publishes so the live function reads it, and the
+full harness runs against that deployment.
+
 ---
 
 ## Verification
