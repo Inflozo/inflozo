@@ -134,7 +134,7 @@ export type Brand = {
 /**
  * A colour Inflozo may paint with: `#rgb` or `#rrggbb` and nothing else. Exported because
  * `style-pack.ts` re-validates the accent it reads back out of `projects.style_pack` — that
- * column is one the USER'S OWN SESSION may write (schema :1201), so a value that was validated
+ * column is one the USER'S OWN SESSION may write (schema :1202, the `grant`), so a value validated
  * on the way in is not thereby validated on the way out, and one rule in one place is the only
  * version of this that cannot drift.
  */
@@ -261,6 +261,14 @@ export const BRAND_COPY = {
   whichProject: 'Which project?',
   /** The card for the project this site's brand is already on, so the chooser says which is which. */
   thisSite: 'This site’s project',
+  /* AND THE MARKER FOR A CARD BOUND TO A DIFFERENT SITE. The chooser lists every project, so a
+     project already linked to ANOTHER connected site is on it, and picking it paints this site's
+     brand onto that one. That is allowed and deliberate — `linked_site_id` is never touched, so
+     the binding does not move (FR-B5) — but it was unlabelled, and a card that says nothing while
+     the card beside it says "This site's project" reads as unbound. Two review layers met it
+     independently (review 3, 2026-09-08). It is the same marker in the same slot, so no second
+     vocabulary: R-74 is satisfied by the frame's own idiom, not by a new one. */
+  otherSite: 'Another site’s project',
   /** The matrix's "insert fails → the page says so", in the voice `COULD_NOT` already speaks. */
   failed: 'We couldn’t save that just now. Try again in a moment.',
 } as const

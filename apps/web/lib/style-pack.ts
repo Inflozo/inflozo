@@ -30,7 +30,11 @@ import { isAccent } from './probe-rule.ts'
  * `brand` is TYPED `unknown` ON PURPOSE and validated where it is read. A stricter shape here
  * would make a `brand` of the wrong type fail the WHOLE parse, and a pack that failed to parse
  * loses its preset — so a junk brand would repaint the card in Paper rather than merely be
- * ignored. `style_pack` is a column the user's own session may write (schema :1201).
+ * ignored. `style_pack` is a column the user's own session may write (schema :1202, the `grant`).
+ *
+ * THE SAME ARGUMENT RUNS THE OTHER WAY AND `placeholderFor` NOW HONOURS IT: `preset` is required,
+ * so a pack with no preset fails the parse, and reading `brand` out of that parse threw a perfectly
+ * good accent away with it. It is read off the raw value instead (review 3, 2026-09-08).
  */
 export const stylePackSchema = z.object({ preset: z.string(), brand: z.unknown().optional() }).loose()
 
@@ -79,7 +83,18 @@ export function placeholderFor(stylePack: unknown): Preset {
   // `style`, and the same session that may write this jsonb could write a CSS injection into it.
   // The preset object is returned UNCHANGED when there is no accent to apply, so a card with no
   // brand is still the very same `Preset` the tests compare by identity.
-  const brand = (parsed.success ? parsed.data.brand : null) as { accent?: unknown } | null | undefined
+  // READ OFF THE RAW COLUMN, NOT OFF `parsed.data`. `preset` is REQUIRED by the schema, so a pack
+  // that lost it failed the WHOLE parse and TOOK THE BRAND WITH IT — the card reverted to Paper
+  // with nothing failing, and `useBrand`'s merge (`{ ...pack, brand }` over whatever the column
+  // held) is a path that can produce exactly that pack. `brand` is `z.unknown()` in the schema and
+  // is re-validated by `isAccent` on the next line either way, so the parse was never what made it
+  // safe — it was only what could throw it away. Three review layers and the Review 2 record's own
+  // `placeholderFor({brand:{accent}})` line, which did not reproduce, all met this one
+  // (review 3, 2026-09-08). The optional chain covers a column holding null, a string or an array.
+  const brand = (stylePack as { brand?: unknown } | null | undefined)?.brand as
+    | { accent?: unknown }
+    | null
+    | undefined
   const accent = brand?.accent
   return isAccent(accent) ? { ...base, accent } : base
 }

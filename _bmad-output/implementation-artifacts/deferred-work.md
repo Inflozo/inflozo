@@ -1683,3 +1683,72 @@ reason: The idempotence the story ships is real and is proved on the live site (
   button most customers press once, which is why it is `low` and not `medium`; the story that next
   writes a migration on `projects` should take it, and E6 is the obvious candidate since it owns the
   column beside it.
+
+### DW-70: S2c's project chooser is a surface with no frame, and it was never drawn back into the export
+
+plain: When you have more than one project, the "Use your brand" screen now shows a card for each
+  one, with a little picture of it. Nobody has drawn that screen in the design tool — it was built
+  by copying the pieces from two screens that ARE drawn. Umang's own rule says a screen with no
+  drawing gets drawn in the same design project, so it is a picture that is owed, not a decision.
+status: open
+severity: low
+origin: Story 3.4 Review 3 (2026-09-08) — raised by the blind-hunter layer
+location: apps/web/app/(app)/app/(authed)/sites/brand/page.tsx (the `choosing` fieldset) ·
+  _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/S2 Onboarding.dc.html:150-196
+reason: R-74 (owner, 2026-09-02) says a surface with no frame is extrapolated from the nearest one
+  that has — same components, same tokens — AND "drawn in the same Claude Design project". The
+  first half was done and is recorded beside the code: `radio-card.tsx`'s coral border and tint
+  (Editor Sidebar Kit `:117`) and `design-picker.tsx`'s 64x44 wireframe tile (`:71`), no second
+  vocabulary invented. The second half was not, and nothing tracked it, which is what makes it a
+  finding rather than a choice. Two states are undrawn: the chooser itself, and the chooser at
+  scale — Pro allows 25 projects, so the fieldset can render 25 stacked cards in a column with no
+  scroll container and no ordering affordance beyond `updated_at desc, id desc`. Every live proof
+  (`brand-picker`, `brand-picker-js-off`, `axe-brand-picker`, `brand-atcap-picker`) runs with
+  exactly two cards, so the 25-card state has never been looked at by a human or a tool. The story
+  that next opens the export for Epic 3 should draw both; a scroll bound on the fieldset is a
+  one-line change once the frame says what the bound is. Not blocking: the owner's manual test
+  reaches the two-card state, which is the state a customer reaches.
+
+### DW-71: three brand keys are stored for no reader, and no epic has claimed them
+
+plain: When Inflozo reads your brand off your Ghost site it keeps seven things. Only three are used
+  today — your colour, your logo and your menu. The other four (your site icon, your cover picture,
+  your title and your description) are saved and nothing reads them. That is fine if some later part
+  of the product wants them, but nothing has said which part, so they could sit there for ever.
+status: open
+severity: low
+origin: Story 3.4 Review 3 (2026-09-08) — raised by the blind-hunter layer
+location: apps/web/lib/probe-rule.ts (`brandOf`) · apps/web/lib/style-pack.ts (the `brand` key) ·
+  _bmad-output/implementation-artifacts/deferred-work.md DW-66
+reason: `brandOf` stores `accent`, `logo`, `icon`, `cover`, `nav`, `title` and `description` on
+  `sites.site_settings.brand`, and `useBrand` copies the whole record into `projects.style_pack.brand`.
+  `placeholderFor` reads `accent`; S2c draws `accent`, `logo` and `nav`; `title` names the created
+  project. `icon`, `cover` and `description` have no reader anywhere and DW-66's deferred half — the
+  announcement seed and the A2 placement — needs none of them. `style-pack.ts`'s header says "every
+  other field is stored for the epic that uses it" and names no epic, which is the gap: a stored
+  value with no claimant is how a column quietly becomes undeletable. It is cheap either way — E6
+  owns the column and may well want `cover` for a hero and `icon` for a favicon — so the ask is a
+  decision recorded, not a deletion: the story that first reads any of the three should say so here,
+  and the story that reaches E6's Style Pack editor should either claim them or drop them from the
+  reader. `hasBrand` narrows to `Brand` while validating only `nav` and one of accent/logo/nav, so
+  the same three are the ones its predicate does not actually check — worth closing in the same pass.
+
+### DW-72: two connected sites with the same Ghost title make two projects with the same name
+
+plain: If you connect two Ghost sites that happen to have the same name — say both are called "Blog"
+  — and press "Use your brand" on each, you get two projects both called "Blog". Their web addresses
+  differ, so nothing breaks, but your dashboard shows two cards you cannot tell apart.
+status: open
+severity: low
+origin: Story 3.4 Review 3 (2026-09-08) — raised by the blind-hunter layer
+location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`useBrand`, the create branch) ·
+  apps/web/lib/projects.ts (`copyName`, `nextUntitled`, `uniqueSlug`)
+reason: The create branch dedupes the SLUG (`uniqueSlug(slugify(name), taken)`) and not the NAME, so
+  two sites titled the same give two identically named projects with distinct slugs. `lib/projects.ts`
+  already carries the taken-names idiom for exactly this — `copyName(name, taken)` appends the
+  suffix `nextUntitled` uses — and the fix is to route the name through it, which is one line. It is
+  deferred rather than patched because "Take my brand" is not a copy and `copyName`'s wording ("Copy
+  of X") is wrong for it: the right suffix is the plain numeric one, and choosing the sentence a
+  customer reads on their own dashboard is a naming decision the owner should see rather than one a
+  review invents. Not reachable on Free (one project), so it waits for the story that next touches
+  project naming.

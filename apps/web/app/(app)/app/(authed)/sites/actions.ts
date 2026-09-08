@@ -646,13 +646,17 @@ export async function useBrand(formData: FormData): Promise<void> {
     // at a different site would move a binding the customer was never asked about. The pack is
     // merged rather than replaced, so a preset E6 has since written survives.
     // NOT `?? defaultStylePack()`: `projects.style_pack` is in the caller's own UPDATE grant
-    // (schema `:1202`), so a pack that is not an object is a thing the column can hold — and
+    // (schema `:1202`, the `grant`), so a pack that is not an object is a thing the column can
     // spreading a string yields its characters, indexed, which is not a pack any more.
+    // `defaultStylePack()` UNDERNEATH, not merely as the fallback: an object with no `preset` is
+    // also a thing this column can hold, and `{ ...pack, brand }` over one wrote a pack that
+    // `stylePackSchema` cannot parse — which used to cost the card the accent as well as the
+    // preset (review 3, 2026-09-08; `placeholderFor` no longer loses the brand, and this keeps the
+    // stored row valid rather than only the render). A preset the pack really carries still wins,
+    // so a pack E6 has since written survives untouched.
     const prev = picked.style_pack
-    const pack = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : defaultStylePack()) as Record<
-      string,
-      unknown
-    >
+    const held = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : {}) as Record<string, unknown>
+    const pack = { ...defaultStylePack(), ...held }
     const { data, error } = await supabase
       .from('projects')
       .update({ style_pack: { ...pack, brand } })

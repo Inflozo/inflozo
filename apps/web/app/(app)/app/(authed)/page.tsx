@@ -64,8 +64,12 @@ export default async function Dashboard({
       .order('updated_at', { ascending: false })
       // `id` BREAKS THE TIE, and it is here because S2c and `useBrand` say "the dashboard's own
       // order" and then order by two columns: two projects saved in the same millisecond made the
-      // three readers disagree about which one is "the project you most recently worked on", which
-      // is the row the brand lands on (review, 2026-09-08 — propagate, never localise).
+      // three readers disagree about which one is "the project you most recently worked on"
+      // (review, 2026-09-08 — propagate, never localise). THIS QUERY DOES NOT DECIDE THE BRAND'S
+      // TARGET: `brandTarget` runs on S2c's own read and again on `useBrand`'s own read, and a
+      // posted choice is resolved by id — so what the tie-break buys HERE is only that the cards
+      // are in a stable order between renders. The comment used to claim it picked the row the
+      // brand lands on, which is a reach it never had (review 3, 2026-09-08).
       .order('id', { ascending: false }),
     resolveEntitlement(user.id),
     nudgeDone(user.user_metadata) ? false : passkeysEnabled(),

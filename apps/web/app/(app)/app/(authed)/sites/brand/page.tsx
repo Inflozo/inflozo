@@ -303,7 +303,12 @@ export default async function BrandOffer({
                         name="project_id"
                         value={project.id}
                         defaultChecked={project.id === target?.id}
-                        className="size-4 shrink-0 accent-coral"
+                        /* `outline-none`: the LABEL carries the coral ring
+                           (`has-[:focus-visible]:shadow-focus` above), so without this a keyboard
+                           user got the UA outline on the 16px dot AND the ring on the card — two
+                           focus indicators, which `greyed.ts:60`'s `ring` exists to prevent and
+                           which axe cannot see (review 3, 2026-09-08). */
+                        className="size-4 shrink-0 accent-coral outline-none"
                       />
                       <ProjectThumb stylePack={project.style_pack} />
                       <span className="min-w-0 flex-1 truncate text-ui-dense font-semibold text-ink">
@@ -311,6 +316,13 @@ export default async function BrandOffer({
                       </span>
                       {project.linked_site_id === row.id ? (
                         <span className="shrink-0 text-control-label text-ink-soft">{BRAND_COPY.thisSite}</span>
+                      ) : project.linked_site_id ? (
+                        /* BOUND TO A DIFFERENT SITE, and saying so is the whole of the change: the
+                           brand still lands where the customer points it and `linked_site_id` is
+                           still never written, so nothing about the binding moves. An unlabelled
+                           card beside one marked "This site's project" reads as unbound, which is
+                           the one thing it is not. */
+                        <span className="shrink-0 text-control-label text-ink-soft">{BRAND_COPY.otherSite}</span>
                       ) : null}
                     </label>
                   ))}

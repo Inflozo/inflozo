@@ -78,3 +78,27 @@ test('a brand of any shape at all costs the pack neither its preset nor its colo
   assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }).surface, paper.surface)
   assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }).accent, '#FF1A75')
 })
+
+test('a pack that lost its preset keeps its brand accent — the parse must not throw the brand away', () => {
+  const paper = PRESETS[DEFAULT_PRESET]
+  // THE MIRROR OF THE TEST ABOVE, and it was false until review 3 (2026-09-08). `preset` is
+  // required, so each of these fails `safeParse` — and `brand` used to be read out of that failed
+  // parse, so the accent went with the preset and the card silently reverted to Paper. `useBrand`
+  // merges `{ ...pack, brand }` over whatever the column holds, and `style_pack` is in the caller's
+  // own UPDATE grant, so a pack with no preset is a thing this column can really carry.
+  for (const packless of [
+    { brand: { accent: '#FF1A75' } },
+    { preset: 7, brand: { accent: '#FF1A75' } },
+    { preset: null, brand: { accent: '#FF1A75' } },
+  ]) {
+    const pack = placeholderFor(packless)
+    assert.equal(pack.accent, '#FF1A75', JSON.stringify(packless))
+    // The preset is still Paper's — losing the preset is expected; losing the brand was the bug.
+    assert.equal(pack.surface, paper.surface)
+    assert.equal(pack.name, paper.name)
+  }
+  // A column holding something that is not an object at all still costs nothing.
+  for (const junk of [null, undefined, 'paper', 42, [], ['brand']]) {
+    assert.equal(placeholderFor(junk), paper, JSON.stringify(junk))
+  }
+})

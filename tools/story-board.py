@@ -360,8 +360,24 @@ def question_blocks(text):
     # `**1. …**` is the shape the specs actually use. An option line starts with a bare digit, never
     # with `**`, so requiring the asterisks keeps the two apart — before this, a section written that
     # way read as ONE question and hid the rest (spec 1.2 had four inside one).
+    # ...and a heading follows a BLANK LINE. A wrapped prose line that merely begins "Question 1"
+    # is not one: Story 3.4's Question 4 ruling wraps onto "Question 1 still decides. Executed on
+    # the live site as …", which started a block of its own and put a sentence fragment in the
+    # owner's inbox as an unanswerable open question (review 3, 2026-09-08). It is `ruled_line`'s
+    # lesson in the other regex — prose that begins like a label is not a label — and every bare
+    # `Question N` line in every spec today is prose, so the check costs nothing and the four
+    # outside a Questions section were only ever invisible by luck.
     starts = [m.start() for m in re.finditer(
-        r'^(?:#{3,6}\s+|\**\s*(?:QUESTION|Question|Q)\s*\d+|\*\*\d+[.)]\s)', text, re.M)]
+        r'^(?:#{3,6}\s+|\**\s*(?:QUESTION|Question|Q)\s*\d+|\*\*\d+[.)]\s)', text, re.M)
+        if m.start() == 0 or text[:m.start()].endswith('\n\n')]
+    # Prose ahead of the first real question is a PREAMBLE, not a question. Spec 2.3 opens its
+    # section with one sentence ("Two decisions from the review…") and the synthetic block below
+    # read it as a headless, optionless, unruled question — one that sat "open" in the owner's
+    # inbox for ever, because nothing can ever rule a sentence (review 3, 2026-09-08). It is only
+    # dropped when it carries NEITHER options NOR a ruling: a real question written without a
+    # heading still has its options, and erring towards "keep" only ever shows one question twice
+    # while erring the other way loses one — `ruled_line`'s own reasoning.
+    preamble = bool(starts) and starts[0] != 0
     if not starts or starts[0] != 0:
         starts = [0] + starts
     out = []
@@ -381,6 +397,8 @@ def question_blocks(text):
                     'options': bool(OPTION_RE.search(blk)),
                     'recommended': '(RECOMMENDED)' in blk,
                     'answered': answered(blk), 'parts': (ask, opts, ruled)})
+    if preamble and out and not out[0]['options'] and not out[0]['answered']:
+        out.pop(0)
     return out
 
 
@@ -1948,6 +1966,21 @@ def demo():
         f'a `**N. …**` question heading did not start a block: {[q["title"][:30] for q in q34]}'
     assert [len(x) > 0 for x in q34[1]['parts']] == [True, True, False], 'the three parts did not split'
     assert q34[0]['parts'][2].startswith('Answer: 1'), 'the ruling did not end the first question'
+    # Prose ahead of the first question is a preamble, not a question. Spec 2.3 opens its section
+    # with one sentence, and it sat "open" in the owner's inbox for ever because nothing can rule a
+    # sentence (review 3, 2026-09-08). Options are what tell the two apart, both ways round.
+    pre = question_blocks('Two decisions from the review. Both are yours.\n\n'
+                          '### Question 1 - a real one\n\nAsk.\n\n1. **(RECOMMENDED)** do it\n2. do not\n')
+    assert [q['title'] for q in pre] == ['Question 1 - a real one'], \
+        f'a preamble was counted as a question: {[q["title"][:40] for q in pre]}'
+    keep = question_blocks('Should we do it?\n\n1. **(RECOMMENDED)** yes\n2. no\n\n'
+                           '### Question 2 - another\n\nAsk.\n\n1. yes\n2. no\n')
+    assert len(keep) == 2, 'a headless question that carries its options was dropped as a preamble'
+    wrapped = question_blocks('### Question 1 - a real one\n\nAsk.\n\n1. yes\n2. no\n\n'
+                              '**Ruled: option 1**. It falls back only where\n'
+                              'Question 1 still decides. Executed as `x`.\n')
+    assert len(wrapped) == 1 and wrapped[0]['answered'], \
+        f'a wrapped prose line beginning "Question N" started a block: {[q["title"][:40] for q in wrapped]}'
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
     assert not q32[0]['options'], 'the shapeless question must fail R-83'

@@ -20,6 +20,14 @@ list gone stale — the sibling harness's own note):
 
   keys           every key this run needs is in `tools/probe/.env`, BY NAME. Printed in both modes;
                  no value is ever printed
+  browser-js     the embedded Playwright script PARSES, checked before a key is read or a byte is
+                 spent. The script is a Python string until node reads it, so no test in the
+                 repository can see it, and a REDECLARATION in it surfaced only in the middle of a
+                 live run (Review, 2026-09-08). IT CATCHES A REDECLARATION AND NOT THE SHADOWING
+                 CLASS: the Dev failure the same day — a block-scoped `const same` that put every
+                 earlier caller in its temporal dead zone — is VALID SYNTAX, and `node --check`
+                 exits 0 on it. Executed, not assumed (review 3, 2026-09-08); the note beside that
+                 step says the same thing, and the guard there is placement, not this gate
   vault-off-rest THE BOUND THE DESIGN RESTS ON, re-executed every run rather than remembered
                  (§21j): `GET /rest/v1/{decrypted_secrets,secrets,site_credentials}` with the
                  secret key -> 404 all three, `/rest/v1/sites` -> 200 as the positive control. A
@@ -92,10 +100,6 @@ list gone stale — the sibling harness's own note):
                  `private.site_credentials` row and a live `vault.secrets` row behind its ref —
                  and STORY 3.4 MOVED WHERE IT LANDS: the browser is on `/sites/brand?site={id}`,
                  S2c, naming the site it just read, because T1's settings carry a brand
-  browser-js     the embedded Playwright script PARSES, checked before a key is read or a byte is
-                 spent. The script is a Python string until node reads it, so no test in the
-                 repository can see it; a redeclaration or a temporal dead zone in it has twice
-                 surfaced only in the middle of a live run (2026-09-08, Dev and Review)
   brand-screen   STORY 3.4: S2c on the deployed site (`S2 Onboarding.dc.html:150-196`), asserted
                  against the ROW the probe just wrote — the heading and its sub-line naming the
                  host, "Your site today", the accent swatch really painted in the row's accent and
@@ -110,14 +114,6 @@ list gone stale — the sibling harness's own note):
                  caption states. (The Sites card's offer is a LINK and needs no form to work with
                  scripts off; it is asserted where it is drawn, in `brand-seed`.)
   axe-brand      axe-core over S2c at 1440 and 390
-  brand-rerun    THE OFFER TAKEN A SECOND TIME, WITH ROOM — the only state in this run where a
-                 second press could make a SECOND project for one site, and until the review of
-                 2026-09-08 it did. It runs after `pro-connect-t3` because every brand step above
-                 it is on a FREE account whose cap of 1 the first press fills, which sends every
-                 later press down the at-cap branch. On Pro the caption names the project already
-                 made for this site rather than promising a new one, and the press leaves the
-                 same single row: FR-C4's "re-runnable" and the matrix's "seeding again writes
-                 the same pack"
   brand-skip     **Skip** writes NOTHING — no project, and no note that it was pressed — the
                  browser returns to `/sites`, and the card still carries the offer link, so it can
                  be taken later. The card itself is unchanged: its title and address as
@@ -154,41 +150,6 @@ list gone stale — the sibling harness's own note):
                  to the site's; the Sites card's tally turns into the app's own "1 project"; and
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
-  brand-picker   THE OWNER'S QUESTION 3 RULING (2026-09-08, his A1 and B1), which is the ONLY
-                 step with more than one project: a second press with a choice to offer ASKS
-                 ("You already put your brand on X. Apply it again?" · "Which project?") and
-                 draws one card per project, each carrying that project's OWN 64x44 wireframe in
-                 its OWN Style-Pack colours — FR-B1's placeholder, which claims to be no preview.
-                 The card for the project this site is already on is PRE-SELECTED, so touching
-                 nothing writes exactly what Question 1 ruled; choosing the other card puts the
-                 brand on THAT row and changes nothing else about it, and the count stays at two.
-                 The two wireframes are read with getComputedStyle and asserted DISTINCT: a
-                 chooser whose pictures all match would be telling the customer nothing
-  brand-picker-js-off  THE CHOOSER'S OWN progressive enhancement, read off S2c fetched as a FRESH
-                 DOCUMENT while the cards are on it — one real `<input type="radio"
-                 name="project_id">` per card, INSIDE the method=post form that carries the hidden
-                 `site_id` and the submit button, exactly one pre-checked and no leftover hidden
-                 decision field. `brand-js-off` above runs when the account has NO projects, so
-                 the document it reads has no chooser in it and the criterion "given the chooser,
-                 when JavaScript is off" was being recorded against the one screen without one
-  axe-brand-picker  axe-core over S2c WITH THE CARDS DRAWN, at 1440 and 390 — `axe-brand` runs
-                 before any project exists, so the radio cards, their `:has(:checked)` coral and
-                 their stacking at 390 had never been looked at
-  brand-atcap-picker  THE OWNER'S QUESTION 4 RULING (2026-09-08, option 1): at the cap AND with a
-                 choice to offer, the ticked card is the project for THIS SITE — the one labelled
-                 "This site's project" — and not the one worked on most recently, so the tick and
-                 the label sit on one card. The state is a DOWNGRADE, the only way to be at the cap
-                 with more than one project (Pro with 2, then Free, which includes 1); the
-                 entitlement is put back in a `finally`. The step prints the row the pre-ruling
-                 rule would have ticked, so it says whether it discriminated
-  brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
-                 `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
-                 is the guard rather than an `.eq('user_id')`. The second account's real site id
-                 is opened as `/sites/brand?site=` (not found) and then forged into S2c's own
-                 **Use your brand** and **Skip** forms and submitted from the fixture's session:
-                 the caller's projects are byte-identical afterwards and none is linked to the
-                 stranger's site. The acceptance criterion says "when the page is opened OR
-                 EITHER ACTION IS POSTED" and only the page had ever been asked
   brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
                  owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
                  will brand before the press, and pressing it writes `style_pack.brand` onto that
@@ -233,6 +194,41 @@ list gone stale — the sibling harness's own note):
                  address: the row stores the typed origin without it, the public url as Ghost
                  sends it, `ghost_version` from config/, a secret behind its ref; the sheet CLOSES
                  on success and the second card shows "Ghost 5.x"
+  brand-rerun    THE OFFER TAKEN A SECOND TIME, WITH ROOM — the only state in this run where a
+                 second press could make a SECOND project for one site, and until the review of
+                 2026-09-08 it did. It runs after `pro-connect-t3` because every brand step above
+                 it is on a FREE account whose cap of 1 the first press fills, which sends every
+                 later press down the at-cap branch. On Pro the caption names the project already
+                 made for this site rather than promising a new one, and the press leaves the
+                 same single row: FR-C4's "re-runnable" and the matrix's "seeding again writes
+                 the same pack"
+  brand-picker-js-off  THE CHOOSER'S OWN progressive enhancement, read off S2c fetched as a FRESH
+                 DOCUMENT while the cards are on it — one real `<input type="radio"
+                 name="project_id">` per card, INSIDE the method=post form that carries the hidden
+                 `site_id` and the submit button, exactly one pre-checked and no leftover hidden
+                 decision field. `brand-js-off` above runs when the account has NO projects, so
+                 the document it reads has no chooser in it and the criterion "given the chooser,
+                 when JavaScript is off" was being recorded against the one screen without one
+  brand-picker   THE OWNER'S QUESTION 3 RULING (2026-09-08, his A1 and B1), which is the ONLY
+                 step with more than one project: a second press with a choice to offer ASKS
+                 ("You already put your brand on X. Apply it again?" · "Which project?") and
+                 draws one card per project, each carrying that project's OWN 64x44 wireframe in
+                 its OWN Style-Pack colours — FR-B1's placeholder, which claims to be no preview.
+                 The card for the project this site is already on is PRE-SELECTED, so touching
+                 nothing writes exactly what Question 1 ruled; choosing the other card puts the
+                 brand on THAT row and changes nothing else about it, and the count stays at two.
+                 The two wireframes are read with getComputedStyle and asserted DISTINCT: a
+                 chooser whose pictures all match would be telling the customer nothing
+  axe-brand-picker  axe-core over S2c WITH THE CARDS DRAWN, at 1440 and 390 — `axe-brand` runs
+                 before any project exists, so the radio cards, their `:has(:checked)` coral and
+                 their stacking at 390 had never been looked at
+  brand-atcap-picker  THE OWNER'S QUESTION 4 RULING (2026-09-08, option 1): at the cap AND with a
+                 choice to offer, the ticked card is the project for THIS SITE — the one labelled
+                 "This site's project" — and not the one worked on most recently, so the tick and
+                 the label sit on one card. The state is a DOWNGRADE, the only way to be at the cap
+                 with more than one project (Pro with 2, then Free, which includes 1); the
+                 entitlement is put back in a `finally`. The step prints the row the pre-ruling
+                 rule would have ticked, so it says whether it discriminated
   search         the shell's field on Sites, on the deployed page: the title of one site leaves one
                  card, the ADDRESS of the other leaves one, and a word that matches neither leaves
                  none with the app's own "No sites match …"
@@ -258,6 +254,14 @@ list gone stale — the sibling harness's own note):
                  legitimately has on screen, the form is submitted from the fixture's own session,
                  and the foreign row is read back BYTE-IDENTICAL. Added by the review of
                  2026-09-08: deleting that one `.eq` left every gate and every step here green
+  brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
+                 `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
+                 is the guard rather than an `.eq('user_id')`. The second account's real site id
+                 is opened as `/sites/brand?site=` (not found) and then forged into S2c's own
+                 **Use your brand** and **Skip** forms and submitted from the fixture's session:
+                 the caller's projects are byte-identical afterwards and none is linked to the
+                 stranger's site. The acceptance criterion says "when the page is opened OR
+                 EITHER ACTION IS POSTED" and only the page had ever been asked
   preview-notice  B15 (`B Missing Surfaces.dc.html:1188-1225`) on the deployed card: its sky panel
                  and cause sentence, "What clears this" with both routes out (Publisher or higher,
                  and self-hosted), and Export theme zip / Ship it ABSENT because neither path
@@ -581,6 +585,10 @@ const projectsById = (rows) => JSON.stringify([...rows].sort((a, b) => (a.id < b
 /* A hex as `getComputedStyle` reports it, so "the card is painted in the site's accent" is read
    off the RENDERED card rather than off the class attribute. */
 const rgbOf = (hex) => {
+  /* A SITE CAN QUALIFY ON ITS LOGO OR ITS MENU ALONE — `hasBrand` is an OR — so the accent can be
+     null on a row S2c really draws. This used to throw and take the whole run down as an opaque
+     `browser` failure rather than failing the step that asked (review 3, 2026-09-08). */
+  if (typeof hex !== 'string' || hex === '') return null
   const h = hex.replace('#', '')
   const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
   return `rgb(${[0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)).join(', ')})`
@@ -739,7 +747,10 @@ const shoot = async (page, name) => {
       } catch (e) {
         if (!/Timeout .* exceeded/.test(String(e && e.message))) throw e
         navRetries += 1
-        console.log(`  note: page.${name}(${args[0] ?? ''}) timed out; retrying once (retry ${navRetries})`)
+        /* `waitForURL` takes a PREDICATE, and printing it printed the function's source into the
+           note — the one line a reader goes to after a hang (review 3, 2026-09-08). */
+        const what = typeof args[0] === 'function' ? '<predicate>' : (args[0] ?? '')
+        console.log(`  note: page.${name}(${what}) timed out; retrying once (retry ${navRetries})`)
         return await raw(...args)
       }
     }
@@ -1068,10 +1079,23 @@ const shoot = async (page, name) => {
     // NO PILL IS A LINK: the frame draws text, and an href off a value read from someone's Ghost
     // is an attribute this screen has no reason to write.
     const pillLinks = await page.locator('main ul li a').count()
+    /* THE LOGO SLOT, AND IT HAD NO LIVE PROOF OF EITHER OUTCOME. §40 records `logo` as an EMPTY
+       STRING on both majors, so `brandOf` stores null and the branch this run always renders is
+       the monogram tile — the `<img>` half is proved by `probe-rule.test.ts` alone and cannot be
+       driven from here, because writing a logo to a test Ghost is an Admin WRITE and this story
+       makes none ("Ask First"). So assert the branch that is live, by the row rather than by a
+       constant: the tile carries the first CODE POINT of the site's own Ghost title, uppercased,
+       and no image is drawn beside it (review 3, 2026-09-08). */
+    const firstCp = (Array.from(String(row.title || ''))[0] || '').toUpperCase()
+    const imgs = await page.locator('main img').count()
+    const spans = await page.locator('main span').allInnerTexts().catch(() => [])
+    const logoSlot = brandRead.logo
+      ? imgs === 1
+      : imgs === 0 && spans.some((t) => t.trim() === firstCp)
     step('brand-screen',
       saidOn(SAY.brand_title) && (await says(page, SAY.brand_sub.replace('%s', new URL(pub1.url || T1.url).host)))
       && saidOn(SAY.brand_site_today) && saidOn(SAY.brand_accent) && saidOn(brandRead.accent)
-      && saidOn(SAY.brand_navigation) && navMatches && pillLinks === 0
+      && saidOn(SAY.brand_navigation) && navMatches && pillLinks === 0 && logoSlot
       && saidOn(SAY.brand_fonts) && saidOn(SAY.brand_homepage)
       && saidOn(SAY.brand_use) && saidOn(SAY.brand_skip)
       && saidOn(SAY.brand_will_create) && swatch,
@@ -1080,7 +1104,9 @@ const shoot = async (page, name) => {
       `${JSON.stringify((brandRead.nav || []).map((n) => n.label))} drawn as ${pills.length} text ` +
       `pill(s) with ${pillLinks} links; "Your site today", "Fonts stay yours", "Your homepage, ` +
       `already wearing your brand.", both buttons, and the caption ${JSON.stringify(SAY.brand_will_create)} ` +
-      `— this account has no project yet, so the screen says one will be MADE`)
+      `— this account has no project yet, so the screen says one will be MADE. The logo slot: ` +
+      `the row's logo is ${JSON.stringify(brandRead.logo ?? null)}, so the LIVE branch is the ` +
+      `monogram tile carrying ${JSON.stringify(firstCp)} with ${imgs} image(s) beside it = ${logoSlot}`)
 
     // ── BOTH CONTROLS ARE FORMS, so S2c works with JavaScript off — the same wiring `js-off`
     //    asserts for the keys form. (The Sites card's offer is a LINK and needs no form to work
@@ -1329,7 +1355,7 @@ const shoot = async (page, name) => {
       afterStale.length === 1 && afterStale[0].id === made.id && trueCaption,
       `at the Free cap, a press carrying an EMPTY decision — the body S2c itself emits before any ` +
       `project exists, and what a second tab that filled the cap leaves behind — wrote nothing: ` +
-      `${afterStale.length} project, still the same row (${afterStale[0].id === made.id}), and the ` +
+      `${afterStale.length} project, still the same row (${afterStale[0]?.id === made.id}), and the ` +
       `browser is back on S2c with the TRUE caption naming it = ${trueCaption} rather than the ` +
       `promise it was posted with. The cap refuses, not just the staleness`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
@@ -2129,7 +2155,14 @@ def run_browser(cfg):
                      AXE_PATH=axe_path() or '', **cfg)
         try:
             proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=1200)
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as timed_out:
+            # THE NOTES SURVIVE THE HANG. `TimeoutExpired` carries what the child had already
+            # written, and this is the ONE case the retry count exists for — a run that hung —
+            # so discarding it here threw away the number DW-68 is measured with
+            # (review 3, 2026-09-08).
+            for line in (timed_out.stdout or '').splitlines():
+                if line.lstrip().startswith('note:'):
+                    print(f'  {line.strip()}')
             return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 1200s'}]
         except FileNotFoundError:
             return [{'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'}]
@@ -2177,15 +2210,19 @@ def main():
         print('  RESULT: FAILED')
         return 1
 
-    # ── THE BROWSER SCRIPT PARSES, and this costs a second before anything is spent. It has now
-    #    bitten this file twice, both times only in the middle of a live run: a block-scoped `const
-    #    same` that put every earlier step in its temporal dead zone (Dev, 2026-09-08), and a
-    #    redeclared `afterSkip` in a step added by the review the same day. Neither is reachable by
-    #    any test the repository has — the script is a Python STRING until node reads it — and both
-    #    are what `node --check` answers instantly.
+    # ── THE BROWSER SCRIPT PARSES, and this costs a second before anything is spent. Neither
+    #    failure it was written for is reachable by any test the repository has — the script is a
+    #    Python STRING until node reads it.
+    #    IT ANSWERS ONE OF THE TWO, AND THE CLAIM THAT IT ANSWERS BOTH WAS FALSE. A redeclared
+    #    `afterSkip` (Review, 2026-09-08) is a SyntaxError and this catches it instantly. A
+    #    block-scoped `const same` shadowing the module-level helper (Dev, the same day) is VALID
+    #    SYNTAX — `node --check` exits 0 on it — so that class still surfaces only as a mid-run
+    #    ReferenceError, exactly as the note at the `same` helper already says. Executed and
+    #    corrected rather than argued (review 3, 2026-09-08): cite or execute, never assert.
     with tempfile.TemporaryDirectory() as work:
         probe = os.path.join(work, 'syntax.mjs')
-        open(probe, 'w').write(BROWSER_JS)
+        with open(probe, 'w') as fh:
+            fh.write(BROWSER_JS)
         parsed = subprocess.run(['node', '--check', probe], capture_output=True, text=True)
     js_ok = parsed.returncode == 0
     print(f'  {"PASS" if js_ok else "FAIL"}  browser-js: the embedded Playwright script parses'

@@ -274,9 +274,12 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   `linked_site_id` set and `style_pack.brand.accent` equal to the site's accent; the Sites card reads
   **1 project**; and the dashboard card's placeholder is painted in that accent
 - Given a caller **at their project cap**, when S2c is opened, then the caption under **Use your
-  brand** names the project that will be branded — the most recently updated — and pressing it
-  writes `style_pack.brand` onto that project and **changes nothing else about it**: not its name,
-  not its `slug`, not its `linked_site_id`
+  brand** names the project that will be branded — **the project for this site where there is one,
+  and otherwise the most recently updated** (the owner's **Question 4** ruling, 2026-09-08; before
+  it this criterion said "the most recently updated" unconditionally, which after that ruling named
+  a different row from AC 6b and was corrected at review 3) — and pressing it writes
+  `style_pack.brand` onto that project and **changes nothing else about it**: not its name, not its
+  `slug`, not its `linked_site_id`
 - Given a decision that has gone stale between render and press, when **Use your brand** is posted,
   then nothing is written and the browser returns to S2c with the true caption
 - Given a caller with **more than one project** whose brand would go onto one that already exists,
@@ -373,6 +376,132 @@ acceptance auditor, real-infra), 20 findings after dedup, 8 dismissed with reaso
 - [x] [Review][Defer] The harness fails roughly three runs in four on the DW-68 hang, so a red run is
       not by itself a regression. Measured across four consecutive full runs; **DW-68** amended with
       what the retry did and did not cover
+
+### Review Findings — third review, 2026-09-08
+
+Five layers (blind hunter, edge-case hunter, verification-gap, acceptance auditor, real-infra), 44
+findings after dedup, 13 patched, 3 deferred, one put to the owner, the rest dismissed with reasons.
+**The full harness ran green on the deployed site and every claim in `## Verification` held under
+execution with negative controls** — the findings below are what five layers found *besides* that.
+
+- [x] [Review][Patch] **A pack that lost its `preset` lost its BRAND with it, and the card silently
+      reverted to Paper.** `placeholderFor` read `brand` out of `stylePackSchema.safeParse`, and
+      `preset` is required — so any pack without one failed the whole parse and took a perfectly
+      good accent with it, making AC 3 false with nothing failing. `useBrand`'s merge
+      (`{ ...pack, brand }` over whatever the column holds, and `style_pack` is in the caller's own
+      UPDATE grant) is a path that produces exactly that pack. **Three layers met this
+      independently, and the fourth met it from the other end:** the real-infra layer found the
+      Review 2 record's own boundary line, `placeholderFor({brand:{accent:'#FF1A75'}})` →
+      `#FF1A75`, **does not reproduce** — it returns Paper. The brand is now read off the raw
+      column (it is re-validated by `isAccent` either way, so the parse was never what made it
+      safe), the merge floors on `defaultStylePack()` so the stored row stays valid too, and a new
+      `style-pack.test.ts` case pins it. **Negative control: the new test fails against the old
+      code and passes against the new.** That also makes the Review 2 line true as written rather
+      than editing a dated record [apps/web/lib/style-pack.ts]
+- [x] [Review][Patch] `epic-3-context.md`'s auto-brand paragraph still described the pre-fix
+      behaviour — neither the Question 3 nor the Question 4 ruling ever reached it, so it said the
+      cap sends the brand to the most recently updated project and never mentioned the chooser.
+      Propagate, never localise [_bmad-output/implementation-artifacts/epic-3-context.md]
+- [x] [Review][Patch] **AC 4 and AC 6b named different rows for the same state.** AC 4 still said
+      "the most recently updated" unconditionally, which the Question 4 ruling had replaced; the
+      criterion is now the ruling [this spec, Acceptance Criteria]
+- [x] [Review][Patch] **The harness docstring was not in execution order**, against the Code Map's
+      "names every step, in order" and `## Verification`'s "passes in order". `brand-rerun` and the
+      whole picker block were documented before `brand-skip` though they run after `pro-connect-t3`;
+      `brand-atcap`/`brand-stale`/`brand-none` were documented last though they run right after
+      `brand-seed`; `brand-ownership` sat before `ownership`; `brand-picker` before its own js-off
+      step; and `browser-js` among the browser steps though it runs in `main()` before a key is
+      read. Reordered and re-derived from the source. (The real-infra layer checked MEMBERSHIP and
+      found nothing missing — both are true, and only order was wrong) [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **`browser-js` claimed a guarantee it does not give, and the claim was
+      executed rather than argued.** Its docstring, its inline comment and the `doc-audit.py` row
+      all said it catches both the redeclaration and the temporal-dead-zone shadowing that bit this
+      file at Dev. `node --check` exits **0** on the shadowing case — it is valid syntax — and the
+      file's own note beside the `same` helper already said so, so the repository contradicted
+      itself in three places. All three narrowed to what the gate really answers (standing rule 1)
+      [tools/probe/run-verify-ghost-admin.py, tools/doc-audit.py]
+- [x] [Review][Patch] The `doc-audit.py` catalogue row stopped at the Fix-1 step list: `brand-stale`,
+      `brand-picker-js-off`, `axe-brand-picker` and `brand-atcap-picker` were all missing — the last
+      being the executed proof of the owner's Question 4 ruling [tools/doc-audit.py]
+- [x] [Review][Patch] **The logo slot had no live proof of either outcome.** §40 records `logo` as
+      an empty string on both majors, so the branch every run renders is the monogram tile — and
+      `brand-screen` asserted the swatch, the pills, the headings and the captions but never the
+      slot. It now asserts the live branch by the row: the tile carries the first **code point** of
+      the site's own Ghost title, uppercased, with no image beside it. The `<img>` half stays
+      unit-proved only, and deliberately: writing a logo to a test Ghost is an Admin write and this
+      story makes none ("Ask First") [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The chooser's radio inputs carried no `outline-none`, so a keyboard user got
+      the UA outline on the 16px dot **and** the coral ring on the card — two focus indicators,
+      which `greyed.ts:60`'s `ring` exists to prevent and which axe cannot see, so
+      `axe-brand-picker` passing was not evidence against it [apps/web/app/(app)/app/(authed)/sites/brand/page.tsx]
+- [x] [Review][Patch] **A card whose project is bound to a DIFFERENT site said nothing**, sitting
+      beside one marked "This site's project" and so reading as unbound — while picking it paints
+      this site's brand onto a project bound elsewhere. Two layers met it independently. It now
+      carries "Another site's project" in the same slot and the same idiom; the behaviour is
+      unchanged and `linked_site_id` is still never written, so no binding moves
+      [apps/web/app/(app)/app/(authed)/sites/brand/page.tsx]
+- [x] [Review][Patch] `rgbOf` threw on a null accent — reachable, because `hasBrand` is an OR and a
+      site can qualify on its logo or menu alone — which would have killed the whole run as an
+      opaque `browser` failure instead of failing the step that asked
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **The retry count was lost in exactly the case it exists for.** `run_browser`
+      read the `note:` lines off captured stdout only on a run that returned; on the 1200s
+      subprocess timeout — the DW-68 hang itself — it discarded them. `TimeoutExpired` carries what
+      the child had already written, and they are printed from it now
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `brand-stale`'s detail string dereferenced `afterStale[0]` unguarded, so an
+      empty list turned a meaningful failure into a crash; and the retry note printed a
+      **predicate's source** where it means to print a URL, because `waitForURL` takes a function —
+      the one line a reader goes to after a hang [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The dashboard's `.order('id')` comment claimed the tie-break decided "the row
+      the brand lands on". It does not: `brandTarget` runs on S2c's own read and again on
+      `useBrand`'s own read, and a posted choice is resolved by id, so the dashboard's ordering
+      reaches neither. The tie-break is real and worth keeping; the reason beside it was a reach
+      [apps/web/app/(app)/app/(authed)/page.tsx]. Two cites of the `projects` UPDATE grant pointed
+      at `:1201`, which is the `revoke`; the `grant` is `:1202` (standing rule 7)
+- [x] [Review][Question] **The at-cap caption gives the limit as the REASON for a choice the limit
+      no longer makes.** After the Question 4 ruling the site's own project wins on both sides of
+      the cap, so "You're at your project limit, **so** we'll put your brand on “X”." states a cause
+      that is no longer there. The project named is correct; only the clause is stale. Put to the
+      owner as **Question 5** rather than rewritten, because his own manual test step 12 quotes the
+      sentence verbatim — the wording is his [apps/web/lib/probe-rule.ts, `BRAND_COPY.willBrand`]
+- [x] [Review][Defer] The chooser is a surface with **no frame** and was never drawn back into the
+      export, which is R-74's second half; and at 25 projects it renders 25 stacked cards with no
+      scroll bound and no design for that state, which nothing has ever looked at — every live proof
+      runs with two cards. **DW-70**
+- [x] [Review][Defer] `icon`, `cover` and `description` are read, stored and copied into every
+      branded project's pack, and **nothing reads them anywhere**; `style-pack.ts` says they are
+      "stored for the epic that uses it" and names no epic. `hasBrand` narrows to `Brand` while
+      checking only `nav` and one of accent/logo/nav, so the same fields are the ones its predicate
+      does not check. **DW-71**
+- [x] [Review][Defer] Two connected sites with the same Ghost title make two projects with the same
+      name — the create branch dedupes the slug and not the name, though `lib/projects.ts` carries
+      the taken-names idiom. Deferred rather than patched because the suffix a customer reads is a
+      naming decision, and `copyName`'s "Copy of X" is the wrong sentence for a brand seed. **DW-72**
+
+**What could not be verified, and no claim is made about it.** Connect's "no brand to offer" arm —
+`redirect(hasBrand(…) ? BRAND : SITES)`'s false side, AC 11's landing — **is executed by nothing and
+cannot be driven from here.** Both test Ghosts answer an accent and a menu, and a connect re-probes
+and re-writes the brand it just read, so the state is only reachable when the probe itself fails.
+`brand-none` covers the route's 404 and the missing link, which is the rest of that criterion, but
+the landing is unpinned: a regression there turns a successful connect into a framework 404. It is
+recorded here rather than papered over, and the honest reading of the green run is "every assertion
+held", not "every branch ran".
+
+**Dismissed, with the reason.** The concurrent double press is **DW-69**, already deferred by the
+last review for the reason that has not changed (the fix is a migration, which is "Ask First") —
+re-raised by a layer that could not see the ledger. `brandOf` was reported as leaving `icon` and
+`cover` unvalidated; it does not — both go through `imageUrl`, and the finding was about `hasBrand`'s
+predicate, which is DW-71. `brandKept` was reported as possibly `undefined` and so deleting the row's
+brand on restore; it is `… .brand || {}` and cannot be. `skipBrand` as a link rather than a form —
+the **third** time this has been raised, and Boundaries freezes both controls as forms. An unbounded
+Ghost menu stored twice and drawn as unbounded pills — a large menu is the customer's own data, not a
+payload, and clamping it would be inventing a limit no frame states; noted here, not patched. A logo
+URL that 404s rendering a broken `<img>` — `imageUrl` proves the scheme, not the fetch, and the only
+fix that helps needs JavaScript, which this screen deliberately does not use. Every reconnect landing
+on S2c — that is "re-runnable" working, and the harness's `skipS2c` is how three pre-existing steps
+walk past a screen they are not about. `audit` is documented early and runs late — pre-existing, not
+this story's.
 
 **Dismissed, with the reason.** `skipBrand` could be a link rather than a form — Boundaries freezes
 both controls as forms, and it is the second time this has been raised. `connectSite`'s second
@@ -614,6 +743,43 @@ Question 1 still decides. Executed on the live site as **`brand-atcap-picker`**.
 3. **Nothing is ticked — you must pick a card before the button works.** No default can ever be
    wrong. But it turns one press into two for everybody who reaches this screen, and it is the one
    shape that does not work the same way as every other screen in the app.
+
+
+### Question 5 — one sentence on the screen now gives a reason that is no longer true
+
+This is about **wording only**. Nothing is broken, nothing is chosen differently, and no project
+moves whichever way you rule. It needs you because your own manual test (step 12) quotes the
+sentence word for word, so changing it changes your test script.
+
+When you press **Use your brand** on a site whose project already exists, and you are at your project
+limit, the caption under the button says:
+
+> You're at your project limit, so we'll put your brand on "Ghost6".
+
+That sentence was written before your **Question 4** ruling. Back then the limit really was the
+reason: at the limit Inflozo took the most recently updated project. After your ruling, the project
+that belongs to the site wins **whether or not** you are at the limit — so Inflozo would have chosen
+"Ghost6" with room to spare too. The limit is no longer why.
+
+For example: you are on Free, which includes one project. You connected `ghost6.inflozo.com` last
+month and pressed the button, so you have a project called "Ghost6". Today you change your accent
+colour in Ghost and press the brand link again. The screen tells you that you are at your limit, as
+if that were the reason it is not making you something new — when in fact it would have refreshed
+"Ghost6" either way.
+
+Two facts are worth saying on that screen, and the options differ in which they keep: **which project
+gets the brand**, and **that you cannot have another one right now**.
+
+1. **Keep the limit, drop the false cause — two short sentences: "You're at your project limit. We'll
+   put your brand on "Ghost6"." (RECOMMENDED)** You still learn both things, and nothing on the
+   screen claims a reason that is not there. It is the smallest change from what you have already
+   read and tested.
+2. **Say only which project: "We'll put your brand on "Ghost6", the project for this site."** The
+   shortest and the truest, and it matches the sentence used when you have room. The cost is that
+   someone at the limit who expected a brand-new project is not told why they did not get one.
+3. **Use the same sentence you get with room: "You already put your brand on "Ghost6". Apply it
+   again?"** One caption fewer in the product, and the screen asks rather than tells everywhere. Same
+   cost as option 2, plus you would no longer be told about the limit anywhere on this screen.
 
 
 ## Owner's manual test
