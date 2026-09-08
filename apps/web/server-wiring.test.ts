@@ -16,6 +16,7 @@ const AUTHED_LAYOUT = 'app/(app)/app/(authed)/layout.tsx'
 const CONNECT_ACTIONS = join('app', '(app)', 'app', '(authed)', 'sites', 'actions.ts')
 const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
 const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
+const SITE_PROBE = join('server', 'site-probe.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -44,13 +45,20 @@ test('the flag reader filters on a key the migration actually seeds', () => {
   assert.ok(seeded.includes('passkeys'), `no migration seeds a 'passkeys' flag row; found ${seeded}`)
 
   const flags = readFileSync(FLAGS, 'utf8')
-  const filtered = /\.eq\('key',\s*'([a-z_]+)'\)/.exec(flags)
-  assert.ok(filtered, `${FLAGS}: no .eq('key', …) was found — this test reads the literal, not restates it`)
-  assert.ok(
-    seeded.includes(filtered[1]),
-    `${FLAGS} reads the flag '${filtered[1]}', which no migration seeds (seeded: ${seeded}). ` +
-      'The read would answer null for ever and the feature would be off with every check green.',
-  )
+  // EVERY key the module reads, not the first: Story 3.3 made the row read take its key as an
+  // argument (`flagRow(key)`) so the timeout and the fail-closed catch are written once, and the
+  // literals moved out to the call sites. Which is where this test now reads them from — the list
+  // is derived, never counted or restated (standing rule: counts are derived).
+  const read = [...flags.matchAll(/flagRow\('([a-z_]+)'\)/g)].map((m) => m[1])
+  assert.ok(read.length > 0, `${FLAGS}: no flagRow('…') call was found — this test reads the literals`)
+  for (const key of read) {
+    assert.ok(
+      seeded.includes(key),
+      `${FLAGS} reads the flag '${key}', which no migration seeds (seeded: ${seeded}). ` +
+        'The read would answer null for ever and the feature would be off with every check green.',
+    )
+  }
+  assert.ok(read.includes('ghostpro_preview_probe'), `${FLAGS}: FR-C2's probe switch is no longer read`)
   // And the table it reads from is the one the seed inserts into.
   assert.match(flags, /\.from\('feature_flags'\)/)
 })
@@ -90,7 +98,14 @@ test('the service-role client is imported by the flag reader and by nothing else
   // (`ghost_version`, `content_key`, `site_settings`, `settings_read_at`, `disconnected_at`) is
   // SERVER-ASSERTED by AD-7 and cannot go through the caller's own session. The read that decides
   // the cap and finds an existing record still does (RLS scopes it); only the write is privileged.
-  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE, PURGE_ROUTE, CONNECT_ACTIONS]
+  // The FIFTH, added by Story 3.3 with its reason: FR-C2's connect-time probes write `capability`,
+  // `capability_source`, `site_settings` and `settings_read_at`, and all four are server-asserted
+  // by AD-7 — `authenticated` may update only title, favicon_url and updated_at (schema :1198).
+  // It is also the module that runs those probes on a STORED key through `call()`, which is what
+  // gives the decrypt path its first product caller (DW-54); connect, B15's Re-check plan and
+  // Story 3.7's cron all call this one function, so there is one write and one audit shape rather
+  // than three.
+  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE, PURGE_ROUTE, CONNECT_ACTIONS, SITE_PROBE]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) =>
@@ -265,6 +280,24 @@ test('no SQL outside server/ghost-admin names vault or the two private tables', 
   )
 })
 
+test('the code-injection payload is named in exactly one file, and it is the pure rule', () => {
+  // NFR-3 and FR-C2: `codeinjection_head` and `codeinjection_foot` are read, OR'd into ONE boolean
+  // and DISCARDED. Neither string is stored, returned to a client, logged, or put anywhere a
+  // render path could reach — and the way that stays true is that only one function has ever seen
+  // the key names. A second mention is either a second reader or a payload on its way somewhere.
+  const PROBE_RULE = join('lib', 'probe-rule.ts')
+  const named = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => /codeinjection/i.test(readFileSync(p, 'utf8')))
+    .filter((p) => p !== PROBE_RULE)
+  assert.deepEqual(
+    named,
+    [],
+    `${named.join(', ')} names Ghost's codeinjection payload. Only ${PROBE_RULE} may, and it turns ` +
+      'the pair into one boolean and keeps neither string (NFR-3).',
+  )
+})
+
 test('the Admin chokepoint is imported by the routes named here and by nothing else', () => {
   // AD-10 allows no third path: no Admin API call from a browser and no generic proxy endpoint.
   // The module is a library that server actions and routes import, and this is that list.
@@ -274,10 +307,16 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     DW-48 was waiting for: Story 3.1's bearer-gated verify route stood here until this
   //     existed, and 3.2 deleted it rather than keep a permanent privileged surface that stored a
   //     credential for any `site_id` a caller named.
+  //   - THE SITE PROBE, Story 3.3's: the first caller that uses a STORED key. It runs `call()` on
+  //     `GET config/` and `GET settings/` — two GETs, so no allowlist item — and it is deliberately
+  //     NOT `fetchWithKey` with the key connect still has in scope: Re-check plan and 3.7's cron
+  //     have no typed key and must run the identical probe, and a second code path is how "the
+  //     daily check re-runs the connect probe" quietly becomes false. It closes DW-54's third gap:
+  //     the decrypt path had no product caller between the verify route's deletion and this.
   // ANY module in the directory counts, not only the index: `db.ts` hands out the decrypting
   // connection, and an import of it from an unlisted file is the same third path (review,
   // 2026-09-07 — the first regex matched the index alone).
-  const allowed = [CONNECT_ACTIONS]
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => /from\s*['"][^'"]*server\/ghost-admin(\/[a-z-]+(\.ts)?)?['"]/.test(readFileSync(p, 'utf8')))

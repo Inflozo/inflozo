@@ -21,6 +21,7 @@ import { atSiteCap, siteCapSentence } from '@/lib/plan'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { fetchWithKey, store } from '@/server/ghost-admin'
 import { AdminError } from '@/server/ghost-admin/admin-rule'
+import { probeSite } from '@/server/site-probe'
 
 /**
  * FR-C1 · FR-C2 · AD-7 — CONNECT, AND IT IS THE CHOKEPOINT'S FIRST PRODUCT CALLER.
@@ -68,10 +69,12 @@ function logged(where: string, code: string | undefined): ConnectResult {
 }
 
 /**
- * The three fields. NOTHING BUT `connectSite` IS EXPORTED FROM THIS FILE: a `'use server'` module
- * may export only async functions, and a single exported constant strips every export from it —
- * the wizard's own `import { connectSite }` then fails to resolve, with `pnpm check` green
- * (executed under `next build`, 2026-09-08). The shapes and the ceiling live in `lib/connect-rule.ts`.
+ * The three fields. EVERY EXPORT FROM THIS FILE IS AN ASYNC FUNCTION and nothing else may be: a
+ * `'use server'` module may export only Server Actions, and a single exported constant strips
+ * every export from it — the wizard's own `import { connectSite }` then fails to resolve, with
+ * `pnpm check` green (executed under `next build`, 2026-09-08). That is why Story 3.3's four
+ * answer actions live down at the bottom of this file rather than beside the component that
+ * submits them. The shapes and the ceiling live in `lib/connect-rule.ts`.
  */
 const Fields = z.object({
   url: z.string().max(CONNECT_MAX),
@@ -306,8 +309,132 @@ export async function connectSite(
     return logged('store', (thrown as { name?: string })?.name)
   }
 
+  // ── FR-C2's FOUR PROBES, on the key that has just gone into Vault (Story 3.3). It runs on the
+  //    STORED credential through `call()` — never on `adminKey`, which is still in scope two lines
+  //    up — so connect, Re-check plan and Story 3.7's cron are literally the same function.
+  //    INSIDE ITS OWN TRY AND FATAL TO NOTHING: `config/` has already passed, so the site is
+  //    connected whatever the probe answers. `probeSite` catches its own failures; this catches
+  //    the one it cannot, a throw on the way in.
+  try {
+    await probeSite({ siteId, userId: user.id, route: ROUTE })
+  } catch (thrown) {
+    console.error('sites: connect probe failed', { name: (thrown as { name?: string })?.name })
+  }
+
   revalidatePath(SITES)
   // Outside every `try` above: `redirect()` throws NEXT_REDIRECT by design, and a catch that
   // swallowed it would report a successful connect as a failure (`lib/action-redirect.ts`).
   redirect('/sites')
+}
+
+/* ───────── STORY 3.3's FOUR ANSWERS, and they live in THIS file because a `'use server'` module
+   may export only async functions — one exported constant strips every export from it, as the
+   header above records. Each is a `<form action={…}>` target in `site-notices.tsx`, so every one
+   works with JavaScript off; each takes the site id from the form and scopes its write with
+   `.eq('user_id', user.id)`, because a form field is a caller's input and `supabaseAdmin()`
+   bypasses RLS by construction.
+
+   NONE OF THEM ANSWERS THE CALLER. A server action that returns nothing re-renders the page it
+   revalidated, which is the whole of the feedback here: the notice is gone, or the chip changed.
+   A failure is logged with a code and leaves the block on screen — the matrix's "a failed write
+   logs a code and the notice stays". */
+
+/** The site id, as a form field: absent or malformed is not a site of anyone's. */
+const SiteId = z.object({ site_id: z.string().uuid() })
+
+async function siteOf(formData: FormData): Promise<{ userId: string; siteId: string } | null> {
+  const user = await signedIn()
+  const parsed = SiteId.safeParse({ site_id: formData.get('site_id') ?? '' })
+  if (!parsed.success) {
+    console.error('sites: notice action refused', { code: 'site_id_invalid' })
+    return null
+  }
+  return { userId: user.id, siteId: parsed.data.site_id }
+}
+
+/** The write every answer below makes, with its own log code. */
+async function writeSite(
+  where: string,
+  at: { userId: string; siteId: string },
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await supabaseAdmin()
+    .from('sites')
+    .update(patch)
+    .eq('id', at.siteId)
+    .eq('user_id', at.userId)
+  if (error) console.error(`sites: ${where} failed`, { code: error.code })
+  revalidatePath(SITES)
+}
+
+/**
+ * FR-C2's notice is ONE-TIME AND THE FACT IS THE COLUMN. **Got it** stamps
+ * `code_injection_notice_shown_at`, and it never returns for that site — not on a reload and not
+ * after a re-probe, because the probe writes `site_settings.code_injection` and never this.
+ */
+export async function dismissInjectionNotice(formData: FormData): Promise<void> {
+  const at = await siteOf(formData)
+  if (!at) return
+  await writeSite('notice dismiss', at, { code_injection_notice_shown_at: new Date().toISOString() })
+}
+
+/**
+ * THE PORTAL QUESTION, asked only when `portal_button` was not a boolean in Ghost's payload. The
+ * answer is stored with source `'declared'`, which Story 3.7's daily check overwrites with
+ * `'probe'` the moment the setting becomes readable.
+ */
+export async function answerPortal(formData: FormData): Promise<void> {
+  const at = await siteOf(formData)
+  if (!at) return
+  const { data } = await supabaseAdmin()
+    .from('sites')
+    .select('site_settings')
+    .eq('id', at.siteId)
+    .eq('user_id', at.userId)
+    .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
+  if (!data) return
+  await writeSite('portal answer', at, {
+    site_settings: {
+      ...(data.site_settings ?? {}),
+      portal_button: formData.get('portal_button') === 'yes',
+      portal_button_source: 'declared',
+    },
+  })
+}
+
+/**
+ * THE PLAN QUESTION — the only place in this project where a plan is ASKED rather than probed
+ * (FR-C2, FR-C8), and it is reachable only when `hostSettings` was present and its shape could not
+ * be read. The answer sets `capability_source` to `'user_declared'`, never `'probe'`, and clears
+ * `plan_ask` so the question does not come back.
+ */
+export async function answerPlan(formData: FormData): Promise<void> {
+  const at = await siteOf(formData)
+  if (!at) return
+  const { data } = await supabaseAdmin()
+    .from('sites')
+    .select('site_settings')
+    .eq('id', at.siteId)
+    .eq('user_id', at.userId)
+    .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
+  if (!data) return
+  const { plan_ask: _asked, ...kept } = (data.site_settings ?? {}) as Record<string, unknown>
+  await writeSite('plan answer', at, {
+    capability: formData.get('capability') === 'preview_only' ? 'preview_only' : 'full',
+    capability_source: 'user_declared',
+    site_settings: kept,
+  })
+}
+
+/**
+ * B15's **Re-check plan**: the SAME probe, re-run. A site that has since been upgraded clears
+ * itself to `full` with no support ticket; a probe that cannot reach Ghost leaves the card exactly
+ * as it was and says so under the button (`?recheck=failed`, read by the page).
+ */
+export async function recheckPlan(formData: FormData): Promise<void> {
+  const at = await siteOf(formData)
+  if (!at) return
+  const summary = await probeSite({ siteId: at.siteId, userId: at.userId, route: ROUTE })
+  revalidatePath(SITES)
+  if (!summary.ok) redirect('/sites?recheck=failed')
 }

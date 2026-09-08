@@ -2,7 +2,8 @@
 title: 'Story 3.3 — The connect-time probes: Preview-only, code injection, Portal and the announcement bar'
 type: 'feature'
 created: '2026-09-08'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'f61eb3b8e3ade838666079ca35a9cd1a6010c23d'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -204,19 +205,19 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/probe-rule.ts` + `apps/web/probe-rule.test.ts` -- the four pure readers and
+- [x] `apps/web/lib/probe-rule.ts` + `apps/web/probe-rule.test.ts` -- the four pure readers and
       B15's copy -- every I/O matrix row that is a parsing question, green before anything calls it
-- [ ] `apps/web/lib/flags.ts` -- `flagRow(key)` + `ghostProPreviewProbe` -- one reader, still
+- [x] `apps/web/lib/flags.ts` -- `flagRow(key)` + `ghostProPreviewProbe` -- one reader, still
       fail-closed, still timed out
-- [ ] `apps/web/server/site-probe.ts` + `server-wiring.test.ts` -- `probeSite` -- two `call()`s and
+- [x] `apps/web/server/site-probe.ts` + `server-wiring.test.ts` -- `probeSite` -- two `call()`s and
       one merged write, the decrypt path's product caller
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- the probe after `store()`, and the four
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- the probe after `store()`, and the four
       answer actions -- a probe failure never fails a connect
-- [ ] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` + `page.tsx` -- the chip on the state
+- [x] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` + `page.tsx` -- the chip on the state
       line and the four blocks -- B15 from the frame, DW-57 respected
-- [ ] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- every new step its docstring names --
+- [x] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- every new step its docstring names --
       R-82, re-runnable
-- [ ] `MEASUREMENTS.md` §39 + `deferred-work.md` (DW-54, DW-57, the new B15 entry) +
+- [x] `MEASUREMENTS.md` §39 + `deferred-work.md` (DW-54, DW-57, the new B15 entry) +
       `epic-3-context.md` -- propagate, never localise
 - [ ] Run `## Verification` on the real infrastructure and record every command and result by
       variable name, no value printed

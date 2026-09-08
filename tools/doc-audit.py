@@ -383,7 +383,27 @@ DOCS = [
   '/rest/v1/sites 200) and the Admin-API user count before and after. --check is the keys, that '
   'control, and whether playwright, axe and the postgres driver resolve; it creates nothing and '
   'needs no deployment. DW-54 records the Story 3.1 proofs that lost their driver with the route '
-  'and which story re-drives each; `re-adopt` here already re-drives the key rotation. Story 3.2.'),
+  'and which story re-drives each; `re-adopt` here already re-drives the key rotation. STORY 3.3 '
+  'ADDED THE PROBES, and with them the decrypt path DW-54 had left with no product caller: the '
+  'connect action now runs FR-C2\'s four probes on the STORED key through call(), so a connect '
+  'leaves two vault_decrypt rows and two more admin_read rows carrying the site id, and the row '
+  'comes back capability full / source probe (hostSettings is absent on both majors, so '
+  'self-hosted and unlimited) with site_settings carrying one code_injection boolean, '
+  'portal_button and its source, and the announcement\'s three values beside 3.2\'s public_url. '
+  'settings-keys re-executes, every run, that the INTEGRATION key really answers all six keys the '
+  'probes read — §15h item 21 measured the announcement three with a staff token. injection-live '
+  'is the ONE write this project makes to a test Ghost, ruled by the owner on 2026-09-08: the '
+  "harness sets the Site-footer code-injection box on BOTH servers with its own staff token — the "
+  'integration key is refused, 403 on Ghost 6 and 501 on Ghost 5 — and restores exactly what it '
+  'found in a finally, passing or failing. The product\'s allowlist is untouched and still denies '
+  'every non-GET. no-payload-leak then proves neither codeinjection payload reaches the row, a '
+  'response body or the rendered HTML; injection-notice drives the one-time sky notice and its Got '
+  'it; portal-question and plan-question drive the only two questions FR-C8 allows, each seeded on '
+  "the fixture's own row through the service role because no Ghost and no Ghost(Pro) plan can "
+  'produce them here (⛔ §4 T4); and preview-notice reads B15 off the deployed card at 1440, 834 '
+  'and 390 — the chip on the STATE line beside Connected (DW-57), Export theme zip and Ship it '
+  'absent because neither path exists (UX-DR3) — then presses Re-check plan and watches a '
+  'self-hosted Ghost clear itself back to full. Stories 3.2 and 3.3.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

@@ -4,8 +4,10 @@ import { ring } from '@/components/kit/greyed'
 import { ExternalLink } from '@/components/kit/icons'
 import { ConnectSiteButton } from '@/components/shell/shell'
 import { checkedLabel, filterSites, ghostLabel, hostOf, projectCounts, projectsLabel, SITES_EMPTY } from '@/lib/connect-rule'
+import { PREVIEW_COPY } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { ConnectSiteDialog } from './connect-dialog'
+import { SiteNotices, type NoticeSite } from './site-notices'
 
 /* ───────── S11 Sites.dc.html — S11a, its top bar, and the empty screen the export does not draw.
 
@@ -34,33 +36,44 @@ import { ConnectSiteDialog } from './connect-dialog'
    filter is the shape of (schema :174). A DISCONNECTED record is a record Inflozo kept (FR-C6)
    and is not a site — it does not appear here and it does not count against the plan.
 
+   STORY 3.3 ADDED TWO THINGS TO THE CARD AND OBEYED DW-57 IN WHERE IT PUT THEM. The sky
+   **Preview-only** chip is on the STATE LINE beside "Connected", not on the pills' line, because
+   it is a property of the CONNECTION and the pills are metadata about the site — so 3.5's ⋯ menu
+   and 3.7's health badges now add to the state line the owner made, rather than reading the frame
+   and undoing him (the ledger entry is amended to say so). And `<SiteNotices>` is the card's LAST
+   block: the one-time code-injection notice, the two questions the probes could not answer for
+   themselves, and B15's Preview-Only Notice — every control in it a form, so all of them work
+   with JavaScript off.
+
    ABSENT FROM THIS SURFACE, each another story's and each absent rather than greyed (UX-DR3):
    the ⋯ menu with Re-check, Reconnect, Manage keys and Disconnect (3.5, 3.6), the health badges
-   and "Reconnect needed" (3.7), S11c's ghost slot at the Free cap (3.5), and the Preview-only
-   chip (3.3). Every card here is Connected, because that is the only state this story can write. */
+   and "Reconnect needed" (3.7), and S11c's ghost slot at the Free cap (3.5). Every card here is
+   Connected, because that is still the only health this epic can write. */
 
 export const metadata: Metadata = {
   title: 'Sites · Inflozo',
   robots: { index: false, follow: false },
 }
 
-type Row = {
-  id: string
+/* The card's own columns, plus the four Story 3.3 reads for `<SiteNotices>`. `capability` and
+   `capability_source` are server-asserted (AD-7) and read here only to draw with. */
+type Row = NoticeSite & {
   title: string | null
   url: string
   ghost_version: string | null
-  site_settings: { public_url?: string } | null
   settings_read_at: string | null
+  site_settings: (NonNullable<NoticeSite['site_settings']> & { public_url?: string }) | null
 }
 
 export default async function Sites({
   searchParams,
 }: {
   // A repeated key (`?q=a&q=b`) arrives as an ARRAY; `filterSites` takes the first, as the
-  // dashboard's own filter does.
-  searchParams: Promise<{ q?: string | string[] }>
+  // dashboard's own filter does. `recheck` is B15's own: `recheckPlan` redirects here with it
+  // when the re-run probe could not reach Ghost, so the card is unchanged and says why.
+  searchParams: Promise<{ q?: string | string[]; recheck?: string | string[] }>
 }) {
-  const [{ q }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ q, recheck }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
@@ -68,7 +81,9 @@ export default async function Sites({
   const [{ data, error }, { data: projects, error: projectsError }] = await Promise.all([
     supabase
       .from('sites')
-      .select('id, title, url, ghost_version, site_settings, settings_read_at')
+      .select(
+        'id, title, url, ghost_version, site_settings, settings_read_at, capability, capability_source, code_injection_notice_shown_at',
+      )
       .is('disconnected_at', null)
       .order('created_at', { ascending: false }),
     // FR-B5: at most one site per project, so the card's "n projects" is a tally of this column.
@@ -85,6 +100,8 @@ export default async function Sites({
   const linked = projectCounts(projects ?? [])
 
   const { query, shown } = filterSites(sites, q)
+  // B15's own: `recheckPlan` redirects here when the re-run probe could not reach Ghost.
+  const recheckFailed = (Array.isArray(recheck) ? recheck[0] : recheck) === 'failed'
 
   // One clock for the whole render, so two cards a millisecond apart never disagree.
   const now = new Date()
@@ -212,16 +229,28 @@ export default async function Sites({
                       </div>
                     ) : null}
                     {/* "Connected" JUST ABOVE "Checked …", and closer to it than to anything else
-                        — one state and its timestamp, read as one thing (his finding 6). */}
+                        — one state and its timestamp, read as one thing (his finding 6). THE
+                        PREVIEW-ONLY CHIP JOINS THIS LINE, not the pills' (DW-57): it is the
+                        connection's state, and the frame's own chip is exactly this — a white
+                        pill with a hairline and a 6px sky dot (`B15:1189-1192`). */}
                     <div className="mt-auto flex flex-col gap-[3px]">
-                      <span className="inline-flex items-center gap-[5px] text-control-label font-medium text-mint-text">
-                        <span aria-hidden className="size-[7px] rounded-full bg-mint" />
-                        Connected
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-[5px] text-control-label font-medium text-mint-text">
+                          <span aria-hidden className="size-[7px] rounded-full bg-mint" />
+                          Connected
+                        </span>
+                        {site.capability === 'preview_only' ? (
+                          <span className="inline-flex items-center gap-[6px] rounded-pill border border-line bg-surface px-[9px] py-[2px] text-[11.5px] font-semibold text-ink">
+                            <span aria-hidden className="size-[6px] rounded-full bg-sky" />
+                            {PREVIEW_COPY.chip}
+                          </span>
+                        ) : null}
                       </span>
                       <span className="text-helper-caption text-ink-soft">
                         {checkedLabel(site.settings_read_at, now)}
                       </span>
                     </div>
+                    <SiteNotices site={site} recheckFailed={recheckFailed} />
                   </article>
                 )
               })}

@@ -2845,3 +2845,63 @@ executes this shape through the deployed wizard.
 
 **Not executed, and cannot be:** a Ghost 4.x — no server exists (T1 is 6, T3 is 5). The "please update
 Ghost" refusal is proved on the version rule alone (`lib/connect-rule.ts`) with `4.48.0` injected.
+
+## 39. What the integration key reads from `GET /admin/settings/`, and what it may not write · 2026-09-08
+
+Story 3.3's four connect-time probes read two Admin endpoints. §15h item 21 had measured the three
+announcement keys with a **Staff Access Token** — a credential Inflozo does not hold until Epic 7 —
+so "the integration key can read them too" was a hypothesis, not a fact. Executed on both live test
+servers with the keys named by variable, no value printed: **T1** `ghost6.inflozo.com` 6.58.0
+(`GHOST6_ADMIN_API_KEY`) and **T3** `ghost5.inflozo.com` 5.130.6 (`GHOST5_ADMIN_API_KEY`).
+
+    GET /ghost/api/admin/config/    Authorization: Ghost <jwt>  Accept-Version: v6.0  -> 200
+    GET /ghost/api/admin/settings/  Authorization: Ghost <jwt>  Accept-Version: v6.0  -> 200
+      (and the same two on T3 with v5.0 -> 200, 200)
+
+**(a) `hostSettings` is absent on both majors, re-confirmed.** `config.config` answers, on T1,
+`clientExtensions, database, emailAnalytics, enableDeveloperExperiments, environment,
+exploreTestimonialsUrl, klipy, labs, mail, mailgunIsConfigured, security, signupForm, stripeDirect,
+useGravatar, version` — and on T3 the same list with `tenor` for `klipy` and no `klipy`. **Neither
+carries `hostSettings`**, which is what §15h item 2 found and what makes both sites self-hosted and
+unlimited: `capability` `full`, `capability_source` `probe`. A real Ghost(Pro) payload remains
+**⛔ unobserved** until the §4 T4 Starter trial.
+
+**(b) `settings/` answers `{ meta, settings: [{ key, value }, …] }` — a flat array, not an object.**
+T1 returns 117 rows and T3 99; the first row of each is `{"key": "title", "value": "Ghost6"}` /
+`"Ghost5"`. `apps/web/lib/probe-rule.ts`'s `settingsOf` flattens it once.
+
+**(c) All six keys the probes read are in the INTEGRATION key's payload, on both majors.** Values as
+found on 2026-09-08:
+
+    portal_button            false                                          (a real JSON boolean, both)
+    codeinjection_head       ""                                             (both)
+    codeinjection_foot       ""                                             (both, before this session)
+    announcement_content     "<p>Fixture announcement — seeded for VERIFY 21.</p>"  (both)
+    announcement_background  "accent"                                       (both)
+    announcement_visibility  "[\"visitors\"]"                               (both — a JSON STRING)
+
+So `portal_button` is readable on both and the Portal question is unreachable here — `portal_button_source`
+is `probe`, and the `default`/question branch is a unit contract and a seeded harness step. And
+`announcement_visibility` is confirmed to be a **JSON string** through the integration key, exactly
+as §15h item 21 saw it through the staff token; Story 3.4's seed decides its shape, so 3.3 stores it
+verbatim.
+
+**(d) The integration key may NOT write settings — 403 on Ghost 6, 501 on Ghost 5.** The same major
+split as `GET /admin/themes/` (AD-24). This is why Story 3.3's harness step `injection-live` signs
+its one sanctioned write with the harness's own staff token:
+
+    PUT /ghost/api/admin/settings/  {"settings":[{"key":"codeinjection_foot","value":"<!-- x -->"}]}
+      with GHOST6_ADMIN_API_KEY  -> 403  {"type":"NoPermissionError","message":"API tokens do not have permission to access this endpoint"}
+      with GHOST5_ADMIN_API_KEY  -> 501  {"type":"NotImplementedError","message":"The server does not support the functionality required to fulfill the request."}
+      with GHOST6_STAFF_ACCESS_TOKEN / GHOST5_STAFF_ACCESS_TOKEN  -> 200, and the value is then
+        readable through the INTEGRATION key on the same server
+
+The product's own allowlist is untouched by this: `permitted()` denies every non-GET Inflozo could
+make, and the write is the harness's alone (the owner's ruling, 2026-09-08, Story 3.3 Question 1).
+
+**(e) Ghost normalises an empty code-injection box to `null` and will not answer `""` again.** Found
+`""` on both servers, wrote `<!-- inflozo probe -->`, wrote `""` back — and both then read `null`;
+writing `null` explicitly also reads `null`. So a restore is byte-identical in **content** (the box
+is empty, as it was found) but not in Ghost's JSON representation of empty, and the harness's
+`same_box` asserts on the content for that reason. The product cannot tell the two apart either:
+`injectionFlag` treats `""`, `null` and an absent key as the same "no code injection".

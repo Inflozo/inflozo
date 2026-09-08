@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The connect wizard, driven through the real UI on the deployed site and read off the wire. Story 3.2.
+"""The connect wizard and its connect-time probes, driven through the real UI on the deployed site and read off the wire. Stories 3.2 and 3.3.
 
     python3 tools/probe/run-verify-ghost-admin.py --check   # plumbing only: no browser, no UI
     python3 tools/probe/run-verify-ghost-admin.py           # the whole round trip, T1 and T3
@@ -24,6 +24,12 @@ list gone stale — the sibling harness's own note):
                  (§21j): `GET /rest/v1/{decrypted_secrets,secrets,site_credentials}` with the
                  secret key -> 404 all three, `/rest/v1/sites` -> 200 as the positive control. A
                  leaked API key yields references, not keys
+  settings-keys  STORY 3.3, printed in both modes: the six settings keys the probes read are
+                 really in the INTEGRATION key's own `GET /admin/settings/` payload on both
+                 majors — `portal_button`, the two `codeinjection_*` and the three
+                 `announcement_*`. §15h item 21 measured the announcement three with a STAFF
+                 token, a credential the product does not hold until Epic 7, so this had to be
+                 executed rather than inherited (§39)
   then, in the browser, as one throwaway account that starts on the Free plan:
   first-run      `/sites` with nothing connected is an EMPTY SCREEN — the owner's finding 7: his
                  own title and subtitle (read from the app, not retyped), a drawing, and TWO
@@ -79,6 +85,25 @@ list gone stale — the sibling harness's own note):
                  the row with `ghost_version`, `content_key`, `site_settings.public_url` and
                  `credentials_present {content,admin} = true, staff = false`; the pooler shows a
                  `private.site_credentials` row and a live `vault.secrets` row behind its ref
+  decrypt-path   STORY 3.3, and DW-54's THIRD GAP CLOSING: the probe runs on the STORED key
+                 through `call()`, so the first connect leaves TWO `vault_decrypt` rows and,
+                 carrying the site's id, THREE `admin_read` rows — `site/` from the connect
+                 action plus `config/` and `settings/` from the probe. Before this story nothing
+                 in the product decrypted at all
+  probe-selfhosted  FR-C2's four probes on a real self-hosted Ghost: `hostSettings` is absent, so
+                 `capability` is `full` with source `probe` (the ghostpro_preview_probe flag OFF,
+                 as production seeds it); `site_settings` carries `code_injection` true (see
+                 injection-live), `portal_button` false with source `probe` — Ghost answers a
+                 real boolean, so no question — the announcement's three values with
+                 `visibility` still the JSON STRING Ghost sends, and Story 3.2's `public_url`
+                 untouched beside them
+  no-payload-leak  NFR-3: neither `codeinjection_head` nor `codeinjection_foot` appears in the
+                 `sites` row, in any response body the page received, or in the rendered `/sites`
+                 HTML. The marker `injection-live` wrote is what makes that assertion real
+  injection-notice  the one-time sky notice is on the card because Ghost really has code
+                 injection set; **Got it** stamps `code_injection_notice_shown_at` and the notice
+                 does not come back on a full reload (nor after a re-probe — `re-adopt` proves
+                 that, where the re-probe happens)
   card           the card the owner finalised (his findings 4 and 6), read off the rendered boxes:
                  the address carries the new-tab glyph, and "Connected" has left the pills' line to
                  sit just above "Checked …" and closer to it than to the pills
@@ -106,12 +131,29 @@ list gone stale — the sibling harness's own note):
   search         the shell's field on Sites, on the deployed page: the title of one site leaves one
                  card, the ADDRESS of the other leaves one, and a word that matches neither leaves
                  none with the app's own "No sites match …"
+  portal-question  STORY 3.3: `portal_button_source` seeded to `default` on the fixture's OWN row
+                 through the service role (no Ghost hides the setting, so no UI can produce this),
+                 the ONE question driven on the deployed card, and "Yes, it shows" answered — the
+                 row comes back `portal_button` true with source `declared`, never `probe`
+  plan-question  `plan_ask` seeded true, the ONLY question FR-C8 allows, answered "No — themes are
+                 restricted": `capability` `preview_only` with source `user_declared`, `plan_ask`
+                 cleared
+  axe-notices    axe-core over `/sites` with EVERY block on screen at once — the code-injection
+                 notice, both questions and B15 — at 1440 and 390
+  preview-notice  B15 (`B Missing Surfaces.dc.html:1188-1225`) on the deployed card: its sky panel
+                 and cause sentence, "What clears this" with both routes out (Publisher or higher,
+                 and self-hosted), and Export theme zip / Ship it ABSENT because neither path
+                 exists in any epic (UX-DR3). The chip sits on the card's STATE line beside
+                 "Connected" at 1440, 834 and 390 — DW-57, read off the rendered boxes. Then
+                 **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
+                 back to `full`/`probe`
   audit          `private.credential_audit` read through the pooler: one `admin_read ok` for
-                 `config/` with a NULL `site_id` per connect and one for `site/` carrying the id;
-                 the bogus key's `admin_read error` at 401 and the plain-http one at 301 — BOTH
-                 asserted by status; every
-                 row stamped with the action's own route; and no `detail` anywhere holding a
-                 `kid:secret`
+                 `config/` with a NULL `site_id` per connect and, carrying the id, one for `site/`
+                 plus TWO per probe (Story 3.3 — three connects and one Re-check plan), with two
+                 `vault_decrypt ok` rows per probe; every count DERIVED from those two numbers,
+                 never written down. The bogus key's `admin_read error` at 401 and the plain-http
+                 one at 301 — BOTH asserted by status; every row stamped with the action's own
+                 route; and no `detail` anywhere holding a `kid:secret`
   axe-sites · axe-sheet · axe-connect · axe-keys
                  axe-core at WCAG 2.1 AA over `/sites` with the cards, the open sheet,
                  `/sites/connect` and `/sites/connect?step=keys`, each at 1440 AND 390, and no
@@ -120,22 +162,35 @@ list gone stale — the sibling harness's own note):
   secret-gone    both sites' refs are gone from the vault — the CASCADE path of DW-44's trigger:
                  auth.users -> sites -> site_credentials -> the trigger, under GoTrue's role
   no-secret-leak no response body this run received contains any key it typed
-  users before == after, read from the Admin API before any sweep and after cleanup.
+  users before == after, read from the Admin API before any sweep and after cleanup
+  injection-live PRINTED LAST, because its restore is the last thing the run does. STORY 3.3's one
+                 sanctioned write to a test Ghost (the owner's ruling, 2026-09-08, Question 1,
+                 widened to both servers): the harness reads T1's and T3's current
+                 `codeinjection_foot`, writes `<!-- inflozo probe -->` BEFORE the browser starts so
+                 the first connect meets a site that really has code injection set, and in a
+                 `finally` — passing, failing or interrupted — puts back exactly what it found and
+                 re-reads to prove it. It is the HARNESS's write and never the product's:
+                 `ADMIN_WRITES` is untouched and `permitted()` still denies every non-GET the app
+                 could make. It is signed with `GHOST6_STAFF_ACCESS_TOKEN` /
+                 `GHOST5_STAFF_ACCESS_TOKEN` because the integration key the PRODUCT holds is
+                 refused on `PUT /admin/settings/` — 403 on Ghost 6, 501 on Ghost 5, executed
+                 2026-09-08 (§39).
 
 THREE OF STORY 3.1's LIVE PROOFS LEFT WITH THE ROUTE, and DW-54 records it rather than letting
 anyone believe they still run: `write-denied` (no product caller makes an allowed write until Epic
 7's deploy path), `rotated` — which `re-adopt` above now drives live through the product, one story
 early — and `staff-removed` (until Epic 7 stores and removes the token). The other two are unit
 contracts in `apps/web/ghost-admin-rule.test.ts` and, for the trigger, the RLS gate, until the story
-that re-drives each live. The decrypt path (`call()` → `vault.decrypted_secrets` → a signed call)
-has no product caller either until Story 3.3's settings read; DW-54 names it too.
+that re-drives each live. THE DECRYPT PATH IS NO LONGER ONE OF THEM: Story 3.3's probe is its
+product caller, and `decrypt-path` above executes it on the deployed function every run.
 
 THE POOLER IS READ FROM THE BROWSER HALF, read-only, through the app's own installed `postgres`
 driver (3.4.9) — `vault` and `private` answer 404 over PostgREST by design (§21j), so there is no
 other way to see them, and reading them beside the UI steps is what lets "the card says Connected"
 and "there is a secret behind the ref" be one assertion.
 
---shots DIR saves each surface at 1440, 834 and 390 (`s11-empty`, `s2b1`, `s2b2`, `s11a`, `s11b`) —
+--shots DIR saves each surface at 1440, 834 and 390 (`s11-empty`, `s2b1`, `s2b2`, `s11a`, `s11b`,
+and Story 3.3's `b15`) —
 the frame comparison the spec's Review owes, re-takeable at Deploy — and asserts nothing extra. The
 empty screen has no frame: it is the owner's finding 7, extrapolated from S3b (R-74).
 
@@ -165,6 +220,7 @@ FIXTURE = r'^ghost-admin-harness-\d+@inflozo\.com$'
 WEB = os.path.join(HERE, '..', '..', 'apps', 'web')
 CONNECT_ACTIONS = os.path.join(WEB, 'app', '(app)', 'app', '(authed)', 'sites', 'actions.ts')
 CONNECT_RULE = os.path.join(WEB, 'lib', 'connect-rule.ts')
+PROBE_RULE = os.path.join(WEB, 'lib', 'probe-rule.ts')
 PLAN = os.path.join(WEB, 'lib', 'plan.ts')
 PG_DIR = os.path.join(WEB, 'node_modules', 'postgres')
 
@@ -182,6 +238,9 @@ Admin, load_env = _passkeys.Admin, _passkeys.load_env
 playwright_dir, axe_path = _passkeys.playwright_dir, _passkeys.axe_path
 _deletion = _sibling('run-verify-account-deletion')
 rest = _deletion.rest
+# The project's ONE JWT mint and Admin client, so `injection-live`'s write is signed exactly the
+# way every other probe in `tools/probe/` signs (propagate, never localise).
+_all = _sibling('run-verify-all')
 
 
 def audit_route():
@@ -199,6 +258,7 @@ def app_text():
     either moves this run with it. `%s` stands where the app puts the host."""
     script = (
         f"import {{ connectMessage, HTTP_WARNING, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
+        f"import {{ INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
         f"import {{ siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
         "console.log(JSON.stringify({"
         " credential_malformed: connectMessage('credential_malformed'),"
@@ -212,6 +272,17 @@ def app_text():
         " empty_title: SITES_EMPTY.title,"
         " empty_sub: SITES_EMPTY.sub,"
         " no_match: SITES_EMPTY.noMatch('zzznomatch'),"
+        " injection_body: INJECTION_COPY.body,"
+        " injection_dismiss: INJECTION_COPY.dismiss,"
+        " portal_body: PORTAL_COPY.body,"
+        " portal_yes: PORTAL_COPY.yes,"
+        " plan_body: PLAN_COPY.body,"
+        " plan_preview: PLAN_COPY.preview,"
+        " preview_chip: PREVIEW_COPY.chip,"
+        " preview_title: PREVIEW_COPY.title,"
+        " preview_clears_title: PREVIEW_COPY.clearsTitle,"
+        " preview_clears: PREVIEW_COPY.clears,"
+        " preview_recheck: PREVIEW_COPY.recheck,"
         " at_cap: siteCapSentence('free') }))")
     try:
         proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
@@ -223,6 +294,44 @@ def app_text():
         sys.exit('  FAIL  the app\'s sentences could not be evaluated from lib/connect-rule.ts and lib/plan.ts: '
                  + proc.stderr.strip()[-400:])
     return json.loads(lines[-1])
+
+
+# ── STORY 3.3's ONE SANCTIONED WRITE TO A TEST GHOST (the owner's ruling, 2026-09-08, Question 1,
+#    widened to BOTH servers). It is the HARNESS's write, never the product's: `ADMIN_WRITES` is
+#    untouched and `permitted()` still denies every non-GET the app could make.
+#
+#    IT IS MADE WITH THE STAFF ACCESS TOKEN, and that was executed rather than chosen: the
+#    INTEGRATION Admin key — the only credential the product holds — is refused on
+#    `PUT /admin/settings/` with 403 NoPermissionError on Ghost 6 and 501 NotImplementedError on
+#    Ghost 5 (2026-09-08, MEASUREMENTS §39 — the same major split as `GET /admin/themes/`). The
+#    tokens are the harness's own, `GHOST6_STAFF_ACCESS_TOKEN` / `GHOST5_STAFF_ACCESS_TOKEN`, and
+#    nothing in the app ever sees one: the PRODUCT's staff token is Epic 7's, at first deploy.
+INJECTION_MARK = '<!-- inflozo probe -->'
+FOOT = 'codeinjection_foot'
+
+
+def ghost_for(env, prefix, token_key):
+    """One `Ghost` from `run-verify-all.py`, so the JWT mint is the one the whole project uses."""
+    return _all.Ghost(env[f'{prefix}_URL'], env[token_key],
+                      int(env[f'{prefix}_VERSION'].split('.')[0]), env[f'{prefix}_CONTENT_API_KEY'])
+
+
+def read_foot(ghost):
+    return {row['key']: row['value'] for row in ghost.api('GET', 'settings/')['settings']}.get(FOOT)
+
+
+def write_foot(ghost, value):
+    ghost.api('PUT', 'settings/', {'settings': [{'key': FOOT, 'value': value}]})
+
+
+def same_box(a, b):
+    """GHOST NORMALISES AN EMPTY BOX TO `null` and will not answer an empty STRING again once
+    anything has been written to it (executed on both majors, 2026-09-08, §39). So the restore is
+    asserted on the box's CONTENT: the same string, or both empty. `injectionFlag` cannot tell an
+    empty string, a null and an absent key apart either, which is why the product sees no
+    difference between what the step found and what it put back."""
+    empty = lambda v: v is None or v == ''
+    return a == b or (empty(a) and empty(b))
 
 
 # ── The browser half. Node, because Playwright is Node; one file, so one catalogue row. The
@@ -241,6 +350,10 @@ const ROUTE = process.env.AUDIT_ROUTE
 const GHOSTS = JSON.parse(process.env.GHOSTS)
 const BOGUS = process.env.BOGUS_KEY
 const SAY = JSON.parse(process.env.SENTENCES)
+/* What `injection-live` put in BOTH test Ghosts' Site-footer code-injection box before this run
+   started, and takes back out in the Python half's `finally` (the owner's ruling, 2026-09-08).
+   It is here so the no-payload-leak sweep can look for the exact string. */
+const MARK = process.env.INJECTION_MARK
 
 /* `load`, NOT `networkidle`, AND A MINUTE TO DO IT IN — the sibling harness's own finding: the
    FIRST authed render on a cold deployment took longer than Playwright's 30s default, and Deploy
@@ -285,6 +398,28 @@ const patch = async (path, body) => {
 const rowsOf = async (select = 'id') => (await wire(`/sites?user_id=eq.${USER_ID}&select=${select}`)).body || []
 /* The fixture's audit rows, by id: a step that must make NO Ghost call proves it by the count. */
 const readAudit = () => sql`select id from private.credential_audit where user_id = ${USER_ID}`
+/* Story 3.3: the DECRYPT path's own rows. `call()` writes one `vault_decrypt` per decryption in
+   the same statement as the read (`ghost-admin/index.ts:181-203`), so a decryption that went
+   unrecorded is not a thing that can happen — this counts them. */
+const readAuditRows = () => sql`
+  select action::text as action, site_id, outcome, detail
+    from private.credential_audit
+   where user_id = ${USER_ID}
+   order by occurred_at, id
+`
+
+/* `site_settings` is one jsonb column and PostgREST PATCH replaces the WHOLE of it, so a fixture
+   state is read-merge-written rather than written — otherwise seeding `plan_ask` would silently
+   delete the `public_url` the card links to. Story 3.3's four blocks are each seeded this way,
+   on the throwaway user's OWN row, through the service role: 3.2's `disconnected_at` fixture is
+   the precedent, and the states below are ones no UI can yet produce (a Ghost that hides
+   `portal_button`, and a Ghost(Pro) plan — ⛔ §4 T4, no such site exists). */
+const patchSettings = async (siteId, extra) => {
+  const rows = (await wire(`/sites?id=eq.${siteId}&select=site_settings`)).body || []
+  const merged = { ...((rows[0] || {}).site_settings || {}), ...extra }
+  for (const [key, value] of Object.entries(extra)) if (value === undefined) delete merged[key]
+  return patch(`/sites?id=eq.${siteId}`, { site_settings: merged })
+}
 
 const admin = async (path, init = {}) => {
   const r = await fetch(`${SB}/auth/v1${path}`, {
@@ -662,6 +797,69 @@ const shoot = async (page, name) => {
       `the browser is on ${page.url()} showing ${JSON.stringify(card.replace(/\s+/g, ' ').trim())}`)
     await shoot(page, 's11a')
 
+    // ── STORY 3.3: THE DECRYPT PATH, LIVE, AND IT IS DW-54's THIRD GAP CLOSING. The probe runs on
+    //    the STORED key through `call()`, so each of its two GETs is a `vault_decrypt` row and an
+    //    `admin_read` row carrying the site's id — on top of the `site/` read the connect action
+    //    made. Counted rather than restated: one connect = 1 config/ with a NULL site_id (the
+    //    typed key), then site/ + config/ + settings/ with the id, and two decryptions.
+    const afterConnect = await readAuditRows()
+    const decrypts = afterConnect.filter((r) => r.action === 'vault_decrypt')
+    const withId = afterConnect.filter((r) => r.action === 'admin_read' && r.site_id === t1SiteId && r.outcome === 'ok')
+    step('decrypt-path',
+      decrypts.length === 2 && decrypts.every((r) => r.outcome === 'ok') && withId.length === 3,
+      `${decrypts.length} vault_decrypt row(s), all ok = ${decrypts.every((r) => r.outcome === 'ok')}, and ` +
+      `${withId.length} admin_read ok rows carrying the site id — site/ from the connect action plus ` +
+      `config/ and settings/ from the probe on the STORED key. Before 3.3 nothing in the product ` +
+      `decrypted at all (DW-54).`)
+
+    // ── THE FOUR PROBES, ON A SELF-HOSTED GHOST. `hostSettings` is absent on both majors (§15h
+    //    item 2, §39), which means self-hosted and unlimited — so `capability` is `full` and its
+    //    source is `probe`, with the ghostpro_preview_probe flag OFF, as production seeds it.
+    const probed = (await rowsOf('*')).find((r) => r.id === t1SiteId) || {}
+    const ss = probed.site_settings || {}
+    const ann = ss.announcement || {}
+    step('probe-selfhosted',
+      probed.capability === 'full' && probed.capability_source === 'probe'
+      && ss.code_injection === true && ss.portal_button === false && ss.portal_button_source === 'probe'
+      && typeof ann.content === 'string' && typeof ann.visibility === 'string'
+      && ss.public_url === pub1.url && ss.plan_ask === undefined,
+      `capability ${probed.capability} / source ${probed.capability_source} (hostSettings absent = ` +
+      `self-hosted); site_settings.code_injection ${ss.code_injection} (the harness set the Site ` +
+      `footer — see injection-live), portal_button ${ss.portal_button} source ${ss.portal_button_source} ` +
+      `(Ghost answered a real boolean, so no question), announcement.visibility ${JSON.stringify(ann.visibility)} ` +
+      `stored as the JSON STRING Ghost sends, and Story 3.2's public_url still there = ` +
+      `${ss.public_url === pub1.url}; no plan_ask`)
+
+    // ── NFR-3: THE PAYLOAD IS COMPUTED TO ONE BOOLEAN AND DISCARDED. Neither `codeinjection_head`
+    //    nor `codeinjection_foot` may appear in the row, in any response the page received, or in
+    //    the rendered HTML — the marker the harness wrote is what makes that assertion real.
+    const html = await page.content()
+    const rowText = JSON.stringify(await rowsOf('*'))
+    step('no-payload-leak',
+      !/codeinjection/i.test(rowText) && !rowText.includes(MARK) && !html.includes(MARK)
+      && !bodies.some((b) => b.includes(MARK)),
+      `the sites rows name codeinjection = ${/codeinjection/i.test(rowText)} and hold the marker = ` +
+      `${rowText.includes(MARK)}; the rendered /sites HTML holds it = ${html.includes(MARK)}; any of the ` +
+      `${bodies.length} response bodies held it = ${bodies.some((b) => b.includes(MARK))}`)
+
+    // ── THE ONE-TIME NOTICE, END TO END. It is on the card because Ghost really has code injection
+    //    set (injection-live), "Got it" stamps the COLUMN, and the notice never comes back — not on
+    //    a reload, and not after a re-probe (which `re-adopt` below proves, where the re-probe is).
+    const noticeShown = await page.getByText(SAY.injection_body).isVisible().catch(() => false)
+    // "Got it" is on screen once: it is the only block showing at this point (portal read cleanly,
+    // no plan_ask, capability full), so the button's own name is the whole locator.
+    await page.getByRole('button', { name: SAY.injection_dismiss }).first().click()
+    await page.getByText(SAY.injection_body).waitFor({ state: 'hidden' }).catch(() => {})
+    const stampedRow = (await rowsOf('id,code_injection_notice_shown_at')).find((r) => r.id === t1SiteId) || {}
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const backAfterReload = await page.getByText(SAY.injection_body).isVisible().catch(() => false)
+    step('injection-notice',
+      noticeShown && Boolean(stampedRow.code_injection_notice_shown_at) && backAfterReload === false,
+      `the sky notice was on the card = ${noticeShown}; "${SAY.injection_dismiss}" stamped ` +
+      `code_injection_notice_shown_at = ${Boolean(stampedRow.code_injection_notice_shown_at)}; after a full ` +
+      `reload it is back = ${backAfterReload}`)
+
     // ── THE CARD THE OWNER FINALISED (his findings 4 and 6). The address carries the new-tab
     //    glyph; "Connected" left the pills' line and sits just above "Checked …", closer to it
     //    than to the pills. Read off the rendered boxes, not off the class attribute: the
@@ -759,17 +957,24 @@ const shoot = async (page, name) => {
     await fill(page, T1.url, T1.adminKey, T1.contentKey)
     await submit(page)
     await page.waitForSelector('text=Connected')
-    const readopted = await rowsOf('id,disconnected_at,ghost_version')
+    const readopted = await rowsOf('id,disconnected_at,ghost_version,site_settings')
     const ref1b = t1SiteId ? await refOf(t1SiteId) : null
+    // STORY 3.3: re-adopting RE-PROBES, and that is where "the notice never comes back after a
+    // re-probe" is proved — the probe writes `site_settings.code_injection` true again while
+    // `code_injection_notice_shown_at`, which the connect action never touches, keeps it away.
+    const reprobed = (readopted[0] || {}).site_settings || {}
+    const noticeBack = await page.getByText(SAY.injection_body).isVisible().catch(() => false)
     step('re-adopt',
       detached.status === 200 && readopted.length === 1 && readopted[0].id === t1SiteId
       && readopted[0].disconnected_at === null && Boolean(ref1b) && ref1b !== ref1
-      && (await secretsBehind(ref1)) === 0 && (await secretsBehind(ref1b)) === 1,
+      && (await secretsBehind(ref1)) === 0 && (await secretsBehind(ref1b)) === 1
+      && reprobed.code_injection === true && noticeBack === false,
       `the record was disconnected (HTTP ${detached.status}), /sites became the empty screen, and reconnecting ` +
       `through the sheet its own button opens ` +
       `re-adopted it: same id = ${readopted[0] && readopted[0].id === t1SiteId}, disconnected_at cleared, a NEW ` +
       `vault ref = ${Boolean(ref1b) && ref1b !== ref1}, secrets behind the old ref ${await secretsBehind(ref1)}, ` +
-      `behind the new ${await secretsBehind(ref1b)} (the trigger dropped the replaced one)`)
+      `behind the new ${await secretsBehind(ref1b)} (the trigger dropped the replaced one); the RE-PROBE wrote ` +
+      `code_injection ${reprobed.code_injection} again and the dismissed notice came back = ${noticeBack}`)
     refs.push(ref1b)
 
     // ── ON PRO, THROUGH THE SHEET: T3 with a trailing slash. The row stores the typed origin
@@ -833,6 +1038,97 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
 
+    // ── STORY 3.3's TWO QUESTIONS, AND B15. Each of the three states below is one NO UI CAN YET
+    //    PRODUCE — a Ghost that hides `portal_button`, and a Ghost(Pro) plan whose payload is
+    //    UNOBSERVED (⛔ §4 T4: no such site exists until the launch-gate Starter trial). So each is
+    //    seeded on the throwaway user's OWN row through the service role, exactly as 3.2 seeded a
+    //    disconnected record and a Pro entitlement, and then DRIVEN in the browser on the deployed
+    //    site: the screen is real even though the Ghost that would cause it is not.
+
+    const settingsOfT1 = async () =>
+      ((await rowsOf('id,capability,capability_source,site_settings')).find((r) => r.id === t1SiteId) || {})
+
+    // The Portal question: `portal_button_source` `default` is what the probe writes when Ghost's
+    // payload had no boolean. "Yes" is the primary, because Portal defaults to ON.
+    const seedPortal = await patchSettings(t1SiteId, { portal_button_source: 'default' })
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.getByText(SAY.portal_body).waitFor()
+    await page.getByRole('button', { name: SAY.portal_yes }).first().click()
+    await page.getByText(SAY.portal_body).waitFor({ state: 'hidden' }).catch(() => {})
+    const portalAnswered = (await settingsOfT1()).site_settings || {}
+    step('portal-question',
+      seedPortal.status === 200 && portalAnswered.portal_button === true
+      && portalAnswered.portal_button_source === 'declared',
+      `seeded portal_button_source = default (HTTP ${seedPortal.status}); the ONE question appeared with ` +
+      `${JSON.stringify(SAY.portal_yes)} as the primary, and answering it wrote portal_button ` +
+      `${portalAnswered.portal_button} with source ${JSON.stringify(portalAnswered.portal_button_source)} ` +
+      `— never 'probe', which only a real read may write (Story 3.7 re-reads it)`)
+
+    // The plan question: the ONE path in the whole story that asks (FR-C8), reachable only when
+    // `hostSettings` was present and its shape could not be read.
+    const seedPlan = await patchSettings(t1SiteId, { plan_ask: true })
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.getByText(SAY.plan_body).waitFor()
+    await page.getByRole('button', { name: SAY.plan_preview }).first().click()
+    await page.getByText(SAY.plan_body).waitFor({ state: 'hidden' }).catch(() => {})
+    const planned = await settingsOfT1()
+    step('plan-question',
+      seedPlan.status === 200 && planned.capability === 'preview_only'
+      && planned.capability_source === 'user_declared' && (planned.site_settings || {}).plan_ask === undefined,
+      `seeded plan_ask = true (HTTP ${seedPlan.status}); answering ${JSON.stringify(SAY.plan_preview)} wrote ` +
+      `capability ${planned.capability} with source ${planned.capability_source} — user_declared, never probe ` +
+      `— and cleared plan_ask = ${(planned.site_settings || {}).plan_ask === undefined}`)
+
+    // Every block at once, for axe: the site is preview_only from the answer above, and the other
+    // three states are seeded back on beside it.
+    await patchSettings(t1SiteId, { portal_button_source: 'default', plan_ask: true })
+    await patch(`/sites?id=eq.${t1SiteId}`, { code_injection_notice_shown_at: null })
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.getByText(SAY.preview_title).waitFor()
+    await axeAt(page, 'notices')
+
+    // ── B15, THE PREVIEW-ONLY NOTICE (`B Missing Surfaces.dc.html:1188-1225`), on the deployed
+    //    card at the three widths the spec names — and then its own Re-check plan, which is the
+    //    matrix's "a site that now allows custom themes clears to `full` on its own": T1 is
+    //    self-hosted, so the re-run probe finds no `hostSettings` and clears it.
+    await patchSettings(t1SiteId, { plan_ask: undefined })
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.getByText(SAY.preview_title).waitFor()
+    const t1Card = page.locator('article', { hasText: SAY.preview_title }).first()
+    const widths = []
+    for (const width of [1440, 834, 390]) {
+      await page.setViewportSize({ width, height: 1200 })
+      const chipBox = await boxOf(t1Card.getByText(SAY.preview_chip, { exact: true }))
+      const stateBox = await boxOf(t1Card.getByText('Connected', { exact: true }))
+      const pillBox = await boxOf(t1Card.getByText(`Ghost ${short(T1.version)}`))
+      // DW-57: the chip is on the STATE line beside "Connected", NOT on the pills' line. Read off
+      // the rendered boxes, because that is what the owner looked at.
+      widths.push(`${width}: chip y ${Math.round(chipBox.y)} vs Connected ${Math.round(stateBox.y)} vs ` +
+                  `pills ${Math.round(pillBox.y)}`)
+      if (Math.abs(chipBox.y - stateBox.y) > 6 || chipBox.y <= pillBox.y) widths.push(`${width}: OFF THE STATE LINE`)
+    }
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await shoot(page, 'b15')
+    const b15 = await t1Card.innerText()
+    const clears = SAY.preview_clears.every((line) => b15.includes(line))
+    const absent = !/Export theme zip|Ship it/i.test(b15)
+    // Re-check plan: the same probe, re-run, on a site that is really self-hosted.
+    await page.getByRole('button', { name: SAY.preview_recheck }).first().click()
+    await page.getByText(SAY.preview_title).waitFor({ state: 'hidden' }).catch(() => {})
+    const cleared = await settingsOfT1()
+    step('preview-notice',
+      !widths.some((w) => w.includes('OFF THE STATE LINE')) && b15.includes(SAY.preview_title)
+      && b15.includes(SAY.preview_clears_title) && clears && absent
+      && cleared.capability === 'full' && cleared.capability_source === 'probe',
+      `B15 on the deployed card: the sky panel's own sentence, ${JSON.stringify(SAY.preview_clears_title)} with ` +
+      `both routes out present = ${clears} (Publisher or higher, and self-hosted), and Export theme zip / ` +
+      `Ship it ABSENT = ${absent} (UX-DR3 — neither path exists until E11 and E7). The chip sat on the STATE ` +
+      `line beside Connected at every width — ${widths.join(' · ')}. Then Re-check plan re-ran the probe and ` +
+      `a self-hosted Ghost cleared itself: capability ${cleared.capability}, source ${cleared.capability_source}`)
+
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+
     // ── The audit trail, through the pooler: three connects, each `config/` with a NULL site_id
     //    and each `site/` carrying the id; the bogus key at 401; the plain-http call at 301.
     const audit = await sql`
@@ -850,15 +1146,28 @@ const shoot = async (page, name) => {
     const stamped = audit.every((r) => r.route === ROUTE)
     const objects = audit.every((r) => r.detail !== null && typeof r.detail === 'object')
     const leak = audit.filter((r) => /[0-9a-f]{16,}:[0-9a-f]{16,}/.test(JSON.stringify(r)))
+    // DERIVED, NEVER COUNTED BY HAND. Three connects succeeded above (T1, T1 re-adopted, T3) and
+    // B15's Re-check plan ran the probe once more. A connect is one `config/` on the TYPED key
+    // (null site_id) plus, with the id, one `site/` and the probe's `config/` + `settings/`; a
+    // bare probe is two. Every probe call decrypts, so `vault_decrypt` is two per probe — and
+    // before Story 3.3 that number was zero, which is what DW-54's third gap was.
+    const CONNECTS = 3
+    const PROBES = CONNECTS + 1
+    const decryptRows = audit.filter((r) => r.action === 'vault_decrypt')
     step('audit',
-      beforeRow.length === 3 && withRow.length === 3
-      && withRow.filter((r) => r.site_id === t1SiteId).length === 2 && withRow.some((r) => r.site_id === t3SiteId)
+      beforeRow.length === CONNECTS && withRow.length === CONNECTS + PROBES * 2
+      && withRow.filter((r) => r.site_id === t1SiteId).length === CONNECTS - 1 + (PROBES - 1) * 2
+      && withRow.some((r) => r.site_id === t3SiteId)
+      && decryptRows.length === PROBES * 2 && decryptRows.every((r) => r.outcome === 'ok')
       && at('401').length >= 1 && at('301').length >= 1 && errs.length >= 2 && stamped && objects && leak.length === 0,
-      `${audit.length} rows: ${beforeRow.length} admin_read ok with a NULL site_id (config/, one per connect), ` +
-      `${withRow.length} with a site_id (site/: T1 twice, T3 once), ${errs.length} admin_read error(s) at ` +
-      `status ${JSON.stringify(httpStatuses)} (the bogus key at 401 and the plain-http attempt — its status ` +
-      `is what the Vercel function's own fetch received); every row stamped ${ROUTE} = ${stamped}; every ` +
-      `detail a jsonb object = ${objects}; rows that look like they hold a key = ${leak.length}`)
+      `${audit.length} rows: ${beforeRow.length} admin_read ok with a NULL site_id (config/ on the typed key, ` +
+      `one per connect), ${withRow.length} with a site_id — ${CONNECTS} site/ reads plus ${PROBES * 2} probe ` +
+      `reads (config/ and settings/ per probe: ${CONNECTS} connects and one Re-check plan); ` +
+      `${decryptRows.length} vault_decrypt row(s), all ok = ${decryptRows.every((r) => r.outcome === 'ok')}; ` +
+      `${errs.length} admin_read error(s) at status ${JSON.stringify(httpStatuses)} (the bogus key at 401 and ` +
+      `the plain-http attempt — its status is what the Vercel function's own fetch received); every row ` +
+      `stamped ${ROUTE} = ${stamped}; every detail a jsonb object = ${objects}; rows that look like they ` +
+      `hold a key = ${leak.length}`)
 
     // ── axe over every surface: the list, both steps of the page pair, and the open sheet.
     await axeAt(page, 'sites')
@@ -947,7 +1256,10 @@ def main():
     env = load_env()
     needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_DB_POOLER_URL',
               'GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_VERSION',
-              'GHOST5_URL', 'GHOST5_ADMIN_API_KEY', 'GHOST5_CONTENT_API_KEY', 'GHOST5_VERSION']
+              'GHOST5_URL', 'GHOST5_ADMIN_API_KEY', 'GHOST5_CONTENT_API_KEY', 'GHOST5_VERSION',
+              # Story 3.3's `injection-live`, and only that: the HARNESS's own credential for the
+              # one write the owner sanctioned. The product never holds one until Epic 7.
+              'GHOST6_STAFF_ACCESS_TOKEN', 'GHOST5_STAFF_ACCESS_TOKEN']
     missing = [k for k in needed if not env.get(k)]
     print(f'  {"PASS" if not missing else "FAIL"}  keys: present in tools/probe/.env by name: '
           f'{", ".join(k for k in needed if env.get(k))}'
@@ -970,6 +1282,27 @@ def main():
     print(f'  {"PASS" if ok else "FAIL"}  vault-off-rest: '
           f'GET /rest/v1/{{decrypted_secrets,secrets,site_credentials}} -> {json.dumps(off_api)}; '
           f'the positive control /rest/v1/sites -> {st_sites}')
+
+    # ── §39, RE-EXECUTED EVERY RUN: the six settings keys FR-C2's probes read are really in the
+    #    INTEGRATION key's own `GET /admin/settings/` payload, on both majors. §15h item 21 measured
+    #    the three announcement keys with a STAFF token — a credential the product does not hold
+    #    until Epic 7 — so "the integration key can read them too" was a hypothesis this story had
+    #    to execute rather than inherit (standing rule: cite or execute, never assert).
+    WANT = ('portal_button', 'codeinjection_head', 'codeinjection_foot',
+            'announcement_content', 'announcement_background', 'announcement_visibility')
+    seen = {}
+    for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
+        try:
+            rows = {r['key'] for r in ghost_for(env, prefix, f'{prefix}_ADMIN_API_KEY')
+                    .api('GET', 'settings/')['settings']}
+            seen[label] = [k for k in WANT if k not in rows] or 'all six present'
+        except Exception as e:
+            seen[label] = f'{type(e).__name__}'
+    keys_ok = all(v == 'all six present' for v in seen.values())
+    failed = failed or not keys_ok
+    print(f'  {"PASS" if keys_ok else "FAIL"}  settings-keys: GET /admin/settings/ read with '
+          f'GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY (the integration key, no staff token) — '
+          f'{json.dumps(seen)}; the keys wanted: {", ".join(WANT)}')
 
     if args.check:
         pw, axe = playwright_dir(), axe_path()
@@ -998,6 +1331,27 @@ def main():
     print(f'  users before: {before}')
 
     user_id = None
+    # ── `injection-live`, HALF ONE (the owner's ruling, 2026-09-08). Both test Ghosts get one
+    #    harmless line in the Site-footer code-injection box BEFORE the browser starts, so the very
+    #    first connect meets a site that really has code injection set. The value found is kept
+    #    here and put back in the `finally` below — passing, failing or interrupted.
+    injection = {}
+    try:
+        for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
+            state = {'label': label, 'prefix': prefix}
+            injection[prefix] = state
+            ghost = ghost_for(env, prefix, f'{prefix}_STAFF_ACCESS_TOKEN')
+            state['ghost'] = ghost
+            state['found'] = read_foot(ghost)
+            write_foot(ghost, INJECTION_MARK)
+            # READ BACK THROUGH THE PRODUCT'S OWN CREDENTIAL, not the one that wrote it: what the
+            # probe will see is the integration key's view, and that is the claim being made.
+            state['seen'] = read_foot(ghost_for(env, prefix, f'{prefix}_ADMIN_API_KEY'))
+            state['set'] = state['seen'] == INJECTION_MARK
+    except Exception as error:
+        print(f'  FAIL  injection-live: the code-injection box could not be set: {type(error).__name__}')
+        failed = True
+
     try:
         status, user = admin.call('POST', '/admin/users',
                                   {'email': f'ghost-admin-harness-{stamp}@inflozo.com', 'email_confirm': True})
@@ -1037,6 +1391,7 @@ def main():
             'AUDIT_ROUTE': audit_route(),
             'GHOSTS': json.dumps(ghosts),
             'BOGUS_KEY': bogus,
+            'INJECTION_MARK': INJECTION_MARK,
             'SENTENCES': json.dumps(says),
         })
         for s in steps:
@@ -1049,6 +1404,28 @@ def main():
         if any(s['name'] == 'user-gone' and s['ok'] for s in steps):
             user_id = None
     finally:
+        # ── `injection-live`, HALF TWO, AND IT RUNS FIRST IN THIS BLOCK: the owner's ruling is that
+        #    both boxes go back to exactly what the step found, on failure too. Each restore is
+        #    re-read and asserted; a restore that could not be made is a FAILED run, loudly, because
+        #    the alternative is leaving a line in someone's live footer and saying nothing.
+        for prefix, state in injection.items():
+            try:
+                write_foot(state['ghost'], state['found'])
+                state['back'] = read_foot(state['ghost'])
+                state['ok'] = same_box(state['back'], state['found'])
+            except Exception as error:
+                state['ok'] = False
+                state['back'] = f'RESTORE FAILED: {type(error).__name__}'
+        if injection:
+            ok = all(s.get('set') and s.get('ok') for s in injection.values())
+            failed = failed or not ok
+            told = '; '.join(
+                f'{s["label"]} ({s["prefix"]}_STAFF_ACCESS_TOKEN wrote, {s["prefix"]}_ADMIN_API_KEY read): '
+                f'found {json.dumps(s.get("found"))}, the integration key then saw '
+                f'{json.dumps(s.get("seen"))}, restored to {json.dumps(s.get("back"))} '
+                f'(the same empty or the same string = {s.get("ok")})'
+                for s in injection.values())
+            print(f'  {"PASS" if ok else "FAIL"}  injection-live: {told}')
         if user_id:
             admin.call('DELETE', f'/admin/users/{user_id}', {})
         # The count is compared BEFORE any sweep of strays, so a user a step created by mistake is

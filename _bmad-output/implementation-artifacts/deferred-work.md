@@ -1248,8 +1248,10 @@ plain: Story 3.1 proved four things on the live site through its temporary back 
   door out, as planned. Its own harness now presses the second button for real (reconnecting a disconnected
   site swaps the key); nothing in the product yet presses the other three — so until later stories do,
   those are proved by the local tests and the database gate only, not on the deployed site.
-status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); `write-denied`, `staff-removed` and the
-  decrypt path remain
+status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decrypt path closed by Story 3.3**
+  (Dev, 2026-09-08): its connect-time probes run on the STORED key through `call()`, so every connect leaves
+  two `vault_decrypt` rows and two `admin_read` rows on the deployed function, and the harness's `decrypt-path`
+  step asserts them every run. `write-denied` and `staff-removed` remain, and both are Epic 7's
 severity: low
 origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"; the decrypt path added by
   3.2's code review (2026-09-08, Edge Case Hunter)
@@ -1275,9 +1277,10 @@ reason: R-82 wants every claim executed on the real infrastructure. With DW-48 h
 
 ## Deferred from: code review of spec-3-2-the-connect-wizard-url-integration-guide-and-the-two-keys (2026-09-08)
 
-- DW-54 (above, amended): the decrypt path — `call()` reading `vault.decrypted_secrets` and signing with it —
-  has no product caller until Story 3.3's settings read, so it runs on no infrastructure between the verify
-  route's deletion and 3.3; `rotated`, by contrast, is driven live again by 3.2's `re-adopt` step.
+- DW-54 (above, amended twice): the decrypt path — `call()` reading `vault.decrypted_secrets` and signing with
+  it — had no product caller until Story 3.3's settings read, so it ran on no infrastructure between the verify
+  route's deletion and 3.3; `rotated`, by contrast, is driven live again by 3.2's `re-adopt` step. **Story 3.3
+  built that caller** (`apps/web/server/site-probe.ts`) and the gap is closed.
 - DW-55 (below): a Ghost installed under a path cannot connect, by the approved contract.
 
 ## Deferred from: code review 2 of spec-3-2-the-connect-wizard-url-integration-guide-and-the-two-keys (2026-09-08)
@@ -1390,3 +1393,38 @@ reason: Three stories still add to this card and each would otherwise read the f
   each: the pills' line carries METADATA only, the state line carries the connection's state and its timestamp,
   and the ⋯ button goes at the top right of the header row where the frame draws it. The export is never
   edited (R-74), so this entry and the file's own comment are where the departure lives.
+amended: Story 3.3 (Dev, 2026-09-08) — **the Preview-only chip went on the STATE LINE, beside "Connected", and
+  the four probe blocks went below it as the card's last child.** The rule above decided it: Preview-only is a
+  property of the CONNECTION, not metadata about the site. So 3.5 and 3.7 now inherit a state line that already
+  carries two things and add to THAT, rather than re-deriving the answer from the frame. The harness asserts
+  the placement off the rendered boxes at 1440, 834 and 390 (`preview-notice`), which is how the owner looked
+  at it, so a later story that moves the chip back onto the pills' line fails a step rather than a reviewer.
+
+## Deferred from: spec-3-3-the-connect-time-probes-preview-only-code-injection-portal-and-the-announcement-bar (2026-09-08)
+
+- DW-60 (below): B15's **Export theme zip** and **Ship it** are drawn on the frame and built by nothing,
+  because neither path exists in any epic yet.
+
+### DW-60: B15 is built without its two buttons, because neither path exists until E11 and E7
+
+plain: The blue "Preview-only" card tells someone on a restricted Ghost(Pro) plan that Inflozo cannot publish
+  to their site. The drawing of that card has two buttons on it — **Export theme zip**, which would download
+  the theme so they can install it themselves, and a greyed-out **Ship it**. Story 3.3 built the card without
+  either, because there is nothing behind either button yet: Inflozo cannot build a theme zip and cannot
+  deploy to anything. The card says what clears the restriction and offers **Re-check plan**, which does work.
+  When the export and the deploy exist, the two buttons go back on this card.
+status: open
+severity: low
+origin: Story 3.3 spec (2026-09-08), Boundaries "Never" and the Acceptance Criteria — UX-DR3, "a control that
+  could never act is ABSENT, not greyed"
+location: apps/web/app/(app)/app/(authed)/sites/site-notices.tsx (`PreviewOnly` — its control row carries
+  Re-check plan alone) · apps/web/lib/probe-rule.ts (`PREVIEW_COPY`, whose body sentence drops the frame's
+  "and export a theme zip whenever you want" for the same reason) · `B Missing Surfaces.dc.html:1188-1225` is
+  the frame both depart from · epics.md E11 (Export) and E7 (Deploy)
+reason: The frame is right about the destination and wrong about today. UX-DR3 forbids drawing a control that
+  could never act — a greyed Ship it with no deploy path behind it explains nothing, and an Export button that
+  404s is worse than no button. The COPY had to move with the control: the frame's body sentence promises the
+  export in its second half, so a card built without the button and with the sentence would promise something
+  that is not there. `probe-rule.test.ts` asserts the absence of both names in the copy, so restoring the
+  sentence without restoring the control fails a test. The story that adds Export theme zip (E11) or Ship it
+  (E7) adds the button, the sentence and this entry's closure together.
