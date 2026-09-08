@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import type { CapabilityVerdict } from './lib/probe-rule.ts'
 import {
   announcementOf,
   capabilityOf,
@@ -7,7 +8,9 @@ import {
   PLAN_COPY,
   portalState,
   PREVIEW_COPY,
+  probePatch,
   settingsOf,
+  settingsReadable,
   THEME_PREFIX,
 } from './lib/probe-rule.ts'
 
@@ -173,4 +176,100 @@ test('B15 says Publisher or higher, never Creator, and promises no control that 
   assert.doesNotMatch(words, /theme zip|Ship it|export/i)
   assert.equal(PREVIEW_COPY.chip, 'Preview-only')
   assert.equal(PREVIEW_COPY.recheck, 'Re-check plan')
+})
+
+// ── `probePatch` — THE WHOLE WRITE A PROBE MAKES. Before the review of 2026-09-08 this mapping
+//    lived inside `server/site-probe.ts` behind `call()` and `supabaseAdmin()`, where nothing
+//    could execute it: T1 and T3 send no `hostSettings`, so the live runs only ever take the pair
+//    branch, and the harness SEEDS both questions rather than probing them. The two branches the
+//    `ghostpro_preview_probe` flag exists to gate therefore ran in no test and on no server.
+
+const patchOf = (args: {
+  previous?: Record<string, unknown>
+  previousSource?: string | null
+  settings?: Record<string, unknown>
+  verdict?: CapabilityVerdict
+}) =>
+  probePatch({
+    previous: args.previous ?? {},
+    previousSource: args.previousSource ?? null,
+    settings: settingsOf(payload(args.settings ?? {})),
+    verdict: args.verdict ?? null,
+  })
+
+test('the browse shape is checked before anything is read from it', () => {
+  assert.equal(settingsReadable(T1_LIKE), true)
+  assert.equal(settingsReadable({ settings: [] }), true, 'an empty browse is still a browse')
+  // A 200 carrying anything else is a read that did not happen: writing from it would flatten to
+  // `{}` and wipe every value while stamping "Checked just now" over it.
+  for (const junk of [null, undefined, {}, { settings: {} }, { settings: 'no' }, 'nope', 42]) {
+    assert.equal(settingsReadable(junk), false, `${JSON.stringify(junk)} is not the browse shape`)
+  }
+})
+
+test('the patch gains keys and loses none — public_url survives every probe', () => {
+  // Story 3.2 wrote `public_url` and this story knows nothing about it. The matrix's first row.
+  const { site_settings } = patchOf({
+    previous: { public_url: 'https://ghost6.inflozo.com/', something_later: 7 },
+    settings: { portal_button: false, announcement_content: 'hi' },
+  })
+  assert.equal(site_settings.public_url, 'https://ghost6.inflozo.com/')
+  assert.equal(site_settings.something_later, 7)
+  assert.equal(site_settings.code_injection, false)
+  assert.equal(site_settings.portal_button, false)
+  assert.equal(site_settings.portal_button_source, 'probe')
+  assert.deepEqual(site_settings.announcement, { content: 'hi', background: null, visibility: null })
+})
+
+test('a probe overwrites a declared Portal answer with a READING, never with an assumption', () => {
+  const answered = { portal_button: false, portal_button_source: 'declared' }
+  // Ghost still hides it: the user's "No, it's off" STANDS, and the question does not come back.
+  // Without this, every Re-check and every one of Story 3.7's cron runs put `true`/`default` back.
+  const kept = patchOf({ previous: answered, settings: {} }).site_settings
+  assert.equal(kept.portal_button, false)
+  assert.equal(kept.portal_button_source, 'declared')
+  // Ghost answers a real boolean again: the READING wins, which is what "3.7 re-reads it, so
+  // 'probe' always wins later" means.
+  const read = patchOf({ previous: answered, settings: { portal_button: true } }).site_settings
+  assert.equal(read.portal_button, true)
+  assert.equal(read.portal_button_source, 'probe')
+  // And a default over a default is still a default — nothing to preserve.
+  const fresh = patchOf({ previous: {}, settings: {} }).site_settings
+  assert.equal(fresh.portal_button, true)
+  assert.equal(fresh.portal_button_source, 'default')
+})
+
+test('the ask verdict raises plan_ask, and never re-asks a question already answered', () => {
+  const ask = { ask: true } as const
+  // First time: `hostSettings` present, shape unreadable — the ONE question FR-C8 allows.
+  const asked = patchOf({ verdict: ask }).site_settings
+  assert.equal(asked.plan_ask, true)
+  // The user answered, so `capability_source` is `user_declared`. The payload is just as
+  // unreadable on the next probe, and the question must NOT come back.
+  const answered = patchOf({ verdict: ask, previousSource: 'user_declared' }).site_settings
+  assert.equal(answered.plan_ask, undefined)
+  // A real verdict still clears it — B15's Re-check plan on a site that has since been upgraded.
+  const cleared = patchOf({
+    previous: { plan_ask: true },
+    previousSource: 'user_declared',
+    verdict: { capability: 'full', capability_source: 'probe' },
+  })
+  assert.equal(cleared.site_settings.plan_ask, undefined)
+  assert.equal(cleared.capability, 'full')
+  assert.equal(cleared.capability_source, 'probe')
+})
+
+test('a null verdict writes NEITHER capability column — the flag-off production seed', () => {
+  // `capabilityOf` answers null for a Ghost(Pro) payload with the flag off, and the patch must
+  // carry no capability at all: untouched, not "written as full".
+  const patch = patchOf({ verdict: capabilityOf({ limits: { customThemes: ['casper'] } }, false) })
+  assert.equal('capability' in patch, false)
+  assert.equal('capability_source' in patch, false)
+  assert.equal(patch.site_settings.plan_ask, undefined)
+})
+
+test('the preview_only pair is carried onto the row with its source', () => {
+  const patch = patchOf({ verdict: capabilityOf({ limits: { customThemes: ['casper'] } }, true) })
+  assert.equal(patch.capability, 'preview_only')
+  assert.equal(patch.capability_source, 'probe')
 })

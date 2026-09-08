@@ -1,11 +1,5 @@
 import { ghostProPreviewProbe } from '@/lib/flags'
-import {
-  announcementOf,
-  capabilityOf,
-  injectionFlag,
-  portalState,
-  settingsOf,
-} from '@/lib/probe-rule'
+import { capabilityOf, probePatch, settingsOf, settingsReadable } from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 
@@ -57,10 +51,15 @@ export async function probeSite(args: {
     // server/ghost-admin if the pair ever races something other than its own caller.
     const { data: before, error: readError } = await admin
       .from('sites')
-      .select('site_settings')
+      // `capability_source` comes back with it because `probePatch` needs to know whether the user
+      // has already ANSWERED the plan question, so a re-probe does not ask it again (review).
+      .select('site_settings, capability_source')
       .eq('id', args.siteId)
       .eq('user_id', args.userId)
-      .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
+      .maybeSingle<{
+        site_settings: Record<string, unknown> | null
+        capability_source: string | null
+      }>()
     if (readError || !before) {
       console.error('sites: probe read failed', { code: readError?.code ?? 'site_not_found' })
       return { ok: false, code: readError?.code ?? 'site_not_found' }
@@ -71,10 +70,24 @@ export async function probeSite(args: {
     // T3 5.130.6 on 2026-09-08: both answer 200 to `config/` AND `settings/` with the header and
     // with the integration key alone (§39).
     const config = await call({ siteId: args.siteId, path: PATHS.config, route: args.route })
+    // SEQUENTIAL AND SHORT-CIRCUITED: a `config/` that Ghost refused is a probe that has already
+    // failed, and asking `settings/` anyway spent a second decryption, a second round trip and a
+    // second `admin_read error` row to learn the same thing twice (review, 2026-09-08).
+    if (!config.ok) {
+      console.error('sites: probe refused', { code: config.code })
+      return { ok: false, code: config.code }
+    }
     const settingsResponse = await call({ siteId: args.siteId, path: PATHS.settings, route: args.route })
-    if (!config.ok || !settingsResponse.ok) {
-      console.error('sites: probe refused', { code: config.code ?? settingsResponse.code })
-      return { ok: false, code: config.code ?? settingsResponse.code }
+    if (!settingsResponse.ok) {
+      console.error('sites: probe refused', { code: settingsResponse.code })
+      return { ok: false, code: settingsResponse.code }
+    }
+    // A 200 THAT IS NOT THE BROWSE SHAPE IS NOT A READ. Writing from it would flatten to `{}` and
+    // quietly wipe `code_injection`, Portal and the announcement, then stamp `settings_read_at` to
+    // say it had all just been checked (review, 2026-09-08).
+    if (!settingsReadable(settingsResponse.body)) {
+      console.error('sites: probe unreadable', { code: 'settings_unreadable' })
+      return { ok: false, code: 'settings_unreadable' }
     }
 
     const body = (config.body as { config?: { version?: unknown; hostSettings?: unknown } })?.config
@@ -84,30 +97,24 @@ export async function probeSite(args: {
     // columns keep what they had.
     const verdict = body ? capabilityOf(body.hostSettings, await ghostProPreviewProbe()) : null
 
-    const settings = settingsOf(settingsResponse.body)
-    const injection = injectionFlag(settings)
-    const portal = portalState(settings)
-    const asked = verdict !== null && 'ask' in verdict
-
-    // `site_settings` GAINS keys and loses none: `public_url` and anything a later story put here
-    // is spread through untouched. `plan_ask` is written only while it is true, and the answer
-    // action deletes it.
+    // THE WHOLE MAPPING IS PURE AND LIVES IN `probe-rule.ts`, where `node --test` can reach the
+    // two verdicts no live Ghost can produce. `site_settings` GAINS keys and loses none:
+    // `public_url` and anything a later story put here is spread through untouched.
     const previous = (before.site_settings ?? {}) as Record<string, unknown>
-    const site_settings: Record<string, unknown> = {
-      ...previous,
-      code_injection: injection,
-      ...portal,
-      announcement: announcementOf(settings),
-    }
-    if (asked) site_settings.plan_ask = true
-    else delete site_settings.plan_ask
+    const patch = probePatch({
+      previous,
+      previousSource: before.capability_source,
+      settings: settingsOf(settingsResponse.body),
+      verdict,
+    })
+    const { site_settings } = patch
+    const injection = site_settings.code_injection === true
 
-    const capability = verdict && 'capability' in verdict ? verdict : null
     const { error: writeError } = await admin
       .from('sites')
       .update({
         ...(version ? { ghost_version: version } : {}),
-        ...(capability ?? {}),
+        ...(patch.capability ? { capability: patch.capability, capability_source: patch.capability_source } : {}),
         site_settings,
         // Stamped WITH the read it names: "Checked just now" may only be said about a read that
         // happened (Story 3.2's own finding).
@@ -122,7 +129,7 @@ export async function probeSite(args: {
 
     return {
       ok: true,
-      capability: capability?.capability ?? 'unchanged',
+      capability: patch.capability ?? 'unchanged',
       code_injection: injection,
     }
   } catch (thrown) {

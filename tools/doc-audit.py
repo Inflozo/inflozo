@@ -403,7 +403,13 @@ DOCS = [
   'produce them here (⛔ §4 T4); and preview-notice reads B15 off the deployed card at 1440, 834 '
   'and 390 — the chip on the STATE line beside Connected (DW-57), Export theme zip and Ship it '
   'absent because neither path exists (UX-DR3) — then presses Re-check plan and watches a '
-  'self-hosted Ghost clear itself back to full. Stories 3.2 and 3.3.'),
+  'self-hosted Ghost clear itself back to full. The review of 2026-09-08 added ownership, which '
+  "forges a SECOND account's site id into a notice form and proves the row does not move: the four "
+  'new actions write under the service role, so one .eq(user_id) inside the action is the whole '
+  'guard between two accounts and nothing had ever executed it. Note that --check is no longer '
+  'plumbing alone — it re-executes settings-keys against both live Ghosts, so it needs every key '
+  'the full run does, the two staff tokens included; it still starts no browser and creates '
+  'nothing. Stories 3.2 and 3.3.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

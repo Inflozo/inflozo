@@ -202,3 +202,71 @@ export const PLAN_COPY = {
   full: 'Yes — custom themes allowed',
   preview: 'No — themes are restricted',
 } as const
+
+/**
+ * IS THIS THE SHAPE GHOST ACTUALLY ANSWERS WITH? `settings/` is a browse and answers
+ * `{ meta, settings: [{key, value}] }` on both majors (§39). A 200 carrying anything else is a
+ * read that did not happen: `settingsOf` would flatten it to `{}` and every reader below would
+ * then answer its "could not read" — `code_injection` false, Portal back to `default`, the
+ * announcement nulled — about a payload nobody parsed. That is a WIPE wearing a probe's clothes,
+ * so the caller checks this first and writes nothing (review, 2026-09-08).
+ */
+export function settingsReadable(body: unknown): boolean {
+  return Array.isArray((body as { settings?: unknown })?.settings)
+}
+
+/**
+ * THE WHOLE WRITE A PROBE MAKES, AS A PURE FUNCTION — verdict and payload in, the row's patch out.
+ * It lives here rather than in `server/site-probe.ts` because the mapping is where the story's
+ * rules actually are, and behind `call()` and `supabaseAdmin()` nothing could reach it: the
+ * `{ ask: true }` and `null` verdicts are unreachable on T1 and T3 (neither sends `hostSettings`)
+ * and unreachable in the harness (the question is SEEDED, never probed), so before this the two
+ * branches the `ghostpro_preview_probe` flag exists to gate ran in no test and on no server —
+ * and the flag would have been flipped at the §4 T4 gate with them never once executed (review,
+ * 2026-09-08, Verification Gap).
+ *
+ * TWO PRESERVATION RULES, and both are the same rule: A PROBE MAY OVERWRITE AN ANSWER WITH A
+ * READING, NEVER WITH AN ASSUMPTION.
+ *
+ *   PORTAL — `portalState` cannot see that the user already answered, so on a Ghost that keeps
+ *   hiding `portal_button` every re-check and every one of Story 3.7's cron runs would put
+ *   `true`/`default` back over the user's "No, it's off" and ask again, for ever. A real read
+ *   (`'probe'`) still wins, which is what "3.7 re-reads it, so `'probe'` always wins later" means.
+ *
+ *   THE PLAN QUESTION — `answerPlan` clears `plan_ask` so the question does not come back, and
+ *   an unreadable `hostSettings` is unreadable every time, so the next probe would re-raise the
+ *   question the user has already answered. A site whose `capability_source` is `'user_declared'`
+ *   is not asked twice; a real verdict pair still overwrites it, because that is B15's
+ *   "Re-check plan" clearing a site that has since been upgraded.
+ */
+export function probePatch(args: {
+  previous: Record<string, unknown>
+  previousSource: string | null
+  settings: Record<string, unknown>
+  verdict: CapabilityVerdict
+}): {
+  site_settings: Record<string, unknown>
+  capability?: Capability
+  capability_source?: CapabilitySource
+} {
+  const { previous, previousSource, settings, verdict } = args
+
+  const portal = portalState(settings)
+  // An assumption does not overwrite an answer; a reading does.
+  const declared = portal.portal_button_source === 'default' && previous.portal_button_source === 'declared'
+  const site_settings: Record<string, unknown> = {
+    ...previous,
+    code_injection: injectionFlag(settings),
+    ...(declared
+      ? { portal_button: previous.portal_button, portal_button_source: 'declared' }
+      : portal),
+    announcement: announcementOf(settings),
+  }
+
+  const asked = verdict !== null && 'ask' in verdict
+  if (asked && previousSource !== 'user_declared') site_settings.plan_ask = true
+  else delete site_settings.plan_ask
+
+  const pair = verdict && 'capability' in verdict ? verdict : null
+  return { site_settings, ...(pair ?? {}) }
+}

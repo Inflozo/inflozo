@@ -10,7 +10,10 @@ import { AlertTriangle, CheckCircleSolid, InfoCircle, XCircleSolid } from './ico
    own 32px buttons instead — a primary for the way on and a secondary for the way out. He ruled
    it on his test of story 2.1 for the passkey nudge (`(authed)/passkey-nudge.tsx`, 2026-09-06):
    "Add passkey as primary button and Not now as secondary (muted design) button." A banner that
-   merely TELLS the user something keeps the sentence and `BannerLink`. */
+   merely TELLS the user something keeps the sentence and `BannerLink` — or, where the thing it
+   tells you is over once you have read it, the sentence and ONE dismissing button: Story 3.3's
+   code-injection notice and its **Got it**, which the spec sanctioned in those words. What the
+   rule forbids is a second WAY ON dressed as a link (review, 2026-09-08). */
 
 export type BannerKind = 'info' | 'success' | 'notice' | 'error'
 

@@ -59,6 +59,25 @@ test('the flag reader filters on a key the migration actually seeds', () => {
     )
   }
   assert.ok(read.includes('ghostpro_preview_probe'), `${FLAGS}: FR-C2's probe switch is no longer read`)
+  // AND EVERY ROW READ GOES THROUGH `flagRow`, WITH A LITERAL. The regex above can only see
+  // literals, so a `flagRow(someKey)` — or a second `.eq('key', …)` written straight onto the
+  // table — would simply not appear in `read` and this test would pass vacuously about a flag it
+  // never checked was seeded. Both shapes are asserted away instead (review, 2026-09-08).
+  const calls = [...flags.matchAll(/(?<!function )flagRow\(/g)].length
+  assert.equal(
+    calls,
+    read.length,
+    `${FLAGS}: ${calls} flagRow(…) call(s) but only ${read.length} with a literal key. ` +
+      'A key that is not a literal cannot be checked against the migrations, so the flag would ' +
+      'fail closed for ever with every gate green.',
+  )
+  const direct = [...flags.matchAll(/\.eq\('key',/g)].length
+  assert.equal(
+    direct,
+    1,
+    `${FLAGS}: ${direct} .eq('key', …) filter(s). Exactly one may exist — the one inside ` +
+      'flagRow — or a flag is being read on a path that this test cannot see.',
+  )
   // And the table it reads from is the one the seed inserts into.
   assert.match(flags, /\.from\('feature_flags'\)/)
 })

@@ -1435,3 +1435,104 @@ reason: The frame is right about the destination and wrong about today. UX-DR3 f
   that is not there. `probe-rule.test.ts` asserts the absence of both names in the copy, so restoring the
   sentence without restoring the control fails a test. The story that adds Export theme zip (E11) or Ship it
   (E7) adds the button, the sentence and this entry's closure together.
+  **A THIRD departure, added by the review of 2026-09-08 because this entry is where B15's departures live:**
+  the frame names the tier — "Ghost(Pro) **Starter** does not allow custom themes", "theme uploads **on
+  Starter**" — and `PREVIEW_COPY` says "this site's Ghost(Pro) plan" and "on this plan" instead. The reason is
+  that the tier is NOT KNOWABLE from what the probe reads: `customThemes` says what the plan forbids, never
+  what it is called, and nothing in this story reads a plan name. Naming Starter would be asserting a fact
+  Inflozo does not have. When the §4 T4 Starter trial makes a real `hostSettings` observable, the story that
+  reads it decides whether the tier can be named and amends this entry with the answer.
+
+## Deferred from: code review of spec-3-3-the-connect-time-probes (2026-09-08)
+
+- DW-61 (below): the four notice blocks put a `<form>` inside the `<span>` the Kit's Banner wraps its children in.
+- DW-62 (below): a site connected under Story 3.2 is never probed, because no product path reaches a first probe.
+- DW-63 (below): the probe rewrites `ghost_version` with none of connect's version rule.
+- DW-64 (below): **Re-check plan** has no throttle.
+- DW-65 (below): four read-modify-write paths share `site_settings` with no concurrency control.
+
+### DW-61: the notice blocks nest a form inside a span, because that is the slot the Kit gives them
+
+plain: A tiny HTML technicality. The blue notices on a site's card each contain a button, and a button has
+  to sit inside a form. The Kit's notice component puts whatever you give it inside a `<span>`, which by the
+  written rules of HTML is not allowed to contain a form. Every browser accepts it, it looks right, and the
+  accessibility checker finds nothing — but a strict HTML validator would complain.
+status: open
+severity: low
+origin: Story 3.3 code review (2026-09-08) — Blind Hunter and the Acceptance Auditor, independently
+location: apps/web/components/kit/banner.tsx (`<span>{children}</span>` — the slot) ·
+  apps/web/app/(app)/app/(authed)/sites/site-notices.tsx (the four blocks) ·
+  apps/web/app/(app)/app/(authed)/passkey-nudge.tsx (the same shape, since Story 2.1)
+reason: NOT this story's to fix. The pattern arrived with the owner's own two-button ruling at his test of
+  2.1 and every Banner in the app shares the slot, so correcting it means changing `banner.tsx` for all of
+  them — a Kit change, in a story about probes. `<span>` is phrasing content and `<form>` is flow content,
+  but unlike `<p>` a browser does not reparse it, so nothing renders wrongly and axe reports zero violations
+  at both widths. The story that next touches the Kit's Banner changes the slot to a `<div>` and closes this.
+
+### DW-62: a site connected before Story 3.3 is never probed, because nothing asks it to be
+
+plain: The connect-time probes run when a site is connected. The two sites the owner connected while
+  testing Story 3.2 were connected before those probes existed, so nothing has ever looked at them — they
+  will show no code-injection note and no Preview-only chip even if Ghost would warrant one. There is no
+  button that says "check this site now" except **Re-check plan**, and that one only appears on a card that
+  is already marked Preview-only, which none of them is. Story 3.7's daily check is what fixes it for good.
+status: open
+severity: low
+origin: Story 3.3 code review (2026-09-08), Blind Hunter
+location: apps/web/server/site-probe.ts (`probeSite`, whose callers are connect and B15's Re-check plan) ·
+  apps/web/app/(app)/app/(authed)/sites/site-notices.tsx (`PreviewOnly` — the only surface carrying a
+  re-probe control) · Story 3.7 (the daily health check, which re-runs this same function)
+reason: The probe is deliberately one function with three callers and the third does not exist yet, so the
+  gap is a scheduling gap and not a defect. Backfilling inside 3.3 would mean either a migration-time sweep
+  (no) or a re-probe on every `/sites` render (two Ghost round trips per page view — no). 3.7's cron calls
+  `probeSite` for every site daily and closes this on its first run; the entry exists so that story knows a
+  first run is a BACKFILL and not only a refresh.
+
+### DW-63: the probe rewrites ghost_version without connect's version rule
+
+plain: When Inflozo connects a site it refuses Ghost 4 and older with a friendly "please update Ghost". The
+  probe, which runs afterwards and again on every re-check, copies whatever version Ghost reports straight
+  onto the record without applying that rule — so a site that was downgraded would have the old version
+  stored, and Inflozo would go on talking to it in that version's dialect.
+status: open
+severity: low
+origin: Story 3.3 code review (2026-09-08), Blind Hunter
+location: apps/web/server/site-probe.ts (the `ghost_version` write) · apps/web/lib/connect-rule.ts (the
+  version rule connect applies) · apps/web/server/ghost-admin/index.ts (`majorOf`, which pins
+  `Accept-Version` from the stored value)
+reason: Story 3.7 is where a version is re-detected and where "this site is no longer supported" has a
+  surface to appear on ("Reconnect needed", with reason and date). Refusing inside 3.3's probe would mean
+  inventing an unhealthy state this epic cannot yet draw, and silently declining to store a version would
+  be worse than storing it. 3.7 applies the rule at re-detection and closes this.
+
+### DW-64: Re-check plan has no throttle
+
+plain: The **Re-check plan** button on a Preview-only card can be pressed as often as somebody likes, and
+  each press decrypts the stored key twice, makes two calls to their Ghost and writes four audit rows.
+status: open
+severity: low
+origin: Story 3.3 code review (2026-09-08), Blind Hunter
+location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`recheckPlan`) · apps/web/server/site-probe.ts
+reason: It is the user's own site, their own key and their own Ghost, and the button exists precisely so
+  somebody who has just upgraded does not have to wait a day. A cooldown wants a rule nobody has decided
+  (how long, and what the button says while it waits), and `settings_read_at` is already on the row to base
+  one on. Story 3.7 adds scheduled load on the same path and is the natural place to weigh both together.
+
+### DW-65: four writers share site_settings, and the last one wins
+
+plain: Four things now write to the same box of settings on a site's record — the probe, the two answer
+  buttons and **Re-check plan**. Each reads the box, changes one thing and writes the whole box back, so if
+  two happened at the same instant the second would erase the first's change. It needs two things to
+  happen within the same fraction of a second on one site.
+status: open
+severity: low
+origin: Story 3.3 code review (2026-09-08), Blind Hunter and the Edge Case Hunter
+location: apps/web/server/site-probe.ts (`probeSite`'s read-then-write, and its own `ponytail:` note) ·
+  apps/web/app/(app)/app/(authed)/sites/actions.ts (`answerPortal`, `answerPlan` — each now re-reads the
+  row first, which narrows the window without closing it)
+reason: supabase-js speaks PostgREST and PostgREST has no `||` for jsonb, so the atomic form is
+  `update sites set site_settings = site_settings || $patch::jsonb`, which must be SQL — and all SQL in
+  this project goes through `server/ghost-admin/`, whose whole point is that it is the one place a
+  credential is decrypted. Putting an ordinary settings write in there to buy atomicity would widen that
+  module for the wrong reason. The story that gives the project a second, unprivileged SQL path — or 3.7,
+  which adds a writer that runs unattended and therefore actually can collide — takes this.

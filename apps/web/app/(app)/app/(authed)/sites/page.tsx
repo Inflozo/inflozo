@@ -69,8 +69,9 @@ export default async function Sites({
   searchParams,
 }: {
   // A repeated key (`?q=a&q=b`) arrives as an ARRAY; `filterSites` takes the first, as the
-  // dashboard's own filter does. `recheck` is B15's own: `recheckPlan` redirects here with it
-  // when the re-run probe could not reach Ghost, so the card is unchanged and says why.
+  // dashboard's own filter does. `recheck` is B15's own: `recheckPlan` redirects here with the
+  // ID OF THE SITE whose re-run probe could not reach Ghost, so that card is unchanged and says
+  // why — and no other card claims a failure that was not its own.
   searchParams: Promise<{ q?: string | string[]; recheck?: string | string[] }>
 }) {
   const [{ q, recheck }, user] = await Promise.all([searchParams, currentUser()])
@@ -100,8 +101,10 @@ export default async function Sites({
   const linked = projectCounts(projects ?? [])
 
   const { query, shown } = filterSites(sites, q)
-  // B15's own: `recheckPlan` redirects here when the re-run probe could not reach Ghost.
-  const recheckFailed = (Array.isArray(recheck) ? recheck[0] : recheck) === 'failed'
+  // B15's own: `recheckPlan` redirects here when the re-run probe could not reach Ghost, and it
+  // names the SITE it failed for — the banner belongs to one card, not to the page, and a success
+  // redirects without the parameter so it cannot outlive the failure it describes (review).
+  const recheckedId = Array.isArray(recheck) ? recheck[0] : recheck
 
   // One clock for the whole render, so two cards a millisecond apart never disagree.
   const now = new Date()
@@ -250,7 +253,7 @@ export default async function Sites({
                         {checkedLabel(site.settings_read_at, now)}
                       </span>
                     </div>
-                    <SiteNotices site={site} recheckFailed={recheckFailed} />
+                    <SiteNotices site={site} recheckFailed={recheckedId === site.id} />
                   </article>
                 )
               })}

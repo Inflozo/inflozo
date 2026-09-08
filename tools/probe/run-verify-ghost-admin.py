@@ -91,8 +91,11 @@ list gone stale — the sibling harness's own note):
                  action plus `config/` and `settings/` from the probe. Before this story nothing
                  in the product decrypted at all
   probe-selfhosted  FR-C2's four probes on a real self-hosted Ghost: `hostSettings` is absent, so
-                 `capability` is `full` with source `probe` (the ghostpro_preview_probe flag OFF,
-                 as production seeds it); `site_settings` carries `code_injection` true (see
+                 `capability` is `full` with source `probe` — the SAME answer with the
+                 ghostpro_preview_probe flag on or off, which is why this step says nothing about
+                 the flag (the flag-off branch is proved in `probe-rule.test.ts`, against a
+                 Ghost(Pro) payload no server here can send); `site_settings` carries
+                 `code_injection` true (see
                  injection-live), `portal_button` false with source `probe` — Ghost answers a
                  real boolean, so no question — the announcement's three values with
                  `visibility` still the JSON STRING Ghost sends, and Story 3.2's `public_url`
@@ -146,6 +149,13 @@ list gone stale — the sibling harness's own note):
                  no-JS paint is DW-56
   axe-notices    axe-core over `/sites` with EVERY block on screen at once — the code-injection
                  notice, both questions and B15 — at 1440 and 390
+  ownership      THE GUARD BETWEEN TWO ACCOUNTS, executed. The four actions this story adds write
+                 through the service role, which bypasses RLS, and take the site id from a FORM
+                 field — so `.eq('user_id', …)` inside the action is the whole of it. A second
+                 throwaway user gets a site row, its id is forged into a notice form the fixture
+                 legitimately has on screen, the form is submitted from the fixture's own session,
+                 and the foreign row is read back BYTE-IDENTICAL. Added by the review of
+                 2026-09-08: deleting that one `.eq` left every gate and every step here green
   preview-notice  B15 (`B Missing Surfaces.dc.html:1188-1225`) on the deployed card: its sky panel
                  and cause sentence, "What clears this" with both routes out (Publisher or higher,
                  and self-hosted), and Export theme zip / Ship it ABSENT because neither path
@@ -366,6 +376,7 @@ const APP = process.env.APP_URL
 const SB = process.env.SB_URL.replace(/\/$/, '')
 const SECRET = process.env.SB_SECRET
 const USER_ID = process.env.USER_ID
+const OTHER_USER_ID = process.env.OTHER_USER_ID
 const CONFIRM = process.env.CONFIRM_URL
 const ROUTE = process.env.AUDIT_ROUTE
 const GHOSTS = JSON.parse(process.env.GHOSTS)
@@ -862,7 +873,12 @@ const shoot = async (page, name) => {
 
     // ── THE FOUR PROBES, ON A SELF-HOSTED GHOST. `hostSettings` is absent on both majors (§15h
     //    item 2, §39), which means self-hosted and unlimited — so `capability` is `full` and its
-    //    source is `probe`, with the ghostpro_preview_probe flag OFF, as production seeds it.
+    //    source is `probe`.
+    //    THIS STEP SAYS NOTHING ABOUT THE FLAG, deliberately: `capabilityOf` answers `full` for an
+    //    absent `hostSettings` whether the flag is on or off — it is a fact about the payload, not
+    //    a judgement about a plan — so a run here CANNOT tell the two apart and a sentence claiming
+    //    it did would be a result with no control behind it (review, 2026-09-08). The flag-off
+    //    branch is proved where it can be: `probe-rule.test.ts`, against a Ghost(Pro) payload.
     const probed = (await rowsOf('*')).find((r) => r.id === t1SiteId) || {}
     const ss = probed.site_settings || {}
     const ann = ss.announcement || {}
@@ -872,7 +888,8 @@ const shoot = async (page, name) => {
       && typeof ann.content === 'string' && typeof ann.visibility === 'string'
       && ss.public_url === pub1.url && ss.plan_ask === undefined,
       `capability ${probed.capability} / source ${probed.capability_source} (hostSettings absent = ` +
-      `self-hosted); site_settings.code_injection ${ss.code_injection} (the harness set the Site ` +
+      `self-hosted and unlimited, which is the same answer with the flag on or off — this step ` +
+      `cannot and does not test the flag); site_settings.code_injection ${ss.code_injection} (the harness set the Site ` +
       `footer — see injection-live), portal_button ${ss.portal_button} source ${ss.portal_button_source} ` +
       `(Ghost answered a real boolean, so no question), announcement.visibility ${JSON.stringify(ann.visibility)} ` +
       `stored as the JSON STRING Ghost sends, and Story 3.2's public_url still there = ` +
@@ -1158,14 +1175,62 @@ const shoot = async (page, name) => {
       })))
     const wired = noticeForms.filter((f) => f.method === 'post' && f.action && f.encoded
                                             && f.site === 1 && f.submits === 1)
+    // THE EXPECTED COUNT IS DERIVED FROM WHAT IS ON SCREEN, not written down. `>= 6` was a floor
+    // the run cleared by one, so exactly one control could become a client `onClick` — vanishing
+    // from a locator that can only ever match forms — and the step would still pass while that
+    // control silently stopped working with scripts off (review, 2026-09-08). Counting every
+    // BUTTON inside the notice blocks and requiring one form per button closes it: a control that
+    // leaves the form set is still counted on the button side, so the two numbers disagree.
+    const noticeButtons = await page.locator('article button[type="submit"]').count()
     step('notices-js-off',
-      noticeForms.length >= 6 && wired.length === noticeForms.length,
-      `${noticeForms.length} notice control(s) on the two cards — Got it, both answers of each question and ` +
-      `Re-check plan — and ${wired.length} of them are progressively-enhanced server actions: method=post, an ` +
+      noticeForms.length > 0 && wired.length === noticeForms.length && noticeForms.length === noticeButtons,
+      `${noticeButtons} submit control(s) on the two cards — Got it, both answers of each question and ` +
+      `Re-check plan — against ${noticeForms.length} form(s) wrapping them (equal = ` +
+      `${noticeForms.length === noticeButtons}: every control is a form, none is a client handler), and ` +
+      `${wired.length} of them are progressively-enhanced server actions: method=post, an ` +
       `action attribute, React's encoded $ACTION_* hidden fields, exactly one hidden site_id and one submit ` +
       `each. No client component, no state (the shell's own no-JS paint is DW-56).`)
 
     await axeAt(page, 'notices')
+
+    // ── OWNERSHIP, AND IT IS THE ONLY THING BETWEEN TWO ACCOUNTS. The four actions this story
+    //    adds write through `supabaseAdmin()`, which bypasses RLS by construction, and the site
+    //    id arrives as a FORM FIELD — so `.eq('user_id', user.id)` in `writeSite`/`rowFor` is the
+    //    whole guard, and until now no test in the repository observed it: deleting that one line
+    //    left `pnpm check`, the RLS gate and every step here green, because the unit tests never
+    //    call an action and this harness only ever ran as a single user (review, 2026-09-08,
+    //    Verification Gap). So: a row belonging to SOMEBODY ELSE, forged into a form the fixture
+    //    legitimately has on screen, submitted from the fixture's own session.
+    const foreign = (await insert('/sites', {
+      user_id: OTHER_USER_ID, url: 'https://foreign.inflozo.com', title: 'Foreign',
+      capability: 'preview_only', capability_source: 'user_declared',
+    })).body
+    const foreignId = (foreign && foreign[0] && foreign[0].id) || null
+    const foreignBefore = JSON.stringify(foreign && foreign[0] ? {
+      capability: foreign[0].capability, source: foreign[0].capability_source,
+      shown: foreign[0].code_injection_notice_shown_at, site_settings: foreign[0].site_settings,
+    } : null)
+    // Swap the hidden id in the FIRST notice form and submit it — the same POST a hand-rolled
+    // curl would make, made through the page so the action sees a real session.
+    const forged = await page.evaluate((id) => {
+      const field = document.querySelector('article form input[name="site_id"]')
+      if (!field) return false
+      field.value = id
+      field.form.querySelector('button[type="submit"]').click()
+      return true
+    }, foreignId)
+    await page.waitForLoadState('networkidle').catch(() => {})
+    const foreignRow = ((await wire(`/sites?id=eq.${foreignId}&select=*`)).body || [])[0] || {}
+    const foreignAfter = JSON.stringify({
+      capability: foreignRow.capability, source: foreignRow.capability_source,
+      shown: foreignRow.code_injection_notice_shown_at, site_settings: foreignRow.site_settings,
+    })
+    step('ownership',
+      Boolean(foreignId) && forged && foreignAfter === foreignBefore,
+      `a site row owned by a DIFFERENT account was forged into a notice form and submitted from ` +
+      `the fixture's own session (forged = ${forged}); the row is byte-identical afterwards = ` +
+      `${foreignAfter === foreignBefore} (${foreignAfter}). The service role bypasses RLS, so ` +
+      `.eq('user_id') in the action is the only thing that refused it.`)
 
     // ── B15, THE PREVIEW-ONLY NOTICE (`B Missing Surfaces.dc.html:1188-1225`), on the deployed
     //    card at the three widths the spec names — and then its own Re-check plan, which is the
@@ -1184,6 +1249,14 @@ const shoot = async (page, name) => {
       const pillBox = await boxOf(t1Card.getByText(`Ghost ${short(T1.version)}`))
       const checkBox = await boxOf(t1Card.getByText('Checked', { exact: false }).first())
       const inner = Math.round((await boxOf(t1Card)).width - 36)
+      // B15 MUST ALSO FIT THE CARD IT IS IN. The chip's placement was measured at all three
+      // widths and the BLOCK below it at none — and 834 is the width that squeezes: a padded sky
+      // panel, an ordered list with an 18px marker, and a 36px button inside ~139px of content
+      // (review, 2026-09-08). A block wider than its own scroll box is content running off the
+      // card, which is the one thing the owner would see and no assertion would.
+      const overflow = await t1Card.locator('section[aria-labelledby^="preview-"]').evaluate(
+        (el) => el.scrollWidth - el.clientWidth)
+      if (overflow > 1) placed = false
       // DW-57 IS THE RULE AND THIS IS IT: the chip is on the STATE line — below the metadata
       // pills, never on them, and above the "Checked …" timestamp the state line ends with.
       const onStateLine = chipBox.y > pillBox.y && chipBox.y <= checkBox.y
@@ -1200,7 +1273,8 @@ const shoot = async (page, name) => {
       const fits = inner >= 195
       widths.push(`${width}: card ${inner}px, chip y ${Math.round(chipBox.y)} · Connected ` +
                   `${Math.round(stateBox.y)} · pills ${Math.round(pillBox.y)} · Checked ` +
-                  `${Math.round(checkBox.y)} — on the state line = ${onStateLine}, beside Connected = ${beside}` +
+                  `${Math.round(checkBox.y)} — on the state line = ${onStateLine}, B15 overflow ` +
+                  `${overflow}px, beside Connected = ${beside}` +
                   `${fits ? '' : ' (the card is too narrow for both, as it is for the two pills)'}`)
       if (!onStateLine || (fits && !beside)) placed = false
     }
@@ -1295,7 +1369,9 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     const orphanCard = page.locator('article', { hasText: 'orphan.inflozo.com' }).first()
     await orphanCard.getByRole('button', { name: SAY.preview_recheck }).click()
-    await page.waitForURL((u) => u.searchParams.get('recheck') === 'failed').catch(() => {})
+    // The redirect names the SITE whose re-check failed (review, 2026-09-08) — the banner belongs
+    // to one card, not to the page.
+    await page.waitForURL((u) => u.searchParams.get('recheck') === orphanId).catch(() => {})
     const banner = await page.getByText(SAY.preview_recheck_failed).isVisible().catch(() => false)
     const orphanAfterRow = ((await rowsOf('*')).find((r) => r.id === orphanId)) || {}
     const orphanAfter = JSON.stringify({
@@ -1477,6 +1553,7 @@ def main():
     print(f'  users before: {before}')
 
     user_id = None
+    other_id = None
     # ── `injection-live`, HALF ONE (the owner's ruling, 2026-09-08). Both test Ghosts get one
     #    harmless line in the Site-footer code-injection box BEFORE the browser starts, so the very
     #    first connect meets a site that really has code injection set. The value found is kept
@@ -1488,7 +1565,14 @@ def main():
             injection[prefix] = state
             ghost = ghost_for(env, prefix, f'{prefix}_STAFF_ACCESS_TOKEN')
             state['ghost'] = ghost
-            state['found'] = read_foot(ghost)
+            found = read_foot(ghost)
+            # A RUN THAT WAS KILLED between the write and the `finally` left the marker in the
+            # box. Adopting it as "what we found" and faithfully restoring it would make the
+            # marker PERMANENT, and every later run would agree it belonged there. The box is
+            # ours only when it holds exactly our marker, so that is the one value that
+            # reconciles to empty (review, 2026-09-08).
+            state['stale'] = found == INJECTION_MARK
+            state['found'] = None if state['stale'] else found
             write_foot(ghost, INJECTION_MARK)
             # READ BACK THROUGH THE PRODUCT'S OWN CREDENTIAL, not the one that wrote it: what the
             # probe will see is the integration key's view, and that is the claim being made.
@@ -1506,6 +1590,17 @@ def main():
             return 1
         user_id = user['id']
         print('  fixture user created (Free plan, so T3 after T1 is the cap proof)')
+
+        # STORY 3.3's `ownership` step needs a row that belongs to SOMEBODY ELSE. The four new
+        # actions write with the service role, so `.eq('user_id', …)` is the entire guard between
+        # one account and another's sites — and nothing observed it (review, 2026-09-08).
+        status, other = admin.call('POST', '/admin/users',
+                                   {'email': f'ghost-admin-harness-{stamp}-other@inflozo.com',
+                                    'email_confirm': True})
+        if status not in (200, 201) or not other.get('id'):
+            print(f'  FAIL  could not create the SECOND fixture user: HTTP {status}')
+            return 1
+        other_id = other['id']
 
         status, link = admin.call('POST', '/admin/generate_link',
                                   {'type': 'magiclink', 'email': f'ghost-admin-harness-{stamp}@inflozo.com'})
@@ -1533,6 +1628,7 @@ def main():
             'SB_SECRET': secret,
             'PG_URL': env['SUPABASE_DB_POOLER_URL'],
             'USER_ID': user_id,
+            'OTHER_USER_ID': other_id,
             'CONFIRM_URL': f'{args.url.rstrip("/")}/auth/confirm?token_hash={link["hashed_token"]}&type=magiclink',
             'AUDIT_ROUTE': audit_route(),
             'GHOSTS': json.dumps(ghosts),
@@ -1570,10 +1666,17 @@ def main():
                 f'found {json.dumps(s.get("found"))}, the integration key then saw '
                 f'{json.dumps(s.get("seen"))}, restored to {json.dumps(s.get("back"))} '
                 f'(the same empty or the same string = {s.get("ok")})'
+                + (' — NOTE: the box already held this harness\'s own marker when the run started, '
+                   'so an earlier run was killed before its restore; reconciled to empty'
+                   if s.get('stale') else '')
                 for s in injection.values())
             print(f'  {"PASS" if ok else "FAIL"}  injection-live: {told}')
         if user_id:
             admin.call('DELETE', f'/admin/users/{user_id}', {})
+        # The `ownership` fixture goes with it, and its site row cascades — so the count below
+        # still has to come back to where it started.
+        if other_id:
+            admin.call('DELETE', f'/admin/users/{other_id}', {})
         # The count is compared BEFORE any sweep of strays, so a user a step created by mistake is
         # reported as the leak it is rather than tidied away (the sibling harness's own note).
         after = admin.user_count()

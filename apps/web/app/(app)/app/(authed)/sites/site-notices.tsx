@@ -151,8 +151,11 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
 /** B15, from the frame: the sky panel with its glyph, What clears this 1 and 2, and Re-check plan. */
 function PreviewOnly({ siteId, recheckFailed }: { siteId: string; recheckFailed?: boolean }) {
   return (
+    /* LABELLED BY ITS OWN HEADING, not by the chip's word: `aria-label="Preview-only"` repeated a
+       string a screen reader had already announced on the state line and threw away the sentence
+       that says WHY, which is the heading two lines down (review, 2026-09-08). */
     <section
-      aria-label={PREVIEW_COPY.chip}
+      aria-labelledby={`preview-${siteId}`}
       className="flex flex-col gap-[15px] rounded-thumb border border-line bg-paper p-[15px]"
     >
       {/* The frame's sky panel (`:1203`), its info glyph drawn at 15px with the same 1.7 stroke. */}
@@ -173,7 +176,9 @@ function PreviewOnly({ siteId, recheckFailed }: { siteId: string; recheckFailed?
           <circle cx="12" cy="8" r="0.6" fill="currentColor" />
         </svg>
         <div className="flex flex-col gap-[6px]">
-          <h3 className="text-ui-dense font-semibold text-sky-text">{PREVIEW_COPY.title}</h3>
+          <h3 id={`preview-${siteId}`} className="text-ui-dense font-semibold text-sky-text">
+            {PREVIEW_COPY.title}
+          </h3>
           <p className="text-[12.5px] leading-[1.55] text-sky-text">{PREVIEW_COPY.body}</p>
         </div>
       </div>

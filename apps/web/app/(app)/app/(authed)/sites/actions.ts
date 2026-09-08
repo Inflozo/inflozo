@@ -316,7 +316,10 @@ export async function connectSite(
   //    connected whatever the probe answers. `probeSite` catches its own failures; this catches
   //    the one it cannot, a throw on the way in.
   try {
-    await probeSite({ siteId, userId: user.id, route: ROUTE })
+    // The summary is a CODE and two facts, never a value — it is what makes a probe that quietly
+    // did nothing visible in the function's log beside the connect that succeeded.
+    const summary = await probeSite({ siteId, userId: user.id, route: ROUTE })
+    if (!summary.ok) console.error('sites: connect probe did not complete', { code: summary.code })
   } catch (thrown) {
     console.error('sites: connect probe failed', { name: (thrown as { name?: string })?.name })
   }
@@ -358,13 +361,37 @@ async function writeSite(
   at: { userId: string; siteId: string },
   patch: Record<string, unknown>,
 ): Promise<void> {
-  const { error } = await supabaseAdmin()
+  // `.select('id')` SO A WRITE THAT MATCHED NO ROW IS NOT SILENCE. PostgREST answers an update
+  // that hit nothing with no error and no rows — a site id belonging to somebody else is exactly
+  // that — and without this the refusal was logged as a success while the notice stayed on screen
+  // with no code recorded anywhere (review, 2026-09-08).
+  const { data, error } = await supabaseAdmin()
     .from('sites')
     .update(patch)
     .eq('id', at.siteId)
     .eq('user_id', at.userId)
+    .select('id')
   if (error) console.error(`sites: ${where} failed`, { code: error.code })
+  else if (!data?.length) console.error(`sites: ${where} failed`, { code: 'no_such_site' })
   revalidatePath(SITES)
+}
+
+/** The row an answer needs before it may act, or null with a code logged. */
+async function rowFor(
+  where: string,
+  at: { userId: string; siteId: string },
+): Promise<{ site_settings: Record<string, unknown>; capability_source: string | null } | null> {
+  const { data, error } = await supabaseAdmin()
+    .from('sites')
+    .select('site_settings, capability_source')
+    .eq('id', at.siteId)
+    .eq('user_id', at.userId)
+    .maybeSingle<{ site_settings: Record<string, unknown> | null; capability_source: string | null }>()
+  if (error || !data) {
+    console.error(`sites: ${where} refused`, { code: error?.code ?? 'no_such_site' })
+    return null
+  }
+  return { site_settings: data.site_settings ?? {}, capability_source: data.capability_source }
 }
 
 /**
@@ -378,6 +405,11 @@ export async function dismissInjectionNotice(formData: FormData): Promise<void> 
   await writeSite('notice dismiss', at, { code_injection_notice_shown_at: new Date().toISOString() })
 }
 
+/* B15's banner is about ONE card, so the redirect names it. These are the BROWSER's paths, not
+   `SITES` — that one is `revalidatePath`'s route-group path and is not a URL. */
+const SITES_URL = '/sites'
+const RECHECK = (siteId: string) => `${SITES_URL}?recheck=${siteId}`
+
 /**
  * THE PORTAL QUESTION, asked only when `portal_button` was not a boolean in Ghost's payload. The
  * answer is stored with source `'declared'`, which Story 3.7's daily check overwrites with
@@ -386,16 +418,18 @@ export async function dismissInjectionNotice(formData: FormData): Promise<void> 
 export async function answerPortal(formData: FormData): Promise<void> {
   const at = await siteOf(formData)
   if (!at) return
-  const { data } = await supabaseAdmin()
-    .from('sites')
-    .select('site_settings')
-    .eq('id', at.siteId)
-    .eq('user_id', at.userId)
-    .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
-  if (!data) return
+  const row = await rowFor('portal answer', at)
+  if (!row) return
+  // AN ANSWER TO A QUESTION THAT WAS NOT ASKED IS NOT AN ANSWER. The block renders only while the
+  // source is `'default'`, so anything else here is a stale or replayed POST, and honouring it
+  // would stamp `'declared'` over a real reading (review, 2026-09-08).
+  if (row.site_settings.portal_button_source !== 'default') {
+    console.error('sites: portal answer refused', { code: 'not_asked' })
+    return
+  }
   await writeSite('portal answer', at, {
     site_settings: {
-      ...(data.site_settings ?? {}),
+      ...row.site_settings,
       portal_button: formData.get('portal_button') === 'yes',
       portal_button_source: 'declared',
     },
@@ -411,16 +445,27 @@ export async function answerPortal(formData: FormData): Promise<void> {
 export async function answerPlan(formData: FormData): Promise<void> {
   const at = await siteOf(formData)
   if (!at) return
-  const { data } = await supabaseAdmin()
-    .from('sites')
-    .select('site_settings')
-    .eq('id', at.siteId)
-    .eq('user_id', at.userId)
-    .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
-  if (!data) return
-  const { plan_ask: _asked, ...kept } = (data.site_settings ?? {}) as Record<string, unknown>
+  // THE VALUE IS ONE OF TWO, NAMED. It used to fall back to `'full'` for anything that was not
+  // `'preview_only'`, so a POST with the field missing CLEARED a restriction nobody had declared
+  // (review, 2026-09-08).
+  const answer = formData.get('capability')
+  if (answer !== 'full' && answer !== 'preview_only') {
+    console.error('sites: plan answer refused', { code: 'capability_invalid' })
+    return
+  }
+  const row = await rowFor('plan answer', at)
+  if (!row) return
+  // `plan_ask` IS THE QUESTION'S OWN PRECONDITION, and the only thing that sets it is a probe
+  // that ran with `ghostpro_preview_probe` ON. Requiring it here is therefore how the flag gates
+  // this write too: with the flag off nothing can ever have asked, so nothing can be answered,
+  // and `capability` — a server-asserted column (AD-7) — cannot be set from a form (review).
+  if (row.site_settings.plan_ask !== true) {
+    console.error('sites: plan answer refused', { code: 'not_asked' })
+    return
+  }
+  const { plan_ask: _asked, ...kept } = row.site_settings
   await writeSite('plan answer', at, {
-    capability: formData.get('capability') === 'preview_only' ? 'preview_only' : 'full',
+    capability: answer,
     capability_source: 'user_declared',
     site_settings: kept,
   })
@@ -436,5 +481,10 @@ export async function recheckPlan(formData: FormData): Promise<void> {
   if (!at) return
   const summary = await probeSite({ siteId: at.siteId, userId: at.userId, route: ROUTE })
   revalidatePath(SITES)
-  if (!summary.ok) redirect('/sites?recheck=failed')
+  // BOTH WAYS OUT REDIRECT, and the failure names the site. A form posts to the URL it is on, so
+  // returning quietly on success left a page still at `?recheck=…` showing the failure line above
+  // a card that had just re-checked cleanly; and the old `?recheck=failed` carried no id, so one
+  // site's failure printed the banner under EVERY Preview-only card (review, 2026-09-08 — five
+  // layers, and the matrix row says "THE CARD is unchanged and a banner says to try again").
+  redirect(summary.ok ? SITES_URL : RECHECK(at.siteId))
 }

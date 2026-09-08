@@ -2,9 +2,9 @@
 title: 'Story 3.3 — The connect-time probes: Preview-only, code injection, Portal and the announcement bar'
 type: 'feature'
 created: '2026-09-08'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'f61eb3b8e3ade838666079ca35a9cd1a6010c23d'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -233,13 +233,20 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
   notice does not return on reload or after a re-probe; and **no part of either payload** appears in
   `sites`, in any response body, or in the rendered HTML
 - Given a site marked `preview_only`, when `/sites` is opened at 1440, 834 and 390, then the card's
-  **state line** carries a sky **Preview-only** chip beside Connected, and below it the notice
+  **state line** carries a sky **Preview-only** chip — beside Connected wherever the card can hold
+  both, and wrapped onto its own line where it cannot, which at 834 it cannot (**the owner ruled
+  this at Question 2**: leave it, the grid stays three-up; DW-57 carries the rule) — and below it
+  the notice
   **matches the frame** (`B Missing Surfaces.dc.html:1188-1225`): the sky panel with its glyph, the
   cause sentence in Ghost's terms, **What clears this** 1 and 2 with **Publisher or higher**, and
   **Re-check plan** — with **Export theme zip** and **Ship it** absent, because neither path exists
   (UX-DR3)
 - Given the `ghostpro_preview_probe` row off — the production seed — when any site is probed, then
-  no site is ever marked `preview_only`, no plan question is asked, and no chip or notice is drawn
+  **the probe marks no site** `preview_only`, asks no plan question, and so draws no chip and no
+  B15. The flag gates the PROBE, not the render: a site already marked `preview_only` keeps its
+  chip whatever the flag says, because Epic 7 marks the same column from a deploy error
+  (`capability_source: 'deploy_error'`) and a chip that vanished with this flag would hide that
+  too (review, 2026-09-08)
 - Given a site whose `portal_button` could not be read, when `/sites` is opened, then one question is
   asked with **Yes** as the default; answering writes the boolean and `portal_button_source`
   `'declared'`; and no question is asked for a site whose setting read cleanly
@@ -252,8 +259,83 @@ Notice. The Ghost(Pro) branch reads the flag row and stays off in production.
 - Given the deployed site, when `tools/probe/run-verify-ghost-admin.py` runs against T1 and T3, then
   every step in its docstring passes in order and axe reports zero violations at both widths
 - Given `injection-live`, when it finishes — passing, failing or interrupted — then both test Ghosts'
-  `codeinjection_foot` is byte-identical to what the step found, re-read and asserted after the
-  restore (the owner's ruling, 2026-09-08)
+  `codeinjection_foot` holds what the step found, re-read and asserted after the restore (the
+  owner's ruling, 2026-09-08). **Identical in CONTENT, not in bytes, and §39(e) is why:** Ghost
+  normalises an empty box to `null` and will not answer `""` again once anything has been written,
+  so `same_box` compares "the same string, or both empty" — which is also the only distinction the
+  product can make, since `injectionFlag` treats `""`, `null` and an absent key alike. And a box
+  found already holding the harness's OWN marker is an earlier run that was killed before its
+  restore, so it reconciles to empty rather than being preserved (review, 2026-09-08)
+
+### Review Findings
+
+Code review of 2026-09-08 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor, Real-infra verifier), run against the diff since `f61eb3b8`. **0 decisions for
+the owner** — both of this story's questions are already ruled, and nothing the review found is his
+to decide. 22 patches, all applied; 5 deferred to the ledger; 9 dismissed as noise.
+
+**The Real-infra layer (R-82) passed before any patch:** the full harness re-executed end to end
+against the deployed `app.inflozo.com`, T1 and T3 — every step green, axe clean at 1440 and 390,
+both Ghosts' `codeinjection_foot` confirmed back to `null` from OUTSIDE the harness — with eight
+negative controls, including mutations proving the NFR-3 payload guard, the flag-off branch and
+both importer lists genuinely fail when broken.
+
+**Four layers independently found the same four product defects.** They are the substance of this
+review, and all four were invisible to the harness for the same reason: T1 and T3 answer a real
+`portal_button` and carry no `hostSettings`, so the live runs only ever take the happy branch, and
+both questions are SEEDED rather than probed.
+
+- [x] [Review][Patch] A re-probe overwrote the user's *declared* Portal answer with an assumption — on a Ghost that keeps hiding `portal_button`, every Re-check and every one of Story 3.7's cron runs put `true`/`default` back over "No, it's off" and asked again, for ever [apps/web/lib/probe-rule.ts · server/site-probe.ts]
+- [x] [Review][Patch] A re-probe re-raised the plan question the user had already answered — `answerPlan` clears `plan_ask`, but an unreadable `hostSettings` is unreadable every time, so the next probe set it again [apps/web/lib/probe-rule.ts]
+- [x] [Review][Patch] The verdict→patch mapping was executed by nothing — the `{ ask: true }` and `null` branches, the two the `ghostpro_preview_probe` flag exists to gate, ran in no test and on no server, so the flag could have been flipped at the §4 T4 gate with them never once run. Extracted as the pure `probePatch()` and unit-tested [apps/web/lib/probe-rule.ts · probe-rule.test.ts]
+- [x] [Review][Patch] `?recheck=failed` was page-wide: one site's failure printed "We couldn't re-check that plan just now" under *every* Preview-only card. The matrix row says **the card** [sites/actions.ts · sites/page.tsx]
+- [x] [Review][Patch] …and it never cleared: a form posts to the URL it is on, so a *successful* re-check re-rendered at `?recheck=failed` with the failure line still under it. Both ways out now redirect [sites/actions.ts:484]
+- [x] [Review][Patch] A 200 carrying anything but the browse shape was written from — flattening to `{}`, wiping `code_injection`, Portal and the announcement, then stamping `settings_read_at` to say it had all just been checked. `settingsReadable()` now refuses it [apps/web/lib/probe-rule.ts · server/site-probe.ts]
+- [x] [Review][Patch] `settings/` was called even after `config/` had already failed — a second decryption, a second round trip and a second `admin_read error` row to learn the same thing twice [apps/web/server/site-probe.ts]
+- [x] [Review][Patch] `answerPlan` fell back to `'full'` for anything that was not `'preview_only'`, so a POST with the field missing CLEARED a restriction nobody had declared [sites/actions.ts]
+- [x] [Review][Patch] The three answer actions honoured a question that was never asked — `answerPlan` now requires `plan_ask` (which only a flag-on probe can set, so the flag gates this write too) and `answerPortal` requires source `'default'` [sites/actions.ts]
+- [x] [Review][Patch] A write that matched no row was logged as a success — PostgREST answers an update that hit nothing with no error and no rows. `.select('id')` now tells them apart [sites/actions.ts]
+- [x] [Review][Patch] The answer actions no-opped silently when the row read failed or missed; each now logs a code [sites/actions.ts]
+- [x] [Review][Patch] `connectSite` discarded the probe summary the Code Map says exists for its log line [sites/actions.ts]
+- [x] [Review][Patch] **Nothing in the repository observed the guard between two accounts.** The four new actions write under the service role and take the site id from a form field, so `.eq('user_id', …)` is the whole of it — and deleting that line left `pnpm check`, the RLS gate and every harness step green. New `ownership` step: a second throwaway user's row, forged into a notice form, submitted from the fixture's session, read back byte-identical [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `notices-js-off` asserted `>= 6` against a locator that can only match forms — exactly one control could become a client `onClick` and vanish from both sides of the test. The count is now derived from the submit buttons on screen [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `injection-live` was self-poisoning: a run killed between the write and its `finally` left the marker in a live Ghost footer, and the next run adopted it as "what we found" and restored it — permanently. Our own marker now reconciles to empty [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `probe-selfhosted` claimed it proved the flag was off; `capabilityOf` answers `full` for an absent `hostSettings` either way, so the step cannot tell them apart — a result with no control behind it [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] B15's chip placement was measured at three widths and the block itself at none; 834 is the width that squeezes. An overflow assertion now runs at each [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `server-wiring.test.ts` lost a guarantee in the `flagRow` refactor — a `flagRow(someVar)` or a second `.eq('key', …)` would simply not appear in the regex and the test would pass vacuously about a flag it never checked was seeded [apps/web/server-wiring.test.ts]
+- [x] [Review][Patch] The B15 section was labelled with the chip's word, repeating a string already announced on the state line and discarding the sentence that says why; `aria-labelledby` now points at its heading [sites/site-notices.tsx]
+- [x] [Review][Patch] AC 3 still stated the pre-ruling claim ("beside Connected" at all three widths) against the owner's own Question 2 ruling [this spec]
+- [x] [Review][Patch] The `injection-live` AC said "byte-identical" where §39(e) had executed that Ghost normalises an empty box to `null`; the AC now says what the code asserts [this spec]
+- [x] [Review][Patch] AC 4 read as though the flag gated the render; it gates the probe, and a chip that vanished with it would hide Epic 7's `deploy_error` marking too [this spec]
+- [x] [Review][Patch] `--check` was described as plumbing alone in the spec, the harness docstring and the doc-audit row, while it now re-executes `settings-keys` against both live Ghosts and needs the two staff tokens; the spec's bullet also asked it for browser steps it has never run [this spec · doc-audit.py · the harness]
+- [x] [Review][Patch] DW-60 recorded two of B15's three departures from the frame — the dropped tier name ("Starter") was not in the ledger [deferred-work.md]
+- [x] [Review][Patch] `banner.tsx`'s own rule said a banner that merely TELLS keeps the sentence and `BannerLink`; the code-injection notice tells and carries a **Got it** [components/kit/banner.tsx]
+
+**Deferred — real, not this story's to close (each is in the ledger):**
+
+- [x] [Review][Defer] DW-61: the four notice blocks nest `<form>` inside the `<span>` `Banner` wraps its children in — invalid content model, renders and hydrates fine, axe clean — deferred, pre-existing (the owner-approved 2.1 nudge does the same, and the slot is every banner's)
+- [x] [Review][Defer] DW-62: sites connected under Story 3.2 are never probed — Re-check plan renders only on a `preview_only` card, so no product path reaches a first probe for them until 3.7's cron — deferred to 3.7
+- [x] [Review][Defer] DW-63: the probe rewrites `ghost_version` with none of connect's version rule, and `call()` pins `Accept-Version` from it — deferred to 3.7, which re-detects version
+- [x] [Review][Defer] DW-64: `recheckPlan` has no throttle — deferred
+- [x] [Review][Defer] DW-65: four read-modify-write paths share `site_settings`; the answer actions now re-read first, which narrows the window without closing it — deferred
+
+**Dismissed as noise (9):** the NFR-3 unit test called tautological (the guarantee is enforced by
+the single-file wiring test and `no-payload-leak`, both mutation-proved by the Real-infra layer);
+the `audit` step's `CONNECTS`/`PROBES` called hand-counted (they describe the script's own actions
+and a mismatch fails loudly); `probe-failure`'s "still Connected" conjunct (weak, but one of six);
+"no migration in the diff" (the columns and the flag row pre-exist at
+`20260904120000_complete_schema.sql:141-160,717`, exactly as the Code Map cites); a claimed
+contradiction between "two" and "three" `admin_read` rows (different subjects — the probe's own,
+and the connect's total); DW-54's status line called truncated (it is idiomatic); `role="status"`
+on the re-check line (the Kit's established pattern, and axe is clean); unused `'deploy_error'` in
+`CapabilitySource` (the DB enum has it and Epic 7 writes it); and the story's status "disagreeing
+with its Dev record" (that is the phase this review was run in).
+
+**One disclosure, not a finding.** The owner's Question 1 example pictured his footer holding the
+marker "about two seconds". `injection-live` writes it before the browser starts and restores it in
+the run's `finally`, so in practice both test footers hold `<!-- inflozo probe -->` for the whole
+run — several minutes. That is within his ruling and the restore is asserted on both servers, but
+it is not what his example described, so it is said here rather than left for him to notice.
 
 ## Spec Change Log
 
@@ -418,13 +500,19 @@ variable; no value is printed.
 - `pnpm build` (`next build`) -- expected: `ƒ /app/sites` still dynamic and inside the guard
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS, 0 warnings, no new catalogue row
 - `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, schema unchanged (no migration)
-- `python3 tools/probe/run-verify-ghost-admin.py --check` -- expected: every step in the docstring
-  passes in order against **T1 `GHOST6_*` and T3 `GHOST5_*`** and the deployed `app.inflozo.com`,
-  including the new `decrypt-path`, `settings-keys`, `probe-selfhosted`, `no-payload-leak`,
-  `injection-live`, `injection-notice`, `portal-question`, `plan-question`, `preview-notice` and
-  `axe-notices`; axe reports zero violations at 1440 and 390. **`injection-live` writes to T1 and T3
-  and restores them** (the owner's ruling): the Dev and Review records state, for each server, the
-  value found, the value written and the value restored
+- `python3 tools/probe/run-verify-ghost-admin.py --check` -- expected: the keys present by name,
+  §21j re-executed over PostgREST, `settings-keys` re-executed against **both live Ghosts**, and
+  playwright, axe and the postgres driver resolvable. It starts **no browser** and connects nothing,
+  so it proves none of the UI steps; it needs every key the full run does, the two
+  `*_STAFF_ACCESS_TOKEN`s included (corrected at review, 2026-09-08 — this bullet had asked
+  `--check` for browser steps it has never run)
+- `python3 tools/probe/run-verify-ghost-admin.py` -- expected: every step in the docstring passes in
+  order against **T1 `GHOST6_*` and T3 `GHOST5_*`** and the deployed `app.inflozo.com`, including
+  `decrypt-path`, `settings-keys`, `probe-selfhosted`, `no-payload-leak`, `injection-live`,
+  `injection-notice`, `portal-question`, `plan-question`, `notices-js-off`, `ownership`,
+  `preview-notice` and `axe-notices`; axe reports zero violations at 1440 and 390.
+  **`injection-live` writes to T1 and T3 and restores them** (the owner's ruling): the Dev and
+  Review records state, for each server, the value found, the value written and the value restored
 
 **Manual checks (if no CLI):**
 - `private.credential_audit`, read through the pooler (`SUPABASE_DB_POOLER_URL`, read-only): a
