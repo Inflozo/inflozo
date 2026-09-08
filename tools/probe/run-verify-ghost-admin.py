@@ -155,7 +155,8 @@ list gone stale — the sibling harness's own note):
                  220px sidebar and the three-column grid leave about 139px, against 78 for
                  "Connected" and 109 for the chip, and the two metadata pills already stack there
                  for the same reason. Read off the rendered boxes at each width, because that is
-                 what the owner looks at (DW-57; spec Question 2 puts the 834 wrap to him). Then
+                 what the owner looks at (DW-57, and he ruled the 834 wrap at spec Question 2 —
+                 leave it, the grid stays three-up). Then
                  **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
                  back to `full`/`probe`
   audit          `private.credential_audit` read through the pooler: one `admin_read ok` for
@@ -1191,7 +1192,10 @@ const shoot = async (page, name) => {
       // "Connected" and the chip measure 78 and 109 (measured with the app's own fonts,
       // 2026-09-08). The two metadata PILLS already stack there for the same reason, which is
       // the layout the owner tested and accepted at 3.2 — so the chip wraps with them rather
-      // than the story quietly re-flowing his card. Question 2 in the spec puts it to him.
+      // than the story quietly re-flowing his card. HE RULED IT (2026-09-08, spec Question 2):
+      // "Leave it — the tag wraps on a tablet and nowhere else", and declined widening the grid.
+      // DW-57 carries the rule 3.5 and 3.7 inherit: ON the state line always, BESIDE "Connected"
+      // only where the card can hold it.
       const beside = Math.abs(chipBox.y - stateBox.y) <= 6
       const fits = inner >= 195
       widths.push(`${width}: card ${inner}px, chip y ${Math.round(chipBox.y)} · Connected ` +

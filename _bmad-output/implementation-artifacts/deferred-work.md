@@ -1399,6 +1399,13 @@ amended: Story 3.3 (Dev, 2026-09-08) — **the Preview-only chip went on the STA
   carries two things and add to THAT, rather than re-deriving the answer from the frame. The harness asserts
   the placement off the rendered boxes at 1440, 834 and 390 (`preview-notice`), which is how the owner looked
   at it, so a later story that moves the chip back onto the pills' line fails a step rather than a reviewer.
+  **And the owner ruled the tablet wrap (2026-09-08, Story 3.3 Question 2): "Leave it — the tag wraps on a
+  tablet and nowhere else."** At 834 the shell's 220px sidebar and the three-column grid leave the card about
+  139px, against 78 for "Connected" and 109 for the chip, so the chip drops to its own line there — as the two
+  metadata pills already do, and have since he tested 3.2. The grid stays three-up; option 2 (two cards on a
+  tablet) was offered and declined. **So the rule 3.5 and 3.7 inherit is: ON the state line always, BESIDE
+  "Connected" only where the card can hold it.** A story that adds a third thing to that line adds it under the
+  same rule and does not widen the grid to make it fit.
 
 ## Deferred from: spec-3-3-the-connect-time-probes-preview-only-code-injection-portal-and-the-announcement-bar (2026-09-08)
 

@@ -356,6 +356,14 @@ instead of `● Connected  ◦ Preview-only` on one line.
 *Nothing waits on this answer.* The build went ahead with option 1, and the automatic test records
 the measured width at each size so switching to option 2 later is one line and one re-run.
 
+**Ruled: option 1 (owner, 2026-09-08) — "Leave it — the tag wraps on a tablet and nowhere else."**
+So the Sites grid stays three-up at `tablet:` and the chip wraps below **Connected** on a card too
+narrow to hold both, exactly as the two metadata pills already do. **DW-57 is amended to carry it**,
+because 3.5's ⋯ menu and 3.7's health badge join the same state line and would otherwise re-derive
+the answer: the binding rule is *on the state line*, and *beside Connected* only where the card can
+hold it. `preview-notice` asserts the first at every width and reports the second with the measured
+card width, so the ruling is a step's own output rather than a sentence someone has to remember.
+
 ## Owner's manual test
 
 On the live site after the Deploy run. You will change one setting on one of your Ghost test servers
