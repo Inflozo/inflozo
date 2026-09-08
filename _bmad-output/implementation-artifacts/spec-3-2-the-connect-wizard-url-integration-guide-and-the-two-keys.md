@@ -602,7 +602,7 @@ that to the owner. The triage for each finding is on the finding.
    - **The bell — NOT this story's. It belongs to Story 13.4, the notifications centre** ("the bell in the
      dashboard and editor top bars", Epic 13). There is **no bell anywhere in the app today** — not on
      Projects, not on Sites — because a control with nothing behind it is left out rather than drawn dead
-     (UX-DR3, and `shell.tsx:24-26` says so in the code). **Question 4** below is the owner's.
+     (UX-DR3, and `shell.tsx:24-26` says so in the code). **Ruled at Question 4: it stays out of this story.**
 
 6. **Move the green connected status just above the bottom "Checked 5 minutes ago". And keep the meta data
    pills (Ghost 6.58, 0 projects) in their existing line only. Gap between "Checked 5 minutes ago" and green
@@ -641,7 +641,8 @@ that to the owner. The triage for each finding is on the finding.
      finding cited.
    - **No frame draws this screen.** The export has S11a, S11b and S11c for Sites and no empty state; it is
      **extrapolated from the nearest one that has** — S3b, the Projects empty screen — same components, same
-     tokens, its own words and its own drawing (R-74). **Questions 5 and 6** are the owner's.
+     tokens, its own words and its own drawing (R-74). **Ruled at Questions 5 and 6:** "One handshake and you're in." / "Connect your Ghost site —
+     it takes about a minute.", over a browser window meeting a plug.
 
    *Routine calls taken rather than asked, each matching Projects:* the top bar with its search field and
    **Connect site** is drawn on the empty screen too; the empty screen's own button is the second one, as
@@ -726,6 +727,11 @@ fill it.
    "Nothing yet. Deploy outcomes land here even if you closed the tab." Honest and complete-looking, but it
    is a slice of Story 13.4 built early, and 13.4 then has to be told not to build it twice.
 
+**Ruled: option 1 (owner, 2026-09-08).** The bell is left to **Story 13.4** and arrives in its own story
+only, on every top bar at once. The Sites top bar this story builds carries the **search field** and
+**Connect site** and nothing else; **no bell is drawn on any surface in this story**, and UX-DR3 stands
+unbroken — the frame's bell (`S11 Sites.dc.html:56`) stays out until there is a feed behind it.
+
 ### Question 5 — the words on the empty Sites screen (owner's finding 7)
 
 Nothing in the design export draws this screen, so its words are a fresh write in the voice of the Projects
@@ -739,6 +745,11 @@ Maya signs in on day one, opens **Sites**, and reads a bold line, a quieter line
    Plainer — says the state first, then what to do.
 3. **"One handshake and you're in."** / *"Connect your Ghost site — it takes about a minute."*
    The shortest, and it borrows the handshake's own word and its own "about a minute".
+
+**Ruled: option 3 (owner, 2026-09-08).** The empty Sites screen reads **"One handshake and you're in."**
+with **"Connect your Ghost site — it takes about a minute."** beneath it. The title is the page's `<h1>` at
+the Projects screen's own display size; the subtitle is its quieter line. It borrows the handshake's own word
+and its own "about a minute", so the empty screen and step 1 of the wizard agree.
 
 ### Question 6 — the drawing on the empty Sites screen (owner's finding 7)
 
@@ -759,6 +770,11 @@ connected", not "a page".
 the search field is drawn on the empty screen too; the empty screen's centred **Connect site** is a *second*
 button alongside the bar's, as S3b's is; ⌘K focuses it on Sites as it does on Projects; and the search
 matches a site's title **or** its address, case-insensitively, on a substring.
+**Ruled: option 1 (owner, 2026-09-08).** **A browser window meeting a plug**: a dashed browser outline on
+the left, a small coral plug on the right, a dashed line joining them and the marigold sparkle where they
+meet. 160×120, `aria-hidden`, drawn in the same hand and the same tokens as the Projects screen's
+(`page.tsx:117-134`) — dashed `currentColor` at 1.5, one `fill-coral`, one `fill-marigold`.
+
 
 ## Verification
 
