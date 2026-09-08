@@ -406,10 +406,24 @@ DOCS = [
   'self-hosted Ghost clear itself back to full. The review of 2026-09-08 added ownership, which '
   "forges a SECOND account's site id into a notice form and proves the row does not move: the four "
   'new actions write under the service role, so one .eq(user_id) inside the action is the whole '
-  'guard between two accounts and nothing had ever executed it. Note that --check is no longer '
-  'plumbing alone — it re-executes settings-keys against both live Ghosts, so it needs every key '
-  'the full run does, the two staff tokens included; it still starts no browser and creates '
-  'nothing. Stories 3.2 and 3.3.'),
+  'guard between two accounts and nothing had ever executed it. STORY 3.4 ADDED FR-C4\'s BRAND: '
+  'brand-keys re-executes, in both modes, that the SEVEN keys the brand reader takes off the same '
+  'settings payload are really there on both majors and records the CONTAINER of each — navigation '
+  'is a JSON string, as announcement_visibility is (MEASUREMENTS §40) — and a connect whose site '
+  'has a brand now lands on S2c rather than the list, so every connect in the run passes through '
+  'it. brand-screen reads S2c against the row the probe just wrote (the swatch really painted in '
+  'the accent and captioned with the HEX, the menu as text pills with no links), brand-js-off '
+  'proves both its controls are forms, axe-brand runs at 1440 and 390, brand-skip proves Skip '
+  'writes nothing and leaves the offer on the card, brand-seed drives the offer link and Use your '
+  'brand to a project named from the site with linked_site_id set — FR-B5\'s first writer — a '
+  'style_pack.brand.accent equal to the site\'s, the card\'s tally at "1 project" and the dashboard '
+  'card computed in that colour, brand-atcap proves the owner\'s Question 1 ruling live (the '
+  'caption NAMES the project before the press and nothing else about it moves), and brand-none '
+  'proves a site with nothing to offer draws no link and 404s, as does a ?site= that is not the '
+  'caller\'s. Note that --check is no longer '
+  'plumbing alone — it re-executes settings-keys and brand-keys against both live Ghosts, so it '
+  'needs every key the full run does, the two staff tokens included; it still starts no browser '
+  'and creates nothing. Stories 3.2, 3.3 and 3.4.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '

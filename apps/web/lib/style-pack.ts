@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isAccent } from './probe-rule.ts'
 
 /**
  * `projects.style_pack`, and the one schema for it (the spine's rule (a): one zod schema per
@@ -15,10 +16,23 @@ import { z } from 'zod'
  * Paper's three values are read off `D4 Dashboard Sheets and Blocks.dc.html` D4a, the Paper
  * pack cell's own dots. DW-11: E6 re-sources every pack from Appendix D, and this is where
  * that lands.
+ *
+ * STORY 3.4 PUT A `brand` KEY IN THIS COLUMN AND E6 STILL OWNS IT (DW-66). FR-C4's "Use your
+ * brand" copies the customer's own Ghost accent, logo, icon, cover and menu out of
+ * `sites.site_settings.brand` (`probe-rule.ts`'s `brandOf`) into `projects.style_pack.brand`, and
+ * the only thing that READS it today is `placeholderFor` below — the dashboard card wears the
+ * site's colour instead of the preset's. Every other field is stored for the epic that uses it.
  */
 
-/** Today's shape. E6 widens it; `placeholderFor` is written so widening cannot break a card. */
-export const stylePackSchema = z.object({ preset: z.string() }).loose()
+/**
+ * Today's shape. E6 widens it; `placeholderFor` is written so widening cannot break a card.
+ *
+ * `brand` is TYPED `unknown` ON PURPOSE and validated where it is read. A stricter shape here
+ * would make a `brand` of the wrong type fail the WHOLE parse, and a pack that failed to parse
+ * loses its preset — so a junk brand would repaint the card in Paper rather than merely be
+ * ignored. `style_pack` is a column the user's own session may write (schema :1201).
+ */
+export const stylePackSchema = z.object({ preset: z.string(), brand: z.unknown().optional() }).loose()
 
 export type StylePack = z.infer<typeof stylePackSchema>
 
@@ -58,5 +72,14 @@ export function placeholderFor(stylePack: unknown): Preset {
   // `Object.hasOwn`, not `??`: `PRESETS['__proto__']` and `PRESETS['constructor']` are TRUTHY on
   // an object literal, so `??` never reached the fallback and the card painted `undefined`
   // colours. `style_pack` is a column the user's own session may write (review, 2026-09-05).
-  return Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : PRESETS[DEFAULT_PRESET]
+  const base = Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : PRESETS[DEFAULT_PRESET]
+  // FR-C4: the SITE's accent wins over the pack's, which is the whole visible result of "Use your
+  // brand" — the dashboard card is painted in the customer's own colour before they have chosen
+  // anything. RE-VALIDATED HERE and not trusted from the column: it is painted as an inline
+  // `style`, and the same session that may write this jsonb could write a CSS injection into it.
+  // The preset object is returned UNCHANGED when there is no accent to apply, so a card with no
+  // brand is still the very same `Preset` the tests compare by identity.
+  const brand = (parsed.success ? parsed.data.brand : null) as { accent?: unknown } | null | undefined
+  const accent = brand?.accent
+  return isAccent(accent) ? { ...base, accent } : base
 }

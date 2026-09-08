@@ -43,3 +43,38 @@ test('the schema is loose, so E6 widening the column cannot break a 1.5 card', (
   const widened = { preset: 'paper', mode: 'dark', tokens: { ink: '#000' } }
   assert.equal(placeholderFor(widened), PRESETS.paper)
 })
+
+/* ───────── STORY 3.4 — FR-C4's `brand` in the column. The dashboard card wearing the customer's
+   own accent is the whole visible result of "Use your brand", and the value it paints with is one
+   the user's own session may write (schema :1201), so it is re-validated on the way out. */
+
+test('a site brand repaints the card accent, and changes nothing else about the pack', () => {
+  const paper = PRESETS[DEFAULT_PRESET]
+  const pack = placeholderFor({ preset: 'paper', brand: { accent: '#FF1A75', nav: [] } })
+  assert.equal(pack.accent, '#FF1A75')
+  // Only the accent moves: the surface, the text colour and the pack's own name are the preset's.
+  assert.equal(pack.surface, paper.surface)
+  assert.equal(pack.text, paper.text)
+  assert.equal(pack.name, paper.name)
+})
+
+test('a brand accent that is not a colour is ignored, never painted', () => {
+  const paper = PRESETS[DEFAULT_PRESET]
+  for (const hostile of ['red;background:url(x)', 'red', '#GGG', 'rgb(0,0,0)', '', null, 7, {}]) {
+    // Identity, not deep equality: nothing was spread, so it is the preset itself.
+    assert.equal(placeholderFor({ preset: 'paper', brand: { accent: hostile } }), paper,
+      `${JSON.stringify(hostile)} must not reach an inline style`)
+  }
+})
+
+test('a brand of any shape at all costs the pack neither its preset nor its colours', () => {
+  const paper = PRESETS[DEFAULT_PRESET]
+  // A strict `brand` shape here would fail the WHOLE parse and drop the preset with it, so a junk
+  // brand would REPAINT a card rather than be ignored. It is typed `unknown` for exactly this.
+  for (const junk of [null, undefined, 'brand', 42, [], { accent: undefined }]) {
+    assert.equal(placeholderFor({ preset: 'paper', brand: junk }), paper, JSON.stringify(junk))
+  }
+  // And an unknown preset still falls back to Paper with the brand's accent on top of it.
+  assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }).surface, paper.surface)
+  assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }).accent, '#FF1A75')
+})

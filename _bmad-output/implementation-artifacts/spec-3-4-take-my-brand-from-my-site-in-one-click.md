@@ -2,7 +2,8 @@
 title: 'Story 3.4 — Take my brand from my site in one click'
 type: 'feature'
 created: '2026-09-08'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -202,23 +203,23 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/probe-rule.ts` + `probe-rule.test.ts` -- `brandOf`, `navOf`, `BRAND_COPY`, and
+- [x] `apps/web/lib/probe-rule.ts` + `probe-rule.test.ts` -- `brandOf`, `navOf`, `BRAND_COPY`, and
       `brand` in `probePatch` -- every I/O matrix row that is a parsing or validation question,
       green before anything renders it
-- [ ] Execute `GET /admin/settings/` against T1 and T3 for the seven brand keys and **write
+- [x] Execute `GET /admin/settings/` against T1 and T3 for the seven brand keys and **write
       MEASUREMENTS §40** -- the reader is not trusted until the shape is read (standing rule 1)
-- [ ] `apps/web/lib/style-pack.ts` + `style-pack.test.ts` -- the optional `brand` and the accent
+- [x] `apps/web/lib/style-pack.ts` + `style-pack.test.ts` -- the optional `brand` and the accent
       override -- the dashboard card wears the site's colour, E6 still owns the column
-- [ ] `apps/web/app/(app)/app/(authed)/sites/brand/page.tsx` -- S2c from the frame -- both forms work
+- [x] `apps/web/app/(app)/app/(authed)/sites/brand/page.tsx` -- S2c from the frame -- both forms work
       with JavaScript off, nothing offered is nothing drawn
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- the redirect, `useBrand`, `skipBrand` --
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- the redirect, `useBrand`, `skipBrand` --
       the user's own session writes `projects`; the owner's ruling decides the at-cap path
-- [ ] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` + `page.tsx` -- the re-run link --
+- [x] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` + `page.tsx` -- the re-run link --
       DW-57 respected, the offer is a link and not a state machine
-- [ ] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- every new step its
+- [x] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- every new step its
       docstring names -- R-82, re-runnable
-- [ ] `deferred-work.md` (DW-66) + `epic-3-context.md` -- propagate, never localise
-- [ ] Run `## Verification` on the real infrastructure and record every command and result by
+- [x] `deferred-work.md` (DW-66) + `epic-3-context.md` -- propagate, never localise
+- [x] Run `## Verification` on the real infrastructure and record every command and result by
       variable name, no value printed
 
 **Acceptance Criteria:**
@@ -427,3 +428,27 @@ variable; no value is printed.
   story added no Admin call
 - The real services this story touched, named in the Dev record: the live Supabase project, the
   deployed Vercel production build on `app.inflozo.com`, and Ghost T1 (6.58.0) and T3 (5.130.6)
+
+## Dev record — what was executed, and what each service answered (R-82)
+
+Run 2026-09-08, Node 24.18.1 on `PATH`. Every key is named by its variable; no value was printed
+and none is recorded here.
+
+| Command | Result |
+|---|---|
+| `GET /admin/settings/` on **T1** `ghost6.inflozo.com` 6.58.0 with `GHOST6_ADMIN_API_KEY` and on **T3** `ghost5.inflozo.com` 5.130.6 with `GHOST5_ADMIN_API_KEY` — the integration key alone, no staff token | **200 / 200.** All seven brand keys present in both payloads. `navigation` is a **JSON string** on both majors, `logo` and `icon` are **empty strings**, `cover_image` an https URL, `accent_color` a hex, `description` **null on T1** and a string on T3. Written up key by key as **MEASUREMENTS §40**; the reader was written against it, not ahead of it |
+| `pnpm check` (`eslint .`, `pnpm -r typecheck`, `node --test`) | **exit 0.** 228 tests in `apps/web` pass — the 30 in `probe-rule.test.ts` and `style-pack.test.ts` include every new brand case — plus 1 in each of the three packages |
+| `node --test probe-rule.test.ts style-pack.test.ts` | **30 pass, 0 fail.** Every I/O-matrix row that is a parsing or validation question: the JSON-string and array containers, an unparseable menu, the hostile accent, the hostile logo (`data:`, `javascript:`, `http:`), "nothing readable", and the patch keeping `public_url`, `announcement`, `code_injection` and `portal_button` beside the new `brand` |
+| `pnpm build` (`next build`) | **exit 0**, and `ƒ /app/sites/brand` is in the route table — dynamic, inside the `(authed)` guard, so it needs no `app-routes.test.ts` entry |
+| `python3 tools/doc-audit.py --check` (twice) | **PASS, 0 warnings.** No new catalogue row: the harness kept its path and its description follows its new subject |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, 82 PASS, 0 FAIL, against a PostgreSQL 17 container with every file in `supabase/migrations/`. **No migration in this story** — `projects.style_pack`, `projects.linked_site_id` and `sites.site_settings` all already exist |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **RESULT: all steps passed.** `keys` PASS (every variable by name), `vault-off-rest` PASS (§21j re-executed), `settings-keys` PASS, and the new **`brand-keys` PASS** against both live Ghosts — `{"T1": {…, "navigation": "json-string"}, "T3": {…, "navigation": "json-string"}}`. Playwright, axe-core and the `postgres` driver all resolved. It starts no browser, so it proves none of the UI steps |
+| `git grep -n 'announcement_clear' -- apps/web packages tools` | `admin-rule.ts:103` and its test only. **No caller** — this story added no Admin write and `ADMIN_WRITES` is unchanged |
+
+**Real services this Dev run touched:** Ghost **T1** (6.58.0) and **T3** (5.130.6) over the Admin
+API, read-only, with `GHOST6_ADMIN_API_KEY` / `GHOST5_ADMIN_API_KEY`; the live **Supabase** project
+over PostgREST for `vault-off-rest`'s control (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`). **This story
+writes to no Ghost:** the only step that ever did is 3.3's `injection-live` and it is unchanged.
+Resend and Dodo are not on this story's path. **Vercel is the one service still owed a result** —
+the full browser run drives `app.inflozo.com`, so it runs against the deployment this Dev commit
+produces, and its record is appended below.

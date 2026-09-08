@@ -1536,3 +1536,36 @@ reason: supabase-js speaks PostgREST and PostgREST has no `||` for jsonb, so the
   credential is decrypted. Putting an ordinary settings write in there to buy atomicity would widen that
   module for the wrong reason. The story that gives the project a second, unprivileged SQL path — or 3.7,
   which adds a writer that runs unattended and therefore actually can collide — takes this.
+
+### DW-66: half of FR-C4 — the announcement bar — cannot be built until a section can be placed
+
+plain: FR-C4 promises four things at connect. Story 3.4 built two of them: Inflozo reads your accent
+  colour, logo and menu off your Ghost, and puts them on a project. The other two are **copying your Ghost
+  announcement bar into an Inflozo section** and then **offering to switch Ghost's own bar off**, and
+  neither can be built yet. Nothing can be placed on a page until the editor defines what a page holds
+  (Epic 4/5), there is no announcement design to place until the library is built (Epics 9–10), and
+  switching the customer's bar off before Inflozo can publish a replacement (Epic 7) would empty the bar
+  on their live site with nothing behind it. The same is true of the canvas showing live content from
+  their site instead of placeholder text.
+status: open
+severity: medium
+origin: Story 3.4 spec (2026-09-08) — the owner ruled it at Question 2, option 1
+location: apps/web/lib/probe-rule.ts (`announcementOf` already stores `content`, `background` and
+  `visibility` verbatim, and `brandOf` stores the rest) · apps/web/app/(app)/app/(authed)/sites/brand/
+  page.tsx (S2c, which today offers the brand half only) · apps/web/lib/style-pack.ts (`style_pack.brand`,
+  the key this story put in E6's column) · apps/web/server/ghost-admin/admin-rule.ts (`ADMIN_WRITES`
+  carries `announcement_clear` and **nothing has ever called it**)
+reason: The owner ruled that Epic 3 ships the brand half on schedule rather than staying open behind two
+  epics (2026-09-08, Question 2, option 1). Everything the deferred half needs is ALREADY STORED and needs
+  no second read of anybody's Ghost: `sites.site_settings.announcement` holds the bar's text, its
+  background role and its visibility exactly as Ghost sends them (Story 3.3), and
+  `sites.site_settings.brand` holds the accent, logo, icon, cover and menu (Story 3.4, MEASUREMENTS §40).
+  The story that first places a section on a page owns the seed — it maps the text onto an **A2** design,
+  the visibility onto **show to** and the background onto the **Background** role — and the consented
+  "turn Ghost's own bar off" waits behind Epic 7's deploy, because P8's safety here is by sequencing and
+  the sequence does not exist yet. `announcement_clear` staying uncalled is the check on that: the day it
+  has a caller is the day this entry closes.
+also: `projects.style_pack.brand` is a key Story 3.4 put in a column **E6 owns**. E6's Style Pack editor
+  (Story 6.1) inherits it and decides whether a pack that carries a site brand shows it, offers to clear
+  it, or re-derives the pack from it. Only `placeholderFor` reads it today, for the dashboard card's
+  accent; every other field is stored for the epic that uses it.

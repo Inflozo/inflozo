@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The connect wizard and its connect-time probes, driven through the real UI on the deployed site and read off the wire. Stories 3.2 and 3.3.
+"""The connect wizard, its connect-time probes and FR-C4's auto-branding screen, driven through the real UI on the deployed site and read off the wire. Stories 3.2, 3.3 and 3.4.
 
     python3 tools/probe/run-verify-ghost-admin.py --check   # plumbing only: no browser, no UI
     python3 tools/probe/run-verify-ghost-admin.py           # the whole round trip, T1 and T3
@@ -30,6 +30,12 @@ list gone stale — the sibling harness's own note):
                  `announcement_*`. §15h item 21 measured the announcement three with a STAFF
                  token, a credential the product does not hold until Epic 7, so this had to be
                  executed rather than inherited (§39)
+  brand-keys     STORY 3.4, printed in both modes: the SEVEN keys FR-C4's brand reader takes off
+                 the SAME payload — `accent_color`, `logo`, `icon`, `cover_image`, `navigation`,
+                 `title`, `description` — are really in the integration key's own
+                 `GET /admin/settings/` on both majors, and the CONTAINER of each is recorded.
+                 `navigation` is a JSON *string*, as `announcement_visibility` is (§40); the
+                 reader admits an array too, and this is what says which branch is live
   then, in the browser, as one throwaway account that starts on the Free plan:
   first-run      `/sites` with nothing connected is an EMPTY SCREEN — the owner's finding 7: his
                  own title and subtitle (read from the app, not retyped), a drawing, and TWO
@@ -79,12 +85,31 @@ list gone stale — the sibling harness's own note):
   content-wrong-key  the Content API key with one character changed: the browser's own check (§38b)
                  answers 401 and the submit NEVER LEAVES THE PAGE — counted, not assumed
   connect        T1's real keys, its address typed as a BARE HOST (the matrix's "Bare host typed"
-                 row — the row stores the https origin): the browser lands on `/sites` showing the card, whose title and
-                 address are what `GET /admin/site/` answers with no key (§38a), the address a
-                 link to the PUBLIC url, "Checked just now" stamped by that read; the wire shows
-                 the row with `ghost_version`, `content_key`, `site_settings.public_url` and
+                 row — the row stores the https origin): the wire shows the row with
+                 `ghost_version`, `content_key`, the title and `site_settings.public_url` as
+                 `GET /admin/site/` answers them with no key (§38a), and
                  `credentials_present {content,admin} = true, staff = false`; the pooler shows a
-                 `private.site_credentials` row and a live `vault.secrets` row behind its ref
+                 `private.site_credentials` row and a live `vault.secrets` row behind its ref —
+                 and STORY 3.4 MOVED WHERE IT LANDS: the browser is on `/sites/brand?site={id}`,
+                 S2c, naming the site it just read, because T1's settings carry a brand
+  brand-screen   STORY 3.4: S2c on the deployed site (`S2 Onboarding.dc.html:150-196`), asserted
+                 against the ROW the probe just wrote — the heading and its sub-line naming the
+                 host, "Your site today", the accent swatch really painted in the row's accent and
+                 CAPTIONED WITH THE HEX (the frame's colour NAME is the one departure: Ghost
+                 answers a hex and nothing else), the menu as text pills with NO links, "Fonts
+                 stay yours", the homepage caption, both buttons, and the caption under **Use your
+                 brand** saying a project will be MADE — this account has none yet
+  brand-js-off   both S2c controls are `<form action={serverAction}>`: method=post, an action
+                 attribute, React's encoded `$ACTION_*` hidden fields, one hidden `site_id` and one
+                 submit each, and exactly one carrying the hidden `project_id` — the decision the
+                 caption states. (The Sites card's offer is a LINK and needs no form to work with
+                 scripts off; it is asserted where it is drawn, in `brand-seed`.)
+  axe-brand      axe-core over S2c at 1440 and 390
+  brand-skip     **Skip** writes NOTHING — no project, and no note that it was pressed — the
+                 browser returns to `/sites`, and the card still carries the offer link, so it can
+                 be taken later. The card itself is unchanged: its title and address as
+                 `GET /admin/site/` answers them, the address a link to the PUBLIC url, and
+                 "Checked just now" stamped by that read
   decrypt-path   STORY 3.3, and DW-54's THIRD GAP CLOSING: the probe runs on the STORED key
                  through `call()`, so the first connect leaves TWO `vault_decrypt` rows and,
                  carrying the site's id, THREE `admin_read` rows — `site/` from the connect
@@ -110,6 +135,22 @@ list gone stale — the sibling harness's own note):
   card           the card the owner finalised (his findings 4 and 6), read off the rendered boxes:
                  the address carries the new-tab glyph, and "Connected" has left the pills' line to
                  sit just above "Checked …" and closer to it than to the pills
+  brand-seed     STORY 3.4, driven the way the owner tests it: the offer LINK on the card, then
+                 **Use your brand**. A project exists named from the site's own Ghost title, with
+                 `linked_site_id` set — FR-B5's first writer — and `style_pack.brand.accent` equal
+                 to the site's; the Sites card's tally turns into the app's own "1 project"; and
+                 the DASHBOARD card's wireframe is painted in that accent, read with
+                 `getComputedStyle` off the rendered card
+  brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
+                 owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
+                 will brand before the press, and pressing it writes `style_pack.brand` onto that
+                 row and changes NOTHING else — not its name, not its `slug`, not its
+                 `linked_site_id` — and makes no second project
+  brand-none     a card that offers nothing is not drawn (UX-DR3): with the brand taken off the
+                 row through the service role (no Ghost here can answer without an accent, a logo
+                 AND a menu), the card draws no offer link and `/sites/brand?site=…` answers 404 —
+                 as does a `?site=` naming a row that is not the caller's, because RLS returns no
+                 row and no row is a 404. The brand is put back afterwards
   dialog         S11a's "Connect site" is a LINK to /sites/connect that JavaScript turns into S11b:
                  the sheet opens with its title pair and the handshake, Escape closes it, and no
                  POST left the page (Cancel, Escape and the backdrop all send nothing)
@@ -220,7 +261,7 @@ other way to see them, and reading them beside the UI steps is what lets "the ca
 and "there is a secret behind the ref" be one assertion.
 
 --shots DIR saves each surface at 1440, 834 and 390 (`s11-empty`, `s2b1`, `s2b2`, `s11a`, `s11b`,
-and Story 3.3's `b15`) —
+Story 3.3's `b15` and Story 3.4's `s2c`) —
 the frame comparison the spec's Review owes, re-takeable at Deploy — and asserts nothing extra. The
 empty screen has no frame: it is the owner's finding 7, extrapolated from S3b (R-74).
 
@@ -287,8 +328,8 @@ def app_text():
     no-op on 24 and the switch on 22.6+), both modules import nothing, and a wording change in
     either moves this run with it. `%s` stands where the app puts the host."""
     script = (
-        f"import {{ connectMessage, HTTP_WARNING, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
-        f"import {{ INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
+        f"import {{ connectMessage, HTTP_WARNING, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
+        f"import {{ BRAND_COPY, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
         f"import {{ siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
         "console.log(JSON.stringify({"
         " credential_malformed: connectMessage('credential_malformed'),"
@@ -314,6 +355,21 @@ def app_text():
         " preview_clears: PREVIEW_COPY.clears,"
         " preview_recheck: PREVIEW_COPY.recheck,"
         " preview_recheck_failed: PREVIEW_COPY.recheckFailed,"
+        # STORY 3.4 — S2c's every sentence, and the two the frame does not draw (the card's offer
+        # and the caption under the button, which is the owner's Question 1 ruling in words).
+        " brand_title: BRAND_COPY.title,"
+        " brand_sub: BRAND_COPY.sub('%s'),"
+        " brand_site_today: BRAND_COPY.siteToday,"
+        " brand_accent: BRAND_COPY.accent,"
+        " brand_navigation: BRAND_COPY.navigation,"
+        " brand_fonts: BRAND_COPY.fonts,"
+        " brand_homepage: BRAND_COPY.homepage,"
+        " brand_use: BRAND_COPY.use,"
+        " brand_skip: BRAND_COPY.skip,"
+        " brand_offer: BRAND_COPY.offer,"
+        " brand_will_create: BRAND_COPY.willCreate,"
+        " brand_will_brand: BRAND_COPY.willBrand('%s'),"
+        " one_project: projectsLabel(1),"
         " at_cap: siteCapSentence('free') }))")
     try:
         proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
@@ -438,6 +494,18 @@ const insert = async (path, body) => {
   return { status: r.status, body: await r.json().catch(() => null) }
 }
 const rowsOf = async (select = 'id') => (await wire(`/sites?user_id=eq.${USER_ID}&select=${select}`)).body || []
+/* STORY 3.4: the projects "Use your brand" writes, in the dashboard's own order. Read through the
+   SERVICE ROLE, like every other wire read here — what a USER may do is still only ever driven
+   through that user's own session, in the browser. */
+const projectsOf = async () => (await wire(
+  `/projects?user_id=eq.${USER_ID}&select=id,name,slug,style_pack,linked_site_id&order=updated_at.desc`)).body || []
+/* A hex as `getComputedStyle` reports it, so "the card is painted in the site's accent" is read
+   off the RENDERED card rather than off the class attribute. */
+const rgbOf = (hex) => {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  return `rgb(${[0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)).join(', ')})`
+}
 /* The fixture's audit rows, by id: a step that must make NO Ghost call proves it by the count. */
 const readAudit = () => sql`select id from private.credential_audit where user_id = ${USER_ID}`
 /* Story 3.3: the DECRYPT path's own rows. `call()` writes one `vault_decrypt` per decryption in
@@ -529,6 +597,20 @@ const sheet = (page) => page.locator('dialog[open]')
 const opener = (page) => page.locator('a[href="/sites/connect"]:visible', { hasText: 'Connect site' })
 const bar = (page) => page.locator('div:has(> form[role="search"])').first()
 const boxOf = async (locator) => (await locator.boundingBox()) || { x: -1, y: -1, width: -1, height: -1 }
+
+/* STORY 3.4 — S2c. A CONNECT WHOSE SITE HAS A BRAND NOW LANDS HERE and not on the list, and both
+   test servers answer an accent and a menu (§40), so this is the LIVE path for every connect in
+   this run rather than a branch. `skipS2c` presses **Skip**, which writes nothing and returns to
+   `/sites`; the steps that only need a site connected use it to get back to where they were. */
+const s2cHeading = (page) => page.getByRole('heading', { name: SAY.brand_title })
+const skipS2c = async (page) => {
+  await s2cHeading(page).waitFor()
+  const landed = page.url()
+  // `exact`, because the shell's own skip-to-content control is a LINK named "Skip to content".
+  await page.getByRole('button', { name: SAY.brand_skip, exact: true }).click()
+  await page.waitForURL((u) => u.pathname === '/sites')
+  return landed
+}
 const same = (a, b) => Math.abs(a - b) < 0.5
 
 /* `--shots`: each surface at the three widths the spec names, for the frame comparison. Assertion-free. */
@@ -832,28 +914,102 @@ const shoot = async (page, name) => {
     // before anything is called, and that origin is what the row stores (review 2, 2026-09-08).
     await fill(page, T1.url.replace(/^https:\/\//, ''), T1.adminKey, T1.contentKey)
     await submit(page)
-    await page.waitForSelector('text=Connected')
+    // STORY 3.4: THE CONNECT NOW LANDS ON S2c, because T1's settings carry an accent and a menu.
+    await s2cHeading(page).waitFor()
+    const landedOn = page.url()
     const rows = await rowsOf('*')
     const row = rows[0] || {}
     t1SiteId = row.id || null
     const ref1 = t1SiteId ? await refOf(t1SiteId) : null
     const present = row.credentials_present || {}
     const cardOf = (title) => page.locator('article', { hasText: title })
-    const card = await cardOf('Connected').first().innerText().catch(() => '')
-    const href = await cardOf('Connected').first().locator('a[target="_blank"]').getAttribute('href').catch(() => null)
     step('connect',
       rows.length === 1 && row.url === T1.url && row.ghost_version === T1.version && Boolean(row.content_key)
-      && row.title === pub1.title && (row.site_settings || {}).public_url === pub1.url && href === pub1.url
+      && row.title === pub1.title && (row.site_settings || {}).public_url === pub1.url
       && Boolean(row.settings_read_at) && present.content === true && present.admin === true
       && present.staff === false && Boolean(ref1) && (await secretsBehind(ref1)) === 1
-      && card.includes('Connected') && card.includes(`Ghost ${short(T1.version)}`) && card.includes('Checked just now')
-      && page.url().replace(/\?.*$/, '') === `${APP}/sites`,
+      && landedOn.replace(/\?.*$/, '') === `${APP}/sites/brand`
+      && landedOn.includes(`site=${t1SiteId}`),
       `${rows.length} row: url ${row.url} from a bare host, ghost_version ${row.ghost_version}, content_key stored = ${Boolean(row.content_key)}, ` +
       `title ${JSON.stringify(row.title)} and site_settings.public_url ${(row.site_settings || {}).public_url} ` +
-      `both as GET /admin/site/ answers them, the card's address links there = ${href === pub1.url}, ` +
+      `both as GET /admin/site/ answers them, ` +
       `settings_read_at set = ${Boolean(row.settings_read_at)}, credentials_present ${JSON.stringify(present)}, ` +
       `a site_credentials row with a ref = ${Boolean(ref1)}, vault.secrets rows behind it = ${await secretsBehind(ref1)}; ` +
-      `the browser is on ${page.url()} showing ${JSON.stringify(card.replace(/\s+/g, ' ').trim())}`)
+      `and the browser landed on ${landedOn} — S2c, naming the site it just read, not the list (Story 3.4)`)
+
+    // ── S2c ON THE DEPLOYED SITE (`S2 Onboarding.dc.html:150-196`), read against the ROW the probe
+    //    just wrote — so "the screen shows what we stored" is one assertion and not two beliefs.
+    const brandRead = (row.site_settings || {}).brand || {}
+    const s2c = await page.locator('main').innerText().catch(() => '')
+    const saidOn = (text) => s2c.toLowerCase().includes(String(text).toLowerCase())
+    // The swatch's caption is THE HEX, not a colour name: the frame prints "Burnt orange" and
+    // Ghost answers a hex and nothing else (§40), so naming one would assert what was not read.
+    const swatch = await page.locator('main [style]').evaluateAll(
+      (els, want) => els.some((el) => getComputedStyle(el).backgroundColor === want),
+      rgbOf(brandRead.accent))
+    const pills = await page.locator('main ul li').allInnerTexts().catch(() => [])
+    const navMatches = (brandRead.nav || []).every((item) => pills.includes(item.label))
+    // NO PILL IS A LINK: the frame draws text, and an href off a value read from someone's Ghost
+    // is an attribute this screen has no reason to write.
+    const pillLinks = await page.locator('main ul li a').count()
+    step('brand-screen',
+      saidOn(SAY.brand_title) && (await says(page, SAY.brand_sub.replace('%s', new URL(pub1.url || T1.url).host)))
+      && saidOn(SAY.brand_site_today) && saidOn(SAY.brand_accent) && saidOn(brandRead.accent)
+      && saidOn(SAY.brand_navigation) && navMatches && pillLinks === 0
+      && saidOn(SAY.brand_fonts) && saidOn(SAY.brand_homepage)
+      && saidOn(SAY.brand_use) && saidOn(SAY.brand_skip)
+      && saidOn(SAY.brand_will_create) && swatch,
+      `S2c against the row: accent ${brandRead.accent} captioned as the HEX (the frame's colour ` +
+      `NAME is the one departure) and painted on the swatch = ${swatch}; the menu ` +
+      `${JSON.stringify((brandRead.nav || []).map((n) => n.label))} drawn as ${pills.length} text ` +
+      `pill(s) with ${pillLinks} links; "Your site today", "Fonts stay yours", "Your homepage, ` +
+      `already wearing your brand.", both buttons, and the caption ${JSON.stringify(SAY.brand_will_create)} ` +
+      `— this account has no project yet, so the screen says one will be MADE`)
+
+    // ── BOTH CONTROLS ARE FORMS, so S2c works with JavaScript off — the same wiring `js-off`
+    //    asserts for the keys form. (The Sites card's offer is a LINK and needs no form to work
+    //    without scripts; it is asserted where it is drawn, in `brand-seed`.)
+    const brandForms = await page.locator('main form').evaluateAll((forms) => forms.map((f) => ({
+      method: (f.getAttribute('method') || '').toLowerCase(),
+      action: Boolean(f.getAttribute('action')),
+      encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
+      site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
+      decision: f.querySelectorAll('input[type="hidden"][name="project_id"]').length,
+      submits: f.querySelectorAll('button[type="submit"]').length,
+    })))
+    const brandWired = brandForms.filter((f) => f.method === 'post' && f.action && f.encoded > 0
+                                                && f.site === 1 && f.submits === 1)
+    step('brand-js-off',
+      brandForms.length === 2 && brandWired.length === 2
+      && brandForms.filter((f) => f.decision === 1).length === 1,
+      `${brandForms.length} form(s) on S2c and ${brandWired.length} of them progressively enhanced: ` +
+      `method=post, an action attribute, React's encoded $ACTION_* hidden fields, one hidden ` +
+      `site_id and one submit each. Exactly one carries the hidden project_id — the decision the ` +
+      `caption states, which useBrand re-counts and refuses if it has gone stale`)
+
+    await axeAt(page, 'brand')
+    await shoot(page, 's2c')
+
+    // ── **Skip** WRITES NOTHING. Not a project, and not a note that it was pressed: the offer is
+    //    a link on the card and stays there, so skipped and not-yet-taken are one state (FR-C4's
+    //    "skippable and re-runnable").
+    await skipS2c(page)
+    await page.waitForSelector('text=Connected')
+    const afterSkip = await projectsOf()
+    const offerHref = `/sites/brand?site=${t1SiteId}`
+    const offerAfterSkip = await page.locator(`article a[href="${offerHref}"]`).count()
+    const card = await cardOf('Connected').first().innerText().catch(() => '')
+    const href = await cardOf('Connected').first().locator('a[target="_blank"]').getAttribute('href').catch(() => null)
+    step('brand-skip',
+      afterSkip.length === 0 && page.url().replace(/\?.*$/, '') === `${APP}/sites`
+      && offerAfterSkip === 1 && card.includes(SAY.brand_offer)
+      && card.includes('Connected') && card.includes(`Ghost ${short(T1.version)}`)
+      && card.includes('Checked just now') && href === pub1.url,
+      `Skip left ${afterSkip.length} project(s) — nothing written — and the browser on ${page.url()}; ` +
+      `the card still carries the offer (${offerAfterSkip} link to ${offerHref}, reading ` +
+      `${JSON.stringify(SAY.brand_offer)}), so it can be taken later. The card behind it is ` +
+      `unchanged: ${JSON.stringify(card.replace(/\s+/g, ' ').trim())}, its address linking to ` +
+      `${href} = the public url`)
     await shoot(page, 's11a')
 
     // ── STORY 3.3: THE DECRYPT PATH, LIVE, AND IT IS DW-54's THIRD GAP CLOSING. The probe runs on
@@ -945,6 +1101,95 @@ const shoot = async (page, name) => {
       `"Checked just now" at ${Math.round(checkBox.y)} — so Connected is BELOW the pills and just above ` +
       `Checked, ${Math.round(stateGap)}px from it against ${Math.round(pillGap)}px from the pills`)
 
+    // ── FR-C4's SEED, DRIVEN THE WAY THE OWNER TESTS IT: the offer link on the card, then
+    //    **Use your brand**. This account has no project and room for one, so the caption said a
+    //    project would be MADE — and this is where that sentence becomes true or false.
+    const offer = () => page.locator(`article a[href="${offerHref}"]`).first()
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const saidCreate = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites')
+    const seeded = (await until(async () => {
+      const list = await projectsOf()
+      return list.length ? list : null
+    })) || []
+    const made = seeded[0] || {}
+    const seededBrand = ((made.style_pack || {}).brand) || {}
+    await page.reload({ waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const tally = await cardOf('Connected').first().innerText().catch(() => '')
+    // …AND THE DASHBOARD CARD IS PAINTED IN IT. `placeholderFor` prefers `brand.accent` over the
+    // preset's, so the wireframe's middle block is the customer's own colour — read off the
+    // RENDERED card with getComputedStyle, not off a class attribute.
+    await page.goto(`${APP}/`, { waitUntil: 'load' })
+    await page.getByText(made.name || 'project').first().waitFor()
+    const painted = await page.locator('article > div[aria-hidden="true"] > div:last-child > div')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor))
+    step('brand-seed',
+      saidCreate && seeded.length === 1 && made.linked_site_id === t1SiteId
+      && seededBrand.accent === brandRead.accent && made.name === pub1.title
+      && Boolean(made.slug) && tally.includes(SAY.one_project)
+      && painted.includes(rgbOf(brandRead.accent)),
+      `the caption said a project would be made = ${saidCreate}; pressing "${SAY.brand_use}" wrote ` +
+      `${seeded.length} project named ${JSON.stringify(made.name)} — the site's own Ghost title — ` +
+      `slug ${JSON.stringify(made.slug)}, linked_site_id = the site = ${made.linked_site_id === t1SiteId} ` +
+      `(FR-B5's first writer), style_pack.brand.accent ${seededBrand.accent} equal to the site's ` +
+      `${brandRead.accent}; the Sites card now reads ${JSON.stringify(SAY.one_project)} = ` +
+      `${tally.includes(SAY.one_project)}, and the dashboard card's wireframe blocks compute to ` +
+      `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} among them`)
+
+    // ── AT THE CAP, WHICH THE SEED ABOVE JUST PUT THIS FREE ACCOUNT AT (F.1: Free includes 1
+    //    project). THE OWNER RULED THIS PATH (Question 1, option 1, 2026-09-08) and asked the
+    //    screen to NAME the project it will brand BEFORE the press — so the caption is read
+    //    first, and then what it promised is checked against the row.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const namedIt = await says(page, SAY.brand_will_brand.replace('%s', made.name))
+    const stillCreate = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForSelector('text=Connected')
+    const afterCap = await projectsOf()
+    const same = afterCap[0] || {}
+    step('brand-atcap',
+      namedIt && !stillCreate && afterCap.length === 1 && same.id === made.id
+      && same.name === made.name && same.slug === made.slug
+      && same.linked_site_id === made.linked_site_id
+      && ((same.style_pack || {}).brand || {}).accent === brandRead.accent,
+      `at the Free cap of 1 the caption NAMED the project it would brand ` +
+      `(${JSON.stringify(SAY.brand_will_brand.replace('%s', made.name))}) = ${namedIt}, and no longer ` +
+      `promised a new one = ${!stillCreate}; pressing it left ${afterCap.length} project — the same ` +
+      `row (${same.id === made.id}) with its name, slug and linked_site_id untouched ` +
+      `(${same.name === made.name && same.slug === made.slug && same.linked_site_id === made.linked_site_id}) ` +
+      `and style_pack.brand written again, idempotently`)
+
+    // ── A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3), and the route that would draw it 404s.
+    //    No Ghost here can produce a site with no accent, no logo and no menu, so the state is
+    //    seeded on the fixture's OWN row through the service role and then put back — the same
+    //    idiom as the Portal and plan questions below.
+    const brandKept = brandRead
+    const stripped = await patchSettings(t1SiteId, { brand: undefined })
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
+    const direct = await page.goto(`${APP}${offerHref}`, { waitUntil: 'load' })
+    const notFound = direct ? direct.status() : 0
+    // A `?site=` naming a STRANGER's row is the same 404 — RLS answers with no row, not an error.
+    const forgedSite = await page.goto(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`,
+                                       { waitUntil: 'load' })
+    const foreign404 = forgedSite ? forgedSite.status() : 0
+    await patchSettings(t1SiteId, { brand: brandKept })
+    step('brand-none',
+      stripped.status === 200 && offerGone === 0 && notFound === 404 && foreign404 === 404,
+      `with the brand taken off the row (HTTP ${stripped.status}) the card draws ${offerGone} offer ` +
+      `link(s) and ${offerHref} answers HTTP ${notFound}; a ?site= naming a row that is not the ` +
+      `caller's answers HTTP ${foreign404} — RLS returns no row, and no row is a 404. The brand ` +
+      `was put back afterwards`)
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+
     // ── S11b: the same pair behind S11a's button. The opener is a LINK to /sites/connect that
     //    JavaScript turns into the sheet; Escape closes it and nothing is sent either way.
     const opened = await sent(async () => {
@@ -1023,6 +1268,9 @@ const shoot = async (page, name) => {
     await page.waitForSelector('dialog[open] #s2b-content-key')
     await fill(page, T1.url, T1.adminKey, T1.contentKey)
     await submit(page)
+    // STORY 3.4: the reconnect re-probes, so it lands on S2c again — the offer is re-runnable by
+    // construction. Skip writes nothing and comes back to the list this step is about.
+    await skipS2c(page)
     await page.waitForSelector('text=Connected')
     const readopted = await rowsOf('id,disconnected_at,ghost_version,site_settings')
     const ref1b = t1SiteId ? await refOf(t1SiteId) : null
@@ -1059,6 +1307,8 @@ const shoot = async (page, name) => {
     await page.waitForSelector('dialog[open] #s2b-content-key')
     await fill(page, `${T3.url}/`, T3.adminKey, T3.contentKey)
     await submit(page)
+    // T3 answers an accent and a menu too (§40), so this connect lands on S2c as well.
+    const t3Landed = await skipS2c(page)
     await page.waitForSelector(`text=Ghost ${short(T3.version)}`)
     const both = await rowsOf('*')
     const row3 = both.find((r) => r.url === T3.url) || {}
@@ -1077,7 +1327,8 @@ const shoot = async (page, name) => {
       `entitlement flipped to pro_active (HTTP ${pro.status}); ${both.length} rows, T3's url stored as ` +
       `${JSON.stringify(row3.url)} from a trailing-slash input, ghost_version ${row3.ghost_version}, ` +
       `public_url ${(row3.site_settings || {}).public_url}, a vault secret behind its ref = ${(await secretsBehind(ref3)) === 1}; ` +
-      `the sheet closed on success (${sheetLeft} left open) and the second card reads ` +
+      `the sheet closed on success (${sheetLeft} left open), the connect landed on ${t3Landed} — ` +
+      `S2c for T3 (Story 3.4) — and after Skip the second card reads ` +
       `${JSON.stringify(card3.replace(/\s+/g, ' ').trim())}`)
 
     // ── THE SEARCH HE ASKED FOR (finding 5, amended): the shell's own field, on Sites, matching a
@@ -1525,6 +1776,35 @@ def main():
     print(f'  {"PASS" if keys_ok else "FAIL"}  settings-keys: GET /admin/settings/ read with '
           f'GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY (the integration key, no staff token) — '
           f'{json.dumps(seen)}; the keys wanted: {", ".join(WANT)}')
+
+    # ── §40, RE-EXECUTED EVERY RUN: Story 3.4's FIFTH reader takes the SAME payload, so the seven
+    #    keys it reads have to be in it, on both majors, with the CONTAINER each really arrives in.
+    #    `announcement_visibility` turned out to be a JSON *string* (§39c), which is what made
+    #    `navigation`'s container a real question rather than a pedantic one — and it is a string
+    #    too. Recorded key by key so a major that changes its mind is caught here rather than on a
+    #    customer's screen (standing rule: cite or execute, never assert).
+    BRAND_KEYS = ('accent_color', 'logo', 'icon', 'cover_image', 'navigation', 'title', 'description')
+    brand_seen = {}
+    for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
+        try:
+            flat = {r['key']: r.get('value') for r in ghost_for(env, prefix, f'{prefix}_ADMIN_API_KEY')
+                    .api('GET', 'settings/')['settings']}
+            missing_brand = [k for k in BRAND_KEYS if k not in flat]
+            shapes = {k: type(flat.get(k)).__name__ for k in BRAND_KEYS}
+            # The one container the reader has to get right: a JSON array inside a STRING.
+            nav = flat.get('navigation')
+            nav_shape = ('json-string' if isinstance(nav, str) and nav.strip().startswith('[')
+                         else 'array' if isinstance(nav, list) else type(nav).__name__)
+            brand_seen[label] = ({'missing': missing_brand} if missing_brand
+                                 else {'types': shapes, 'navigation': nav_shape})
+        except Exception as e:
+            brand_seen[label] = f'{type(e).__name__}'
+    brand_ok = all(isinstance(v, dict) and 'missing' not in v and v['navigation'] in ('json-string', 'array')
+                   for v in brand_seen.values())
+    failed = failed or not brand_ok
+    print(f'  {"PASS" if brand_ok else "FAIL"}  brand-keys: the seven FR-C4 keys in the same '
+          f'GET /admin/settings/ payload, read with GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY — '
+          f'{json.dumps(brand_seen)}; wanted: {", ".join(BRAND_KEYS)} (MEASUREMENTS §40)')
 
     if args.check:
         pw, axe = playwright_dir(), axe_path()

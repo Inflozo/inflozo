@@ -1,6 +1,6 @@
 'use server'
 
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
@@ -17,7 +17,10 @@ import {
   type MessageCode,
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
-import { atSiteCap, siteCapSentence } from '@/lib/plan'
+import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
+import { hasBrand } from '@/lib/probe-rule'
+import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
+import { defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { fetchWithKey, store } from '@/server/ghost-admin'
 import { AdminError } from '@/server/ghost-admin/admin-rule'
@@ -57,6 +60,16 @@ import { probeSite } from '@/server/site-probe'
 const ROUTE = 'sites/connect'
 /** `proxy.ts` rewrites `app.inflozo.com/sites` onto the internal `/app/sites`. */
 const SITES = '/app/sites'
+/** …and `app.inflozo.com/` onto `/app`, which is the dashboard's own revalidate path. */
+const DASHBOARD = '/app'
+
+/* THE BROWSER's paths, not the two above — those are `revalidatePath`'s route-group paths and are
+   not URLs. B15's banner is about ONE card, so its redirect names it; S2c is about one site, so
+   its route does too. */
+const SITES_URL = '/sites'
+const RECHECK = (siteId: string) => `${SITES_URL}?recheck=${siteId}`
+/** FR-C4's S2c, on its own route so the connect wizard's redirect has somewhere to land. */
+const BRAND = (siteId: string) => `${SITES_URL}/brand?site=${siteId}`
 
 const fail = (code: ConnectCode, message: string, field?: ConnectField): ConnectResult => ({
   error: { code, message, ...(field ? { field } : {}) },
@@ -325,9 +338,22 @@ export async function connectSite(
   }
 
   revalidatePath(SITES)
+
+  // ── FR-C4, STORY 3.4: WHERE CONNECT LANDS. A site whose settings carry a brand we can offer
+  //    goes to S2c; anything else goes to the list, exactly as it did before. The row is re-read
+  //    through the CALLER'S OWN SESSION rather than taken from the probe's summary, and that is
+  //    deliberate: a probe that failed just now still leaves the brand a PREVIOUS probe wrote —
+  //    the FR-C6 re-adopt path — and offering it there is right, while a summary field would
+  //    answer "no brand" about a read that did not happen.
+  const { data: probed } = await supabase
+    .from('sites')
+    .select('site_settings')
+    .eq('id', siteId)
+    .maybeSingle<{ site_settings: { brand?: unknown } | null }>()
+
   // Outside every `try` above: `redirect()` throws NEXT_REDIRECT by design, and a catch that
   // swallowed it would report a successful connect as a failure (`lib/action-redirect.ts`).
-  redirect('/sites')
+  redirect(hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : SITES_URL)
 }
 
 /* ───────── STORY 3.3's FOUR ANSWERS, and they live in THIS file because a `'use server'` module
@@ -404,11 +430,6 @@ export async function dismissInjectionNotice(formData: FormData): Promise<void> 
   if (!at) return
   await writeSite('notice dismiss', at, { code_injection_notice_shown_at: new Date().toISOString() })
 }
-
-/* B15's banner is about ONE card, so the redirect names it. These are the BROWSER's paths, not
-   `SITES` — that one is `revalidatePath`'s route-group path and is not a URL. */
-const SITES_URL = '/sites'
-const RECHECK = (siteId: string) => `${SITES_URL}?recheck=${siteId}`
 
 /**
  * THE PORTAL QUESTION, asked only when `portal_button` was not a boolean in Ghost's payload. The
@@ -487,4 +508,133 @@ export async function recheckPlan(formData: FormData): Promise<void> {
   // site's failure printed the banner under EVERY Preview-only card (review, 2026-09-08 — five
   // layers, and the matrix row says "THE CARD is unchanged and a banner says to try again").
   redirect(summary.ok ? SITES_URL : RECHECK(at.siteId))
+}
+
+/* ───────── STORY 3.4 — FR-C4's TWO ANSWERS, and they live in this file for the same reason the
+   four above do: a `'use server'` module may export only async functions, so S2c's route cannot
+   carry its own actions beside it.
+
+   BOTH GO THROUGH THE CALLER'S OWN SESSION — `supabaseServer()`, never `supabaseAdmin()` — because
+   what they write is `projects`, an AD-6 owner-policy table every write in `projects/actions.ts`
+   already reaches this way. RLS is therefore the guard, not an `.eq('user_id', …)` we remembered:
+   a `?site=` or a `project_id` naming somebody else's row simply reads back nothing.
+
+   NEITHER WRITES `sites`. `site_settings.brand` is server-asserted and the probe is its only
+   author (AD-7); these two only COPY it onto a project. */
+
+/** What S2c needs to know about the site it is offering, read through RLS. */
+type BrandSite = { id: string; title: string | null; url: string; site_settings: { brand?: unknown } | null }
+
+/**
+ * THE OFFER IS A LINK AND THE SEED IS IDEMPOTENT. Pressing **Use your brand** twice writes the
+ * same pack twice, and nothing anywhere records that it was pressed — FR-C4 asks for "skippable
+ * and re-runnable", and a `brand_seeded_at` column would give a third state (used vs skipped) that
+ * no screen in this epic shows.
+ * ponytail: the offer is a link; the seed is idempotent. A column when a screen needs to tell
+ * skipped from used.
+ *
+ * THE OWNER RULED THE AT-CAP PATH (Question 1, option 1, 2026-09-08) AND THE SCREEN SAYS WHICH
+ * PROJECT IT WILL BRAND BEFORE THE PRESS. S2c counts the caller's projects and prints, under the
+ * button, either "we'll make one" or the name of the project that will be branded instead — the
+ * most recently updated one. That decision rides in a hidden field, and THIS RE-COUNTS IT: a
+ * second tab that filled the cap between the render and the press would otherwise rebrand a
+ * project the screen never named. `refusedAtCap` in `projects/actions.ts` is the precedent — the
+ * page's count can be one tab out of date, so the answer is to re-render, not to act.
+ */
+export async function useBrand(formData: FormData): Promise<void> {
+  const at = await siteOf(formData)
+  if (!at) return
+  // The screen's own decision: a project id, or empty for "make one". A field that is not there
+  // at all is a crafted post, not a press.
+  const chosen = formData.get('project_id')
+  if (typeof chosen !== 'string') {
+    console.error('sites: use brand refused', { code: 'decision_missing' })
+    return
+  }
+
+  const supabase = await supabaseServer()
+  const [site, { data: projects, error: projectsError }, { plan }] = await Promise.all([
+    // A DISCONNECTED record is not a site (FR-C6), so it is not offering a brand either.
+    supabase
+      .from('sites')
+      .select('id, title, url, site_settings')
+      .eq('id', at.siteId)
+      .is('disconnected_at', null)
+      .maybeSingle<BrandSite>()
+      .then(({ data }) => data),
+    // `updated_at desc` IS THE DASHBOARD'S OWN ORDER, so "the project you most recently worked on"
+    // means on this screen exactly what it means on that one.
+    supabase.from('projects').select('id, name, slug, style_pack').order('updated_at', { ascending: false }),
+    resolveEntitlement(at.userId),
+  ])
+
+  // Another user's site id reaches no row through RLS rather than an error — the two are the same
+  // answer here, which is the point.
+  if (!site) notFound()
+  const brand = site.site_settings?.brand
+  // Nothing to offer is nothing to seed: the page 404s for this site too, so this is a stale post.
+  if (!hasBrand(brand)) redirect(SITES_URL)
+  if (projectsError || !projects) {
+    console.error('sites: use brand read failed', { code: projectsError?.code })
+    return
+  }
+
+  const target = atCap(plan, projects.length) ? projects[0] : undefined
+  // THE DECISION THE SCREEN PRINTED, RE-MADE. Both directions matter: a caption that said "we'll
+  // make one" while the cap has since filled, and a caption that named a project while room has
+  // since appeared. Either way nothing is written and S2c is re-rendered with the true sentence.
+  if ((target?.id ?? '') !== chosen) {
+    revalidatePath(SITES)
+    redirect(BRAND(site.id))
+  }
+
+  if (target) {
+    // AT THE CAP: the brand goes onto the project the caption named and NOTHING ELSE about it
+    // moves — not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. The
+    // pack is merged rather than replaced, so a preset E6 has since written survives.
+    const pack = (target.style_pack ?? defaultStylePack()) as Record<string, unknown>
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ style_pack: { ...pack, brand } })
+      .eq('id', target.id)
+      .select('id')
+    if (error || !data?.length) {
+      console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
+      return
+    }
+  } else {
+    // WITH ROOM: a project for the site, named after it. `lib/projects.ts`'s own rules give it its
+    // name and slug — a Ghost title longer than the field allows is clamped, a site with no title
+    // falls back to its host, and a host that slugs to nothing falls back to "Untitled project".
+    const named = (site.title ?? '').trim().slice(0, NAME_MAX).trim() || hostOf(site.url).slice(0, NAME_MAX)
+    const name = named || nextUntitled(projects.map((row) => row.name))
+    const { error } = await supabase.from('projects').insert({
+      user_id: at.userId,
+      name,
+      slug: uniqueSlug(slugify(name), projects.map((row) => row.slug)),
+      style_pack: { ...defaultStylePack(), brand },
+      // FR-B5's binding, and this is its first writer: it is what turns the Sites card's tally
+      // from "0 projects" into "1 project".
+      linked_site_id: site.id,
+    })
+    if (error) {
+      console.error('sites: use brand insert failed', { code: error.code })
+      return
+    }
+  }
+
+  revalidatePath(SITES)
+  revalidatePath(DASHBOARD)
+  redirect(SITES_URL)
+}
+
+/**
+ * **Skip**, and it writes nothing at all — not even a note that it was pressed. The offer stays on
+ * the site's card, so "skipped" and "not taken yet" are one state and the customer can come back
+ * to it. It is a form rather than a link so that both controls on S2c are the same kind of thing
+ * and both work with JavaScript off.
+ */
+export async function skipBrand(formData: FormData): Promise<void> {
+  await siteOf(formData)
+  redirect(SITES_URL)
 }

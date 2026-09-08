@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
-import { INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY } from '@/lib/probe-rule'
+import { ring } from '@/components/kit/greyed'
+import { BRAND_COPY, hasBrand, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY } from '@/lib/probe-rule'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
@@ -27,7 +28,13 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
 
    DW-57 BINDS THE CHIP, NOT THIS FILE: the sky "Preview-only" chip is on the card's STATE LINE
    beside "Connected" (`page.tsx`), because it is the connection's state and the pills line is
-   metadata. These four blocks are the card's last child. */
+   metadata. These blocks are the card's last child.
+
+   STORY 3.4 PUT FR-C4's OFFER AT THE TOP OF THE LIST, and it is A PLAIN LINK, not a Banner: a
+   Banner tells or asks, and this offers. It is shown while the site has a brand worth offering
+   and it never goes away — "skippable and re-runnable" (FR-C4) means skipped and not-yet-taken
+   are one state, so nothing records that it was pressed. DW-57 still binds: this is a block in
+   the card's last child, not a pill on the metadata line and not a word on the state line. */
 
 export type NoticeSite = {
   id: string
@@ -38,6 +45,8 @@ export type NoticeSite = {
     code_injection?: boolean
     portal_button_source?: string
     plan_ask?: boolean
+    /** FR-C4, Story 3.4: `unknown`, because `hasBrand` is what decides whether it offers anything. */
+    brand?: unknown
   } | null
 }
 
@@ -99,10 +108,19 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   const planAsk = settings.plan_ask === true
   const portalAsk = settings.portal_button_source === 'default'
   const preview = site.capability === 'preview_only'
-  if (!injection && !planAsk && !portalAsk && !preview) return null
+  const brand = hasBrand(settings.brand)
+  if (!brand && !injection && !planAsk && !portalAsk && !preview) return null
 
   return (
     <div className="flex flex-col gap-[10px]">
+      {brand ? (
+        <a
+          href={`/sites/brand?site=${site.id}`}
+          className={`self-start rounded-sm text-ui-dense font-medium text-coral-text underline-offset-2 hover:underline ${ring}`}
+        >
+          {BRAND_COPY.offer}
+        </a>
+      ) : null}
       {injection ? (
         <Banner kind="info" rowHeight={ROW}>
           <span className="flex flex-col gap-2">

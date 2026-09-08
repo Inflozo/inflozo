@@ -11,10 +11,14 @@
  * measured the announcement three with a STAFF token, which is a credential Inflozo does not hold
  * until Epic 7, so the spec made confirming them with the integration key part of this story.
  *
- * `settingsOf` FLATTENS THAT ARRAY ONCE and the three readers take the flat record, so a payload
- * of a hundred rows is walked one time rather than three. Anything that is not the executed shape
- * — an object, a string, a missing `settings` — flattens to `{}`, and every reader below answers
- * its own "could not read" from that: absence and nonsense land in the same place, deliberately.
+ * `settingsOf` FLATTENS THAT ARRAY ONCE and every reader takes the flat record, so a payload of a
+ * hundred rows is walked one time rather than once per reader. Anything that is not the executed
+ * shape — an object, a string, a missing `settings` — flattens to `{}`, and every reader below
+ * answers its own "could not read" from that: absence and nonsense land in the same place,
+ * deliberately.
+ *
+ * STORY 3.4 ADDED A FIFTH READER, `brandOf`, TO THE SAME PAYLOAD — no second Admin call, no new
+ * path — so connect, **Re-check plan** and Story 3.7's cron keep being the same function.
  */
 
 export type Capability = 'full' | 'preview_only'
@@ -87,6 +91,147 @@ export function announcementOf(settings: Record<string, unknown>): {
     visibility: text(settings.announcement_visibility),
   }
 }
+
+/**
+ * FR-C4's BRAND, READ OFF THE SAME PAYLOAD — Story 3.4's fifth reader.
+ *
+ * THE SHAPE OF EVERY KEY WAS EXECUTED, not assumed (standing rule 1). The integration key's own
+ * `GET /admin/settings/` on T1 6.58.0 and T3 5.130.6, 2026-09-08 (MEASUREMENTS §40):
+ *
+ *   accent_color   a hex STRING on both majors
+ *   logo · icon    a STRING, and EMPTY on both test servers at rest — which is why an empty
+ *                  string has to mean "no logo" rather than a src of ""
+ *   cover_image    an https URL string on both
+ *   navigation     a JSON **STRING**, exactly as `announcement_visibility` is (§39) — never an
+ *                  array. The array container is admitted anyway, because one major changing its
+ *                  mind is cheaper to absorb here than to discover on a customer's screen
+ *   title          a string on both
+ *   description    a string on T3 and **null** on T1 — absence is a real answer, not a hole
+ *
+ * EVERY VALUE IS VALIDATED AT THIS BOUNDARY, because each one crosses into an attribute:
+ *
+ *   the accent is painted as an inline `style` (`placeholderFor`, and S2c's own swatch), so a
+ *   string Ghost sent that is not a colour is a CSS injection into Inflozo's chrome;
+ *
+ *   the three images become `<img src>`, and `img-src` admits `data:` (`csp.ts:60`) — a `data:`
+ *   SVG is script — so only an `https:` URL survives. Ghost's own are absolute https;
+ *
+ *   nav entries keep their `url` for the epic that turns a menu into a section, but S2c renders
+ *   them as TEXT PILLS WITH NO `href`, which is what the frame draws.
+ */
+export type NavItem = { label: string; url: string }
+
+export type Brand = {
+  accent: string | null
+  logo: string | null
+  icon: string | null
+  cover: string | null
+  nav: NavItem[]
+  title: string | null
+  description: string | null
+}
+
+/**
+ * A colour Inflozo may paint with: `#rgb` or `#rrggbb` and nothing else. Exported because
+ * `style-pack.ts` re-validates the accent it reads back out of `projects.style_pack` — that
+ * column is one the USER'S OWN SESSION may write (schema :1201), so a value that was validated
+ * on the way in is not thereby validated on the way out, and one rule in one place is the only
+ * version of this that cannot drift.
+ */
+const ACCENT = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
+
+export const isAccent = (value: unknown): value is string =>
+  typeof value === 'string' && ACCENT.test(value)
+
+/** An `https:` URL, or null. Not `isHttpUrl`'s question: this one becomes an `<img src>`. */
+function imageUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || value === '') return null
+  try {
+    return new URL(value).protocol === 'https:' ? value : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The menu, out of either container. `allowlistOf` above is the idiom; the JSON string is the
+ * one T1 and T3 actually send. An entry without both strings is not a menu item.
+ */
+export function navOf(value: unknown): NavItem[] {
+  let list: unknown = value
+  if (typeof list === 'string') {
+    try {
+      list = JSON.parse(list)
+    } catch {
+      return []
+    }
+  }
+  if (!Array.isArray(list)) return []
+  return list.flatMap((entry) => {
+    const label = (entry as { label?: unknown })?.label
+    const url = (entry as { url?: unknown })?.url
+    return typeof label === 'string' && label.trim() !== '' && typeof url === 'string'
+      ? [{ label, url }]
+      : []
+  })
+}
+
+export function brandOf(settings: Record<string, unknown>): Brand {
+  // An empty string is Ghost's own "unset" for every one of these (executed, §40), so it is not
+  // a title and not a description either.
+  const text = (value: unknown) => (typeof value === 'string' && value.trim() !== '' ? value : null)
+  return {
+    accent: isAccent(settings.accent_color) ? settings.accent_color : null,
+    logo: imageUrl(settings.logo),
+    icon: imageUrl(settings.icon),
+    cover: imageUrl(settings.cover_image),
+    nav: navOf(settings.navigation),
+    title: text(settings.title),
+    description: text(settings.description),
+  }
+}
+
+/**
+ * IS THERE ANYTHING TO OFFER? A card that offers nothing is not drawn (UX-DR3), and the three
+ * things S2c actually shows are the accent, the logo and the menu — a TITLE is not a brand,
+ * because every Ghost site has one. Three callers ask this question — the connect redirect, the
+ * S2c route's own 404 and the Sites card's link — so it is one predicate rather than three.
+ *
+ * It takes `unknown` because the other two read it back out of a jsonb column.
+ */
+export function hasBrand(brand: unknown): brand is Brand {
+  if (!isRecord(brand)) return false
+  return isAccent(brand.accent) || typeof brand.logo === 'string' || navOf(brand.nav).length > 0
+}
+
+/**
+ * S2c's OWN WORDS (`S2 Onboarding.dc.html:150-196`), so the harness and the tests read the app's
+ * copy rather than retyping it — `PREVIEW_COPY` above is the pattern.
+ *
+ * ONE DEPARTURE FROM THE FRAME, and it is a fact Inflozo does not have: the frame captions the
+ * swatch with the accent's NAME ("Burnt orange"). Ghost answers a hex and nothing else, so the
+ * swatch is captioned with the hex in mono — the card's own idiom for a machine value. Naming a
+ * colour would be asserting what was not read.
+ *
+ * THE THREE SENTENCES THE FRAME DOES NOT DRAW are the offer link on the Sites card and the two
+ * captions under **Use your brand** — the owner's ruling at Question 1 (2026-09-08) asks the
+ * screen to say WHICH project it will brand before the press, not after.
+ */
+export const BRAND_COPY = {
+  title: 'Nice site. Want to keep the vibe?',
+  sub: (host: string) => `We pulled these from ${host} — your call.`,
+  siteToday: 'Your site today',
+  accent: 'Accent color',
+  navigation: 'Navigation',
+  fonts: 'Fonts stay yours — pick a pairing once you’re in the editor.',
+  homepage: 'Your homepage, already wearing your brand.',
+  use: 'Use your brand',
+  skip: 'Skip',
+  /** The Sites card's offer — a link, never a Banner: a Banner tells or asks, this offers. */
+  offer: 'Use this site’s brand',
+  willCreate: 'We’ll make a project for this site and put your brand on it.',
+  willBrand: (name: string) => `You’re at your project limit, so we’ll put your brand on “${name}”.`,
+} as const
 
 /**
  * THE THEME-NAME PREFIX FR-J10 FREEZES AT FIRST DEPLOY — `inflozo-{project-slug}`. At CONNECT
@@ -261,6 +406,8 @@ export function probePatch(args: {
       ? { portal_button: previous.portal_button, portal_button_source: 'declared' }
       : portal),
     announcement: announcementOf(settings),
+    // FR-C4, Story 3.4: the fifth reader, on the payload that was already read.
+    brand: brandOf(settings),
   }
 
   const asked = verdict !== null && 'ask' in verdict

@@ -2905,3 +2905,49 @@ writing `null` explicitly also reads `null`. So a restore is byte-identical in *
 is empty, as it was found) but not in Ghost's JSON representation of empty, and the harness's
 `same_box` asserts on the content for that reason. The product cannot tell the two apart either:
 `injectionFlag` treats `""`, `null` and an absent key as the same "no code injection".
+
+## 40. The seven brand keys in `GET /admin/settings/`, key by key, on both majors · 2026-09-08
+
+Story 3.4 adds a **fifth reader** to the payload §39 measured — `brandOf` — and FR-C4's whole
+screen is built from what it returns, so the container of each key had to be executed rather than
+assumed (standing rule 1). `announcement_visibility` had already turned out to be a JSON *string*
+(§39c), which made `navigation` a real question and not a pedantic one. Executed with the
+**integration** key alone, no Staff Access Token, keys named by variable and no value printed:
+**T1** `ghost6.inflozo.com` 6.58.0 (`GHOST6_ADMIN_API_KEY`) and **T3** `ghost5.inflozo.com` 5.130.6
+(`GHOST5_ADMIN_API_KEY`).
+
+    GET /ghost/api/admin/settings/  Authorization: Ghost <jwt>  Accept-Version: v6.0 / v5.0  -> 200, 200
+      (the same 117 rows on T1 and 99 on T3 as §39b; every key below is PRESENT in both)
+
+    key            T1 (6.58.0)                                          T3 (5.130.6)                    type
+    accent_color   "#FF1A75"                                            "#FF1A75"                       string
+    logo           ""                                                   ""                              string (EMPTY)
+    icon           ""                                                   ""                              string (EMPTY)
+    cover_image    "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"   (identical)         string
+    navigation     "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"}]"     string (JSON)
+    title          "Ghost6"                                             "Ghost5"                        string
+    description    null                                                 "Thoughts, stories and ideas."  null / string
+
+**(a) `navigation` is a JSON STRING on both majors, never an array.** The same container
+`announcement_visibility` uses, and the answer the spec asked Dev to find. `navOf` parses the
+string; it also admits an already-parsed array, because absorbing one major changing its mind is
+cheaper here than discovering it on a customer's screen — but the LIVE branch on both test servers
+is the string. `secondary_navigation` is present in the same shape (`"[{\"label\":\"Sign
+up\",\"url\":\"#/portal/\"}]"`) and is **not read**: FR-C4's menu is the primary one.
+
+**(b) `logo` and `icon` are EMPTY STRINGS at rest, not null and not absent.** So "" has to mean *no
+logo* — an `<img src="">` re-requests the page — which is why `brandOf` refuses the empty string
+before it ever asks whether the value is a URL. `cover_image` carries Ghost's own default cover on
+both servers, an absolute `https:` URL.
+
+**(c) `description` is `null` on T1 and a string on T3**, from the same key on the same endpoint. An
+absent description is a real answer, so it is stored as null rather than as `""`.
+
+**(d) Every one of the seven is readable with the integration key**, so FR-C4's brand rides the read
+Story 3.3 already makes: no second Admin call, no allowlist item, and connect, **Re-check plan** and
+Story 3.7's cron stay the same function.
+
+**(e) What this does NOT say.** These are the values the two test servers happened to hold on
+2026-09-08, not a claim about what Ghost guarantees. `accent_color` was a 6-digit hex on both, and
+`brandOf` admits `#rgb` as well because Ghost's own field accepts it — that shorter form is
+**unobserved** here. The three-digit branch is a unit contract in `apps/web/probe-rule.test.ts`.

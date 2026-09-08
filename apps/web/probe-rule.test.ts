@@ -3,8 +3,13 @@ import assert from 'node:assert/strict'
 import type { CapabilityVerdict } from './lib/probe-rule.ts'
 import {
   announcementOf,
+  BRAND_COPY,
+  brandOf,
   capabilityOf,
+  hasBrand,
   injectionFlag,
+  isAccent,
+  navOf,
   PLAN_COPY,
   portalState,
   PREVIEW_COPY,
@@ -272,4 +277,143 @@ test('the preview_only pair is carried onto the row with its source', () => {
   const patch = patchOf({ verdict: capabilityOf({ limits: { customThemes: ['casper'] } }, true) })
   assert.equal(patch.capability, 'preview_only')
   assert.equal(patch.capability_source, 'probe')
+})
+
+/* ───────── STORY 3.4 — FR-C4's brand, and every I/O matrix row that is a PARSING or VALIDATION
+   question. The payloads are what T1 6.58.0 and T3 5.130.6 really answered on 2026-09-08 with the
+   INTEGRATION key (MEASUREMENTS §40): `navigation` is a JSON STRING on both, `logo` and `icon` are
+   EMPTY STRINGS, `description` is null on T1 and a string on T3. The rest — the screen, the seed,
+   the cap and the redirect — runs on the deployed site under `run-verify-ghost-admin.py` (R-82). */
+
+const BRAND_LIKE = payload({
+  accent_color: '#FF1A75',
+  logo: '',
+  icon: '',
+  cover_image: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+  navigation: '[{"label":"Home","url":"/"},{"label":"About","url":"/about/"}]',
+  title: 'Ghost6',
+  description: null,
+})
+
+const brand = (values: Record<string, unknown>) => brandOf(settingsOf(payload(values)))
+
+test('the brand is read off the payload T1 and T3 really answered', () => {
+  const read = brandOf(settingsOf(BRAND_LIKE))
+  assert.equal(read.accent, '#FF1A75')
+  // An empty string is Ghost's "unset" — never an <img src="">.
+  assert.equal(read.logo, null)
+  assert.equal(read.icon, null)
+  assert.equal(read.cover, 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg')
+  assert.deepEqual(read.nav, [
+    { label: 'Home', url: '/' },
+    { label: 'About', url: '/about/' },
+  ])
+  assert.equal(read.title, 'Ghost6')
+  // T1 answers null here and T3 a string; absence is a fact, not a hole.
+  assert.equal(read.description, null)
+  assert.equal(brand({ description: 'Thoughts, stories and ideas.' }).description, 'Thoughts, stories and ideas.')
+})
+
+test('navigation is admitted as the JSON STRING Ghost sends AND as an already-parsed array', () => {
+  const parsed = [{ label: 'Essays', url: '/essays/' }]
+  // The matrix's "`navigation` as a JSON string" row — the container both majors actually use.
+  assert.deepEqual(navOf('[{"label":"Essays","url":"/essays/"}]'), parsed)
+  // And the container neither has ever sent, admitted so one major changing its mind is absorbed.
+  assert.deepEqual(navOf(parsed), parsed)
+  // Unparseable, or not a list, or not menu items: an EMPTY menu, never a throw.
+  for (const junk of ['[{', 'null', '"a string"', '{}', 42, null, undefined, [1, 2], [{ label: 'x' }], [{ url: '/' }]]) {
+    assert.deepEqual(navOf(junk), [], `${JSON.stringify(junk)} is not a menu`)
+  }
+  // A blank label is not a pill.
+  assert.deepEqual(navOf([{ label: '  ', url: '/' }]), [])
+})
+
+test('a hostile accent never reaches an inline style', () => {
+  // The matrix's "Hostile accent" row: the swatch is painted as `style`, so anything that is not
+  // a hex is dropped and no swatch is drawn.
+  for (const hostile of [
+    'red;background:url(x)',
+    'red',
+    '#FF1A7',
+    '#GGGGGG',
+    'rgb(255,0,0)',
+    '#FF1A75; }',
+    123,
+    null,
+  ]) {
+    assert.equal(brand({ accent_color: hostile }).accent, null, `${JSON.stringify(hostile)} is not a colour`)
+    assert.equal(isAccent(hostile), false)
+  }
+  // Both lengths the rule admits, either case.
+  for (const good of ['#fff', '#FFF', '#FF1A75', '#ff1a75']) assert.equal(isAccent(good), true, good)
+})
+
+test('a hostile logo never reaches an <img src> — https only, because img-src admits data:', () => {
+  // The matrix's "Hostile logo" row. A `data:` SVG is script, and `img-src 'self' data: https:`
+  // would have loaded it (csp.ts:60).
+  for (const hostile of [
+    'data:image/svg+xml,<svg onload=alert(1)>',
+    'javascript:alert(1)',
+    'http://example.com/logo.png',
+    '/content/images/logo.png',
+    '',
+    null,
+    42,
+  ]) {
+    const read = brand({ logo: hostile, icon: hostile, cover_image: hostile })
+    assert.equal(read.logo, null, `${JSON.stringify(hostile)} is not an image URL`)
+    assert.equal(read.icon, null)
+    assert.equal(read.cover, null)
+  }
+  assert.equal(brand({ logo: 'https://ghost6.inflozo.com/content/images/logo.png' }).logo,
+    'https://ghost6.inflozo.com/content/images/logo.png')
+})
+
+test('a card that offers nothing is not drawn — a TITLE is not a brand', () => {
+  // The matrix's "Nothing readable" row: connect redirects to /sites, S2c 404s, no card link.
+  assert.equal(hasBrand(brandOf(settingsOf(payload({ title: 'Ghost6', description: 'A blog' })))), false)
+  assert.equal(hasBrand(brandOf(settingsOf({}))), false)
+  // Any ONE of the three S2c actually shows is enough to offer.
+  assert.equal(hasBrand(brand({ accent_color: '#FF1A75' })), true, 'an accent alone')
+  assert.equal(hasBrand(brand({ logo: 'https://x.example/l.png' })), true, 'a logo alone')
+  assert.equal(hasBrand(brand({ navigation: '[{"label":"Home","url":"/"}]' })), true, 'a menu alone')
+  // And it is asked of a jsonb column, so it survives whatever is in one.
+  for (const junk of [null, undefined, 'brand', 42, [], {}, { accent: 'red' }, { nav: 'x' }]) {
+    assert.equal(hasBrand(junk), false, `${JSON.stringify(junk)} offers nothing`)
+  }
+})
+
+test('the patch carries the brand beside everything Story 3.3 wrote, and loses none of it', () => {
+  // The matrix's first row, one story on: `brand` joins `public_url`, `announcement`,
+  // `code_injection` and `portal_button` rather than replacing any of them.
+  const { site_settings } = patchOf({
+    previous: { public_url: 'https://ghost6.inflozo.com/' },
+    settings: settingsOf(BRAND_LIKE),
+  })
+  assert.equal(site_settings.public_url, 'https://ghost6.inflozo.com/')
+  assert.equal(site_settings.code_injection, false)
+  assert.equal(site_settings.portal_button_source, 'default')
+  assert.deepEqual(site_settings.announcement, { content: null, background: null, visibility: null })
+  assert.deepEqual(site_settings.brand, brandOf(settingsOf(BRAND_LIKE)))
+})
+
+test('S2c reads its every sentence from the app, and the swatch is captioned with a hex', () => {
+  // The frame's own words (`S2 Onboarding.dc.html:150-196`), so the harness cannot drift from them.
+  assert.equal(BRAND_COPY.title, 'Nice site. Want to keep the vibe?')
+  assert.equal(BRAND_COPY.sub('orbitweekly.com'), 'We pulled these from orbitweekly.com — your call.')
+  assert.equal(BRAND_COPY.siteToday, 'Your site today')
+  assert.equal(BRAND_COPY.accent, 'Accent color')
+  assert.equal(BRAND_COPY.navigation, 'Navigation')
+  assert.equal(BRAND_COPY.use, 'Use your brand')
+  assert.equal(BRAND_COPY.skip, 'Skip')
+  assert.ok(BRAND_COPY.fonts.startsWith('Fonts stay yours'))
+  assert.ok(BRAND_COPY.homepage.endsWith('wearing your brand.'))
+  // THE ONE DEPARTURE: the frame prints the accent's NAME. Ghost answers a hex and nothing else,
+  // so no sentence in the app may name a colour — naming one would assert what was not read.
+  for (const [key, value] of Object.entries(BRAND_COPY)) {
+    if (typeof value !== 'string') continue
+    assert.ok(!/burnt orange/i.test(value), `BRAND_COPY.${key} names a colour Ghost never said`)
+  }
+  // The owner's Question 1 ruling: the caption names the project BEFORE the press.
+  assert.ok(BRAND_COPY.willBrand('Field Notes').includes('Field Notes'))
 })
