@@ -5,7 +5,7 @@ created: '2026-09-08'
 status: 'in-review'
 review_loop_iteration: 2
 baseline_commit: '3a530ebcec1adc5584999bbb52ca62374859c5f8'
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -1288,3 +1288,20 @@ deleted route). The harness's Harness run 5 above already exercised all 28 steps
 `app.inflozo.com` on the code this deployment now serves — the same code, since neither commit since
 touched `apps/web` — so nothing there needed re-running. The owner's manual test below is the one
 thing this run leaves open.
+
+### Deploy run 2, 2026-09-08 — after the Fix and Review 2
+
+`Deployment: dpl_7vvKuVCr6Fqahby2ohqLG9oiuByX` (`inflozo-i72cr4mte-umangkagathara.vercel.app`). CI run
+for HEAD `64751882` (`gh`/`GITHUB_TOKEN`, via the GitHub API): `check`, `rls` and `deploy` all
+`success`. `GET /v6/deployments` with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` shows it `READY` for
+`VERCEL_PROJECT`'s `production` target; `GET /v13/deployments/{id}` shows its `alias` carrying
+`app.inflozo.com`, `www.inflozo.com` and `inflozo.com`. `64751882` itself touched only the spec and
+the story board (doc-only, verified above with `git show --stat`); the last commit that changed
+`apps/web` was the second Review's `05011e23`, whose own deployment (`dpl_A4Z71L9cMsgryDF6Zz3AN1jqPYsp`)
+already carried the 34-step harness run recorded above (Review 2, Harness run 2) — this deployment
+serves the same `apps/web` code. A live sanity check from this machine: `https://app.inflozo.com/sites`
+→ 307 to `/sign-in` (the guard, unchanged), `https://app.inflozo.com/connect/integration.png` → 200
+`image/png` (the file), `https://app.inflozo.com/api/ghost-admin/verify` → 404 (the deleted route).
+No schema change in this story since the Fix or Review 2, so no migration and no re-run of
+`run-rls-gate.sh` is owed here beyond the gate already green above. The owner's manual test below,
+against this deployment, is the one thing this run leaves open.
