@@ -496,12 +496,20 @@ Keys by variable NAME only; nothing printed; nothing changed in Vercel or on the
 | `pnpm check` (Node 24) | **exit 0**; `apps/web` **187/187** — the two new `ghost-admin.test.ts` order tests among them, which fail twice against the pre-patch module (control run) |
 | two mutants against `server-wiring.test.ts` — `lib/zz-mutant-db.ts` importing `@/server/ghost-admin/db`, and a double-quoted `import postgres from "postgres"` | **each turned its own contract red** (`not ok 10` the importer list; `not ok 7` the driver), then removed; the widened regexes catch what the first ones let through |
 
-**What is still unexecuted, and only this:** the Vault round trip on the live project — `store`, `credential-missing`,
-`malformed`, the two `config/` calls through the module, the three denials' audit rows, `bogus-key`, `rotated`,
-`staff-removed`, `audit`, `user-gone`, `secret-gone` — every one of them a harness step that runs the moment
-`SUPABASE_DB_POOLER_URL` is in Vercel production (Question 1) and, for `rotated`, `staff-removed` and
-`secret-gone`, the migration is applied (Deploy). The review leaves the story **in review** on that account:
-its code is patched and every proof that does not need the variable has run twice.
+### Review 1, continued 2026-09-08 — the Vault round trip on the live project, after the owner's ruling
+
+| Command | Result |
+|---|---|
+| `GET /v9/projects/{VERCEL_PROJECT}/env` with **`VERCEL_TOKEN`**, **`VERCEL_TEAM_ID`** | **`SUPABASE_DB_POOLER_URL` present**, target `production`, type `sensitive` (the owner, by hand — Question 1, option 1) |
+| the re-publish: commit `441131de` pushed; CI run completed **success**; `GET /v6/deployments?target=production` | **`dpl_4d5b6nfU7zPvEBZ6BMpMjwU5DWdw`, READY, at `441131de`** — the first deployment that carries the variable (the GitHub token may not re-run a workflow: HTTP 403, so a real commit published it) |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **exit 0, all steps passed** — `grants` → `{"who": "postgres", "may_delete": true}` from inside the Vercel function. **The Vercel → pooler hypothesis is executed and held** |
+| `python3 tools/probe/run-verify-ghost-admin.py` (full, T1 6.58.0 and T3 5.130.6) | **Every step PASS except the five that need the migration, which FAIL exactly as predicted.** Per Ghost: `credential-missing` (500 `credential_missing`, and its `vault_decrypt error {reason: missing}` row found by `audit`) · `store` (ref, `credentials_present.admin` true) · `malformed` (500 `credential_malformed`, no ref) · `config-no-version` 200 with the version · `config-versioned` 200 · `write-denied` ×3 (no item, wrong item, guarded body — each `write_not_allowed`, each audit row without a `status`, so no network call) · `bogus-key` (`{ok: false, status: 401, code: ghost_unknown_key}`) · `audit` (13 rows: 6 `vault_decrypt ok`, 1 `vault_decrypt error`, 2 `admin_read ok`, 1 `admin_read error` at 401, 3 `admin_write denied`; every `detail` a jsonb object; every row stamped `api/ghost-admin/verify`; **no row that looks like a key**). Once: `user-gone` 404 · `no-secret-leak` (34 response bodies, neither key appeared) · users **5 before, 5 after**. **FAIL, expected until Deploy:** `rotated` ×2 (the bogus secret survived the re-store), `staff-removed` ×2 (the secret survived `remove`; `credentials_present.staff` did flip to false), `secret-gone` (both refs still in the vault after the account went) |
+| **DW-44 observed on the live project:** after the cascade, `vault.secrets` held **8** orphans — per Ghost the real key twice, the bogus one, the staff-shaped one — with `site_credentials` at 0 rows | swept through the pooler with **`SUPABASE_DB_POOLER_URL`** after the count and the description shape (`^site <uuid> (admin|staff)$`) were checked: `DELETE 8`, vault rows **0**. The trigger, once applied, is what makes this sweep unnecessary; the harness docstring says so |
+
+**What is still unexecuted, and only this:** the three trigger-dependent steps — `rotated`, `staff-removed`,
+`secret-gone` — which pass the moment the owner applies `20260907200000_vault_secret_lifecycle.sql` in the SQL
+editor at Deploy and the harness is re-run. Everything else the story claims has now run on the deployed site
+against both real Ghosts. The story stays **in review** until then; Done is the owner's after Deploy.
 
 ### What ran on this machine, and what it returned
 

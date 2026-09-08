@@ -74,8 +74,14 @@ here in the order the run prints them:
 BETWEEN DEV AND DEPLOY the code is live before the SQL is: CI deploys on the Dev push, and
 `supabase/migrations/20260907200000_vault_secret_lifecycle.sql` is applied by the owner in the
 Supabase SQL editor at Deploy (the direct host is IPv6-only from here and this machine's sandbox
-refuses writes to the live database). Until then `rotated` and `secret-gone` FAIL, and that is the
-expected pre-migration state rather than a pass — the run says so in its own words.
+refuses writes to the live database). Until then `rotated`, `staff-removed` and `secret-gone` FAIL, and
+that is the expected pre-migration state rather than a pass — the run says so in its own words. A
+pre-migration run also LEAVES ITS SECRETS BEHIND: the trigger cannot act on rows that are already gone,
+so per Ghost the real key (stored twice — once at `store`, once at `rotated`), the bogus one and the
+staff-shaped one stay in the live Vault as orphans (observed 2026-09-08: eight) and are swept by hand
+through the pooler —
+`delete from vault.secrets where description ~ '^site [0-9a-f-]{36} (admin|staff)$'` — after checking
+the count is the run's own. Once the migration is on, the cascade takes them and the sweep is moot.
 
 NO KEY IS EVER PRINTED. Every key reaches a request through a header or a JSON body built from
 the environment, and every command is recorded by the key's variable NAME. Redirects are
