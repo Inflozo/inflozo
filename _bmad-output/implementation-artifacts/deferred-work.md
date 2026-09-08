@@ -1280,6 +1280,29 @@ reason: R-82 wants every claim executed on the real infrastructure. With DW-48 h
   route's deletion and 3.3; `rotated`, by contrast, is driven live again by 3.2's `re-adopt` step.
 - DW-55 (below): a Ghost installed under a path cannot connect, by the approved contract.
 
+### DW-56: the authed shell renders content that is not visible without JavaScript
+
+plain: With JavaScript switched off, the connect wizard's fields are present in the page's HTML but do not
+  show on screen — they compute to a zero-size box until the page's scripts run. The connect FORM itself is
+  wired correctly for a no-script submit (it is a real server-action form with the fields a browser posts
+  without scripts), so this is not the connect screen's own doing; something in the shared app frame (the
+  shell or the root layout, Story 1.5) hides content until the scripts load. A visitor with scripts off —
+  rare, but the spec promises the keys form works for them — would see the page but not the form.
+status: open
+severity: low
+origin: Story 3.2 code review (2026-09-08, Review 2) — the Real-infra verifier's no-JS check on app.inflozo.com
+location: apps/web/components/shell/shell.tsx (or app/(app)/app/(authed)/layout.tsx / the root layout) —
+  the ancestor that computes a zero box before hydration · spec-3-2 Boundaries ("JavaScript off: … the keys
+  form posts the server action, the errors render server-side")
+reason: Executed at Review 2 on the deployed site: `<form method="post" action="">` carries React's encoded
+  `$ACTION_*` hidden fields (progressive enhancement is on), the field HTML is in the document, yet a
+  scripts-off browser reports every field and the submit button "not visible", so a no-JS submit cannot be
+  driven. The connect wizard did nothing to cause this — it is a shell-level gate that predates Epic 3 and
+  affects every authed page — so fixing it is Story 1.5's frame, not 3.2's connect screen, and it needs a
+  decision on whether no-JS is a supported mode at all (the owner's, when it is picked up). 3.2's part — the
+  form is progressively enhanced — is proved by the harness's `js-off` step; the shell's part is this entry.
+  Ask the owner whether scripts-off is a mode Inflozo commits to before spending on it.
+
 ### DW-55: a Ghost installed under a path cannot be connected
 
 plain: Ghost can live at an address like `https://example.com/blog` rather than at the root of a domain. The

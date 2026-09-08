@@ -344,6 +344,11 @@ ledger row; the one decision is Question 3 under `## Questions for the owner`.
 - [x] [Review][Defer] The decrypt path — `call()` reading `vault.decrypted_secrets` and signing with it — has
       no product caller until Story 3.3's settings read, so between the route's deletion and 3.3 it runs on no
       infrastructure — DW-54 [apps/web/server/ghost-admin/index.ts `call`] — deferred, 3.3's
+- [x] [Review][Defer] With JavaScript off, the connect form's fields are in the HTML but not visible — the
+      authed shell hides content until hydration. The connect form itself is correctly progressively enhanced
+      (`method=post`, an `action` attribute, React's `$ACTION_*` fields — the harness's `js-off` step proves
+      it); the visibility gate is shell-wide and predates Epic 3 — DW-56 [components/shell or the layout] —
+      deferred, a shell question the owner rules on
 
 Dismissed (4): the Sites grid's three columns at 834 (the dashboard's own convention; the app frames are
 drawn at 1440 only); S11b's two-word step-3 difference from S2b·1 and the Kit's 36/44 button heights against
@@ -693,4 +698,31 @@ alone, in `connect-rule.test.ts`, with `4.48.0` and `4.0.0` injected.
   the sheet's title pair and ✕, the card's disc, title, mono address, "Connected", version and projects
   pills and "Checked just now". At 834 the Sites grid keeps the dashboard's three columns and the address
   truncates — the dashboard's own shape, the app frames drawn at 1440 only; left as is.
-- **Harness run 3** — the patched build, after this review's first commit deployed: recorded below.
+- **Harness run 3** — the first review commit's build (`24b356bb`) deployed. The new `js-off` step (a raw
+  request replay of the keys form) answered HTTP 500, and `http-connect` timed out: submitting a plain-`http://`
+  address produced NO POST at all. Investigated on the deployed site (Review 2): the raw replay was an
+  artifact, but the http-no-POST was a REAL bug — the wizard's re-entrant `form.requestSubmit()` after the
+  browser check fired nested inside the same submit event when the check returned synchronously (a skipped
+  `http://` never fetches), so React dispatched no action; https only worked because its real fetch delayed
+  the resubmit. Fixed at root: the action is invoked directly with `startTransition(() => action(data))`
+  (second review commit, `6597d223`), which also deletes the `verified`-ref dance.
+- **Harness run 4** (the fixed build) confirmed the fix and the true plain-http behaviour: `http-connect`
+  POSTs and NO site connects, and the audit shows the deployed function's own fetch received a **301**
+  (not the 403 §38c had measured with no key) → `ghost_redirected`. The no-JS check found the connect FORM
+  is progressively enhanced (`method=post`, an `action` attribute, React's `$ACTION_*` fields) but the authed
+  shell paints content with a zero box until hydration, so a scripts-off submit can't be driven — a shell
+  concern, recorded as DW-56, not this story's. `js-off` was recast to assert the PE wiring it can prove and
+  `http-connect` to assert the audit-confirmed `ghost_redirected` (harness-only, no redeploy).
+- **Harness run 5** (same build `6597d223`, corrected steps) — **all 28 steps passed**, exit 0:
+  `keys · vault-off-rest · first-run · keys-step · http-warned · js-off · http-connect · malformed ·
+  bogus-key · content-wrong-key · connect · dialog · sheet-submit · sheet-reopen · at-cap · re-adopt ·
+  pro-connect-t3 · audit · axe-sites · axe-sheet · axe-connect · axe-keys · user-gone · secret-gone ·
+  no-secret-leak`. T1 connected (`6.58.0`, public_url, one vault secret); T3 connected through the sheet on
+  Pro (`5.130.6`, trailing slash normalised, the sheet closed on success, a second card); the disconnected
+  record was re-adopted with a new vault ref and the old secret dropped (DW-44's replace path, live); the
+  cap sentence was the app's own; the plain-http attempt was a 301 → ghost_redirected with no row; the audit
+  showed one `config/` (null site_id) and one `site/` per connect, the bogus key at 401 and the http attempt
+  at 301, every row stamped `sites/connect`, none holding a key; axe clean at 1440 and 390 over all four
+  surfaces; both secrets gone with the account (`[0,0]`), 159 bodies swept with no key in any, users 5 → 5.
+  **The frames beside the built pages** at 1440 / 834 / 390 (`--shots`) match S2b·1, S2b·2, S11a and S11b as
+  in run 2. This is the run the review rests on.

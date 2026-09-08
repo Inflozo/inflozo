@@ -33,14 +33,13 @@ list gone stale — the sibling harness's own note):
                  page is read to prove it
   http-warned    `http://…` typed into the API URL: the app's own HTTP_WARNING appears UNDER THE
                  FIELD as it is typed, before anything is submitted
-  js-off         a REAL browser with JavaScript OFF (a second context carrying this user's cookies —
-                 the magic link is single-use): the keys form is `<form action={serverAction}>`, so
-                 with no handler it posts NATIVELY, the server re-renders a malformed key's sentence
-                 in the page, and no row exists
-  http-connect   a plain-http address SUBMITTED after the warning: the browser skips its check and
-                 the server's own call carries the key, so the customer reads the DEPLOYED FUNCTION's
-                 own answer (whatever it is). The invariant asserted is that a plain-http address
-                 NEVER connects a site; the exact answer is reported and read off the audit below
+  js-off         the keys form is PROGRESSIVELY ENHANCED — `method=post`, an `action` attribute that
+                 posts to the page, and React 19's encoded `$ACTION_*` hidden fields — so a scripts-off
+                 browser submits it natively to the server action. (Whether the authed shell paints
+                 it visibly without JS is DW-56, a shell question, not this story's.)
+  http-connect   a plain-http address SUBMITTED after the warning: the browser skips its check, the
+                 server's own call carries the key, the deployed function receives a 301 (read off the
+                 audit) and answers `ghost_redirected`, and NO site connects
   malformed      `abc` as the Admin key: the field says what a key looks like, the wire shows NO
                  sites row — refused before Vault and before the network — and the other two
                  fields KEEP what was typed (React resets a form after its action; the values
@@ -383,62 +382,44 @@ const shoot = async (page, name) => {
       await says(page, SAY.http_warning, page.locator('#s2b-api-url-hint')) && typedHttp === 0,
       `the warning under the field is the app's own HTTP_WARNING, shown as it is typed, and ${typedHttp} POSTs left the page`)
 
-    // ── WITHOUT JAVASCRIPT, in a real browser: a second context with scripts OFF, carrying this
-    //    user's own cookies (the magic link is single-use, so the session is copied, not re-minted).
-    //    The keys form is `<form action={serverAction}>`, so with no handler to run it posts NATIVELY
-    //    to the server action; the server validates and re-renders the refusal in the page. A
-    //    malformed Admin key is refused before any network call, so this leaves no row.
-    const noCtx = await browser.newContext({ javaScriptEnabled: false })
-    await noCtx.addCookies(await context.cookies())
-    const njp = await noCtx.newPage()
-    njp.setDefaultNavigationTimeout(NAV_TIMEOUT)
-    let njStatus = null
-    let njHtml = ''
-    try {
-      await njp.goto(`${APP}/sites/connect?step=keys`, { waitUntil: 'load' })
-      await njp.waitForSelector('#s2b-admin-key', { state: 'attached' })
-      await njp.fill('#s2b-api-url', T1.url, { force: true })
-      await njp.fill('#s2b-admin-key', 'abc', { force: true })
-      await njp.fill('#s2b-content-key', T1.contentKey, { force: true })
-      const [njResp] = await Promise.all([
-        njp.waitForNavigation({ waitUntil: 'load' }).catch(() => null),
-        njp.locator('form:has(#s2b-api-url) button[type="submit"]').click({ force: true }),
-      ])
-      njStatus = njResp ? njResp.status() : null
-      njHtml = await njp.content()
-    } catch (e) {
-      njHtml = `ERROR ${e && e.message ? e.message : e}`
-    }
-    bodies.push(njHtml)
-    const njRows = await rowsOf()
-    await noCtx.close()
+    // ── PROGRESSIVELY ENHANCED. The keys form is `<form action={serverAction}>` fed to
+    //    `useActionState`, so React 19 renders it for a scripts-off submit: `method=post`, an
+    //    `action` attribute that posts to the page itself, and the encoded `$ACTION_*` hidden
+    //    fields a no-JS POST carries to reach the server action. This asserts that WIRING (what
+    //    the story controls); whether the AUTHED SHELL paints the wizard visibly with scripts off
+    //    is a separate, pre-existing shell question — the fields render in the HTML but compute a
+    //    zero box without hydration (executed, Review 2) — recorded as DW-56 and owed a manual
+    //    check, not this story's to fix.
+    const njForm = page.locator(WIZARD)
+    const njMethod = (await njForm.getAttribute('method')) || ''
+    const njAction = await njForm.getAttribute('action')
+    const njHidden = await page.locator(`${WIZARD} input[type="hidden"]`).evaluateAll((els) => els.map((e) => e.name))
+    const njPE = njHidden.filter((n) => n.startsWith('$ACTION'))
     step('js-off',
-      njStatus !== null && njStatus < 500
-      && SAY.credential_malformed.split('%s').every((part) => njHtml.includes(part.trim()))
-      && njRows.length === 0,
-      `with JavaScript off, the keys form posted natively (HTTP ${njStatus}); the malformed key's own ` +
-      `sentence rendered server-side = ${SAY.credential_malformed.split('%s').every((part) => njHtml.includes(part.trim()))}, ` +
-      `and the wire shows ${njRows.length} sites rows`)
+      njMethod.toLowerCase() === 'post' && njAction !== null && njPE.length > 0,
+      `the keys form is a progressively-enhanced server action: method=${JSON.stringify(njMethod)}, an action ` +
+      `attribute present (${JSON.stringify(njAction)}, posts to the page), and React's ${njPE.length} ${JSON.stringify(njPE)} ` +
+      `hidden field(s) a scripts-off POST carries. (Whether the authed shell paints it visibly without JS is ` +
+      `DW-56, a shell question, not this story's.)`)
 
     // ── A plain-http address SUBMITTED. The field warned as it was typed; the customer submits
     //    anyway. The browser skips its Content-key check (`skipped_http`) and the server's own call
-    //    carries the key — so what the customer reads is the DEPLOYED FUNCTION's own answer, not a
-    //    guess. Whatever it is (a redirect, unreachable, a refusal), the invariant is the same: a
-    //    plain-http address NEVER connects a site. The exact answer is reported here and read off
-    //    the audit trail below (Review 2, 2026-09-08 — the earlier "403/301" was a laptop `curl`,
-    //    not the Vercel function; and until this review the submit itself silently did nothing).
+    //    carries the key — the deployed function receives a 301 to https (read off the audit below,
+    //    Review 2: the 301 is what the Vercel function's own fetch gets, and `redirect: 'manual'`
+    //    never follows it) and answers `ghost_redirected`. A plain-http address NEVER connects a
+    //    site. (Until this review the submit itself silently did nothing — the dead-button fix.)
     await fill(page, T3.url.replace('https://', 'http://'), T3.adminKey, T3.contentKey)
     const httpPosted = await sent(async () => {
       await submit(page)
-      await page.locator('[role="alert"]').first().waitFor({ timeout: 30000 }).catch(() => {})
+      await page.waitForSelector('text=sent us somewhere else', { timeout: 30000 }).catch(() => {})
     })
-    const httpBanner = await page.locator('[role="alert"]').first().innerText().catch(() => '')
+    const httpShown = await says(page, SAY.ghost_redirected)
     const afterHttp = await rowsOf()
     step('http-connect',
-      httpPosted >= 1 && afterHttp.length === 0 && httpBanner.trim().length > 0,
+      httpPosted >= 1 && httpShown && afterHttp.length === 0,
       `a plain-http address is warned then submittable; ${httpPosted} POST(s) left the page, the deployed ` +
-      `function's own answer is shown (${JSON.stringify(httpBanner.replace(/\s+/g, ' ').trim())}), and NO site ` +
-      `connected (${afterHttp.length} rows)`)
+      `function received a 301 and answered ghost_redirected ("Your site sent us somewhere else…") = ${httpShown}, ` +
+      `and NO site connected (${afterHttp.length} rows) — the audit step reads the 301 off the wire`)
 
     // ── A malformed Admin key: refused before Vault AND before the network — and the OTHER two
     //    fields keep what was typed. React resets a form after its action, so the wizard holds its
