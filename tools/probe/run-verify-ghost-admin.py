@@ -386,13 +386,20 @@ const shoot = async (page, name) => {
     await page.getByText(SAY.empty_title).waitFor()
     const drawing = await page.locator('main svg[aria-hidden="true"]').count()
     const openers = await opener(page).count()
+    // THE SHEET IS RENDERED ON THIS PAGE — closed — because its button is what opens it, so the
+    // key fields are PRESENT and hidden rather than absent. Visibility is the question the owner
+    // asked ("show an empty screen"), and it is the one asked here (run 1 of the Fix failed on a
+    // `.count() === 0` that was the harness's mistake, not the product's — the same lesson as
+    // Review's run 1).
+    const fieldsShown = await page.locator('#s2b-api-url').isVisible()
+    const handshakeShown = await page.getByText('First, a quick handshake.').isVisible().catch(() => false)
     step('first-run',
       await says(page, SAY.empty_sub) && drawing >= 1 && openers === 2
-      && (await page.getByText('First, a quick handshake.').count()) === 0
-      && (await page.locator('#s2b-api-url').count()) === 0,
+      && handshakeShown === false && fieldsShown === false,
       `the empty screen: ${JSON.stringify(SAY.empty_title)} over ${JSON.stringify(SAY.empty_sub)}, a drawing ` +
       `(${drawing} aria-hidden svg), ${openers} "Connect site" buttons (the bar's and the centred one, as ` +
-      `Projects draws both), and NO handshake and NO key fields on this route any more`)
+      `Projects draws both), and NOTHING of the handshake on screen: its headline visible = ` +
+      `${handshakeShown}, the key fields visible = ${fieldsShown} (the closed sheet holds them)`)
 
     // ── THE TOP BAR IS THE SHELL'S, as Projects' is (his finding 5, amended): the field on the
     //    left, "Connect site" on the right, the frame's 1px rule under both — and NO BELL, which
@@ -666,10 +673,10 @@ const shoot = async (page, name) => {
     const reopened = await sheet(page).innerText().catch(() => '')
     // Both panes are always in the DOM — that is what makes the box one size — so "no fields"
     // is a VISIBILITY question, not a presence one.
-    const fieldsShown = await sheet(page).locator('#s2b-api-url').isVisible()
+    const reopenedFields = await sheet(page).locator('#s2b-api-url').isVisible()
     step('sheet-reopen',
-      !reopened.includes('is already connected') && reopened.includes('1/2') && fieldsShown === false,
-      `reopened: at the handshake ("1/2"), the keys pane hidden (visible = ${fieldsShown}), and no sentence ` +
+      !reopened.includes('is already connected') && reopened.includes('1/2') && reopenedFields === false,
+      `reopened: at the handshake ("1/2"), the keys pane hidden (visible = ${reopenedFields}), and no sentence ` +
       `from the last attempt = ${!reopened.includes('is already connected')}`)
     await page.keyboard.press('Escape')
     await sheet(page).waitFor({ state: 'detached' }).catch(() => {})

@@ -1113,9 +1113,50 @@ findings**, and the fix is structural rather than numeric: both panes share one 
   in." and `.sub` = "Connect your Ghost site — it takes about a minute.", which are the owner's Question 5
   ruling read out of `lib/connect-rule.ts` rather than retyped in the harness.
 
-**The deployed site — the browser half.** _Recorded below once this Fix commit's CI deployment is READY;
-the harness drives `https://app.inflozo.com` and cannot run against code that is not deployed (DW-7: CI
-publishes, the push does not)._
+**The deployed site — the browser half, on the fix itself.** The Fix commit `ab31141c` was pushed, CI run
+**34191997391** completed `success` (`check` ✓, `rls` ✓, `deploy` ✓ — `GITHUB_TOKEN`), and Vercel
+production's newest deployment **`dpl_6DvXAdwJrvcdBqe1A3PBE2YsphG7`** is **READY** for `ab31141c`
+(`VERCEL_TOKEN`, `VERCEL_TEAM_ID`). The harness then ran against `https://app.inflozo.com`.
+
+- **Harness run 1** — `first-run` FAIL, everything else PASS. The product was right and the harness was
+  not, the same way Review's run 1 was: the connect sheet is now rendered on the empty screen (closed),
+  because its button is what opens it, so `#s2b-api-url` is PRESENT and hidden rather than absent and a
+  `.count() === 0` was the wrong question. Recast to ask whether the fields and the handshake headline are
+  VISIBLE, which is what the owner asked for. Fixture deleted, users 5 → 5.
+- **Harness run 2 — all 32 steps passed, exit 0**: `keys · vault-off-rest · first-run · sites-bar ·
+  axe-empty · same-size · find-link · handshake · keys-step · http-warned · js-off · http-connect ·
+  malformed · bogus-key · content-wrong-key · connect · card · dialog · sheet-submit · sheet-reopen ·
+  at-cap · re-adopt · pro-connect-t3 · search · audit · axe-sites · axe-sheet · axe-connect · axe-keys ·
+  user-gone · secret-gone · no-secret-leak`. **The seven findings, each measured on the live site:**
+  - **1 and 2** — `same-size`: the sheet is **520 × 677.6875 at (460, 111.15625)** at step 1 **and the
+    identical box at step 2**, against 665.7 → 608.5 and a 28.6px sweep before the fix. `keys-step`: the
+    page card is **560 × 724.390625 at both steps**, against 480×694.7 → 560×661. Re-measured
+    independently by the same script that reproduced the bug, on the same fixture shape: both steps
+    identical, and the footers land at the same y, so not even the buttons move.
+  - **3** — `find-link`: `<a href="?step=integration">` with a **0px border and 0 chevrons**, above the
+    fields (y 256 < 322) and in the right half of the step.
+  - **4 and 6** — `card`, read off the rendered boxes: the address carries **1** new-tab glyph; the pills
+    line ends at y 183, "Connected" starts at **198** and "Checked just now" at **219** — Connected below
+    the pills and **3px** above Checked against **15px** from the pills.
+  - **5** — `sites-bar`: a **64px** bar with a **1px** rule, the field placeholdered **"Search sites…"**
+    (the frame's own, S11a :52), **1** control beside it, **0 bells anywhere on the page**. `search`, on
+    the deployed page with two cards: the title left 1 card, the other site's **address** left 1, and a
+    word matching neither left 0 with the app's own "No sites match “zzznomatch”."
+  - **7** — `first-run`: the empty screen with his own title and subtitle (evaluated from
+    `lib/connect-rule.ts`, not retyped), a drawing, **2** "Connect site" buttons, and nothing of the
+    handshake visible; `axe-empty` clean. `re-adopt` reached the wizard the way he asked — press
+    **Connect site**, the two steps open in the sheet — and re-adopted the disconnected record with a new
+    vault ref, the old secret dropped.
+  - Everything Review proved still holds on the same run: T1 connected (`6.58.0`, public url, one vault
+    secret, `credentials_present {admin, content} true, staff false`), T3 through the sheet on Pro
+    (`5.130.6`, trailing slash normalised, the sheet closed on success), the cap sentence the app's own,
+    the plain-http attempt a **301** → `ghost_redirected` with no row, 8 audit rows all stamped
+    `sites/connect` and none holding a key, **axe zero violations at 1440 and 390 over all five surfaces**,
+    180 response bodies swept with no key in any, both secrets gone with the account (`[0,0]`), users
+    5 → 5.
+- **`--shots` at 1440 / 834 / 390**: `s11-empty` (new — no frame draws it; it is S3b's shape with his
+  words and drawing), `s2b1`, `s2b2`, `s11a`, `s11b`. S2b·1, S2b·2, S11a and S11b still match their frames
+  on everything except the three departures his test ruled, which are listed in Design Notes.
 
 ### Deploy run, 2026-09-08
 
