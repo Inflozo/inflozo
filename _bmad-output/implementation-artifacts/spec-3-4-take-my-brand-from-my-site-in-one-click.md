@@ -79,7 +79,27 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   preset's, so the dashboard card visibly wears the site's colour. DW-66 tells E6 the key exists and
   what wrote it.
 - **Seeding is idempotent and consented.** The offer is a link, never a stored state machine; pressing
-  it twice writes the same pack twice. `// ponytail:` says so.
+  it twice writes the same pack twice — onto the project already made for this site, found by
+  `linked_site_id`, never onto a new one. `// ponytail:` says so.
+- **THE SECOND PRESS ASKS, AND WHERE THERE IS A CHOICE IT OFFERS ONE (the owner's Question 3 ruling,
+  2026-09-08, with his A1 and B1 — this clause is his renegotiation of this block).** When the brand
+  is going onto a project that already exists AND the caller has more than one, S2c says *"You
+  already put your brand on “X”. Apply it again?"* and draws **one card per project** under it —
+  each with the project's **own 64×44 wireframe painted from its own Style Pack** (`ProjectThumb`,
+  the dashboard card's drawing at the size `design-picker.tsx` draws one), its name, and a marker on
+  the project this site is already on, which is **pre-selected**. **One screen, not two** (A1), and
+  **only when there is more than one project** (B1) — Free includes one, and a chooser with a single
+  option is a step rather than a choice. The cards are **real `<input type="radio">` inside the
+  existing form**, so the chooser works with JavaScript off like everything else on this screen; the
+  Kit's `RadioCards` is presentational and posts nothing, so this borrows its tokens and not its
+  markup. **Purely additive:** the pre-selected card is what `brandTarget` would have chosen, so
+  touching nothing writes exactly what Question 1 ruled. Choosing a card writes `style_pack` and
+  **nothing else** — `linked_site_id` is untouched, because FR-B5 gives a project at most one site
+  and a chooser must not silently move a binding.
+- **No captured thumbnail, ever, in v1.** The card's drawing is `placeholderFor`'s three colours and
+  nothing else. FR-B1 defers auto-captured thumbnails out of v1 — "a wrong thumbnail is worse than
+  none" — and prescribes the Style-Pack placeholder in their place; `projects.thumb_path` stays
+  unused, the `thumbnails` bucket stays unprovisioned, and no headless browser runs anywhere.
 - **THE OWNER RULED THE AT-CAP PATH (Question 1, option 1, 2026-09-08), and the screen says which
   project it will brand BEFORE the press, not after.** S2c counts the caller's projects against
   `atCap` at render: with room, the helper caption under **Use your brand** says a project will be
@@ -126,7 +146,9 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 | Use your brand, at the cap | Free, 1 project already | the caption names that project; pressing brands it — `style_pack.brand` written, **name, slug and `linked_site_id` untouched** | N/A |
 | Cap changed under the page | caption said "make one", a second tab filled the cap | `useBrand` re-counts, writes nothing, and redirects back to S2c with the true caption | N/A |
 | Someone else's site id | `?site=` a stranger's row | the page 404s and the action writes nothing (RLS: the read returns no row) | N/A |
-| Re-run | the card's brand link, pressed again | S2c again; seeding again writes the same pack | N/A |
+| Re-run, one project | the card's brand link, pressed again | S2c again; seeding again writes the same pack **onto the same project** — never a second one | N/A |
+| Re-run, two or more projects | the brand link, pressed again | S2c **asks** ("You already put your brand on “X”. Apply it again?") and draws a card per project, each with its own wireframe in its own colours, the project for this site pre-selected | N/A |
+| A card chosen | the customer picks a different project's card | the brand goes onto **that** project's `style_pack`; its name, `slug` and `linked_site_id` are untouched, and the project count does not move | a project id that is not the caller's is not in his own list → nothing written, back to S2c |
 
 </frozen-after-approval>
 
@@ -157,6 +179,11 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   `skipBrand(formData)`, each `signedIn()`, each scoped `.eq('user_id', user.id)`, each
   `revalidatePath` on `SITES` and `DASHBOARD` and redirecting. `useBrand` re-counts against `atCap`
   and refuses a stale decision (Boundaries, the owner's Question 1 ruling).
+- `apps/web/app/(app)/app/(authed)/placeholder.tsx` -- **`ProjectThumb`** beside `Placeholder`: the
+  dashboard card's wireframe at **64×44**, the size `design-picker.tsx` draws a mini diagram at
+  (`Editor Sidebar Kit.dc.html:71`), painted from the same `placeholderFor`. It is the owner's
+  Question 3 thumbnail, and it is **FR-B1's** placeholder rather than a capture — the two live in
+  one file so a change to either is read beside the other.
 - `apps/web/lib/projects.ts` -- **reused, not rewritten**: `slugify`, `uniqueSlug`, `nextUntitled`
   and `NAME_MAX` give the created project its name and slug from the site's title. A site with no
   title falls back to its host, then to `nextUntitled`.
@@ -240,6 +267,16 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   not its `slug`, not its `linked_site_id`
 - Given a decision that has gone stale between render and press, when **Use your brand** is posted,
   then nothing is written and the browser returns to S2c with the true caption
+- Given a caller with **more than one project** whose brand would go onto one that already exists,
+  when S2c is opened, then it **asks** rather than tells and draws **one card per project** — each
+  carrying that project's own Style-Pack wireframe, the two drawings visibly different where the
+  Style Packs are — with the project this site is already on **pre-selected**; and when a different
+  card is chosen and pressed, then the brand lands on **that** project and nothing else about it
+  moves, and the project count is unchanged
+- Given a caller with **exactly one project**, when S2c is opened, then **no cards are drawn** — a
+  chooser with one option is a step and not a choice (the owner's B1)
+- Given the chooser, when JavaScript is off, then it still posts: the cards are real radio inputs
+  inside the form the button submits
 - Given **Skip**, when it is pressed, then the browser goes to `/sites`, **no project is written**,
   and the site card still carries the brand link, so the offer can be taken later
 - Given a site whose settings carry no accent, no logo and no navigation, when it is connected, then
@@ -420,6 +457,20 @@ Boundaries already said "pressing it twice writes the same pack twice". But your
 First** list says *"any change to what Use your brand does with an existing project"* is yours, so
 here it is. **You can change it at your test — nothing else depends on it.**
 
+**Ruled: a fourth option, the owner's own (2026-09-08).** A second press **says what it already did
+and asks** — *"You already put your brand on “Ghost6”. Apply it again?"* — and where there is more
+than one project it offers **one card per project**, each carrying that project's **own wireframe in
+its own colours**, with the project this site is already on **pre-selected**. He then ruled the two
+follow-ups: **A1**, one screen rather than two — the sentence, the cards, then the button, which is
+also the only shape that works with JavaScript off; and **B1**, the cards appear **only when there is
+more than one project**, because Free includes one and a chooser with one option is a step and not a
+choice. Two things this deliberately is not: not a `<select>` (a native one cannot hold a drawing,
+and a custom menu would need JavaScript), and **not a captured thumbnail** — FR-B1 defers those out
+of v1 and prescribes exactly this instead, a Style-Pack drawing that stays "visually distinguishable
+without claiming to be a preview". **It is purely additive:** the pre-selected card is what
+`brandTarget` would have written on its own, so a customer who touches nothing gets the behaviour
+ruled at Question 1.
+
 1. **The second press puts your brand on the project Inflozo already made for that site, and the
    screen says so before you press: "We'll put your brand on "Ghost6", the project for this site."
    (RECOMMENDED)** — *this is what is built and proved now.* One site keeps one project, refreshing
@@ -471,15 +522,24 @@ need a site that is not connected yet, and you will need a menu and an accent co
 10. **URL:** https://app.inflozo.com/ · **Screen:** your dashboard · **See:** the project's card, and
     the little wireframe drawing on it is painted in **your orange**, not the default.
 11. **URL:** https://app.inflozo.com/sites · **See:** the site's card now reads **1 project**.
-12. **Press the offer link a SECOND time** — this is **Question 3** above, and it is the thing the
-    review fixed. **Do:** press the "use this site's brand" link on the card again · **See:** under
-    **Use your brand**, a line naming the project it will use — either *"We'll put your brand on
-    "Ghost6", the project for this site."* or, if you are at your project limit, the "you're at your
-    project limit" version. **Do:** press **Use your brand** · **See:** back on the Sites page, the
-    card still reads **1 project** — **not 2**. Then tell me whether option 1 in Question 3 is what
-    you want, or one of the others.
-13. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
-    `Inflozo owner test` integration if you want to.
+12. **Press the offer link a SECOND time** — this is **Question 3**, your own ruling. **Do:** press
+    the "use this site's brand" link on the card again · **See:** *"You already put your brand on
+    “Ghost6”. Apply it again?"* and the two buttons. Because you have **one** project, there are no
+    cards to choose from — that is your B1. **Do:** press **Use your brand** · **See:** the Sites
+    page, and the card still reads **1 project** — **not 2**.
+13. **Now the chooser, with something to choose.** **URL:** https://app.inflozo.com/ · **Do:** make a
+    second project (**New project**), call it anything · **Do:** go back to
+    https://app.inflozo.com/sites and press the brand link again · **See:** the same question, and
+    under it **one card per project** — each with a small wireframe drawing **painted in that
+    project's own colours**, its name beside it, and the card for this site's project **already
+    selected** and outlined in coral. The site's project wears **your orange**; the new one wears the
+    default. **Do:** click the other card, then **Use your brand** · **See:** the Sites page. **Do:**
+    open https://app.inflozo.com/ · **See:** the project you picked is now the one wearing your
+    orange, and the other one kept its own. Nothing was renamed, and there are still **2 projects**.
+14. **Do:** on your phone, open the brand screen once more · **See:** the cards stack, the drawings
+    stay legible, and you can tap one.
+15. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
+    `Inflozo owner test` integration if you want to, and the spare project you made in step 13.
 
 **What you cannot test yet, and why.** Your Ghost announcement bar is **not** copied into Inflozo and
 Inflozo does **not** offer to switch it off — that is Question 2 above. Both settings are already

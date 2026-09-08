@@ -154,6 +154,16 @@ list gone stale — the sibling harness's own note):
                  to the site's; the Sites card's tally turns into the app's own "1 project"; and
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
+  brand-picker   THE OWNER'S QUESTION 3 RULING (2026-09-08, his A1 and B1), which is the ONLY
+                 step with more than one project: a second press with a choice to offer ASKS
+                 ("You already put your brand on X. Apply it again?" · "Which project?") and
+                 draws one card per project, each carrying that project's OWN 64x44 wireframe in
+                 its OWN Style-Pack colours — FR-B1's placeholder, which claims to be no preview.
+                 The card for the project this site is already on is PRE-SELECTED, so touching
+                 nothing writes exactly what Question 1 ruled; choosing the other card puts the
+                 brand on THAT row and changes nothing else about it, and the count stays at two.
+                 The two wireframes are read with getComputedStyle and asserted DISTINCT: a
+                 chooser whose pictures all match would be telling the customer nothing
   brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
                  `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
                  is the guard rather than an `.eq('user_id')`. The second account's real site id
@@ -396,6 +406,12 @@ def app_text():
         " brand_will_create: BRAND_COPY.willCreate,"
         " brand_will_brand: BRAND_COPY.willBrand('%s'),"
         " brand_will_rebrand: BRAND_COPY.willRebrand('%s'),"
+        # The owner's Question 3 ruling (2026-09-08): the second press asks, and where there is
+        # more than one project it offers cards carrying each project's own wireframe.
+        " brand_already_on: BRAND_COPY.alreadyOn('%s'),"
+        " brand_which_project: BRAND_COPY.whichProject,"
+        " brand_at_limit_pick: BRAND_COPY.atLimitPick,"
+        " brand_this_site: BRAND_COPY.thisSite,"
         " brand_failed: BRAND_COPY.failed,"
         " one_project: projectsLabel(1),"
         " at_cap: siteCapSentence('free') }))")
@@ -1481,6 +1497,64 @@ const shoot = async (page, name) => {
       `"re-runnable", and the matrix's "seeding again ` +
       `writes the same pack": the offer never retires, so this is the only thing that keeps a press ` +
       `from being a project factory`)
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+
+    // ── THE CHOOSER, WHICH IS THE OWNER'S QUESTION 3 RULING (2026-09-08, his A1/B1): with MORE
+    //    THAN ONE project the second press stops telling and starts asking — one card per project,
+    //    each carrying that project's OWN wireframe in its OWN colours, the project this site is
+    //    already on pre-selected. The account is Pro here, so a second project fits; it is made
+    //    through the service role because no screen in this epic makes one for a test.
+    const second = (await insert('/projects', {
+      user_id: USER_ID, name: 'Field Notes', slug: 'field-notes', style_pack: { preset: 'paper' },
+    })).body
+    const secondId = (second && second[0] && second[0].id) || null
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const asked = await says(page, SAY.brand_already_on.replace('%s', made.name))
+    const askedWhich = await says(page, SAY.brand_which_project)
+    const cards = page.locator('fieldset label:has(input[name="project_id"])')
+    const cardCount = await cards.count()
+    // PRE-SELECTED ON THE PROJECT THIS SITE IS ALREADY ON — the owner's "purely additive": touch
+    // nothing and the write is the one he already approved at Question 1.
+    const preselected = await page.locator('input[name="project_id"]:checked').getAttribute('value')
+    // AND THE THUMBNAILS ARE EACH PROJECT'S OWN COLOUR, which is the whole of what he asked for:
+    // the accent block in each card's 64x44 drawing, read off the RENDERED page. The branded one
+    // wears the site's accent; the fresh one wears Paper's, so the two cards really are telling
+    // the customer apart rather than repeating one picture.
+    const thumbs = await cards.locator('span[aria-hidden] > span:last-child > span:nth-child(2)')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor))
+    // PICK THE OTHER ONE and press: the brand must land on the card that was chosen, not on the
+    // one the rule would have picked on its own.
+    await page.locator(`input[name="project_id"][value="${secondId}"]`).check()
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForSelector('text=Connected')
+    const afterPick = await projectsOf()
+    const chosenRow = afterPick.find((r) => r.id === secondId) || {}
+    const untouched = afterPick.find((r) => r.id === made.id) || {}
+    step('brand-picker',
+      Boolean(secondId) && asked && askedWhich && cardCount === 2
+      && preselected === made.id && thumbs.length === 2
+      && thumbs.includes(rgbOf(brandRead.accent)) && new Set(thumbs).size === 2
+      && afterPick.length === 2
+      && ((chosenRow.style_pack || {}).brand || {}).accent === brandRead.accent
+      && chosenRow.name === 'Field Notes' && chosenRow.slug === 'field-notes'
+      && chosenRow.linked_site_id === null
+      && untouched.name === made.name && untouched.slug === made.slug
+      && untouched.linked_site_id === t1SiteId,
+      `with 2 projects the second press ASKED ` +
+      `(${JSON.stringify(SAY.brand_already_on.replace('%s', made.name))} = ${asked}, ` +
+      `${JSON.stringify(SAY.brand_which_project)} = ${askedWhich}) and drew ${cardCount} cards, ` +
+      `pre-selected on ${preselected === made.id ? 'the project this site is already on' : preselected} ` +
+      `— touch nothing and the write is Question 1's. The two wireframes computed to ` +
+      `${JSON.stringify(thumbs)}: the site's accent ${rgbOf(brandRead.accent)} on the branded card ` +
+      `and a different colour on the fresh one (${new Set(thumbs).size} distinct), so the drawings ` +
+      `tell the projects apart — FR-B1's Style-Pack placeholder, claiming to be no preview. ` +
+      `Choosing "Field Notes" put the brand on THAT row (accent ` +
+      `${((chosenRow.style_pack || {}).brand || {}).accent}) and changed nothing else about it — ` +
+      `name, slug and a null linked_site_id intact — while "${made.name}" kept its own binding to ` +
+      `the site. Still ${afterPick.length} projects: a chooser, never a factory`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
 
     // ── THE SEARCH HE ASKED FOR (finding 5, amended): the shell's own field, on Sites, matching a

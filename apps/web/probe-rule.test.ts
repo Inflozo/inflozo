@@ -455,6 +455,12 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
   assert.ok(BRAND_COPY.willBrand('Field Notes').includes('Field Notes'))
   assert.ok(BRAND_COPY.willRebrand('Ghost6').includes('Ghost6'))
   assert.ok(!BRAND_COPY.willRebrand('Ghost6').includes('limit'), 'room to spare is not a limit')
+  // THE OWNER'S QUESTION 3 RULING: a second press SAYS what it already did, and ASKS.
+  assert.ok(BRAND_COPY.alreadyOn('Ghost6').includes('Ghost6'))
+  assert.ok(BRAND_COPY.alreadyOn('Ghost6').trimEnd().endsWith('?'), 'it asks rather than tells')
+  assert.ok(BRAND_COPY.whichProject.endsWith('?'))
+  assert.ok(BRAND_COPY.atLimitPick.includes('limit'))
+  assert.ok(BRAND_COPY.thisSite.length > 0)
   // The matrix's "insert fails → the page says so" has a sentence to say it with.
   assert.ok(BRAND_COPY.failed.length > 0)
 })

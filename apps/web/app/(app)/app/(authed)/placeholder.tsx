@@ -35,3 +35,35 @@ export function Placeholder({ stylePack }: { stylePack: unknown }) {
     </div>
   )
 }
+
+/**
+ * THE SAME CARD, 64×44 — the size the export's own design picker draws a mini wireframe at
+ * (`Editor Sidebar Kit.dc.html:71`, `design-picker.tsx`). It is the dashboard card's drawing
+ * shrunk, painted from the SAME `placeholderFor`, so a project looks in the chooser exactly as
+ * it looks on the dashboard. That is the whole reason it is honest: FR-B1 defers captured
+ * thumbnails out of v1 because "a wrong thumbnail is worse than none", and prescribes this
+ * instead — a Style-Pack drawing that stays "visually distinguishable without claiming to be a
+ * preview". This claims nothing it has not been given.
+ *
+ * The owner asked for it in the brand chooser (Question 3, 2026-09-08). It sits beside
+ * `Placeholder` rather than growing a size prop on it, because the two are different drawings
+ * at different sizes — and beside it so that a change to one is read next to the other.
+ */
+export function ProjectThumb({ stylePack }: { stylePack: unknown }) {
+  const pack = placeholderFor(stylePack)
+  return (
+    <span
+      aria-hidden
+      style={{ background: pack.surface }}
+      className="flex h-11 w-16 shrink-0 flex-col gap-[3px] rounded-[6px] border border-line p-[6px]"
+    >
+      <span style={{ background: pack.text }} className="h-[3px] w-[55%] rounded-[1px]" />
+      <span className="h-[2px] w-[75%] rounded-[1px] bg-line-strong" />
+      <span className="mt-auto flex gap-[3px]">
+        <span className="h-[9px] flex-1 rounded-[2px] bg-line" />
+        <span style={{ background: pack.accent, opacity: 0.85 }} className="h-[9px] flex-1 rounded-[2px]" />
+        <span className="h-[9px] flex-1 rounded-[2px] bg-line" />
+      </span>
+    </span>
+  )
+}

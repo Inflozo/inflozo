@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/kit/button'
+import { ProjectThumb } from '../../placeholder'
 import { hostOf } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap } from '@/lib/plan'
@@ -79,7 +80,7 @@ export default async function BrandOffer({
     // press then bounced back here for ever (review, 2026-09-08).
     supabase
       .from('projects')
-      .select('id, name, linked_site_id')
+      .select('id, name, style_pack, linked_site_id')
       .order('updated_at', { ascending: false })
       .order('id', { ascending: false }),
     resolveEntitlement(user.id),
@@ -102,11 +103,25 @@ export default async function BrandOffer({
   // `brandTarget` is that rule, shared with `useBrand` so the caption and the write cannot drift.
   const capped = atCap(plan, rows.length)
   const target = brandTarget(capped, rows, row.id)
+  // THE OWNER RULED THE CHOOSER (Question 3, 2026-09-08, and his A1/B1): ONE screen — the
+  // sentence, the cards under it with the project this would have picked already selected, then
+  // the button — and it appears ONLY when the brand is going onto a project that already exists
+  // AND there is more than one to choose between. With one project there is no choice to offer,
+  // and Free includes one, so the quiet path stays quiet.
+  //
+  // IT IS PURELY ADDITIVE: the pre-selected card is exactly what `brandTarget` would have written
+  // on its own, so a customer who touches nothing gets the behaviour the owner already approved
+  // at Question 1 — the chooser only lets him overrule it.
+  const choosing = Boolean(target) && rows.length > 1
   const caption = !target
     ? BRAND_COPY.willCreate
-    : capped
-      ? BRAND_COPY.willBrand(target.name)
-      : BRAND_COPY.willRebrand(target.name)
+    : choosing
+      ? capped
+        ? BRAND_COPY.atLimitPick
+        : BRAND_COPY.alreadyOn(target.name)
+      : capped
+        ? BRAND_COPY.willBrand(target.name)
+        : BRAND_COPY.willRebrand(target.name)
 
   const host = hostOf(row.site_settings?.public_url || row.url)
   const title = row.title || host
@@ -225,13 +240,65 @@ export default async function BrandOffer({
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex w-full max-w-[760px] flex-col items-center gap-3">
+          <p id="brand-caption" className="text-center text-helper-caption text-ink-soft">
+            {caption}
+          </p>
+
           <div className="flex flex-wrap items-center justify-center gap-[14px]">
-            <form action={useBrand}>
+            <form action={useBrand} className="contents">
               <input type="hidden" name="site_id" value={row.id} />
-              {/* The decision the caption states, carried back so `useBrand` can refuse it if it
-                  has gone stale. Empty means "make a project for this site". */}
-              <input type="hidden" name="project_id" value={target?.id ?? ''} />
+              {/* THE CHOOSER, AND IT IS REAL RADIO INPUTS — not the Kit's presentational
+                  `RadioCards`, which draws the shape with `role="radio"` on buttons and posts
+                  nothing. Both controls on this screen work with JavaScript off (Boundaries), and
+                  a native radio inside this form is the only version of a chooser that does; it
+                  is also why this is cards and not a `<select>`, which cannot hold a drawing.
+                  R-74: no frame draws this, so it is extrapolated from the two that draw its
+                  parts — `radio-card.tsx`'s coral border and tint (Editor Sidebar Kit `:117`) and
+                  `design-picker.tsx`'s 64×44 wireframe tile (`:71`) — same components, same
+                  tokens, no second vocabulary. */}
+              {choosing ? (
+                <fieldset className="m-0 w-full border-0 p-0">
+                  {/* A real `<legend>`, and the cards in a flex column INSIDE the fieldset rather
+                      than making the fieldset itself the flex container — a legend is laid out
+                      specially and does not want to be a flex item. */}
+                  <legend className="mb-[10px] w-full text-center text-ui-dense font-semibold text-ink">
+                    {BRAND_COPY.whichProject}
+                  </legend>
+                  <div className="flex flex-col gap-[10px]">
+                  {rows.map((project) => (
+                    <label
+                      key={project.id}
+                      /* THE HIGHLIGHT IS `:has(:checked)` AND NOTHING ELSE. A static class on the
+                         pre-selected card would stay lit after the customer picked a different
+                         one — two cards coral, with scripts off and nothing to clear it. The
+                         `defaultChecked` below lights the right card on first paint and the
+                         browser moves it from there, no JavaScript involved. */
+                      className="flex cursor-pointer items-center gap-[11px] rounded-thumb border border-line p-[12px_13px] text-left hover:border-line-strong has-[:checked]:border-coral has-[:checked]:bg-coral-tint has-[:focus-visible]:shadow-focus"
+                    >
+                      <input
+                        type="radio"
+                        name="project_id"
+                        value={project.id}
+                        defaultChecked={project.id === target?.id}
+                        className="size-4 shrink-0 accent-coral"
+                      />
+                      <ProjectThumb stylePack={project.style_pack} />
+                      <span className="min-w-0 flex-1 truncate text-ui-dense font-semibold text-ink">
+                        {project.name}
+                      </span>
+                      {project.linked_site_id === row.id ? (
+                        <span className="shrink-0 text-control-label text-ink-soft">{BRAND_COPY.thisSite}</span>
+                      ) : null}
+                    </label>
+                  ))}
+                  </div>
+                </fieldset>
+              ) : (
+                /* The decision the caption states, carried back so `useBrand` can refuse it if it
+                   has gone stale. Empty means "make a project for this site". */
+                <input type="hidden" name="project_id" value={target?.id ?? ''} />
+              )}
               <Button type="submit" size={44} variant="primary" aria-describedby="brand-caption">
                 {BRAND_COPY.use}
               </Button>
@@ -243,9 +310,6 @@ export default async function BrandOffer({
               </Button>
             </form>
           </div>
-          <p id="brand-caption" className="text-center text-helper-caption text-ink-soft">
-            {caption}
-          </p>
           {/* The matrix's "insert fails → the page says so". `useBrand` redirects back here with
               the flag rather than returning a value, so the message survives scripts off — the
               same shape `recheckPlan` uses on the Sites page. */}

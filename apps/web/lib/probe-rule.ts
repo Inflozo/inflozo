@@ -246,6 +246,15 @@ export const BRAND_COPY = {
   willBrand: (name: string) => `You’re at your project limit, so we’ll put your brand on “${name}”.`,
   /** The offer taken a SECOND time, with room to spare: the project for this site already exists. */
   willRebrand: (name: string) => `We’ll put your brand on “${name}”, the project for this site.`,
+  /* THE OWNER'S QUESTION 3 RULING (2026-09-08): a second press SAYS what it already did and ASKS,
+     rather than telling — and where there is more than one project it lets the customer pick
+     which one, from cards carrying each project's own wireframe. These three sentences are that
+     screen; `willRebrand` above is what it says when there is only one project and so no choice. */
+  alreadyOn: (name: string) => `You already put your brand on “${name}”. Apply it again?`,
+  atLimitPick: 'You’re at your project limit, so your brand goes onto a project you already have.',
+  whichProject: 'Which project?',
+  /** The card for the project this site's brand is already on, so the chooser says which is which. */
+  thisSite: 'This site’s project',
   /** The matrix's "insert fails → the page says so", in the voice `COULD_NOT` already speaks. */
   failed: 'We couldn’t save that just now. Try again in a moment.',
 } as const

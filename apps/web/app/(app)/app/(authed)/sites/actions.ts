@@ -613,25 +613,39 @@ export async function useBrand(formData: FormData): Promise<void> {
   // inserted a second project for the same site (review, 2026-09-08).
   const capped = atCap(plan, projects.length)
   const target = brandTarget(capped, projects, site.id)
-  // THE DECISION THE SCREEN PRINTED, RE-MADE. Both directions matter: a caption that said "we'll
-  // make one" while the cap has since filled, and a caption that named a project while room has
-  // since appeared. Either way nothing is written and S2c is re-rendered with the true sentence.
-  if ((target?.id ?? '') !== chosen) {
+  // THE CUSTOMER MAY HAVE CHOSEN (the owner's Question 3 ruling): where the brand was going onto
+  // a project that already exists and there was more than one to choose between, S2c drew a card
+  // per project and this is the one he picked. It is looked up in HIS OWN list — the read above
+  // is his session's, so RLS has already decided what is in it and a forged id is simply not
+  // there. `undefined` here means "make one".
+  const picked = chosen === '' ? undefined : projects.find((row) => row.id === chosen)
+
+  // THE DECISION THE SCREEN OFFERED, RE-MADE. Two ways to be stale and both matter: an empty
+  // choice — "make one" — while a project for this site or the cap has since appeared, and a
+  // named project that is no longer the caller's (deleted in another tab, or never his). Either
+  // way nothing is written and S2c is re-rendered with the true sentence and the true cards.
+  // `refusedAtCap` in `projects/actions.ts` is the precedent: re-render, never act on a count
+  // that has moved. NOTE THE CAP IS STILL ENFORCED BY THIS — at the cap `target` always exists,
+  // so an empty choice is refused and no project can be made past the limit.
+  if (chosen === '' ? Boolean(target) : !picked) {
     revalidatePath(SITES)
     redirect(BRAND(site.id))
   }
 
-  if (target) {
-    // ONTO THE PROJECT THE CAPTION NAMED, and NOTHING ELSE about it moves — not its name, not
-    // its `slug` (FR-J10 freezes that), not its `linked_site_id`. Two ways to be here and the
-    // write is the same: AT THE CAP the most recently updated project (the owner's Question 1
-    // ruling), or WITH ROOM the project already made for this site — the second press of an
-    // offer that never retires. The pack is merged rather than replaced, so a preset E6 has
-    // since written survives.
+  if (picked) {
+    // ONTO THE PROJECT THE SCREEN NAMED OR THE CUSTOMER CHOSE, and NOTHING ELSE about it moves —
+    // not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. THREE ways to
+    // be here and the write is the same: AT THE CAP the most recently updated project (the
+    // owner's Question 1 ruling), WITH ROOM the project already made for this site — the second
+    // press of an offer that never retires — or, where there was more than one to choose between,
+    // the card he picked (Question 3). `linked_site_id` is deliberately untouched in all three:
+    // FR-B5 allows a project at most one site, and a chooser that silently re-pointed a project
+    // at a different site would move a binding the customer was never asked about. The pack is
+    // merged rather than replaced, so a preset E6 has since written survives.
     // NOT `?? defaultStylePack()`: `projects.style_pack` is in the caller's own UPDATE grant
     // (schema `:1202`), so a pack that is not an object is a thing the column can hold — and
     // spreading a string yields its characters, indexed, which is not a pack any more.
-    const prev = target.style_pack
+    const prev = picked.style_pack
     const pack = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : defaultStylePack()) as Record<
       string,
       unknown
@@ -639,7 +653,7 @@ export async function useBrand(formData: FormData): Promise<void> {
     const { data, error } = await supabase
       .from('projects')
       .update({ style_pack: { ...pack, brand } })
-      .eq('id', target.id)
+      .eq('id', picked.id)
       .select('id')
     if (error || !data?.length) {
       console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
