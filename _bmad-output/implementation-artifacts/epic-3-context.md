@@ -15,6 +15,7 @@ A user connects their own Ghost site with **one credential pair** — the Admin 
 - Story 3.5: My sites, their caps, and disconnecting one
 - Story 3.6: Manage keys, and a partially credentialed site as an ordinary state
 - Story 3.7: The daily health check, the reconnect email and the compatibility watch
+- Story 3.8: First Run — the three doors after the first sign-in (added 2026-09-08 by the owner's ruling on 3.2's Question 1; DW-19 closed)
 
 ## Requirements & Constraints
 
@@ -51,7 +52,7 @@ A user connects their own Ghost site with **one credential pair** — the Admin 
 ## Cross-Story Dependencies
 
 - 3.1 first — every other story mints through it and stores through it. 3.2 before 3.3 and 3.4 (the probes and the brand read run on a validated connection); 3.5 writes `disconnected_at` before 3.7's orphan purge reads it; 3.6's re-encrypt uses 3.1's write path.
-- **Ledger, open and binding:** DW-43 (a restored account clears every snapshot's `purge_after`, the 90-day clock included — the story that first writes `disconnected_at` re-stamps `purge_after = disconnected_at + interval '90 days'` for the restored user's disconnected sites, or splits the column). DW-19 (**S2a First Run** is drawn, in the UX spine, and named by no story — Epic 3 is its natural home; it is the owner's decision, so 3.2 asks it under Questions rather than building or skipping it).
+- **Ledger, open and binding:** DW-43 (a restored account clears every snapshot's `purge_after`, the 90-day clock included — the story that first writes `disconnected_at` re-stamps `purge_after = disconnected_at + interval '90 days'` for the restored user's disconnected sites, or splits the column). DW-19 is **closed** (owner, 2026-09-08): **S2a First Run** is Story 3.8, Epic 3's last, planned after 3.4 so its Recommended door runs connect → auto-brand → a project.
 - **On Epic 7:** the token request and decline, the snapshot capture, the backup gate and the deploy-error side of Preview-only are all deploy-time and none exists; specs state what they build against or flag the gap, as 2.5 did for Dodo. **On Epics 4–6:** nothing renders a section until the runtime exists, so 3.4's A2 placement and Style Pack seed name where they write and what reads it later, or flag it; the canvas shims that consume `site_settings` (Portal, announcement) are E5's. **On Epic 12:** caps read `resolveEntitlement()`/`PLANS`, which exist; no billing code does. **On Epic 13:** FR-C7's redesign proposals and the notifications reader are E13's — this epic only writes rows.
 - **T4 (Ghost(Pro) Starter)** is deferred to the launch gate by the owner's decision; the self-hosted path is proved on T1 and T3, and the flag row keeps the unobserved half off in production.
 - Process rulings binding every story: commit and push after every phase as `Story 3.<n> - <Phase> - <one line>`; the doc gate before every commit; review and owner test on the real Supabase, Resend, Vercel and Ghost (T1/T3, keys in `tools/probe/.env`); every UI story carries an owner's manual test on the production domains; owner questions in plain English with an example, numbered options and a (RECOMMENDED) mark.

@@ -491,7 +491,10 @@ reason: The nonce is stamped into script tags PER REQUEST, so a prerendered page
 ### DW-19: the First Run screen S2a is drawn, is in the UX spine, and is named by no story
 
 plain: The very first screen a brand-new customer should see after signing up — the one offering "connect your Ghost site", "start from a starter" or "blank canvas" — is drawn and designed, but no piece of work anywhere is scheduled to build it. Unless a story claims it, new customers will land straight on an empty dashboard instead.
-status: open
+status: closed
+closed: Story 3.2 Create (2026-09-08) — the owner ruled option 1 of its Question 1: First Run is Story 3.8,
+  the last story of Epic 3, planned after 3.4 so the Recommended door runs connect → auto-brand → a project;
+  added to `epics.md` and `sprint-status.yaml` in the same commit
 severity: medium
 origin: Story 1.5 owner test, second round (2026-09-06) — the owner compared the New project window to S2a, which surfaced this
 location: _bmad-output/planning-artifacts/epics.md · _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/S2 Onboarding.dc.html

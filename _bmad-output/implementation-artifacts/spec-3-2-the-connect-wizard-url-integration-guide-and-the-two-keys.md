@@ -176,9 +176,11 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
   assertion follow; the marketing assertion (`undefined`) stays.
 - `apps/web/app/api/ghost-admin/verify/route.ts`, `apps/web/server/ghost-admin/verify-queries.ts` --
   **deleted** (DW-48).
-- `apps/web/public/connect/{integrations,add-integration,keys}.png` -- **new**: three screenshots of
-  Ghost Admin on T1 at 2× (Question 2 gates the capture; until then the frame's striped placeholder box
-  with its mono caption, `S2 Onboarding.dc.html:97-98`).
+- `apps/web/public/connect/integration.png` -- **new**: the owner's screenshot of the saved "Inflozo"
+  integration in Ghost Admin (title, description, the two keys and the API URL, keys blurred), copied from
+  `_bmad-output/planning-artifacts/design/CustomIntegrationScreen.png` (644×408, ruled 2026-09-08). One
+  image for the frame's one box (`S2 Onboarding.dc.html:97-98`), `<img>` with width/height and alt text
+  naming what it shows; it sits under step 3, the step it illustrates.
 - `apps/web/app/(app)/app/(authed)/layout.tsx` -- unchanged; `/sites` is inside the guard by where its
   file sits. `app-routes.test.ts` walks every `page.tsx` — the new pages are guarded by construction.
 - `tools/probe/run-verify-ghost-admin.py` -- **rewritten**, `run-verify-account-deletion.py:196-340`'s
@@ -214,8 +216,7 @@ and the Ghost Admin screenshots go to the owner as questions; neither blocks the
       compensate, redirect
 - [ ] `apps/web/app/(app)/app/(authed)/sites/{page,connect/page,connect-wizard,connect-dialog,content-check}.*`
       -- S2b·1, S2b·2, S11b, S11a's card -- the surface, from the frames
-- [ ] `apps/web/public/connect/*.png` -- the three screenshots, or the frame's placeholder until Question 2
-      is ruled -- "guided, screenshotted"
+- [ ] `apps/web/public/connect/integration.png` -- the owner's screenshot, copied in -- "guided, screenshotted"
 - [ ] delete `app/api/ghost-admin/verify/route.ts` + `server/ghost-admin/verify-queries.ts`;
       `server-wiring.test.ts` importer lists -- DW-48 -- the chokepoint's caller is the product
 - [ ] `tools/probe/run-verify-ghost-admin.py` + `tools/doc-audit.py` row -- the harness retargeted at the
@@ -305,8 +306,8 @@ On the live site after the Deploy run. You will make one test integration on you
 and can delete it afterwards.
 
 1. **URL:** https://app.inflozo.com/sites · **Screen:** Sites, first visit · **Do:** look · **See:** no list
-   — a white card "First, a quick handshake." with "1/2", three numbered steps, a screenshot of Ghost
-   Admin's Integrations page, "Back" and a black "Done — next".
+   — a white card "First, a quick handshake." with "1/2", three numbered steps, the screenshot you supplied of the
+   Inflozo integration with its keys, "Back" and a black "Done — next".
 2. **URL:** https://ghost6.inflozo.com/ghost/#/settings/integrations · **Screen:** Ghost Admin · **Do:**
    Add custom integration → name it `Inflozo owner test` → Save · **See:** an API URL, an Admin API key
    and a Content API key. Keep this tab open.
@@ -350,6 +351,9 @@ presses Connect and is on this story's handshake. Nothing in this story depends 
 2. **Inside this story now** — the Connect card works; the other two are greyed with one line each.
 3. **Not built** — the empty Projects page is the first screen, and the ledger records that decision.
 
+**Ruled: option 1 (owner, 2026-09-08).** Story 3.8 "First Run — the three doors after the first sign-in" is
+added to `epics.md` after 3.7 and to `sprint-status.yaml` as backlog; DW-19 is closed by that ruling.
+
 ### Question 2 — screenshots of Ghost Admin for the handshake steps
 
 Step 1 shows real screenshots of Ghost Admin (Settings → Integrations → Add custom integration → the new
@@ -363,6 +367,10 @@ to click. Until they exist the build shows the design's grey placeholder box, so
    three pictures with a headless browser, re-capturable whenever Ghost's admin changes. **(RECOMMENDED)**
 2. **You take the three screenshots yourself** on ghost6.inflozo.com and tell me where you put them.
 3. **Ship with the placeholder box** and revisit when Ghost Admin's look is final for launch.
+
+**Ruled: option 2 (owner, 2026-09-08).** The screenshot is at
+`_bmad-output/planning-artifacts/design/CustomIntegrationScreen.png` — one picture of the saved integration
+showing its keys, which is what step 3 describes; the Code Map and Tasks now name it.
 
 ## Verification
 

@@ -1048,6 +1048,32 @@ scheduled job has one owning epic and one home (AD-33).
 **FRs:** FR-C5 (the check, the watch), FR-P1 email (3). · **Frame:** `S11 Sites.dc.html` S11a (the badge) · `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 (the notice). The email is a transactional send, not a drawn surface. · **Owner test:** yes (the badge and the email). ·
 **Verification:** real Resend send and a deliberately broken credential on T3 (R-82).
 
+### Story 3.8: First Run — the three doors after the first sign-in
+
+*Added 2026-09-08 by the owner's ruling on Story 3.2's Question 1 (DW-19, closed): the drawn First Run screen
+is built as Epic 3's last story, after 3.4, so its Recommended door runs all the way through.*
+
+As someone who has just signed in for the first time,
+I want to be shown my three ways to start,
+So that I connect my Ghost site first rather than landing on an empty page.
+
+**Acceptance Criteria:**
+
+**Given** an account with no project and no site
+**When** its first sign-in completes
+**Then** it lands on **First Run** — "Let's make your Ghost site gorgeous." with three cards: **Connect your
+Ghost site** marked Recommended, **Start from a starter**, **Blank canvas** — and the line "You can do all of
+this later."
+**And** Connect leads into Story 3.2's handshake and on through 3.4's auto-brand; Blank canvas opens the New
+Project Sheet; Start from a starter is greyed with its reason in the caption until Epic 11's chooser exists
+(a door stays drawn and carries its reason)
+**And** it is shown once: an account that has a project or a site, or that chose a door, goes to the dashboard
+**And** the screen matches frame S2a at 1440, 834 and 390.
+
+**FRs:** FR-C1 (the entry to connect), FR-B2 (the creation paths). · **Frame:** `S2 Onboarding.dc.html` S2a. ·
+**Owner test:** yes. · **Verification:** a fresh throwaway account on `app.inflozo.com` lands on First Run
+and, after connecting T1, never sees it again (R-82).
+
 *Exit:* T1–T3 connected and validated **with the token absent**, and the partially credentialed state
 round-tripped through Manage keys; on T4 the connect-time probe sets Preview-only and clears it when the probe
 changes. **The deploy-error half of the Starter path is verified at the E4/E7 joint gate**, because FR-C2 makes
