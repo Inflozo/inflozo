@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
-review_loop_iteration: 2
+review_loop_iteration: 3
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -609,6 +609,68 @@ the clear needs a deploy (Epic 7) or the user's live bar disappears with nothing
 this story **stores what the seed will need and builds none of it** — 3.3 already put
 `site_settings.announcement` there verbatim, and DW-66 names the story that finishes the job. The
 owner sees the deferral in his own words in "In plain English" rather than discovering it later.
+
+## Review 3 record — what was executed, and what each service answered (R-82)
+
+Run 2026-09-08 against **CI's deployment of `57d635a3`** on `app.inflozo.com` — this review's own
+patches, deployed (`rls` ✔ `check` ✔ `deploy` ✔, production `READY` on that sha through the Vercel
+API by `VERCEL_TOKEN`) — with **T1** `ghost6.inflozo.com` 6.58.0 and **T3** `ghost5.inflozo.com`
+5.130.6, and the live Supabase project over PostgREST, GoTrue and the transaction pooler. Every key
+named by its variable; no value printed or recorded.
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **exit 0.** **230 tests** in `apps/web` (229 + the new `style-pack` case), 1 in each of the three packages. `tokens.test.ts` still finds `style-pack.ts` the one place a colour literal lives |
+| `pnpm build` | **exit 0**, `ƒ /app/sites/brand` still dynamic inside the `(authed)` guard |
+| `node --test style-pack.test.ts` | **8 pass, 0 fail** — and its **negative control ran**: with `placeholderFor` reverted to reading `brand` off the parse, the new case **fails** (7 pass, 1 fail) and with the fix it passes. The bug and the test were each proved against the other |
+| `python3 tools/doc-audit.py --check` (twice) | first pass regenerated and failed on it, second **PASS, 0 warnings** — the documented behaviour of the sub-tools |
+| `bash supabase/tests/run-rls-gate.sh` | untouched: **no migration** in this review, and DW-69 says why the one it wanted is still not written |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **all steps passed** — `keys`, `browser-js`, `vault-off-rest`, `settings-keys` and `brand-keys` against both live Ghosts |
+| `python3 tools/probe/run-verify-ghost-admin.py` | **63 steps, 0 failures, on the FIRST run**, every step in the docstring in order — which is the first run of this story where the docstring's order is the run's order. **0 navigation retries** (DW-68 did not manifest) |
+| `git grep -n 'announcement_clear'` | `admin-rule.ts` and its test only. **No caller**; `ADMIN_WRITES` unchanged |
+
+### What the deployed site answered on the review's own change
+
+| Step | In the run's own words |
+|---|---|
+| `brand-screen` | The new assertion, live for the first time: *"The logo slot: the row's logo is **null**, so the LIVE branch is the **monogram tile carrying "G"** with **0** image(s) beside it = true"* — the tile carrying the first code point of the site's own Ghost title, read off the rendered page rather than assumed. §40's "logo is an empty string on both majors" is now a fact this run re-proves every time rather than one the reader trusted |
+| `brand-atcap` | The caption still names the project (*"You're at your project limit, so we'll put your brand on “Ghost6”."*) and pressing left 1 project, the same row, name, slug and `linked_site_id` untouched. **This is the sentence Question 5 asks about** — it is correct about the project and stale about the cause |
+| `brand-rerun` | On Pro with room the caption **asks** and names the site's project; the second press left **1** project |
+| `brand-picker` | Two cards, two distinct wireframe colours `["rgb(217, 108, 63)", "rgb(255, 26, 117)"]`, pre-selected on the site's project |
+| `brand-atcap-picker` | Downgraded to Free with 2 projects: the ticked card is "Ghost6" **and** it is the same card carrying "This site's project" — the Question 4 ruling, with its discriminating control still answering "a DIFFERENT row" for the pre-ruling rule |
+
+### Controls, including the one that failed
+
+- **THE ONE DEFECT WAS PROVED BOTH WAYS.** The new `style-pack.test.ts` case was executed against
+  the **old** `placeholderFor` and **failed**, then against the new one and passed. A test that has
+  not been seen to fail is not evidence, and this one has been.
+- **A claim in the repository was executed and found false.** `browser-js` was documented in three
+  places as catching both the redeclaration and the temporal-dead-zone shadowing. `node --check`
+  exits **0** on a block-scoped `const` that shadows a module-level helper — valid syntax — so it
+  catches one of the two. The file's own note beside the `same` helper had said so all along, and
+  the three places that contradicted it are narrowed. Cite or execute, never assert.
+- **`brand-screen`'s new assertion discriminates.** It is `imgs === 0 && some span reads "G"`, read
+  with `allInnerTexts` off the rendered document — a page that drew the `<img>` branch, or drew no
+  tile, fails it. It is asserted **by the row** (`row.title`'s first code point) and not against a
+  constant, so it stays true for a site with a different title.
+- **DW-68 did not manifest on this run** — 63 steps, 0 retries, green on the first attempt, where
+  the real-infra layer needed four runs for one green earlier the same day. **No claim is made
+  either way:** the cause is still unknown, the control that would settle it still cannot be driven
+  (the harness cannot sign in against a preview URL), and one clean run is not evidence that a
+  probabilistic hang is gone.
+- **What was NOT executed, and is not claimed.** Connect's "no brand to offer" landing (AC 11's
+  first half) is unreachable from here — both test Ghosts answer a brand, and a connect re-probes
+  and rewrites the brand it just read, so the branch needs the probe itself to fail. The logo
+  `<img>` branch is unit-proved only, because writing a logo to a test Ghost is an Admin write this
+  story does not make. Both are recorded above under *What could not be verified*.
+
+**Real services this review touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
+Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
+story's path** and were not called.
 
 ## Questions for the owner
 
