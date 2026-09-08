@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: '2026-09-07'
+last_updated: '2026-09-08'
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -61,7 +61,7 @@ development_status:
 
   epic-3: in-progress
   3-1-the-server-side-admin-proxy-and-vault-credential-storage: done
-  3-2-the-connect-wizard-url-integration-guide-and-the-two-keys: backlog
+  3-2-the-connect-wizard-url-integration-guide-and-the-two-keys: ready-for-dev
   3-3-the-connect-time-probes-preview-only-code-injection-portal-a: backlog
   3-4-take-my-brand-from-my-site-in-one-click: backlog
   3-5-my-sites-their-caps-and-disconnecting-one: backlog

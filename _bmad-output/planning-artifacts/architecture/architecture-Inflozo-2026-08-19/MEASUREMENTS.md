@@ -2783,3 +2783,45 @@ Two things recorded in passing from the same run, both majors:
 The first is why `BACKUP-GATE.md` records that `routes.yaml` *could* be offered as a download on the
 no-token path; the ruling of 2026-09-03 (F-077) ties both downloads to the staff token and the
 loosening is left to the owner.
+
+## 38. What connect can read with no key, and what a browser can read with the Content key · 2026-09-08
+
+Story 3.2's wizard rests on three claims about the two live Ghosts that nothing above had executed. Run
+from this machine at Create, keys read from `tools/probe/.env` by name (`GHOST6_URL`, `GHOST5_URL`,
+`GHOST6_CONTENT_API_KEY`, `GHOST5_CONTENT_API_KEY`); `curl` with a 15 s ceiling.
+
+**(a) `GET /admin/site/` answers with NO credential at all, on both majors** — which is why FR-C2 forbids it
+as a validator and why 3.2 reads it only *after* `config/` has passed:
+
+    ghost6 (6.58.0)  GET /ghost/api/admin/site/   200  title "Ghost6"  url "https://ghost6.inflozo.com/"
+                     version "6.58"  accent_color "#FF1A75"  logo null  icon null  description null
+    ghost5 (5.130.6) GET /ghost/api/admin/site/   200  title "Ghost5"  url "https://ghost5.inflozo.com/"
+                     version "5.130"  description "Thoughts, stories and ideas."
+
+`version` here is TWO parts; `GET /admin/config/` (3.1's harness, `config-no-version`) answers the full
+`6.58.0` / `5.130.6`, and that is what `sites.ghost_version` stores. The public `url` carries a trailing slash.
+
+**(b) The Content API is readable from a browser origin, and the preflight allows `Accept-Version`:**
+
+    GET /ghost/api/content/settings/?key=<content key>   Origin: https://app.inflozo.com   Accept-Version: v5.0
+      ghost6 -> 200, access-control-allow-origin: *, vary: Accept-Version, Accept-Encoding
+      ghost5 -> 200, access-control-allow-origin: *   (settings incl. title, url, accent_color, codeinjection_*)
+    OPTIONS (same URL)  Origin + Access-Control-Request-Method: GET + Access-Control-Request-Headers: accept-version
+      both  -> 204, access-control-allow-origin: *, access-control-allow-headers: accept-version, max-age 86400
+    GET with a 25-hex key Ghost never issued
+      both  -> 401  UnauthorizedError | "Unknown Content API Key"
+
+So a browser-side `settings` read with `Accept-Version: v5.0` works against both majors, and a wrong key is
+a 401 with that message. The app's CSP is the only thing that could block it (`csp.ts`, 3.2 widens
+`connect-src` to `https:` — the origin being checked at connect is never a stored one).
+
+**(c) Plain `http://` to the admin API is refused, not redirected, on both:**
+
+    GET http://ghost6.inflozo.com/ghost/api/admin/config/   -> 403 Forbidden, no Location
+    GET http://ghost5.inflozo.com/ghost/api/admin/config/   -> 403 Forbidden, no Location
+
+An `http://` site address therefore fails at validation with Ghost's own 403 (the chokepoint's `ghost_refused`
+family), which is why 3.2 warns the moment the field says `http://` rather than after Connect.
+
+**Not executed, and cannot be:** a Ghost 4.x — no server exists (T1 is 6, T3 is 5). The "please update
+Ghost" refusal is proved on the version rule alone (`lib/connect-rule.ts`) with `4.48.0` injected.

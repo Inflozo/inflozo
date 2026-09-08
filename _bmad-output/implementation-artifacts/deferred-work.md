@@ -1231,3 +1231,22 @@ reason: `action` is an enum and the three labels the code inserts were confirmed
   migration cannot change, so it is a new migration (`alter table … add constraint … check (outcome in
   ('ok','denied','error'))`) with its SCHEMA.sql line and gate assertion, in the next story that touches
   the table.
+
+### DW-54: three of the key store's live proofs lose their driver with the verify route
+
+plain: Story 3.1 proved three things on the live site through its temporary back door — that Inflozo
+  refuses to make any change to a Ghost site outside its four allowed ones, that swapping a key removes
+  the old one from the locked store, and that removing the deploy-time token removes it too. Story 3.2
+  takes that back door out, as planned, and nothing in the product yet presses those three buttons —
+  so until later stories do, those three are proved by the local tests and the database gate only, not
+  on the deployed site.
+status: open
+severity: low
+origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"
+location: tools/probe/run-verify-ghost-admin.py (the retargeted harness) · apps/web/ghost-admin-rule.test.ts
+  (`write-denied` as a unit contract) · supabase/tests (the trigger under the RLS gate)
+reason: R-82 wants every claim executed on the real infrastructure. With DW-48 honoured, `write-denied`
+  has no product caller until Epic 7's deploy path makes the first allowed write (and can then be driven
+  by asking for one outside the list); `rotated` has none until Story 3.6's Manage keys re-pastes a key;
+  `staff-removed` none until Epic 7 stores and removes the Staff Access Token. Each of those stories
+  adds the matching step back to its own harness and closes its third of this entry.
