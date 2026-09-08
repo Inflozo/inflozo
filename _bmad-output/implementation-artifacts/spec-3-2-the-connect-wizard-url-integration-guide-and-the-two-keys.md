@@ -262,9 +262,10 @@ Real-infra verifier) over the diff `3a530ebc..156f5d08`, plus the harness driven
 (`## Verification`, Review 1). Every patch below is applied in this review's commits; every defer has its
 ledger row; the one decision is Question 3 under `## Questions for the owner`.
 
-- [ ] [Review][Decision] The consent line names two writes ("your theme and your routes file") while the
-      frozen Boundaries say "Inflozo's four writes are named in the same breath" — Question 3, the owner's
-      [apps/web/lib/connect-rule.ts `ADMIN_KEY_CONSENT`]
+- [x] [Review][Decision] The consent line names two writes ("your theme and your routes file") while the
+      frozen Boundaries say "Inflozo's four writes are named in the same breath" — **Ruled: option 1 (owner,
+      2026-09-08), keep the sentence as it is**; the announcement-bar switch is Story 3.4's own consented
+      yes/no, no code change [apps/web/lib/connect-rule.ts `ADMIN_KEY_CONSENT`]
 - [x] [Review][Patch] The Dev commit truncated the spec from the last task line to the end of `## Questions
       for the owner` — the Acceptance Criteria, the change log, the Design Notes, the owner's manual test and
       both rulings — and spliced the Verification record into the task line, so the board showed no test and
@@ -581,6 +582,10 @@ connect that Inflozo could.
 2. **Name all four now** — "Inflozo only ever writes your theme, your routes file and — if you say so later —
    switches off Ghost's announcement bar." One clause longer, on a screen that already asks for a lot.
 3. **Name three** — "your theme, its activation and your routes file" — and leave the bar to Story 3.4's card.
+
+**Ruled: option 1 (owner, 2026-09-08).** The consent line stands as it is: "Inflozo only ever writes your theme
+and your routes file." The announcement-bar switch is a separate, consented yes/no at the moment it happens
+(Story 3.4). No code change — `ADMIN_KEY_CONSENT` in `lib/connect-rule.ts` already carries this sentence.
 
 ## Verification
 
