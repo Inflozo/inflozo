@@ -79,6 +79,16 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   what wrote it.
 - **Seeding is idempotent and consented.** The offer is a link, never a stored state machine; pressing
   it twice writes the same pack twice. `// ponytail:` says so.
+- **THE OWNER RULED THE AT-CAP PATH (Question 1, option 1, 2026-09-08), and the screen says which
+  project it will brand BEFORE the press, not after.** S2c counts the caller's projects against
+  `atCap` at render: with room, the helper caption under **Use your brand** says a project will be
+  made for the site; at the cap it names the project that will be branded instead — the most
+  recently updated one (`updated_at desc`, the dashboard's own order). The form carries that
+  decision as a hidden field — the project's id, or empty for "make one" — and **`useBrand`
+  re-counts and refuses a decision that has gone stale**, redirecting back to S2c so the caption is
+  true again rather than silently rebranding a project the screen did not name. `refusedAtCap`
+  (`projects/actions.ts:87-91`) is the precedent: the page's count can be one tab out of date, so
+  the action re-renders rather than acts on it.
 - **No migration.** `projects.style_pack`, `projects.linked_site_id` and `sites.site_settings` all
   exist (schema `:208-230`, `:157`).
 - R-81: every phase commits and pushes as `Story 3.4 - <Phase> - <one line>`. R-82: Review and the
@@ -112,7 +122,8 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 | Hostile logo | `logo: "data:image/svg+xml,…"` or `javascript:…` | `logo: null`, the initial letter tile is drawn instead | N/A |
 | Nothing readable | no accent, no logo, no nav | connect redirects to `/sites`; no S2c, no card link | N/A |
 | Use your brand, no project | brand present, 0 projects | a project named from the site's title, `linked_site_id` set, `style_pack.brand` written; the site card reads "1 project" and the dashboard card wears the accent | insert fails → the page says so, the site stays connected |
-| Use your brand, at the cap | Free, 1 project already | **the owner's ruling (Question 1)** decides which project is seeded and what the page says | N/A |
+| Use your brand, at the cap | Free, 1 project already | the caption names that project; pressing brands it — `style_pack.brand` written, **name, slug and `linked_site_id` untouched** | N/A |
+| Cap changed under the page | caption said "make one", a second tab filled the cap | `useBrand` re-counts, writes nothing, and redirects back to S2c with the true caption | N/A |
 | Someone else's site id | `?site=` a stranger's row | the page 404s and the action writes nothing (RLS: the read returns no row) | N/A |
 | Re-run | the card's brand link, pressed again | S2c again; seeding again writes the same pack | N/A |
 
@@ -136,13 +147,15 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   site through `supabaseServer()` (`.eq('id', …)`, RLS scopes it to the caller), `notFound()` on no
   row or no brand, renders the frame from `BRAND_COPY`, posts to the two actions. `robots: noindex`,
   `title: '… · Inflozo'` — `sites/connect/page.tsx` is the pattern for the route's shape, its
-  centring and its metadata.
+  centring and its metadata. It also counts the caller's projects (`atCap`, `lib/plan.ts:47`) to
+  compose the button's caption and the hidden decision field.
 - `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- `connectSite`'s tail (`:327-330`): the
   redirect becomes `/sites/brand?site={siteId}` when the freshly probed row has a brand, `/sites`
   otherwise. **Two new exports** (a `'use server'` module may export only async functions — the
   file's own header at `:70-77` records why they live here): `useBrand(formData)` and
   `skipBrand(formData)`, each `signedIn()`, each scoped `.eq('user_id', user.id)`, each
-  `revalidatePath` on `SITES` and `DASHBOARD` and redirecting.
+  `revalidatePath` on `SITES` and `DASHBOARD` and redirecting. `useBrand` re-counts against `atCap`
+  and refuses a stale decision (Boundaries, the owner's Question 1 ruling).
 - `apps/web/lib/projects.ts` -- **reused, not rewritten**: `slugify`, `uniqueSlug`, `nextUntitled`
   and `NAME_MAX` give the created project its name and slug from the site's title. A site with no
   title falls back to its host, then to `nextUntitled`.
@@ -178,8 +191,11 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 - `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` --
   **§40 appended at Dev**: what the integration key's `GET /admin/settings/` answers for the seven
   brand keys on T1 and T3, the container shape of `navigation` named exactly.
-- `_bmad-output/implementation-artifacts/deferred-work.md` -- **DW-66** (below) and DW-54 left as it
-  is: this story adds no Admin write, so `write-denied` is still Epic 7's.
+- `_bmad-output/implementation-artifacts/deferred-work.md` -- **DW-66 written at Dev** (the owner
+  ruled Question 2, option 1): the announcement seed, the A2 placement, the consented "turn Ghost's
+  own bar off" and the canvas's live-content switch, each with its owning epic and what this story
+  already stored for it. DW-54 is left as it is — this story adds no Admin write, so `write-denied`
+  is still Epic 7's.
 - `_bmad-output/implementation-artifacts/epic-3-context.md` -- the auto-brand paragraph updated to
   what was built and what was deferred; propagate, never localise.
 
@@ -217,6 +233,12 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 - Given **Use your brand**, when it is pressed, then a project exists for that site with
   `linked_site_id` set and `style_pack.brand.accent` equal to the site's accent; the Sites card reads
   **1 project**; and the dashboard card's placeholder is painted in that accent
+- Given a caller **at their project cap**, when S2c is opened, then the caption under **Use your
+  brand** names the project that will be branded — the most recently updated — and pressing it
+  writes `style_pack.brand` onto that project and **changes nothing else about it**: not its name,
+  not its `slug`, not its `linked_site_id`
+- Given a decision that has gone stale between render and press, when **Use your brand** is posted,
+  then nothing is written and the browser returns to S2c with the true caption
 - Given **Skip**, when it is pressed, then the browser goes to `/sites`, **no project is written**,
   and the site card still carries the brand link, so the offer can be taken later
 - Given a site whose settings carry no accent, no logo and no navigation, when it is connected, then
@@ -260,6 +282,13 @@ that no screen in this epic shows. The link is always there while there is somet
 seeding twice writes the same pack. `// ponytail: the offer is a link; the seed is idempotent. A
 column when a screen needs to tell skipped from used.`
 
+**Why the at-cap message is a caption and not a confirmation.** The owner's ruling asks the screen to
+say which project gets the brand. Saying it *after* the write is a notification about something
+already done to an existing project; saying it *before* is consent, and it is the idiom this app
+already uses ("a greyed control shows its reason in the helper caption"). It costs one count the page
+can make anyway and one hidden field, and it turns "the page promised a new project and rebranded an
+old one" from a possible outcome into a redirect.
+
 **What cannot be built, said plainly.** Half of FR-C4 is the announcement bar: its text becomes a
 placed **A2** design, its visibility maps onto **show to**, its background onto the **Background**
 role, and only then is "turn Ghost's own bar off" safe. Placing a section needs
@@ -278,6 +307,11 @@ four menu links, and is showing them to you. You press **Use your brand**. What 
 
 There is one wrinkle worth knowing: your plan limits how many projects you can have — **Free
 includes 1**. So if you already have a project, there may be no room to make another.
+
+**Ruled: option 1** (owner, 2026-09-08). A project is made for the site and wears the brand; at the
+project limit the brand goes onto the most recently updated project instead, and **S2c names it in the
+caption under the button before the press**, so the screen tells you which one while you can still
+choose. The stale-decision guard in Boundaries and the two matrix rows are that ruling in force.
 
 1. **Inflozo makes a project for that site, named after it ("Ghost6"), wearing your brand — and if
    you are already at your project limit, it puts the brand on the project you most recently worked
@@ -302,6 +336,11 @@ it off your live site with nothing replacing it.
 
 For example: your site has a bar that says "Free shipping this week". Inflozo has already saved that
 sentence, its colour and who it shows to. It just cannot put it on a page yet.
+
+**Ruled: option 1** (owner, 2026-09-08). Story 3.4 ships the brand half. The announcement seed, the A2
+placement and the consented "turn Ghost's own bar off" become **DW-66**, written at Dev, owned by the
+story that first places a section on a page (Epic 4/5), with the clear waiting on Epic 7's deploy.
+Epic 3 closes on 3.5–3.8 as planned.
 
 1. **Build the brand half now; the announcement half becomes a tracked item (DW-66) and is built by
    the story that first places a section on a page, in Epic 4 or 5. (RECOMMENDED)** Epic 3 finishes
@@ -342,8 +381,10 @@ need a site that is not connected yet, and you will need a menu and an accent co
 8. **Do:** back on the computer, press **Skip** · **See:** the Sites page, your site's card, and on
    it a link offering to use the site's brand. Nothing else changed — the card still reads
    **0 projects**.
-9. **Do:** press that link · **See:** the same screen as step 5. **Do:** press **Use your brand** ·
-   **See:** what you asked for in Question 1 above.
+9. **Do:** press that link · **See:** the same screen as step 5, and under **Use your brand** one
+   short line saying what it will do — either that it will make a project for this site, or, if you
+   are already at your project limit, naming the project it will brand instead. **Do:** press **Use
+   your brand** · **See:** the Sites page, and the line was right.
 10. **URL:** https://app.inflozo.com/ · **Screen:** your dashboard · **See:** the project's card, and
     the little wireframe drawing on it is painted in **your orange**, not the default.
 11. **URL:** https://app.inflozo.com/sites · **See:** the site's card now reads **1 project**.
