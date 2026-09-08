@@ -531,10 +531,15 @@ and can delete it afterwards.
 
 ## Owner's test findings
 
-Tested on app.inflozo.com on 2026-09-08. **Six findings, and all six are this story's own surfaces** —
-the two connect screens and the connected-site card, both built here. **Nothing belongs to a later
-story and nothing needs a sub-story**; the triage is on each one. They are fixed in this story, by the
-Fix run (R-80 as amended).
+Tested on app.inflozo.com on 2026-09-08. **Seven findings**: six in the owner's first message, then a
+second message the same day that **amended finding 5** and **added finding 7**. They are on the two connect
+screens, the connected-site card and the Sites page's own top bar and empty state — every one of them a
+surface this story built, and all are fixed in this story by the Fix run (R-80 as amended). **No sub-story
+is needed.**
+
+**One part of one finding is not this story's**: the notifications bell that finding 5's amendment asks for
+belongs to **Story 13.4** (Epic 13, the notifications centre), and it is not built here. **Question 4** puts
+that to the owner. The triage for each finding is on the finding.
 
 1. **Can we make both the windows same size?**
 
@@ -576,11 +581,28 @@ Fix run (R-80 as amended).
    card.
 
 5. **Add a top border below the connect site button just like we have in projects page.**
+   **Amended by the owner the same day:** *"Make it similar to Projects page. Just the search bar goes out.
+   The bell should stay as it is for notifications. If it is easy to implement search bar — I would like to
+   keep the search bar too, but it will search the sites by title or URL."*
 
-   *Whose:* **this story's** — `sites/page.tsx`. This one moves the surface **towards** the frame, not away
-   from it: S11a draws a 64px bar with `border-bottom:1px solid #E7E2DB` above the grid
-   (`S11 Sites.dc.html:49`), and the build dropped the whole bar because the search field and the bell
-   inside it belong to the dashboard. The rule comes back; the search field and the bell stay out.
+   *Whose:* **this story's, except the bell** — `sites/page.tsx` and `components/shell/shell.tsx`. Three
+   parts:
+
+   - **The bar and its rule — this story's.** S11a draws a 64px bar with `border-bottom:1px solid #E7E2DB`
+     above the grid (`S11 Sites.dc.html:49`); the build dropped the whole bar because what sat in it
+     belonged to the dashboard. It comes back, with **Connect site** on its right, exactly as Projects
+     carries **New project** in its own.
+   - **The search field — this story's, and it is easy.** The shell's field already posts to whatever page
+     it is drawn on, and ⌘K already finds whichever copy of it is visible; the only thing hard-wired to
+     the dashboard is the word "projects" in its label and placeholder and the `path === '/'` gate around
+     the bar. It becomes **"Search sites…"** — the frame's own placeholder (`S11 Sites.dc.html:52`) — it
+     matches a site's **title or its address**, "No sites match "…"" is the empty result, and it is drawn
+     even when nothing is connected, which is what Projects does. `filterSites` sits beside
+     `filterProjects` in `lib/`, pure and under test, because the match is now over two fields.
+   - **The bell — NOT this story's. It belongs to Story 13.4, the notifications centre** ("the bell in the
+     dashboard and editor top bars", Epic 13). There is **no bell anywhere in the app today** — not on
+     Projects, not on Sites — because a control with nothing behind it is left out rather than drawn dead
+     (UX-DR3, and `shell.tsx:24-26` says so in the code). **Question 4** below is the owner's.
 
 6. **Move the green connected status just above the bottom "Checked 5 minutes ago". And keep the meta data
    pills (Ghost 6.58, 0 projects) in their existing line only. Gap between "Checked 5 minutes ago" and green
@@ -594,6 +616,36 @@ Fix run (R-80 as amended).
    *And it binds the later stories that add to this card*, so they inherit this layout and not the frame's:
    the ⋯ menu and the Free-cap ghost slot (3.5), the Preview-only chip (3.3), the health badges and
    "Reconnect needed" (3.7). Written into `deferred-work.md` at Fix so it cannot be missed.
+
+7. **Show an empty screen when no site is connected. Just like projects, we show an empty screen: "Every
+   great site starts somewhere. / Yours starts with hundreds of gorgeous sections." Similarly, on sites too
+   design an empty screen. Add a different title, subtitle and image. Below that Connect Site button. Once we
+   click connect site button, then the two step window should open in a popup.**
+   *(Added by the owner, 2026-09-08, after the first six.)*
+
+   *Whose:* **this story's** — `sites/page.tsx`.
+
+   *What changes:* today `/sites` with nothing connected **is** the handshake — S2b·1 fills the page and
+   `/sites?step=keys` is S2b·2. That goes. In its place, the shape of the Projects empty screen
+   (`page.tsx:114-145`): a drawing, a display-size title, a quieter subtitle, and a centred **Connect site**
+   button that opens the same sheet the bar's button opens. `?step=` stops meaning anything on `/sites`.
+
+   *The full-page handshake does not disappear, it stops being `/sites`.* It stays at `/sites/connect`,
+   which is where the **Connect site** link goes with JavaScript off — so the no-JS path this story proved
+   on the live site (`js-off` in the harness) still lands somewhere real. Its step 1 "Back" now goes to
+   `/sites` in every case, since `/sites` is no longer the same screen.
+
+   *Two departures recorded here so a later story does not undo them:*
+   - **The experience spine currently says the opposite.** Its Sites row reads "Sites with none: the connect
+     card as the whole page" (`EXPERIENCE.md:318`). **Amended at Fix** to the owner's screen, with this
+     finding cited.
+   - **No frame draws this screen.** The export has S11a, S11b and S11c for Sites and no empty state; it is
+     **extrapolated from the nearest one that has** — S3b, the Projects empty screen — same components, same
+     tokens, its own words and its own drawing (R-74). **Questions 5 and 6** are the owner's.
+
+   *Routine calls taken rather than asked, each matching Projects:* the top bar with its search field and
+   **Connect site** is drawn on the empty screen too; the empty screen's own button is the second one, as
+   S3b's is (UX-DR6); and the drawing is `aria-hidden`, the title the page's `<h1>`.
 
 ## Questions for the owner
 
@@ -652,6 +704,61 @@ connect that Inflozo could.
 **Ruled: option 1 (owner, 2026-09-08).** The consent line stands as it is: "Inflozo only ever writes your theme
 and your routes file." The announcement-bar switch is a separate, consented yes/no at the moment it happens
 (Story 3.4). No code change — `ADMIN_KEY_CONSENT` in `lib/connect-rule.ts` already carries this sentence.
+
+### Question 4 — the notifications bell on the Sites bar (owner's finding 5, amended)
+
+You asked for the bell to stay on the Sites top bar. **There is no bell in the app** — not on Projects, not
+on Sites, not anywhere. Claude Design does draw one on Sites (`S11 Sites.dc.html:56`), and the build left it
+out on the rule this project works to: a button with nothing behind it is left out rather than drawn dead.
+Its real home is **Story 13.4, the notifications centre**, which gives it a feed — deploy outcomes, site
+health changes, Ghost compatibility notices, billing events — an unread badge, mark-all-read, and puts it on
+**every** top bar at once. **Example:** Maya connects her site, presses the bell, and reads "Orbit Weekly
+deployed — 2 minutes ago". None of that exists until Epic 13; today the panel would be empty with no way to
+fill it.
+
+1. **Leave the bell to Story 13.4.** Sites gets the same bar Projects has — search on the left, **Connect
+   site** on the right, the rule underneath — and the bell arrives on every page at once when there is
+   something behind it. **(RECOMMENDED)**
+2. **Draw the bell now, on Sites only, doing nothing when pressed.** It is there when you look. It is a dead
+   control until Epic 13, which is the one thing UX-DR3 exists to prevent, and Sites would be the only page
+   with one.
+3. **Draw the bell now on every top bar, opening an empty panel** that says Story 13.4's own sentence —
+   "Nothing yet. Deploy outcomes land here even if you closed the tab." Honest and complete-looking, but it
+   is a slice of Story 13.4 built early, and 13.4 then has to be told not to build it twice.
+
+### Question 5 — the words on the empty Sites screen (owner's finding 7)
+
+Nothing in the design export draws this screen, so its words are a fresh write in the voice of the Projects
+one ("Every great site starts somewhere." / "Yours starts with hundreds of gorgeous sections."). **Example:**
+Maya signs in on day one, opens **Sites**, and reads a bold line, a quieter line under it, and presses
+**Connect site**.
+
+1. **"Your Ghost site, meet Inflozo."** / *"Connect it once — everything after that happens here."*
+   The closest to the Projects screen's voice: a warm line, then the promise. **(RECOMMENDED)**
+2. **"Nothing connected yet."** / *"Point Inflozo at your Ghost site and we'll take it from there."*
+   Plainer — says the state first, then what to do.
+3. **"One handshake and you're in."** / *"Connect your Ghost site — it takes about a minute."*
+   The shortest, and it borrows the handshake's own word and its own "about a minute".
+
+### Question 6 — the drawing on the empty Sites screen (owner's finding 7)
+
+The Projects screen's drawing is a dashed page outline with one coral block and one marigold sparkle
+(`page.tsx:117-134`). The Sites one is drawn in the same hand — same dashed line, one coral shape, one
+marigold sparkle, 160×120 — and only its subject differs. **Example:** at a glance it should read "your site,
+connected", not "a page".
+
+1. **A browser window meeting a plug** — a dashed browser outline on the left, a small coral plug on the
+   right, a dashed line joining them and the marigold sparkle where they meet. Reads as connecting.
+   **(RECOMMENDED)**
+2. **A globe with a dashed ring** — the globe is already the Sites icon in the left nav, so the screen and
+   the nav item say the same thing. Reads as "a site on the web" more than "connected".
+3. **Two cards joined by a dashed line** — one plain, one coral, the sparkle on the join. Reads as "two
+   things linked", closest to the Projects drawing but the least specific about what.
+
+**Also decided as routine, not asked** (each matches the Projects page exactly, which is what you asked for):
+the search field is drawn on the empty screen too; the empty screen's centred **Connect site** is a *second*
+button alongside the bar's, as S3b's is; ⌘K focuses it on Sites as it does on Projects; and the search
+matches a site's title **or** its address, case-insensitively, on a substring.
 
 ## Verification
 
