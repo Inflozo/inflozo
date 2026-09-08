@@ -495,6 +495,12 @@ committed or logged**.
   reads over 3 connects and one Re-check), **8 `vault_decrypt` rows all ok**, the bogus key at 401
   and the plain-http attempt at 301, every row stamped `sites/connect`, and **0 rows that look like
   they hold a key**.
+- `probe-failure` — **a probe that cannot run changes nothing**, and three matrix rows meet in it:
+  a site with no credential behind it had **Re-check plan** pressed on the deployed card;
+  `call()` answered `credential_missing`, the audit took **1 `vault_decrypt` error row and 0
+  `admin_read` rows** — nothing reached Ghost — the row came back byte-identical
+  (`capability preview_only`, `settings_read_at null`, `site_settings {}`), the card still read
+  **Connected**, and the banner under the button said to try again.
 - `injection-live` — **the owner's ruling executed on both servers.** T1: found `null`, the
   integration key then saw `<!-- inflozo probe -->`, restored to `null`. T3: identical. Written with
   `GHOST6_STAFF_ACCESS_TOKEN` / `GHOST5_STAFF_ACCESS_TOKEN`, restored in a `finally`.
@@ -526,4 +532,8 @@ the sibling harness's own lesson: a step that fails is the harness until proved 
 gate), so `capabilityOf`'s Preview-only branch runs against a **synthesised** payload in a unit test
 that says so in its own name, and B15 is driven on a **seeded** row. No Ghost hides `portal_button`
 — both test servers answer a real boolean — so the Portal question is likewise a unit contract plus
-a seeded live step. Both are stated in the owner's manual test rather than glossed.
+a seeded live step. Both are stated in the owner's manual test rather than glossed. And the matrix's
+**connect-time** "Probe throws" is not reproducible: at connect the key has just passed `config/` and
+gone into Vault, so there is no way to make the next call fail on demand. It is the same `probeSite`
+catch `probe-failure` executes one caller earlier, and `sites/actions.ts` wraps the call in a second
+try of its own so a throw on the way in cannot fail a connect either.

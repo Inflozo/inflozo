@@ -165,6 +165,14 @@ list gone stale — the sibling harness's own note):
                  never written down. The bogus key's `admin_read error` at 401 and the plain-http
                  one at 301 — BOTH asserted by status; every row stamped with the action's own
                  route; and no `detail` anywhere holding a `kid:secret`
+  probe-failure  A PROBE THAT CANNOT RUN CHANGES NOTHING — three matrix rows in one: a site row
+                 with NO credential behind it (seeded through the service role; no UI can make one)
+                 has B15's Re-check plan pressed on the deployed card. `call()` answers
+                 `credential_missing`, the audit gets one `vault_decrypt` ERROR row and NO
+                 `admin_read` row — nothing reached Ghost — the row is byte-identical to what it
+                 was, the card still reads Connected, and the banner under the button says to try
+                 again. The CONNECT-TIME variant is not reproducible: at connect the key has just
+                 passed `config/` and gone into Vault
   axe-sites · axe-sheet · axe-connect · axe-keys
                  axe-core at WCAG 2.1 AA over `/sites` with the cards, the open sheet,
                  `/sites/connect` and `/sites/connect?step=keys`, each at 1440 AND 390, and no
@@ -294,6 +302,7 @@ def app_text():
         " preview_clears_title: PREVIEW_COPY.clearsTitle,"
         " preview_clears: PREVIEW_COPY.clears,"
         " preview_recheck: PREVIEW_COPY.recheck,"
+        " preview_recheck_failed: PREVIEW_COPY.recheckFailed,"
         " at_cap: siteCapSentence('free') }))")
     try:
         proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
@@ -401,6 +410,16 @@ const wire = async (path) => {
 const patch = async (path, body) => {
   const r = await fetch(`${SB}/rest/v1${path}`, {
     method: 'PATCH',
+    headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify(body),
+  })
+  return { status: r.status, body: await r.json().catch(() => null) }
+}
+/* One INSERT under the service role, for the one fixture state that has no UI and no probe: a
+   site row with no credential behind it. */
+const insert = async (path, body) => {
+  const r = await fetch(`${SB}/rest/v1${path}`, {
+    method: 'POST',
     headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: JSON.stringify(body),
   })
@@ -1249,6 +1268,48 @@ const shoot = async (page, name) => {
       `the plain-http attempt — its status is what the Vercel function's own fetch received); every row ` +
       `stamped ${ROUTE} = ${stamped}; every detail a jsonb object = ${objects}; rows that look like they ` +
       `hold a key = ${leak.length}`)
+
+    // ── A PROBE THAT CANNOT RUN CHANGES NOTHING. Three matrix rows meet here and all three are the
+    //    same contract: "No stored key" (`call()` answers `credential_missing`), "Probe throws"
+    //    (the site stays as it was and a code is logged with no value) and "Re-check plan → probe
+    //    failure → the card is unchanged and a banner says to try again". The state is seeded the
+    //    only way it can be — a site row with NO credential behind it, which no UI can make — and
+    //    then B15's own button is pressed on the deployed card.
+    //    THE CONNECT-TIME VARIANT of "Probe throws" is not reproducible: at connect the key has
+    //    just passed `config/` and gone into Vault, so there is no way to make the next call fail
+    //    on demand. It is the SAME `probeSite` catch one caller earlier, and `sites/actions.ts`
+    //    wraps it in a second try of its own so a throw on the way in cannot fail a connect either.
+    const orphan = (await insert('/sites', {
+      user_id: USER_ID, url: 'https://orphan.inflozo.com', title: 'Orphan',
+      capability: 'preview_only', capability_source: 'user_declared',
+    })).body
+    const orphanId = (orphan && orphan[0] && orphan[0].id) || null
+    const orphanBefore = orphan && orphan[0] ? JSON.stringify({
+      capability: orphan[0].capability, source: orphan[0].capability_source,
+      settings_read_at: orphan[0].settings_read_at, site_settings: orphan[0].site_settings,
+    }) : null
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    const orphanCard = page.locator('article', { hasText: 'orphan.inflozo.com' }).first()
+    await orphanCard.getByRole('button', { name: SAY.preview_recheck }).click()
+    await page.waitForURL((u) => u.searchParams.get('recheck') === 'failed').catch(() => {})
+    const banner = await page.getByText(SAY.preview_recheck_failed).isVisible().catch(() => false)
+    const orphanAfterRow = ((await rowsOf('*')).find((r) => r.id === orphanId)) || {}
+    const orphanAfter = JSON.stringify({
+      capability: orphanAfterRow.capability, source: orphanAfterRow.capability_source,
+      settings_read_at: orphanAfterRow.settings_read_at, site_settings: orphanAfterRow.site_settings,
+    })
+    const orphanAudit = (await readAuditRows()).filter((r) => r.site_id === orphanId)
+    const failedDecrypt = orphanAudit.filter((r) => r.action === 'vault_decrypt' && r.outcome === 'error')
+    const reached = orphanAudit.filter((r) => r.action === 'admin_read')
+    const stillConnected = await orphanCard.getByText('Connected', { exact: true }).isVisible().catch(() => false)
+    step('probe-failure',
+      Boolean(orphanId) && banner && orphanAfter === orphanBefore && failedDecrypt.length === 1
+      && reached.length === 0 && stillConnected,
+      `a site with NO credential behind it: Re-check plan answered ${JSON.stringify(SAY.preview_recheck_failed)} ` +
+      `under the button = ${banner}; the row is byte-identical to what it was = ` +
+      `${orphanAfter === orphanBefore} (${orphanAfter}); the audit shows ${failedDecrypt.length} vault_decrypt ` +
+      `ERROR row for it and ${reached.length} admin_read rows — nothing reached Ghost; and the card still reads ` +
+      `Connected = ${stillConnected}, because a probe that could not run is not a connection that broke`)
 
     // ── axe over every surface: the list, both steps of the page pair, and the open sheet.
     await axeAt(page, 'sites')
