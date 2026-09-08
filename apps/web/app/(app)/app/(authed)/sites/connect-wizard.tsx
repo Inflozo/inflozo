@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
+import { startTransition, useActionState, useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
 import { Banner } from '@/components/kit/banner'
 import { Button, buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
@@ -114,10 +114,6 @@ export function ConnectWizard({
   const warning = isPlainHttp(typed.url) ? HTTP_WARNING : null
   const [contentError, setContentError] = useState<string | null>(null)
   const [checking, setChecking] = useState(false)
-  // The submit that follows a passed browser check. A ref and not state: it is set and read
-  // inside one event turn, and `pending` is state that only turns true on the NEXT render — the
-  // finding `new-project-sheet.tsx` records about double submits.
-  const verified = useRef(false)
 
   const error = state && 'error' in state ? state.error : null
   const fieldError = (field: ConnectField) =>
@@ -133,28 +129,30 @@ export function ConnectWizard({
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    // The second pass — `requestSubmit()` below — must reach React's own action.
-    if (verified.current) {
-      verified.current = false
-      return
-    }
+    // THE BROWSER CHECKS THE CONTENT KEY FIRST, then the action runs — and the action is INVOKED
+    // DIRECTLY, not by re-submitting the form. The old dance (a `verified` ref, `preventDefault`,
+    // then `form.requestSubmit()` on a second pass) raced: when `checkContentKey` returned
+    // synchronously — a skipped `http://` address, which never fetches — the nested submit fired
+    // inside the first submit event's own tick and React dispatched no action, so an http connect
+    // silently did nothing (no POST, the button still "Connect"; executed on the deployed site,
+    // Review 2, 2026-09-08). The https path only worked because its real fetch delayed the
+    // resubmit past the event. `startTransition(() => action(data))` is React 19's own way to run
+    // a `useActionState` action imperatively — one path, no re-entrancy, no timing. WITHOUT
+    // JavaScript this handler never runs and the form's `action={action}` posts natively.
     event.preventDefault()
     if (checking || pending) return
-    const form = event.currentTarget
-    const data = new FormData(form)
+    const data = new FormData(event.currentTarget)
     setContentError(null)
     setChecking(true)
     const verdict = await checkContentKey(String(data.get('url') ?? ''), String(data.get('content_key') ?? ''))
     setChecking(false)
+    // Only Ghost saying "I do not know this key" is the user's to fix here; everything else lets
+    // the submit through, so the SERVER's answer is what the customer reads.
     if (verdict === 'unknown_key') {
       setContentError(connectMessage('content_key_unknown'))
       return
     }
-    // The sheet may have closed, or Back been pressed, during the check: `requestSubmit` on a
-    // detached form does nothing and the flag would have skipped the next check (review, 2026-09-08).
-    if (!form.isConnected) return
-    verified.current = true
-    form.requestSubmit()
+    startTransition(() => action(data))
   }
 
   const cancelling = variant === 'dialog' && step === 'integration'

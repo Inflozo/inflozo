@@ -277,6 +277,13 @@ ledger row; the one decision is Question 3 under `## Questions for the owner`.
       emptied on every server-side refusal (the owner's test step 5 would have needed everything re-pasted) —
       the values are state, the fields controlled; `malformed` asserts they survive
       [sites/connect-wizard.tsx, components/kit/input.tsx]
+- [x] [Review][Patch] **A plain-`http://` address could not be submitted at all** — the Connect button
+      did nothing, no POST, no error (executed on the deployed site, Review 2): the browser's Content-key
+      check returns synchronously for a skipped `http://`, so the old re-entrant `form.requestSubmit()`
+      fired nested inside the same submit event and React dispatched no action; the https path only
+      worked because its real fetch delayed the resubmit. Replaced the `verified`-ref dance with a
+      direct `startTransition(() => action(data))` — one path, no timing; the `http-connect` and
+      `js-off` steps now exercise it on the live site [sites/connect-wizard.tsx]
 - [x] [Review][Patch] Nothing closed S11b after a successful connect: the action redirects to the route the
       sheet lives on, the page re-renders in place and the sheet stayed open with the keys in it — the page
       keys the button on the number of cards; `pro-connect-t3` proves it [sites/page.tsx, sites/connect-dialog.tsx]
@@ -380,6 +387,15 @@ Free).
   without one still connects with `content: false`, the partially credentialed state, and Manage keys (3.6)
   is where it is added. (f) An IP literal is refused as an address, beside `localhost` and for the same
   reason.
+- **2026-09-08, Review 1 — a real submit bug the new harness step surfaced:** a plain-`http://` address
+  could not be submitted — the Connect button did nothing (no POST, no banner), executed on the deployed
+  site. The wizard ran the browser Content-key check, then re-submitted the form with `form.requestSubmit()`
+  guarded by a `verified` ref; when the check returned synchronously (a skipped `http://` never fetches) the
+  nested submit fired inside the first submit event's own tick and React dispatched no action. The https
+  path only worked because its real network fetch pushed the resubmit past the event. Fixed at root by
+  dropping the re-entrant dance and invoking the action directly with `startTransition(() => action(data))`
+  — fewer lines, one path, and JS-off still posts natively because the form keeps `action={action}`. The
+  bug predates this story (the same dance shipped in Dev); no earlier test submitted an http address.
 - **2026-09-08, Review 1 — behaviour the Dev build lacked, added:** the wizard's three values are React state
   (React 19 resets a form after its action, a refusal included, so uncontrolled fields emptied on every
   server-side refusal); the sheet is a fresh wizard on every open and is closed on a successful connect by
