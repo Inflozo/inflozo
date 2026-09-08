@@ -225,9 +225,9 @@ export function ConnectWizard({
         width={644}
         height={408}
         alt="The saved Inflozo integration in Ghost Admin, showing its API URL, Admin API key and Content API key"
-        // The sheet is rendered closed on every Sites visit and this pane is hidden on step 2, so
-        // the picture is fetched when it is looked at (review 2, 2026-09-08).
-        loading="lazy"
+        // NOT `loading="lazy"`: tried at review 2 (2026-09-08) and the harness's own "served"
+        // control caught it — the picture is still loading the instant the sheet opens, which is a
+        // pop-in the customer would see. It is one 29KB file; eager is right.
         className="w-full rounded-thumb border border-line"
       />
       <div className="mt-auto flex items-center justify-between gap-3">

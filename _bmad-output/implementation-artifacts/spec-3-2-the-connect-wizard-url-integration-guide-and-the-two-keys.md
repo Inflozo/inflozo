@@ -447,8 +447,11 @@ their ledger rows; no decision is open.**
       [sites/actions.ts, lib/connect-rule.ts]
 - [x] [Review][Patch] The "n projects" tally was new logic no test executed; `projectCounts` and `projectsLabel`
       lifted into `lib/connect-rule.ts` and tested [sites/page.tsx, connect-rule.test.ts]
-- [x] [Review][Patch] The screenshot was fetched on every Sites visit for a sheet that is closed; `loading="lazy"`.
-      `backHref`'s default and comment described a caller finding 7 removed [sites/connect-wizard.tsx]
+- [x] [Review][Patch] `backHref`'s default and comment described a caller finding 7 removed
+      [sites/connect-wizard.tsx]. (A `loading="lazy"` on the screenshot was applied and REVERTED in the same
+      review: the harness's `same-size` "served" control failed on the deployed patch because the picture is
+      still loading the instant the sheet opens — a pop-in the customer would see. Standing rule 2, the other
+      way round: the control caught the patch.)
 - [x] [Review][Patch] `written.size >= 8` was a literal count beside the list it counts — the set is now one
       list and the writes must equal it. The wordmark test's exemption matched any mono span, not the frame's
       chip — tightened. `/connect` (no slash) asserted inside the proxy and the exclusions documented as
@@ -578,8 +581,8 @@ Free).
   Real-infra verifier and the harness all green on the deployed Fix before any patch. Behaviour added: a
   cancelled sheet no longer dispatches a connect its pending browser check was holding; a non-string
   `version` is "no version"; the `site/` cosmetic write logs its failure; an over-long Content key is
-  `content_key_malformed` under its own field (a new sentence, backtick-free like the rest); the screenshot
-  loads lazily. **Recorded against the frozen text rather than edited there:** the action writes
+  `content_key_malformed` under its own field (a new sentence, backtick-free like the rest). A lazy-loaded
+  screenshot was tried and reverted — the harness caught the pop-in on the deployed site. **Recorded against the frozen text rather than edited there:** the action writes
   `credentials_present` — `{content, admin: false, staff}` at the row, `store()` flipping `.admin` in the
   same transaction as the Vault write — which the Boundaries' column list did not name; the AC's `content:
   true` implied it and `epic-3-context.md` records it. The harness gained `not-a-url`, `unreachable`, the
