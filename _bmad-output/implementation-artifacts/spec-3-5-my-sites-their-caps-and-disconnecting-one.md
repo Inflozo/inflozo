@@ -2,10 +2,10 @@
 title: 'Story 3.5 — My sites, their caps, and disconnecting one'
 type: 'feature'
 created: '2026-09-09'
-status: 'in-review'
+status: 'done'
 baseline_commit: '34317cc5553dde2a2df16322c6ce0bceb784916c'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
