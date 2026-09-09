@@ -90,7 +90,7 @@ GATED_TITLES = ('the shell block', 'the gated library pipeline')
 # `demo()` below, which is the only reason the first version's breadth was invisible.
 REAL_SERVICE = re.compile(r'ghost[56]\.inflozo\.com|[\w.-]+\.supabase\.co|[\w.-]+\.vercel\.app|'
                           r'api\.vercel\.com|api\.resend\.com|[\w.-]+\.dodopayments\.com|'
-                          r'(?<![\w.@-])(?:app|www)\.inflozo\.com|(?<![\w.@-])inflozo\.com')
+                          r'(?<![\w.@-])(?:app|www)\.inflozo\.com|(?<![\w.@-])inflozo\.com', re.I)
 
 # The same grammar bmad-sprint-planning's sprint_plan.py uses, so the board and the tracker agree on
 # what an epic, a story and a status key are (a split story is `2-6a-…`).
@@ -488,6 +488,15 @@ def load_commits(lines):
         # feed is the whole history rather than the story-shaped slice of it, and greyed where it renders.
         out.append({'h': h, 'date': d, 'kind': 'other', 'key': '', 'phase': '', 'msg': s})
     return out
+
+
+def dup_dw_ids(text):
+    """The DW ids used more than once. An id is an IDENTITY — every cite, and every sweep that
+    keys on one, resolves to whichever entry it meets first, so a repeat silently loses the other.
+    It happened inside one story: Story 3.4's third review spent DW-72 and its Fix spent it again
+    (found at review 6, 2026-09-09), and nothing in the gate could see it."""
+    ids = re.findall(r'^### (DW-\d+):', text, re.M)
+    return sorted({i for i in ids if ids.count(i) > 1}, key=lambda i: int(i.split('-')[1]))
 
 
 def load_deferred(text):
@@ -1976,6 +1985,10 @@ def demo():
     # email cleared the one pill that exists to fail it (review 4, 2026-09-09).
     for names in ('driven on app.inflozo.com', 'the marketing site inflozo.com', 'on www.inflozo.com'):
         assert REAL_SERVICE.search(names), f'a production domain is not a real service: {names!r}'
+    # …and a sentence that STARTS with the domain still counts: prose capitalises, and the pill
+    # this feeds is amber-by-default, so case was one more way to flag a story that named a real
+    # service (review, 2026-09-09).
+    assert REAL_SERVICE.search('App.inflozo.com answered 200'), 'the domain is not case-sensitive'
     for nothing in ('signed in as owner+test1@inflozo.com', 'a my-inflozo.com fixture', 'mocked throughout'):
         assert not REAL_SERVICE.search(nothing), f'this names no real service: {nothing!r}'
     # …and the pill's explanation is rendered inside every story it flags, and only those
@@ -2004,6 +2017,9 @@ def demo():
     assert box.count('<h4 class="sub">Completed') == 1, 'Completed is not a subheading inside the box'
     assert box.count('<ul class="pl acc prl">') == 2, 'the two prompt lists are not both inside the box'
     assert 'class="lede">Someone could hammer' in out, 'a deferred entry ignores its plain: line'
+    # …and a repeated DW id is caught, because one was spent twice inside a single story
+    assert dup_dw_ids('### DW-1: a\n### DW-2: b\n### DW-1: c\n') == ['DW-1']
+    assert dup_dw_ids('### DW-1: a\n### DW-2: b\n') == []
     assert 'A retry count belongs in configuration' in out, 'an entry with no plain: lost its reason'
     assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
     # A `**N. …**` heading starts a question; an option line, which begins with a bare digit, does not.
@@ -2091,6 +2107,12 @@ def main():
             what = str(e) if isinstance(e, AssertionError) else f'{type(e).__name__}: {e}'
             print(f'story board: SELF-CHECK FAILED — {what or "an assertion in demo() did not hold"}',
                   file=sys.stderr)
+            return 2
+        dupes = dup_dw_ids(read(DEFERRED) or '')
+        if dupes:
+            print(f'story board: DEFERRED LEDGER — {", ".join(dupes)} used twice in '
+                  f'deferred-work.md; a DW id is an identity, so one entry is lost to every cite '
+                  f'and every sweep that keys on it', file=sys.stderr)
             return 2
     out = render(real())
     if '--check' in sys.argv:

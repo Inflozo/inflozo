@@ -165,6 +165,14 @@ list gone stale — the sibling harness's own note):
                  to the site's; the Sites card's tally turns into the app's own "1 project"; and
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
+  skeleton-soft-nav
+                 RECORDED, NEVER ASSERTED, and it is a step the run prints: pressing Sites in the
+                 sidebar and polling `main` every 50ms, so the path the router really takes
+                 between two commits is in the log. What it draws there is timing this run cannot
+                 hold still — the first version of `skeleton-shape` asserted exactly this by
+                 HOLDING the RSC request and saw neither sentence, because holding it stops the
+                 router committing the navigation at all and the boundary is drawn after the
+                 commit (executed, then corrected)
   skeleton-shape THE OWNER'S TEST OF 2026-09-09, finding 2 ("they are showing a generic shmmer"),
                  and ruling R-98. Read off the STREAMED DOCUMENT of each route, where React puts
                  the segment's Suspense fallback before it streams the content over it, so there
@@ -173,11 +181,9 @@ list gone stale — the sibling harness's own note):
                  CONTROL IS THE PAIR — before this fix /sites had no `loading.tsx` of its own and
                  carried the dashboard's, image band and all, which is a state no arrangement of
                  those four booleans passes. The drawing agrees: the 16:10 band is counted in both
-                 bodies and belongs to only one of them. `skeleton-soft-nav` RECORDS what a
-                 sidebar press draws between commits and asserts nothing — the first version of
-                 this step asserted exactly that by HOLDING the RSC request, and saw neither
-                 sentence, because holding it stops the router committing the navigation at all
-                 and the boundary is drawn after the commit (executed, then corrected)
+                 bodies and belongs to only one of them, matched on the class pair only a
+                 FALLBACK carries — the real project card wears the same 16:10 band, so counting
+                 the band alone left that half of the pair unable to fail (review, 2026-09-09)
   busy-label     THE SAME TEST, finding 1 ("the button does not says anything"), and the same
                  ruling. The POST is HELD and S2c's buttons are read inside the hold: the pressed
                  one goes from the app's own BRAND_COPY.skip to BRAND_COPY.skipping with
@@ -212,10 +218,11 @@ list gone stale — the sibling harness's own note):
                  NOT-FOUND page — as does a `?site=` naming a row NO ACCOUNT carries. (The
                  stranger's row is a different question and `brand-ownership` asks it.) The
                  brand is restored in a `finally`. The assertion is the page the
-                 customer SEES, because the HTTP status on these routes is 200: `(authed)/
-                 loading.tsx` is a Suspense boundary over the whole group, so the shell has
-                 streamed and the status is committed before `notFound()` throws. Measured, not
-                 excused — DW-67. The brand is put back afterwards
+                 customer SEES, because the HTTP status on these routes is 200: `/sites/brand`
+                 has its OWN `loading.tsx` since R-98 — the group-wide `(authed)/loading.tsx` is
+                 gone — so the shell has streamed and the status is committed before `notFound()`
+                 throws. The reason changed with the route groups and the status did not;
+                 measured, not excused — DW-67, amended. The brand is put back afterwards
   dialog         S11a's "Connect site" is a LINK to /sites/connect that JavaScript turns into S11b:
                  the sheet opens with its title pair and the handshake, Escape closes it, and no
                  POST left the page (Cancel, Escape and the backdrop all send nothing)
@@ -575,6 +582,13 @@ const MARK = process.env.INJECTION_MARK
    FIRST authed render on a cold deployment took longer than Playwright's 30s default, and Deploy
    always meets a fresh deployment. Every step asserts through a locator that waits on its own. */
 const NAV_TIMEOUT = 60000
+/* THE CHECK STAMP IS A CLOCK, AND TWO STEPS PINNED ON ONE MINUTE OF IT. `Checked just now` is a
+   RELATIVE label with a 60-second life, so a slow run reached `brand-skip` after the card had
+   rolled to "Checked 1 minute ago" and went red on a build with nothing wrong with it — then the
+   `card` step's locator waited 30s for the same gone string and killed the run (review's own run
+   2, 2026-09-09). What both steps mean is "this run's probe stamped it", which is what this
+   matches; the freshness is not the claim either of them is making. */
+const CHECKED = /Checked (just now|\d+ (minute|hour)s? ago)/
 
 const steps = []
 const step = (name, ok, detail) => { steps.push({ name, ok, detail }); return ok }
@@ -1286,7 +1300,7 @@ const shoot = async (page, name) => {
       afterSkip.length === 0 && page.url().replace(/\?.*$/, '') === `${APP}/sites`
       && offerAfterSkip === 1 && card.includes(SAY.brand_offer)
       && card.includes('Connected') && card.includes(`Ghost ${short(T1.version)}`)
-      && card.includes('Checked just now') && href === pub1.url,
+      && CHECKED.test(card) && href === pub1.url,
       `Skip left ${afterSkip.length} project(s) — nothing written — and the browser on ${page.url()}; ` +
       `the card still carries the offer (${offerAfterSkip} link to ${offerHref}, reading ` +
       `${JSON.stringify(SAY.brand_offer)}), so it can be taken later. The card behind it is ` +
@@ -1373,14 +1387,14 @@ const shoot = async (page, name) => {
     const arrow = await first.locator('a[target="_blank"] svg').count()
     const pillBox = await boxOf(first.getByText(`Ghost ${short(T1.version)}`))
     const connBox = await boxOf(first.getByText('Connected', { exact: true }))
-    const checkBox = await boxOf(first.getByText('Checked just now'))
+    const checkBox = await boxOf(first.getByText(CHECKED))
     const pillGap = connBox.y - (pillBox.y + pillBox.height)
     const stateGap = checkBox.y - (connBox.y + connBox.height)
     step('card',
       arrow === 1 && pillGap > 0 && stateGap >= 0 && stateGap < pillGap,
       `the address carries ${arrow} new-tab glyph; the pills line ends at y ` +
       `${Math.round(pillBox.y + pillBox.height)}, "Connected" starts at ${Math.round(connBox.y)} and ` +
-      `"Checked just now" at ${Math.round(checkBox.y)} — so Connected is BELOW the pills and just above ` +
+      `the check stamp at ${Math.round(checkBox.y)} — so Connected is BELOW the pills and just above ` +
       `Checked, ${Math.round(stateGap)}px from it against ${Math.round(pillGap)}px from the pills`)
 
     // ── FR-C4's SEED, DRIVEN THE WAY THE OWNER TESTS IT: the offer link on the card, then
@@ -1490,11 +1504,22 @@ const shoot = async (page, name) => {
     const dashSaysSites = dashHtml.includes(LOADING_SITES)
 
     /* And the drawing under the sentence, off the same body: the site card's skeleton has three
-       40px monogram tiles and NO image band, which is the difference he was looking at. Counted
-       on the boundary's own markup — `aria-hidden` decoration inside the fallback — rather than
-       on the finished page, which has one tile per real site. */
-    const bandInSites = (sitesHtml.match(/aspect-\[16\/10\]/g) || []).length
-    const bandInDash = (dashHtml.match(/aspect-\[16\/10\]/g) || []).length
+       40px monogram tiles and NO image band, which is the difference he was looking at.
+
+       MATCHED ON THE SKELETON'S OWN CLASS PAIR, NOT ON THE SHAPE ITSELF, which is what this
+       comment used to CLAIM it did while `aspect-[16/10]` matched `placeholder.tsx` too — the
+       REAL project card. By the time this step runs `brand-seed` has made a project, so the
+       finished page satisfied `bandInDash > 0` whether the dashboard's skeleton was drawn or
+       deleted: half the pair could not fail (review, 2026-09-09). `bg-paper-sunk` before the
+       band, and `bg-paper-sunk` after `rounded-thumb`, appear only in the two fallbacks — and
+       the site tile is now counted BOTH ways too, so each route's drawing is asserted present on
+       its own route and absent on the other. */
+    const bandOf = (html) => (html.match(/bg-paper-sunk tablet:aspect-\[16\/10\]/g) || []).length
+    const tileOf = (html) => (html.match(/size-10 shrink-0 rounded-thumb bg-paper-sunk/g) || []).length
+    const bandInSites = bandOf(sitesHtml)
+    const bandInDash = bandOf(dashHtml)
+    const tileInSites = tileOf(sitesHtml)
+    const tileInDash = tileOf(dashHtml)
 
     // The soft navigation, polled and recorded. `textContent`, not `innerText`: the sentence is
     // `sr-only` and clipped, and what matters is that it is in the tree.
@@ -1517,15 +1542,16 @@ const shoot = async (page, name) => {
       `still, and the first version of this step asserted it and measured the wrong half`)
     step('skeleton-shape',
       sitesSaysSites && !sitesSaysProjects && dashSaysProjects && !dashSaysSites
-      && bandInSites === 0 && bandInDash > 0,
+      && bandInSites === 0 && bandInDash > 0 && tileInSites > 0 && tileInDash === 0,
       `the streamed document of each route carries its OWN loading boundary: /sites says ` +
       `${JSON.stringify(LOADING_SITES)} = ${sitesSaysSites} and does NOT say ` +
       `${JSON.stringify(LOADING_PROJECTS)} = ${!sitesSaysProjects}; / says the second = ` +
       `${dashSaysProjects} and not the first = ${!dashSaysSites}. THE CONTROL IS THE PAIR — ` +
       `before this fix /sites had no boundary of its own and carried the dashboard's, which is ` +
-      `the state the second and fourth booleans exclude. The drawing agrees: the 16:10 image ` +
-      `band appears ${bandInDash} time(s) in the dashboard's body and ${bandInSites} in /sites', ` +
-      `whose card has no image on it. R-98`)
+      `the state the second and fourth booleans exclude. The drawing agrees, and it is a pair ` +
+      `both ways: the skeleton's 16:10 image band appears ${bandInDash} time(s) in the ` +
+      `dashboard's body and ${bandInSites} in /sites', and the skeleton's 40px monogram tile ` +
+      `${tileInSites} time(s) in /sites' and ${tileInDash} in the dashboard's. R-98`)
 
     /* FINDING 1: "the button does not says anything." Proved on SKIP rather than on Use your
        brand, deliberately: Skip writes nothing, so the assertion cannot disturb the row the
@@ -1624,7 +1650,12 @@ const shoot = async (page, name) => {
     await offer().click()
     await s2cHeading(page).waitFor()
     await page.evaluate(() => {
-      document.querySelector('input[type="hidden"][name="project_id"]').value = ''
+      // NAMED, NOT SWALLOWED. Without the field this step posts S2c's own real decision, which
+      // the cap ACCEPTS — so every assertion below would hold and the step would report "the
+      // stale decision wrote nothing" having never posted one (review, 2026-09-09).
+      const f = document.querySelector('input[type="hidden"][name="project_id"]')
+      if (!f) throw new Error('brand-stale: S2c drew no project_id hidden field to blank')
+      f.value = ''
     })
     const staleLanded = await pressAndLand(SAY.brand_use)
     const afterStale = await projectsOf()
@@ -1654,7 +1685,10 @@ const shoot = async (page, name) => {
     await s2cHeading(page).waitFor()
     await page.evaluate((id) => {
       const f = document.querySelector('input[type="hidden"][name="project_id"]')
-      if (f) f.value = id
+      // `if (f)` SKIPPED SILENTLY and the forgery never happened: the press then wrote the real
+      // decision, which is legal here, and every assertion below held anyway (review, 2026-09-09).
+      if (!f) throw new Error('brand-forged-project: S2c drew no project_id hidden field to forge')
+      f.value = id
     }, FORGED_PROJECT)
     const forgedProjectLanded = await pressAndLand(SAY.brand_use)
     const afterForgedProject = await projectsOf()
@@ -1934,6 +1968,14 @@ const shoot = async (page, name) => {
     // absent, the `preset === 'paper'` assertion below is the floor under execution: it can only
     // pass if `useBrand` put it there. `mode` still discriminates merge-from-replace, so the one
     // fixture now proves both halves.
+    //
+    // WHAT THIS FIXTURE STILL DOES NOT REACH, said plainly rather than left to be discovered:
+    // `linked_site_id` is absent, so the card draws neither label, and `BRAND_COPY.otherSite`
+    // ("Another site's project") is the one sentence in BRAND_COPY that NO step renders — delete
+    // the branch and the run stays green (review, 2026-09-09). Binding it needs a SECOND site of
+    // this account's alive at this point in the run, which the sequence above does not guarantee,
+    // so it is written here rather than faked; `thisSite`, the label the ruling turns on, IS
+    // asserted, by `brand-picker` and `brand-atcap-picker`.
     const second = (await insert('/projects', {
       user_id: USER_ID, name: 'Field Notes', slug: 'field-notes',
       style_pack: { mode: 'dark' },
@@ -2547,7 +2589,16 @@ def run_browser(cfg):
             # written, and this is the ONE case the retry count exists for — a run that hung —
             # so discarding it here threw away the number DW-68 is measured with
             # (review 3, 2026-09-08).
-            for line in (timed_out.stdout or '').splitlines():
+            #
+            # AND IT CARRIES THEM AS BYTES, `text=True` NOTWITHSTANDING: on POSIX the exception
+            # `run()` re-raises is the one `communicate()` built from its raw accumulator, before
+            # the decode. So `line.startswith('note:')` raised TypeError and killed the report
+            # this block exists to print — executed, 2026-09-09, and the whole reason it is
+            # written down: the only path that reaches here is a run nobody was watching.
+            hung = timed_out.stdout or ''
+            if isinstance(hung, bytes):
+                hung = hung.decode('utf-8', 'replace')
+            for line in hung.splitlines():
                 if line.lstrip().startswith('note:'):
                     print(f'  {line.strip()}')
             return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 1200s'}]
@@ -2649,7 +2700,11 @@ def main():
                     .api('GET', 'settings/')['settings']}
             seen[label] = [k for k in WANT if k not in rows] or 'all six present'
         except Exception as e:
-            seen[label] = f'{type(e).__name__}'
+            # THE CLASS ALONE IS NOT A REASON. `--check` is the pre-spend gate for the whole run,
+            # so a red one printing "HTTPError" and nothing else told the reader to go and
+            # reproduce it by hand (review, 2026-09-09). The message is truncated and no key can
+            # reach it: the credential rides in the Authorization header, never in the URL.
+            seen[label] = f'{type(e).__name__}: {str(e)[:120]}'
     keys_ok = all(v == 'all six present' for v in seen.values())
     failed = failed or not keys_ok
     print(f'  {"PASS" if keys_ok else "FAIL"}  settings-keys: GET /admin/settings/ read with '
@@ -2677,7 +2732,7 @@ def main():
             brand_seen[label] = ({'missing': missing_brand} if missing_brand
                                  else {'types': shapes, 'navigation': nav_shape})
         except Exception as e:
-            brand_seen[label] = f'{type(e).__name__}'
+            brand_seen[label] = f'{type(e).__name__}: {str(e)[:120]}'
     brand_ok = all(isinstance(v, dict) and 'missing' not in v and v['navigation'] in ('json-string', 'array')
                    for v in brand_seen.values())
     failed = failed or not brand_ok

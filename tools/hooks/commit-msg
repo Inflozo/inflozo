@@ -40,8 +40,23 @@ if [ -n "$key" ]; then
   epic=${key%%.*}
   num=${key#*.}
   spec=$(ls _bmad-output/implementation-artifacts/spec-"$epic"-"$num"-*.md 2>/dev/null | head -1)
+  # NO SPEC IS NOT A PASS. The two ways to fail this guard were inverted: a spec that reads
+  # anything but `issues` was blocked, while a spec that could not be FOUND — renamed, not yet
+  # created, a story key that is a typo — skipped the check entirely and got the board's "Fix
+  # your findings" with nothing filed, which is the exact event this hook was written for
+  # (review, 2026-09-09). Every story has a spec, so the absence is the anomaly.
+  if [ -z "$spec" ]; then
+    cat <<MSG
+COMMIT BLOCKED — "Story $key - Test - …" claims the owner just reported problems, but no spec
+matches _bmad-output/implementation-artifacts/spec-$epic-$num-*.md, so the claim cannot be checked.
+  - Story key a typo? Fix the subject.
+  - Prep for the owner's test (not a filed report)? Use the Deploy phase instead.
+MSG
+    exit 1
+  fi
   if [ -n "$spec" ]; then
-    ot=$(git show ":$spec" 2>/dev/null | sed -En "s/^owner_test:[[:space:]]*'?([a-z]*)'?.*/\1/p" | head -1)
+    # `["']?` — the frontmatter is hand-written and both quotings are valid YAML.
+    ot=$(git show ":$spec" 2>/dev/null | sed -En "s/^owner_test:[[:space:]]*[\"']?([a-z]*)[\"']?.*/\1/p" | head -1)
     if [ "$ot" != "issues" ]; then
       cat <<MSG
 COMMIT BLOCKED — "Story $key - Test - …" claims the owner just reported problems (the only event

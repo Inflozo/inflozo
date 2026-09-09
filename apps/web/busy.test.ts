@@ -20,6 +20,13 @@ import { join } from 'node:path'
 
 const APP = 'app/(app)'
 const AUTHED = 'app/(app)/app/(authed)'
+/* THE WALK HAS TO REACH `components/`, and the first writing of it did not — so the one control
+   in the repository that ALREADY had a busy state, `account-menu.tsx`'s Sign out, was the one
+   control this test could not see. Deleting its label and both aria attributes left the suite
+   green (review, 2026-09-09), in the test whose whole subject is that the pattern was never
+   lifted out of that file. The `submit.tsx` skip below is the tell: it names a path this walk
+   could never have produced. */
+const ROOTS = [APP, 'components']
 
 /** Every `.tsx` under the app, so a new surface is audited without being listed. */
 function tsxUnder(dir: string): string[] {
@@ -51,12 +58,17 @@ const SAYS_SOMETHING =
 
 test('every submit control says it is working', () => {
   const offenders: string[] = []
-  for (const file of tsxUnder(APP)) {
+  for (const file of ROOTS.flatMap(tsxUnder)) {
     // `Submit` is the control this rule is about; its own `type="submit"` is the implementation.
     if (file.endsWith('components/kit/submit.tsx')) continue
     const source = readFileSync(file, 'utf8')
+    const controls = [...source.matchAll(/type="submit"/g)].map((m) => m.index)
     for (const match of source.matchAll(/type="submit"/g)) {
-      const control = source.slice(match.index, match.index + WINDOW)
+      // AND THE WINDOW STOPS AT THE NEXT SUBMIT CONTROL, so a silent one cannot be credited with
+      // its neighbour's label — which is the very thing "a busy control from a busy neighbour"
+      // means where two of them sit close together (review, 2026-09-09).
+      const next = controls.find((i) => i > match.index)
+      const control = source.slice(match.index, Math.min(match.index + WINDOW, next ?? Infinity))
       if (SAYS_SOMETHING.test(control)) continue
       const line = source.slice(0, match.index).split('\n').length
       offenders.push(`${file}:${line}`)
@@ -101,6 +113,14 @@ test('the shared submit control refuses the second press and says why', () => {
 
 /** The routes deliberately without one, each with its reason, so it is a decision not an omission. */
 const NO_SKELETON: Record<string, string> = {
+  [join(APP, 'app', 'sign-in')]:
+    'not a list of cards but ONE card the page draws whole, and nothing stands above it: since ' +
+    'the route groups landed there is no loading.tsx anywhere on its path, so it inherits no ' +
+    'shape at all — which is what this rule is about. R-98\'s words are "every route the user ' +
+    'reaches", so it is recorded here rather than left outside the walk',
+  [join(APP, 'app', 'restore')]:
+    'the same, and it is reached only by the shell\'s own redirect for a pending account ' +
+    '(`deletion-rule.ts`\'s RESTORE_PATH); one card, no list, and no boundary above it',
   [join(AUTHED, 'kit')]:
     'the internal component gallery, reachable only by typing the path — a skeleton of every ' +
     'control for a page that IS every control is work nobody asked for. It now inherits NOTHING ' +
@@ -114,7 +134,7 @@ const NO_SKELETON: Record<string, string> = {
 
 test('a skeleton sits where it covers one route and no sibling', () => {
   const overreaching: string[] = []
-  for (const file of tsxUnder(AUTHED)) {
+  for (const file of tsxUnder(APP)) {
     if (!file.endsWith('/loading.tsx')) continue
     const dir = file.slice(0, -'/loading.tsx'.length)
     // Any page.tsx BELOW this directory is a route this boundary also stands over — which is how
@@ -134,7 +154,7 @@ test('a skeleton sits where it covers one route and no sibling', () => {
 
 test('every route the user reaches has a skeleton in its own shape', () => {
   const missing: string[] = []
-  for (const file of tsxUnder(AUTHED)) {
+  for (const file of tsxUnder(APP)) {
     if (!file.endsWith('/page.tsx')) continue
     const dir = file.slice(0, -'/page.tsx'.length)
     if (dir in NO_SKELETON) continue
@@ -151,7 +171,7 @@ test('every route the user reaches has a skeleton in its own shape', () => {
 })
 
 test('a skeleton draws the shape that is coming, never a spinner', () => {
-  for (const file of tsxUnder(AUTHED)) {
+  for (const file of tsxUnder(APP)) {
     if (!file.endsWith('/loading.tsx')) continue
     const source = readFileSync(file, 'utf8')
     // DESIGN.md § Loading is explicit: "Never a spinner."

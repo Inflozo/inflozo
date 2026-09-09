@@ -111,6 +111,12 @@ export default async function BrandOffer({
   // unavailable, and there was nothing to press again (review 4, 2026-09-09). The projects read
   // below has taken this position since review 2 and `sites/page.tsx` since 3.3 — "A FAILED READ
   // IS NOT AN EMPTY ACCOUNT" — and two reads in one `Promise.all` were answering it two ways.
+  // A MALFORMED ID IS NOT A FAILED READ. `?site=` is typed by whoever holds the URL, and an id
+  // that is not a uuid makes PostgREST answer `22P02 invalid input syntax` rather than an empty
+  // row — so a mangled link rendered `app/error.tsx`, "something went wrong", for a request that
+  // simply names nothing. There is no row it could be, which is what `notFound()` says
+  // (review, 2026-09-09).
+  if (rowError?.code === '22P02') notFound()
   if (rowError) readFailed('site', rowError.code)
   if (!row || !hasBrand(brand)) notFound()
 
@@ -120,9 +126,12 @@ export default async function BrandOffer({
   // for a page that cannot answer.
   if (projectsError) readFailed('projects', projectsError.code)
   const rows = projects ?? []
-  // At the cap the brand goes onto the project the customer most recently worked on; with room it
-  // goes onto the project already made for this site, and only when there is none is one made.
-  // `brandTarget` is that rule, shared with `useBrand` so the caption and the write cannot drift.
+  // THE PROJECT FOR THIS SITE WINS ON BOTH SIDES OF THE CAP (the owner's Question 4 ruling,
+  // 2026-09-08); only where this site has no project do the two sides differ — at the cap the
+  // most recently updated one, with room none at all, which is what makes one. `brandTarget` is
+  // that rule, shared with `useBrand` so the caption and the write cannot drift. (This comment
+  // said the cap always took the most recently updated row, which is what the code did BEFORE
+  // his ruling — review, 2026-09-09.)
   const capped = atCap(plan, rows.length)
   const target = brandTarget(capped, rows, row.id)
   // THE OWNER RULED THE CHOOSER (Question 3, 2026-09-08, and his A1/B1): ONE screen — the

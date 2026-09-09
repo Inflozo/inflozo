@@ -213,7 +213,7 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   **first** entry: a plain link to `/sites/brand?site={id}`, **not a Banner** (a Banner tells or
   asks; this offers). Shown while the site has a readable brand. **DW-57 binds**: the pills line
   stays metadata, the state line stays the connection's.
-- `apps/web/app/(app)/app/(authed)/sites/page.tsx:82-91` -- `site_settings` is **already selected**;
+- `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx:82-91` -- `site_settings` is **already selected**;
   the row type gains `brand` and passes it to `SiteNotices`. The projects tally at `:91` and
   `projectCounts` are what turn a seeded link into "1 project" on the card — no change needed.
 - `apps/web/csp.ts:60` -- **read-only evidence**: `img-src 'self' data: https:` already admits a
@@ -223,17 +223,57 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 - `supabase/migrations/20260904120000_complete_schema.sql:208-230` (`projects.style_pack`,
   `slug`, `linked_site_id`) and `:157` (`sites.site_settings`) -- **read-only evidence. No migration
   in this story.**
-- `apps/web/app/(app)/app/(authed)/page.tsx` -- **one line and its comment**: `.order('id')` breaks
+- `apps/web/app/(app)/app/(authed)/(dashboard)/page.tsx` -- **one line and its comment**: `.order('id')` breaks
   the dashboard's `updated_at` tie, because two projects saved in the same millisecond let S2c and
   `useBrand` name different rows and the press bounced for ever. The tie-break is real; the reason
   first written beside it — that it decides "the row the brand lands on" — was a reach and was
   narrowed at review 3. *(The Code Map named neither this file nor the next one until review 4.)*
+- **THE OWNER'S TEST ADDED A WHOLE SECOND SUBJECT TO THIS STORY (R-98), and the Code Map did not
+  follow it until review 6.** These files are the Fix of his two findings, and none of them is
+  about S2c:
+  - `apps/web/components/kit/submit.tsx` -- **new**: `Submit` (a Kit button with a **required**
+    `busy` label) and `useSubmitting()` (the busy half alone, for a control that is not a Kit
+    button). It is `account-menu.tsx`'s own pattern lifted out of the one file that had it.
+    `aria-disabled` and `aria-busy`, never `disabled`. *Review 6: the in-flight ref is claimed only
+    by a click that really submits — the release runs on `pending` falling, so a click the form
+    refuses or a caller cancels left the ref set and the control inert for good, and `Submit` now
+    calls the caller's `onClick` first so a cancelled click is visible to the guard.*
+  - `apps/web/busy.test.ts` -- **new**: the auditor for both findings, deriving its subjects from
+    the tree so a new form or route is covered the day it lands. *Review 6: it walked `app/(app)`
+    only, so `components/` — where the one control that ALREADY had a busy state lives — was
+    unaudited and its removal shipped green; the walk is now `app/(app)` **and** `components`, the
+    window ends at the next submit control, and the route tests walk the whole app with
+    `sign-in` and `restore` recorded in `NO_SKELETON` beside `kit` and `sites/connect`.*
+  - `apps/web/app/(app)/app/(authed)/(dashboard)/loading.tsx` ·
+    `sites/(list)/loading.tsx` · `sites/brand/loading.tsx` · `account/loading.tsx` -- one skeleton
+    per route in that route's own shape, and the two **route groups** that scope them: a
+    `loading.tsx` stands over every child segment with none of its own, so `(authed)/loading.tsx`
+    drew project cards over Sites and Account. `(dashboard)/` and `sites/(list)/` are
+    path-transparent — the build's route table is byte-identical.
+  - `apps/web/app/(app)/app/(authed)/project-menu.tsx` -- Duplicate closes the menu when the
+    duplicate **lands**, not when it is pressed, and says `Duplicating…` meanwhile. *Review 6: the
+    scope's `pending` is shared by every card, so a sibling menu opened mid-flight was shut by the
+    landing and a sibling item read "Duplicating…" about a card nothing was duplicating; the label
+    and the close are now the pressing card's, while the aria attributes stay on the scope,
+    because `arm()` really does refuse the sibling press.*
+  - `apps/web/components/shell/account-menu.tsx` · `apps/web/app/(app)/app/restore/page.tsx` ·
+    `sites/site-notices.tsx` -- the three files whose controls moved onto the shared pattern.
+  - `tools/hooks/commit-msg` -- a `Test`-phase commit is a claim (the owner reported problems), so
+    it is refused unless the spec reads `owner_test: issues`. *Review 6: a story whose spec cannot
+    be FOUND is now refused too — that case skipped the guard silently, which is the event the
+    hook was written for.*
+  - `DESIGN.md` § Loading · `EXPERIENCE.md` § State Patterns (the in-flight column) ·
+    `reconcile-designs-decisions.md` §A21 (R-98) · `docs/project-context.md` -- **the durable
+    half**: the rule where a future story reads it, which is what he asked for twice.
 - `tools/story-board.py` -- **not this story's screen, but this story's diff, and it changes the
   board for EVERY story**: `REAL_SERVICE` learns the production domains, so a Verification that names
   `app.inflozo.com` is no longer told it named no real service (found on this story at review 3) —
   **anchored at review 4**, because the first writing of it also matched `owner@inflozo.com`; and
   `question_blocks` requires a blank line before a heading, so a wrapped prose line beginning
-  "Question 1" stops starting a block. `demo()` carries a case for each, both directions.
+  "Question 1" stops starting a block. `demo()` carries a case for each, both directions. *Review 6
+  adds two more: `REAL_SERVICE` is case-insensitive, because prose capitalises a domain at the start
+  of a sentence and the pill it feeds is amber by default; and `dup_dw_ids` fails the gate when a
+  `DW-` id is used twice, which had just happened inside this one story.*
 - `tools/probe/run-verify-ghost-admin.py` -- the `connect` step's landing assertion moves to
   `/sites/brand`; the story's own steps, **in the order the run emits them** (the docstring is the
   list and it is derived from the source, never retyped): `brand-keys` (the **integration** key's
@@ -355,6 +395,19 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   every step in its docstring passes in order, `brand-keys` included
 - Given `ADMIN_WRITES`, when this story is finished, then it is **unchanged** and
   `announcement_clear` has still never been called
+- **(R-98, the owner's test of this story, 2026-09-09 — added at review 6 to the story that made
+  the rule.)** Given any control in the app that starts work, when it is pressed, then its label
+  swaps to the present tense and it goes `aria-disabled` and `aria-busy` — never `disabled`, which
+  drops the control the user is waiting on out of the tab order — until the work lands; and
+  `apps/web/busy.test.ts` fails on a submit control that does not, walking `app/(app)` **and**
+  `components` so the pattern's own home is audited too. Proved live by the harness's `busy-label`,
+  which HOLDS the POST and reads the button inside the hold
+- **(R-98's other half.)** Given any route the user reaches, when it is loading, then it draws a
+  skeleton in **its own** shape and never a spinner, and no `loading.tsx` stands over a route that
+  is not its own; a route deliberately without one is recorded in `NO_SKELETON` with its reason, so
+  it is a decision and not an omission. Proved live by `skeleton-shape`, which reads the streamed
+  document of `/` and of `/sites` and asserts each carries its own sentence **and its own fallback
+  drawing** and not the other's
 
 ### Review Findings
 
@@ -850,6 +903,149 @@ one. Sites connected before 3.4 carrying no `brand` key — `probeSite` is the s
 connect, **Re-check plan** and 3.7's cron, so it backfills; and no customer pre-dates this story.
 Three harness null-guards (`beforeRerun[0]`, `secondId`, `brand-stale`'s hidden field) — the states
 that would trip them are excluded by construction at those points in the run.
+
+### Review Findings — sixth review, 2026-09-09
+
+The first review of this story since the owner tested it, so **the subject is the Fix of his two
+findings (R-98) as much as it is S2c**: five layers (blind hunter, edge-case hunter,
+verification-gap, acceptance auditor, real-infra), 21 findings after dedup, 18 patched, 1 deferred,
+9 dismissed with reasons, **none for the owner** — his six questions all carry a `Ruled:` line and
+no fix here needed a decision that is his. **Three layers independently demonstrated the same
+thing: the auditor written to make his findings un-repeatable could not see the file the pattern was
+lifted from.**
+
+- [x] [Review][Patch] **`busy.test.ts` walked `app/(app)` and nothing else, so the one control in
+      the repository that ALREADY had a busy state was the one control it could not audit.**
+      `components/shell/account-menu.tsx`'s Sign out — the file this whole pattern was lifted out
+      of — sits under `components/`, a sibling of `app/`. Its skip line (`if
+      (file.endsWith('components/kit/submit.tsx')) continue`) named a path the walk could never
+      produce, which is the tell. Executed both ways: with the label and both aria attributes
+      deleted the suite stayed **5/5 green**, and after the patch it goes red naming
+      `components/shell/account-menu.tsx:293`. Three layers reached it. The window also now ends at
+      the **next submit control**, so a silent one cannot be credited with its neighbour's label
+      [apps/web/busy.test.ts]
+- [x] [Review][Patch] **`useSubmitting()`'s in-flight ref could latch for good — the same failure
+      the release was added to prevent, from the other side.** `guard` sets the ref on **click**
+      and the release runs on `pending` falling, so any click that never submits (a form's own
+      constraint validation, a caller's `preventDefault`) leaves it set and every later press is
+      refused: the control is inert until remount. Today's four call sites have no validated field
+      and no cancelling `onClick`, which is why nothing met it — but this is the Kit primitive
+      every future form reaches. The slot is now claimed only by a click that really submits, and
+      `Submit` calls the caller's `onClick` **first** so a cancelled click is visible to the guard.
+      Two layers [apps/web/components/kit/submit.tsx]
+- [x] [Review][Patch] **`TimeoutExpired.stdout` is BYTES even under `text=True`, so the one block
+      that exists to report a hung run raised `TypeError` instead.** On POSIX the exception
+      `subprocess.run` re-raises is the one `communicate()` built from its raw accumulator, before
+      the decode — executed here, not reasoned: `line.lstrip().startswith('note:')` dies. The only
+      path that reaches this block is a run nobody was watching, and it is where DW-68's retry
+      count is measured [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **Both forgery steps passed for the wrong reason if S2c drew no hidden
+      field** (standing rule 2). `brand-stale` blanked `…project_id` with no null check and
+      `brand-forged-project` skipped silently on `if (f)` — and in that state the press posts S2c's
+      own real decision, which the cap **accepts**, so every assertion below still held and each
+      step reported that a stale or forged decision wrote nothing having never posted one. Both
+      now throw a named error [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **`skeleton-shape`'s drawing half could not fail, and its comment claimed the
+      opposite.** `aspect-[16/10]` is in `placeholder.tsx` — the REAL project card — as well as in
+      the dashboard's skeleton, and `brand-seed` has made a project by the time this step runs, so
+      `bandInDash > 0` was satisfied by the finished page whether the fallback was drawn or
+      deleted. It matches the fallback's own class pair now, and the site skeleton's 40px monogram
+      tile is counted **both ways**, so each route's drawing is asserted present on its own route
+      and absent on the other [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **`DW-72` was assigned twice, both times by this story** — review 3's "two
+      sites with the same Ghost title" and the Fix's `brand-ownership` flake, which also sits after
+      DW-73. An id is an identity: every cite and every sweep that keys on one resolves to whichever
+      entry it meets first. Renumbered to **DW-74**, the Fix record's cite corrected, and
+      `story-board.py --check` now fails the gate on a repeated id — executed as a control, exit 2
+      with the id named. Two layers [deferred-work.md, tools/story-board.py]
+- [x] [Review][Patch] **The harness docstring still described a file this same diff deletes.**
+      "`(authed)/loading.tsx` is a Suspense boundary over the whole group" is `brand-none`'s reason
+      for asserting the page rather than the status — and the step's own inline comment was
+      rewritten to the true reason (`/sites/brand` has its own boundary) in the same commit that
+      left the docstring saying the old one. Propagate, never localise, missed inside one commit
+      for the second time in this story. Two layers [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **The same dead claim, propagated into the generated catalogue**, where it is
+      rendered into `INDEX.md` and is now false for `/kit` and `/sites/connect`, which have no
+      boundary at all [tools/doc-audit.py]
+- [x] [Review][Patch] **The doc-audit harness row named none of the steps the owner's test added** —
+      `busy-label`, `skeleton-shape`, `skeleton-soft-nav` and `brand-forged-project`, all four
+      emitted by the run — which is verbatim the defect review 3 patched on the same row [tools/doc-audit.py]
+- [x] [Review][Patch] **`skeleton-soft-nav` is a step the run prints and the docstring listed it
+      only as prose inside another step's paragraph** — the fourth time one bullet of this list has
+      gone stale (omission at review 2, omission at review 4, order at review 5). It has its own
+      entry now, in emission order [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **The Code Map and the Acceptance Criteria did not describe the Fix at all** —
+      in the story that CREATED R-98. Neither `submit.tsx`, `busy.test.ts`, the four `loading.tsx`,
+      the two route-group moves, `project-menu.tsx`, `account-menu.tsx`, `commit-msg` nor the three
+      spine documents appeared, two bullets still cited paths the route groups moved, and R-98's own
+      rule — "any story with a screen carries both as acceptance criteria" — was carried by no
+      criterion here. Both sections now do [this spec]
+- [x] [Review][Patch] **Three load-bearing comments still stated the rule the owner's Question 4
+      ruling replaced** — "at the cap, the most recently updated project" — beside the two call
+      sites of `brandTarget`, whose own header says the site's project wins on both sides of the
+      cap. The behaviour was right; the comments beside it said the opposite
+      [sites/brand/page.tsx, sites/actions.ts ×2]
+- [x] [Review][Patch] **A `Test`-phase commit for a story whose spec cannot be found skipped the new
+      guard silently** — the two failure modes were inverted: a spec reading anything but `issues`
+      was blocked, a spec that could not be found was waved through, which is the event the hook was
+      added for. Controls run both ways: `Story 3.3 - Test` blocked, `Story 9.9 - Test` (no spec)
+      blocked, `Story 3.4 - Test` and `Story 3.4 - Deploy` pass [tools/hooks/commit-msg]
+- [x] [Review][Patch] **The project menu's Duplicate is the SCOPE's `pending`, shared by every
+      card.** On a dashboard with more than one project, opening card B's menu while A was
+      duplicating had B's own effect shut it the moment A landed, and B's item read `Duplicating…`
+      about a card nothing was duplicating — a control saying something untrue, in the fix for a
+      finding about controls saying nothing. The label and the close are the pressing card's now;
+      the aria attributes stay on the scope, because `arm()` really does refuse B's press. Two
+      layers [apps/web/app/(app)/app/(authed)/project-menu.tsx]
+- [x] [Review][Patch] **A malformed `?site=` rendered the crash screen rather than the not-found
+      page.** An id that is not a uuid makes PostgREST answer `22P02` rather than an empty row, and
+      review 4's "a failed read is not an absence" then sent a mangled link to `app/error.tsx`.
+      There is no row it could be, which is what `notFound()` says [sites/brand/page.tsx]
+- [x] [Review][Patch] **Two steps pinned on a 60-second clock**, and one of the review's own three
+      runs went red on it with nothing wrong with the build: `Checked just now` had rolled to
+      "Checked 1 minute ago", `brand-skip` failed with the wrong step named, and the `card` step's
+      locator then waited 30s for the gone string and killed the run. What both steps mean is "this
+      run's probe stamped it", which is what they match now [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **`--check`'s two live Ghost reads recorded the exception CLASS and threw the
+      message away**, so the pre-spend gate for the whole run went red printing `HTTPError` and
+      nothing a reader could act on. The message is truncated and carries no key: the credential
+      rides in the Authorization header [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] Two smaller ones, both wording beside code: `REAL_SERVICE` was
+      case-sensitive, so a spec naming the live site at the start of a sentence still drew the amber
+      "named no real service" pill; and `useBrand`'s naming comment claimed a "Untitled project"
+      fallback for a name that SLUGS to nothing, which is a path it never takes — that name keeps
+      itself and takes `slugify`'s own `project` fallback [tools/story-board.py, sites/actions.ts]
+
+- [x] [Review][Defer] **`BRAND_COPY.otherSite` is the one sentence in `BRAND_COPY` that no step
+      renders** — delete the branch and the run stays green. Reaching it needs a second site of the
+      caller's alive at that point in the run, which the sequence does not guarantee, so it is
+      **recorded where the fixture is inserted** rather than faked. `thisSite`, the label both
+      rulings turn on, is asserted by `brand-picker` and `brand-atcap-picker`
+      [tools/probe/run-verify-ghost-admin.py]
+
+**Two survivals of the fifth review's own patch, recorded and not edited.** That review's
+"the FIFTH reader" finding says the number "is gone from all four" — it survives in
+`MEASUREMENTS.md` §40 and in this spec's own frozen `## Intent`, while `probe-rule.ts` now says
+**fourth**. Both are places this review may not rewrite (a `record` document, and a
+`frozen-after-approval` block), so the correction is this line: **the readers that take the flat
+record `settingsOf` builds are four** — `injectionFlag`, `portalState`, `announcementOf`, `brandOf`.
+It is the standing-rule-7 miss the original finding invoked, closed the only way it can be.
+
+**Dismissed, with the reason.** `stylePackSchema`'s `brand: z.unknown().optional()` called a dead
+field — it is deliberate and the file says why: it gives consumers the type without making a junk
+`brand` fail the whole parse and lose the preset with it. The chooser's unbounded card list —
+dismissed at reviews 3 and 5 for the reason that has not changed, a customer's own data is not a
+payload. `icon` and `cover` stored with no reader — **DW-71**. A customer logo URL that 404s
+drawing a broken glyph with no monogram behind it — real, and the fallback needs a client component
+for one `onError`, which is more machinery than the case earns while `img-src` already excludes
+everything but `https:`. `NO_SKELETON` keys not asserted to name real directories — a moved route
+falls out of the exemption and is then reported missing by the test beside it, which is the safe
+direction. `hidePopover()` on a closed popover claimed to throw `InvalidStateError` — **executed
+rather than argued**: through the harness's own Playwright (Chromium), the call on a
+`popover="auto"` element that is NOT showing returned `no-throw`, and so did the same call while it
+was showing. Check-popover-validity returns false for an unexpected visibility state and throws only
+for an element with no `popover` attribute, so the comment in `project-menu.tsx` was right — and the
+finding built beside it, the shared scope one above, was real and is patched. `brand-ownership`'s landing control — **DW-74**, above.
 
 ## Spec Change Log
 
@@ -1706,7 +1902,11 @@ mistake cannot recur.
   slot, which no run had ever drawn, off a fixture row patched through the service role and put back
   in a `finally` — no Ghost is written) and **`brand-failed-line`** (the `&failed=1` sentence
   printed with the flag and absent without it) — and the ruling's own **`brand-atcap-picker`** (downgraded to Free with two
-  projects: at the cap AND with a choice, the ticked card is the project for this site). Axe reports zero violations at 1440 and 390 on both S2c states. **This story
+  projects: at the cap AND with a choice, the ticked card is the project for this site) — and **the
+  owner's test's own three, plus the fifth review's**: **`busy-label`** (the POST held, the pressed
+  button read inside the hold), **`skeleton-shape`** (each route's streamed document carrying its
+  own loading sentence and its own fallback drawing), **`skeleton-soft-nav`** (recorded, never
+  asserted) and **`brand-forged-project`**. Axe reports zero violations at 1440 and 390 on both S2c states. **This story
   writes to no Ghost** — the only step that ever did, `injection-live`, is 3.3's and is unchanged
 - `git grep -n 'announcement_clear'` -- expected: `admin-rule.ts` and its test only; no caller
 
@@ -1735,7 +1935,7 @@ confirmed through the Vercel API to be serving `323a4447` (`dpl_7kGkPnpFsqbwupAy
 | `pnpm check` (`eslint .`, `pnpm -r typecheck`, `node --test`) | **exit 0**, 235 tests in `apps/web` — the five in the new `busy.test.ts` among them — plus 1 in each of the three packages |
 | `pnpm build` (`next build`) | **exit 0**, and the route table is **byte-identical to before the route-group move**: `/app`, `/app/sites`, `/app/sites/brand`, `/app/sites/connect`, `/app/account`, `/app/kit` all still there and still `ƒ`. That is the proof `(dashboard)/` and `sites/(list)/` changed no URL |
 | `python3 tools/doc-audit.py --check` (twice) | **PASS, 0 warnings** on both passes |
-| `node --test busy.test.ts` against the tree the owner tested | **3 of 5 red, naming the files he was looking at** — `sites/brand/page.tsx` and `sites/site-notices.tsx` for the buttons, and `account`, `sites` and `sites/brand` for the skeletons. Run against the half-fix (`4363ff02`) the boundary-scope test is red too, naming `(authed)/loading.tsx` as covering five routes and `sites/loading.tsx` as covering two. **This is the control**: the tests fail on the code that produced the findings and pass on the code that fixes it |
+| `node --test busy.test.ts` against the tree the owner tested | **4 of 5 red, naming the files he was looking at** *(written here as 3; the sixth review re-ran the ladder across all four commits and the fourth red is "the shared submit control refuses the second press", `components/kit/submit.tsx` not existing yet — an undercount of its own control, corrected 2026-09-09)* — `sites/brand/page.tsx` and `sites/site-notices.tsx` for the buttons, and `account`, `sites` and `sites/brand` for the skeletons. Run against the half-fix (`4363ff02`) the boundary-scope test is red too, naming `(authed)/loading.tsx` as covering five routes and `sites/loading.tsx` as covering two. **This is the control**: the tests fail on the code that produced the findings and pass on the code that fixes it |
 
 ### The deployed site — `python3 tools/probe/run-verify-ghost-admin.py` against `app.inflozo.com`
 
@@ -1790,7 +1990,8 @@ because the next session should not rediscover it:
   The recording added to the step paid for itself on run 8: the press lands on
   `/sites/brand?site=<the stranger's id>` with **`<main>` empty**, because Next's default not-found
   page replaces the route rather than filling the landmark — so the sentence the control waits for
-  is outside `main`, and what varies is when it appears. Carried as **DW-72** with that line, so
+  is outside `main`, and what varies is when it appears. Carried as **DW-74** with that line (written
+as DW-72, an id DW-71's own review had already spent; renumbered at review 6, 2026-09-09), so
   whoever picks it up starts from a measurement rather than a theory.
 
 ## Dev record — what was executed, and what each service answered (R-82)

@@ -40,6 +40,15 @@ import { Button } from './button'
  * the only control that can retry inert for good (review, 2026-09-06). React queues form actions,
  * so without the ref one impatient double tap sends two — the New project sheet made three rows
  * from three submits in one tick before it got one.
+ *
+ * AND ONLY A CLICK THAT REALLY SUBMITS MAY CLAIM THE SLOT. The release runs on `pending` falling,
+ * so a click that never turns `pending` true never releases: the ref stays set and the control is
+ * inert for good — the exact failure the release was added to prevent, reached from the other
+ * side (review, 2026-09-09). Two clicks do that, and neither is exotic in a Kit primitive every
+ * future form reaches: one the form refuses on its own constraints, and one a caller cancels.
+ * Today's four call sites have no validated field and no cancelling `onClick`, which is why
+ * nothing had met it; `Submit` calls the caller's `onClick` FIRST so `defaultPrevented` is
+ * already true here when it cancels.
  */
 export function useSubmitting() {
   const { pending } = useFormStatus()
@@ -50,7 +59,15 @@ export function useSubmitting() {
   return {
     pending,
     guard: (event: MouseEvent<HTMLElement>) => {
-      if (inFlight.current) event.preventDefault()
+      if (inFlight.current) {
+        event.preventDefault()
+        return
+      }
+      if (event.defaultPrevented) return
+      // `noValidate` first: it suppresses the browser's block, so such a form submits with an
+      // invalid field and the slot is genuinely claimed (`email-card.tsx` is that shape).
+      const form = event.currentTarget.closest('form')
+      if (form && !form.noValidate && !form.checkValidity()) return
       inFlight.current = true
     },
   }
@@ -77,9 +94,11 @@ export function Submit({
       type="submit"
       aria-disabled={pending || undefined}
       aria-busy={pending || undefined}
+      /* The caller's handler runs BEFORE the guard so a cancelled click cannot claim the
+         in-flight slot — see `useSubmitting`. Nothing here reads what the guard sets. */
       onClick={(event) => {
-        guard(event)
         onClick?.(event)
+        guard(event)
       }}
     >
       {pending ? busy : children}

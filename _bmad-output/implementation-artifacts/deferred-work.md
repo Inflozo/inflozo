@@ -1812,7 +1812,7 @@ reason: Both are append-only by construction — every story adds its findings t
   generator, so it belongs to a story that owns those files rather than to a review of one story
   that appended to them.
 
-### DW-72: `brand-ownership`'s "the press landed" control is unreliable, while the claim under it is not
+### DW-74: `brand-ownership`'s "the press landed" control is unreliable, while the claim under it is not
 
 plain: A safety test that proves nobody can put your brand on someone else's site still passes every
   time. What is flaky is only the part that checks the button press reached the server at all, so the

@@ -570,7 +570,9 @@ type BrandSite = {
  * THE OWNER RULED THE AT-CAP PATH (Question 1, option 1, 2026-09-08) AND THE SCREEN SAYS WHICH
  * PROJECT IT WILL BRAND BEFORE THE PRESS. S2c counts the caller's projects and prints, under the
  * button, either "we'll make one" or the name of the project that will be branded instead — the
- * most recently updated one. That decision rides in a hidden field, and THIS RE-COUNTS IT: a
+ * project for this site where there is one, and otherwise the most recently updated (his
+ * Question 4 ruling, 2026-09-08, which this line still described the way the code read before
+ * it — review, 2026-09-09). That decision rides in a hidden field, and THIS RE-COUNTS IT: a
  * second tab that filled the cap between the render and the press would otherwise rebrand a
  * project the screen never named. `refusedAtCap` in `projects/actions.ts` is the precedent — the
  * page's count can be one tab out of date, so the answer is to re-render, not to act.
@@ -659,8 +661,9 @@ export async function useBrand(formData: FormData): Promise<void> {
   if (picked) {
     // ONTO THE PROJECT THE SCREEN NAMED OR THE CUSTOMER CHOSE, and NOTHING ELSE about it moves —
     // not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. THREE ways to
-    // be here and the write is the same: AT THE CAP the most recently updated project (the
-    // owner's Question 1 ruling), WITH ROOM the project already made for this site — the second
+    // be here and the write is the same: AT THE CAP the project for this site, or the most
+    // recently updated one where this site has none (Questions 1 and 4), WITH ROOM the project
+    // already made for this site — the second
     // press of an offer that never retires — or, where there was more than one to choose between,
     // the card he picked (Question 3). `linked_site_id` is deliberately untouched in all three:
     // FR-B5 allows a project at most one site, and a chooser that silently re-pointed a project
@@ -694,7 +697,11 @@ export async function useBrand(formData: FormData): Promise<void> {
   } else {
     // WITH ROOM: a project for the site, named after it. `lib/projects.ts`'s own rules give it its
     // name and slug — a Ghost title longer than the field allows is clamped, a site with no title
-    // falls back to its host, and a host that slugs to nothing falls back to "Untitled project".
+    // falls back to its host, and only when there is NO name at all does `nextUntitled` run.
+    // A name that survives but SLUGS to nothing (a Ghost title in CJK, or emoji alone) keeps its
+    // name and takes `slugify`'s own 'project' fallback, which `uniqueSlug` then makes unique —
+    // the comment said "Untitled project" for that case too, which is a path it never takes
+    // (review, 2026-09-09).
     // The SAME host S2c showed the customer — `public_url` where Ghost gave one, which on
     // Ghost(Pro) is not the admin domain the row's `url` holds.
     const shown = hostOf(site.site_settings?.public_url || site.url)

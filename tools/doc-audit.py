@@ -407,9 +407,9 @@ DOCS = [
   "forges a SECOND account's site id into a notice form and proves the row does not move: the four "
   'new actions write under the service role, so one .eq(user_id) inside the action is the whole '
   'guard between two accounts and nothing had ever executed it. STORY 3.4 ADDED FR-C4\'s BRAND: '
-  'brand-keys re-executes, in both modes, that the keys BRAND_KEYS names — the brand reader takes '
-  'them off the same '
-  'settings payload are really there on both majors and records the CONTAINER of each — navigation '
+  'brand-keys re-executes, in both modes, that the keys BRAND_KEYS names (the brand reader takes '
+  'them off the same settings payload the announcement reader already reads) are really there on '
+  'both majors, and records the CONTAINER of each — navigation '
   'is a JSON string, as announcement_visibility is (MEASUREMENTS §40) — and a connect whose site '
   'has a brand now lands on S2c rather than the list, so every connect in the run passes through '
   'it. brand-screen reads S2c against the row the probe just wrote (the swatch really painted in '
@@ -423,8 +423,10 @@ DOCS = [
   'presses the offer a SECOND time on Pro — the one state in the run with room to spare, and until '
   'the review of 2026-09-08 the one that made a second project for the same site — and brand-none '
   'proves a site with nothing to offer draws no link and renders the NOT-FOUND page, as does a '
-  '?site= naming a row no account carries (the HTTP status is 200 on every (authed) route: '
-  'loading.tsx is a Suspense boundary over the group, measured rather than excused, DW-67). '
+  '?site= naming a row no account carries (the HTTP status is 200 because /sites/brand has its '
+  'OWN loading.tsx since R-98 and the shell has streamed before notFound() throws — the '
+  'group-wide (authed)/loading.tsx that used to be the reason is gone; measured rather than '
+  'excused, DW-67 amended). '
   'brand-picker drives the owner\'s Question 3 ruling — with more than one project the second '
   'press ASKS instead of telling and draws a card per project carrying that project\'s own 64x44 '
   'wireframe in its own Style-Pack colours (FR-B1\'s placeholder, no preview claimed), the card '
@@ -458,6 +460,18 @@ DOCS = [
   'a REDECLARATION and not the shadowing class beside it — a block-scoped const that puts an '
   'earlier caller in its temporal dead zone is valid syntax and node --check exits 0 on it, '
   'executed rather than assumed (review 3, 2026-09-08). '
+  "STORY 3.4's OWNER TEST ADDED R-98's OWN TWO, and brand-forged-project with them: busy-label "
+  'HOLDS the POST and reads S2c\'s pressed button inside the hold — it swaps to the app\'s own '
+  'busy sentence with aria-busy and aria-disabled and never disabled, while the button in the '
+  'OTHER form is untouched, which is useFormStatus being a form\'s status and not a page\'s; '
+  "skeleton-shape reads the STREAMED DOCUMENT of / and of /sites and asserts each carries its own "
+  'loading sentence and its own fallback drawing and NOT the other\'s — the pair is the control, '
+  'because before the route groups /sites streamed the dashboard\'s project cards; '
+  'skeleton-soft-nav RECORDS, and deliberately does not assert, the path a sidebar press takes '
+  'between two commits; and brand-forged-project posts a project_id the caller does not carry and '
+  "proves nothing is written — the !picked half of useBrand's guard, which every step that "
+  'presses a real button walks past, and with the clause gone the post makes a project past the '
+  'Free cap. '
   'Note that --check is no longer '
   'plumbing alone — it re-executes settings-keys and brand-keys against both live Ghosts, so it '
   'needs every key the full run does, the two staff tokens included; it still starts no browser '
@@ -661,11 +675,12 @@ DOCS = [
   'The block bmad-build, bmad-build-auto, bmad-code-review and the planning skills load as persistent '
   'facts on every run (their customize.toml lists `file:{project-root}/**/project-context.md`; the '
   'file\'s own header names every one). '
-  "Carries the owner's rulings R-80 to R-84 as instructions the skills obey — commit after every "
+  "Carries the owner's development-loop rulings, R-80 onward, as instructions the skills obey "
+  "— commit after every "
   'phase, review on the real infrastructure, every question in plain English with options, the owner '
   'tests every screen himself, the story board is the tracker — plus where things are and the known '
   'pitfalls. Edit the block, never the skills; the numbers in it cite reconcile-designs-decisions.md.'),
- ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds R-80 to R-84',
+ ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds the development-loop rulings',
   'The override BMAD merges into bmad-build at run time: states the four rules before the first plan '
   "step, requires the spec's three owner-facing sections and `owner_test: pending` for any story with a "
   'screen, adds the Real-infra verifier review layer (R-82), and ends every run by regenerating the '
@@ -723,7 +738,7 @@ GROUPS = [
   'There is no bypass: --no-verify is denied in .claude/settings.json.'),
  ('_bmad/custom/', 'tool', 'BMAD configuration and skill overrides',
   "The project's BMAD configuration (config.toml) and the per-skill team overrides (`<skill>.toml`) "
-  "BMAD merges at run time. The three that bind the owner's rulings R-80 to R-84 are catalogued "
+  "BMAD merges at run time. The three that bind the owner's development-loop rulings are catalogued "
   'individually. A `*.user.toml` beside them is a personal copy, gitignored by BMAD convention, and '
   'never catalogued: the inventory comes from git, so an ignored file never enters it.'),
  ('ux-designs/frames.py', 'tool', 'The frame lifter — shared by both step-5 builds',
@@ -848,7 +863,7 @@ def inventory():
     """Every document under BASES as git sees it: tracked files plus untracked ones git does not
     ignore. A gitignored file — a personal `*.user.toml`, the generated theme, a key file — never
     enters the catalogue or a group's count, and a new file still needs its row before it is
-    committed. docs/ and _bmad/custom/ are walked because the owner's rulings R-80 to R-84 are bound
+    committed. docs/ and _bmad/custom/ are walked because the owner's development-loop rulings are bound
     inside the BMAD skills through them. The hooks in tools/hooks/ have no extension and are kept."""
     ls = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '--', *BASES],
                         cwd=ROOT, capture_output=True, text=True).stdout.splitlines()

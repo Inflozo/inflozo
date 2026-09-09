@@ -162,13 +162,28 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
   // appeared. It is the same rule the two dialogs above already follow ("a dialog closes when its
   // action succeeded"), on the one control here that is a popover rather than a dialog.
   //
-  // `pending` is the SCOPE's, shared by every card's menu, and that is harmless: `popover="auto"`
-  // means only one is ever open, and `hidePopover()` on a closed popover does nothing.
+  // `pending` is the SCOPE's — one action for the whole grid — so it is true in EVERY card's menu
+  // while any one card is duplicating, and this had to be narrowed to the card that pressed
+  // (review, 2026-09-09). Two consequences, both on a dashboard with more than one project:
+  // opening card B's menu while A was in flight had B's own effect shut it the moment A landed,
+  // and B's item read "Duplicating…" about a card nothing was duplicating. `mine` is state and
+  // not a ref because the LABEL reads it. The aria attributes stay on the scope's `pending`,
+  // because `arm()` really would refuse B's press while A is running — that half is true of
+  // every card, and it is the refusal rather than the work.
+  //
+  // THE EDGE IS STILL WHAT CLOSES IT, and that is not decoration: `pending` turns true on the
+  // render AFTER the dispatch, so "mine and not pending" is momentarily true the instant this
+  // card presses — which would close the menu at the press again, the very thing the owner
+  // reported. The ref makes the close wait until a duplicate has actually been in flight.
+  const [mine, setMine] = useState(false)
   const wasDuplicating = useRef(false)
   useEffect(() => {
-    if (wasDuplicating.current && !duplicate.pending) close()
+    if (mine && wasDuplicating.current && !duplicate.pending) {
+      setMine(false)
+      close()
+    }
     wasDuplicating.current = duplicate.pending
-  }, [duplicate.pending])
+  }, [mine, duplicate.pending])
 
   /** The menu is a popover and has to go before the modal opens; the rest is `kit/dialog.ts`. */
   const open = (dialog: HTMLDialogElement | null) => {
@@ -243,6 +258,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
             action={duplicate.action}
             onSubmit={(event) => {
               if (!duplicate.arm()) event.preventDefault()
+              else setMine(true)
             }}
           >
             <input type="hidden" name="id" value={id} />
@@ -258,7 +274,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
               <span className="shrink-0 text-ink-soft">
                 <Copy size={15} />
               </span>
-              {duplicate.pending ? 'Duplicating…' : 'Duplicate'}
+              {mine && duplicate.pending ? 'Duplicating…' : 'Duplicate'}
             </button>
           </form>
         )}
