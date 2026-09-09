@@ -2768,10 +2768,36 @@ Read in source (Ghost 6.54.1, local checkout): `core/server/services/auth/api-ke
 mints ("Max 5 minutes after 'now'").
 
 **So "your Admin key expired" is a failure that does not exist.** The real causes are: the key was
-regenerated or the integration deleted in Ghost Admin (401 `Unknown Admin API Key`), or Inflozo
-mis-signed the JWT (401 `Invalid token`, a bug of ours, never the user's). Propagated: `prd.md`
+regenerated or the integration deleted in Ghost Admin (401 `Unknown Admin API Key`), **or the key was
+issued by a DIFFERENT Ghost install (the same 401 `Unknown Admin API Key`)**, or Inflozo mis-signed
+the JWT (401 `Invalid token`, a bug of ours, never the user's). Propagated: `prd.md`
 Appendix H's example, `EXPERIENCE.md`'s voice table, prompt A7 item 11 (S8d′ and S11a), AD-24's
 mapping owes one row per code.
+
+**The third cause, added 2026-09-09 and executed on both majors.** It follows from the source read
+above and was assumed away for a whole story before anyone ran it. `models.ApiKey.findOne({id:
+apiKeyId})` looks the key up by id in `api_keys`, and that table has **no domain, url, site or install
+column** — Ghost's own `url` is a config-file value, not a database one. So "does this key belong to
+this install" is decided entirely by *which database the request reaches*, and a key from another
+install is indistinguishable from a key that was never issued. Both are `Unknown Admin API Key`.
+
+    # T1 = ghost6.inflozo.com (6.58.0), T3 = ghost5.inflozo.com (5.130.6)
+    GHOST6_ADMIN_API_KEY -> T1 GET /ghost/api/admin/config/    200        <- the control
+    GHOST5_ADMIN_API_KEY -> T1 GET /ghost/api/admin/config/    401 UNKNOWN_ADMIN_API_KEY
+    GHOST6_ADMIN_API_KEY -> T3 GET /ghost/api/admin/config/    401 UNKNOWN_ADMIN_API_KEY
+
+**The consequence, and it is a product rule** (owner's ruling **R-100**, 2026-09-09, at Story 3.6's
+review): **no surface may claim to have recognised another site's key.** Story 3.6's Manage keys
+originally promised the sentence "These keys belong to a different Ghost site" for that case; there is
+no answer from Ghost that earns it. The key is refused and nothing is written — by this 401 — and the
+sentence shown is this code's own. `GET /admin/site/` is kept for the question it *can* answer: what
+public address this Ghost reports now, versus the one recorded at connect, which is a domain move.
+
+⛔ **Unobserved, and it would break the first paragraph rather than this one:** two Ghost installs
+sharing one database (a staging instance restored from a production dump) would accept each other's
+keys at `config/` outright, because the lookup would find the row. That is a real configuration and
+no probe here has produced it; FR-C6 already records the neighbouring fact that one address can serve
+a different install after a cutover, which is why a snapshot is never adopted on URL match alone.
 
 Two things recorded in passing from the same run, both majors:
 

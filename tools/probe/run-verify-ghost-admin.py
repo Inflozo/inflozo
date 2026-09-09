@@ -415,11 +415,20 @@ list gone stale — the sibling harness's own note):
                  which is the departure from B20's eye made checkable
   axe-keys-screen  axe-core over the keys route at 1440 and 390
   keys-malformed  `hello` into the Admin field: refused UNDER THAT FIELD, and nothing written
-  keys-other-site  T3's Admin key pasted into T1's screen. ⛔ READ THE REVIEW NOTE OF 2026-09-09
-                 BEFORE TRUSTING THIS STEP: executed against both Ghosts, T3's key answers 401
-                 "Unknown Admin API Key" at T1's `GET /admin/config/`, so this lands as
-                 `ghost_unknown_key` and never reaches the `site/` comparison the step was written
-                 for. The site IS refused and nothing IS written; the SENTENCE is the open question
+  keys-foreign-key  T3's Admin key pasted into T1's screen: T1 never issued it, so T1 answers 401
+                 `Unknown Admin API Key` at `GET /admin/config/` and the refusal fires there —
+                 under the Admin field, with GHOST'S sentence, nothing written. The `site/`
+                 comparison is never reached. This step was called `keys-other-site` and asserted
+                 our own "belongs to a different Ghost site" sentence until the owner ruled R-100
+                 (2026-09-09): `api_keys` has no install identity, so Ghost gives one answer to a
+                 wrong key and to another site's key and Inflozo may not claim to tell them apart
+  keys-other-site  THE GUARD R-100 KEEPS, and the only step that executes it: THIS Ghost reporting a
+                 public address different from the one recorded at connect, which is a domain move.
+                 T1's OWN valid key is refused with the disconnect+reconnect sentence, nothing
+                 written. ⛔ The BASELINE is seeded — the record's `site_settings.public_url` is
+                 moved through the service role, because neither test Ghost has a second address —
+                 and restored afterwards; the comparison, the refusal and the sentence are the
+                 product's
   keys-rotate    a rotated Admin key saved on T1, read back through the pooler:
                  `admin_key_rotated_at` moved, `admin_key_id` is the new key's public id half,
                  `vault.secrets` holds one secret for the ref and it is NOT the old one, and
@@ -764,7 +773,11 @@ const record = (name, detail) => steps.push({ name, ok: null, detail })
 
 /* THE POOLER, READ-ONLY. `vault` and `private` answer 404 over PostgREST (§21j), so this is the
    only way to see either — the same connection shape the app itself opens (`server/ghost-admin/
-   db.ts`): transaction pooler, one connection, no prepared statements. Nothing here writes. */
+   db.ts`): transaction pooler, one connection, no prepared statements. MOSTLY READ-ONLY: two steps
+   write through it — `moved-domains` seeds the old record and `keys-token`'s `finally` nulls a ref
+   the run may have left behind — and the line that claimed "nothing here writes" was false from the
+   day the first of them landed (review, 2026-09-09). Fixture writes only, on the throwaway user's
+   own rows; nothing here writes anything a customer owns. */
 const sql = postgres(process.env.PG_URL, {
   max: 1, prepare: false, ssl: 'require', connect_timeout: 10, idle_timeout: 20,
 })
@@ -3181,7 +3194,7 @@ const shoot = async (page, name) => {
        to `private.site_credentials` and to the audit log, and `audit` above derives its counts from
        the connects and probes that came before. Putting these after it keeps that derivation honest
        and lets each step here assert its OWN delta instead. The account is on PRO here with T1 and
-       T3 connected, which is what `keys-other-site` needs — two real Ghosts, one screen. */
+       T3 connected, which is what `keys-foreign-key` needs — two real Ghosts, one screen. */
 
     const keysUrl = (id) => `${APP}/sites/keys?site=${id}`
     const openKeys = async (id) => {
@@ -3259,27 +3272,67 @@ const shoot = async (page, name) => {
       `${keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref}, same rotation ` +
       `stamp = ${String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at)}`)
 
-    // ── keys-other-site: T3's REAL Admin key, valid on its own Ghost, pasted into T1's screen.
-    //    FR-C8's rule on its one remaining path: a key that opens a DIFFERENT install would carry
-    //    this record — its snapshots, its projects, its first-upload flag — onto that one.
+    // ── keys-foreign-key: T3's REAL Admin key, valid on its own Ghost, pasted into T1's screen.
+    //    IT WAS CALLED `keys-other-site` AND ASSERTED OUR OWN SENTENCE, and that was wrong — the
+    //    owner ruled it R-100 (2026-09-09). The key is sent to T1's Ghost, which never issued it,
+    //    so T1 answers 401 `Unknown Admin API Key` at `config/` and the `site/` comparison is never
+    //    reached. Ghost decides "is this key mine" by one lookup in `api_keys`, a table with no
+    //    domain or install column (MEASUREMENTS §37), so it gives the same 401 to a wrong key and
+    //    to another site's key and Inflozo may not claim to tell them apart. The customer is
+    //    protected either way: refused under the field, nothing written.
+    //    NO `.catch(() => {})` ON THE WAIT: a wrong prediction here used to cost a silent 30-second
+    //    timeout and then a red assertion, which reads as a product failure rather than a stale test.
     await openKeys(t1SiteId)
     const beforeOther = await credsOf(t1SiteId)
     await page.fill('#keys-admin', T3.adminKey)
     await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    await page.waitForURL((u) => u.searchParams.get('keys') === 'keys_other_site', { timeout: 30000 }).catch(() => {})
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'ghost_unknown_key', { timeout: 30000 })
     const otherSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
     const afterOther = await credsOf(t1SiteId)
-    step('keys-other-site',
-      otherSaid.includes(SAY.keys_other_site)
+    step('keys-foreign-key',
+      otherSaid.includes(SAY.ghost_unknown_key)
       && afterOther.admin_key_vault_ref === beforeOther.admin_key_vault_ref
       && afterOther.admin_key_id === beforeOther.admin_key_id,
       `T3's own Admin API key — valid, and valid on the WRONG Ghost — pasted into T1's screen: ` +
-      `REFUSED under the field with the app's own sentence, which names the fix ` +
+      `REFUSED under the Admin field with GHOST'S OWN answer ` +
       `(${JSON.stringify(otherSaid.slice(0, 120))}), and NOTHING was written — same vault ref and ` +
-      `admin_key_id still ${JSON.stringify(afterOther.admin_key_id)}. It passed GET config/ (it is a ` +
-      `real key) and was stopped by GET site/, whose url is a different host from this record's ` +
-      `site_settings.public_url. That is FR-C8's edit-URL-in-place hazard reaching the record through ` +
-      `the key field instead of the URL field`)
+      `admin_key_id still ${JSON.stringify(afterOther.admin_key_id)}. T1 answered 401 Unknown Admin ` +
+      `API Key at GET config/ — it never issued this key — so the refusal fires before GET site/ is ` +
+      `called at all. R-100: Inflozo cannot tell "another site's key" from "wrong key" and does not ` +
+      `pretend to; the domain-move sentence belongs to the step below, which is where it is earned`)
+
+    // ── keys-other-site: THE GUARD R-100 KEEPS, and the only step that executes it. It fires when
+    //    THIS Ghost reports a public address different from the one recorded at connect — a domain
+    //    move, which is FR-C8's edit-URL-in-place hazard reaching the record through the key field.
+    //    ⛔ THE BASELINE IS SEEDED, not the answer: neither test Ghost can be given a second
+    //    address, so the RECORD's `site_settings.public_url` is moved instead and T1's own valid key
+    //    is pasted. `config/` 200 (own key, own Ghost), `site/` 200 with T1's real url, the hosts
+    //    differ, the guard fires. The comparison, the refusal, the sentence and the untouched
+    //    credential row are all the product's — the same shape `moved-domains` declares below.
+    //    AND IT PROVES THE FIX OF 2026-09-09 TOO: the guard now compares Ghost's recorded answer
+    //    with Ghost's current one, so the restore at the end puts the record back to a state where
+    //    a legitimate rotation is NOT refused.
+    await patchSettings(t1SiteId, { public_url: 'https://moved.example.com/' })
+    await openKeys(t1SiteId)
+    const beforeMoved = await credsOf(t1SiteId)
+    await page.fill('#keys-admin', T1.adminKey)
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'keys_other_site', { timeout: 30000 })
+    const movedSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const afterMoved = await credsOf(t1SiteId)
+    await patchSettings(t1SiteId, { public_url: pub1.url })
+    step('keys-other-site',
+      movedSaid.includes(SAY.keys_other_site)
+      && afterMoved.admin_key_vault_ref === beforeMoved.admin_key_vault_ref
+      && afterMoved.admin_key_id === beforeMoved.admin_key_id,
+      `the record's recorded public address moved to a host T1's Ghost will never report, then T1's ` +
+      `OWN valid key pasted into T1's own screen: REFUSED under the field with the app's own ` +
+      `sentence, which names the fix (${JSON.stringify(movedSaid.slice(0, 120))}), and NOTHING was ` +
+      `written — same vault ref, admin_key_id still ${JSON.stringify(afterMoved.admin_key_id)}. The ` +
+      `key is valid and config/ passed; it is GET site/'s url, whose host differs from the recorded ` +
+      `site_settings.public_url, that stops it. ⛔ The BASELINE is seeded because neither test Ghost ` +
+      `has a second address; everything after it is the product's. The record is restored to ` +
+      `${JSON.stringify(pub1.url)} afterwards, so later steps rotate against a truthful baseline`)
 
     // ── keys-rotate: THE ROTATION, live. ⛔ The key is RE-PASTED rather than regenerated in Ghost
     //    Admin: regenerating T1's integration key would invalidate `GHOST6_ADMIN_API_KEY` for every

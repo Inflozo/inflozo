@@ -1019,16 +1019,21 @@ const KeyFields = z.object({
  *
  * The Admin key goes through the path `connectSite` already uses — `fetchWithKey` on
  * `GET /admin/config/` — so a typo is refused where it was typed rather than surfacing as a broken
- * site the next day. AND THEN `GET /admin/site/`, WHICH IS A SECOND QUESTION: `config/` proves the
- * key is a key of SOME Ghost, and `site/` says WHICH. A key belonging to a different install is
- * refused, because storing it would carry this record — its snapshots, its projects, its
- * first-upload flag — onto another live Ghost. That is precisely the harm FR-C8 removed
- * edit-URL-in-place for; the key field is the same door with a different handle.
+ * site the next day. THAT ONE CALL IS THE WHOLE OF THE WRONG-KEY DEFENCE, and the story originally
+ * claimed otherwise (owner's ruling **R-100**, 2026-09-09): a key issued by a different Ghost
+ * install is sent to THIS record's Ghost, which has never heard of it and answers 401 `Unknown
+ * Admin API Key`. It is refused and nothing is written; the sentence is Ghost's own rather than the
+ * "disconnect and reconnect" one the spec first promised, because Inflozo cannot tell "this key is
+ * from your other site" apart from "this key is wrong" — Ghost gives one answer to both, and
+ * `api_keys` carries no install identity at all (MEASUREMENTS §37, read in Ghost's source).
  *
- * THE COMPARISON IS AGAINST `site_settings.public_url`, Ghost's OWN answer read at connect, and
- * falls back to `sites.url` only for a record that has none: on Ghost(Pro) the admin domain and
- * the public domain differ by design, so comparing against the typed address would refuse every
- * legitimate Pro rotation.
+ * `GET /admin/site/` IS KEPT, FOR THE CASE IT REALLY DOES CATCH: this Ghost now reports a different
+ * public address than the one recorded at connect. That IS a domain move — the state FR-C8 designed
+ * for when it removed edit-URL-in-place, because carrying this record's snapshots, projects and
+ * first-upload flag onto a different live Ghost is the harm — and it is where "disconnect and
+ * connect the new address" belongs. `site/` validates nothing (it answers 200 to any key at all,
+ * §38a and `epic-3-context.md`), which is why it is read only AFTER `config/` has passed and is
+ * used as an IDENTIFIER rather than as a check.
  *
  * THE CONTENT KEY IS NOT VALIDATED HERE (FR-C2). The browser checks it against the customer's own
  * Ghost before this action is called — that is the path the editor will use, and a server-side 200
@@ -1102,14 +1107,35 @@ export async function saveKeys(formData: FormData): Promise<void> {
       console.error('sites: keys validate failed', { name: (thrown as { name?: string })?.name })
       redirect(KEYS_REFUSED(site.id, 'keys_failed'))
     }
+    // WHAT THIS COMPARISON ACTUALLY PROVES, stated exactly, because it was over-claimed once and
+    // the owner ruled on it (R-100, 2026-09-09). Both calls above go to THIS record's `site.url`,
+    // so a key issued by a DIFFERENT Ghost install never reaches here at all: that Ghost answers
+    // 401 `Unknown Admin API Key` at `config/` and the refusal above fires (executed T3→T1 and
+    // T1→T3, with T1→T1 200 as the control; MEASUREMENTS §37). What IS caught here is the other
+    // case, and it is a real one: **this** Ghost now reports a different public address than the
+    // one Inflozo recorded — a domain move, which is exactly where "disconnect and connect the new
+    // address" belongs.
+    //
     // A HOST COMPARISON AND NOT A STRING ONE: `public_url` is kept AS GHOST SENDS IT, trailing
-    // slash and all (§38a), and `sites.url` is the normalised origin — so the two are equal as
-    // hosts and unequal as strings for every site in the product. A read that could not answer at
-    // all leaves `belongsHere` undefined and the key is stored: `config/` has already proved it,
+    // slash and all (§38a), and `sites.url` is the normalised origin. A read that could not answer
+    // at all leaves `belongsHere` undefined and the key is stored: `config/` has already proved it,
     // and refusing a valid rotation because a cosmetic read failed would be the wrong kind of
     // careful (the same rule connect's own `site/` read follows).
-    const mine = hostOf(site.site_settings?.public_url || site.url)
-    if (belongsHere && hostOf(belongsHere) !== mine) redirect(KEYS_REFUSED(site.id, 'keys_other_site'))
+    //
+    // AND IT COMPARES GHOST'S ANSWER WITH GHOST'S ANSWER, NEVER WITH THE TYPED ADDRESS. `mine` used
+    // to fall back to `sites.url` when `public_url` was absent, and `public_url` CAN be absent on a
+    // perfectly healthy record: it is written in one place, at connect, inside a deliberately
+    // non-fatal `try`, and nothing ever backfills it — `probeSite` preserves it and never writes
+    // it. On Ghost(Pro) the admin origin the customer types and the public address Ghost reports
+    // differ BY DESIGN (this file says so three screens up), so on such a record the customer's
+    // first entirely legitimate key rotation was refused as "These keys belong to a different Ghost
+    // site" — permanently, because the URL row offers no way to correct it and the daily re-check
+    // never refreshes `public_url`. Found by the review of 2026-09-09. With no recorded answer from
+    // Ghost there is nothing to compare against, so the comparison does not happen.
+    const recorded = site.site_settings?.public_url
+    if (recorded && belongsHere && hostOf(belongsHere) !== hostOf(recorded)) {
+      redirect(KEYS_REFUSED(site.id, 'keys_other_site'))
+    }
     try {
       // `store()` re-encrypts, stamps `admin_key_rotated_at`, writes the key's public id half and
       // audits — and DW-44's trigger deletes the secret the old ref pointed at.

@@ -52,12 +52,22 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
   is refused under its own field and nothing is written. The Content key is checked **from the
   browser** by `checkContentKey` (FR-C2), exactly as connect does, and stored unchecked with scripts
   off.
-- **A pasted Admin key that belongs to a DIFFERENT Ghost install is refused.** After validating, read
-  `GET /admin/site/` and compare its `url` against the record's `site_settings.public_url` (falling
-  back to `sites.url`). This is the same hazard FR-C8 killed edit-URL-in-place for — carrying one
-  site's record, snapshot and first-upload flag onto another live Ghost — reaching the record through
-  the key field instead of the URL field. The refusal names the fix: disconnect and connect the new
-  address.
+- **A pasted Admin key that belongs to a DIFFERENT Ghost install is refused, and the refusal is
+  Ghost's own** *(renegotiated by the owner, R-100, 2026-09-09 — see `## Questions for the owner`,
+  Question 2)*. The key is sent to THIS record's Ghost, which has never issued it and answers 401
+  `Unknown Admin API Key`: refused under `admin_key`, nothing written. Inflozo cannot say more than
+  that, because `api_keys` carries no domain or install identity and Ghost gives the same 401 to a
+  wrong key and to another site's key (MEASUREMENTS §37; executed T3→T1 and T1→T3 on 2026-09-09 with
+  T1→T1 200 as the control).
+- **A Ghost that now reports a DIFFERENT public address is refused, and THAT is where disconnect +
+  reconnect belongs.** After validating, read `GET /admin/site/` and compare its `url` against the
+  record's `site_settings.public_url`. This is the hazard FR-C8 killed edit-URL-in-place for —
+  carrying one site's record, snapshot and first-upload flag onto another live Ghost — reaching the
+  record through the key field instead of the URL field, and it is a domain move. `site/` validates
+  nothing (it answers 200 to any key at all, §38a and `epic-3-context.md:23`), so it is read only
+  after `config/` has passed and is used as an identifier, never as a check. **The comparison is
+  Ghost's answer against Ghost's answer and never against the typed address:** with no
+  `site_settings.public_url` recorded there is nothing to compare and no comparison is made.
 - **The URL is read-only text, and the screen says why.** No field, no edit affordance, guarded or
   otherwise (A9 item 17; the affordance does not exist rather than being defended).
 - **Removing the token degrades, never disconnects.** `remove({ kind: 'staff' })` flips
@@ -108,8 +118,10 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
 | Open the screen | A connected site owned by the caller | Three rows: Admin (present, its id half then dots), Content (present, its first characters then dots), Staff (**Not added**), each with its one line; the URL as read-only text with the "Fixed for this connection" reason | N/A |
 | Paste a good Admin key | A key from the same site's integration | `GET /admin/config/` 200 → `GET /admin/site/` url matches → `store()` re-encrypts, deletes the old secret behind it (DW-44), stamps `admin_key_rotated_at`, writes `admin_key_id`, writes one audit row | N/A |
 | Paste a malformed key | `not-a-key` | Nothing written; the field says what an Admin API key looks like | `parseCredential` → `credential_malformed`, under `admin_key` |
-| Paste a key Ghost refuses | A well-formed key from a deleted integration | Nothing written; the field says the key was regenerated or removed in Ghost Admin — never "expired" | `ghost_unknown_key` / `ghost_unauthorized`, under `admin_key` |
-| Paste ANOTHER site's Admin key | A valid key whose `GET /admin/site/` url differs from this record's | **Refused**, nothing written, and the sentence names disconnect + reconnect | `keys_other_site`, under `admin_key` |
+| Paste a key Ghost refuses | A well-formed key from a deleted integration, a regenerated one, **or one issued by a different Ghost install** — all three land here (R-100) | Nothing written; the field says the key does not match this site — never "expired" | `ghost_unknown_key` / `ghost_unauthorized`, under `admin_key` |
+| Paste ANOTHER install's Admin key | A key valid on some other Ghost | **Refused at `config/` by that Ghost's own 401**, nothing written. The sentence is Ghost's, not ours: Inflozo cannot tell this from a wrong key *(renegotiated, R-100)* | `ghost_unknown_key`, under `admin_key` |
+| This Ghost now reports a different address | A valid key for THIS Ghost, whose `GET /admin/site/` url host differs from the recorded `site_settings.public_url` | **Refused**, nothing written, and the sentence names disconnect + reconnect | `keys_other_site`, under `admin_key` |
+| …and no address was ever recorded | The same, on a record whose `site_settings.public_url` is absent | **No comparison and no refusal** — there is no Ghost answer to compare against, and comparing with the typed admin origin refused legitimate Ghost(Pro) rotations for ever (review, 2026-09-09) | N/A |
 | Paste a Content key | A key the browser's `settings` read accepts | `sites.content_key` updated, `credentials_present.content` true | A 401 stops the submit under `content_key`; anything else lets the server answer |
 | Add the Staff token | A `id:secret` token pasted into the token row | `store({ kind: 'staff' })`, `credentials_present.staff` true, the row becomes present with its own removal control; one audit row | Malformed → `credential_malformed` under `staff_token`; the store failing → the row is unchanged and the page says so |
 | Remove the token | A site whose `credentials_present.staff` is true | `remove({ kind: 'staff' })`, the Vault secret gone behind it, the row back to **Not added**, the site still **Connected**; one audit row | `remove()` throws → nothing changes and the page says the credential store could not be reached |
@@ -266,7 +278,12 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
   before anything is stored, the old Vault secret is gone behind the new one, and
   `admin_key_rotated_at` moves.
 - Given I paste an Admin key belonging to a different Ghost install, when I save, then it is
-  **refused**, nothing is written, and the sentence names disconnect + reconnect.
+  **refused** and nothing is written — by that Ghost's own 401, under the Admin key field, in Ghost's
+  words *(renegotiated by the owner, R-100, 2026-09-09; the original promised our own
+  disconnect + reconnect sentence, which Inflozo has no way to earn)*.
+- Given my Ghost now reports a different public address than the one recorded at connect, when I save
+  a key, then it is **refused**, nothing is written, and the sentence names disconnect + reconnect —
+  and given no address was ever recorded, then no such comparison is made at all.
 - Given a site with no Staff Access Token, when I add one and then remove it, then the site stays
   **Connected** through both, `credentials_present.staff` follows, and the Vault secret is gone after
   the removal.
@@ -292,8 +309,8 @@ Five layers ran — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
 Real-infra verifier — and none failed. Two findings are the owner's; the rest were patched in this
 phase or deferred with a reason.
 
-- [ ] [Review][Decision] **Production is broken right now: the code is deployed and its migration is not applied** — Commit `41ca519a` IS live (CI run `34369485655` green, Vercel READY at that SHA), but production's `private.site_credentials` has no `admin_key_id` (`42703`) and `public.credential_action` has no `credential_change` (`22P02`) — both reproduced against the hosted database inside rolled-back transactions, each with a passing minimal-pair control. `connectSite` calls `store()`, so **connecting any Ghost site fails on production**, not just the new screen. This is a collision between two approved rules, not a coding mistake: Epic 2's says a migration is applied by hand **in the Deploy phase**, DW-7 says CI publishes **on every push**. Every migration-bearing story will hit it. See `## Questions for the owner`, Question 1.
-- [ ] [Review][Decision] **`keys_other_site` cannot fire for the hazard the frozen acceptance criterion names** — Executed against the real Ghosts, with a passing control: T1's own key → T1 `GET /admin/config/` = **200**; **T3's key → T1 = 401 "Unknown Admin API Key"**; T1's key → T3 = 401. Both `fetchWithKey` calls in `saveKeys` target `siteUrl: site.url` — this record's Ghost — so another install's key is refused by Ghost's own 401 (`ghost_unknown_key`) and the `GET /admin/site/` comparison is never reached. The guard as built fires only when *this* Ghost's self-reported url has drifted from the stored one, which is a different (and real) case. So the site IS refused and nothing IS written, but the AC's "the sentence names disconnect + reconnect" is false, and the harness's `keys-other-site` step will fail at Review. See `## Questions for the owner`, Question 2.
+- [x] [Review][Decision] **RULED (option 1, owner, 2026-09-09 — filed as R-99).** Production is broken right now: the code is deployed and its migration is not applied** — Commit `41ca519a` IS live (CI run `34369485655` green, Vercel READY at that SHA), but production's `private.site_credentials` has no `admin_key_id` (`42703`) and `public.credential_action` has no `credential_change` (`22P02`) — both reproduced against the hosted database inside rolled-back transactions, each with a passing minimal-pair control. `connectSite` calls `store()`, so **connecting any Ghost site fails on production**, not just the new screen. This is a collision between two approved rules, not a coding mistake: Epic 2's says a migration is applied by hand **in the Deploy phase**, DW-7 says CI publishes **on every push**. Every migration-bearing story will hit it. See `## Questions for the owner`, Question 1.
+- [x] [Review][Decision] **RULED (option 1, owner, 2026-09-09 — filed as R-100).** `keys_other_site` cannot fire for the hazard the frozen acceptance criterion names — Executed against the real Ghosts, with a passing control: T1's own key → T1 `GET /admin/config/` = **200**; **T3's key → T1 = 401 "Unknown Admin API Key"**; T1's key → T3 = 401. Both `fetchWithKey` calls in `saveKeys` target `siteUrl: site.url` — this record's Ghost — so another install's key is refused by Ghost's own 401 (`ghost_unknown_key`) and the `GET /admin/site/` comparison is never reached. The guard as built fires only when *this* Ghost's self-reported url has drifted from the stored one, which is a different (and real) case. So the site IS refused and nothing IS written, but the AC's "the sentence names disconnect + reconnect" is false, and the harness's `keys-other-site` step will fail at Review. See `## Questions for the owner`, Question 2.
 
 - [x] [Review][Patch] `saveKeys` swallowed every Ghost refusal into `keys_failed` — `redirect()` sat inside the `try`, and its `NEXT_REDIRECT` throw was caught by the sibling `catch` [apps/web/app/(app)/app/(authed)/sites/actions.ts]
 - [x] [Review][Patch] The Content API key's **Save** button went permanently inert after its first press — `useSubmitting()`'s `guard` claimed the in-flight slot while `onSubmit`'s `preventDefault()` kept `useFormStatus().pending` from ever rising, so the release effect never re-ran [apps/web/app/(app)/app/(authed)/sites/keys-content-form.tsx]
@@ -317,6 +334,11 @@ phase or deferred with a reason.
 - [x] [Review][Patch] `EXPERIENCE.md:128`'s "Reached from" cell still listed "any Reconnect needed" while its own appended prose says the ⋯ menu is the only entry point
 - [x] [Review][Patch] DW-54's edited entry ended mid-sentence and its `location` still claimed `remove()` has no product caller — `disconnectSite` falsified that in 3.5 and `removeToken` falsifies it again here
 
+- [x] [Review][Patch] **A live false positive in the guard R-100 keeps: `keys_other_site` refused legitimate key rotations for ever.** Found by the adversarial verifiers after the ruling, not before it. `mine` fell back to `sites.url` — the typed ADMIN origin — whenever `site_settings.public_url` was absent, and absent is a reachable state on a healthy record: that column is written in exactly one place, at connect, inside a deliberately non-fatal `try`, and nothing backfills it (`probeSite` preserves it and never writes it). On Ghost(Pro) the admin origin and the public address differ **by design** — this spec says so itself — so on such a record the customer's first legitimate rotation was refused as *"These keys belong to a different Ghost site"*, permanently: the URL row offers no way to correct it and the daily re-check never refreshes `public_url`. It now compares Ghost's recorded answer with Ghost's current one, and makes no comparison when there is none [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] The harness asserted a sentence the product cannot produce — `keys-other-site` is split into **`keys-foreign-key`** (T3's key into T1's screen → `ghost_unknown_key`, Ghost's own 401, nothing written) and a new **`keys-other-site`** that actually executes the guard R-100 keeps, by seeding the record's recorded address and pasting T1's own valid key [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] MEASUREMENTS §37's enumeration of the causes of a 401 `Unknown Admin API Key` was missing the third one, and §37 is the owning document every downstream copy cites — the executed cross-install result is now filed there with its control [.../architecture-Inflozo-2026-08-19/MEASUREMENTS.md]
+- [x] [Review][Patch] `EXPERIENCE.md`'s customer-voice row and its long-form companion named one cause for that 401 and forbade the wrong anti-pattern — both amended, and "These keys belong to a different Ghost site" on a 401 is now listed as a voice to avoid [.../ux-Inflozo-2026-09-03/EXPERIENCE.md]
+- [x] [Review][Patch] The pooler helper's docstring said "Nothing here writes", which two steps had already falsified [tools/probe/run-verify-ghost-admin.py]
 - [x] [Review][Defer] `admin_key_id` is never backfilled, so every site connected before this story draws no Admin mask and can never raise the moved-domains hint [apps/web/server/ghost-admin/index.ts] — deferred, needs a decision about reading Vault from a migration; DW-78
 - [x] [Review][Defer] `ORPHAN_SNAPSHOT_DAYS` is a second home for the 90 days `20260907150000_account_deletion_window.sql` already computes, with nothing asserting they agree [apps/web/lib/connect-rule.ts] — deferred, pre-existing split across two languages; DW-79
 - [x] [Review][Defer] "A rolled-back store leaves no row claiming it happened" is asserted in four places and induced nowhere [apps/web/server/ghost-admin/index.ts] — deferred, wants a fault-injection fixture in the RLS gate; DW-80
@@ -348,14 +370,29 @@ move", which one value answers directly. This is a routine engineering call reco
 put to the owner — the name is invisible to him and there is no plain-English framing of it that is
 not a waste of his time.
 
-**Why a key from another site is refused rather than warned.** FR-C8 removed edit-URL-in-place
-because it would carry one site's record, snapshot and first-upload flag onto a different live Ghost
-install — "restore the original theme" would then push one customer's archived theme over another's,
-and the second site would never be snapshotted at all. Re-pasting a *different install's keys* into an
-existing record reaches the same end state through the field FR-C8 left open. This is not a new
-decision: it is the approved rule enforced on its one remaining path, and the comparison is made
-against `site_settings.public_url` — Ghost's own answer, read at connect — rather than `sites.url`,
-because on Ghost(Pro) the admin domain and the public domain differ by design.
+**Why a moved domain is refused rather than warned — and why another site's key is not our sentence
+to write** *(corrected at the review of 2026-09-09; the owner ruled it R-100)*. FR-C8 removed
+edit-URL-in-place because it would carry one site's record, snapshot and first-upload flag onto a
+different live Ghost install — "restore the original theme" would then push one customer's archived
+theme over another's, and the second site would never be snapshotted at all. **A Ghost that now
+reports a different public address is exactly that state**, and it is what the `GET /admin/site/`
+comparison catches: the approved rule enforced on its one remaining path.
+
+What the comparison does **not** catch, and never could, is a key from a different install. The key is
+sent to this record's own Ghost, which has never issued it and answers 401 `Unknown Admin API Key` —
+so it is refused at `config/` and the comparison is never reached. Ghost decides "is this key mine" by
+one lookup in `api_keys`, a table with no domain, url or install column (§37, read in Ghost's source),
+and it gives the same 401 to a wrong key and to another site's key. Inflozo cannot tell them apart, so
+it says what Ghost said. The customer is protected either way: the key is refused and nothing is
+written. Executed T3→T1 and T1→T3, both 401, with T1→T1 200 as the control.
+
+**And the comparison compares Ghost with Ghost.** It reads `site_settings.public_url` — Ghost's own
+answer, captured at connect — and where that is absent it makes no comparison at all. It used to fall
+back to `sites.url`, the typed admin origin, and `public_url` is genuinely absent on healthy records:
+its write is a single non-fatal one at connect and nothing backfills it. On Ghost(Pro) the admin origin
+and the public address differ by design — this spec says so two paragraphs up — so that fallback
+refused the first legitimate rotation on such a record as "These keys belong to a different Ghost
+site", permanently, with no field to correct and no re-check that refreshes it.
 
 **What "removing the token degrades three capabilities" means today.** Nothing observable. Nothing
 stores a staff token until Epic 7, so the removal path has no production site to run on and the
@@ -411,7 +448,13 @@ but every order bounces until someone adds the field.
 database change to the live database, after which connecting works again. Say the word and it goes
 out with the Deploy phase.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-09).** Filed as **R-99** and propagated to `docs/project-context.md`,
+`CLAUDE.md`, `epic-3-context.md` and the three `_bmad/custom/*.toml` team overrides, which gain a
+`Schema` phase before `Dev`. Two things checked in `.github/workflows/ci.yml` and stated with the rule
+rather than assumed: the schema push still deploys the tree as it stands (harmlessly — the code is
+unchanged), and **nothing in CI applies a migration**, so the apply stays a hand step through
+`SUPABASE_DB_POOLER_URL`. This story's own migration is still Deploy's, unchanged: production stays
+unable to connect a Ghost site until it lands, which is the first thing the Deploy phase does.
 
 ### Question 2 — what Inflozo should say when you paste the wrong site's key
 
@@ -448,7 +491,15 @@ domain move looks like. That is where the "disconnect and connect the new addres
    have connected. It would give the exact sentence we promised, but only for sites already in
    Inflozo, and it adds work to every key you paste.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-09).** Filed as **R-100**. The frozen Boundaries bullet, the I/O
+matrix and the acceptance criterion below are renegotiated on his word rather than edited quietly, and
+the Design Note is corrected. `GET /admin/site/` stays, for the domain move it really does catch —
+**and the review found that guard had a live false positive**, now fixed: it compared Ghost's answer
+against `sites.url` whenever `site_settings.public_url` was absent, which is a reachable state (that
+column is written once, non-fatally, at connect and nothing backfills it), so on Ghost(Pro) — where the
+admin origin and the public address differ by design — a customer's first legitimate rotation was
+refused as *"These keys belong to a different Ghost site"*, permanently. It now compares Ghost's answer
+only against Ghost's answer, and does not compare at all when there is none.
 
 ## Owner's manual test
 
@@ -692,6 +743,32 @@ is held under and never by its value.**
   `keys-test`, `keys-js-off`, `keys-forged`, `moved-domains`. Frame screenshots (`--shots` against
   S11d and B20) are blocked with them. **They run at Deploy, immediately after the migration is
   applied by hand**, and `keys-other-site` is expected to fail as written until Question 2 is ruled.
+
+### Review phase, second pass, 2026-09-09 — the owner's two rulings, and what they cost
+
+He ruled both questions option 1. Recording them was the small half; a nine-agent propagation sweep
+and three adversarial verifiers ran over the rulings before anything was edited, and both halves paid.
+
+- **The sweep found the surfaces the rulings had to reach, including three no first pass had touched:**
+  `MEASUREMENTS.md` §37 — the OWNING document for the 401 whose causes both downstream copies cite and
+  neither had corrected; `EXPERIENCE.md`'s customer-voice row and its long-form companion; and the
+  auto-memory file, which states the superseded ordering rule as an imperative in every future session.
+  Also the three `_bmad/custom/*.toml` overrides, whose closed phase enumerations would have made the
+  unattended loop reproduce the outage by construction — a `Schema` phase now precedes `Dev` in each.
+- **The adversarial verifiers could not refute the executed claim, and found a live bug behind it.**
+  Two of three returned `refuted: false, confidence: high` on "a foreign key can never reach the
+  `site/` comparison" — structurally guaranteed, not merely observed: both `fetchWithKey` calls target
+  `site.url`, `redirect: 'manual'` closes the 3xx route, and MEASUREMENTS §37 closes the Ghost side.
+  The third refuted the FRAMING and was right: `mine` fell back to the typed admin origin whenever
+  `site_settings.public_url` was absent, which is reachable on a healthy record, so on Ghost(Pro) the
+  first legitimate rotation was refused as "These keys belong to a different Ghost site" **for ever**.
+  Patched. One verifier also recorded an unobserved case — two Ghosts sharing one database would accept
+  each other's keys outright — filed as a ⛔ in §37 rather than claimed either way.
+- **`pnpm check`** — exit 0, **241 pass, 0 fail**. **`run-verify-ghost-admin.py --check`** — exit 0,
+  all steps passed; the rewritten browser script parses. **`doc-audit --check`** — PASS twice.
+- **Still not executed, and still Deploy's:** the ten live steps, now eleven with `keys-foreign-key`
+  and the seeded `keys-other-site` split apart. They remain blocked behind the migration, which under
+  R-99 is the first thing the Deploy phase does rather than the last.
 
 ## Spec Change Log
 

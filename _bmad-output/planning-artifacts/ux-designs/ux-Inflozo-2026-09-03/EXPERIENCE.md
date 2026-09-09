@@ -254,7 +254,7 @@ Short, warm, confident, lightly playful. Errors are human and name the fix.
 
 | Do | Don't |
 |---|---|
-| "Ghost said no — this Admin API key no longer works. It was regenerated or removed in Ghost Admin." + Reconnect *(a 401 `Unknown Admin API Key` — Admin API keys never expire, `MEASUREMENTS.md` §37)* | "An error occurred." · "Your Admin key expired." — a failure Ghost never produces |
+| "Ghost said no — this Admin API key no longer works. It was regenerated or removed in Ghost Admin." + Reconnect *(a 401 `Unknown Admin API Key` — Admin API keys never expire, `MEASUREMENTS.md` §37)*. **The shipped copy widened this to "this Admin API key doesn't match your site" (R-100, 2026-09-09)**, because the same 401 also means a key issued by a DIFFERENT Ghost install and the voice must not name a cause it cannot tell apart | "An error occurred." · "Your Admin key expired." — a failure Ghost never produces · **"These keys belong to a different Ghost site" on a 401** — Ghost gives one answer to a wrong key and to another site's key, so this claims a diagnosis Inflozo never made |
 | "Your theme is on your site but isn't live yet." | "Deploy failed." |
 | "7 unsynced edits will be lost." | "Some changes may not be saved." |
 | "Hundreds of gorgeous sections" | any design, category or free-set total |
@@ -1887,6 +1887,12 @@ token corrections, never a redraw).
     MEASUREMENTS §37. S8d′'s sentence becomes: "Ghost said no — this Admin API key no longer works.
     It was regenerated or removed in Ghost Admin. Paste the new key." with the Reconnect action.
     S11a's chip becomes "Key regenerated Aug 15". Same voice, a cause that exists.
+    AMENDED 2026-09-09 (ruling R-100, Story 3.6's review): that 401 has a THIRD cause — a key issued
+    by a different Ghost install — because `api_keys` carries no domain or install column, so Ghost
+    answers the same 401 to all three (executed T3→T1 and T1→T3, with T1→T1 200 as the control;
+    MEASUREMENTS §37). A sentence that names ONE of the three as the cause is the same mistake as
+    "expired", one step smaller. The shipped copy therefore says "this Admin API key doesn't match
+    your site" and lets the customer's own next step be the same for every cause.
 
 12. `C Post Body` C3b · THE PAYWALL EMPTY STATE.
     Delete "Ghost has no paid tiers … so this block never renders — a members-only post shows the

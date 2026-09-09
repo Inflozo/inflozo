@@ -77,8 +77,11 @@ Each was learned expensively. They are not style preferences.
 > "standing rule 3" is *counts are derived* and "standing rule 4" is *a finding must reach an owning
 > document*. When you cite a rule, cite its words, not its number.
 
-1. **A claim about an external platform is a hypothesis until executed or read in its source.** Five
-   confident claims about Ghost entered this project as normative text and were later proven false.
+1. **A claim about an external platform is a hypothesis until executed or read in its source.** More
+   than once, a confident claim about Ghost entered this project as normative text and was later
+   proven false — most recently at Story 3.6, where "a key belonging to a different Ghost install is
+   refused with our own sentence" turned out to be Ghost's ordinary 401, because `api_keys` carries no
+   install identity to test against (ruling **R-100**).
    **Cite or execute. Never assert.** Two real Ghost servers exist for this: **T1**
    `ghost6.inflozo.com` (6.58.0) and **T3** `ghost5.inflozo.com` (5.130.6), credentials in
    `tools/probe/.env` (gitignored), pattern `tools/probe/run-verify-all.py`.
@@ -124,10 +127,14 @@ between a mistake and the live site: the pre-commit gate below, and **CI**, beca
 
 Claude may **commit and push freely** at sensible checkpoints, always running the gate first and never
 pushing a red gate. **Once stories exist, the checkpoints are mandatory, not sensible** (owner, 2026-09-04,
-ruling **R-81**): after every story phase — create, dev, review, deploy, owner test, fix, done, and any
+ruling **R-81**): after every story phase — schema, create, dev, review, deploy, owner test, fix, done, and any
 other status change — commit and push to `main` with the one-line message
 `Story <epic>.<story> - <Phase> - <one line about the story>`, e.g. `Story 3.2 - Dev - connect wizard
-validates the three keys`. The rule, the phases and the real-infra rule below are bound inside the BMAD
+validates the three keys`. **A story that changes the database pushes the migration FIRST, on its own,
+before the code that needs it** (owner, 2026-09-09, ruling **R-99**) — that is the `Schema` phase, and it
+exists because CI publishes on every push while the migration is applied by hand: Story 3.6 shipped
+schema-dependent code first and production could not connect a Ghost site until Deploy. A story with no
+migration has no Schema phase. The rule, the phases and the real-infra rule below are bound inside the BMAD
 skills themselves through `docs/project-context.md` (loaded as persistent facts) and
 `_bmad/custom/bmad-build.toml`, `bmad-build-auto.toml`, `bmad-code-review.toml` (the committed team layer).
 **That binding is why BMAD is never updated** (owner, 2026-09-04, ruling **R-91**): the project finishes
