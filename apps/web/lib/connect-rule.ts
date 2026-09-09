@@ -185,6 +185,35 @@ export const SITES_EMPTY = {
 } as const
 
 /**
+ * STORY 3.5 — DISCONNECT'S EVERY WORD, AND THEY LIVE HERE AND NOWHERE ELSE. `site-menu.tsx` draws
+ * them and `run-verify-ghost-admin.py` reads them out of this file, so the screen and the harness
+ * cannot disagree about what the customer was shown (`PREVIEW_COPY` and `BRAND_COPY` in
+ * `probe-rule.ts` are the precedent).
+ *
+ * NO NUMBER IS IN HERE. The cap's sentence is `siteCapSentence()`'s, derived from `PLANS`; nothing
+ * in this object may name a plan, a count or a deadline (standing rule 4, and
+ * `connect-rule.test.ts` asserts it).
+ *
+ * THE BODY SAYS WHAT DISCONNECTING COSTS AND WHAT IT DOES NOT, because that is the whole of the
+ * owner's Question 2 ruling (option 1, 2026-09-09): a simple confirm, no typed field. Nothing of
+ * the customer's is destroyed — FR-C6 keeps the record, the projects, their names and their
+ * colours — so the friction matches the risk and the sentence carries the reassurance the typed
+ * field would otherwise have to.
+ */
+export const DISCONNECT = {
+  /** S11a's ⋯ menu item, and the confirm's own primary: one word for one action. */
+  menu: 'Disconnect',
+  title: (host: string) => `Disconnect ${host}?`,
+  body:
+    'Inflozo will forget this site\u2019s two Ghost keys. Your projects, their names and their colours ' +
+    'stay exactly as they are, and nothing on your Ghost site changes. To connect again you paste the ' +
+    'two keys once more.',
+  cancel: 'Cancel',
+  /** R-98: a submit control cannot exist without the present tense it wears while it works. */
+  busy: 'Disconnecting\u2026',
+} as const
+
+/**
  * The connect sheet's dialog id. S11a's "Connect site" sits in the SHELL's top bar (the owner's
  * finding 5) and the sheet is rendered by the page, so the DOM is the only thing the two share —
  * one constant rather than two string literals a rename could separate (`NEW_PROJECT_DIALOG`'s
@@ -239,6 +268,11 @@ export const CONNECT_MESSAGES = {
   credential_store_unavailable: () =>
     "We couldn't save your key just now. Nothing was connected — try again in a moment.",
   connect_failed: () => "We couldn't connect that site just now. Try again in a moment.",
+  // STORY 3.5. IT NAMES NO HALF, deliberately: `remove()` throwing leaves the site connected with
+  // its keys, and the stamp failing after it leaves it connected with none — two different states,
+  // one honest sentence, and pressing again is idempotent from either (`remove()` on a null ref is
+  // a no-op, and the stamp then lands).
+  disconnect_failed: () => "We couldn't disconnect that site just now. Try again in a moment.",
 } as const
 
 export type MessageCode = keyof typeof CONNECT_MESSAGES

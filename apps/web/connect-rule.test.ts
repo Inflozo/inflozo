@@ -7,6 +7,7 @@ import {
   checkedLabel,
   CONNECT_MESSAGES,
   connectMessage,
+  DISCONNECT,
   projectCounts,
   projectsLabel,
   filterSites,
@@ -138,6 +139,42 @@ test('the at-cap row is Appendix F.1’s sentence and nothing typed here', () =>
     'at_cap must have no sentence here — a second copy could disagree with S11c’s pill')
   assert.equal(atSiteCap('free', PLANS.free.sites), true, 'Free at one site refuses the second')
   assert.equal(atSiteCap('pro', PLANS.free.sites), false, 'Pro at one site connects the second')
+})
+
+/* ───────── STORY 3.5 — DISCONNECT'S WORDS. */
+
+test('DISCONNECT holds every word the confirm shows, and names no number', () => {
+  // The menu item and the confirm's primary are ONE word — the owner's manual test reads the same
+  // label in both places, so they are the same constant and not two that could drift.
+  assert.equal(DISCONNECT.menu, 'Disconnect')
+  assert.equal(DISCONNECT.title('orbitweekly.com'), 'Disconnect orbitweekly.com?')
+  assert.equal(DISCONNECT.cancel, 'Cancel')
+  // R-98: a submit control cannot exist without the present tense it wears while it works, and it
+  // must differ from the resting label or the control says nothing by changing.
+  // `as string` because `as const` makes both literal types and `tsc` refuses a comparison it can
+  // already decide — which is the compiler agreeing with the assertion, not disagreeing with it.
+  assert.ok(DISCONNECT.busy.length > 0)
+  assert.notEqual(DISCONNECT.busy as string, DISCONNECT.menu as string)
+
+  // THE OWNER'S QUESTION 2 RULING, IN THE ONLY PLACE A TEST CAN HOLD IT: the body says what
+  // SURVIVES, because that is what a confirm with no typed field owes the reader.
+  assert.match(DISCONNECT.body, /projects/)
+  assert.match(DISCONNECT.body, /keys/)
+
+  // COUNTS ARE DERIVED (standing rule 4). The cap's number belongs to `siteCapSentence`, the
+  // 90-day orphan clock to Story 7.20 (DW-75) — nothing in this object may name either, or the
+  // screen would carry a number whose source lives somewhere else.
+  const words = Object.values(DISCONNECT).map((v) => (typeof v === 'function' ? v('x') : v)).join(' ')
+  assert.ok(!/\d/.test(words), `DISCONNECT names a number: ${words}`)
+})
+
+test('disconnect_failed is in the one codes-to-sentences table, and names no half', () => {
+  assert.ok(Object.prototype.hasOwnProperty.call(CONNECT_MESSAGES, 'disconnect_failed'))
+  const said = connectMessage('disconnect_failed')
+  assert.match(said, /couldn’t|couldn't/)
+  // Two states reach this sentence — `remove()` throwing (the keys are still there) and the stamp
+  // failing after it (they are not) — so it may claim neither. Pressing again is idempotent.
+  assert.ok(!/still connected/i.test(said), 'the sentence must not claim which half ran')
 })
 
 test('the card’s two labels', () => {

@@ -99,7 +99,12 @@ test('the restored hint round-trips, and nothing else reads as it', () => {
  * the other, with lint, types, the build and every browser step still green. The source is read.
  */
 test('DELETION_WINDOW_DAYS is the interval the migration actually stamps', () => {
-  const migration = readFileSync(new URL(PURGE_WINDOW_DOC, import.meta.url), 'utf8')
+  // THE COMMENTS COME OUT FIRST. What this reads is what the migration STAMPS, and a `--` line
+  // that merely NAMES another interval is not a stamp: Story 3.5's note beside `restore_account()`
+  // explains that FR-C6's 90-day orphan clock is derived as `disconnected_at + interval '90 days'`
+  // and is never written into `purge_after`, which is the opposite of a second writer — and it
+  // failed this test (2026-09-09). Prose about a clock is not a clock.
+  const migration = readFileSync(new URL(PURGE_WINDOW_DOC, import.meta.url), 'utf8').replace(/--[^\n]*/g, '')
   const stamped = [...migration.matchAll(/interval '(\d+) days'/g)].map((m) => Number(m[1]))
   assert.ok(stamped.length > 0, `${PURGE_WINDOW_DOC} no longer stamps an interval — this test reads it rather than restating it`)
   for (const days of stamped) {

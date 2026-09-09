@@ -70,8 +70,22 @@ end $$;
 -- passed, 2.6's purge owns the account and this answers `false` rather than clearing a state the
 -- purge may already be halfway through.
 --
--- ponytail: restore clears every snapshot's purge_after, the 90-day orphan clock included; E3
--- re-stamps it when it exists (DW-43).
+-- TWO CLOCKS, ONE COLUMN, AND THEY WERE TOLD APART WITHOUT SQL — DW-43, ANSWERED (Story 3.5,
+-- 2026-09-09). `site_snapshots.purge_after` carries FR-A5's 14-day ACCOUNT-DELETION clock and
+-- ONLY that, so the `purge_after = null` below is correct exactly as written and this function
+-- needs no change.
+--
+-- FR-C6's 90-day ORPHAN clock — a snapshot whose site has been disconnected for 90 days — is
+-- DERIVED from `public.sites.disconnected_at` and is never stamped into this column. Story 3.5 is
+-- that column's first and only writer (`sites/actions.ts`'s `disconnectSite`); the job that reads
+-- the derived deadline and deletes the snapshot is **Story 7.20's**, built beside the snapshot it
+-- deletes (the owner's ruling, 2026-09-09; DW-75), and it needs no migration for the clock either
+-- — it joins `sites` and computes `disconnected_at + interval '90 days'`.
+--
+-- Had 3.5 written the 90-day value into this column instead, the `purge_after = null` below would
+-- have silently cancelled a running orphan clock on every restore, which is precisely what DW-43
+-- was raised about. The `least(coalesce(...))` in `request_account_deletion()` above stays right
+-- for the same reason: one column, one meaning.
 create or replace function public.restore_account() returns boolean
 language plpgsql security definer set search_path = public as $$
 begin

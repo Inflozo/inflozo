@@ -2,7 +2,8 @@
 title: 'Story 3.5 — My sites, their caps, and disconnecting one'
 type: 'feature'
 created: '2026-09-09'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '34317cc5553dde2a2df16322c6ce0bceb784916c'
 review_loop_iteration: 0
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -206,28 +207,30 @@ slot at the Free cap.
 
 **Execution:**
 
-- [ ] `apps/web/lib/connect-rule.ts` -- add `DISCONNECT` beside `SITES_EMPTY` and `disconnect_failed`
+- [x] `apps/web/lib/connect-rule.ts` -- add `DISCONNECT` beside `SITES_EMPTY` and `disconnect_failed`
       to `CONNECT_MESSAGES` -- one home for the words, so the screen and the harness cannot disagree.
-- [ ] `apps/web/connect-rule.test.ts` -- cover the new copy and assert `DISCONNECT` names no plan
+- [x] `apps/web/connect-rule.test.ts` -- cover the new copy and assert `DISCONNECT` names no plan
       number of its own -- counts are derived (standing rule 4).
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- add `disconnectSite`: ownership read under
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- add `disconnectSite`: ownership read under
       the caller's session, `remove()` for `admin` then `staff`, then the one server-asserted update,
       revalidate, redirect -- the missing writer of `disconnected_at`, in the file the chokepoint's
       importer list already names.
-- [ ] `apps/web/components/kit/icons.tsx` -- add the broken-link glyph from `S11 Sites.dc.html:82` if
+- [x] `apps/web/components/kit/icons.tsx` -- add the broken-link glyph from `S11 Sites.dc.html:82` if
       absent -- one symbol for one action, as `Trash` is for delete.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/site-menu.tsx` -- new: the ⋯ menu and the confirm, lifted
+      **Dev, 2026-09-09: NOT ABSENT.** `LinkOff` (`icons.tsx:130`) is already the frame's glyph —
+      the same broken link with the diagonal stroke — so it is reused and the file is unchanged.
+- [x] `apps/web/app/(app)/app/(authed)/sites/site-menu.tsx` -- new: the ⋯ menu and the confirm, lifted
       from `project-menu.tsx`'s vocabulary, Disconnect its only item, `Submit` with a `busy` label --
       the frame's control, in the app's existing dialog language (R-74).
-- [ ] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- mount `<SiteMenu>` in the header row,
+- [x] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- mount `<SiteMenu>` in the header row,
       read the plan, draw S11c's ghost slot at the Free cap, read `?disconnect=` for the failure
       Banner -- DW-57's placement rule, and the Refusal cell EXPERIENCE.md already specifies.
-- [ ] `supabase/migrations/20260907150000_account_deletion_window.sql` -- amend the `ponytail:` comment
+- [x] `supabase/migrations/20260907150000_account_deletion_window.sql` -- amend the `ponytail:` comment
       beside `restore_account()` to record the two clocks and why no code changes -- DW-43, answered
       where the next reader meets it. **Comment only: no function change, no new migration.**
-- [ ] `tools/probe/run-verify-ghost-admin.py` -- add this story's steps and extend the docstring from
+- [x] `tools/probe/run-verify-ghost-admin.py` -- add this story's steps and extend the docstring from
       the source -- R-82: the review runs on the real infrastructure or it is not a review.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-43 and amend DW-57 -- propagate,
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-43 and amend DW-57 -- propagate,
       never localise (standing rule 3). **DW-75 is already written and stays open** — it is Story 7.20's.
 
 **Acceptance Criteria:**
@@ -344,6 +347,49 @@ app: you can always sign back in.
 Cancel and Disconnect, **no typing**. It takes the project-delete dialog's look and not its typed field; the
 Boundaries and the acceptance criteria above say so, so a later review cannot re-add one.
 
+### Question 3 — the log entry this story was told to write does not have a name to write itself under
+
+**Raised at Dev, 2026-09-09, and it is a small one — but it is the difference between an acceptance
+criterion being met and being quietly skipped.**
+
+Inflozo keeps a private tamper-log of everything that touches a customer's Ghost keys — every call
+to their Ghost, every time a key is unlocked. It exists so that if a key were ever misused we could
+see it, and it is the only safeguard in this area that *detects* rather than prevents.
+
+This story's spec says disconnecting should add a line to that log: *"the site's Vault secrets are
+gone with an audit row for each removal."* Building it, I checked the code that removes a key
+(`remove()` in `server/ghost-admin/index.ts`) and found it writes **no** line today — and that the
+log's list of allowed entry types is a fixed list in the database with six names on it: *key
+unlocked*, *read from Ghost*, *wrote to Ghost*, and three unrelated ones. **None of them means "a
+key was removed."**
+
+**An example.** It is like a visitors' book with pre-printed tick-boxes for *Arrived*, *Read a
+file* and *Signed a form*, and someone asking you to record a *Departure*. You either add a new
+tick-box to the book — which here means a database change, and this story's spec says in bold that
+it makes none — or you tick the nearest wrong box, which makes the book lie.
+
+**What is *not* in question:** the removal itself works and is proved on the real site. The key is
+deleted from the locked store, the deletion is verified through a direct database read, and the
+record, the projects and the archived theme are all verified untouched. The only thing missing is
+the *line in the log book*.
+
+1. **Leave it out of this story and add the removal entry when the log next needs changing —
+   Story 3.6, which is the other story that removes keys.** **(RECOMMENDED)** — 3.6 ("Manage keys")
+   adds a *Remove token* button, so it removes keys too and it needs the very same new entry type.
+   One database change, made once, covering both. Nothing is lost meanwhile: disconnecting is
+   already recorded in the site's own row (the date it was disconnected) and the key is provably
+   gone.
+2. **Add the new entry type now, in this story.** It is a small database change, but this story's
+   spec says in bold that it makes none, and a database change has to be applied to the live
+   database by hand at Deploy — so it is the one kind of edit that cannot simply be undone.
+3. **Write the line under an existing name — "a key was unlocked".** No database change, and I
+   would not pick it: it would put a *false* entry in the one record that exists to be trusted, and
+   it would break two live checks that count those entries.
+
+**Ruled:** _(awaiting the owner)_ — Dev shipped option 1's behaviour in the meantime: no audit row
+for a removal, and nothing untrue written. The live harness's `disconnect` step proves the secret
+is gone by reading the vault directly, which is the stronger evidence of the two.
+
 ## Owner's manual test
 
 Follow these on the real site after Deploy fills the URLs. You will need a Ghost site to connect —
@@ -405,5 +451,11 @@ use the same test site you used for Story 3.4.
 
 - The Vault secret for a disconnected site is **gone**, not orphaned — `select count(*) from
   vault.secrets` before and after, read through the pooler as the existing `secret-gone` step does.
-- `private.credential_audit` carries a row per removal, naming the route and the site, with no secret
-  in `detail`.
+- ~~`private.credential_audit` carries a row per removal, naming the route and the site, with no secret
+  in `detail`.~~ **Not true of the code, and executed rather than assumed (Dev, 2026-09-09, standing
+  rule 1).** `remove()` writes no audit row — `withStore` only wraps its errors — and
+  `public.credential_action` is a fixed six-value enum with no member meaning "a credential was
+  removed"; adding one is a migration, which this spec's Boundaries forbid in bold. **Question 3
+  above is the owner's, and DW-76 is the ledger entry so it cannot be lost.** The removal is proved
+  the stronger way instead: the `disconnect` step reads `vault.secrets` through the pooler and sees
+  the secret gone.

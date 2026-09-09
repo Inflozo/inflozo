@@ -1,12 +1,25 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
 import { ring } from '@/components/kit/greyed'
 import { ExternalLink } from '@/components/kit/icons'
 import { ConnectSiteButton } from '@/components/shell/shell'
-import { checkedLabel, filterSites, ghostLabel, hostOf, projectCounts, projectsLabel, SITES_EMPTY } from '@/lib/connect-rule'
+import {
+  checkedLabel,
+  connectMessage,
+  filterSites,
+  ghostLabel,
+  hostOf,
+  projectCounts,
+  projectsLabel,
+  SITES_EMPTY,
+} from '@/lib/connect-rule'
+import { resolveEntitlement } from '@/lib/entitlement'
+import { atSiteCap, goProLabel, siteCapSentence } from '@/lib/plan'
 import { PREVIEW_COPY } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { ConnectSiteDialog } from '../connect-dialog'
+import { SiteMenu } from '../site-menu'
 import { SiteNotices, type NoticeSite } from '../site-notices'
 
 /* ───────── S11 Sites.dc.html — S11a, its top bar, and the empty screen the export does not draw.
@@ -45,10 +58,19 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
    themselves, and B15's Preview-Only Notice — every control in it a form, so all of them work
    with JavaScript off.
 
+   STORY 3.5 ADDED THE ⋯ AND THE GHOST SLOT, AND OBEYED DW-57 TWICE OVER. `<SiteMenu>` goes at
+   the TOP RIGHT OF THE HEADER ROW, in the `margin-left:auto` slot the frame draws it in
+   (`S11 Sites.dc.html:68`) — nothing joined the pills' line and nothing joined the state line. It
+   holds **Disconnect** and nothing else: the frame's other three rows are 3.6's and 3.7's and are
+   ABSENT rather than greyed (UX-DR3), and those stories add INTO this menu rather than building a
+   second one. S11c's ghost slot is the grid's next cell at the Free cap, `atSiteCap` and
+   `siteCapSentence` deciding both the WHETHER and the sentence — nothing here types a number
+   (standing rule 4).
+
    ABSENT FROM THIS SURFACE, each another story's and each absent rather than greyed (UX-DR3):
-   the ⋯ menu with Re-check, Reconnect, Manage keys and Disconnect (3.5, 3.6), the health badges
-   and "Reconnect needed" (3.7), and S11c's ghost slot at the Free cap (3.5). Every card here is
-   Connected, because that is still the only health this epic can write. */
+   the ⋯ menu's Manage keys (3.6) and its Re-check / Reconnect, the health badges and "Reconnect
+   needed" (3.7). Every card here is Connected, because that is still the only health this epic
+   can write. */
 
 export const metadata: Metadata = {
   title: 'Sites · Inflozo',
@@ -72,14 +94,22 @@ export default async function Sites({
   // dashboard's own filter does. `recheck` is B15's own: `recheckPlan` redirects here with the
   // ID OF THE SITE whose re-run probe could not reach Ghost, so that card is unchanged and says
   // why — and no other card claims a failure that was not its own.
-  searchParams: Promise<{ q?: string | string[]; recheck?: string | string[] }>
+  // `disconnect` is Story 3.5's own, and the same shape: `disconnectSite` redirects here with the
+  // ID OF THE SITE it could not let go, so that one card says why and no other claims it.
+  searchParams: Promise<{
+    q?: string | string[]
+    recheck?: string | string[]
+    disconnect?: string | string[]
+  }>
 }) {
-  const [{ q, recheck }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ q, recheck, disconnect }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
   const supabase = await supabaseServer()
-  const [{ data, error }, { data: projects, error: projectsError }] = await Promise.all([
+  // THE PLAN IS READ, READ-ONLY, exactly as the dashboard reads it for S3c's upgrade tile: S11c's
+  // ghost slot is the same decision one row down the plan table (`lib/plan.ts`).
+  const [{ data, error }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
     supabase
       .from('sites')
       .select(
@@ -89,6 +119,7 @@ export default async function Sites({
       .order('created_at', { ascending: false }),
     // FR-B5: at most one site per project, so the card's "n projects" is a tally of this column.
     supabase.from('projects').select('linked_site_id'),
+    resolveEntitlement(user.id),
   ])
 
   const sites: Row[] = data ?? []
@@ -105,6 +136,12 @@ export default async function Sites({
   // names the SITE it failed for — the banner belongs to one card, not to the page, and a success
   // redirects without the parameter so it cannot outlive the failure it describes (review).
   const recheckedId = Array.isArray(recheck) ? recheck[0] : recheck
+  const disconnectedId = Array.isArray(disconnect) ? disconnect[0] : disconnect
+  // THE ACTIVE SITES ARE WHAT THE CAP COUNTS — the read above already filters `disconnected_at`
+  // out, which is the same rule the connect action enforces: a record Inflozo kept is not a site.
+  // Free only, as S3c's tile is: on Pro at ten there is nothing further to sell (the dashboard's
+  // own rule), so there is nothing to draw.
+  const ghostSlot = plan === 'free' && atSiteCap(plan, sites.length)
 
   // One clock for the whole render, so two cards a millisecond apart never disagree.
   const now = new Date()
@@ -215,6 +252,12 @@ export default async function Sites({
                           <ExternalLink size={12} className="shrink-0" label="opens in a new tab" />
                         </a>
                       </div>
+                      {/* DW-57: THE ⋯ GOES HERE — the header row's `margin-left:auto` slot, level
+                          with the site's name, where the frame draws it (`S11 Sites.dc.html:68`).
+                          Nothing joins the pills' line and nothing joins the state line. */}
+                      <div className="ml-auto shrink-0">
+                        <SiteMenu id={site.id} name={title} />
+                      </div>
                     </div>
                     {/* THE PILLS KEEP THEIR OWN LINE (his finding 6) — nothing else joins them. */}
                     {version || !projectsError ? (
@@ -253,10 +296,42 @@ export default async function Sites({
                         {checkedLabel(site.settings_read_at, now)}
                       </span>
                     </div>
+                    {/* The one card that could not be let go says so — `?disconnect=<id>` names it,
+                        as `?recheck=` already does, and the sentence is the app's own table's. */}
+                    {disconnectedId === site.id ? (
+                      <Banner kind="error">{connectMessage('disconnect_failed')}</Banner>
+                    ) : null}
                     <SiteNotices site={site} recheckFailed={recheckedId === site.id} />
                   </article>
                 )
               })}
+
+              {/* S11c: the grid's NEXT CELL after the cards, at the Free cap. The grid stretches
+                  it to the cards' own height, so it needs no min-height of its own; the dashed
+                  `line-strong` border goes marigold on hover, as S3c's tile does. Every word of it
+                  is derived — `siteCapSentence` and `goProLabel` from `lib/plan.ts` — so a change
+                  to Appendix F.1 moves the slot, the pill and the connect action's banner together
+                  (standing rule 4). */}
+              {ghostSlot ? (
+                <Link
+                  href="/billing"
+                  className={`flex flex-col items-center justify-center gap-2 rounded border-[1.5px] border-dashed border-line-strong p-5 transition-colors hover:border-marigold ${ring}`}
+                >
+                  <span aria-hidden className="text-[18px] text-marigold-text">
+                    ✦
+                  </span>
+                  {/* S11c's OWN sizes, not S3c's — 13/12/12 against the dashboard tile's 14/13/13
+                      (`S11 Sites.dc.html:181-184`). The two tiles are drawn on two frames and the
+                      export decides each (R-74); everything else here is S3c's, one row down. */}
+                  <span className="text-ui-dense font-semibold text-ink">Upgrade to connect more</span>
+                  <span className="max-w-[200px] text-center text-control-label leading-[1.5] text-ink-soft">
+                    {siteCapSentence(plan)}
+                  </span>
+                  <span className="mt-[2px] rounded-pill bg-marigold-tint px-[12px] py-[5px] text-control-label font-semibold text-marigold-text">
+                    {goProLabel()}
+                  </span>
+                </Link>
+              ) : null}
             </div>
           )}
         </div>

@@ -22,7 +22,7 @@ import { brandPath, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
-import { fetchWithKey, store } from '@/server/ghost-admin'
+import { fetchWithKey, remove, store } from '@/server/ghost-admin'
 import { AdminError } from '@/server/ghost-admin/admin-rule'
 import { probeSite } from '@/server/site-probe'
 
@@ -78,6 +78,9 @@ const BRAND = brandPath
    that reads the reason out of the URL, which is also the only shape that survives scripts off
    (review, 2026-09-08 — every failure branch here used to `return` in silence). */
 const BRAND_FAILED = (siteId: string) => `${BRAND(siteId)}&failed=1`
+/* STORY 3.5, and the same shape one row up: the card that could not be disconnected is the one
+   that says so, named in the URL, so no other card claims a failure that was not its own. */
+const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}`
 
 const fail = (code: ConnectCode, message: string, field?: ConnectField): ConnectResult => ({
   error: { code, message, ...(field ? { field } : {}) },
@@ -735,5 +738,123 @@ export async function useBrand(formData: FormData): Promise<void> {
  */
 export async function skipBrand(formData: FormData): Promise<void> {
   await siteOf(formData, 'skip brand')
+  redirect(SITES_URL)
+}
+
+/**
+ * STORY 3.5 — FR-C6's MISSING WRITER. `sites.disconnected_at` had no author anywhere in the
+ * product: Story 3.2 built the whole RE-ADOPTION half — a disconnected record revived in place,
+ * keeping its id, its `site_settings` and its staff flag, and the cap counting only active rows —
+ * and nothing could put a record into that state, so the branch had never run in production and a
+ * customer could not let a site go at all.
+ *
+ * IT DELETES EXACTLY ONE THING: THE CREDENTIALS. The `sites` row, every `projects` row, every
+ * `projects.linked_site_id` and every `site_snapshots` row survive untouched. That is FR-C6's
+ * promise made true BY CONSTRUCTION rather than by a rule someone remembers, and the live harness
+ * counts each of them either side of the press.
+ *
+ * CREDENTIALS FIRST, `disconnected_at` SECOND, AND A FAILED `remove()` FAILS THE WHOLE ACTION.
+ * `remove()` reaches Vault over the transaction pooler and throws on any store failure
+ * (`ghost-admin/index.ts:151`); a caught throw leaves the site connected and the card says so. The
+ * reverse order would leave a window in which the card reads "gone" while the Admin key still
+ * decrypts.
+ *
+ * READ UNDER THE CALLER'S OWN SESSION, WRITTEN UNDER THE SERVICE ROLE. The read proves ownership
+ * through RLS rather than through an `.eq('user_id', …)` a future edit could drop (`useBrand`'s
+ * shape, executed by the `brand-ownership` step); the write MUST be `supabaseAdmin()` because
+ * `authenticated` may UPDATE only `(title, favicon_url, updated_at)` on `sites` (schema :1040) —
+ * `disconnected_at` and `content_key` are server-asserted (AD-7). Both clients are already
+ * imported by this file and it is already on both importer lists in `server-wiring.test.ts`.
+ *
+ * `credentials_present` STAYS THE MIRROR IT CLAIMS TO BE (Story 3.2's rule): `remove()` flips
+ * `admin` and `staff` inside its own transaction, and the same update that stamps `disconnected_at`
+ * nulls `content_key` and flips `content`. A disconnected record holds no credential of any kind.
+ *
+ * THE 90-DAY ORPHAN CLOCK IS DERIVED FROM `disconnected_at` AND NEVER STAMPED INTO
+ * `site_snapshots.purge_after` — that column carries FR-A5's 14-day account-deletion clock and only
+ * that, which is what keeps `restore_account()`'s `purge_after = null` correct as written and
+ * closes DW-43 with no SQL. The purging job itself is **Story 7.20's**, beside the snapshot it
+ * deletes (the owner's ruling at Question 1, 2026-09-09; DW-75). This story owes only the clock's
+ * origin, written once.
+ *
+ * NO GHOST WRITE. Disconnecting changes nothing on the customer's Ghost, which is the sentence
+ * D4c already prints; `ADMIN_WRITES` is untouched.
+ *
+ * NO AUDIT ROW, AND THAT IS A FINDING, NOT AN OVERSIGHT (Dev, 2026-09-09, standing rule 1 — cite
+ * or execute). The spec asked for "an audit row for each removal"; `remove()` was READ and writes
+ * none — `withStore` only wraps its errors — and `public.credential_action` is a fixed six-value
+ * enum (`admin_write`, `admin_read`, `vault_decrypt`, `entitlement_change`, `admin_flag_change`,
+ * `moderation`) with no member meaning "a credential was removed". Adding one is a migration, which
+ * this story's Boundaries forbid in bold, and writing under `vault_decrypt` would put a FALSE row in
+ * the one record that exists to be trusted and break two live counts. So nothing untrue is written
+ * and the question is the spec's Question 3, for the owner. What IS proved instead, and it is the
+ * stronger evidence: the harness's `disconnect` step reads `vault.secrets` through the pooler and
+ * sees the secret gone.
+ */
+export async function disconnectSite(formData: FormData): Promise<void> {
+  const at = await siteOf(formData, 'disconnect')
+  // A `site_id` that is absent or not a uuid is a crafted post, not a press — every ⋯ menu carries
+  // the hidden field. `siteOf` has already logged it, naming this action.
+  if (!at) notFound()
+
+  // OWNERSHIP THROUGH RLS, AND THE ROW'S CURRENT STATE IN THE SAME READ. A site id the caller does
+  // not own simply is not in this list, which is the matrix's "nothing written, nothing disclosed".
+  const supabase = await supabaseServer()
+  const { data: site, error } = await supabase
+    .from('sites')
+    .select('id, disconnected_at')
+    .eq('id', at.siteId)
+    .maybeSingle<{ id: string; disconnected_at: string | null }>()
+  // A READ THAT FAILED IS NOT A STRANGER'S ROW — the rule `useBrand` was given at review 4 and
+  // `sites/page.tsx` states as "A FAILED READ IS NOT AN EMPTY ACCOUNT". 404ing on it would tell
+  // the customer his own site is gone; the card's own failure line is the honest answer.
+  if (error) {
+    console.error('sites: disconnect read failed', { code: error.code })
+    redirect(DISCONNECT_FAILED(at.siteId))
+  }
+  if (!site) notFound()
+  // The same id posted twice: the second press has nothing to do and nothing to say about it.
+  if (site.disconnected_at) redirect(SITES_URL)
+
+  // ── THE CREDENTIALS, FIRST. Both kinds unconditionally: `remove()` is an UPDATE over
+  //    `private.site_credentials`, so a kind that was never stored matches its own null and the
+  //    call is a no-op — and `staff` is exactly that today, because nothing stores one until Epic 7.
+  //    SO THIS IS NOT DW-54's `staff-removed` PROOF and must not be recorded as one: removing a
+  //    token that was never there exercises the call and says nothing about the secret it would
+  //    have dropped. It is here so the day Epic 7 stores one, disconnecting already takes it out.
+  //    The trigger deletes the Vault secret behind each ref it nulls (DW-44).
+  try {
+    await remove({ siteId: site.id, kind: 'admin', route: ROUTE })
+    await remove({ siteId: site.id, kind: 'staff', route: ROUTE })
+  } catch (thrown) {
+    // Logged with a code and no value, and the site is STILL CONNECTED: nothing below has run.
+    // `redirect` throws NEXT_REDIRECT and this catch is not inside another `try`, so it leaves.
+    console.error('sites: disconnect remove failed', {
+      code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
+    })
+    redirect(DISCONNECT_FAILED(site.id))
+  }
+
+  // ── ...AND ONLY THEN THE STAMP. One update, three server-asserted columns, and `.select('id')`
+  //    so a write that matched no row is not silence — PostgREST answers an update that hit
+  //    nothing with no error and no rows (`writeSite`'s own finding).
+  const { data, error: stamped } = await supabaseAdmin()
+    .from('sites')
+    .update({
+      disconnected_at: new Date().toISOString(),
+      content_key: null,
+      credentials_present: { content: false, admin: false, staff: false },
+    })
+    .eq('id', site.id)
+    .eq('user_id', at.userId)
+    .select('id')
+  if (stamped || !data?.length) {
+    console.error('sites: disconnect stamp failed', { code: stamped?.code ?? 'no_such_site' })
+    redirect(DISCONNECT_FAILED(site.id))
+  }
+
+  // The card leaves the list, and the dashboard's own tally of connected sites moves with it.
+  revalidatePath(SITES)
+  revalidatePath(DASHBOARD)
   redirect(SITES_URL)
 }

@@ -197,7 +197,13 @@ create table public.site_snapshots (
   theme_name    text,
   bytes         bigint,
   captured_at   timestamptz not null default now(),
-  purge_after   timestamptz,                              -- FR-C6: 90 days after disconnect; FR-A5: 14 days at delete
+  -- FR-A5's 14-DAY ACCOUNT-DELETION CLOCK, AND ONLY THAT (Story 3.5, 2026-09-09 — DW-43 closed).
+  -- FR-C6's 90-day ORPHAN clock is DERIVED from `public.sites.disconnected_at` and is never
+  -- stamped here: two clocks in one column is what made `restore_account()`'s `purge_after = null`
+  -- ambiguous. `disconnectSite` is `disconnected_at`'s only writer; Story 7.20 reads the derived
+  -- deadline (DW-75). See the comment beside `restore_account()` in
+  -- `supabase/migrations/20260907150000_account_deletion_window.sql`.
+  purge_after   timestamptz,
   download_offered_at timestamptz,
   unique (site_id)                                        -- one pre-Inflozo snapshot per site record
 );

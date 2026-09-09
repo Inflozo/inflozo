@@ -234,16 +234,64 @@ list gone stale — the sibling harness's own note):
   at-cap         T3's keys on a Free account that already has T1: Appendix F.1's own sentence,
                  evaluated from the app's `siteCapSentence('free')` rather than typed here, and no
                  second row
-  re-adopt       FR-C6: the service role marks T1's record disconnected (nothing in the product
-                 writes that until Story 3.5), `/sites` is the EMPTY SCREEN again, its button opens
-                 the sheet, and reconnecting
-                 RE-ADOPTS the record — same id, `disconnected_at` cleared, a NEW vault ref, the
+  then STORY 3.5, on that same state — Free, one site, one project linked to it:
+  ghost-slot     S11c: at the FREE cap the grid's next cell is the dashed upgrade box, beside the
+                 card and on its row, reading the app's own `siteCapSentence('free')` and
+                 `goProLabel()` — no number is typed here (standing rule 4)
+  site-menu      S11a's ⋯ at the TOP RIGHT of the header row, level with the site's name (DW-57),
+                 196px wide (the frame's own, `S11 Sites.dc.html:77`) and holding EXACTLY ONE item,
+                 **Disconnect** — Manage keys, Re-check and Reconnect are 3.6's and 3.7's and are
+                 ABSENT, not greyed (UX-DR3). Escape closes it and returns focus to the ⋯, which is
+                 the platform's, not ours. The count is read off the very selector `lib/menu.ts`'s
+                 arrow keys walk, so a row added without a story fails a step
+  axe-disconnect axe-core over the open confirm at 1440 and 390
+  disconnect-confirm  THE OWNER'S QUESTION 2 RULING (option 1, 2026-09-09) in its two observable
+                 halves: the dialog opens with focus on **Cancel** (EXPERIENCE.md § Destructive
+                 confirms) and there is NOTHING TO TYPE INTO — zero fields, and Disconnect live on
+                 the first click. It names the site and says what happens; Cancel closes it and the
+                 site is still connected
+  axe-menu       axe-core over the open ⋯ menu at 1440 and 390, REOPENED at each width: a popover's
+                 coordinates are written at the click (`lib/menu.ts`) and do not survive a resize,
+                 so auditing one opened at 1440 while the viewport says 390 audits nothing
+  disconnect-js-off  the confirm is a real `<form action={disconnectSite}>` in the SERVED document —
+                 method=post, an action attribute, React's encoded `$ACTION_*` fields, one hidden
+                 `site_id`, one submit and ZERO fields to type into, so re-adding the typed field
+                 cannot pass by being hidden. The menu itself is a native popover opened by
+                 `popovertarget`; the shell's own no-JS paint is DW-56
+  disconnect-forged  A SECOND ACCOUNT'S SITE ID forged into that form and submitted from the
+                 fixture's own session. `disconnectSite` reads the row through the CALLER'S session
+                 before it writes anything and the write is `supabaseAdmin()`'s, so that read is the
+                 whole guard: the press is watched LANDING on the not-found page (standing rule 2 —
+                 a negative assertion needs a positive control), the stranger's row is byte-identical
+                 afterwards, and the caller's own site is not disconnected either
+  disconnect     THE PRESS, AND FR-C6 IN ONE STEP. The card leaves the list and `/sites` is the
+                 empty screen again — while the ROW survives, stamped `disconnected_at`, with
+                 `content_key` null and `credentials_present` every-one-false (the mirror it claims
+                 to be). The vault ref is nulled and the secret behind it is GONE (DW-44's trigger).
+                 NOTHING ELSE MOVED: the project, its name, its `style_pack` and its
+                 `linked_site_id`, and a fixture `site_snapshots` row patched in through the service
+                 role — no product code writes one until Story 7.20 — are byte-identical after it,
+                 its `purge_after` still null, because the 90-day orphan clock is DERIVED from
+                 `sites.disconnected_at` and never stamped there (DW-43 closed, DW-75 owns the job).
+                 THE SECRET'S ABSENCE IS READ FROM `vault.secrets` AND NOT FROM A LOG ENTRY,
+                 deliberately: `remove()` writes NO `private.credential_audit` row and the enum has
+                 no member meaning one (DW-76, and Story 3.5's Question 3 for the owner). Reading
+                 the vault is the stronger of the two anyway — a log line says a removal was
+                 attempted; this says the key is gone
+  re-adopt       FR-C6: the record disconnected BY THE PRODUCT above — the first run in which that
+                 branch is reached the way a customer reaches it — `/sites` is the EMPTY SCREEN,
+                 its button opens the sheet, and reconnecting
+                 RE-ADOPTS the record — same id, `disconnected_at` cleared, `site_settings` intact
+                 (its `public_url` and its `brand` both survive), a NEW vault ref, the
                  OLD secret gone (DW-44's replace path, live — the `rotated` proof DW-54 deferred)
   pro-connect-t3 the service role flips the entitlement row to `pro_active` (no billing exists
                  until Epic 12), and T3 is connected THROUGH THE SHEET with a trailing-slash
                  address: the row stores the typed origin without it, the public url as Ghost
                  sends it, `ghost_version` from config/, a secret behind its ref; the sheet CLOSES
                  on success and the second card shows "Ghost 5.x"
+  ghost-slot-pro S11c's OTHER HALF: on Pro there is nothing further to sell, so the grid draws no
+                 ghost slot at all. Pro AT its cap needs ten connected Ghost sites and is ⛔
+                 unexecuted, recorded rather than claimed
   brand-rerun    THE OFFER TAKEN A SECOND TIME, WITH ROOM — the only state in this run where a
                  second press could make a SECOND project for one site, and until the review of
                  2026-09-08 it did. It runs after `pro-connect-t3` because every brand step above
@@ -333,7 +381,10 @@ list gone stale — the sibling harness's own note):
                  leave it, the grid stays three-up). Then
                  **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
                  back to `full`/`probe`
-  audit          `private.credential_audit` read through the pooler: one `admin_read ok` for
+  audit          `private.credential_audit` read through the pooler — and STORY 3.5's DISCONNECT
+                 ADDS NOTHING TO IT, which is why every count below is unchanged by it: `remove()`
+                 and `store()` both write no audit row at all, and `public.credential_action` has no
+                 member meaning "a credential was removed" (DW-76). One `admin_read ok` for
                  `config/` with a NULL `site_id` per connect and, carrying the id, one for `site/`
                  plus TWO per probe (Story 3.3 — three connects and one Re-check plan), with two
                  `vault_decrypt ok` rows per probe; every count DERIVED from those two numbers,
@@ -391,9 +442,11 @@ empty screen has no frame: it is the owner's finding 7, extrapolated from S3b (R
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
 (argv is world-readable in `ps`), and every command is recorded by the key's variable NAME.
 
-ONE FIXTURE USER IS CREATED AND DELETED HERE, and its two sites go with it. Two states no UI can
-yet produce are made on it by the service role and nothing else: a DISCONNECTED record (Story 3.5's
-Disconnect does not exist) and a PRO entitlement (Epic 12's billing does not). The Admin-API user
+ONE FIXTURE USER IS CREATED AND DELETED HERE, and its two sites go with it. The states no UI can
+yet produce are made on it by the service role and nothing else: a PRO entitlement (Epic 12's
+billing does not exist), a site row with no credential behind it, and a `site_snapshots` row (Story
+7.20 takes the first real one). **A DISCONNECTED RECORD IS NO LONGER ONE OF THEM** — Story 3.5
+built its writer, so `re-adopt` is driven through the product's own ⋯ menu. The Admin-API user
 count is read before and after — BEFORE any sweep of strays, so a step that created a user it
 should not have is reported as the leak it is rather than tidied away — and a count that could not
 be read FAILS the run, because it is the cleanup's control.
@@ -451,9 +504,9 @@ def app_text():
     no-op on 24 and the switch on 22.6+), both modules import nothing, and a wording change in
     either moves this run with it. `%s` stands where the app puts the host."""
     script = (
-        f"import {{ connectMessage, HTTP_WARNING, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
+        f"import {{ connectMessage, DISCONNECT, HTTP_WARNING, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
         f"import {{ BRAND_COPY, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
-        f"import {{ siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
+        f"import {{ goProLabel, siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
         "console.log(JSON.stringify({"
         " credential_malformed: connectMessage('credential_malformed'),"
         " ghost_unknown_key: connectMessage('ghost_unknown_key'),"
@@ -505,6 +558,17 @@ def app_text():
         " brand_this_site: BRAND_COPY.thisSite,"
         " brand_failed: BRAND_COPY.failed,"
         " one_project: projectsLabel(1),"
+        # STORY 3.5 — the ⋯ menu's one item, the confirm's every word, and the failure line the
+        # card prints. Read from the app for the reason every sentence above it is: a harness that
+        # retypes a sentence proves nothing about the one Vercel serves.
+        " disconnect_menu: DISCONNECT.menu,"
+        " disconnect_title: DISCONNECT.title('%s'),"
+        " disconnect_body: DISCONNECT.body,"
+        " disconnect_cancel: DISCONNECT.cancel,"
+        " disconnect_busy: DISCONNECT.busy,"
+        " disconnect_failed: connectMessage('disconnect_failed'),"
+        # S11c's ghost slot, both halves derived from `PLANS` — nothing here names a number.
+        " go_pro: goProLabel(),"
         " at_cap: siteCapSentence('free') }))")
     try:
         proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
@@ -705,11 +769,17 @@ const publicSite = async (ghost) =>
 // only exists there is still a violation. `evaluate` and not `addScriptTag`: the app serves a
 // per-session CSP with no `unsafe-inline`, which blocks an injected <script>.
 const AXE_SOURCE = process.env.AXE_PATH ? require('fs').readFileSync(process.env.AXE_PATH, 'utf8') : null
-const axeAt = async (page, label) => {
+/* `atWidth` IS STORY 3.5's, and it exists because a POPOVER cannot survive a resize: `lib/menu.ts`
+   writes the trigger's rect as FIXED coordinates at the moment of the click, so a menu opened at
+   1440 and measured at 390 is being audited where it will never be. The hook reopens it at each
+   width, which is the only way "axe at 1440 and 390 on the menu" means anything. Every other
+   caller passes nothing and is unchanged. */
+const axeAt = async (page, label, atWidth) => {
   if (!AXE_SOURCE) return record(`axe-${label}`, 'axe-core not on this machine — not run')
   const found = []
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
+    if (atWidth) await atWidth(width)
     await page.evaluate(AXE_SOURCE)
     const r = await page.evaluate(() =>
       window.axe.run(document, {
@@ -1836,14 +1906,238 @@ const shoot = async (page, name) => {
       `the banner reads ${JSON.stringify(SAY.at_cap)} — the app's own siteCapSentence('free') — and ` +
       `the account still has ${capped.length} site`)
 
-    // ── FR-C6: a DISCONNECTED record is RE-ADOPTED in place — same id, `disconnected_at` cleared,
-    //    the key re-stored and the OLD secret dropped by the trigger (DW-44's replace path, live).
-    //    Nothing in the product writes `disconnected_at` until Story 3.5, so the service role sets
-    //    it here; with no active site, `/sites` is the empty screen again.
-    const detached = await patch(`/sites?id=eq.${t1SiteId}`, { disconnected_at: new Date().toISOString() })
+
+    /* ═══════════ STORY 3.5 — S11c's GHOST SLOT, S11a's ⋯ MENU, AND THE ONE WRITER OF
+       `sites.disconnected_at`. The account is on FREE with T1 connected and one project linked to
+       it, which is exactly the state all three need: at the cap for the slot, one card for the
+       menu, and something for the disconnect to leave alone. ═══════════ */
+
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    // …and with no active site `/sites` is the EMPTY SCREEN again, so the handshake is reached
-    // the way the owner asked for it: press "Connect site" and the two steps open in the sheet.
+    await page.waitForSelector('text=Connected')
+
+    // ── S11c: THE GRID'S NEXT CELL AT THE FREE CAP. Every word of it is the app's own — the
+    //    sentence is `siteCapSentence('free')` and the pill is `goProLabel()`, both derived from
+    //    `PLANS` — so this step cannot restate a number Appendix F.1 owns (standing rule 4).
+    const slotOf = () => page.locator('a[href="/billing"]', { hasText: SAY.at_cap })
+    const slotBox = await boxOf(slotOf().first())
+    const freeCard = await boxOf(cardOf(pub1.title || 'Ghost6').first())
+    const slotText = (await slotOf().first().innerText().catch(() => '')).replace(/\s+/g, ' ').trim()
+    step('ghost-slot',
+      (await slotOf().count()) === 1 && slotText.includes(SAY.at_cap) && slotText.includes(SAY.go_pro)
+      && slotBox.x > freeCard.x && Math.abs(slotBox.y - freeCard.y) < 2,
+      `at the FREE cap the grid's next cell is S11c: one dashed link to /billing reading ` +
+      `${JSON.stringify(slotText)} — the app's own siteCapSentence('free') and goProLabel(), not a ` +
+      `number typed here — sitting beside the card at x ${Math.round(slotBox.x)} against the card's ` +
+      `${Math.round(freeCard.x)}, on the same grid row (y ${Math.round(slotBox.y)} vs ` +
+      `${Math.round(freeCard.y)})`)
+
+    // ── S11a's ⋯, AT THE TOP RIGHT OF THE HEADER ROW (DW-57). Disconnect is its ONLY item: the
+    //    frame draws four and the other three are 3.6's and 3.7's, ABSENT rather than greyed
+    //    (UX-DR3). The count is read off the very selector `lib/menu.ts`'s arrow keys walk, so a
+    //    row added without a story is a failing step and not a review note.
+    // BY ROLE AND BY NAME, scoped to T1's own card: the label is the component's
+    // `Options for {title}` and a Ghost title with a quote in it would break an attribute selector.
+    const t1CardLoc = () => cardOf(pub1.title || 'Ghost6').first()
+    const dots = () => t1CardLoc().getByRole('button', { name: /^Options for / })
+    const menuBox0 = await boxOf(page.locator(`article h2`).first())
+    await dots().first().click()
+    const menuEl = page.locator(`#site-menu-${t1SiteId}`)
+    await menuEl.waitFor({ state: 'visible' })
+    const menuItems = await menuEl.locator('a[href], button').allInnerTexts()
+    const dotsBox = await boxOf(dots().first())
+    const menuWidth = Math.round((await boxOf(menuEl)).width)
+    // Escape is the PLATFORM's, not ours — that is why every menu here is a popover — and the
+    // owner's manual test names it: the menu closes and the ⋯ is focused again.
+    await page.keyboard.press('Escape')
+    const menuClosed = (await menuEl.isVisible().catch(() => false)) === false
+    const backOnDots = await page.evaluate(() =>
+      Boolean(document.activeElement && (document.activeElement.getAttribute('aria-label') || '')
+        .startsWith('Options for')))
+    step('site-menu',
+      (await dots().count()) === 1 && menuItems.length === 1
+      && menuItems[0].trim() === SAY.disconnect_menu
+      && dotsBox.x > menuBox0.x && Math.abs(dotsBox.y - menuBox0.y) < 24
+      && menuWidth === 196 && menuClosed && backOnDots,
+      `one ⋯ on the card, at the header row's right edge (x ${Math.round(dotsBox.x)} against the ` +
+      `title's ${Math.round(menuBox0.x)}, level with it at y ${Math.round(dotsBox.y)} vs ` +
+      `${Math.round(menuBox0.y)}); the menu is ${menuWidth}px wide — the frame's own ` +
+      `(S11 Sites.dc.html:77) — and holds EXACTLY ${menuItems.length} item, ` +
+      `${JSON.stringify(menuItems)}. Manage keys, Re-check and Reconnect are 3.6's and 3.7's and ` +
+      `are ABSENT, not greyed (UX-DR3). Escape closed it = ${menuClosed} and returned focus to the ` +
+      `⋯ = ${backOnDots}`)
+
+    // ── THE CONFIRM, AND THE OWNER'S QUESTION 2 RULING IN ITS TWO OBSERVABLE HALVES (option 1,
+    //    2026-09-09): it opens with focus on CANCEL, and there is NOTHING TO TYPE INTO — the
+    //    project-delete dialog's look without its typed name field. Cancel leaves the site
+    //    connected, which is the matrix's own way out.
+    const openConfirm = async () => {
+      if ((await menuEl.isVisible().catch(() => false)) === false) await dots().first().click()
+      await menuEl.waitFor({ state: 'visible' })
+      await menuEl.getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
+      await page.waitForSelector('dialog[open]')
+    }
+    await openConfirm()
+    const dialog = page.locator('dialog[open]')
+    const onCancel = await page.evaluate(() =>
+      document.activeElement ? document.activeElement.hasAttribute('data-cancel') : false)
+    // A FIELD IS WHAT THIS RULING FORBIDS, so the assertion is that there is not one — any input
+    // that is not the form's own hidden `site_id`.
+    const typedFields = await dialog.locator('input:not([type="hidden"]), textarea').count()
+    const confirmText = (await dialog.innerText().catch(() => '')).replace(/\s+/g, ' ').trim()
+    const confirmButton = dialog.getByRole('button', { name: SAY.disconnect_menu, exact: true })
+    // LIVE ON THE FIRST CLICK: nothing greys it, because nothing has to be typed first.
+    const armed = (await confirmButton.getAttribute('aria-disabled')) === null
+    // The confirm NAMES THE SITE — the app's own `DISCONNECT.title(host)`, interpolated with the
+    // very title the card shows (`sites.title`, written from `GET /admin/site/`).
+    const titleSaid = confirmText.includes(SAY.disconnect_title.replace('%s', pub1.title || 'Ghost6'))
+    await axeAt(page, 'disconnect')
+    await dialog.getByRole('button', { name: SAY.disconnect_cancel, exact: true }).click()
+    const closedOnCancel = (await page.locator('dialog[open]').count()) === 0
+    const stillThere = ((await rowsOf('id,disconnected_at')).find((r) => r.id === t1SiteId) || {})
+    step('disconnect-confirm',
+      onCancel && typedFields === 0 && armed && titleSaid && closedOnCancel
+      && stillThere.disconnected_at === null && confirmText.includes(SAY.disconnect_body),
+      `the confirm opens with focus on Cancel = ${onCancel} (EXPERIENCE.md § Destructive confirms), ` +
+      `names the site in its title = ${titleSaid} and says what happens ` +
+      `(${JSON.stringify(confirmText.slice(0, 120))}); there are ${typedFields} fields to type into — ` +
+      `the owner's Question 2 ruling is option 1, a SIMPLE confirm — and Disconnect is live on the ` +
+      `first click = ${armed}. Cancel closed it = ${closedOnCancel} and the site is still ` +
+      `connected (disconnected_at ${JSON.stringify(stillThere.disconnected_at)})`)
+
+    // axe over the MENU, reopened at each width, because a popover's coordinates are written at
+    // the click and do not survive a resize (see `axeAt`).
+    await axeAt(page, 'menu', async () => {
+      await page.keyboard.press('Escape').catch(() => {})
+      await dots().first().click()
+      await menuEl.waitFor({ state: 'visible' })
+    })
+    await page.keyboard.press('Escape').catch(() => {})
+
+    // ── EVERY CONTROL IS A REAL FORM — the same shape `notices-js-off` asserts, on the ONE form
+    //    that step's selector deliberately excludes.
+    //    A SCRIPTS-OFF BROWSER IS SERVED THE SERVER'S HTML, so `goto` is the setup — the same one
+    // `notices-js-off` and `js-off` use, and the one `brand-js-off` was corrected to (runs 2-4):
+    // React emits `method="POST"` and the encoded `$ACTION_*` fields only when it renders on the
+    // SERVER, so a form reached through a client-side transition carries neither.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const confirmForms = await page.locator('article dialog form').evaluateAll((forms) =>
+      forms.map((f) => ({
+        method: (f.getAttribute('method') || '').toLowerCase(),
+        // `!== null`, NEVER truthiness: React emits `action=""`, which MEANS "post to this page".
+        action: f.getAttribute('action') !== null,
+        encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
+        site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
+        // A FIELD TO TYPE INTO IS WHAT THE OWNER'S QUESTION 2 RULING FORBIDS, asserted in the
+        // served markup as well as on screen, so re-adding one cannot pass by being hidden.
+        typed: f.querySelectorAll('input:not([type="hidden"]), textarea').length,
+        submits: f.querySelectorAll('button[type="submit"]').length,
+      })))
+    const wiredConfirm = confirmForms.filter((f) => f.method === 'post' && f.action && f.encoded > 0
+                                                    && f.site === 1 && f.submits === 1 && f.typed === 0)
+    step('disconnect-js-off',
+      confirmForms.length === 1 && wiredConfirm.length === 1,
+      `the ⋯ confirm is ${confirmForms.length} real <form> in the SERVED document and ` +
+      `${wiredConfirm.length} of them progressively enhanced: method=post, an action attribute, ` +
+      `React's encoded $ACTION_* hidden fields, one hidden site_id, one submit and ZERO fields to ` +
+      `type into. Read: ${JSON.stringify(confirmForms)}. The menu itself is a native popover opened ` +
+      `by popovertarget; the shell's own no-JS paint is DW-56`)
+
+    // ── A SECOND ACCOUNT'S SITE ID, FORGED INTO THIS FORM. `disconnectSite` reads the row through
+    //    the CALLER'S OWN session before it writes anything, so RLS refuses it and `notFound()` is
+    //    the whole answer — and, because the write below is `supabaseAdmin()`'s, that read is the
+    //    only thing standing between two accounts. A negative assertion needs a positive control
+    //    (standing rule 2): the press is watched LANDING before the rows are re-read.
+    const stranger = ((await insert('/sites', {
+      user_id: OTHER_USER_ID, url: 'https://stranger.inflozo.com', title: 'Stranger',
+    })).body || [])[0] || {}
+    const strangerBefore = JSON.stringify({
+      disconnected_at: stranger.disconnected_at, content_key: stranger.content_key,
+      credentials_present: stranger.credentials_present,
+    })
+    await openConfirm()
+    const forgedDisconnect = await page.evaluate((id) => {
+      const field = document.querySelector('dialog[open] form input[name="site_id"]')
+      if (!field) return false
+      field.value = id
+      field.form.querySelector('button[type="submit"]').click()
+      return true
+    }, stranger.id)
+    const forgedLanded = await page.getByText('could not be found', { exact: false }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    const strangerRow = ((await wire(`/sites?id=eq.${stranger.id}&select=*`)).body || [])[0] || {}
+    const strangerAfter = JSON.stringify({
+      disconnected_at: strangerRow.disconnected_at, content_key: strangerRow.content_key,
+      credentials_present: strangerRow.credentials_present,
+    })
+    const mineUntouched = ((await rowsOf('id,disconnected_at')).find((r) => r.id === t1SiteId) || {})
+    step('disconnect-forged',
+      Boolean(stranger.id) && forgedDisconnect && forgedLanded && strangerAfter === strangerBefore
+      && mineUntouched.disconnected_at === null,
+      `a site id owned by a DIFFERENT account was forged into the ⋯ confirm and submitted from the ` +
+      `fixture's own session (forged = ${forgedDisconnect}); the press was seen to LAND on the ` +
+      `not-found page = ${forgedLanded} — its ownership read came back empty through RLS — and the ` +
+      `stranger's row is byte-identical afterwards = ${strangerAfter === strangerBefore} ` +
+      `(${strangerAfter}). The caller's own site was not disconnected either ` +
+      `(disconnected_at ${JSON.stringify(mineUntouched.disconnected_at)}), which is the other way a ` +
+      `guard could be wrong. The stamp runs under supabaseAdmin(), so that read is the whole guard.`)
+
+    // ── THE PRESS. FR-C6 IN ONE STEP: the credentials go and NOTHING ELSE DOES. A fixture
+    //    `site_snapshots` row is patched in through the service role — no product code writes one
+    //    until Story 7.20 (DW-75) — precisely so the promise "your archived theme stays" has
+    //    something to be true about; `brand-logo` is the precedent for a fixture row.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const snapIn = await insert('/site_snapshots', {
+      user_id: USER_ID, site_id: t1SiteId, storage_path: `site-snapshots/${USER_ID}/${t1SiteId}/before.zip`,
+      theme_name: 'casper', bytes: 1234,
+    })
+    const snapBefore = JSON.stringify((snapIn.body || [])[0] || null)
+    const projectsBeforeDisconnect = await projectsOf()
+    const refBefore = await refOf(t1SiteId)
+    const secretsBefore = await secretsBehind(refBefore)
+    await openConfirm()
+    await page.locator('dialog[open]').getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
+    // WITH T1 GONE THE ACCOUNT HAS NO ACTIVE SITE, so `/sites` is the empty screen again — which
+    // is also the assertion that the card really left the list rather than merely re-rendering.
+    await page.getByText(SAY.empty_title).waitFor({ timeout: 30000 })
+    const goneRow = ((await wire(`/sites?id=eq.${t1SiteId}&select=*`)).body || [])[0] || {}
+    const gonePresent = goneRow.credentials_present || {}
+    const refAfter = await refOf(t1SiteId)
+    const secretsAfter = await secretsBehind(refBefore)
+    const projectsAfterDisconnect = await projectsOf()
+    const stillLinked = projectsAfterDisconnect.filter((r) => r.linked_site_id === t1SiteId).length
+    const snapAfter = JSON.stringify(((await wire(`/site_snapshots?site_id=eq.${t1SiteId}&select=*`)).body || [])[0] || null)
+    step('disconnect',
+      Boolean(goneRow.id) && Boolean(goneRow.disconnected_at) && goneRow.content_key === null
+      && gonePresent.content === false && gonePresent.admin === false && gonePresent.staff === false
+      && refAfter === null && secretsBefore === 1 && secretsAfter === 0
+      && projectsById(projectsAfterDisconnect) === projectsById(projectsBeforeDisconnect)
+      && stillLinked === 1 && snapAfter === snapBefore && snapBefore !== 'null',
+      `the card left the list and /sites is the empty screen again — and the ROW is still there ` +
+      `(FR-C6: a disconnected record is a record Inflozo KEPT), stamped disconnected_at ` +
+      `${JSON.stringify(goneRow.disconnected_at)} with content_key null and credentials_present ` +
+      `${JSON.stringify(gonePresent)} — every one false, the mirror it claims to be. The vault ref ` +
+      `is nulled (${refAfter}) and the secret behind it went from ${secretsBefore} to ` +
+      `${secretsAfter} (DW-44's trigger). NOTHING ELSE MOVED: ` +
+      `${projectsAfterDisconnect.length} project(s), byte-identical to before = ` +
+      `${projectsById(projectsAfterDisconnect) === projectsById(projectsBeforeDisconnect)} — name, ` +
+      `style_pack and all — with ${stillLinked} still carrying linked_site_id, and the fixture ` +
+      `site_snapshots row untouched = ${snapAfter === snapBefore} (its purge_after is still null: ` +
+      `the 90-day orphan clock is DERIVED from sites.disconnected_at and never stamped there, which ` +
+      `is what closes DW-43 with no SQL and leaves the job itself to Story 7.20, DW-75)`)
+    // The fixture goes with the site's record only at the cascade; it is removed here so the
+    // re-adopt below reads a row this run has not left lying about.
+    await fetch(`${SB}/rest/v1/site_snapshots?site_id=eq.${t1SiteId}`, {
+      method: 'DELETE', headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}` },
+    }).catch(() => {})
+
+    // ── FR-C6: a DISCONNECTED record is RE-ADOPTED in place — same id, its `site_settings` intact,
+    //    `disconnected_at` cleared, the key re-stored and the OLD secret already dropped by the
+    //    trigger (DW-44's replace path, live). SINCE STORY 3.5 THE DISCONNECT ABOVE IS THE
+    //    PRODUCT'S OWN: the service role no longer patches the record into that state, which is
+    //    what makes this the first run where the re-adoption branch is reached the way a customer
+    //    reaches it. With no active site, `/sites` is already the empty screen.
     await page.getByText(SAY.empty_title).waitFor()
     await opener(page).last().click()
     await page.waitForSelector('dialog[open] a[href="?step=keys"]')
@@ -1863,16 +2157,20 @@ const shoot = async (page, name) => {
     const reprobed = (readopted[0] || {}).site_settings || {}
     const noticeBack = await page.getByText(SAY.injection_body).isVisible().catch(() => false)
     step('re-adopt',
-      detached.status === 200 && readopted.length === 1 && readopted[0].id === t1SiteId
+      Boolean(goneRow.disconnected_at) && readopted.length === 1 && readopted[0].id === t1SiteId
       && readopted[0].disconnected_at === null && Boolean(ref1b) && ref1b !== ref1
       && (await secretsBehind(ref1)) === 0 && (await secretsBehind(ref1b)) === 1
-      && reprobed.code_injection === true && noticeBack === false,
-      `the record was disconnected (HTTP ${detached.status}), /sites became the empty screen, and reconnecting ` +
+      && reprobed.code_injection === true && noticeBack === false
+      && Boolean(reprobed.public_url) && Boolean(reprobed.brand),
+      `the record was disconnected BY THE PRODUCT (the ⋯ menu's own Disconnect, above), /sites became the empty screen, and reconnecting ` +
       `through the sheet its own button opens ` +
       `re-adopted it: same id = ${readopted[0] && readopted[0].id === t1SiteId}, disconnected_at cleared, a NEW ` +
       `vault ref = ${Boolean(ref1b) && ref1b !== ref1}, secrets behind the old ref ${await secretsBehind(ref1)}, ` +
       `behind the new ${await secretsBehind(ref1b)} (the trigger dropped the replaced one); the RE-PROBE wrote ` +
-      `code_injection ${reprobed.code_injection} again and the dismissed notice came back = ${noticeBack}`)
+      `code_injection ${reprobed.code_injection} again and the dismissed notice came back = ${noticeBack}; ` +
+      `and the record came back CARRYING WHAT IT HELD — site_settings.public_url and .brand both ` +
+      `survived the disconnect, which is Story 3.5's own criterion and what makes a re-adopted site ` +
+      `the one Inflozo already knew rather than a stranger with the same name`)
     refs.push(ref1b)
 
     // ── ON PRO, THROUGH THE SHEET: T3 with a trailing slash. The row stores the typed origin
@@ -1913,6 +2211,20 @@ const shoot = async (page, name) => {
       `the sheet closed on success (${sheetLeft} left open), the connect landed on ${t3Landed} — ` +
       `S2c for T3 (Story 3.4) — and after Skip the second card reads ` +
       `${JSON.stringify(card3.replace(/\s+/g, ' ').trim())}`)
+
+    // ── ...AND S11c's OTHER HALF. On Pro there is nothing further to sell, so there is nothing to
+    //    draw: the slot is the FREE cap's alone (the dashboard's own rule, one row down the plan
+    //    table). Pro AT its cap needs ten connected sites and no run can make them — the frame's
+    //    own answer for that state is the same absence, and it is RECORDED as unexecuted rather
+    //    than claimed (⛔, standing rule 1).
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const proSlots = await slotOf().count()
+    const proCards = await page.locator('article').count()
+    step('ghost-slot-pro',
+      proSlots === 0 && proCards === 2,
+      `on PRO with ${proCards} sites the grid has ${proSlots} ghost slot — S11c is the FREE cap's ` +
+      `alone. Pro AT the cap is ⛔ unexecuted here: it needs ten connected Ghost sites`)
 
     // ── THE OFFER TAKEN A SECOND TIME, WITH ROOM. Every other brand step above ran on a FREE
     //    account whose cap is 1, so the first press filled it and every later press took the
@@ -2206,7 +2518,14 @@ const shoot = async (page, name) => {
     //    encoded `$ACTION_*` hidden fields a scripts-off POST carries to reach the server action.
     //    None of these is a client component and none of them holds state; the shell's own no-JS
     //    paint is DW-56 and not this story's.
-    const NOTICE_FORM = 'article form:has(input[name="site_id"])'
+    /* `:not(dialog form)` IS STORY 3.5's, and it is not decoration. The ⋯ menu's confirm is a
+       `<form action={disconnectSite}>` carrying its OWN hidden `site_id`, and it lives INSIDE the
+       same `<article>` — first in document order, because the ⋯ is in the header row. Without this
+       the count below would silently start including it, and `ownership` below would forge the
+       stranger's id into the DISCONNECT form instead of a notice form: the row it re-reads would
+       still look untouched (nothing there compares `disconnected_at`) while the guard the step
+       exists for went unexercised. The disconnect form has its own step, `disconnect-js-off`. */
+    const NOTICE_FORM = 'article form:not(dialog form):has(input[name="site_id"])'
     const noticeForms = await page.locator(NOTICE_FORM).evaluateAll((forms) =>
       forms.map((f) => ({
         method: (f.getAttribute('method') || '').toLowerCase(),
@@ -2223,7 +2542,7 @@ const shoot = async (page, name) => {
     // control silently stopped working with scripts off (review, 2026-09-08). Counting every
     // BUTTON inside the notice blocks and requiring one form per button closes it: a control that
     // leaves the form set is still counted on the button side, so the two numbers disagree.
-    const noticeButtons = await page.locator('article button[type="submit"]').count()
+    const noticeButtons = await page.locator('article :not(dialog) button[type="submit"]').count()
     step('notices-js-off',
       noticeForms.length > 0 && wired.length === noticeForms.length && noticeForms.length === noticeButtons,
       `${noticeButtons} submit control(s) on the two cards — Got it, both answers of each question and ` +
@@ -2248,14 +2567,20 @@ const shoot = async (page, name) => {
       capability: 'preview_only', capability_source: 'user_declared',
     })).body
     const foreignId = (foreign && foreign[0] && foreign[0].id) || null
-    const foreignBefore = JSON.stringify(foreign && foreign[0] ? {
-      capability: foreign[0].capability, source: foreign[0].capability_source,
-      shown: foreign[0].code_injection_notice_shown_at, site_settings: foreign[0].site_settings,
+    // `disconnected_at` AND `credentials_present` ARE IN THE COMPARISON SINCE STORY 3.5: the page
+    // now carries a form that writes exactly those two, so a post that reached the wrong form must
+    // be able to fail this step rather than pass it by being compared on the wrong columns.
+    const foreignFields = (r) => JSON.stringify(r ? {
+      capability: r.capability, source: r.capability_source,
+      shown: r.code_injection_notice_shown_at, site_settings: r.site_settings,
+      disconnected_at: r.disconnected_at, credentials_present: r.credentials_present,
     } : null)
+    const foreignBefore = foreignFields(foreign && foreign[0])
     // Swap the hidden id in the FIRST notice form and submit it — the same POST a hand-rolled
     // curl would make, made through the page so the action sees a real session.
     const forged = await page.evaluate((id) => {
-      const field = document.querySelector('article form input[name="site_id"]')
+      // A NOTICE form, never the ⋯ confirm — see the selector note at `notices-js-off`.
+      const field = document.querySelector('article form:not(dialog form) input[name="site_id"]')
       if (!field) return false
       field.value = id
       field.form.querySelector('button[type="submit"]').click()
@@ -2263,10 +2588,7 @@ const shoot = async (page, name) => {
     }, foreignId)
     await page.waitForLoadState('networkidle').catch(() => {})
     const foreignRow = ((await wire(`/sites?id=eq.${foreignId}&select=*`)).body || [])[0] || {}
-    const foreignAfter = JSON.stringify({
-      capability: foreignRow.capability, source: foreignRow.capability_source,
-      shown: foreignRow.code_injection_notice_shown_at, site_settings: foreignRow.site_settings,
-    })
+    const foreignAfter = foreignFields(foreignRow)
     step('ownership',
       Boolean(foreignId) && forged && foreignAfter === foreignBefore,
       `a site row owned by a DIFFERENT account was forged into a notice form and submitted from ` +

@@ -1030,12 +1030,26 @@ reason: FR-A5 (`prd.md:184`): "soft-delete stops the Dodo subscription's auto-re
 ### DW-43: restoring an account clears every snapshot's `purge_after`, the 90-day orphan clock included
 
 plain: When someone cancels their account deletion, the countdown on their archived original themes is
-  cleared too — including a separate, longer countdown that starts when a site is disconnected. Today
-  nothing starts that longer countdown, so nothing is wrong yet; the story that builds it (Epic 3) has to
-  set it again after a restore.
-status: open
+  cleared too — including a separate, longer countdown that starts when a site is disconnected. **Fixed
+  by never writing the second countdown down at all:** the date a site was disconnected is stored, and the
+  90-day deadline is worked out from it whenever anyone needs it, so cancelling a deletion cannot wipe a
+  countdown that was never in that box.
+status: closed
 severity: low
 origin: Story 2.5 spec (2026-09-07), the `restore_account()` function
+closed: Story 3.5 Dev (2026-09-09) — **with a comment, not a migration.** The two clocks were told
+  apart by DERIVING the 90-day one instead of storing it: `site_snapshots.purge_after` carries
+  FR-A5's 14-day account-deletion clock and ONLY that, so `restore_account()`'s `purge_after = null`
+  is correct exactly as written and neither function changes. FR-C6's 90-day orphan deadline is
+  `public.sites.disconnected_at + interval '90 days'`, computed by whoever reads it; Story 3.5's
+  `disconnectSite` is that column's first and only writer, and the job that acts on the deadline is
+  **Story 7.20's** (DW-75), which therefore needs no migration for the clock either. Recorded where
+  the next reader meets each half: the comment above `restore_account()` in
+  `supabase/migrations/20260907150000_account_deletion_window.sql`, the `purge_after` line in the
+  architecture's `SCHEMA.sql`, and `disconnectSite`'s own header. The live harness asserts it —
+  `disconnect` reads a fixture `site_snapshots` row back byte-identical, `purge_after` still null,
+  after a real disconnect. NEITHER OPTION THE REASON BELOW OFFERED WAS TAKEN: no re-stamp, no
+  second column.
 location: supabase/migrations/20260907150000_account_deletion_window.sql (`restore_account`) ·
   supabase/migrations/20260904120000_complete_schema.sql:199 (`site_snapshots.purge_after`, "FR-C6: 90 days
   after disconnect; FR-A5: 14 days at delete")
@@ -1406,6 +1420,20 @@ amended: Story 3.3 (Dev, 2026-09-08) — **the Preview-only chip went on the STA
   tablet) was offered and declined. **So the rule 3.5 and 3.7 inherit is: ON the state line always, BESIDE
   "Connected" only where the card can hold it.** A story that adds a third thing to that line adds it under the
   same rule and does not widen the grid to make it fit.
+amended: Story 3.5 (Dev, 2026-09-09) — **the ⋯ landed at the TOP RIGHT OF THE HEADER ROW, level
+  with the site's name, exactly where the frame draws it (`S11 Sites.dc.html:68`), and nothing this
+  story added joined the pills' line or the state line.** That is the rule above, followed rather
+  than re-derived. **S11c's ghost slot is built** and is the grid's next cell at the Free cap, so
+  the Refusal cell in `EXPERIENCE.md`'s Sites row ("Free at 1 site: S11c's ghost slot") now
+  describes shipped code.
+  **AND THE MENU IS NOW THE ONE PLACE THE CARD'S ACTIONS LIVE: 3.6 and 3.7 ADD INTO IT, they do not
+  build a second one.** It holds **Disconnect** alone today — the frame's Re-check connection,
+  Reconnect and Manage API keys are 3.6's and 3.7's and are ABSENT rather than greyed (UX-DR3) —
+  in `apps/web/app/(app)/app/(authed)/sites/site-menu.tsx`, a near-straight lift of
+  `project-menu.tsx`'s vocabulary (the shared `item` row is now EXPORTED from that file rather than
+  copied). The rule above says the rest: a row added there is a row, not a new surface, and the
+  harness's `site-menu` step counts the items off the very selector `lib/menu.ts`'s arrow keys walk
+  — so a fourth row arriving without a story fails a step rather than a reviewer.
 
 ## Deferred from: spec-3-3-the-connect-time-probes-preview-only-code-injection-portal-and-the-announcement-bar (2026-09-08)
 
@@ -1888,3 +1916,33 @@ reason: FR-C6's rule is one rule — purge the orphan after a notice and a downl
   `apps/web/vercel.json`, owning epic in the route header, `CRON_SECRET` compared with `timingSafeEqual` and
   fail-closed, and `drainPrefix` from `lib/storage-drain.ts` over `site-snapshots/{uid}/{siteId}/` — objects
   **before** rows, as `purge-accounts` does.
+
+### DW-76: removing a credential leaves no line in the credential audit log, and the log has no name for one
+
+plain: Inflozo keeps a private tamper-log of everything that touches a customer's Ghost keys — every call to
+  their Ghost, every time a key is unlocked. It is the only safeguard in this area that *detects* rather than
+  prevents. **Taking a key back out writes nothing to it**, and the log's list of allowed entry types is a
+  fixed list in the database with no name that means "a key was removed". So recording one is a database
+  change — and Story 3.5's spec forbids one in bold. The removal itself is proved a stronger way: the harness
+  reads the locked store directly and sees the key gone.
+status: open
+severity: low
+origin: Story 3.5 Dev (2026-09-09) — the spec's acceptance criterion asked for "an audit row for each
+  removal"; `remove()` was READ (standing rule 1) and writes none
+owner: **Story 3.6** (Manage keys), which adds the *Remove token* control and therefore needs the very same
+  entry type — one migration, made once, covering both callers. Pending the owner's ruling at Story 3.5's
+  **Question 3**; option 1 is the recommendation and is what Dev shipped the behaviour of.
+location: `apps/web/server/ghost-admin/index.ts:151` (`remove()`, and `store()` beside it, neither of which
+  audits) · `supabase/migrations/20260904120000_complete_schema.sql:736` (`public.credential_action`, the
+  six-value enum) · `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`disconnectSite`'s header records the
+  finding beside the code) · `tools/probe/run-verify-ghost-admin.py` (`disconnect`, which proves the secret is
+  gone by reading `vault.secrets` through the pooler instead)
+reason: `public.credential_action` is `('admin_write','admin_read','vault_decrypt','entitlement_change',
+  'admin_flag_change','moderation')`. None of them means a removal. Writing one under `vault_decrypt` would
+  put a FALSE row in the one record that exists to be trusted, and would break both the `decrypt-path` and
+  `audit` steps, whose counts are derived from "one `vault_decrypt` per decryption". Adding a seventh value is
+  an `alter type`, which means a new migration, the RLS gate's copies, `SCHEMA.sql`, and a hand-application to
+  the live database at Deploy — the one kind of edit that cannot be rolled back casually. Nothing is lost
+  meanwhile: the disconnect is recorded on the site's own row (`disconnected_at`) and the secret's absence is
+  executed every harness run. When it lands: one value, one `audit()` call inside `remove()` and one inside
+  `store()` (a key going IN is unrecorded too), and the `audit` step's derived counts move with them.
