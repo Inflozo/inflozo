@@ -674,6 +674,62 @@ project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPA
 Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
 story's path** and were not called.
 
+## Fix record 3 — the owner's Question 5 ruling, executed (R-82)
+
+Run 2026-09-09 against CI's deployment of **`21cdf201`** on `app.inflozo.com` (`rls` ✔ `check` ✔
+`deploy` ✔, production `READY` on that sha through the Vercel API by `VERCEL_TOKEN`), with **T1**
+`ghost6.inflozo.com` 6.58.0 and **T3** `ghost5.inflozo.com` 5.130.6, and the live Supabase project
+over PostgREST, GoTrue and the transaction pooler. Every key named by its variable; no value printed.
+
+**63 steps, 0 failures** — on the **third** attempt; the two before it are recorded below rather than
+discarded. `pnpm check` exit 0 with **230 tests**; `doc-audit --check` PASS twice; no migration, so
+the RLS gate is untouched.
+
+**The change is one string.** `BRAND_COPY.willBrand` went from *"You're at your project limit, **so**
+we'll put your brand on “X”."* to two sentences that claim no relation between them. Nothing else
+moved: the three captions are still three, `brandTarget` is untouched, and no harness step needed an
+edit — `SAY` evaluates the app's own module, so the assertion followed the ruling by itself. That is
+the whole reason the copy lives in `BRAND_COPY` and not in the page.
+
+**`brand-atcap`, in the run's own words:** *"at the Free cap of 1 the caption NAMED the project it
+would brand (**"You're at your project limit. We'll put your brand on “Ghost6”."**) = true, and no
+longer promised a new one = true; pressing it left 1 project — the same row (true) with its name,
+slug and `linked_site_id` untouched"*. `brand-rerun` beside it still reads the with-room sentence
+that asks, and `brand-stale` still gets the true caption back after a refused press — so the ruling
+changed the one caption it was about and no other.
+
+### The two runs that failed first, and what they measured
+
+Neither reached a brand step; both died in **Story 3.2's** part of the run, before anything this fix
+touches.
+
+| Run | Died at | Shape |
+|---|---|---|
+| 1 | `#s2b-admin-key-error` (the `malformed` step) | `locator.waitFor`, 30s, **0 navigation retries** |
+| 2 | `#s2b-api-url-error` (the `not-a-url` step) | `locator.waitFor`, 30s, **0 navigation retries** |
+| 3 | — | **63 PASS, 0 FAIL, 0 retries** |
+
+**They are DW-68, and they sharpened it.** Both elements — and two of the three failures the review's
+real-infra layer saw the day before (`text=Ghost said no`, `#s2b-admin-key-error`) — are inline field
+errors rendered by the Kit's `Input` (`components/kit/input.tsx:105`) **from a server action's
+result**. So what the harness is waiting for is a **POST to an authed route coming back**, not a
+navigation, which is exactly why every one of them reports `0 navigation retries`: the retry wrapper
+covers `goto`, `waitForURL` and `reload`, and none is involved. **DW-68 is amended with this**: the
+entry's "sends no response" is right, but the thing failing to respond is at least as often a server
+action as a document, and anyone reading Vercel's runtime logs for it should look for hung POST
+invocations to `(authed)` routes. **No cause is claimed** and the control that would settle one still
+cannot be driven. The mitigation was deliberately **not** widened again, for the reason Fix record 2
+already gave: a `locator.waitFor` is an assertion nearly everywhere in this file, and retrying
+assertions hides real failures.
+
+**Real services this fix touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
+Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
+story's path** and were not called.
+
 ## Questions for the owner
 
 ### Question 1 — when you press "Use your brand", which project wears it?

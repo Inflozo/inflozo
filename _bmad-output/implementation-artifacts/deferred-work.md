@@ -1658,6 +1658,28 @@ reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sit
   than ride over a hang. So the observed class is now "a page or a wait on the deployed app
   occasionally makes no progress for 30-60s", which is wider than what is mitigated, and a red run
   must still be read before it is believed.
+  A FOURTH LOOK, AND THE FIRST ONE THAT NARROWS ANYTHING (Story 3.4 Fix, 2026-09-09). Three full
+  runs against the same deployment failed twice, and both failures — plus two of the three the
+  review's real-infra layer saw the day before — were `locator.waitFor` timeouts on ONE kind of
+  element: an inline field error on the connect wizard (`#s2b-admin-key-error`, `#s2b-api-url-error`,
+  and `text=Ghost said no`). Those are rendered by the Kit's `Input` (`components/kit/input.tsx:105`)
+  from a SERVER ACTION'S RESULT, so what the harness is waiting for in each case is a POST to an
+  authed route coming back — not a navigation. That is why every one of them reports
+  `0 navigation retries`: the wrapper covers `goto`, `waitForURL` and `reload`, and none of those is
+  involved. So the count printed with a run is a subset AGAIN, in a second way, and for the same
+  underlying reason the second amendment found.
+  WHAT THIS DOES AND DOES NOT SAY. It does not name a cause, and the control that would is still the
+  one that cannot be driven. What it does is sharpen the SHAPE: the entry's title says "sends no
+  response", and on the evidence that is right — but the thing failing to respond is at least as
+  often a server action POST as a document GET, and the two hang the same way for the same duration
+  on the same routes. Anyone opening Vercel's runtime logs for this should look for hung POST
+  invocations to `(authed)` routes and not only for hung page renders; the connect wizard is where
+  to look first, because it is where this run spends its POSTs.
+  THE MITIGATION IS STILL NOT WIDENED, and the reason is the third amendment's reason unchanged: a
+  `locator.waitFor` is an assertion nearly everywhere in this file, and retrying assertions hides
+  real failures. The honest cost is what it has always been — roughly one full run in two reaches
+  the end, so proving anything on the deployed site costs two or three runs, and a red run is read
+  before it is believed rather than re-run on reflex.
 
 ### DW-69: two presses of "Use your brand" in flight together can still make two projects
 
