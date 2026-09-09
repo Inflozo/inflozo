@@ -1576,6 +1576,18 @@ control the reviews above already used.
 
 **Deployment:** https://app.inflozo.com (`dpl_3bzGvgQHjtvntKeAr8TmbTQT411j`)
 
+**Test-environment prep (2026-09-09), mislabeled and corrected.** `ghost6.inflozo.com`'s site record
+was disconnected (soft; FR-C6, nothing lost) and the manual test steps below were pointed at it by
+name, so the owner had one un-connected test server to walk step 5 with — no code changed. That
+commit's subject said `Story 3.4 - Test - …`, which build-sequence.md's Record prompt reserves for
+the owner's own reported result (the one path that sets `owner_test: issues` in the same commit) —
+`owner_test` here stayed `pending`, so the board's `NEXT_AFTER['Test'] = 'Fix'` read it as a finding
+that was never filed and offered "Fix your findings" with nothing to fix. Not rewritten (a pushed
+commit is never amended); this commit's own phase word is `Deploy` — continued deploy-adjacent prep,
+which is what it actually was — so the trail reads `Test` (awaiting the owner) again. **`tools/hooks/commit-msg`
+now blocks a `Test`-phase commit whose spec does not read `owner_test: issues`**, so this specific
+mistake cannot recur.
+
 **Commands:**
 - `pnpm check` (root: `eslint .`, `tsc --noEmit`, `node --test '*.test.ts'`) -- expected: exit 0,
   every existing test still green plus the new `probe-rule` and `style-pack` cases
