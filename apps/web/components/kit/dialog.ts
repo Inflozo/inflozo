@@ -13,8 +13,16 @@
 /* `m-auto` IS LOAD-BEARING. The user agent centres a modal `<dialog>` with `inset:0; margin:auto`,
    and Tailwind's Preflight resets `margin:0` on `*` — so every dialog opened flush against the
    top-left corner until this was here (executed, and visible in the D4b screenshot that found it). */
-export const sheet =
-  'm-auto w-[460px] max-w-[calc(100vw-20px)] flex-col rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex'
+/* THE BOX ITSELF, WITHOUT THE DIALOG. A confirm that appears BOTH in a `<dialog>` and on its own
+   route — Story 3.5's disconnect is the first — cannot reuse `sheet`, because `open:flex` and
+   `backdrop:` mean nothing on a plain element and `open:flex` would leave the page's box with no
+   `display` at all. So the shared half is named once and the two callers add what is theirs. The
+   review of 2026-09-09 found the page had hand-copied these tokens and ALREADY diverged
+   (`max-w-full` against the `calc` below), which is the drift this file exists to prevent. */
+export const sheetBox =
+  'w-[460px] max-w-[calc(100vw-20px)] rounded-lg bg-surface p-[26px] shadow-modal'
+
+export const sheet = `m-auto ${sheetBox} flex-col backdrop:bg-scrim open:flex`
 
 export const title = 'font-display text-[20px] font-bold tracking-[-0.01em] text-ink'
 

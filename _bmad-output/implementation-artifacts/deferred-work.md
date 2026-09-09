@@ -1948,3 +1948,28 @@ reason: `public.credential_action` is `('admin_write','admin_read','vault_decryp
   meanwhile: the disconnect is recorded on the site's own row (`disconnected_at`) and the secret's absence is
   executed every harness run. When it lands: one value, one `audit()` call inside `remove()` and one inside
   `store()` (a key going IN is unrecorded too), and the `audit` step's derived counts move with them.
+
+### DW-77: a disconnect whose second credential removal fails leaves a site reading Connected with no Admin key
+
+plain: Disconnecting takes two keys out, one after the other. If the first comes out and the second cannot —
+  the locked store stops answering in between — the site is left saying **Connected** while the key it needs
+  is already gone. Nothing is lost and nothing is wrong on the customer's Ghost; pressing Disconnect again
+  finishes the job, and the site's own key list already says the key is not there. But between the two
+  presses the card says one thing and the truth is another.
+status: open
+severity: low
+origin: Story 3.5 code review (2026-09-09) — the Edge Case Hunter and the Blind Hunter both reached it from
+  `disconnectSite`'s two sequential `remove()` calls
+owner: **Epic 7**, the story that first stores a Staff Access Token — which is the story that makes this
+  reachable at all
+location: `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`disconnectSite`, the two `remove()` calls
+  inside one `try`) · `apps/web/server/ghost-admin/index.ts` (`remove()`, one `sql().begin()` per call)
+reason: **It cannot happen today.** Nothing stores a staff token until Epic 7, so `remove('staff')` matches no
+  row and cannot fail on its own; and both calls cross the SAME pooler connection, so a store that refuses the
+  second refuses the first, which the `try` already handles by leaving the site connected. The state is also
+  honest rather than silent — `remove()` flips `credentials_present.admin` to false inside its own
+  transaction, so the mirror never claims a key the site has not got, and Epic 3 already calls a partially
+  credentialed site a first-class state and never an error. The fix, when it is worth making, is one
+  transaction across both kinds rather than one per kind — a change to the chokepoint's shape, which is
+  outside a story whose Code Map marks that file read-only. Recorded here rather than designed around, and
+  it is the story that makes it reachable that should close it.

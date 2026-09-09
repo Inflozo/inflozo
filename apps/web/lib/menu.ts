@@ -15,6 +15,17 @@ import type { KeyboardEvent } from 'react'
  * measurable size yet, and anchoring to an edge needs none.
  */
 
+/* EVERY MENU ROW IN THE APP, and it lives beside the placement rather than inside whichever menu
+   happened to need it first. S3c's row and S11a's are the same row; it was exported from
+   `project-menu.tsx` until the review of 2026-09-09, which made `sites/site-menu.tsx` import a
+   `'use client'` feature module — and with it `projects/actions`, `TextInput` and `Banner` — for
+   one string. THE COLOURS AND THE FOCUS RING STAY AT EACH CALL SITE — the danger row is the
+   caller's choice, not the vocabulary's, and `ring` lives in `components/kit/greyed.ts`, which
+   nothing under `lib/` imports (this file would be the first, and one string is not the reason to
+   make `lib` depend on `components`). Both menus already import `ring` for their own rows. */
+export const item =
+  'flex w-full items-center gap-[9px] rounded-sm p-[8px_12px] text-left text-ui-dense font-medium transition-colors'
+
 type Placement = {
   /** `up` puts the menu's bottom above the trigger (the sidebar chip); `down` below it. */
   side: 'up' | 'down'

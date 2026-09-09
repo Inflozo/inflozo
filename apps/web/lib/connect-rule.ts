@@ -204,10 +204,13 @@ export const DISCONNECT = {
   /** S11a's ⋯ menu item, and the confirm's own primary: one word for one action. */
   menu: 'Disconnect',
   title: (host: string) => `Disconnect ${host}?`,
+  /* NO COUNT, IN WORDS EITHER. "two Ghost keys" was a tally in the one object whose header
+     forbids one, and it goes stale the day Epic 7 stores a staff token and disconnecting takes
+     three (review, 2026-09-09). The sentence says what is forgotten, not how many. */
   body:
-    'Inflozo will forget this site\u2019s two Ghost keys. Your projects, their names and their colours ' +
-    'stay exactly as they are, and nothing on your Ghost site changes. To connect again you paste the ' +
-    'two keys once more.',
+    'Inflozo will forget this site\u2019s Ghost keys. Your projects, their names and their colours ' +
+    'stay exactly as they are, and nothing on your Ghost site changes. To connect again you paste ' +
+    'them once more.',
   cancel: 'Cancel',
   /** R-98: a submit control cannot exist without the present tense it wears while it works. */
   busy: 'Disconnecting\u2026',

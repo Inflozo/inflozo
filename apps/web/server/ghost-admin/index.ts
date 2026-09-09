@@ -147,9 +147,21 @@ export async function store(args: {
  * A KEY COMES OUT. The ref is nulled and the trigger deletes the secret behind it; the rotation
  * stamp records WHEN, which is what "Key removed 15 Aug" on Manage keys reads (Story 3.6). The
  * row itself survives — FR-C6, the connection record outlives its credentials.
+ *
+ * THE SITE MUST BE THE CALLER'S, exactly as `store()` requires — the same clause, for the same
+ * reason. A caller proving ownership with its own read and handing the id on is one widened
+ * `select` policy away from deleting a stranger's credential, so the guard lives HERE, beside the
+ * write, and not in the memory of each caller (review, 2026-09-09).
+ *
+ * AND `${column.rotated}` IS STAMPED ONLY WHEN A KEY ACTUALLY CAME OUT. The update matches on the
+ * row, not on the kind, so without `is not null` removing a kind that was never stored stamped a
+ * removal date for a credential that never existed — and Story 3.6's Manage keys renders that
+ * column as "Key removed 15 Aug". With it, such a call matches no row and is the no-op two
+ * comments already claimed it was (review, 2026-09-09).
  */
 export async function remove(args: {
   siteId: string
+  userId: string
   kind: CredentialKind
   route: string
 }): Promise<void> {
@@ -159,12 +171,13 @@ export async function remove(args: {
       await tx`
         update private.site_credentials
            set ${tx(column.ref)} = null, ${tx(column.rotated)} = now()
-         where site_id = ${args.siteId}
+         where site_id = ${args.siteId} and user_id = ${args.userId}
+           and ${tx(column.ref)} is not null
       `
       await tx`
         update public.sites
            set credentials_present = credentials_present || jsonb_build_object(${args.kind}::text, false)
-         where id = ${args.siteId}
+         where id = ${args.siteId} and user_id = ${args.userId}
       `
     })
   })

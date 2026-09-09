@@ -8,7 +8,7 @@ import { ring } from '@/components/kit/greyed'
 import { Copy, Pencil, Trash } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { openNewProject } from '@/components/shell/shell'
-import { arrowKeys, openMenu } from '@/lib/menu'
+import { arrowKeys, item as row, openMenu } from '@/lib/menu'
 import { matchesName, NAME_MAX } from '@/lib/projects'
 import { deleteProject, duplicateProject, renameProject, type ActionResult } from './projects/actions'
 
@@ -43,11 +43,11 @@ import { deleteProject, duplicateProject, renameProject, type ActionResult } fro
 /* `sheet`, `title` and `openOnCancel` are `components/kit/dialog.ts` — the account page's two
    dialogs need the same vocabulary and a second copy is how two dialogs stop matching. */
 
-/* S3c's row, and S11a's — Story 3.5's ⋯ draws the same one, so it is EXPORTED rather than copied
-   into `sites/site-menu.tsx` (the argument `components/kit/dialog.ts`'s header makes for `sheet`:
-   a second copy is how two menus stop matching). The COLOURS stay at each call site — the danger
-   row is the caller's choice, not the vocabulary's. */
-export const item = `flex w-full items-center gap-[9px] rounded-sm p-[8px_12px] text-left text-ui-dense font-medium transition-colors ${ring}`
+/* S3c's row, and S11a's — Story 3.5's ⋯ draws the same one. It LIVES IN `lib/menu.ts` beside the
+   placement both menus already import: exporting it from here made `sites/site-menu.tsx` pull a
+   `'use client'` feature module — `projects/actions`, `TextInput`, `Banner` — into the Sites
+   bundle for one string (review, 2026-09-09). The colours and the ring stay at each call site. */
+const item = `${row} ${ring}`
 
 /**
  * DUPLICATE IS ONE ACTION FOR THE WHOLE GRID, so its failure Banner sits above the grid rather

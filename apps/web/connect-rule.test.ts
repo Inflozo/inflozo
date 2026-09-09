@@ -164,8 +164,13 @@ test('DISCONNECT holds every word the confirm shows, and names no number', () =>
   // COUNTS ARE DERIVED (standing rule 4). The cap's number belongs to `siteCapSentence`, the
   // 90-day orphan clock to Story 7.20 (DW-75) — nothing in this object may name either, or the
   // screen would carry a number whose source lives somewhere else.
+  // A DIGIT IS NOT THE ONLY WAY TO WRITE A NUMBER. The body said "two Ghost keys" and passed this
+  // assertion for a whole story, because `\d` cannot see a word (review, 2026-09-09). The small
+  // words are the ones a sentence about keys, sites or days would actually reach for.
   const words = Object.values(DISCONNECT).map((v) => (typeof v === 'function' ? v('x') : v)).join(' ')
   assert.ok(!/\d/.test(words), `DISCONNECT names a number: ${words}`)
+  const spelled = /\b(one|two|three|four|five|six|seven|eight|nine|ten|ninety)\b/i
+  assert.ok(!spelled.test(words), `DISCONNECT spells a number out: ${words}`)
 })
 
 test('disconnect_failed is in the one codes-to-sentences table, and names no half', () => {

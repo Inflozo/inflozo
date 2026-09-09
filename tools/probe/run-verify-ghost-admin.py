@@ -309,6 +309,10 @@ list gone stale — the sibling harness's own note):
                  gets — and its `disconnected_at` is the instant it already carried, so the second
                  press re-stamps nothing. The row is made by the service role for this press alone
                  and deleted inside the step, so no later count sees it
+  disconnect-route-answers  THE SAME THREE STATES ON THE ROUTE, which is the half a scripts-off
+                 browser reaches. A second account's id and a malformed one are `notFound()`; the
+                 caller's OWN already-disconnected record REDIRECTS to `/sites`, as the action does.
+                 All three were one `notFound()` until the review of 2026-09-09
   disconnect-failed  THE FAILURE THE CUSTOMER SEES. `?disconnect=<id>` puts the app's own
                  `connectMessage('disconnect_failed')` on THAT card and no other (the shape
                  `?recheck=` already has), and the site is STILL CONNECTED — which is the whole
@@ -2378,6 +2382,37 @@ const shoot = async (page, name) => {
       `carried (${JSON.stringify(keptAfter.disconnected_at)} = ${keptAfter.disconnected_at === keptBefore}), ` +
       `so the second press re-stamped nothing. The card whose confirm carried the forged id (T3) is ` +
       `still connected (disconnected_at ${JSON.stringify(t3Still.disconnected_at)})`)
+    // ── AND THE SAME THREE STATES ON THE ROUTE ITSELF, which is the half a scripts-off browser
+    //    reaches. `/sites/disconnect?site=` answered ALL THREE with `notFound()` until the review
+    //    of 2026-09-09: a stranger's id (right), a malformed one (right), and an ALREADY
+    //    DISCONNECTED one (wrong — it is the caller's own record, and the action redirects it to
+    //    `/sites`). Press Disconnect with scripts off and go Back and the browser re-requests this
+    //    page, so that third state is on the ordinary path, not a corner of it.
+    const routeSays = async (site) => {
+      await page.goto(`${APP}/sites/disconnect?site=${site}`, { waitUntil: 'load' }).catch(() => {})
+      const saw = await Promise.race([
+        page.getByText('could not be found', { exact: false }).first()
+          .waitFor({ timeout: 20000 }).then(() => 'not-found').catch(() => null),
+        page.waitForURL((u) => u.pathname === '/sites', { timeout: 20000 })
+          .then(() => 'sites').catch(() => null),
+        page.getByText(SAY.disconnect_cancel, { exact: true }).first()
+          .waitFor({ timeout: 20000 }).then(() => 'confirm').catch(() => null),
+      ])
+      return `${saw} @ ${new URL(page.url()).pathname}`
+    }
+    const strangerGet = await routeSays(stranger.id)
+    const goneGet = await routeSays(kept.id)
+    const mangledGet = await routeSays('not-a-uuid')
+    step('disconnect-route-answers',
+      strangerGet.startsWith('not-found') && goneGet.startsWith('sites')
+      && mangledGet.startsWith('not-found'),
+      `GET /sites/disconnect?site= — a SECOND ACCOUNT'S id: ${strangerGet} (RLS reads nothing, so ` +
+      `there is no page); a MALFORMED id: ${mangledGet} (PostgREST answers 22P02 and there is no ` +
+      `row it could be, which is what notFound() says); the caller's OWN ALREADY-DISCONNECTED ` +
+      `record: ${goneGet} — a redirect to /sites and NOT the not-found page, the same answer ` +
+      `disconnectSite gives that state. All three were one notFound() until the review of ` +
+      `2026-09-09, so the third told a customer his own record had vanished`)
+
     await fetch(`${SB}/rest/v1/sites?id=eq.${kept.id}`, {
       method: 'DELETE', headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}` },
     }).catch(() => {})

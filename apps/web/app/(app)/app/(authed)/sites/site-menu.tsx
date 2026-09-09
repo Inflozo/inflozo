@@ -6,15 +6,14 @@ import { closeOnBackdrop, openOnCancel, sheet } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { LinkOff } from '@/components/kit/icons'
 import { DISCONNECT } from '@/lib/connect-rule'
-import { arrowKeys, openMenu } from '@/lib/menu'
-import { item } from '../project-menu'
+import { arrowKeys, item as row, openMenu } from '@/lib/menu'
 import { DisconnectConfirm } from './disconnect-confirm'
 
 /* ────────────────────────────── S11a's ⋯ menu and the confirm behind it (Story 3.5).
 
    IT IS CLOSE TO A STRAIGHT LIFT OF `project-menu.tsx`, and that is the point: the same
-   `popover="auto"` menu, the same `lib/menu.ts` placement and arrow keys, the same exported `item`
-   row, the same rule above the danger row, and the same `sheet` / `title` / `openOnCancel` dialog
+   `popover="auto"` menu, the same `lib/menu.ts` placement, arrow keys AND `item`
+   row (it lives there, not in `project-menu.tsx` — review, 2026-09-09), the same rule above the danger row, and the same `sheet` / `title` / `openOnCancel` dialog
    vocabulary out of `components/kit/dialog.ts`. R-74 — never a second interface vocabulary beside
    this one. The frame's own numbers where they differ: 196px wide (S11 Sites.dc.html:77) against
    S3c's 160, and the broken-link glyph the frame draws on its Disconnect row (`:82`), which is the
@@ -50,7 +49,9 @@ import { DisconnectConfirm } from './disconnect-confirm'
    `sites/disconnect/page.tsx` serves the same confirm as a full page, posting the same action. A
    `<button onClick>` would have been a control that does nothing without a script — which is what
    the first Dev pass shipped, and what this acceptance criterion forbids. A MODIFIED click (⌘, ctrl,
-   shift, middle) is the customer asking for a new tab and is left alone, as the opener's is. */
+   shift, ALT, middle) is the customer asking for a new tab or a saved link and is left alone, as
+   the opener's is — alt joined that list at the review of 2026-09-09, having been the one gesture
+   the guard swallowed. */
 
 export function SiteMenu({ id, name }: { id: string; name: string }) {
   const menuId = `site-menu-${id}`
@@ -89,14 +90,14 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
         <a
           href={`/sites/disconnect?site=${id}`}
           onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-            if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
             if (!confirm.current) return
             event.preventDefault()
             // The menu is a popover and has to go before the modal opens.
             menu.current?.hidePopover()
             openOnCancel(confirm.current)
           }}
-          className={`${item} text-danger-text hover:bg-danger-tint`}
+          className={`${row} ${ring} text-danger-text hover:bg-danger-tint`}
         >
           <span className="shrink-0 text-danger">
             <LinkOff size={15} />

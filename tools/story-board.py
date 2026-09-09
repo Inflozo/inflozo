@@ -361,6 +361,15 @@ def ruled_line(line):
 # an answer because the words after the colon were not empty (owner, 2026-09-09).
 RULED_STAMP = re.compile(r'\(\s*(?:the\s+)?owner[^)]*?20\d\d-\d\d-\d\d\s*\)'
                          r'|\(\s*20\d\d-\d\d-\d\d\s*\)', re.I)
+# ...AND THE SECOND ALTERNATIVE IS ONLY EVER A DATE **BESIDE HIS NAME IN THE PROSE**, which is what
+# the paragraph above always said and what the pattern alone does not say. Without this, a ruling
+# whose prose merely CITES a dated decision — `**Ruled:** option 1 — Dev shipped it (2026-09-09).`,
+# `… it follows the rule set at (2026-09-02).` — signed itself, and the board kept a question the
+# owner had never seen out of his inbox. That is the same failure the contract below was written to
+# end, in its fourth shape (review, 2026-09-09). Measured before the change: of the 76 question
+# blocks in this repository, ZERO change state under this rule — every real ruling already names
+# him, so the guard costs nothing and closes the hole.
+NAMES_HIM = re.compile(r'\bowner\b', re.I)
 # The one way to say "still his" — a fixed token, so it can never be mistaken for a decision. It
 # may carry a note after it (what Dev shipped meanwhile, say); the token is what the board reads.
 OPEN_MARK = re.compile(r'_\(awaiting the owner\)_', re.I)
@@ -385,8 +394,12 @@ def answered(blk):
     """
     if OPEN_MARK.search(blk):
         return False
+    part = _ruling_part(blk)
+    # A DATE IS NOT A SIGNATURE UNLESS IT IS HIS. `NAMES_HIM` is the other half of the stamp.
+    if not NAMES_HIM.search(part):
+        return False
     return any(ruled_line(l) and RULED_STAMP.search(l) for l in blk.splitlines()) \
-        or bool(RULED_STAMP.search(_ruling_part(blk)))
+        or bool(RULED_STAMP.search(part))
 
 
 def _ruling_part(blk):
@@ -2065,6 +2078,16 @@ def demo():
     # A DATE IN THE ASK IS NOT A SIGNATURE. Every question this story writes is dated where it was
     # raised, and reading that as the owner's answer would hide it exactly as before.
     assert not answered('Raised at Dev (owner, 2026-09-09) — ask.\n\n1. yes\n2. no\n')
+    # A DATE THE RULING MERELY **CITES** IS NOT A SIGNATURE EITHER, and this is the fourth shape of
+    # the same failure (review, 2026-09-09). The bare-date alternative of `RULED_STAMP` was always
+    # meant as "a date beside his name in the prose"; without `NAMES_HIM` it was any date at all,
+    # so a ruling that pointed at an EARLIER decision — the commonest sentence in these specs —
+    # signed itself. Both shapes below rendered `ruled` and were flagged by nothing.
+    assert not answered('### Q\n\n1. yes\n2. no\n\n**Ruled:** option 1 — Dev shipped it (2026-09-09).')
+    assert not answered('### Q\n\n1. yes\n2. no\n\n**Ruled:** option 2 — it follows the rule set at (2026-09-02).')
+    # …while a bare date that DOES sit beside his name still answers, which is the shape the specs
+    # use when the ruling names him in prose rather than in the parenthesis.
+    assert answered('**Ruled:** option 1 — the owner picked it on the call (2026-09-09).')
     # ── AND THE REFUSAL. A question that claims a ruling but carries neither mark is UNREADABLE,
     #    and the board stops instead of rendering a state it invented.
     unreadable = {'k': {'questions': question_blocks(

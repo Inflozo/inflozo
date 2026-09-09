@@ -2,9 +2,9 @@
 title: 'Story 3.5 — My sites, their caps, and disconnecting one'
 type: 'feature'
 created: '2026-09-09'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '34317cc5553dde2a2df16322c6ce0bceb784916c'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -194,9 +194,14 @@ slot at the Free cap.
   upgrade tile, which S11c's ghost slot mirrors — Free only, `min-h` matched to the cards, dashed
   `line-strong` border going marigold on hover.
 - `apps/web/busy.test.ts` · `apps/web/app-routes.test.ts` · `apps/web/server-wiring.test.ts` --
-  **the three auditors that must stay green and need no edit**: the new control is a `Submit` so
-  `busy.test.ts` covers it the day it lands; the new component is inside `(authed)` so it needs no
-  `PUBLIC`/`SELF_GUARDED` row; no new privileged importer.
+  **the three auditors that must stay green**: the new component is inside `(authed)` so it needs no
+  `PUBLIC`/`SELF_GUARDED` row, and there is no new privileged importer. **`busy.test.ts` gained one
+  `NO_SKELETON` row** for the new route (recorded at Dev). **And it is NOT what guards the new
+  control's `busy` label** — the review executed the control on 2026-09-09: delete `busy=` from the
+  confirm's `Submit` and `busy.test.ts` stays green 5/5, because its walk matches the literal string
+  `type="submit"`, which a Kit `<Submit>` never contains. The guard is real but it is **`tsc` inside
+  `pnpm check`**, because `Submit`'s `busy` prop is REQUIRED (`components/kit/submit.tsx:80` says so
+  in those words). Corrected here so the next story does not lean on the wrong tool.
 - `apps/web/connect-rule.test.ts` -- the pure tests for the new copy and for `DISCONNECT`'s presence
   in `CONNECT_MESSAGES`; `:136-140` is the existing site-cap block.
 - `tools/probe/run-verify-ghost-admin.py` -- the live harness gains this story's steps. **The
@@ -216,6 +221,23 @@ slot at the Free cap.
   add **into** this menu rather than building a second one.
 - `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:333` -- the Sites
   row's **Refusal** cell ("Free at 1 site: S11c's ghost slot") is now built; propagate, never localise.
+
+- **What the code review of 2026-09-09 touched, beyond the rows above** — recorded here because the
+  Code Map is this spec's statement of where the code lands, and four of these are files it marks
+  read-only. `server/ghost-admin/index.ts` (`remove()` gains the caller's `user_id` and stops
+  stamping a removal date for a kind that was never stored — the guard belongs beside the write, so
+  every future caller inherits it); `lib/menu.ts` and `project-menu.tsx` (the shared `item` row moves
+  out of the feature module); `components/kit/dialog.ts` (`sheetBox`, the half the dialog and the
+  page share); `supabase/migrations/20260904120000_complete_schema.sql` (**comment only** — the line
+  DW-43's own `location:` names still carried what DW-43 was closed on); `tools/story-board.py` and
+  `_bmad/custom/bmad-build-auto.toml` (the ruling contract's missing half, and its missing
+  propagation); `tools/probe/run-verify-ghost-admin.py` (`disconnect-route-answers`, the step the two
+  patched branches needed). **And at Dev, three the rows above already record but the Code Map still
+  called read-only:** `project-menu.tsx`, `busy.test.ts` (one `NO_SKELETON` row) and
+  `deletion-rule.test.ts`. The ruling-contract change (`tools/story-board.py`,
+  `docs/project-context.md`, `_bmad/custom/bmad-build.toml`, `bmad-code-review.toml`) rode along with
+  this story because Question 3 is the third question the board rendered as `ruled` while it was
+  still the owner's; it is process, not product, and it is named here so it is not invisible.
 
 ## Tasks & Acceptance
 
@@ -278,6 +300,35 @@ slot at the Free cap.
 - Given JavaScript is disabled, when I use the ⋯ menu and confirm a disconnect, then both work.
 - Given `remove()` cannot reach Vault, when I confirm, then the site stays connected and its card says
   why.
+
+### Review Findings
+
+**Code review, 2026-09-09** — five layers (Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor, Real-infra verifier). The Real-infra verifier re-executed the live harness
+against production and **every claim in `## Verification` held**; the findings below are what the
+other four found beside it. All patches are applied and the gates are green.
+
+- [x] [Review][Patch] `/sites/disconnect` answered a FAILED read with `notFound()`, telling a customer his own site is gone — and threw the error away, so nothing was logged either. The rule `disconnectSite` states thirty lines from it, and `brand/page.tsx`'s three-way split, are now both honoured [`apps/web/app/(app)/app/(authed)/sites/disconnect/page.tsx`]
+- [x] [Review][Patch] …and it answered an ALREADY-DISCONNECTED site — the caller's own record — with `notFound()`, where the action redirects to `/sites`. Reached by pressing Disconnect with scripts off and going Back [same file]
+- [x] [Review][Patch] `remove()` was not scoped to the caller while its sibling `store()` always has been, so the credential-deletion path's only guard was the caller's preceding read. The `and user_id =` clause now lives beside the write [`apps/web/server/ghost-admin/index.ts`]
+- [x] [Review][Patch] `remove()` stamped `*_rotated_at` for a kind that was NEVER stored, so Story 3.6's Manage keys would have rendered "Key removed 15 Aug" for a staff token that never existed — and two comments called it a no-op. `and <ref> is not null` makes both true [same file]
+- [x] [Review][Patch] The stamp could restart FR-C6's derived 90-day clock: two presses past the read (two tabs, a scripts-off double post) re-stamped `disconnected_at`. `.is('disconnected_at', null)` writes it once, and matching no row is now the idempotent redirect, not a failure [`sites/actions.ts`]
+- [x] [Review][Patch] Every disconnect was stamped with the CONNECT route (`ROUTE = 'sites/connect'`), which `withStore` carries into the failure envelope and DW-76's future audit row would have carried into `private.credential_audit` — the wrong route in the one record that exists to be trusted, planted before the row that reads it is written [`sites/actions.ts`]
+- [x] [Review][Patch] `tools/story-board.py`'s ruling contract still signed itself from a date the ruling merely CITES: `**Ruled:** option 1 — Dev shipped it (2026-09-09).` rendered `ruled` and was flagged by nothing. Executed, not argued. `NAMES_HIM` is the missing half the comment always described, with a control — **0 of the 76 real question blocks change state** — and three new `demo()` cases [`tools/story-board.py`]
+- [x] [Review][Patch] `supabase/migrations/20260904120000_complete_schema.sql` still carried the two-clock comment DW-43 was CLOSED on, and DW-43's own `location:` points a reader straight at it; only the architecture's `SCHEMA.sql` had been corrected. Comment only — the RLS gate is the control that it changes no database (`pg_dump -s` carries no `--` comment, and it reported no drift)
+- [x] [Review][Patch] `_bmad/custom/bmad-build-auto.toml` never got the ruling contract the other two TOMLs and `project-context.md` gained this story — and the unattended loop is the one likeliest to write a question nobody reads (standing rule 7: a propagation list cannot audit itself)
+- [x] [Review][Patch] `DISCONNECT.body` named a count in words — "this site's **two** Ghost keys" — in the one object whose header forbids one, and the test could only see digits. The sentence now says what is forgotten, not how many, and the test can see a spelled-out number (standing rule 4) [`apps/web/lib/connect-rule.ts`]
+- [x] [Review][Patch] `item` was exported from `project-menu.tsx`, so `sites/site-menu.tsx` imported a `'use client'` feature module — and with it `projects/actions`, `TextInput` and `Banner` — for one string, against the argument its own comment makes. It lives in `lib/menu.ts`, which both menus already import [`apps/web/lib/menu.ts`]
+- [x] [Review][Patch] `disconnect/page.tsx` hand-copied the sheet's tokens instead of importing them and had ALREADY diverged (`max-w-full` against `max-w-[calc(100vw-20px)]`) — the drift `components/kit/dialog.ts` exists to prevent, reintroduced by the story that centralised the confirm to prevent it. `sheetBox` is now the shared half [`apps/web/components/kit/dialog.ts`]
+- [x] [Review][Patch] The ⋯ row's modifier guard omitted `altKey`, so the browser's save-link gesture was swallowed into opening the dialog [`sites/site-menu.tsx`]
+- [x] [Review][Patch] The two patched route branches had no check behind them — the harness only ever navigated `/sites/disconnect` on a site that exists. New live step **`disconnect-route-answers`**: a second account's id, a malformed id, and the caller's own already-disconnected record, each asserted to land where it should [`tools/probe/run-verify-ghost-admin.py`]
+- [x] [Review][Patch] The Code Map credited `busy.test.ts` with guarding the new control's `busy` label. Executed at review: delete the prop and `busy.test.ts` stays green — `tsc` is the guard, because `Submit`'s `busy` is required. Corrected above so the next story does not lean on the wrong tool
+- [x] [Review][Patch] `## Verification` claimed every matrix row "ran and passed" in the same paragraph that records two ⛔ exceptions. Corrected above
+
+- [ ] [Review][Decision] **The last I/O matrix row cannot be true as written**, and the matrix is inside `<frozen-after-approval>` — so correcting it is the owner's to allow, not mine (standing rule 6). Dev executed a different state and flagged it rather than reinterpreting it silently. Asked as **Question 4** below
+
+- [x] [Review][Defer] A failed `remove('staff')` after a successful `remove('admin')` leaves the site reading **Connected with its Admin credential already gone**. It is recoverable (the mirror is honest, `credentials_present.admin` is false, and pressing again completes), it is a state the epic already calls first-class, and it is **unreachable today** — nothing stores a staff token until Epic 7, and both calls cross the same pooler connection, so the first fails whenever the second would. Recorded rather than designed around: **DW-77**
+- [x] [Review][Defer] The AC names Escape-closes-the-confirm and no step asserts it — native `<dialog>` behaviour, and the only Escape in the harness is on the popover menu. Deferred: proving a platform guarantee costs a 35-minute live run, and the owner's manual test step 2 exercises it by hand
 
 ## Design Notes
 
@@ -419,6 +470,40 @@ propagated the same day: `epics.md` 3.6 carries the entry as an acceptance crite
 `disconnectSite`'s header, the harness docstring and the `audit` step all name DW-76 as the reason the
 counts below are unchanged by a disconnect.
 
+### Question 4 — one line in this story's own test table cannot be true, and the table is marked as yours
+
+**Raised at the code review, 2026-09-09.** Nothing is broken and nothing needs rebuilding — this is
+a wording fix I am not allowed to make on my own, because that table is marked "human-owned: do not
+change unless the owner renegotiates".
+
+The table lists every situation this story had to handle, so each one could be tested. Its last line
+reads: *"Free, one active + three disconnected → not at the cap by three."*
+
+On Free you get **1 site**. So somebody with **1 connected site** is at their limit — the line says
+they are "not at the limit by three", which cannot be right. What the line is plainly reaching for
+is the rule that **sites you have let go do not count against your limit**, and that rule is built,
+and it was proved on the real site.
+
+**An example.** A cinema with one screen. The line as written says "one film showing, three films
+finished last month — so there are three free screens." There is one screen and it is in use. What
+was meant is "the three that finished do not take up a screen", which is true and is what the code
+does.
+
+**What is *not* in question:** the behaviour. Disconnected sites are already ignored when your limit
+is counted, the live run proved it, and no code changes whichever option you pick. This is only
+about what the line should *say*, so the next person to read it is not misled.
+
+1. **Correct the line to say what it meant** — *"Free, none connected + three let go → not at the
+   limit; the ghost slot is absent and the connect form is open."* **(RECOMMENDED)** — it is the
+   state the live run actually tested, it is true, and it is the rule the line was written to
+   capture.
+2. **Leave the line exactly as it is** and add a note underneath saying it cannot happen and which
+   state was tested instead. Nothing in your approved table changes, but the table keeps a line that
+   is wrong, and the next reader meets the wrong line before the note.
+3. **Say it differently** — tell me the words and I will use yours.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 Follow these on the real site after Deploy fills the URLs. You will need a Ghost site to connect —
@@ -518,7 +603,10 @@ never arrived"):
   site stays connected. ⛔ The throw itself is not induced: breaking the pooler breaks every other
   step in the run, so the code path is read and the surface is executed.
 
-**Every I/O & Edge-Case Matrix row has a step that ran and passed:** happy path `disconnect` ·
+**Every I/O & Edge-Case Matrix row has a step that ran, and all but the three marked ⛔ passed
+outright** (the sentence read "every row has a step that ran and passed" until the review of
+2026-09-09, which is not true of a paragraph that then records two ⛔ exceptions of its own — and a
+third, the last row, whose executed state differs from the row as written; see Question 4): happy path `disconnect` ·
 Vault unreachable `disconnect-failed` (surface, with the ⛔ above) · a stranger's id
 `disconnect-forged` · already disconnected `disconnect-again` · re-adopt `re-adopt` · re-adopt at the
 cap `re-adopt-at-cap` · a new URL `connect` and `pro-connect-t3` · Free at the cap `ghost-slot` · Pro

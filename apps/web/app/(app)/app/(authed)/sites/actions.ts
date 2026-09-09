@@ -58,6 +58,11 @@ import { probeSite } from '@/server/site-probe'
  */
 
 const ROUTE = 'sites/connect'
+/* STORY 3.5 — AND IT IS NOT `ROUTE`. `withStore` carries this into the failure envelope's `detail`,
+   and DW-76's audit row inside `remove()` will carry it into `private.credential_audit`, so
+   stamping a removal `sites/connect` would put the wrong route in the one record that exists to be
+   trusted — before the row that reads it is ever written (review, 2026-09-09). */
+const DISCONNECT_ROUTE = 'sites/disconnect'
 /** `proxy.ts` rewrites `app.inflozo.com/sites` onto the internal `/app/sites`. */
 const SITES = '/app/sites'
 /** …and `app.inflozo.com/` onto `/app`, which is the dashboard's own revalidate path. */
@@ -819,16 +824,22 @@ export async function disconnectSite(formData: FormData): Promise<void> {
   // The same id posted twice: the second press has nothing to do and nothing to say about it.
   if (site.disconnected_at) redirect(SITES_URL)
 
-  // ── THE CREDENTIALS, FIRST. Both kinds unconditionally: `remove()` is an UPDATE over
-  //    `private.site_credentials`, so a kind that was never stored matches its own null and the
-  //    call is a no-op — and `staff` is exactly that today, because nothing stores one until Epic 7.
-  //    SO THIS IS NOT DW-54's `staff-removed` PROOF and must not be recorded as one: removing a
-  //    token that was never there exercises the call and says nothing about the secret it would
-  //    have dropped. It is here so the day Epic 7 stores one, disconnecting already takes it out.
-  //    The trigger deletes the Vault secret behind each ref it nulls (DW-44).
+  // ── THE CREDENTIALS, FIRST. Both kinds unconditionally: `remove()` matches on a ref that is
+  //    NOT NULL, so a kind that was never stored matches no row and the call is a true no-op —
+  //    and `staff` is exactly that today, because nothing stores one until Epic 7. (Until the
+  //    review of 2026-09-09 that `is not null` was missing and this comment was WRONG: the call
+  //    stamped `staff_rotated_at` for a token that had never existed, which Story 3.6's Manage
+  //    keys renders as "Key removed 15 Aug". The guard is in `remove()` so every future caller
+  //    inherits it.) SO THIS IS NOT DW-54's `staff-removed` PROOF and must not be recorded as
+  //    one: removing a token that was never there exercises the call and says nothing about the
+  //    secret it would have dropped. It is here so the day Epic 7 stores one, disconnecting
+  //    already takes it out. The trigger deletes the Vault secret behind each ref it nulls (DW-44).
+  //    `userId` IS PASSED because ownership belongs beside the write, not in the caller's memory:
+  //    the RLS read above is this action's proof, and `remove()`'s own `and user_id =` clause is
+  //    the floor under it, the same one `store()` has always had.
   try {
-    await remove({ siteId: site.id, kind: 'admin', route: ROUTE })
-    await remove({ siteId: site.id, kind: 'staff', route: ROUTE })
+    await remove({ siteId: site.id, userId: at.userId, kind: 'admin', route: DISCONNECT_ROUTE })
+    await remove({ siteId: site.id, userId: at.userId, kind: 'staff', route: DISCONNECT_ROUTE })
   } catch (thrown) {
     // Logged with a code and no value, and the site is STILL CONNECTED: nothing below has run.
     // `redirect` throws NEXT_REDIRECT and this catch is not inside another `try`, so it leaves.
@@ -841,6 +852,12 @@ export async function disconnectSite(formData: FormData): Promise<void> {
   // ── ...AND ONLY THEN THE STAMP. One update, three server-asserted columns, and `.select('id')`
   //    so a write that matched no row is not silence — PostgREST answers an update that hit
   //    nothing with no error and no rows (`writeSite`'s own finding).
+  //    `.is('disconnected_at', null)` SO THE CLOCK IS WRITTEN ONCE. FR-C6's 90-day orphan
+  //    deadline is DERIVED from this column (DW-43), so a second press that re-stamped it would
+  //    silently restart the countdown on a site that had been let go weeks earlier. The read above
+  //    already redirects an already-disconnected site, but two presses can pass it together — two
+  //    tabs, or a scripts-off double post — and only the write can settle a race (review,
+  //    2026-09-09).
   const { data, error: stamped } = await supabaseAdmin()
     .from('sites')
     .update({
@@ -850,10 +867,19 @@ export async function disconnectSite(formData: FormData): Promise<void> {
     })
     .eq('id', site.id)
     .eq('user_id', at.userId)
+    .is('disconnected_at', null)
     .select('id')
-  if (stamped || !data?.length) {
-    console.error('sites: disconnect stamp failed', { code: stamped?.code ?? 'no_such_site' })
+  if (stamped) {
+    console.error('sites: disconnect stamp failed', { code: stamped.code })
     redirect(DISCONNECT_FAILED(site.id))
+  }
+  // MATCHING NO ROW IS NOT A FAILURE HERE, and that is the whole of the `.is()` above: the row was
+  // read under this caller's own session moments ago, so the only way it is gone is that the other
+  // press won. The credentials are out either way and the site is disconnected — which is what
+  // `/sites` is about to show. The matrix's "the same id posted twice → idempotent".
+  if (!data?.length) {
+    console.error('sites: disconnect stamp matched nothing', { code: 'already_disconnected' })
+    redirect(SITES_URL)
   }
 
   // The card leaves the list, and the dashboard's own tally of connected sites moves with it.
