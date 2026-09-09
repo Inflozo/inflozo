@@ -20,7 +20,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
 import { brandPath, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
-import { defaultStylePack } from '@/lib/style-pack'
+import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { fetchWithKey, store } from '@/server/ghost-admin'
 import { AdminError } from '@/server/ghost-admin/admin-rule'
@@ -578,15 +578,14 @@ export async function useBrand(formData: FormData): Promise<void> {
   }
 
   const supabase = await supabaseServer()
-  const [site, { data: projects, error: projectsError }, { plan }] = await Promise.all([
+  const [{ data: site, error: siteError }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
     // A DISCONNECTED record is not a site (FR-C6), so it is not offering a brand either.
     supabase
       .from('sites')
       .select('id, title, url, site_settings')
       .eq('id', at.siteId)
       .is('disconnected_at', null)
-      .maybeSingle<BrandSite>()
-      .then(({ data }) => data),
+      .maybeSingle<BrandSite>(),
     // `updated_at desc` IS THE DASHBOARD'S OWN ORDER, so "the project you most recently worked on"
     // means on this screen exactly what it means on that one. `id` breaks the tie: two projects
     // saved in the same millisecond gave the page and this action different first rows, and the
@@ -600,7 +599,14 @@ export async function useBrand(formData: FormData): Promise<void> {
   ])
 
   // Another user's site id reaches no row through RLS rather than an error — the two are the same
-  // answer here, which is the point.
+  // answer here, which is the point. A READ THAT FAILED IS NEITHER: 404ing on it tells the customer
+  // his own site is gone and gives him nothing to press, while the three write branches below all
+  // redirect back to S2c with the reason. One transient PostgREST failure is not a stranger's row
+  // (review 4, 2026-09-09) — `sites/page.tsx`'s "A FAILED READ IS NOT AN EMPTY ACCOUNT" is the rule.
+  if (siteError) {
+    console.error('sites: use brand site read failed', { code: siteError.code })
+    redirect(BRAND_FAILED(at.siteId))
+  }
   if (!site) notFound()
   const brand = site.site_settings?.brand
   // Nothing to offer is nothing to seed: the page 404s for this site too, so this is a stale post.
@@ -647,16 +653,20 @@ export async function useBrand(formData: FormData): Promise<void> {
     // merged rather than replaced, so a preset E6 has since written survives.
     // NOT `?? defaultStylePack()`: `projects.style_pack` is in the caller's own UPDATE grant
     // (schema `:1202`, the `grant`), so a pack that is not an object is a thing the column can
-    // spreading a string yields its characters, indexed, which is not a pack any more.
+    // hold — and spreading a string yields its characters, indexed, which is not a pack any more.
     // `defaultStylePack()` UNDERNEATH, not merely as the fallback: an object with no `preset` is
     // also a thing this column can hold, and `{ ...pack, brand }` over one wrote a pack that
     // `stylePackSchema` cannot parse — which used to cost the card the accent as well as the
     // preset (review 3, 2026-09-08; `placeholderFor` no longer loses the brand, and this keeps the
     // stored row valid rather than only the render). A preset the pack really carries still wins,
-    // so a pack E6 has since written survives untouched.
+    // so a pack E6 has since written survives untouched — BUT ONLY IF IT IS ONE. A `preset` that is
+    // present and not a string fails `stylePackSchema` exactly as an absent one does, and `...held`
+    // put it straight back, so the floor held for the hole and not for the wrong shape while the
+    // sentence above claimed both (review 4, 2026-09-09). Every other key of a pack E6 wrote is
+    // still carried through untouched; it is the one required field that is repaired.
     const prev = picked.style_pack
     const held = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : {}) as Record<string, unknown>
-    const pack = { ...defaultStylePack(), ...held }
+    const pack = { ...defaultStylePack(), ...held, ...(typeof held.preset === 'string' ? {} : { preset: DEFAULT_PRESET }) }
     const { data, error } = await supabase
       .from('projects')
       .update({ style_pack: { ...pack, brand } })

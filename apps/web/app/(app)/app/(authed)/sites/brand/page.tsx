@@ -52,6 +52,19 @@ type Row = {
   site_settings: { brand?: unknown; public_url?: string } | null
 }
 
+/**
+ * `app/error.tsx` is the screen for a page that cannot answer, and this is how it gets there.
+ *
+ * NOT `throw postgrestError`: it is a plain object rather than an `Error`, and it carries `details`
+ * and `hint`, which PostgREST fills with row values — straight into the server log and the error
+ * digest, against the epic's "never log" rule, which is about content and not only credentials.
+ * Every other reader in this epic logs `{ code }` and nothing else (review 4, 2026-09-09).
+ */
+function readFailed(what: string, code: string | undefined): never {
+  console.error('sites/brand: read failed', { what, code })
+  throw new Error(`sites/brand: ${what} read failed`)
+}
+
 export default async function BrandOffer({
   searchParams,
 }: {
@@ -66,7 +79,7 @@ export default async function BrandOffer({
   if (!siteId) notFound()
 
   const supabase = await supabaseServer()
-  const [{ data: row }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
+  const [{ data: row, error: rowError }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
     // THE CALLER'S OWN SESSION. A `?site=` naming a stranger's row returns no row through RLS —
     // and a malformed id returns none either, because PostgREST refuses the filter. Both are the
     // same 404, which is the point. A DISCONNECTED record is not a site (FR-C6).
@@ -92,13 +105,20 @@ export default async function BrandOffer({
   // A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3) — and a route that would draw it is not a
   // route: with no accent, no logo and no menu there is nothing to keep, so this 404s and the
   // Sites card carries no link to it.
+  // A READ THAT FAILED IS NOT A ROW THAT IS NOT THERE, and this one used to be the only read on
+  // the screen whose error was thrown away: a transient PostgREST failure rendered the not-found
+  // page to a customer whose site exists, so the offer looked gone rather than momentarily
+  // unavailable, and there was nothing to press again (review 4, 2026-09-09). The projects read
+  // below has taken this position since review 2 and `sites/page.tsx` since 3.3 — "A FAILED READ
+  // IS NOT AN EMPTY ACCOUNT" — and two reads in one `Promise.all` were answering it two ways.
+  if (rowError) readFailed('site', rowError.code)
   if (!row || !hasBrand(brand)) notFound()
 
   // A COUNT THAT COULD NOT BE READ IS NOT A COUNT OF ZERO. Falling back to `[]` printed "we'll
   // make a project" and then `useBrand` — whose own read succeeded — refused the stale decision
   // and sent the customer straight back here (review, 2026-09-08). `app/error.tsx` is the screen
   // for a page that cannot answer.
-  if (projectsError) throw projectsError
+  if (projectsError) readFailed('projects', projectsError.code)
   const rows = projects ?? []
   // At the cap the brand goes onto the project the customer most recently worked on; with room it
   // goes onto the project already made for this site, and only when there is none is one made.

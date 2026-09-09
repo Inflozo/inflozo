@@ -107,6 +107,18 @@ list gone stale — the sibling harness's own note):
                  answers a hex and nothing else), the menu as text pills with NO links, "Fonts
                  stay yours", the homepage caption, both buttons, and the caption under **Use your
                  brand** saying a project will be MADE — this account has none yet
+  brand-logo     THE `<img>` HALF OF THE LOGO SLOT, which is what a customer whose Ghost carries a
+                 logo sees and which no run had ever rendered: §40 records `logo` as an EMPTY
+                 STRING on both majors, so every other step draws the monogram tile. The reason
+                 recorded for leaving it unproved was that a logo needs an Admin WRITE — it does
+                 not: the row is patched through the SERVICE ROLE, as `brand-none` already patches
+                 it, and put back in a `finally`. Exactly one `<img>` carrying that src, and the
+                 monogram tile NOT drawn beside it
+  brand-failed-line  THE MATRIX'S "insert fails -> the page says so". All four of `useBrand`'s
+                 failure branches redirect to `&failed=1`, and until now the sentence they redirect
+                 to was asserted by `BRAND_COPY.failed.length > 0` and by nothing else at any
+                 level, so deleting the block that renders it would have shipped green. Asserted
+                 BOTH WAYS: printed with the flag, absent without it
   brand-js-off   both S2c controls are `<form action={serverAction}>`, read off S2c fetched as a
                  FRESH DOCUMENT because that is what a scripts-off browser is served: method=post, an action
                  attribute, React's encoded `$ACTION_*` hidden fields, one hidden `site_id` and one
@@ -209,6 +221,9 @@ list gone stale — the sibling harness's own note):
                  decision field. `brand-js-off` above runs when the account has NO projects, so
                  the document it reads has no chooser in it and the criterion "given the chooser,
                  when JavaScript is off" was being recorded against the one screen without one
+  axe-brand-picker  axe-core over S2c WITH THE CARDS DRAWN, at 1440 and 390 — `axe-brand` runs
+                 before any project exists, so the radio cards, their `:has(:checked)` coral and
+                 their stacking at 390 had never been looked at
   brand-picker   THE OWNER'S QUESTION 3 RULING (2026-09-08, his A1 and B1), which is the ONLY
                  step with more than one project: a second press with a choice to offer ASKS
                  ("You already put your brand on X. Apply it again?" · "Which project?") and
@@ -218,10 +233,11 @@ list gone stale — the sibling harness's own note):
                  nothing writes exactly what Question 1 ruled; choosing the other card puts the
                  brand on THAT row and changes nothing else about it, and the count stays at two.
                  The two wireframes are read with getComputedStyle and asserted DISTINCT: a
-                 chooser whose pictures all match would be telling the customer nothing
-  axe-brand-picker  axe-core over S2c WITH THE CARDS DRAWN, at 1440 and 390 — `axe-brand` runs
-                 before any project exists, so the radio cards, their `:has(:checked)` coral and
-                 their stacking at 390 had never been looked at
+                 chooser whose pictures all match would be telling the customer nothing. It also
+                 proves the pack is MERGED and not replaced: the second project is seeded with a
+                 key `defaultStylePack()` does not carry, and the key is still there after the
+                 press. Before that the fixture's pack was byte-identical to the default, so a
+                 write that replaced the whole column passed every assertion (review 4)
   brand-atcap-picker  THE OWNER'S QUESTION 4 RULING (2026-09-08, option 1): at the cap AND with a
                  choice to offer, the ticked card is the project for THIS SITE — the one labelled
                  "This site's project" — and not the one worked on most recently, so the tick and
@@ -1108,6 +1124,50 @@ const shoot = async (page, name) => {
       `the row's logo is ${JSON.stringify(brandRead.logo ?? null)}, so the LIVE branch is the ` +
       `monogram tile carrying ${JSON.stringify(firstCp)} with ${imgs} image(s) beside it = ${logoSlot}`)
 
+    /* ── THE TWO SLOTS ON S2c THAT NO RUN HAS EVER RENDERED, and the stated reason for one of
+       them was wrong. The `<img>` half of the logo slot is the branch MOST REAL CUSTOMERS get —
+       a Ghost site with a logo — and it had been left "unit-proved only" because writing a logo
+       to a test Ghost is an Admin write this story does not make. But nothing here needs Ghost:
+       `brand-none` below already drives S2c off a PATCHED FIXTURE ROW through the service role,
+       which is a Supabase write and not a Ghost one, and the same handle reaches the logo. The
+       failure line is the same shape of gap from the other end — `useBrand`'s four failure
+       branches all redirect to `&failed=1` and the sentence they redirect to was asserted by
+       `BRAND_COPY.failed.length > 0` and by nothing else, at any level (review 4, 2026-09-09).
+       Both restore in a `finally`, as `brand-none` does. */
+    let logoShot, failedShown, failedAbsent
+    const LOGO = 'https://ghost6.inflozo.com/content/images/size/w256h256/inflozo-review-4.png'
+    try {
+      await patchSettings(t1SiteId, { brand: { ...brandRead, logo: LOGO } })
+      await page.goto(landedOn, { waitUntil: 'load' })
+      await s2cHeading(page).waitFor()
+      logoShot = await page.locator('main img').evaluateAll((els) => els.map((el) => el.getAttribute('src')))
+      // NO MONOGRAM BESIDE IT: the two are one slot and drawing both would be the bug.
+      const tiles = await page.locator('main span').allInnerTexts().catch(() => [])
+      logoShot = { srcs: logoShot, tile: tiles.some((t) => t.trim() === firstCp) }
+    } finally {
+      await patchSettings(t1SiteId, { brand: brandRead })
+    }
+    step('brand-logo',
+      logoShot.srcs.length === 1 && logoShot.srcs[0] === LOGO && logoShot.tile === false,
+      `with an https: logo on the row S2c drew ${logoShot.srcs.length} image(s) ` +
+      `${JSON.stringify(logoShot.srcs)} and the monogram tile ${logoShot.tile ? 'AS WELL' : 'not at all'} ` +
+      `— the branch a customer whose Ghost carries a logo gets, which until now was proved by a ` +
+      `unit test alone. The row was patched through the service role and put back in a finally: ` +
+      `no Ghost was written, which is what "Ask First" forbids`)
+
+    await page.goto(`${landedOn}&failed=1`, { waitUntil: 'load' })
+    await s2cHeading(page).waitFor()
+    failedShown = await says(page, SAY.brand_failed)
+    await page.goto(landedOn, { waitUntil: 'load' })
+    await s2cHeading(page).waitFor()
+    failedAbsent = await says(page, SAY.brand_failed)
+    step('brand-failed-line',
+      failedShown && !failedAbsent,
+      `S2c asked for with &failed=1 printed ${JSON.stringify(SAY.brand_failed)} = ${failedShown}, ` +
+      `and the same screen without the flag did not = ${!failedAbsent}. This is the matrix's ` +
+      `"insert fails -> the page says so": all four of useBrand's failure branches redirect here, ` +
+      `and the sentence they redirect to was asserted by its own LENGTH and nothing else`)
+
     // ── BOTH CONTROLS ARE FORMS, so S2c works with JavaScript off — the same wiring `js-off`
     //    asserts for the keys form. (The Sites card's offer is a LINK and needs no form to work
     //    without scripts; it is asserted where it is drawn, in `brand-seed`.)
@@ -1604,8 +1664,15 @@ const shoot = async (page, name) => {
     //    each carrying that project's OWN wireframe in its OWN colours, the project this site is
     //    already on pre-selected. The account is Pro here, so a second project fits; it is made
     //    through the service role because no screen in this epic makes one for a test.
+    // `mode` IS A KEY `defaultStylePack()` DOES NOT CARRY, and that is the whole point of it
+    // being here: the fixture's pack used to be byte-identical to the default, so a `useBrand`
+    // that REPLACED the column instead of merging it passed every assertion in this file — the
+    // action's own docstring claims "a pack E6 has since written survives untouched" and nothing
+    // could tell the two apart (review 4, 2026-09-09). The schema is `.loose()`, so an unknown
+    // key is exactly what E6 widening the column looks like from here.
     const second = (await insert('/projects', {
-      user_id: USER_ID, name: 'Field Notes', slug: 'field-notes', style_pack: { preset: 'paper' },
+      user_id: USER_ID, name: 'Field Notes', slug: 'field-notes',
+      style_pack: { preset: 'paper', mode: 'dark' },
     })).body
     const secondId = (second && second[0] && second[0].id) || null
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
@@ -1672,6 +1739,7 @@ const shoot = async (page, name) => {
       && thumbs.includes(rgbOf(brandRead.accent)) && new Set(thumbs).size === 2
       && afterPick.length === 2
       && ((chosenRow.style_pack || {}).brand || {}).accent === brandRead.accent
+      && (chosenRow.style_pack || {}).mode === 'dark' && (chosenRow.style_pack || {}).preset === 'paper'
       && chosenRow.name === 'Field Notes' && chosenRow.slug === 'field-notes'
       && chosenRow.linked_site_id === null
       && untouched.name === made.name && untouched.slug === made.slug
@@ -1687,7 +1755,11 @@ const shoot = async (page, name) => {
       `Choosing "Field Notes" put the brand on THAT row (accent ` +
       `${((chosenRow.style_pack || {}).brand || {}).accent}) and changed nothing else about it — ` +
       `name, slug and a null linked_site_id intact — while "${made.name}" kept its own binding to ` +
-      `the site. Still ${afterPick.length} projects: a chooser, never a factory`)
+      `the site. THE PACK WAS MERGED AND NOT REPLACED: the fixture's own \`mode\` came back as ` +
+      `${JSON.stringify((chosenRow.style_pack || {}).mode)} beside preset ` +
+      `${JSON.stringify((chosenRow.style_pack || {}).preset)}, which is the action's "a pack E6 ` +
+      `has since written survives untouched" under execution rather than in a comment. ` +
+      `Still ${afterPick.length} projects: a chooser, never a factory`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
 
     // ── THE OWNER'S QUESTION 4 RULING (2026-09-08, option 1), EXECUTED: at the cap, with a choice
@@ -2269,7 +2341,7 @@ def main():
           f'GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY (the integration key, no staff token) — '
           f'{json.dumps(seen)}; the keys wanted: {", ".join(WANT)}')
 
-    # ── §40, RE-EXECUTED EVERY RUN: Story 3.4's FIFTH reader takes the SAME payload, so the seven
+    # ── §40, RE-EXECUTED EVERY RUN: Story 3.4's brand reader takes the SAME payload, so the
     #    keys it reads have to be in it, on both majors, with the CONTAINER each really arrives in.
     #    `announcement_visibility` turned out to be a JSON *string* (§39c), which is what made
     #    `navigation`'s container a real question rather than a pedantic one — and it is a string
@@ -2294,7 +2366,7 @@ def main():
     brand_ok = all(isinstance(v, dict) and 'missing' not in v and v['navigation'] in ('json-string', 'array')
                    for v in brand_seen.values())
     failed = failed or not brand_ok
-    print(f'  {"PASS" if brand_ok else "FAIL"}  brand-keys: the seven FR-C4 keys in the same '
+    print(f'  {"PASS" if brand_ok else "FAIL"}  brand-keys: the {len(BRAND_KEYS)} FR-C4 keys in the same '
           f'GET /admin/settings/ payload, read with GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY — '
           f'{json.dumps(brand_seen)}; wanted: {", ".join(BRAND_KEYS)} (MEASUREMENTS §40)')
 

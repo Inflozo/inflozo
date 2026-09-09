@@ -38,9 +38,13 @@ export function Placeholder({ stylePack }: { stylePack: unknown }) {
 
 /**
  * THE SAME CARD, 64×44 — the size the export's own design picker draws a mini wireframe at
- * (`Editor Sidebar Kit.dc.html:71`, `design-picker.tsx`). It is the dashboard card's drawing
- * shrunk, painted from the SAME `placeholderFor`, so a project looks in the chooser exactly as
- * it looks on the dashboard. That is the whole reason it is honest: FR-B1 defers captured
+ * (`Editor Sidebar Kit.dc.html:71`, `design-picker.tsx`). It is the dashboard card's drawing at a
+ * tile's scale, painted from the SAME `placeholderFor`, so a project wears the same three COLOURS
+ * in the chooser that it wears on the dashboard. The bars are re-proportioned for a box a fifth
+ * the width — 55%/75% here against the card's 40%/55% — because a 40% bar in 64px is nine pixels
+ * and reads as nothing; the claim is the colours and the layout, not the percentages, and it was
+ * written as though the two drawings were identical (review 4, 2026-09-09).
+ * That is the whole reason it is honest: FR-B1 defers captured
  * thumbnails out of v1 because "a wrong thumbnail is worse than none", and prescribes this
  * instead — a Style-Pack drawing that stays "visually distinguishable without claiming to be a
  * preview". This claims nothing it has not been given.

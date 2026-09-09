@@ -46,7 +46,7 @@ test('the schema is loose, so E6 widening the column cannot break a 1.5 card', (
 
 /* ───────── STORY 3.4 — FR-C4's `brand` in the column. The dashboard card wearing the customer's
    own accent is the whole visible result of "Use your brand", and the value it paints with is one
-   the user's own session may write (schema :1201), so it is re-validated on the way out. */
+   the user's own session may write (schema :1202, the `grant`), so it is re-validated on the way out. */
 
 test('a site brand repaints the card accent, and changes nothing else about the pack', () => {
   const paper = PRESETS[DEFAULT_PRESET]

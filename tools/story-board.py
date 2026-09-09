@@ -82,9 +82,15 @@ GATED_TITLES = ('the shell block', 'the gated library pipeline')
 # told it had named no real service (found on Story 3.4, review 3, 2026-09-08). The preview host
 # stays on the list: naming one is still naming a real deployment, it is only the wrong one to
 # test on, and that is a different rule than this pill's.
+# ANCHORED, BECAUSE THE FIRST WRITING OF IT WAS NOT. `\b(?:app|www)?\.?inflozo\.com` put a word
+# boundary in front of an OPTIONAL group, so it matched `owner@inflozo.com`, `my-inflozo.com` and
+# the bare words in prose — and this pill is the one thing that tells the owner a spec's
+# `## Verification` named no real service (R-82). A spec that merely mentioned a test email
+# address cleared the check it exists to fail (review 4, 2026-09-09). Executed both ways in
+# `demo()` below, which is the only reason the first version's breadth was invisible.
 REAL_SERVICE = re.compile(r'ghost[56]\.inflozo\.com|[\w.-]+\.supabase\.co|[\w.-]+\.vercel\.app|'
                           r'api\.vercel\.com|api\.resend\.com|[\w.-]+\.dodopayments\.com|'
-                          r'\b(?:app|www)?\.?inflozo\.com')
+                          r'(?<![\w.@-])(?:app|www)\.inflozo\.com|(?<![\w.@-])inflozo\.com')
 
 # The same grammar bmad-sprint-planning's sprint_plan.py uses, so the board and the tracker agree on
 # what an epic, a story and a status key are (a split story is `2-6a-…`).
@@ -376,9 +382,15 @@ def question_blocks(text):
     # lesson in the other regex — prose that begins like a label is not a label — and every bare
     # `Question N` line in every spec today is prose, so the check costs nothing and the four
     # outside a Questions section were only ever invisible by luck.
+    # A BLANK LINE, NOT THE EXACT BYTES `\n\n`. `endswith('\n\n')` is false for a CRLF spec and
+    # false for a "blank" line holding a space or a tab, and this check DROPS a heading it does not
+    # recognise — so the question under it merged into the one above and vanished from the owner's
+    # inbox, which is the very failure the check was added to prevent, in the other direction
+    # (review 4, 2026-09-09). Erring towards "keep" only ever shows a question twice.
+    blank_before = re.compile(r'\n[ \t]*\r?\n$')
     starts = [m.start() for m in re.finditer(
         r'^(?:#{3,6}\s+|\**\s*(?:QUESTION|Question|Q)\s*\d+|\*\*\d+[.)]\s)', text, re.M)
-        if m.start() == 0 or text[:m.start()].endswith('\n\n')]
+        if m.start() == 0 or blank_before.search(text[:m.start()])]
     # Prose ahead of the first real question is a PREAMBLE, not a question. Spec 2.3 opens its
     # section with one sentence ("Two decisions from the review…") and the synthetic block below
     # read it as a headless, optionless, unruled question — one that sat "open" in the owner's
@@ -1940,6 +1952,13 @@ def demo():
     assert answered('Ruled (owner, 2026-09-05): option 1') and not answered('Ruled (owner, 2026-09-05)')
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
+    # …and the production domains count while a mere @inflozo.com ADDRESS does not. The first
+    # writing of this alternative matched both, so a spec that named no service but quoted a test
+    # email cleared the one pill that exists to fail it (review 4, 2026-09-09).
+    for names in ('driven on app.inflozo.com', 'the marketing site inflozo.com', 'on www.inflozo.com'):
+        assert REAL_SERVICE.search(names), f'a production domain is not a real service: {names!r}'
+    for nothing in ('signed in as owner+test1@inflozo.com', 'a my-inflozo.com fixture', 'mocked throughout'):
+        assert not REAL_SERVICE.search(nothing), f'this names no real service: {nothing!r}'
     # …and the pill's explanation is rendered inside every story it flags, and only those
     flagged = sum(1 for st in flat.values() if st['unverified'])
     assert flagged and out.count('What the amber') == flagged, out.count('What the amber')
@@ -1990,6 +2009,12 @@ def demo():
                               'Question 1 still decides. Executed as `x`.\n')
     assert len(wrapped) == 1 and wrapped[0]['answered'], \
         f'a wrapped prose line beginning "Question N" started a block: {[q["title"][:40] for q in wrapped]}'
+    # …and the blank line that must precede a heading is a BLANK LINE, not the two bytes `\n\n`.
+    # Either of these dropped its second heading and hid the question under it (review 4).
+    for gap in ('\r\n\r\n', '\n \n', '\n\t\n'):
+        two = question_blocks('### Question 1 - one\n\nAsk.\n\n1. yes\n2. no' + gap +
+                              '### Question 2 - two\n\nAsk.\n\n1. yes\n2. no\n')
+        assert len(two) == 2, f'a heading after {gap!r} was swallowed: {[q["title"][:30] for q in two]}'
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
     assert not q32[0]['options'], 'the shapeless question must fail R-83'

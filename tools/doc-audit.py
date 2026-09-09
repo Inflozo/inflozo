@@ -437,7 +437,13 @@ DOCS = [
   "drawn; and brand-atcap-picker proves the owner's Question 4 ruling in the only state that "
   'reaches it — a DOWNGRADE, Pro with two projects and then Free — where the ticked card is the '
   "site's own project and carries the This site's project label, printing the row the PRE-RULING "
-  'rule would have ticked as its discriminating control. '
+  'rule would have ticked as its discriminating control. brand-logo renders the <img> HALF of the '
+  'logo slot — what a customer whose Ghost carries a logo sees, and the branch no run had ever '
+  'drawn because logo is an empty string on both majors (MEASUREMENTS §40); the row is patched '
+  'through the SERVICE ROLE and put back in a finally, so no Ghost is written. brand-failed-line '
+  "proves the matrix's insert fails -> the page says so BOTH WAYS: useBrand's four failure "
+  'branches all redirect to &failed=1, and the sentence they redirect to had been asserted by its '
+  'own string length and nothing else at any level. '
   'brand-ownership asks the cross-account question of the two ACTIONS, which is not ownership\'s: '
   'a second account\'s real site id is forged into S2c\'s own Use your brand and Skip forms and '
   'submitted from the fixture\'s session, and the caller\'s projects are byte-identical afterwards '
