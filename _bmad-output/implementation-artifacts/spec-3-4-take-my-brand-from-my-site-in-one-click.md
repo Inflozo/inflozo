@@ -5,7 +5,7 @@ created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 5
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -1880,3 +1880,81 @@ step and every other one. Nothing between the last green deployment and this one
 and the retry was deliberately **not** widened to cover `locator.waitFor`, because a locator wait is
 an assertion nearly everywhere else in this file and retrying those would hide real failures. The
 cause remains open and no claim is made about it.
+
+## Owner's test findings
+
+Tested on `app.inflozo.com` on **2026-09-09**. **Two findings**, and they are one complaint told
+twice: **the screen does not say it is working.** Neither is about S2c in particular — he walked the
+brand screen and reported what he saw **across the app** — and each carries the same second half:
+*"Please do a thorough check and ensure this is included in all future specs and stories."* So each
+finding has **two halves**: the app as it stands today (fixed in this story, R-80 as amended) and the
+rule that keeps it from coming back (bound where every future story reads it — see *The durable half*
+below). His words first, then the triage.
+
+1. **"When I click a button, there is no way the user know if something is happening in background.
+   The button does not says anything. Can we show some kind of button state and label change so user
+   know that something is happening. This is almost all buttons/links. Please do a thorough check and
+   ensure this is included in all future specs and stories."**
+
+   *What was seen:* every form on the site submits with the button unchanged — **Use your brand**,
+   **Skip**, **Connect**, **Create project**, **Delete**, **Send the link**, all of them. The work
+   behind some of them is a round trip to Ghost or to Supabase and is not instant, so between the
+   click and the new page the screen is identical to the screen before the click.
+
+   *Whose:* **every story that shipped a form, and this one owns the sweep.** It is not a defect of
+   S2c — S2c inherited it. The rule is missing, not broken.
+
+   *Verified before it is written down, not assumed:* `components/kit/button.tsx` has **no busy or
+   pending state at all**, and deliberately no `disabled` either (its own comment: the Kit draws no
+   disabled full-size button). `useFormStatus` appears **exactly once in the whole app** —
+   `components/shell/account-menu.tsx`'s `SignOut`, which says `Signing out…` while it is in flight,
+   uses `aria-disabled` rather than `disabled` so the control keeps focus and stays announced, and
+   holds a ref so one impatient double-tap does not send two submits. **That one is the pattern**;
+   the finding is that it was never lifted out of that file. Fourteen files carry a `<form>` or a
+   form action.
+
+   *And the rule it is missing from:* `EXPERIENCE.md`'s **State Patterns** table designs Empty,
+   Loading, Error and Refusal for every surface — there is **no in-flight column**. That absence is
+   why a story can be written, built, reviewed and passed with no busy state and nothing catches it.
+
+2. **"When the Projects or Sites are being loaded. They are showing a generic shmmer. I want the
+   loading shimmer to match the cards they show. Please do a thorough check and ensure this is
+   included in all future specs and stories."**
+
+   *Whose:* **this is a rule the project already has and did not keep.** `DESIGN.md` (Visual
+   Language, *Loading*) rules "skeletons **matching the shape that is coming**, and coral progress
+   bars where a real byte count exists. Never a spinner", and `EXPERIENCE.md`'s State Patterns table
+   says "skeleton cards" for the Dashboard. So finding 2 needs no new ruling — it needs the rule
+   applied and a check that would fail if it were not.
+
+   *Verified:* the app has **one** route skeleton, `app/(app)/app/(authed)/loading.tsx`, and it draws
+   three **project** cards — a 150px / 16:10 image band over two grey lines. `/sites` has **no
+   `loading.tsx` of its own**, so it inherits that one; a site card is a 40px square monogram, a
+   title, a mono host with an external-link glyph and pill badges, with **no image band anywhere on
+   it**. That mismatch is the "generic shimmer" he saw on Sites. The dashboard's own skeleton is the
+   right family but is now short of the card it shadows, which has gained a badge row and a menu.
+   `/sites/brand`, `/sites/connect` and `/account` have no skeleton at all.
+
+   *The file predicted this in writing.* `loading.tsx`'s own `ponytail:` comment says "this boundary
+   covers every `(authed)` child, and today the dashboard is the only page with a shape … **The
+   first sibling page that needs its own skeleton moves the dashboard and this file into their own
+   route group.**" Sites arrived in Epic 3 and that move was never made. The deferral was recorded in
+   the code and nowhere a story would read it — which is standing rule 3, *propagate, never localise*,
+   caught by the owner instead of by the project.
+
+**The durable half — "ensure this is included in all future specs and stories".** Both findings ask
+for the same thing twice, so it lands **once**, at the Fix run, in the places a future story actually
+reads: `EXPERIENCE.md`'s State Patterns gains the missing **in-flight** column beside Empty, Loading,
+Error and Refusal; `DESIGN.md`'s *Loading* line gains the busy-control rule next to the skeleton rule
+it already carries; and `docs/project-context.md` — the persistent facts every BMAD workflow loads —
+gains the one-line acceptance rule, which is what puts it in front of the Create, Dev and Review
+phases of every story after this one. A ruling number in `reconcile-designs-decisions.md` and a
+`DW-` row for anything the sweep cannot finish inside Epic 3 go with them. **A rule with no check is
+the state we are already in**, so the sweep leaves a step in the deployed-site harness for each half
+that fails if the busy state or the matching skeleton goes away.
+
+**Scope of the "thorough check" at Fix.** Every form action and every navigating link in the app —
+the fourteen files above, not only the two screens named — and every route that lists cards. What the
+sweep cannot fix inside this story is written down with its owning epic rather than quietly dropped;
+the editor's own controls (Epics 4–7) are not built yet and inherit the rule through the durable half
+rather than through a patch here.
