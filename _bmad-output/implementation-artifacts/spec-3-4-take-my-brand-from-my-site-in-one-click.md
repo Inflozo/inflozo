@@ -1958,6 +1958,17 @@ which is what it actually was — so the trail reads `Test` (awaiting the owner)
 now blocks a `Test`-phase commit whose spec does not read `owner_test: issues`**, so this specific
 mistake cannot recur.
 
+**Deploy (2026-09-09), second run — the owner's two findings, fixed.** App code only — no migration,
+so nothing else to deploy. The push of `712e5a7a` (the sixth review, already green above) built on CI
+(`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`): GitHub Actions run `34321213712` **completed /
+success** (`GITHUB_TOKEN`, `actions/runs?head_sha=712e5a7a…`), and the production deployment
+`dpl_C7wC4tQYGK97LKkSgGPxDTmRScrT` is **READY**, `target: production`, `meta.githubCommitSha` equal
+to `712e5a7ab75b09087dd978790e569de0ba7677ac`, aliased to `app.inflozo.com` (and `inflozo.com`,
+`www.inflozo.com`) — confirmed through the Vercel API, the same control the first deploy above used.
+This is the build the owner re-tests steps 17–21 against.
+
+**Deployment:** https://app.inflozo.com (`dpl_C7wC4tQYGK97LKkSgGPxDTmRScrT`)
+
 **Commands:**
 - `pnpm check` (root: `eslint .`, `tsc --noEmit`, `node --test '*.test.ts'`) -- expected: exit 0,
   every existing test still green plus the new `probe-rule` and `style-pack` cases
