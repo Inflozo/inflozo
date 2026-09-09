@@ -629,7 +629,7 @@ plain: When you open the dashboard fresh, there is a moment where the page is bl
 status: open
 severity: low
 origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
-location: apps/web/app/(app)/app/(authed)/layout.tsx · apps/web/app/(app)/app/(authed)/loading.tsx
+location: apps/web/app/(app)/app/(authed)/layout.tsx · apps/web/app/(app)/app/(authed)/(dashboard)/loading.tsx
 reason: `loading.tsx` sits BELOW `(authed)/layout.tsx`, and that layout awaits `currentUser()`, the
   `profiles` read and `resolveEntitlement` before it renders anything — so the skeleton covers client
   navigations inside the group but not the first paint, which is a blank document for those round trips.
@@ -1585,17 +1585,24 @@ note: WHOEVER CLOSES THIS BREAKS THREE HARNESS STEPS, and they will not say why.
   entry is a real `not-found.tsx` drawn from the export's `M9 404`, whose words will not be those —
   so the three steps go red for a reason unrelated to what they assert. Update `rendered()` in the
   same change (review 5, 2026-09-09; propagate, never localise).
-location: apps/web/app/(app)/app/(authed)/loading.tsx (the Suspense boundary over the whole group) ·
-  apps/web/app/(app)/app/(authed)/sites/brand/page.tsx (`notFound()`) — and every other `(authed)` page
-  that calls `notFound()`, which is the point: it is a property of the route group
+location: apps/web/app/(app)/app/(authed)/(dashboard)/loading.tsx ·
+  apps/web/app/(app)/app/(authed)/sites/(list)/loading.tsx · sites/brand/loading.tsx ·
+  account/loading.tsx — each a Suspense boundary over ITS OWN route since R-98 (2026-09-09) ·
+  apps/web/app/(app)/app/(authed)/sites/brand/page.tsx (`notFound()`)
 reason: `loading.tsx` puts a Suspense boundary over EVERY page in `(authed)`, so Next streams the shell
   and commits the status line before the page component runs — `notFound()` then renders the not-found
   page into an already-successful response. It is not this story's to fix: the same is true of every
   authed route, the pages themselves are `robots: noindex` so nothing indexes them, and the fix is the
   one `loading.tsx`'s own `ponytail:` note already names — move the dashboard and its skeleton into their
   own route group so the boundary stops covering pages that have no skeleton. The story that gives a
-  second `(authed)` page its own loading shape takes it. Until then `brand-none` asserts the page the
-  customer sees and RECORDS the status beside it, rather than asserting a code the shell already sent.
+  second `(authed)` page its own loading shape takes it. THAT MOVE HAPPENED, in Story 3.4's Fix on the
+  owner's finding 2 (ruling R-98, 2026-09-09): there is no group-wide boundary any more, so this is now
+  a per-route property — a route WITH a skeleton (`/`, `/sites`, `/sites/brand`, `/account`) still
+  commits its status before `notFound()`, and a route without one (`/kit`, `/sites/connect`) no longer
+  does. WHAT REMAINS OPEN IS THE STATUS ITSELF, which nothing has asked the owner about, and the
+  not-found PAGE being Next's default rather than M9 404 — the larger half of this entry. `brand-none`
+  goes on asserting the page the customer sees and RECORDING the status beside it, rather than
+  asserting a code the shell already sent.
   AND THE PAGE ITSELF IS NEXT'S DEFAULT, not Inflozo's (found at the Story 3.4 review, 2026-09-08).
   There is no `not-found.tsx` anywhere in `apps/web`, so every `notFound()` in the app renders the
   framework's own unstyled 404 — outside the shell and outside the export's vocabulary — while

@@ -166,12 +166,18 @@ list gone stale — the sibling harness's own note):
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
   skeleton-shape THE OWNER'S TEST OF 2026-09-09, finding 2 ("they are showing a generic shmmer"),
-                 and ruling R-98. The RSC request a soft navigation to /sites makes is HELD for
-                 four seconds and the boundary is read inside the hold: it says "Loading sites…"
-                 and NOT the dashboard's "Loading projects…", which is the control — that sentence
-                 standing over /sites IS the finding, because /sites had no `loading.tsx` of its
-                 own and inherited the dashboard's project cards, image band and all. The drawing
-                 under the sentence is counted too: the site card's 40px monogram tiles
+                 and ruling R-98. Read off the STREAMED DOCUMENT of each route, where React puts
+                 the segment's Suspense fallback before it streams the content over it, so there
+                 is no timing to lose: /sites' body carries "Loading sites…" and NOT the
+                 dashboard's "Loading projects…", and / carries the second and not the first. THE
+                 CONTROL IS THE PAIR — before this fix /sites had no `loading.tsx` of its own and
+                 carried the dashboard's, image band and all, which is a state no arrangement of
+                 those four booleans passes. The drawing agrees: the 16:10 band is counted in both
+                 bodies and belongs to only one of them. `skeleton-soft-nav` RECORDS what a
+                 sidebar press draws between commits and asserts nothing — the first version of
+                 this step asserted exactly that by HOLDING the RSC request, and saw neither
+                 sentence, because holding it stops the router committing the navigation at all
+                 and the boundary is drawn after the commit (executed, then corrected)
   busy-label     THE SAME TEST, finding 1 ("the button does not says anything"), and the same
                  ruling. The POST is HELD and S2c's buttons are read inside the hold: the pressed
                  one goes from the app's own BRAND_COPY.skip to BRAND_COPY.skipping with
@@ -1431,72 +1437,125 @@ const shoot = async (page, name) => {
        both steps let the navigation land afterwards and leave the run where it found it.
 
        EACH CARRIES ITS OWN CONTROL, because a step that cannot tell the fix from its absence is
-       not evidence for it (standing rule 2). `skeleton-shape` fails if the page shows the
-       DASHBOARD's sentence, which is exactly what /sites showed before this fix rather than
-       nothing at all; `busy-label` fails if nothing was ever held, so a race that resolved before
-       the assertion cannot read as a pass.
+       not evidence for it (standing rule 2). `skeleton-shape` asserts the two routes AGAINST EACH
+       OTHER, so the state before the fix — /sites carrying the dashboard's boundary — is a state
+       it cannot pass in; `busy-label` fails if nothing was ever held, so a press whose POST
+       resolved before the read cannot read as a pass.
 
        This block runs where it does because `brand-seed` has just made the one project: the
        dashboard has a card and /sites has a card, so both skeletons stand in for something. */
     let held = 0
+    /* THE MATCHER AND THE HANDLER ARE BOTH KEPT, because `page.unroute` matches them BY REFERENCE:
+       a fresh arrow passed to `unroute` removes nothing, and the hold would have stayed installed
+       over every step after this block. */
+    const anyApp = (u) => u.href.startsWith(APP)
     const holding = (match) => async (route) => {
       if (!match(route.request())) return route.continue()
       held += 1
       await new Promise((r) => setTimeout(r, 4000))
       return route.continue()
     }
+    const holdPost = holding((r) => r.method() === 'POST')
 
-    /* FINDING 2: "I want the loading shimmer to match the cards they show." A soft navigation to
-       /sites fetches the segment over RSC, so holding that request holds the skeleton on screen.
-       The two sentences are `loading.tsx`'s own and are RETYPED here — the only words in this run
-       that are, because `app_text()` evaluates `lib/*.ts` and node cannot load a `.tsx`. They are
-       what tells the two skeletons apart, which is the whole finding. */
+    /* FINDING 2: "I want the loading shimmer to match the cards they show."
+
+       PROVED OFF THE STREAMED DOCUMENT, and the first version of this step was proved wrong by
+       running it. That one HELD the RSC request of a soft navigation and read the screen inside
+       the hold, and it saw NEITHER sentence and stayed on the dashboard — because holding that
+       request stops the router COMMITTING the navigation at all, and the loading boundary is what
+       is drawn AFTER the commit while the page's own data streams. The instrument was measuring
+       the wrong half of the navigation (executed against `4363ff02`, 2026-09-09).
+
+       A hard navigation has no such race: React streams the layout with the segment's Suspense
+       fallback inside it and then streams the content over it, so the fallback is IN the document
+       body whatever the timing. The sentence in that body names which boundary the route is
+       under, which is the whole finding — and the two routes are asserted AGAINST EACH OTHER,
+       which is the control: before this fix /sites carried the dashboard's, and there was no
+       arrangement of these four booleans that could tell one from the other by accident.
+
+       The soft navigation is RECORDED beside it rather than asserted, because what the router
+       draws between two commits is timing this run cannot hold still. */
     const LOADING_SITES = 'Loading sites…'
     const LOADING_PROJECTS = 'Loading projects…'
-    await page.route((u) => u.href.startsWith(APP), holding((r) => r.url().includes('_rsc=') || r.headers()['rsc'] === '1'))
+    const bodyOf = async (path) => {
+      const response = await page.goto(`${APP}${path}`, { waitUntil: 'load' })
+      return (await response.text().catch(() => '')) || ''
+    }
+    const sitesHtml = await bodyOf('/sites')
+    await page.waitForSelector('text=Connected')
+    const dashHtml = await bodyOf('/')
+    const sitesSaysSites = sitesHtml.includes(LOADING_SITES)
+    const sitesSaysProjects = sitesHtml.includes(LOADING_PROJECTS)
+    const dashSaysProjects = dashHtml.includes(LOADING_PROJECTS)
+    const dashSaysSites = dashHtml.includes(LOADING_SITES)
+
+    /* And the drawing under the sentence, off the same body: the site card's skeleton has three
+       40px monogram tiles and NO image band, which is the difference he was looking at. Counted
+       on the boundary's own markup — `aria-hidden` decoration inside the fallback — rather than
+       on the finished page, which has one tile per real site. */
+    const bandInSites = (sitesHtml.match(/aspect-\[16\/10\]/g) || []).length
+    const bandInDash = (dashHtml.match(/aspect-\[16\/10\]/g) || []).length
+
+    // The soft navigation, polled and recorded. `textContent`, not `innerText`: the sentence is
+    // `sr-only` and clipped, and what matters is that it is in the tree.
     await page.getByRole('link', { name: 'Sites', exact: true }).first().click()
-    const sawSites = await page.getByText(LOADING_SITES).waitFor({ state: 'attached', timeout: 3500 })
-      .then(() => true).catch(() => false)
-    // THE CONTROL: the dashboard's sentence must NOT be the one standing over /sites. Before this
-    // fix it was — /sites had no boundary of its own and inherited the dashboard's project cards.
-    const sawProjects = await page.getByText(LOADING_PROJECTS).count().then((n) => n > 0).catch(() => false)
-    // The shape behind the sentence: the site card has a 40px monogram tile and NO image band,
-    // which is the difference the owner was looking at.
-    const monograms = await page.locator('main .size-10').count().catch(() => 0)
-    await page.unroute((u) => u.href.startsWith(APP))
+    const seen = []
+    for (let i = 0; i < 80; i += 1) {
+      const text = await page.locator('main').evaluate((el) => el.textContent).catch(() => '')
+      const tag = text.includes(LOADING_SITES) ? 'sites-skeleton'
+        : text.includes(LOADING_PROJECTS) ? 'projects-skeleton'
+        : text.includes('Connected') ? 'sites-page' : 'dashboard'
+      if (seen[seen.length - 1] !== tag) seen.push(tag)
+      if (tag === 'sites-page') break
+      await page.waitForTimeout(50)
+    }
     await page.waitForURL((u) => u.pathname === '/sites')
     await page.waitForSelector('text=Connected')
+    record('skeleton-soft-nav',
+      `pressing Sites in the sidebar and polling every 50ms went ${seen.join(' -> ')}. Recorded, ` +
+      `not asserted: what the router draws between two commits is timing this run cannot hold ` +
+      `still, and the first version of this step asserted it and measured the wrong half`)
     step('skeleton-shape',
-      held > 0 && sawSites && !sawProjects && monograms >= 3,
-      `held ${held} RSC request(s) on the way to /sites and read the boundary inside the hold: ` +
-      `it said ${JSON.stringify(LOADING_SITES)} = ${sawSites}, it did NOT say ` +
-      `${JSON.stringify(LOADING_PROJECTS)} = ${!sawProjects} (the control — that sentence over ` +
-      `/sites IS the finding), and the drawing under it carried ${monograms} monogram tiles, the ` +
-      `site card's own shape, with no image band. R-98`)
+      sitesSaysSites && !sitesSaysProjects && dashSaysProjects && !dashSaysSites
+      && bandInSites === 0 && bandInDash > 0,
+      `the streamed document of each route carries its OWN loading boundary: /sites says ` +
+      `${JSON.stringify(LOADING_SITES)} = ${sitesSaysSites} and does NOT say ` +
+      `${JSON.stringify(LOADING_PROJECTS)} = ${!sitesSaysProjects}; / says the second = ` +
+      `${dashSaysProjects} and not the first = ${!dashSaysSites}. THE CONTROL IS THE PAIR — ` +
+      `before this fix /sites had no boundary of its own and carried the dashboard's, which is ` +
+      `the state the second and fourth booleans exclude. The drawing agrees: the 16:10 image ` +
+      `band appears ${bandInDash} time(s) in the dashboard's body and ${bandInSites} in /sites', ` +
+      `whose card has no image on it. R-98`)
 
     /* FINDING 1: "the button does not says anything." Proved on SKIP rather than on Use your
        brand, deliberately: Skip writes nothing, so the assertion cannot disturb the row the
        at-cap steps below are about to read. Both buttons are the same `Submit`. */
-    held = 0
     // `offer()` is the run's own locator for the card's link — by href, so it is the same control
     // whether it is drawn as an `<a>` or, since R-98, as a `next/link`.
     await offer().click()
     await s2cHeading(page).waitFor()
     const submits = page.locator('main form button[type="submit"]')
-    const idle = await submits.allInnerTexts()
-    await page.route((u) => u.href.startsWith(APP), holding((r) => r.method() === 'POST'))
+    const idle = (await submits.allInnerTexts()).map((t) => t.trim())
+    await page.route(anyApp, holdPost)
     await submits.nth(1).click()
+    /* WAITED FOR, NOT READ ON THE NEXT LINE. `pending` turns true on the render AFTER the submit,
+       so reading the label immediately raced React and would have reported the idle word — the
+       same beat `account-menu.tsx` records for the ref it keeps. The wait is inside the 4s hold. */
+    const wentBusy = await page.getByRole('button', { name: SAY.brand_skipping, exact: true })
+      .waitFor({ timeout: 3000 }).then(() => true).catch(() => false)
     const busyText = (await submits.nth(1).innerText().catch(() => '')).trim()
     const busyAttr = await submits.nth(1).getAttribute('aria-busy').catch(() => null)
     const disabledAttr = await submits.nth(1).getAttribute('aria-disabled').catch(() => null)
     // `useFormStatus` is the FORM's status, so the button in the other form is untouched — the
     // screen says which control is working rather than that the screen is.
     const siblingText = (await submits.nth(0).innerText().catch(() => '')).trim()
-    await page.unroute((u) => u.href.startsWith(APP))
+    // The navigation lands FIRST and the handler is removed after it: `unroute` does not abort a
+    // hold that is already running, and removing it mid-flight is one less thing to reason about.
     await page.waitForURL((u) => u.pathname === '/sites')
+    await page.unroute(anyApp, holdPost)
     await page.waitForSelector('text=Connected')
     step('busy-label',
-      held > 0 && idle[1] === SAY.brand_skip && busyText === SAY.brand_skipping
+      held > 0 && wentBusy && idle[1] === SAY.brand_skip && busyText === SAY.brand_skipping
       && busyAttr === 'true' && disabledAttr === 'true' && siblingText === SAY.brand_use,
       `held ${held} POST(s) and read S2c's buttons inside the hold: the pressed one went from ` +
       `${JSON.stringify(idle[1])} to ${JSON.stringify(busyText)} — the app's own ` +
@@ -1628,12 +1687,15 @@ const shoot = async (page, name) => {
        level every step that needs it can see. `node --check` cannot see this one — it is valid
        syntax — so the rule is the placement, not a check. */
     /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders Next's own 404
-       page — but the HTTP STATUS on these routes is 200, and that is measured rather than
-       excused: `(authed)/loading.tsx` is a Suspense boundary over EVERY page in the group, so
-       the shell streams and the status line is committed before the page component ever runs.
-       It is a property of the route group and not of this story — every `(authed)` page that
-       404s does it — so the assertion is the page the customer sees, and the status is RECORDED
-       beside it (DW-67). */
+       page, and the HTTP status beside it is MEASURED rather than excused or predicted: a route
+       whose segment has a `loading.tsx` streams its shell first, so the status line is committed
+       before the page component ever runs and `notFound()` lands in an already-successful
+       response. Until R-98 that was true of EVERY page in `(authed)`, because one boundary sat
+       over the whole group; the route-group split (`(dashboard)/`, `sites/(list)/`) means it is
+       now true per route — `/sites/brand` has its own boundary and so should still answer 200,
+       while `/kit` and `/sites/connect` have none at all. The assertion stays the page the
+       customer sees and the status stays RECORDED beside it, so this run reports what changed
+       rather than this comment predicting it (DW-67). */
     const rendered = async (url) => {
       const r = await page.goto(url, { waitUntil: 'load' })
       // A LOCATOR THAT WAITS ON ITSELF, never `innerText` the instant `load` fires — the same
@@ -1670,9 +1732,10 @@ const shoot = async (page, name) => {
       `link(s), and ${offerHref} rendered ${JSON.stringify(direct.saw)}; a ?site= naming a row that ` +
       `does not exist rendered ${JSON.stringify(forgedSite.saw)} (the STRANGER'S row is ` +
       `brand-ownership's). Both answer HTTP ${direct.status}/${forgedSite.status} rather than ` +
-      `404: (authed)/loading.tsx is a Suspense boundary over the whole group, so the shell has ` +
-      `streamed and the status is committed before notFound() throws — a property of the route ` +
-      `group, not of this story (DW-67). The brand was put back afterwards`)
+      `404: /sites/brand has its own Suspense boundary (sites/brand/loading.tsx), so the shell ` +
+      `has streamed and the status is committed before notFound() throws. Since R-98 that is a ` +
+      `property of THIS ROUTE rather than of the whole group — the group-wide boundary is gone ` +
+      `(DW-67). The brand was put back afterwards`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
 

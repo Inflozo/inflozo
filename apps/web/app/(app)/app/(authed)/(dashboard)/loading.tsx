@@ -7,17 +7,23 @@
  * Three, because three is a row of the grid at 1440 and enough of one at 390.
  *
  * THIS FILE IS THE DASHBOARD'S AND ONLY THE DASHBOARD'S, and it took the owner's test of Story
- * 3.4 (finding 2: "they are showing a generic shmmer") to make that true. A `loading.tsx` covers
- * every child segment that has none of its own, so when Sites arrived in Epic 3 it inherited
- * THESE cards — a 16:10 image band over two lines — for a card that is a monogram, a title, a
- * mono host and pills with no image anywhere on it. `/account` inherited them too. Each of those
- * routes now has its own, which is the sibling half of the note this file used to carry; moving
- * the dashboard into a route group would have done the same thing with a larger diff.
+ * 3.4 (finding 2: "they are showing a generic shmmer") to make that true — in two goes, the
+ * second of which the deployed site had to teach.
  *
- * ponytail: `/kit` still inherits this one. It is the internal component gallery, reachable only
- * by typing the path, and giving a gallery of every control a skeleton of every control is the
- * definition of work nobody asked for. `busy.test.ts` names it as the one exception, with this
- * reason, so it is a decision rather than an omission.
+ * It used to sit at `(authed)/loading.tsx`, where a `loading.tsx` covers every child segment that
+ * has none of its own: when Sites arrived in Epic 3 it inherited THESE cards — a 16:10 image band
+ * over two lines — for a card that is a monogram, a title, a mono host and pills with no image
+ * anywhere on it, and `/account` inherited them too. Giving those routes their own files was only
+ * half of it: this one was still a boundary ABOVE them, so the streamed document of /sites carried
+ * the project skeleton and then the site skeleton over it (measured on app.inflozo.com, the
+ * harness's `skeleton-shape`, 2026-09-09). **A skeleton scopes to one route only when its segment
+ * has no child routes** — hence `(dashboard)`, a path-transparent route group that changed no URL.
+ * `busy.test.ts` asserts both halves now: a route has its own, and a boundary has no children.
+ *
+ * ponytail: `/kit` has none at all now, which is better than the wrong one. It is the internal
+ * component gallery, reachable only by typing the path, and giving a gallery of every control a
+ * skeleton of every control is the definition of work nobody asked for. `busy.test.ts` names it
+ * as an exception with this reason, so it is a decision rather than an omission.
  *
  * The rows below are `project-card.tsx`'s, in its order: the Placeholder's band, then the name
  * beside its ⋯, then the "Sample content" pill with the date pushed to the end of the line.

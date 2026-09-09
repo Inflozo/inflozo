@@ -90,19 +90,47 @@ test('the shared submit control refuses the second press and says why', () => {
    A `loading.tsx` covers every child segment that has none of its own, so one boundary at the top
    of `(authed)` drew the DASHBOARD's cards over Sites and over Account. The rule was already the
    project's — DESIGN.md § Loading, "skeletons matching the shape that is coming" — so what this
-   asserts is the file, which is the part that was missing. */
+   asserts is the file, which is the part that was missing.
+
+   AND WHERE THE FILE SITS, which is the half a first fix got wrong and the deployed-site harness
+   caught. Giving `/sites` its own `loading.tsx` was not enough: `(authed)/loading.tsx` was still a
+   boundary ABOVE it, so the streamed document of /sites carried the dashboard's project-card
+   skeleton and then its own over the top. A skeleton scopes to exactly one route only when it
+   sits in a segment with no child routes — hence `(dashboard)/` and `sites/(list)/`, two
+   path-transparent route groups that changed no URL (the build's route table is identical). */
 
 /** The routes deliberately without one, each with its reason, so it is a decision not an omission. */
 const NO_SKELETON: Record<string, string> = {
   [join(AUTHED, 'kit')]:
     'the internal component gallery, reachable only by typing the path — a skeleton of every ' +
-    'control for a page that IS every control is work nobody asked for',
+    'control for a page that IS every control is work nobody asked for. It now inherits NOTHING ' +
+    'rather than the dashboard\'s cards, which is the point of the route groups',
   [join(AUTHED, 'sites', 'connect')]:
     'no soft navigation reaches it, so a route skeleton is never what the browser shows. The ' +
     '"Connect site" opener is an <a href> whose click JavaScript turns into the sheet, and the ' +
     'wizard\'s own ?step= links are plain anchors — every remaining way in (scripts off, a ' +
     'modified click, a typed URL) is a document load with the browser\'s own progress on it',
 }
+
+test('a skeleton sits where it covers one route and no sibling', () => {
+  const overreaching: string[] = []
+  for (const file of tsxUnder(AUTHED)) {
+    if (!file.endsWith('/loading.tsx')) continue
+    const dir = file.slice(0, -'/loading.tsx'.length)
+    // Any page.tsx BELOW this directory is a route this boundary also stands over — which is how
+    // /sites came to stream the dashboard's cards before its own.
+    const below = tsxUnder(dir).filter((f) => f.endsWith('/page.tsx') && f.slice(0, -'/page.tsx'.length) !== dir)
+    if (below.length) overreaching.push(`${file} also covers ${below.join(', ')}`)
+  }
+  assert.deepEqual(
+    overreaching,
+    [],
+    'These skeletons stand over routes that are not their own, so those routes stream this shape ' +
+      'before their own — the owner\'s test of Story 3.4, finding 2, and the half a first fix ' +
+      'missed. Move the page and its loading.tsx into a route group (a parenthesised directory, ' +
+      'which changes no URL) so the boundary has no children:\n  ' + overreaching.join('\n  '),
+  )
+})
 
 test('every route the user reaches has a skeleton in its own shape', () => {
   const missing: string[] = []

@@ -3,11 +3,17 @@
  * Sites are being loaded. They are showing a generic shmmer. I want the loading shimmer to match
  * the cards they show."
  *
- * Until this file existed `/sites` inherited the dashboard's boundary (`../loading.tsx`) and drew
- * three PROJECT cards — a 16:10 image band over two lines — for a card that has no image on it at
- * all. The rule was already the project's ("skeletons matching the shape that is coming",
- * DESIGN.md § Loading); what was missing was a file, and a `loading.tsx` covering a sibling
- * segment is exactly how a rule like that goes quietly unkept.
+ * Until this file existed `/sites` inherited the dashboard's boundary and drew three PROJECT
+ * cards — a 16:10 image band over two lines — for a card that has no image on it at all. The rule
+ * was already the project's ("skeletons matching the shape that is coming", DESIGN.md § Loading);
+ * what was missing was a file, and a `loading.tsx` covering a sibling segment is exactly how a
+ * rule like that goes quietly unkept.
+ *
+ * IT LIVES IN `(list)` — a path-transparent route group — for the same reason the dashboard lives
+ * in `(dashboard)`: at `sites/loading.tsx` it was a boundary over `/sites/brand` and
+ * `/sites/connect` as well, and would have drawn this list over S2c exactly as the dashboard's
+ * once drew project cards over this list. A skeleton covers one route only when its segment has
+ * no child routes, and `busy.test.ts` asserts it.
  *
  * The rows are `page.tsx`'s card, in its order: the 40px monogram beside the title and the mono
  * host, then the pills line, then the state line and its timestamp pushed to the bottom by
@@ -17,7 +23,7 @@
  * Three, because three is a row of the grid at 1440 and enough of one at 390 — the dashboard's
  * own reason, and the same grid.
  *
- * It covers `/sites/connect` too, where it is never seen: the "Connect site" opener is an
+ * `/sites/connect` now has no boundary at all, and needs none: the "Connect site" opener is an
  * `<a href>` whose click JavaScript turns into the sheet, so the only way to that route is a
  * document navigation (scripts off, or a modified click opening a new tab) and a route skeleton
  * is not what a browser shows for one. `/sites/brand` has its own, because it IS reached by a

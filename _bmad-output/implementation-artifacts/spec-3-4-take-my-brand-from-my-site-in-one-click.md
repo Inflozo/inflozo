@@ -929,11 +929,23 @@ around it draw their own shape while they load.
   beside it already followed — and the item reads `Duplicating…` in between.
 - **Finding 2 — three skeletons, and one that had drifted.** `sites/loading.tsx` (the site card:
   monogram, title, mono host, pills, state line — no image band), `sites/brand/loading.tsx` (S2c's
-  760 split card) and `account/loading.tsx` (the stacked cards). `(authed)/loading.tsx` is the
-  dashboard's alone now and matches today's project card, which had gained a badge row and a ⋯.
+  760 split card) and `account/loading.tsx` (the stacked cards). The dashboard's own moved to
+  `(dashboard)/loading.tsx` and matches today's project card, which had gained a badge row and a ⋯.
   The file had **predicted this in writing** — "the first sibling page that needs its own skeleton
   moves the dashboard and this file into their own route group" — and Sites arrived in Epic 3
   without it, which is why a `ponytail:` note in code is not a propagation (standing rule 3).
+- **And the first attempt at finding 2 was HALF a fix, which the deployed site caught rather than a
+  reviewer.** Giving each route its own file was not enough: a `loading.tsx` is a boundary over
+  every child segment as well, so `(authed)/loading.tsx` still stood above `/sites` and the
+  streamed document carried the dashboard's project-card skeleton and then the site one over it —
+  measured on `app.inflozo.com` by `skeleton-shape`, which failed and named it. **A skeleton scopes
+  to one route only when its segment has no child routes**, so the dashboard and the Sites list
+  moved into `(dashboard)/` and `sites/(list)/`, two path-transparent route groups: the build's
+  route table is byte-identical and no URL changed. `sites/loading.tsx` had the same fault one
+  level down, over `/sites/brand`, and the same move fixes it. **This is the move DW-67 named and
+  assigned to "the story that gives a second `(authed)` page its own loading shape"** — that is
+  this one, so the entry is amended rather than left pointing at a file that has moved.
+  `busy.test.ts` gained the check that would have caught it: a boundary may have no child routes.
 - **The check, because a rule with no check is the state that produced the findings.**
   `apps/web/busy.test.ts` walks the tree: every submit control must carry a busy label **in its own
   window**, and every route with a `page.tsx` must have a `loading.tsx` of its own or be recorded
@@ -1761,11 +1773,12 @@ story writes to no Ghost**: `injection-live` is 3.3's and is unchanged.
    what a scripts-off browser is served. Both other js-off steps already did.
 
 **One measured fact about the product, and it is not this story's:** a page in `(authed)` that calls
-`notFound()` renders the not-found page but answers **HTTP 200**, because `(authed)/loading.tsx` is a
-Suspense boundary over the whole group and the status is committed before the page component runs.
-It is true of every authed route, the pages are `robots: noindex`, and the fix is the route-group
-split `loading.tsx`'s own `ponytail:` note already names. Recorded as **DW-67**; `brand-none`
-asserts the page the customer sees and records the status beside it.
+`notFound()` renders the not-found page but answers **HTTP 200**, because a `loading.tsx` above it is
+a Suspense boundary and the status is committed before the page component runs. It was true of every
+authed route while ONE boundary sat over the group; the route-group split that `loading.tsx`'s own
+`ponytail:` note named happened in this story's Fix on the owner's finding 2 (R-98), so it is now a
+property of each route that has a skeleton rather than of the group. Recorded as **DW-67**;
+`brand-none` asserts the page the customer sees and records the status beside it.
 
 **Real services this story touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
 `GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and

@@ -6,8 +6,8 @@ import { ConnectSiteButton } from '@/components/shell/shell'
 import { checkedLabel, filterSites, ghostLabel, hostOf, projectCounts, projectsLabel, SITES_EMPTY } from '@/lib/connect-rule'
 import { PREVIEW_COPY } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
-import { ConnectSiteDialog } from './connect-dialog'
-import { SiteNotices, type NoticeSite } from './site-notices'
+import { ConnectSiteDialog } from '../connect-dialog'
+import { SiteNotices, type NoticeSite } from '../site-notices'
 
 /* ───────── S11 Sites.dc.html — S11a, its top bar, and the empty screen the export does not draw.
 
