@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
-review_loop_iteration: 5
+review_loop_iteration: 6
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -1510,6 +1510,89 @@ this diff.
 - **Ghost was written by nothing this story owns.** The only Ghost write in the run is 3.3's
   `injection-live`, signed with the staff tokens and restored to `null` on both servers.
   `git grep announcement_clear` → `admin-rule.ts` and its test only, still no caller.
+
+## Review 6 record — what was executed, and what each service answered (R-82)
+
+Run 2026-09-09, Node 24.18.1 on `PATH`. Every key is named by its variable; no value was printed
+and none is recorded here.
+
+**On the review's own deployment, confirmed before anything below was trusted.** The review's
+patches were pushed as `2f51ebeb` and built on CI (`GITHUB_TOKEN`): GitHub Actions run
+`34319756241` **completed / success**, `check` ✔ `rls` ✔ `deploy` ✔. The Vercel API
+(`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) then answered that `app.inflozo.com` serves
+`dpl_9xXwUeZA7dkvy3StrdbNRA8kYF6Z`, **READY**, `target: production`,
+`meta.githubCommitSha = 2f51ebebc8dd5aa1117ec31eac311268e5b1dfe0` — so every live assertion below is
+against the reviewed code and not the code it replaced.
+
+**Deployment:** https://app.inflozo.com (`dpl_9xXwUeZA7dkvy3StrdbNRA8kYF6Z`)
+
+| Command | Result |
+|---|---|
+| `pnpm check` (`eslint .`, `pnpm -r typecheck`, `node --test`) | **exit 0**, 235 tests in `apps/web` plus 1 in each of the three packages |
+| `pnpm build` (`next build`) | **exit 0**, and the route table is unchanged: `/app`, `/app/account`, `/app/kit`, `/app/restore`, `/app/sign-in`, `/app/sites`, `/app/sites/brand`, `/app/sites/connect` all present and all `ƒ` |
+| `python3 tools/doc-audit.py --check` (twice) | first pass regenerated `INDEX.md`/`INDEX.html` and the board, second **PASS, 0 warnings** — the documented first-failure-after-an-edit |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, every `PASS` NOTICE including the DW-44 vault-cascade set. No migration in this story |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **all steps passed**, `browser-js` included; `brand-keys` live on both majors — T1 `{accent_color, logo, icon, cover_image, navigation, title: str, description: NoneType}`, T3 the same with `description: str`, `navigation: json-string` on both, which is MEASUREMENTS §40 unchanged |
+| `python3 tools/probe/run-verify-ghost-admin.py` (full) | **`RESULT: all steps passed`, 68 PASS / 0 FAIL / 1 RECORD**, against T1 `ghost6.inflozo.com` 6.58.0, T3 `ghost5.inflozo.com` 5.130.6 and the deployed site — **on the fifth attempt**, see below |
+| `git grep -n 'announcement_clear'` | `admin-rule.ts` and its test only; no caller. `ADMIN_WRITES` unchanged |
+
+### The steps this review changed, in the run's own words
+
+| Step | What it answered |
+|---|---|
+| `skeleton-shape` | **PASS, and now able to fail**: "the skeleton's 16:10 image band appears **6** time(s) in the dashboard's body and **0** in /sites', and the skeleton's 40px monogram tile **6** time(s) in /sites' and **0** in the dashboard's". It read **8** before this review, because `aspect-[16/10]` matched the REAL project card too — that count was the finished page, not the fallback, and could not go to zero |
+| `busy-label` | **PASS**: the pressed button went `"Skip"` → `"Skipping…"` with `aria-busy=true` and `aria-disabled=true`, never `disabled`, while the other form's button was untouched. It is also the live proof that `Submit`'s reordered `onClick` still submits |
+| `brand-stale` · `brand-forged-project` | **PASS both**, and each now throws by name if S2c draws no `project_id` field — without that, the press posts S2c's own real decision, which the cap accepts, and both steps passed having never posted a stale or forged one |
+| `card` · `brand-skip` | **PASS both** with the relaxed check stamp ("the check stamp at y 219"), which is what the review's own run 2 went red on with nothing wrong with the build |
+| `brand-ownership` | **PASS**, landing control included: a stranger's site id renders `not-found`, the forged **Skip** redirects, and the caller's projects come back byte-identical |
+| `no-secret-leak` | **784 response bodies** scanned for the five keys the run typed; none appeared |
+| `axe-brand` · `axe-brand-picker` | zero violations at WCAG 2.1 AA, 1440 and 390, on both S2c states |
+
+### Controls, including the ones that failed on purpose
+
+- **The walk-root finding, executed both ways.** With `account-menu.tsx`'s Sign out stripped of its
+  label and both aria attributes, `node --test busy.test.ts` was **5/5 green** before the patch and
+  goes **red naming `components/shell/account-menu.tsx:293`** after it. A first attempt at the same
+  mutation left the suite green *correctly* — `${pending ? 'text-ink-soft' : ''}` in the className
+  is itself a busy affordance — which is the control on the control.
+- **A repeated `DW-` id fails the gate**: renaming DW-74 back to DW-72 made
+  `python3 tools/story-board.py --check` exit **2** naming the id; restored, it is `current`.
+- **The `commit-msg` guard, four shapes**: `Story 3.4 - Test` (spec reads `owner_test: issues`)
+  **exit 0**; `Story 3.3 - Test` (reads `passed`) **exit 1**; `Story 9.9 - Test` (no spec at all,
+  the case that used to be waved through) **exit 1**; `Story 3.4 - Deploy` **exit 0**.
+- **`TimeoutExpired.stdout` is bytes**, executed rather than argued: a one-second `subprocess.run`
+  with `text=True` over a child that prints `note:` and sleeps returns `<class 'bytes'>`, and the
+  code as it stood raised `TypeError: startswith first arg must be bytes`.
+- **`hidePopover()` on a closed popover does not throw**, executed in Chromium through the
+  harness's own Playwright: `no-throw` both while hidden and while showing. The finding that
+  depended on it is dismissed; the sibling-scope finding beside it was real and is patched.
+- **`style-pack.ts`'s preset floor still discriminates** (the real-infra layer's own control):
+  reverting `placeholderFor` to read `brand` off `parsed.data` turned `style-pack.test.ts` red on
+  "a pack that lost its preset keeps its brand accent"; restored, 8/8 green.
+- **A Ghost Admin key with one hex digit flipped** answers **401** on both majors while the real
+  key answers 200 — so the reads above are the credentials, not an open endpoint.
+
+### The four runs that failed before the green one, stated plainly
+
+**Five full runs; only the fifth was green**, and none of the four failures was in a step this
+review changed or in anything this story does:
+
+- **Run 1** — 35 steps in, `page.waitForURL` for `/sites` after **Use your brand**, `navRetries: 1`
+  (it retried and timed out again).
+- **Run 2** — 18 steps in, `locator.waitFor` for `#s2b-admin-key-error` in the CONNECT WIZARD,
+  `navRetries: 0`. **This one is the discriminator**: it is Story 3.2's screen, on a path carrying
+  none of this review's patches and no `Submit` at all.
+- **Run 3** — 21 steps in, the S2c heading after a connect, `navRetries: 0` — which is
+  *verbatim* one of the two signatures the Fix record already carries ("runs 4 and 7, steps 48 and
+  22").
+- **Run 4** — 36 steps in, `page.goto` to `/sites`, `navRetries: 1`; it had already passed
+  **`skeleton-shape` and `busy-label`**, which is where this review's own changes live.
+
+This is the **DW-68 family** — one lost wait per run, never twice in the same place, nothing
+measurably unhealthy at the time — and it was measured rather than assumed: DNS answered from the
+stub and from `@1.1.1.1` for both hosts, and `https://app.inflozo.com/app/sign-in` answered
+**HTTP 308 in 0.106s** between runs. The Fix record's own eight-run figure is the base rate: this
+review's four-in-five is consistent with it, not worse than it.
 
 ## Questions for the owner
 
