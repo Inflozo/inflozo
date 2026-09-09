@@ -786,10 +786,13 @@ export async function skipBrand(formData: FormData): Promise<void> {
  * enum (`admin_write`, `admin_read`, `vault_decrypt`, `entitlement_change`, `admin_flag_change`,
  * `moderation`) with no member meaning "a credential was removed". Adding one is a migration, which
  * this story's Boundaries forbid in bold, and writing under `vault_decrypt` would put a FALSE row in
- * the one record that exists to be trusted and break two live counts. So nothing untrue is written
- * and the question is the spec's Question 3, for the owner. What IS proved instead, and it is the
- * stronger evidence: the harness's `disconnect` step reads `vault.secrets` through the pooler and
- * sees the secret gone.
+ * the one record that exists to be trusted and break two live counts. So nothing untrue is written.
+ * THE OWNER RULED IT (option 1, 2026-09-09, Story 3.5's Question 3): the removal entry lands in the
+ * story that next changes the log, which is **Story 3.6** — it adds *Remove token*, so it removes
+ * keys too and needs the very same new value; one migration, made once, covering both callers
+ * (DW-76). `store()` is silent for the same reason and joins it there. What IS proved meanwhile, and
+ * it is the stronger evidence: the harness's `disconnect` step reads `vault.secrets` through the
+ * pooler and sees the secret gone.
  */
 export async function disconnectSite(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'disconnect')

@@ -1018,6 +1018,11 @@ one site's record, snapshot and first-upload flag onto a different live Ghost in
 record hints "Moved domains? … your old site's snapshot is kept for 90 days"
 **And** there is **no plan field** in this flow — Preview-only is probed, not declared
 **And** it is reachable from the site card and from every "Reconnect needed" state
+**And** **a credential coming OUT writes a row in `private.credential_audit`, and so does one going in** —
+`public.credential_action` gains the value that names a removal, and both `remove()` and `store()` audit
+through it, so the one record that exists to be trusted stops being silent about the half of the traffic
+that takes keys away (**DW-76**; the owner's ruling at Story 3.5's Question 3, option 1, 2026-09-09 — the
+entry lands in the story that next changes the log, and this is it)
 **And** the screen matches S11d and B20 as re-specified.
 
 **FRs:** FR-C8. · **Frame:** `S11 Sites.dc.html` S11d + `B Missing Surfaces.dc.html` B20. · **Owner test:** yes.

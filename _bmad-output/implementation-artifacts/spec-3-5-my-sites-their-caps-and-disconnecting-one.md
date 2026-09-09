@@ -265,7 +265,11 @@ slot at the Free cap.
   + `aria-busy` until the page changes (R-98).
 - Given a site with one linked project and a snapshot row, when I disconnect it, then the project row,
   its `linked_site_id`, its `style_pack` and the snapshot row are **all still there**, and the site's
-  Vault secrets are **gone** with an audit row for each removal.
+  Vault secrets are **gone** ~~with an audit row for each removal~~. **The audit row is Story 3.6's, on
+  the owner's ruling at Question 3 (option 1, 2026-09-09):** the log has no name for a removal and
+  giving it one is a migration this spec forbids, so 3.6 — which removes keys too — makes that change
+  once for both callers (DW-76). The removal is proved the stronger way instead: the harness reads
+  `vault.secrets` through the pooler and sees the secret gone.
 - Given a disconnected site, when I connect the same address again, then **the same site id** comes
   back carrying its `site_settings`, and the project's tally on the card returns to what it was.
 - Given a Free account at one connected site, when I view `/sites`, then the grid's next cell is
@@ -406,9 +410,14 @@ the *line in the log book*.
    would not pick it: it would put a *false* entry in the one record that exists to be trusted, and
    it would break two live checks that count those entries.
 
-**Ruled:** _(awaiting the owner)_ — Dev shipped option 1's behaviour in the meantime: no audit row
-for a removal, and nothing untrue written. The live harness's `disconnect` step proves the secret
-is gone by reading the vault directly, which is the stronger evidence of the two.
+**Ruled: option 1 (owner, 2026-09-09).** Leave it out of this story and add the removal entry when the
+log next needs changing — **Story 3.6**, which is the other story that removes keys. Dev had already
+shipped this option's behaviour, so **nothing in this story changes**: no audit row for a removal, and
+nothing untrue written. The live harness's `disconnect` step proves the secret is gone by reading the
+vault directly, which is the stronger evidence of the two. Landed as **DW-76**, owned by Story 3.6, and
+propagated the same day: `epics.md` 3.6 carries the entry as an acceptance criterion, and
+`disconnectSite`'s header, the harness docstring and the `audit` step all name DW-76 as the reason the
+counts below are unchanged by a disconnect.
 
 ## Owner's manual test
 
@@ -520,8 +529,8 @@ and is recorded rather than claimed) · disconnected records and the cap, inside
 (standing rule 1): ~~`private.credential_audit` carries a row per removal~~. `remove()` writes **no**
 audit row — `withStore` only wraps its errors — and `public.credential_action` is a fixed six-value
 enum with no member meaning "a credential was removed"; adding one is a migration, which this spec's
-Boundaries forbid in bold. **Question 3 above is the owner's and DW-76 is the ledger entry**, so it
-cannot be lost. The removal is proved the stronger way instead: `disconnect` reads `vault.secrets`
+Boundaries forbid in bold. **The owner ruled it option 1 (2026-09-09): the entry is Story 3.6's**, which
+removes keys too, and DW-76 is the ledger entry so it cannot be lost. The removal is proved the stronger way instead: `disconnect` reads `vault.secrets`
 through the pooler and sees the secret gone (1 → 0). The `audit` step's 25 rows are unchanged by the
 disconnect, which is itself the evidence that nothing untrue was written.
 

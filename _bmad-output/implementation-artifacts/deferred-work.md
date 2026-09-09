@@ -1930,8 +1930,10 @@ severity: low
 origin: Story 3.5 Dev (2026-09-09) — the spec's acceptance criterion asked for "an audit row for each
   removal"; `remove()` was READ (standing rule 1) and writes none
 owner: **Story 3.6** (Manage keys), which adds the *Remove token* control and therefore needs the very same
-  entry type — one migration, made once, covering both callers. Pending the owner's ruling at Story 3.5's
-  **Question 3**; option 1 is the recommendation and is what Dev shipped the behaviour of.
+  entry type — one migration, made once, covering both callers. **Ruled by the owner, option 1
+  (2026-09-09), at Story 3.5's Question 3:** "Leave it out of this story and add the removal entry when the
+  log next needs changing — Story 3.6, which is the other story that removes keys." Story 3.5 shipped that
+  behaviour already, so nothing there changes; 3.6's acceptance criteria in `epics.md` now carry it.
 location: `apps/web/server/ghost-admin/index.ts:151` (`remove()`, and `store()` beside it, neither of which
   audits) · `supabase/migrations/20260904120000_complete_schema.sql:736` (`public.credential_action`, the
   six-value enum) · `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`disconnectSite`'s header records the

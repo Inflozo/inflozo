@@ -280,7 +280,8 @@ list gone stale — the sibling harness's own note):
                  nothing active, the grid draws no ghost slot and the connect form is open.
                  THE SECRET'S ABSENCE IS READ FROM `vault.secrets` AND NOT FROM A LOG ENTRY,
                  deliberately: `remove()` writes NO `private.credential_audit` row and the enum has
-                 no member meaning one (DW-76, and Story 3.5's Question 3 for the owner). Reading
+                 no member meaning one (DW-76 — the owner ruled the entry into Story 3.6, which
+                 removes keys too, at Story 3.5's Question 3, option 1, 2026-09-09). Reading
                  the vault is the stronger of the two anyway — a log line says a removal was
                  attempted; this says the key is gone
   re-adopt       FR-C6: the record disconnected BY THE PRODUCT above — the first run in which that
@@ -406,7 +407,8 @@ list gone stale — the sibling harness's own note):
   audit          `private.credential_audit` read through the pooler — and STORY 3.5's DISCONNECT
                  ADDS NOTHING TO IT, which is why every count below is unchanged by it: `remove()`
                  and `store()` both write no audit row at all, and `public.credential_action` has no
-                 member meaning "a credential was removed" (DW-76). One `admin_read ok` for
+                 member meaning "a credential was removed" (DW-76, ruled into Story 3.6 by the
+                 owner on 2026-09-09 — WHEN IT LANDS THESE COUNTS MOVE WITH IT). One `admin_read ok` for
                  `config/` with a NULL `site_id` per connect and, carrying the id, one for `site/`
                  plus TWO per probe (Story 3.3 — three connects and one Re-check plan), with two
                  `vault_decrypt ok` rows per probe; every count DERIVED from those two numbers,
