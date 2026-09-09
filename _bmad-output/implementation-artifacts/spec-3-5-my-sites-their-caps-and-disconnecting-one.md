@@ -656,3 +656,14 @@ never arrived.
 
 **Not run here, and they belong to the phases that own them:** the owner's manual test above (R-80,
 his, on the deployed site) and the 1440/834/390 frame screenshots (`--shots`).
+
+**Deploy, 2026-09-09.** No schema change in this story — the SQL edit is comment-only, and
+`run-rls-gate.sh` above is the control that it changed no database. App code only: the push of
+`a211f24b473cb64dfea355bfb68300371d1eb1be` (this story's last Review commit) already built the
+production Vercel project per DW-7 — CI's `check` and `rls` gated `deploy` — with no separate action
+here. Confirmed against the Vercel API (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): deployment
+`dpl_9Xyja2eRTqxD7ykYjfpodih43UxS` reads `state: READY`, `target: production`, `meta.githubCommitSha`
+matching HEAD exactly, aliased to `app.inflozo.com` and `inflozo.com`. This is the same deployment the
+`## Verification` section above already ran the 80-step live harness against.
+
+**Deployment:** `https://app.inflozo.com` — `dpl_9Xyja2eRTqxD7ykYjfpodih43UxS` (commit `a211f24b`)
