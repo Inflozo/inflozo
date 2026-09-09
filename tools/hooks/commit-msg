@@ -13,8 +13,8 @@
 subject=$(sed -e '/^#/d' -e '/^[[:space:]]*$/d' "$1" | sed -n '1p')
 printf '%s\n' "$subject" | grep -Eq '^(Story|Step|Hotfix|Epic)\b' || exit 0
 P='(Create|Dev|Review|Deploy|Test|Fix|Done|Blocked)'
-printf '%s\n' "$subject" | grep -Eq "^Story [0-9]+\.[0-9]+[a-z]? - $P - .+\$|^Step [^ ]+ - $P - .+\$|^Hotfix - .+\$|^Epic [0-9]+ - Retro - .+\$" && exit 0
-cat <<MSG
+printf '%s\n' "$subject" | grep -Eq "^Story [0-9]+\.[0-9]+[a-z]? - $P - .+\$|^Step [^ ]+ - $P - .+\$|^Hotfix - .+\$|^Epic [0-9]+ - Retro - .+\$" || {
+  cat <<MSG
 COMMIT BLOCKED — the subject starts like one of ours but does not fit the shape (R-81):
   $subject
 Expected one of:
@@ -24,4 +24,37 @@ Expected one of:
   Epic <N> - Retro - <one line>
 A subject that does not start with Story, Step, Hotfix or Epic is not checked.
 MSG
-exit 1
+  exit 1
+}
+
+# THE TEST PHASE WORD IS A CLAIM, NOT JUST A LABEL. build-sequence.md's Record prompt (step 7) has
+# exactly one path to a "Story E.S - Test - …" commit: the owner reported a problem, and that same
+# prompt sets `owner_test: issues` in the spec in the SAME commit. story-board.py's derive() reads
+# every Test-phase commit as that report having just landed (NEXT_AFTER['Test'] = 'Fix') and sends
+# the board straight to "Fix your findings" — with nothing filed, if the phase word was used for
+# anything else. Caught here, on the spec the commit is about to make current, rather than after the
+# fact: Story 3.4, 2026-09-09 — a commit that only disconnected a test site and edited the manual
+# test steps (prep, not a report) said "Test", and the board offered a Fix prompt with no findings.
+key=$(printf '%s\n' "$subject" | sed -En 's/^Story ([0-9]+\.[0-9]+[a-z]?) - Test - .*/\1/p')
+if [ -n "$key" ]; then
+  epic=${key%%.*}
+  num=${key#*.}
+  spec=$(ls _bmad-output/implementation-artifacts/spec-"$epic"-"$num"-*.md 2>/dev/null | head -1)
+  if [ -n "$spec" ]; then
+    ot=$(git show ":$spec" 2>/dev/null | sed -En "s/^owner_test:[[:space:]]*'?([a-z]*)'?.*/\1/p" | head -1)
+    if [ "$ot" != "issues" ]; then
+      cat <<MSG
+COMMIT BLOCKED — "Story $key - Test - …" claims the owner just reported problems (the only event
+build-sequence.md's Record prompt spends a Test-phase commit on), but $spec would read
+owner_test: ${ot:-<none>}, not issues, once this commit lands.
+The story board reads every Test-phase commit as that report landing and offers "Fix your findings"
+next — with nothing to fix if none was filed.
+  - Prep for the owner's test (not a filed report)? Use the Deploy phase instead.
+  - The owner really did just report problems? Add "## Owner's test findings" and set
+    owner_test: issues to the spec in this same commit.
+MSG
+      exit 1
+    fi
+  fi
+fi
+exit 0

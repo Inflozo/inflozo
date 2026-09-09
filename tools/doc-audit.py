@@ -715,7 +715,10 @@ GROUPS = [
   'first failure), stages every regenerated artefact, and BLOCKS a commit whose staged lines contain '
   'a secret from tools/probe/.env (the values of its KEY, SECRET, TOKEN, PASSWORD and DB_URL entries, '
   'compared in memory and never printed); `commit-msg` rejects a subject that starts Story, Step, '
-  'Hotfix or Epic but does not fit the R-81 shape and vocabulary; `post-commit` regenerates '
+  'Hotfix or Epic but does not fit the R-81 shape and vocabulary, and — since Story 3.4, 2026-09-09 — '
+  'also rejects a "Story E.S - Test - …" subject whose spec would not read `owner_test: issues`, '
+  "because that phase word is story-board.py's only signal that the owner's report actually landed; "
+  '`post-commit` regenerates '
   'STORY-BOARD.html in the working tree so the page the owner opens carries the commit just made. '
   'There is no bypass: --no-verify is denied in .claude/settings.json.'),
  ('_bmad/custom/', 'tool', 'BMAD configuration and skill overrides',
