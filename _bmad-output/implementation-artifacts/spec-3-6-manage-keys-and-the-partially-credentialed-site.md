@@ -770,6 +770,63 @@ and three adversarial verifiers ran over the rulings before anything was edited,
   and the seeded `keys-other-site` split apart. They remain blocked behind the migration, which under
   R-99 is the first thing the Deploy phase does rather than the last.
 
+### Deploy phase, 2026-09-10 — the migration, the deployment, and the eleven live steps
+
+**R-99's own first step.** Read via `SUPABASE_DB_POOLER_URL` before touching anything: production's
+`public.credential_action` had no `credential_change` and `private.site_credentials` had no
+`admin_key_id` — the same gap Review found. Applied by hand, both statements from
+`supabase/migrations/20260909180000_credential_audit_and_key_id.sql`, each its own autocommit
+statement (no transaction wrapping either): `alter type public.credential_action add value if not
+exists 'credential_change'` and `alter table private.site_credentials add column if not exists
+admin_key_id text`. Read back immediately after: the enum now lists `credential_change` as its
+seventh value, `admin_key_id` exists as `text`, and its only grantees are `postgres` and
+`service_role` — no `anon`, no `authenticated` — matching the gate's own assertion. Production can
+now connect a Ghost site again.
+
+**The deployment.** `Deployment: https://inflozo-9f92lwtgq-umangkagathara.vercel.app` (`dpl_73S91tvsM4Gf9AcPQBTWZFGHMNRy`),
+commit `7f36596a` (the last Review push), CI run `34383368482` green, Vercel `READY`/`PROMOTED` and
+aliased to `app.inflozo.com` (confirmed via the Vercel API's own alias list) — the code has been live
+since Review; the migration above is what Deploy adds.
+
+**The eleven live steps, on the fourth full run.** `python3 tools/probe/run-verify-ghost-admin.py
+--url https://app.inflozo.com` — three runs each died on one `locator`/`waitFor` timeout of 20-60s at
+a different point (`pro-connect-t3`'s S2c heading, `keys-other-site`'s post-submit navigation,
+`keys-forged`'s staff-field forgery landing), all pre-existing DW-68/DW-74-class flakiness read
+before being believed and gone on retry with nothing changed. **RESULT: all steps passed** on the
+run that reached the end: 92 steps, 0 failures, including this story's own — `keys-screen`,
+`axe-keys-screen`, `keys-malformed`, `keys-foreign-key`, `keys-other-site`, `keys-rotate`,
+`keys-token`, `keys-test`, `keys-js-off`, `keys-forged`, `moved-domains` — each against T1 and T3
+where the matrix names both, `SUPABASE_URL`/`SUPABASE_SECRET_KEY`/`SUPABASE_DB_POOLER_URL` for the
+pooler reads and `GHOST6_ADMIN_API_KEY`/`GHOST5_ADMIN_API_KEY`/`GHOST6_STAFF_ACCESS_TOKEN`/`GHOST5_STAFF_ACCESS_TOKEN`
+for the two Ghosts.
+
+**Two real bugs in the harness, found chasing what first looked like more of the same flakiness, and
+fixed rather than retried past.**
+
+- `disconnect-js-off` (Story 3.5's) read the ⋯ menu's href with `page.locator('#site-menu-${t1SiteId} a').getAttribute('href')` — one `<a>`, by assumption. Story 3.6 put a second link, **Manage API
+  keys**, above it in the same menu, and this step was missed from the "four existing steps moved
+  with this story" list at Review: Playwright's strict mode refused the now-ambiguous locator outright.
+  Fixed by naming the one it wants: `{ hasText: 'Disconnect' }`.
+- `moved-domains`'s reconnect half asserted `page.waitForURL((u) => u.pathname === '/sites' || u.pathname === '/sites/brand')` to mean "the reconnect redirected." It doesn't: the connect sheet is a
+  dialog drawn OVER `/sites`, so the predicate was **already true before the submit**, success or
+  failure alike — a failed reconnect (whatever DW-68's hang is, on this one call) was read as a pass,
+  and the lie only surfaced two steps later as a T3 that had silently stayed disconnected, on a
+  different assertion, in a different run. There is no field-level error to wait for that covers
+  every way this submit can fail, so the fix waits for the one thing a real navigation always does
+  and a stuck dialog never can: the dialog's own `#s2b-content-key` field leaving the DOM
+  (`state: 'detached'`), the same shape `s2cHeading(page).waitFor()` already gives the first, plain
+  connect. Filed as DW-68's fifth manifestation rather than re-derived there.
+
+**Commands, and what each returned (unchanged since Review, re-run because the tree changed):**
+
+- `python3 tools/doc-audit.py --check`, twice — PASS, 0 warnings (the harness fix above is a `tools/`
+  file already in the catalogue; nothing new to register).
+- `bash supabase/tests/run-rls-gate.sh` — not re-run: no schema file changed in this phase, and the
+  gate already ran green against this exact migration at Review.
+
+**Not run in this phase:** `pnpm check` / `pnpm build` — no `apps/web` source changed at Deploy, only
+`tools/probe/run-verify-ghost-admin.py` and this spec.
+
 ## Spec Change Log
 
 Four departures from the Code Map, each recorded here rather than made silently. None changes an

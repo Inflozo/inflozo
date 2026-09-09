@@ -1732,6 +1732,19 @@ reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sit
   real failures. The honest cost is what it has always been — roughly one full run in two reaches
   the end, so proving anything on the deployed site costs two or three runs, and a red run is read
   before it is believed rather than re-run on reflex.
+  A FIFTH MANIFESTATION, AND ONE IT HAD BEEN HIDING BEHIND A WRONG ASSERTION (Story 3.6 Deploy,
+  2026-09-10). Four full runs against production before a clean one: one hung on `pro-connect-t3`'s
+  `s2cHeading` wait (the third manifestation's own kind), one on `keys-other-site`'s post-submit
+  navigation, and one dropped the "landed" signal on `keys-forged`'s staff-field forgery (this
+  story's own step; DW-74's kind, on a different form) — all read before being believed, per this
+  entry's own rule, and all gone on the next run with nothing changed. The fourth run's failure was
+  different in kind: `moved-domains`'s reconnect step used `waitForURL(pathname === '/sites')` to
+  mean "the redirect happened," but the flow was ALREADY on `/sites` with a dialog open over it
+  before the submit, so the predicate was true whether the submit succeeded or hung — this class of
+  hang had been silently read as a pass, not a fail, for as long as that assertion existed. Fixed at
+  Deploy by waiting on the dialog's own content field to be REMOVED from the DOM instead, which only
+  a real navigation does; a hang now times out visibly, the same shape as everywhere else in this
+  entry, rather than reporting a site that never reconnected as one that had.
 
 ### DW-69: two presses of "Use your brand" in flight together can still make two projects
 

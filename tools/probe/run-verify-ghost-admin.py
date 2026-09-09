@@ -2168,7 +2168,8 @@ const shoot = async (page, name) => {
        `/sites/disconnect?site=<id>`, rendered from the same component and posting the same action.
        Both halves are read out of SERVED markup: the menu row's href off `/sites`, and the route's
        own form off a second `goto` no script touched. */
-    const rowHref = await page.locator(`#site-menu-${t1SiteId} a`).getAttribute('href')
+    const rowHref = await page.locator(`#site-menu-${t1SiteId} a`, { hasText: 'Disconnect' })
+      .getAttribute('href')
     await page.goto(`${APP}${rowHref}`, { waitUntil: 'load' })
     const routeForms = await page.locator('form').evaluateAll((forms) =>
       forms.filter((f) => f.querySelector('input[name="site_id"]')).map((f) => ({
@@ -3564,7 +3565,10 @@ const shoot = async (page, name) => {
       // carries the hint, and re-adoption is a connect.
       await page.goto(`${APP}/sites`, { waitUntil: 'load' })
       await page.waitForSelector('text=Connected')
-      await cardOf(pub3.title || 'Ghost5').first().getByRole('button', { name: /^Options for / }).first().click()
+      // BY THE SITE ID, not the title: a `hasText` substring match on T3's title is a needless
+      // second way for this click to miss when a precise id is already in hand. `popovertarget`
+      // carries `t3SiteId` itself, same as the menu it opens.
+      await page.locator(`button[popovertarget="site-menu-${t3SiteId}"]`).click()
       const menu3 = page.locator(`#site-menu-${t3SiteId}`)
       await menu3.waitFor({ state: 'visible' })
       await menu3.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
@@ -3574,10 +3578,25 @@ const shoot = async (page, name) => {
       await opener(page).first().click()
       await page.waitForSelector('dialog[open] a[href="?step=keys"]')
       await sheet(page).locator('a[href="?step=keys"]').click()
-      await page.waitForSelector('dialog[open] #s2b-content-key')
+      const contentField = page.locator('dialog[open] #s2b-content-key')
+      await contentField.waitFor()
       await fill(page, T3.url, T3.adminKey, T3.contentKey)
       await submit(page)
-      await page.waitForURL((u) => u.pathname === '/sites' || u.pathname === '/sites/brand', { timeout: 60000 })
+      // NOT `waitForURL(pathname === '/sites')`: A FAILED SUBMIT LEAVES THE DIALOG OPEN ON TOP OF
+      // THE SAME `/sites` THE FLOW WAS ALREADY ON, so that predicate is already true before the
+      // submit even lands and proves nothing (found live, 2026-09-09 — it read a failed reconnect
+      // as a success and the run only surfaced the lie two steps later, as a T3 that had silently
+      // stayed disconnected). A real success is a real navigation: `redirect()` tears down this
+      // exact dialog instance, so waiting for THIS element to be gone is the same signal
+      // `s2cHeading(page).waitFor()` gives the FIRST connect, spelled for a dialog that has no
+      // heading of its own to wait on.
+      const reconnected = await contentField.waitFor({ state: 'detached', timeout: 60000 })
+        .then(() => true).catch(() => false)
+      if (!reconnected) {
+        const shown = (await page.locator('dialog[open]').innerText().catch(() => '')).replace(/\s+/g, ' ')
+        throw new Error(`moved-domains: T3's reconnect did not navigate away — the dialog is still ` +
+          `open ${shown ? 'saying ' + JSON.stringify(shown) : 'with nothing readable in it'}`)
+      }
       if (page.url().includes('/sites/brand')) await skipS2c(page)
       await page.waitForSelector('text=Connected')
       return page.url()
