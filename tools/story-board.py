@@ -387,10 +387,19 @@ def question_blocks(text):
     # recognise — so the question under it merged into the one above and vanished from the owner's
     # inbox, which is the very failure the check was added to prevent, in the other direction
     # (review 4, 2026-09-09). Erring towards "keep" only ever shows a question twice.
+    # ...AND THE BLANK LINE IS ONLY ASKED OF THE SHAPES THAT NEED IT. A `###` at the start of a
+    # line is unambiguously a heading — that is what makes it one in Markdown, blank line above or
+    # not — and requiring one dropped `### Question 2` written directly under a paragraph or a
+    # list item, merging its question into the one above and losing it from the owner's inbox: the
+    # exact failure this check was added to prevent, arriving from the other side for the second
+    # time (review 5, 2026-09-09). The guard exists for the BARE shapes — `Question 1` and
+    # `**2.`— which are the ones a wrapped prose line can imitate. A `#` heading cannot be
+    # imitated by wrapped prose, so it never needed the guard.
     blank_before = re.compile(r'\n[ \t]*\r?\n$')
+    hard_heading = re.compile(r'^#{3,6}\s')
     starts = [m.start() for m in re.finditer(
         r'^(?:#{3,6}\s+|\**\s*(?:QUESTION|Question|Q)\s*\d+|\*\*\d+[.)]\s)', text, re.M)
-        if m.start() == 0 or blank_before.search(text[:m.start()])]
+        if m.start() == 0 or hard_heading.match(m.group()) or blank_before.search(text[:m.start()])]
     # Prose ahead of the first real question is a PREAMBLE, not a question. Spec 2.3 opens its
     # section with one sentence ("Two decisions from the review…") and the synthetic block below
     # read it as a headless, optionless, unruled question — one that sat "open" in the owner's
@@ -398,6 +407,15 @@ def question_blocks(text):
     # dropped when it carries NEITHER options NOR a ruling: a real question written without a
     # heading still has its options, and erring towards "keep" only ever shows one question twice
     # while erring the other way loses one — `ruled_line`'s own reasoning.
+    # ...AND IT IS DROPPED ONLY IF IT DOES NOT ASK ANYTHING. The pop below removes a first block
+    # with no options and no ruling — which is ALSO the exact shape R-83 exists to flag, so a
+    # genuinely shapeless question written without a heading was being discarded instead of
+    # reported (the board's own fixture asserts shapeless questions are real: `assert not
+    # q32[0]['options']`). Review 4 dismissed this for want of a signal that could tell a preamble
+    # from a question; a QUESTION MARK is that signal, and it costs nothing — spec 2.3's preamble
+    # ("Two decisions from the review. Both are yours.") carries none (review 5, 2026-09-09).
+    # It is read off the block's whole TEXT and not off `parts[0]`: a one-line block has its line
+    # in the title and an EMPTY `ask`, so the mark would never have been seen there.
     preamble = bool(starts) and starts[0] != 0
     if not starts or starts[0] != 0:
         starts = [0] + starts
@@ -418,7 +436,8 @@ def question_blocks(text):
                     'options': bool(OPTION_RE.search(blk)),
                     'recommended': '(RECOMMENDED)' in blk,
                     'answered': answered(blk), 'parts': (ask, opts, ruled)})
-    if preamble and out and not out[0]['options'] and not out[0]['answered']:
+    if preamble and out and not out[0]['options'] and not out[0]['answered'] \
+            and '?' not in out[0]['text']:
         out.pop(0)
     return out
 
@@ -2015,6 +2034,19 @@ def demo():
         two = question_blocks('### Question 1 - one\n\nAsk.\n\n1. yes\n2. no' + gap +
                               '### Question 2 - two\n\nAsk.\n\n1. yes\n2. no\n')
         assert len(two) == 2, f'a heading after {gap!r} was swallowed: {[q["title"][:30] for q in two]}'
+    # ...and a `###` heading needs NO blank line above it at all: it is a heading because it is one,
+    # and demanding the blank line lost the question under it (review 5). The bare shapes still
+    # need the guard, which is the `wrapped` case above.
+    tight = question_blocks('### Question 1 - one\n\nAsk.\n\n1. yes\n2. no\n'
+                            '### Question 2 - two\n\nAsk.\n\n1. yes\n2. no\n')
+    assert len(tight) == 2, \
+        f'a heading with no blank line above it was swallowed: {[q["title"][:30] for q in tight]}'
+    # A headless, optionless block that ASKS is a question, not a preamble — the one shape R-83
+    # exists to flag, which the pop was silently deleting (review 5).
+    shapeless = question_blocks('Which way should this go?\n\n### Question 2 - two\n\nAsk.\n\n1. yes\n2. no\n')
+    assert len(shapeless) == 2, \
+        f'a shapeless question was dropped as a preamble: {[q["title"][:40] for q in shapeless]}'
+    assert not shapeless[0]['options'], 'the shapeless question must still fail R-83'
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
     assert not q32[0]['options'], 'the shapeless question must fail R-83'

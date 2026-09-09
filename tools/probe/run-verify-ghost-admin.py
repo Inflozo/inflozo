@@ -38,9 +38,9 @@ list gone stale — the sibling harness's own note):
                  `announcement_*`. §15h item 21 measured the announcement three with a STAFF
                  token, a credential the product does not hold until Epic 7, so this had to be
                  executed rather than inherited (§39)
-  brand-keys     STORY 3.4, printed in both modes: the SEVEN keys FR-C4's brand reader takes off
-                 the SAME payload — `accent_color`, `logo`, `icon`, `cover_image`, `navigation`,
-                 `title`, `description` — are really in the integration key's own
+  brand-keys     STORY 3.4, printed in both modes: the keys `BRAND_KEYS` names — FR-C4's brand
+                 reader takes them off the SAME payload — `accent_color`, `logo`, `icon`,
+                 `cover_image`, `navigation`, `title`, `description` — are really in the integration key's own
                  `GET /admin/settings/` on both majors, and the CONTAINER of each is recorded.
                  `navigation` is a JSON *string*, as `announcement_visibility` is (§40); the
                  reader admits an array too, and this is what says which branch is live
@@ -114,11 +114,14 @@ list gone stale — the sibling harness's own note):
                  not: the row is patched through the SERVICE ROLE, as `brand-none` already patches
                  it, and put back in a `finally`. Exactly one `<img>` carrying that src, and the
                  monogram tile NOT drawn beside it
-  brand-failed-line  THE MATRIX'S "insert fails -> the page says so". All four of `useBrand`'s
-                 failure branches redirect to `&failed=1`, and until now the sentence they redirect
-                 to was asserted by `BRAND_COPY.failed.length > 0` and by nothing else at any
-                 level, so deleting the block that renders it would have shipped green. Asserted
-                 BOTH WAYS: printed with the flag, absent without it
+  brand-failed-line  THE MATRIX'S "insert fails -> the page says so". EVERY failure branch in
+                 `useBrand` redirects to `&failed=1` (the count is not written down here — it was,
+                 as "four", and there are five: review 5, 2026-09-09, standing rule 4), and until
+                 now the sentence they redirect to was asserted by `BRAND_COPY.failed.length > 0`
+                 and by nothing else at any level, so deleting the block that renders it would have
+                 shipped green. Asserted BOTH WAYS: printed with the flag, absent without it — and
+                 a REAL failure branch is now driven to it, because visiting the flagged URL by
+                 hand proves the sentence renders and NOT that anything redirects there
   brand-js-off   both S2c controls are `<form action={serverAction}>`, read off S2c fetched as a
                  FRESH DOCUMENT because that is what a scripts-off browser is served: method=post, an action
                  attribute, React's encoded `$ACTION_*` hidden fields, one hidden `site_id` and one
@@ -175,6 +178,12 @@ list gone stale — the sibling harness's own note):
                  which takes the other half of `useBrand`'s guard; the paywall's own half was
                  resting on a line nothing asserted, and the matrix's "cap changed under the page"
                  row had no proof at any level
+  brand-forged-project  ...AND THE OTHER HALF OF THAT SAME TERNARY. A press carrying a project_id
+                 no project of this caller's carries — what a deleted project and another account's
+                 row both look like through his own RLS-scoped read — writes nothing and returns to
+                 S2c. That is the `!picked` clause, which every step that presses a real button
+                 walks past; with it gone the post falls into the INSERT branch and makes a SECOND
+                 project at the Free cap, so the count proves the paywall as well as the guard
   brand-none     a card that offers nothing is not drawn (UX-DR3): with the brand taken off the
                  row through the service role (no Ghost here can answer without an accent, a logo
                  AND a menu), the card draws no offer link and `/sites/brand?site=…` renders the
@@ -1137,8 +1146,8 @@ const shoot = async (page, name) => {
        to a test Ghost is an Admin write this story does not make. But nothing here needs Ghost:
        `brand-none` below already drives S2c off a PATCHED FIXTURE ROW through the service role,
        which is a Supabase write and not a Ghost one, and the same handle reaches the logo. The
-       failure line is the same shape of gap from the other end — `useBrand`'s four failure
-       branches all redirect to `&failed=1` and the sentence they redirect to was asserted by
+       failure line is the same shape of gap from the other end — `useBrand`'s failure branches
+       all redirect to `&failed=1` and the sentence they redirect to was asserted by
        `BRAND_COPY.failed.length > 0` and by nothing else, at any level (review 4, 2026-09-09).
        Both restore in a `finally`, as `brand-none` does. */
     let logoShot, failedShown, failedAbsent
@@ -1154,10 +1163,14 @@ const shoot = async (page, name) => {
     } finally {
       await patchSettings(t1SiteId, { brand: brandRead })
     }
+    // `logoShot?.` AND NOT `logoShot.`: it is assigned INSIDE the try, so anything that threw
+    // between the patch and the read — a navigation timeout, DW-68's own 30-60s hang — reached
+    // this line undefined and died as a TypeError reported as the opaque `browser` step, hiding
+    // which assertion was even being made. A red `brand-logo` names itself (review 5, 2026-09-09).
     step('brand-logo',
-      logoShot.srcs.length === 1 && logoShot.srcs[0] === LOGO && logoShot.tile === false,
-      `with an https: logo on the row S2c drew ${logoShot.srcs.length} image(s) ` +
-      `${JSON.stringify(logoShot.srcs)} and the monogram tile ${logoShot.tile ? 'AS WELL' : 'not at all'} ` +
+      logoShot?.srcs.length === 1 && logoShot.srcs[0] === LOGO && logoShot.tile === false,
+      `with an https: logo on the row S2c drew ${logoShot?.srcs.length} image(s) ` +
+      `${JSON.stringify(logoShot?.srcs)} and the monogram tile ${logoShot?.tile ? 'AS WELL' : 'not at all'} ` +
       `— the branch a customer whose Ghost carries a logo gets, which until now was proved by a ` +
       `unit test alone. The row was patched through the service role and put back in a finally: ` +
       `no Ghost was written, which is what "Ask First" forbids`)
@@ -1168,12 +1181,33 @@ const shoot = async (page, name) => {
     await page.goto(landedOn, { waitUntil: 'load' })
     await s2cHeading(page).waitFor()
     failedAbsent = await says(page, SAY.brand_failed)
+    // AND A REAL FAILURE BRANCH IS DRIVEN TO IT. The two assertions above prove the SENTENCE
+    // renders off the flag; they prove nothing about anything ever SETTING the flag, because the
+    // step types the flagged URL itself — the same shape of gap the step was written to close, one
+    // level up (review 5, 2026-09-09). `decision_missing` is the one branch a browser can reach
+    // without fault injection: `useBrand` refuses a post whose `project_id` field is not there AT
+    // ALL (a crafted body, not a press), which is `typeof chosen !== 'string'` and NOT the blank
+    // value `brand-stale` posts. Removing the input is exactly that post.
+    await page.evaluate(() => {
+      const f = document.querySelector('input[name="project_id"]')
+      if (f) f.remove()
+    })
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    // WAIT FOR THE FLAG, not for the path: the press starts ON `/sites/brand`, so a predicate on
+    // the pathname alone is already true and resolves before the redirect has happened at all.
+    await page.waitForURL((u) => u.searchParams.get('failed') === '1').catch(() => {})
+    await s2cHeading(page).waitFor().catch(() => {})
+    const failedByBranch = await says(page, SAY.brand_failed)
+    const failedFlagInUrl = new URL(page.url()).searchParams.get('failed') === '1'
     step('brand-failed-line',
-      failedShown && !failedAbsent,
+      failedShown && !failedAbsent && failedByBranch && failedFlagInUrl,
       `S2c asked for with &failed=1 printed ${JSON.stringify(SAY.brand_failed)} = ${failedShown}, ` +
       `and the same screen without the flag did not = ${!failedAbsent}. This is the matrix's ` +
-      `"insert fails -> the page says so": all four of useBrand's failure branches redirect here, ` +
-      `and the sentence they redirect to was asserted by its own LENGTH and nothing else`)
+      `"insert fails -> the page says so": every failure branch in useBrand redirects here, and ` +
+      `the sentence they redirect to was asserted by its own LENGTH and nothing else. AND A REAL ` +
+      `BRANCH NOW DRIVES IT: a press whose project_id input was REMOVED (decision_missing, not ` +
+      `the blank value brand-stale posts) landed back on ${page.url().split('?')[0]} carrying ` +
+      `failed=1 (${failedFlagInUrl}) and printing the sentence (${failedByBranch})`)
 
     // ── BOTH CONTROLS ARE FORMS, so S2c works with JavaScript off — the same wiring `js-off`
     //    asserts for the keys form. (The Sites card's offer is a LINK and needs no form to work
@@ -1398,6 +1432,24 @@ const shoot = async (page, name) => {
       `(${rebranded.name === made.name && rebranded.slug === made.slug && rebranded.linked_site_id === made.linked_site_id}) ` +
       `and style_pack.brand written again, idempotently`)
 
+    // A PRESS THAT HAS NOT LANDED PROVES NOTHING ABOUT "NOTHING WAS WRITTEN" (standing rule 2).
+    // The two steps below both refuse and REDIRECT BACK TO `/sites/brand` — the path the press
+    // started on — so `waitForURL(pathname === '/sites/brand')` is already true the instant it is
+    // called and returns before the server has answered at all; `s2cHeading` is on the old document
+    // too, so it returns as well, and the rows could then be read BEFORE the action ran. A false
+    // "nothing was written" is exactly what these steps exist to rule out. Waiting on the action's
+    // own POST is the control, and it is the same fix `brand-ownership` took this review
+    // (review 5, 2026-09-09; propagate, never localise).
+    const pressAndLand = async (name) => {
+      const [resp] = await Promise.all([
+        page.waitForResponse((r) => r.request().method() === 'POST', { timeout: NAV_TIMEOUT })
+          .catch(() => null),
+        page.getByRole('button', { name, exact: true }).click(),
+      ])
+      await s2cHeading(page).waitFor().catch(() => {})
+      return Boolean(resp)
+    }
+
     // ── THE CAP IS WHAT REFUSES, NOT MERELY A STALE DECISION — and this is the ONLY step that
     //    executes it. `useBrand`'s guard reads `chosen === '' ? Boolean(target) : !picked`, so an
     //    EMPTY decision at the cap is refused and no project can be made past F.1's limit; every
@@ -1413,18 +1465,50 @@ const shoot = async (page, name) => {
     await page.evaluate(() => {
       document.querySelector('input[type="hidden"][name="project_id"]').value = ''
     })
-    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
-    await page.waitForURL((u) => u.pathname === '/sites/brand')
-    await s2cHeading(page).waitFor()
+    const staleLanded = await pressAndLand(SAY.brand_use)
     const afterStale = await projectsOf()
     const trueCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
     step('brand-stale',
-      afterStale.length === 1 && afterStale[0].id === made.id && trueCaption,
+      staleLanded && afterStale.length === 1 && afterStale[0].id === made.id && trueCaption,
       `at the Free cap, a press carrying an EMPTY decision — the body S2c itself emits before any ` +
       `project exists, and what a second tab that filled the cap leaves behind — wrote nothing: ` +
       `${afterStale.length} project, still the same row (${afterStale[0]?.id === made.id}), and the ` +
       `browser is back on S2c with the TRUE caption naming it = ${trueCaption} rather than the ` +
-      `promise it was posted with. The cap refuses, not just the staleness`)
+      `promise it was posted with (the action's POST was seen to answer first = ${staleLanded}, ` +
+      `because a re-read that raced the press would report "nothing written" for the wrong ` +
+      `reason). The cap refuses, not just the staleness`)
+
+    // ── AND THE OTHER HALF OF THAT TERNARY. `brand-stale` posts the EMPTY decision, so it takes
+    //    `chosen === '' ? Boolean(target)`; every other step presses a real button, so `picked` is
+    //    always found and `!picked` — the clause that refuses a project id THAT IS NOT THE
+    //    CALLER'S — was executed by nothing at any level (review 5, 2026-09-09). It is what stands
+    //    between a crafted body and a write onto a row the screen never offered, AND it is the
+    //    cap's second guard: with `!picked` gone, a post naming an unknown id falls through to the
+    //    INSERT branch and makes a project past F.1's limit, which is why the count is the
+    //    assertion. The id is a uuid no project carries, which is what a deleted project or
+    //    another account's row both look like through the caller's own RLS-scoped read.
+    const FORGED_PROJECT = '00000000-0000-4000-8000-00000000dead'
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    await page.evaluate((id) => {
+      const f = document.querySelector('input[type="hidden"][name="project_id"]')
+      if (f) f.value = id
+    }, FORGED_PROJECT)
+    const forgedProjectLanded = await pressAndLand(SAY.brand_use)
+    const afterForgedProject = await projectsOf()
+    const forgedCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
+    step('brand-forged-project',
+      forgedProjectLanded && afterForgedProject.length === 1 && afterForgedProject[0].id === made.id
+      && afterForgedProject[0].name === made.name && forgedCaption,
+      `a press carrying a project_id no project of this caller's carries ` +
+      `(${FORGED_PROJECT}) wrote NOTHING and came back to S2c: still ` +
+      `${afterForgedProject.length} project, still ${JSON.stringify(afterForgedProject[0]?.name)} ` +
+      `(${afterForgedProject[0]?.id === made.id}), true caption = ${forgedCaption}, and the POST ` +
+      `was seen to answer before the rows were re-read = ${forgedProjectLanded}. This is the ` +
+      `\`!picked\` half of useBrand's guard, which every other step walks past by pressing a real ` +
+      `button — and with it gone the post falls into the INSERT branch and makes a SECOND project ` +
+      `at the Free cap, so the count is the paywall's proof as much as the guard's`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
 
     // ── A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3), and the route that would draw it 404s.
@@ -1677,9 +1761,17 @@ const shoot = async (page, name) => {
     // action's own docstring claims "a pack E6 has since written survives untouched" and nothing
     // could tell the two apart (review 4, 2026-09-09). The schema is `.loose()`, so an unknown
     // key is exactly what E6 widening the column looks like from here.
+    // AND IT CARRIES NO `preset` AT ALL, which makes the OTHER half of the merge discriminate.
+    // Review 4 added a floor that repairs a `preset` that is absent or not a string, so the row
+    // STORED stays parseable by `stylePackSchema` — and the fixture it landed beside already had
+    // `preset: 'paper'`, which is byte-identical to `DEFAULT_PRESET`, so deleting the floor or
+    // inverting it left every assertion in this step green (review 5, 2026-09-09). With the key
+    // absent, the `preset === 'paper'` assertion below is the floor under execution: it can only
+    // pass if `useBrand` put it there. `mode` still discriminates merge-from-replace, so the one
+    // fixture now proves both halves.
     const second = (await insert('/projects', {
       user_id: USER_ID, name: 'Field Notes', slug: 'field-notes',
-      style_pack: { preset: 'paper', mode: 'dark' },
+      style_pack: { mode: 'dark' },
     })).body
     const secondId = (second && second[0] && second[0].id) || null
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
@@ -1766,6 +1858,9 @@ const shoot = async (page, name) => {
       `${JSON.stringify((chosenRow.style_pack || {}).mode)} beside preset ` +
       `${JSON.stringify((chosenRow.style_pack || {}).preset)}, which is the action's "a pack E6 ` +
       `has since written survives untouched" under execution rather than in a comment. ` +
+      `AND THE PRESET FLOOR TOO: the fixture was inserted with NO preset, so a stored ` +
+      `${JSON.stringify((chosenRow.style_pack || {}).preset)} is review 4's repair running, not ` +
+      `the fixture's own value being echoed back. ` +
       `Still ${afterPick.length} projects: a chooser, never a factory`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
 
@@ -1994,24 +2089,39 @@ const shoot = async (page, name) => {
         return true
       }, [foreignId, label])
     }
+    // A NEGATIVE ASSERTION NEEDS A POSITIVE CONTROL (standing rule 2). `forgeBrand` returns true
+    // because it FOUND the button and called click() — not because the server ever saw the post —
+    // and `networkidle` is swallowed with `.catch(() => {})`, so a press that had not landed yet
+    // satisfied "the projects are byte-identical" for the wrong reason. Both actions have an
+    // observable server answer and this now waits for it: the forged **Use your brand** reaches
+    // `useBrand`, whose site read returns no row through RLS, so it calls `notFound()` and the
+    // not-found page renders; the forged **Skip** redirects to `/sites`. Either one proves the
+    // round trip completed before the rows are re-read (review 5, 2026-09-09).
     const forgedUse = await forgeBrand(SAY.brand_use)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    const forgedUseLanded = await page.getByText('could not be found', { exact: false }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
     const afterUse = await projectsOf()
     const forgedSkip = await forgeBrand(SAY.brand_skip)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    const forgedSkipLanded = await page.waitForURL((u) => u.pathname === '/sites')
+      .then(() => true).catch(() => false)
     const afterForgedSkip = await projectsOf()
     // NOT A RE-READ COMPARED WITH ITSELF: nothing may now be LINKED to the stranger's site, which
     // is the one row `useBrand` could have written if RLS had let it through.
     const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
     step('brand-ownership',
       foreignPage.saw === 'not-found' && forgedUse && forgedSkip
+      && forgedUseLanded && forgedSkipLanded
       && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
       && projectsById(afterUse) === projectsById(projectsBefore)
       && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
       `/sites/brand?site= a row a DIFFERENT account owns rendered ${JSON.stringify(foreignPage.saw)} — ` +
       `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
       `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
-      `submitted from the fixture's session. The caller still has ${afterUse.length} project, ` +
+      `submitted from the fixture's session — and EACH POST WAS SEEN TO LAND before the rows were ` +
+      `re-read (the forged Use reached useBrand, whose site read returns no row through RLS, so ` +
+      `the not-found page rendered = ${forgedUseLanded}; the forged Skip redirected to /sites = ` +
+      `${forgedSkipLanded}), because a byte-identical re-read proves nothing about a press that ` +
+      `never arrived. The caller still has ${afterUse.length} project, ` +
       `byte-identical to the ${projectsBefore.length} it had before ` +
       `(${projectsById(afterUse) === projectsById(projectsBefore)}` +
       // A DIFFERENCE NAMES ITSELF. A boolean here cost the review a run it could not explain.

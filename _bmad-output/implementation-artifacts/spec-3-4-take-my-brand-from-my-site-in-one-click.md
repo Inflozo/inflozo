@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
-review_loop_iteration: 4
+review_loop_iteration: 5
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -242,16 +242,25 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   (S2c on the deployed site, its values matching the row), **`brand-logo`** (the `<img>` half of the
   logo slot, driven off a fixture row patched through the service role — no Ghost written),
   **`brand-failed-line`** (the `&failed=1` sentence, asserted both ways), `brand-js-off` (both forms
-  post with scripts disabled), `axe-brand` at 1440 and 390, `brand-seed` (**Use your brand** → a
+  post with scripts disabled), `axe-brand` at 1440 and 390, `brand-skip` (→ `/sites`, no project
+  written), `brand-seed` (**Use your brand** → a
   project exists, `linked_site_id` set, `style_pack.brand.accent` equal to the site's, the site card
   reading "1 project" and the dashboard card painted in it), `brand-atcap` (the caption names the
   project before the press), **`brand-stale`** (the empty decision S2c itself emits at the cap writes
-  nothing), `brand-skip` (→ `/sites`, no project written), `brand-none` (a seeded row with no brand
-  redirects to `/sites` and draws no link), **`brand-ownership`** (a second account's real site id
-  forged into both forms), **`brand-rerun`** (the offer pressed again on Pro, where there is room),
-  **`brand-picker-js-off`**, **`axe-brand-picker`**, **`brand-picker`** (the chooser, and the proof
-  that the pack is merged and not replaced) and **`brand-atcap-picker`** (the Question 4 ruling in
-  the only state that reaches it).
+  nothing), **`brand-forged-project`** (the other half of that same guard: a `project_id` the caller
+  does not carry writes nothing, and with the clause gone the post makes a project past the cap),
+  `brand-none` (a seeded row with no brand
+  redirects to `/sites` and draws no link), **`brand-rerun`** (the offer pressed again on Pro, where
+  there is room), **`brand-picker-js-off`**, **`axe-brand-picker`**, **`brand-picker`** (the chooser,
+  and the proof that the pack is merged and not replaced, and — since review 5 — that the preset
+  floor really runs, its fixture carrying no `preset` at all), **`brand-atcap-picker`** (the
+  Question 4 and Question 6 rulings in the only state that reaches them) and
+  **`brand-ownership`**, last of them (a second account's real site id forged into both forms).
+  *(This list is the third the bullet has carried: it was corrected for omission at review 2, for
+  omission again at review 4, and for ORDER at review 5, when `brand-skip` sat four positions late
+  and `brand-ownership` five early. The docstring — which is derived from the source — was right
+  each time. A retyped copy of a derived list is the thing standing rule 4 is about; read the
+  docstring, and treat this as prose about the shape rather than as the list.)*
 - `tools/doc-audit.py:355-362` -- the harness row's description follows its new subject; same path,
   no new row.
 - `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` --
@@ -524,6 +533,17 @@ the landing is unpinned: a regression there turns a successful connect into a fr
 recorded here rather than papered over, and the honest reading of the green run is "every assertion
 held", not "every branch ran".
 
+**And the 834 width is drawn by nothing (review 5, 2026-09-09).** AC 2 and Boundaries both say
+"1440 / 834 / 390", and the run reaches 834 only through `shoot()`, which returns immediately unless
+`SHOTS_DIR` is set — no command in `## Verification` passes `--shots`, and no review or fix record
+reports having run it. `axeAt` covers 1440 and 390, which is what those criteria say and what the
+run proves. So the tablet width is **asserted at no level**: the responsive behaviour there rests on
+the same Tailwind `tablet:` breakpoints the rest of the app uses, which is a reason to expect it and
+not a proof of it. It is also the width at which nobody has seen the chooser at all, since
+`shoot(page, 's2c')` fires on the first S2c visit, before any project exists. The owner's manual
+test walks 390 (step 14) and 1440 throughout; 834 is the gap, and it is named here rather than
+counted as covered.
+
 **Dismissed, with the reason.** The concurrent double press is **DW-69**, already deferred by the
 last review for the reason that has not changed (the fix is a migration, which is "Ask First") —
 re-raised by a layer that could not see the ledger. `brandOf` was reported as leaving `icon` and
@@ -562,7 +582,13 @@ the Review 3 record and Fix record 3 — all held, with negative controls at bot
 live-API boundary**, including the `placeholderFor({brand:{accent:'#FF1A75'}})` line that review 3
 made true. The findings below are what five layers found *besides* that.
 
-- [ ] [Review][Decision] **The at-cap caption TELLS while the cards beside it ASK, and two of the
+- [x] [Review][Decision] **RULED — option 1 (owner, 2026-09-09).** The caption at the cap AND with
+      cards became *"You're at your project limit, so no new project — pick the one to wear your
+      brand."*, which keeps the limit and names no project because the cards do; `willBrand` is
+      untouched and still runs at the cap with a single project. Executed as `brand-atcap-picker`,
+      which asserts the ruled sentence and that the naming one is gone from that screen, while
+      `brand-atcap` proves it still alive one state over. AC 6, AC 7 and the Boundaries clause were
+      corrected in the Fix. *(As raised:)* **The at-cap caption TELLS while the cards beside it ASK, and two of the
       owner's own rulings point at the two halves.** Downgraded to Free with two projects — AC 7's
       state — S2c prints *"You're at your project limit. We'll put your brand on “Ghost6”."* (the
       Question 5 ruling) and then draws a card per project asking which (the Question 3 ruling).
@@ -675,6 +701,155 @@ assuming both test Ghosts answer a brand — true, and they are our own controll
 that goes red when someone clears T1's accent is the harness working. The `preamble` pop dropping a
 headless, optionless question — a deliberate, documented trade-off with no signal that could tell it
 from prose, and erring the other way puts an unanswerable sentence in the owner's inbox for ever.
+
+### Review Findings — fifth review, 2026-09-09
+
+Five layers (blind hunter, edge-case hunter, verification-gap, acceptance auditor, real-infra), 29
+findings after dedup, 15 patched, 2 deferred, 12 dismissed with reasons, **none for the owner** —
+every one of his six questions carries a `Ruled:` line and no fix here needed a decision that is his.
+**The real-infra layer confirmed through the Vercel API that `app.inflozo.com` aliases the reviewed
+commit before trusting any live assertion, re-executed every claim in `## Verification` and in the
+Review 3, Review 4 and both Fix records, and added two negative controls of its own** — a Ghost
+Admin key with one hex digit flipped (401 on both majors) and `BRAND_COPY.atLimitChoose` pointed at
+the pre-ruling sentence (`probe-rule.test.ts` went red and back green). All held.
+
+- [x] [Review][Patch] **"the FIFTH reader" is not a restated count, it is a WRONG one**, in four live
+      places at once. The readers that take the flat record `settingsOf` builds are `injectionFlag`,
+      `portalState`, `announcementOf` and `brandOf` — four. `settingsOf` BUILDS the record rather
+      than reading it and `capabilityOf` takes `hostSettings`, a different payload; the header said
+      "the three readers" before this story, so +1 was always four. Two layers derived it
+      independently. The number is gone from all four, and `probe-rule.ts` now carries why it is
+      gone rather than a corrected figure — the sixth reader would have made it wrong again
+      [apps/web/lib/probe-rule.ts ×3, _bmad-output/implementation-artifacts/epic-3-context.md]
+- [x] [Review][Patch] **`useBrand` has FIVE `&failed=1` branches and every document said four**
+      (`actions.ts:577,608,616,677,699`) — a restated count in the story whose previous review
+      patched two others. De-numbered in the harness docstring, its inline comment and the
+      doc-audit row [tools/probe/run-verify-ghost-admin.py, tools/doc-audit.py]
+- [x] [Review][Patch] **`connectSite`'s landing read was the third reader in this one story asked
+      "is a failed read an absence?" and the only one still answering by silence.** Its `error` was
+      not even destructured, so a transient PostgREST failure sent a successful connect to `/sites`
+      indistinguishably from "this site has nothing to offer". Review 4 gave the opposite rule to
+      the other two reads of the same table **in this same change** — propagate, never localise,
+      missed inside one commit. Three layers met it. The landing stays `/sites` deliberately (with
+      no readable row there is nothing to say whether S2c would 404, and the card's own offer link
+      is the recovery); what changed is that the failure now names itself in the log
+      [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] **The `!picked` half of `useBrand`'s staleness guard was executed by nothing,
+      at any level** — and the cap's second guard sits behind it. `brand-stale` posts the EMPTY
+      decision and takes the other half of the ternary; every other step presses a real button, so
+      `picked` is always found. Delete the clause and a post naming an unknown project id falls
+      through to the INSERT branch and makes a project **past the Free cap**, with the whole run
+      green. New step **`brand-forged-project`**, and the project count is the assertion, so it
+      proves the paywall as well as the guard [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **`brand-failed-line` proved the sentence and not the branches.** It typed the
+      flagged URL itself, so it showed the copy renders off `?failed=1` and nothing about anything
+      ever SETTING the flag — the same shape of gap the step was added to close, one level up. Two
+      layers. It now drives a real branch: a press whose `project_id` input is REMOVED (which is
+      `decision_missing`, not the blank value `brand-stale` posts) is asserted to land back on S2c
+      carrying `failed=1` and printing the line [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **Review 4's preset floor was indistinguishable from its own absence.** The
+      floor repairs a `preset` that is absent or not a string so the STORED row stays parseable;
+      `brand-picker`'s fixture carried `preset: 'paper'`, which is byte-identical to
+      `DEFAULT_PRESET`, so deleting or inverting the floor left every assertion green. The fixture
+      now carries **no `preset` at all**, which turns the step's existing `preset === 'paper'`
+      assertion into the floor under execution — while `mode: 'dark'` goes on discriminating
+      merge-from-replace, so one fixture proves both halves [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **`brand-ownership` had no control that the forged POST ever reached the
+      server** (standing rule 2). `forgeBrand` returns true because it FOUND the button and called
+      `click()`, `networkidle` was swallowed with `.catch(() => {})`, and the assertion is negative —
+      so a press that had not landed satisfied "the projects are byte-identical" for the wrong
+      reason. Both actions have an observable server answer and the step now waits for it: the
+      forged **Use your brand** reaches `useBrand`, whose site read returns no row through RLS, so
+      the not-found page renders; the forged **Skip** redirects to `/sites`
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **The same defect, found in the review's own new step and in `brand-stale`
+      beside it.** Both refuse and redirect back to `/sites/brand` — the path the press started on —
+      so `waitForURL(pathname === '/sites/brand')` is already true when called and returns before
+      the server has answered, and `s2cHeading` is on the old document too: the rows could be read
+      BEFORE the action ran, which is a false "nothing was written" in the two steps that exist to
+      rule exactly that out. One `pressAndLand` helper now waits on the action's own POST and both
+      steps assert it. Raised against the patch this review had just written, and propagated to the
+      step that already shipped with it [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] **The owner cannot see the one screen his Question 6 ruling changed.** His
+      manual test goes Free-with-one (step 12, the naming caption), Pro-with-two (step 13, the
+      chooser with room), mobile (14), then cleanup — so the DOWNGRADE state, Free while still
+      holding two projects, is never rendered for him. `atLimitChoose` was the only sentence in the
+      story with a live harness proof and no owner-test step, in the story whose Fix changed nothing
+      else. New step 15 puts him back on Free **before** he deletes the spare project; cleanup is
+      now 16 [this spec, `## Owner's manual test`]
+- [x] [Review][Patch] **DW-71's owner-facing line contradicted its own title and reason.** Title:
+      "three brand keys are stored for no reader". `plain:` "The other **four** (your site icon,
+      your cover picture, your **title** and your description) are saved and nothing reads them" —
+      but `title` names the created project, as the entry's own `reason:` says. The `plain:` line is
+      the one the owner reads and it was the wrong one
+      [_bmad-output/implementation-artifacts/deferred-work.md]
+- [x] [Review][Patch] **`question_blocks` could still lose a question from the owner's inbox, from
+      the other side.** Review 4 made a heading require a blank line above it; a `### Question 2`
+      written directly under a paragraph or a list item is valid Markdown that renders as a heading
+      and was then DROPPED, merging its question into the one above — the exact failure the check
+      exists to prevent, for the second time in the opposite direction. Two layers. The blank-line
+      guard is now asked only of the BARE shapes (`Question 1`, `**2.`), which are the ones wrapped
+      prose can imitate; a `#` heading cannot be, so it never needed the guard. `demo()` case added
+      [tools/story-board.py]
+- [x] [Review][Patch] **The preamble pop was discarding exactly the shape R-83 exists to flag.** It
+      removes a first block with no options and no ruling — which is the definition of a shapeless
+      question, and the board's own fixture asserts those are real. Review 4 dismissed this for want
+      of a signal that could tell a preamble from a question; **a question mark is that signal**, and
+      spec 2.3's preamble carries none. Two layers re-raised it with the discriminator, which is
+      what reopened it. `demo()` case added, and the mark is read off the block's whole text because
+      a one-line block has its line in the title and an empty `ask` [tools/story-board.py]
+- [x] [Review][Patch] **The Code Map's harness step list was out of emission order — the THIRD drift
+      of one bullet** (omission at review 2, omission at review 4, order now): `brand-skip` four
+      positions late and `brand-ownership` five early, in the bullet whose own words are "in the
+      order the run emits them … derived from the source, never retyped". The docstring was right
+      every time. Re-derived mechanically from the source, and the bullet now says outright that it
+      is prose about the shape and the docstring is the list [this spec, Code Map]
+- [x] [Review][Patch] `logoShot` is assigned inside `brand-logo`'s `try` and read after the
+      `finally`, so anything that threw in between — a navigation timeout, DW-68's own hang —
+      arrived undefined and died as a `TypeError` reported as the opaque `browser` step, hiding
+      which assertion was even being made. A red `brand-logo` names itself
+      [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `brandPath` is the one definition of S2c's URL and `BRAND_FAILED` builds the
+      failure URL by APPENDING `&failed=1` to it, so a "tidier" `/sites/brand/${siteId}` would
+      silently produce one path segment with no flag, no sentence and nothing failing — the drift
+      the extraction was made to prevent (standing rule 7). The coupling is recorded where the
+      rename would happen. Also recorded: `useBrand`'s one failure branch that CANNOT redirect
+      (`siteOf` refused, so there is no usable site id for `BRAND_FAILED`), because the comment
+      beside it says every failure branch speaks [apps/web/lib/probe-rule.ts, sites/actions.ts]
+
+- [x] [Review][Defer] **The 404 assertions are pinned to a framework string a tracked fix will
+      change** — recorded as a `note:` on **DW-67** itself, where the change that closes it will be
+      read [tools/probe/run-verify-ghost-admin.py `rendered()`]
+- [x] [Review][Defer] **The two documents a fresh session reads first are each one unbroken wall of
+      prose** — **DW-73**, because the fix is structural and touches a generator
+      [_bmad-output/implementation-artifacts/epic-3-context.md, tools/doc-audit.py]
+
+**Deferred, not patched.** The three 404 assertions (`brand-none`, `brand-ownership`, the `?site=`
+forgery) recognise the not-found page by matching **Next's own default string**, and DW-67 in this
+same diff commits to replacing it with a real `not-found.tsx` from `M9 404` — whose words will not be
+those, so three steps go red for a reason unrelated to what they assert. Recorded as a `note:` on
+DW-67 itself rather than fixed here, because the fix belongs in the change that closes it. And
+`epic-3-context.md`'s Auto-brand bullet and the doc-audit harness row are each now a single unbroken
+paragraph of many hundreds of words — the two files a fresh session reads first; real, and a
+rewrite is not this story's.
+
+**Dismissed, with the reason.** The concurrent double press is **DW-69** and its fix is still a
+migration ("Ask First") — raised again by a layer that cannot see the ledger. `hasBrand` narrowing to
+`Brand` while checking three of its keys is **DW-71**. The unbounded Ghost menu, and now the
+unbounded card list — dismissed at review 3 for the reason that has not changed: a customer's own
+data is not a payload. The chooser's focus resting on `:has()` — baseline in every browser this app
+targets, and dismissed at review 4. `REAL_SERVICE` matching a bare `inflozo.com` in prose — the
+marketing site genuinely IS that domain, `demo()` asserts it deliberately, and the real-infra layer
+that re-executed the regex called it correct; narrowing it would fail the marketing-site case.
+`brand-logo` asserting the `<img>`'s src rather than that the bytes load — the step exists to
+discriminate the image branch from the monogram tile, which it does; asserting the pixels would test
+Ghost's CDN. `ProjectThumb` being a hand-copy of `Placeholder`, and every thumbnail looking alike
+while one preset ships — both already admitted in the components' own comments. "No route from the
+chooser to a NEW project" — his Question 3 ruled that a second press re-brands rather than making
+one. Sites connected before 3.4 carrying no `brand` key — `probeSite` is the same function on
+connect, **Re-check plan** and 3.7's cron, so it backfills; and no customer pre-dates this story.
+Three harness null-guards (`beforeRerun[0]`, `secondId`, `brand-stale`'s hidden field) — the states
+that would trip them are excluded by construction at those points in the run.
 
 ## Spec Change Log
 
@@ -1020,6 +1195,68 @@ project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPA
 Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
 story's path** and were not called.
 
+## Review 5 record — what was executed, and what each service answered (R-82)
+
+Node 24 on `PATH`. Every key read by variable name; no value printed, and no value appears in this
+record.
+
+**The deployment was identified before anything live was trusted.** `GET api.vercel.com/v6/deployments`
+and `/v4/aliases` (`VERCEL_TOKEN`) → `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` all alias
+one deployment whose `githubCommitSha` is **`b4703219`** — the commit under review. This review's own
+patches are a comment, one `console.error` and harness/tooling changes, so the deployed build is
+**behaviourally identical** to the patched tree and every live assertion below is about the code in
+this diff.
+
+| Command | Result |
+|---|---|
+| `pnpm check` (`eslint .`, `tsc --noEmit`, `node --test '*.test.ts'`) | **exit 0**, every suite green |
+| `python3 tools/doc-audit.py --check` ×2 | first regenerated `INDEX.md`/`INDEX.html`/`STORY-BOARD.html` (its sub-tools regenerate on failure), second **PASS, 0 warnings** |
+| `python3 tools/story-board.py --check` | `story board: current` — `demo()` green, including the four cases this review added |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | all steps passed, **`browser-js` PASS** (the embedded Playwright script parses with this review's edits) |
+| `python3 tools/probe/run-verify-ghost-admin.py` | **66 steps, 0 FAIL, exit 0** against T1 `GHOST6_*`, T3 `GHOST5_*` and the deployed `app.inflozo.com` |
+
+### The three steps this review added or strengthened, in the run's own words
+
+- **`brand-forged-project`** (new) — "a press carrying a project_id no project of this caller's
+  carries (`00000000-…-dead`) wrote NOTHING and came back to S2c: still 1 project, still "Ghost6",
+  true caption, and the POST was seen to answer before the rows were re-read". This is the `!picked`
+  clause, executed for the first time at any level, and the project count is the paywall's proof too.
+- **`brand-failed-line`** (strengthened) — "AND A REAL BRANCH NOW DRIVES IT: a press whose
+  `project_id` input was REMOVED (`decision_missing`, not the blank value `brand-stale` posts)
+  landed back on `/sites/brand` carrying `failed=1` (true) and printing the sentence (true)."
+- **`brand-picker`** (strengthened) — "AND THE PRESET FLOOR TOO: the fixture was inserted with NO
+  preset, so a stored "paper" is review 4's repair running, not the fixture's own value being echoed
+  back", beside the `mode: "dark"` that goes on proving the merge.
+- **`brand-ownership`** and **`brand-stale`** (controls added) — "EACH POST WAS SEEN TO LAND before
+  the rows were re-read", and "the action's POST was seen to answer first = true, because a re-read
+  that raced the press would report 'nothing written' for the wrong reason".
+
+### Controls, including the one that failed
+
+- **The run that failed, and why it is recorded.** The **second** of three full runs failed at
+  `browser`: `locator.waitFor: Timeout 30000ms exceeded` waiting for S2c's heading at the
+  connect landing — **22 steps in, upstream of every step this review touched** (`pressAndLand` is
+  declared 350 lines below it and nothing there references it). Before re-running, the ground was
+  checked rather than assumed: `dig +short @1.1.1.1` resolved `app.inflozo.com` and
+  `ghost6.inflozo.com`, and `curl` got the expected 307 to `/sign-in`. The third run was green at 66
+  steps. It is DW-68's documented hang on that navigation, and it is written down rather than
+  quietly re-run.
+- **Both `story-board.py` fixes discriminate, executed in both directions.** Restoring review 4's
+  rule (a blank line demanded of *every* heading) → `SELF-CHECK FAILED — a heading with no blank line
+  above it was swallowed`. Removing the question-mark signal from the preamble pop → `SELF-CHECK
+  FAILED — a shapeless question was dropped as a preamble`. Restored, `story board: current` both
+  times. These are the fixes whose first versions were invisible precisely because nothing executed
+  the comparison.
+- **`brand-forged-project` discriminates as a pair with `brand-picker`**, in the same run and against
+  the same action: a **valid** chosen project id writes the brand onto that row (`brand-picker`), and
+  an id the caller does not carry writes nothing (`brand-forged-project`). One step alone asserting
+  an absence would prove nothing; the two together say the guard is what makes the difference.
+- **No key was printed and none leaked.** `no-secret-leak` scanned every response body this run
+  produced for the keys it typed and found none.
+- **Ghost was written by nothing this story owns.** The only Ghost write in the run is 3.3's
+  `injection-live`, signed with the staff tokens and restored to `null` on both servers.
+  `git grep announcement_clear` → `admin-rule.ts` and its test only, still no caller.
+
 ## Questions for the owner
 
 ### Question 1 — when you press "Use your brand", which project wears it?
@@ -1304,9 +1541,19 @@ need a site that is not connected yet, and you will need a menu and an accent co
     still **2 projects**.
 14. **Do:** on your phone, open the brand screen once more · **See:** the cards stack, the drawings
     stay legible, and you can tap one.
-15. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
-    `Inflozo owner test` integration if you want to, and the spare project you made in step 13; tell
-    me and I will put your account back on Free.
+15. **The one screen your Question 6 ruling changed — and it is the last thing to look at before
+    cleanup.** It only appears if you are back on **Free** while **still holding the two projects**,
+    which is what happens to anyone who downgrades. **Do:** tell me you are at step 15 and I will put
+    you back on Free **before** you delete the spare project. Then: **URL:**
+    https://app.inflozo.com/sites · **Do:** press the brand link on the site's card · **See:** the
+    line above the cards now reads *"You're at your project limit, so no new project — pick the one
+    to wear your brand."* — it tells you about the limit and then **hands you the choice**, instead
+    of naming a project the way step 12 did. That is **your Question 6 ruling** (option 1,
+    2026-09-09). Both cards are still there with one already ticked, and pressing **Use your brand**
+    still puts the brand on the ticked one and makes **no** new project — the count stays **2**.
+16. **Cleanup:** nothing to undo on Ghost — this story wrote nothing to your site. Delete the
+    `Inflozo owner test` integration if you want to, and the spare project you made in step 13. Your
+    account is already back on Free from step 15.
 
 **What you cannot test yet, and why.** Your Ghost announcement bar is **not** copied into Inflozo and
 Inflozo does **not** offer to switch it off — that is Question 2 above. Both settings are already

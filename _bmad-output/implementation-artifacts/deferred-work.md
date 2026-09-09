@@ -1579,6 +1579,12 @@ plain: When you open a link to something that is not yours or no longer exists �
 status: open
 severity: low
 origin: Story 3.4 Dev harness (2026-09-08), step `brand-none` — measured, not reasoned
+note: WHOEVER CLOSES THIS BREAKS THREE HARNESS STEPS, and they will not say why. `brand-none`,
+  `brand-ownership` and the `?site=` forgery all recognise the not-found page by matching Next's own
+  default string, `could not be found` (`run-verify-ghost-admin.py`'s `rendered()`). The fix for this
+  entry is a real `not-found.tsx` drawn from the export's `M9 404`, whose words will not be those —
+  so the three steps go red for a reason unrelated to what they assert. Update `rendered()` in the
+  same change (review 5, 2026-09-09; propagate, never localise).
 location: apps/web/app/(app)/app/(authed)/loading.tsx (the Suspense boundary over the whole group) ·
   apps/web/app/(app)/app/(authed)/sites/brand/page.tsx (`notFound()`) — and every other `(authed)` page
   that calls `notFound()`, which is the point: it is a property of the route group
@@ -1733,9 +1739,10 @@ reason: R-74 (owner, 2026-09-02) says a surface with no frame is extrapolated fr
 
 ### DW-71: three brand keys are stored for no reader, and no epic has claimed them
 
-plain: When Inflozo reads your brand off your Ghost site it keeps seven things. Only three are used
-  today — your colour, your logo and your menu. The other four (your site icon, your cover picture,
-  your title and your description) are saved and nothing reads them. That is fine if some later part
+plain: When Inflozo reads your brand off your Ghost site it keeps seven things. Four are used today
+  — your colour, your logo, your menu, and your site's title, which names the project that gets made
+  for it. The other three (your site icon, your cover picture and your description) are saved and
+  nothing reads them. That is fine if some later part
   of the product wants them, but nothing has said which part, so they could sit there for ever.
 status: open
 severity: low
@@ -1774,3 +1781,26 @@ reason: The create branch dedupes the SLUG (`uniqueSlug(slugify(name), taken)`) 
   customer reads on their own dashboard is a naming decision the owner should see rather than one a
   review invents. Not reachable on Free (one project), so it waits for the story that next touches
   project naming.
+
+### DW-73: the two documents a fresh session reads first are each one unbroken wall of prose
+
+plain: Two files exist so that a new session — or Claude, or you — can find out fast what a part of
+  Inflozo does and what was decided about it. Both have grown into single paragraphs hundreds of
+  words long, one of them a single line of about eight thousand characters. Everything in them is
+  correct; the trouble is that nobody can find the sentence they need, and the whole point of these
+  two files is being findable.
+status: open
+severity: low
+origin: Story 3.4 Review 5 (2026-09-09) — raised by the blind-hunter layer
+location: _bmad-output/implementation-artifacts/epic-3-context.md (the Auto-brand bullet) ·
+  tools/doc-audit.py (the `run-verify-ghost-admin.py` catalogue row)
+reason: Both are append-only by construction — every story adds its findings to the end of the same
+  bullet or the same row, and nothing ever re-shapes them. The Auto-brand bullet now carries the
+  whole of 3.4 in one sentence-chain; the harness row is one string literal of roughly 8,000
+  characters. `CLAUDE.md` sends every session to the epic context first and the doc gate renders the
+  catalogue row into `INDEX.md`, so these are the two highest-traffic paragraphs in the repository,
+  and "flag, do not guess" depends on someone actually finding the sentence that contradicts. The
+  fix is structural, not editorial — sub-bullets per story in the epic context, and a row whose
+  description is a short subject line with the per-story detail beneath it — and it touches the
+  generator, so it belongs to a story that owns those files rather than to a review of one story
+  that appended to them.

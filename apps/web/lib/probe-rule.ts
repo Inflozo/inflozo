@@ -17,7 +17,7 @@
  * answers its own "could not read" from that: absence and nonsense land in the same place,
  * deliberately.
  *
- * STORY 3.4 ADDED A FIFTH READER, `brandOf`, TO THE SAME PAYLOAD — no second Admin call, no new
+ * STORY 3.4 ADDED ANOTHER READER, `brandOf`, TO THE SAME PAYLOAD — no second Admin call, no new
  * path — so connect, **Re-check plan** and Story 3.7's cron keep being the same function.
  */
 
@@ -93,7 +93,15 @@ export function announcementOf(settings: Record<string, unknown>): {
 }
 
 /**
- * FR-C4's BRAND, READ OFF THE SAME PAYLOAD — Story 3.4's fifth reader.
+ * FR-C4's BRAND, READ OFF THE SAME PAYLOAD — Story 3.4's reader.
+ *
+ * NO ORDINAL HERE, and it is not a style choice: three comments in this file and one in
+ * `epic-3-context.md` called this "the FIFTH reader" and it is the FOURTH. The readers that take
+ * the flat record are `injectionFlag`, `portalState`, `announcementOf` and this one — `settingsOf`
+ * BUILDS the record rather than reading it, and `capabilityOf` takes `hostSettings`, a different
+ * payload. The header above said "the three readers" before this story, so +1 was always four.
+ * Counts are derived, never restated (standing rule 4), and this one was restated wrong in four
+ * places at once (review 5, 2026-09-09).
  *
  * THE SHAPE OF EVERY KEY WAS EXECUTED, not assumed (standing rule 1). The integration key's own
  * `GET /admin/settings/` on T1 6.58.0 and T3 5.130.6, 2026-09-08 (MEASUREMENTS §40):
@@ -307,6 +315,11 @@ export const BRAND_COPY = {
  *
  * It is the BROWSER's path — what `proxy.ts` rewrites onto the internal `/app/sites/brand` — and
  * so it is not `revalidatePath`'s argument.
+ *
+ * IT MUST KEEP ITS QUERY STRING. `sites/actions.ts` builds the failure URL by APPENDING
+ * `&failed=1` to this, so a "tidier" `/sites/brand/${siteId}` would silently produce
+ * `/sites/brand/xyz&failed=1` — one path segment, no flag, no sentence, and nothing failing
+ * anywhere (review 5, 2026-09-09; standing rule 7 — the coupling is invisible from that end).
  */
 export const brandPath = (siteId: string) => `/sites/brand?site=${siteId}`
 
@@ -513,7 +526,7 @@ export function probePatch(args: {
       ? { portal_button: previous.portal_button, portal_button_source: 'declared' }
       : portal),
     announcement: announcementOf(settings),
-    // FR-C4, Story 3.4: the fifth reader, on the payload that was already read.
+    // FR-C4, Story 3.4: the brand, on the payload that was already read.
     brand: brandOf(settings),
   }
 

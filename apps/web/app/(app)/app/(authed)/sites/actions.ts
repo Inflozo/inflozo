@@ -353,11 +353,20 @@ export async function connectSite(
   //    deliberate: a probe that failed just now still leaves the brand a PREVIOUS probe wrote —
   //    the FR-C6 re-adopt path — and offering it there is right, while a summary field would
   //    answer "no brand" about a read that did not happen.
-  const { data: probed } = await supabase
+  //    A READ THAT FAILED IS NOT A SITE WITH NO BRAND, and this was the THIRD reader in this one
+  //    story to be asked that question and the only one still answering it by silence: the other
+  //    two — S2c's `readFailed` and `useBrand`'s `siteError` branch — were both given the opposite
+  //    rule at review 4, and the error here was not even destructured (review 5, 2026-09-09;
+  //    propagate, never localise). THE LANDING STAYS `/sites`, deliberately: with no readable row
+  //    there is nothing to say whether S2c would 404, and the Sites card's own offer link — drawn
+  //    from that page's own read — is the recovery. What changes is that the failure is no longer
+  //    INDISTINGUISHABLE from "this site has nothing to offer" in the log.
+  const { data: probed, error: probedError } = await supabase
     .from('sites')
     .select('site_settings')
     .eq('id', siteId)
     .maybeSingle<{ site_settings: { brand?: unknown } | null }>()
+  if (probedError) console.error('sites: connect brand read failed', { code: probedError.code })
 
   // Outside every `try` above: `redirect()` throws NEXT_REDIRECT by design, and a catch that
   // swallowed it would report a successful connect as a failure (`lib/action-redirect.ts`).
@@ -568,6 +577,12 @@ type BrandSite = {
  */
 export async function useBrand(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'use brand')
+  // THE ONE FAILURE HERE THAT CANNOT REDIRECT, and it is not an oversight: `BRAND_FAILED` needs a
+  // site id and this is precisely the branch where there is not a usable one — `siteOf` refused
+  // because `site_id` was absent or not a uuid, which is a crafted post and not a press (every
+  // form on S2c carries the hidden field). `siteOf` has already logged it, naming this action.
+  // Recorded because the comment beside `BRAND_FAILED` says every failure branch speaks, and a
+  // reader counting them would otherwise find this one mute (review 5, 2026-09-09).
   if (!at) return
   // The screen's own decision: a project id, or empty for "make one". A field that is not there
   // at all is a crafted post, not a press.

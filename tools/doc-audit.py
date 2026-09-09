@@ -407,7 +407,8 @@ DOCS = [
   "forges a SECOND account's site id into a notice form and proves the row does not move: the four "
   'new actions write under the service role, so one .eq(user_id) inside the action is the whole '
   'guard between two accounts and nothing had ever executed it. STORY 3.4 ADDED FR-C4\'s BRAND: '
-  'brand-keys re-executes, in both modes, that the SEVEN keys the brand reader takes off the same '
+  'brand-keys re-executes, in both modes, that the keys BRAND_KEYS names — the brand reader takes '
+  'them off the same '
   'settings payload are really there on both majors and records the CONTAINER of each — navigation '
   'is a JSON string, as announcement_visibility is (MEASUREMENTS §40) — and a connect whose site '
   'has a brand now lands on S2c rather than the list, so every connect in the run passes through '
@@ -444,7 +445,7 @@ DOCS = [
   'logo slot — what a customer whose Ghost carries a logo sees, and the branch no run had ever '
   'drawn because logo is an empty string on both majors (MEASUREMENTS §40); the row is patched '
   'through the SERVICE ROLE and put back in a finally, so no Ghost is written. brand-failed-line '
-  "proves the matrix's insert fails -> the page says so BOTH WAYS: useBrand's four failure "
+  "proves the matrix's insert fails -> the page says so BOTH WAYS: useBrand's failure "
   'branches all redirect to &failed=1, and the sentence they redirect to had been asserted by its '
   'own string length and nothing else at any level. '
   'brand-ownership asks the cross-account question of the two ACTIONS, which is not ownership\'s: '
