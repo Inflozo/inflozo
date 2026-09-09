@@ -2,10 +2,10 @@
 title: 'Story 3.4 — Take my brand from my site in one click'
 type: 'feature'
 created: '2026-09-08'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 6
-owner_test: issues
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
