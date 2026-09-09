@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
-review_loop_iteration: 3
+review_loop_iteration: 4
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -866,6 +866,81 @@ already gave: a `locator.waitFor` is an assertion nearly everywhere in this file
 assertions hides real failures.
 
 **Real services this fix touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
+Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
+story's path** and were not called.
+
+## Review 4 record — what was executed, and what each service answered (R-82)
+
+Run 2026-09-09 against **CI's deployment of `533aa616`** on `app.inflozo.com` — this review's own
+patches, deployed (`rls` ✔ `check` ✔ `deploy` ✔; the sha confirmed through the Vercel API by
+`VERCEL_TOKEN` **before** any live assertion was trusted) — with **T1** `ghost6.inflozo.com` 6.58.0
+and **T3** `ghost5.inflozo.com` 5.130.6, and the live Supabase project over PostgREST, GoTrue and the
+transaction pooler. Every key named by its variable; no value printed or recorded.
+
+| Command | Result |
+|---|---|
+| `pnpm check` | **exit 0.** **230 tests** in `apps/web`, 1 in each of the three packages. `tokens.test.ts` still finds `style-pack.ts` the one place a colour literal lives |
+| `pnpm build` | **exit 0**, `ƒ /app/sites/brand` still dynamic inside the `(authed)` guard |
+| `python3 tools/doc-audit.py --check` (twice) | first pass regenerated and failed on it, second **PASS, 0 warnings** — the documented behaviour of the sub-tools |
+| `story-board.py demo()` | **passes**, including the five new cases this review added: three line-ending/whitespace shapes of the blank line before a question heading, and `REAL_SERVICE` asserted in **both** directions |
+| `bash supabase/tests/run-rls-gate.sh` | untouched: `git diff` over `supabase/` since the baseline is **empty** — no migration in this story, and DW-69 says why the one it wanted is still not written |
+| `python3 tools/probe/run-verify-ghost-admin.py --check` | **all steps passed** — `keys`, `browser-js`, `vault-off-rest`, `settings-keys` and `brand-keys` against both live Ghosts |
+| `python3 tools/probe/run-verify-ghost-admin.py` | **65 steps, 0 failures**, every step in the docstring in order. **2 navigation retries** — a run that rode over two hangs and said so |
+| `git grep -n 'announcement_clear' -- apps/ packages/ supabase/ tools/` | `admin-rule.ts:103` and its test only. **No caller**; `ADMIN_WRITES` unchanged |
+
+### The three steps this review added, in the run's own words
+
+| Step | What the deployed site answered |
+|---|---|
+| `brand-logo` | *"with an https: logo on the row S2c drew **1** image(s) `["https://ghost6.inflozo.com/content/images/size/w256h256/inflozo-review-4.png"]` and the monogram tile **not at all**"* — the `<img>` branch, rendered for the first time in this story's life. The row was patched **through the service role** and put back in a `finally`; **no Ghost was written** |
+| `brand-failed-line` | *"S2c asked for with &failed=1 printed "We couldn’t save that just now. Try again in a moment." = true, and the same screen without the flag did not = true"* — the matrix's "insert fails → the page says so", asserted **both ways** |
+| `brand-picker` (widened) | *"**THE PACK WAS MERGED AND NOT REPLACED**: the fixture's own `mode` came back as "dark" beside preset "paper""* — the action's "a pack E6 has since written survives untouched" under execution rather than in a comment |
+
+### Controls, including the ones that failed
+
+- **THE DOCSTRING ORDER WAS DERIVED, NOT READ.** The claim that failed two reviews running is now
+  checked by machine: the run's own 65 emitted step names were parsed out of the log and compared
+  with the docstring's, **in order** — 57 single-name bullets match exactly, and the remaining eight
+  (`axe-sites · axe-sheet · axe-connect · axe-keys`, `vault-off-rest`, `no-secret-leak`,
+  `injection-live`, `pro-connect-t3`) are named in grouped bullets, checked by membership. Review 3
+  asserted this order and was wrong about `brand-picker`/`axe-brand-picker`; this states it because
+  it ran.
+- **TWO RUNS FAILED BEFORE THE GREEN ONE AND NEITHER WAS THIS STORY.** The first died at
+  **`#s2b-api-url-hint`** — `waitForSelector`, 30s, **0 navigation retries** — which is **Story 3.2's**
+  part of the run, before any brand step, and is exactly the shape Fix record 3 recorded for its own
+  two failures (`#s2b-admin-key-error`, `#s2b-api-url-error`): an inline field element rendered from a
+  **server action's result**, so what is hanging is a POST coming back and not a navigation, which is
+  why the retry wrapper reports zero. **DW-68, unchanged, and no cause is claimed.**
+- **ONE FAILURE WAS THE REVIEWER'S OWN TOOLING AND IS RECORDED RATHER THAN QUIETLY RE-RUN.** An
+  earlier attempt reported `could not create the fixture user: HTTP 422` and a leaked user. The cause
+  was **two harness runs racing** — a detached poller of mine had started a second run — not a defect
+  in the story. The harness's own startup sweep cleared the stale `ghost-admin-harness-*` account on
+  the next run (*"swept 1 stale … user(s) an earlier run left behind"*), and the green run's user
+  count returned to where it started.
+- **`brand-logo` discriminates.** It is `srcs.length === 1 && srcs[0] === LOGO && tile === false`, read
+  off the rendered document: a page that drew the monogram as well, or drew no image, or drew a
+  different src, fails it. Its negative control is every other run of `brand-screen`, which asserts
+  the **opposite** branch (0 images, the tile carrying the title's first code point) on the same
+  screen minutes earlier — the two steps prove each other.
+- **`brand-failed-line` discriminates.** It asserts the sentence present with the flag **and absent
+  without it**, in the same step, so a screen that printed the failure line unconditionally fails it.
+- **The merge proof discriminates.** `mode: 'dark'` is a key `defaultStylePack()` does not carry, so
+  a `useBrand` that replaced the column would return `mode: undefined` and fail. Before this the
+  fixture's pack was byte-identical to the default and no assertion in the repository could tell the
+  two apart.
+- **What was NOT executed, and is not claimed.** Unchanged from review 3 and stated again rather than
+  dropped: connect's "no brand to offer" landing (AC 11's first half) is unreachable from here,
+  because both test Ghosts answer a brand and a connect re-probes and rewrites the brand it just
+  read. The preset-floor patch (`{ ...held, preset: DEFAULT_PRESET }` where the held preset is not a
+  string) is proved by reasoning and `tsc`, not by execution: reaching it needs a project row whose
+  `style_pack.preset` is already the wrong type, which nothing in the harness writes and which only
+  the customer's own session could create.
+
+**Real services this review touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
 `GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
 **T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
 project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
