@@ -34,8 +34,9 @@ credentials through the Admin chokepoint (`remove()`, audited) and only then sta
 so a site can never read as disconnected while its Admin key is still decryptable. It deletes nothing
 else — not the row, not the project, not the snapshot — which is what makes FR-C6's promise true by
 construction rather than by a rule someone remembers. The card gets S11a's ⋯ menu (holding Disconnect
-alone; 3.6's Manage keys and 3.7's Re-check/Reconnect are absent, not greyed) with a confirm dialog in
-the project-delete vocabulary, and the grid gets S11c's ghost slot at the Free cap.
+alone; 3.6's Manage keys and 3.7's Re-check/Reconnect are absent, not greyed) with a **simple confirm —
+Cancel and Disconnect, no typed field** (the owner's ruling, Question 2) — and the grid gets S11c's ghost
+slot at the Free cap.
 
 ## Boundaries & Constraints
 
@@ -69,6 +70,13 @@ the project-delete vocabulary, and the grid gets S11c's ghost slot at the Free c
   is.
 - **The confirm opens with focus on Cancel** (EXPERIENCE.md § Destructive confirms), via
   `openOnCancel` and `data-cancel`.
+- **The confirm asks for NO typed confirmation** (the owner's ruling, Question 2, 2026-09-09). It borrows the
+  project-delete dialog's *visual* vocabulary — the 460px `<dialog>`, the centred disc, the display title, the
+  13px body, equal-half buttons — and **not its typed name field**, because nothing here is destroyed and the
+  friction must match the risk. Do not add one back.
+- **The 90-day purging job is NOT in this story** (the owner's ruling, Question 1, 2026-09-09; **DW-75**). It
+  is Story 7.20's, beside the snapshot it deletes. This story owes only the clock's origin: `disconnected_at`,
+  written once, derived from thereafter.
 
 **Ask First:**
 
@@ -88,7 +96,10 @@ the project-delete vocabulary, and the grid gets S11c's ghost slot at the Free c
   correct, and this story's job is to make it reachable and to prove it.
 - **No new migration.** Every column this story writes exists.
 - **No sixth deletion path** (AD-32/AD-33's five are sanctioned). `remove()` is the credential path
-  already in the set.
+  already in the set — and the snapshot orphan path is Story 7.20's, which **moves** a path rather than
+  adding one (AD-33, amended 2026-09-09).
+- **Never build the orphan purge cron here** — no `api/cron/purge-snapshots`, no `vercel.json` entry, no
+  notice, no download offer. DW-75 is the record of why and of who builds it.
 
 ## I/O & Edge-Case Matrix
 
@@ -183,10 +194,11 @@ the project-delete vocabulary, and the grid gets S11c's ghost slot at the Free c
   same URL returning the **same site id** with `site_settings` intact; a second account's site id
   forged into the form writing nothing; the Free ghost slot present at the cap and absent below it;
   both flows posting with JavaScript disabled; and `axe` at 1440 and 390 on the menu and the dialog.
-- `_bmad-output/implementation-artifacts/deferred-work.md` -- **DW-43 closed** by this story with the
-  derivation above. The owner's ruling on Question 1 is written here as its own entry if he defers the
-  purge job; DW-57 is amended to record that the ⋯ landed where it drew it and that 3.6 and 3.7 add
-  **into** this menu rather than building a second one.
+- `_bmad-output/implementation-artifacts/deferred-work.md` -- **DW-75 is already written** (Create,
+  2026-09-09, the owner's Question 1 ruling): the purge job, its notice and its download offer are Story
+  7.20's, and the entry records what this story leaves ready for it. **DW-43 is closed by this story** with
+  the derivation above; DW-57 is amended to record that the ⋯ landed where it drew it and that 3.6 and 3.7
+  add **into** this menu rather than building a second one.
 - `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:333` -- the Sites
   row's **Refusal** cell ("Free at 1 site: S11c's ghost slot") is now built; propagate, never localise.
 
@@ -215,16 +227,17 @@ the project-delete vocabulary, and the grid gets S11c's ghost slot at the Free c
       where the next reader meets it. **Comment only: no function change, no new migration.**
 - [ ] `tools/probe/run-verify-ghost-admin.py` -- add this story's steps and extend the docstring from
       the source -- R-82: the review runs on the real infrastructure or it is not a review.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-43, amend DW-57, and record
-      the owner's ruling on Question 1 -- propagate, never localise (standing rule 3).
+- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-43 and amend DW-57 -- propagate,
+      never localise (standing rule 3). **DW-75 is already written and stays open** — it is Story 7.20's.
 
 **Acceptance Criteria:**
 
 - Given a connected site, when I open its ⋯ menu, then it holds **Disconnect** and nothing else, at
   the top right of the card's header row, and **the card and the menu match `S11 Sites.dc.html` S11a**
   in width, order, rule, danger colour and glyph (R-74).
-- Given the confirm dialog, when it opens, then focus is on **Cancel** and Escape closes it without
-  disconnecting.
+- Given the confirm dialog, when it opens, then focus is on **Cancel**, Escape closes it without
+  disconnecting, and **Disconnect is live immediately — there is no field to type into** (the owner's
+  ruling, Question 2).
 - Given I confirm, when the action runs, then the button reads its `busy` label and is `aria-disabled`
   + `aria-busy` until the page changes (R-98).
 - Given a site with one linked project and a snapshot row, when I disconnect it, then the project row,
@@ -300,6 +313,14 @@ nothing is lost, and nothing needs re-doing later.
    later — I would not pick this: it splits one rule across two stories months apart, which is how
    the "purge proceeds whether or not the offer was taken" guarantee gets lost.
 
+**Ruled: option 1 (the owner, 2026-09-09).** Build the deleting-and-warning job in Epic 7, next to the thing
+it deletes, and write it down now so it cannot be forgotten. Landed as **DW-75**, owned by **Story 7.20**, and
+propagated the same day: `epics.md` (3.5's AC now points there, 7.20's AC now carries the purge),
+`ARCHITECTURE-SPINE.md` AD-33 · AD-29 · AD-32 (the cron's owning epic — still five deletion paths, not six),
+`VERIFY-AT-BUILD.md` item 38, `apps/web/lib/storage-drain.ts`'s header and `epic-3-context.md`. This story
+still writes `sites.disconnected_at` and derives the 90-day deadline from it, so the clock runs correctly from
+day one.
+
 ### Question 2 — how hard should it be to disconnect a site?
 
 Disconnecting is **not** like deleting. Nothing of yours is destroyed: your projects stay, their
@@ -319,6 +340,10 @@ app: you can always sign back in.
 3. **No confirm at all** — the menu item disconnects immediately, with an "Undo" for a few seconds.
    Fewest clicks, but a mis-click in a ⋯ menu is easy and the undo is easy to miss.
 
+**Ruled: option 1 (the owner, 2026-09-09).** A simple confirm — a small window saying what happens, with
+Cancel and Disconnect, **no typing**. It takes the project-delete dialog's look and not its typed field; the
+Boundaries and the acceptance criteria above say so, so a later review cannot re-add one.
+
 ## Owner's manual test
 
 Follow these on the real site after Deploy fills the URLs. You will need a Ghost site to connect —
@@ -332,8 +357,9 @@ use the same test site you used for Story 3.4.
    3.6 and 3.7 — they are deliberately not there yet rather than greyed out.) Press **Escape**: the
    menu closes and the **⋯** is focused again.
 3. **URL:** same · **Screen:** Sites · **Do:** open the menu again and click **Disconnect**. · **See:**
-   a window in the middle of the screen naming your site and saying what happens. **Cancel** is the
-   button already outlined when it opens.
+   a window in the middle of the screen naming your site and saying what happens, with **Cancel** and
+   **Disconnect**. **Cancel** is the button already outlined when it opens, and there is **nothing to type** —
+   Disconnect works on the first click.
 4. **URL:** same · **Screen:** the confirm window · **Do:** press **Cancel**. · **See:** the window
    closes and your site is still there, unchanged.
 5. **URL:** same · **Screen:** the confirm window · **Do:** open it again and press **Disconnect**. ·

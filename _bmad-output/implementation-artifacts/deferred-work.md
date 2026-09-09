@@ -1845,3 +1845,46 @@ reason: The fifth review (2026-09-09) added a positive control to this step, bec
   Two of the five runs that reached the step passed. Related: DW-68, the harness's wider
   intermittent-wait problem — three of the same eight runs died early on an unrelated locator wait,
   each at a different point.
+
+
+## Deferred from: spec-3-5-my-sites-their-caps-and-disconnecting-one (2026-09-09)
+
+- DW-75 (below): FR-C6's 90-day snapshot orphan purge — the job, its notice and its download offer —
+  moves from Epic 3 to **Story 7.20**, the story that first captures a snapshot. The owner's ruling at
+  Question 1, option 1 (2026-09-09).
+
+### DW-75: the 90-day purge of a snapshot moves to the story that first takes one
+
+plain: When someone deploys with Inflozo for the first time, Inflozo archives a copy of the theme their site
+  was wearing before — the safety net. If a site then stays disconnected for 90 days, that archive is deleted,
+  after a warning and a download offer. **Nothing takes that archive yet** — that needs the deploy machinery,
+  which is Epic 7. So the deleting-and-warning job is built there, beside the thing it deletes, instead of
+  running nightly over an empty cupboard for months and offering a download link to a file whose shape is not
+  decided. **The 90-day countdown itself is built now, in Story 3.5** — nothing is lost and nothing needs
+  re-doing later.
+status: open
+severity: medium
+origin: Story 3.5 Create (2026-09-09) — the owner's ruling at Question 1, option 1
+owner: **Story 7.20** (the backup gate and the pre-Inflozo snapshot), Epic 7 — the story that first writes a
+  `site_snapshots` row, so the purge and its subject are designed together
+location: `_bmad-output/planning-artifacts/epics.md` Story 7.20 (its AC now carries the purge) and Story 3.5
+  (its AC now points here) · `ARCHITECTURE-SPINE.md` AD-33, AD-29, AD-32 (the cron's owning epic, amended
+  2026-09-09) · `apps/web/lib/storage-drain.ts` (the header names its future callers) ·
+  `supabase/migrations/20260904120000_complete_schema.sql:199` (`site_snapshots.purge_after`)
+what 3.5 leaves ready, so 7.20 builds only the job: **`sites.disconnected_at` is written** — Story 3.5 is its
+  first and only writer — and **the 90-day deadline is DERIVED from it**, never stamped into
+  `site_snapshots.purge_after`. That column carries FR-A5's 14-day account-deletion clock and only that, which
+  is what keeps `restore_account()`'s `purge_after = null` correct and is how **DW-43 closes without SQL**.
+  7.20 therefore needs no migration for the clock: it reads `sites.disconnected_at` and joins.
+reason: FR-C6's rule is one rule — purge the orphan after a notice and a download offer, **and proceed on the
+  deadline whether or not the offer was taken** — and splitting it across two epics months apart is how the
+  second half of that sentence gets lost. It cannot be built in Epic 3 in any useful form: `site_snapshots`
+  can hold no row until FR-J13's first upload (Story 7.20), the download offer must name an artifact whose
+  storage path and zip shape 7.20 decides, and a nightly cron over a table that must stay empty is a deletion
+  path with no test that can ever be positive. AD-33 admits a cron only with an owning epic; the owner moved
+  this one's owner rather than leaving it nominally E3's and actually nobody's. **It is one of the five
+  sanctioned deletion paths (AD-29, AD-32) and stays exactly one — this moves a path, it does not add a
+  sixth.** When 7.20 builds it: `apps/web/app/api/cron/purge-snapshots/route.ts`, schedule in
+  `apps/web/vercel.json`, owning epic in the route header, `CRON_SECRET` compared with `timingSafeEqual` and
+  fail-closed, and `drainPrefix` from `lib/storage-drain.ts` over `site-snapshots/{uid}/{siteId}/` — objects
+  **before** rows, as `purge-accounts` does.

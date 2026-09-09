@@ -986,8 +986,11 @@ id, not the raw URL**, so a disconnected record and its snapshot are retained an
 record is reconnected
 **And** reconnecting a URL for which no record is retained creates a **new** site record with no snapshot
 association — Inflozo never adopts a snapshot on a URL match alone
-**And** a snapshot whose record has been disconnected for **90 days** is purged after a notice and a download
-offer, and **the purge proceeds on its deadline whether or not the offer was taken**
+**And** the **90-day countdown starts here** — this story is the only writer of `disconnected_at`, and the
+deadline is derived from it, never stamped into `site_snapshots.purge_after` (which carries FR-A5's 14-day
+clock alone). **The purging job itself — the notice, the download offer, and the purge proceeding on its
+deadline whether or not the offer was taken — is Story 7.20's**, beside the snapshot it deletes, because
+nothing captures a snapshot until FR-J13's first upload *(the owner's ruling, 2026-09-09; DW-75)*
 **And** the screens match S11a and S11c.
 
 **FRs:** FR-C5 (the caps), FR-C6. · **Frame:** `S11 Sites.dc.html` S11a · S11c. · **Owner test:** yes.
@@ -2951,6 +2954,11 @@ with its own gscan**, so an old fork can be rejected on the way back in; that ca
 offering the zip as a download and pointing at Settings → Design
 **And** snapshots are stored **per site record id**, survive project deletion and disconnect/reconnect, and are
 offered as a download before account purge
+**And** **FR-C6's 90-day orphan purge is built here** *(moved from Story 3.5 by the owner's ruling, 2026-09-09;
+DW-75, AD-33)*: a snapshot whose site record has been disconnected for 90 days — the deadline **derived from
+`sites.disconnected_at`**, which Story 3.5 already writes, never from `site_snapshots.purge_after` — is purged
+after a notice and a download offer, and **the purge proceeds on its deadline whether or not the offer was
+taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
 **And** the gate matches D1d self-hosted, D1d′ with the shortcut ticked and D1e Ghost(Pro); the running and
 degraded snapshot states match B12a and B12b as corrected.
 

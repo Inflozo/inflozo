@@ -3,7 +3,7 @@
  *
  * AD-32: objects before rows. A row deleted first leaves an object nothing points at, and an
  * orphan in a bucket with no policy is a leak nobody can see. Story 2.6's account purge is the
- * first caller; E3's snapshot orphan purge (FR-C6) and E7's artifact retention (FR-J7) are the
+ * first caller; E7's snapshot orphan purge (FR-C6, Story 7.20 — moved from E3 on 2026-09-09, DW-75) and E7's artifact retention (FR-J7) are the
  * next two, and each is a cron of its own (AD-33) — so the walk lives here rather than inside the
  * first route that needed it.
  *
