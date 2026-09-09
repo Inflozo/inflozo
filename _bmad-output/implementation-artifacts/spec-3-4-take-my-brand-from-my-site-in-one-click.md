@@ -1484,21 +1484,21 @@ that screen.
 On the live site after the Deploy run. **The new screen appears when a site is connected**, so you
 need a site that is not connected yet, and you will need a menu and an accent colour set on it.
 
-1. **Before you start:** open https://app.inflozo.com/sites and tell me which of your two test
-   servers — `ghost6.inflozo.com` or `ghost5.inflozo.com` — is **not** on that page. If both are
-   there, say so and I will clear one record for you (one line, your data, on your say-so). Call the
-   one you are going to connect **your test site** below.
-2. **URL:** https://&lt;your test site&gt;/ghost/#/settings/design/brand · **Screen:** Ghost Admin,
+1. **Before you start:** both test servers were on https://app.inflozo.com/sites, so
+   `ghost6.inflozo.com`'s record was cleared for you (one line, your data, 2026-09-09) — it is a
+   disconnect, not a delete, so nothing about it was lost. **`ghost6.inflozo.com` is your test site**
+   for every step below; `ghost5.inflozo.com` was not touched.
+2. **URL:** https://ghost6.inflozo.com/ghost/#/settings/design/brand · **Screen:** Ghost Admin,
    Brand · **Do:** set **Accent color** to `#D96C3F` and Save · **See:** Ghost confirms it saved.
-3. **URL:** https://&lt;your test site&gt;/ghost/#/settings/navigation · **Do:** make sure there are
+3. **URL:** https://ghost6.inflozo.com/ghost/#/settings/navigation · **Do:** make sure there are
    a few menu items — add `Essays`, `Notes`, `Archive` if it is empty — and Save.
-4. **URL:** https://&lt;your test site&gt;/ghost/#/settings/integrations · **Do:** Add custom
+4. **URL:** https://ghost6.inflozo.com/ghost/#/settings/integrations · **Do:** Add custom
    integration → name it `Inflozo owner test` → Save · **See:** an API URL, an Admin API key and a
    Content API key. Keep this tab open.
-5. **URL:** https://app.inflozo.com/sites · **Do:** **Connect site** → **Done — next** → type your
-   test site's address and paste its two keys → **Connect** · **See:** instead of the Sites list, a
+5. **URL:** https://app.inflozo.com/sites · **Do:** **Connect site** → **Done — next** → type
+   `ghost6.inflozo.com` and paste its two keys → **Connect** · **See:** instead of the Sites list, a
    new full screen: **"Nice site. Want to keep the vibe?"** and under it *"We pulled these from
-   &lt;your test site&gt; — your call."*
+   ghost6.inflozo.com — your call."*
 6. **Do:** look at the card in the middle · **See:** on the left, **YOUR SITE TODAY** with your
    site's name and address, an **Accent color** dot in your orange with `#D96C3F` beside it, your
    menu items as small pills, and the line *"Fonts stay yours — pick a pairing once you're in the
