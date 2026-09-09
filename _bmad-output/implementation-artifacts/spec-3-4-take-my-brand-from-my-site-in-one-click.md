@@ -93,7 +93,14 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   existing form**, so the chooser works with JavaScript off like everything else on this screen; the
   Kit's `RadioCards` is presentational and posts nothing, so this borrows its tokens and not its
   markup. **Purely additive:** the pre-selected card is what `brandTarget` would have chosen, so
-  touching nothing writes exactly what Question 1 ruled. Choosing a card writes `style_pack` and
+  touching nothing writes exactly what Question 1 ruled. **AND THE CAPTION OVER THE CARDS HANDS THE
+  CHOICE TO THEM (the owner's Question 6 ruling, option 1, 2026-09-09 — this sentence is his
+  renegotiation of this block).** At the cap *and* with cards — the downgrade state — S2c reads
+  *"You're at your project limit, so no new project — pick the one to wear your brand."*: it keeps
+  the limit and **names no project**, because one card per project already does. Before it, that
+  state printed the naming sentence of his Question 5 ruling, so the caption announced the answer
+  and the cards underneath asked the question; at the cap with a **single** project that naming
+  sentence is unchanged and still runs. Choosing a card writes `style_pack` and
   **nothing else** — `linked_site_id` is untouched, because FR-B5 gives a project at most one site
   and a chooser must not silently move a binding.
 - **No captured thumbnail, ever, in v1.** The card's drawing is `placeholderFor`'s three colours and
@@ -302,7 +309,12 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 - Given a decision that has gone stale between render and press, when **Use your brand** is posted,
   then nothing is written and the browser returns to S2c with the true caption
 - Given a caller with **more than one project** whose brand would go onto one that already exists,
-  when S2c is opened, then it **asks** rather than tells and draws **one card per project** — each
+  when S2c is opened, then it **asks** rather than tells — *"You already put your brand on “X”.
+  Apply it again?"* with room, and at the cap the sentence the owner ruled at **Question 6**
+  (option 1, 2026-09-09), *"You're at your project limit, so no new project — pick the one to wear
+  your brand."*, which keeps the limit and **names no project, because the cards do** (before that
+  ruling this state printed the naming sentence, so the caption answered and the cards then asked)
+  — and draws **one card per project** — each
   carrying that project's own Style-Pack wireframe, the two drawings visibly different where the
   Style Packs are — with the project this site is already on **pre-selected**; and when a different
   card is chosen and pressed, then the brand lands on **that** project and nothing else about it
@@ -311,7 +323,10 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   more than one project — when S2c is opened, then the **same** card is pre-selected: the project
   for this site, carrying the "This site's project" label, and not the most recently updated one
   (the owner's **Question 4** ruling, 2026-09-08). The cap decides only which project is named when
-  this site has none
+  this site has none — **and the caption over those cards names none at all** (his **Question 6**
+  ruling, option 1, 2026-09-09): at the cap with a choice it keeps the limit and hands the choice
+  to the cards, while at the cap with a **single** project it still names the row, because there
+  the caption is the only thing that can (his Question 5, untouched)
 - Given a caller with **exactly one project**, when S2c is opened, then **no cards are drawn** — a
   chooser with one option is a step and not a choice (the owner's B1)
 - Given the chooser, when JavaScript is off, then it still posts: the cards are real radio inputs
@@ -1160,6 +1175,14 @@ own; together they read as though the screen has stopped listening.
 3. **Leave it exactly as it is.** Nothing to build, nothing to test again, and the ticked card does
    tell you the same thing the sentence does. The cost is the one you can see above: the screen
    answers and then asks.
+
+**Ruled: option 1** (owner, 2026-09-09). The caption becomes *"You're at your project limit, so no
+new project — pick the one to wear your brand."* — one new sentence, used only on this screen. You
+still learn about the limit, and the sentence hands the choice to the cards instead of pre-answering
+it. `BRAND_COPY.willBrand` is untouched and still runs at the cap with a single project, which is
+every Free customer; `brandTarget`, the cards and what is written are all untouched. Executed as
+`brand-atcap-picker`, which now asserts the ruled sentence **and** that the naming one is gone from
+that screen.
 
 
 ## Owner's manual test

@@ -437,7 +437,10 @@ DOCS = [
   "drawn; and brand-atcap-picker proves the owner's Question 4 ruling in the only state that "
   'reaches it — a DOWNGRADE, Pro with two projects and then Free — where the ticked card is the '
   "site's own project and carries the This site's project label, printing the row the PRE-RULING "
-  'rule would have ticked as its discriminating control. brand-logo renders the <img> HALF of the '
+  "rule would have ticked as its discriminating control, and carrying the owner's Question 6 "
+  'ruling too — the caption over the cards keeps the limit and names NO project, because the cards '
+  'do, asserted with the control that the naming sentence is gone from that screen while '
+  'brand-atcap proves it alive at the cap with one project. brand-logo renders the <img> HALF of the '
   'logo slot — what a customer whose Ghost carries a logo sees, and the branch no run had ever '
   'drawn because logo is an empty string on both majors (MEASUREMENTS §40); the row is patched '
   'through the SERVICE ROLE and put back in a finally, so no Ghost is written. brand-failed-line '

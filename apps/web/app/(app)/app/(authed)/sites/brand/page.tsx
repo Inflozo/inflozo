@@ -141,10 +141,19 @@ export default async function BrandOffer({
   // used to tie the asking to the cards as well, so the one-project customer — every Free
   // customer — was told rather than asked, against the owner's own words and against step 12 of
   // his manual test (review, 2026-09-08). `choosing` now decides the cards and nothing else.
+  // FOUR STATES NOW, AND THE FOURTH IS THE OWNER'S QUESTION 6 RULING (option 1, 2026-09-09):
+  // at the cap AND with cards, the caption keeps the limit and HANDS THE CHOICE TO THE CARDS
+  // instead of pre-answering it. Before the ruling this branch printed `willBrand`, which names a
+  // project — so the sentence announced the answer and the cards under it then asked the question,
+  // one half his Question 5 ruling and the other half his Question 3 ruling (review 4).
+  // `capped` and `choosing` are decided by different predicates, which is why the two could
+  // disagree at all, and this is the one state where both are true.
   const caption = !target
     ? BRAND_COPY.willCreate
     : capped
-      ? BRAND_COPY.willBrand(target.name)
+      ? choosing
+        ? BRAND_COPY.atLimitChoose
+        : BRAND_COPY.willBrand(target.name)
       : BRAND_COPY.alreadyOn(target.name)
 
   const host = hostOf(row.site_settings?.public_url || row.url)

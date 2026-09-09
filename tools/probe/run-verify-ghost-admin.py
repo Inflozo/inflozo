@@ -244,7 +244,11 @@ list gone stale — the sibling harness's own note):
                  the label sit on one card. The state is a DOWNGRADE, the only way to be at the cap
                  with more than one project (Pro with 2, then Free, which includes 1); the
                  entitlement is put back in a `finally`. The step prints the row the pre-ruling
-                 rule would have ticked, so it says whether it discriminated
+                 rule would have ticked, so it says whether it discriminated. IT ALSO CARRIES THE
+                 OWNER'S QUESTION 6 RULING (option 1, 2026-09-09): the caption over the cards keeps
+                 the limit and NAMES NO PROJECT, because the cards do — asserted with its control,
+                 that the naming sentence this screen printed before the ruling is GONE from it,
+                 while `brand-atcap` proves that same sentence alive at the cap with one project
   search         the shell's field on Sites, on the deployed page: the title of one site leaves one
                  card, the ADDRESS of the other leaves one, and a word that matches neither leaves
                  none with the app's own "No sites match …"
@@ -453,6 +457,9 @@ def app_text():
         # The owner's Question 3 ruling (2026-09-08): the second press asks, and where there is
         # more than one project it offers cards carrying each project's own wireframe.
         " brand_already_on: BRAND_COPY.alreadyOn('%s'),"
+        # The owner's Question 6 ruling (option 1, 2026-09-09): at the cap AND with cards, the
+        # caption keeps the limit and hands the choice to the cards instead of naming a project.
+        " brand_at_limit_choose: BRAND_COPY.atLimitChoose,"
         " brand_which_project: BRAND_COPY.whichProject,"
         " brand_this_site: BRAND_COPY.thisSite,"
         " brand_failed: BRAND_COPY.failed,"
@@ -1784,18 +1791,30 @@ const shoot = async (page, name) => {
       // THE TICK AND THE LABEL ON THE SAME CARD, which is the whole of what he ruled — read off
       // the label element that CONTAINS the checked radio, not off two separate locators.
       const tickedCard = await page.locator('label:has(input[name="project_id"]:checked)').innerText()
-      const cappedCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
+      /* THE OWNER'S QUESTION 6 RULING (option 1, 2026-09-09), AND ITS OWN CONTROL. This state —
+         at the cap AND with cards — used to print the sentence that NAMES a project, so the
+         caption answered and the cards then asked. It must now print the one that names none, and
+         the named one must be GONE from this screen: asserting only the new sentence would pass on
+         a page that printed both. `brand-atcap` next door still asserts `brand_will_brand` at the
+         cap with ONE project, so the sentence this step now refuses is proved alive elsewhere in
+         the same run — the pair is what makes each assertion mean something. */
+      const cappedCaption = await says(page, SAY.brand_at_limit_choose)
+      const oldCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
       step('brand-atcap-picker',
         order.length === 2 && tickedAtCap === made.id
         && tickedCard.includes(SAY.brand_this_site) && tickedCard.includes(made.name)
-        && cappedCaption,
+        && cappedCaption && !oldCaption,
         `downgraded to Free with ${order.length} projects — at the cap AND with a choice, which no ` +
         `other step reaches: the ticked card is ${JSON.stringify(made.name)}, the project for THIS ` +
         `SITE (${tickedAtCap === made.id}), and it is the same card that carries ` +
         `${JSON.stringify(SAY.brand_this_site)} (${tickedCard.includes(SAY.brand_this_site)}) — the ` +
         `owner's Question 4 ruling, where the pre-ruling rule would have ticked the first card in ` +
         `${JSON.stringify(order)}, ${order[0] === made.id ? 'which is the SAME row here' : 'a DIFFERENT row'}. ` +
-        `The caption names it too = ${cappedCaption}`)
+        `THE CAPTION HANDS THE CHOICE OVER rather than pre-answering it (his Question 6, option ` +
+        `1): it printed ${JSON.stringify(SAY.brand_at_limit_choose)} = ${cappedCaption}, and the ` +
+        `sentence that NAMES a project — the one this screen printed before the ruling — is gone ` +
+        `= ${!oldCaption}. It still names one at the cap with a single project, which is what ` +
+        `brand-atcap asserts in this same run`)
     } finally {
       await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'pro_active' })
       await page.goto(`${APP}/sites`, { waitUntil: 'load' })

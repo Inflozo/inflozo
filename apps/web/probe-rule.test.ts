@@ -471,10 +471,22 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
   assert.ok(!BRAND_COPY.alreadyOn('Ghost6').includes('limit'), 'room to spare is not a limit')
   assert.ok(BRAND_COPY.whichProject.endsWith('?'))
   assert.ok(BRAND_COPY.thisSite.length > 0)
-  // THREE CAPTIONS AND NO FOURTH: a sentence nothing prints is a sentence nothing can be wrong
-  // about, and `atLimitPick` was one — it rendered only at the cap WITH cards, which no step and
-  // no criterion ever reached, and it was the one caption that named no project.
+  // FOUR CAPTIONS NOW, AND THE FOURTH IS THE OWNER'S QUESTION 6 RULING (option 1, 2026-09-09).
+  // `atLimitPick` was deleted at review 2 because a sentence nothing prints is a sentence nothing
+  // can be wrong about: it rendered at the cap WITH cards, and no step and no criterion reached
+  // that state. THAT REASON NO LONGER HOLDS — `brand-atcap-picker` reaches it, AC 7 describes it,
+  // and the owner has ruled what it says. So the state has a caption again, deliberately, and the
+  // two dead names stay dead so the deletion cannot be undone by accident.
   assert.ok(!('atLimitPick' in BRAND_COPY) && !('willRebrand' in BRAND_COPY))
+  // IT KEEPS THE LIMIT AND NAMES NO PROJECT — the cards name them, one each, and a name here is
+  // the pre-answer he ruled against. Both halves asserted, because dropping either would satisfy
+  // the other: `willBrand` keeps the limit AND names one, and that is the sentence this replaced.
+  assert.ok(BRAND_COPY.atLimitChoose.includes('limit'), 'the customer still learns about the cap')
+  assert.ok(!BRAND_COPY.atLimitChoose.includes('“'), 'it names no project — the cards do')
+  assert.notEqual(BRAND_COPY.atLimitChoose, BRAND_COPY.willBrand('Ghost6'))
+  // …and the naming sentence is untouched, because at the cap with ONE project it is the only
+  // thing on the screen that can say which row wears the brand (his Question 5, 2026-09-09).
+  assert.ok(BRAND_COPY.willBrand('Ghost6').includes('Ghost6') && BRAND_COPY.willBrand('Ghost6').includes('limit'))
   // The matrix's "insert fails → the page says so" has a sentence to say it with.
   assert.ok(BRAND_COPY.failed.length > 0)
   // ONE OFFER URL. The Sites card's link and the two redirects are the same address, and it was

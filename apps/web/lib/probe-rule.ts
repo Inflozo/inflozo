@@ -266,6 +266,23 @@ export const BRAND_COPY = {
      2026-09-08). There are now three captions and no fourth: none yet → `willCreate`, at the cap →
      `willBrand` (which NAMES the project, Question 1), otherwise → `alreadyOn`, which asks. */
   alreadyOn: (name: string) => `You already put your brand on “${name}”. Apply it again?`,
+  /* AT THE CAP **AND** WITH CARDS TO CHOOSE FROM — the owner's Question 5b ruling, his Question 6,
+     option 1 (2026-09-09). ONE state, reachable only by a downgrade (Pro with two projects, then
+     Free), and until his ruling it printed `willBrand`: the caption announced the answer and the
+     cards underneath then asked the question. Both halves were his — the sentence is the Question 5
+     ruling, the cards are the Question 3 ruling — so the review put the collision to him rather
+     than choosing between two of his own rulings (standing rule 6, review 4, 2026-09-09).
+
+     IT NAMES NO PROJECT, AND THAT IS THE POINT rather than an omission: the cards name them, one
+     per project, with the site's own already ticked, so a name in the caption is the pre-answer he
+     ruled against. This is NOT the `atLimitPick` review 2 deleted — that one named no project on a
+     screen that DREW NO CARDS, so nothing on it said which project would be branded, and no step
+     or criterion ever reached it. This one is reachable, it is asserted by `brand-atcap-picker`,
+     and the thing that names the project is on the screen beside it.
+
+     `willBrand` IS UNTOUCHED and still runs at the cap with one project, which is every Free
+     customer: there the caption is the only thing that can name the row, so it does (Question 5). */
+  atLimitChoose: 'You’re at your project limit, so no new project — pick the one to wear your brand.',
   whichProject: 'Which project?',
   /** The card for the project this site's brand is already on, so the chooser says which is which. */
   thisSite: 'This site’s project',
