@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
-import { Button } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
+import { Submit } from '@/components/kit/submit'
 import {
   BRAND_COPY,
   brandPath,
@@ -18,9 +19,16 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
    Notice (`B Missing Surfaces.dc.html:1188-1225`).
 
    EVERY CONTROL HERE IS A `<form action={serverAction}>` WITH A HIDDEN SITE ID, so all of them
-   work with JavaScript off and none of them needs state. There is no client component in this
-   file and no `'use client'` — the card is a server render, and the only thing that changes it is
-   a POST that revalidates the route.
+   work with JavaScript off and none of them needs state. The card is a server render, and the
+   only thing that changes it is a POST that revalidates the route.
+
+   THE ONE CLIENT THING IN THE FILE IS THE BUSY LABEL, and it changes none of that. `Submit`
+   (`components/kit/submit.tsx`) is a client component INSIDE each form rather than around it, so
+   this file has no `'use client'` of its own, the markup is still a server render, and with
+   scripts off the forms post exactly as they did — there is simply no busy label to show, which
+   is right, because the click is then a document navigation the browser reports itself. It landed
+   on the owner's test of Story 3.4, finding 1: every control here submitted with the button
+   unchanged, because a server component has no hook to read a form's status with.
 
    THE TWO QUESTIONS USE THE BANNER'S TWO-BUTTON EXCEPTION, the owner's own from his test of story
    2.1 (`components/kit/banner.tsx:9-13`): a banner that ASKS FOR AN ANSWER may carry the Kit's
@@ -39,7 +47,11 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
    metadata. These blocks are the card's last child.
 
    STORY 3.4 PUT FR-C4's OFFER AT THE TOP OF THE LIST, and it is A PLAIN LINK, not a Banner: a
-   Banner tells or asks, and this offers. It is shown while the site has a brand worth offering
+   Banner tells or asks, and this offers. It is `next/link` AND NOT AN `<a href>`, which is the
+   owner's finding 1 for a link rather than a button: an `<a>` is a document navigation, so the
+   press left this page standing and unchanged until the next one painted. A `Link` is a soft
+   navigation, so `brand/loading.tsx` — S2c's own shape — appears the instant it is pressed, and
+   the route is prefetched on hover, which usually means there is nothing to wait for at all. It is shown while the site has a brand worth offering
    and it never goes away — "skippable and re-runnable" (FR-C4) means skipped and not-yet-taken
    are one state, so nothing records that it was pressed. DW-57 still binds: this is a block in
    the card's last child, not a pill on the metadata line and not a word on the state line. */
@@ -63,6 +75,12 @@ const SiteField = ({ id }: { id: string }) => <input type="hidden" name="site_id
 
 /** The Kit's 32px control row, declared once so the Banner's icon centres on it (`banner.tsx`). */
 const ROW = 32
+
+/* What the four controls say while their action is in flight (the owner's test, finding 1). Three
+   of them write one column and come back, so they say the same thing; Re-check plan calls Ghost
+   and is named for what it is doing, because it is the one press here with a wait worth naming. */
+const SAVING = 'Saving…'
+const RECHECKING = 'Re-checking…'
 
 function Ask({
   children,
@@ -91,16 +109,16 @@ function Ask({
           <form action={action}>
             <SiteField id={siteId} />
             <input type="hidden" name={primary.name} value={primary.value} />
-            <Button type="submit" size={ROW} variant="primary">
+            <Submit busy={SAVING} size={ROW} variant="primary">
               {primary.label}
-            </Button>
+            </Submit>
           </form>
           <form action={action}>
             <SiteField id={siteId} />
             <input type="hidden" name={secondary.name} value={secondary.value} />
-            <Button type="submit" size={ROW} variant="secondary">
+            <Submit busy={SAVING} size={ROW} variant="secondary">
               {secondary.label}
-            </Button>
+            </Submit>
           </form>
         </span>
       </span>
@@ -122,12 +140,12 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   return (
     <div className="flex flex-col gap-[10px]">
       {brand ? (
-        <a
+        <Link
           href={brandPath(site.id)}
           className={`self-start rounded-sm text-ui-dense font-medium text-coral-text underline-offset-2 hover:underline ${ring}`}
         >
           {BRAND_COPY.offer}
-        </a>
+        </Link>
       ) : null}
       {injection ? (
         <Banner kind="info" rowHeight={ROW}>
@@ -137,9 +155,9 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
             </span>
             <form action={dismissInjectionNotice}>
               <SiteField id={site.id} />
-              <Button type="submit" size={ROW} variant="secondary">
+              <Submit busy={SAVING} size={ROW} variant="secondary">
                 {INJECTION_COPY.dismiss}
-              </Button>
+              </Submit>
             </form>
           </span>
         </Banner>
@@ -236,9 +254,9 @@ function PreviewOnly({ siteId, recheckFailed }: { siteId: string; recheckFailed?
       <div className="flex flex-col gap-2 border-t border-line pt-[14px]">
         <form action={recheckPlan}>
           <SiteField id={siteId} />
-          <Button type="submit" size={36} variant="secondary">
+          <Submit busy={RECHECKING} size={36} variant="secondary">
             {PREVIEW_COPY.recheck}
-          </Button>
+          </Submit>
         </form>
         {recheckFailed ? (
           <p role="status" className="text-helper-caption text-ink-soft">

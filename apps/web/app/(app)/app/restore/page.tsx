@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { redirect } from 'next/navigation'
 import { buttonClasses } from '@/components/kit/button'
 import { Lockup } from '@/components/kit/logo'
+import { Submit } from '@/components/kit/submit'
 import type { Snapshot } from '@/lib/deletion-email'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import {
@@ -130,9 +131,9 @@ export default async function RestorePage() {
 
         {/* Signing out does not stop the countdown, and signing back in lands right here. */}
         <form action={signOut} className="flex justify-center">
-          <button type="submit" className={buttonClasses('secondary', 36)}>
+          <Submit busy="Signing out…" variant="secondary" size={36}>
             Sign out
-          </button>
+          </Submit>
         </form>
       </div>
     </main>

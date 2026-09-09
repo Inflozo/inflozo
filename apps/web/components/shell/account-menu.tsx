@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, type ReactNode } from 'react'
-import { useFormStatus } from 'react-dom'
+import { useRef, type ReactNode } from 'react'
 import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
 import { Book, Card, Lightbulb, Logout, Person } from '@/components/kit/icons'
+import { useSubmitting } from '@/components/kit/submit'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import type { PlanId } from '@/lib/plan'
 import { nameOf, secondLineOf, type ShellUser } from '@/lib/shell-user'
@@ -281,33 +281,19 @@ export function AccountMenu({
  * double tap.
  */
 function SignOut({ dense, iconSize }: { dense: boolean; iconSize: number }) {
-  const { pending } = useFormStatus()
-  // `pending` turns true on the NEXT render, and React queues form actions — the sheet's
-  // "Create project" made three rows from three submits in one tick before it got a ref
-  // (review, 2026-09-06).
-  //
-  // THE REF HAS TO BE RELEASED, and the comment that said otherwise was true only until the
-  // owner ruled question 8. It read "the redirect replaces the document, so the ref never needs
-  // resetting" — which held while BOTH branches went to `/sign-in`, a different route group, so
-  // this component unmounted with the `(authed)` layout. The failure branch now lands on
-  // `/?sign-out-failed=1`, the dashboard, INSIDE that same layout: a server-action redirect is a
-  // soft navigation, `AccountMenu` is never remounted, and the ref stayed `true` for good. The
-  // banner said "Try again in a moment" while the only control that can try was inert — and
-  // `pending` was false again, so the row still read "Sign out" and looked live (review,
-  // 2026-09-06). Both sibling guards already release exactly this way
-  // (`new-project-sheet.tsx`, `project-menu.tsx`); this one now does too.
-  const inFlight = useRef(false)
-  useEffect(() => {
-    if (!pending) inFlight.current = false
-  }, [pending])
+  // THE HOOK IS THIS ROW'S OWN LOGIC, MOVED — not a new one. Every line of it was written here
+  // (the released ref, the click guard, `aria-disabled` over `disabled`) and every line of it was
+  // reachable only from this file, which is why every form in a SERVER component shipped with no
+  // busy state at all and the owner found it on Story 3.4. The markup stays here because this row
+  // is not a Kit button; the behaviour lives in `components/kit/submit.tsx` with `Submit`, which
+  // is the same thing wearing one.
+  const { pending, guard } = useSubmitting()
   return (
     <button
       type="submit"
       aria-disabled={pending || undefined}
-      onClick={(event) => {
-        if (inFlight.current) event.preventDefault()
-        inFlight.current = true
-      }}
+      aria-busy={pending || undefined}
+      onClick={guard}
       className={`flex w-full items-center gap-[10px] rounded-sm text-left font-medium text-ink transition-colors hover:bg-paper ${
         dense ? 'p-[9px_12px] text-ui-dense' : 'p-[13px_12px] text-[15px]'
       } ${pending ? 'text-ink-soft' : ''} ${ring}`}

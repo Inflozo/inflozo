@@ -304,6 +304,21 @@ Behavioural. Visual specs live in `DESIGN.md` § Components.
 **Every empty state is designed, not omitted.** Every surface below answers "what does this show
 when it has nothing to show".
 
+**And every control that starts work SAYS SO, from the press until the work lands** (the owner's
+test of Story 3.4, 2026-09-09 — ruling **R-98**). Two halves, and a surface owes both:
+
+- **A control in flight changes its label and stops taking the press** — "Use your brand" becomes
+  "Taking your brand…" — and it is `aria-disabled` with `aria-busy`, never `disabled`, so it keeps
+  focus and stays announced while it is the thing being waited on. The Kit's `Submit` carries a
+  **required** `busy` label, so a control cannot ship without one.
+- **A navigation's answer is the destination's own skeleton**, which is why the Loading column
+  below is not decoration: a link is answered by the route it opens, so a route the user reaches
+  by a soft navigation has a skeleton **in its own shape**, not a parent's. A route no soft
+  navigation reaches says so and has none.
+
+This is written here rather than as a column because it binds **every** row, including the ones
+whose Loading cell is "—": a surface with nothing to shimmer still has controls that act.
+
 | Surface | Empty | Loading | Error | Refusal |
 |---|---|---|---|---|
 | **Dashboard** | S3b: "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." + New project | skeleton cards | a project card carrying a Failed chip, with "See what failed →" | Free at 1 project: New Project Sheet opens on the Upgrade Sheet path (FR-B4) |
@@ -326,6 +341,7 @@ when it has nothing to show".
 
 | State | Surface | Treatment |
 |---|---|---|
+| **In flight** | **every surface with a control** | The control says what it is doing and refuses the second press — the label swaps, `aria-disabled` + `aria-busy`, never `disabled`; a navigation is answered by the destination's own skeleton instead. R-98, above. With scripts off there is no busy state and none is owed: the click is a document navigation and the browser reports it |
 | **Partially credentialed** | Manage Keys, Deploy Wizard | Three credentials, each **present or absent with what it enables**. Never an error badge (FR-C1, FR-C8) |
 | **Preview-only** | Preview-Only Notice, Preview-Only Destination, Sites | Sky, not danger. Probed, never asked. Clears automatically |
 | **Uploaded, not activated** | Partial Success | A **partial success**, recorded as one. Re-activate is one click. Sends no failure email |

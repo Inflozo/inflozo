@@ -249,6 +249,14 @@ export const BRAND_COPY = {
   homepage: 'Your homepage, already wearing your brand.',
   use: 'Use your brand',
   skip: 'Skip',
+  /* The busy labels the two buttons wear while their action is in flight (the owner's test,
+     finding 1). They are HERE rather than inline because these two are the controls he pressed:
+     `app_text()` hands them to the deployed-site harness, so the run asserts the app's own words
+     rather than a copy of them. Every other busy label in the app is a literal beside its button
+     and is asserted by the mechanism instead — a list of words in one file is the thing that goes
+     stale (standing rule 4). */
+  using: 'Taking your brand…',
+  skipping: 'Skipping…',
   /** The Sites card's offer — a link, never a Banner: a Banner tells or asks, this offers. */
   offer: 'Use this site’s brand',
   willCreate: 'We’ll make a project for this site and put your brand on it.',

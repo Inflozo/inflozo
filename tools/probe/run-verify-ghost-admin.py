@@ -165,6 +165,22 @@ list gone stale — the sibling harness's own note):
                  to the site's; the Sites card's tally turns into the app's own "1 project"; and
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
+  skeleton-shape THE OWNER'S TEST OF 2026-09-09, finding 2 ("they are showing a generic shmmer"),
+                 and ruling R-98. The RSC request a soft navigation to /sites makes is HELD for
+                 four seconds and the boundary is read inside the hold: it says "Loading sites…"
+                 and NOT the dashboard's "Loading projects…", which is the control — that sentence
+                 standing over /sites IS the finding, because /sites had no `loading.tsx` of its
+                 own and inherited the dashboard's project cards, image band and all. The drawing
+                 under the sentence is counted too: the site card's 40px monogram tiles
+  busy-label     THE SAME TEST, finding 1 ("the button does not says anything"), and the same
+                 ruling. The POST is HELD and S2c's buttons are read inside the hold: the pressed
+                 one goes from the app's own BRAND_COPY.skip to BRAND_COPY.skipping with
+                 `aria-busy` and `aria-disabled` — never `disabled`, which would drop the control
+                 the user is waiting on out of the tab order — while the button in the OTHER form
+                 is untouched, because `useFormStatus` is a form's status and not a page's. Driven
+                 on **Skip**, which writes nothing, so the assertion cannot disturb the row the
+                 at-cap steps read next. `held > 0` is its control: a press whose POST was never
+                 held would resolve before the read and could not fail
   brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
                  owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
                  will brand before the press, and pressing it writes `style_pack.brand` onto that
@@ -460,6 +476,9 @@ def app_text():
         " brand_homepage: BRAND_COPY.homepage,"
         " brand_use: BRAND_COPY.use,"
         " brand_skip: BRAND_COPY.skip,"
+        # The owner's test of 2026-09-09, finding 1: what the two buttons say while they work.
+        " brand_using: BRAND_COPY.using,"
+        " brand_skipping: BRAND_COPY.skipping,"
         " brand_offer: BRAND_COPY.offer,"
         " brand_will_create: BRAND_COPY.willCreate,"
         " brand_will_brand: BRAND_COPY.willBrand('%s'),"
@@ -1402,6 +1421,89 @@ const shoot = async (page, name) => {
       `${tally.includes(SAY.one_project)}, and the dashboard card's wireframe blocks compute to ` +
       `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} on the MIDDLE one and ` +
       `on no other (${painted.filter((c) => c === rgbOf(brandRead.accent)).length} of 3)`)
+
+    /* ── THE OWNER'S TEST OF 2026-09-09, BOTH FINDINGS, ON THE DEPLOYED SITE (ruling R-98).
+
+       Each state being asserted here EXISTS ONLY WHILE SOMETHING IS IN FLIGHT, and on a healthy
+       deployment that is a few hundred milliseconds — so each step HOLDS the request the press
+       makes and reads the screen inside the hold. `route.continue()` after a wait changes nothing
+       about what is sent or what comes back: the delay is in this browser, not in the app, and
+       both steps let the navigation land afterwards and leave the run where it found it.
+
+       EACH CARRIES ITS OWN CONTROL, because a step that cannot tell the fix from its absence is
+       not evidence for it (standing rule 2). `skeleton-shape` fails if the page shows the
+       DASHBOARD's sentence, which is exactly what /sites showed before this fix rather than
+       nothing at all; `busy-label` fails if nothing was ever held, so a race that resolved before
+       the assertion cannot read as a pass.
+
+       This block runs where it does because `brand-seed` has just made the one project: the
+       dashboard has a card and /sites has a card, so both skeletons stand in for something. */
+    let held = 0
+    const holding = (match) => async (route) => {
+      if (!match(route.request())) return route.continue()
+      held += 1
+      await new Promise((r) => setTimeout(r, 4000))
+      return route.continue()
+    }
+
+    /* FINDING 2: "I want the loading shimmer to match the cards they show." A soft navigation to
+       /sites fetches the segment over RSC, so holding that request holds the skeleton on screen.
+       The two sentences are `loading.tsx`'s own and are RETYPED here — the only words in this run
+       that are, because `app_text()` evaluates `lib/*.ts` and node cannot load a `.tsx`. They are
+       what tells the two skeletons apart, which is the whole finding. */
+    const LOADING_SITES = 'Loading sites…'
+    const LOADING_PROJECTS = 'Loading projects…'
+    await page.route((u) => u.href.startsWith(APP), holding((r) => r.url().includes('_rsc=') || r.headers()['rsc'] === '1'))
+    await page.getByRole('link', { name: 'Sites', exact: true }).first().click()
+    const sawSites = await page.getByText(LOADING_SITES).waitFor({ state: 'attached', timeout: 3500 })
+      .then(() => true).catch(() => false)
+    // THE CONTROL: the dashboard's sentence must NOT be the one standing over /sites. Before this
+    // fix it was — /sites had no boundary of its own and inherited the dashboard's project cards.
+    const sawProjects = await page.getByText(LOADING_PROJECTS).count().then((n) => n > 0).catch(() => false)
+    // The shape behind the sentence: the site card has a 40px monogram tile and NO image band,
+    // which is the difference the owner was looking at.
+    const monograms = await page.locator('main .size-10').count().catch(() => 0)
+    await page.unroute((u) => u.href.startsWith(APP))
+    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForSelector('text=Connected')
+    step('skeleton-shape',
+      held > 0 && sawSites && !sawProjects && monograms >= 3,
+      `held ${held} RSC request(s) on the way to /sites and read the boundary inside the hold: ` +
+      `it said ${JSON.stringify(LOADING_SITES)} = ${sawSites}, it did NOT say ` +
+      `${JSON.stringify(LOADING_PROJECTS)} = ${!sawProjects} (the control — that sentence over ` +
+      `/sites IS the finding), and the drawing under it carried ${monograms} monogram tiles, the ` +
+      `site card's own shape, with no image band. R-98`)
+
+    /* FINDING 1: "the button does not says anything." Proved on SKIP rather than on Use your
+       brand, deliberately: Skip writes nothing, so the assertion cannot disturb the row the
+       at-cap steps below are about to read. Both buttons are the same `Submit`. */
+    held = 0
+    // `offer()` is the run's own locator for the card's link — by href, so it is the same control
+    // whether it is drawn as an `<a>` or, since R-98, as a `next/link`.
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const submits = page.locator('main form button[type="submit"]')
+    const idle = await submits.allInnerTexts()
+    await page.route((u) => u.href.startsWith(APP), holding((r) => r.method() === 'POST'))
+    await submits.nth(1).click()
+    const busyText = (await submits.nth(1).innerText().catch(() => '')).trim()
+    const busyAttr = await submits.nth(1).getAttribute('aria-busy').catch(() => null)
+    const disabledAttr = await submits.nth(1).getAttribute('aria-disabled').catch(() => null)
+    // `useFormStatus` is the FORM's status, so the button in the other form is untouched — the
+    // screen says which control is working rather than that the screen is.
+    const siblingText = (await submits.nth(0).innerText().catch(() => '')).trim()
+    await page.unroute((u) => u.href.startsWith(APP))
+    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForSelector('text=Connected')
+    step('busy-label',
+      held > 0 && idle[1] === SAY.brand_skip && busyText === SAY.brand_skipping
+      && busyAttr === 'true' && disabledAttr === 'true' && siblingText === SAY.brand_use,
+      `held ${held} POST(s) and read S2c's buttons inside the hold: the pressed one went from ` +
+      `${JSON.stringify(idle[1])} to ${JSON.stringify(busyText)} — the app's own ` +
+      `BRAND_COPY.skipping — with aria-busy=${busyAttr} and aria-disabled=${disabledAttr} ` +
+      `(never \`disabled\`, so it keeps focus and stays announced), while the button in the OTHER ` +
+      `form still read ${JSON.stringify(siblingText)}. \`held > 0\` is the control: a press whose ` +
+      `POST was never held would have resolved before the read and could not fail. R-98`)
 
     // ── AT THE CAP, WHICH THE SEED ABOVE JUST PUT THIS FREE ACCOUNT AT (F.1: Free includes 1
     //    project). THE OWNER RULED THIS PATH (Question 1, option 1, 2026-09-08) and asked the

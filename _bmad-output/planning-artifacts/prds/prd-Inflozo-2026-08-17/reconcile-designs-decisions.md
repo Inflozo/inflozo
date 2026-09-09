@@ -1802,6 +1802,54 @@ nobody can pay.
 
 ---
 
+---
+
+## A21 · Step 7 — Story 3.4's owner test, one standing ruling on feedback, 2026-09-09
+
+The owner tested Story 3.4 on `app.inflozo.com` and filed two findings, both of them one complaint
+told twice — the screen does not say it is working — and both of them ending in the same sentence:
+*"Please do a thorough check and ensure this is included in all future specs and stories."* That
+second half is what makes this a ruling rather than a story's fix list: he asked for the rule, not
+only the repair.
+
+**R-98 — every control that starts work says so, and every route has a skeleton in its own shape.**
+His words: *"When I click a button, there is no way the user know if something is happening in
+background. The button does not says anything. Can we show some kind of button state and label
+change so user know that something is happening. This is almost all buttons/links."* And: *"When
+the Projects or Sites are being loaded. They are showing a generic shmmer. I want the loading
+shimmer to match the cards they show."* Both halves are now acceptance criteria on every story with
+a screen.
+- **The first half was never a missing idea, only a missing home.** Three controls already said what
+  they were doing — the account menu's Sign out, the passkey button, the connect wizard — and the
+  behaviour lived in the file that had it, reachable by nobody else. The split that produced the
+  finding was exact: **a form in a CLIENT component read its own `useActionState` pending and said
+  something; a form in a SERVER component had no hook to read and said nothing.** Three files,
+  seven controls, S2c's own two buttons among them. `apps/web/components/kit/submit.tsx` is that
+  behaviour lifted out — `Submit` with a **required** `busy` label, and `useSubmitting()` for a
+  control that is not a Kit button — and the account menu now uses it rather than its own copy
+  (standing rule 3: propagate, never localise).
+- **The second half was a rule the project already had and did not keep.** DESIGN.md § Loading has
+  said "skeletons matching the shape that is coming … Never a spinner" since step 5. What was
+  missing was a *file*: a Next `loading.tsx` covers every child segment that has none of its own,
+  so the dashboard's project cards — a 16:10 image band over two lines — were drawn over `/sites`,
+  whose card has no image on it at all, and over `/account`, which is not a grid. The route's own
+  skeleton is also **the answer to a link**, which is the other half of finding 1: the Sites card's
+  brand offer was an `<a href>`, so the press left the page standing until the next document
+  painted, and it is a `next/link` now.
+- **A rule with no check is the state that produced the finding**, so both halves are executable.
+  `apps/web/busy.test.ts` walks the tree — it names every submit control with no busy label in its
+  own window, and every route with a `page.tsx` and no `loading.tsx` of its own — and it derives
+  its subjects from the directory tree rather than a list, so a new surface is covered the day it
+  lands (standing rule 4). Two routes are recorded in it as deliberate exceptions **with their
+  reasons** rather than omitted. Its control passed: run against the tree the owner tested, it
+  fails and names exactly the files he was looking at.
+- Targets: ✅ `docs/project-context.md`, so every BMAD run inherits it · ✅ `EXPERIENCE.md`
+  § State Patterns (the rule, and an **In flight** row in the partial-states table) · ✅ `DESIGN.md`
+  § Loading, and a new § Busy beside it · ✅ Story 3.4's spec (`## Owner's test findings` and the
+  Fix record) · ✅ `apps/web/busy.test.ts`, which is the half no document can enforce. The design
+  export is **not** a target and is not edited (R-74): the frames draw a button's resting state and
+  say nothing about its in-flight one, so this extrapolates rather than contradicts.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

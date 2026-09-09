@@ -485,7 +485,17 @@ Every empty state in the product is designed like this one: a sentence that says
 apology.
 
 **Loading** — skeletons matching the shape that is coming, and coral progress bars where a real
-byte count exists. Never a spinner.
+byte count exists. Never a spinner. **"The shape that is coming" means the cards of the route being
+opened, not of the route beside it**: a skeleton lives with the surface it stands in for, and one
+shared with a sibling draws the sibling's cards over yours (the owner's test of Story 3.4, ruling
+**R-98**).
+
+**Busy** — a control that has been pressed says what it is doing until the work lands: the label
+swaps to the present tense ("Use your brand" → "Taking your brand…"), and the control carries
+`aria-disabled` with `aria-busy` rather than `disabled`, so it keeps focus and stays announced
+while it is the thing being waited on. There is no busy *colour* and no spinner beside the word —
+the label and the cursor are the whole treatment, because the export draws no third state for a
+button and inventing one would be a value R-74 never gave us.
 
 ---
 

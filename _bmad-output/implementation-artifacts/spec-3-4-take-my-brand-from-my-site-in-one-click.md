@@ -904,6 +904,52 @@ owner as **Question 3** because Boundaries' own "Ask First" names it.
   unreadable read. Connect's landing and S2c's 404 cannot diverge: both call the same `hasBrand` on
   the same value.
 
+**Fix, 2026-09-09 — the owner's two test findings, and the standing ruling they became (R-98).**
+Neither finding is about this story's own behaviour, so **nothing in the frozen sections changes**:
+S2c does what Intent and Boundaries say it does, with the same two forms, the same server actions
+and the same words. What changed is that its controls now say they are working, and that the routes
+around it draw their own shape while they load.
+
+- **Finding 1 — a new shared control, and it is an old one moved.** `components/kit/submit.tsx`:
+  `Submit`, a Kit button with a **required** `busy` label, and `useSubmitting()` for a control that
+  is not a Kit button. Both are `account-menu.tsx`'s Sign out row lifted verbatim — the released
+  in-flight ref, the click guard, `aria-disabled` over `disabled` — and that row now imports them
+  rather than keeping its own copy. **The diagnosis is exactly one line:** a form in a **client**
+  component reads its own `useActionState` pending and every one said something; a form in a
+  **server** component has no hook to read and every one said nothing. Three files, seven controls,
+  S2c's two among them. `Submit` is a client component *inside* each form, so `site-notices.tsx`
+  and S2c stay server renders and both keep working with scripts off.
+- **Finding 1, the link half.** The Sites card's brand offer was an `<a href>` — a document
+  navigation, so the press left the page standing, unchanged, until the next one painted. It is a
+  `next/link` now, which makes the press a soft navigation answered by the destination's skeleton,
+  and prefetches the route on hover so there is usually nothing to wait for.
+- **One control outside the three files, found by the check rather than by reading.** The ⋯ menu's
+  **Duplicate** closed the menu at the press, which took the one place the click could be reported
+  off the screen with it. The menu now closes when the action **lands** — the rule the two dialogs
+  beside it already followed — and the item reads `Duplicating…` in between.
+- **Finding 2 — three skeletons, and one that had drifted.** `sites/loading.tsx` (the site card:
+  monogram, title, mono host, pills, state line — no image band), `sites/brand/loading.tsx` (S2c's
+  760 split card) and `account/loading.tsx` (the stacked cards). `(authed)/loading.tsx` is the
+  dashboard's alone now and matches today's project card, which had gained a badge row and a ⋯.
+  The file had **predicted this in writing** — "the first sibling page that needs its own skeleton
+  moves the dashboard and this file into their own route group" — and Sites arrived in Epic 3
+  without it, which is why a `ponytail:` note in code is not a propagation (standing rule 3).
+- **The check, because a rule with no check is the state that produced the findings.**
+  `apps/web/busy.test.ts` walks the tree: every submit control must carry a busy label **in its own
+  window**, and every route with a `page.tsx` must have a `loading.tsx` of its own or be recorded
+  as an exception with its reason. Its subjects are derived from the directory tree, never listed.
+  **Its own first version was wrong and the control caught it**: it asked whether the file
+  contained a pending-ish word anywhere, and `restore/page.tsx` — whose Sign out button had no busy
+  state whatever — passed on the word "deleting" three hundred lines away. Narrowed to a window at
+  the control, it named `project-menu.tsx:237`, which is how Duplicate was found.
+- **The durable half — his "ensure this is included in all future specs and stories".** Ruling
+  **R-98** in `reconcile-designs-decisions.md` §A21, and from there into `docs/project-context.md`
+  (the facts every BMAD run loads, so it reaches Create, Dev and Review of every later story),
+  `EXPERIENCE.md` § State Patterns (the rule, and an **In flight** row in the partial-states table)
+  and `DESIGN.md` (§ Loading tightened, § Busy added). The design export is **not** edited (R-74):
+  the frames draw a button's resting state and are silent on its in-flight one, so this
+  extrapolates rather than contradicts.
+
 ## Design Notes
 
 **Why the brand rides the probe and not a new call.** FR-C4 says "on the same read" and Story 3.3
@@ -1558,6 +1604,39 @@ need a site that is not connected yet, and you will need a menu and an accent co
 **What you cannot test yet, and why.** Your Ghost announcement bar is **not** copied into Inflozo and
 Inflozo does **not** offer to switch it off — that is Question 2 above. Both settings are already
 saved on your site's record, so nothing is lost; the screen for them arrives with the page editor.
+
+### Your re-test, 2026-09-09 — the two things you found
+
+Your findings are fixed. **Steps 1 to 16 above still hold and you do not need to walk them again**;
+these five are the new ones. They are quick, and on a fast connection the first two are quick to the
+point of being hard to catch — that is the fix working, and each step says what to do if it goes by
+too fast to see.
+
+17. **The button says what it is doing.** **URL:** https://app.inflozo.com/sites · **Do:** press the
+    **use this site's brand** link on your site's card, then on the screen that opens press
+    **Skip** and watch the button you pressed · **See:** for the moment before the page changes it
+    reads **Skipping…** instead of **Skip**, and pressing it again does nothing. Press **Use your
+    brand** the same way and it reads **Taking your brand…**. *If it is too fast to see:* it is
+    proved on the live site by the run below (step `busy-label`), which holds the request open on
+    purpose and reads the button while it waits. **Every button in the app now does this** — Connect,
+    Create project, Delete, Send link, Got it, Re-check plan, Sign out and the rest.
+18. **The ⋯ menu's Duplicate.** **URL:** https://app.inflozo.com/ · **Do:** press the **⋯** on a
+    project card and press **Duplicate** · **See:** the menu **stays open** and the item reads
+    **Duplicating…**, then the menu closes by itself and the new card is there. It used to shut
+    instantly and leave you with nothing to look at.
+19. **The loading shimmer matches the cards.** **Do:** press **Sites** in the left menu · **See:**
+    for a moment, grey cards shaped like **site** cards — a square tile with two lines beside it,
+    two small pills, and a line at the bottom — and **not** the big picture box the project cards
+    have. Then press **Projects** · **See:** the shimmer there has the picture box, because that is
+    what a project card has. *If it is too fast to see:* the same run proves it (step
+    `skeleton-shape`), and it fails if the wrong one is drawn.
+20. **The Account page too** — it was showing project cards while it loaded, which you did not
+    report but is the same fault. **Do:** press **Account** in the menu under your name · **See:**
+    a shimmer of stacked wide cards, not a grid of three.
+21. **Nothing else moved.** **Do:** anything from steps 5 to 13 above that you want to spot-check ·
+    **See:** the same screens, the same words, the same buttons. This fix changed how the controls
+    behave while they work and what the pages draw while they load. **It changed nothing about what
+    any of them do.**
 
 ## Verification
 

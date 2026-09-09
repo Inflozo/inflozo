@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Button } from '@/components/kit/button'
+import { Submit } from '@/components/kit/submit'
 import { ProjectThumb } from '../../placeholder'
 import { hostOf } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
@@ -362,15 +362,15 @@ export default async function BrandOffer({
                    has gone stale. Empty means "make a project for this site". */
                 <input type="hidden" name="project_id" value={target?.id ?? ''} />
               )}
-              <Button type="submit" size={44} variant="primary" aria-describedby="brand-caption">
+              <Submit busy={BRAND_COPY.using} size={44} variant="primary" aria-describedby="brand-caption">
                 {BRAND_COPY.use}
-              </Button>
+              </Submit>
             </form>
             <form action={skipBrand}>
               <input type="hidden" name="site_id" value={row.id} />
-              <Button type="submit" size={44} variant="ghost" weight="font-medium">
+              <Submit busy={BRAND_COPY.skipping} size={44} variant="ghost" weight="font-medium">
                 {BRAND_COPY.skip}
-              </Button>
+              </Submit>
             </form>
           </div>
         </div>

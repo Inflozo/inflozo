@@ -65,6 +65,8 @@ type Duplicate = {
   action: (formData: FormData) => void
   /** Claims the in-flight slot. `false` means one is already running and this submit is refused. */
   arm: () => boolean
+  /** Whether a duplicate is in flight, so the item can SAY so (the owner's test of 3.4, finding 1). */
+  pending: boolean
 }
 
 const DuplicateContext = createContext<Duplicate | null>(null)
@@ -98,7 +100,7 @@ export function DuplicateScope({ children }: { children: ReactNode }) {
   const failed = error && error.code !== 'at_cap' ? error.message : null
 
   return (
-    <DuplicateContext value={{ action, arm }}>
+    <DuplicateContext value={{ action, arm, pending }}>
       {failed ? <Banner kind="error">{failed}</Banner> : null}
       {children}
     </DuplicateContext>
@@ -153,6 +155,20 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
   }, [removed])
 
   const close = () => menu.current?.hidePopover()
+
+  // THE MENU NOW CLOSES WHEN DUPLICATE LANDS, NOT WHEN IT IS PRESSED — the owner's test of Story
+  // 3.4, finding 1. Closing at the press took the one place the click could be reported off the
+  // screen with it, so the card said nothing at all for a whole round trip and a new card simply
+  // appeared. It is the same rule the two dialogs above already follow ("a dialog closes when its
+  // action succeeded"), on the one control here that is a popover rather than a dialog.
+  //
+  // `pending` is the SCOPE's, shared by every card's menu, and that is harmless: `popover="auto"`
+  // means only one is ever open, and `hidePopover()` on a closed popover does nothing.
+  const wasDuplicating = useRef(false)
+  useEffect(() => {
+    if (wasDuplicating.current && !duplicate.pending) close()
+    wasDuplicating.current = duplicate.pending
+  }, [duplicate.pending])
 
   /** The menu is a popover and has to go before the modal opens; the rest is `kit/dialog.ts`. */
   const open = (dialog: HTMLDialogElement | null) => {
@@ -226,19 +242,23 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
           <form
             action={duplicate.action}
             onSubmit={(event) => {
-              if (!duplicate.arm()) {
-                event.preventDefault()
-                return
-              }
-              close()
+              if (!duplicate.arm()) event.preventDefault()
             }}
           >
             <input type="hidden" name="id" value={id} />
-            <button type="submit" className={`${item} text-ink hover:bg-paper`}>
+            {/* `aria-disabled`, never `disabled` — the item stays in the menu's arrow-key walk and
+                stays announced while it is the thing being waited on (`greyed.ts`, `submit.tsx`).
+                The refusal itself is `arm()`'s, above, which predates this and is unchanged. */}
+            <button
+              type="submit"
+              aria-disabled={duplicate.pending || undefined}
+              aria-busy={duplicate.pending || undefined}
+              className={`${item} text-ink hover:bg-paper`}
+            >
               <span className="shrink-0 text-ink-soft">
                 <Copy size={15} />
               </span>
-              Duplicate
+              {duplicate.pending ? 'Duplicating…' : 'Duplicate'}
             </button>
           </form>
         )}
