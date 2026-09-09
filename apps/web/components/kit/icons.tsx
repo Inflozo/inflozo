@@ -127,6 +127,13 @@ export const Link = (p: IconProps) => (
     <path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1" />
   </Icon>
 )
+/* S11a's ⋯ menu, third row (`S11 Sites.dc.html:80`) — the key with the diagonal stroke, copied as
+   drawn. `stroke-linejoin: round` is on the frame's own <svg> and `Icon` already sets it. */
+export const Key = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15 8m-2 2l4-4m0 0l3 3 3-3-3-3" />
+  </Icon>
+)
 export const LinkOff = (p: IconProps) => (
   <Icon {...p}>
     <path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1" />

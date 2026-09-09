@@ -2,7 +2,7 @@
 title: 'Story 3.6 — Manage keys, and a partially credentialed site as an ordinary state'
 type: 'feature'
 created: '2026-09-09'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '8c301682b72bc598e082f62c4f6813244418dfbd'
 review_loop_iteration: 0
 owner_test: pending
@@ -224,31 +224,31 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
 
 **Execution:**
 
-- [ ] `supabase/migrations/20260909180000_credential_audit_and_key_id.sql` + `SCHEMA.sql` + `RLS-TEST.sql` and
+- [x] `supabase/migrations/20260909180000_credential_audit_and_key_id.sql` + `SCHEMA.sql` + `RLS-TEST.sql` and
       their `supabase/` copies -- add `credential_change` to the enum and `admin_key_id` to
       `private.site_credentials`, with the gate assertion for the new column -- DW-76 and the moved-
       domains hint, in one migration, applied by hand at Deploy.
-- [ ] `apps/web/server/ghost-admin/index.ts` -- write `admin_key_id` in `store()`; audit inside both
+- [x] `apps/web/server/ghost-admin/index.ts` -- write `admin_key_id` in `store()`; audit inside both
       `store()` and `remove()`, in their own transactions; add `findSiteByAdminKeyId` -- the log stops
       being silent about half its traffic, and `private` stays reachable from one module only.
-- [ ] `apps/web/lib/connect-rule.ts` · `apps/web/connect-rule.test.ts` -- add `KEYS` and the three new
+- [x] `apps/web/lib/connect-rule.ts` · `apps/web/connect-rule.test.ts` -- add `KEYS` and the three new
       message codes, and extend the no-number assertion to cover them -- one home for the words, so
       the screen and the harness cannot disagree.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- add `saveKeys`, `removeToken` and
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- add `saveKeys`, `removeToken` and
       `testConnection`, each with its own route constant; add the moved-domains lookup and
       `?moved=` redirect to `connectSite` -- FR-C8's flow, and the hint on the path FR-C8 puts it on.
-- [ ] `apps/web/components/kit/icons.tsx` · `.../sites/site-menu.tsx` -- add the frame's key glyph and
+- [x] `apps/web/components/kit/icons.tsx` · `.../sites/site-menu.tsx` -- add the frame's key glyph and
       the **Manage API keys** row above the rule -- the frame's own third item, in the menu 3.5 built
       rather than a second one (DW-57).
-- [ ] `apps/web/app/(app)/app/(authed)/sites/keys-panel.tsx` · `.../sites/keys/page.tsx` ·
+- [x] `apps/web/app/(app)/app/(authed)/sites/keys-panel.tsx` · `.../sites/keys/page.tsx` ·
       `apps/web/busy.test.ts` -- the surface as one component, its route with `disconnect/page.tsx`'s
       three-way read split, and the route's `busy.test.ts` row with its reason -- one component and
       one split, so the JavaScript-off path is the same screen and not a second one.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- read `?moved=` and put the hint on its
+- [x] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- read `?moved=` and put the hint on its
       own card -- the shape `?recheck=` and `?disconnect=` already have.
-- [ ] `tools/probe/run-verify-ghost-admin.py` -- this story's live steps against T1 and T3, docstring
+- [x] `tools/probe/run-verify-ghost-admin.py` -- this story's live steps against T1 and T3, docstring
       extended from the source -- R-82: a review that did not touch the real services is not a review.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` ·
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` ·
       `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- close DW-76
       and DW-54's `staff-removed` half; record on EXPERIENCE.md:128 that the "Reconnect needed" entry
       point is Story 3.7's -- propagate, never localise (standing rule 3).
@@ -447,3 +447,130 @@ returned, by the key's variable name and never its value.
 - Frame screenshots at 1440 / 834 / 390 (`--shots`) against S11d and B20, for the "matches the frame"
   criterion.
 - The owner's manual test above (R-80) — his, on the deployed production domains, after Deploy.
+
+
+### Dev phase, 2026-09-09 — what each command returned
+
+Every command below was run in this phase; nothing is carried forward from an earlier one. **R-82:
+the real services are named by the variable each key is held under and never by its value.**
+
+**Commands, and what each returned:**
+
+- `pnpm check` (repo root, Node 24 on PATH — the shell defaults to 22) — **exit 0**. Lint clean,
+  `tsc --noEmit` clean, and the run printed **240 tests, 240 pass, 0 fail** in `apps/web`, plus 1
+  each in `packages/{ghost-shim,section-runtime,theme-compiler}`. `busy.test.ts`,
+  `app-routes.test.ts`, `server-wiring.test.ts` and `connect-rule.test.ts` are among them.
+- `pnpm build` — **exit 0**, "Compiled successfully", and the route table now lists
+  **`ƒ /app/sites/keys`** beside `/app/sites/connect` and `/app/sites/disconnect`.
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, against a PostgreSQL 17 container it brings
+  itself. It refused nothing (the `supabase/` copies match the architecture originals), applied
+  **every** file in `supabase/migrations/` including the new one, and diffed the result against
+  `SCHEMA.sql` with no drift — so `credential_change` and `admin_key_id` are in both descriptions of
+  the database. It ended on the DW-44 vault assertions and on this story's own:
+  `PASS: admin_key_id exists and no client holds a privilege on it`. **The `alter type … add value`
+  question in the Code Map is answered by execution rather than by the sentence there** (standing
+  rule 1): the gate applies each migration through `psql -f` in autocommit, the value is only ADDED
+  and never used in that file, and the apply step passed.
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings** (the first call regenerated
+  `STORY-BOARD.html`, as its sub-tools do).
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **RESULT: all steps passed.** Its
+  plumbing steps hit the real services:
+  - **Supabase** — `SUPABASE_URL` with `SUPABASE_SECRET_KEY`: `vault-off-rest` re-executed §21j's
+    bound, `GET /rest/v1/{decrypted_secrets,secrets,site_credentials}` → **404, 404, 404**, with
+    `GET /rest/v1/sites` → **200** as its positive control. `SUPABASE_DB_POOLER_URL` is present by
+    name and is what the browser half reads `private.*` and `vault.secrets` through.
+  - **Ghost T1 (`ghost6.inflozo.com`, 6.58.0)** and **T3 (`ghost5.inflozo.com`, 5.130.6)** — read
+    with `GHOST6_ADMIN_API_KEY` / `GHOST5_ADMIN_API_KEY`: `settings-keys` → **all six settings keys
+    present on both majors**; `brand-keys` → **all seven FR-C4 keys present on both**, `navigation`
+    a JSON string on each. `GHOST6_STAFF_ACCESS_TOKEN` and `GHOST5_STAFF_ACCESS_TOKEN` are present
+    by name, and the first is now passed to the browser half as this story's `keys-token` credential.
+  - `browser-js` — the embedded Playwright script **parses** with this story's ten new steps in it.
+  - The step printed **this story's copy read out of `lib/connect-rule.ts` itself**, not retyped:
+    `keys_menu`, `keys_title`, `keys_url_reason`, `keys_present`/`keys_absent`, all three credential
+    names and their `enables` lines, `keys_no_reveal`, `keys_roll_hint`, `keys_test*`,
+    `keys_other_site`, and `keys_moved` — which rendered as **"…kept for 90 days"**, the figure
+    coming from `ORPHAN_SNAPSHOT_DAYS` while `KEYS` itself names no number.
+- `python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com` — **not run in this
+  phase, and it cannot be**: it drives this story's screens on the DEPLOYED site, and nothing is
+  deployed until CI publishes this commit (DW-7 — publishing happens from GitHub Actions). It is the
+  Review phase's, on production, and it is where the ten live steps below are executed.
+
+**Written in this phase, to be executed at Review on the deployed site** (`--url
+https://app.inflozo.com`), each named in the harness's own docstring: `keys-screen`,
+`axe-keys-screen`, `keys-malformed`, `keys-other-site`, `keys-rotate`, `keys-token`, `keys-test`,
+`keys-js-off`, `keys-forged`, `moved-domains`. Three carry a ⛔ recorded in the step's own output
+rather than hidden: `keys-rotate` **re-pastes** T1's Admin key instead of regenerating it in Ghost
+Admin (regenerating would invalidate `GHOST6_ADMIN_API_KEY` for every probe in this repository, and
+the assertion is on the *secret's* identity, so the path is the one a real rotation takes);
+`moved-domains` **seeds the old record** through the pooler because neither test Ghost has a second
+reachable address, while the connect, the lookup, the redirect and the hint are all the product's;
+and `disconnect-failed` remains un-induced for the reason it always was.
+
+**Four existing steps moved with this story rather than being left to fail:** `site-menu` now
+asserts **two** rows in the frame's order with the rule between them; `audit` asserts DW-76's rows —
+one `in` per connect, one `out` per removal that actually took a key, each stamped with its own
+writer's route and each `detail` exactly `{kind, direction}`; and the `disconnect` step's note that
+`remove()` writes no audit row is now history rather than a claim about the code. The fourth is a
+finding rather than a consequence: **`secret-gone`'s two refs are re-taken** at the end of this
+story's block, because `keys-rotate` puts a new secret behind T1's ref and `moved-domains`
+reconnects T3 twice — so the refs pushed earlier in the run were already dropped by DW-44's trigger,
+and the account cascade would have been proved against two refs that had nothing behind them
+before it ran. A control that cannot fail is not a control (standing rule 2).
+
+**Not verified in this phase, and named rather than assumed:** the migration is **not** applied to
+the hosted database — that is by hand in the Deploy phase (the direct host is IPv6-only), with
+`select unnest(enum_range(null::public.credential_action))` on production showing `credential_change`
+before the Deploy commit is written. Frame screenshots at 1440 / 834 / 390 (`--shots`) against S11d
+and B20 belong to Review. The owner's manual test (R-80) is his, on the production domains, after
+Deploy.
+
+## Spec Change Log
+
+Four departures from the Code Map, each recorded here rather than made silently. None changes an
+acceptance criterion; three are the Code Map disagreeing with itself and one is a test that had to
+be widened rather than weakened.
+
+1. **The ⋯ row NAVIGATES; it does not open a dialog over the card.** The Code Map asked for both:
+   `site-menu.tsx`'s entry says "same `<a href>`-intercepted-into-a-`<dialog>` shape as Disconnect",
+   and `(list)/page.tsx`'s says "the card's **link** to `/sites/keys?site=…` is the ⋯ row" with no
+   credential read added to that page. Only one of the two can be built. **The link wins**, because
+   the panel draws the Admin key's public id half, which lives in `private.site_credentials` and is
+   reachable only through `server/ghost-admin` (§21j): a dialog rendered on the Sites list would
+   mean one pooler round trip per card on the busiest route in the app, or a dialog whose Admin row
+   disagreed with the route's — which is precisely the drift "ONE component for both" exists to
+   prevent. The harness agrees: this story's `keys-js-off` asserts the route's forms and the row's
+   href, where 3.5's asserted the dialog's forms *and* the route's. Recorded in `site-menu.tsx` and
+   in `keys/page.tsx`'s header.
+2. **A fifth change to the chokepoint: `credentialsOf()`.** The Code Map counts four and then tells
+   `keys/page.tsx` to read "the credential row through `ghost-admin`", which is a fifth. It returns
+   the Admin key's public id half and the two rotation stamps and nothing else — no ref, no
+   decryption — so the count was about not WIDENING the chokepoint, and this does not. It puts
+   `keys/page.tsx` on `server-wiring.test.ts`'s chokepoint importer list with its reason, which is
+   what that list is for.
+3. **`remove()`'s audit row is CONDITIONAL.** DW-76 says "one `audit()` call inside `remove()`". It
+   is written only when a credential actually came out — the same `is not null` the update matches
+   on. `disconnectSite` removes BOTH kinds on every press and nothing stores a staff token until
+   Epic 7, so an unconditional row would have written a false "the staff credential came out" line
+   into the one record that exists to be trusted, on every disconnect, for ever. That is DW-76's own
+   argument against writing under `vault_decrypt`, one table over.
+4. **`connect-rule.test.ts`'s Admin-path assertion now compares DISTINCT paths.** It asserted the
+   sorted list of `path: '…'` literals in `sites/actions.ts` equals `['config/', 'site/']`; this
+   story adds three more call sites to those same two endpoints and none to a third. The contract is
+   which endpoints Inflozo reaches, not how many callers reach them, so the set is what is compared.
+   The Ask First it guards — a third Admin path — still fails it.
+
+**Two departures from the frames, both drawn from the frame that is nearest and both recorded in
+`lib/connect-rule.ts` with a test over them** (R-74; the precedent is Story 3.4's
+hex-instead-of-colour-name):
+
+- **No reveal control and no trailing characters.** B20 masks each key with its first *and last*
+  characters and offers an eye. The last characters are the secret half, which exists for
+  milliseconds inside `server/ghost-admin/index.ts` and reaches no render path (AD-10). The screen
+  draws the half that is not a secret — the Admin key's `id`, which rides in the header of every JWT
+  Inflozo mints — and one line says Inflozo cannot read the rest back either. `Eye` and `EyeOff` are
+  in the Kit and are deliberately unimported; the harness's `keys-screen` step counts the elements
+  offering to reveal and requires zero.
+- **"Added" / "Not added", never B20's "Working".** A green dot and "Working" claim a check has just
+  passed. Nothing checks on load — **Test connection** is where a customer asks, and the continuous
+  answer is Story 3.7's health badge — so the screen says what it knows. This is also the acceptance
+  criterion "present or absent, and never an error badge".

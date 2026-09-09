@@ -22,8 +22,8 @@ import { brandPath, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
-import { fetchWithKey, remove, store } from '@/server/ghost-admin'
-import { AdminError } from '@/server/ghost-admin/admin-rule'
+import { call, fetchWithKey, findSiteByAdminKeyId, remove, store } from '@/server/ghost-admin'
+import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
 import { probeSite } from '@/server/site-probe'
 
 /**
@@ -63,6 +63,14 @@ const ROUTE = 'sites/connect'
    stamping a removal `sites/connect` would put the wrong route in the one record that exists to be
    trusted — before the row that reads it is ever written (review, 2026-09-09). */
 const DISCONNECT_ROUTE = 'sites/disconnect'
+/* STORY 3.6 — THREE MORE, AND EACH IS ITS OWN. DW-76's `credential_change` rows are stamped with
+   the route that wrote them, so a key saved from Manage keys must not arrive in the audit log
+   looking like a connect: the whole point of the log is that a reader can tell which surface acted.
+   `sites/connect` on a key write is the exact defect the review of 2026-09-09 caught one story
+   earlier, before the rows that read it existed. */
+const KEYS_ROUTE = 'sites/keys'
+const REMOVE_TOKEN_ROUTE = 'sites/keys/remove-token'
+const TEST_ROUTE = 'sites/keys/test'
 /** `proxy.ts` rewrites `app.inflozo.com/sites` onto the internal `/app/sites`. */
 const SITES = '/app/sites'
 /** …and `app.inflozo.com/` onto `/app`, which is the dashboard's own revalidate path. */
@@ -86,6 +94,17 @@ const BRAND_FAILED = (siteId: string) => `${BRAND(siteId)}&failed=1`
 /* STORY 3.5, and the same shape one row up: the card that could not be disconnected is the one
    that says so, named in the URL, so no other card claims a failure that was not its own. */
 const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}`
+/* STORY 3.6. Manage keys is a SERVER-RENDERED screen with no `useActionState` to answer — that is
+   what makes every control on it work with JavaScript off — so its three actions speak the way
+   `recheckPlan` and `disconnectSite` already do: they redirect to the screen, and the screen reads
+   the reason out of the URL. Only the CODE travels; which field it belongs under is derived by
+   `keysFieldOf` in `lib/connect-rule.ts`, so a hand-typed `?field=` cannot put a refusal sentence
+   under a field it has nothing to do with. */
+const KEYS_URL = (siteId: string) => `/sites/keys?site=${siteId}`
+const KEYS_REFUSED = (siteId: string, code: string) => `${KEYS_URL(siteId)}&keys=${code}`
+const KEYS_TESTED = (siteId: string, result: string) => `${KEYS_URL(siteId)}&test=${result}`
+/** FR-C8's hint, on the NEW card: `?moved=` names the site it belongs to, as `?recheck=` does. */
+const MOVED = (siteId: string) => `${SITES_URL}?moved=${siteId}`
 
 const fail = (code: ConnectCode, message: string, field?: ConnectField): ConnectResult => ({
   error: { code, message, ...(field ? { field } : {}) },
@@ -376,9 +395,31 @@ export async function connectSite(
     .maybeSingle<{ site_settings: { brand?: unknown } | null }>()
   if (probedError) console.error('sites: connect brand read failed', { code: probedError.code })
 
+  // ── FR-C8's "Moved domains?", STORY 3.6, and it is the LAST thing this action decides. The
+  //    Admin key just stored carries an id half; if another record of THIS CALLER'S carries the
+  //    same one, the customer has connected the same Ghost install at a second address — which is
+  //    the state FR-C8 designed for when it killed edit-URL-in-place, reached the way FR-C8 says
+  //    to reach it. Nothing is written and nothing is refused: the new card carries the hint.
+  //    INSIDE ITS OWN TRY AND FATAL TO NOTHING — the site is connected whatever this answers, and
+  //    a pooler that would not read is not a reason to fail a connect that worked. `parseCredential`
+  //    cannot throw here: `store()` above already ran it on this very key.
+  let moved = false
+  try {
+    const { kid } = parseCredential(adminKey)
+    moved = Boolean(await findSiteByAdminKeyId({ userId: user.id, kid, exceptSiteId: siteId }))
+  } catch (thrown) {
+    console.error('sites: connect moved-domains lookup failed', {
+      code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
+    })
+  }
+
   // Outside every `try` above: `redirect()` throws NEXT_REDIRECT by design, and a catch that
   // swallowed it would report a successful connect as a failure (`lib/action-redirect.ts`).
-  redirect(hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : SITES_URL)
+  // THE HINT COMES BEFORE THE BRAND SCREEN and takes nothing away: S2c's offer is a LINK on the
+  // card that never retires (`brand-skip` proves it), so a customer sent to the list with the
+  // "Moved domains?" hint can still take the brand from the same card afterwards. The reverse
+  // order would have shown S2c and swallowed the hint entirely — there is no second chance at it.
+  redirect(moved ? MOVED(siteId) : hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : SITES_URL)
 }
 
 /* ───────── STORY 3.3's FOUR ANSWERS, and they live in THIS file because a `'use server'` module
@@ -886,4 +927,260 @@ export async function disconnectSite(formData: FormData): Promise<void> {
   revalidatePath(SITES)
   revalidatePath(DASHBOARD)
   redirect(SITES_URL)
+}
+
+/* ───────── STORY 3.6 — MANAGE KEYS' THREE WRITERS, and they live in THIS file for the reason the
+   nine above them do: a `'use server'` module may export only async functions, so the route cannot
+   carry its own actions beside it (the header at the top of this file is the record).
+
+   NONE OF THEM ANSWERS THE CALLER. Manage keys is server-rendered — no `useActionState`, which is
+   what makes every control on it a plain `<form action={…}>` that a scripts-off browser posts
+   natively — so each redirects back to the screen with its reason in the URL, the shape
+   `recheckPlan` and `disconnectSite` already have.
+
+   EVERY CALL THEY MAKE IS A `GET`. `ADMIN_WRITES` is untouched: validating a key is
+   `GET /admin/config/`, checking which install it belongs to is `GET /admin/site/`, and **Test
+   connection** is `GET /admin/config/` again. Nothing on this screen changes anything on the
+   customer's Ghost.
+
+   AND NONE OF THEM WRITES `sites.health` OR `sites.last_checked_at`. Those two, the "Reconnect
+   needed" state, the once-per-transition email and its 7-day cap are Story 3.7's state machine; a
+   manual press that wrote either would drive that machine from outside it, and a press that wrote
+   `last_checked_at` alone would make the card claim a check the daily job never made. So the test
+   result is drawn on this screen and stored nowhere. */
+
+/** The row Manage keys acts on, read under the CALLER'S OWN session so RLS decides it exists. */
+async function keysSite(
+  at: { userId: string; siteId: string },
+): Promise<{ id: string; url: string; site_settings: { public_url?: string } | null }> {
+  const supabase = await supabaseServer()
+  const { data: site, error } = await supabase
+    .from('sites')
+    .select('id, url, site_settings, disconnected_at')
+    .eq('id', at.siteId)
+    .maybeSingle<{
+      id: string
+      url: string
+      site_settings: { public_url?: string } | null
+      disconnected_at: string | null
+    }>()
+  // THE SAME THREE ANSWERS `sites/keys/page.tsx` GIVES, and for the same reasons — a malformed id
+  // is `22P02` and not a failed read, a failed read is not a stranger's row, and an
+  // already-disconnected record redirects rather than 404ing (the split the review of 2026-09-09
+  // gave `sites/disconnect`). `redirect` throws NEXT_REDIRECT, so these leave.
+  if (error?.code === '22P02') notFound()
+  if (error) {
+    console.error('sites: keys read failed', { code: error.code })
+    redirect(KEYS_REFUSED(at.siteId, 'keys_failed'))
+  }
+  if (!site) notFound()
+  if (site.disconnected_at) redirect(SITES_URL)
+  return site
+}
+
+/** Manage keys' three fields, each optional: every credential row posts its own form. */
+const KeyFields = z.object({
+  admin_key: z.string().max(CONNECT_MAX),
+  content_key: z.string().max(CONNECT_MAX),
+  staff_token: z.string().max(CONNECT_MAX),
+})
+
+/**
+ * FR-C8 — A KEY IS PASTED AND IT IS PROVED BEFORE IT IS STORED.
+ *
+ * The Admin key goes through the path `connectSite` already uses — `fetchWithKey` on
+ * `GET /admin/config/` — so a typo is refused where it was typed rather than surfacing as a broken
+ * site the next day. AND THEN `GET /admin/site/`, WHICH IS A SECOND QUESTION: `config/` proves the
+ * key is a key of SOME Ghost, and `site/` says WHICH. A key belonging to a different install is
+ * refused, because storing it would carry this record — its snapshots, its projects, its
+ * first-upload flag — onto another live Ghost. That is precisely the harm FR-C8 removed
+ * edit-URL-in-place for; the key field is the same door with a different handle.
+ *
+ * THE COMPARISON IS AGAINST `site_settings.public_url`, Ghost's OWN answer read at connect, and
+ * falls back to `sites.url` only for a record that has none: on Ghost(Pro) the admin domain and
+ * the public domain differ by design, so comparing against the typed address would refuse every
+ * legitimate Pro rotation.
+ *
+ * THE CONTENT KEY IS NOT VALIDATED HERE (FR-C2). The browser checks it against the customer's own
+ * Ghost before this action is called — that is the path the editor will use, and a server-side 200
+ * would prove the wrong thing — so with scripts off it is stored unchecked, exactly as connect
+ * stores it.
+ *
+ * THE STAFF TOKEN IS PARSED AND STORED, AND NOTHING VALIDATES IT AGAINST GHOST. It is a
+ * `id:secret` pair that `parseCredential` reads identically to an Admin key, but the endpoints it
+ * unlocks are Epic 7's (`GET /admin/themes/`, `PUT /admin/settings/routes/`), and calling one here
+ * to prove the token would be this story making an Admin call no story owns. `store()` refuses a
+ * malformed one before Vault, which is the check that matters: a token that cannot sign is a typo.
+ */
+export async function saveKeys(formData: FormData): Promise<void> {
+  const at = await siteOf(formData, 'save keys')
+  if (!at) notFound()
+  const parsed = KeyFields.safeParse({
+    admin_key: formData.get('admin_key') ?? '',
+    content_key: formData.get('content_key') ?? '',
+    staff_token: formData.get('staff_token') ?? '',
+  })
+  // Each field carries `maxLength`, so only a crafted post gets here — answered under the field it
+  // came in, as the wizard's own over-long post is.
+  if (!parsed.success) {
+    const field = parsed.error.issues[0]?.path[0]
+    redirect(
+      KEYS_REFUSED(at.siteId, field === 'staff_token' ? 'token_malformed' : field === 'content_key' ? 'content_key_malformed' : 'credential_malformed'),
+    )
+  }
+  const adminKey = parsed.data.admin_key.trim()
+  const contentKey = parsed.data.content_key.trim()
+  const staffToken = parsed.data.staff_token.trim()
+  // A form posted with nothing in it is a press with nothing to do, and it says nothing about it.
+  if (!adminKey && !contentKey && !staffToken) redirect(KEYS_URL(at.siteId))
+
+  const site = await keysSite(at)
+
+  if (adminKey) {
+    let belongsHere: string | undefined
+    try {
+      const config = await fetchWithKey({
+        credential: adminKey,
+        siteUrl: site.url,
+        path: 'config/',
+        route: KEYS_ROUTE,
+        siteId: site.id,
+        userId: at.userId,
+      })
+      if (!config.ok) redirect(KEYS_REFUSED(site.id, config.code ?? 'ghost_refused'))
+      // WHICH GHOST THIS KEY OPENS. `site/` answers 200 to any key at all (§38a), so it validates
+      // nothing and is read only AFTER `config/` has passed — here it is not a validator but an
+      // IDENTIFIER, which is a use it is perfectly good for.
+      const answered = await fetchWithKey({
+        credential: adminKey,
+        siteUrl: site.url,
+        path: 'site/',
+        route: KEYS_ROUTE,
+        siteId: site.id,
+        userId: at.userId,
+      })
+      const read = (answered.body as { site?: { url?: unknown } })?.site
+      if (answered.ok && isHttpUrl(read?.url)) belongsHere = read.url
+    } catch (thrown) {
+      if (thrown instanceof AdminError) redirect(KEYS_REFUSED(site.id, thrown.code))
+      console.error('sites: keys validate failed', { name: (thrown as { name?: string })?.name })
+      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+    }
+    // A HOST COMPARISON AND NOT A STRING ONE: `public_url` is kept AS GHOST SENDS IT, trailing
+    // slash and all (§38a), and `sites.url` is the normalised origin — so the two are equal as
+    // hosts and unequal as strings for every site in the product. A read that could not answer at
+    // all leaves `belongsHere` undefined and the key is stored: `config/` has already proved it,
+    // and refusing a valid rotation because a cosmetic read failed would be the wrong kind of
+    // careful (the same rule connect's own `site/` read follows).
+    const mine = hostOf(site.site_settings?.public_url || site.url)
+    if (belongsHere && hostOf(belongsHere) !== mine) redirect(KEYS_REFUSED(site.id, 'keys_other_site'))
+    try {
+      // `store()` re-encrypts, stamps `admin_key_rotated_at`, writes the key's public id half and
+      // audits — and DW-44's trigger deletes the secret the old ref pointed at.
+      await store({ siteId: site.id, userId: at.userId, kind: 'admin', secret: adminKey, route: KEYS_ROUTE })
+    } catch (thrown) {
+      if (thrown instanceof AdminError) redirect(KEYS_REFUSED(site.id, thrown.code))
+      console.error('sites: keys store failed', { name: (thrown as { name?: string })?.name })
+      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+    }
+  }
+
+  if (staffToken) {
+    try {
+      await store({ siteId: site.id, userId: at.userId, kind: 'staff', secret: staffToken, route: KEYS_ROUTE })
+    } catch (thrown) {
+      // `credential_malformed` under the TOKEN's own name: the Admin key's sentence names the
+      // integration, and a Staff Access Token is not on the integration at all.
+      if (thrown instanceof AdminError) {
+        redirect(KEYS_REFUSED(site.id, thrown.code === 'credential_malformed' ? 'token_malformed' : thrown.code))
+      }
+      console.error('sites: keys token store failed', { name: (thrown as { name?: string })?.name })
+      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+    }
+  }
+
+  if (contentKey) {
+    // `sites.content_key` IS SERVER-ASSERTED (AD-7) — `authenticated` may update only title,
+    // favicon_url and updated_at (schema :1198) — so this is `supabaseAdmin()`'s, scoped by the
+    // `.eq('user_id')` that stands in for the RLS this client bypasses. `credentials_present` is
+    // read-modify-written as one object because it is the client's MIRROR of what is stored, and
+    // the two Vault kinds on it are `store()`'s to move.
+    const { data, error } = await supabaseAdmin()
+      .from('sites')
+      .update({ content_key: contentKey })
+      .eq('id', site.id)
+      .eq('user_id', at.userId)
+      .select('credentials_present')
+      .maybeSingle<{ credentials_present: Record<string, boolean> | null }>()
+    if (error || !data) {
+      console.error('sites: keys content write failed', { code: error?.code ?? 'no_such_site' })
+      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+    }
+    const { error: mirrored } = await supabaseAdmin()
+      .from('sites')
+      .update({ credentials_present: { ...(data.credentials_present ?? {}), content: true } })
+      .eq('id', site.id)
+      .eq('user_id', at.userId)
+    if (mirrored) console.error('sites: keys content mirror failed', { code: mirrored.code })
+  }
+
+  revalidatePath(SITES)
+  redirect(KEYS_URL(site.id))
+}
+
+/**
+ * FR-C8 — THE TOKEN COMES OUT, AND THE SITE STAYS CONNECTED. That is the whole of this action and
+ * the whole of what makes a partially credentialed site an ordinary state: `remove()` flips
+ * `credentials_present.staff`, DW-44's trigger drops the secret behind the ref, and nothing else
+ * moves. The three token-dependent capabilities — the pre-Inflozo snapshot, the drift re-read and
+ * the `routes.yaml` upload — read that flag when Epic 7 builds them, and the row on this screen
+ * says **Not added** with what it would enable.
+ *
+ * NO SIXTH DELETION PATH: `remove()` is already one of AD-32/AD-33's five.
+ */
+export async function removeToken(formData: FormData): Promise<void> {
+  const at = await siteOf(formData, 'remove token')
+  if (!at) notFound()
+  const site = await keysSite(at)
+  try {
+    await remove({ siteId: site.id, userId: at.userId, kind: 'staff', route: REMOVE_TOKEN_ROUTE })
+  } catch (thrown) {
+    // The store could not be reached, so NOTHING changed — `remove()` owns its own transaction —
+    // and the screen says so rather than showing a row that claims a state nobody wrote.
+    console.error('sites: remove token failed', {
+      code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
+    })
+    redirect(KEYS_REFUSED(site.id, 'credential_store_unavailable'))
+  }
+  revalidatePath(SITES)
+  redirect(KEYS_URL(site.id))
+}
+
+/**
+ * S11d's **Test connection**: ONE `GET /admin/config/` on the STORED key, through `call()` — so it
+ * exercises the decrypt path, the audit row and the mint exactly as every other product call does,
+ * rather than a second code path that could pass while the real one is broken.
+ *
+ * IT STORES NOTHING. The result is carried back in the URL and drawn on the screen; `sites.health`
+ * and `sites.last_checked_at` belong to Story 3.7's state machine and this must not reach into it
+ * (see the header above these three).
+ */
+export async function testConnection(formData: FormData): Promise<void> {
+  const at = await siteOf(formData, 'test connection')
+  if (!at) notFound()
+  const site = await keysSite(at)
+  let result: string
+  try {
+    const config = await call({ siteId: site.id, path: 'config/', route: TEST_ROUTE })
+    result = config.ok ? 'ok' : (config.code ?? 'ghost_refused')
+  } catch (thrown) {
+    // A THROWN CODE IS A RESULT HERE, not a failure of the press: "your Ghost did not answer" and
+    // "this key has no secret behind it" are both things the customer came to this screen to find
+    // out. The screen reads the same codes table every other refusal on it reads.
+    result = thrown instanceof AdminError ? thrown.code : 'keys_failed'
+    if (!(thrown instanceof AdminError)) {
+      console.error('sites: test connection failed', { name: (thrown as { name?: string })?.name })
+    }
+  }
+  redirect(KEYS_TESTED(site.id, result))
 }

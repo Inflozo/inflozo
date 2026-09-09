@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The connect wizard, its connect-time probes and FR-C4's auto-branding screen, driven through the real UI on the deployed site and read off the wire. Stories 3.2, 3.3 and 3.4.
+"""The connect wizard, its probes, FR-C4's auto-branding screen, the site ⋯ menu and FR-C8's key management, driven through the real UI on the deployed site and read off the wire. Stories 3.2-3.6.
 
     python3 tools/probe/run-verify-ghost-admin.py --check   # plumbing only: no browser, no UI
     python3 tools/probe/run-verify-ghost-admin.py           # the whole round trip, T1 and T3
@@ -278,12 +278,11 @@ list gone stale — the sibling harness's own note):
                  `sites.disconnected_at` and never stamped there (DW-43 closed, DW-75 owns the job).
                  AND THE RECORD DOES NOT COUNT AGAINST THE CAP — on Free, with it disconnected and
                  nothing active, the grid draws no ghost slot and the connect form is open.
-                 THE SECRET'S ABSENCE IS READ FROM `vault.secrets` AND NOT FROM A LOG ENTRY,
-                 deliberately: `remove()` writes NO `private.credential_audit` row and the enum has
-                 no member meaning one (DW-76 — the owner ruled the entry into Story 3.6, which
-                 removes keys too, at Story 3.5's Question 3, option 1, 2026-09-09). Reading
-                 the vault is the stronger of the two anyway — a log line says a removal was
-                 attempted; this says the key is gone
+                 THE SECRET'S ABSENCE IS STILL READ FROM `vault.secrets` AND NOT FROM A LOG ENTRY,
+                 and that is now a choice rather than the only option: since **Story 3.6** closed
+                 DW-76, `remove()` writes one `credential_change` row and the `audit` step below
+                 counts it. Reading the vault remains the stronger of the two — a log line says a
+                 removal was attempted; this says the key is gone
   re-adopt       FR-C6: the record disconnected BY THE PRODUCT above — the first run in which that
                  branch is reached the way a customer reaches it — `/sites` is the EMPTY SCREEN,
                  its button opens the sheet, and reconnecting
@@ -408,11 +407,16 @@ list gone stale — the sibling harness's own note):
                  leave it, the grid stays three-up). Then
                  **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
                  back to `full`/`probe`
-  audit          `private.credential_audit` read through the pooler — and STORY 3.5's DISCONNECT
-                 ADDS NOTHING TO IT, which is why every count below is unchanged by it: `remove()`
-                 and `store()` both write no audit row at all, and `public.credential_action` has no
-                 member meaning "a credential was removed" (DW-76, ruled into Story 3.6 by the
-                 owner on 2026-09-09 — WHEN IT LANDS THESE COUNTS MOVE WITH IT). One `admin_read ok` for
+  audit          `private.credential_audit` read through the pooler — and STORY 3.6 MOVED THESE
+                 COUNTS, exactly as this line said it would: `public.credential_action` gained
+                 `credential_change`, and `store()` and `remove()` each write one row through it
+                 inside the transaction that makes the change (DW-76, closed). Derived, never typed:
+                 one `in` per connect, and one `out` per removal that ACTUALLY took a key — which is
+                 the single `disconnect`, because `remove('staff')` matches no row on a site that
+                 never had a token and so writes nothing. Each row is stamped with ITS OWN writer's
+                 route, so the `sites/connect` rows and the `sites/disconnect` row are told apart,
+                 and each `detail` is exactly `{kind, direction}` and never a credential. One
+                 `admin_read ok` for
                  `config/` with a NULL `site_id` per connect and, carrying the id, one for `site/`
                  plus TWO per probe (Story 3.3 — three connects and one Re-check plan), with two
                  `vault_decrypt ok` rows per probe; every count DERIVED from those two numbers,
@@ -532,7 +536,7 @@ def app_text():
     no-op on 24 and the switch on 22.6+), both modules import nothing, and a wording change in
     either moves this run with it. `%s` stands where the app puts the host."""
     script = (
-        f"import {{ connectMessage, DISCONNECT, HTTP_WARNING, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
+        f"import {{ connectMessage, DISCONNECT, HTTP_WARNING, KEYS, ORPHAN_SNAPSHOT_DAYS, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
         f"import {{ BRAND_COPY, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
         f"import {{ goProLabel, siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
         "console.log(JSON.stringify({"
@@ -595,6 +599,35 @@ def app_text():
         " disconnect_cancel: DISCONNECT.cancel,"
         " disconnect_busy: DISCONNECT.busy,"
         " disconnect_failed: connectMessage('disconnect_failed'),"
+        # STORY 3.6 — Manage keys' every word, read from the app for the reason every sentence
+        # above it is. `movedDomains` is called with ORPHAN_SNAPSHOT_DAYS, which is where the one
+        # number this screen's copy needs lives: `KEYS` itself names none (standing rule 4).
+        " keys_menu: KEYS.menu,"
+        " keys_title: KEYS.title('%s'),"
+        " keys_sub: KEYS.sub,"
+        " keys_url_label: KEYS.urlLabel,"
+        " keys_url_reason: KEYS.urlReason,"
+        " keys_present: KEYS.present,"
+        " keys_absent: KEYS.absent,"
+        " keys_admin_name: KEYS.admin.name,"
+        " keys_admin_enables: KEYS.admin.enables,"
+        " keys_admin_save: KEYS.admin.save,"
+        " keys_content_name: KEYS.content.name,"
+        " keys_content_enables: KEYS.content.enables,"
+        " keys_content_save: KEYS.content.save,"
+        " keys_staff_name: KEYS.staff.name,"
+        " keys_staff_enables: KEYS.staff.enables,"
+        " keys_staff_add: KEYS.staff.add,"
+        " keys_staff_remove: KEYS.staff.remove,"
+        " keys_no_reveal: KEYS.noReveal,"
+        " keys_roll_hint: KEYS.rollHint,"
+        " keys_cancel: KEYS.cancel,"
+        " keys_test: KEYS.test.label,"
+        " keys_test_passed: KEYS.test.passed,"
+        " keys_test_needs_token: KEYS.test.routesWithoutToken,"
+        " keys_other_site: connectMessage('keys_other_site'),"
+        " keys_malformed: connectMessage('credential_malformed'),"
+        " keys_moved: KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS),"
         # S11c's ghost slot, both halves derived from `PLANS` — nothing here names a number.
         " go_pro: goProLabel(),"
         " at_cap: siteCapSentence('free') }))")
@@ -664,6 +697,10 @@ const CONFIRM = process.env.CONFIRM_URL
 const ROUTE = process.env.AUDIT_ROUTE
 const GHOSTS = JSON.parse(process.env.GHOSTS)
 const BOGUS = process.env.BOGUS_KEY
+/* STORY 3.6: the harness's own Staff Access Token for T1 — the credential the PRODUCT first
+   stores and removes on this story's screen (DW-54's `staff-removed`). Through the environment,
+   never argv. */
+const STAFF_TOKEN = process.env.T1_STAFF_TOKEN
 const SAY = JSON.parse(process.env.SENTENCES)
 /* What `injection-live` put in BOTH test Ghosts' Site-footer code-injection box before this run
    started, and takes back out in the Python half's `finally` (the owner's ruling, 2026-09-08).
@@ -1959,10 +1996,12 @@ const shoot = async (page, name) => {
       `${Math.round(freeCard.x)}, on the same grid row (y ${Math.round(slotBox.y)} vs ` +
       `${Math.round(freeCard.y)})`)
 
-    // ── S11a's ⋯, AT THE TOP RIGHT OF THE HEADER ROW (DW-57). Disconnect is its ONLY item: the
-    //    frame draws four and the other three are 3.6's and 3.7's, ABSENT rather than greyed
-    //    (UX-DR3). The count is read off the very selector `lib/menu.ts`'s arrow keys walk, so a
-    //    row added without a story is a failing step and not a review note.
+    // ── S11a's ⋯, AT THE TOP RIGHT OF THE HEADER ROW (DW-57). TWO items since Story 3.6, in the
+    //    frame's own order: **Manage API keys** above the thin rule and **Disconnect** below it.
+    //    Re-check connection and Reconnect are Story 3.7's and are still ABSENT rather than greyed
+    //    (UX-DR3). The list is read off the very selector `lib/menu.ts`'s arrow keys walk, so a row
+    //    added without a story is a failing step and not a review note — and the ORDER is asserted,
+    //    because "above the rule" is the whole of what the frame says about where 3.6's row goes.
     // BY ROLE AND BY NAME, scoped to T1's own card: the label is the component's
     // `Options for {title}` and a Ghost title with a quote in it would break an attribute selector.
     const t1CardLoc = () => cardOf(pub1.title || 'Ghost6').first()
@@ -1981,18 +2020,24 @@ const shoot = async (page, name) => {
     const backOnDots = await page.evaluate(() =>
       Boolean(document.activeElement && (document.activeElement.getAttribute('aria-label') || '')
         .startsWith('Options for')))
+    // THE RULE IS BETWEEN THE TWO, not above both: read off the DOM order of the menu's children,
+    // because "Manage API keys above the thin line, Disconnect in red below it" is what the owner's
+    // manual test looks at and a class alone cannot say which side of it a row is on.
+    const menuOrder = await menuEl.evaluate((el) =>
+      [...el.children].map((child) => (child.getAttribute('aria-hidden') === 'true' ? '—rule—' : child.textContent.trim())))
     step('site-menu',
-      (await dots().count()) === 1 && menuItems.length === 1
-      && menuItems[0].trim() === SAY.disconnect_menu
+      (await dots().count()) === 1 && menuItems.length === 2
+      && menuItems[0].trim() === SAY.keys_menu && menuItems[1].trim() === SAY.disconnect_menu
+      && JSON.stringify(menuOrder) === JSON.stringify([SAY.keys_menu, '—rule—', SAY.disconnect_menu])
       && dotsBox.x > menuBox0.x && Math.abs(dotsBox.y - menuBox0.y) < 24
       && menuWidth === 196 && menuClosed && backOnDots,
       `one ⋯ on the card, at the header row's right edge (x ${Math.round(dotsBox.x)} against the ` +
       `title's ${Math.round(menuBox0.x)}, level with it at y ${Math.round(dotsBox.y)} vs ` +
       `${Math.round(menuBox0.y)}); the menu is ${menuWidth}px wide — the frame's own ` +
-      `(S11 Sites.dc.html:77) — and holds EXACTLY ${menuItems.length} item, ` +
-      `${JSON.stringify(menuItems)}. Manage keys, Re-check and Reconnect are 3.6's and 3.7's and ` +
-      `are ABSENT, not greyed (UX-DR3). Escape closed it = ${menuClosed} and returned focus to the ` +
-      `⋯ = ${backOnDots}`)
+      `(S11 Sites.dc.html:77) — and holds ${menuItems.length} items, ${JSON.stringify(menuItems)}, ` +
+      `laid out ${JSON.stringify(menuOrder)} — Story 3.6's row ABOVE the frame's own rule and ` +
+      `Disconnect below it. Re-check connection and Reconnect are 3.7's and are ABSENT, not greyed ` +
+      `(UX-DR3). Escape closed it = ${menuClosed} and returned focus to the ⋯ = ${backOnDots}`)
 
     // ── THE CONFIRM, AND THE OWNER'S QUESTION 2 RULING IN ITS TWO OBSERVABLE HALVES (option 1,
     //    2026-09-09): it opens with focus on CANCEL, and there is NOTHING TO TYPE INTO — the
@@ -2989,9 +3034,30 @@ const shoot = async (page, name) => {
     const errs = reads.filter((r) => r.outcome === 'error')
     const at = (status) => errs.filter((r) => String((r.detail || {}).status) === status)
     const httpStatuses = errs.map((r) => (r.detail || {}).status).filter((v) => v !== undefined)
-    const stamped = audit.every((r) => r.route === ROUTE)
+    // EVERY ROW CARRIES THE ROUTE OF THE ACTION THAT WROTE IT, and since Story 3.6 that is no
+    // longer one string: `remove()` audits, and the only caller that has removed a key by here is
+    // `disconnectSite`, whose route is its own. Stamping a removal `sites/connect` is the exact
+    // defect the review of 2026-09-09 named before the rows existed, so the assertion is the SET
+    // and each action's rows are checked against it below.
+    const routes = [...new Set(audit.map((r) => r.route))].sort()
+    const stamped = audit.every((r) => (r.action === 'credential_change' ? true : r.route === ROUTE))
     const objects = audit.every((r) => r.detail !== null && typeof r.detail === 'object')
     const leak = audit.filter((r) => /[0-9a-f]{16,}:[0-9a-f]{16,}/.test(JSON.stringify(r)))
+    // DW-76, CLOSED BY STORY 3.6 AND EXECUTED HERE. A key going IN and a key coming OUT each leave
+    // one row, in the same transaction as the write. DERIVED, never counted by hand: one `in` per
+    // connect (every connect stores the Admin key) and one `out` per removal that ACTUALLY took a
+    // key — which is the single `disconnect` above, because `remove('staff')` matches no row on a
+    // site that never had a token and must therefore write nothing.
+    const changes = audit.filter((r) => r.action === 'credential_change')
+    const wentIn = changes.filter((r) => (r.detail || {}).direction === 'in')
+    const cameOut = changes.filter((r) => (r.detail || {}).direction === 'out')
+    const REMOVALS = 1
+    const changeRoutes = [...new Set(changes.map((r) => r.route))].sort()
+    // Nothing in a `credential_change` detail but the kind and the direction — `AuditDetail` is the
+    // type-level guard and this is the live one.
+    const changeDetail = changes.every((r) =>
+      Object.keys(r.detail || {}).sort().join(',') === 'direction,kind'
+      && ['admin', 'staff'].includes((r.detail || {}).kind))
     // DERIVED, NEVER COUNTED BY HAND. Three connects succeeded above (T1, T1 re-adopted, T3) and
     // B15's Re-check plan ran the probe once more. A connect is one `config/` on the TYPED key
     // (null site_id) plus, with the id, one `site/` and the probe's `config/` + `settings/`; a
@@ -3005,14 +3071,21 @@ const shoot = async (page, name) => {
       && withRow.filter((r) => r.site_id === t1SiteId).length === CONNECTS - 1 + (PROBES - 1) * 2
       && withRow.some((r) => r.site_id === t3SiteId)
       && decryptRows.length === PROBES * 2 && decryptRows.every((r) => r.outcome === 'ok')
+      && wentIn.length === CONNECTS && cameOut.length === REMOVALS && changeDetail
+      && JSON.stringify(changeRoutes) === JSON.stringify([ROUTE, 'sites/disconnect'].sort())
       && at('401').length >= 1 && at('301').length >= 1 && errs.length >= 2 && stamped && objects && leak.length === 0,
       `${audit.length} rows: ${beforeRow.length} admin_read ok with a NULL site_id (config/ on the typed key, ` +
       `one per connect), ${withRow.length} with a site_id — ${CONNECTS} site/ reads plus ${PROBES * 2} probe ` +
       `reads (config/ and settings/ per probe: ${CONNECTS} connects and one Re-check plan); ` +
       `${decryptRows.length} vault_decrypt row(s), all ok = ${decryptRows.every((r) => r.outcome === 'ok')}; ` +
       `${errs.length} admin_read error(s) at status ${JSON.stringify(httpStatuses)} (the bogus key at 401 and ` +
-      `the plain-http attempt — its status is what the Vercel function's own fetch received); every row ` +
-      `stamped ${ROUTE} = ${stamped}; every detail a jsonb object = ${objects}; rows that look like they ` +
+      `the plain-http attempt — its status is what the Vercel function's own fetch received); ` +
+      `DW-76's rows, live for the first time: ${wentIn.length} credential_change IN — one per ` +
+      `connect — and ${cameOut.length} OUT, the one disconnect that actually took a key ` +
+      `(remove('staff') matched no row and wrote none, which is the point), across routes ` +
+      `${JSON.stringify(changeRoutes)}, every detail exactly {kind,direction} = ${changeDetail}; ` +
+      `every read stamped ${ROUTE} = ${stamped} (the routes seen this run: ${JSON.stringify(routes)}); ` +
+      `every detail a jsonb object = ${objects}; rows that look like they ` +
       `hold a key = ${leak.length}`)
 
     // ── A PROBE THAT CANNOT RUN CHANGES NOTHING. Three matrix rows meet here and all three are the
@@ -3058,6 +3131,364 @@ const shoot = async (page, name) => {
       `${orphanAfter === orphanBefore} (${orphanAfter}); the audit shows ${failedDecrypt.length} vault_decrypt ` +
       `ERROR row for it and ${reached.length} admin_read rows — nothing reached Ghost; and the card still reads ` +
       `Connected = ${stillConnected}, because a probe that could not run is not a connection that broke`)
+
+
+    /* ───────── STORY 3.6 — MANAGE KEYS, FR-C8. Driven LAST, deliberately: every step below writes
+       to `private.site_credentials` and to the audit log, and `audit` above derives its counts from
+       the connects and probes that came before. Putting these after it keeps that derivation honest
+       and lets each step here assert its OWN delta instead. The account is on PRO here with T1 and
+       T3 connected, which is what `keys-other-site` needs — two real Ghosts, one screen. */
+
+    const keysUrl = (id) => `${APP}/sites/keys?site=${id}`
+    const openKeys = async (id) => {
+      await page.goto(keysUrl(id), { waitUntil: 'load' })
+      // The URL row's reason is on this screen and on no other, and it carries no `%s` hole.
+      await page.getByText(SAY.keys_url_reason).first().waitFor()
+    }
+    /* The credential row for a site, read READ-ONLY through the pooler — `private` answers 404 over
+       PostgREST by design (§21j), so this is the only way to see what the chokepoint wrote. */
+    const credsOf = async (siteId) => (await sql`
+      select admin_key_id, admin_key_rotated_at, staff_token_vault_ref, staff_token_rotated_at,
+             admin_key_vault_ref
+        from private.site_credentials where site_id = ${siteId}
+    `)[0] || {}
+    const changesFor = async (siteId) => (await sql`
+      select route, detail from private.credential_audit
+       where site_id = ${siteId} and action = 'credential_change' order by occurred_at, id
+    `)
+    const kidOf = (key) => String(key).split(':')[0]
+
+    // ── keys-screen: the ⋯ row goes somewhere, and what it goes to is S11d around B20.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    await cardOf(pub1.title || 'Ghost6').first().getByRole('button', { name: /^Options for / }).first().click()
+    const keysMenu = page.locator(`#site-menu-${t1SiteId}`)
+    await keysMenu.waitFor({ state: 'visible' })
+    await keysMenu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites/keys' && u.searchParams.get('site') === t1SiteId)
+    const screen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
+    const named = [SAY.keys_admin_name, SAY.keys_content_name, SAY.keys_staff_name].every((n) => screen.includes(n))
+    const enabled = [SAY.keys_admin_enables, SAY.keys_content_enables, SAY.keys_staff_enables]
+      .every((n) => screen.includes(n.replace(/\s+/g, ' ')))
+    const tokenAbsent = screen.includes(SAY.keys_absent)
+    // THE URL IS TEXT. Not a field, not a disabled field, not a readonly one (A9 item 17): the
+    // assertion is that no input anywhere on this screen carries the site's address as its value.
+    const urlIsText = screen.includes(SAY.keys_url_reason) && screen.includes(pub1.url || T1.url)
+    const urlFields = await page.locator('input').evaluateAll((all, address) =>
+      all.filter((i) => (i.value || '').includes(address) || i.name === 'url').length, T1.url)
+    // AND NOTHING OFFERS TO REVEAL A KEY — B20 draws an eye and this screen deliberately has none.
+    const reveals = await page.evaluate(() =>
+      [...document.querySelectorAll('button, a, [title], svg title')]
+        .filter((el) => /\b(show|reveal|unmask|hide)\b/i.test(`${el.textContent || ''} ${el.getAttribute('title') || ''} ${el.getAttribute('aria-label') || ''}`)).length)
+    const noRevealSaid = screen.includes(SAY.keys_no_reveal)
+    const t1Kid = kidOf(T1.adminKey)
+    const maskDrawn = screen.includes(t1Kid)
+    step('keys-screen',
+      named && enabled && tokenAbsent && urlIsText && urlFields === 0 && reveals === 0
+      && noRevealSaid && maskDrawn && screen.includes(SAY.keys_roll_hint),
+      `the ⋯ row landed on /sites/keys?site=<id>: all three credentials named = ${named}, each with ` +
+      `the app's own one line on what it enables = ${enabled}, the token reading ` +
+      `${JSON.stringify(SAY.keys_absent)} = ${tokenAbsent}. The address is TEXT with its reason ` +
+      `= ${urlIsText} and there are ${urlFields} inputs carrying it — no field and no disabled field ` +
+      `(A9 item 17). ${reveals} elements offer to show a key (B20's eye cannot exist: the secret half ` +
+      `never leaves the chokepoint) and the screen says so itself = ${noRevealSaid}; the Admin row is ` +
+      `masked with the key's PUBLIC id half = ${maskDrawn}. The roll-keys hint is the app's own = ` +
+      `${screen.includes(SAY.keys_roll_hint)}`)
+
+    await axeAt(page, 'keys-screen', async () => { await openKeys(t1SiteId) })
+
+    // ── keys-malformed: refused UNDER THE ADMIN FIELD, and nothing written.
+    await openKeys(t1SiteId)
+    const keysBeforeBad = await credsOf(t1SiteId)
+    await page.fill('#keys-admin', 'hello')
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_malformed', { timeout: 20000 }).catch(() => {})
+    const malformedSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const keysAfterBad = await credsOf(t1SiteId)
+    step('keys-malformed',
+      malformedSaid.includes(SAY.keys_malformed)
+      && keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref
+      && String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at),
+      `"hello" in the Admin API key field: refused UNDER THAT FIELD with the app's own sentence ` +
+      `(${JSON.stringify(malformedSaid.slice(0, 90))}) — refused before Vault and before the network — ` +
+      `and the credential row is untouched: same vault ref = ` +
+      `${keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref}, same rotation ` +
+      `stamp = ${String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at)}`)
+
+    // ── keys-other-site: T3's REAL Admin key, valid on its own Ghost, pasted into T1's screen.
+    //    FR-C8's rule on its one remaining path: a key that opens a DIFFERENT install would carry
+    //    this record — its snapshots, its projects, its first-upload flag — onto that one.
+    await openKeys(t1SiteId)
+    const beforeOther = await credsOf(t1SiteId)
+    await page.fill('#keys-admin', T3.adminKey)
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'keys_other_site', { timeout: 30000 }).catch(() => {})
+    const otherSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const afterOther = await credsOf(t1SiteId)
+    step('keys-other-site',
+      otherSaid.includes(SAY.keys_other_site)
+      && afterOther.admin_key_vault_ref === beforeOther.admin_key_vault_ref
+      && afterOther.admin_key_id === beforeOther.admin_key_id,
+      `T3's own Admin API key — valid, and valid on the WRONG Ghost — pasted into T1's screen: ` +
+      `REFUSED under the field with the app's own sentence, which names the fix ` +
+      `(${JSON.stringify(otherSaid.slice(0, 120))}), and NOTHING was written — same vault ref and ` +
+      `admin_key_id still ${JSON.stringify(afterOther.admin_key_id)}. It passed GET config/ (it is a ` +
+      `real key) and was stopped by GET site/, whose url is a different host from this record's ` +
+      `site_settings.public_url. That is FR-C8's edit-URL-in-place hazard reaching the record through ` +
+      `the key field instead of the URL field`)
+
+    // ── keys-rotate: THE ROTATION, live. ⛔ The key is RE-PASTED rather than regenerated in Ghost
+    //    Admin: regenerating T1's integration key would invalidate `GHOST6_ADMIN_API_KEY` for every
+    //    other run and every other probe in `tools/probe/`. What the product does is identical
+    //    either way — `store()` mints a NEW vault secret, DW-44's trigger drops the one behind the
+    //    ref it replaces, `admin_key_rotated_at` moves and `admin_key_id` is rewritten — and the
+    //    assertion is on the SECRET's identity, not on the key's, so a re-paste proves the whole
+    //    path (the same argument `re-adopt` makes for DW-44's replace path).
+    await openKeys(t1SiteId)
+    const beforeRotate = await credsOf(t1SiteId)
+    const changesBeforeRotate = (await changesFor(t1SiteId)).length
+    await page.fill('#keys-admin', T1.adminKey)
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    // POLLED ON THE DATABASE, NOT ON THE URL: a save that succeeds redirects to the very URL it was
+    // posted from, so `waitForURL` on the absence of `?keys=` resolves against the STARTING url and
+    // waits for nothing at all — the assertion would then read the row before the write landed.
+    const afterRotate = (await until(async () => {
+      const row = await credsOf(t1SiteId)
+      return row.admin_key_vault_ref && row.admin_key_vault_ref !== beforeRotate.admin_key_vault_ref ? row : null
+    })) || {}
+    const oldGone = (await secretsBehind(beforeRotate.admin_key_vault_ref)) === 0
+    const newHeld = (await secretsBehind(afterRotate.admin_key_vault_ref)) === 1
+    const rotateChanges = await changesFor(t1SiteId)
+    const rotateRow = rotateChanges[rotateChanges.length - 1] || {}
+    step('keys-rotate',
+      afterRotate.admin_key_vault_ref !== beforeRotate.admin_key_vault_ref && oldGone && newHeld
+      && new Date(afterRotate.admin_key_rotated_at) > new Date(beforeRotate.admin_key_rotated_at)
+      && afterRotate.admin_key_id === t1Kid
+      && rotateChanges.length === changesBeforeRotate + 1
+      && rotateRow.route === 'sites/keys' && (rotateRow.detail || {}).kind === 'admin'
+      && (rotateRow.detail || {}).direction === 'in',
+      `a key saved from Manage keys on T1: the vault ref MOVED, the secret behind the old ref is ` +
+      `gone = ${oldGone} (DW-44's trigger, on the product's own rotation path) and there is exactly ` +
+      `one behind the new = ${newHeld}; admin_key_rotated_at advanced to ` +
+      `${JSON.stringify(afterRotate.admin_key_rotated_at)}; admin_key_id is the key's public id half ` +
+      `= ${afterRotate.admin_key_id === t1Kid}; and DW-76 wrote exactly ` +
+      `${rotateChanges.length - changesBeforeRotate} new credential_change row, stamped ` +
+      `${JSON.stringify(rotateRow.route)} — THIS screen's route and not the connect's — with detail ` +
+      `${JSON.stringify(rotateRow.detail)}. ⛔ The key is re-pasted, not regenerated: regenerating ` +
+      `T1's integration key would invalidate GHOST6_ADMIN_API_KEY for every probe in this repo. The ` +
+      `SECRET's identity is what is asserted, so the path is the same one a real rotation takes`)
+
+    // ── keys-token: DW-54's `staff-removed`, DRIVEN LIVE FOR THE FIRST TIME. Nothing in the product
+    //    had ever stored or removed a Staff Access Token — Epic 7 asks for one at first deploy, and
+    //    FR-C8 has always said it can be added and taken away at any time. This is that screen.
+    await openKeys(t1SiteId)
+    const changesBeforeToken = (await changesFor(t1SiteId)).length
+    await page.fill('#keys-staff', STAFF_TOKEN)
+    await page.locator('form:has(#keys-staff) button[type="submit"]').click()
+    const withToken = (await until(async () => {
+      const row = await credsOf(t1SiteId)
+      return row.staff_token_vault_ref ? row : null
+    })) || {}
+    await page.getByText(SAY.keys_staff_remove).first().waitFor({ timeout: 20000 }).catch(() => {})
+    const tokenSecret = await secretsBehind(withToken.staff_token_vault_ref)
+    const presentAfterAdd = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
+    const tokenScreen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
+    const removeOffered = tokenScreen.includes(SAY.keys_staff_remove)
+    // …AND OUT AGAIN. The site must still be Connected through both — removing degrades, never
+    // disconnects, which is the whole of "a partially credentialed site is an ordinary state".
+    await page.getByRole('button', { name: SAY.keys_staff_remove, exact: true }).click()
+    const withoutToken = (await until(async () => {
+      const row = await credsOf(t1SiteId)
+      return row.staff_token_vault_ref === null ? row : null
+    })) || {}
+    const secretAfterRemove = withToken.staff_token_vault_ref
+      ? await secretsBehind(withToken.staff_token_vault_ref) : -1
+    const presentAfterRemove = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
+    const tokenChanges = (await changesFor(t1SiteId)).slice(changesBeforeToken)
+    const staffRows = tokenChanges.filter((r) => (r.detail || {}).kind === 'staff')
+    step('keys-token',
+      Boolean(withToken.staff_token_vault_ref) && tokenSecret === 1
+      && (presentAfterAdd.credentials_present || {}).staff === true && removeOffered
+      && withoutToken.staff_token_vault_ref === null && secretAfterRemove === 0
+      && (presentAfterRemove.credentials_present || {}).staff === false
+      && presentAfterRemove.disconnected_at === null
+      && staffRows.length === 2
+      && JSON.stringify(staffRows.map((r) => (r.detail || {}).direction)) === JSON.stringify(['in', 'out'])
+      && staffRows[0].route === 'sites/keys' && staffRows[1].route === 'sites/keys/remove-token',
+      `DW-54's staff-removed, live at last — the product had no way in for the token until this ` +
+      `screen. ADDED: a vault secret behind staff_token_vault_ref = ${tokenSecret === 1}, ` +
+      `credentials_present.staff true = ${(presentAfterAdd.credentials_present || {}).staff === true}, ` +
+      `and the row then offers its removal = ${removeOffered} (it is drawn only where it could act, ` +
+      `UX-DR3). REMOVED: the ref nulled, the secret behind it GONE = ${secretAfterRemove === 0} ` +
+      `(read from vault.secrets through the pooler, not from a log line), credentials_present.staff ` +
+      `false, and the site STILL CONNECTED — disconnected_at ` +
+      `${JSON.stringify(presentAfterRemove.disconnected_at)}. Removing degrades, never disconnects. ` +
+      `DW-76 wrote ${staffRows.length} credential_change rows for it, ` +
+      `${JSON.stringify(staffRows.map((r) => `${r.route} ${(r.detail || {}).direction}`))} — each ` +
+      `stamped with the control that pressed it`)
+
+    // ── keys-test: ONE `GET config/` on the STORED key, and NOTHING is written — the negative
+    //    control that this story did not step on Story 3.7's state machine.
+    await openKeys(t1SiteId)
+    const healthBefore = ((await rowsOf('id,health,last_checked_at')).find((r) => r.id === t1SiteId) || {})
+    const readsBefore = (await sql`
+      select count(*)::int as n from private.credential_audit
+       where site_id = ${t1SiteId} and action = 'admin_read'`)[0].n
+    await page.getByRole('button', { name: SAY.keys_test, exact: true }).click()
+    await page.waitForURL((u) => u.searchParams.get('test') !== null, { timeout: 30000 }).catch(() => {})
+    const tested = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
+    const testRows = (await sql`
+      select route, detail from private.credential_audit
+       where site_id = ${t1SiteId} and action = 'admin_read' order by occurred_at, id`).slice(readsBefore)
+    const healthAfter = ((await rowsOf('id,health,last_checked_at')).find((r) => r.id === t1SiteId) || {})
+    step('keys-test',
+      tested.includes(SAY.keys_test_passed) && tested.includes(SAY.keys_test_needs_token)
+      && testRows.length === 1 && testRows[0].route === 'sites/keys/test'
+      && healthAfter.health === healthBefore.health
+      && String(healthAfter.last_checked_at) === String(healthBefore.last_checked_at),
+      `Test connection on a site with a stored key: the result is DRAWN — ` +
+      `${JSON.stringify(SAY.keys_test_passed)} = ${tested.includes(SAY.keys_test_passed)} — and it ` +
+      `says what still needs the token the customer has not added = ` +
+      `${tested.includes(SAY.keys_test_needs_token)}. It made exactly ${testRows.length} Admin call, ` +
+      `stamped ${JSON.stringify((testRows[0] || {}).route)}. AND IT WROTE NOTHING: sites.health is ` +
+      `still ${JSON.stringify(healthAfter.health)} and last_checked_at still ` +
+      `${JSON.stringify(healthAfter.last_checked_at)} — both are Story 3.7's state machine, and a ` +
+      `manual press that wrote either would fire its transition semantics from outside it`)
+
+    // ── keys-js-off: the ⋯ row has a DESTINATION and the route's three forms are wired, both read
+    //    off SERVED markup — React emits method=post and the encoded $ACTION_* fields only when it
+    //    renders on the server, so a form reached by a client transition carries neither.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    const keysHref = await page.locator(`#site-menu-${t1SiteId} a`).first().getAttribute('href')
+    await page.goto(keysUrl(t1SiteId), { waitUntil: 'load' })
+    const keysForms = await page.locator('form').evaluateAll((forms) =>
+      forms.filter((f) => f.querySelector('input[name="site_id"]')).map((f) => ({
+        method: (f.getAttribute('method') || '').toLowerCase(),
+        action: f.getAttribute('action') !== null,
+        encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
+        site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
+        field: [...f.querySelectorAll('input:not([type="hidden"])')].map((i) => i.name).join(','),
+        submits: f.querySelectorAll('button[type="submit"]').length,
+      })))
+    const wiredKeys = keysForms.filter((f) => f.method === 'post' && f.action && f.encoded > 0
+                                              && f.site === 1 && f.submits === 1)
+    const keysFields = keysForms.map((f) => f.field).sort()
+    step('keys-js-off',
+      keysHref === `/sites/keys?site=${t1SiteId}` && keysForms.length === 4 && wiredKeys.length === 4
+      && JSON.stringify(keysFields) === JSON.stringify(['', 'admin_key', 'content_key', 'staff_token']),
+      `the ⋯ row is an <a href> with a real destination (${JSON.stringify(keysHref)}), so it is a ` +
+      `navigation and not a control that does nothing without a script; and the route it lands on ` +
+      `serves ${keysForms.length} forms, ${wiredKeys.length} of them progressively enhanced — ` +
+      `method=post, an action attribute, React's encoded $ACTION_* fields, one hidden site_id and ` +
+      `one submit each: ${JSON.stringify(keysForms)}. Their typed fields are ${JSON.stringify(keysFields)} ` +
+      `— the three credentials plus Test connection, which has none. So paste a key, add the token, ` +
+      `remove it and test the connection all work with JavaScript off`)
+
+    // ── keys-forged: A SECOND ACCOUNT'S SITE ID, in the URL and in each of the three forms. The
+    //    page reads under the caller's OWN session, so RLS is the whole guard; each action reads
+    //    the same way before it writes. A negative assertion needs a positive control (standing
+    //    rule 2): every press is WATCHED LANDING before anything is re-read.
+    const victim = ((await insert('/sites', {
+      user_id: OTHER_USER_ID, url: 'https://victim.inflozo.com', title: 'Victim',
+    })).body || [])[0] || {}
+    const victimBefore = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
+    await page.goto(keysUrl(victim.id), { waitUntil: 'load' }).catch(() => {})
+    const pageRefused = await page.getByText('could not be found', { exact: false }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    const landings = []
+    for (const which of ['#keys-admin', '#keys-staff', null]) {
+      await openKeys(t1SiteId)
+      const forged = await page.evaluate(({ id, field }) => {
+        const form = field
+          ? document.querySelector(field).closest('form')
+          : [...document.querySelectorAll('form')].find((f) =>
+              f.querySelector('input[name="site_id"]') && f.querySelectorAll('input:not([type="hidden"])').length === 0)
+        if (!form) return false
+        form.querySelector('input[name="site_id"]').value = id
+        form.querySelector('button[type="submit"]').click()
+        return true
+      }, { id: victim.id, field: which })
+      landings.push(forged && await page.getByText('could not be found', { exact: false }).first()
+        .waitFor({ timeout: 20000 }).then(() => true).catch(() => false))
+    }
+    const victimAfter = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
+    const victimCreds = (await sql`select * from private.site_credentials where site_id = ${victim.id}`).length
+    step('keys-forged',
+      Boolean(victim.id) && pageRefused && landings.every(Boolean) && victimAfter === victimBefore
+      && victimCreds === 0,
+      `a site id owned by a DIFFERENT account: /sites/keys?site=<id> is the not-found page = ` +
+      `${pageRefused}, and forged into the Admin form, the token form and the Test connection form ` +
+      `and submitted from the fixture's own session, every press was seen to LAND on the not-found ` +
+      `page = ${JSON.stringify(landings)} — its ownership read came back empty through RLS. The ` +
+      `stranger's row is byte-identical afterwards = ${victimAfter === victimBefore} and it has ` +
+      `${victimCreds} credential rows`)
+
+    // ── moved-domains: FR-C8's hint. ⛔ THE OLD RECORD IS SEEDED and the rest is the product's:
+    //    there is no SECOND reachable address for either test Ghost, so a genuine domain move
+    //    cannot be performed here — what can be, and is, is the state a domain move leaves behind:
+    //    a record the caller already has whose `admin_key_id` is the key being connected with. The
+    //    connect, the lookup, the redirect and the hint are all live.
+    const decoy = ((await insert('/sites', {
+      user_id: USER_ID, url: 'https://old-address.inflozo.com', title: 'Old address',
+      disconnected_at: new Date().toISOString(),
+    })).body || [])[0] || {}
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${decoy.id}, ${USER_ID}, ${kidOf(T3.adminKey)})
+    `
+    const movedAgain = async () => {
+      // T3 out through the product's own ⋯, then back in through the sheet: a connect is what
+      // carries the hint, and re-adoption is a connect.
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await page.waitForSelector('text=Connected')
+      await cardOf(pub3.title || 'Ghost5').first().getByRole('button', { name: /^Options for / }).first().click()
+      const menu3 = page.locator(`#site-menu-${t3SiteId}`)
+      await menu3.waitFor({ state: 'visible' })
+      await menu3.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
+      await page.waitForSelector('dialog[open]')
+      await sheet(page).getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
+      await page.waitForURL((u) => u.pathname === '/sites', { timeout: 30000 })
+      await opener(page).first().click()
+      await page.waitForSelector('dialog[open] a[href="?step=keys"]')
+      await sheet(page).locator('a[href="?step=keys"]').click()
+      await page.waitForSelector('dialog[open] #s2b-content-key')
+      await fill(page, T3.url, T3.adminKey, T3.contentKey)
+      await submit(page)
+      await page.waitForURL((u) => u.pathname === '/sites' || u.pathname === '/sites/brand', { timeout: 60000 })
+      if (page.url().includes('/sites/brand')) await skipS2c(page)
+      await page.waitForSelector('text=Connected')
+      return page.url()
+    }
+    const movedTo = await movedAgain()
+    const hinted = await says(page, SAY.keys_moved)
+    const onOneCard = await page.locator('article', { hasText: SAY.keys_moved.slice(0, 24) }).count()
+    // …AND THE NEGATIVE CONTROL. A record whose `admin_key_id` is null NEVER matches — which is
+    // every record connected before this story's migration — so the same connect prints no hint.
+    await sql`update private.site_credentials set admin_key_id = null where site_id = ${decoy.id}`
+    await movedAgain()
+    const hintedAgain = await says(page, SAY.keys_moved)
+    await sql`delete from private.site_credentials where site_id = ${decoy.id}`
+    step('moved-domains',
+      Boolean(decoy.id) && hinted && onOneCard === 1 && !hintedAgain,
+      `a connect whose Admin key id matches ANOTHER record this caller holds: the redirect carried ` +
+      `?moved= (${JSON.stringify(new URL(movedTo).search)}) and FR-C8's hint is on that ONE card ` +
+      `(${onOneCard} of them) reading the app's own ${JSON.stringify(SAY.keys_moved)} — the 90 days ` +
+      `derived from ORPHAN_SNAPSHOT_DAYS, not typed into the sentence. THE CONTROL: with the same ` +
+      `record's admin_key_id set to NULL — which is every record connected before this story's ` +
+      `migration — the identical connect printed NO hint = ${!hintedAgain}, because a null never ` +
+      `matches and a missing hint is not a wrong one. ⛔ The OLD record is seeded through the pooler: ` +
+      `neither test Ghost has a second reachable address, so a real domain move cannot be performed ` +
+      `here. The connect, the lookup, the redirect and the hint are all the product's`)
+
+    /* THE REFS `secret-gone` READS ARE RE-TAKEN HERE, and this is not tidying: `keys-rotate` put a
+       NEW secret behind T1's ref and `moved-domains` reconnected T3 twice, so the two refs pushed
+       further up were already dropped by DW-44's trigger. Left as they were, `secret-gone` would
+       have found zero secrets behind them and PASSED without the account cascade doing anything —
+       a control that cannot fail (standing rule 2). These are the refs that are actually live when
+       the user is deleted. */
+    refs.length = 0
+    refs.push(await refOf(t1SiteId), await refOf(t3SiteId))
 
     // ── axe over every surface: the list, both steps of the page pair, and the open sheet.
     await axeAt(page, 'sites')
@@ -3386,6 +3817,11 @@ def main():
             'CONFIRM_URL': f'{args.url.rstrip("/")}/auth/confirm?token_hash={link["hashed_token"]}&type=magiclink',
             'AUDIT_ROUTE': audit_route(),
             'GHOSTS': json.dumps(ghosts),
+            # STORY 3.6's `keys-token`: the token the harness already owns for `injection-live`,
+            # now ALSO the one the product stores and removes through Manage keys — the first
+            # product path that does either (DW-54's `staff-removed`, closing here). It is the
+            # HARNESS's own credential for T1 and nothing in the app has ever held one before.
+            'T1_STAFF_TOKEN': env['GHOST6_STAFF_ACCESS_TOKEN'],
             'BOGUS_KEY': bogus,
             'INJECTION_MARK': INJECTION_MARK,
             'SENTENCES': json.dumps(says),

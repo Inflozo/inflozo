@@ -10,6 +10,8 @@ import {
   filterSites,
   ghostLabel,
   hostOf,
+  KEYS,
+  ORPHAN_SNAPSHOT_DAYS,
   projectCounts,
   projectsLabel,
   SITES_EMPTY,
@@ -67,10 +69,14 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
    `siteCapSentence` deciding both the WHETHER and the sentence — nothing here types a number
    (standing rule 4).
 
-   ABSENT FROM THIS SURFACE, each another story's and each absent rather than greyed (UX-DR3):
-   the ⋯ menu's Manage keys (3.6) and its Re-check / Reconnect, the health badges and "Reconnect
-   needed" (3.7). Every card here is Connected, because that is still the only health this epic
-   can write. */
+   STORY 3.6 ADDED TWO THINGS AND OBEYED DW-57 IN BOTH. **Manage API keys** went INTO the ⋯ menu
+   above the rule — the frame's own third row — and nothing else on the card moved; and FR-C8's
+   "Moved domains?" hint reads `?moved=` exactly as `?recheck=` and `?disconnect=` already do, so
+   it belongs to ONE card and no other claims it.
+
+   ABSENT FROM THIS SURFACE, each another story's and each absent rather than greyed (UX-DR3): the
+   ⋯ menu's Re-check connection and Reconnect, the health badges and "Reconnect needed" (3.7).
+   Every card here is Connected, because that is still the only health this epic can write. */
 
 export const metadata: Metadata = {
   title: 'Sites · Inflozo',
@@ -96,13 +102,17 @@ export default async function Sites({
   // why — and no other card claims a failure that was not its own.
   // `disconnect` is Story 3.5's own, and the same shape: `disconnectSite` redirects here with the
   // ID OF THE SITE it could not let go, so that one card says why and no other claims it.
+  // `moved` is Story 3.6's, and the same shape again: a connect whose Admin key matches a record
+  // this caller already has is FR-C8's domain move, and `connectSite` redirects here naming the
+  // NEW site — so the hint lands on the one card it is about.
   searchParams: Promise<{
     q?: string | string[]
     recheck?: string | string[]
     disconnect?: string | string[]
+    moved?: string | string[]
   }>
 }) {
-  const [{ q, recheck, disconnect }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ q, recheck, disconnect, moved }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
@@ -137,6 +147,7 @@ export default async function Sites({
   // redirects without the parameter so it cannot outlive the failure it describes (review).
   const recheckedId = Array.isArray(recheck) ? recheck[0] : recheck
   const disconnectedId = Array.isArray(disconnect) ? disconnect[0] : disconnect
+  const movedId = Array.isArray(moved) ? moved[0] : moved
   // THE ACTIVE SITES ARE WHAT THE CAP COUNTS — the read above already filters `disconnected_at`
   // out, which is the same rule the connect action enforces: a record Inflozo kept is not a site.
   // Free only, as S3c's tile is: on Pro at ten there is nothing further to sell (the dashboard's
@@ -300,6 +311,13 @@ export default async function Sites({
                         as `?recheck=` already does, and the sentence is the app's own table's. */}
                     {disconnectedId === site.id ? (
                       <Banner kind="error">{connectMessage('disconnect_failed')}</Banner>
+                    ) : null}
+                    {/* FR-C8's "Moved domains?" — INFO and not a warning: nothing is wrong, the
+                        customer has connected the same Ghost at a new address and there are two
+                        things to do about it. The days come from `ORPHAN_SNAPSHOT_DAYS`, so the
+                        sentence in `KEYS` still names no number (standing rule 4). */}
+                    {movedId === site.id ? (
+                      <Banner kind="info">{KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS)}</Banner>
                     ) : null}
                     <SiteNotices site={site} recheckFailed={recheckedId === site.id} />
                   </article>

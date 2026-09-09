@@ -185,7 +185,13 @@ create table private.site_credentials (
   staff_token_vault_ref  uuid,                            -- nullable: deferred to first deploy, declinable
   admin_key_rotated_at   timestamptz,
   staff_token_rotated_at timestamptz,
-  updated_at             timestamptz not null default now()
+  updated_at             timestamptz not null default now(),
+  -- Story 3.6: the Admin key's PUBLIC id half (`id:secret`, the part before the colon). It is not
+  -- a secret -- it travels in the header of every JWT Inflozo mints -- and it is what Manage keys
+  -- draws as the key's mask and what a new connect matches to print FR-C8's "Moved domains?" hint.
+  -- `text`, because Ghost's key id is a 24-character ObjectID hex string and not a uuid. LAST,
+  -- because `alter table ... add column` appends and the gate diffs the two databases.
+  admin_key_id           text
 );
 
 -- FR-J13 / FR-C6: keyed on user_id (the RLS key) and holding the site RECORD id, never the URL.
@@ -740,8 +746,15 @@ insert into public.feature_flags(key, enabled, note) values
 --
 -- It lives in `private` for the same reason site_credentials does: an audit log readable over the
 -- data API is a map of which sites are worth attacking.
+-- `credential_change` joined the list in Story 3.6 (DW-76, the owner's ruling of 2026-09-09):
+-- `store()` and `remove()` both wrote NO row at all, so the log was silent about every key that
+-- went in and every key that came out. ONE value for both writers, named for the change with
+-- `{ kind, direction }` in `detail` -- which is this enum's own convention, as `entitlement_change`
+-- and `admin_flag_change` already are. It is LAST because `alter type ... add value` appends, and
+-- the RLS gate diffs this file's database against the migrations'.
 create type public.credential_action as enum (
-  'admin_write','admin_read','vault_decrypt','entitlement_change','admin_flag_change','moderation');
+  'admin_write','admin_read','vault_decrypt','entitlement_change','admin_flag_change','moderation',
+  'credential_change');
 
 create table private.credential_audit (
   id             bigint generated always as identity primary key,

@@ -17,6 +17,7 @@ const CONNECT_ACTIONS = join('app', '(app)', 'app', '(authed)', 'sites', 'action
 const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
 const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
 const SITE_PROBE = join('server', 'site-probe.ts')
+const KEYS_PAGE = join('app', '(app)', 'app', '(authed)', 'sites', 'keys', 'page.tsx')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -335,7 +336,15 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   // ANY module in the directory counts, not only the index: `db.ts` hands out the decrypting
   // connection, and an import of it from an unlisted file is the same third path (review,
   // 2026-09-07 — the first regex matched the index alone).
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE]
+  //   - MANAGE KEYS' ROUTE, Story 3.6's: the first caller that only READS, and it reads nothing
+  //     secret. `credentialsOf` hands back the Admin key's public id half — the part before the
+  //     colon, which rides in the header of every JWT this module mints — and the two rotation
+  //     stamps, so the screen can draw what Inflozo HAS without ever approaching what it holds.
+  //     It is here rather than on the Sites list deliberately: a `<dialog>` on that list would put
+  //     this read on every card of the busiest route in the app, and `private.site_credentials` is
+  //     reachable from this module and nowhere else (§21j). No decryption is on this path and none
+  //     can be — `decrypt()` is private to the module and `call()` is its only caller.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, KEYS_PAGE]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => /from\s*['"][^'"]*server\/ghost-admin(\/[a-z-]+(\.ts)?)?['"]/.test(readFileSync(p, 'utf8')))

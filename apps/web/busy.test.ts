@@ -130,6 +130,13 @@ const NO_SKELETON: Record<string, string> = {
     '"Connect site" opener is an <a href> whose click JavaScript turns into the sheet, and the ' +
     'wizard\'s own ?step= links are plain anchors — every remaining way in (scripts off, a ' +
     'modified click, a typed URL) is a document load with the browser\'s own progress on it',
+  [join(AUTHED, 'sites', 'keys')]:
+    'Story 3.6, and the same reason one row down with one difference worth stating: S11a\'s ⋯ ' +
+    '"Manage API keys" is a PLAIN <a href="/sites/keys?site=…"> that navigates — it is not ' +
+    'intercepted into a dialog the way Disconnect is, because this screen draws a value only the ' +
+    'Admin chokepoint can read (site-menu.tsx records it) — and a plain anchor is a document load, ' +
+    'not a soft navigation. So every way in carries the browser\'s own progress and a route ' +
+    'skeleton is never what is shown',
   [join(AUTHED, 'sites', 'disconnect')]:
     'the same, one row down: S11a\'s ⋯ "Disconnect" is an <a href="/sites/disconnect?site=…"> whose ' +
     'click JavaScript turns into the card\'s <dialog>, and it is a PLAIN anchor and not a <Link>, so ' +

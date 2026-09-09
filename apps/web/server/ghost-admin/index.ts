@@ -11,7 +11,7 @@ import {
   parseCredential,
   permitted,
 } from './admin-rule.ts'
-import { sql } from './db.ts'
+import { sql, type Client } from './db.ts'
 
 /**
  * THE CHOKEPOINT (AD-10). Every Ghost Admin API call Inflozo makes goes through `call` or
@@ -74,20 +74,31 @@ async function withStore<T>(route: string, run: () => Promise<T>): Promise<T> {
   }
 }
 
-/** One audit row. `detail` is an `AuditDetail` and nothing else can reach that column. */
-async function audit(row: {
-  action: 'vault_decrypt' | 'admin_read' | 'admin_write'
-  userId?: string | null
-  siteId?: string | null
-  route: string
-  item?: string | null
-  outcome: 'ok' | 'denied' | 'error'
-  detail: AuditDetail
-}): Promise<void> {
-  await sql()`
+/**
+ * One audit row. `detail` is an `AuditDetail` and nothing else can reach that column.
+ *
+ * `on` IS THE TRANSACTION THE ROW BELONGS TO, and it defaults to the pooled client because the
+ * call paths write theirs outside one. DW-76's two writers do NOT: a `credential_change` row is
+ * inserted INSIDE the same `begin()` as the write it describes, so a store that rolled back leaves
+ * no row claiming it happened. The driver's transaction object is callable exactly as the client
+ * is, which is why one parameter covers both.
+ */
+async function audit(
+  row: {
+    action: 'vault_decrypt' | 'admin_read' | 'admin_write' | 'credential_change'
+    userId?: string | null
+    siteId?: string | null
+    route: string
+    item?: string | null
+    outcome: 'ok' | 'denied' | 'error'
+    detail: AuditDetail
+  },
+  on: Client = sql(),
+): Promise<void> {
+  await on`
     insert into private.credential_audit (action, user_id, site_id, route, allowlist_item, outcome, detail)
     values (${row.action}, ${row.userId ?? null}, ${row.siteId ?? null}, ${row.route},
-            ${row.item ?? null}, ${row.outcome}, ${sql().json(row.detail)})
+            ${row.item ?? null}, ${row.outcome}, ${on.json(row.detail)})
   `
 }
 
@@ -111,7 +122,7 @@ export async function store(args: {
   const column = COLUMNS[args.kind]
   // REFUSED BEFORE VAULT: a credential that cannot sign is a typo, and a typo stored in Vault
   // would come back out as `ghost_unreachable` on every call (found by the review, 2026-09-07).
-  parseCredential(args.secret)
+  const { kid } = parseCredential(args.secret)
   return withStore(args.route, async () => {
     const ref = await sql().begin(async (tx) => {
       // THE SITE MUST BE THE CALLER'S. `user_id` on the credentials row is what the audit trail
@@ -126,17 +137,43 @@ export async function store(args: {
       const [created] = await tx<{ id: string }[]>`
         select vault.create_secret(${args.secret}, null, ${`site ${args.siteId} ${args.kind}`}) as id
       `
+      // THE ADMIN KEY'S PUBLIC ID HALF, WRITTEN IN THE SAME STATEMENT AS ITS REF (Story 3.6).
+      // `parseCredential` above already has it and already refused a key that has none, so the
+      // value is in hand and the column can never disagree with the secret behind it. It is NOT a
+      // secret -- it rides in the header of every JWT `mintJwt` signs -- and it is what Manage keys
+      // masks with and what FR-C8's "Moved domains?" hint matches on. NULL for `staff`, which has
+      // no such column and no such use: the token is never matched, only held.
+      // A STAFF STORE MUST NOT WIPE THE ADMIN KEY'S ID, which is what `coalesce` below is for:
+      // `excluded` carries null for it on that path, so the existing value is KEPT rather than
+      // overwritten -- the same rule the two ref columns already follow, where one kind's write
+      // never touches the other's.
+      const keyId = args.kind === 'admin' ? kid : null
       await tx`
-        insert into private.site_credentials (site_id, user_id, ${tx(column.ref)}, ${tx(column.rotated)})
-        values (${args.siteId}, ${args.userId}, ${created.id}, now())
+        insert into private.site_credentials
+               (site_id, user_id, ${tx(column.ref)}, ${tx(column.rotated)}, admin_key_id)
+        values (${args.siteId}, ${args.userId}, ${created.id}, now(), ${keyId})
         on conflict (site_id) do update
-          set ${tx(column.ref)} = excluded.${tx(column.ref)}, ${tx(column.rotated)} = now()
+          set ${tx(column.ref)} = excluded.${tx(column.ref)}, ${tx(column.rotated)} = now(),
+              admin_key_id = coalesce(excluded.admin_key_id, site_credentials.admin_key_id)
       `
       await tx`
         update public.sites
            set credentials_present = credentials_present || jsonb_build_object(${args.kind}::text, true)
          where id = ${args.siteId}
       `
+      // DW-76: A KEY GOING IN LEAVES A LINE, and it leaves it INSIDE this transaction. `detail`
+      // says which credential and which way and holds nothing else -- `AuditDetail` is the guard.
+      await audit(
+        {
+          action: 'credential_change',
+          userId: args.userId,
+          siteId: args.siteId,
+          route: args.route,
+          outcome: 'ok',
+          detail: { kind: args.kind, direction: 'in' },
+        },
+        tx,
+      )
       return created.id
     })
     return { ref }
@@ -168,17 +205,42 @@ export async function remove(args: {
   const column = COLUMNS[args.kind]
   await withStore(args.route, async () => {
     await sql().begin(async (tx) => {
-      await tx`
+      const dropped = await tx`
         update private.site_credentials
            set ${tx(column.ref)} = null, ${tx(column.rotated)} = now()
          where site_id = ${args.siteId} and user_id = ${args.userId}
            and ${tx(column.ref)} is not null
+        returning site_id
       `
       await tx`
         update public.sites
            set credentials_present = credentials_present || jsonb_build_object(${args.kind}::text, false)
          where id = ${args.siteId} and user_id = ${args.userId}
       `
+      // DW-76's OTHER HALF, and the one the owner ruled into this story: a key coming out leaves a
+      // line too. INSIDE the transaction, so a removal that rolled back claims nothing.
+      //
+      // AND ONLY WHEN ONE ACTUALLY CAME OUT. The update above matches on a ref that is NOT NULL --
+      // the guard the review of 2026-09-09 added, because removing a kind that was never stored
+      // stamped a removal date for a credential that never existed. An audit row is the same
+      // mistake one layer up and worse: `disconnectSite` removes BOTH kinds on every press and
+      // nothing stores a staff token until Epic 7, so an unconditional row would write a false
+      // "the staff credential came out" line into the one record that exists to be trusted, on
+      // every disconnect, for ever. That is DW-76's own argument against `vault_decrypt`, one
+      // table over.
+      if (dropped.count > 0) {
+        await audit(
+          {
+            action: 'credential_change',
+            userId: args.userId,
+            siteId: args.siteId,
+            route: args.route,
+            outcome: 'ok',
+            detail: { kind: args.kind, direction: 'out' },
+          },
+          tx,
+        )
+      }
     })
   })
 }
@@ -342,4 +404,84 @@ export async function fetchWithKey(args: {
   // The BODY is returned to the caller and stored nowhere: Story 3.3 computes one boolean from a
   // settings read and discards it (the spine's Logging rule).
   return { ok, status, body, ...(ok ? {} : { code: ghostCode(status, error) }) }
+}
+
+
+/**
+ * FR-C8's "Moved domains?" LOOKUP, and it lives here because `private` is reachable from this
+ * module and from nowhere else (§21j, and `server-wiring.test.ts` asserts it).
+ *
+ * A new connect whose Admin key id matches a record the caller ALREADY HAS is the same Ghost
+ * install arriving at a second address -- which is exactly the state FR-C8 designed for by killing
+ * edit-URL-in-place: the customer moved domains. The hint is printed on the new card; nothing is
+ * written and nothing is refused.
+ *
+ * `exceptSiteId` IS REQUIRED, and `<>` is why it cannot be optional: the caller stores the key
+ * BEFORE it looks, so its own new record carries this very id and would always match itself -- and
+ * `site_id <> null` is NULL rather than true, so a defaulted one would answer "no match" every
+ * time, silently, with every check green. Scoped to the caller's own rows by `user_id`, so this can never see across
+ * accounts -- two customers connecting the same Ghost is not a domain move and is none of either's
+ * business.
+ *
+ * A NULL `admin_key_id` NEVER MATCHES. A record connected before Story 3.6 has none, and the
+ * comparison is an equality, so an older record simply produces no hint -- which is the right
+ * answer: a missing hint is not a wrong one.
+ */
+export async function findSiteByAdminKeyId(args: {
+  userId: string
+  kid: string
+  exceptSiteId: string
+}): Promise<{ siteId: string; url: string; disconnectedAt: string | null } | null> {
+  return withStore('ghost-admin/find-by-key-id', async () => {
+    const [row] = await sql()<{ site_id: string; url: string; disconnected_at: string | null }[]>`
+      select c.site_id, s.url, s.disconnected_at
+        from private.site_credentials c
+        join public.sites s on s.id = c.site_id
+       where c.user_id = ${args.userId}
+         and c.admin_key_id = ${args.kid}
+         and c.site_id <> ${args.exceptSiteId}
+       order by s.created_at desc
+       limit 1
+    `
+    return row ? { siteId: row.site_id, url: row.url, disconnectedAt: row.disconnected_at } : null
+  })
+}
+
+/**
+ * WHAT MANAGE KEYS MAY DRAW, AND IT IS EVERY NON-SECRET COLUMN OF THE CREDENTIALS ROW AND NOTHING
+ * ELSE. The Vault refs are not here and neither is any decryption: `decrypt()` above is the only
+ * thing in this file that reads `vault.decrypted_secrets`, and it is private. What comes back is
+ * the Admin key's public id half and the two rotation stamps -- three values a customer could read
+ * off their own Ghost Admin, which is precisely the test for whether something may leave here.
+ *
+ * IT IS THE FIFTH CHANGE THIS STORY MAKES TO THIS FILE, and the spec's Code Map counts four --
+ * but its own entry for `sites/keys/page.tsx` says that page reads "the credential row through
+ * `ghost-admin`", which is this. The count was about not WIDENING the chokepoint, and this does
+ * not: the secret half still exists only between `decrypt()` and `mintJwt`. Recorded rather than
+ * quietly added (standing rule 3).
+ *
+ * SCOPED TO THE CALLER'S OWN ROW by `user_id`, the same clause `store()` and `remove()` carry and
+ * for the same reason: ownership belongs beside the read, not in the memory of the caller.
+ */
+export async function credentialsOf(args: {
+  siteId: string
+  userId: string
+}): Promise<{ adminKeyId: string | null; adminRotatedAt: string | null; staffRotatedAt: string | null }> {
+  return withStore('ghost-admin/credentials-of', async () => {
+    const [row] = await sql()<
+      { admin_key_id: string | null; admin_key_rotated_at: string | null; staff_token_rotated_at: string | null }[]
+    >`
+      select admin_key_id, admin_key_rotated_at, staff_token_rotated_at
+        from private.site_credentials
+       where site_id = ${args.siteId} and user_id = ${args.userId}
+    `
+    // A SITE WITH NO CREDENTIALS ROW IS NOT AN ERROR -- it is a record whose keys have been taken
+    // out, or one seeded without any. The screen draws "Not added" from `credentials_present`, and
+    // these three are the decoration beside it.
+    return {
+      adminKeyId: row?.admin_key_id ?? null,
+      adminRotatedAt: row?.admin_key_rotated_at ?? null,
+      staffRotatedAt: row?.staff_token_rotated_at ?? null,
+    }
+  })
 }

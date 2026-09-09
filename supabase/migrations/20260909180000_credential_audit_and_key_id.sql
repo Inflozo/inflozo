@@ -1,0 +1,35 @@
+-- Story 3.6 — DW-76's missing audit value, and the Admin key's public id half.
+--
+-- TWO CHANGES, ONE MIGRATION, because they land in the same story and the same hand-application.
+--
+-- (1) `credential_change` — THE VALUE THE LOG HAS NEVER HAD. `private.credential_audit` is the
+--     only control in this area that DETECTS rather than prevents, and it was silent about every
+--     key that went IN and every key that came OUT: `store()` and `remove()` both wrote nothing,
+--     because the enum held no member that means "a credential moved". The owner ruled the entry
+--     into this story (option 1, 2026-09-09, at Story 3.5's Question 3) — it is the other story
+--     that removes keys, so one value, made once, covers both callers.
+--
+--     ONE VALUE AND NOT TWO, and it is named for the CHANGE rather than for the removal, because
+--     one writer stores and the other removes. `detail` carries `{ kind, direction }`, which is
+--     this enum's OWN existing convention: `entitlement_change` and `admin_flag_change` are both
+--     state mutations named for the change with their specifics in `detail`.
+--
+--     NOTHING HERE USES THE VALUE. `alter type … add value` may run inside a transaction block on
+--     PostgreSQL 12+, but the new value cannot be USED until that transaction commits — so a
+--     migration that both added it and wrote a row through it would fail wherever the runner wraps
+--     the file. This file only adds it; the first row through it is written by the application.
+--
+-- (2) `admin_key_id` — THE HALF OF THE ADMIN KEY THAT IS NOT A SECRET. A Ghost Admin API key is
+--     `id:secret`; the id travels in the header of every JWT Inflozo mints and identifies nothing
+--     on its own. Storing it does two things the product needs and neither widens AD-10 by a byte:
+--     Manage keys draws it as the key's mask (there is no reveal — the secret half reaches no
+--     render path), and a NEW connect whose key id matches a record the caller already has is
+--     FR-C8's "Moved domains?" hint, which is the whole reason edit-URL-in-place does not exist.
+--
+--     `text` and not `uuid`: Ghost's key id is a 24-character ObjectID hex string, not a UUID
+--     (executed on T1 6.58.0 and T3 5.130.6 — `parseCredential` accepts any non-empty id half).
+--     Nullable, and a null NEVER matches: a record connected before this story has none, and a
+--     missing hint is not a wrong one.
+alter type public.credential_action add value 'credential_change';
+
+alter table private.site_credentials add column admin_key_id text;

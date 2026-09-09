@@ -4,8 +4,8 @@ import { type MouseEvent, useRef } from 'react'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
-import { LinkOff } from '@/components/kit/icons'
-import { DISCONNECT } from '@/lib/connect-rule'
+import { Key, LinkOff } from '@/components/kit/icons'
+import { DISCONNECT, KEYS } from '@/lib/connect-rule'
 import { arrowKeys, item as row, openMenu } from '@/lib/menu'
 import { DisconnectConfirm } from './disconnect-confirm'
 
@@ -83,9 +83,31 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
         // `[popover]:not(:popover-open){display:none}` and the menu renders inside every card.
         className="w-[196px] flex-col rounded border border-line bg-surface p-[6px] shadow-lg open:flex"
       >
-        {/* The frame's own rule above the danger row (`S11 Sites.dc.html:81`). It stays with one
-            item: it is what makes Disconnect read as set apart from whatever 3.6 and 3.7 put
-            above it, and the owner's manual test names it — "a thin line and one red item". */}
+        {/* STORY 3.6's ROW, AND IT IS THE FRAME'S OWN THIRD ITEM (`S11 Sites.dc.html:80`), with the
+            frame's key glyph. It goes ABOVE the rule, into the menu 3.5 built rather than into a
+            second one (DW-57). Re-check connection and Reconnect are Story 3.7's and are still
+            ABSENT rather than greyed (UX-DR3).
+
+            IT IS A PLAIN LINK THAT NAVIGATES, AND THAT IS THE ONE PLACE THIS ROW DIFFERS FROM
+            DISCONNECT BELOW IT. Disconnect's click is intercepted into the card's `<dialog>`
+            because everything its confirm draws is already on this card. Manage keys is not: it
+            draws the ADMIN KEY'S ID HALF, which lives in `private.site_credentials` and is
+            reachable only through `server/ghost-admin` (AD-10, §21j). Rendering it here would put
+            a chokepoint read on the Sites list — one pooler round trip per card, on the busiest
+            route in the app — and rendering it WITHOUT that value would give the dialog a
+            different Admin row from the route's, which is exactly the drift "one component for
+            both" exists to prevent. So there is one surface, `/sites/keys?site=…`, and this row
+            goes to it. A modified click already opened it in a new tab; now every click does.
+            (Recorded in the spec's Change Log — the Code Map named both shapes.) */}
+        <a href={`/sites/keys?site=${id}`} className={`${row} ${ring} hover:bg-paper`}>
+          <span className="shrink-0 text-ink-soft">
+            <Key size={15} />
+          </span>
+          {KEYS.menu}
+        </a>
+        {/* The frame's own rule above the danger row (`S11 Sites.dc.html:81`). It is what makes
+            Disconnect read as set apart from Manage API keys above it, and the owner's manual test
+            names it — "a thin line and one red item". */}
         <div aria-hidden className="m-[4px_8px] h-px bg-line" />
         <a
           href={`/sites/disconnect?site=${id}`}

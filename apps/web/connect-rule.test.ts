@@ -16,7 +16,10 @@ import {
   HTTP_WARNING,
   isHttpUrl,
   isPlainHttp,
+  KEYS,
+  keysFieldOf,
   MIN_GHOST_MAJOR,
+  ORPHAN_SNAPSHOT_DAYS,
   normaliseSiteUrl,
   SITES_EMPTY,
   stepOf,
@@ -141,6 +144,104 @@ test('the at-cap row is Appendix F.1’s sentence and nothing typed here', () =>
   assert.equal(atSiteCap('pro', PLANS.free.sites), false, 'Pro at one site connects the second')
 })
 
+/* ───────── STORY 3.6 — MANAGE KEYS' WORDS, AND THE SAME TWO RULES OVER THEM. */
+
+/** Every string `KEYS` holds, functions called with a placeholder — the shape `DISCONNECT`'s
+    no-number assertion already uses, walked one level deeper because `KEYS` nests. */
+function wordsOf(held: unknown): string[] {
+  if (typeof held === 'string') return [held]
+  if (typeof held === 'function') return [String((held as (x: string) => unknown)('x'))]
+  if (Array.isArray(held)) return held.flatMap(wordsOf)
+  if (held && typeof held === 'object') return Object.values(held).flatMap(wordsOf)
+  return []
+}
+
+test('KEYS holds every word Manage keys shows, and names no number', () => {
+  // The ⋯ row and the screen's own title are one object, so the owner's manual test reads the same
+  // label in the menu and above the panel.
+  assert.equal(KEYS.menu, 'Manage API keys')
+  assert.equal(KEYS.title('orbitweekly.com'), 'API keys — orbitweekly.com')
+
+  // PRESENT OR ABSENT, AND NEVER AN ERROR BADGE (the acceptance criterion, and B20's "Working" is
+  // the departure this asserts): nothing checks on load, so no word here may claim a check passed.
+  assert.equal(KEYS.absent, 'Not added')
+  assert.notEqual(KEYS.present as string, 'Working')
+
+  // Each credential says what it ENABLES, in one plain line — B20's whole argument: `settings:write`
+  // means nothing to a founder and "uploads routes.yaml" means everything.
+  assert.match(KEYS.admin.enables, /theme/i)
+  assert.match(KEYS.content.enables, /posts/i)
+  assert.match(KEYS.staff.enables, /routes\.yaml/)
+  // D1b's disclosure, VERBATIM and unsoftened (A1, 2026-09-04). Deleting it would leave the screen
+  // asking for a full-Administrator credential without saying so.
+  assert.match(KEYS.staff.enables, /full-Administrator credential/)
+  // NOTHING RETROACTIVE IS PROMISED: adding the token starts the safety net from that moment.
+  assert.match(KEYS.staff.forward, /already been replaced/)
+
+  // R-98: every control that starts work wears a present tense, and it must DIFFER from the
+  // resting label or the control says nothing by changing.
+  for (const [resting, busy] of [
+    [KEYS.admin.save, KEYS.admin.busy],
+    [KEYS.content.save, KEYS.content.busy],
+    [KEYS.staff.add, KEYS.staff.addBusy],
+    [KEYS.staff.remove, KEYS.staff.removeBusy],
+    [KEYS.test.label, KEYS.test.busy],
+  ] as [string, string][]) {
+    assert.ok(busy.length > 0, `${resting} has no busy label`)
+    assert.notEqual(busy, resting)
+  }
+
+  // THE URL ROW SAYS WHY THERE IS NO FIELD (A9 item 17, FR-C8), and the reveal's absence is said
+  // to the customer rather than only in a comment (the departure from B20's eye).
+  assert.match(KEYS.urlReason, /disconnecting and connecting again/)
+  assert.match(KEYS.noReveal, /cannot read the rest back/)
+
+  // COUNTS ARE DERIVED (standing rule 4) — the same assertion `DISCONNECT` carries, and for the
+  // same reason: the one number this screen's copy needs is the orphan clock's, and it belongs to
+  // `ORPHAN_SNAPSHOT_DAYS` rather than to a sentence. A DIGIT IS NOT THE ONLY WAY TO WRITE A
+  // NUMBER, so the spelled-out words are refused too.
+  const words = wordsOf(KEYS).join(' ')
+  assert.ok(!/\d/.test(words), `KEYS names a number: ${words}`)
+  const spelled = /\b(one|two|three|four|five|six|seven|eight|nine|ten|ninety)\b/i
+  assert.ok(!spelled.test(words), `KEYS spells a number out: ${words}`)
+})
+
+test('FR-C8’s moved-domains hint names the orphan clock, and takes it as an argument', () => {
+  assert.equal(ORPHAN_SNAPSHOT_DAYS, 90)
+  const said = KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS)
+  assert.match(said, /Moved domains\?/)
+  assert.match(said, /90 days/)
+  // …and the number is the CALLER's. `wordsOf` above calls it with 'x', which is what lets the
+  // no-number assertion hold over an object whose one sentence has to name a figure.
+  assert.doesNotMatch(KEYS.movedDomains('x'), /\d/)
+})
+
+test('the three Manage-keys codes are in the one table, and each lands under its own field', () => {
+  for (const code of ['keys_other_site', 'token_malformed', 'keys_failed'] as MessageCode[]) {
+    assert.ok(Object.prototype.hasOwnProperty.call(CONNECT_MESSAGES, code), `${code} has no sentence`)
+    assert.ok(connectMessage(code).length > 0)
+  }
+  // FR-C8's refusal NAMES THE FIX, because "these are the wrong keys" without it leaves the
+  // customer with a site they cannot connect and no idea what to do.
+  assert.match(connectMessage('keys_other_site'), /disconnecting/)
+  // "EXPIRED" APPEARS IN NONE OF THEM either — Ghost's `api_keys` has no expiry column (§37).
+  for (const code of Object.keys(CONNECT_MESSAGES) as MessageCode[]) {
+    assert.doesNotMatch(connectMessage(code, 'x'), /expired/i, `${code} tells the customer a key expired`)
+  }
+
+  // THE FIELD IS DERIVED FROM THE CODE AND NEVER READ OUT OF THE URL BESIDE IT, which is what
+  // stops a hand-typed link putting a refusal under a field it has nothing to do with.
+  assert.equal(keysFieldOf('keys_other_site'), 'admin_key')
+  assert.equal(keysFieldOf('ghost_unknown_key'), 'admin_key')
+  assert.equal(keysFieldOf('credential_malformed'), 'admin_key')
+  assert.equal(keysFieldOf('content_key_unknown'), 'content_key')
+  assert.equal(keysFieldOf('token_malformed'), 'staff_token')
+  // Everything else is the panel's banner, including a code the table does not name at all.
+  assert.equal(keysFieldOf('keys_failed'), null)
+  assert.equal(keysFieldOf('credential_store_unavailable'), null)
+  assert.equal(keysFieldOf('not-a-code'), null)
+})
+
 /* ───────── STORY 3.5 — DISCONNECT'S WORDS. */
 
 test('DISCONNECT holds every word the confirm shows, and names no number', () => {
@@ -256,8 +357,12 @@ test('config/ is the validator and site/ is read only after it has passed', () =
   // §38a: `GET /admin/site/` answers 200 with NO CREDENTIAL AT ALL on both majors, so a connect
   // that read it first would accept any key at all. The order is the control.
   assert.ok(config < site, `${ACTIONS}: site/ is called before config/ — site/ validates nothing (§38a)`)
-  // And no third Admin path from this story (the spec's Ask First).
-  const paths = [...source.matchAll(/path: '([^']+)'/g)].map((m) => m[1]).sort()
+  // And NO THIRD ADMIN PATH out of this file, ever (the spec's Ask First). DISTINCT paths, because
+  // the contract is about which endpoints Inflozo reaches and not how many callers reach them:
+  // Story 3.6's Manage keys validates a rotated key with the same `config/` + `site/` pair the
+  // connect does, and Test connection presses `config/` a third time — three more call sites and
+  // not one new endpoint, which is exactly what this is meant to allow (2026-09-09).
+  const paths = [...new Set([...source.matchAll(/path: '([^']+)'/g)].map((m) => m[1]))].sort()
   assert.deepEqual(paths, ['config/', 'site/'], `${ACTIONS} calls Admin paths beyond config/ and site/`)
 })
 

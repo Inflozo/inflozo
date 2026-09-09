@@ -43,9 +43,17 @@ export class AdminError extends Error implements AdminEnvelope {
 // `detail.status` would have read undefined for ever with every check green.
 export type AuditDetail = {
   status?: number
-  ms: number
+  /** How long the Ghost call took. Absent on a row that made no call -- `credential_change`. */
+  ms?: number
   ghost_type?: string
   reason?: 'missing' // written by the decrypt CTE in SQL for a site with no key, and by nothing else
+  /**
+   * DW-76, Story 3.6: WHICH credential moved and WHICH WAY, and never the credential itself. One
+   * enum value serves both writers -- `store()` and `remove()` -- so the specifics live here, the
+   * way `entitlement_change` and `admin_flag_change` already carry theirs.
+   */
+  kind?: 'admin' | 'staff'
+  direction?: 'in' | 'out'
 }
 
 /**

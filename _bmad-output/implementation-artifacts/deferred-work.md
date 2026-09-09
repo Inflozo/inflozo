@@ -1265,7 +1265,13 @@ plain: Story 3.1 proved four things on the live site through its temporary back 
 status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decrypt path closed by Story 3.3**
   (Dev, 2026-09-08): its connect-time probes run on the STORED key through `call()`, so every connect leaves
   two `vault_decrypt` rows and two `admin_read` rows on the deployed function, and the harness's `decrypt-path`
-  step asserts them every run. `write-denied` and `staff-removed` remain, and both are Epic 7's
+  step asserts them every run. **`staff-removed` closed by Story 3.6** (Dev, 2026-09-09): Manage keys is the
+  first product path that STORES and REMOVES a Staff Access Token, so the harness's `keys-token` step adds the
+  harness's own token on T1 and takes it out again — `credentials_present.staff` true then false, the Vault
+  secret gone behind the nulled ref (read read-only through the pooler, as `disconnect` already does), the site
+  still active with `disconnected_at` null, and two `credential_change` rows. It was never reachable before:
+  nothing in the product had a way in for the token. **`write-denied` alone remains, and it is Epic 7's** — no
+  product caller makes an allowed Ghost write until the deploy path
 severity: low
 origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"; the decrypt path added by
   3.2's code review (2026-09-08, Edge Case Hunter)
@@ -1275,8 +1281,10 @@ location: tools/probe/run-verify-ghost-admin.py (the retargeted harness — its 
   `remove()`, neither with a product caller) · supabase/tests (the trigger under the RLS gate)
 reason: R-82 wants every claim executed on the real infrastructure. With DW-48 honoured, `write-denied`
   has no product caller until Epic 7's deploy path makes the first allowed write (and can then be driven
-  by asking for one outside the list); `staff-removed` none until Epic 7 stores and removes the Staff
-  Access Token; and the DECRYPT path — `call()` reading `vault.decrypted_secrets` and signing with what it
+  by asking for one outside the list); `staff-removed` had none until **Story 3.6's Manage keys**, which
+  turned out to be the story that gives the token a way in and a way out rather than Epic 7 — the token is
+  ASKED for at first deploy, but FR-C8 has always said it can be added and removed at any time, and that is
+  this screen; and the DECRYPT path — `call()` reading `vault.decrypted_secrets` and signing with what it
   read, the `vault_decrypt` audit row with it — none until Story 3.3's settings read, the first product
   call made with a stored key rather than a typed one. Each of those stories adds the matching step to its
   own harness and closes its part of this entry.
@@ -1919,13 +1927,28 @@ reason: FR-C6's rule is one rule — purge the orphan after a notice and a downl
 
 ### DW-76: removing a credential leaves no line in the credential audit log, and the log has no name for one
 
+**CLOSED by Story 3.6 (Dev, 2026-09-09.)** `public.credential_action` gained `credential_change` —
+one value, appended, in `supabase/migrations/20260909180000_credential_audit_and_key_id.sql` with
+`SCHEMA.sql`, `RLS-TEST.sql` and the gate's copies in the same commit — and `store()` and `remove()`
+in `apps/web/server/ghost-admin/index.ts` each write one row through it, **inside the same
+`sql().begin()` as the write it describes**, so a rolled-back store leaves no row claiming it
+happened. `detail` carries `{ kind, direction }` and nothing else (`AuditDetail` is the guard); each
+row is stamped with its own route (`sites/keys`, `sites/keys/remove-token`, `sites/connect`,
+`sites/disconnect`), which is why this story gave each writer its own route constant.
+**`remove()`'s row is conditional and that is deliberate:** the update matches on a ref that is NOT
+NULL, and `disconnectSite` removes BOTH kinds on every press while nothing stores a staff token until
+Epic 7 — so an unconditional row would have written a false "the staff credential came out" line on
+every disconnect for ever, which is this entry's own argument against `vault_decrypt` one table over.
+The `vault_decrypt` counts the harness derives are unchanged: a decryption is still one row per
+decryption.
+
 plain: Inflozo keeps a private tamper-log of everything that touches a customer's Ghost keys — every call to
   their Ghost, every time a key is unlocked. It is the only safeguard in this area that *detects* rather than
   prevents. **Taking a key back out writes nothing to it**, and the log's list of allowed entry types is a
   fixed list in the database with no name that means "a key was removed". So recording one is a database
   change — and Story 3.5's spec forbids one in bold. The removal itself is proved a stronger way: the harness
   reads the locked store directly and sees the key gone.
-status: open
+status: **closed** — Story 3.6 Dev, 2026-09-09 (see the block above)
 severity: low
 origin: Story 3.5 Dev (2026-09-09) — the spec's acceptance criterion asked for "an audit row for each
   removal"; `remove()` was READ (standing rule 1) and writes none

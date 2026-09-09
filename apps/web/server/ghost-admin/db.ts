@@ -39,6 +39,14 @@ import { AdminError } from './admin-rule.ts'
 
 let client: postgres.Sql | undefined
 
+/**
+ * WHAT A WRITER MAY BE HANDED TO WRITE ON: the pooled client, or a transaction inside it. Both are
+ * `ISql` — callable as a tagged template, with `json()` on them — and neither is assignable to the
+ * other, so a helper that must work inside `begin()` and outside it takes this. Exported from here
+ * because `postgres` has exactly one importer and this file is it (`server-wiring.test.ts`).
+ */
+export type Client = postgres.ISql
+
 export function sql(): postgres.Sql {
   if (!client) {
     const url = process.env.SUPABASE_DB_POOLER_URL

@@ -490,6 +490,24 @@ begin
   if bad is not null then raise exception 'FAIL: server-only table is granted to a client: %', bad; end if;
   raise notice 'PASS: no server-only table holds a client grant';
 
+  -- 5c'. STORY 3.6's NEW COLUMN, AND THE SAME QUESTION ASKED OF IT ON ITS OWN. `admin_key_id`
+  -- holds the Admin key's PUBLIC id half, and it is drawn on Manage keys -- so the temptation the
+  -- day someone wants it in a page is a column grant, which 5c above would catch only while every
+  -- OTHER column of the table stayed ungranted (`has_any_column_privilege` answers for the table).
+  -- Asserted per column, and its EXISTENCE with it: a migration that silently did not apply would
+  -- otherwise leave every assertion here passing over a column that is not there.
+  if not exists (select 1 from pg_attribute a
+                 where a.attrelid = 'private.site_credentials'::regclass
+                   and a.attname = 'admin_key_id' and a.attnum > 0 and not a.attisdropped) then
+    raise exception 'FAIL: private.site_credentials has no admin_key_id column (Story 3.6''s migration)';
+  end if;
+  select string_agg(r.who, ', ') into bad from (values ('anon'),('authenticated')) as r(who)
+  where has_column_privilege(r.who, 'private.site_credentials', 'admin_key_id', 'SELECT,INSERT,UPDATE');
+  if bad is not null then
+    raise exception 'FAIL: private.site_credentials.admin_key_id is granted to a client: %', bad;
+  end if;
+  raise notice 'PASS: admin_key_id exists and no client holds a privilege on it';
+
   -- 5d. A function with a null ACL is EXECUTE to PUBLIC, which includes anon.
   --
   -- ⚠️ Also de-hardcoded 2026-08-21, for the same reason and found by the same audit:
