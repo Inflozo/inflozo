@@ -1565,6 +1565,17 @@ To be run at Dev and again at Review, on the real infrastructure (R-82), Node 24
 (`export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH`). Every key is named by its
 variable; no value is printed.
 
+**Deploy (2026-09-09).** App code only — no migration, so nothing else to deploy. The push of
+`3a82bed5` (the fifth review, already green above) built on CI (`VERCEL_TOKEN`, `VERCEL_PROJECT`,
+`VERCEL_TEAM_ID`): GitHub Actions run `34302152793` **completed / success**
+(`GITHUB_TOKEN`, `actions/runs?head_sha=3a82bed5…`), and the production deployment
+`dpl_3bzGvgQHjtvntKeAr8TmbTQT411j` is **READY**, `target: production`, `meta.githubCommitSha` equal
+to `3a82bed56c4db0d5770a84f0e98a12c4c1acd055`, aliased to `app.inflozo.com` (and `inflozo.com`,
+`www.inflozo.com`) — confirmed through the Vercel API before anything below is trusted, the same
+control the reviews above already used.
+
+**Deployment:** https://app.inflozo.com (`dpl_3bzGvgQHjtvntKeAr8TmbTQT411j`)
+
 **Commands:**
 - `pnpm check` (root: `eslint .`, `tsc --noEmit`, `node --test '*.test.ts'`) -- expected: exit 0,
   every existing test still green plus the new `probe-rule` and `style-pack` cases
