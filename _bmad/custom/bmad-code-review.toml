@@ -9,7 +9,7 @@ activation_steps_append = [
 ]
 
 on_complete = """
-Before you end: `python3 {project-root}/tools/story-board.py`, then `python3 {project-root}/tools/doc-audit.py --check` twice, then commit and push to main as `Story <epic>.<story> - Review - <one line about what the review found>`. Never push a red gate. If `## Questions for the owner` has any question without a `Ruled:` line, repeat it in the summary in R-83 shape.
+Before you end: `python3 {project-root}/tools/story-board.py`, then `python3 {project-root}/tools/doc-audit.py --check` twice, then commit and push to main as `Story <epic>.<story> - Review - <one line about what the review found>`. Never push a red gate. If `## Questions for the owner` has any question that is still OPEN, repeat it in the summary in R-83 shape. A question is OPEN until the owner rules it, and the board reads that state rather than inferring it: a ruling carries his signature and the date — `**Ruled: option 1 (owner, 2026-09-09).**` — and a question still his carries the token `**Ruled:** _(awaiting the owner)_`. A block that claims a ruling with neither mark FAILS the gate rather than being guessed at (`tools/story-board.py`).
 """
 
 [[workflow.review_layers]]

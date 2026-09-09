@@ -352,9 +352,49 @@ def ruled_line(line):
     return bool(m.group(1)) or ':' in m.group(3)
 
 
+# THE OWNER'S SIGNATURE, AND IT IS WHAT MAKES A RULING A RULING — not the word "Ruled".
+# A ruling is a DATED DECISION HE MADE: `(owner, 2026-09-05)`, `(the owner, 2026-09-09)`,
+# `*(owner, 2026-09-04)*`, or a bare `(2026-09-08)` beside his name in the prose. Measured across
+# every spec in this repository when this contract landed: 50 of the 51 blocks the old heuristic
+# called answered carry it, and the ONE that does not is the misfile that produced this rule —
+# `**Ruled:** _(awaiting the owner)_ …`, which names the owner and carries a date and was read as
+# an answer because the words after the colon were not empty (owner, 2026-09-09).
+RULED_STAMP = re.compile(r'\(\s*(?:the\s+)?owner[^)]*?20\d\d-\d\d-\d\d\s*\)'
+                         r'|\(\s*20\d\d-\d\d-\d\d\s*\)', re.I)
+# The one way to say "still his" — a fixed token, so it can never be mistaken for a decision. It
+# may carry a note after it (what Dev shipped meanwhile, say); the token is what the board reads.
+OPEN_MARK = re.compile(r'_\(awaiting the owner\)_', re.I)
+
+
 def answered(blk):
-    """True when any line of the block is a ruling that carries a ruling."""
-    return any(ruled_line(l) for l in blk.splitlines())
+    """True when the block carries a ruling the OWNER signed and dated.
+
+    THIS IS A CONTRACT, NOT A HEURISTIC, AND THAT IS THE WHOLE POINT. Three times the board read
+    an open question as answered and kept it out of the owner's inbox — Story 1.1's two, Story
+    1.5's tab-order, and Story 3.5's Question 3 — and three times the answer was to tighten a
+    guess about prose: first "the label must carry words", then "the label must look like a
+    label". Each tightening held until someone wrote a placeholder in a shape nobody had
+    predicted, because a rule that infers a DECISION from the SHAPE OF A SENTENCE has no floor.
+
+    So the inference is gone. A question is answered when its ruling carries `RULED_STAMP` — the
+    owner's name and the date he ruled — and it is open otherwise, which is the safe direction:
+    erring towards "not ruled" only ever shows a question that is already answered, while erring
+    the other way loses one. And nothing sits silently in the wrong state either, because
+    `unclassifiable_questions()` FAILS THE GATE on a block that claims a ruling without the stamp
+    and is not marked open. Flag, do not guess (standing rule 6).
+    """
+    if OPEN_MARK.search(blk):
+        return False
+    return any(ruled_line(l) and RULED_STAMP.search(l) for l in blk.splitlines()) \
+        or bool(RULED_STAMP.search(_ruling_part(blk)))
+
+
+def _ruling_part(blk):
+    """The block from its ruling label down — where the stamp is allowed to live, so a date in the
+    ASK ("Raised at Dev, 2026-09-09") is never mistaken for the owner having signed anything."""
+    lines = blk.splitlines()
+    cut = next((i for i, l in enumerate(lines) if ruled_line(l)), None)
+    return '' if cut is None else '\n'.join(lines[cut:])
 
 
 def split_question(blk):
@@ -425,8 +465,9 @@ def question_blocks(text):
         if not blk:
             continue
         first = re.sub(r'^#+\s*|\*', '', blk.split('\n', 1)[0]).strip()
-        # ponytail: "answered" is a line starting Answer/Answered/Ruled/Ruling/Decision — the spec has no
-        # field for it yet; add one to the template if this heuristic ever misfiles a question.
+        # THE STATE IS READ, NEVER INFERRED (see `answered`): a ruling the owner signed and dated,
+        # or the `_(awaiting the owner)_` token, and a block that is neither fails the gate rather
+        # than being guessed at — `unclassifiable_questions()` below.
         ask, opts, ruled = split_question(blk)
         if len(first) > 110:
             first = first[:110].rsplit(' ', 1)[0] + ' …'
@@ -440,6 +481,34 @@ def question_blocks(text):
             and '?' not in out[0]['text']:
         out.pop(0)
     return out
+
+
+def unclassifiable_questions(specs):
+    """Every question whose state the board cannot READ — a block that claims a ruling but carries
+    neither the owner's dated signature nor the open token.
+
+    THIS IS WHY THE BOARD CAN BE THE SOURCE OF TRUTH. Its old failure was silent: it decided, it
+    decided wrongly, and the page looked exactly as confident either way, so a question the owner
+    had never seen sat marked `ruled` until he happened to read the block. A generator that would
+    rather guess than stop cannot be an authority. This one stops: the gate runs
+    `story-board.py --check` on every commit, so a spec that leaves a question in an unreadable
+    state cannot be committed at all, and the page can only ever be built from questions whose
+    state was stated rather than inferred.
+
+    Returns (story key, heading, the offending ruling) per offender."""
+    bad = []
+    for key, spec in specs.items():
+        for q in (spec or {}).get('questions', []):
+            ruling = q['parts'][2]
+            if not ruling or q['answered'] or OPEN_MARK.search(q['text']):
+                continue
+            # ONE LINE PER OFFENDER, NAMING ITSELF, because `doc-audit.py` reports a refusing tool
+            # by its LAST line of stderr: a message split across lines showed the gate the ruling
+            # with no story and no question on it (executed 2026-09-09). The key is a `(epic, s)`
+            # tuple internally and `3.5` to everyone else.
+            k = f'{key[0]}.{key[1]}' if isinstance(key, tuple) else str(key)
+            bad.append(f'{k} · {q["title"][:70]} — carries {" ".join(ruling.split())[:80]!r}')
+    return bad
 
 
 def load_specs(files):
@@ -1883,7 +1952,7 @@ Example: you remove your test site; two projects were last deployed there.
 2. Delete the projects with the site.
    One action, but it throws away work.
 
-Answer: 1 — keep the projects.
+Answer: 1 — keep the projects (owner, 2026-09-04).
 
 **2. Should the removed site's name be free to reuse straight away?**
 
@@ -1966,18 +2035,49 @@ def demo():
     assert flat['3.1']['lane'] == 'progress' and flat['3.2']['lane'] == 'ready' and flat['3.3']['lane'] == 'backlog'
     # 4.1: blocked from the tracker and the trail; the question carries an Answer line
     assert flat['3.4']['blocked'] and flat['3.4']['spec']['questions'][0]['answered']
-    # an empty ruling label is a placeholder, never an answer — it used to hide the question
-    assert not answered('### Q\n\n**Ruled:**\n') and answered('### Q\n\n**Ruled:** option 1\n')
-    # …and prose is not a ruling. A wrapped line beginning "answer"/"ruling" read as one, which marked
-    # 1.5's tab-order question Ruled and kept it out of the owner's inbox (owner, 2026-09-05).
+    # ── THE RULING CONTRACT. A ruling is the owner's SIGNED, DATED decision; anything else is open,
+    #    and a block that claims a ruling and carries neither the signature nor the open token stops
+    #    the build rather than being guessed at. Every shape below is one the repository has really
+    #    written — the assertions are the contract, not examples of it.
+    # The signature is what answers, in each of the shapes the specs use:
+    assert answered('**Ruled (owner, 2026-09-05): option 1 — leave it as built.**')
+    assert answered('**Ruled: option 1 (the owner, 2026-09-09).** Build it in Epic 7.')
+    assert answered('**Ruled:** option 2 (owner, 2026-09-07) — recorded as **R-95**.')
+    assert answered('**Ruled:** "leave it" *(owner, 2026-09-04)* — **option 1**.')
+    assert answered('Ruled: option 1 — the eighth email (owner, 2026-09-07).')
+    # …and its absence does not, however much the line LOOKS like a ruling. Three questions were
+    # hidden from the owner by successive guesses at prose — 1.1's two, 1.5's tab-order, and 3.5's
+    # Question 3 — so the inference is gone (owner, 2026-09-09).
+    assert not answered('### Q\n\n**Ruled:**\n')            # the empty placeholder
+    assert not answered('### Q\n\n**Ruled:** option 1\n')    # unsigned: nobody said who or when
+    assert not answered('**Ruled** — option 1')
+    assert not answered('Answer: 1 — keep the projects.')
+    # THE MISFILE THAT PRODUCED THIS CONTRACT, kept as a case so it cannot come back: a placeholder
+    # that names the owner and carries a date, and was read as an answer because the words after
+    # the colon were not empty. The open TOKEN decides, and it beats any ruling text beside it.
+    assert not answered('**Raised at Dev, 2026-09-09.** Ask.\n\n1. yes\n2. no\n\n'
+                        '**Ruled:** _(awaiting the owner)_ — Dev shipped option 1 in the meantime.')
+    assert not answered('**Ruled:** _(awaiting the owner)_ (owner, 2026-09-09)')
+    # …and prose is still not a ruling label at all.
     assert not answered('either way. It is here because the\nanswer is yours and not mine, and if you pick 2')
     assert not answered('the\nruling amends them** (R-74 is the owner\'s to amend, and he just did)')
-    assert answered('**Ruled (owner, 2026-09-05): option 1 — leave it as built.**')
-    assert answered('Answer: 1 — keep the projects.')
-    # The label must LOOK like a label: bold OR a colon. A dash alone is prose (review, 2026-09-05).
-    assert answered('**Ruled** — option 1') and not answered('Ruled — option 1')
-    # …and a date in brackets before the colon does not hide the colon (review, 2026-09-06)
-    assert answered('Ruled (owner, 2026-09-05): option 1') and not answered('Ruled (owner, 2026-09-05)')
+    assert not answered('Ruled (owner, 2026-09-05)')          # a label with no ruling after it
+    # A DATE IN THE ASK IS NOT A SIGNATURE. Every question this story writes is dated where it was
+    # raised, and reading that as the owner's answer would hide it exactly as before.
+    assert not answered('Raised at Dev (owner, 2026-09-09) — ask.\n\n1. yes\n2. no\n')
+    # ── AND THE REFUSAL. A question that claims a ruling but carries neither mark is UNREADABLE,
+    #    and the board stops instead of rendering a state it invented.
+    unreadable = {'k': {'questions': question_blocks(
+        '### Question 1 - one\n\nAsk.\n\n1. yes\n2. no\n\n**Ruled:** option 1, I think.\n')}}
+    bad = unclassifiable_questions(unreadable)
+    assert len(bad) == 1, \
+        'an unsigned ruling did not stop the build — the board would have guessed at it'
+    # …and it NAMES ITSELF on that one line, because the gate reports only the last line of stderr.
+    assert 'Question 1' in bad[0] and 'option 1, I think' in bad[0], bad[0]
+    for fine in ('**Ruled:** option 1 (owner, 2026-09-05).', '**Ruled:** _(awaiting the owner)_', ''):
+        ok = {'k': {'questions': question_blocks(
+            '### Question 1 - one\n\nAsk.\n\n1. yes\n2. no\n\n' + fine + '\n')}}
+        assert not unclassifiable_questions(ok), f'this is readable and was refused: {fine!r}'
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
     # …and the production domains count while a mere @inflozo.com ADDRESS does not. The first
@@ -2040,7 +2140,7 @@ def demo():
                            '### Question 2 - another\n\nAsk.\n\n1. yes\n2. no\n')
     assert len(keep) == 2, 'a headless question that carries its options was dropped as a preamble'
     wrapped = question_blocks('### Question 1 - a real one\n\nAsk.\n\n1. yes\n2. no\n\n'
-                              '**Ruled: option 1**. It falls back only where\n'
+                              '**Ruled: option 1** (owner, 2026-09-05). It falls back only where\n'
                               'Question 1 still decides. Executed as `x`.\n')
     assert len(wrapped) == 1 and wrapped[0]['answered'], \
         f'a wrapped prose line beginning "Question N" started a block: {[q["title"][:40] for q in wrapped]}'
@@ -2114,7 +2214,22 @@ def main():
                   f'deferred-work.md; a DW id is an identity, so one entry is lost to every cite '
                   f'and every sweep that keys on it', file=sys.stderr)
             return 2
-    out = render(real())
+    data = real()
+    # A QUESTION WHOSE STATE THE BOARD CANNOT READ STOPS THE BUILD — it is not rendered in a guessed
+    # state and it is not quietly dropped. The gate runs this file with `--check` on every commit,
+    # so a spec cannot reach `main` with a question the owner might never be shown. `dup_dw_ids`
+    # above is the same shape: a refusal, at exit 2, that names what to fix.
+    unread = unclassifiable_questions(data['specs'])
+    if unread:
+        print('story board: UNREADABLE QUESTION — the board decides `ruled` vs `open` by reading, '
+              'never by inferring, so it will not render these. A ruling carries the owner\'s '
+              'signature and date — `(owner, 2026-09-05)` — and a question still his carries the '
+              'token `_(awaiting the owner)_`. These carry neither:', file=sys.stderr)
+        for line in unread:
+            print(f'  {line}', file=sys.stderr)
+        print(f'story board: UNREADABLE QUESTION — {"; ".join(unread)}', file=sys.stderr)
+        return 2
+    out = render(data)
     if '--check' in sys.argv:
         cur = open(OUT, encoding='utf8').read() if os.path.exists(OUT) else ''
         if cur.strip() != out.strip():
