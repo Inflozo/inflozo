@@ -2,9 +2,9 @@
 title: 'Story 3.6 — Manage keys, and a partially credentialed site as an ordinary state'
 type: 'feature'
 created: '2026-09-09'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '8c301682b72bc598e082f62c4f6813244418dfbd'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -285,6 +285,43 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
 - Given the credential store cannot be reached, when I save or remove, then nothing changes and the
   screen says why.
 
+
+### Review Findings
+
+Five layers ran — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the
+Real-infra verifier — and none failed. Two findings are the owner's; the rest were patched in this
+phase or deferred with a reason.
+
+- [ ] [Review][Decision] **Production is broken right now: the code is deployed and its migration is not applied** — Commit `41ca519a` IS live (CI run `34369485655` green, Vercel READY at that SHA), but production's `private.site_credentials` has no `admin_key_id` (`42703`) and `public.credential_action` has no `credential_change` (`22P02`) — both reproduced against the hosted database inside rolled-back transactions, each with a passing minimal-pair control. `connectSite` calls `store()`, so **connecting any Ghost site fails on production**, not just the new screen. This is a collision between two approved rules, not a coding mistake: Epic 2's says a migration is applied by hand **in the Deploy phase**, DW-7 says CI publishes **on every push**. Every migration-bearing story will hit it. See `## Questions for the owner`, Question 1.
+- [ ] [Review][Decision] **`keys_other_site` cannot fire for the hazard the frozen acceptance criterion names** — Executed against the real Ghosts, with a passing control: T1's own key → T1 `GET /admin/config/` = **200**; **T3's key → T1 = 401 "Unknown Admin API Key"**; T1's key → T3 = 401. Both `fetchWithKey` calls in `saveKeys` target `siteUrl: site.url` — this record's Ghost — so another install's key is refused by Ghost's own 401 (`ghost_unknown_key`) and the `GET /admin/site/` comparison is never reached. The guard as built fires only when *this* Ghost's self-reported url has drifted from the stored one, which is a different (and real) case. So the site IS refused and nothing IS written, but the AC's "the sentence names disconnect + reconnect" is false, and the harness's `keys-other-site` step will fail at Review. See `## Questions for the owner`, Question 2.
+
+- [x] [Review][Patch] `saveKeys` swallowed every Ghost refusal into `keys_failed` — `redirect()` sat inside the `try`, and its `NEXT_REDIRECT` throw was caught by the sibling `catch` [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] The Content API key's **Save** button went permanently inert after its first press — `useSubmitting()`'s `guard` claimed the in-flight slot while `onSubmit`'s `preventDefault()` kept `useFormStatus().pending` from ever rising, so the release effect never re-ran [apps/web/app/(app)/app/(authed)/sites/keys-content-form.tsx]
+- [x] [Review][Patch] The Content key's Save button dropped its busy label the instant it was pressed, and its `NEXT_REDIRECT` rejection was unhandled — `start(() => { void saveKeys(data) })` returns `undefined`, and React 19.2.8 only holds a transition open (and handles the rejection) when the scope callback RETURNS the promise [apps/web/app/(app)/app/(authed)/sites/keys-content-form.tsx]
+- [x] [Review][Patch] `ghost_refused` printed the site's name where the HTTP status belongs — "Ghost refused the connection (HTTP My Blog)" [apps/web/app/(app)/app/(authed)/sites/keys-panel.tsx]
+- [x] [Review][Patch] A failed **Remove token** said "We couldn't save your key just now. Nothing was connected" — a connect's sentence on a removal [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] `credential_missing` had no sentence, so a **Test connection** with no stored secret read "We couldn't save that just now. Nothing changed" [apps/web/lib/connect-rule.ts]
+- [x] [Review][Patch] The Content key was written in two round trips and a failed mirror was only logged — the key stored while the row still read **Not added** [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] The "Moved domains?" hint promised a 90-day snapshot clock for an old record that is still connected — `findSiteByAdminKeyId` returns `disconnectedAt` and the caller discarded it [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] `keysFieldOf` put four "check the address" codes under the Admin key field on the one screen whose address cannot be changed, and disagreed with the wizard's `FIELD_OF` over the same vocabulary [apps/web/lib/connect-rule.ts]
+- [x] [Review][Patch] A pooler blip in `credentialsOf()` took the whole Manage keys screen to the error boundary over a value that only draws a mask [apps/web/app/(app)/app/(authed)/sites/keys/page.tsx]
+- [x] [Review][Patch] `AuditDetail.ms` was made optional for every row, not just the new one, weakening the contract that every Ghost-call row carries its duration [apps/web/server/ghost-admin/admin-rule.ts]
+- [x] [Review][Patch] The migration was not re-runnable, though it is applied to the hosted database by hand and a retry is exactly what a hand-apply invites [supabase/migrations/20260909180000_credential_audit_and_key_id.sql]
+- [x] [Review][Patch] `keys-token` could leave a live full-Administrator Staff Access Token in Vault if the run aborted between the store and the removal [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] Two hand-typed counts in the new harness steps, under a docstring that forbids them [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The harness docstring named none of the ten new steps, though the Code Map required it and the Verification section claimed it did [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `remove()`'s doc comment still claimed Manage keys renders "Key removed 15 Aug", and `credentialsOf` fetched two rotation stamps nothing draws [apps/web/server/ghost-admin/index.ts]
+- [x] [Review][Patch] `keysSite`'s comment claimed "THE SAME THREE ANSWERS `sites/keys/page.tsx` GIVES" — the page throws on a failed read, the action redirects [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] The Spec Change Log omitted three real departures: `token_malformed` against the frozen matrix's `credential_malformed`, `findSiteByAdminKeyId`'s required third argument, and the moved-domains redirect pre-empting Story 3.4's S2c brand screen
+- [x] [Review][Patch] Owner's manual test step 10's "or after disconnecting" path cannot produce the hint — a re-adopted record is the same row, which `exceptSiteId` excludes
+- [x] [Review][Patch] `EXPERIENCE.md:128`'s "Reached from" cell still listed "any Reconnect needed" while its own appended prose says the ⋯ menu is the only entry point
+- [x] [Review][Patch] DW-54's edited entry ended mid-sentence and its `location` still claimed `remove()` has no product caller — `disconnectSite` falsified that in 3.5 and `removeToken` falsifies it again here
+
+- [x] [Review][Defer] `admin_key_id` is never backfilled, so every site connected before this story draws no Admin mask and can never raise the moved-domains hint [apps/web/server/ghost-admin/index.ts] — deferred, needs a decision about reading Vault from a migration; DW-78
+- [x] [Review][Defer] `ORPHAN_SNAPSHOT_DAYS` is a second home for the 90 days `20260907150000_account_deletion_window.sql` already computes, with nothing asserting they agree [apps/web/lib/connect-rule.ts] — deferred, pre-existing split across two languages; DW-79
+- [x] [Review][Defer] "A rolled-back store leaves no row claiming it happened" is asserted in four places and induced nowhere [apps/web/server/ghost-admin/index.ts] — deferred, wants a fault-injection fixture in the RLS gate; DW-80
+- [x] [Review][Defer] A crafted post carrying several credential fields at once can store the Admin key and then redirect saying "Nothing changed" [apps/web/app/(app)/app/(authed)/sites/actions.ts] — deferred, unreachable from the screen's three single-field forms; DW-81
+
 ## Design Notes
 
 **Why no reveal control, and what is drawn instead.** B20 masks each key with its first *and last*
@@ -335,6 +372,84 @@ and its email fires once per healthy→unhealthy transition with a 7-day cap. A 
 make the card claim a check the daily job did not make. So the result is drawn on this screen and
 stored nowhere, and the "· 2 min ago" stamp arrives with 3.7.
 
+## Questions for the owner
+
+Two came out of the code review on 2026-09-09. The first is urgent — your live site cannot connect a
+Ghost site right now — and the second changes one sentence a customer might read.
+
+### Question 1 — the database change and the code arrive in the wrong order, and your live site is broken until they meet
+
+**What happened.** This story needs one small change to the database (two new entries). The rule we
+have been following says a database change is applied **by hand, later, in the Deploy step**. But
+since 5 September, GitHub publishes the code to your live site **within minutes of every push**. So
+the code went live on Tuesday expecting something the database does not have yet.
+
+**What that means today.** On `app.inflozo.com`, **connecting a Ghost site fails** — not just the new
+API keys screen, all of it. Nothing is damaged and nothing is half-saved (the site record is rolled
+back cleanly), but the button does not work. It will keep failing until the database change is
+applied. This is not a mistake in the code — it is two of our own rules pulling opposite ways, and
+**every future story that changes the database will hit it again**.
+
+**An example.** Think of it like sending out a new order form that asks for a customer's delivery
+slot, before the warehouse system has a place to record one. The form is fine, the warehouse is fine,
+but every order bounces until someone adds the field.
+
+**Your options:**
+
+1. **Apply the database change first, on its own, before the code that needs it goes out.** One extra
+   push at the start of a story instead of one at the end. The database is then always at least as
+   new as the code, so this can never happen again. **(RECOMMENDED)** — it is the smallest change to
+   how we work, and it removes the broken window entirely rather than shortening it.
+2. **Keep the order, and write every new bit of code so it still works while the database is behind.**
+   No change to your routine, but every story pays for it in extra code, and that code is only ever
+   exercised during the gap.
+3. **Stop publishing on every push.** Publish only when the Deploy step says so. This gives the most
+   control and is the biggest change — it would undo the automatic publishing you approved on
+   5 September.
+
+**Either way, the immediate fix is the same and it is the Deploy step's:** apply this story's
+database change to the live database, after which connecting works again. Say the word and it goes
+out with the Deploy phase.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 2 — what Inflozo should say when you paste the wrong site's key
+
+**What we promised.** The spec says: if you paste an Admin API key that belongs to a *different*
+Ghost site, Inflozo refuses it and says *"These keys belong to a different Ghost site. Moving a site
+means disconnecting this one and connecting the new address."*
+
+**What actually happens.** We tested it against two real Ghost sites. Your own Ghost is the one being
+asked, and it simply does not recognise a key it never issued — it answers "Unknown Admin API Key".
+So the key **is** refused and **nothing is saved** (that part of the promise holds), but the sentence
+the customer sees is the ordinary one: *"Ghost refused this Admin API key. Copy it again from the
+Inflozo integration."* Inflozo has no way to tell "this key is from your other site" apart from "this
+key is wrong", because your Ghost gives the same answer to both.
+
+**An example.** You run `orbitweekly.com` and `sidequest.blog`. You open API keys for
+`orbitweekly.com` and paste `sidequest.blog`'s Admin key by mistake. It is refused — good — but the
+message tells you to copy the key again from the integration, rather than telling you it belongs to
+your other site.
+
+**The extra check we built is not wasted:** it does catch a real, different case — when your Ghost
+now reports a *different web address* than the one Inflozo has on file, which is exactly what a
+domain move looks like. That is where the "disconnect and connect the new address" sentence belongs.
+
+**Your options:**
+
+1. **Accept your Ghost's own answer for the wrong-key case, and keep the extra check for the domain
+   move it really does catch.** The customer is still protected — nothing is saved — they just get
+   the plainer sentence. **(RECOMMENDED)** — it is honest about what we can actually tell apart, it
+   costs nothing, and the domain-move sentence still appears where it is true.
+2. **Broaden the sentence** so the ordinary refusal also mentions the possibility: *"…Copy it again
+   from the Inflozo integration — and check you are not pasting another site's key."* Slightly more
+   helpful, slightly longer, and shown on every mistyped key.
+3. **Keep trying to tell them apart** by checking the pasted key against every other Ghost site you
+   have connected. It would give the exact sentence we promised, but only for sites already in
+   Inflozo, and it adds work to every key you paste.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 Follow these on the real site after Deploy fills the URLs. You will need the Ghost site you connected
@@ -377,12 +492,19 @@ for Story 3.4 or 3.5, and Ghost Admin open in another tab.
 9. **URL:** same · **Screen:** the API keys window · **Do:** remove the token again. · **See:** the
    block goes back to **Not added**, the site is **still Connected**, and nothing about your Ghost site
    changed.
-10. **URL:** `https://app.inflozo.com/sites` · **Screen:** Sites · **Do:** *(only if you are on Pro, or
-    after disconnecting)* connect **a second, different address** using **the same Ghost site's keys** —
-    the way it would look if you had moved your site to a new domain. **Dummy data:** the new address,
-    and the same Admin + Content keys. · **See:** it connects, and the new card carries a note asking
-    whether you moved domains, telling you to re-point your projects, and saying your old site's
-    safety-net copy is kept for 90 days.
+10. **URL:** `https://app.inflozo.com/sites` · **Screen:** Sites · **Do:** *(only if your Ghost site
+    answers at **two working addresses** — on Ghost(Pro) your `something.ghost.io` address and your
+    own domain both do)* connect the **second** address using **the same Ghost site's keys**, the way
+    it would look if you had moved your site to a new domain. **Dummy data:** the second address, and
+    the same Admin + Content keys. · **See:** it connects, and the new card carries a note asking
+    whether you moved domains and telling you to re-point your projects. If you left the first one
+    **connected**, that is all it says. If you **disconnected** the first one before doing this, it
+    also says your old site's safety-net copy is kept for 90 days — because that 90-day clock only
+    starts when a site is disconnected.
+    · **If you only have one address, skip this step and say so** — it cannot be done by
+    disconnecting and reconnecting the *same* address, because Inflozo recognises that as the same
+    site coming back rather than a move (corrected at the review of 2026-09-09; the old wording asked
+    for something that could not be done).
 11. **URL:** same, on your **phone** · **Screen:** Sites → Manage API keys · **Do:** repeat steps 1, 2
     and 4. · **See:** the menu opens on the screen, the keys window fits, and the three blocks stack
     without anything running off the edge.
@@ -524,6 +646,53 @@ before the Deploy commit is written. Frame screenshots at 1440 / 834 / 390 (`--s
 and B20 belong to Review. The owner's manual test (R-80) is his, on the production domains, after
 Deploy.
 
+### Review phase, 2026-09-09 — what each command returned
+
+Five review layers ran and none failed. **R-82: the real services are named by the variable each key
+is held under and never by its value.**
+
+- `pnpm check` (Node 24 on PATH) — **exit 0**, **241 tests, 241 pass, 0 fail** in `apps/web` (240
+  before this phase; the extra one is the review's own code-has-a-sentence assertion), plus 1 each in
+  `packages/{ghost-shim,section-runtime,theme-compiler}`.
+- `pnpm build` — **exit 0**, "Compiled successfully", `ƒ /app/sites/keys` in the route table.
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, on the migration as this phase made it
+  idempotent. It ended on the DW-44 vault assertions and printed `PASS: admin_key_id exists and no
+  client holds a privilege on it`.
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings**.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **RESULT: all steps passed**, against
+  Supabase (`SUPABASE_URL` + `SUPABASE_SECRET_KEY`: `vault-off-rest` 404/404/404 with `/rest/v1/sites`
+  → 200 as its own positive control) and both Ghosts (`GHOST6_ADMIN_API_KEY`, `GHOST5_ADMIN_API_KEY`).
+  The embedded browser script parses with this phase's `try`/`finally` in it.
+- **The cross-site key question, executed against the real Ghosts with its own control**
+  (`GHOST6_ADMIN_API_KEY`, `GHOST5_ADMIN_API_KEY`, `GHOST6_URL`, `GHOST5_URL`): T1's own key →
+  T1 `GET /admin/config/` = **200** (the control — without it the two 401s prove nothing); **T3's key
+  → T1 = 401 `UNKNOWN_ADMIN_API_KEY`**; T1's key → T3 = 401. This is the evidence behind Question 2.
+- **`redirect()` inside a `try`, executed against the installed Next 16.3.1**: `redirect()` throws a
+  plain `Error` carrying `digest: 'NEXT_REDIRECT;…'` (`next/dist/client/components/redirect.js:51-53`),
+  so the sibling `catch` swallowed it and the landing was `?keys=keys_failed` where
+  `?keys=ghost_unknown_key` was intended. Patched with `isRedirect`.
+- **React's transition tracking, read in the installed React 19.2.8**
+  (`react.development.js:1158-1167`): `startTransition` holds the transition open, and attaches its
+  own rejection handling, ONLY when the scope callback returns the thenable. This is the evidence
+  behind the Content-key busy-label patch.
+
+**Did NOT hold, and it is Question 1:**
+
+- `python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com` — **RESULT: FAILED,
+  exit 1**, at the first connect. Commit `41ca519a` **is** deployed (CI run `34369485655` green;
+  Vercel production READY at that SHA), but the migration is **not applied to the hosted database**:
+  read through `SUPABASE_DB_POOLER_URL`, production's `private.site_credentials` has no
+  `admin_key_id` and `public.credential_action` has no `credential_change`. Both of `store()`'s new
+  writes were reproduced against production inside **rolled-back** transactions — `42703` and `22P02`
+  — each with a passing minimal-pair control (`admin_key_vault_ref` selects fine;
+  `'vault_decrypt'::public.credential_action` casts fine). `connectSite` calls `store()`, so
+  connecting any Ghost site fails on production until the migration lands.
+- **Therefore all ten of this story's live steps are NOT EXECUTED** — not failed, never reached:
+  `keys-screen`, `axe-keys-screen`, `keys-malformed`, `keys-other-site`, `keys-rotate`, `keys-token`,
+  `keys-test`, `keys-js-off`, `keys-forged`, `moved-domains`. Frame screenshots (`--shots` against
+  S11d and B20) are blocked with them. **They run at Deploy, immediately after the migration is
+  applied by hand**, and `keys-other-site` is expected to fail as written until Question 2 is ruled.
+
 ## Spec Change Log
 
 Four departures from the Code Map, each recorded here rather than made silently. None changes an
@@ -558,6 +727,28 @@ be widened rather than weakened.
    story adds three more call sites to those same two endpoints and none to a third. The contract is
    which endpoints Inflozo reaches, not how many callers reach them, so the set is what is compared.
    The Ask First it guards — a third Admin path — still fails it.
+
+**Three more departures, found by the code review of 2026-09-09 and recorded here rather than left
+in the code alone.** None changes an acceptance criterion; the first two were made at Dev and not
+written down, and the third is the review's own.
+
+5. **A malformed Staff Access Token answers `token_malformed`, not the frozen matrix's
+   `credential_malformed`.** The matrix row *Add the Staff token* says `credential_malformed under
+   staff_token`; the Code Map introduces `token_malformed` and the code follows the Code Map. The
+   SENTENCE is why: `credential_malformed`'s names the Inflozo integration, and a Staff Access Token
+   is not on the integration at all — it is on the person's own profile. The field is unchanged, so
+   the row's observable half (`under staff_token`) holds.
+6. **`findSiteByAdminKeyId` takes a required third argument, `exceptSiteId`.** The Code Map names
+   `{ userId, kid }`. It cannot be two: the caller stores the key BEFORE it looks, so the new record
+   carries the very id being searched for and would always match itself — and `site_id <> null` is
+   NULL rather than true, so a defaulted argument would answer "no match" every time, silently, with
+   every check green. Its own doc comment carries this; the Change Log did not.
+7. **The moved-domains redirect goes to the Sites list rather than to Story 3.4's S2c brand screen.**
+   The Boundaries say the connect action's probe/brand tail is not to be edited, and this rides its
+   final `redirect()`. It takes nothing away — S2c's offer is a LINK on the card that never retires
+   (`brand-skip` proves it, and `site-notices.tsx` keeps drawing it) — where the other order would
+   have shown S2c and swallowed the hint, which has no second chance. Recorded because it is a
+   behavioural change to another story's flow.
 
 **Two departures from the frames, both drawn from the frame that is nearest and both recorded in
 `lib/connect-rule.ts` with a test over them** (R-74; the precedent is Story 3.4's

@@ -1271,14 +1271,17 @@ status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decry
   secret gone behind the nulled ref (read read-only through the pooler, as `disconnect` already does), the site
   still active with `disconnected_at` null, and two `credential_change` rows. It was never reachable before:
   nothing in the product had a way in for the token. **`write-denied` alone remains, and it is Epic 7's** — no
-  product caller makes an allowed Ghost write until the deploy path
+  product caller makes an allowed Ghost write until the deploy path exists, and `ADMIN_WRITES` still
+  carries `announcement_clear` with no caller (DW-66).
 severity: low
 origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"; the decrypt path added by
   3.2's code review (2026-09-08, Edge Case Hunter)
 location: tools/probe/run-verify-ghost-admin.py (the retargeted harness — its docstring names the steps it
   runs; `re-adopt` is the one that rotates a key) · apps/web/ghost-admin-rule.test.ts (`permitted()`'s three
   denials as a unit contract) · apps/web/server/ghost-admin/index.ts (`call()` — the decrypt path — and
-  `remove()`, neither with a product caller) · supabase/tests (the trigger under the RLS gate)
+  `remove()` — `remove()` HAS had a product caller since Story 3.5's `disconnectSite` and has a
+  second in 3.6's `removeToken`; only the allowed-WRITE path is still callerless) · supabase/tests
+  (the trigger under the RLS gate)
 reason: R-82 wants every claim executed on the real infrastructure. With DW-48 honoured, `write-denied`
   has no product caller until Epic 7's deploy path makes the first allowed write (and can then be driven
   by asking for one outside the list); `staff-removed` had none until **Story 3.6's Manage keys**, which
@@ -1996,3 +1999,75 @@ reason: **It cannot happen today.** Nothing stores a staff token until Epic 7, s
   transaction across both kinds rather than one per kind — a change to the chokepoint's shape, which is
   outside a story whose Code Map marks that file read-only. Recorded here rather than designed around, and
   it is the story that makes it reachable that should close it.
+
+### DW-78: `admin_key_id` is never backfilled, so no site connected before Story 3.6 has an Admin mask or can raise the moved-domains hint
+
+plain: The API keys screen shows the first few characters of your Admin key so you can tell which key it is.
+  It reads a column that only gets filled when a key is SAVED — so every site you connected before this
+  screen existed shows "Added" with no characters beside it, and can never raise the "Moved domains?" note
+  either. Nothing is wrong and nothing is lost; the screen simply has less to show until you next paste a key.
+status: open
+severity: low
+origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, from `store()` being the only writer
+owner: the story that next needs the mask or the hint on an OLD record; a candidate is Story 3.7, which
+  already visits every site's credentials on its daily check
+location: `apps/web/server/ghost-admin/index.ts` (`store()` writes `admin_key_id`; `credentialsOf` reads it)
+  · `supabase/migrations/20260909180000_credential_audit_and_key_id.sql` (the column, added nullable)
+reason: The value is DERIVABLE — it is the half of the stored secret in front of the colon — but every route
+  to it reads the Vault. A backfill in the migration would put a `vault.decrypted_secrets` read inside a
+  schema change, which is precisely what AD-10 keeps to one module; a lazy fill on the next `call()` puts a
+  write on the read path of every Ghost call. Both are decisions bigger than the blank mask they fix, and a
+  missing mask is not a wrong one — the same argument the spec already makes for the missing hint. The
+  daily health check is the natural place: it decrypts anyway, once per site per day.
+
+### DW-79: the 90-day orphan window is written down twice, in two languages, with nothing asserting they agree
+
+plain: "Your old site's copy is kept for 90 days" is stored as a number in the app's code and computed
+  separately in the database. If one were ever changed the other would not follow, and nothing would notice.
+status: open
+severity: low
+origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, against standing rule 4
+owner: **Story 7.20**, the orphan purge — the job that acts on the deadline, and the only place that can
+  read both homes at once
+location: `apps/web/lib/connect-rule.ts` (`ORPHAN_SNAPSHOT_DAYS`) · `supabase/migrations/
+  20260907150000_account_deletion_window.sql` (`disconnected_at + interval '90 days'` in the view)
+reason: They agree today and `connect-rule.test.ts` pins the app's copy at 90, so a silent drift needs
+  someone to edit the SQL alone. The honest fix is one home — either the view reads a setting the app also
+  reads, or the app derives its figure from the view — and choosing between those is the purge story's, which
+  is the first code to depend on both. Recorded rather than patched with a comment that would itself go stale.
+
+### DW-80: "a rolled-back store leaves no audit row" is asserted in four places and induced in none
+
+plain: The credential log is written inside the same transaction as the key it describes, so that a save
+  which fails leaves no line claiming it happened. That is stated in the migration, the spec, the ledger and
+  the code — and nothing anywhere makes a save fail on purpose to check it.
+status: open
+severity: low
+origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, against standing rule 2
+owner: the next story that touches `private.credential_audit` or the RLS gate
+location: `apps/web/server/ghost-admin/index.ts` (`store()` and `remove()`, `audit(..., tx)` inside
+  `sql().begin()`) · `supabase/tests/rls.sql` (where the fixture would live)
+reason: The RLS gate is the natural home — it already brings a PostgreSQL 17 container and already reaches
+  the `private` tables — and the fixture is small: begin, insert a credential row and its audit row, force a
+  failure, roll back, assert the audit table is unchanged. It was not written here because the claim is
+  structural (one `begin()`, one `tx` handed to both writers) rather than conditional, and because inducing
+  the failure means reaching past the application into the transaction. A structural claim with no control
+  is still a claim without a control.
+
+### DW-81: a crafted multi-field post to Manage keys can store one credential and then report that nothing changed
+
+plain: The API keys screen has three separate save buttons, one per credential, and each sends only its own
+  box. Someone hand-crafting a request could send two at once — and if the first is saved and the second is
+  refused, the screen says "Nothing changed", which would not be true of the first.
+status: open
+severity: low
+origin: Story 3.6 code review (2026-09-09) — the Edge Case Hunter
+owner: the story that gives Manage keys a single combined Save, if one ever does
+location: `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`saveKeys`, the three sequential branches)
+reason: Unreachable from the product. `keys-panel.tsx` renders three `<form>`s and each carries exactly one
+  typed field, which `keys-js-off` asserts off the SERVED markup every run — so producing this needs a
+  hand-built POST, and the worst it yields is a true save described by a slightly wrong sentence on the
+  crafter's own site. Nothing is written that the caller did not ask for, ownership is checked before every
+  branch, and no other account is reachable. The fix — one transaction across all three, or a refusal of
+  multi-field posts — is worth making only if the screen ever grows a combined Save, and it would be that
+  change's to make.

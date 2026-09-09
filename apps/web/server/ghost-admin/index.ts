@@ -182,8 +182,15 @@ export async function store(args: {
 
 /**
  * A KEY COMES OUT. The ref is nulled and the trigger deletes the secret behind it; the rotation
- * stamp records WHEN, which is what "Key removed 15 Aug" on Manage keys reads (Story 3.6). The
- * row itself survives — FR-C6, the connection record outlives its credentials.
+ * stamp records WHEN. The row itself survives — FR-C6, the connection record outlives its
+ * credentials.
+ *
+ * NOTHING RENDERS THAT STAMP YET, and two comments in this file used to say Story 3.6's Manage
+ * keys draws it as "Key removed 15 Aug". It does not: the screen states present or absent and
+ * offers **Test connection**, and a date beside a credential is the kind of claim the story
+ * deliberately left to 3.7's health badge. Corrected rather than left standing (review,
+ * 2026-09-09) — a comment describing a screen that was never built is what the next reader
+ * trusts.
  *
  * THE SITE MUST BE THE CALLER'S, exactly as `store()` requires — the same clause, for the same
  * reason. A caller proving ownership with its own read and handing the id on is one widened
@@ -192,9 +199,9 @@ export async function store(args: {
  *
  * AND `${column.rotated}` IS STAMPED ONLY WHEN A KEY ACTUALLY CAME OUT. The update matches on the
  * row, not on the kind, so without `is not null` removing a kind that was never stored stamped a
- * removal date for a credential that never existed — and Story 3.6's Manage keys renders that
- * column as "Key removed 15 Aug". With it, such a call matches no row and is the no-op two
- * comments already claimed it was (review, 2026-09-09).
+ * removal date for a credential that never existed. With it, such a call matches no row and is
+ * the no-op two comments already claimed it was (review, 2026-09-09) — and it is also what makes
+ * DW-76's audit row conditional, one screen down.
  */
 export async function remove(args: {
   siteId: string
@@ -448,11 +455,15 @@ export async function findSiteByAdminKeyId(args: {
 }
 
 /**
- * WHAT MANAGE KEYS MAY DRAW, AND IT IS EVERY NON-SECRET COLUMN OF THE CREDENTIALS ROW AND NOTHING
- * ELSE. The Vault refs are not here and neither is any decryption: `decrypt()` above is the only
- * thing in this file that reads `vault.decrypted_secrets`, and it is private. What comes back is
- * the Admin key's public id half and the two rotation stamps -- three values a customer could read
- * off their own Ghost Admin, which is precisely the test for whether something may leave here.
+ * WHAT MANAGE KEYS MAY DRAW, AND IT IS ONE NON-SECRET COLUMN OF THE CREDENTIALS ROW. The Vault refs
+ * are not here and neither is any decryption: `decrypt()` above is the only thing in this file that
+ * reads `vault.decrypted_secrets`, and it is private. What comes back is the Admin key's public id
+ * half -- a value a customer can read off their own Ghost Admin, which is precisely the test for
+ * whether something may leave here.
+ *
+ * IT RETURNED THE TWO ROTATION STAMPS AS WELL AND THE SCREEN DREW NEITHER. Data that crosses the
+ * chokepoint for no drawn purpose is exactly what this boundary exists to refuse, and the story
+ * that wants "Key removed 15 Aug" can widen it then, with a reason (review, 2026-09-09).
  *
  * IT IS THE FIFTH CHANGE THIS STORY MAKES TO THIS FILE, and the spec's Code Map counts four --
  * but its own entry for `sites/keys/page.tsx` says that page reads "the credential row through
@@ -466,22 +477,16 @@ export async function findSiteByAdminKeyId(args: {
 export async function credentialsOf(args: {
   siteId: string
   userId: string
-}): Promise<{ adminKeyId: string | null; adminRotatedAt: string | null; staffRotatedAt: string | null }> {
+}): Promise<{ adminKeyId: string | null }> {
   return withStore('ghost-admin/credentials-of', async () => {
-    const [row] = await sql()<
-      { admin_key_id: string | null; admin_key_rotated_at: string | null; staff_token_rotated_at: string | null }[]
-    >`
-      select admin_key_id, admin_key_rotated_at, staff_token_rotated_at
+    const [row] = await sql()<{ admin_key_id: string | null }[]>`
+      select admin_key_id
         from private.site_credentials
        where site_id = ${args.siteId} and user_id = ${args.userId}
     `
     // A SITE WITH NO CREDENTIALS ROW IS NOT AN ERROR -- it is a record whose keys have been taken
     // out, or one seeded without any. The screen draws "Not added" from `credentials_present`, and
-    // these three are the decoration beside it.
-    return {
-      adminKeyId: row?.admin_key_id ?? null,
-      adminRotatedAt: row?.admin_key_rotated_at ?? null,
-      staffRotatedAt: row?.staff_token_rotated_at ?? null,
-    }
+    // this is the decoration beside it.
+    return { adminKeyId: row?.admin_key_id ?? null }
   })
 }

@@ -240,6 +240,39 @@ test('the three Manage-keys codes are in the one table, and each lands under its
   assert.equal(keysFieldOf('keys_failed'), null)
   assert.equal(keysFieldOf('credential_store_unavailable'), null)
   assert.equal(keysFieldOf('not-a-code'), null)
+
+  // AND THE FOUR "CHECK THE ADDRESS" CODES ARE THE BANNER'S, not the Admin field's. Their
+  // sentences tell the customer to check or change the address, and this is the one screen whose
+  // address is read-only text with no edit affordance at all (A9 item 17) — so answering them
+  // under the key's field pointed at a fix the screen does not offer. It is also what the
+  // wizard's own `FIELD_OF` has always done with them: two maps over one vocabulary that
+  // disagreed on four codes (review, 2026-09-09).
+  for (const code of ['ghost_unreachable', 'ghost_redirected', 'ghost_refused', 'ghost_bad_signature']) {
+    assert.equal(keysFieldOf(code), null, `${code} answers under a field on a screen with no address`)
+  }
+})
+
+test('every code Manage keys can answer with has a sentence of its own', () => {
+  // THE SCREEN'S OWN CODE TABLE, DERIVED FROM THE ACTIONS rather than listed by hand: any code
+  // `saveKeys`, `removeToken` or `testConnection` can redirect with must resolve to a sentence, or
+  // the panel silently falls back to one written for a different press. `credential_missing` did
+  // exactly that — `call()` throws it and **Test connection** rendered "We couldn't save that just
+  // now. Nothing changed" at someone who pressed a read-only test (review, 2026-09-09).
+  const source = readFileSync(ACTIONS, 'utf8')
+  const codes = new Set([
+    ...[...source.matchAll(/KEYS_REFUSED\([^,]+,\s*'([a-z_]+)'/g)].map((m) => m[1]),
+    ...[...source.matchAll(/KEYS_TESTED\([^,]+,\s*'([a-z_]+)'/g)].map((m) => m[1]),
+    // The two the chokepoint throws through those calls as `thrown.code`, which no regex can see.
+    'credential_missing',
+    'credential_store_unavailable',
+  ])
+  assert.ok(codes.size > 0, 'no Manage-keys codes found — the regex has gone stale')
+  for (const code of codes) {
+    assert.ok(
+      Object.prototype.hasOwnProperty.call(CONNECT_MESSAGES, code),
+      `${code} is redirected with but has no sentence in CONNECT_MESSAGES`,
+    )
+  }
 })
 
 /* ───────── STORY 3.5 — DISCONNECT'S WORDS. */

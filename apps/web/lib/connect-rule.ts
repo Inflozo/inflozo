@@ -336,6 +336,16 @@ export const KEYS = {
    */
   movedDomains: (days: number | string) =>
     `Moved domains? Re-point your projects to this site — your old site's snapshot is kept for ${days} days.`,
+  /**
+   * …AND THE SAME HINT WHERE THE OLD RECORD IS STILL CONNECTED, which is the shape the owner's own
+   * test step 10 produces on Ghost(Pro): two live addresses, one Ghost. THE SNAPSHOT CLAUSE IS
+   * DROPPED RATHER THAN REWORDED, because the 90-day clock is DERIVED from `sites.disconnected_at`
+   * (DW-43) and a record that was never let go has no clock at all — promising one would name a
+   * deadline that is not running (review, 2026-09-09).
+   */
+  movedStillConnected:
+    'Moved domains? Re-point your projects to this site. Your other site is still connected — ' +
+    'disconnect it when you no longer need it.',
 } as const
 
 /**
@@ -418,6 +428,18 @@ export const CONNECT_MESSAGES = {
      that would not land. It says nothing changed, because nothing did — every write here is
      validated before it is made. */
   keys_failed: () => "We couldn't save that just now. Nothing changed — try again in a moment.",
+  /* `call()` THROWS THIS when the site has no Admin secret behind its ref, and until this story
+     nothing rendered it: the wizard never calls `call()` with an empty store. **Test connection**
+     does, so the code needed a sentence of its own — the fallback was `keys_failed`, which told
+     someone who pressed a read-only test that a save had failed (review, 2026-09-09). */
+  credential_missing: () =>
+    'Inflozo has no Admin API key for this site any more. Paste it again above, then test.',
+  /* A REMOVAL THAT COULD NOT REACH THE STORE, and it is NOT `credential_store_unavailable`: that
+     sentence says "We couldn't save your key… Nothing was connected", which is a connect's words
+     about a save, shown here for taking a token OUT. `disconnect_failed` is the precedent for a
+     removal-shaped failure and this is its twin one row down (review, 2026-09-09). */
+  token_remove_failed: () =>
+    "We couldn't remove that token just now. It is still there — try again in a moment.",
 } as const
 
 export type MessageCode = keyof typeof CONNECT_MESSAGES
@@ -445,16 +467,18 @@ export const keysFieldOf = (code: string): ConnectField | null =>
     ? 'content_key'
     : code === 'token_malformed'
       ? 'staff_token'
-      : code === 'credential_malformed' ||
-          code === 'keys_other_site' ||
-          code === 'ghost_unknown_key' ||
-          code === 'ghost_unauthorized' ||
-          code === 'ghost_bad_signature' ||
-          code === 'ghost_redirected' ||
-          code === 'ghost_refused' ||
-          code === 'ghost_unreachable'
+      : code === 'credential_malformed' || code === 'keys_other_site' || code === 'ghost_unknown_key' || code === 'ghost_unauthorized'
         ? 'admin_key'
         : null
+/* FOUR CODES THAT ARE **NOT** THE ADMIN FIELD'S, and they were until the review of 2026-09-09.
+   `ghost_unreachable`, `ghost_redirected`, `ghost_refused` and `ghost_bad_signature` say "check the
+   address" or "connect with the address your site actually uses" — under a field on the ONE screen
+   whose address is read-only text with no edit affordance at all (A9 item 17). They are the panel's
+   banner instead, which is also what the wizard's own `FIELD_OF` has always done with them: two maps
+   over one vocabulary that disagreed on four codes is the drift standing rule "propagate, never
+   localise" exists to catch. The two the I/O matrix names — `ghost_unknown_key` and
+   `ghost_unauthorized` — stay under `admin_key`, because those two ARE about the key that was
+   typed. */
 
 /**
  * WHAT `connectSite` ANSWERS, AND IT LIVES HERE RATHER THAN BESIDE THE ACTION. A `'use server'`

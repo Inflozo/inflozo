@@ -27,9 +27,11 @@ import { KeysPanel } from '../keys-panel'
    site is gone; and an ALREADY-DISCONNECTED record redirects to `/sites`, which is what the actions
    do with the same state.
 
-   THE CREDENTIAL ROW COMES THROUGH THE CHOKEPOINT, and only its non-secret columns do
-   (`credentialsOf`): the Admin key's id half and the two rotation stamps. No decryption happens on
-   this path and none can — `decrypt()` is private to that module and is called by `call()` alone.
+   THE CREDENTIAL ROW COMES THROUGH THE CHOKEPOINT, and only its non-secret column does
+   (`credentialsOf`): the Admin key's id half, which is what the Admin row masks with. No
+   decryption happens on this path and none can — `decrypt()` is private to that module and is
+   called by `call()` alone. A pooler that will not answer is caught below rather than taking the
+   screen down: the value is a mask and nothing more.
 
    NO `loading.tsx`, and that is deliberate rather than forgotten (R-98): nothing soft-navigates
    here. The ⋯ row is a PLAIN anchor and not a `<Link>`, so every way in — a click, a modified
@@ -55,9 +57,14 @@ type Row = {
 export default async function Keys({
   searchParams,
 }: {
-  searchParams: Promise<{ site?: string | string[]; keys?: string | string[]; test?: string | string[] }>
+  searchParams: Promise<{
+    site?: string | string[]
+    keys?: string | string[]
+    status?: string | string[]
+    test?: string | string[]
+  }>
 }) {
-  const { site, keys, test } = await searchParams
+  const { site, keys, status, test } = await searchParams
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)
   const siteId = first(site)
   if (!siteId) notFound()
@@ -81,7 +88,17 @@ export default async function Keys({
   // clause as well, the same floor `store()` and `remove()` have: ownership beside the read.
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) notFound()
-  const held = await credentialsOf({ siteId: row.id, userId: auth.user.id })
+  // A DECORATIVE READ MAY NOT TAKE THE SCREEN DOWN. `credentialsOf` goes through the pooler, and
+  // `withStore` turns a pooler that will not answer into a thrown `credential_store_unavailable` —
+  // which, uncaught, made the whole Manage keys page the error boundary over a value that draws
+  // the Admin row's MASK and nothing else (review, 2026-09-09). Without it the row still says
+  // **Added** from `credentials_present`; it just shows no first characters.
+  const held = await credentialsOf({ siteId: row.id, userId: auth.user.id }).catch((thrown) => {
+    console.error('sites/keys: credential read failed', {
+      name: (thrown as { code?: string; name?: string })?.code ?? (thrown as { name?: string })?.name,
+    })
+    return { adminKeyId: null }
+  })
 
   const present = row.credentials_present ?? {}
   const publicUrl = row.site_settings?.public_url || row.url
@@ -105,6 +122,10 @@ export default async function Keys({
             contentKey: row.content_key,
           }}
           refused={first(keys) ?? null}
+          /* DIGITS OR NOTHING. `?status=` is typed by whoever holds the URL and its one use is
+             inside a sentence the customer reads, so it is validated here rather than trusted —
+             the same rule `?keys=` follows by being a lookup key and never a sentence. */
+          status={/^\d{3}$/.test(first(status) ?? '') ? (first(status) as string) : null}
           tested={first(test) ?? null}
           cancel={
             <Link href="/sites" className={buttonClasses('secondary', 36)}>

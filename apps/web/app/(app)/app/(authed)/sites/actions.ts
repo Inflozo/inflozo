@@ -24,6 +24,7 @@ import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { call, fetchWithKey, findSiteByAdminKeyId, remove, store } from '@/server/ghost-admin'
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
+import { isRedirect } from '@/lib/action-redirect'
 import { probeSite } from '@/server/site-probe'
 
 /**
@@ -101,10 +102,21 @@ const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}
    `keysFieldOf` in `lib/connect-rule.ts`, so a hand-typed `?field=` cannot put a refusal sentence
    under a field it has nothing to do with. */
 const KEYS_URL = (siteId: string) => `/sites/keys?site=${siteId}`
-const KEYS_REFUSED = (siteId: string, code: string) => `${KEYS_URL(siteId)}&keys=${code}`
-const KEYS_TESTED = (siteId: string, result: string) => `${KEYS_URL(siteId)}&test=${result}`
-/** FR-C8's hint, on the NEW card: `?moved=` names the site it belongs to, as `?recheck=` does. */
-const MOVED = (siteId: string) => `${SITES_URL}?moved=${siteId}`
+/* `status` TRAVELS BESIDE THE CODE, and only a code that needs one uses it. `ghost_refused`'s
+   sentence is `(status) => 'Ghost refused the connection (HTTP ${status})'` — the wizard passes
+   `String(config.status)` into it and this screen passed the SITE'S NAME, so a 403 or a 429 read
+   "Ghost refused the connection (HTTP My Blog)" (review, 2026-09-09). It is a number and the panel
+   re-checks that it is one: everything in this URL is typed by whoever holds it. */
+const KEYS_REFUSED = (siteId: string, code: string, status?: number) =>
+  `${KEYS_URL(siteId)}&keys=${code}${status ? `&status=${status}` : ''}`
+const KEYS_TESTED = (siteId: string, result: string, status?: number) =>
+  `${KEYS_URL(siteId)}&test=${result}${status ? `&status=${status}` : ''}`
+/* FR-C8's hint, on the NEW card: `?moved=` names the site it belongs to, as `?recheck=` does, and
+   `?old=` says whether the record it matched was ever let go. THE SNAPSHOT CLAUSE DEPENDS ON IT:
+   the 90-day clock is DERIVED from `sites.disconnected_at` (DW-43), so a matched record that is
+   still connected has no clock, and the hint that named one was promising a deadline that is not
+   running (review, 2026-09-09). */
+const MOVED = (siteId: string, old: 'orphan' | 'live') => `${SITES_URL}?moved=${siteId}&old=${old}`
 
 const fail = (code: ConnectCode, message: string, field?: ConnectField): ConnectResult => ({
   error: { code, message, ...(field ? { field } : {}) },
@@ -403,10 +415,15 @@ export async function connectSite(
   //    INSIDE ITS OWN TRY AND FATAL TO NOTHING — the site is connected whatever this answers, and
   //    a pooler that would not read is not a reason to fail a connect that worked. `parseCredential`
   //    cannot throw here: `store()` above already ran it on this very key.
-  let moved = false
+  let moved: 'orphan' | 'live' | null = null
   try {
     const { kid } = parseCredential(adminKey)
-    moved = Boolean(await findSiteByAdminKeyId({ userId: user.id, kid, exceptSiteId: siteId }))
+    // `disconnectedAt` IS THE GATE AND IT WAS BEING DISCARDED. `findSiteByAdminKeyId` has always
+    // returned it; `Boolean(...)` threw it away, so a customer whose other record was still
+    // CONNECTED was told their old site's snapshot is kept for 90 days — a clock that only starts
+    // at `disconnected_at` and was therefore not running at all (review, 2026-09-09).
+    const hit = await findSiteByAdminKeyId({ userId: user.id, kid, exceptSiteId: siteId })
+    moved = hit ? (hit.disconnectedAt ? 'orphan' : 'live') : null
   } catch (thrown) {
     console.error('sites: connect moved-domains lookup failed', {
       code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
@@ -419,7 +436,7 @@ export async function connectSite(
   // card that never retires (`brand-skip` proves it), so a customer sent to the list with the
   // "Moved domains?" hint can still take the brand from the same card afterwards. The reverse
   // order would have shown S2c and swallowed the hint entirely — there is no second chance at it.
-  redirect(moved ? MOVED(siteId) : hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : SITES_URL)
+  redirect(moved ? MOVED(siteId, moved) : hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : SITES_URL)
 }
 
 /* ───────── STORY 3.3's FOUR ANSWERS, and they live in THIS file because a `'use server'` module
@@ -952,22 +969,34 @@ export async function disconnectSite(formData: FormData): Promise<void> {
 /** The row Manage keys acts on, read under the CALLER'S OWN session so RLS decides it exists. */
 async function keysSite(
   at: { userId: string; siteId: string },
-): Promise<{ id: string; url: string; site_settings: { public_url?: string } | null }> {
+): Promise<{
+  id: string
+  url: string
+  site_settings: { public_url?: string } | null
+  credentials_present: Record<string, boolean> | null
+}> {
   const supabase = await supabaseServer()
   const { data: site, error } = await supabase
     .from('sites')
-    .select('id, url, site_settings, disconnected_at')
+    .select('id, url, site_settings, credentials_present, disconnected_at')
     .eq('id', at.siteId)
     .maybeSingle<{
       id: string
       url: string
       site_settings: { public_url?: string } | null
+      credentials_present: Record<string, boolean> | null
       disconnected_at: string | null
     }>()
-  // THE SAME THREE ANSWERS `sites/keys/page.tsx` GIVES, and for the same reasons — a malformed id
-  // is `22P02` and not a failed read, a failed read is not a stranger's row, and an
+  // THE SAME SPLIT `sites/keys/page.tsx` MAKES, and for the same reasons — a malformed id is
+  // `22P02` and not a failed read, a failed read is not a stranger's row, and an
   // already-disconnected record redirects rather than 404ing (the split the review of 2026-09-09
   // gave `sites/disconnect`). `redirect` throws NEXT_REDIRECT, so these leave.
+  //
+  // IT DIFFERS FROM THE PAGE ON ONE OF THE THREE, deliberately: a FAILED READ throws there and
+  // redirects here. A page that cannot read its own row has nothing to draw and the error boundary
+  // is the honest answer; an ACTION that cannot read it has a screen to go back to, and saying
+  // "nothing changed" on it beats replacing the customer's work with a boundary. The comment that
+  // claimed the two were identical is what a later reader would have trusted (review, 2026-09-09).
   if (error?.code === '22P02') notFound()
   if (error) {
     console.error('sites: keys read failed', { code: error.code })
@@ -1047,7 +1076,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
         siteId: site.id,
         userId: at.userId,
       })
-      if (!config.ok) redirect(KEYS_REFUSED(site.id, config.code ?? 'ghost_refused'))
+      if (!config.ok) redirect(KEYS_REFUSED(site.id, config.code ?? 'ghost_refused', config.status))
       // WHICH GHOST THIS KEY OPENS. `site/` answers 200 to any key at all (§38a), so it validates
       // nothing and is read only AFTER `config/` has passed — here it is not a validator but an
       // IDENTIFIER, which is a use it is perfectly good for.
@@ -1062,6 +1091,13 @@ export async function saveKeys(formData: FormData): Promise<void> {
       const read = (answered.body as { site?: { url?: unknown } })?.site
       if (answered.ok && isHttpUrl(read?.url)) belongsHere = read.url
     } catch (thrown) {
+      // `redirect()` THROWS `NEXT_REDIRECT`, AND THIS CATCH USED TO EAT IT. The refusal above is a
+      // `redirect()` inside this `try`, so its throw landed here, failed `instanceof AdminError`,
+      // and was rewritten as `keys_failed` — the one refusal a customer rolling keys is most
+      // likely to hit, reported as an unexplained "nothing changed" in the page banner instead of
+      // the key's own sentence under the key's own field. Executed against Next 16.3.1 at the
+      // review of 2026-09-09; `lib/action-redirect.ts` exists for exactly this rejection.
+      if (isRedirect(thrown)) throw thrown
       if (thrown instanceof AdminError) redirect(KEYS_REFUSED(site.id, thrown.code))
       console.error('sites: keys validate failed', { name: (thrown as { name?: string })?.name })
       redirect(KEYS_REFUSED(site.id, 'keys_failed'))
@@ -1105,23 +1141,27 @@ export async function saveKeys(formData: FormData): Promise<void> {
     // `.eq('user_id')` that stands in for the RLS this client bypasses. `credentials_present` is
     // read-modify-written as one object because it is the client's MIRROR of what is stored, and
     // the two Vault kinds on it are `store()`'s to move.
+    // ONE UPDATE CARRYING BOTH COLUMNS. It was two, and the second one's failure was only
+    // `console.error`'d before the action redirected as a success — so a mirror that would not
+    // land left the key STORED while the row still drew **Not added** with no mask, which is the
+    // "the row claims a state nobody wrote" hazard this file argues against one screen over
+    // (review, 2026-09-09). `credentials_present` comes from `keysSite`'s read above, taken before
+    // any `store()` on this request, and `.select('id')` is what makes a write that matched no row
+    // an answer rather than silence (`writeSite`'s own rule).
     const { data, error } = await supabaseAdmin()
       .from('sites')
-      .update({ content_key: contentKey })
+      .update({
+        content_key: contentKey,
+        credentials_present: { ...(site.credentials_present ?? {}), content: true },
+      })
       .eq('id', site.id)
       .eq('user_id', at.userId)
-      .select('credentials_present')
-      .maybeSingle<{ credentials_present: Record<string, boolean> | null }>()
+      .select('id')
+      .maybeSingle<{ id: string }>()
     if (error || !data) {
       console.error('sites: keys content write failed', { code: error?.code ?? 'no_such_site' })
       redirect(KEYS_REFUSED(site.id, 'keys_failed'))
     }
-    const { error: mirrored } = await supabaseAdmin()
-      .from('sites')
-      .update({ credentials_present: { ...(data.credentials_present ?? {}), content: true } })
-      .eq('id', site.id)
-      .eq('user_id', at.userId)
-    if (mirrored) console.error('sites: keys content mirror failed', { code: mirrored.code })
   }
 
   revalidatePath(SITES)
@@ -1150,7 +1190,10 @@ export async function removeToken(formData: FormData): Promise<void> {
     console.error('sites: remove token failed', {
       code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
     })
-    redirect(KEYS_REFUSED(site.id, 'credential_store_unavailable'))
+    // NOT `credential_store_unavailable`: that sentence reads "We couldn't save your key just now.
+    // Nothing was connected" — a connect's words about a save, on a press that removes (review,
+    // 2026-09-09). `token_remove_failed` is `disconnect_failed`'s twin one row down.
+    redirect(KEYS_REFUSED(site.id, 'token_remove_failed'))
   }
   revalidatePath(SITES)
   redirect(KEYS_URL(site.id))
@@ -1170,9 +1213,11 @@ export async function testConnection(formData: FormData): Promise<void> {
   if (!at) notFound()
   const site = await keysSite(at)
   let result: string
+  let status: number | undefined
   try {
     const config = await call({ siteId: site.id, path: 'config/', route: TEST_ROUTE })
     result = config.ok ? 'ok' : (config.code ?? 'ghost_refused')
+    status = config.ok ? undefined : config.status
   } catch (thrown) {
     // A THROWN CODE IS A RESULT HERE, not a failure of the press: "your Ghost did not answer" and
     // "this key has no secret behind it" are both things the customer came to this screen to find
@@ -1182,5 +1227,5 @@ export async function testConnection(formData: FormData): Promise<void> {
       console.error('sites: test connection failed', { name: (thrown as { name?: string })?.name })
     }
   }
-  redirect(KEYS_TESTED(site.id, result))
+  redirect(KEYS_TESTED(site.id, result, status))
 }

@@ -168,12 +168,15 @@ export type KeysSite = {
 export function KeysPanel({
   site,
   refused,
+  status,
   tested,
   cancel,
 }: {
   site: KeysSite
   /** `?keys=<code>` — one of the app's own codes, or null. The FIELD is derived, never trusted. */
   refused: string | null
+  /** `?status=<n>` — the HTTP status `ghost_refused`'s sentence is built from; digits or null. */
+  status: string | null
   /** `?test=ok` or `?test=<code>` — what the last press of Test connection proved. */
   tested: string | null
   cancel: ReactNode
@@ -182,7 +185,12 @@ export function KeysPanel({
   // A CODE THE TABLE DOES NOT NAME IS NOT DRAWN AT ALL. `?keys=` is typed by whoever holds the URL,
   // so the value is a lookup key and never a sentence: anything unknown renders nothing, rather
   // than putting a stranger's text on the customer's screen.
-  const said = refused && hasSentence(refused) ? connectMessage(refused as MessageCode, site.name) : null
+  // WHICH SUBJECT A SENTENCE TAKES IS THE SENTENCE'S, NOT THE SCREEN'S. Every code was handed
+  // `site.name`, and `ghost_refused` is `(status) => 'Ghost refused the connection (HTTP ${status})'`
+  // — so a 403 or a 429 from the customer's Ghost read "(HTTP My Blog)" (review, 2026-09-09). The
+  // status travels beside the code and `page.tsx` has already refused anything that is not digits.
+  const subjectFor = (code: string) => (code === 'ghost_refused' ? (status ?? '') : site.name)
+  const said = refused && hasSentence(refused) ? connectMessage(refused as MessageCode, subjectFor(refused)) : null
   const errorFor = (which: ConnectField) => (field === which ? said : null)
   // A code with no field of its own — a read that failed, a store that would not answer — is the
   // panel's banner, exactly as the wizard's fieldless refusals are its own.
@@ -287,7 +295,9 @@ export function KeysPanel({
               {KEYS.test.label}
             </Submit>
           </form>
-          {tested ? <TestResult result={tested} staff={site.present.staff} host={site.name} /> : null}
+          {tested ? (
+            <TestResult result={tested} staff={site.present.staff} host={site.name} status={status} />
+          ) : null}
         </div>
       ) : null}
 
@@ -302,11 +312,23 @@ export function KeysPanel({
  * the SAME codes-to-sentences table every other refusal in this epic reads, so a customer never
  * meets two different sentences for one cause.
  */
-function TestResult({ result, staff, host }: { result: string; staff: boolean; host: string }) {
+function TestResult({
+  result,
+  staff,
+  host,
+  status,
+}: {
+  result: string
+  staff: boolean
+  host: string
+  status: string | null
+}) {
   if (result !== 'ok') {
+    // The same subject rule as the panel's refusals above, and for the same reason.
+    const subject = result === 'ghost_refused' ? (status ?? '') : host
     return (
       <Banner kind="error">
-        {hasSentence(result) ? connectMessage(result as MessageCode, host) : connectMessage('keys_failed')}
+        {hasSentence(result) ? connectMessage(result as MessageCode, subject) : connectMessage('keys_failed')}
       </Banner>
     )
   }

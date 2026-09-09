@@ -3,7 +3,7 @@
 import { useState, useTransition, type FormEvent } from 'react'
 import { Button } from '@/components/kit/button'
 import { TextInput } from '@/components/kit/input'
-import { useSubmitting } from '@/components/kit/submit'
+import { isRedirect } from '@/lib/action-redirect'
 import { CONNECT_MAX, connectMessage, KEYS } from '@/lib/connect-rule'
 import { saveKeys } from './actions'
 import { checkContentKey } from './content-check'
@@ -30,10 +30,28 @@ import { checkContentKey } from './content-check'
    deployed site, Review 2, 2026-09-08). `startTransition` around the server action is React 19's
    own way to run one imperatively: one path, no re-entrancy, no timing.
 
-   AND THE CONTROL SAYS IT IS WORKING THROUGH BOTH HALVES (R-98). `useFormStatus` cannot see the
-   browser check — no form action is in flight during it, and it can take ten seconds — so the
-   button ORs three things: the check, the transition that carries the server action, and the
-   form's own status for the scripts-off-shaped path where React dispatches it itself. */
+   AND THE CONTROL SAYS IT IS WORKING THROUGH BOTH HALVES (R-98) — WITH `useFormStatus` PLAYING NO
+   PART IN IT, which the review of 2026-09-09 had to correct twice over.
+
+   `onSubmit` CALLS `preventDefault()` ON EVERY PATH THAT HAS A SCRIPT, so React never dispatches
+   this form's action itself and `useFormStatus().pending` never turns true. That made the Kit's
+   `useSubmitting()` actively harmful here rather than merely idle: its `guard` claims the
+   in-flight slot on the first click, and its release — `if (!pending) inFlight.current = false`,
+   keyed on `pending` — never re-runs, because `pending` never moved. The second click was
+   `preventDefault`ed by the guard, so `onSubmit` never fired and the button did NOTHING, for
+   good: the redirect back to this route is a soft navigation and the island is never remounted.
+   That is verbatim the failure `components/kit/submit.tsx` records ("a ref left `true` makes the
+   only control that can retry inert"), and `connect-wizard.tsx:315` — the precedent for this
+   exact shape — uses a bare `<Button type="submit">` with no guard for the same reason. So does
+   this. Re-entrancy is held by `checking || saving` at the top of `onSubmit` instead.
+
+   AND THE ACTION'S PROMISE IS RETURNED, NOT DISCARDED. `start(() => { void saveKeys(data) })`
+   returns `undefined`, and React 19.2.8 only holds a transition open — and only attaches its own
+   rejection handling — when the scope callback RETURNS the thenable (`react.development.js`
+   :1158-1167, read at the review). So `saving` fell in the same tick, the button dropped back to
+   its resting label for the whole server round trip, and the `NEXT_REDIRECT` every one of these
+   actions rejects with was an unhandled rejection. An async scope fixes both, and `isRedirect` is
+   the predicate the repository already keeps for that rejection. */
 
 export function ContentKeyForm({
   siteId,
@@ -66,8 +84,15 @@ export function ContentKeyForm({
       setRefused(connectMessage('content_key_unknown'))
       return
     }
-    start(() => {
-      void saveKeys(data)
+    start(async () => {
+      try {
+        await saveKeys(data)
+      } catch (thrown) {
+        // The save worked and the redirect is already running: say nothing and stay busy until it
+        // lands. Anything else is ours, and the field says so rather than the press dying quiet.
+        if (isRedirect(thrown)) return
+        setRefused(connectMessage('keys_failed'))
+      }
     })
   }
 
@@ -94,21 +119,19 @@ export function ContentKeyForm({
   )
 }
 
-/** `useSubmitting()` is the Kit's busy half for a control that is not a Kit `Submit` — and this
-    one is not, because it has a second thing to be busy about. It must be a CHILD of the form. */
+/** R-98's busy half, driven by THIS component's own state rather than by `useFormStatus` — see
+    the header: the form's action is never dispatched by the form, so the Kit's `useSubmitting()`
+    could only ever read false here, and its click guard could only ever jam. */
 function Save({ busy }: { busy: boolean }) {
-  const { pending, guard } = useSubmitting()
-  const working = pending || busy
   return (
     <Button
       type="submit"
       variant="secondary"
       size={32}
-      aria-disabled={working || undefined}
-      aria-busy={working || undefined}
-      onClick={guard}
+      aria-disabled={busy || undefined}
+      aria-busy={busy || undefined}
     >
-      {working ? KEYS.content.busy : KEYS.content.save}
+      {busy ? KEYS.content.busy : KEYS.content.save}
     </Button>
   )
 }

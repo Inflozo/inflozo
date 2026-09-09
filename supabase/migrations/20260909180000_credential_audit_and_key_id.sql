@@ -30,6 +30,13 @@
 --     (executed on T1 6.58.0 and T3 5.130.6 — `parseCredential` accepts any non-empty id half).
 --     Nullable, and a null NEVER matches: a record connected before this story has none, and a
 --     missing hint is not a wrong one.
-alter type public.credential_action add value 'credential_change';
+-- BOTH STATEMENTS ARE RE-RUNNABLE, and that is not decoration: this file is applied to the hosted
+-- database BY HAND (the direct host is IPv6-only), and a hand-apply is exactly the kind that gets
+-- retried -- after a dropped connection, or when the operator is not sure the first one landed.
+-- Without the guards a retry aborts on `duplicate_object`, and an operator staring at an error has
+-- no way to tell "already applied" from "failed". With them the file is idempotent and the answer
+-- is the same either way (review, 2026-09-09). Both forms are supported on PostgreSQL 12+, which
+-- the gate's container (17) and the hosted database both exceed.
+alter type public.credential_action add value if not exists 'credential_change';
 
-alter table private.site_credentials add column admin_key_id text;
+alter table private.site_credentials add column if not exists admin_key_id text;

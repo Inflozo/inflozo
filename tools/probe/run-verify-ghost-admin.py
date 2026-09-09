@@ -407,6 +407,45 @@ list gone stale — the sibling harness's own note):
                  leave it, the grid stays three-up). Then
                  **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
                  back to `full`/`probe`
+  keys-screen    STORY 3.6, and the first of ten: S11a's ⋯ carries **Manage API keys** above the
+                 rule, the row NAVIGATES to `/sites/keys?site=…`, and the screen draws three
+                 credential rows with the app's OWN sentences (read out of `lib/connect-rule.ts`,
+                 never retyped here). The URL is text with NO input element in it, and NOTHING on
+                 the page offers to reveal a key — the element count for that is asserted at zero,
+                 which is the departure from B20's eye made checkable
+  axe-keys-screen  axe-core over the keys route at 1440 and 390
+  keys-malformed  `hello` into the Admin field: refused UNDER THAT FIELD, and nothing written
+  keys-other-site  T3's Admin key pasted into T1's screen. ⛔ READ THE REVIEW NOTE OF 2026-09-09
+                 BEFORE TRUSTING THIS STEP: executed against both Ghosts, T3's key answers 401
+                 "Unknown Admin API Key" at T1's `GET /admin/config/`, so this lands as
+                 `ghost_unknown_key` and never reaches the `site/` comparison the step was written
+                 for. The site IS refused and nothing IS written; the SENTENCE is the open question
+  keys-rotate    a rotated Admin key saved on T1, read back through the pooler:
+                 `admin_key_rotated_at` moved, `admin_key_id` is the new key's public id half,
+                 `vault.secrets` holds one secret for the ref and it is NOT the old one, and
+                 exactly one new `credential_change` row stamped with THIS screen's route.
+                 ⛔ The key is re-pasted, not regenerated — regenerating would invalidate
+                 `GHOST6_ADMIN_API_KEY` for every probe in this repository
+  keys-token     DW-54's `staff-removed`, driven live for the first time: the harness's own token
+                 added and then removed on T1 — `credentials_present.staff` true then false, the
+                 Vault secret GONE behind the nulled ref, the site still active with
+                 `disconnected_at` null, and two `credential_change` rows. Wrapped in a `finally`
+                 that nulls the ref if the run aborts mid-way: a real full-Administrator credential
+                 sits in Vault between the two presses
+  keys-test      **Test connection** pressed: one `admin_read` row for `GET /admin/config/`, the
+                 result drawn on the screen, and `sites.health` and `sites.last_checked_at`
+                 UNCHANGED — the negative control that this story did not step on Story 3.7's
+  keys-js-off    the ⋯ row's `href` in the served markup and the route's own forms wired —
+                 `method=post`, an `action` attribute, React's encoded `$ACTION_*` fields, one
+                 hidden `site_id` and one submit each. Every form served is wired, and the TYPED
+                 FIELD LIST is what pins the shape rather than a hand-typed count
+  keys-forged    a second account's site id in `/sites/keys?site=…` and forged into each form: the
+                 not-found page, and every row of both accounts byte-identical — WATCHED LANDING,
+                 not re-read afterwards (standing rule 2)
+  moved-domains  FR-C8's hint on the new card, naming 90 days; and the same connect against a
+                 record whose `admin_key_id` is null showing NO hint. ⛔ The old record is seeded
+                 through the pooler because neither test Ghost has a second reachable address —
+                 the connect, the lookup, the redirect and the hint are all the product's
   audit          `private.credential_audit` read through the pooler — and STORY 3.6 MOVED THESE
                  COUNTS, exactly as this line said it would: `public.credential_action` gained
                  `credential_change`, and `store()` and `remove()` each write one row through it
@@ -3044,13 +3083,18 @@ const shoot = async (page, name) => {
     const objects = audit.every((r) => r.detail !== null && typeof r.detail === 'object')
     const leak = audit.filter((r) => /[0-9a-f]{16,}:[0-9a-f]{16,}/.test(JSON.stringify(r)))
     // DW-76, CLOSED BY STORY 3.6 AND EXECUTED HERE. A key going IN and a key coming OUT each leave
-    // one row, in the same transaction as the write. DERIVED, never counted by hand: one `in` per
+    // one row, in the same transaction as the write. One `in` per
     // connect (every connect stores the Admin key) and one `out` per removal that ACTUALLY took a
     // key — which is the single `disconnect` above, because `remove('staff')` matches no row on a
     // site that never had a token and must therefore write nothing.
     const changes = audit.filter((r) => r.action === 'credential_change')
     const wentIn = changes.filter((r) => (r.detail || {}).direction === 'in')
     const cameOut = changes.filter((r) => (r.detail || {}).direction === 'out')
+    // NOT DERIVED FROM THE ROWS, AND IT MUST NOT BE: an expectation read out of the thing it is
+    // asserting is vacuous. It is the RUN'S OWN count, declared here beside `CONNECTS` below and
+    // for the same reason — this script performs exactly one disconnect, and that disconnect is
+    // the only press in the run that takes a credential out (review, 2026-09-09, correcting the
+    // comment above, which claimed both were derived).
     const REMOVALS = 1
     const changeRoutes = [...new Set(changes.map((r) => r.route))].sort()
     // Nothing in a `credential_change` detail but the kind and the direction — `AuditDetail` is the
@@ -3281,6 +3325,14 @@ const shoot = async (page, name) => {
     // ── keys-token: DW-54's `staff-removed`, DRIVEN LIVE FOR THE FIRST TIME. Nothing in the product
     //    had ever stored or removed a Staff Access Token — Epic 7 asks for one at first deploy, and
     //    FR-C8 has always said it can be added and taken away at any time. This is that screen.
+    //    AND IT IS WRAPPED, because between the store and the removal a real Staff Access Token —
+    //    a full-Administrator credential — is sitting in the product's Vault. An abort in that
+    //    window (a timeout, a failed selector, a killed run) used to leave it there until the
+    //    throwaway account was purged. The `finally` nulls the ref through the pooler so DW-44's
+    //    trigger drops the secret behind it whatever happens (review, 2026-09-09); `injection-live`
+    //    carries the same shape one story up.
+    let tokenStored = false
+    try {
     await openKeys(t1SiteId)
     const changesBeforeToken = (await changesFor(t1SiteId)).length
     await page.fill('#keys-staff', STAFF_TOKEN)
@@ -3326,6 +3378,16 @@ const shoot = async (page, name) => {
       `DW-76 wrote ${staffRows.length} credential_change rows for it, ` +
       `${JSON.stringify(staffRows.map((r) => `${r.route} ${(r.detail || {}).direction}`))} — each ` +
       `stamped with the control that pressed it`)
+    tokenStored = withoutToken.staff_token_vault_ref !== null
+    } finally {
+      // Only if the product's own removal did NOT run to completion. It is a no-op on the happy
+      // path, and on any other it is the difference between a dropped secret and a live one.
+      if (tokenStored) {
+        await sql`update private.site_credentials set staff_token_vault_ref = null
+                   where site_id = ${t1SiteId} and staff_token_vault_ref is not null`
+        console.log('  NOTE  keys-token: the run left a staff token behind; the ref was nulled by the harness')
+      }
+    }
 
     // ── keys-test: ONE `GET config/` on the STORED key, and NOTHING is written — the negative
     //    control that this story did not step on Story 3.7's state machine.
@@ -3374,9 +3436,16 @@ const shoot = async (page, name) => {
     const wiredKeys = keysForms.filter((f) => f.method === 'post' && f.action && f.encoded > 0
                                               && f.site === 1 && f.submits === 1)
     const keysFields = keysForms.map((f) => f.field).sort()
+    // DERIVED, NOT COUNTED: the FIELD LIST is what pins the screen's shape — the three credentials
+    // plus Test connection, which types nothing — and "every form served is wired" is the claim
+    // worth making. A hand-typed 4 said neither, and silently depended on `keys-token` having
+    // removed the token first (with one present, the staff form has no typed field and the list
+    // changes shape). Review, 2026-09-09.
+    const EXPECTED_KEYS_FIELDS = ['', 'admin_key', 'content_key', 'staff_token']
     step('keys-js-off',
-      keysHref === `/sites/keys?site=${t1SiteId}` && keysForms.length === 4 && wiredKeys.length === 4
-      && JSON.stringify(keysFields) === JSON.stringify(['', 'admin_key', 'content_key', 'staff_token']),
+      keysHref === `/sites/keys?site=${t1SiteId}`
+      && keysForms.length > 0 && wiredKeys.length === keysForms.length
+      && JSON.stringify(keysFields) === JSON.stringify(EXPECTED_KEYS_FIELDS),
       `the ⋯ row is an <a href> with a real destination (${JSON.stringify(keysHref)}), so it is a ` +
       `navigation and not a control that does nothing without a script; and the route it lands on ` +
       `serves ${keysForms.length} forms, ${wiredKeys.length} of them progressively enhanced — ` +

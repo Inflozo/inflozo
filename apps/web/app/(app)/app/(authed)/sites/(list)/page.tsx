@@ -110,9 +110,10 @@ export default async function Sites({
     recheck?: string | string[]
     disconnect?: string | string[]
     moved?: string | string[]
+    old?: string | string[]
   }>
 }) {
-  const [{ q, recheck, disconnect, moved }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ q, recheck, disconnect, moved, old }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
@@ -148,6 +149,10 @@ export default async function Sites({
   const recheckedId = Array.isArray(recheck) ? recheck[0] : recheck
   const disconnectedId = Array.isArray(disconnect) ? disconnect[0] : disconnect
   const movedId = Array.isArray(moved) ? moved[0] : moved
+  // `?old=live` — the record this connect matched is STILL CONNECTED, so there is no orphan and no
+  // 90-day clock to name (the clock is derived from `disconnected_at`, DW-43). Anything else takes
+  // the orphan sentence, which is the safe default: it is the state a domain move actually leaves.
+  const movedOld = Array.isArray(old) ? old[0] : old
   // THE ACTIVE SITES ARE WHAT THE CAP COUNTS — the read above already filters `disconnected_at`
   // out, which is the same rule the connect action enforces: a record Inflozo kept is not a site.
   // Free only, as S3c's tile is: on Pro at ten there is nothing further to sell (the dashboard's
@@ -317,7 +322,9 @@ export default async function Sites({
                         things to do about it. The days come from `ORPHAN_SNAPSHOT_DAYS`, so the
                         sentence in `KEYS` still names no number (standing rule 4). */}
                     {movedId === site.id ? (
-                      <Banner kind="info">{KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS)}</Banner>
+                      <Banner kind="info">
+                        {movedOld === 'live' ? KEYS.movedStillConnected : KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS)}
+                      </Banner>
                     ) : null}
                     <SiteNotices site={site} recheckFailed={recheckedId === site.id} />
                   </article>

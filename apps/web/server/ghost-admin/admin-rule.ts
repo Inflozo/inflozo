@@ -41,20 +41,30 @@ export class AdminError extends Error implements AdminEnvelope {
 // is the only shape that stores a jsonb OBJECT. Executed on the live database 2026-09-07:
 // `${JSON.stringify(detail)}::jsonb` gives `jsonb_typeof = 'string'`, a JSON string scalar, so
 // `detail.status` would have read undefined for ever with every check green.
-export type AuditDetail = {
-  status?: number
-  /** How long the Ghost call took. Absent on a row that made no call -- `credential_change`. */
-  ms?: number
-  ghost_type?: string
-  reason?: 'missing' // written by the decrypt CTE in SQL for a site with no key, and by nothing else
+/**
+ * A UNION AND NOT ONE LOOSENED SHAPE, which is what it briefly became when Story 3.6 needed a row
+ * that makes no Ghost call: `ms` was turned optional for EVERY row, so an `admin_read` could then
+ * ship with no duration and nothing would notice. That is the same defect the comment above this
+ * type records ("`detail.status` would have read undefined for ever with every check green"), so
+ * the two shapes are named separately and `tsc` keeps each writer honest (review, 2026-09-09).
+ */
+export type AuditDetail =
+  /** Every row that made (or refused to make) a call: `ms` is REQUIRED, as it always was. */
+  | {
+      status?: number
+      ms: number
+      ghost_type?: string
+      reason?: 'missing' // written by the decrypt CTE in SQL for a site with no key, and by nothing else
+      kind?: never
+      direction?: never
+    }
   /**
    * DW-76, Story 3.6: WHICH credential moved and WHICH WAY, and never the credential itself. One
    * enum value serves both writers -- `store()` and `remove()` -- so the specifics live here, the
-   * way `entitlement_change` and `admin_flag_change` already carry theirs.
+   * way `entitlement_change` and `admin_flag_change` already carry theirs. No call was made, so
+   * there is no duration to carry and no `status` to report.
    */
-  kind?: 'admin' | 'staff'
-  direction?: 'in' | 'out'
-}
+  | { kind: 'admin' | 'staff'; direction: 'in' | 'out'; ms?: never; status?: never }
 
 /**
  * A CREDENTIAL IS `kid:secret`, and the secret is HEX. Refused here — before Vault, before the
