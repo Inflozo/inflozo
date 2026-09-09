@@ -1995,7 +1995,9 @@ const shoot = async (page, name) => {
     const openConfirm = async () => {
       if ((await menuEl.isVisible().catch(() => false)) === false) await dots().first().click()
       await menuEl.waitFor({ state: 'visible' })
-      await menuEl.getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
+      // BY ROLE `link` AND NOT `button`: the menu row is an `<a href="/sites/disconnect?site=…">`,
+      // which is what gives it a destination with scripts off. `disconnect-js-off` reads that href.
+      await menuEl.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
       await page.waitForSelector('dialog[open]')
     }
     await openConfirm()
@@ -2151,7 +2153,16 @@ const shoot = async (page, name) => {
     await page.locator('dialog[open]').getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
     // WITH T1 GONE THE ACCOUNT HAS NO ACTIVE SITE, so `/sites` is the empty screen again — which
     // is also the assertion that the card really left the list rather than merely re-rendering.
-    await page.getByText(SAY.empty_title).waitFor({ timeout: 30000 })
+    // A FAILURE HERE NAMES ITSELF (the file's own rule, and `brand-ownership` is the precedent):
+    // waiting bare threw a locator timeout with no page in it, so a run could not say whether the
+    // press had been REFUSED — `remove()` throwing redirects to `?disconnect=<id>` and leaves the
+    // card standing, which is a different fault from a press that never arrived (executed
+    // 2026-09-09, run 7).
+    const wentEmpty = await page.getByText(SAY.empty_title).waitFor({ timeout: 30000 })
+      .then(() => true).catch(() => false)
+    const endedOn = page.url()
+    const endedSaw = wentEmpty ? '' :
+      (await page.locator('main').evaluate((el) => el.textContent).catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 160)
     const goneRow = ((await wire(`/sites?id=eq.${t1SiteId}&select=*`)).body || [])[0] || {}
     const gonePresent = goneRow.credentials_present || {}
     const refAfter = await refOf(t1SiteId)
@@ -2173,7 +2184,7 @@ const shoot = async (page, name) => {
       && refAfter === null && secretsBefore === 1 && secretsAfter === 0
       && projectsById(projectsAfterDisconnect) === projectsById(projectsBeforeDisconnect)
       && stillLinked === 1 && snapAfter === snapBefore && snapBefore !== 'null'
-      && slotsWhileGone === 0,
+      && slotsWhileGone === 0 && wentEmpty,
       `the card left the list and /sites is the empty screen again — and the ROW is still there ` +
       `(FR-C6: a disconnected record is a record Inflozo KEPT), stamped disconnected_at ` +
       `${JSON.stringify(goneRow.disconnected_at)} with content_key null and credentials_present ` +
@@ -2188,7 +2199,11 @@ const shoot = async (page, name) => {
       `is what closes DW-43 with no SQL and leaves the job itself to Story 7.20, DW-75). And the ` +
       `RECORD DOES NOT COUNT AGAINST THE CAP: on FREE with one disconnected row and no active one ` +
       `the grid draws ${slotsWhileGone} ghost slot and the connect form is open — which is what ` +
-      `re-adopt below then walks through`)
+      `re-adopt below then walks through` +
+      (wentEmpty ? '' : `. ⚠ THE PRESS DID NOT REACH THE EMPTY SCREEN: it ended on ` +
+        `${JSON.stringify(endedOn)} showing ${JSON.stringify(endedSaw)} — a "?disconnect=" in that ` +
+        `URL is remove() having thrown and the site still connected, which is the refusal path, not ` +
+        `a press that never arrived`))
     // The fixture goes with the site's record only at the cascade; it is removed here so the
     // re-adopt below reads a row this run has not left lying about.
     await fetch(`${SB}/rest/v1/site_snapshots?site_id=eq.${t1SiteId}`, {
@@ -2339,7 +2354,7 @@ const shoot = async (page, name) => {
     await t3Dots().first().click()
     const t3Menu = page.locator(`#site-menu-${t3SiteId}`)
     await t3Menu.waitFor({ state: 'visible' })
-    await t3Menu.getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
+    await t3Menu.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
     await page.waitForSelector('dialog[open]')
     await page.evaluate((id) => {
       const field = document.querySelector('dialog[open] form input[name="site_id"]')

@@ -450,32 +450,103 @@ use the same test site you used for Story 3.4.
 
 ## Verification
 
-**Commands:**
+**R-82: the real infrastructure, and what each returned.** Every command below was RUN, not
+planned; the numbers are what came back. No key was printed and every one is recorded by its
+variable name.
 
-- `cd apps/web && pnpm check` -- expected: lint, types and `node --test` green, `busy.test.ts` and
-  `app-routes.test.ts` included. *(Node 24 on PATH — the shell defaults to 22.)*
-- `bash supabase/tests/run-rls-gate.sh` -- expected: green. No migration in this story, so this is the
-  control that the comment-only edit changed nothing.
-- `python3 tools/probe/run-verify-ghost-admin.py --check` -- expected: the plumbing steps pass and the
-  new steps are listed; no browser, no key spent.
-- `python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com` -- **R-82, the real
-  one.** Expected: every step PASS against the deployed site, the real Supabase (PostgREST **and** the
-  transaction pooler, read-only, for `vault.secrets`, `private.site_credentials` and
-  `private.credential_audit`) and the real Ghost **T1 `ghost6.inflozo.com` (6.58.0)** and **T3
-  `ghost5.inflozo.com` (5.130.6)**. **A result whose control did not pass is not a result** (standing
-  rule 2): the run must include at least one negative control — the forged-site-id post that writes
-  nothing, verified to write something once the ownership clause is commented out.
-- `python3 tools/doc-audit.py --check` -- expected: green, twice.
+**Commands, and their answers:**
 
-**Manual checks:**
+- `pnpm check` (repo root, Node 24 on PATH — the shell defaults to 22) -- **exit 0**: lint and types
+  clean, **237 tests, 237 pass, 0 fail**, `busy.test.ts` and `app-routes.test.ts` among them.
+  *(`apps/web` has no `check` script of its own; the root's runs the whole workspace.)*
+- `pnpm build` -- **exit 0**, "Compiled successfully", and the route table shows the new
+  `ƒ /app/sites/disconnect`.
+- `bash supabase/tests/run-rls-gate.sh` -- **exit 0**, ending on the four DW-44 vault assertions. It
+  is the control that this story's SQL edits are comment-only: it refuses to run on drifted copies
+  and it diffs the database the migrations produce against `SCHEMA.sql`, and it did neither.
+- `python3 tools/doc-audit.py --check`, twice -- **PASS (0 warnings)**. The first call regenerated,
+  as its sub-tools do; the second was clean.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` -- **all steps passed**, and it printed
+  this story's copy read out of the app itself: `disconnect_menu` "Disconnect", `disconnect_title`
+  "Disconnect %s?", `disconnect_body`, `disconnect_cancel` "Cancel", `disconnect_busy`
+  "Disconnecting…", `disconnect_failed`, `go_pro` "Go Pro — $15/mo", `at_cap` "Free includes 1 site.
+  Pro connects up to 10." Nothing in the harness types a plan number.
+- `python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com` -- **80 steps, all
+  passed, RESULT: all steps passed**, against the **production** deployment of `81bc46b8` (CI green;
+  DW-7 means GitHub Actions publishes, so the deployment is the commit).
 
-- The Vault secret for a disconnected site is **gone**, not orphaned — `select count(*) from
-  vault.secrets` before and after, read through the pooler as the existing `secret-gone` step does.
-- ~~`private.credential_audit` carries a row per removal, naming the route and the site, with no secret
-  in `detail`.~~ **Not true of the code, and executed rather than assumed (Dev, 2026-09-09, standing
-  rule 1).** `remove()` writes no audit row — `withStore` only wraps its errors — and
-  `public.credential_action` is a fixed six-value enum with no member meaning "a credential was
-  removed"; adding one is a migration, which this spec's Boundaries forbid in bold. **Question 3
-  above is the owner's, and DW-76 is the ledger entry so it cannot be lost.** The removal is proved
-  the stronger way instead: the `disconnect` step reads `vault.secrets` through the pooler and sees
-  the secret gone.
+**The real services it hit, and what they returned:**
+
+| Service | Keys, by variable name | What it returned |
+|---|---|---|
+| **Vercel** (production `app.inflozo.com`) | — the deployed app itself | every surface this story adds, served: S11a's ⋯, its confirm, S11c's ghost slot, and the new `/sites/disconnect` route |
+| **Supabase**, PostgREST | `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY` | the `sites`, `projects` and `site_snapshots` rows read before and after each press; the fixture user created and deleted, users after: 7 |
+| **Supabase**, transaction pooler (read-only) | `SUPABASE_DB_POOLER_URL` | `vault.secrets` behind T1's ref went **1 → 0** on the disconnect; `private.credential_audit` **25 rows**, every one stamped `sites/connect`, 0 that look like they hold a key; `secret-gone` after the cascade: `[0,0]` |
+| **Ghost T1** `ghost6.inflozo.com` (6.58.0) | `GHOST6_ADMIN_API_KEY`, `GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` | `GET /admin/config/` and `/admin/site/` answered the connect and the re-adoption; `GET /admin/users/{id}` → **HTTP 404** after the cascade |
+| **Ghost T3** `ghost5.inflozo.com` (5.130.6) | `GHOST5_ADMIN_API_KEY`, `GHOST5_CONTENT_API_KEY`, `GHOST5_STAFF_ACCESS_TOKEN` | the Pro connect, and the two refusals — `at-cap` and `re-adopt-at-cap` — both **before** any Ghost call, so no key was spent on either |
+| **Resend · Dodo** | — | **not hit.** This story sends no email and touches no billing; `/billing` is a link the ghost slot points at, not a call. |
+
+**What the disconnect itself returned, live:** `disconnected_at` stamped
+`"2026-09-09T11:44:35.65+00:00"`, `content_key` null, `credentials_present`
+`{"admin":false,"staff":false,"content":false}` — every one false — the vault ref nulled and its
+secret gone (1 → 0), while the project, its `style_pack`, its `linked_site_id` and the fixture
+`site_snapshots` row came back byte-identical, that row's `purge_after` still null.
+
+**The negative controls, and they are controls because they were watched LANDING** (standing rule 2,
+which the harness's own comments state as "a byte-identical re-read proves nothing about a press that
+never arrived"):
+
+- `disconnect-forged` — a second account's site id forged into the confirm and posted from the
+  fixture's session: the press was seen to land on the **not-found page**, the stranger's row is
+  byte-identical, and the caller's own site was not disconnected either.
+- `disconnect-again` — the same id posted twice: the second press landed back on `/sites` **with the
+  cards still drawn** (a redirect, not the not-found page a stranger's id gets) and re-stamped
+  nothing.
+- `re-adopt-at-cap` — a retained record for T3's address, connected back on Free at one active site:
+  refused with `siteCapSentence('free')` and **not revived**. This is a branch ORDER nothing could
+  reach until this story built the writer.
+- `disconnect-failed` — `?disconnect=<id>` puts the sentence on **that** card and no other, and the
+  site stays connected. ⛔ The throw itself is not induced: breaking the pooler breaks every other
+  step in the run, so the code path is read and the surface is executed.
+
+**Every I/O & Edge-Case Matrix row has a step that ran and passed:** happy path `disconnect` ·
+Vault unreachable `disconnect-failed` (surface, with the ⛔ above) · a stranger's id
+`disconnect-forged` · already disconnected `disconnect-again` · re-adopt `re-adopt` · re-adopt at the
+cap `re-adopt-at-cap` · a new URL `connect` and `pro-connect-t3` · Free at the cap `ghost-slot` · Pro
+at the cap `ghost-slot-pro` (⛔ Pro AT ten sites is unexecuted — it needs ten connected Ghost sites —
+and is recorded rather than claimed) · disconnected records and the cap, inside `disconnect`.
+
+**The one manual check that turned out not to be true of the code**, executed rather than assumed
+(standing rule 1): ~~`private.credential_audit` carries a row per removal~~. `remove()` writes **no**
+audit row — `withStore` only wraps its errors — and `public.credential_action` is a fixed six-value
+enum with no member meaning "a credential was removed"; adding one is a migration, which this spec's
+Boundaries forbid in bold. **Question 3 above is the owner's and DW-76 is the ledger entry**, so it
+cannot be lost. The removal is proved the stronger way instead: `disconnect` reads `vault.secrets`
+through the pooler and sees the secret gone (1 → 0). The `audit` step's 25 rows are unchanged by the
+disconnect, which is itself the evidence that nothing untrue was written.
+
+**Two things the live runs found that reading could not, both fixed:**
+
+1. **`notices-js-off` went red the first live run.** Its `article :not(dialog) button[type="submit"]`
+   reads "a button under SOME element that is not a dialog", and the ⋯ confirm's Submit has a plain
+   `<div>` for a parent, so it matched and the count disagreed with the form count. Excluding by
+   ANCESTOR — `button[type="submit"]:not(dialog button)`, the idiom the form selector already used —
+   is the fix. A CSS `:not()` reading that no amount of staring at the app would have shown.
+2. **The ⋯ row was a `<button onClick>`, so the confirm could not be reached with JavaScript off** —
+   the acceptance criterion was not met and had been caveated with a `ponytail:` ceiling instead.
+   Fixed in the shape this codebase already had for its other dialog: the row is now an `<a href>`
+   with a real destination, and `disconnect-js-off` asserts BOTH halves off served markup — the
+   href (`/sites/disconnect?site=…`) and that route's own wired form.
+
+**Flake, recorded rather than hidden.** Nine live runs were made. Runs 6, 7 and 8 each went red at a
+**different** step — `brand-ownership`, `disconnect`, and a bare 60s `page.goto` timeout — and each of
+those steps passed in the other runs; runs 3 and 9 were fully green, before and after the app change.
+DNS and `https://app.inflozo.com` were checked healthy between them (`dig @1.1.1.1` and a 307 in
+0.4s), so this reads as the long browser session against live infrastructure, not a regression —
+`brand-ownership`'s own comment already records it failing "twice in five runs" before this story
+existed. The `disconnect` step now **names its own failure** (the URL and the page it ended on) rather
+than throwing a bare locator timeout, so the next occurrence says whether the press was refused or
+never arrived.
+
+**Not run here, and they belong to the phases that own them:** the owner's manual test above (R-80,
+his, on the deployed site) and the 1440/834/390 frame screenshots (`--shots`).
