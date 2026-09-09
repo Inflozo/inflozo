@@ -2263,8 +2263,26 @@ const shoot = async (page, name) => {
     // not-found page renders; the forged **Skip** redirects to `/sites`. Either one proves the
     // round trip completed before the rows are re-read (review 5, 2026-09-09).
     const forgedUse = await forgeBrand(SAY.brand_use)
-    const forgedUseLanded = await page.getByText('could not be found', { exact: false }).first()
+    /* THE POST HAS TWO OBSERVABLE LANDINGS AND THE CONTROL TAKES EITHER, because what it is here
+       to prove is that the press REACHED the server — not which branch the server then chose.
+       `useBrand`'s site read is `.maybeSingle()`: a stranger's row comes back as no row and no
+       error and it calls `notFound()`, but a read that ERRORS redirects to `&failed=1` instead,
+       deliberately ("one transient PostgREST failure is not a stranger's row", review 4). Waiting
+       only for the not-found page therefore reported "the press never arrived" about a press that
+       had arrived and been refused the other way — twice in five runs, while the security claim
+       beneath it (no row written, nothing linked to the stranger's site) passed every time.
+       Which landing happened is RECORDED, so a run says which branch it exercised rather than
+       hiding the difference (executed 2026-09-09, runs 2 and 5). */
+    const sawNotFound = await page.getByText('could not be found', { exact: false }).first()
       .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    /* AND WHERE IT ACTUALLY WENT, read after the wait rather than waited on: `page.waitForURL` is
+       wrapped by the DW-68 retry, so racing one against the locator spent a second 20s and two
+       navRetries on a step that had already answered. */
+    const forgedUseUrl = page.url()
+    const forgedUseSaw = (await page.locator('main').evaluate((el) => el.textContent).catch(() => ''))
+      .replace(/\s+/g, ' ').trim().slice(0, 140)
+    const forgedUseLanded = sawNotFound ? 'not-found'
+      : (new URL(forgedUseUrl).searchParams.get('failed') === '1' ? 'failed-redirect' : null)
     const afterUse = await projectsOf()
     const forgedSkip = await forgeBrand(SAY.brand_skip)
     const forgedSkipLanded = await page.waitForURL((u) => u.pathname === '/sites')
@@ -2275,7 +2293,7 @@ const shoot = async (page, name) => {
     const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
     step('brand-ownership',
       foreignPage.saw === 'not-found' && forgedUse && forgedSkip
-      && forgedUseLanded && forgedSkipLanded
+      && Boolean(forgedUseLanded) && forgedSkipLanded
       && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
       && projectsById(afterUse) === projectsById(projectsBefore)
       && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
@@ -2283,8 +2301,11 @@ const shoot = async (page, name) => {
       `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
       `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
       `submitted from the fixture's session — and EACH POST WAS SEEN TO LAND before the rows were ` +
-      `re-read (the forged Use reached useBrand, whose site read returns no row through RLS, so ` +
-      `the not-found page rendered = ${forgedUseLanded}; the forged Skip redirected to /sites = ` +
+      `re-read (the forged Use reached useBrand and was refused, landing on ` +
+      `${JSON.stringify(forgedUseLanded)} — "not-found" is its site read coming back EMPTY through ` +
+      `RLS and "failed-redirect" is that read erroring, and both are the server answering this ` +
+      `press. It ended on ${JSON.stringify(forgedUseUrl)} showing ${JSON.stringify(forgedUseSaw)}; ` +
+      `the forged Skip redirected to /sites = ` +
       `${forgedSkipLanded}), because a byte-identical re-read proves nothing about a press that ` +
       `never arrived. The caller still has ${afterUse.length} project, ` +
       `byte-identical to the ${projectsBefore.length} it had before ` +

@@ -1811,3 +1811,37 @@ reason: Both are append-only by construction — every story adds its findings t
   description is a short subject line with the per-story detail beneath it — and it touches the
   generator, so it belongs to a story that owns those files rather than to a review of one story
   that appended to them.
+
+### DW-72: `brand-ownership`'s "the press landed" control is unreliable, while the claim under it is not
+
+plain: A safety test that proves nobody can put your brand on someone else's site still passes every
+  time. What is flaky is only the part that checks the button press reached the server at all, so the
+  test sometimes goes red without anything being wrong. It costs nothing on the live site.
+status: open
+severity: low
+origin: Story 3.4 Fix on the owner's test findings (2026-09-09) — measured over eight runs, not reasoned
+location: tools/probe/run-verify-ghost-admin.py (step `brand-ownership`) ·
+  apps/web/app/(app)/app/(authed)/sites/actions.ts (`useBrand`'s `notFound()` branch)
+reason: The fifth review (2026-09-09) added a positive control to this step, because "the rows are
+  byte-identical" proves nothing about a press that never arrived. The control waits for the forged
+  **Use your brand** press to land on the not-found page. It passed in that review's run and in the
+  first run after the owner's fix, and FAILED in three of the four later runs that reached it — and
+  in run 6 the press produced neither the not-found page nor the `&failed=1` redirect within 20s,
+  which is the pair of answers `useBrand` can give (its site read is `.maybeSingle()`: a stranger's
+  row is no row and no error, so `notFound()`; a read that ERRORS redirects to `&failed=1`, which
+  review 4 made deliberate — "one transient PostgREST failure is not a stranger's row").
+  **THE SECURITY CLAIM PASSED IN EVERY RUN**: nothing is written, the caller's projects come back
+  byte-identical, and none is linked to the stranger's site. Only the arrival control is unreliable.
+  `Submit` (R-98) is excluded as the cause by construction — its only click-time addition is a guard
+  that refuses a SECOND press, so a first click submits exactly as before, and an unhydrated page
+  submits natively either way; the step also failed on a deployment that predates the route-group
+  move and passed on one that carried every other part of the same change. What is NOT yet known is
+  where the forged press actually goes: the step now records the URL and the page text it ended on,
+  so the next run that reaches it answers that instead of it being reasoned about. Whoever picks this
+  up starts from that line, AND THE FIRST DATUM IS ALREADY IN IT: on the green eighth run the press
+  landed on `/sites/brand?site=<the stranger's id>` with `<main>` EMPTY, because Next's default
+  not-found page replaces the route rather than filling the landmark — so the sentence the control
+  waits for lives outside `main` and what varies is when it appears, not which branch was taken.
+  Two of the five runs that reached the step passed. Related: DW-68, the harness's wider
+  intermittent-wait problem — three of the same eight runs died early on an unrelated locator wait,
+  each at a different point.

@@ -1719,6 +1719,80 @@ mistake cannot recur.
 - The real services this story touched, named in the Dev record: the live Supabase project, the
   deployed Vercel production build on `app.inflozo.com`, and Ghost T1 (6.58.0) and T3 (5.130.6)
 
+## Fix record 5 — the owner's two test findings, executed (R-82)
+
+Run 2026-09-09, Node 24.18.1 on `PATH`. Every key is named by its variable; no value was printed and
+none is recorded here.
+
+**Deployed twice, because the first fix was half of one.** `4363ff02` (the shared `Submit`, the three
+new skeletons, the `next/link` offer) and then `323a4447` (the route-group move the deployed site
+asked for). Both built on CI — `check` ✔ `rls` ✔ `deploy` ✔ on each — and `app.inflozo.com` was
+confirmed through the Vercel API to be serving `323a4447` (`dpl_7kGkPnpFsqbwupAyZeGCAcr8q1f9`,
+`READY`, `target: production`) before anything below was trusted.
+
+| Command | Result |
+|---|---|
+| `pnpm check` (`eslint .`, `pnpm -r typecheck`, `node --test`) | **exit 0**, 235 tests in `apps/web` — the five in the new `busy.test.ts` among them — plus 1 in each of the three packages |
+| `pnpm build` (`next build`) | **exit 0**, and the route table is **byte-identical to before the route-group move**: `/app`, `/app/sites`, `/app/sites/brand`, `/app/sites/connect`, `/app/account`, `/app/kit` all still there and still `ƒ`. That is the proof `(dashboard)/` and `sites/(list)/` changed no URL |
+| `python3 tools/doc-audit.py --check` (twice) | **PASS, 0 warnings** on both passes |
+| `node --test busy.test.ts` against the tree the owner tested | **3 of 5 red, naming the files he was looking at** — `sites/brand/page.tsx` and `sites/site-notices.tsx` for the buttons, and `account`, `sites` and `sites/brand` for the skeletons. Run against the half-fix (`4363ff02`) the boundary-scope test is red too, naming `(authed)/loading.tsx` as covering five routes and `sites/loading.tsx` as covering two. **This is the control**: the tests fail on the code that produced the findings and pass on the code that fixes it |
+
+### The deployed site — `python3 tools/probe/run-verify-ghost-admin.py` against `app.inflozo.com`
+
+**The two steps that are the owner's findings, and what every run answered:**
+
+| Step | Runs that reached it | Result |
+|---|---|---|
+| `busy-label` | **6 of 6** | **PASS every time.** The pressed button went from the app's own `BRAND_COPY.skip` to `BRAND_COPY.skipping` with `aria-busy=true` and `aria-disabled=true` — never `disabled`, so it keeps focus and stays announced — while the button in the **other** form still read "Use your brand", which is `useFormStatus` being a form's status and not a page's. Driven on **Skip**, which writes nothing. `held > 0` is its control: a press whose POST was never held would have resolved before the read and could not fail |
+| `skeleton-shape` | 6 | **Red on the first fix, PASS on all four runs against the route-group build.** The number that moved is the 16:10 image band in `/sites`' streamed document: **6 before the move, 0 after**, while the dashboard's stayed at 8. Each route's body now carries its own sentence and not the other's — asserted as a **pair**, so the state before the fix is one it cannot pass in |
+| `skeleton-soft-nav` | 4 | **Recorded, not asserted** (what the router draws between two commits is timing this run cannot hold still). Every run traced the same path: `projects-skeleton -> dashboard -> sites-skeleton -> sites-page`. The dashboard finishes its own skeleton, and the press to Sites is answered by **the site skeleton** — which is the owner's finding, live |
+
+**`skeleton-shape` was wrong twice before it was right, and both corrections are the record.** Its
+first version HELD the RSC request of a soft navigation and read the screen inside the hold; it saw
+neither sentence and never left the dashboard, because holding that request stops the router
+*committing* the navigation and the boundary is drawn *after* the commit — the instrument was
+measuring the wrong half. Rewritten to read the **streamed document** of each route, it then failed
+for a real reason: `/sites` carried both sentences, because `(authed)/loading.tsx` was still a
+boundary above it. That is what sent the pages into `(dashboard)/` and `sites/(list)/`.
+
+**`brand-none` re-passed with its explanation corrected.** `/sites/brand` still answers **HTTP 200**
+rather than 404 on `notFound()`, now because **it has its own** Suspense boundary rather than because
+one covered the group. DW-67 is amended: the move it named and assigned to "the story that gives a
+second `(authed)` page its own loading shape" is this one, and what remains open there is the status
+itself and the not-found page being Next's default rather than `M9 404`.
+
+**The eighth run was green end to end: `RESULT: all steps passed`, 69 steps, 0 failures**, against
+`app.inflozo.com` serving `323a4447`, with T1 `ghost6.inflozo.com` 6.58.0 and T3
+`ghost5.inflozo.com` 5.130.6 — every step in the harness's docstring in order, this story's own
+among them, plus `no-secret-leak` scanning every response body for the five keys the run typed and
+finding none.
+
+### What the earlier runs did not get clean, stated plainly
+
+**Seven runs preceded that one and none of them was green end to end.** Recorded rather than
+smoothed over, because a result whose control did not pass is not a result (standing rule 2) and
+because the next session should not rediscover it:
+
+- **Three runs died early on a locator wait that timed out** — `text=Ghost said no` (run 3, step 20),
+  and the S2c heading after a connect (runs 4 and 7, steps 48 and 22) — each at a different point,
+  with `navRetries: 0`. This is the **DW-68 family**, whose signature is already written down here
+  from the fifth review: ~one lost wait per run, never twice in the same place, nothing measurably
+  unhealthy at the time. The retry wrapper deliberately does not cover locator waits, because a
+  locator wait is an assertion nearly everywhere else in the file.
+- **`brand-ownership`'s landing control passed in two of the five runs that reached it** — run 1 and
+  the green run 8, and the fifth review's own run before that. **The security claim underneath it
+  passed in every single run**: the forged press writes nothing, the caller's projects come back
+  byte-identical, and none is linked to the stranger's site. What is unreliable is only the control
+  that proves the POST *arrived*. **`Submit` is excluded as the cause by construction**: its only
+  click-time addition is a guard that refuses a *second* press, so a first click submits exactly as
+  before, and an unhydrated page submits natively either way; the step also failed on a deployment
+  predating the route-group move and passed on one carrying every other part of the same change.
+  The recording added to the step paid for itself on run 8: the press lands on
+  `/sites/brand?site=<the stranger's id>` with **`<main>` empty**, because Next's default not-found
+  page replaces the route rather than filling the landmark — so the sentence the control waits for
+  is outside `main`, and what varies is when it appears. Carried as **DW-72** with that line, so
+  whoever picks it up starts from a measurement rather than a theory.
+
 ## Dev record — what was executed, and what each service answered (R-82)
 
 Run 2026-09-08, Node 24.18.1 on `PATH`. Every key is named by its variable; no value was printed
