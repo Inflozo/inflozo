@@ -963,6 +963,63 @@ project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPA
 Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
 story's path** and were not called.
 
+## Fix record 4 — the owner's Question 6 ruling, executed (R-82)
+
+Run 2026-09-09 against CI's deployment of **`8dab7947`** on `app.inflozo.com` (`rls` ✔ `check` ✔
+`deploy` ✔; the sha confirmed through the Vercel API by `VERCEL_TOKEN` before any live assertion was
+trusted), with **T1** `ghost6.inflozo.com` 6.58.0 and **T3** `ghost5.inflozo.com` 5.130.6, and the
+live Supabase project over PostgREST, GoTrue and the transaction pooler. Every key named by its
+variable; no value printed.
+
+**65 steps, 0 failures — on the FIRST run**, 1 navigation retry. `pnpm check` exit 0 with **230
+tests**; `pnpm build` exit 0 with `ƒ /app/sites/brand` still dynamic; `doc-audit --check` PASS twice;
+no migration, so the RLS gate is untouched.
+
+**The change is one sentence and one branch.** `BRAND_COPY.atLimitChoose` is new and the caption
+branch gained a `choosing` arm inside its `capped` arm. `brandTarget`, the cards, the pre-selection,
+the hidden decision field and everything `useBrand` writes are **untouched**, and `BRAND_COPY.willBrand`
+is untouched — it still runs at the cap with a single project, which is every Free customer, because
+there the caption is the only thing on the screen that can say which row wears the brand.
+
+### The two sentences, live, in the same run
+
+| Step | In the run's own words |
+|---|---|
+| `brand-atcap-picker` | *"THE CAPTION HANDS THE CHOICE OVER rather than pre-answering it (his Question 6, option 1): it printed **"You're at your project limit, so no new project — pick the one to wear your brand."** = true, and the sentence that NAMES a project — the one this screen printed before the ruling — **is gone** = true"* — with the Question 4 ruling still holding beside it: the ticked card is "Ghost6", the same card carrying "This site's project", where the pre-ruling rule *"would have ticked … a DIFFERENT row"* |
+| `brand-atcap` | *"at the Free cap of 1 the caption NAMED the project it would brand (**"You're at your project limit. We'll put your brand on “Ghost6”."**) = true"* — the sentence the step above refuses, proved **alive** in the same run at the cap with one project |
+
+### Controls, including the one that failed
+
+- **THE UNIT ASSERTIONS WERE PROVED BOTH WAYS.** `BRAND_COPY.atLimitChoose` was pointed at the
+  pre-ruling naming sentence and `node --test probe-rule.test.ts` **failed** — 23 pass, 1 fail, on
+  *"it names no project — the cards do"* — then restored and passed 24, 0. A test that has not been
+  seen to fail is not evidence, and this one has been.
+- **THE LIVE STEP DISCRIMINATES IN BOTH DIRECTIONS IN ONE ASSERTION.** `brand-atcap-picker` is
+  `cappedCaption && !oldCaption`: a screen that printed the ruled sentence **and** the naming one —
+  the shape a half-applied ruling would produce — fails it. Asserting only the new sentence would
+  have passed on exactly that page.
+- **THE PAIR IS THE CONTROL.** `brand-atcap` and `brand-atcap-picker` assert opposite things about
+  the same sentence in the same run, so neither can be satisfied by the caption simply disappearing:
+  one requires it present, the other requires it absent, and they differ only in whether cards are
+  drawn.
+- **The two caption names review 2 deleted stayed deleted.** `atLimitPick` and `willRebrand` are
+  still asserted absent from `BRAND_COPY` (standing rule 7, grepped across the repository). The new
+  key is deliberately **not** called `atLimitPick`: that one named no project on a screen that drew
+  **no cards**, so nothing on it said which project would be branded and no step or criterion ever
+  reached it. This one names no project **because the cards do**, and it is reached by a step and by
+  two criteria. The test's comment now records that the reason for the old deletion no longer holds.
+- **What was NOT executed, and is not claimed.** Unchanged from review 4 and stated again rather than
+  dropped: connect's "no brand to offer" landing (AC 11's first half) is unreachable from here, and
+  the preset-floor patch is proved by reasoning and `tsc` rather than by execution.
+
+**Real services this fix touched, by name:** Ghost **T1** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`,
+`GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN` for 3.3's unchanged `injection-live` only) and
+**T3** (`GHOST5_*`, the same four) — **read-only from this story's code**; the live **Supabase**
+project over PostgREST, GoTrue and the transaction pooler (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`SUPABASE_DB_POOLER_URL`); the **Vercel** production deployment serving `app.inflozo.com`, and the
+Vercel API by `VERCEL_TOKEN` to confirm which commit it serves. **Resend and Dodo are not on this
+story's path** and were not called.
+
 ## Questions for the owner
 
 ### Question 1 — when you press "Use your brand", which project wears it?
