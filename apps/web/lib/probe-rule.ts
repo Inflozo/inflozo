@@ -245,8 +245,16 @@ export const BRAND_COPY = {
   offer: 'Use this site’s brand',
   willCreate: 'We’ll make a project for this site and put your brand on it.',
   /** At the cap the brand goes onto a project that already exists, so the caption NAMES it before
-      the press — the owner's Question 1 ruling, and it says so whether or not cards are drawn. */
-  willBrand: (name: string) => `You’re at your project limit, so we’ll put your brand on “${name}”.`,
+      the press — the owner's Question 1 ruling, and it says so whether or not cards are drawn.
+
+      TWO SENTENCES, AND THE SECOND DOES NOT DEPEND ON THE FIRST (the owner's Question 5 ruling,
+      option 1, 2026-09-09). It used to read "You're at your project limit, SO we'll put your brand
+      on X", and after his Question 4 ruling that cause was gone: `brandTarget` prefers the project
+      for this site on BOTH sides of the cap, so the same row is named with room to spare and the
+      limit decides nothing here. He kept the limit — someone at the cap still needs to know why no
+      new project appears — and dropped the "so". The sentence states two facts and claims no
+      relation between them. */
+  willBrand: (name: string) => `You’re at your project limit. We’ll put your brand on “${name}”.`,
   /* THE OWNER'S QUESTION 3 RULING (2026-09-08): a second press SAYS what it already did and ASKS,
      rather than telling — and where there is more than one project it lets the customer pick
      which one, from cards carrying each project's own wireframe.

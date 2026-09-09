@@ -74,8 +74,17 @@ TEST_WORDS = {'pending': 'not yet', 'issues': 'you found issues', 'passed': 'pas
 # The epics whose stories run one at a time behind the owner's category gate (PRD §4): matched by
 # title, so the numbers stay the PRD's and epics.md's business.
 GATED_TITLES = ('the shell block', 'the gated library pipeline')
+# THE PRODUCTION DOMAINS ARE ON THIS LIST AND WERE NOT. The check looked for `*.vercel.app` — the
+# one host this project FORBIDS an owner test to use — and did not know `app.inflozo.com` or
+# `inflozo.com`, which are the real deployment every UI story is reviewed and tested against
+# ("Every owner test runs on the real production domains, never on a vercel.app preview URL",
+# owner 2026-09-04). So a story whose Verification named the live site by its real address was
+# told it had named no real service (found on Story 3.4, review 3, 2026-09-08). The preview host
+# stays on the list: naming one is still naming a real deployment, it is only the wrong one to
+# test on, and that is a different rule than this pill's.
 REAL_SERVICE = re.compile(r'ghost[56]\.inflozo\.com|[\w.-]+\.supabase\.co|[\w.-]+\.vercel\.app|'
-                          r'api\.vercel\.com|api\.resend\.com|[\w.-]+\.dodopayments\.com')
+                          r'api\.vercel\.com|api\.resend\.com|[\w.-]+\.dodopayments\.com|'
+                          r'\b(?:app|www)?\.?inflozo\.com')
 
 # The same grammar bmad-sprint-planning's sprint_plan.py uses, so the board and the tracker agree on
 # what an epic, a story and a status key are (a split story is `2-6a-…`).

@@ -459,8 +459,10 @@ execution with negative controls** — the findings below are what five layers f
       reaches neither. The tie-break is real and worth keeping; the reason beside it was a reach
       [apps/web/app/(app)/app/(authed)/page.tsx]. Two cites of the `projects` UPDATE grant pointed
       at `:1201`, which is the `revoke`; the `grant` is `:1202` (standing rule 7)
-- [x] [Review][Question] **The at-cap caption gives the limit as the REASON for a choice the limit
-      no longer makes.** After the Question 4 ruling the site's own project wins on both sides of
+- [x] [Review][Decision] **RULED — option 1 (owner, 2026-09-09).** The caption is two sentences now
+      — *"You're at your project limit. We'll put your brand on “X”."* — keeping the limit and
+      dropping the cause. One string changed; the choice is untouched. *(As raised:)* **the at-cap
+      caption gave the limit as the REASON for a choice the limit no longer makes.** After the Question 4 ruling the site's own project wins on both sides of
       the cap, so "You're at your project limit, **so** we'll put your brand on “X”." states a cause
       that is no longer there. The project named is correct; only the clause is stale. Put to the
       owner as **Question 5** rather than rewritten, because his own manual test step 12 quotes the
@@ -832,6 +834,14 @@ if that were the reason it is not making you something new — when in fact it w
 Two facts are worth saying on that screen, and the options differ in which they keep: **which project
 gets the brand**, and **that you cannot have another one right now**.
 
+**Ruled: option 1** (owner, 2026-09-09). The caption is two short sentences — *"You're at your
+project limit. We'll put your brand on “Ghost6”."* — so the screen still tells someone at the cap
+why no new project appears, and no longer claims the limit is the reason it chose that project.
+`BRAND_COPY.willBrand` is the change and it is the whole change: the captions are still three, the
+choice `brandTarget` makes is untouched, and his manual test step 12 now quotes the new sentence.
+Executed on the live site as `brand-atcap`, which reads the app's own copy rather than a retyped
+one, so the step needed no edit to follow the ruling.
+
 1. **Keep the limit, drop the false cause — two short sentences: "You're at your project limit. We'll
    put your brand on "Ghost6"." (RECOMMENDED)** You still learn both things, and nothing on the
    screen claims a reason that is not there. It is the smallest change from what you have already
@@ -884,9 +894,11 @@ need a site that is not connected yet, and you will need a menu and an accent co
 12. **Press the offer link a SECOND time** — this is **Question 3**, your own ruling. **Do:** press
     the "use this site's brand" link on the card again · **See:** the line under **Use your brand**
     no longer promises a new project. On the **Free** plan, which includes **one** project, you have
-    just used it, so the line names that project and says why: *"You're at your project limit, so
-    we'll put your brand on “Ghost6”."* Because you have one project there are **no cards to choose
-    from** — that is your B1. **Do:** press **Use your brand** · **See:** the Sites page, and the
+    just used it, so the line tells you both things in two short sentences — *"You're at your
+    project limit. We'll put your brand on “Ghost6”."* — which is **your Question 5 ruling**
+    (option 1, 2026-09-09): it used to say the limit was the *reason*, and after your Question 4
+    ruling it is not. Because you have one project there are **no cards to choose from** — that is
+    your B1. **Do:** press **Use your brand** · **See:** the Sites page, and the
     card still reads **1 project** — **not 2**.
 13. **Now the chooser, with something to choose. This step needs the Pro plan**, because Free
     includes one project and a chooser needs two — there is no billing to go through and nothing to
