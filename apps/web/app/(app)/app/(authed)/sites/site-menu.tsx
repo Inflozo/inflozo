@@ -1,15 +1,14 @@
 'use client'
 
-import { useRef } from 'react'
+import { type MouseEvent, useRef } from 'react'
 import { Button } from '@/components/kit/button'
-import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
+import { closeOnBackdrop, openOnCancel, sheet } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { LinkOff } from '@/components/kit/icons'
-import { Submit } from '@/components/kit/submit'
 import { DISCONNECT } from '@/lib/connect-rule'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { item } from '../project-menu'
-import { disconnectSite } from './actions'
+import { DisconnectConfirm } from './disconnect-confirm'
 
 /* ────────────────────────────── S11a's ⋯ menu and the confirm behind it (Story 3.5).
 
@@ -44,10 +43,14 @@ import { disconnectSite } from './actions'
    :52-64 is the record of what happens when a client closure is passed instead). `Submit` carries
    the required `busy` label (R-98) and its own double-submit guard, so this file needs neither a
    `useActionState` nor a ref: `disconnectSite` answers nothing and redirects.
-   ponytail: the ⋯ opens the dialog with `onClick`, exactly as the project-delete confirm does — so
-   with scripts off the menu opens (the popover is the platform's) and the confirm cannot. Making
-   the dialog reachable natively means giving up `showModal()`'s modality or the shared `sheet`, and
-   `<dialog popover>` cannot be both. Revisit if a scripts-off confirm is ever asked for. */
+   AND THE MENU ROW IS A LINK, WHICH IS THE WHOLE JAVASCRIPT-OFF STORY — the shape
+   `ConnectSiteButton` already is (`components/shell/shell.tsx:95`, and its own comment says it in
+   those words). `<a href="/sites/disconnect?site=…">` HAS a destination: with JavaScript the click
+   is intercepted and this dialog opens; without it the click is a navigation and
+   `sites/disconnect/page.tsx` serves the same confirm as a full page, posting the same action. A
+   `<button onClick>` would have been a control that does nothing without a script — which is what
+   the first Dev pass shipped, and what this acceptance criterion forbids. A MODIFIED click (⌘, ctrl,
+   shift, middle) is the customer asking for a new tab and is left alone, as the opener's is. */
 
 export function SiteMenu({ id, name }: { id: string; name: string }) {
   const menuId = `site-menu-${id}`
@@ -83,9 +86,12 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
             item: it is what makes Disconnect read as set apart from whatever 3.6 and 3.7 put
             above it, and the owner's manual test names it — "a thin line and one red item". */}
         <div aria-hidden className="m-[4px_8px] h-px bg-line" />
-        <button
-          type="button"
-          onClick={() => {
+        <a
+          href={`/sites/disconnect?site=${id}`}
+          onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+            if (!confirm.current) return
+            event.preventDefault()
             // The menu is a popover and has to go before the modal opens.
             menu.current?.hidePopover()
             openOnCancel(confirm.current)
@@ -96,7 +102,7 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
             <LinkOff size={15} />
           </span>
           {DISCONNECT.menu}
-        </button>
+        </a>
       </div>
 
       <dialog
@@ -105,26 +111,10 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
         aria-labelledby={`disconnect-${id}-title`}
         className={`${sheet} gap-5`}
       >
-        <div className="flex flex-col items-center gap-[14px] text-center">
-          <span
-            aria-hidden
-            className="inline-flex size-[52px] shrink-0 items-center justify-center rounded-full bg-danger-tint text-danger ring-8 ring-danger-tint/50"
-          >
-            <LinkOff size={22} strokeWidth={1.7} />
-          </span>
-          <div className="flex min-w-0 flex-col gap-[6px]">
-            <h2 id={`disconnect-${id}-title`} className={`${title} wrap-anywhere`}>
-              {DISCONNECT.title(name)}
-            </h2>
-            <p className="text-ui-dense leading-[1.5] text-ink-soft">{DISCONNECT.body}</p>
-          </div>
-        </div>
-
-        <form action={disconnectSite} className="flex flex-col gap-5">
-          <input type="hidden" name="site_id" value={id} />
-          {/* Two equal halves, so neither choice looks like the small one and both are a full-width
-              tap target at 390. Cancel is first: it is the way out, and it is what opens focused. */}
-          <div className="grid grid-cols-2 gap-[10px]">
+        <DisconnectConfirm
+          id={id}
+          name={name}
+          cancel={
             <Button
               type="button"
               variant="secondary"
@@ -135,12 +125,8 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
             >
               {DISCONNECT.cancel}
             </Button>
-            {/* LIVE ON THE FIRST CLICK — there is no field to type into and nothing greys it. */}
-            <Submit variant="danger" size={44} className="w-full" busy={DISCONNECT.busy}>
-              {DISCONNECT.menu}
-            </Submit>
-          </div>
-        </form>
+          }
+        />
       </dialog>
     </>
   )

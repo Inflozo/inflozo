@@ -130,6 +130,11 @@ const NO_SKELETON: Record<string, string> = {
     '"Connect site" opener is an <a href> whose click JavaScript turns into the sheet, and the ' +
     'wizard\'s own ?step= links are plain anchors — every remaining way in (scripts off, a ' +
     'modified click, a typed URL) is a document load with the browser\'s own progress on it',
+  [join(AUTHED, 'sites', 'disconnect')]:
+    'the same, one row down: S11a\'s ⋯ "Disconnect" is an <a href="/sites/disconnect?site=…"> whose ' +
+    'click JavaScript turns into the card\'s <dialog>, and it is a PLAIN anchor and not a <Link>, so ' +
+    'nothing soft-navigates here either. One card the page draws whole, reached only by a document ' +
+    'load (scripts off, a modified click, a typed URL) with the browser\'s own progress on it',
 }
 
 test('a skeleton sits where it covers one route and no sibling', () => {

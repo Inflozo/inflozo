@@ -147,6 +147,20 @@ slot at the Free cap.
   (`S11 Sites.dc.html:82`); add it to `components/kit/icons.tsx` beside `Trash` if it is not there.
   The confirm's submit is `Submit` from `components/kit/submit.tsx` with a required `busy` label
   (R-98).
+- `apps/web/app/(app)/app/(authed)/sites/disconnect-confirm.tsx` -- **new, added at Dev**: the confirm
+  itself — the disc, the title, the body and the `<form action={disconnectSite}>` — as ONE component,
+  because it appears in two places. No `'use client'`: it is static markup plus a server action's
+  dispatch, so the client menu renders it as a child and the server route renders it directly. Only
+  `cancel` differs between them and it is a prop.
+- `apps/web/app/(app)/app/(authed)/sites/disconnect/page.tsx` -- **new, added at Dev, and it is what
+  makes the JavaScript-off acceptance criterion TRUE rather than caveated.** The ⋯ row is an
+  `<a href="/sites/disconnect?site=…">` whose click JavaScript intercepts into the `<dialog>` — the
+  shape `ConnectSiteButton` and `/sites/connect` already are (`shell.tsx:95`, and that route's own
+  header says so in those words). Without JavaScript the click is a navigation and this page serves
+  the same confirm, posting the same action. The site is read under the caller's own session, so RLS
+  decides whether the page exists; a stranger's id or an already-disconnected one is `notFound()`.
+  `busy.test.ts`'s `NO_SKELETON` carries its reason beside `sites/connect`'s: no soft navigation
+  reaches either, so a route skeleton is never what the browser shows.
 - `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- three changes and no more. `<SiteMenu>`
   in the header row's `margin-left:auto` slot (`:222-240`, the `flex items-start gap-3` block) —
   **DW-57: the ⋯ goes here and nothing joins the pills line or the state line.** The plan is read
@@ -222,6 +236,12 @@ slot at the Free cap.
 - [x] `apps/web/app/(app)/app/(authed)/sites/site-menu.tsx` -- new: the ⋯ menu and the confirm, lifted
       from `project-menu.tsx`'s vocabulary, Disconnect its only item, `Submit` with a `busy` label --
       the frame's control, in the app's existing dialog language (R-74).
+- [x] `apps/web/app/(app)/app/(authed)/sites/disconnect-confirm.tsx` · `.../sites/disconnect/page.tsx`
+      · `apps/web/busy.test.ts` -- **added at Dev, for the JavaScript-off criterion.** The ⋯ row became
+      an `<a href>` with a real destination and the confirm became one component rendered in both
+      places, which is the shape `/sites/connect` already had; the new route is recorded in
+      `NO_SKELETON` beside it, for its reason. **The first Dev pass shipped a `<button onClick>` and
+      the criterion was not met; this is the fix, not an addition.**
 - [x] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- mount `<SiteMenu>` in the header row,
       read the plan, draw S11c's ghost slot at the Free cap, read `?disconnect=` for the failure
       Banner -- DW-57's placement rule, and the Refusal cell EXPERIENCE.md already specifies.
