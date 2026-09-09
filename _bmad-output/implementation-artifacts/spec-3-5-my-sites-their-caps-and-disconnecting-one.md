@@ -115,7 +115,7 @@ slot at the Free cap.
 | A new URL, no retained record | Connect an address never connected | A **new** row, no snapshot association — by construction, since snapshots key on `site_id` | Existing |
 | Free at the cap | Free plan, one active site | S11c's ghost slot is the grid's next cell: ✦, "Upgrade to connect more", `siteCapSentence('free')`, `goProLabel()`, linking to `/billing` | N/A |
 | Pro at the cap | Pro plan, ten active sites | **No** ghost slot — there is nothing further to sell (the dashboard's own rule) | N/A |
-| Disconnected records and the cap | Free, one active + three disconnected | Not at the cap by three; the ghost slot is absent and the connect form is open | N/A |
+| Disconnected records and the cap | Free, none connected + three let go | Not at the limit; the ghost slot is absent and the connect form is open | N/A |
 
 </frozen-after-approval>
 
@@ -325,7 +325,7 @@ other four found beside it. All patches are applied and the gates are green.
 - [x] [Review][Patch] The Code Map credited `busy.test.ts` with guarding the new control's `busy` label. Executed at review: delete the prop and `busy.test.ts` stays green — `tsc` is the guard, because `Submit`'s `busy` is required. Corrected above so the next story does not lean on the wrong tool
 - [x] [Review][Patch] `## Verification` claimed every matrix row "ran and passed" in the same paragraph that records two ⛔ exceptions. Corrected above
 
-- [ ] [Review][Decision] **The last I/O matrix row cannot be true as written**, and the matrix is inside `<frozen-after-approval>` — so correcting it is the owner's to allow, not mine (standing rule 6). Dev executed a different state and flagged it rather than reinterpreting it silently. Asked as **Question 4** below
+- [x] [Review][Decision] **The last I/O matrix row cannot be true as written**, and the matrix is inside `<frozen-after-approval>` — so correcting it is the owner's to allow, not mine (standing rule 6). Dev executed a different state and flagged it rather than reinterpreting it silently. Asked as **Question 4**, and **he ruled option 1 (2026-09-09)**: the row now reads *"Free, none connected + three let go → not at the limit"*, which is the state the live `disconnect` step already executes. No code changed
 
 - [x] [Review][Defer] A failed `remove('staff')` after a successful `remove('admin')` leaves the site reading **Connected with its Admin credential already gone**. It is recoverable (the mirror is honest, `credentials_present.admin` is false, and pressing again completes), it is a state the epic already calls first-class, and it is **unreachable today** — nothing stores a staff token until Epic 7, and both calls cross the same pooler connection, so the first fails whenever the second would. Recorded rather than designed around: **DW-77**
 - [x] [Review][Defer] The AC names Escape-closes-the-confirm and no step asserts it — native `<dialog>` behaviour, and the only Escape in the harness is on the popover menu. Deferred: proving a platform guarantee costs a 35-minute live run, and the owner's manual test step 2 exercises it by hand
@@ -502,7 +502,14 @@ about what the line should *say*, so the next person to read it is not misled.
    is wrong, and the next reader meets the wrong line before the note.
 3. **Say it differently** — tell me the words and I will use yours.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (the owner, 2026-09-09).** Correct the line to say what it meant — *"Free, none
+connected + three let go → not at the limit; the ghost slot is absent and the connect form is open."*
+The row in the I/O & Edge-Case Matrix now reads that, inside the frozen block and by his
+renegotiation of it, which is the only thing that opens one. It is the state the live `disconnect`
+step already executes, so the row and the evidence now describe the same thing and no code changed.
+Propagated the same day: the matrix row itself, the `disconnect` step's comment in
+`tools/probe/run-verify-ghost-admin.py` (which had flagged the contradiction rather than
+reinterpreting it), and the `## Verification` sentence that pointed here.
 
 ## Owner's manual test
 
@@ -603,10 +610,12 @@ never arrived"):
   site stays connected. ⛔ The throw itself is not induced: breaking the pooler breaks every other
   step in the run, so the code path is read and the surface is executed.
 
-**Every I/O & Edge-Case Matrix row has a step that ran, and all but the three marked ⛔ passed
+**Every I/O & Edge-Case Matrix row has a step that ran, and all but the two marked ⛔ passed
 outright** (the sentence read "every row has a step that ran and passed" until the review of
-2026-09-09, which is not true of a paragraph that then records two ⛔ exceptions of its own — and a
-third, the last row, whose executed state differs from the row as written; see Question 4): happy path `disconnect` ·
+2026-09-09, which is not true of a paragraph that then records two ⛔ exceptions of its own. The last
+row was a third: its executed state differed from the row as written, because the row could not be
+true as written — **the owner's Question 4 ruling corrected the row**, and it now describes exactly
+what the `disconnect` step executes): happy path `disconnect` ·
 Vault unreachable `disconnect-failed` (surface, with the ⛔ above) · a stranger's id
 `disconnect-forged` · already disconnected `disconnect-again` · re-adopt `re-adopt` · re-adopt at the
 cap `re-adopt-at-cap` · a new URL `connect` and `pro-connect-t3` · Free at the cap `ghost-slot` · Pro

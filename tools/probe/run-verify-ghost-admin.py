@@ -2179,10 +2179,11 @@ const shoot = async (page, name) => {
     // A RECORD INFLOZO KEPT IS NOT A SITE, AND THE CAP IS THE PLACE THAT SHOWS IT: on FREE, whose
     // cap is one, this account now holds one DISCONNECTED record and no active one — and the page
     // draws NO ghost slot and offers the connect form, which `re-adopt` below then walks through
-    // successfully. That is the matrix's "disconnected records and the cap", executed on the state
-    // this run can actually reach (its own row reads one active + three disconnected, which on a
-    // Free cap of one is at the cap by the active row alone — noted for review, not silently
-    // reinterpreted).
+    // successfully. That is the matrix's "disconnected records and the cap", and the row now names
+    // THIS state: it used to read "one active + three disconnected", which on a Free cap of one is
+    // at the cap by the active row alone. Flagged here rather than reinterpreted silently, raised as
+    // the story's Question 4, and the owner corrected the row (option 1, 2026-09-09) to "none
+    // connected + three let go" — the state this step has executed all along.
     const slotsWhileGone = await slotOf().count()
     step('disconnect',
       Boolean(goneRow.id) && Boolean(goneRow.disconnected_at) && goneRow.content_key === null
