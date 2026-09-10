@@ -1,6 +1,7 @@
 'use client'
 
 import { type MouseEvent, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
@@ -42,21 +43,32 @@ import { DisconnectConfirm } from './disconnect-confirm'
    :52-64 is the record of what happens when a client closure is passed instead). `Submit` carries
    the required `busy` label (R-98) and its own double-submit guard, so this file needs neither a
    `useActionState` nor a ref: `disconnectSite` answers nothing and redirects.
-   AND THE MENU ROW IS A LINK, WHICH IS THE WHOLE JAVASCRIPT-OFF STORY — the shape
+   AND BOTH MENU ROWS ARE LINKS, WHICH IS THE WHOLE JAVASCRIPT-OFF STORY — the shape
    `ConnectSiteButton` already is (`components/shell/shell.tsx:95`, and its own comment says it in
-   those words). `<a href="/sites/disconnect?site=…">` HAS a destination: with JavaScript the click
-   is intercepted and this dialog opens; without it the click is a navigation and
-   `sites/disconnect/page.tsx` serves the same confirm as a full page, posting the same action. A
-   `<button onClick>` would have been a control that does nothing without a script — which is what
-   the first Dev pass shipped, and what this acceptance criterion forbids. A MODIFIED click (⌘, ctrl,
-   shift, ALT, middle) is the customer asking for a new tab or a saved link and is left alone, as
-   the opener's is — alt joined that list at the review of 2026-09-09, having been the one gesture
-   the guard swallowed. */
+   those words). `<a href="/sites/disconnect?site=…">` and `<a href="/sites/keys?site=…">` each HAS
+   a destination: with JavaScript the click is intercepted — into this dialog for Disconnect, into
+   `router.push` and the intercepted `@modal/(.)keys` popup for Manage keys — and without it the
+   click is a navigation and `sites/disconnect/page.tsx` and `sites/keys/page.tsx` serve the same
+   surfaces as full pages, posting the same actions. A `<button onClick>` would have been a control
+   that does nothing without a script — which is what the first Dev pass shipped, and what this
+   acceptance criterion forbids. A MODIFIED click (⌘, ctrl, shift, ALT, middle) is the customer
+   asking for a new tab or a saved link and is left alone on BOTH rows, as the opener's is — alt
+   joined that list at the review of 2026-09-09, having been the one gesture the guard swallowed,
+   and it is why the keys row is a guarded `router.push` rather than a `<Link>`, whose own modifier
+   test does not include alt. */
 
 export function SiteMenu({ id, name }: { id: string; name: string }) {
   const menuId = `site-menu-${id}`
   const menu = useRef<HTMLDivElement>(null)
   const confirm = useRef<HTMLDialogElement>(null)
+  const router = useRouter()
+  const keysHref = `/sites/keys?site=${id}`
+
+  /** The gesture the two rows share: a plain left click is ours, every other one is the browser's
+      — ⌘, ctrl, shift, ALT and middle are the customer asking for a new tab or a saved link, and
+      alt joined that list at the review of 2026-09-09 having been the one the guard swallowed. */
+  const plainClick = (event: MouseEvent<HTMLAnchorElement>) =>
+    !(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
 
   return (
     <>
@@ -88,18 +100,37 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
             second one (DW-57). Re-check connection and Reconnect are Story 3.7's and are still
             ABSENT rather than greyed (UX-DR3).
 
-            IT IS A PLAIN LINK THAT NAVIGATES, AND THAT IS THE ONE PLACE THIS ROW DIFFERS FROM
-            DISCONNECT BELOW IT. Disconnect's click is intercepted into the card's `<dialog>`
-            because everything its confirm draws is already on this card. Manage keys is not: it
-            draws the ADMIN KEY'S ID HALF, which lives in `private.site_credentials` and is
-            reachable only through `server/ghost-admin` (AD-10, §21j). Rendering it here would put
-            a chokepoint read on the Sites list — one pooler round trip per card, on the busiest
-            route in the app — and rendering it WITHOUT that value would give the dialog a
-            different Admin row from the route's, which is exactly the drift "one component for
-            both" exists to prevent. So there is one surface, `/sites/keys?site=…`, and this row
-            goes to it. A modified click already opened it in a new tab; now every click does.
-            (Recorded in the spec's Change Log — the Code Map named both shapes.) */}
-        <a href={`/sites/keys?site=${id}`} className={`${row} ${ring} hover:bg-paper`}>
+            IT OPENS A WINDOW OVER THIS LIST, EXACTLY AS DISCONNECT BELOW IT DOES — the owner's
+            test of 3.6, finding 1: "Can we show the Manage Keys as a popup on the Sites screen
+            rather than a separate screen." Two rows of one menu had two behaviours, and the reason
+            was an engineering one that did not survive: the panel draws the ADMIN KEY'S ID HALF,
+            which lives in `private.site_credentials` and is reachable only through
+            `server/ghost-admin` (AD-10, §21j), so the card cannot RENDER the panel without a
+            pooler round trip per card on the busiest route in the app.
+
+            SO THE WINDOW IS NOT RENDERED BY THIS CARD. The click is a soft navigation to the very
+            address the `href` names, and `@modal/(.)keys` intercepts it and draws the route's own
+            panel in a `<dialog>` over the list — one component, one credential read, taken only
+            when somebody opens it. The `href` and its destination are untouched, which is the
+            JavaScript-off story and an acceptance criterion: with no script the click is a
+            document load and `sites/keys/page.tsx` serves the same panel as a full page. */}
+        <a
+          href={keysHref}
+          onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+            if (!plainClick(event)) return
+            event.preventDefault()
+            // The menu is a popover and has to go before the window opens over the card.
+            menu.current?.hidePopover()
+            // `router.push` AND NOT A `<Link>`: `<Link>`'s own modifier test does not include ALT,
+            // so an alt-click — the browser's "save this link" — would have been swallowed into a
+            // soft navigation. The guard above is the one Disconnect below already uses, and this
+            // is the same shape with the other half of the interception: a soft navigation to the
+            // SAME address the `href` names, which `@modal/(.)keys` draws as a popup over this
+            // list. Nothing else about the row changed.
+            router.push(keysHref)
+          }}
+          className={`${row} ${ring} hover:bg-paper`}
+        >
           <span className="shrink-0 text-ink-soft">
             <Key size={15} />
           </span>
@@ -112,7 +143,7 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
         <a
           href={`/sites/disconnect?site=${id}`}
           onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+            if (!plainClick(event)) return
             if (!confirm.current) return
             event.preventDefault()
             // The menu is a popover and has to go before the modal opens.

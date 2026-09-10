@@ -1,6 +1,6 @@
 'use server'
 
-import { notFound, redirect } from 'next/navigation'
+import { notFound, redirect, RedirectType } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
@@ -966,6 +966,28 @@ export async function disconnectSite(formData: FormData): Promise<void> {
    `last_checked_at` alone would make the card claim a check the daily job never made. So the test
    result is drawn on this screen and stored nowhere. */
 
+/**
+ * MANAGE KEYS REPLACES THE HISTORY ENTRY; IT DOES NOT PUSH ONE. Every one of these three actions
+ * answers by redirecting to the screen the customer is already on (`recheckPlan`'s shape), and
+ * since the owner's test the screen is usually a POPUP over the Sites list — an intercepted route,
+ * whose only sound way out is `router.back()` (`keys-back.tsx` carries the measurement).
+ *
+ * A server action's `redirect()` PUSHES by default. Measured on a throwaway control under
+ * `next dev`, 2026-09-10: after one push-redirect the first Back returned to the panel as it stood
+ * BEFORE the save instead of to the list, and after two saves it took three. With `replace` there
+ * is exactly one entry for the panel however many keys are saved or refused, and Back is always
+ * the list — executed as the control, with the push variant failing beside it.
+ *
+ * IT COSTS THE SCRIPTS-OFF PATH NOTHING: `RedirectType` steers the CLIENT router only. The same
+ * control posted the form with JavaScript disabled and got the same 303 onto the same URL.
+ */
+/* A `function` declaration with an explicit `never`, and not a `const` arrow: TypeScript only
+   lets a never-returning CALL end a code path when the callee is declared that way, so the arrow
+   form left `parsed.data` "possibly undefined" three lines under a refusal that cannot return. */
+function keysRedirect(url: string): never {
+  redirect(url, RedirectType.replace)
+}
+
 /** The row Manage keys acts on, read under the CALLER'S OWN session so RLS decides it exists. */
 async function keysSite(
   at: { userId: string; siteId: string },
@@ -1000,10 +1022,10 @@ async function keysSite(
   if (error?.code === '22P02') notFound()
   if (error) {
     console.error('sites: keys read failed', { code: error.code })
-    redirect(KEYS_REFUSED(at.siteId, 'keys_failed'))
+    keysRedirect(KEYS_REFUSED(at.siteId, 'keys_failed'))
   }
   if (!site) notFound()
-  if (site.disconnected_at) redirect(SITES_URL)
+  if (site.disconnected_at) keysRedirect(SITES_URL)
   return site
 }
 
@@ -1058,7 +1080,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
   // came in, as the wizard's own over-long post is.
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path[0]
-    redirect(
+    keysRedirect(
       KEYS_REFUSED(at.siteId, field === 'staff_token' ? 'token_malformed' : field === 'content_key' ? 'content_key_malformed' : 'credential_malformed'),
     )
   }
@@ -1066,7 +1088,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
   const contentKey = parsed.data.content_key.trim()
   const staffToken = parsed.data.staff_token.trim()
   // A form posted with nothing in it is a press with nothing to do, and it says nothing about it.
-  if (!adminKey && !contentKey && !staffToken) redirect(KEYS_URL(at.siteId))
+  if (!adminKey && !contentKey && !staffToken) keysRedirect(KEYS_URL(at.siteId))
 
   const site = await keysSite(at)
 
@@ -1081,7 +1103,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
         siteId: site.id,
         userId: at.userId,
       })
-      if (!config.ok) redirect(KEYS_REFUSED(site.id, config.code ?? 'ghost_refused', config.status))
+      if (!config.ok) keysRedirect(KEYS_REFUSED(site.id, config.code ?? 'ghost_refused', config.status))
       // WHICH GHOST THIS KEY OPENS. `site/` answers 200 to any key at all (§38a), so it validates
       // nothing and is read only AFTER `config/` has passed — here it is not a validator but an
       // IDENTIFIER, which is a use it is perfectly good for.
@@ -1096,16 +1118,16 @@ export async function saveKeys(formData: FormData): Promise<void> {
       const read = (answered.body as { site?: { url?: unknown } })?.site
       if (answered.ok && isHttpUrl(read?.url)) belongsHere = read.url
     } catch (thrown) {
-      // `redirect()` THROWS `NEXT_REDIRECT`, AND THIS CATCH USED TO EAT IT. The refusal above is a
-      // `redirect()` inside this `try`, so its throw landed here, failed `instanceof AdminError`,
+      // A REDIRECT THROWS `NEXT_REDIRECT`, AND THIS CATCH USED TO EAT IT. The refusal above is a
+      // `keysRedirect()` inside this `try`, so its throw landed here, failed `instanceof AdminError`,
       // and was rewritten as `keys_failed` — the one refusal a customer rolling keys is most
       // likely to hit, reported as an unexplained "nothing changed" in the page banner instead of
       // the key's own sentence under the key's own field. Executed against Next 16.3.1 at the
       // review of 2026-09-09; `lib/action-redirect.ts` exists for exactly this rejection.
       if (isRedirect(thrown)) throw thrown
-      if (thrown instanceof AdminError) redirect(KEYS_REFUSED(site.id, thrown.code))
+      if (thrown instanceof AdminError) keysRedirect(KEYS_REFUSED(site.id, thrown.code))
       console.error('sites: keys validate failed', { name: (thrown as { name?: string })?.name })
-      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
     }
     // WHAT THIS COMPARISON ACTUALLY PROVES, stated exactly, because it was over-claimed once and
     // the owner ruled on it (R-100, 2026-09-09). Both calls above go to THIS record's `site.url`,
@@ -1134,16 +1156,16 @@ export async function saveKeys(formData: FormData): Promise<void> {
     // Ghost there is nothing to compare against, so the comparison does not happen.
     const recorded = site.site_settings?.public_url
     if (recorded && belongsHere && hostOf(belongsHere) !== hostOf(recorded)) {
-      redirect(KEYS_REFUSED(site.id, 'keys_other_site'))
+      keysRedirect(KEYS_REFUSED(site.id, 'keys_other_site'))
     }
     try {
       // `store()` re-encrypts, stamps `admin_key_rotated_at`, writes the key's public id half and
       // audits — and DW-44's trigger deletes the secret the old ref pointed at.
       await store({ siteId: site.id, userId: at.userId, kind: 'admin', secret: adminKey, route: KEYS_ROUTE })
     } catch (thrown) {
-      if (thrown instanceof AdminError) redirect(KEYS_REFUSED(site.id, thrown.code))
+      if (thrown instanceof AdminError) keysRedirect(KEYS_REFUSED(site.id, thrown.code))
       console.error('sites: keys store failed', { name: (thrown as { name?: string })?.name })
-      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
     }
   }
 
@@ -1154,10 +1176,10 @@ export async function saveKeys(formData: FormData): Promise<void> {
       // `credential_malformed` under the TOKEN's own name: the Admin key's sentence names the
       // integration, and a Staff Access Token is not on the integration at all.
       if (thrown instanceof AdminError) {
-        redirect(KEYS_REFUSED(site.id, thrown.code === 'credential_malformed' ? 'token_malformed' : thrown.code))
+        keysRedirect(KEYS_REFUSED(site.id, thrown.code === 'credential_malformed' ? 'token_malformed' : thrown.code))
       }
       console.error('sites: keys token store failed', { name: (thrown as { name?: string })?.name })
-      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
     }
   }
 
@@ -1186,12 +1208,12 @@ export async function saveKeys(formData: FormData): Promise<void> {
       .maybeSingle<{ id: string }>()
     if (error || !data) {
       console.error('sites: keys content write failed', { code: error?.code ?? 'no_such_site' })
-      redirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
     }
   }
 
   revalidatePath(SITES)
-  redirect(KEYS_URL(site.id))
+  keysRedirect(KEYS_URL(site.id))
 }
 
 /**
@@ -1219,10 +1241,10 @@ export async function removeToken(formData: FormData): Promise<void> {
     // NOT `credential_store_unavailable`: that sentence reads "We couldn't save your key just now.
     // Nothing was connected" — a connect's words about a save, on a press that removes (review,
     // 2026-09-09). `token_remove_failed` is `disconnect_failed`'s twin one row down.
-    redirect(KEYS_REFUSED(site.id, 'token_remove_failed'))
+    keysRedirect(KEYS_REFUSED(site.id, 'token_remove_failed'))
   }
   revalidatePath(SITES)
-  redirect(KEYS_URL(site.id))
+  keysRedirect(KEYS_URL(site.id))
 }
 
 /**
@@ -1253,5 +1275,5 @@ export async function testConnection(formData: FormData): Promise<void> {
       console.error('sites: test connection failed', { name: (thrown as { name?: string })?.name })
     }
   }
-  redirect(KEYS_TESTED(site.id, result, status))
+  keysRedirect(KEYS_TESTED(site.id, result, status))
 }

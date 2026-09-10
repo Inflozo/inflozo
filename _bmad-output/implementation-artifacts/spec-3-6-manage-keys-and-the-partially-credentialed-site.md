@@ -11,13 +11,13 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.m
 
 ## In plain English
 
-After this story every connected site has an **API keys** screen — reached from the ⋯ on its card —
-that lists the three credentials Inflozo can hold for it, says in one line what each one lets Inflozo
-do, and shows plainly which of them you have and which you have not. You can paste a fresh Admin or
-Content key into it when you roll your keys in Ghost, add or take away the Staff Access Token
-whenever you like, and press **Test connection** to watch Inflozo actually reach your Ghost and
-report back. Not having the token is shown as a choice you have not made yet, never as something
-wrong with your site.
+After this story every connected site has an **API keys** window that opens over your Sites list
+when you pick **Manage API keys** from the ⋯ on its card — the three credentials Inflozo can hold
+for that site down the left, and everything you only read down a column on the right, so it fits on
+a laptop screen instead of running off the bottom. You can paste a fresh Admin or Content key into
+it when you roll your keys in Ghost, add or take away the Staff Access Token whenever you like, and
+press **Test connection** to watch Inflozo actually reach your Ghost and report back. Not having the
+token is shown as a choice you have not made yet, never as something wrong with your site.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -176,6 +176,24 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
   read-only URL row with its reason, the roll-keys hint, the footer — around B20's three credential
   rows. The Content key's pre-submit browser check needs a client island; keep it as small as
   `content-check.ts`'s caller in `connect-wizard.tsx` and leave the rest server-rendered.
+  **AMENDED BY THE OWNER'S TEST (finding 2, 2026-09-10):** the chrome is now
+  `design/ManageKeys/…/S11e Manage Keys Popup.dc.html` — a 900px window, header with a ✕, a body of
+  two columns (B20's three rows on the left, the context rail on the right with **Test connection**
+  on its bottom edge), and a footer of Cancel. Same sentences, same order within each half; the body
+  is what scrolls, which is the length complaint answered.
+- `apps/web/app/(app)/app/(authed)/sites/keys-screen.tsx` -- **new at the Fix: the READS, once, for
+  both places the panel appears.** It is what makes "one component, one credential read" true now
+  that there are two routes, and it is the file `server-wiring.test.ts` names as the chokepoint's
+  third allowed importer.
+- `apps/web/app/(app)/app/(authed)/sites/layout.tsx` ·
+  `.../sites/@modal/default.tsx` · `.../sites/@modal/(.)keys/{layout,page,loading}.tsx` ·
+  `.../sites/keys-modal.tsx` · `.../sites/keys-back.tsx` -- **new at the Fix: the popup** (finding 1).
+  A Next intercepting route over `/sites`, not markup the Sites list renders — so the ⋯ click draws
+  the panel in a `<dialog>` over the list while the credential read stays one, taken only when the
+  panel is opened. The dialog lives in the segment's `layout.tsx` so it opens once and
+  `loading.tsx`'s skeleton is swapped for the panel inside it (R-98's skeleton for the one route a
+  soft navigation reaches). `keys-back.tsx` carries the measurement that says why the way out has to
+  be `router.back()`.
 - `apps/web/app/(app)/app/(authed)/sites/keys/page.tsx` -- **new route, `/sites/keys?site=<id>`.**
   Copy `sites/disconnect/page.tsx` wholesale, including its **three-way read split** — `22P02` →
   `notFound()`, a failed read → thrown and logged, no row → `notFound()`, already disconnected →
@@ -265,6 +283,29 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
       and DW-54's `staff-removed` half; record on EXPERIENCE.md:128 that the "Reconnect needed" entry
       point is Story 3.7's -- propagate, never localise (standing rule 3).
 
+**The Fix, 2026-09-10 — the owner's two findings, both inside this story (R-80 as amended):**
+
+- [x] `apps/web/.../sites/layout.tsx` · `.../sites/@modal/default.tsx` ·
+      `.../sites/@modal/(.)keys/{layout,page,loading}.tsx` · `.../sites/keys-modal.tsx` ·
+      `.../sites/keys-back.tsx` · `.../sites/keys-screen.tsx` · `.../sites/site-menu.tsx` --
+      **finding 1: the popup.** The ⋯ row keeps its `href` and its destination and its click becomes
+      a guarded `router.push` of the same address, which `@modal/(.)keys` intercepts into a
+      `<dialog>` over the Sites list; `keys-screen.tsx` is the one component both routes render, so
+      the credential read is still taken once and only when the panel is opened.
+- [x] `apps/web/.../sites/keys-panel.tsx` · `apps/web/components/kit/dialog.ts` ·
+      `apps/web/components/kit/icons.tsx` -- **finding 2: S11e's two columns.** The 900px `panelBox`
+      beside the 460px `sheetBox` (one vocabulary, two widths), the header/body/footer split, the
+      context rail, and the frame's own **Test connection** glyph. Same content, nothing removed;
+      the Admin row's mask stays, which is the owner's Question 3 ruling.
+- [x] `apps/web/.../sites/actions.ts` -- the three keys actions redirect with `RedirectType.replace`,
+      so one Back out of the popup is always the Sites list however many keys were saved or refused.
+- [x] `apps/web/busy.test.ts` · `apps/web/server-wiring.test.ts` ·
+      `tools/probe/run-verify-ghost-admin.py` ·
+      `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- the two
+      auditors' reasons rewritten to what is now true, the harness's `keys-screen` step driven
+      through the ⋯ row rather than a `page.goto`, a new `keys-popup` step over the popup's own
+      behaviour, and EXPERIENCE.md's Manage Keys row naming S11e (standing rule 3).
+
 **Acceptance Criteria:**
 
 - Given a connected site, when I open its ⋯ menu, then **Manage API keys** sits above the thin rule
@@ -301,6 +342,20 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
   and test the connection, then all four work.
 - Given the credential store cannot be reached, when I save or remove, then nothing changes and the
   screen says why.
+- Given I pick **Manage API keys** from a card's ⋯, when it opens, then it is a **window over the
+  Sites list** and not a page instead of it — the cards are still behind it — and the row's `href`
+  and destination are unchanged, so a typed URL, a modified click, a refresh and a browser with
+  scripts off all still get `/sites/keys?site=…` as a full page drawn by the **same component**
+  *(the owner's test, finding 1, 2026-09-10)*.
+- Given the window is open, when a key is refused, then the window **stays open** with the sentence
+  under its own field; and when I press Cancel, ✕ or Escape, then I am back on the Sites list with
+  the panel gone and **the ⋯ row opens it again**.
+- Given the window, when I read it, then it matches `S11e Manage Keys Popup` — the three keys on
+  the left, the site address, the not-readable-back line, the roll-keys hint and **Test connection**
+  in a context rail on the right — with **every sentence the long screen carried still on it**, and
+  the Admin row's mask kept *(the owner's Question 3 ruling, 2026-09-10, recorded in the Spec Change
+  Log as a departure from that frame)*. On a phone the two columns become one, the address staying
+  at the top.
 
 
 ### Review Findings
@@ -550,12 +605,15 @@ for Story 3.4 or 3.5, and Ghost Admin open in another tab.
    on your connected site's card. · **See:** the menu now has **Manage API keys** above the thin line,
    with **Disconnect** in red below it. (Re-check connection and Reconnect are Story 3.7's and are
    deliberately not there yet.)
-2. **URL:** same · **Screen:** Sites · **Do:** click **Manage API keys**. · **See:** a window titled
-   for your site, with three blocks — **Admin API key**, **Content API key**, **Staff Access Token**.
-   The first two say they are there and show the beginning of each key followed by dots; the third
-   says **Not added**. Each has one plain line saying what it does for you. Your site's address is
-   shown as text you cannot edit, with a line saying a domain move means disconnecting and connecting
-   again.
+2. **URL:** same · **Screen:** Sites · **Do:** click **Manage API keys**. · **See:** a window opens
+   **over your Sites list** — your cards are still there behind it, the way they are when you press
+   Disconnect. It is wide, with two columns. On the **left**, three blocks — **Admin API key**,
+   **Content API key**, **Staff Access Token**. The first two say they are there and show the
+   beginning of each key followed by dots; the third says **Not added**. Each has one plain line
+   saying what it does for you. On the **right**, the things you only read: your site's address as
+   text you cannot edit with a line saying a domain move means disconnecting and connecting again,
+   the note that Inflozo cannot read a key back, the blue how-to-roll-your-keys note, and
+   **Test connection** at the bottom. Nothing runs off the bottom of the screen.
 3. **URL:** same · **Screen:** the API keys window · **Do:** look for a way to see the rest of a key. ·
    **See:** there is none, and a line explains that Inflozo cannot read the secret part back either —
    only your Ghost can.
@@ -597,8 +655,19 @@ for Story 3.4 or 3.5, and Ghost Admin open in another tab.
     site coming back rather than a move (corrected at the review of 2026-09-09; the old wording asked
     for something that could not be done).
 11. **URL:** same, on your **phone** · **Screen:** Sites → Manage API keys · **Do:** repeat steps 1, 2
-    and 4. · **See:** the menu opens on the screen, the keys window fits, and the three blocks stack
-    without anything running off the edge.
+    and 4. · **See:** the menu opens on the screen, the keys window fits, and the two columns become
+    one — your site's address at the top, then the three key blocks, then the rest, without anything
+    running off the edge.
+12. **URL:** same · **Screen:** Sites → Manage API keys · **Do:** open the window, then close it —
+    press **Cancel** at the bottom, or the **✕** in its top right, or the **Esc** key. Then open it
+    again from the ⋯. · **See:** each way closes it and puts you back on your Sites list, and it
+    **opens again** every time. *(This is the one to try more than once — it is what the fix had to
+    get right.)*
+13. **URL:** `https://app.inflozo.com/sites/keys?site=<the id from the address bar in step 2>` ·
+    **Screen:** API keys · **Do:** copy the address while the window is open, open a **new browser
+    tab**, and paste it in. · **See:** the same window, this time as a page of its own rather than
+    over the list — same three blocks, same right-hand column, everything working. That is the page
+    a shared link, a refresh and a browser with JavaScript switched off all get.
 
 ## Verification
 
@@ -611,8 +680,9 @@ returned, by the key's variable name and never its value.
 - `pnpm check` (repo root, Node 24 on PATH — the shell defaults to 22) -- expected exit 0: lint and
   types clean, every test passing, `busy.test.ts`, `app-routes.test.ts`, `server-wiring.test.ts` and
   `connect-rule.test.ts` among them. Report the count the run prints; never carry one forward.
-- `pnpm build` -- expected exit 0, "Compiled successfully", and the route table showing the new
-  `ƒ /app/sites/keys`.
+- `pnpm build` -- expected exit 0, "Compiled successfully", and the route table showing
+  **`ƒ /app/sites/(.)keys`** — the intercepted popup — beside `ƒ /app/sites/keys`, the full page it
+  intercepts. Both, or the popup is not built and the ⋯ row simply navigates.
 - `bash supabase/tests/run-rls-gate.sh` -- expected exit 0. **This is the gate on the migration**: it
   brings its own PostgreSQL 17 container, refuses to run if the `supabase/` copies have drifted from
   the architecture originals, applies every migration and diffs the result against `SCHEMA.sql`. It
@@ -626,15 +696,23 @@ returned, by the key's variable name and never its value.
 
 **The live steps this story adds** (named here; the docstring is derived from the source at Dev):
 
-- `keys-screen` — the ⋯ row present above the rule, the screen opening, three credential rows drawn
-  with the app's own sentences, the URL as text with **no** input element in it, and no element
-  anywhere on it offering to reveal a key.
+- `keys-screen` — the ⋯ row present above the rule; **its click opening S11e's popup over the Sites
+  list**, with an open `<dialog>` and the cards still behind it; three credential rows drawn with
+  the app's own sentences, the URL as text with **no** input element in it, and no element anywhere
+  on it offering to reveal a key.
+- `keys-popup` — the popup's own behaviour, and every claim in it is one a `<Link>` way out broke
+  when the Fix measured it: a refusal keeps the window **open** with the sentence under its own
+  field; **Cancel** returns to the list with the panel unmounted; the ⋯ row opens it **a second
+  time**; **Escape** does the same as Cancel; and a typed URL is still the **full page** with no
+  dialog at all.
 - `keys-rotate` — a rotated Admin key pasted and saved on **T1**; read back through the pooler:
   `admin_key_rotated_at` moved, `admin_key_id` equals the new key's id half, `vault.secrets` holds one
   secret for that ref and it is **not** the old one, and exactly one new `credential_change` row is
   stamped with this screen's route.
-- `keys-other-site` — **T3's** Admin key pasted into **T1's** screen: refused, nothing written, the
-  sentence read off the app.
+- `keys-foreign-key` — **T3's** Admin key pasted into **T1's** screen: refused by that Ghost's own
+  401, nothing written, the sentence read off the app *(renamed at Review; R-100)*.
+- `keys-other-site` — the guard R-100 keeps, executed: this Ghost reporting a different public
+  address, refused with the disconnect + reconnect sentence.
 - `keys-malformed` — `hello` into the Admin field: refused under that field, nothing written.
 - `keys-token` — the harness's staff token added and then removed on T1: `credentials_present.staff`
   true then false, the Vault secret **gone** (read read-only through the pooler, as `disconnect`
@@ -650,15 +728,16 @@ returned, by the key's variable name and never its value.
   with JavaScript disabled.
 - `moved-domains` — a second address connected with T1's keys: the hint on the new card, naming 90
   days; and the same connect with a record whose `admin_key_id` is null showing **no** hint.
-- `axe` at 1440 and 390 on the menu, the dialog and the route.
+- `axe` at 1440 and 390 on the menu, on **the popup** (`axe-keys-screen`) and on **the full route**
+  (`axe-keys-route`) — the popup reopened at each width, because a popover cannot survive a resize.
 
 **Manual checks:**
 
 - The migration applied to the hosted database **by hand in the Deploy phase** (the direct host is
   IPv6-only), and `select unnest(enum_range(null::public.credential_action))` on production showing
   the new value before the Deploy commit is written.
-- Frame screenshots at 1440 / 834 / 390 (`--shots`) against S11d and B20, for the "matches the frame"
-  criterion.
+- Frame screenshots at 1440 / 834 / 390 (`--shots`) against **S11e** (and, for the rows inside it,
+  B20), for the "matches the frame" criterion.
 - The owner's manual test above (R-80) — his, on the deployed production domains, after Deploy.
 
 
@@ -867,6 +946,83 @@ fixed rather than retried past.**
 **Not run in this phase:** `pnpm check` / `pnpm build` — no `apps/web` source changed at Deploy, only
 `tools/probe/run-verify-ghost-admin.py` and this spec.
 
+### Fix phase, 2026-09-10 — what each command returned
+
+The owner's two findings, fixed inside this story (R-80 as amended). **R-82: the real services are
+named by the variable each key is held under and never by its value.**
+
+**Commands, and what each returned:**
+
+- `pnpm check` (repo root, Node 24 on PATH — the shell defaults to 22) — **exit 0**. Lint clean,
+  `tsc --noEmit` clean, and the run printed **241 tests, 241 pass, 0 fail** in `apps/web`, plus 1
+  each in `packages/{ghost-shim,section-runtime,theme-compiler}`. `busy.test.ts`,
+  `app-routes.test.ts`, `server-wiring.test.ts` and `connect-rule.test.ts` are among them; the first
+  two carry the popup's own rows (the new `@modal/(.)keys` segment's skeleton, and the full route's
+  reason rewritten to name the interception), and `server-wiring.test.ts`'s chokepoint importer is
+  now `keys-screen.tsx` rather than the page, which is what keeps that list at three.
+  **One failure on the way, and it is recorded because the shape recurs:** `keysRedirect` was first
+  written as a `const` arrow with `: never`, and TypeScript only lets a never-returning CALL end a
+  code path when the callee is declared as a function — so `parsed.data` went "possibly undefined"
+  three lines under a refusal that cannot return. A `function` declaration fixed it.
+- `pnpm build` — **exit 0**, "Compiled successfully", and the route table now lists
+  **`ƒ /app/sites/(.)keys`** immediately above `ƒ /app/sites/keys`: the intercepted popup and the
+  full page it intercepts, both built.
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, against the PostgreSQL 17 container it brings
+  itself. No schema file changed in this phase; it was re-run because the tree changed, and it ended
+  on the DW-44 vault assertions as before. **This story's migration is already applied to
+  production** (Deploy, 2026-09-10) and the Fix adds none, so R-99's Schema phase does not recur.
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings**. `design/ManageKeys/` already
+  carries its catalogue row.
+- **The panel was RENDERED AND MEASURED, not only type-checked.** A throwaway public route drew
+  `KeysPanel` with fake props under `next dev` and Playwright screenshotted it at 1440 / 834 / 390;
+  the route was deleted afterwards. At **1440 the box is 900 × 743 — S11e's own dimensions** — two
+  columns with the rail on the right and **Test connection** on its bottom edge; at 834 it is
+  786 × 743, still two columns; at **390 it is one column with the site address at the top**, then
+  the three keys, then the rest of the rail, and **no horizontal scroll at any of the three**.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **RESULT: all steps passed.** Its
+  plumbing steps hit the real services:
+  - **Supabase** — `SUPABASE_URL` with `SUPABASE_SECRET_KEY`: `vault-off-rest` re-executed §21j's
+    bound, `GET /rest/v1/{decrypted_secrets,secrets,site_credentials}` → **404, 404, 404**, with
+    `GET /rest/v1/sites` → **200** as its positive control. `SUPABASE_DB_POOLER_URL` present by name.
+  - **Ghost T1 (`ghost6.inflozo.com`, 6.58.0)** and **T3 (`ghost5.inflozo.com`, 5.130.6)** — read
+    with `GHOST6_ADMIN_API_KEY` / `GHOST5_ADMIN_API_KEY`: `settings-keys` → **all six settings keys
+    present on both majors**; `brand-keys` → **all seven FR-C4 keys present on both**, `navigation`
+    a JSON string on each. Both `*_STAFF_ACCESS_TOKEN` present by name.
+  - `browser-js` — the embedded Playwright script **parses** with the new `keys-popup` step, the
+    rewritten `keys-screen` and the second axe pass in it.
+  - The step printed this story's copy read out of `lib/connect-rule.ts` itself, unchanged by the
+    Fix: not one sentence moved, which is S11e's own constraint (*"Same content as the long screen,
+    nothing removed"*) made checkable.
+
+**The Next.js behaviour this Fix rests on was EXECUTED, not asserted (standing rule 1).** A
+throwaway control — a list route, an `@modal/(.)panel` interception, a server action that redirects
+back to the panel — was built under `app/(app)/app/`, driven with Playwright against `next dev`
+16.3.1, and deleted. **The first attempt was a broken control and is recorded as one** (standing
+rule 2): it was built under `(marketing)`, which gets no CSP nonce, so React never hydrated, the
+click was a plain document navigation and "interception does not work" was the wrong conclusion.
+Rebuilt under the app host, it returned:
+
+| what was driven | what happened |
+|---|---|
+| the row's guarded `router.push` | **intercepted** — dialog open, list still behind, no full page |
+| a server action's `redirect()` from inside it | the popup **stays**, with the action's answer drawn |
+| `<Link href="/…">` as the way out | url moved, **panel still mounted** — and the row then opened nothing |
+| `router.push` + `router.refresh()` | the same |
+| a `[...catchAll]` slot filler | the same |
+| `router.back()` | **clean** — panel unmounted, list showing, and the second and third opens worked |
+| `router.back()` after a default `redirect()` | back to the **panel**, not the list — a server action's redirect pushes |
+| `RedirectType.replace`, then `router.back()` after two saves | **clean** — one history entry for the panel |
+| a typed URL, and a refresh inside the popup | the **full page**, no dialog |
+| the same form posted with **JavaScript disabled** | `method=post` and React's `$ACTION_*` fields served; the 303 landed with the answer drawn. `RedirectType` steers the client router only |
+
+**Not run in this phase, and named rather than assumed:** `python3
+tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com` — it drives these screens on the
+DEPLOYED site, and the Fix is not deployed until CI publishes this commit (DW-7). It is the Review
+phase's, on production, and it is where `keys-screen` (now driven through the ⋯ row) and the new
+`keys-popup` are executed against T1 and T3. Frame screenshots against S11e at 1440 / 834 / 390
+(`--shots`) belong there too. The owner's manual test (R-80) is his, on the production domains,
+after Deploy — steps 2, 11, 12 and 13 are the ones the Fix rewrote or added.
+
 ## Spec Change Log
 
 Four departures from the Code Map, each recorded here rather than made silently. None changes an
@@ -924,6 +1080,57 @@ written down, and the third is the review's own.
    have shown S2c and swallowed the hint, which has no second chance. Recorded because it is a
    behavioural change to another story's flow.
 
+**Five more from the Fix of 2026-09-10 — the owner's two test findings.** Each is a departure from
+what the Dev pass built or from the frame it was rebuilt on, and none changes an acceptance
+criterion except the ones the findings themselves added.
+
+8. **ENTRY 1 ABOVE IS REVERSED: the ⋯ row opens a WINDOW over the list after all, and it keeps its
+   `href`.** The Dev pass read the Code Map's two shapes as exclusive and chose the link, because
+   the panel draws the Admin key's public id half, which lives in `private.site_credentials` and is
+   reachable only through `server/ghost-admin` (§21j) — a dialog rendered by the Sites list would be
+   one pooler round trip per card on the busiest route in the app. That cost is real and the
+   conclusion was not: a popup does not have to be rendered by the list. `sites/@modal/(.)keys`
+   intercepts a soft navigation to `/sites/keys` and draws `keys-screen.tsx` — the same component
+   the full page draws — in a `<dialog>` over it, so the read is still ONE and still only taken when
+   somebody opens the panel. The row's click is a guarded `router.push` of its own `href` (the
+   guard is Disconnect's, alt included), so the destination, the modified click and the scripts-off
+   path are all untouched. **Both halves of the Code Map turn out to be buildable.**
+9. **THE WAY OUT OF THE POPUP IS `router.back()`, AND IT CANNOT BE A `<Link>`.** Measured on a
+   throwaway control under `next dev` (2026-09-10) rather than reasoned: **Next keeps an unmatched
+   parallel slot's state across a soft navigation**, so `<Link href="/sites">` moved the URL to
+   `/sites` and left the panel MOUNTED in the slot — and the ⋯ row then did nothing at all the
+   second time it was pressed, because the dialog was already in the DOM and closed and nothing
+   re-ran `showModal()`. `router.push` + `router.refresh()` and a `[...catchAll]` slot filler were
+   both tried against the same control and both failed the same way; `router.back()` passed, and the
+   second and third opens worked. The full page keeps its `<Link>`, which is correct there because
+   its slot holds nothing. So `KeysPanel` takes one `popup` boolean and draws one way out or the
+   other — the `disconnect-confirm.tsx` `cancel` prop's argument, at one prop instead of two nodes.
+10. **THE THREE KEYS ACTIONS REDIRECT WITH `RedirectType.replace`.** A server action's `redirect()`
+    PUSHES by default, which the same control showed costs a history entry per save — so after one
+    refusal the first Back returned to the panel as it stood before the save instead of to the list,
+    and after two saves it took three. With `replace` there is exactly one entry for the panel
+    however many keys are pasted, so `router.back()` is always the list. It costs the scripts-off
+    path nothing: `RedirectType` steers the client router only, and the control's JavaScript-disabled
+    POST got the same 303 onto the same URL.
+11. **THE RAIL'S TINT IS `paper-raised` (`#FBF9F5`) WHERE S11e DRAWS `#FAF8F5`.** `tokens.test.ts`
+    fails any colour value that does not occur verbatim in the Claude Design export, and `#FAF8F5`
+    does not; `paper-raised` is the nearest token the export does carry. The alternative was a
+    twelfth colour in the token layer that no export frame draws, which is the second vocabulary
+    R-74 exists to prevent. Every other value in S11e — the coral, the ink, the paper, the line, the
+    mint pair, the marigold, the three faces, the `#EFEAE2` hairline as `line-faint`, the 16px
+    radius and the modal shadow at .25 — is already a token, checked before the frame was accepted.
+12. **A `Refresh` GLYPH JOINS THE KIT**, for S11e's **Test connection**. The path is the export's
+    own — it is drawn verbatim in `S11 Sites.dc.html`, `S8 Deploy.dc.html` and `S10 Assets.dc.html`
+    — so it is lifted, not invented, and Story 3.7's *Re-check connection* will want the same one.
+13. **EACH PASTE ROW STAYS A STACK — label, field, hint, button — WHERE S11e DRAWS ONE INLINE ROW**
+    (`Paste new` · field · **Save key**, side by side). It is the consequence of the routine call
+    above rather than a second decision: the frozen Boundaries put a refused key's sentence **under
+    the field it was typed in**, S11e draws no error state at all, and an inline row has nowhere to
+    put one — nor the Admin field's standing hint, which the Dev pass already drew. So the row keeps
+    the Kit's `TextInput`, which owns label, hint and refusal in one column. Rendered and measured
+    at the Fix: the panel comes out at **900 × 743 at 1440**, the frame's own dimensions, so the
+    stack costs the layout nothing.
+
 **Two departures from the frames, both drawn from the frame that is nearest and both recorded in
 `lib/connect-rule.ts` with a test over them** (R-74; the precedent is Story 3.4's
 hex-instead-of-colour-name):
@@ -939,6 +1146,11 @@ hex-instead-of-colour-name):
   passed. Nothing checks on load — **Test connection** is where a customer asks, and the continuous
   answer is Story 3.7's health badge — so the screen says what it knows. This is also the acceptance
   criterion "present or absent, and never an error badge".
+
+**And one departure from S11e itself, which is the OWNER'S OWN** (Question 3, ruled 2026-09-10): the
+new frame draws the masked line under **Content API key** only, and the screen draws it under
+**Admin API key** as well. His words: *"Keep the line under Admin API key as it is today."* It is the
+only thing on the screen that says WHICH Admin key is stored, and his manual test step 5 reads it.
 
 ## Owner's test findings
 
@@ -1031,3 +1243,31 @@ answered by Question 3.
   manual test is what checks it.
 - **Refusals stay under the field they came in.** The two-column frame draws no error state; the
   frozen Boundaries say a refused key is refused under its own field, and that does not move.
+
+### What the Fix did, 2026-09-10
+
+**Both findings are closed, and the two things the fix had to hold to are held.** Finding 1's
+"the row keeps its `href` and its destination" and "there stays ONE component drawing the panel":
+`site-menu.tsx`'s row is still `<a href="/sites/keys?site=…">` and its click is now a guarded
+`router.push` of that same address (Disconnect's own guard, alt included), which
+`sites/@modal/(.)keys` intercepts into a `<dialog>` over the list; `keys-screen.tsx` is the one
+component both that popup and `/sites/keys` render, so the credential read is still one and still
+taken only when the panel is opened. Finding 2's "same content, nothing removed": not one sentence
+in `KEYS` moved — the harness prints them out of `lib/connect-rule.ts` and the list is unchanged —
+and the Admin row's mask stays, which is Question 3's ruling and is recorded in the Spec Change Log
+as this screen's one departure from S11e.
+
+**Two things had to be measured rather than reasoned, and one of them changed the design.** Next
+keeps an unmatched parallel slot's state across a soft navigation, so a `<Link>` out of the popup
+left the panel mounted and **the ⋯ row opened nothing the second time it was pressed**; and a server
+action's `redirect()` pushes a history entry, so one Back after a refusal returned to the panel
+rather than to the list. The answers are `router.back()` and `RedirectType.replace`, both executed
+against a throwaway control under `next dev` and both recorded in the Fix phase's `## Verification`
+— including the first control, which was broken and proved nothing. Change Log entries 8 to 12 carry
+the rest; `keys-back.tsx` carries the measurement beside the code it governs (standing rule 3).
+
+**And the harness now drives the door the customer uses.** `keys-screen` opened the screen with a
+`page.goto`, which is a document load and therefore the full page; it now clicks the ⋯ row and
+asserts an open `<dialog>` with the Sites cards behind it, and a new `keys-popup` step executes each
+claim above — the refusal that keeps the window open, the way out, **the second open**, Escape, and
+the typed URL that is still the full page. `axe` runs over both shapes.

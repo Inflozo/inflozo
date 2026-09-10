@@ -407,13 +407,21 @@ list gone stale — the sibling harness's own note):
                  leave it, the grid stays three-up). Then
                  **Re-check plan** re-runs the same probe and a self-hosted Ghost clears ITSELF
                  back to `full`/`probe`
-  keys-screen    STORY 3.6, and the first of ten: S11a's ⋯ carries **Manage API keys** above the
-                 rule, the row NAVIGATES to `/sites/keys?site=…`, and the screen draws three
-                 credential rows with the app's OWN sentences (read out of `lib/connect-rule.ts`,
-                 never retyped here). The URL is text with NO input element in it, and NOTHING on
-                 the page offers to reveal a key — the element count for that is asserted at zero,
-                 which is the departure from B20's eye made checkable
-  axe-keys-screen  axe-core over the keys route at 1440 and 390
+  keys-screen    STORY 3.6: S11a's ⋯ carries **Manage API keys** above the rule, the row's click
+                 opens S11e's WIDE POPUP over the Sites list — the owner's test finding 1 — and the
+                 panel draws three credential rows with the app's OWN sentences (read out of
+                 `lib/connect-rule.ts`, never retyped here). The URL is text with NO input element
+                 in it, and NOTHING on it offers to reveal a key — the element count for that is
+                 asserted at zero, which is the departure from B20's eye made checkable
+  keys-popup     THE POPUP'S OWN BEHAVIOUR, and every claim in it is one a `<Link>` way-out broke
+                 when it was measured (Fix, 2026-09-10): the ⋯ click leaves the list mounted BEHIND
+                 an open `<dialog>`; a refusal keeps the popup open with the sentence under its own
+                 field (the actions redirect with `RedirectType.replace`); Cancel returns to the
+                 list with the panel UNMOUNTED; the row opens the popup A SECOND time; Escape does
+                 the same as Cancel; and a typed URL is still the FULL page with no dialog at all
+  axe-keys-screen  axe-core over S11e's POPUP at 1440 and 390 — reopened at each width, because a
+                 popover cannot survive a resize (`axeAt`'s own note)
+  axe-keys-route   axe-core over the same panel as the FULL page, at both widths
   keys-malformed  `hello` into the Admin field: refused UNDER THAT FIELD, and nothing written
   keys-foreign-key  T3's Admin key pasted into T1's screen: T1 never issued it, so T1 answers 401
                  `Unknown Admin API Key` at `GET /admin/config/` and the refusal fires there —
@@ -3203,6 +3211,30 @@ const shoot = async (page, name) => {
       // The URL row's reason is on this screen and on no other, and it carries no `%s` hole.
       await page.getByText(SAY.keys_url_reason).first().waitFor()
     }
+    /* THE SAME PANEL BY THE DOOR THE CUSTOMER USES. `openKeys` above is a document load, which is
+       the FULL page (`sites/keys/page.tsx`); this is the ⋯ row's own click, which soft-navigates
+       and is intercepted by `sites/@modal/(.)keys` into a dialog over the list. Both draw
+       `keys-screen.tsx`, so a step that does not care which door it came through may use either. */
+    const openKeysPopup = async (id, name) => {
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await page.waitForSelector('text=Connected')
+      await cardOf(name).first().getByRole('button', { name: /^Options for / }).first().click()
+      const menu = page.locator(`#site-menu-${id}`)
+      await menu.waitFor({ state: 'visible' })
+      await menu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
+      await page.locator('dialog[open]').getByText(SAY.keys_url_reason).first().waitFor()
+    }
+    /* What the screen looks like from outside: is it a popup over the list, or a page instead of
+       it? Read off the DOM rather than off the URL, because the URL is the SAME either way — which
+       is the whole point of an intercepted route. */
+    const keysShape = async () => await page.evaluate(() => ({
+      dialogOpen: !!document.querySelector('dialog[open]'),
+      dialogInDom: !!document.querySelector('dialog[aria-labelledby="keys-panel-title"]'),
+      panelMounted: !!document.querySelector('#keys-panel-title'),
+      // The Sites cards are <article>s (`(list)/page.tsx`), and the panel contains none — so
+      // "the list is still there" and "the panel is drawn instead of it" are distinguishable.
+      cardsBehind: document.querySelectorAll('article').length,
+    }))
     /* The credential row for a site, read READ-ONLY through the pooler — `private` answers 404 over
        PostgREST by design (§21j), so this is the only way to see what the chokepoint wrote. */
     const credsOf = async (siteId) => (await sql`
@@ -3216,14 +3248,11 @@ const shoot = async (page, name) => {
     `)
     const kidOf = (key) => String(key).split(':')[0]
 
-    // ── keys-screen: the ⋯ row goes somewhere, and what it goes to is S11d around B20.
-    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await page.waitForSelector('text=Connected')
-    await cardOf(pub1.title || 'Ghost6').first().getByRole('button', { name: /^Options for / }).first().click()
-    const keysMenu = page.locator(`#site-menu-${t1SiteId}`)
-    await keysMenu.waitFor({ state: 'visible' })
-    await keysMenu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
+    // ── keys-screen: the ⋯ row goes somewhere, and what it goes to is S11e's wide popup around B20.
+    const t1Name = pub1.title || 'Ghost6'
+    await openKeysPopup(t1SiteId, t1Name)
     await page.waitForURL((u) => u.pathname === '/sites/keys' && u.searchParams.get('site') === t1SiteId)
+    const openedAs = await keysShape()
     const screen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
     const named = [SAY.keys_admin_name, SAY.keys_content_name, SAY.keys_staff_name].every((n) => screen.includes(n))
     const enabled = [SAY.keys_admin_enables, SAY.keys_content_enables, SAY.keys_staff_enables]
@@ -3243,8 +3272,11 @@ const shoot = async (page, name) => {
     const maskDrawn = screen.includes(t1Kid)
     step('keys-screen',
       named && enabled && tokenAbsent && urlIsText && urlFields === 0 && reveals === 0
-      && noRevealSaid && maskDrawn && screen.includes(SAY.keys_roll_hint),
-      `the ⋯ row landed on /sites/keys?site=<id>: all three credentials named = ${named}, each with ` +
+      && noRevealSaid && maskDrawn && screen.includes(SAY.keys_roll_hint)
+      && openedAs.dialogOpen && openedAs.panelMounted && openedAs.cardsBehind > 0,
+      `the ⋯ row opened S11e's popup at /sites/keys?site=<id> — an OPEN <dialog> = ` +
+      `${openedAs.dialogOpen} with ${openedAs.cardsBehind} Sites cards still behind it, which is ` +
+      `the owner's finding 1. All three credentials named = ${named}, each with ` +
       `the app's own one line on what it enables = ${enabled}, the token reading ` +
       `${JSON.stringify(SAY.keys_absent)} = ${tokenAbsent}. The address is TEXT with its reason ` +
       `= ${urlIsText} and there are ${urlFields} inputs carrying it — no field and no disabled field ` +
@@ -3253,7 +3285,52 @@ const shoot = async (page, name) => {
       `masked with the key's PUBLIC id half = ${maskDrawn}. The roll-keys hint is the app's own = ` +
       `${screen.includes(SAY.keys_roll_hint)}`)
 
-    await axeAt(page, 'keys-screen', async () => { await openKeys(t1SiteId) })
+    await axeAt(page, 'keys-screen', async () => { await openKeysPopup(t1SiteId, t1Name) })
+    await axeAt(page, 'keys-route', async () => { await openKeys(t1SiteId) })
+
+    /* ── keys-popup: THE POPUP'S OWN BEHAVIOUR, and every claim here is one that a `<Link>` way out
+       broke when the Fix measured it (2026-09-10). Next keeps an unmatched parallel slot's state
+       across a soft navigation, so `<Link href="/sites">` moved the URL but left the panel mounted
+       and the ⋯ row DEAD on the second press; and a server action's `redirect()` pushes by default,
+       so one Back after a refusal returned to the panel rather than to the list. The product's
+       answers are `router.back()` and `RedirectType.replace`, and these are what say they hold.
+       A REFUSAL IS THE WRITE THIS STEP USES because it writes nothing: `hello` is refused by
+       `parseCredential` before Vault is reached, so the step's own subject is the CHROME. */
+    await openKeysPopup(t1SiteId, t1Name)
+    await page.fill('#keys-admin', 'hello')
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.getByText(SAY.credential_malformed).first().waitFor()
+    const afterRefusal = await keysShape()
+    // Cancel: the footer control, which in the popup is the back-anchor and on the page a <Link>.
+    await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).last().click()
+    await page.waitForURL((u) => u.pathname === '/sites')
+    const afterCancel = await keysShape()
+    // AND THE ROW OPENS IT AGAIN. This is the regression the whole step exists for: with the panel
+    // left mounted, the second press changed the URL and drew nothing at all.
+    await openKeysPopup(t1SiteId, t1Name)
+    const secondOpen = await keysShape()
+    await page.keyboard.press('Escape')
+    await page.waitForURL((u) => u.pathname === '/sites')
+    const afterEscape = await keysShape()
+    // …and a typed URL is still the FULL page, which is the half that has to keep working with no
+    // script at all (`keys-js-off` reads its markup).
+    await openKeys(t1SiteId)
+    const typedUrl = await keysShape()
+    step('keys-popup',
+      afterRefusal.dialogOpen && afterRefusal.cardsBehind > 0
+      && !afterCancel.panelMounted && !afterCancel.dialogInDom && afterCancel.cardsBehind > 0
+      && secondOpen.dialogOpen && secondOpen.panelMounted
+      && !afterEscape.panelMounted && !afterEscape.dialogInDom && afterEscape.cardsBehind > 0
+      && typedUrl.panelMounted && !typedUrl.dialogInDom && typedUrl.cardsBehind === 0,
+      `a refusal keeps the popup OPEN with the sentence under its own field = ` +
+      `${afterRefusal.dialogOpen} (the three actions redirect with RedirectType.replace, so there ` +
+      `is one history entry for the panel however many keys are saved); Cancel returns to the list ` +
+      `with the panel UNMOUNTED = ${!afterCancel.panelMounted} and no dialog left in the DOM = ` +
+      `${!afterCancel.dialogInDom}; the ⋯ row opens it A SECOND time = ${secondOpen.dialogOpen} — ` +
+      `the exact press that did nothing when the way out was a soft navigation; Escape does the ` +
+      `same as Cancel = ${!afterEscape.panelMounted}; and a typed URL is the FULL page — panel ` +
+      `drawn = ${typedUrl.panelMounted}, no dialog = ${!typedUrl.dialogInDom}, ` +
+      `${typedUrl.cardsBehind} Sites cards on it`)
 
     // ── keys-malformed: refused UNDER THE ADMIN FIELD, and nothing written.
     await openKeys(t1SiteId)

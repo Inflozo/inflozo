@@ -19,10 +19,25 @@
    `display` at all. So the shared half is named once and the two callers add what is theirs. The
    review of 2026-09-09 found the page had hand-copied these tokens and ALREADY diverged
    (`max-w-full` against the `calc` below), which is the drift this file exists to prevent. */
-export const sheetBox =
-  'w-[460px] max-w-[calc(100vw-20px)] rounded-lg bg-surface p-[26px] shadow-modal'
+/* The half BOTH widths share, so a change to the paper, the corner or the shadow cannot land on
+   one box and miss the other. Width and padding are each box's own. */
+const box = 'max-w-[calc(100vw-20px)] rounded-lg bg-surface shadow-modal'
+
+export const sheetBox = `w-[460px] p-[26px] ${box}`
 
 export const sheet = `m-auto ${sheetBox} flex-col backdrop:bg-scrim open:flex`
+
+/* STORY 3.6's WIDE PANEL — S11e Manage Keys Popup, 900 x 743 (the owner's test finding 2). It is
+   the SAME vocabulary at a second width and NOT a second one (R-74): a screen whose content is a
+   left column and a context rail cannot be read at 460, and the owner's words were "it is too
+   long". NO PADDING HERE — the header, the body and the footer carry their own, because the
+   frame's rail runs edge to edge between the two rules. `overflow-hidden` is what keeps the rail's
+   tint inside the rounded corner, and the height cap is what makes the BODY scroll instead of the
+   page, which is the length complaint answered. */
+const panelHeight = 'max-h-[calc(100dvh-40px)] tablet:max-h-[min(743px,calc(100dvh-64px))]'
+export const panelBox = `w-[900px] overflow-hidden ${panelHeight} ${box}`
+
+export const panelSheet = `m-auto ${panelBox} flex-col backdrop:bg-scrim open:flex`
 
 export const title = 'font-display text-[20px] font-bold tracking-[-0.01em] text-ink'
 

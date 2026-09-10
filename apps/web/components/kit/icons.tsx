@@ -134,6 +134,15 @@ export const Key = (p: IconProps) => (
     <path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15 8m-2 2l4-4m0 0l3 3 3-3-3-3" />
   </Icon>
 )
+/* S11e's **Test connection** glyph (`S11e Manage Keys Popup.dc.html:1a`) — the export's own
+   circular arrow, drawn verbatim in `S11 Sites.dc.html`, `S8 Deploy.dc.html` and
+   `S10 Assets.dc.html` as well, so it is lifted rather than invented (R-74). */
+export const Refresh = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M21 12a9 9 0 1 1-3-6.7" />
+    <polyline points="21 3 21 9 15 9" />
+  </Icon>
+)
 export const LinkOff = (p: IconProps) => (
   <Icon {...p}>
     <path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1" />
