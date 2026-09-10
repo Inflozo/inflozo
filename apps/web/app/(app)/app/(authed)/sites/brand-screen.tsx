@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { hostOf } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap } from '@/lib/plan'
@@ -9,12 +9,19 @@ import { BrandPanel } from './brand-panel'
 /* ───────── FR-C4's BRAND OFFER: THE READS, ONCE, FOR BOTH PLACES THE PANEL APPEARS.
 
    It was `brand/page.tsx`'s body until the owner asked for the offer as a popup (2026-09-10).
-   `@modal/(.)brand` renders this over the Sites list when the card's offer LINK is clicked, and
-   `brand/page.tsx` renders it as the full screen S2 draws — which is where `connectSite`'s
-   redirect still lands, because a server action's `redirect()` is not intercepted (executed;
-   `panel-modal.tsx` carries the measurement). One file, so the two can never disagree. */
+   The Sites list renders this over itself when its `?brand=` parameter is there — where the card's
+   offer link goes — and `brand/page.tsx` renders it as the full screen S2 draws, which is where
+   `connectSite`'s redirect lands and which the owner ruled should stay that way (Question 7,
+   option 1, 2026-09-10). One file, so the two can never disagree. */
 
-export type BrandSearchParams = { site?: string | string[]; failed?: string | string[] }
+export type BrandSearchParams = {
+  /** The FULL PAGE's own — `/sites/brand?site=…`, where `connectSite` still lands (Question 7,
+      option 1, owner, 2026-09-10). */
+  site?: string | string[]
+  /** THE POPUP'S — `/sites?brand=…`, a parameter on the Sites list (`brandPopupPath`). */
+  brand?: string | string[]
+  failed?: string | string[]
+}
 
 type Row = {
   id: string
@@ -36,14 +43,32 @@ function readFailed(what: string, code: string | undefined): never {
   throw new Error(`sites/brand: ${what} read failed`)
 }
 
-export async function BrandScreen({ searchParams }: { searchParams: Promise<BrandSearchParams> }) {
+export async function BrandScreen({
+  searchParams,
+  popup = false,
+}: {
+  searchParams: Promise<BrandSearchParams>
+  /** TRUE when this is the window over the Sites list. It picks the parameter the site id is read
+      from and travels into both forms so `useBrand` answers onto this chrome (`brandBase`). */
+  popup?: boolean
+}) {
   // A repeated key (`?site=a&site=b`) arrives as an ARRAY; every other page in this epic takes
   // the first, and so does this one.
-  const [{ site, failed }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ site, brand: fromList, failed }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
-  const siteId = Array.isArray(site) ? site[0] : site
-  if (!siteId) notFound()
+  const named = popup ? fromList : site
+  const siteId = Array.isArray(named) ? named[0] : named
+  /** `keys-screen.tsx` carries the argument: in the window this is rendered by the SITES LIST, and
+      a `notFound()` there costs the customer the list itself. Both answers disclose the same. */
+  /* A `function` DECLARATION AND NOT A `const` ARROW, which is `keysRedirect`'s own lesson one
+     file over: TypeScript only lets a never-returning CALL end a code path when the callee is
+     declared that way, so the arrow form left every read below "possibly null". */
+  function gone(): never {
+    if (popup) redirect('/sites')
+    notFound()
+  }
+  if (!siteId) gone()
 
   const supabase = await supabaseServer()
   const [{ data: row, error: rowError }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
@@ -83,9 +108,9 @@ export async function BrandScreen({ searchParams }: { searchParams: Promise<Bran
   // row — so a mangled link rendered `app/error.tsx`, "something went wrong", for a request that
   // simply names nothing. There is no row it could be, which is what `notFound()` says
   // (review, 2026-09-09).
-  if (rowError?.code === '22P02') notFound()
+  if (rowError?.code === '22P02') gone()
   if (rowError) readFailed('site', rowError.code)
-  if (!row || !hasBrand(brand)) notFound()
+  if (!row || !hasBrand(brand)) gone()
 
   // A COUNT THAT COULD NOT BE READ IS NOT A COUNT OF ZERO. Falling back to `[]` printed "we'll
   // make a project" and then `useBrand` — whose own read succeeded — refused the stale decision
@@ -148,6 +173,7 @@ export async function BrandScreen({ searchParams }: { searchParams: Promise<Bran
       projects={rows}
       targetId={target?.id ?? null}
       choosing={choosing}
+      popup={popup}
     />
   )
 }

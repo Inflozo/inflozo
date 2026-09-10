@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, type FormEvent } from 'react'
+import { useState, useTransition, type FormEvent, type ReactNode } from 'react'
 import { Button } from '@/components/kit/button'
 import { BusyLabel } from '@/components/kit/submit'
 import { TextInput } from '@/components/kit/input'
@@ -58,12 +58,16 @@ export function ContentKeyForm({
   siteId,
   siteUrl,
   error,
+  chrome,
 }: {
   siteId: string
   /** The PUBLIC url — the address a browser can actually reach, which on Ghost(Pro) is not `sites.url`. */
   siteUrl: string
   /** The server's refusal for this field, read out of the URL by the panel. */
   error: string | null
+  /** The panel's chrome marker (`KeysPanel`'s `popup`). `new FormData(form)` below picks it up
+      with every other field, so the direct invocation and the scripts-off post carry it alike. */
+  chrome: ReactNode
 }) {
   const [typed, setTyped] = useState('')
   const [refused, setRefused] = useState<string | null>(null)
@@ -100,6 +104,7 @@ export function ContentKeyForm({
   return (
     <form action={saveKeys} onSubmit={onSubmit} className="flex flex-col gap-[10px]">
       <input type="hidden" name="site_id" value={siteId} />
+      {chrome}
       <TextInput
         id="keys-content"
         name="content_key"

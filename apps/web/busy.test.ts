@@ -131,12 +131,12 @@ const NO_SKELETON: Record<string, string> = {
     'wizard\'s own ?step= links are plain anchors — every remaining way in (scripts off, a ' +
     'modified click, a typed URL) is a document load with the browser\'s own progress on it',
   [join(AUTHED, 'sites', 'keys')]:
-    'Story 3.6, and the one route whose soft navigation is INTERCEPTED rather than absent: S11a\'s ' +
-    '⋯ "Manage API keys" pushes /sites/keys?site=…, and sites/@modal/(.)keys catches it and draws ' +
-    'the panel as a popup over the list — that segment has its OWN loading.tsx, which is the ' +
-    'skeleton the customer actually sees (the owner\'s test of 3.6, finding 1). Nothing soft-' +
-    'navigates to this FULL PAGE: a typed URL, a modified click, a refresh, a shared link and a ' +
-    'scripts-off browser are document loads with the browser\'s own progress on them',
+    'Story 3.6, and NOTHING SOFT-NAVIGATES HERE. S11a\'s ⋯ "Manage API keys" is a PanelLink: its ' +
+    'href is this route, so a typed URL, a modified click, a refresh, a shared link and a ' +
+    'scripts-off browser all land here as document loads with the browser\'s own progress on ' +
+    'them, and a plain click goes to /sites?manage=… instead — the window over the list, whose ' +
+    'skeleton is keys-skeleton.tsx inside the list page\'s own <Suspense> (the owner\'s test of ' +
+    '3.6, findings 2, 3 and 5: a popup that is a parameter on a route the URL never leaves)',
   [join(AUTHED, 'sites', 'disconnect')]:
     'the same, one row down: S11a\'s ⋯ "Disconnect" is an <a href="/sites/disconnect?site=…"> whose ' +
     'click JavaScript turns into the card\'s <dialog>, and it is a PLAIN anchor and not a <Link>, so ' +
@@ -179,6 +179,42 @@ test('every route the user reaches has a skeleton in its own shape', () => {
     'These routes have no loading.tsx of their own, so they inherit a parent\'s skeleton and draw ' +
       'the wrong shape — the owner\'s test of Story 3.4, finding 2. Add one matching the cards the ' +
       'route shows, or record the route in NO_SKELETON with its reason:\n  ' + missing.join('\n  '),
+  )
+})
+
+/* ── AND THE HALF THIS AUDITOR COULD NOT SEE, found by the owner instead of by it (his test of
+   Story 3.6, 2026-09-10, finding 2): "it takes some time and while it is still not open I can
+   click the Menu link again. If I do so the popup open on a blank screen instead of the Sites
+   screen."
+
+   The submit test above walks `type="submit"`, so it audits every control that posts a FORM and
+   no control that starts a NAVIGATION — and S11a's ⋯ "Manage API keys" was one of those: a bare
+   `router.push` inside an `onClick`, with two server round trips behind it and nothing on screen
+   through them. R-98 says "every control that starts work says so", and a navigation that has to
+   read a credential row is work. `useTransition` is what such a control has in place of
+   `useFormStatus`; `panel-link.tsx` is the one that has it.
+
+   `router.replace` IS DELIBERATELY NOT AUDITED. The two in the tree are a search field clearing
+   its own `?q=` and a dialog closing itself — neither starts work, and neither has anywhere to
+   show a busy state if it did. */
+test('every control that starts a navigation says it is working', () => {
+  const offenders: string[] = []
+  for (const file of ROOTS.flatMap(tsxUnder)) {
+    const source = readFileSync(file, 'utf8')
+    for (const match of source.matchAll(/router\.push\(/g)) {
+      // Read in the control's OWN window, as the submit rule is — the same reason: a file with a
+      // busy neighbour is not a control that says anything.
+      const control = source.slice(Math.max(0, match.index - WINDOW), match.index + WINDOW)
+      if (/useTransition|isPending|\bpending\b/.test(control)) continue
+      offenders.push(`${file}:${source.slice(0, match.index).split('\n').length}`)
+    }
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    'These controls start a navigation with nothing on screen to say so — the owner\'s test of ' +
+      'Story 3.6, finding 2. Wrap the push in `useTransition` and swap the label while it is ' +
+      'pending (`panel-link.tsx` is the pattern):\n  ' + offenders.join('\n  '),
   )
 })
 

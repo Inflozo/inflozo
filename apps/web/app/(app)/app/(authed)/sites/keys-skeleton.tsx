@@ -1,22 +1,26 @@
 /**
- * THE KEYS POPUP'S OWN SKELETON — R-98, "every route the user reaches has a skeleton in its own
- * shape", and this is the only route in the story that a soft navigation reaches. The ⋯ row's
- * click is `router.push('/sites/keys?site=…')`, which this segment intercepts, and the panel
- * behind it reads the site row and then the credential row through the Admin chokepoint's pooler
- * — two round trips, so there IS a gap to draw.
+ * S11e's OWN SHAPE WHILE THE PANEL LOADS — R-98, "every route the user reaches has a skeleton in
+ * its own shape", and the window over the Sites list is what a soft navigation actually reaches.
+ * Opening the panel reads the site row and then the credential row through the Admin chokepoint's
+ * pooler — two round trips, so there IS a gap to draw.
+ *
+ * IT IS A `<Suspense>` FALLBACK AND NO LONGER A `loading.tsx`, because the popup is no longer a
+ * route: it is `/sites?manage=…`, a parameter on the list (`panel-modal.tsx` carries the whole
+ * argument). The list page wraps the panel in its own boundary and this is what that boundary
+ * shows, inside the `<dialog>` that is already open — so the panel replaces it without the window
+ * moving, exactly as before.
  *
  * IT DRAWS S11e, NOT A GENERIC CARD (the owner's test of Story 3.4, finding 2): the header's two
  * lines and its ✕, then the body's two columns — three credential blocks on the left, the context
  * rail on the right with its Test connection card on the bottom edge — then the footer's single
- * control. The dialog is opened by the segment's `layout.tsx`, so this is drawn INSIDE the window
- * that is already on screen and the panel replaces it without the window moving.
+ * control.
  *
  * The rail's shape is drawn from `tablet` up only, exactly as the panel's is: below it the
  * columns are one and the rail sits under the keys.
  */
 const Bar = ({ className }: { className: string }) => <div className={`rounded-[3px] bg-paper-sunk ${className}`} />
 
-export default function Loading() {
+export function KeysSkeleton() {
   return (
     <>
       <p className="sr-only">Loading your API keys…</p>

@@ -1,6 +1,6 @@
 /**
- * S2c'S OWN SHAPE WHILE IT LOADS, drawn once for both chromes — the popup over the Sites list
- * (`@modal/(.)brand`) and the full page `connectSite` lands on.
+ * S2c'S OWN SHAPE WHILE IT LOADS, drawn once for both chromes — the window over the Sites list
+ * (`/sites?brand=…`) and the full page `connectSite` lands on.
  *
  * It exists for the half of the owner's finding 1 of Story 3.4 that is a LINK rather than a
  * button: the offer was an `<a href>`, so pressing it left the Sites page standing, unchanged,
@@ -17,8 +17,10 @@
  * to show and it has not been read yet; drawing a guess at it would be a skeleton that lies about
  * the shape that is coming.
  *
- * The two `loading.tsx` files that render it carry their own `sr-only` sentence and their own
- * `aria-hidden`, which is what `busy.test.ts` reads — a route's sentence is the route's.
+ * ITS TWO CALLERS EACH CARRY THEIR OWN `sr-only` SENTENCE AND THEIR OWN `aria-hidden`, which is
+ * what `busy.test.ts` reads on the route that still has a `loading.tsx` — a route's sentence is
+ * the route's. `BrandPanelSkeleton` below is the popup's half, which is a `<Suspense>` fallback
+ * rather than a route (`panel-modal.tsx` carries why the popup is no longer one).
  */
 const Bar = ({ className }: { className: string }) => <div className={`rounded-[3px] bg-paper-sunk ${className}`} />
 
@@ -65,6 +67,24 @@ export function BrandSkeleton() {
             <div className="h-11 rounded bg-paper-sunk/70" />
           </div>
         </div>
+      </div>
+    </>
+  )
+}
+
+/**
+ * The window's own fallback: the drawing plus the sentence a reader gets instead of it. The full
+ * page cannot share it — `brand/loading.tsx` has to carry `page.tsx`'s centring and `panelBox` as
+ * well, or the skeleton paints edge to edge and the panel then snaps into a 900px box.
+ */
+export function BrandPanelSkeleton() {
+  return (
+    <>
+      <p className="sr-only">Reading your site&rsquo;s brand&hellip;</p>
+      {/* `contents`: the skeleton's blocks are the panel's own flex children, so the wrapper that
+          hides them from a reader must not become a box between them. */}
+      <div aria-hidden className="contents">
+        <BrandSkeleton />
       </div>
     </>
   )

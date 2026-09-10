@@ -185,15 +185,19 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
   both places the panel appears.** It is what makes "one component, one credential read" true now
   that there are two routes, and it is the file `server-wiring.test.ts` names as the chokepoint's
   third allowed importer.
-- `apps/web/app/(app)/app/(authed)/sites/layout.tsx` ·
-  `.../sites/@modal/default.tsx` · `.../sites/@modal/(.)keys/{layout,page,loading}.tsx` ·
-  `.../sites/keys-modal.tsx` · `.../sites/keys-back.tsx` -- **new at the Fix: the popup** (finding 1).
-  A Next intercepting route over `/sites`, not markup the Sites list renders — so the ⋯ click draws
-  the panel in a `<dialog>` over the list while the credential read stays one, taken only when the
-  panel is opened. The dialog lives in the segment's `layout.tsx` so it opens once and
-  `loading.tsx`'s skeleton is swapped for the panel inside it (R-98's skeleton for the one route a
-  soft navigation reaches). `keys-back.tsx` carries the measurement that says why the way out has to
-  be `router.back()`.
+- `apps/web/app/(app)/app/(authed)/sites/panel-modal.tsx` · `.../sites/panel-link.tsx` ·
+  `.../sites/keys-skeleton.tsx` · `.../sites/(list)/page.tsx` -- **the popup** (finding 1 of the
+  first test, and findings 1 to 5 of the second). **`/sites?manage=<id>` — a QUERY PARAMETER ON THE
+  LIST, not a route of its own.** The ⋯ row keeps its `href` to `/sites/keys?site=…` (the full page,
+  and the whole scripts-off story) and a plain click opens the parameter, which the list draws in a
+  `<dialog>` with the panel inside its own `<Suspense>`; the credential read is still one, taken
+  only when the panel is opened, because with no `?manage=` there is nothing to render.
+  **It was a Next INTERCEPTING ROUTE for one day and that is what the owner's second test was
+  about:** an intercepted popup lives at the panel's own URL, so opening it moved the path off
+  `/sites` and the shell stopped drawing the top bar, and every answer from inside it was a
+  navigation Next did not intercept — the full page loaded behind the still-open window and took
+  the list with it. `panel-modal.tsx` carries the measurements. **Deleted with it:**
+  `sites/layout.tsx`, `sites/@modal/**` and `keys-back.tsx`, none of which has anything left to do.
 - `apps/web/app/(app)/app/(authed)/sites/keys/page.tsx` -- **new route, `/sites/keys?site=<id>`.**
   Copy `sites/disconnect/page.tsx` wholesale, including its **three-way read split** — `22P02` →
   `notFound()`, a failed read → thrown and logged, no row → `notFound()`, already disconnected →
@@ -285,13 +289,12 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
 
 **The Fix, 2026-09-10 — the owner's two findings, both inside this story (R-80 as amended):**
 
-- [x] `apps/web/.../sites/layout.tsx` · `.../sites/@modal/default.tsx` ·
-      `.../sites/@modal/(.)keys/{layout,page,loading}.tsx` · `.../sites/keys-modal.tsx` ·
-      `.../sites/keys-back.tsx` · `.../sites/keys-screen.tsx` · `.../sites/site-menu.tsx` --
-      **finding 1: the popup.** The ⋯ row keeps its `href` and its destination and its click becomes
-      a guarded `router.push` of the same address, which `@modal/(.)keys` intercepts into a
-      `<dialog>` over the Sites list; `keys-screen.tsx` is the one component both routes render, so
-      the credential read is still taken once and only when the panel is opened.
+- [x] `apps/web/.../sites/panel-modal.tsx` · `.../sites/keys-screen.tsx` · `.../sites/site-menu.tsx`
+      -- **finding 1: the popup.** The ⋯ row keeps its `href` and its destination and its click
+      becomes a guarded `router.push`; `keys-screen.tsx` is the one component both chromes render,
+      so the credential read is still taken once and only when the panel is opened. *(Built as an
+      intercepting route on 2026-09-10 and rebuilt as `/sites?manage=…` the same day, on his second
+      test of it — Change Log 13.)*
 - [x] `apps/web/.../sites/keys-panel.tsx` · `apps/web/components/kit/dialog.ts` ·
       `apps/web/components/kit/icons.tsx` -- **finding 2: S11e's two columns.** The 900px `panelBox`
       beside the 460px `sheetBox` (one vocabulary, two widths), the header/body/footer split, the
@@ -614,13 +617,22 @@ for Story 3.4 or 3.5, and Ghost Admin open in another tab.
    text you cannot edit with a line saying a domain move means disconnecting and connecting again,
    the note that Inflozo cannot read a key back, the blue how-to-roll-your-keys note, and
    **Test connection** at the bottom. Nothing runs off the bottom of the screen.
+   **And the bar along the top of the app is still there** — the search box and **Connect site** —
+   which is what went missing when you tested this on 2026-09-10.
 3. **URL:** same · **Screen:** the API keys window · **Do:** look for a way to see the rest of a key. ·
    **See:** there is none, and a line explains that Inflozo cannot read the secret part back either —
    only your Ghost can.
-4. **URL:** same · **Screen:** the API keys window · **Do:** press **Test connection**. · **See:** the
-   button's own words change while it works, then a short result: Inflozo reached your Ghost, what it
-   can do today, and one line saying uploading `routes.yaml` needs the Staff Access Token you have not
-   added.
+4. **URL:** same · **Screen:** the API keys window · **Do:** press **Test connection**, then press
+   it again. · **See:** the button's own words change while it works, then a short result appears
+   **inside the window you are already looking at**: Inflozo reached your Ghost, what it can do
+   today, and one line saying uploading `routes.yaml` needs the Staff Access Token you have not
+   added. **There is only ever one window**, your Sites cards stay behind it and the top bar stays
+   above it — no second window appears anywhere, and nothing goes blank. Pressing it twice does the
+   same thing twice.
+4b. **URL:** same · **Screen:** the API keys window · **Do:** clear the **Admin API key** box if
+   there is anything in it and press **Save key** with it empty. · **See:** it now tells you, right
+   under that box, that the box is empty — where before it did nothing at all and said nothing. The
+   window stays open and your Sites list stays behind it.
 5. **URL:** same · **Screen:** the API keys window · **Do:** in Ghost Admin go to **Settings →
    Integrations → Inflozo**, press **Regenerate** on the Admin API key, copy the new one, come back and
    paste it in, then save. **Dummy data:** the newly regenerated Admin API key. · **See:** it saves,
@@ -658,16 +670,26 @@ for Story 3.4 or 3.5, and Ghost Admin open in another tab.
     and 4. · **See:** the menu opens on the screen, the keys window fits, and the two columns become
     one — your site's address at the top, then the three key blocks, then the rest, without anything
     running off the edge.
+11b. **URL:** `https://app.inflozo.com/sites` · **Screen:** Sites · **Do:** open the **⋯** menu and
+    click **Manage API keys**, and watch the row itself as you click. · **See:** the row says
+    **Opening…** while the window is on its way, and it will not take a second click while it is
+    saying so. The window arrives with its own outline drawn in it first — the shape of what is
+    coming, not a spinner — and then fills in. This is the one you found on 2026-09-10, where a
+    second click landed the window on a blank screen.
 12. **URL:** same · **Screen:** Sites → Manage API keys · **Do:** open the window, then close it —
     press **Cancel** at the bottom, or the **✕** in its top right, or the **Esc** key. Then open it
     again from the ⋯. · **See:** each way closes it and puts you back on your Sites list, and it
     **opens again** every time. *(This is the one to try more than once — it is what the fix had to
     get right.)*
-13. **URL:** `https://app.inflozo.com/sites/keys?site=<the id from the address bar in step 2>` ·
-    **Screen:** API keys · **Do:** copy the address while the window is open, open a **new browser
-    tab**, and paste it in. · **See:** the same window, this time as a page of its own rather than
-    over the list — same three blocks, same right-hand column, everything working. That is the page
-    a shared link, a refresh and a browser with JavaScript switched off all get.
+13. **URL:** `https://app.inflozo.com/sites` · **Screen:** Sites → the ⋯ menu · **Do:** open the
+    **⋯** menu and open **Manage API keys** in a **new browser tab** instead of clicking it — hold
+    ⌘ (or Ctrl) as you click it, or right-click it and choose *Open link in new tab*. · **See:** the
+    new tab shows the same panel as **a page of its own** rather than over the list — same three
+    blocks, same right-hand column, everything working. That is the page a shared link, a bookmark
+    and a browser with JavaScript switched off all get, and it is why the row is a real link.
+    *(The address in your own address bar while the window is open now stays on your Sites list and
+    reads `…/sites?manage=…` — that is deliberate, and it is what stops the window losing the list
+    behind it.)*
 
 ## Verification
 
@@ -681,8 +703,9 @@ returned, by the key's variable name and never its value.
   types clean, every test passing, `busy.test.ts`, `app-routes.test.ts`, `server-wiring.test.ts` and
   `connect-rule.test.ts` among them. Report the count the run prints; never carry one forward.
 - `pnpm build` -- expected exit 0, "Compiled successfully", and the route table showing
-  **`ƒ /app/sites/(.)keys`** — the intercepted popup — beside `ƒ /app/sites/keys`, the full page it
-  intercepts. Both, or the popup is not built and the ⋯ row simply navigates.
+  `ƒ /app/sites` beside `ƒ /app/sites/keys` and **no intercepted segment at all**: since the owner's
+  second test the popup is `/sites?manage=…`, a parameter on the list, so a `(.)keys` in this table
+  would mean the interception has come back (`panel-modal.tsx` carries why it must not).
 - `bash supabase/tests/run-rls-gate.sh` -- expected exit 0. **This is the gate on the migration**: it
   brings its own PostgreSQL 17 container, refuses to run if the `supabase/` copies have drifted from
   the architecture originals, applies every migration and diffs the result against `SCHEMA.sql`. It
@@ -1023,6 +1046,67 @@ phase's, on production, and it is where `keys-screen` (now driven through the �
 (`--shots`) belong there too. The owner's manual test (R-80) is his, on the production domains,
 after Deploy — steps 2, 11, 12 and 13 are the ones the Fix rewrote or added.
 
+### Fix 2 phase, 2026-09-10 — what each command returned (R-82)
+
+Every command below was run in THIS phase; nothing is carried forward. The real services are named
+by the variable each key is held under and never by its value.
+
+- `pnpm check` (repo root, Node 24 on PATH — the shell defaults to 22) — **exit 0**. Lint clean,
+  `tsc --noEmit` clean, **242 tests, 242 pass, 0 fail** in `apps/web` (241 before this phase; the
+  new one is `busy.test.ts`'s navigation rule), plus 1 each in
+  `packages/{ghost-shim,section-runtime,theme-compiler}`.
+- `pnpm --filter web build` — **exit 0**, "Compiled successfully", and the route table lists
+  `ƒ /app/sites` beside `ƒ /app/sites/brand`, `ƒ /app/sites/connect`, `ƒ /app/sites/disconnect` and
+  `ƒ /app/sites/keys` — **and no intercepted segment**, which is what says the interception is gone
+  rather than merely unused.
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0** against the PostgreSQL 17 container it brings
+  itself, ending on the DW-44 vault assertions. This phase adds no migration; the gate is run
+  because a green schema is a precondition of the push, not because anything moved.
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings** both times.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **all steps passed**, printing this
+  story's copy read out of the app itself. It now prints `keys_empty_admin` — *"Paste the new Admin
+  API key first — this box is empty."* — and `keys_opening`, both evaluated out of
+  `lib/connect-rule.ts` rather than retyped, which is what proves the new refusal and the new busy
+  label exist as the app's own words.
+
+**The mechanism, DRIVEN rather than reasoned** (standing rule 1), on a throwaway route under
+`next dev` 16.3.1 built from the product's own `PanelModal` and `PanelLink` and deleted in the same
+session. Playwright, Chromium, eight steps, **all green, and the first is the control** that says
+the driver can tell the two states apart:
+
+| driven | what happened |
+|---|---|
+| **control** — the route with no `?manage=` | **0 dialogs**, the list rendered — so a window is something this driver can see the absence of |
+| the row's plain click | window open in **135 ms** with its skeleton inside it, against a panel whose own read takes 700 ms — the wait the owner pressed twice into is now behind the window, not in front of it |
+| the list, with the window open | **still there** (`?manage=1`) |
+| a SERVER ACTION's `redirect(…, replace)` onto the same route from inside the window | **the window stayed open**, the list stayed behind it, and the answer was drawn in the panel — this is his finding 3, and it is the exact press that used to load the full page behind the window |
+| the same again | the same |
+| **Escape** | the URL left the panel |
+| the row's click with the panel's fetch **held back 1.5 s** | the row read **`Opening…`** with `aria-busy=true` and `aria-disabled=true` |
+| a **second press** in that gap (forced, because Playwright refuses to click an `aria-disabled` control — which is half the proof) | **one window, one list** — nothing extra opened |
+
+**And the deployed-site harness now drives every one of his findings**, named here rather than
+claimed: `keys-popup` asserts the shell's TOP BAR is still drawn while the window is open (finding
+1), that a refusal keeps the window open with the cards behind it (finding 3's door), and that an
+EMPTY save says which box is empty (finding 4); `keys-test` now presses **Test connection** *in the
+window* and asserts one window, one panel, the top bar and the cards — where it used to press it on
+the full page and prove nothing about the chrome.
+
+**Not run in this phase, and named rather than assumed:** `python3
+tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com`. It drives these screens on the
+DEPLOYED site and the Fix is not deployed until CI publishes this commit (DW-7), so it is the Review
+phase's, against T1 and T3 — as it was for the first Fix. Frame screenshots against S11e at
+1440 / 834 / 390 (`--shots`) belong there too, and the owner's manual test (R-80) is his, on the
+production domains, after Deploy. Steps 2, 4, 4b, 11b and 13 are the ones this Fix rewrote or added.
+
+**One thing that was a hypothesis and is now unreachable, recorded so nobody hunts for its proof.**
+The second half of his finding 2 — *a second `router.push` from the panel's own address is not
+intercepted, so Next serves the full page into the list's slot* — was read off the interception rule
+and off the first Fix's own measured table, and it was **never executed**. It cannot be now: the
+mechanism it describes no longer exists. What IS executed is the row above — two presses in the gap
+leave one window and one list — which is the behaviour the finding asked for either way.
+
+
 ## Spec Change Log
 
 Four departures from the Code Map, each recorded here rather than made silently. None changes an
@@ -1132,6 +1216,52 @@ criterion except the ones the findings themselves added.
     the Kit's `TextInput`, which owns label, hint and refusal in one column. Rendered and measured
     at the Fix: the panel comes out at **900 × 743 at 1440**, the frame's own dimensions, so the
     stack costs the layout nothing.
+
+**Five more from the Fix of 2026-09-10 (his SECOND test of this screen).** Entry 8 above is
+reversed and the rest are new; none changes an acceptance criterion, and two of them ADD one.
+
+14. **ENTRY 8's INTERCEPTING ROUTE IS GONE. The popup is `/sites?manage=<id>`, a query parameter on
+    the Sites list.** The intercepted route was built and shipped on 2026-09-10 and he tested it the
+    same day: an intercepted popup lives at the PANEL'S own URL, so opening it moved the path off
+    `/sites` — which took the shell's top bar with it, his finding 1 — and every answer from inside
+    it was a navigation Next did not intercept, so the full page loaded behind the still-open window
+    and took the list with it (his findings 2, 3 and 5). On a parameter the route never changes: an
+    action's redirect is an ordinary same-route answer, exactly what `?recheck=`, `?disconnect=` and
+    `?moved=` have always been on this list, so the panel is re-rendered inside the window that is
+    already open. **What entry 8 promised is unchanged and is what made this possible at all** — the
+    ⋯ row keeps its `href` to `/sites/keys?site=…`, `keys-screen.tsx` is still the one component
+    both chromes render, and the credential read is still taken once and only when the panel is
+    opened. `sites/layout.tsx`, `sites/@modal/**` and `keys-back.tsx` are deleted; `panel-modal.tsx`
+    keeps the measurements. **The build's route table is the check**: a `(.)keys` in it means the
+    interception has come back.
+15. **THE THREE ACTIONS TAKE A CHROME MARKER.** `saveKeys`, `removeToken` and `testConnection` each
+    answer ONTO the screen the press came from, and there are now two of those — so each form
+    carries a hidden `popup` field and `keysBase()` decides the redirect's base once per action. It
+    is not a URL read off the post: the field is a flag and the action builds both addresses itself.
+    `useBrand`'s failure path takes the same marker, because Story 3.4's popup had the same defect
+    latent in it (standing rule 3).
+16. **AN EMPTY SAVE IS REFUSED UNDER ITS OWN FIELD, WHERE IT USED TO SAY NOTHING** — his finding 4,
+    and a NEW acceptance criterion. `saveKeys` read "a press with nothing to do says nothing about
+    it"; R-98 is his own ruling the other way. Three new codes — `credential_empty`,
+    `content_key_empty`, `token_empty` — because `keysFieldOf` derives the field FROM the code, and
+    the row that was pressed is the one that posted its own field.
+17. **THE ⋯ ROW SAYS `Opening…` AND REFUSES THE SECOND PRESS** — his finding 2, and a NEW acceptance
+    criterion. `panel-link.tsx` is the one control that opens a panel over this list (the card's
+    brand offer uses it too), and `busy.test.ts` gained the rule that caught nothing here before:
+    every `router.push` sits inside a `useTransition`. The submit rule walks `type="submit"` and
+    could never have seen a link.
+18a. **A SITE THE WINDOW CANNOT DRAW RETURNS TO `/sites` INSTEAD OF 404ing**, and only in the
+    window. `notFound()` inside the LIST's own `<Suspense>` takes the list to the not-found page, so
+    a stale or forged `?manage=` would have cost the customer the screen he was looking at — which
+    the full page cannot do, because there the panel IS the page. Both answers disclose exactly the
+    same (nothing about whether the row exists), and it is already what an already-disconnected
+    record does in both chromes. The full page still 404s, and `keys-forged` still drives it there.
+    *The narrowing had to be a `function` declaration and not a `const` arrow — `keysRedirect`'s own
+    recorded lesson, met again.*
+18. **THE PANEL'S ADDRESS IS A LINK THAT OPENS IN A NEW TAB.** Story 3.4's own finding 2 asked for it
+    on the brand popup; the same address is drawn in three places and behaved two ways, so it lands
+    here as well (standing rule 3). It is not an edit affordance — A9 item 17 stands, the reason line
+    under it is unchanged, and there is still no field.
 
 **Two departures from the frames, both drawn from the frame that is nearest and both recorded in
 `lib/connect-rule.ts` with a test over them** (R-74; the precedent is Story 3.4's
@@ -1273,6 +1403,7 @@ the rest; `keys-back.tsx` carries the measurement beside the code it governs (st
 asserts an open `<dialog>` with the Sites cards behind it, and a new `keys-popup` step executes each
 claim above — the refusal that keeps the window open, the way out, **the second open**, Escape, and
 the typed URL that is still the full page. `axe` runs over both shapes.
+
 
 
 ## Owner's test findings

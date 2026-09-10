@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
 import { ring } from '@/components/kit/greyed'
@@ -20,7 +21,14 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { atSiteCap, goProLabel, siteCapSentence } from '@/lib/plan'
 import { PREVIEW_COPY } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { BRAND_TITLE_ID } from '../brand-panel'
+import { BrandScreen } from '../brand-screen'
+import { BrandPanelSkeleton } from '../brand-skeleton'
 import { ConnectSiteDialog } from '../connect-dialog'
+import { KEYS_TITLE_ID } from '../keys-panel'
+import { KeysScreen } from '../keys-screen'
+import { KeysSkeleton } from '../keys-skeleton'
+import { PanelModal } from '../panel-modal'
 import { SiteMenu } from '../site-menu'
 import { SiteNotices, type NoticeSite } from '../site-notices'
 
@@ -105,15 +113,30 @@ export default async function Sites({
   // `moved` is Story 3.6's, and the same shape again: a connect whose Admin key matches a record
   // this caller already has is FR-C8's domain move, and `connectSite` redirects here naming the
   // NEW site — so the hint lands on the one card it is about.
+  // `manage` and `brand` ARE THE TWO PANELS THIS ROUTE CAN DRAW OVER ITSELF, and `keys`, `status`,
+  // `test` and `failed` are what their own actions answer with — the owner's test of Story 3.6,
+  // findings 2, 3 and 5. Each panel used to be an intercepted ROUTE, so the URL moved off `/sites`
+  // when it opened and every answer afterwards was a navigation the interception did not survive;
+  // as a parameter on this list the route never changes at all (`panel-modal.tsx` carries the
+  // measurements). The panels read these themselves — this page passes the promise straight in.
   searchParams: Promise<{
     q?: string | string[]
     recheck?: string | string[]
     disconnect?: string | string[]
     moved?: string | string[]
     old?: string | string[]
+    manage?: string | string[]
+    brand?: string | string[]
+    keys?: string | string[]
+    status?: string | string[]
+    test?: string | string[]
+    failed?: string | string[]
   }>
 }) {
-  const [{ q, recheck, disconnect, moved, old }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ q, recheck, disconnect, moved, old, manage, brand }, user] = await Promise.all([
+    searchParams,
+    currentUser(),
+  ])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
 
@@ -361,6 +384,35 @@ export default async function Sites({
           )}
         </div>
       )}
+      {/* THE TWO PANELS THIS LIST CAN DRAW OVER ITSELF (the owner's test of Story 3.6, findings
+          2, 3 and 5). Each is drawn ONLY while its parameter is there, so leaving unmounts it and
+          there is no state to keep in step with the URL; each reads its own site id and its own
+          answer out of the same search params this page was given, so the popup and the full page
+          are one component with one read either way (`keys-screen.tsx`, `brand-screen.tsx`).
+
+          `<Suspense>` INSIDE THE WINDOW AND NOT AROUND IT: `PanelModal` opens the `<dialog>` on
+          mount, so it has to sit above the boundary — a dialog rendered by both the fallback and
+          the panel would unmount and remount as the panel arrived, and the window would open,
+          close and open again in front of the customer. The list itself never waits for either.
+
+          THE CREDENTIAL READ IS STILL TAKEN ONCE AND ONLY WHEN THE PANEL IS OPENED. That was the
+          cost the Dev pass rejected a card-rendered dialog for — one pooler round trip per card on
+          the busiest route in the app — and a parameter on the route costs none of it: with no
+          `?manage=` there is nothing here to render at all. */}
+      {manage ? (
+        <PanelModal labelledBy={KEYS_TITLE_ID}>
+          <Suspense fallback={<KeysSkeleton />}>
+            <KeysScreen searchParams={searchParams} popup />
+          </Suspense>
+        </PanelModal>
+      ) : null}
+      {brand ? (
+        <PanelModal labelledBy={BRAND_TITLE_ID}>
+          <Suspense fallback={<BrandPanelSkeleton />}>
+            <BrandScreen searchParams={searchParams} popup />
+          </Suspense>
+        </PanelModal>
+      ) : null}
       {/* KEYED ON THE NUMBER OF CARDS. A connect made from the sheet redirects to this same route,
           which re-renders in place — so the sheet stayed open over the new card with the keys
           still in its fields. One more card remounts it closed (review, 2026-09-08);

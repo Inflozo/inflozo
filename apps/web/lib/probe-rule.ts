@@ -259,6 +259,10 @@ export const BRAND_COPY = {
   skipping: 'Skipping…',
   /** The Sites card's offer — a link, never a Banner: a Banner tells or asks, this offers. */
   offer: 'Use this site’s brand',
+  /* What the offer says while the window is on its way (R-98) — `KEYS.opening`'s twin, and the
+     same reason: opening the panel is a server round trip and the control used to sit through it
+     saying nothing. */
+  opening: 'Opening\u2026',
   willCreate: 'We’ll make a project for this site and put your brand on it.',
   /** At the cap the brand goes onto a project that already exists, so the caption NAMES it before
       the press — the owner's Question 1 ruling, and it says so whether or not cards are drawn.
@@ -330,6 +334,12 @@ export const BRAND_COPY = {
  * anywhere (review 5, 2026-09-09; standing rule 7 — the coupling is invisible from that end).
  */
 export const brandPath = (siteId: string) => `/sites/brand?site=${siteId}`
+/** …and S2c as a window over the Sites list, which is a QUERY PARAMETER on `/sites` and not a
+    route of its own — `keysPopupPath` in `lib/connect-rule.ts` carries the whole argument, and
+    the two popups in this app are deliberately the same shape. `connectSite` still redirects to
+    `brandPath`: the owner ruled at Question 7 (option 1, 2026-09-10) that the moment straight
+    after a connect stays a full screen. */
+export const brandPopupPath = (siteId: string) => `/sites?brand=${siteId}`
 
 /**
  * WHICH PROJECT WEARS THE BRAND — one rule, because S2c prints it in the caption and `useBrand`

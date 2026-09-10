@@ -20,7 +20,7 @@ import { skipBrand, useBrand } from './actions'
    the brand LOOKS like, so it goes with its own half. Nothing S2c drew has been removed.
 
    ONE COMPONENT, TWO CHROMES, AND `panel-modal.tsx` RECORDS WHY THERE ARE TWO. The Sites card's
-   offer is a `next/link`, so its click is a soft navigation and `@modal/(.)brand` intercepts it
+   offer is a `PanelLink`, so its plain click opens `/sites?brand=…` over the list and its `href`
    into a `<dialog>` over the list — the popup. `connectSite`'s landing is a SERVER ACTION's
    `redirect()`, and those are not intercepted (executed, 2026-09-10), so the moment straight after
    a connect stays the full-screen onboarding S2 draws. Both render this file.
@@ -83,6 +83,7 @@ export function BrandPanel({
   projects,
   targetId,
   choosing,
+  popup,
 }: {
   site: BrandSite
   caption: string
@@ -94,7 +95,14 @@ export function BrandPanel({
   /** The chooser is drawn only where the brand is going onto a project that already exists AND
       there is more than one to choose between (the owner's Question 3 ruling and his B1). */
   choosing: boolean
+  /** TRUE when this panel is the window over the Sites list (`/sites?brand=…`) rather than the
+      full screen `connectSite` lands on. It travels into both forms as a hidden field so a
+      refused **Use your brand** redirects onto the chrome the press came from — `keys-panel.tsx`
+      carries the argument, and this is the same defect on the other popup (standing rule 3). */
+  popup: boolean
 }) {
+  /** The hidden field both forms on this panel carry — see `popup` above. */
+  const chrome = popup ? <input type="hidden" name="popup" value="1" /> : null
   return (
     <>
       {/* S2c's heading pair. It is the panel's header in both chromes, so the popup and the full
@@ -115,6 +123,7 @@ export function BrandPanel({
         <aside className="flex w-full shrink-0 flex-col gap-4 border-t border-line-faint bg-paper-raised p-[16px_20px] tablet:w-[360px] tablet:overflow-y-auto tablet:border-t-0 tablet:border-l tablet:p-[20px_22px]">
           <form action={useBrand} className="flex flex-1 flex-col gap-4">
             <input type="hidden" name="site_id" value={site.id} />
+            {chrome}
             {/* THE CHOOSER, AND IT IS REAL RADIO INPUTS — not the Kit's presentational
                 `RadioCards`, which draws the shape with `role="radio"` on buttons and posts
                 nothing. Both controls on this screen work with JavaScript off (Boundaries), and a
@@ -219,6 +228,7 @@ export function BrandPanel({
               rail is 340 wide and both labels grow when pressed, so a row of two would wrap. */}
           <form action={skipBrand}>
             <input type="hidden" name="site_id" value={site.id} />
+            {chrome}
             <Submit busy={BRAND_COPY.skipping} size={44} variant="ghost" weight="font-medium" className="w-full">
               {BRAND_COPY.skip}
             </Submit>

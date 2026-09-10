@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
 import { buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
-import { Check, Refresh, X } from '@/components/kit/icons'
+import { Check, ExternalLink, Refresh, X } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { Submit } from '@/components/kit/submit'
 import { title as sheetTitle } from '@/components/kit/dialog'
@@ -30,9 +30,11 @@ import { removeToken, saveKeys, testConnection } from './actions'
    document — `panelBox`'s height cap — which is the length complaint answered.
 
    ONE COMPONENT, TWO CALLERS, AND SINCE THE FIX THEY ARE THE POPUP AND THE PAGE.
-   `keys-screen.tsx` does the reads once and hands them here; `@modal/(.)keys` renders that inside
-   a `<dialog>` over the Sites list, and `keys/page.tsx` renders the same thing as a full page for
-   a typed URL, a modified click, a refresh and a scripts-off browser.
+   `keys-screen.tsx` does the reads once and hands them here; the Sites list renders that inside a
+   `<dialog>` when its `?manage=` parameter is there, and `keys/page.tsx` renders the same thing as
+   a full page for a typed URL, a modified click, a refresh and a scripts-off browser. WHICH OF
+   THE TWO IT IS TRAVELS INTO EVERY FORM as a hidden field (`popup`), so each action redirects onto
+   the chrome the press came from — the owner's findings 3 and 5 of 2026-09-10.
 
    AND THE WAY OUT IS THE SAME IN BOTH, WHICH IS WHY IT IS NOT A PROP HERE THE WAY
    `disconnect-confirm.tsx`'s `cancel` is: the ✕ and Cancel are `<Link href="/sites">`. On the page
@@ -143,6 +145,7 @@ function PasteForm({
   submit,
   busy,
   error,
+  chrome,
 }: {
   siteId: string
   id: string
@@ -153,10 +156,13 @@ function PasteForm({
   submit: string
   busy: string
   error: string | null
+  /** The chrome marker the panel builds once; see `KeysPanel`'s `popup`. */
+  chrome: ReactNode
 }) {
   return (
     <form action={saveKeys} className="flex flex-col gap-[10px]">
       <input type="hidden" name="site_id" value={siteId} />
+      {chrome}
       <TextInput
         id={id}
         name={name}
@@ -188,7 +194,25 @@ function SiteUrl({ publicUrl, className = '' }: { publicUrl: string; className?:
   return (
     <div className={`flex flex-col gap-[3px] ${className}`}>
       <span className="text-control-label font-medium text-ink-soft">{KEYS.urlLabel}</span>
-      <span className="break-all font-mono text-ui-dense text-ink">{publicUrl}</span>
+      {/* THE ADDRESS OPENS IN A NEW TAB AND SAYS SO — the owner's ask on Story 3.4 ("make the URL
+          on left side an anchor link and show a new tab icon"), propagated here because the same
+          address is drawn in three places and behaved two ways: the Sites card has linked it with
+          this exact markup since his finding 4 one story earlier, and this was the odd one out
+          (standing rule 3). It is `public_url || url` — the address Inflozo connected or the
+          public one Ghost reports — and never a value read out of the customer's Ghost menu. The
+          glyph is the export's own (`P0-2:111`) and is decorative: the link's name is the address,
+          and "opens in a new tab" is what a screen reader hears after it. THIS IS NOT AN EDIT
+          AFFORDANCE (A9 item 17): the reason line under it still says the address is fixed for this
+          connection, and there is no field and no control that changes it. */}
+      <a
+        href={publicUrl}
+        target="_blank"
+        rel="noreferrer"
+        className={`flex min-w-0 items-center gap-[5px] break-all rounded-sm font-mono text-ui-dense text-ink underline-offset-2 hover:underline ${ring}`}
+      >
+        <span className="break-all">{publicUrl}</span>
+        <ExternalLink size={12} className="shrink-0" label="opens in a new tab" />
+      </a>
       <span className="text-helper-caption leading-[1.55] text-ink-soft">{KEYS.urlReason}</span>
     </div>
   )
@@ -217,8 +241,15 @@ export function KeysPanel({
   refused,
   status,
   tested,
+  popup,
 }: {
   site: KeysSite
+  /** TRUE when this panel is the window over the Sites list (`/sites?manage=…`) rather than the
+      full page (`/sites/keys?site=…`). It travels into every form as a hidden field, so the three
+      actions redirect ONTO THE CHROME THE PRESS CAME FROM — the owner's test of 2026-09-10,
+      findings 3 and 5. Nothing else on this screen reads it: the two chromes differ in how they
+      arrive and in where an answer lands, and in nothing the customer sees. */
+  popup: boolean
   /** `?keys=<code>` — one of the app's own codes, or null. The FIELD is derived, never trusted. */
   refused: string | null
   /** `?status=<n>` — the HTTP status `ghost_refused`'s sentence is built from; digits or null. */
@@ -226,6 +257,8 @@ export function KeysPanel({
   /** `?test=ok` or `?test=<code>` — what the last press of Test connection proved. */
   tested: string | null
 }) {
+  /** The hidden field every form on this panel carries — see `popup` above. */
+  const chrome = popup ? <input type="hidden" name="popup" value="1" /> : null
   const field = refused ? keysFieldOf(refused) : null
   // A CODE THE TABLE DOES NOT NAME IS NOT DRAWN AT ALL. `?keys=` is typed by whoever holds the URL,
   // so the value is a lookup key and never a sentence: anything unknown renders nothing, rather
@@ -296,6 +329,7 @@ export function KeysPanel({
               submit={KEYS.admin.save}
               busy={KEYS.admin.busy}
               error={errorFor('admin_key')}
+              chrome={chrome}
             />
           </Credential>
 
@@ -305,7 +339,7 @@ export function KeysPanel({
             enables={KEYS.content.enables}
             mask={site.present.content ? site.contentKey?.slice(0, 10) : null}
           >
-            <ContentKeyForm siteId={site.id} siteUrl={site.publicUrl} error={errorFor('content_key')} />
+            <ContentKeyForm siteId={site.id} siteUrl={site.publicUrl} error={errorFor('content_key')} chrome={chrome} />
           </Credential>
 
           <Credential
@@ -323,6 +357,7 @@ export function KeysPanel({
                  capabilities read as unavailable with their reason when Epic 7 builds them. */
               <form action={removeToken}>
                 <input type="hidden" name="site_id" value={site.id} />
+                {chrome}
                 <Submit variant="secondary" size={32} busy={KEYS.staff.removeBusy}>
                   {KEYS.staff.remove}
                 </Submit>
@@ -337,6 +372,7 @@ export function KeysPanel({
                 submit={KEYS.staff.add}
                 busy={KEYS.staff.addBusy}
                 error={errorFor('staff_token')}
+                chrome={chrome}
               />
             )}
           </Credential>
@@ -368,6 +404,7 @@ export function KeysPanel({
               ) : null}
               <form action={testConnection} className="flex">
                 <input type="hidden" name="site_id" value={site.id} />
+                {chrome}
                 <Submit variant="secondary" size={36} className="w-full" busy={KEYS.test.busy}>
                   <Refresh size={13} />
                   {KEYS.test.label}

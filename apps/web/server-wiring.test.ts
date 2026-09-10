@@ -341,7 +341,7 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     colon, which rides in the header of every JWT this module mints — and the two rotation
   //     stamps, so the screen can draw what Inflozo HAS without ever approaching what it holds.
   //     IT IS ONE FILE AND NOT TWO, and that is what keeps the list this short: the panel appears
-  //     as a popup over the Sites list (`@modal/(.)keys`) and as a full page (`sites/keys/page.tsx`),
+  //     as a window over the Sites list (`/sites?manage=…`) and as a full page (`sites/keys/page.tsx`),
   //     and both render THIS component, so the read happens once wherever the customer came from.
   //     It is here rather than on the Sites list deliberately: a `<dialog>` RENDERED BY that list
   //     would put this read on every card of the busiest route in the app, and

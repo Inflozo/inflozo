@@ -262,6 +262,11 @@ export const ORPHAN_SNAPSHOT_DAYS = 90
 export const KEYS = {
   /** S11a's ⋯ menu item, the frame's own third row (`S11 Sites.dc.html:80`). */
   menu: 'Manage API keys',
+  /* WHAT THE ⋯ ROW SAYS WHILE THE WINDOW IS ON ITS WAY (R-98, and the owner's test of 2026-09-10,
+     finding 2). Opening the panel is two server round trips, and until this the row said nothing
+     through them — so a second press was there to be made, and it landed the window on a blank
+     screen. `PanelLink` swaps to this and refuses the second press. */
+  opening: 'Opening\u2026',
   /** S11d's title pair (`:197-198`). */
   title: (host: string) => `API keys — ${host}`,
   sub: 'Rolled your keys in Ghost Admin? Paste the new ones here — they take effect right away.',
@@ -364,6 +369,29 @@ export const KEYS = {
 export const CONNECT_SITE_DIALOG = 'connect-site-sheet'
 
 /**
+ * MANAGE KEYS HAS TWO ADDRESSES AND ONE PANEL, and both are written here so a rename cannot move
+ * one without the other (standing rule 7 — the ⋯ row and `actions.ts` each used to spell the full
+ * page out for themselves).
+ *
+ * `keysPath` IS THE ROUTE AND IT IS WHAT THE ⋯ ROW'S `href` NAMES: a typed URL, a modified click,
+ * a refresh, a shared link and a scripts-off browser are all document loads and all land on
+ * `sites/keys/page.tsx`, which draws the same panel as a full page. That is an acceptance
+ * criterion of Story 3.6, not a nicety.
+ *
+ * `keysPopupPath` IS THE SAME PANEL AS A WINDOW OVER THE SITES LIST, and it is a QUERY PARAMETER
+ * ON `/sites` rather than a route of its own — the owner's test of 2026-09-10, findings 2, 3 and
+ * 5: "There should be only one perfect popup and that only should be source of truth." The panel
+ * used to be an intercepted route at `keysPath`, which moved the URL off `/sites`, and everything
+ * that answered the customer afterwards — Test connection, every save, every refusal — was a
+ * navigation the interception did not survive: the full page loaded BEHIND the still-open window
+ * and took the list with it. On `/sites?manage=…` the route never changes, so an action's redirect
+ * is an ordinary same-route answer, exactly as `?recheck=`, `?disconnect=` and `?moved=` already
+ * are on this list.
+ */
+export const keysPath = (siteId: string) => `/sites/keys?site=${siteId}`
+export const keysPopupPath = (siteId: string) => `/sites?manage=${siteId}`
+
+/**
  * THE CODES → SENTENCES TABLE, AND IT LIVES HERE AND NOWHERE ELSE. The action answers a code and
  * a subject; the wizard renders the sentence. Two copies of a refusal sentence is how a refusal
  * drifts from the one the owner read and approved.
@@ -431,6 +459,18 @@ export const CONNECT_MESSAGES = {
   token_malformed: () =>
     "That doesn't look like a Staff Access Token — copy the whole thing from your Ghost profile, " +
     'including the part before the colon.',
+  /* THE OWNER'S TEST, 2026-09-10, FINDING 4: "when I click Save Key without any inputs, it does
+     not show any error." It did not, and that was a written decision rather than an oversight —
+     `saveKeys` read "a press with nothing to do says nothing about it". R-98 is his own ruling the
+     other way round: a pressed control says what happened, and "nothing happened" is something.
+
+     THREE CODES AND NOT ONE, because the FIELD IS DERIVED FROM THE CODE (`keysFieldOf`) and the
+     frozen Boundaries put a refusal under the box it came in. One shared `credential_empty` would
+     have had to carry a field beside it in the URL, which is exactly what that derivation exists
+     to stop. */
+  credential_empty: () => 'Paste the new Admin API key first — this box is empty.',
+  content_key_empty: () => 'Paste the new Content API key first — this box is empty.',
+  token_empty: () => 'Paste your Staff Access Token first — this box is empty.',
   /* Everything on this screen that is ours rather than the customer's: a read that failed, a write
      that would not land. It says nothing changed, because nothing did — every write here is
      validated before it is made. */
@@ -470,11 +510,11 @@ export type ConnectField = 'url' | 'admin_key' | 'content_key' | 'staff_token'
  * Anything this does not name is the panel's banner.
  */
 export const keysFieldOf = (code: string): ConnectField | null =>
-  code === 'content_key_unknown' || code === 'content_key_malformed'
+  code === 'content_key_unknown' || code === 'content_key_malformed' || code === 'content_key_empty'
     ? 'content_key'
-    : code === 'token_malformed'
+    : code === 'token_malformed' || code === 'token_empty'
       ? 'staff_token'
-      : code === 'credential_malformed' || code === 'keys_other_site' || code === 'ghost_unknown_key' || code === 'ghost_unauthorized'
+      : code === 'credential_malformed' || code === 'credential_empty' || code === 'keys_other_site' || code === 'ghost_unknown_key' || code === 'ghost_unauthorized'
         ? 'admin_key'
         : null
 /* FOUR CODES THAT ARE **NOT** THE ADMIN FIELD'S, and they were until the review of 2026-09-09.

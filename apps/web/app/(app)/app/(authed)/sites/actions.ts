@@ -9,6 +9,8 @@ import {
   connectMessage,
   hostOf,
   isHttpUrl,
+  keysPath,
+  keysPopupPath,
   normaliseSiteUrl,
   versionVerdict,
   type ConnectCode,
@@ -18,7 +20,7 @@ import {
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
-import { brandPath, brandTarget, hasBrand } from '@/lib/probe-rule'
+import { brandPath, brandPopupPath, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
 import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
@@ -91,7 +93,13 @@ const BRAND = brandPath
    file's own precedent: a server action that must speak to the customer redirects to a screen
    that reads the reason out of the URL, which is also the only shape that survives scripts off
    (review, 2026-09-08 — every failure branch here used to `return` in silence). */
-const BRAND_FAILED = (siteId: string) => `${BRAND(siteId)}&failed=1`
+const BRAND_FAILED = (base: string) => `${base}&failed=1`
+/* S2c HAS THE SAME TWO CHROMES MANAGE KEYS HAS, and its actions answer onto the same base for the
+   same reason — see `keysBase` below. `connectSite`'s own landing is NOT this: the owner ruled at
+   Question 7 (option 1, 2026-09-10) that the moment straight after a connect stays a full screen,
+   so line 439 keeps `BRAND(siteId)` and nothing about that hand-over changed. */
+const brandBase = (formData: FormData, siteId: string) =>
+  formData.get('popup') === '1' ? brandPopupPath(siteId) : brandPath(siteId)
 /* STORY 3.5, and the same shape one row up: the card that could not be disconnected is the one
    that says so, named in the URL, so no other card claims a failure that was not its own. */
 const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}`
@@ -101,16 +109,30 @@ const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}
    the reason out of the URL. Only the CODE travels; which field it belongs under is derived by
    `keysFieldOf` in `lib/connect-rule.ts`, so a hand-typed `?field=` cannot put a refusal sentence
    under a field it has nothing to do with. */
-const KEYS_URL = (siteId: string) => `/sites/keys?site=${siteId}`
+/* THE OWNER'S TEST, 2026-09-10, FINDINGS 3 AND 5. Manage keys answers ONTO ITSELF, and until
+   this fix "itself" was one address — the route `/sites/keys`, drawn as a popup by an intercepted
+   segment. A server action's `redirect()` is not intercepted (executed 2026-09-10), so every
+   answer loaded the FULL PAGE behind the still-open window and took the Sites list with it: "it
+   tests it but opens a new popup in the background with Test results. Then both these popup
+   appear on a blank screen."
+
+   SO THE CHROME IS DECIDED ONCE PER ACTION, from a hidden field the panel writes, and every
+   sentence below is appended to that base. In the popup the base is `/sites?manage=…`, so the
+   redirect never leaves `/sites` and nothing under the window can change; on the full page it is
+   `/sites/keys?site=…`, which is where a scripts-off post came from and where it must answer.
+   `keysSite` takes it as an argument for the same reason: a helper that redirects has to know
+   which screen it is redirecting to. */
+const keysBase = (formData: FormData, siteId: string) =>
+  formData.get('popup') === '1' ? keysPopupPath(siteId) : keysPath(siteId)
 /* `status` TRAVELS BESIDE THE CODE, and only a code that needs one uses it. `ghost_refused`'s
    sentence is `(status) => 'Ghost refused the connection (HTTP ${status})'` — the wizard passes
    `String(config.status)` into it and this screen passed the SITE'S NAME, so a 403 or a 429 read
    "Ghost refused the connection (HTTP My Blog)" (review, 2026-09-09). It is a number and the panel
    re-checks that it is one: everything in this URL is typed by whoever holds it. */
-const KEYS_REFUSED = (siteId: string, code: string, status?: number) =>
-  `${KEYS_URL(siteId)}&keys=${code}${status ? `&status=${status}` : ''}`
-const KEYS_TESTED = (siteId: string, result: string, status?: number) =>
-  `${KEYS_URL(siteId)}&test=${result}${status ? `&status=${status}` : ''}`
+const KEYS_REFUSED = (base: string, code: string, status?: number) =>
+  `${base}&keys=${code}${status ? `&status=${status}` : ''}`
+const KEYS_TESTED = (base: string, result: string, status?: number) =>
+  `${base}&test=${result}${status ? `&status=${status}` : ''}`
 /* FR-C8's hint, on the NEW card: `?moved=` names the site it belongs to, as `?recheck=` does, and
    `?old=` says whether the record it matched was ever let go. THE SNAPSHOT CLAUSE DEPENDS ON IT:
    the 90-day clock is DERIVED from `sites.disconnected_at` (DW-43), so a matched record that is
@@ -652,12 +674,13 @@ export async function useBrand(formData: FormData): Promise<void> {
   // Recorded because the comment beside `BRAND_FAILED` says every failure branch speaks, and a
   // reader counting them would otherwise find this one mute (review 5, 2026-09-09).
   if (!at) return
+  const base = brandBase(formData, at.siteId)
   // The screen's own decision: a project id, or empty for "make one". A field that is not there
   // at all is a crafted post, not a press.
   const chosen = formData.get('project_id')
   if (typeof chosen !== 'string') {
     console.error('sites: use brand refused', { code: 'decision_missing' })
-    brandRedirect(BRAND_FAILED(at.siteId))
+    brandRedirect(BRAND_FAILED(base))
   }
 
   const supabase = await supabaseServer()
@@ -688,7 +711,7 @@ export async function useBrand(formData: FormData): Promise<void> {
   // (review 4, 2026-09-09) — `sites/page.tsx`'s "A FAILED READ IS NOT AN EMPTY ACCOUNT" is the rule.
   if (siteError) {
     console.error('sites: use brand site read failed', { code: siteError.code })
-    brandRedirect(BRAND_FAILED(at.siteId))
+    brandRedirect(BRAND_FAILED(base))
   }
   if (!site) notFound()
   const brand = site.site_settings?.brand
@@ -696,7 +719,7 @@ export async function useBrand(formData: FormData): Promise<void> {
   if (!hasBrand(brand)) brandRedirect(SITES_URL)
   if (projectsError || !projects) {
     console.error('sites: use brand read failed', { code: projectsError?.code })
-    brandRedirect(BRAND_FAILED(site.id))
+    brandRedirect(BRAND_FAILED(base))
   }
 
   // ONE RULE, SHARED WITH THE CAPTION S2c PRINTED (`brandTarget`): at the cap the most recently
@@ -721,7 +744,7 @@ export async function useBrand(formData: FormData): Promise<void> {
   // so an empty choice is refused and no project can be made past the limit.
   if (chosen === '' ? Boolean(target) : !picked) {
     revalidatePath(SITES)
-    brandRedirect(BRAND(site.id))
+    brandRedirect(base)
   }
 
   if (picked) {
@@ -758,7 +781,7 @@ export async function useBrand(formData: FormData): Promise<void> {
       .select('id')
     if (error || !data?.length) {
       console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
-      brandRedirect(BRAND_FAILED(site.id))
+      brandRedirect(BRAND_FAILED(base))
     }
   } else {
     // WITH ROOM: a project for the site, named after it. `lib/projects.ts`'s own rules give it its
@@ -784,7 +807,7 @@ export async function useBrand(formData: FormData): Promise<void> {
     })
     if (error) {
       console.error('sites: use brand insert failed', { code: error.code })
-      brandRedirect(BRAND_FAILED(site.id))
+      brandRedirect(BRAND_FAILED(base))
     }
   }
 
@@ -803,7 +826,7 @@ export async function useBrand(formData: FormData): Promise<void> {
  *
  * `connectSite`'s OWN redirect onto this screen deliberately does NOT use this. It arrives from
  * `/sites` and is the customer's first sight of the offer, so it is a real step forward in the
- * history — and it is not intercepted anyway (executed), so it lands on the full page.
+ * history — and the owner ruled at Question 7 (option 1, 2026-09-10) that it stays the full page.
  */
 function brandRedirect(url: string): never {
   redirect(url, RedirectType.replace)
@@ -985,8 +1008,8 @@ export async function disconnectSite(formData: FormData): Promise<void> {
 /**
  * MANAGE KEYS REPLACES THE HISTORY ENTRY; IT DOES NOT PUSH ONE. Every one of these three actions
  * answers by redirecting to the screen the customer is already on (`recheckPlan`'s shape), and
- * since the owner's test the screen is usually a POPUP over the Sites list — an intercepted route,
- * whose Escape closes with `router.back()` (`panel-modal.tsx` carries the measurement).
+ * since the owner's test the screen is usually a WINDOW over the Sites list — `/sites?manage=…`,
+ * a parameter on the list itself (`panel-modal.tsx` carries why it is not a route).
  *
  * A server action's `redirect()` PUSHES by default. Measured on a throwaway control under
  * `next dev`, 2026-09-10: after one push-redirect the first Back returned to the panel as it stood
@@ -1007,6 +1030,7 @@ function keysRedirect(url: string): never {
 /** The row Manage keys acts on, read under the CALLER'S OWN session so RLS decides it exists. */
 async function keysSite(
   at: { userId: string; siteId: string },
+  base: string,
 ): Promise<{
   id: string
   url: string
@@ -1038,12 +1062,18 @@ async function keysSite(
   if (error?.code === '22P02') notFound()
   if (error) {
     console.error('sites: keys read failed', { code: error.code })
-    keysRedirect(KEYS_REFUSED(at.siteId, 'keys_failed'))
+    keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
   }
   if (!site) notFound()
   if (site.disconnected_at) keysRedirect(SITES_URL)
   return site
 }
+
+/** WHICH BOX WAS EMPTY, read off the form that was posted rather than guessed: each credential
+    row is its own `<form>` carrying its own one field, so the field that is PRESENT names the row.
+    A post carrying none of the three is crafted and takes the Admin row's sentence. */
+const emptyKeyCode = (formData: FormData) =>
+  formData.has('staff_token') ? 'token_empty' : formData.has('content_key') ? 'content_key_empty' : 'credential_empty'
 
 /** Manage keys' three fields, each optional: every credential row posts its own form. */
 const KeyFields = z.object({
@@ -1087,6 +1117,7 @@ const KeyFields = z.object({
 export async function saveKeys(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'save keys')
   if (!at) notFound()
+  const base = keysBase(formData, at.siteId)
   const parsed = KeyFields.safeParse({
     admin_key: formData.get('admin_key') ?? '',
     content_key: formData.get('content_key') ?? '',
@@ -1097,16 +1128,21 @@ export async function saveKeys(formData: FormData): Promise<void> {
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path[0]
     keysRedirect(
-      KEYS_REFUSED(at.siteId, field === 'staff_token' ? 'token_malformed' : field === 'content_key' ? 'content_key_malformed' : 'credential_malformed'),
+      KEYS_REFUSED(base, field === 'staff_token' ? 'token_malformed' : field === 'content_key' ? 'content_key_malformed' : 'credential_malformed'),
     )
   }
   const adminKey = parsed.data.admin_key.trim()
   const contentKey = parsed.data.content_key.trim()
   const staffToken = parsed.data.staff_token.trim()
-  // A form posted with nothing in it is a press with nothing to do, and it says nothing about it.
-  if (!adminKey && !contentKey && !staffToken) keysRedirect(KEYS_URL(at.siteId))
+  /* THE OWNER'S TEST, 2026-09-10, FINDING 4: "when I click Save Key without any inputs, it does
+     not show any error." This line used to read "a press with nothing to do says nothing about
+     it" and redirect in silence — which is R-98 broken by a decision rather than by an omission:
+     a pressed control says what happened, and "there was nothing in the box" is what happened.
+     THE CODE NAMES THE ROW, because each credential row posts only its own field, so the refusal
+     lands under the box that was empty and never on a neighbour (the frozen Boundaries' rule). */
+  if (!adminKey && !contentKey && !staffToken) keysRedirect(KEYS_REFUSED(base, emptyKeyCode(formData)))
 
-  const site = await keysSite(at)
+  const site = await keysSite(at, base)
 
   if (adminKey) {
     let belongsHere: string | undefined
@@ -1119,7 +1155,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
         siteId: site.id,
         userId: at.userId,
       })
-      if (!config.ok) keysRedirect(KEYS_REFUSED(site.id, config.code ?? 'ghost_refused', config.status))
+      if (!config.ok) keysRedirect(KEYS_REFUSED(base, config.code ?? 'ghost_refused', config.status))
       // WHICH GHOST THIS KEY OPENS. `site/` answers 200 to any key at all (§38a), so it validates
       // nothing and is read only AFTER `config/` has passed — here it is not a validator but an
       // IDENTIFIER, which is a use it is perfectly good for.
@@ -1141,9 +1177,9 @@ export async function saveKeys(formData: FormData): Promise<void> {
       // the key's own sentence under the key's own field. Executed against Next 16.3.1 at the
       // review of 2026-09-09; `lib/action-redirect.ts` exists for exactly this rejection.
       if (isRedirect(thrown)) throw thrown
-      if (thrown instanceof AdminError) keysRedirect(KEYS_REFUSED(site.id, thrown.code))
+      if (thrown instanceof AdminError) keysRedirect(KEYS_REFUSED(base, thrown.code))
       console.error('sites: keys validate failed', { name: (thrown as { name?: string })?.name })
-      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
     }
     // WHAT THIS COMPARISON ACTUALLY PROVES, stated exactly, because it was over-claimed once and
     // the owner ruled on it (R-100, 2026-09-09). Both calls above go to THIS record's `site.url`,
@@ -1172,16 +1208,16 @@ export async function saveKeys(formData: FormData): Promise<void> {
     // Ghost there is nothing to compare against, so the comparison does not happen.
     const recorded = site.site_settings?.public_url
     if (recorded && belongsHere && hostOf(belongsHere) !== hostOf(recorded)) {
-      keysRedirect(KEYS_REFUSED(site.id, 'keys_other_site'))
+      keysRedirect(KEYS_REFUSED(base, 'keys_other_site'))
     }
     try {
       // `store()` re-encrypts, stamps `admin_key_rotated_at`, writes the key's public id half and
       // audits — and DW-44's trigger deletes the secret the old ref pointed at.
       await store({ siteId: site.id, userId: at.userId, kind: 'admin', secret: adminKey, route: KEYS_ROUTE })
     } catch (thrown) {
-      if (thrown instanceof AdminError) keysRedirect(KEYS_REFUSED(site.id, thrown.code))
+      if (thrown instanceof AdminError) keysRedirect(KEYS_REFUSED(base, thrown.code))
       console.error('sites: keys store failed', { name: (thrown as { name?: string })?.name })
-      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
     }
   }
 
@@ -1192,10 +1228,10 @@ export async function saveKeys(formData: FormData): Promise<void> {
       // `credential_malformed` under the TOKEN's own name: the Admin key's sentence names the
       // integration, and a Staff Access Token is not on the integration at all.
       if (thrown instanceof AdminError) {
-        keysRedirect(KEYS_REFUSED(site.id, thrown.code === 'credential_malformed' ? 'token_malformed' : thrown.code))
+        keysRedirect(KEYS_REFUSED(base, thrown.code === 'credential_malformed' ? 'token_malformed' : thrown.code))
       }
       console.error('sites: keys token store failed', { name: (thrown as { name?: string })?.name })
-      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
     }
   }
 
@@ -1224,12 +1260,12 @@ export async function saveKeys(formData: FormData): Promise<void> {
       .maybeSingle<{ id: string }>()
     if (error || !data) {
       console.error('sites: keys content write failed', { code: error?.code ?? 'no_such_site' })
-      keysRedirect(KEYS_REFUSED(site.id, 'keys_failed'))
+      keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
     }
   }
 
   revalidatePath(SITES)
-  keysRedirect(KEYS_URL(site.id))
+  keysRedirect(base)
 }
 
 /**
@@ -1245,7 +1281,8 @@ export async function saveKeys(formData: FormData): Promise<void> {
 export async function removeToken(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'remove token')
   if (!at) notFound()
-  const site = await keysSite(at)
+  const base = keysBase(formData, at.siteId)
+  const site = await keysSite(at, base)
   try {
     await remove({ siteId: site.id, userId: at.userId, kind: 'staff', route: REMOVE_TOKEN_ROUTE })
   } catch (thrown) {
@@ -1257,10 +1294,10 @@ export async function removeToken(formData: FormData): Promise<void> {
     // NOT `credential_store_unavailable`: that sentence reads "We couldn't save your key just now.
     // Nothing was connected" — a connect's words about a save, on a press that removes (review,
     // 2026-09-09). `token_remove_failed` is `disconnect_failed`'s twin one row down.
-    keysRedirect(KEYS_REFUSED(site.id, 'token_remove_failed'))
+    keysRedirect(KEYS_REFUSED(base, 'token_remove_failed'))
   }
   revalidatePath(SITES)
-  keysRedirect(KEYS_URL(site.id))
+  keysRedirect(base)
 }
 
 /**
@@ -1275,7 +1312,8 @@ export async function removeToken(formData: FormData): Promise<void> {
 export async function testConnection(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'test connection')
   if (!at) notFound()
-  const site = await keysSite(at)
+  const base = keysBase(formData, at.siteId)
+  const site = await keysSite(at, base)
   let result: string
   let status: number | undefined
   try {
@@ -1291,5 +1329,5 @@ export async function testConnection(formData: FormData): Promise<void> {
       console.error('sites: test connection failed', { name: (thrown as { name?: string })?.name })
     }
   }
-  keysRedirect(KEYS_TESTED(site.id, result, status))
+  keysRedirect(KEYS_TESTED(base, result, status))
 }

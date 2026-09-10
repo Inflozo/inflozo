@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
 import { ring } from '@/components/kit/greyed'
 import { Submit } from '@/components/kit/submit'
 import {
   BRAND_COPY,
   brandPath,
+  brandPopupPath,
   hasBrand,
   INJECTION_COPY,
   PLAN_COPY,
@@ -13,6 +13,7 @@ import {
   PREVIEW_COPY,
 } from '@/lib/probe-rule'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
+import { PanelLink } from './panel-link'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
    one-time code-injection notice, the plan question, the Portal question, and B15's Preview-Only
@@ -47,11 +48,18 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
    metadata. These blocks are the card's last child.
 
    STORY 3.4 PUT FR-C4's OFFER AT THE TOP OF THE LIST, and it is A PLAIN LINK, not a Banner: a
-   Banner tells or asks, and this offers. It is `next/link` AND NOT AN `<a href>`, which is the
-   owner's finding 1 for a link rather than a button: an `<a>` is a document navigation, so the
-   press left this page standing and unchanged until the next one painted. A `Link` is a soft
-   navigation, so `brand/loading.tsx` — S2c's own shape — appears the instant it is pressed, and
-   the route is prefetched on hover, which usually means there is nothing to wait for at all. It is shown while the site has a brand worth offering
+   Banner tells or asks, and this offers.
+
+   IT IS `PanelLink`, THE SAME CONTROL S11a's ⋯ "Manage API keys" row is, and the reasons are one
+   per bug it has had. It was an `<a href>` first, which is a document navigation, so the press
+   left this page standing and unchanged until the next one painted (the owner's finding 1 on
+   Story 3.4). It became a `next/link` to `/sites/brand?site=…`, which an intercepted route drew as
+   a popup — and the URL moving off `/sites` took the shell's top bar with it and left every answer
+   from inside the window landing on the full page behind it (his findings on both popups,
+   2026-09-10). `PanelLink` keeps the `href` — the full page, which is where a scripts-off click
+   and a modified click still go — and turns a plain click into `/sites?brand=…`, a window over
+   this list at an address the list never leaves. It says `Opening…` while the panel loads, which
+   is the busy state his finding 2 asked for on the other one. It is shown while the site has a brand worth offering
    and it never goes away — "skippable and re-runnable" (FR-C4) means skipped and not-yet-taken
    are one state, so nothing records that it was pressed. DW-57 still binds: this is a block in
    the card's last child, not a pill on the metadata line and not a word on the state line. */
@@ -140,12 +148,14 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   return (
     <div className="flex flex-col gap-[10px]">
       {brand ? (
-        <Link
+        <PanelLink
           href={brandPath(site.id)}
+          panel={brandPopupPath(site.id)}
+          busy={BRAND_COPY.opening}
           className={`self-start rounded-sm text-ui-dense font-medium text-coral-text underline-offset-2 hover:underline ${ring}`}
         >
           {BRAND_COPY.offer}
-        </Link>
+        </PanelLink>
       ) : null}
       {injection ? (
         <Banner kind="info" rowHeight={ROW}>

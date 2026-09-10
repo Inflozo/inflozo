@@ -12,11 +12,12 @@ import { KeysPanel } from './keys-panel'
    `private.site_credentials` and is reachable only through `server/ghost-admin` (AD-10, §21j), so
    a dialog RENDERED BY THE LIST would mean one pooler round trip per card on the busiest route in
    the app. That cost is still real; the conclusion was not. A popup does not have to be rendered
-   by the list: `@modal/(.)keys` intercepts `/sites/keys` and renders THIS component inside a
-   `<dialog>` over it, so the read is still taken once and still only when somebody opens the
-   panel. `sites/keys/page.tsx` renders the same component as a full page — a typed URL, a
-   modified click, a refresh and a scripts-off browser all land there — and both are this file, so
-   the popup and the page can never disagree.
+   by the list: the list renders THIS component inside a `<dialog>` only when its `?manage=`
+   parameter is there, so the read is still taken once and still only when somebody opens the
+   panel — with no `?manage=` there is nothing here to render at all. `sites/keys/page.tsx` renders
+   the same component as a full page — a typed URL, a modified click, a refresh and a scripts-off
+   browser all land there — and both are this file, so the window and the page can never disagree.
+   (It was an INTERCEPTED ROUTE for one day, and `panel-modal.tsx` records what that cost.)
 
    THE SITE IS READ UNDER THE CALLER'S OWN SESSION, so RLS is what decides whether this screen
    exists at all — a site id belonging to somebody else is `notFound()` and discloses nothing,
@@ -34,7 +35,12 @@ import { KeysPanel } from './keys-panel'
    screen down: the value is a mask and nothing more. */
 
 export type KeysSearchParams = {
+  /** The FULL PAGE's own — `/sites/keys?site=…`. */
   site?: string | string[]
+  /** THE POPUP'S — `/sites?manage=…`, a parameter on the Sites list and not a route of its own
+      (`keysPopupPath`). The list page hands its own search params straight in, so the two chromes
+      differ by which key holds the site id and by nothing else. */
+  manage?: string | string[]
   keys?: string | string[]
   status?: string | string[]
   test?: string | string[]
@@ -52,10 +58,31 @@ type Row = {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)
 
-export async function KeysScreen({ searchParams }: { searchParams: Promise<KeysSearchParams> }) {
-  const { site, keys, status, test } = await searchParams
-  const siteId = first(site)
-  if (!siteId) notFound()
+export async function KeysScreen({
+  searchParams,
+  popup = false,
+}: {
+  searchParams: Promise<KeysSearchParams>
+  /** TRUE when this is the window over the Sites list. It picks the parameter the site id is read
+      from and travels into every form so the actions answer onto this chrome (`keysBase`). */
+  popup?: boolean
+}) {
+  const { site, manage, keys, status, test } = await searchParams
+  const siteId = first(popup ? manage : site)
+  /* A SITE THIS SCREEN CANNOT DRAW IS THE FULL PAGE'S 404 AND THE WINDOW'S "no window", and that
+     difference matters now that the window is rendered by the Sites list: `notFound()` inside the
+     list's own `<Suspense>` takes THE LIST to the not-found page, so a stale or forged `?manage=`
+     would cost the customer the screen he was looking at. Going back to `/sites` says exactly what
+     404 says — nothing at all about whether the row exists — and leaves him on his list. It is
+     already what an ALREADY-DISCONNECTED record does below, in both chromes. */
+  /* A `function` DECLARATION AND NOT A `const` ARROW, which is `keysRedirect`'s own lesson one
+     file over: TypeScript only lets a never-returning CALL end a code path when the callee is
+     declared that way, so the arrow form left every read below "possibly null". */
+  function gone(): never {
+    if (popup) redirect('/sites')
+    notFound()
+  }
+  if (!siteId) gone()
 
   const supabase = await supabaseServer()
   const { data: row, error } = await supabase
@@ -63,19 +90,19 @@ export async function KeysScreen({ searchParams }: { searchParams: Promise<KeysS
     .select('id, url, title, content_key, credentials_present, site_settings, disconnected_at')
     .eq('id', siteId)
     .maybeSingle<Row>()
-  if (error?.code === '22P02') notFound()
+  if (error?.code === '22P02') gone()
   if (error) {
     console.error('sites/keys: read failed', { code: error.code })
     throw new Error('sites/keys: site read failed')
   }
-  if (!row) notFound()
+  if (!row) gone()
   if (row.disconnected_at) redirect('/sites')
 
   // The user id is needed to scope the credential read, and the row above already proves the site
   // is this caller's — RLS answered nothing otherwise. `credentialsOf` carries its own `user_id`
   // clause as well, the same floor `store()` and `remove()` have: ownership beside the read.
   const { data: auth } = await supabase.auth.getUser()
-  if (!auth.user) notFound()
+  if (!auth.user) gone()
   // A DECORATIVE READ MAY NOT TAKE THE SCREEN DOWN. `credentialsOf` goes through the pooler, and
   // `withStore` turns a pooler that will not answer into a thrown `credential_store_unavailable` —
   // which, uncaught, made the whole Manage keys page the error boundary over a value that draws
@@ -110,6 +137,7 @@ export async function KeysScreen({ searchParams }: { searchParams: Promise<KeysS
          `?keys=` follows by being a lookup key and never a sentence. */
       status={/^\d{3}$/.test(first(status) ?? '') ? (first(status) as string) : null}
       tested={first(test) ?? null}
+      popup={popup}
     />
   )
 }

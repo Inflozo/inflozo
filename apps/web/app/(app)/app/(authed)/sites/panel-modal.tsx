@@ -1,110 +1,80 @@
 'use client'
 
 import { useEffect, useRef, type ReactNode } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { closeOnBackdrop, panelSheet } from '@/components/kit/dialog'
-import { stripApp } from '@/routing'
 
-/* ────────────────────────────── THE `<dialog>` AN INTERCEPTED PANEL IS DRAWN IN — Manage keys'
-   (`@modal/(.)keys`) and the brand offer's (`@modal/(.)brand`).
+/* ────────────────────────────── THE `<dialog>` A PANEL IS DRAWN IN OVER THE SITES LIST — Manage
+   keys' (`?manage=`) and the brand offer's (`?brand=`). ONE dialog for both, so a change to how a
+   panel opens cannot land on one and miss the other.
 
-   THE OWNER'S TEST OF STORY 3.6, FINDING 1: "Can we show the Manage Keys as a popup on the Sites
-   screen rather than a separate screen for Manage API Keys." Disconnect, one row below it in the
-   same ⋯ menu, already opened over the card; Manage keys left the list. He asked for the same of
-   S2c's brand offer on 2026-09-10, which is why this is `PanelModal` and not `KeysModal`: ONE
-   dialog for both, so a change to how a panel opens cannot land on one and miss the other.
+   ───────── WHY IT IS A QUERY PARAMETER ON `/sites` AND NOT AN INTERCEPTED ROUTE.
 
-   IT IS THE SAME DIALOG VOCABULARY AS EVERY OTHER MODAL IN THE APP (R-74) — `panelSheet` out of
-   `components/kit/dialog.ts`, `closeOnBackdrop` for the click the native element does not handle
-   — at the second width `S11e Manage Keys Popup` draws.
+   It was an intercepted route until the owner's test of 2026-09-10, and that is what his findings
+   2, 3 and 5 were: *"There should be only one perfect popup and that only should be source of
+   truth."* An intercepted popup lives at the PANEL'S OWN ADDRESS — the URL moves off `/sites` when
+   it opens — and Next serves the full page into the list's own slot for any navigation to that
+   address it does not intercept. Three of those were reachable in one sitting:
 
-   THE PANEL ITSELF IS A SERVER COMPONENT AND STAYS ONE. It arrives as `children` — the slot's
-   `layout` wraps `loading.tsx` and `page.tsx` alike — so every read, every `<form
-   action={serverAction}>` dispatch and every sentence are rendered on the server exactly as they
-   are on the full page.
-
-   WRAPPING IN THE LAYOUT AND NOT IN THE PAGE IS LOAD-BEARING: a Suspense fallback and its content
-   are different positions in the tree, so a `<dialog>` rendered by both `loading.tsx` and
-   `page.tsx` would unmount and remount between them — the popup would open, close and open again
-   while the panel loaded. Here it opens once and the skeleton is swapped for the panel inside it.
-
-   ───────── AND IT WATCHES THE PATH, WHICH IS THE WHOLE OF WHY THIS COMPONENT HAS STATE AT ALL.
-
-   **Next keeps an unmatched parallel slot's state across a soft navigation.** Every way OUT of an
-   intercepted popup is a soft navigation, so without this the panel simply stayed: the URL moved
-   to `/sites` and the window sat there over it, and the control that had opened it then did
-   nothing at all the next time it was pressed, because the dialog was already in the DOM and
-   nothing re-ran `showModal()`. Measured on throwaway controls under `next dev` 16.3.1 on
-   2026-09-10, each of these separately:
-
-   | the way out                                   | without the watch      |
+   | what the customer did                          | what happened                                |
    |---|---|
-   | `<Link href="/sites">` (Cancel, ✕)            | panel stayed, mounted  |
-   | `router.push` + `router.refresh()`            | the same               |
-   | a `[...catchAll]` filler in the slot          | the same               |
-   | a SERVER ACTION's `redirect('/sites')`        | the same — and this is **Use your brand** and **Skip** |
-   | `router.back()`                               | cleared                |
+   | pressed **Test connection**                    | a server action's `redirect()` is NOT intercepted (executed 2026-09-10), so the FULL PAGE loaded behind the still-open window and took the list with it — "both these popup appear on a blank screen" |
+   | saved a key, or was refused one                 | the same, by the same door |
+   | pressed the ⋯ row twice while the panel loaded  | the second navigation started from the panel's own address, where `(.)` no longer matches |
 
-   So the rule is written once, here, as the thing that is actually true: **the dialog is open
-   exactly when the path is the panel's.** Leaving closes it, returning re-opens it, and the
-   controls inside can go back to being ordinary `<Link href="/sites">`s that work with no script.
-   Executed after the change on the same control: open → an action that leaves → closed; press the
-   opener again → open; Cancel → closed; again → open; Escape → closed; again → open.
+   AND THE TOP BAR WENT WITH IT, which was his finding 1 on both popups: the shell draws the search
+   field and **Connect site** from a table keyed on the EXACT path (`components/shell/shell.tsx`),
+   and an intercepted popup is not at `/sites` any more.
 
-   ESCAPE AND THE BACKDROP STILL HAVE TO MOVE THE URL, because the native element closes without
-   navigating and would leave the address bar naming a panel that is not on screen. `router.back()`
-   is that, and it is sound only because every action that answers ONTO a panel redirects with
-   `RedirectType.replace` (`actions.ts`) — a server action's `redirect()` pushes by default, so
-   after one refusal the first Back returned to the panel-before-the-refusal instead of the list.
-   `leaving` is what keeps the watch's own `close()` from being read as one of those presses.
+   ON `/sites?manage=…` THE ROUTE NEVER CHANGES. There is nothing to intercept, nothing to fail to
+   intercept, and no address for the shell to fail to recognise. An action's redirect is an
+   ordinary same-route answer — exactly what `?recheck=`, `?disconnect=` and `?moved=` have always
+   been on this list — so the panel is re-rendered inside the window that is already open, and the
+   cards stay behind it. It is also S11a's Disconnect row's own shape, one step further: an
+   `<a href>` to a real route whose click JavaScript turns into a dialog over the list.
 
-   ONE MORE THING THOSE CONTROLS SETTLED, and it is why the brand offer has two chromes rather than
-   one: **a server action's `redirect()` is not intercepted at all.** A redirect out of an action on
-   the list route landed on the FULL page, with no dialog and no list behind it, where the same
-   address reached by `router.push` opened the popup. So `connectSite`'s landing on S2c stays the
-   full-screen onboarding moment S2 draws, and the Sites card's offer LINK — a real soft navigation
-   — is the popup. */
+   ───────── WHAT THIS COMPONENT STILL HAS TO DO, WHICH IS ONE THING.
+
+   `<dialog>` opens only through `showModal()`, so the element that the list renders when the
+   parameter is there has to be opened once, on mount. It is rendered ONLY while the parameter is
+   there, so leaving unmounts it and there is no state to keep in step with the URL — which is the
+   whole of what the intercepted version's path watch existed for.
+
+   ESCAPE AND THE BACKDROP HAVE TO MOVE THE URL, because the native element closes without
+   navigating and would leave the address bar naming a panel that is not on screen. They go where
+   the ✕ and **Cancel** go — `/sites`, ONE way out for every gesture — and by `replace`, so the
+   panel leaves no entry behind however many keys were saved in it. `back()` would have been the
+   other choice and is not: a typed `/sites?manage=…` has nothing behind it to go back to.
+
+   THE PANEL ITSELF IS A SERVER COMPONENT AND STAYS ONE. It arrives as `children`, inside the
+   list's own `<Suspense>`, so every read, every `<form action={serverAction}>` dispatch and every
+   sentence are rendered on the server exactly as they are on the full page.
+
+   WRAPPING THE SUSPENSE BOUNDARY AND NOT SITTING INSIDE IT IS LOAD-BEARING: a fallback and its
+   content are different positions in the tree, so a `<dialog>` rendered by both would unmount and
+   remount between them — the window would open, close and open again while the panel loaded.
+   Here it opens once and the skeleton inside it is swapped for the panel. */
 
 export function PanelModal({
   labelledBy,
-  path,
   children,
 }: {
   labelledBy: string
-  /** The panel's own public path, e.g. `/sites/keys`. `usePathname()` reports `/app/…` on
-      localhost and the public path on the app host, so it is stripped before it is compared —
-      `routing.ts`'s own helper, which `shell.tsx` uses for the same reason. */
-  path: string
   children: ReactNode
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const router = useRouter()
-  const pathname = usePathname()
-  /** Set while the watch below is closing the dialog, so `onClose` does not read it as a press. */
-  const leaving = useRef(false)
 
   useEffect(() => {
     const el = dialog.current
-    if (!el) return
-    if (stripApp(pathname) === path) {
-      if (!el.open) el.showModal()
-    } else if (el.open) {
-      leaving.current = true
-      el.close()
-    }
-  }, [pathname, path])
+    if (el && !el.open) el.showModal()
+  }, [])
 
   return (
     <dialog
       ref={dialog}
       onClick={closeOnBackdrop}
-      onClose={() => {
-        if (leaving.current) {
-          leaving.current = false
-          return
-        }
-        router.back()
-      }}
+      onClose={() => router.replace('/sites')}
       aria-labelledby={labelledBy}
       className={panelSheet}
     >
