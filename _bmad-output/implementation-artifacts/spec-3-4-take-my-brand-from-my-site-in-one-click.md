@@ -2,10 +2,10 @@
 title: 'Story 3.4 — Take my brand from my site in one click'
 type: 'feature'
 created: '2026-09-08'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 6
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -2990,4 +2990,10 @@ answered, in the run's own words:
   pack merged and the preset floor run — the rows were read after the write this time.
 
 Story stays **in review**. Done is the owner's (R-80).
+
+## Owner's final test — passed
+
+Tested on `app.inflozo.com` on **2026-09-10**, against the Deploy run recorded above
+(`dpl_HR9RaXs2wqKxCevKoMAPX7L4MgML`, `cebd5fdb`). His word: **passed**, no findings. Story is **done**
+(R-80).
 
