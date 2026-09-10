@@ -5,7 +5,7 @@ created: '2026-09-08'
 status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 6
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -2166,6 +2166,19 @@ Vercel API (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`). The full harness ran on it: every
 steps green, 75 PASS in all; the run's one FAIL is Story 3.6's `keys-screen` (Review 7 record).
 
 **Deployment:** https://app.inflozo.com (`dpl_4iruz2K1tt2y4EBjvVQKcPbnDjKz`)
+
+**Deploy (2026-09-10), the eighth run — the doc-only Review 7 push.** No `apps/web` change (`git show
+--stat cebd5fdb` touches only this spec, the story board and the probe harness), so nothing new to
+build in the app, but CI (`GITHUB_TOKEN`) still ran for `cebd5fdb` and Vercel (`VERCEL_TOKEN`,
+`VERCEL_TEAM_ID`) still deployed it (DW-7: every push builds). `GET /v4/aliases` shows
+`app.inflozo.com`, `inflozo.com` and `www.inflozo.com` all aliasing `dpl_HR9RaXs2wqKxCevKoMAPX7L4MgML`;
+`GET /v13/deployments/dpl_HR9RaXs2wqKxCevKoMAPX7L4MgML` shows it **READY**, `target: production`,
+`meta.githubCommitSha` equal to `cebd5fdb5519630fee3399befca9805c9a69c051` — the deployed code is
+`acd45156`'s app code (Review 7's harness run), confirmed present through the same Vercel API control.
+No migration — `git show --stat` for every commit since the last Schema phase is empty under
+`supabase/`. `owner_test` reset to `pending`: this is the build the owner tests next.
+
+**Deployment:** https://app.inflozo.com (`dpl_HR9RaXs2wqKxCevKoMAPX7L4MgML`)
 
 **Commands:**
 - `pnpm check` (root: `eslint .`, `tsc --noEmit`, `node --test '*.test.ts'`) -- expected: exit 0,
