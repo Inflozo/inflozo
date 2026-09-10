@@ -433,6 +433,8 @@ with a reason. The status stays `in-review`: Deploy and the owner's test follow 
 - [x] [Review][Patch] The catalogue row for S11e placed the rendered `.png` inside the export folder it names; it is one level up [tools/doc-audit.py]
 - [x] [Review][Patch] `HANDOVER.md` said step 6 was opening; it carries a dated paragraph on where step 7 stands and the two rulings a fresh session needs. `epic-3-context.md` tells Story 3.7 that its "Reconnect needed" link into Manage keys is a `PanelLink` with both addresses [HANDOVER.md · epic-3-context.md]
 - [x] [Review][Patch] Three departures the Change Log did not record: the Content row's Save is a Kit `Button` + `BusyLabel` rather than a `Submit`, the staff row draws a hint under its field where S11e draws none, and "Added" is ink-soft where the frame draws it in mint — entries 19 to 21 [this spec, `## Spec Change Log`]
+- [x] [Review][Patch] **Found by the live run on the review's own deployment:** the Content form's forged post did not land on the not-found page — three of four presses did. This form calls `saveKeys` itself, so `notFound()` arrived as a rejection and was reported as "We couldn't save that just now" — at a forged id, and at a customer whose site was gone. `isNotFound` recognises the digest and the form throws `notFound()` from render, which reaches the boundary [apps/web/app/(app)/app/(authed)/sites/keys-content-form.tsx · apps/web/lib/action-redirect.ts]
+- [x] [Review][Patch] Two harness sequencing gaps the same run exposed: `keys-test` read the window the instant the URL changed and got the skeleton, and the new `keys-test-refused` left the run on the keys page so the `axe-sites` sweep audited the wrong screen and the sheet's opener was not there to click. The result is waited for; the step returns to the list. And `keys-screen` now takes S11e's frame screenshots at 1440 / 834 / 390 (`--shots`) [tools/probe/run-verify-ghost-admin.py]
 - [x] [Review][Defer] `findSiteByAdminKeyId` returns the newest match, so with a live and an orphaned twin the hint can name the wrong clock [apps/web/server/ghost-admin/index.ts] — deferred, needs a third seeded record; DW-83
 - [x] [Review][Defer] Escape during an in-flight save re-opens the window with the answer; the Content save's read-modify-write of `credentials_present` can lose a cross-tab store [panel-modal.tsx · actions.ts] — deferred, a race nobody reaches without trying; DW-84
 - [x] [Review][Defer] Three harness controls still owed: the `?old=live` hint, the cross-account decoy for the moved-domains lookup, `useBrand`'s popup branch on a vanished row [tools/probe/run-verify-ghost-admin.py] — deferred, each a seeding; DW-85
@@ -1231,9 +1233,30 @@ and 2).
   `keys_ghost_refused` out of `lib/connect-rule.ts`.
 - `python3 tools/doc-audit.py --check`, twice — recorded below with the commit.
 
-**Post-deploy run, on this commit's own deployment:** _(recorded in the next Review commit — CI
-publishes this push, and the harness is then driven against it with T1 and T3; every step from
-`keys-screen` on has to be green there for the first time on the two-column window.)_
+**Run 5 — on the review's own deployment (`4d9c008b`, Vercel READY, `githubCommitSha` checked),
+`--url https://app.inflozo.com --shots`, T1 and T3.** **90 PASS, 1 RECORD, 3 FAIL.** Every keys step
+green on the two-column window for the first time — `keys-screen`, `axe-keys-screen`,
+`axe-keys-route`, **`keys-phone`** (the 390 menu fix held: the ⋯ of the last card opened and its row
+was pressed at phone width), `keys-popup` with the ✕, Back and the second open, `keys-malformed`,
+`keys-foreign-key`, `keys-other-site`, `keys-rotate`, `keys-token` with `admin_key_id` unchanged,
+`keys-js-off`, `moved-domains`, `keys-content`, `keys-test-refused`, and `audit` with DW-76's rows.
+The three failures, each executed to its cause and fixed in this phase:
+
+- `keys-test` — the press landed in the window (one window, one panel, the cards and the bar still
+  there) and made its one `admin_read` call, but the result text was not in the panel: the harness
+  read it the instant the URL changed, which is before the window's server component has re-rendered
+  behind its skeleton. Harness: wait for the sentence.
+- `keys-forged` — `[true,false,true,true]`: the Content form's forged post did NOT land on the
+  not-found page, because that form calls the action itself and the `notFound()` came back as a
+  rejection the catch reported as "couldn't save". Nothing was written and nothing disclosed either
+  way (the stranger's row byte-identical, 0 credential rows). Product: `isNotFound` + `notFound()`
+  from render.
+- `browser: locator.click timeout` — the new `keys-test-refused` step left the run on the keys page,
+  so `axe-sites` audited it as "sites" (a false PASS — recorded here so it is not trusted) and the
+  sheet's opener, which lives in the list's top bar, was not there. Harness: the step ends on `/sites`.
+
+**Run 6 — on the deployment of the commit that carries those fixes:** _(recorded below once CI has
+published it.)_
 
 ## Spec Change Log
 

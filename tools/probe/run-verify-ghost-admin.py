@@ -3506,6 +3506,7 @@ const shoot = async (page, name) => {
     const t1Name = pub1.title || 'Ghost6'
     await openKeysPopup(t1SiteId, t1Name)
     await page.waitForURL((u) => u.pathname === '/sites' && u.searchParams.get('manage') === t1SiteId)
+    await shoot(page, 's11e')
     const openedAs = await keysShape()
     const screen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
     const named = [SAY.keys_admin_name, SAY.keys_content_name, SAY.keys_staff_name].every((n) => screen.includes(n))
@@ -3874,6 +3875,10 @@ const shoot = async (page, name) => {
        where site_id = ${t1SiteId} and action = 'admin_read'`)[0].n
     await page.getByRole('button', { name: SAY.keys_test, exact: true }).click()
     await page.waitForURL((u) => u.searchParams.get('test') !== null, { timeout: 30000 }).catch(() => {})
+    // THE URL LANDS BEFORE THE PANEL DOES: the answer re-renders the window's server component
+    // behind its own skeleton, so the result is waited for and not read the instant the address
+    // changes (the first live run on the two-column window read the skeleton, 2026-09-10).
+    await page.locator('dialog[open]').getByText(SAY.keys_test_passed).first().waitFor({ timeout: 20000 }).catch(() => {})
     const tested = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
     // WHERE THE RESULT LANDED, and how many windows there are to read it in.
     const afterTest = await keysShape()
@@ -4099,6 +4104,10 @@ const shoot = async (page, name) => {
       `?test=ghost_refused&status=429 draws ${JSON.stringify(SAY.keys_ghost_refused.replace('%s', '429'))} ` +
       `= ${refusedSaid}; with status=abc it draws no "(HTTP )" sentence = ${refusedBlank}; and a code ` +
       `the table does not name draws nothing rather than a save's sentence = ${unknownBlank}`)
+    // Back on the list: the axe sweep below audits `/sites` and reads its top bar, and it used to
+    // inherit the list from `moved-domains` (a run on 2026-09-10 audited the keys page as "sites").
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
 
     /* THE REFS `secret-gone` READS ARE RE-TAKEN HERE, and this is not tidying: `keys-rotate` put a
        NEW secret behind T1's ref and `moved-domains` reconnected T3 twice, so the two refs pushed

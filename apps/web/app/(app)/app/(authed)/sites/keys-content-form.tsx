@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useTransition, type FormEvent, type ReactNode } from 'react'
+import { notFound } from 'next/navigation'
 import { Button } from '@/components/kit/button'
 import { BusyLabel } from '@/components/kit/submit'
 import { TextInput } from '@/components/kit/input'
-import { isRedirect } from '@/lib/action-redirect'
+import { isNotFound, isRedirect } from '@/lib/action-redirect'
 import { CONNECT_MAX, connectMessage, KEYS } from '@/lib/connect-rule'
 import { saveKeys } from './actions'
 import { checkContentKey } from './content-check'
@@ -76,6 +77,14 @@ export function ContentKeyForm({
   const [refused, setRefused] = useState<string | null>(null)
   const [checking, setChecking] = useState(false)
   const [saving, start] = useTransition()
+  const [gone, setGone] = useState(false)
+  // THE SAME LANDING THE OTHER THREE FORMS GET. Their `<form action>` is dispatched by Next, so a
+  // `notFound()` inside `saveKeys` renders the not-found page; this form calls the action itself,
+  // so that same throw arrived here as a rejection and was reported as "We couldn't save that just
+  // now" — at a stranger's id forged into the post, and at a customer whose site was disconnected
+  // in another tab, for ever (Story 3.6's review on the live site, 2026-09-10; `keys-forged` saw
+  // three of four presses land and this one not). Thrown from render, it reaches the boundary.
+  if (gone) notFound()
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -99,6 +108,10 @@ export function ContentKeyForm({
         // The save worked and the redirect is already running: say nothing and stay busy until it
         // lands. Anything else is ours, and the field says so rather than the press dying quiet.
         if (isRedirect(thrown)) return
+        if (isNotFound(thrown)) {
+          setGone(true)
+          return
+        }
         setRefused(connectMessage('keys_failed'))
       }
     })
