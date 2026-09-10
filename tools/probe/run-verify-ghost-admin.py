@@ -100,7 +100,10 @@ list gone stale — the sibling harness's own note):
                  `private.site_credentials` row and a live `vault.secrets` row behind its ref —
                  and STORY 3.4 MOVED WHERE IT LANDS: the browser is on `/sites/brand?site={id}`,
                  S2c, naming the site it just read, because T1's settings carry a brand
-  brand-screen   STORY 3.4: S2c on the deployed site (`S2 Onboarding.dc.html:150-196`), asserted
+  brand-screen   STORY 3.4: S2c on the deployed site (`S2 Onboarding.dc.html:150-196`) — including
+                 the owner's ask of 2026-09-10, items 2 and 3: the site's address is an ANCHOR with
+                 the new-tab glyph pointing at the PUBLIC url while the menu pills stay text with
+                 no href, and there is a ✕ going to /sites. Asserted
                  against the ROW the probe just wrote — the heading and its sub-line naming the
                  host, "Your site today", the accent swatch really painted in the row's accent and
                  CAPTIONED WITH THE HEX (the frame's colour NAME is the one departure: Ghost
@@ -129,13 +132,15 @@ list gone stale — the sibling harness's own note):
                  caption states. (The Sites card's offer is a LINK and needs no form to work with
                  scripts off; it is asserted where it is drawn, in `brand-seed`.)
   axe-brand      axe-core over S2c at 1440 and 390
-  brand-popup    THE OWNER'S ASK OF 2026-09-10: the card's offer opens S2c as a WINDOW over the
-                 Sites list (`@modal/(.)brand` intercepts the link's soft navigation), the press
-                 closes it and leaves the list, **the offer opens it again**, and Skip closes it
-                 too. Every one of those failed before `panel-modal.tsx` watched the path: Next
-                 keeps an unmatched parallel slot's state across a soft navigation, so the window
-                 stayed over the list after the project had been written and the second press
-                 opened nothing at all
+  brand-popup    THE OWNER'S ASK OF 2026-09-10 AND HIS TEST OF IT THE SAME DAY: the card's offer
+                 opens S2c as a WINDOW over the Sites list — `/sites?brand=<id>`, a parameter on
+                 the list and not a route of its own — **with the shell's top bar still drawn**,
+                 which is his finding ("the pop up opens but then the top bar with search box and
+                 Connect site buttons disappears": the bar is keyed on the exact path, and an
+                 intercepted popup lives at the panel's own URL). The press closes it and leaves
+                 the list, the offer opens it again, Skip closes it too, and **the ✕ is a fourth
+                 way out** (his ask, item 3) that leaves the offer on the card — it writes nothing,
+                 exactly as Skip writes nothing
   brand-skip     **Skip** writes NOTHING — no project, and no note that it was pressed — the
                  browser returns to `/sites`, and the card still carries the offer link, so it can
                  be taken later. The card itself is unchanged: its title and address as
@@ -646,6 +651,8 @@ def app_text():
         " brand_using: BRAND_COPY.using,"
         " brand_skipping: BRAND_COPY.skipping,"
         " brand_offer: BRAND_COPY.offer,"
+        " brand_close: BRAND_COPY.close,"
+        " brand_opening: BRAND_COPY.opening,"
         " brand_will_create: BRAND_COPY.willCreate,"
         " brand_will_brand: BRAND_COPY.willBrand('%s'),"
         # The owner's Question 3 ruling (2026-09-08): the second press asks, and where there is
@@ -1372,13 +1379,28 @@ const shoot = async (page, name) => {
     const logoSlot = brandRead.logo
       ? imgs === 1
       : imgs === 0 && spans.some((t) => t.trim() === firstCp)
+    /* THE OWNER'S ASK OF 2026-09-10, ITEMS 2 AND 3, and both are read off the DOM rather than off
+       the words: "Make the URL on left side an anchor link and show a new tab icon. On clicking it
+       should open in a new tab" and "Add a cross button too which will close the popup."
+
+       THE ADDRESS IS THE SITE'S OWN and never a menu entry — `pillLinks === 0` above is the other
+       half of that and stays true. It is the PUBLIC url (`public_url || url`), which on Ghost(Pro)
+       is not `sites.url`, so it is compared against what `GET /admin/site/` answered. */
+    const addressLink = await page.locator('main a[target="_blank"]').evaluateAll((all, want) =>
+      all.filter((a) => a.getAttribute('href') === want)
+        .map((a) => ({ rel: a.getAttribute('rel') || '', svgs: a.querySelectorAll('svg').length })),
+      pub1.url || T1.url)
+    const closeControl = await page.locator(`main a[href="/sites"][aria-label]`).evaluateAll((all, word) =>
+      all.filter((a) => a.getAttribute('aria-label') === word).length, SAY.brand_close)
     step('brand-screen',
       saidOn(SAY.brand_title) && (await says(page, SAY.brand_sub.replace('%s', new URL(pub1.url || T1.url).host)))
       && saidOn(SAY.brand_site_today) && saidOn(SAY.brand_accent) && saidOn(brandRead.accent)
       && saidOn(SAY.brand_navigation) && navMatches && pillLinks === 0 && logoSlot
       && saidOn(SAY.brand_fonts) && saidOn(SAY.brand_homepage)
       && saidOn(SAY.brand_use) && saidOn(SAY.brand_skip)
-      && saidOn(SAY.brand_will_create) && swatch,
+      && saidOn(SAY.brand_will_create) && swatch
+      && addressLink.length === 1 && addressLink[0].rel.includes('noreferrer') && addressLink[0].svgs === 1
+      && closeControl === 1,
       `S2c against the row: accent ${brandRead.accent} captioned as the HEX (the frame's colour ` +
       `NAME is the one departure) and painted on the swatch = ${swatch}; the menu ` +
       `${JSON.stringify((brandRead.nav || []).map((n) => n.label))} drawn as ${pills.length} text ` +
@@ -1386,7 +1408,11 @@ const shoot = async (page, name) => {
       `already wearing your brand.", both buttons, and the caption ${JSON.stringify(SAY.brand_will_create)} ` +
       `— this account has no project yet, so the screen says one will be MADE. The logo slot: ` +
       `the row's logo is ${JSON.stringify(brandRead.logo ?? null)}, so the LIVE branch is the ` +
-      `monogram tile carrying ${JSON.stringify(firstCp)} with ${imgs} image(s) beside it = ${logoSlot}`)
+      `monogram tile carrying ${JSON.stringify(firstCp)} with ${imgs} image(s) beside it = ${logoSlot}. ` +
+      `HIS ASK OF 2026-09-10: the site's address is ${addressLink.length} link with target=_blank, ` +
+      `rel=${JSON.stringify((addressLink[0] || {}).rel)} and ${(addressLink[0] || {}).svgs} new-tab ` +
+      `glyph — pointing at the PUBLIC url, while the menu pills stay text with ${pillLinks} links; ` +
+      `and there are ${closeControl} ✕ controls named ${JSON.stringify(SAY.brand_close)} going to /sites`)
 
     /* ── THE TWO SLOTS ON S2c THAT NO RUN HAS EVER RENDERED, and the stated reason for one of
        them was wrong. The `<img>` half of the logo slot is the branch MOST REAL CUSTOMERS get —
@@ -1616,17 +1642,20 @@ const shoot = async (page, name) => {
     /* ── brand-popup: THE OFFER OPENS A WINDOW OVER THE LIST, and the press closes it again.
 
        The owner asked for S2c as a popup on 2026-09-10 ("make the 'Nice site. Want to keep the
-       vibe?' as a popup instead of as a page"), and `@modal/(.)brand` is what does it: the card's
-       offer is a `next/link`, so its click is a soft navigation and Next intercepts it. EVERY
-       claim below is one that failed before `panel-modal.tsx` watched the path — Next keeps an
-       unmatched parallel slot's state across a soft navigation, so the window sat over the list
-       after **Use your brand** had already written the project and the offer then opened nothing
-       the second time. THE SECOND OPEN IS THE ASSERTION THAT MATTERS, and it is the one this
-       harness exists to keep true. */
+       vibe?' as a popup instead of as a page") and then TESTED IT THE SAME DAY: "the pop up opens
+       but then the top bar with search box and Connect site buttons disappears." It did. The popup
+       was an intercepted route, which lives at the panel's own URL, and the shell draws that bar
+       from a table keyed on the EXACT path — so opening the window took the bar off the screen.
+
+       It is `/sites?brand=<id>` now, a parameter on the list itself, so the path never leaves the
+       one the bar belongs to. `topBar` below is that finding made checkable, and it is asserted on
+       every one of the four states this step walks through. */
     const brandShape = async () => await page.evaluate(() => ({
       open: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"][open]'),
       inDom: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"]'),
       cards: document.querySelectorAll('article').length,
+      topBar: !!document.querySelector('input[name="q"]')
+        && [...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/sites/connect'),
     }))
     const brandOpened = await brandShape()
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
@@ -1650,18 +1679,35 @@ const shoot = async (page, name) => {
     await skipS2c(page)
     await page.waitForTimeout(400)
     const brandSkipped = await brandShape()
+    /* …AND THE ✕ IS A FOURTH WAY OUT — his ask of 2026-09-10, item 3 ("Add a cross button too which
+       will close the popup"). It is not a fifth behaviour: **Skip** writes nothing at all, so the
+       ✕ lands exactly where Skip lands and the offer is still on the card afterwards. That last
+       clause is what this drives — the offer has to be there to press again. */
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const beforeClose = await brandShape()
+    await page.locator(`dialog[open] a[href="/sites"][aria-label="${SAY.brand_close}"]`).click()
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
+    await page.waitForTimeout(400)
+    const afterClose = await brandShape()
+    const offerStillThere = await offer().count()
     step('brand-popup',
-      brandOpened.open && brandOpened.cards > 0
-      && !brandClosed.open && brandClosed.cards > 0
-      && brandReopened.open && !brandSkipped.open,
+      brandOpened.open && brandOpened.cards > 0 && brandOpened.topBar
+      && !brandClosed.open && brandClosed.cards > 0 && brandClosed.topBar
+      && brandReopened.open && brandReopened.topBar && !brandSkipped.open
+      && beforeClose.open && !afterClose.open && !afterClose.inDom
+      && afterClose.cards > 0 && afterClose.topBar && offerStillThere === 1,
       `the card's offer opened S2c as a WINDOW over the Sites list — an open <dialog> = ` +
-      `${brandOpened.open} with ${brandOpened.cards} cards still behind it (the owner's ask of ` +
-      `2026-09-10). Pressing ${JSON.stringify(SAY.brand_use)} closed it and left the list: open = ` +
-      `${brandClosed.open}, ${brandClosed.cards} cards. And the offer opened it A SECOND time = ` +
-      `${brandReopened.open} — the press that did nothing while an unmatched parallel slot kept ` +
-      `its state, which is what panel-modal.tsx's path watch exists to prevent. ` +
+      `${brandOpened.open} with ${brandOpened.cards} cards still behind it AND THE TOP BAR STILL ` +
+      `DRAWN = ${brandOpened.topBar}, which is his test finding of 2026-09-10: the bar went with ` +
+      `the path while this was an intercepted route. Pressing ${JSON.stringify(SAY.brand_use)} ` +
+      `closed it and left the list: open = ${brandClosed.open}, ${brandClosed.cards} cards, bar ` +
+      `= ${brandClosed.topBar}. The offer opened it A SECOND time = ${brandReopened.open}; ` +
       `${JSON.stringify(SAY.brand_skip)} closed it as well = ${!brandSkipped.open}, so BOTH server ` +
-      `actions that leave the panel leave it`)
+      `actions that leave the panel leave it. AND THE ✕ IS A FOURTH WAY OUT (his ask, item 3): ` +
+      `open = ${beforeClose.open} → pressed → open = ${afterClose.open}, nothing left in the DOM ` +
+      `= ${!afterClose.inDom}, ${afterClose.cards} cards, and the offer is still on the card ` +
+      `(${offerStillThere}) — it writes nothing, exactly as Skip writes nothing`)
 
     const seeded = (await until(async () => {
       const list = await projectsOf()

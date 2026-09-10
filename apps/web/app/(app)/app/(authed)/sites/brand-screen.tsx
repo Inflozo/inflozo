@@ -151,7 +151,11 @@ export async function BrandScreen({
         : BRAND_COPY.willBrand(target.name)
       : BRAND_COPY.alreadyOn(target.name)
 
-  const host = hostOf(row.site_settings?.public_url || row.url)
+  // ONE VALUE, TWO USES: the short form is what the panel DRAWS and the whole address is where
+  // its link GOES (the owner's ask of 2026-09-10). It is `public_url || url` — the same choice the
+  // Sites card makes, because on Ghost(Pro) the address a browser can reach is not `sites.url`.
+  const publicUrl = row.site_settings?.public_url || row.url
+  const host = hostOf(publicUrl)
   // RE-VALIDATED HERE, ALL THREE: `brandOf` wrote them, but this reads them back out of a jsonb
   // column and each one crosses into an attribute — `style-pack.ts` takes the same position on
   // the accent it reads back out of `style_pack`. `hasBrand` is an OR, so a record admitted on
@@ -164,6 +168,7 @@ export async function BrandScreen({
         id: row.id,
         title: row.title || host,
         host,
+        url: publicUrl,
         logo: imageUrl(brand.logo),
         accent: isAccent(brand.accent) ? brand.accent : null,
         nav: navOf(brand.nav),

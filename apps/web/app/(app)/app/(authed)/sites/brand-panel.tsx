@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { ring } from '@/components/kit/greyed'
+import { ExternalLink, X } from '@/components/kit/icons'
 import { Submit } from '@/components/kit/submit'
 import { title as sheetTitle } from '@/components/kit/dialog'
 import { BRAND_COPY } from '@/lib/probe-rule'
@@ -30,10 +33,13 @@ import { skipBrand, useBrand } from './actions'
    the swatch is captioned with the hex in mono — the card's own idiom for a machine value, the
    same one the site's address is printed in. Naming a colour would be asserting what was not read.
 
-   NOTHING HERE IS A LINK TO THE CUSTOMER'S SITE. The menu entries keep their `url` in the column
-   for the epic that turns a menu into a section, but the frame draws them as text pills and so
-   does this: an `href` off a value read from someone's Ghost is an attribute this screen has no
-   reason to write. The logo is an `<img>` and is `https:`-only, checked in `brandOf` — `img-src`
+   THE MENU ENTRIES ARE NOT LINKS, AND THE SITE'S OWN ADDRESS IS — a distinction this note used to
+   blur, and the owner's ask of 2026-09-10 is why it now states it. The menu entries keep their
+   `url` in the column for the epic that turns a menu into a section, but the frame draws them as
+   text pills and so does this: an `href` off a value read from someone's Ghost menu is an
+   attribute this screen has no reason to write. The SITE'S address is a different thing — it is
+   the address Inflozo connected, or the public one Ghost reports for it, and the Sites card has
+   linked it with a new-tab glyph since his finding 4 on Story 3.2. The logo is an `<img>` and is `https:`-only, checked in `brandOf` — `img-src`
    admits `data:` (`csp.ts:60`) and a `data:` SVG is script.
 
    BOTH CONTROLS ARE `<form action={serverAction}>` WITH A HIDDEN SITE ID, so both work with
@@ -70,6 +76,10 @@ export type BrandSite = {
   /** The site's own name, as the card shows it. */
   title: string
   host: string
+  /** The PUBLIC address, whole — `public_url || url`, exactly what the Sites card links. `host` is
+      what is DRAWN and this is where the link GOES, so the panel shows the short form and still
+      opens the real address (on Ghost(Pro) the two differ by design). */
+  url: string
   /** `https:`-only, already checked in `brandOf` and re-checked where it crosses. */
   logo: string | null
   accent: string | null
@@ -105,13 +115,33 @@ export function BrandPanel({
   const chrome = popup ? <input type="hidden" name="popup" value="1" /> : null
   return (
     <>
-      {/* S2c's heading pair. It is the panel's header in both chromes, so the popup and the full
-          page say the same thing in the same place. */}
-      <div className="flex shrink-0 flex-col gap-[5px] border-b border-line-faint p-[18px_20px] tablet:p-[24px_28px]">
-        <h1 id={BRAND_TITLE_ID} className={`${sheetTitle} wrap-anywhere`}>
-          {BRAND_COPY.title}
-        </h1>
-        <p className="text-ui-dense leading-[1.55] text-ink-soft">{BRAND_COPY.sub(site.host)}</p>
+      {/* S2c's heading pair, and the ✕ at the right edge — the owner's ask of 2026-09-10 ("Add a
+          cross button too which will close the popup").
+
+          NO FRAME DRAWS IT, so it is extrapolated from the nearest one that does (R-74): S2c is a
+          PAGE in the export and a page has no ✕; S11e is the export's popup and this is its ✕,
+          markup for markup — the same 28px hit area, the same `X` at 14/1.8, the same
+          `<Link href="/sites">` destination its footer Cancel has.
+
+          AND THERE IS NOTHING FOR A SECOND WAY OUT TO DISAGREE WITH. **Skip** writes nothing at
+          all — not even a note that it was pressed (`actions.ts`) — so the ✕, the backdrop and
+          Escape land exactly where Skip does and the offer stays on the card either way. That is
+          also why it is the same control in BOTH chromes rather than a popup-only one: on the full
+          page it means what Skip means, which is "not now". */}
+      <div className="flex shrink-0 items-start gap-4 border-b border-line-faint p-[18px_20px] tablet:p-[24px_28px]">
+        <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+          <h1 id={BRAND_TITLE_ID} className={`${sheetTitle} wrap-anywhere`}>
+            {BRAND_COPY.title}
+          </h1>
+          <p className="text-ui-dense leading-[1.55] text-ink-soft">{BRAND_COPY.sub(site.host)}</p>
+        </div>
+        <Link
+          href="/sites"
+          aria-label={BRAND_COPY.close}
+          className={`flex size-7 shrink-0 items-center justify-center rounded-thumb text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
+        >
+          <X size={14} strokeWidth={1.8} />
+        </Link>
       </div>
 
       {/* The two columns scroll separately from `tablet` up, for `keys-panel.tsx`'s reason: one
@@ -241,7 +271,7 @@ export function BrandPanel({
 
 /** The left column: everything read off the customer's Ghost, and nothing decided. */
 function SiteToday({ site }: { site: BrandSite }) {
-  const { logo, accent, nav, title, host } = site
+  const { logo, accent, nav, title, host, url } = site
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6 p-[16px_20px] tablet:overflow-y-auto tablet:p-[20px_22px]">
       <h2 className="text-ui-dense font-semibold uppercase tracking-[0.04em] text-ink-soft">
@@ -265,7 +295,25 @@ function SiteToday({ site }: { site: BrandSite }) {
         )}
         <div className="flex min-w-0 flex-col gap-[2px]">
           <span className="truncate text-body font-semibold text-ink">{title}</span>
-          <span className="truncate font-mono text-control-label text-ink-soft">{host}</span>
+          {/* THE ADDRESS OPENS IN A NEW TAB AND SAYS SO — the owner's ask of 2026-09-10 ("Make the
+              URL on left side an anchor link and show a new tab icon. On clicking it should open in
+              a new tab"). It is a straight lift of the Sites card's own markup, which has linked
+              the same address since his finding 4 one story earlier, glyph included; two addresses
+              in one app behaving two ways is what this closes.
+
+              THE VALUE IS THE ONE THE CARD LINKS — `public_url || url` (`brand-screen.tsx`), the
+              address Inflozo connected or the public one Ghost reports — and NEVER a url read out
+              of the customer's Ghost menu. That distinction is the file's own rule two paragraphs
+              up: the menu entries stay text pills with no `href`, and this is not one of them. */}
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className={`flex min-w-0 items-center gap-[5px] rounded-sm font-mono text-control-label text-ink-soft underline-offset-2 hover:underline ${ring}`}
+          >
+            <span className="truncate">{host}</span>
+            <ExternalLink size={12} className="shrink-0" label="opens in a new tab" />
+          </a>
         </div>
       </div>
 

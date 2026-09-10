@@ -1939,6 +1939,33 @@ too fast to see.
     behave while they work and what the pages draw while they load. **It changed nothing about what
     any of them do.**
 
+### Your re-test, 2026-09-10 — the three things you found on the popup
+
+Your three findings are fixed. **Steps 1 to 21 above still hold and you do not need to walk them
+again**; these four are the new ones, and the first is the one that was really two.
+
+22. **The top bar stays.** **URL:** https://app.inflozo.com/sites · **Do:** press **Use this site's
+    brand** on a site's card · **See:** the window opens over your Sites list **and the bar along
+    the top of the app is still there** — the search box and **Connect site** — with your cards
+    behind the window. It stays there the whole time the window is open, and it is still there
+    after you press **Use your brand** or **Skip**. *(This was one fault on both windows, so the
+    same is true of **Manage API keys** — that is Story 3.6's step 2.)*
+23. **The address opens your site.** **Do:** in that window, look at the left column under your
+    site's name · **See:** the address is now a **link** with a small new-tab mark after it, the way
+    it already is on the Sites card. Click it · **See:** your Ghost site opens **in a new tab**, and
+    the window you were looking at is still there when you come back. *(The menu items below it are
+    still plain pills and are deliberately not links — they are read off your Ghost's menu, and
+    Inflozo has no reason to make them clickable here.)*
+24. **The ✕ closes it.** **Do:** press the **✕** in the top right of the window · **See:** it closes
+    and you are back on your Sites list, with the **Use this site's brand** link still on the card —
+    because closing it records nothing, exactly as **Skip** records nothing. Clicking outside the
+    window and pressing **Esc** do the same. Then press the link again · **See:** it opens again,
+    every time.
+25. **And the link says it is working.** **Do:** press **Use this site's brand** and watch the link
+    itself · **See:** for the moment before the window arrives it reads **Opening…** and will not
+    take a second click, and the window arrives with its own outline drawn in it first. *If it is
+    too fast to see:* that is the fix — the window now arrives before the panel inside it is read.
+
 ## Verification
 
 To be run at Dev and again at Review, on the real infrastructure (R-82), Node 24 on `PATH`
@@ -2451,6 +2478,13 @@ reason beside the code.
    — a `next/link`, and therefore a soft navigation — opens S2c in a `<dialog>` over the list.
    `brand-screen.tsx` does the reads once and `brand-panel.tsx` draws the panel, and both routes
    render them, so the popup and the full page cannot disagree.
+   **⚠ SUPERSEDED THE NEXT DAY, and the reason is in *Owner's test findings* below.** He tested this
+   and the intercepted route cost him the shell's top bar and, on the other popup, the list itself:
+   an intercepted popup lives at the panel's own URL, so the path leaves `/sites` and every answer
+   from inside the window is a navigation Next does not intercept. The popup is `/sites?brand=<id>`
+   now — a query parameter on the list — and it moved there in Story 3.6's Fix (`acd31327`), which
+   owns both windows. Everything else in this entry still stands: one link, one component, two
+   chromes that cannot disagree.
 2. **Two columns.** Left: everything READ off the customer's Ghost — logo, title and host, accent,
    menu, the fonts note, and the mini homepage wearing the accent. Right: everything DECIDED —
    **Which project?** with the cards, and **Use your brand** / **Skip** below them. Nothing S2c drew
@@ -2612,3 +2646,81 @@ markup the app already has.
 **Question 7 above is still awaiting the owner** and is not answered by any of this. Its option 2 —
 making the post-connect landing a popup too — would change what this Fix builds, so the Fix takes
 findings 2 and 3 (which are the same either way) and holds anything that depends on that ruling.
+
+
+## Fix record 6 — the owner's three test findings of 2026-09-10, executed (R-82)
+
+**All three are closed, and two of them were closed by Story 3.6's Fix rather than by this one** —
+which is what the findings section above said should happen, and it is recorded here so this story
+is not read as having fixed something twice.
+
+**Finding 1 — the top bar — was fixed once, in `acd31327` (Story 3.6's Fix), and this story
+inherits it.** The cause was one file and one line: `BARS` in `components/shell/shell.tsx` is a
+table keyed on the EXACT path, and an intercepted popup lives at the panel's own URL, so opening
+either window moved the path off `/sites` and the shell drew no bar. **`shell.tsx` was not
+touched.** Both popups moved instead: the brand offer is now `/sites?brand=<id>` and Manage keys
+`/sites?manage=<id>`, query parameters on the Sites list, so the path never leaves the one the bar
+belongs to. `site-notices.tsx`'s offer is a `PanelLink` — an `<a href="/sites/brand?site=…">`, the
+full page and the whole scripts-off story, whose plain click opens the window — and it says
+`Opening…` while the panel loads, which is R-98 on a control that starts a navigation.
+
+**And the one he did not hit went with it.** `useBrand`'s failure path redirected from a server
+action back onto `/sites/brand?…`, which was not intercepted: the full page would have loaded behind
+the still-open window and taken the list with it. Both S2c forms now carry the `popup` marker and
+`brandBase()` decides the redirect once, so a refused **Use your brand** answers inside the window
+it was pressed in. Also `acd31327`.
+
+**Findings 2 and 3 are this story's own, and both are lifts rather than inventions.**
+
+- **The address is an anchor with the new-tab glyph** (`brand-panel.tsx`) — the Sites card's own
+  markup, `<a target="_blank" rel="noreferrer">` with the export's `ExternalLink` at 12 and
+  `label="opens in a new tab"`. The panel is handed `url` as well as `host` now, and it is
+  `public_url || url`, the same value the card links — never a url read out of the customer's Ghost
+  MENU, which stays text pills with no `href`. The file's note that "nothing here is a link to the
+  customer's site" said more than it meant and now says which links it means.
+- **The ✕** is `keys-panel.tsx`'s, markup for markup: the same 28px hit area, the same `X` at
+  14/1.8, the same `<Link href="/sites">`. No frame draws one on S2c — S2c is a page in the export
+  — so it is extrapolated from S11e, the nearest frame that has one (R-74). Its accessible name is
+  `BRAND_COPY.close`, so the harness reads the app's own word. **It costs nothing to get wrong in
+  the other direction:** `skipBrand` writes nothing at all, so the ✕, the backdrop and Escape land
+  exactly where **Skip** lands and the offer stays on the card either way — which is why it is the
+  same control in both chromes rather than a popup-only one.
+
+**Question 7's ruling held to:** the connect wizard was not touched and `connectSite` still
+redirects to `/sites/brand?site=…`, the full screen S2 draws.
+
+### What was executed
+
+- `pnpm check` (repo root, Node 24 on PATH) — **exit 0**: lint clean, `tsc --noEmit` clean,
+  **242 tests, 242 pass, 0 fail** in `apps/web` plus 1 each in the three packages.
+- `pnpm --filter web build` — **exit 0**, "Compiled successfully".
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings**.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **all steps passed**, and it now prints
+  `brand_close: 'Close'` and `brand_opening: 'Opening…'` evaluated out of `lib/probe-rule.ts`, which
+  is what says the ✕'s name and the offer's busy label are the app's own words rather than the
+  harness's.
+
+**The markup, DRIVEN rather than read** (standing rule 1), on a throwaway route under `next dev`
+16.3.1 that renders the product's own `BrandPanel` with fake props and no database, deleted in the
+same session. Playwright, Chromium, four steps, **all green, and the third is a control**:
+
+| driven | result |
+|---|---|
+| the site's address | **one** `a[target="_blank"]` at `https://ghost6.example.com/`, `rel="noreferrer"`, **one** glyph inside it, showing the host |
+| the ✕ | **one** `a[href="/sites"]`, `aria-label="Close"`, one glyph |
+| **control** — the menu entries | **2 pills, 0 links** — the fix did not sweep an `href` onto a value read from someone's Ghost |
+| the two presses | still **Use your brand** and **Skip** |
+
+**And the deployed-site harness now drives both findings as well as his finding 1**: `brand-screen`
+asserts the address is ONE anchor with `target="_blank"`, `rel` carrying `noreferrer` and one glyph,
+pointing at the PUBLIC url, and that there is one ✕ named `Close` going to `/sites` — with the
+menu-pill link count still asserted at zero beside it; `brand-popup` asserts **the shell's top bar
+is still drawn** on every one of the four states it walks (opened, after **Use your brand**,
+reopened, after the ✕), and drives the ✕ as a fourth way out, checking the offer is still on the
+card afterwards.
+
+**Not run in this phase, and named rather than assumed:** `python3
+tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com`. It drives these screens on the
+DEPLOYED site and this Fix is not deployed until CI publishes this commit (DW-7), so it is the
+Review phase's, against T1 and T3. The owner's manual test (R-80) is his, on the production domains,
+after Deploy.

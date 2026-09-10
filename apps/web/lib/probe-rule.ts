@@ -258,6 +258,11 @@ export const BRAND_COPY = {
   using: 'Taking your brand…',
   skipping: 'Skipping…',
   /** The Sites card's offer — a link, never a Banner: a Banner tells or asks, this offers. */
+  /* The ✕'s accessible name — the owner's ask of 2026-09-10 ("Add a cross button too which will
+     close the popup"). It says what it DOES rather than naming the glyph, and it is one word
+     because **Skip** beside it writes nothing either: both mean "not now". `KEYS.cancel` is the
+     same word on the other popup's ✕, and the harness reads both from here (standing rule 4). */
+  close: 'Close',
   offer: 'Use this site’s brand',
   /* What the offer says while the window is on its way (R-98) — `KEYS.opening`'s twin, and the
      same reason: opening the panel is a server round trip and the control used to sit through it
