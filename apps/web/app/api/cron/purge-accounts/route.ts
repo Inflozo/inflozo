@@ -1,6 +1,7 @@
+import { authorized } from '@/lib/cron-auth'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { drainPrefix } from '@/lib/storage-drain'
-import { BATCH, authorized, runPurge, type PurgeDeps } from './purge-rule'
+import { BATCH, runPurge, type PurgeDeps } from './purge-rule'
 
 /**
  * FR-A5's LAST SENTENCE, once a day (Epic 2, Story 2.6): the account whose fourteen days ran out
@@ -53,7 +54,8 @@ function failure(step: string, error: unknown): Error {
 }
 
 export async function GET(request: Request) {
-  // BEFORE ANY DATABASE READ. An unset CRON_SECRET is a 401 too (`purge-rule.ts`).
+  // BEFORE ANY DATABASE READ. An unset CRON_SECRET is a 401 too (`lib/cron-auth.ts`, which
+  // Story 3.7 lifted this compare into so both scheduled jobs share one door).
   if (!authorized(request.headers.get('authorization'), process.env.CRON_SECRET)) {
     return new Response('Unauthorized', { status: 401, headers: NO_STORE })
   }

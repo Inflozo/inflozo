@@ -4,9 +4,12 @@ import { type MouseEvent, useRef } from 'react'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
-import { Key, LinkOff } from '@/components/kit/icons'
-import { DISCONNECT, KEYS, keysPath, keysPopupPath } from '@/lib/connect-rule'
+import { Key, LinkOff, Refresh, Swatch } from '@/components/kit/icons'
+import { useSubmitting } from '@/components/kit/submit'
+import { DISCONNECT, HEALTH, KEYS, keysPath, keysPopupPath } from '@/lib/connect-rule'
 import { arrowKeys, item as row, openMenu } from '@/lib/menu'
+import { BRAND_COPY, brandPath, brandPopupPath } from '@/lib/probe-rule'
+import { recheckConnection } from './actions'
 import { DisconnectConfirm } from './disconnect-confirm'
 import { PanelLink } from './panel-link'
 
@@ -20,10 +23,23 @@ import { PanelLink } from './panel-link'
    S3c's 160, and the broken-link glyph the frame draws on its Disconnect row (`:82`), which is the
    Kit's `LinkOff`.
 
-   DISCONNECT IS ITS ONLY ITEM. The frame draws four — Re-check connection, Reconnect, Manage API
-   keys, Disconnect — and the other three are Stories 3.6's and 3.7's. A control that could NEVER
-   act is ABSENT, not greyed (UX-DR3), so they are not here at all; 3.6 and 3.7 add INTO this menu
-   rather than building a second one (DW-57, amended).
+   STORY 3.7 FILLED IT, AND OBEYED DW-57: IT ADDED INTO THIS MENU RATHER THAN BUILDING A SECOND
+   ONE. The frame draws four rows — Re-check connection, Reconnect, Manage API keys, Disconnect;
+   3.5 built the last, 3.6 the third, and 3.7 adds **Re-check connection** (the frame's own first
+   row, `:78`, with the frame's own refresh glyph) and **Use this site's brand**, which is the
+   owner's instruction of 2026-09-10: it used to be a coral link under the card and every other
+   per-site action already lives here. It goes FIRST because it is the one item that does something
+   *for* the customer rather than *about* the connection.
+
+   THE FRAME'S **Reconnect** ROW IS STILL ABSENT FROM THIS MENU, and that is a departure recorded
+   here and in `HEALTH`'s own comment (R-74): as a permanent row it would be a second name for
+   **Manage API keys** directly beneath it, and a menu with two rows that open the same panel is a
+   menu that teaches people not to read it. It is drawn on the UNHEALTHY CARD instead — where it is
+   the recovery action, which is what the frame draws it as (`:99`) — so it appears only where it
+   can act (UX-DR3).
+
+   **Use this site's brand** IS ABSENT WHERE THERE IS NO BRAND TO OFFER, not greyed (UX-DR3); the
+   card decides that with `hasBrand` and passes the boolean.
 
    THE CONFIRM ASKS FOR NO TYPED CONFIRMATION — the owner's ruling at Question 2 (option 1,
    2026-09-09). It borrows the project-delete dialog's VISUAL vocabulary and not its typed name
@@ -43,7 +59,7 @@ import { PanelLink } from './panel-link'
    :52-64 is the record of what happens when a client closure is passed instead). `Submit` carries
    the required `busy` label (R-98) and its own double-submit guard, so this file needs neither a
    `useActionState` nor a ref: `disconnectSite` answers nothing and redirects.
-   AND BOTH MENU ROWS ARE LINKS, WHICH IS THE WHOLE JAVASCRIPT-OFF STORY — the shape
+   AND EVERY OTHER MENU ROW IS A LINK OR A FORM, WHICH IS THE WHOLE JAVASCRIPT-OFF STORY — the shape
    `ConnectSiteButton` already is (`components/shell/shell.tsx`, and its own comment says it in
    those words). `<a href="/sites/disconnect?site=…">` and `<a href="/sites/keys?site=…">` each HAS
    a destination: with JavaScript the click opens something over this card — this dialog for
@@ -52,16 +68,31 @@ import { PanelLink } from './panel-link'
    full pages, posting the same actions. A `<button onClick>` would have been a control that does
    nothing without a script — which is what the first Dev pass shipped, and what this acceptance
    criterion forbids. A MODIFIED click (⌘, ctrl, shift, ALT, middle) is the customer asking for a
-   new tab or a saved link and is left alone on BOTH rows, as the opener's is — alt joined that
+   new tab or a saved link and is left alone on BOTH link rows, as the opener's is — alt joined that
    list at the review of 2026-09-09, having been the one gesture the guard swallowed, and it is why
    each row is a guarded `router.push` rather than a `<Link>`, whose own modifier test does not
    include alt.
 
-   MANAGE KEYS' HALF OF THAT NOW LIVES IN `panel-link.tsx`, which the card's brand offer uses too:
-   one control opens a panel over this list, so the two cannot drift, and it is where the owner's
-   test of 2026-09-10 put the busy state his finding 2 asked for. */
+   **Re-check connection IS A `<form>`, NOT AN `<a>` — BECAUSE IT MUTATES.** It writes
+   `sites.health`, `last_checked_at` and the two `routes_*` columns, and possibly a notification row
+   and an email; an `<a href>` that did that would mutate on a GET, which R-98's own ruling forbids
+   and which a link preloader or a browser prefetch would fire on its own. So it is
+   `<form action={recheckConnection}>` with the hidden `site_id` every other form on this card
+   carries, and the row is the shape `account-menu.tsx`'s Sign out row already is: not a Kit button,
+   so `useSubmitting()` rather than `Submit` — the present-tense label, `aria-disabled`,
+   `aria-busy`, and the released in-flight ref that refuses a second press.
 
-export function SiteMenu({ id, name }: { id: string; name: string }) {
+   `data-recheck` IS WHAT THE CARD'S STATE LINE SELECTS ON, and it is why this row needs no state
+   and the card needs no client boundary: the Kit's busy behaviour already puts `aria-busy="true"`
+   on a submitting control, and this popover is a DOM descendant of the card's `<article>` even
+   while it is rendered in the top layer. So the state line swaps the mint line for the amber one
+   with a `:has()` and nothing more (`(list)/page.tsx` carries that half).
+
+   MANAGE KEYS' AND THE BRAND OFFER'S SHARED HALF LIVES IN `panel-link.tsx`: one control opens a
+   panel over this list, so the two cannot drift, and it is where the owner's test of 2026-09-10
+   put the busy state his finding 2 asked for. */
+
+export function SiteMenu({ id, name, brand }: { id: string; name: string; brand: boolean }) {
   const menuId = `site-menu-${id}`
   const menu = useRef<HTMLDivElement>(null)
   const confirm = useRef<HTMLDialogElement>(null)
@@ -99,10 +130,40 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
         // `[popover]:not(:popover-open){display:none}` and the menu renders inside every card.
         className="w-[196px] flex-col rounded border border-line bg-surface p-[6px] shadow-lg open:flex"
       >
+        {/* STORY 3.7's FIRST ROW — THE OWNER'S INSTRUCTION OF 2026-09-10, moved here from the card
+            body. It is the SAME `PanelLink` the card's link was, with the same two addresses and
+            the same busy word, so nothing about how the brand window opens changed: a plain click
+            goes to `/sites?brand=…`, a window over this list; a modified click and a scripts-off
+            click take `/sites/brand?site=…`, the full page. And it is the SAME two sentences —
+            `BRAND_COPY.offer` and `BRAND_COPY.opening`, which Story 3.4 wrote and the harness
+            already reads from `probe-rule.ts`. A copy of them in `HEALTH` would have been two homes
+            for one word (standing rule 7), so the row moved and the words did not. */}
+        {brand ? (
+          <PanelLink
+            href={brandPath(id)}
+            panel={brandPopupPath(id)}
+            busy={BRAND_COPY.opening}
+            onOpened={() => menu.current?.hidePopover()}
+            className={`${row} ${ring} hover:bg-paper`}
+          >
+            <span className="shrink-0 text-ink-soft">
+              <Swatch size={15} />
+            </span>
+            {BRAND_COPY.offer}
+          </PanelLink>
+        ) : null}
+
+        {/* STORY 3.7's OTHER ROW, AND IT IS THE FRAME'S OWN FIRST ITEM (`S11 Sites.dc.html:78`),
+            with the frame's own circular-arrow glyph — the Kit's `Refresh`, which is that glyph
+            already. A `<form>` and not a link, because it mutates; see the header. */}
+        <form action={recheckConnection}>
+          <input type="hidden" name="site_id" value={id} />
+          <RecheckRow />
+        </form>
+
         {/* STORY 3.6's ROW, AND IT IS THE FRAME'S OWN THIRD ITEM (`S11 Sites.dc.html:80`), with the
             frame's key glyph. It goes ABOVE the rule, into the menu 3.5 built rather than into a
-            second one (DW-57). Re-check connection and Reconnect are Story 3.7's and are still
-            ABSENT rather than greyed (UX-DR3).
+            second one (DW-57).
 
             IT OPENS A WINDOW OVER THIS LIST, EXACTLY AS DISCONNECT BELOW IT DOES — the owner's
             test of 3.6, finding 1: "Can we show the Manage Keys as a popup on the Sites screen
@@ -186,5 +247,38 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
         />
       </dialog>
     </>
+  )
+}
+
+/**
+ * **Re-check connection**'s ROW, AND IT IS A CHILD OF ITS OWN `<form>` — `useFormStatus` reads the
+ * form it sits INSIDE, so a row rendered by `SiteMenu` beside the form would read nothing
+ * (`components/kit/submit.tsx`'s header is the record). `account-menu.tsx`'s Sign out row is the
+ * same shape for the same reason: not a Kit `Button`, so `useSubmitting()` rather than `Submit`.
+ *
+ * `aria-disabled` AND NOT `disabled`: a disabled control loses focus to the body and stops being
+ * announced, and this one is the thing the customer is waiting on. `guard` refuses the second press
+ * instead — React queues form actions, so without it one impatient double tap sends two checks.
+ *
+ * `data-recheck` IS THE HOOK THE CARD'S STATE LINE READS (see `SiteMenu`'s header). It is on the
+ * BUTTON, beside the `aria-busy` the hook sets, because those two together are what "this card is
+ * being checked right now" means in the DOM — and nothing else in the card can be busy in that way.
+ */
+function RecheckRow() {
+  const { pending, guard } = useSubmitting()
+  return (
+    <button
+      type="submit"
+      data-recheck
+      aria-disabled={pending || undefined}
+      aria-busy={pending || undefined}
+      onClick={guard}
+      className={`${row} ${ring} hover:bg-paper ${pending ? 'text-ink-soft' : ''}`}
+    >
+      <span className="shrink-0 text-ink-soft">
+        <Refresh size={15} />
+      </span>
+      {pending ? HEALTH.recheckBusy : HEALTH.recheck}
+    </button>
   )
 }

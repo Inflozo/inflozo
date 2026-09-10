@@ -2,7 +2,7 @@
 title: 'Story 3.7 — The daily health check, the reconnect email, and the card''s connection controls'
 type: 'feature'
 created: '2026-09-10'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'a0748b7ad9a4a6fda3cb557544f8bbc80ebb6003'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -252,34 +252,34 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 
 **Execution:**
 
-- [ ] `apps/web/lib/health-rule.ts` + `apps/web/health-rule.test.ts` -- the pure decision: `healthOf`,
+- [x] `apps/web/lib/health-rule.ts` + `apps/web/health-rule.test.ts` -- the pure decision: `healthOf`,
       `transitionOf`, `emailAllowed`, `HEALTH_REASONS` -- so the four transitions and the 7-day cap are
       executed rather than read off a route file.
-- [ ] `apps/web/lib/email-shell.ts` + `apps/web/lib/health-email.ts` -- lift the magic-link shell out
+- [x] `apps/web/lib/email-shell.ts` + `apps/web/lib/health-email.ts` -- lift the magic-link shell out
       of `deletion-email.ts`, then FR-P1's third email on it -- one email vocabulary, not two.
-- [ ] `apps/web/server/site-health.ts` -- `checkSite()`: `probeSite`, the routes read and hash,
+- [x] `apps/web/server/site-health.ts` -- `checkSite()`: `probeSite`, the routes read and hash,
       `healthOf`, the `sites` write, the notification row, the email, and DW-78's `admin_key_id`
       backfill -- one health check with two callers and no second code path.
-- [ ] `apps/web/app/api/cron/site-health/route.ts` + `apps/web/vercel.json` -- AD-33's Epic 3 cron on
+- [x] `apps/web/app/api/cron/site-health/route.ts` + `apps/web/vercel.json` -- AD-33's Epic 3 cron on
       the purge route's shape, ordered `last_checked_at` nulls first -- so the first run is DW-62's
       backfill and the schedule has one home.
-- [ ] `apps/web/lib/connect-rule.ts` + `apps/web/connect-rule.test.ts` -- the `HEALTH` copy object and
+- [x] `apps/web/lib/connect-rule.ts` + `apps/web/connect-rule.test.ts` -- the `HEALTH` copy object and
       the extended no-number assertion -- one home for the words (standing rule 4).
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- `recheckConnection` with its own route
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- `recheckConnection` with its own route
       constant, redirecting both ways -- the audit log names the write that made it.
-- [ ] `apps/web/components/kit/icons.tsx` + `apps/web/app/globals.css` -- the brand swatch glyph and
+- [x] `apps/web/components/kit/icons.tsx` + `apps/web/app/globals.css` -- the brand swatch glyph and
       the pulse keyframes -- drawn in the Kit's hand, degrading under the existing reduced-motion rule.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/site-menu.tsx` + `site-notices.tsx` -- add **Re-check
+- [x] `apps/web/app/(app)/app/(authed)/sites/site-menu.tsx` + `site-notices.tsx` -- add **Re-check
       connection** and **Use this site's brand** to the ⋯; delete the card's brand link -- the owner's
       instruction, and DW-57's "3.7 adds INTO this menu".
-- [ ] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- the three-state line, the reason and
+- [x] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- the three-state line, the reason and
       date, **Reconnect** on an unhealthy card, the open-notification read and `?health=` -- the badge
       the frame draws and Manage keys' second entry point.
-- [ ] `apps/web/server-wiring.test.ts` · `busy.test.ts` · `app-routes.test.ts` -- the two new
+- [x] `apps/web/server-wiring.test.ts` · `busy.test.ts` · `app-routes.test.ts` -- the two new
       privileged importers with their reasons, and the menu's new submit control.
-- [ ] `tools/probe/run-verify-site-health.py` -- the live steps against T1 and T3, with a deliberately
+- [x] `tools/probe/run-verify-site-health.py` -- the live steps against T1 and T3, with a deliberately
       broken credential on T3 and a real Resend send (R-82).
-- [ ] `deferred-work.md` · `EXPERIENCE.md` -- close DW-62, DW-63, DW-78; amend DW-64; propagate the
+- [x] `deferred-work.md` · `EXPERIENCE.md` -- close DW-62, DW-63, DW-78; amend DW-64; propagate the
       three EXPERIENCE.md rows (standing rule 3).
 
 **Acceptance Criteria:**

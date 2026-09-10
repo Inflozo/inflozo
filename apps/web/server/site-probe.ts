@@ -1,3 +1,4 @@
+import { versionVerdict } from '@/lib/connect-rule'
 import { ghostProPreviewProbe } from '@/lib/flags'
 import { capabilityOf, probePatch, settingsOf, settingsReadable } from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
@@ -15,6 +16,15 @@ import { call } from '@/server/ghost-admin'
  * difference between `call()` being tested and `call()` being used: two GETs, each preceded by a
  * `vault_decrypt` row and each leaving its own `admin_read` row (`ghost-admin/index.ts:181-203`).
  * ponytail: one extra config/ read at connect so connect, Re-check and the cron are the same call.
+ *
+ * DW-63 CLOSED HERE, BY STORY 3.7, AND IT IS ONE CLAUSE. This function used to copy whatever
+ * `version` Ghost reported straight onto the row, with none of connect's floor applied — so a site
+ * downgraded to Ghost 4 would have had `4.x` stored and `majorOf` would then have pinned
+ * `Accept-Version: v4.0` on every later call, talking a dialect the product does not support. The
+ * floor is `versionVerdict` in `lib/connect-rule.ts` — connect's own rule, CALLED and not restated
+ * — and a version it refuses is REPORTED to the caller and not written: `checkSite` turns it into
+ * FR-C5's "Reconnect needed" with its own reason, which is the surface DW-63 was waiting for, and
+ * the stored version stays a major the chokepoint can still talk to.
  *
  * A PROBE FAILURE IS NOT A CONNECT FAILURE. `config/` has already passed with the typed key by the
  * time this runs, so a site whose probe throws is a CONNECTED site: `capability` stays `full`,
@@ -36,6 +46,13 @@ export interface ProbeSummary {
   code?: string
   capability?: string
   code_injection?: boolean
+  /**
+   * WHAT GHOST REPORTED, whether or not it was stored (DW-63). `checkSite` applies FR-C5's health
+   * verdict to it, so the re-detected version has to leave here even when the floor refused it —
+   * the alternative was a second `config/` read one level up, which is the second code path this
+   * function's whole header argues against.
+   */
+  version?: string
 }
 
 export async function probeSite(args: {
@@ -110,10 +127,12 @@ export async function probeSite(args: {
     const { site_settings } = patch
     const injection = site_settings.code_injection === true
 
+    // DW-63: THE FLOOR DECIDES WHETHER THE VERSION IS STORED, and it is connect's own.
+    const floor = versionVerdict(version)
     const { error: writeError } = await admin
       .from('sites')
       .update({
-        ...(version ? { ghost_version: version } : {}),
+        ...(version && floor.ok ? { ghost_version: version } : {}),
         ...(patch.capability ? { capability: patch.capability, capability_source: patch.capability_source } : {}),
         site_settings,
         // Stamped WITH the read it names: "Checked just now" may only be said about a read that
@@ -131,6 +150,7 @@ export async function probeSite(args: {
       ok: true,
       capability: patch.capability ?? 'unchanged',
       code_injection: injection,
+      ...(version ? { version } : {}),
     }
   } catch (thrown) {
     // A THROWN PROBE LEAVES A CONNECTED SITE. `AdminError` carries a code; anything else carries a

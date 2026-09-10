@@ -16,7 +16,9 @@ const AUTHED_LAYOUT = 'app/(app)/app/(authed)/layout.tsx'
 const CONNECT_ACTIONS = join('app', '(app)', 'app', '(authed)', 'sites', 'actions.ts')
 const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
 const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
+const HEALTH_ROUTE = join('app', 'api', 'cron', 'site-health', 'route.ts')
 const SITE_PROBE = join('server', 'site-probe.ts')
+const SITE_HEALTH = join('server', 'site-health.ts')
 const KEYS_SCREEN = join('app', '(app)', 'app', '(authed)', 'sites', 'keys-screen.tsx')
 const MIGRATIONS = '../../supabase/migrations'
 
@@ -125,7 +127,25 @@ test('the service-role client is imported by the flag reader and by nothing else
   // gives the decrypt path its first product caller (DW-54); connect, B15's Re-check plan and
   // Story 3.7's cron all call this one function, so there is one write and one audit shape rather
   // than three.
-  const allowed = [join('lib', 'flags.ts'), SNAPSHOT_ROUTE, PURGE_ROUTE, CONNECT_ACTIONS, SITE_PROBE]
+  // The SIXTH, added by Story 3.7 with its reason: FR-C5's daily health check writes `health`,
+  // `last_checked_at`, `last_health_email_at` and the two `routes_*` columns — every one of them
+  // server-asserted by AD-7 — and it is this epic's first emitter of `notifications`, a table with
+  // a select policy and a `read_at`-only update grant and NO insert policy at all (schema `:907-910`,
+  // `:1156-1157`). It also reads the owner's address through GoTrue's admin API, which is an
+  // admin-API call by definition: the cron acts for NOBODY and has no session to read one from.
+  // The SEVENTH, added by Story 3.7 with its reason: that cron's own route. It selects the sites
+  // whose check is due — every connected site, ordered by the oldest check — and, like the purge
+  // beside it, acts for nobody: there is no session that could make its reads, and it is reachable
+  // only behind Vercel's `CRON_SECRET` bearer (`lib/cron-auth.ts`'s `authorized`).
+  const allowed = [
+    join('lib', 'flags.ts'),
+    SNAPSHOT_ROUTE,
+    PURGE_ROUTE,
+    HEALTH_ROUTE,
+    CONNECT_ACTIONS,
+    SITE_PROBE,
+    SITE_HEALTH,
+  ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) =>
@@ -348,7 +368,16 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     `private.site_credentials` is reachable from this module and nowhere else (§21j). No
   //     decryption is on this path and none can be — `decrypt()` is private to the module and
   //     `call()` is its only caller.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, KEYS_SCREEN]
+  //   - THE HEALTH CHECK, Story 3.7's: the one function AD-33's cron and S11a's ⋯ **Re-check
+  //     connection** both drive. It calls `probeSite` for everything FR-C5 lists and reaches this
+  //     module twice on its own account: `call()` once more for `GET settings/routes/yaml/`, which
+  //     answers 200 with the Admin key alone on both majors (§37's trailing block) and whose BYTES
+  //     are what FR-I4's `routes_live_sha256` hashes; and `backfillAdminKeyId`, which closes DW-78
+  //     by filling the Admin key's public id half where a pre-3.6 record has none. That second one
+  //     is the narrowest use of Vault in the app — the split happens inside the database, so the
+  //     decrypted value never enters Node at all — and it is here rather than on the `call()` path
+  //     precisely because the ledger refused to put a write on the read path of every Ghost call.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => /from\s*['"][^'"]*server\/ghost-admin(\/[a-z-]+(\.ts)?)?['"]/.test(readFileSync(p, 'utf8')))

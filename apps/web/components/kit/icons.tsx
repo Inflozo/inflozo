@@ -143,6 +143,19 @@ export const Refresh = (p: IconProps) => (
     <polyline points="21 3 21 9 15 9" />
   </Icon>
 )
+/* S11a's ⋯ "Use this site's brand" — STORY 3.7, AND IT IS AN EXTRAPOLATION, WHICH IS WHY THIS
+   COMMENT EXISTS (R-74). No frame draws a brand row in this menu: the owner moved the card's coral
+   link into the ⋯ on 2026-09-10 and the export is never edited. The export's own brand symbol is
+   S2c's accent swatch — a 28px filled disc (`S2 Onboarding.dc.html:173`) — which is a FILL and not
+   a line glyph, so it is drawn here in the Kit's own hand: the disc at the Kit's 1.5 stroke with
+   its accent still filled in the middle, so it reads as a colour sample beside `Key` and `Refresh`
+   rather than as another circle. Nothing was invented but the line weight. */
+export const Swatch = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+  </Icon>
+)
 export const LinkOff = (p: IconProps) => (
   <Icon {...p}>
     <path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1" />

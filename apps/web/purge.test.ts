@@ -6,11 +6,16 @@ import {
   BATCH,
   BUCKETS,
   CRON_PATH,
-  authorized,
   prefixesFor,
   runPurge,
   type PurgeDeps,
 } from './app/api/cron/purge-accounts/purge-rule.ts'
+/* THE BEARER COMPARE MOVED TO `lib/cron-auth.ts` WITH STORY 3.7 and every assertion below it came
+   with it: AD-33's second scheduled job needs the same fail-closed door, and a copy beside the new
+   route would have been a second place for the rule to be true. It is still executed here, because
+   this is where it was written and where the reasons for each of its cases are recorded. */
+import { authorized } from './lib/cron-auth.ts'
+import { CRON_PATH as HEALTH_CRON_PATH } from './lib/health-rule.ts'
 import { MAX_ROUNDS, drainPrefix, type DrainBucket } from './lib/storage-drain.ts'
 
 /* Story 2.6 — FR-A5's purge, every part of it a test can reach. The ROUTE cannot be one of them:
@@ -251,7 +256,14 @@ test('nothing due is a run of nothing, not an error', async () => {
   assert.deepEqual(calls, [])
 })
 
-test('the schedule names the route, the route is where it says, and it runs once a day', () => {
+/* EVERY SCHEDULED JOB, DERIVED FROM THE FILE — never a count, and never a list retyped here
+   (standing rule 4). This asserted `crons.length === 1` until Story 3.7 added AD-33's second job,
+   which is exactly how a hardcoded total goes stale; what it asserts now is a PROPERTY of whatever
+   entries the file carries, plus that each path a constant names is really one of them. AD-33's v1
+   set is closed and adding a third is an `Ask First`, so the constants are the list. */
+const CRON_CONSTANTS = { 'purge-accounts (Epic 2, Story 2.6)': CRON_PATH, 'site-health (Epic 3, Story 3.7)': HEALTH_CRON_PATH }
+
+test('every scheduled job names a route that exists, and each runs once a day', () => {
   // A path typed twice is a cron that invokes a 404 once a day for ever, and every check stays
   // green. So both are READ and compared: the constant the handler lives at, and the schedule
   // Vercel deploys from — and the constant is checked against the file system, because a
@@ -259,16 +271,33 @@ test('the schedule names the route, the route is where it says, and it runs once
   const vercel = JSON.parse(readFileSync('vercel.json', 'utf8')) as {
     crons?: { path: string; schedule: string }[]
   }
-  assert.equal(vercel.crons?.length, 1, 'vercel.json must carry exactly one crons entry (AD-33)')
-  const [job] = vercel.crons
-  assert.equal(job.path, CRON_PATH)
-  assert.ok(existsSync(join('app', CRON_PATH, 'route.ts')), `no route.ts at app${CRON_PATH}`)
-  const fields = job.schedule.trim().split(/\s+/)
-  assert.equal(fields.length, 5, `'${job.schedule}' is not a five-field cron expression`)
-  const [minute, hour, ...rest] = fields
-  assert.match(minute, /^\d+$/, 'a daily job pins its minute')
-  assert.match(hour, /^\d+$/, 'a daily job pins its hour')
-  assert.deepEqual(rest, ['*', '*', '*'], `'${job.schedule}' does not run once a day`)
+  const jobs = vercel.crons ?? []
+  assert.ok(jobs.length > 0, 'vercel.json carries no crons entry at all — AD-33\'s jobs would never run')
+
+  for (const [name, path] of Object.entries(CRON_CONSTANTS)) {
+    assert.ok(
+      jobs.some((job) => job.path === path),
+      `${name}: '${path}' is not scheduled in vercel.json, so the job never runs`,
+    )
+  }
+  // …and no entry is scheduled that no constant names, which is the other half of the same 404.
+  for (const job of jobs) {
+    assert.ok(
+      Object.values(CRON_CONSTANTS).includes(job.path),
+      `vercel.json schedules '${job.path}', which no CRON_PATH constant names`,
+    )
+    assert.ok(existsSync(join('app', job.path, 'route.ts')), `no route.ts at app${job.path}`)
+    const fields = job.schedule.trim().split(/\s+/)
+    assert.equal(fields.length, 5, `'${job.schedule}' is not a five-field cron expression`)
+    const [minute, hour, ...rest] = fields
+    assert.match(minute, /^\d+$/, 'a daily job pins its minute')
+    assert.match(hour, /^\d+$/, 'a daily job pins its hour')
+    assert.deepEqual(rest, ['*', '*', '*'], `'${job.schedule}' does not run once a day`)
+  }
+  // THE TWO JOBS MUST NOT SHARE AN HOUR (the spec's own line): two cold starts in the same minute
+  // is one function competing with itself for the pooler and for somebody else's Ghost.
+  const hours = jobs.map((job) => job.schedule.trim().split(/\s+/)[1])
+  assert.equal(new Set(hours).size, hours.length, `two scheduled jobs share an hour: ${hours.join(', ')}`)
 })
 
 test('nothing in the purge sends mail — FR-A5 says so in its last sentence', () => {

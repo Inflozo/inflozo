@@ -3,24 +3,29 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
 import { ring } from '@/components/kit/greyed'
-import { ExternalLink } from '@/components/kit/icons'
+import { ExternalLink, Refresh } from '@/components/kit/icons'
 import { ConnectSiteButton } from '@/components/shell/shell'
 import {
   checkedLabel,
   connectMessage,
   filterSites,
   ghostLabel,
+  HEALTH,
   hostOf,
   KEYS,
+  keysPath,
+  keysPopupPath,
   ORPHAN_SNAPSHOT_DAYS,
   projectCounts,
   projectsLabel,
   SITES_EMPTY,
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
+import { HEALTH_REASONS, openHealthNotices, type HealthReason } from '@/lib/health-rule'
 import { atSiteCap, goProLabel, siteCapSentence } from '@/lib/plan'
-import { PREVIEW_COPY } from '@/lib/probe-rule'
+import { hasBrand, PREVIEW_COPY } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { deadlineLabel } from '../../account/deletion-rule'
 import { BRAND_TITLE_ID } from '../brand-panel'
 import { BrandScreen } from '../brand-screen'
 import { BrandPanelSkeleton } from '../brand-skeleton'
@@ -28,6 +33,7 @@ import { ConnectSiteDialog } from '../connect-dialog'
 import { KEYS_TITLE_ID } from '../keys-panel'
 import { KeysScreen } from '../keys-screen'
 import { KeysSkeleton } from '../keys-skeleton'
+import { PanelLink } from '../panel-link'
 import { PanelModal } from '../panel-modal'
 import { SiteMenu } from '../site-menu'
 import { SiteNotices, type NoticeSite } from '../site-notices'
@@ -82,9 +88,26 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
    "Moved domains?" hint reads `?moved=` exactly as `?recheck=` and `?disconnect=` already do, so
    it belongs to ONE card and no other claims it.
 
-   ABSENT FROM THIS SURFACE, each another story's and each absent rather than greyed (UX-DR3): the
-   ⋯ menu's Re-check connection and Reconnect, the health badges and "Reconnect needed" (3.7).
-   Every card here is Connected, because that is still the only health this epic can write. */
+   STORY 3.7 FINISHED THE STATE LINE AND OBEYED DW-57 IN DOING IT. The line the owner made now
+   carries THREE states rather than one — mint **Connected**, marigold **Reconnect needed** with the
+   reason and the date under it, and marigold **Checking…** with a pulsing dot while a check is in
+   flight — and nothing joined the pills' line, nothing left the state line, and the ⋯ stayed in the
+   header row's `margin-left:auto` slot. The unhealthy card gains the frame's own **Reconnect**
+   button (`S11 Sites.dc.html:99`), which is EXPERIENCE.md's promised second entry point into
+   Manage keys and which appears only where it can act (UX-DR3).
+
+   AND THE CARD'S BRAND LINK LEFT IT — the owner's instruction of 2026-09-10. "Use this site's
+   brand" is now the ⋯ menu's first row, where every other per-site action already lives, so the
+   card hands `SiteMenu` a boolean and `site-notices.tsx` no longer draws the offer at all.
+
+   ONE MORE READ BESIDE THE PROJECTS TALLY: the caller's OPEN `site_health` notification rows, taken
+   once for the whole list and joined in memory the way `projectCounts` already is. `sites.health`
+   is the STATE; the notification is the record of the transition, and its `data.reason` and
+   `created_at` are where the unhealthy card's caption comes from — which is why this story added no
+   column to `sites` and needed no migration (`server/site-health.ts` carries that argument).
+
+   `?health=` READS EXACTLY AS `?recheck=`, `?disconnect=` AND `?moved=` DO, so one card owns a
+   check that could not be finished and no other claims it. */
 
 export const metadata: Metadata = {
   title: 'Sites · Inflozo',
@@ -98,6 +121,10 @@ type Row = NoticeSite & {
   url: string
   ghost_version: string | null
   settings_read_at: string | null
+  /* STORY 3.7: the connection's own two columns. Both are server-asserted (AD-7) and read here
+     only to draw with — `health` is the state and `last_checked_at` is the stamp the check writes. */
+  health: 'healthy' | 'unhealthy' | null
+  last_checked_at: string | null
   site_settings: (NonNullable<NoticeSite['site_settings']> & { public_url?: string }) | null
 }
 
@@ -110,6 +137,9 @@ export default async function Sites({
   // why — and no other card claims a failure that was not its own.
   // `disconnect` is Story 3.5's own, and the same shape: `disconnectSite` redirects here with the
   // ID OF THE SITE it could not let go, so that one card says why and no other claims it.
+  // `health` is Story 3.7's, and the same shape again: `recheckConnection` redirects here with the
+  // ID OF THE SITE whose check could not be FINISHED — never one whose check answered "Ghost
+  // refused this key", which is a badge and not a failure — so that card says so and no other does.
   // `moved` is Story 3.6's, and the same shape again: a connect whose Admin key matches a record
   // this caller already has is FR-C8's domain move, and `connectSite` redirects here naming the
   // NEW site — so the hint lands on the one card it is about.
@@ -122,6 +152,7 @@ export default async function Sites({
   searchParams: Promise<{
     q?: string | string[]
     recheck?: string | string[]
+    health?: string | string[]
     disconnect?: string | string[]
     moved?: string | string[]
     old?: string | string[]
@@ -133,7 +164,7 @@ export default async function Sites({
     failed?: string | string[]
   }>
 }) {
-  const [{ q, recheck, disconnect, moved, old, manage, brand }, user] = await Promise.all([
+  const [{ q, recheck, health, disconnect, moved, old, manage, brand }, user] = await Promise.all([
     searchParams,
     currentUser(),
   ])
@@ -143,18 +174,33 @@ export default async function Sites({
   const supabase = await supabaseServer()
   // THE PLAN IS READ, READ-ONLY, exactly as the dashboard reads it for S3c's upgrade tile: S11c's
   // ghost slot is the same decision one row down the plan table (`lib/plan.ts`).
-  const [{ data, error }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
-    supabase
-      .from('sites')
-      .select(
-        'id, title, url, ghost_version, site_settings, settings_read_at, capability, capability_source, code_injection_notice_shown_at',
-      )
-      .is('disconnected_at', null)
-      .order('created_at', { ascending: false }),
-    // FR-B5: at most one site per project, so the card's "n projects" is a tally of this column.
-    supabase.from('projects').select('linked_site_id'),
-    resolveEntitlement(user.id),
-  ])
+  const [{ data, error }, { data: projects, error: projectsError }, { data: notices, error: noticesError }, { plan }] =
+    await Promise.all([
+      supabase
+        .from('sites')
+        .select(
+          'id, title, url, ghost_version, site_settings, settings_read_at, health, last_checked_at, capability, capability_source, code_injection_notice_shown_at',
+        )
+        .is('disconnected_at', null)
+        .order('created_at', { ascending: false }),
+      // FR-B5: at most one site per project, so the card's "n projects" is a tally of this column.
+      supabase.from('projects').select('linked_site_id'),
+      /* STORY 3.7 — THE OPEN `site_health` ROWS, ONE READ FOR THE WHOLE LIST. `sites.health` says
+         WHETHER a connection needs attention; this says WHY and SINCE WHEN, which is the record of
+         the transition AD-25 requires this epic to write anyway — so the card's caption costs one
+         read per render rather than two columns and an R-99 Schema phase (`server/site-health.ts`
+         makes that argument in full). Through the CALLER'S OWN SESSION, so
+         `notifications_owner_read` scopes it: a card can never draw a reason written for somebody
+         else's account. `resolved_at is null` is what makes a fixed connection stop explaining
+         itself. */
+      supabase
+        .from('notifications')
+        .select('data, created_at')
+        .eq('kind', 'site_health')
+        .is('resolved_at', null)
+        .order('created_at', { ascending: false }),
+      resolveEntitlement(user.id),
+    ])
 
   const sites: Row[] = data ?? []
   // A FAILED READ IS NOT AN EMPTY ACCOUNT — the dashboard's own finding (review, 2026-09-05):
@@ -164,12 +210,19 @@ export default async function Sites({
   // (review, 2026-09-08). Logged without the id: logs carry no user content.
   if (projectsError) console.error('sites: projects read failed', { code: projectsError.code })
   const linked = projectCounts(projects ?? [])
+  /* A FAILED NOTICE READ IS NOT A SITE WITH NO REASON, and it is not a reason to fail the list
+     either: `sites.health` is the state and it came out of its own read, so an unhealthy card still
+     wears its badge and simply says nothing under it. Logged without an id — logs carry no user
+     content (the rule this file's projects tally already follows). */
+  if (noticesError) console.error('sites: health notices read failed', { code: noticesError.code })
+  const openNotices = openHealthNotices(notices)
 
   const { query, shown } = filterSites(sites, q)
   // B15's own: `recheckPlan` redirects here when the re-run probe could not reach Ghost, and it
   // names the SITE it failed for — the banner belongs to one card, not to the page, and a success
   // redirects without the parameter so it cannot outlive the failure it describes (review).
   const recheckedId = Array.isArray(recheck) ? recheck[0] : recheck
+  const healthFailedId = Array.isArray(health) ? health[0] : health
   const disconnectedId = Array.isArray(disconnect) ? disconnect[0] : disconnect
   const movedId = Array.isArray(moved) ? moved[0] : moved
   // `?old=live` — the record this connect matched is STILL CONNECTED, so there is no orphan and no
@@ -263,10 +316,18 @@ export default async function Sites({
                 const title = site.title || hostOf(site.url)
                 const version = ghostLabel(site.ghost_version)
                 const projectCount = linked.get(site.id) ?? 0
+                // STORY 3.7. `null` cannot happen — the column is `not null default 'healthy'`
+                // (schema `:162`) — but the row is typed off a `select` and a healthy default is
+                // the honest reading of a value nobody wrote.
+                const unhealthy = site.health === 'unhealthy'
+                const notice = unhealthy ? openNotices.get(site.id) : undefined
                 return (
                   <article
                     key={site.id}
-                    className="flex flex-col gap-[14px] rounded border border-line bg-surface p-[18px] shadow-sm transition-shadow hover:shadow-md"
+                    // `group` IS WHAT THE STATE LINE'S `:has()` HANGS OFF (see the two spans
+                    // below): the ⋯ popover is a DOM descendant of this element even while it is
+                    // rendered in the top layer, so `group-has-[…]` reaches the submit inside it.
+                    className="group flex flex-col gap-[14px] rounded border border-line bg-surface p-[18px] shadow-sm transition-shadow hover:shadow-md"
                   >
                     <div className="flex items-start gap-3">
                       <span
@@ -295,7 +356,11 @@ export default async function Sites({
                           with the site's name, where the frame draws it (`S11 Sites.dc.html:68`).
                           Nothing joins the pills' line and nothing joins the state line. */}
                       <div className="ml-auto shrink-0">
-                        <SiteMenu id={site.id} name={title} />
+                        {/* STORY 3.7: the ⋯ draws "Use this site's brand" only where there is a
+                            brand to offer — absent, never greyed (UX-DR3). `hasBrand` is the same
+                            reader Story 3.4's link used, so the row appears in exactly the cases
+                            the link did. */}
+                        <SiteMenu id={site.id} name={title} brand={hasBrand(site.site_settings?.brand)} />
                       </div>
                     </div>
                     {/* THE PILLS KEEP THEIR OWN LINE (his finding 6) — nothing else joins them. */}
@@ -317,12 +382,50 @@ export default async function Sites({
                         — one state and its timestamp, read as one thing (his finding 6). THE
                         PREVIEW-ONLY CHIP JOINS THIS LINE, not the pills' (DW-57): it is the
                         connection's state, and the frame's own chip is exactly this — a white
-                        pill with a hairline and a 6px sky dot (`B15:1189-1192`). */}
+                        pill with a hairline and a 6px sky dot (`B15:1189-1192`).
+
+                        STORY 3.7 MADE IT THREE STATES AND ADDED NOTHING ELSE TO THE CARD. The
+                        frame draws two — mint `Connected` (`:70`) and marigold `Reconnect needed`
+                        (`:94`) — and the third is the owner's, from 2026-09-10: while a check is
+                        in flight the line reads **Checking…** beside an amber dot that pulses.
+
+                        **AND IT COSTS NO CLIENT COMPONENT.** The Kit's busy behaviour already puts
+                        `aria-busy="true"` on a submitting control, and the ⋯ menu's Re-check row
+                        carries `data-recheck` beside it (`site-menu.tsx`), so this line SELECTS on
+                        the press rather than being told about it: `group-has-[…]` hides the settled
+                        state and shows the checking one. No state, no context, no card-wide client
+                        boundary — and the scripts-off behaviour falls out for free, because with no
+                        script there is no `aria-busy`, no swap, and the click is a document
+                        navigation the browser reports itself.
+                        ponytail: `:has()` off the submit's own aria-busy; a client card component
+                        the day two controls need to disagree about what "busy" means. */}
                     <div className="mt-auto flex flex-col gap-[3px]">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-[5px] text-control-label font-medium text-mint-text">
-                          <span aria-hidden className="size-[7px] rounded-full bg-mint" />
-                          Connected
+                        <span className="inline-flex items-center gap-[5px] text-control-label font-medium group-has-[[data-recheck][aria-busy=true]]:hidden">
+                          {unhealthy ? (
+                            <span className="inline-flex items-center gap-[5px] text-marigold-text">
+                              <span aria-hidden className="size-[7px] rounded-full bg-marigold" />
+                              {HEALTH.unhealthy}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-[5px] text-mint-text">
+                              <span aria-hidden className="size-[7px] rounded-full bg-mint" />
+                              {HEALTH.connected}
+                            </span>
+                          )}
+                        </span>
+                        {/* THE CHECKING STATE, hidden until the ⋯'s own submit says it is busy.
+                            `role="status"` so a reader is told the check started without the focus
+                            leaving the row that started it. */}
+                        <span
+                          role="status"
+                          className="hidden items-center gap-[5px] text-control-label font-medium text-marigold-text group-has-[[data-recheck][aria-busy=true]]:inline-flex"
+                        >
+                          <span
+                            aria-hidden
+                            className="size-[7px] animate-health-pulse rounded-full bg-marigold"
+                          />
+                          {HEALTH.checking}
                         </span>
                         {site.capability === 'preview_only' ? (
                           <span className="inline-flex items-center gap-[6px] rounded-pill border border-line bg-surface px-[9px] py-[2px] text-[11.5px] font-semibold text-ink">
@@ -331,15 +434,63 @@ export default async function Sites({
                           </span>
                         ) : null}
                       </span>
+                      {/* `last_checked_at` FIRST, `settings_read_at` BEHIND IT. The health check is
+                          what the customer just pressed and what runs daily, so its stamp is the
+                          one "Checked just now" is about; a site connected before this story has
+                          none, and connect's own settings read is then the honest answer rather
+                          than "Not checked yet" about a site that was read at connect. */}
                       <span className="text-helper-caption text-ink-soft">
-                        {checkedLabel(site.settings_read_at, now)}
+                        {checkedLabel(site.last_checked_at ?? site.settings_read_at, now)}
                       </span>
+                      {/* THE FRAME'S OWN CAPTION AND ITS OWN BUTTON (`:99-100`) — "Key regenerated
+                          Aug 15" beside an outline **Reconnect**, drawn only on an unhealthy card
+                          where it can act (UX-DR3). The reason and the date come from the OPEN
+                          `site_health` notification row, not from a column: the reason is the one
+                          table's (`HEALTH_REASONS`), the date is `deadlineLabel`'s, and `HEALTH
+                          .reason` is the wrapper — so no number and no date format lives in the
+                          copy (standing rule 4).
+
+                          **Reconnect** IS A `PanelLink`, EXACTLY AS THE ⋯'S Manage API keys ROW IS:
+                          a plain click opens the Manage keys WINDOW over this list and a modified
+                          or scripts-off click takes the full page, and it already carries its own
+                          busy state (R-98). This is EXPERIENCE.md's promised second entry point
+                          into that panel, and the first thing that has ever reached it besides the
+                          ⋯ menu. A row that could not be read leaves the caption absent and the
+                          button standing: the button is the recovery and does not depend on knowing
+                          why. */}
+                      {unhealthy ? (
+                        <span className="mt-[7px] flex flex-wrap items-center gap-[10px]">
+                          <PanelLink
+                            href={keysPath(site.id)}
+                            panel={keysPopupPath(site.id)}
+                            busy={HEALTH.reconnectBusy}
+                            className={`inline-flex h-8 items-center gap-[6px] rounded-thumb border border-coral bg-surface px-[14px] text-control-label font-semibold text-coral-text transition-colors hover:bg-coral-tint ${ring}`}
+                          >
+                            <Refresh size={12} strokeWidth={1.8} />
+                            {HEALTH.reconnect}
+                          </PanelLink>
+                          {notice ? (
+                            <span className="text-helper-caption text-ink-soft">
+                              {HEALTH.reason(
+                                notice.reason && notice.reason in HEALTH_REASONS
+                                  ? HEALTH_REASONS[notice.reason as HealthReason]
+                                  : HEALTH.emailUnknown,
+                                deadlineLabel(notice.at),
+                              )}
+                            </span>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </div>
                     {/* The one card that could not be let go says so — `?disconnect=<id>` names it,
                         as `?recheck=` already does, and the sentence is the app's own table's. */}
                     {disconnectedId === site.id ? (
                       <Banner kind="error">{connectMessage('disconnect_failed')}</Banner>
                     ) : null}
+                    {/* STORY 3.7: the one card whose check could not be FINISHED says so, and the
+                        card's badge is unchanged — a check that did not run decides nothing
+                        (`server/site-health.ts`'s `health: null`). */}
+                    {healthFailedId === site.id ? <Banner kind="error">{HEALTH.failed}</Banner> : null}
                     {/* FR-C8's "Moved domains?" — INFO and not a warning: nothing is wrong, the
                         customer has connected the same Ghost at a new address and there are two
                         things to do about it. The days come from `ORPHAN_SNAPSHOT_DAYS`, so the

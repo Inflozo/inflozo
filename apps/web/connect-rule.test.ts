@@ -8,6 +8,7 @@ import {
   CONNECT_MESSAGES,
   connectMessage,
   DISCONNECT,
+  HEALTH,
   projectCounts,
   projectsLabel,
   filterSites,
@@ -204,6 +205,32 @@ test('KEYS holds every word Manage keys shows, and names no number', () => {
   assert.ok(!/\d/.test(words), `KEYS names a number: ${words}`)
   const spelled = /\b(one|two|three|four|five|six|seven|eight|nine|ten|ninety)\b/i
   assert.ok(!spelled.test(words), `KEYS spells a number out: ${words}`)
+})
+
+/* ───────── STORY 3.7 — THE HEALTH CHECK'S WORDS, UNDER THE SAME NO-NUMBER RULE.
+
+   `wordsOf` above is what makes this checkable over an object that nests and whose sentences take
+   arguments: it walks the whole shape and calls every function with 'x', so a figure that arrived
+   as a PARAMETER is not mistaken for one written into the copy. The three objects this file guards
+   are now `DISCONNECT`, `KEYS` and `HEALTH`, and the assertion is EXTENDED to the third rather
+   than written a second time — which is the standing rule the assertion is about, applied to
+   itself. What the copy may not name: the rolling cap's days (`EMAIL_CAP_DAYS`), the version
+   floor's major (`MIN_GHOST_MAJOR`), the schedule (`vercel.json`) and any date format
+   (`deadlineLabel`). Every branch of the copy's BEHAVIOUR — R-98's busy twins, the three card
+   states, the reason wrapper — is executed in `health-rule.test.ts` beside the decision it
+   describes. */
+test('HEALTH holds every word the check shows, and names no number', () => {
+  const words = wordsOf(HEALTH).join(' ')
+  assert.ok(!/\d/.test(words), `HEALTH names a number: ${words}`)
+  const spelled = /\b(one|two|three|four|five|six|seven|eight|nine|ten|ninety)\b/i
+  assert.ok(!spelled.test(words), `HEALTH spells a number out: ${words}`)
+  // "EXPIRED" APPEARS NOWHERE IN IT EITHER — Ghost's `api_keys` has no expiry column (§37), and a
+  // health badge is the surface most tempted to say it.
+  assert.doesNotMatch(words, /expired/i)
+  // AND NOTHING IN IT PROMISES A SECOND EMAIL. FR-P2 permits no nudge and the one email is the
+  // whole of what a broken connection ever sends, which is what `emailOnly` says out loud.
+  assert.match(HEALTH.emailOnly, /only email/)
+  assert.doesNotMatch(words, /we.ll (check|email|remind) (you )?again/i)
 })
 
 test('FR-C8’s moved-domains hint names the orphan clock, and takes it as an argument', () => {

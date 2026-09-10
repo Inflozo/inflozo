@@ -1,19 +1,8 @@
 import type { ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
-import { ring } from '@/components/kit/greyed'
 import { Submit } from '@/components/kit/submit'
-import {
-  BRAND_COPY,
-  brandPath,
-  brandPopupPath,
-  hasBrand,
-  INJECTION_COPY,
-  PLAN_COPY,
-  PORTAL_COPY,
-  PREVIEW_COPY,
-} from '@/lib/probe-rule'
+import { INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY } from '@/lib/probe-rule'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
-import { PanelLink } from './panel-link'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
    one-time code-injection notice, the plan question, the Portal question, and B15's Preview-Only
@@ -47,22 +36,17 @@ import { PanelLink } from './panel-link'
    beside "Connected" (`page.tsx`), because it is the connection's state and the pills line is
    metadata. These blocks are the card's last child.
 
-   STORY 3.4 PUT FR-C4's OFFER AT THE TOP OF THE LIST, and it is A PLAIN LINK, not a Banner: a
-   Banner tells or asks, and this offers.
+   STORY 3.4 PUT FR-C4's OFFER AT THE TOP OF THIS LIST, AND STORY 3.7 TOOK IT AWAY AGAIN — the
+   owner's instruction of 2026-09-10. It was a coral `PanelLink` here, the most prominent thing on
+   the card; it is now the ⋯ menu's first row, where every other per-site action already lives
+   (`site-menu.tsx`). NOTHING ABOUT HOW IT BEHAVES MOVED WITH IT: the same `PanelLink`, the same two
+   addresses, the same `BRAND_COPY.offer` and `BRAND_COPY.opening`, and it is still shown only while
+   the site has a brand worth offering and still never goes away — "skippable and re-runnable"
+   (FR-C4) means skipped and not-yet-taken are one state, so nothing records that it was pressed.
+   The card decides that with `hasBrand` and hands `SiteMenu` the boolean.
 
-   IT IS `PanelLink`, THE SAME CONTROL S11a's ⋯ "Manage API keys" row is, and the reasons are one
-   per bug it has had. It was an `<a href>` first, which is a document navigation, so the press
-   left this page standing and unchanged until the next one painted (the owner's finding 1 on
-   Story 3.4). It became a `next/link` to `/sites/brand?site=…`, which an intercepted route drew as
-   a popup — and the URL moving off `/sites` took the shell's top bar with it and left every answer
-   from inside the window landing on the full page behind it (his findings on both popups,
-   2026-09-10). `PanelLink` keeps the `href` — the full page, which is where a scripts-off click
-   and a modified click still go — and turns a plain click into `/sites?brand=…`, a window over
-   this list at an address the list never leaves. It says `Opening…` while the panel loads, which
-   is the busy state his finding 2 asked for on the other one. It is shown while the site has a brand worth offering
-   and it never goes away — "skippable and re-runnable" (FR-C4) means skipped and not-yet-taken
-   are one state, so nothing records that it was pressed. DW-57 still binds: this is a block in
-   the card's last child, not a pill on the metadata line and not a word on the state line. */
+   THE FOUR PROBE BLOCKS BELOW ARE UNTOUCHED. DW-57 still binds all of them: they are the card's
+   LAST child, not a pill on the metadata line and not a word on the state line. */
 
 export type NoticeSite = {
   id: string
@@ -142,21 +126,10 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   const planAsk = settings.plan_ask === true
   const portalAsk = settings.portal_button_source === 'default'
   const preview = site.capability === 'preview_only'
-  const brand = hasBrand(settings.brand)
-  if (!brand && !injection && !planAsk && !portalAsk && !preview) return null
+  if (!injection && !planAsk && !portalAsk && !preview) return null
 
   return (
     <div className="flex flex-col gap-[10px]">
-      {brand ? (
-        <PanelLink
-          href={brandPath(site.id)}
-          panel={brandPopupPath(site.id)}
-          busy={BRAND_COPY.opening}
-          className={`self-start rounded-sm text-ui-dense font-medium text-coral-text underline-offset-2 hover:underline ${ring}`}
-        >
-          {BRAND_COPY.offer}
-        </PanelLink>
-      ) : null}
       {injection ? (
         <Banner kind="info" rowHeight={ROW}>
           <span className="flex flex-col gap-2">

@@ -48,6 +48,14 @@ export interface CallResult {
   ok: boolean
   status: number
   body: unknown
+  /**
+   * THE BYTES, FOR THE ONE READ THAT IS NOT JSON (Story 3.7). `GET /settings/routes/yaml/` answers
+   * YAML, so `body` is null for it — `JSON.parse` fails and the catch below sets it so — and
+   * FR-I4's `routes_live_sha256` is a hash OF THE FILE, not of a parse of it. It is no wider a
+   * disclosure than `body` already is: both are the same response, and neither is stored (the
+   * spine's Logging rule).
+   */
+  text: string
   code?: string
 }
 
@@ -368,6 +376,7 @@ export async function fetchWithKey(args: {
   const started = Date.now()
   let status = 0
   let body: unknown
+  let text = ''
 
   try {
     const response = await fetch(url, {
@@ -381,7 +390,7 @@ export async function fetchWithKey(args: {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
     status = response.status
-    const text = await response.text()
+    text = await response.text()
     try {
       body = text ? JSON.parse(text) : null
     } catch {
@@ -410,7 +419,7 @@ export async function fetchWithKey(args: {
   )
   // The BODY is returned to the caller and stored nowhere: Story 3.3 computes one boolean from a
   // settings read and discards it (the spine's Logging rule).
-  return { ok, status, body, ...(ok ? {} : { code: ghostCode(status, error) }) }
+  return { ok, status, body, text, ...(ok ? {} : { code: ghostCode(status, error) }) }
 }
 
 
@@ -451,6 +460,55 @@ export async function findSiteByAdminKeyId(args: {
        limit 1
     `
     return row ? { siteId: row.site_id, url: row.url, disconnectedAt: row.disconnected_at } : null
+  })
+}
+
+/**
+ * DW-78 CLOSES HERE — Story 3.7. Every site connected before Story 3.6 has a null `admin_key_id`,
+ * so Manage keys draws "Added" with no mask beside it and FR-C8's "Moved domains?" hint can never
+ * fire for that record. The value is DERIVABLE — it is the half of the stored secret in front of
+ * the colon — and the ledger rejected both routes to it that were available then: a backfill inside
+ * the migration would have put a `vault.decrypted_secrets` read inside a schema change, and a lazy
+ * fill on the next `call()` would have put a WRITE on the read path of every Ghost call.
+ *
+ * THE DAILY CHECK IS THE THIRD ROUTE AND IT COSTS NOTHING: it visits every site's credentials once
+ * a day anyway. So this is called once per site per check, and it is a no-op — one indexed
+ * primary-key update matching nothing — on every record that already has the column filled.
+ *
+ * IT IS ONE STATEMENT, IN SQL, AND THE SECRET NEVER ENTERS NODE. `split_part(secret, ':', 1)` runs
+ * inside the database, so the decrypted value exists only between `vault.decrypted_secrets` and the
+ * column beside it — narrower than `decrypt()` above, which hands the whole credential to
+ * `mintJwt`. The audit row rides the same statement as a CTE, exactly as `decrypt()`'s does, so a
+ * Vault read here can no more go unrecorded than one on the call path.
+ *
+ * `where admin_key_id is null` IS THE WHOLE GUARD. It can never overwrite a mask that disagrees
+ * with its secret, and it can never write one for `staff`, which has no such column and no such
+ * use. Scoped to the caller's own row by `user_id`, the clause every write in this file carries.
+ */
+export async function backfillAdminKeyId(args: {
+  siteId: string
+  userId: string
+  route: string
+}): Promise<{ filled: boolean }> {
+  return withStore(args.route, async () => {
+    const client = sql()
+    const rows = await client<{ admin_key_id: string }[]>`
+      with filled as (
+        update private.site_credentials c
+           set admin_key_id = split_part(v.decrypted_secret, ':', 1)
+          from vault.decrypted_secrets v
+         where c.site_id = ${args.siteId} and c.user_id = ${args.userId}
+           and c.admin_key_id is null
+           and v.id = c.admin_key_vault_ref
+        returning c.user_id, c.admin_key_id
+      ), logged as (
+        insert into private.credential_audit (action, user_id, site_id, route, outcome, detail)
+        select 'vault_decrypt', user_id, ${args.siteId}, ${args.route}, 'ok', '{}'::jsonb
+        from filled
+      )
+      select admin_key_id from filled
+    `
+    return { filled: rows.length > 0 }
   })
 }
 

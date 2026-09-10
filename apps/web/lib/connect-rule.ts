@@ -361,6 +361,83 @@ export const KEYS = {
 } as const
 
 /**
+ * STORY 3.7 — THE HEALTH CHECK'S EVERY WORD, and they live here beside `DISCONNECT` and `KEYS`
+ * for the reason those two do: `site-menu.tsx` and the Sites card draw them,
+ * `run-verify-site-health.py` reads them out of this file, and the screen and the harness cannot
+ * then disagree about what the customer was shown.
+ *
+ * NO NUMBER IS IN HERE, and `connect-rule.test.ts` asserts it over this object as it does over
+ * the other two: the cap's figure is `EMAIL_CAP_DAYS`'s, the version floor's is
+ * `MIN_GHOST_MAJOR`'s, the schedule is `vercel.json`'s, and the date beside a reason on the card
+ * is `deadlineLabel`'s — `reason` takes it as an argument rather than spelling it (standing rule 4).
+ *
+ * THE REASON SENTENCES ARE NOT HERE. They are `HEALTH_REASONS` in `lib/health-rule.ts`, beside the
+ * decision that picks one, because that is the file `node --test` drives the five causes through;
+ * this object holds the WRAPPER that puts a sentence and a date on one caption.
+ *
+ * **"Use this site's brand" IS NOT HERE EITHER, AND THAT IS DELIBERATE.** The spec's Code Map asks
+ * for "the two menu rows' labels and their busy twins"; the brand row's two words already exist as
+ * `BRAND_COPY.offer` and `BRAND_COPY.opening` in `lib/probe-rule.ts` — Story 3.4 wrote them for the
+ * link this ⋯ row replaces, and the harness already reads them from there. A second copy of one
+ * sentence is the drift standing rule 7 exists to catch, so the row moved and the words did not.
+ *
+ * THREE DEPARTURES FROM `S11 Sites.dc.html` S11a, each recorded rather than silent (R-74):
+ *
+ *   1. A FIFTH ⋯ ROW, "Use this site's brand", FIRST. The owner's instruction of 2026-09-10. It
+ *      goes at the top because it is the one item that does something *for* the customer rather
+ *      than *about* the connection, and because it is replacing the most prominent thing on the
+ *      card — a coral link. It appears only where there is a brand to offer (UX-DR3).
+ *   2. "Re-check connection", NOT "Check connection". The owner wrote *Check connection*; the
+ *      frame's own row (`:78`) says *Re-check connection*, and it sits three lines from B15's
+ *      existing **Re-check plan**, which reads as its sibling. The frame's word is used and his
+ *      manual test shows it to him.
+ *   3. "Reconnect" IS DRAWN ONLY ON AN UNHEALTHY CARD. As a permanent ⋯ row (the frame's `:79`) it
+ *      would be a second name for **Manage API keys** directly beneath it, and a menu with two rows
+ *      that open the same panel teaches people not to read it. On the unhealthy card it is the
+ *      recovery action, which is what the frame draws it as (`:99`).
+ */
+export const HEALTH = {
+  /** The ⋯ row, the frame's own FIRST item (`S11 Sites.dc.html:78`), wearing its refresh glyph. */
+  recheck: 'Re-check connection',
+  /** R-98: what that row says while it is talking to Ghost, and it may not equal the resting word. */
+  recheckBusy: 'Checking…',
+
+  /** The state line's two words — the frame's mint `Connected` (`:70`) and amber (`:94`). */
+  connected: 'Connected',
+  unhealthy: 'Reconnect needed',
+  /** …and the third state, which the frame does not draw: a check in flight (the owner, 2026-09-10). */
+  checking: 'Checking…',
+
+  /** The unhealthy card's own control (`:99`) — a `PanelLink` to the Manage keys window. */
+  reconnect: 'Reconnect',
+  reconnectBusy: 'Opening…',
+
+  /**
+   * The caption under an unhealthy badge, and the frame's own shape: "Key regenerated Aug 15"
+   * (`:100`) — one sentence and the date it was found, on one line. Both are the caller's, which
+   * is what keeps this object free of a number AND of a date format.
+   */
+  reason: (sentence: string, date: string) => `${sentence} · ${date}`,
+
+  /** The one thing a pressed **Re-check connection** can say that is not an answer about Ghost. */
+  failed: 'We couldn’t finish that check just now. Try it again in a moment.',
+
+  /* FR-P1's THIRD EMAIL. Its subject and heading name the site — the customer may have several —
+     and its note is the deletion email's own promise, because FR-P2 permits no nudge and this is
+     the only message a broken connection ever sends. */
+  emailSubject: (site: string) => `${site} needs reconnecting to Inflozo`,
+  emailPreheader: 'Inflozo could not reach your Ghost site with the key it has.',
+  emailHeading: (site: string) => `Reconnect ${site}`,
+  emailBody: (date: string) =>
+    `Inflozo checks every connected site every day. On ${date} this site did not let us in, so ` +
+    'nothing can be published to it until the connection is fixed. Your live site is untouched.',
+  /** A cause `HEALTH_REASONS` does not name — the email still says what to do about it. */
+  emailUnknown: 'Paste your Ghost keys again and Inflozo will check them straight away.',
+  emailButton: 'Open API keys',
+  emailOnly: "This is the only email we'll send about this.",
+} as const
+
+/**
  * The connect sheet's dialog id. S11a's "Connect site" sits in the SHELL's top bar (the owner's
  * finding 5) and the sheet is rendered by the page, so the DOM is the only thing the two share —
  * one constant rather than two string literals a rename could separate (`NEW_PROJECT_DIALOG`'s

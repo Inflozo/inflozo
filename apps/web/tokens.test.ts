@@ -107,15 +107,20 @@ const PACK_DATA = join('lib', 'style-pack.ts')
 const IDENTITY = join('components', 'kit', 'logo.tsx')
 
 /*
- * THE THIRD, and it is the email one (Story 2.5). FR-P1's eighth email is composed by
- * `lib/deletion-email.ts`, and an email client has neither custom properties nor a stylesheet it
- * can be trusted with — `supabase/auth/magic-link.html` already carries the same five values
- * inline for exactly that reason, and this module is that template as a function. So the literals
- * stay, and the test BELOW turns them from an exemption into a checked copy: each one must be a
- * token's own value in the theme, so the day a token moves this fails rather than quietly sending
- * the old paper colour to an inbox.
+ * THE THIRD, and it is the email one (Story 2.5). An email client has neither custom properties
+ * nor a stylesheet it can be trusted with — `supabase/auth/magic-link.html` already carries the
+ * same five values inline for exactly that reason, and this module is that template as a function.
+ * So the literals stay, and the test BELOW turns them from an exemption into a checked copy: each
+ * one must be a token's own value in the theme, so the day a token moves this fails rather than
+ * quietly sending the old paper colour to an inbox.
+ *
+ * IT MOVED WITH THE SHELL IN STORY 3.7, and this is the whole reason the exemption names ONE path
+ * rather than a directory: FR-P1's eighth email was `lib/deletion-email.ts` alone until the third
+ * one needed the same paper, so the shell — and its five hexes with it — became
+ * `lib/email-shell.ts` and BOTH emails ride it. The exemption follows the values, so the two
+ * callers carry no colour at all and are scanned like every other file.
  */
-const EMAIL = join('lib', 'deletion-email.ts')
+const EMAIL = join('lib', 'email-shell.ts')
 
 test('no .ts or .tsx under apps/web carries a colour literal', () => {
   const walk = (dir: string): string[] =>
@@ -149,12 +154,14 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
 })
 
 /**
- * THE EMAIL'S EXEMPTION, PAID FOR. `lib/deletion-email.ts` may write hexes because an inbox has no
- * token layer — but every one of them must still BE a token's value, or the one email the product
- * sends itself would drift away from the product it is about, silently and for ever. The values
- * are read out of the module and looked up in the theme; neither side is restated here.
+ * THE EMAIL SHELL'S EXEMPTION, PAID FOR. `lib/email-shell.ts` may write hexes because an inbox has
+ * no token layer — but every one of them must still BE a token's value, or the emails the product
+ * sends itself would drift away from the product they are about, silently and for ever. The values
+ * are read out of the module and looked up in the theme; neither side is restated here. Both
+ * callers — the deletion confirmation and Story 3.7's reconnect notice — are covered by this one
+ * assertion, because there is one shell.
  */
-test('every colour the deletion email writes is a token value in the theme', () => {
+test('every colour the email shell writes is a token value in the theme', () => {
   const source = readFileSync(join(process.cwd(), EMAIL), 'utf8')
   const written = [...new Set(source.match(/#[0-9A-Fa-f]{6}\b/g) ?? [])]
   assert.ok(written.length > 0, `${EMAIL} carries no colour at all — delete its exemption with them`)

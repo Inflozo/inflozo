@@ -1,9 +1,11 @@
-import { timingSafeEqual } from 'node:crypto'
-
 /**
- * THE PURGE'S PURE HALF — the secret compare, the batch size and the four prefixes. No Next
+ * THE PURGE'S PURE HALF — the batch size, the four prefixes and the loop. No Next
  * import and no Supabase import, so `node --test` reaches every branch of it (the route beside
  * this file reaches none of them: it needs a deployment, a bearer and a due account).
+ *
+ * THE BEARER COMPARE LEFT WITH STORY 3.7. It is `lib/cron-auth.ts`'s now, because AD-33's
+ * second scheduled job needs the same fail-closed door and a second copy of it is a second
+ * place for the rule to be true — `purge.test.ts` still executes it, from its new home.
  */
 
 /**
@@ -21,23 +23,6 @@ export const CRON_PATH = '/api/cron/purge-accounts'
  * and the run is reconciliation-based, so the 26th account is simply due tomorrow.
  */
 export const BATCH = 25
-
-/**
- * VERCEL'S OWN MECHANISM, FAIL-CLOSED. A project that carries `CRON_SECRET` gets
- * `Authorization: Bearer $CRON_SECRET` on every cron invocation (Vercel docs, read 2026-09-07).
- *
- * AN UNSET SECRET IS A 401, never an open endpoint: the `!secret` line is the whole difference
- * between a door that is shut when the variable is missing and a purge anyone on the internet can
- * fire. The length check comes first because `timingSafeEqual` THROWS on unequal lengths rather
- * than returning false, and it is the comparison itself — never `===` — because the header is
- * attacker-supplied and the secret is the only thing guarding an irreversible job.
- */
-export function authorized(header: string | null, secret: string | undefined): boolean {
-  if (!secret || !header) return false
-  const expected = Buffer.from(`Bearer ${secret}`)
-  const given = Buffer.from(header)
-  return given.length === expected.length && timingSafeEqual(given, expected)
-}
 
 /**
  * WHOSE ID NAMES THE TOP FOLDER, per bucket, with the schema line each layout is stated on.

@@ -352,6 +352,52 @@ DOCS = [
   'the first execution of the list-v2 hypothesis lib/storage-drain.ts rests on — and needs no '
   'deployment. --url points a Review run at a deployment URL; it defaults to the apex, which '
   'routing.ts passes through to the same handler Vercel invokes. Story 2.6.'),
+ ('tools/probe/run-verify-site-health.py', 'tool', 'Daily site-health harness',
+  "FR-C5's daily health check, its cron door, AD-25's notification row and FR-P1's third email, "
+  'executed against T1, T3, the live Supabase, the real Resend and the deployed route (R-82). '
+  'Story 3.7. Its docstring\'s step list is DERIVED from a STEPS table in its own source and a '
+  'steps-listed assertion fails the run if the two ever disagree — the sibling harness\'s '
+  'hand-typed list went stale three times inside one story. What it executes: the app\'s own copy, '
+  'read out of lib/connect-rule.ts and lib/health-rule.ts with node --experimental-strip-types and '
+  'printed rather than retyped, the rolling cap and the batch size with it; GET /admin/config/ 200 '
+  'on both majors as the HEALTHY CONTROL first (standing rule 2), each version recorded; GET '
+  '/settings/routes/yaml/ 200 on both majors with the ADMIN key alone — no Staff token — the '
+  'sha256 of the bytes recorded (that is what routes_live_sha256 holds) and the body recorded as '
+  'NOT JSON, which is why CallResult had to start carrying text; a TAMPERED copy of T3\'s key — '
+  'one hex digit of its kid, a key Ghost has never issued — answering 401 UNKNOWN_ADMIN_API_KEY, '
+  'so the unhealthy CAUSE is executed with T3 untouched and nothing to reset; then the app\'s own '
+  'whole chain over what the wire just said, ghostCode(401, envelope) -> ghost_unknown_key -> '
+  'unhealthy with its sentence, plus 4.48.0 -> ghost_too_old (DW-63, the branch no server can '
+  'produce since neither test Ghost is a Ghost 4) and ghost_unreachable -> UNDECIDED, which is what '
+  'keeps FR-P2\'s no-nudges true when somebody\'s Ghost is briefly offline. The first writing of '
+  "that step fed Ghost's own code straight into healthOf and went red, correctly. due-select runs "
+  "the CRON'S OWN QUERY against the live table — two claims about PostgREST that no unit test can "
+  'reach and that would each have failed as a 400 at 05:40 with nobody watching: the jsonb filter '
+  'credentials_present->>admin=eq.true, and a NULLS FIRST order on last_checked_at, which is what '
+  "makes the first run DW-62's backfill; it records how many sites are due and how many have never "
+  'been checked at all. notice-rls is the '
+  'one claim no other gate covers: two throwaway users, one site_health row written for the first '
+  "with the service role, then read back through EACH ONE'S OWN session — the owner sees it, the "
+  'other sees nothing, an insert and a delete from a user session are both 403, and the resolve is '
+  "stamped THROUGH THE data->>site_id FILTER resolveNotice really uses — notifications is FR-B7's "
+  'table and has no site_id column, so a jsonb path in an UPDATE filter is a claim about PostgREST '
+  'and a 400 there would mean recovery never resolved anything in production — after which the row '
+  'leaves the open set the card reads; every fixture is deleted in a '
+  'finally and the Admin-API user count is the control. schedule reads both sides and restates '
+  "neither: vercel.json's crons carries the path lib/health-rule.ts's CRON_PATH names and a route.ts "
+  'is really there. resend sends FR-P1\'s third email FOR REAL, composed by the app\'s own '
+  'healthEmail, RESEND_FROM -> RESEND_TEST_INBOX, its id recorded (a User-Agent is set because '
+  'Resend sits behind Cloudflare bot protection that answers urllib\'s default with 403 "error code '
+  '1010" — check-access.py:45-49 records the same quirk). Then, with a deployment: the cron with no '
+  'Authorization and with a wrong bearer are both 401 from THE ROUTE — body Unauthorized, '
+  'x-matched-path naming it, cache-control no-store, so a platform 401 cannot pass for the control — '
+  'and the real bearer is RECORDED rather than asserted green, because a real account whose Ghost is '
+  'genuinely unhealthy makes 500 the correct answer. WHAT IT DELIBERATELY DOES NOT DO: it never '
+  'regenerates a key and never disconnects anything, so it proves the CAUSE and not the round trip '
+  '— the card going amber, the email arriving, the second press sending nothing and the recovery '
+  "clearing it are the owner's manual test on the deployed site, which is R-80's gate for a UI story "
+  'and the one place a real regenerate belongs. No key, no address and no site title is ever '
+  'printed. --check runs everything but the deployed cron and needs no deployment. Story 3.7.'),
  ('tools/probe/run-verify-ghost-admin.py', 'tool', 'Connect wizard and Admin chokepoint harness',
   'FR-C1/FR-C2 driven through the real UI on the deployed site, and read back off the wire and off '
   'the transaction pooler. Story 3.1 drove a bearer-gated verify route because the Admin chokepoint '

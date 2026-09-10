@@ -27,6 +27,7 @@ import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { call, fetchWithKey, findSiteByAdminKeyId, remove, store } from '@/server/ghost-admin'
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
 import { isRedirect } from '@/lib/action-redirect'
+import { checkSite } from '@/server/site-health'
 import { probeSite } from '@/server/site-probe'
 
 /**
@@ -74,6 +75,13 @@ const DISCONNECT_ROUTE = 'sites/disconnect'
 const KEYS_ROUTE = 'sites/keys'
 const REMOVE_TOKEN_ROUTE = 'sites/keys/remove-token'
 const TEST_ROUTE = 'sites/keys/test'
+/* STORY 3.7 — AND IT IS ITS OWN FOR THE REASON THE FOUR ABOVE ARE. `checkSite` carries this into
+   every `vault_decrypt` and `admin_read` row it leaves, so stamping a customer-pressed re-check
+   `sites/connect` would put the wrong surface in the one record that exists to be trusted — the
+   exact defect the review of 2026-09-09 caught one story earlier. The CRON's own route string is
+   the cron's (`api/cron/site-health/route.ts`), so the log can tell the daily pass apart from the
+   press even though both call one function. */
+const RECHECK_CONNECTION_ROUTE = 'sites/recheck-connection'
 /** `proxy.ts` rewrites `app.inflozo.com/sites` onto the internal `/app/sites`. */
 const SITES = '/app/sites'
 /** …and `app.inflozo.com/` onto `/app`, which is the dashboard's own revalidate path. */
@@ -104,6 +112,10 @@ const brandBase = (formData: FormData, siteId: string) =>
 /* STORY 3.5, and the same shape one row up: the card that could not be disconnected is the one
    that says so, named in the URL, so no other card claims a failure that was not its own. */
 const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}`
+/* STORY 3.7, and the same shape again: a check that could not be FINISHED — not one that answered
+   "Ghost refused this key", which is a badge and not a failure — names the card it belongs to, so
+   `?health=` reads exactly as `?recheck=`, `?disconnect=` and `?moved=` already do. */
+const HEALTH_FAILED = (siteId: string) => `${SITES_URL}?health=${siteId}`
 /* STORY 3.6. Manage keys is a SERVER-RENDERED screen with no `useActionState` to answer — that is
    what makes every control on it work with JavaScript off — so its three actions speak the way
    `recheckPlan` and `disconnectSite` already do: they redirect to the screen, and the screen reads
@@ -620,6 +632,56 @@ export async function recheckPlan(formData: FormData): Promise<void> {
   // site's failure printed the banner under EVERY Preview-only card (review, 2026-09-08 — five
   // layers, and the matrix row says "THE CARD is unchanged and a banner says to try again").
   redirect(summary.ok ? SITES_URL : RECHECK(at.siteId))
+}
+
+/**
+ * STORY 3.7 — S11a's ⋯ **Re-check connection**, and it is `recheckPlan`'s TWIN one row up: the
+ * daily check, run now, for the customer who has just re-pasted a key and does not want to wait
+ * until tomorrow. `checkSite` is the whole of it — the same function AD-33's cron drives, so the
+ * answer a customer gets by pressing this is literally the answer the cron would have given.
+ *
+ * BOTH WAYS OUT REDIRECT, for the reason `recheckPlan`'s own comment records: a form posts to the
+ * URL it is on, so returning quietly on success would leave a page still at `?health=…` showing a
+ * failure line above a card that had just re-checked cleanly. Success goes to `/sites`; a check
+ * that could not be FINISHED goes to `?health=<siteId>`, naming the one card it is about.
+ *
+ * "GHOST REFUSED THIS KEY" IS NOT A FAILURE OF THE PRESS. It is an ANSWER — the card comes back
+ * amber with the reason and today's date, which is the whole point of the control — so it
+ * redirects to `/sites` like any other answer. `checkSite` answers `health: null` only when the
+ * check could not be made at all, and that is the one thing this line reads.
+ *
+ * SOMEBODY ELSE'S SITE DOES NOTHING AND WRITES NOTHING: `siteOf` reads through the caller's own
+ * session and `checkSite` scopes every read and write with the same `user_id`, so a forged
+ * `site_id` reaches no row and answers `health: null`. That lands on `?health=<forged id>`, which
+ * is a card the list does not draw — so nothing is written, nothing is disclosed and the customer
+ * sees nothing at all, which is the matrix's "nothing happens" reached by the same one code path
+ * every real press takes rather than by a branch that only a forged post would exercise.
+ *
+ * NO THROTTLE, DELIBERATELY (DW-64, amended by this story). It is the customer's own site, their
+ * own key and their own Ghost, and the control exists precisely so somebody who has just fixed a
+ * key does not have to wait a day. A cooldown wants a rule nobody has decided — how long, and what
+ * the row says while it waits.
+ */
+export async function recheckConnection(formData: FormData): Promise<void> {
+  const at = await siteOf(formData, 're-check connection')
+  if (!at) return
+  let finished = false
+  try {
+    const answer = await checkSite({
+      siteId: at.siteId,
+      userId: at.userId,
+      route: RECHECK_CONNECTION_ROUTE,
+    })
+    finished = answer.health !== null
+  } catch (thrown) {
+    // `checkSite` catches its own failures and answers `health: null`; this catches the one it
+    // cannot, a throw on the way in. Logged with a code and no value.
+    console.error('sites: re-check connection failed', {
+      code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
+    })
+  }
+  revalidatePath(SITES)
+  redirect(finished ? SITES_URL : HEALTH_FAILED(at.siteId))
 }
 
 /* ───────── STORY 3.4 — FR-C4's TWO ANSWERS, and they live in this file for the same reason the

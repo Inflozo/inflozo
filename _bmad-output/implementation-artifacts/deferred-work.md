@@ -1485,10 +1485,10 @@ reason: The frame is right about the destination and wrong about today. UX-DR3 f
 ## Deferred from: code review of spec-3-3-the-connect-time-probes (2026-09-08)
 
 - DW-61 (below): the four notice blocks put a `<form>` inside the `<span>` the Kit's Banner wraps its children in.
-- DW-62 (below): a site connected under Story 3.2 is never probed, because no product path reaches a first probe.
-- DW-63 (below): the probe rewrites `ghost_version` with none of connect's version rule.
-- DW-64 (below): **Re-check plan** has no throttle.
-- DW-65 (below): four read-modify-write paths share `site_settings` with no concurrency control.
+- DW-62 (below): a site connected under Story 3.2 is never probed, because no product path reaches a first probe. **Closed by Story 3.7.**
+- DW-63 (below): the probe rewrites `ghost_version` with none of connect's version rule. **Closed by Story 3.7.**
+- DW-64 (below): **Re-check plan** has no throttle. **Amended by Story 3.7**, which added a second such control and weighed both, as this entry asked; still open, deliberately.
+- DW-65 (below): four read-modify-write paths share `site_settings` with no concurrency control. **Amended by Story 3.7**, which added the fifth and the first that runs unattended; still open.
 
 ### DW-61: the notice blocks nest a form inside a span, because that is the slot the Kit gives them
 
@@ -1510,12 +1510,18 @@ reason: NOT this story's to fix. The pattern arrived with the owner's own two-bu
 
 ### DW-62: a site connected before Story 3.3 is never probed, because nothing asks it to be
 
-plain: The connect-time probes run when a site is connected. The two sites the owner connected while
-  testing Story 3.2 were connected before those probes existed, so nothing has ever looked at them — they
-  will show no code-injection note and no Preview-only chip even if Ghost would warrant one. There is no
-  button that says "check this site now" except **Re-check plan**, and that one only appears on a card that
-  is already marked Preview-only, which none of them is. Story 3.7's daily check is what fixes it for good.
-status: open
+plain: FIXED 2026-09-10 (Story 3.7) — Inflozo now looks at every connected site once a day on its own, and
+  the very first pass starts with the sites that have never been looked at, so the two you connected before
+  the checks existed are the first ones done. You can also ask for it yourself from a site's ⋯ menu.
+status: closed
+closed: 2026-09-10 — Story 3.7. `checkSite()` calls `probeSite` for every connected site, and AD-33's cron
+  at `app/api/cron/site-health/route.ts` selects them ordered `last_checked_at` **nulls first** — the index
+  the schema already draws (`:176`) — so a site that has never been checked is at the FRONT of the very
+  first run, which is what makes that run a backfill rather than only a refresh. `health-rule.test.ts`
+  asserts that ordering out of the route's own source, because a `.order()` quietly dropped would leave a
+  never-checked site starving behind everything else with every gate green. The second caller is the ⋯
+  menu's **Re-check connection**, so a customer need not wait for the schedule at all.
+was_status: open
 severity: low
 origin: Story 3.3 code review (2026-09-08), Blind Hunter
 location: apps/web/server/site-probe.ts (`probeSite`, whose callers are connect and B15's Re-check plan) ·
@@ -1529,11 +1535,20 @@ reason: The probe is deliberately one function with three callers and the third 
 
 ### DW-63: the probe rewrites ghost_version without connect's version rule
 
-plain: When Inflozo connects a site it refuses Ghost 4 and older with a friendly "please update Ghost". The
-  probe, which runs afterwards and again on every re-check, copies whatever version Ghost reports straight
-  onto the record without applying that rule — so a site that was downgraded would have the old version
-  stored, and Inflozo would go on talking to it in that version's dialect.
-status: open
+plain: FIXED 2026-09-10 (Story 3.7) — if a site is ever moved back to an old version of Ghost, its card now
+  says "Reconnect needed" and tells you to update Ghost, instead of quietly recording the old version and
+  carrying on.
+status: closed
+closed: 2026-09-10 — Story 3.7. `probeSite` now writes `ghost_version` only when `versionVerdict` — connect's
+  own floor, CALLED and not restated — accepts it, and REPORTS the detected version to its caller either way
+  (`ProbeSummary.version`, added for exactly this rather than a second `config/` read one level up).
+  `healthOf` turns a refused version into `unhealthy` with the `ghost_too_old` reason, which is the surface
+  this entry was waiting for. The stored version therefore stays a major `majorOf` can still pin
+  `Accept-Version` to, rather than becoming one the product cannot talk. Executed in `health-rule.test.ts`
+  against an injected version string and in `run-verify-site-health.py`'s `decision` step through the app's
+  own function — no Ghost 4 server exists and cannot (MEASUREMENTS §38), which is why the rule was pure from
+  the start.
+was_status: open
 severity: low
 origin: Story 3.3 code review (2026-09-08), Blind Hunter
 location: apps/web/server/site-probe.ts (the `ghost_version` write) · apps/web/lib/connect-rule.ts (the
@@ -1548,14 +1563,24 @@ reason: Story 3.7 is where a version is re-detected and where "this site is no l
 
 plain: The **Re-check plan** button on a Preview-only card can be pressed as often as somebody likes, and
   each press decrypts the stored key twice, makes two calls to their Ghost and writes four audit rows.
+  **Story 3.7 added a second such button** — **Re-check connection**, on every site's ⋯ menu — and
+  deliberately gave it no cooldown either.
 status: open
 severity: low
-origin: Story 3.3 code review (2026-09-08), Blind Hunter
-location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`recheckPlan`) · apps/web/server/site-probe.ts
+origin: Story 3.3 code review (2026-09-08), Blind Hunter; **amended 2026-09-10 by Story 3.7**, which weighed
+  it as this entry asked and left it open on purpose
+location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`recheckPlan` AND `recheckConnection`) ·
+  apps/web/server/site-probe.ts · apps/web/server/site-health.ts
 reason: It is the user's own site, their own key and their own Ghost, and the button exists precisely so
   somebody who has just upgraded does not have to wait a day. A cooldown wants a rule nobody has decided
   (how long, and what the button says while it waits), and `settings_read_at` is already on the row to base
-  one on. Story 3.7 adds scheduled load on the same path and is the natural place to weigh both together.
+  one on. **Story 3.7 weighed both together, as this entry asked, and decided NOT to throttle** — the second
+  control has exactly the same argument for existing (somebody who has just re-pasted a key wants the answer
+  now, not tomorrow) and `last_checked_at` is now on the row as a basis, so the figure is the only thing
+  missing and it is the owner's. What 3.7 DID add is R-98's guard on both: the row refuses a second press
+  while one is in flight (`useSubmitting`), so the accidental double-tap this entry was mostly about no
+  longer reaches the server. The remaining case is somebody pressing it deliberately, once a second, on
+  their own site — and the story that gives the owner a reason to care about that cost decides the rule.
 
 ### DW-65: four writers share site_settings, and the last one wins
 
@@ -1575,6 +1600,15 @@ reason: supabase-js speaks PostgREST and PostgREST has no `||` for jsonb, so the
   credential is decrypted. Putting an ordinary settings write in there to buy atomicity would widen that
   module for the wrong reason. The story that gives the project a second, unprivileged SQL path — or 3.7,
   which adds a writer that runs unattended and therefore actually can collide — takes this.
+  **AMENDED 2026-09-10 by Story 3.7, and it stays open.** The unattended writer this entry predicted now
+  exists: the daily cron calls `probeSite`, whose read-then-write of `site_settings` is the fifth path onto
+  that column. It collides with nothing today for a reason worth writing down rather than assuming — the
+  cron is the ONLY writer that runs while nobody is looking, at 05:40 once a day, and every other writer is
+  a button somebody has to press. Two runs of the cron cannot overlap on one site (one batch, in order), and
+  a customer pressing **Re-check connection** during the daily pass would meet it — which is the case this
+  entry describes and which needs the same fraction of a second it always did. The second unprivileged SQL
+  path is still the honest fix and this story did not add one; what it did add was a reason to expect the
+  collision rather than to hope for it.
 
 ### DW-66: half of FR-C4 — the announcement bar — cannot be built until a section can be placed
 
@@ -2015,15 +2049,22 @@ reason: **It cannot happen today.** Nothing stores a staff token until Epic 7, s
 
 ### DW-78: `admin_key_id` is never backfilled, so no site connected before Story 3.6 has an Admin mask or can raise the moved-domains hint
 
-plain: The API keys screen shows the first few characters of your Admin key so you can tell which key it is.
-  It reads a column that only gets filled when a key is SAVED — so every site you connected before this
-  screen existed shows "Added" with no characters beside it, and can never raise the "Moved domains?" note
-  either. Nothing is wrong and nothing is lost; the screen simply has less to show until you next paste a key.
-status: open
+plain: FIXED 2026-09-10 (Story 3.7) — the API keys screen now shows the first few characters of the Admin
+  key for every site, including the ones you connected before that screen existed, because the daily check
+  fills them in as it goes. The "Moved domains?" note can raise on those records too now.
+status: closed
+closed: 2026-09-10 — Story 3.7, in the place this entry named as the candidate: the daily check decrypts
+  once a day anyway, so `backfillAdminKeyId()` in `server/ghost-admin/index.ts` fills `admin_key_id` where
+  it is null and does nothing at all where it is not. It is ONE statement in SQL, so the decrypted secret
+  never enters Node — `split_part(v.decrypted_secret, ':', 1)` runs inside the database, which is narrower
+  than `decrypt()` beside it, and the `vault_decrypt` audit row rides the same statement as a CTE exactly as
+  `decrypt()`'s does. Both routes this entry rejected are still rejected: no Vault read went into a
+  migration, and no write went onto the read path of every `call()`. `where admin_key_id is null` is the
+  whole guard, so it can never overwrite a mask that disagrees with its secret.
+was_status: open
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, from `store()` being the only writer
-owner: the story that next needs the mask or the hint on an OLD record; a candidate is Story 3.7, which
-  already visits every site's credentials on its daily check
+owner: Story 3.7 — the daily health check, which visits every site's credentials anyway
 location: `apps/web/server/ghost-admin/index.ts` (`store()` writes `admin_key_id`; `credentialsOf` reads it)
   · `supabase/migrations/20260909180000_credential_audit_and_key_id.sql` (the column, added nullable)
 reason: The value is DERIVABLE — it is the half of the stored secret in front of the colon — but every route

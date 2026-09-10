@@ -130,6 +130,35 @@
   --default-transition-timing-function: var(--ease-out);
 }
 
+/* ───────── STORY 3.7: THE AMBER DOT THAT PULSES WHILE A CHECK IS IN FLIGHT.
+
+   The owner asked for it on 2026-09-10 — the frame draws two states on the Sites card, mint
+   "Connected" and amber "Reconnect needed", and no third — so this is the one motion the state
+   line has. It is an OPACITY breath and not a scale or a spin: DESIGN.md § Loading says never a
+   spinner, and a 7px dot that grew would move the words beside it.
+
+   IT DEGRADES THROUGH THE EXISTING REDUCED-MOTION BLOCK ABOVE and nothing here opts out of it:
+   `animation-duration: 0.01ms !important` and `animation-iteration-count: 1 !important` stop this
+   as they stop every other animation in the app, so the dot is simply amber and still. That is
+   also why the WORDS do not change with the motion — "Checking…" is text, and text is what says
+   what is happening when the animation is switched off.
+
+   `@utility` and not a bare class, so it sits in Tailwind's utilities layer with `bg-marigold`
+   beside it and the reduced-motion block in `@layer base` can still win. */
+@keyframes health-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@utility animate-health-pulse {
+  animation: health-pulse 1200ms var(--ease-out) infinite;
+}
+
 /* `app-floor`'s condition is a COARSE POINTER, never a bare width (R-76, R-87): a desktop
    at 200% zoom is 720px wide and stays in the editor. Nothing here collapses anything —
    the editor's own ladder is D8 and Story 5.22. */
