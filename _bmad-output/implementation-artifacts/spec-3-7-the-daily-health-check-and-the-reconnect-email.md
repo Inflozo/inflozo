@@ -512,3 +512,67 @@ returned, by the key's variable name and never its value.
   the caller's own session so RLS is what proves it is theirs.
 - **The deployed cron** — `GET /api/cron/site-health` with the wrong `Authorization` answering 401,
   and Vercel's own scheduled invocation observed in the log after Deploy.
+
+### What the Dev phase ran, and what each answered (2026-09-10)
+
+Every command below was executed at this story's Dev commit. Keys are named by their variable name
+only; no value was printed, and no output recorded here carries one.
+
+| Command | Answered |
+|---|---|
+| `pnpm check` (Node 24 on PATH) | exit 0 — `apps/web` **261 tests, 261 pass, 0 fail, 0 skipped**; `ghost-shim`, `section-runtime`, `theme-compiler` 1 pass each. `health-rule.test.ts`, `busy.test.ts`, `app-routes.test.ts`, `server-wiring.test.ts`, `connect-rule.test.ts`, `purge.test.ts` and `tokens.test.ts` among them |
+| `pnpm build` | exit 0, "Compiled successfully", route table carries `ƒ /api/cron/site-health` beside `ƒ /api/cron/purge-accounts` |
+| `bash supabase/tests/run-rls-gate.sh` | exit 0 — the control held unchanged, so **no column and no migration were added** (the last acceptance criterion, and R-99: this story has no Schema phase) |
+| `python3 tools/doc-audit.py --check`, twice | PASS, 0 warnings, both runs |
+| `python3 tools/probe/run-verify-site-health.py --check` | **all 11 steps PASS** — the live run below |
+| `python3 tools/probe/run-verify-site-health.py --url https://app.inflozo.com` | **Deploy phase.** The three `cron-*` steps need the route to exist on the deployed build; it does not yet |
+
+**The real services this story hit (R-82), and what each returned:**
+
+- **T1 `ghost6.inflozo.com`** — `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`. `GET /admin/config/` **200**,
+  version `6.58.0`. `GET /settings/routes/yaml/` **200**, 130 bytes,
+  `content-type: application/yaml; charset=utf-8`, **not JSON-parseable** — which is why
+  `CallResult` had to start carrying `text`; sha256
+  `b2d675260a6071be426ac6a67ea60da9428f6169e03e25cb14cc2d7ed74381a1`.
+- **T3 `ghost5.inflozo.com`** — `GHOST5_URL`, `GHOST5_ADMIN_API_KEY`. `GET /admin/config/` **200**,
+  version `5.130.6`. `GET /settings/routes/yaml/` **200**, the same 130 bytes and the same sha256, so
+  **the read needs no Staff token on either major** (the claim `MEASUREMENTS.md` §37 made, executed
+  here again as this story's own).
+- **The unhealthy cause, executed — and a departure from the plan above, recorded rather than
+  glossed.** The plan said *regenerate T3's Admin key through Ghost Admin*. What ran instead:
+  T3's key with **one hex digit of its `kid` changed** — a key Ghost has never issued — answering
+  **401 `UNKNOWN_ADMIN_API_KEY`**. It is the same lookup miss and therefore the same answer, because
+  `api_keys` carries no install identity for Ghost to test against (§37, R-100); it leaves T3
+  untouched, so no `RESET-PROTOCOL.md` run is owed and T1 stays the clean control (standing rule 2).
+  **The regenerate-and-recover round trip is the owner's own test, steps 6–8**, on his site.
+- **The app's own rule over what the wire answered** — `ghostCode(401, UNKNOWN_ADMIN_API_KEY)` →
+  `ghost_unknown_key` → `unhealthy` with its sentence; both 200s → `healthy`; `4.48.0` →
+  `unhealthy` / `ghost_too_old` (**DW-63**, the one branch no test Ghost can produce);
+  `ghost_unreachable` → **undecided**, so no badge and no email.
+- **Supabase** — `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`. The cron's own
+  query on the live table: **HTTP 200, 2 sites due, both never checked** and therefore first on the
+  next run — **DW-62's backfill in evidence**, and PostgREST accepting both the
+  `credentials_present->>admin=eq.true` jsonb filter and the `last_checked_at` NULLS FIRST order
+  (each would otherwise have been a 400 at 05:40 with nobody watching). A `site_health` row written
+  for one throwaway account and read back through **each account's own session**: the owner sees 1
+  open row, the other sees **0**, a user-session insert is **403** and a delete is **403**;
+  `resolved_at` stamped through `resolveNotice`'s own `data->>site_id` filter, after which the owner
+  sees **0** open. Every fixture deleted in a `finally`.
+- **Resend** — `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_TEST_INBOX`. One message, composed by the
+  app's own `healthEmail` and not by the harness, accepted **2xx**, id
+  `39408814-c43f-4dbe-80bf-2ca541867cb8`. A 2xx is where a harness's knowledge of an email ends
+  (**DW-22**) — the owner reads the real one at step 7, and the *second* transition inside the same
+  week is proved not-sent by `emailAllowed`'s executed cap rather than by a second send.
+- **Vercel** — the schedule and the app agree by reading both sides: `vercel.json` schedules
+  `40 5 * * *` on the path `CRON_PATH` names, one other job at a different hour, and a `route.ts`
+  really there. `CRON_SECRET` is present by name. **The deployed cron's own 401 and Vercel's
+  scheduled invocation in the log are the Deploy phase.**
+- **Dodo** — not touched. This story reads no plan and writes no entitlement.
+
+**The matrix audit.** Every row of the I/O & Edge-Case Matrix maps to a check that ran and passed
+above. One row had none when the implementation returned — *`routes.yaml` unreadable* — and it now
+has `health-rule.test.ts`'s **"an unreadable routes.yaml leaves health and both routes columns
+alone"**: `healthOf` takes the probe and the version and nothing else, the two `routes_*` columns are
+written only behind the answer, and each of `readRoutes`' three failure paths returns the same
+`null`. Its control was run — making the spread unconditional turns it red, restoring the file turns
+it green — because a test that cannot fail is not a test (standing rule 2).

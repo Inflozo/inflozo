@@ -276,6 +276,45 @@ test('the cron checks the secret before it reads, backfills oldest-first, and go
   assert.ok(typeof BATCH === 'number' && BATCH > 0)
 })
 
+/* ───────── A ROUTES READ THAT FAILS DOES NOT MAKE A SITE UNHEALTHY, and leaves both columns where
+   they were. The matrix row no stub reaches: `readRoutes` is internal to a module that opens a
+   service-role client at import, so this is read out of the source in `ROUTE`'s own shape above.
+   It is here rather than in a note because the three ways the read can fail — a non-200, a body
+   with no bytes, and a throw — each have to end in the SAME `null`, and a fourth path added later
+   that rethrows would turn an unreadable file into an unhealthy site with nothing to catch it. */
+
+const CHECK = join('server', 'site-health.ts')
+
+test('an unreadable routes.yaml leaves health and both routes columns alone', () => {
+  const source = readFileSync(CHECK, 'utf8')
+  const flat = source.replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
+  // 1. HEALTH CANNOT DEPEND ON THE READ. `healthOf` takes the probe and the version, full stop —
+  //    a third argument here is the review question, not a refactor.
+  assert.match(
+    flat,
+    /healthOf\(probe, probe\.version\)/,
+    `${CHECK}: health is decided from the probe and the version alone — routes are never an input`,
+  )
+  // 2. BOTH COLUMNS ARE WRITTEN ONLY BEHIND THE ANSWER, so a null read writes neither and the
+  //    last good hash and stamp stand. An unconditional spread would blank them on every 404.
+  assert.match(
+    flat,
+    /\.\.\.\(routes \? \{ routes_live_sha256: routes\.sha256, routes_verified_at: [^}]+\} : \{\}\)/,
+    `${CHECK}: routes_live_sha256 and routes_verified_at must be left where they were on a failed read`,
+  )
+  // 3. EVERY WAY THE READ CAN FAIL ENDS IN THE SAME `null` — counted out of the function's own
+  //    body, so a path added without one fails here rather than escaping as a throw.
+  const body = source.slice(source.indexOf('async function readRoutes'))
+  const fn = body.slice(0, body.indexOf('\n}\n') + 2)
+  assert.equal(
+    (fn.match(/return null/g) ?? []).length,
+    3,
+    `${CHECK}: readRoutes has three ways to fail — a non-200, no bytes, and a throw — and each must return null`,
+  )
+  assert.doesNotMatch(fn, /\bthrow\b/, `${CHECK}: readRoutes must never rethrow; the rest of the check stands`)
+  assert.match(fn, /catch \(thrown\)/, `${CHECK}: the read is wrapped, so a network throw is logged and swallowed`)
+})
+
 /* ───────── FR-P1's THIRD EMAIL. None of it is reachable from a browser step — the harness sees
    Resend's 2xx and nothing after it (DW-22) — so the message itself is held here, exactly as
    `deletion-email.test.ts` holds the eighth. */
