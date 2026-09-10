@@ -2511,7 +2511,15 @@ with your sites still visible behind it.
 3. **Go the other way: no popup at all**, and put the two-column screen back to being a page in both
    places. You would keep the new layout and lose the window.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-10).** In his words: *"Leave it. The card's link gives you
+the popup; the moment straight after connecting stays a full screen."*
+
+So the connect wizard is not touched and the brand offer keeps its two chromes: the Sites card's
+offer link opens the popup over the list, and `connectSite`'s own redirect lands on the full
+screen S2 draws — which is what a server action's `redirect()` does anyway (executed 2026-09-10),
+so this ruling costs nothing and removes nothing. The Fix builds findings 2 and 3 in **both**
+chromes, because one component draws them (`brand-panel.tsx`), and the ✕ on the full page means
+there exactly what **Skip** means: nothing is recorded and the offer stays on the card.
 
 
 ## Owner's test findings
