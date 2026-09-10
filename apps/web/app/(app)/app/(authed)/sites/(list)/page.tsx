@@ -21,7 +21,7 @@ import {
   SITES_EMPTY,
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
-import { HEALTH_REASONS, openHealthNotices, type HealthReason } from '@/lib/health-rule'
+import { openHealthNotices, reasonSentence } from '@/lib/health-rule'
 import { atSiteCap, goProLabel, siteCapSentence } from '@/lib/plan'
 import { hasBrand, PREVIEW_COPY } from '@/lib/probe-rule'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
@@ -472,9 +472,7 @@ export default async function Sites({
                           {notice ? (
                             <span className="text-helper-caption text-ink-soft">
                               {HEALTH.reason(
-                                notice.reason && notice.reason in HEALTH_REASONS
-                                  ? HEALTH_REASONS[notice.reason as HealthReason]
-                                  : HEALTH.emailUnknown,
+                                reasonSentence(notice.reason) ?? HEALTH.emailUnknown,
                                 deadlineLabel(notice.at),
                               )}
                             </span>

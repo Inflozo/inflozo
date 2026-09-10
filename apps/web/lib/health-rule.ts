@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { versionVerdict } from './connect-rule.ts'
 
 /**
@@ -46,6 +47,29 @@ export const HEALTH_REASONS = {
 
 export type HealthReason = keyof typeof HEALTH_REASONS
 
+/**
+ * THE SENTENCE FOR A CODE, OR NULL — `Object.hasOwn`, never `in`: a code read back out of a jsonb
+ * column could be `toString`, and `'toString' in HEALTH_REASONS` is true (review, 2026-09-10).
+ * Every lookup — the card's caption, the email, the notification body — goes through this one.
+ */
+export function reasonSentence(code: string | null | undefined): string | null {
+  return code && Object.hasOwn(HEALTH_REASONS, code) ? HEALTH_REASONS[code as HealthReason] : null
+}
+
+/**
+ * AD-25: THE `site_health` PAYLOAD, DECLARED ONCE BESIDE THE REASONS AND VALIDATED ON WRITE. Story
+ * 3.7 is the first emitter of `notifications`, so this is the contract E13's reader (Story 13.4)
+ * imports rather than re-derives: `site_id` names the site — the table is FR-B7's and has no
+ * `site_id` column — and `reason` is a code from the table above or null for a cause it does not
+ * name. No user text: the card and the email draw the sentence from the code.
+ * `openNotice` parses it before the insert; `openHealthNotices` and `resolveNotice` read by it.
+ */
+export const siteHealthData = z.object({
+  site_id: z.uuid(),
+  reason: z.string().nullable(),
+})
+export type SiteHealthData = z.infer<typeof siteHealthData>
+
 const unhealthy = (reason: HealthReason): HealthAnswer => ({ health: 'unhealthy', reason })
 
 /**
@@ -62,7 +86,7 @@ export function healthOf(
 ): HealthAnswer {
   if (!probe.ok) {
     const code = probe.code ?? ''
-    return code in HEALTH_REASONS ? unhealthy(code as HealthReason) : { health: null, reason: code || null }
+    return reasonSentence(code) ? unhealthy(code as HealthReason) : { health: null, reason: code || null }
   }
   const verdict = versionVerdict(version)
   if (!verdict.ok) {
@@ -89,10 +113,15 @@ export function transitionOf({ was, now }: { was: Health; now: Health | null }):
 export const EMAIL_CAP_DAYS = 7
 
 /**
- * ONE EMAIL PER SITE PER ROLLING SEVEN DAYS, AND ONLY ON THE WAY DOWN. `resolved` clears
- * `last_health_email_at`, so a genuine second outage a fortnight later is a fresh transition and
- * not one the cap is still holding down; two transitions inside one week write two notification
- * rows and send ONE message, which is FR-P2's guarantee that Inflozo does not nudge.
+ * ONE EMAIL PER SITE PER ROLLING SEVEN DAYS, AND ONLY ON THE WAY DOWN. THE STAMP SURVIVES
+ * RECOVERY: FR-C5's own sentence is "regardless of transitions, at most one health email per site
+ * per rolling 7 days", and a recovery that cleared `last_health_email_at` made the cap unreachable
+ * — every `opened` follows a `resolved`, so the stamp was always null by the time it was read and
+ * a site that flapped inside one week sent two emails (review, 2026-09-10; the spec's frozen
+ * "recovery clears" bullet is Question 2 for the owner). A genuine second outage a fortnight later
+ * is past the rolling window anyway, which is all the clear was for. Two transitions inside one
+ * week therefore write two notification rows and send ONE message — FR-P2's guarantee that
+ * Inflozo does not nudge.
  */
 export function emailAllowed({
   transition,
@@ -112,23 +141,57 @@ export function emailAllowed({
 }
 
 /**
+ * WHAT ONE DECIDED CHECK WRITES, AND WHAT IT THEN DOES — pure, so the wiring `server/site-health.ts`
+ * used to carry inline runs under `node --test`: the review of 2026-09-10 showed that changing
+ * `if (transition === 'opened')` to `if (health === 'unhealthy')` — a daily email for every
+ * unhealthy site, FR-P2's forbidden nudge — failed nothing.
+ *
+ * `update` is the `sites` patch: `health`, the stamp, the two routes columns only behind a read
+ * that answered. `last_health_email_at` IS NOT IN IT: the stamp is written by the caller after a
+ * send that LANDED, because a stamp for an email nobody received would hold the cap over the one
+ * message FR-P1 promises for seven days (the same review). It is never cleared — see `emailAllowed`.
+ */
+export function writePlan(args: {
+  before: { health: Health; last_health_email_at: string | null }
+  health: Health
+  routes: { sha256: string } | null
+  now: Date
+}): {
+  update: Record<string, string>
+  transition: 'opened' | 'resolved' | null
+  mayEmail: boolean
+} {
+  const transition = transitionOf({ was: args.before.health, now: args.health })
+  const mayEmail = emailAllowed({ transition, lastEmailAt: args.before.last_health_email_at, now: args.now })
+  const stamp = args.now.toISOString()
+  return {
+    update: {
+      health: args.health,
+      last_checked_at: stamp,
+      ...(args.routes ? { routes_live_sha256: args.routes.sha256, routes_verified_at: stamp } : {}),
+    },
+    transition,
+    mayEmail,
+  }
+}
+
+/**
  * THE OPEN `site_health` ROW PER SITE, joined in memory the way `projectCounts` already is — one
  * read per Sites render for the whole list rather than one per card. Newest first is the caller's
  * order; the first row a site is named in wins, so a site that somehow carries two open rows draws
  * the current one.
  *
- * `data.site_id` IS WHAT NAMES THE SITE, and it is read defensively: `notifications.data` is jsonb
- * and the client may mark a row read, so nothing here trusts its shape.
+ * `data` IS READ THROUGH `siteHealthData`, the one declared shape: `notifications.data` is jsonb
+ * and the client may mark a row read, so nothing here trusts it — a row that is not one is skipped.
  */
 export function openHealthNotices(
   rows: readonly { data: unknown; created_at: string }[] | null | undefined,
 ): Map<string, { reason: string | null; at: string }> {
   const found = new Map<string, { reason: string | null; at: string }>()
   for (const row of rows ?? []) {
-    const data = (row?.data ?? {}) as { site_id?: unknown; reason?: unknown }
-    const siteId = typeof data.site_id === 'string' ? data.site_id : null
-    if (!siteId || found.has(siteId)) continue
-    found.set(siteId, { reason: typeof data.reason === 'string' ? data.reason : null, at: row.created_at })
+    const parsed = siteHealthData.safeParse(row?.data)
+    if (!parsed.success || found.has(parsed.data.site_id)) continue
+    found.set(parsed.data.site_id, { reason: parsed.data.reason, at: row.created_at })
   }
   return found
 }
@@ -150,9 +213,22 @@ export const CRON_PATH = '/api/cron/site-health'
  * simply first tomorrow.
  * ponytail: one batch, oldest first, no claim column — an overlapping run re-checks a site that
  * has just been checked, which is idempotent; a claim column the day the batch is observed to
- * starve, which is DW-47's own trigger one job over.
+ * starve, which is DW-47's own trigger one job over. THE CEILING, NAMED (review, 2026-09-10): an
+ * UNDECIDED site never moves `last_checked_at` — a stamp would claim a check that could not be
+ * made — so it stays at the head of this ordering, and `BATCH` such sites (every one of them a
+ * Ghost that is offline today) would keep every site behind them unchecked. An `attempted_at`
+ * column the day that is observed; it is a migration, so it is an R-99 Schema phase.
  */
 export const BATCH = 100
+
+/**
+ * HOW LONG ONE RUN MAY SPEND CHECKING BEFORE IT STOPS AND SAYS SO. A site is up to three calls at
+ * the chokepoint's timeout, so a bad day is BATCH times that — far past the function's limit —
+ * and a function the platform kills answers no 500 and no counts, which is exactly the day the red
+ * line exists for (DW-46). Under the limit with room for the response; the sites not reached are
+ * counted as failed, logged by number, and first tomorrow (oldest-first).
+ */
+export const BUDGET_MS = 240_000
 
 /** What one site's check needs of the world, and nothing more. The route builds this. */
 export interface HealthDeps {
@@ -173,11 +249,18 @@ export async function runHealthChecks(
   deps: HealthDeps,
   sites: readonly { siteId: string; userId: string }[],
   log: Pick<Console, 'log' | 'error'> = console,
+  deadline: number = Date.now() + BUDGET_MS,
 ): Promise<{ checked: number; unhealthy: number; failed: number }> {
   let checked = 0
   let unhealthy = 0
   let failed = 0
-  for (const site of sites) {
+  for (const [index, site] of sites.entries()) {
+    // OUT OF TIME IS A RED RUN, NOT A KILLED ONE: the rest are failed by count and the run answers.
+    if (Date.now() > deadline) {
+      log.error('site-health: out of time', { left: sites.length - index })
+      failed += sites.length - index
+      break
+    }
     try {
       const answer = await deps.check(site)
       if (!answer.health) {

@@ -2,7 +2,7 @@
 title: 'Story 3.7 — The daily health check, the reconnect email, and the card''s connection controls'
 type: 'feature'
 created: '2026-09-10'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'a0748b7ad9a4a6fda3cb557544f8bbc80ebb6003'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
@@ -144,7 +144,7 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 | Daily run, first ever check | A site connected before Story 3.3 (**DW-62**) | The same, and it is a BACKFILL: capability, Portal, announcement and brand are populated for the first time | A probe failure is a health failure like any other |
 | Healthy → unhealthy | Ghost answers 401 `UNKNOWN_ADMIN_API_KEY` | `health='unhealthy'`; one `site_health` notification row with the reason, the date and `link=/sites?manage=<id>`; the email sends; `last_health_email_at` stamped | The email failing is logged and the row still stands — a send never undoes what it reports on (`lib/email.ts`) |
 | Unhealthy → unhealthy | The same site the next day | Nothing sent, nothing inserted; `last_checked_at` moves. The open notification row is untouched | N/A |
-| Unhealthy → healthy | The key was re-pasted through Manage keys | `health='healthy'`; the open row gets `resolved_at`; `last_health_email_at` cleared | N/A |
+| Unhealthy → healthy | The key was re-pasted through Manage keys | `health='healthy'`; the open row gets `resolved_at`; `last_health_email_at` is left alone — the cap is "regardless of transitions" (FR-C5; review 2026-09-10, Question 2) | N/A |
 | Two transitions inside 7 days | Healthy → unhealthy → healthy → unhealthy, all in one week | Two notification rows, **one** email. The second transition is capped and logs only (FR-C5's flapping rule) | N/A |
 | Ghost downgraded to 4.x | `config/` 200, `version` `4.48.0` (**DW-63**) | `health='unhealthy'` with the "no longer supported" reason; `ghost_version` **not** overwritten, so the chokepoint keeps pinning a major it can talk to | N/A |
 | `routes.yaml` unreadable | 404, 403, or a body that is not YAML | Logged by code; `routes_live_sha256` and `routes_verified_at` left where they were; **health unaffected** | N/A |
@@ -153,7 +153,7 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 | Disconnected record | `disconnected_at` set | Never selected. FR-C6's kept record is not a site | N/A |
 | Cron called without the secret | No or wrong `Authorization` | 401 before any database read | An unset `CRON_SECRET` is also 401 |
 | Cron: one site throws | Ten sites, one whose Ghost times out | The other nine complete; the run answers 500 so the red line exists in Vercel's log (DW-46 until NFR-9's Sentry) | Each site is its own `try` — `runPurge`'s shape |
-| **Re-check connection** pressed | A connected site, the caller's own | The row says its present-tense label and refuses a second press; the card's state line shows the amber pulsing dot and **Checking…**; on return the badge, the reason and "Checked just now" are the fresh answer | A failed check redirects with `?health=<siteId>`, and that one card says the check could not reach Ghost |
+| **Re-check connection** pressed | A connected site, the caller's own | The row says its present-tense label and refuses a second press; the card's state line shows the amber pulsing dot and **Checking…**; on return the badge, the reason and "Checked just now" are the fresh answer | A check that could not be finished redirects with `?health=<siteId>`, and that one card says so in `HEALTH.failed`'s words |
 | **Re-check connection**, scripts off | The same, no JavaScript | The form posts natively, the page reloads with the fresh answer. No busy label and no pulse — the browser's own progress is the signal | Same redirect |
 | **Re-check connection** on someone else's site | A forged `site_id` | Nothing happens and nothing is written — `siteOf` reads through the caller's session and RLS answers nothing | Returns quietly, as the four actions beside it do |
 | **Use this site's brand** in the ⋯ | A site whose settings carry a brand | The same `PanelLink` behaviour it has today, one level up: plain click opens `/sites?brand=…` over the list, modified click and scripts-off take `/sites/brand?site=…` | Unchanged |
@@ -282,6 +282,30 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 - [x] `deferred-work.md` · `EXPERIENCE.md` -- close DW-62, DW-63, DW-78; amend DW-64; propagate the
       three EXPERIENCE.md rows (standing rule 3).
 
+### Review Findings (code review, 2026-09-10)
+
+Five layers ran — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the
+Real-infra verifier (R-82) — and every finding below was read at its location before it was rated.
+
+- [ ] [Review][Decision] The rolling 7-day cap can never fire — recovery clears `last_health_email_at`, so a site that flaps inside one week sends two emails. The frozen spec says both "capped at one per rolling 7 days" and "recovery clears the stamp"; the PRD's own FR-C5 says "regardless of transitions, at most one health email per site per rolling 7 days". The code now follows the PRD; the frozen bullet awaits the owner — **Question 2** below.
+- [x] [Review][Patch] The cap survives recovery, the stamp is written only for a send that landed, and the whole write plan is pure and executed under `node --test` [apps/web/server/site-health.ts:194-212, apps/web/lib/health-rule.ts]
+- [x] [Review][Patch] The email's preheader and body say "did not let us in" for every reason, including a Ghost that let us in and is too old [apps/web/lib/connect-rule.ts — `HEALTH.emailPreheader`, `HEALTH.emailBody`]
+- [x] [Review][Patch] The `sites` write is not a compare-and-set: a cron pass and a Re-check on the same site can both see `healthy`, both open a row and both email; a disconnect between the read and the write is written over [apps/web/server/site-health.ts:194-212]
+- [x] [Review][Patch] `runHealthChecks` has no time budget: BATCH × three 15-second calls is far past the function's limit, and a killed function answers no 500 and no log line [apps/web/lib/health-rule.ts:172, apps/web/app/api/cron/site-health/route.ts]
+- [x] [Review][Patch] Story 3.4's harness still reads the brand offer off the card body and clicks a link that is now inside the closed ⋯ popover [tools/probe/run-verify-ghost-admin.py:1553-1557, 1659]
+- [x] [Review][Patch] AD-25's `site_health` payload is neither declared nor validated on write: the writer, the card's reader and `resolveNotice` each spell `{ site_id, reason }` for themselves, and the four reason lookups use `in`, which answers true for `toString` [apps/web/lib/health-rule.ts, apps/web/server/site-health.ts:230-264, apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx:475]
+- [x] [Review][Patch] `split_part(secret, ':', 1)` on a secret with no colon writes the whole secret into the non-secret `admin_key_id` column [apps/web/server/ghost-admin/index.ts:495]
+- [x] [Review][Patch] `checkSite` returns a `changed` field nobody reads [apps/web/server/site-health.ts:131]
+- [x] [Review][Patch] The harness: later steps index `copy` when the `copy` step failed and abort with a traceback; a no-op ternary at `config-200`; the notice link retyped rather than read from `keysPopupPath`; the docstring's `--url https://app.inflozo.com` example names a host on which the route 404s by construction [tools/probe/run-verify-site-health.py]
+- [x] [Review][Patch] Nothing executes `CallResult.text` on a 200 with a non-JSON body — a `routes-stored` step reads `routes_live_sha256` back after `cron-run` and compares it to the sha the run hashed itself [tools/probe/run-verify-site-health.py]
+- [x] [Review][Patch] This spec's Verification: the deployed command must use the apex (`app.inflozo.com` rewrites every path under `/app`, so `/api/cron/site-health` is a 404 there — reproduced, with `purge-accounts` as the control); the Dev row's "does not exist on the deployed build yet" was the wrong cause; the unhealthy→recovery round trip through `checkSite` is the owner's steps 6–8 and must say so; the matrix row says "could not reach Ghost" where the copy says "couldn't finish" [this file]
+- [x] [Review][Patch] The key-id backfill runs after a refused probe, unlike the routes read, and the header does not say why [apps/web/server/site-health.ts:157]
+- [x] [Review][Patch] An undecided site never moves `last_checked_at`, so it stays at the head of the nulls-first queue; `BATCH` such sites would starve every other — the ceiling is unnamed [apps/web/lib/health-rule.ts:155]
+- [x] [Review][Patch] The ledger: DW-64 says the double-tap "no longer reaches the server", which is true only with scripts on; DW-65 restates the schedule as a literal "05:40" [_bmad-output/implementation-artifacts/deferred-work.md]
+- [x] [Review][Patch] Story 9.1's FR line cites "FR-P1 email (3)'s one carve-out" — email (3) is this story's reconnect alert; the compatibility notice is FR-P2's carve-out [_bmad-output/planning-artifacts/epics.md:3558]
+- [x] [Review][Patch] `recheckConnection`'s header says a forged `site_id` reaches `checkSite` and lands on `?health=<id>`; `siteOf` returns null first and the action returns quietly [apps/web/app/(app)/app/(authed)/sites/actions.ts:654-659]
+- [x] [Review][Patch] DW-63's `floor.ok` gate on `ghost_version` in `probeSite` is observed by nothing [apps/web/health-rule.test.ts]
+
 **Acceptance Criteria:**
 
 - **Given** a connected site whose Ghost answers `config/` **When** the daily cron runs **Then**
@@ -293,7 +317,8 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 - **Given** that same site **When** the check runs again the next day **Then** nothing is sent and no
   second row is written.
 - **Given** an unhealthy site whose key is re-pasted **When** the next check runs **Then** `health`
-  returns to `healthy`, the open row is stamped `resolved_at`, and `last_health_email_at` is cleared.
+  returns to `healthy` and the open row is stamped `resolved_at`. `last_health_email_at` is **not**
+  cleared — amended at review (2026-09-10): clearing it made the rolling cap unreachable; see Question 2.
 - **Given** a site that goes unhealthy twice inside seven days **When** the second transition happens
   **Then** a second notification row is written and **no** second email is sent.
 - **Given** a Ghost that now reports 4.x **When** the check runs **Then** the site is `unhealthy` with
@@ -373,8 +398,9 @@ email the same person has already received, so this rides its shell, which moves
 
 ## Questions for the owner
 
-One, asked at Create and **ruled the same day**. It is recorded here because the ruling moved
-work out of this story and the propagation it required is listed with it.
+Two. The first was asked at Create and **ruled the same day**; it is recorded here because the
+ruling moved work out of this story and the propagation it required is listed with it. The second
+was found at review on 2026-09-10 and is **open**.
 
 ### Question 1 — the "Ghost released a new version" announcement: build it now, or when there is a library to check?
 
@@ -423,6 +449,33 @@ writes `site_health` and **E9** writes `ghost_compat` rather than E3 writing bot
 was already specified without the broadcast, and everything the notice will need to travel is built
 here: the `notifications` rows, the email shell and FR-P1's "Reconnect needed" channel the notice
 rides. The receiving story adds a trigger and a template, not a mechanism.
+
+### Question 2 — after a site recovers, should the 7-day email cap still count, or start again?
+
+**What it is.** When a site breaks, Inflozo emails you once. To make sure you are never nagged, there
+is also a rule that says: **no more than one of these emails per site per week**, whatever happens.
+The plan for this story had one more line in it: *when the site is fixed, forget the week's count*.
+The review found that those two lines cannot both be true — a site that breaks, gets fixed, and
+breaks again the same afternoon would get **two** emails in one day, because the fix wiped the count.
+
+**An example.** Your Ghost key is regenerated on Monday and you get the email. You paste the new
+key in on Tuesday and the card goes green. On Wednesday somebody regenerates it again. With the
+plan's extra line you get a second email on Wednesday; without it you get none until the following
+Monday, and the card and the notifications list still show what happened.
+
+**What the PRD says.** FR-C5's own words are "regardless of transitions, at most one health email
+per site per rolling 7 days". The review has made the code follow that sentence, so the week's count
+is kept across a fix. The spec's plan still carries the old line, and it is yours to strike.
+
+**Your options:**
+
+1. **Keep the week's count across a fix** — one email per site per week, full stop; the card and
+   the notifications list carry every later break. **(RECOMMENDED)** — it is what the PRD says and
+   what the code now does; nothing more to build.
+2. **Start the count again when a site is fixed** — a second break the same week emails again. One
+   line of code goes back; the PRD's sentence would need to change to match.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Owner's manual test
 
@@ -492,8 +545,11 @@ returned, by the key's variable name and never its value.
   regenerates, as its sub-tools do).
 - `python3 tools/probe/run-verify-site-health.py --check` -- expected all steps passing, printing this
   story's copy read out of the app itself rather than retyped.
-- `python3 tools/probe/run-verify-site-health.py --url https://app.inflozo.com` -- expected all steps
-  passing against the deployed build.
+- `python3 tools/probe/run-verify-site-health.py` (its default is the apex, `https://inflozo.com`) --
+  expected all steps passing against the deployed build. **Never `--url https://app.inflozo.com`:**
+  `routing.ts` rewrites every path on the app host under `/app`, so `/api/cron/site-health` is a 404
+  there by construction (reproduced at review with `purge-accounts` as the control) and Vercel
+  invokes the schedule on the apex.
 
 **Real services this story must touch (R-82), and what each must be seen to answer:**
 
@@ -501,11 +557,14 @@ returned, by the key's variable name and never its value.
   from `tools/probe/.env` — `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST5_URL`,
   `GHOST5_ADMIN_API_KEY`. `GET /admin/config/` 200 on both (the healthy control);
   `GET /settings/routes/yaml/` 200 on both, with the sha256 recorded.
-- **A deliberately broken credential on T3** — the unhealthy transition, executed rather than
-  simulated: regenerate T3's Admin key through Ghost Admin, observe the 401
-  `UNKNOWN_ADMIN_API_KEY`, then restore it through Manage keys and observe the recovery. Follow
-  `tools/probe/RESET-PROTOCOL.md`; T1 stays untouched as the control (standing rule 2 — a result
-  whose control did not pass is not a result).
+- **A deliberately broken credential on T3** — the unhealthy CAUSE, executed rather than
+  simulated: T3's key with one hex digit of its `kid` changed answers the 401
+  `UNKNOWN_ADMIN_API_KEY` that `healthOf` turns into "Reconnect needed", and T3 itself is untouched
+  (no `RESET-PROTOCOL.md` run owed). T1 stays the control (standing rule 2). **The round trip
+  through `checkSite` on a real site row — amber, the email, the second press sending nothing, the
+  recovery — is deferred to the owner's manual test, steps 6–8, on his own site** (R-80); no run
+  before Deploy executes it, and this section says so rather than implying otherwise (review,
+  2026-09-10).
 - **A real Resend send** through `RESEND_API_KEY` / `RESEND_FROM` — one message, its id recorded, and
   the second transition inside the same week recorded as **not sent**.
 - **Supabase** — the `notifications` row written and then `resolved_at` stamped, read back through
@@ -525,7 +584,7 @@ only; no value was printed, and no output recorded here carries one.
 | `bash supabase/tests/run-rls-gate.sh` | exit 0 — the control held unchanged, so **no column and no migration were added** (the last acceptance criterion, and R-99: this story has no Schema phase) |
 | `python3 tools/doc-audit.py --check`, twice | PASS, 0 warnings, both runs |
 | `python3 tools/probe/run-verify-site-health.py --check` | **all 11 steps PASS** — the live run below |
-| `python3 tools/probe/run-verify-site-health.py --url https://app.inflozo.com` | **Deploy phase.** The three `cron-*` steps need the route to exist on the deployed build; it does not yet |
+| `python3 tools/probe/run-verify-site-health.py --url https://app.inflozo.com` | The three `cron-*` steps answered **404**. Recorded at Dev as "the route does not exist on the deployed build yet"; **the review found the real cause** — the route existed (production was on the Dev commit) but the app host rewrites every path under `/app`, so it is a 404 there by construction. The command is the apex's, above |
 
 **The real services this story hit (R-82), and what each returned:**
 
@@ -568,6 +627,60 @@ only; no value was printed, and no output recorded here carries one.
   really there. `CRON_SECRET` is present by name. **The deployed cron's own 401 and Vercel's
   scheduled invocation in the log are the Deploy phase.**
 - **Dodo** — not touched. This story reads no plan and writes no entitlement.
+
+### What the Review phase ran, and what each answered (2026-09-10)
+
+Five review layers ran over the diff since the baseline commit; the findings and their disposition
+are under `### Review Findings` above (every patch applied; one question open for the owner). Every
+command below ran at the review's own tree with the patches in; keys by variable name only.
+
+| Command | Answered |
+|---|---|
+| `pnpm check` (Node 24 on PATH) | exit 0 — `apps/web` **268 tests, 268 pass, 0 fail, 0 skipped**; `ghost-shim`, `section-runtime`, `theme-compiler` 1 pass each. New among them: the write plan's four transitions and the cap across a recovery, the out-of-time run, AD-25's payload round trip, the own-key reason lookup, the compare-and-set and DW-63's gate read off the source |
+| `pnpm build` | exit 0, "Compiled successfully", route table carries `ƒ /api/cron/site-health` beside `ƒ /api/cron/purge-accounts` |
+| `bash supabase/tests/run-rls-gate.sh` | exit 0 — the control held unchanged; **no migration and no column** (R-99) |
+| `python3 tools/doc-audit.py --check`, twice | first run regenerated the story board (expected after a commit), second PASS, 0 warnings |
+| `python3 tools/probe/run-verify-site-health.py --check` | **all 11 steps PASS**; the `notice-rls` row's `link` and `data` are now composed by the app's own `keysPopupPath` and `siteHealthData` |
+| `python3 tools/probe/run-verify-site-health.py` (the apex) | **all 15 steps PASS** — `cron-no-header` 401 / `no-store` / `x-matched-path: /api/cron/site-health`, `cron-wrong-secret` 401, `cron-run` **200 `{checked: 2, unhealthy: 0, failed: 0}`**, and the new **`routes-stored`**: both live sites (T1 and T3) carry the sha this run hashed off the wire and a fresh `routes_verified_at` — `CallResult.text` executed end to end on a 200 that is not JSON |
+| `python3 tools/probe/run-verify-site-health.py --url https://app.inflozo.com` | the three `cron-*` steps **404** (`x-matched-path: /404`), `purge-accounts` on the same host 404 as the control, the same route on the apex 401 — the host, not the route. The command and the docstring now say so |
+
+**The real services the review hit (R-82), and what each returned:**
+
+- **T1 `ghost6.inflozo.com`** and **T3 `ghost5.inflozo.com`** — `GHOST6_*`, `GHOST5_*`: `config/`
+  200 on both (`6.58.0`, `5.130.6`); `settings/routes/yaml/` 200 on both, 130 bytes, sha256
+  `b2d675260a6071be426ac6a67ea60da9428f6169e03e25cb14cc2d7ed74381a1`. **Negative control** on
+  BOTH servers and BOTH endpoints: one hex digit of the `kid` changed → 401 `UNKNOWN_ADMIN_API_KEY`
+  four times, with the good key's 200 alongside each.
+- **Supabase** — `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, and the hosted
+  schema read through `SUPABASE_DB_POOLER_URL` (R-99): every column the code writes is there —
+  `sites.health` (enum `healthy, unhealthy`), `last_checked_at`, `last_health_email_at`,
+  `routes_live_sha256`, `routes_verified_at`, `ghost_version`; `notifications` with
+  `notification_kind` carrying `site_health`, `resolved_at`, `link`, `data`; owner-read and
+  owner-mark policies only, no insert policy for `authenticated`; `private.site_credentials.admin_key_id`;
+  the partial index on `sites(last_checked_at) where disconnected_at is null`. **After the deployed
+  cron's run:** both live sites `health=healthy`, `last_checked_at` stamped (one had been NULL —
+  **DW-62's backfill executed on production**), `routes_live_sha256` = the T1/T3 sha, and
+  `admin_key_id` **non-null on both** (**DW-78's backfill executed on production**). The harness's
+  `site_health` fixture row: owner sees 1, the other account 0, user-session insert 403, delete 403,
+  `resolved_at` stamped through `data->>site_id`, owner then sees 0; deleted in the `finally`.
+- **Resend** — `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_TEST_INBOX`: one message per harness run,
+  composed by `healthEmail`, 2xx each (ids `e39f3592-…`, `0829782a-…`, `f1bae3c6-…` from the
+  verifier's runs; `869fe8ae-…` and `66d25424-…` from the post-patch runs, the last two carrying the
+  corrected preheader and body). The second transition inside a week is proved not-sent by
+  `writePlan`'s executed cap, not by a second send.
+- **Vercel** — `VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`: the latest READY production
+  deployment was the Dev commit while the verifier ran, so the schema check above is against the
+  code that was live. The scheduled invocation (`40 5 * * *` UTC) had not come round; the manual
+  `cron-run` stands in for it until Deploy.
+- **Dodo** — not touched.
+
+**Not executed by any run, said plainly:** the unhealthy → recovery round trip through `checkSite`
+on a real site row (amber card, the email to a real inbox, the capped second press, the recovery) —
+that is the owner's steps 6–8, on his site, and the concurrent-write compare-and-set, which the
+executed source assertion covers and no harness can race. **Story 3.4's harness**
+(`run-verify-ghost-admin.py`) was patched for the moved brand row but **not re-run** here — it
+drives a full connect on the deployed site and belongs to the Deploy phase, where it always runs;
+its brand steps are the ones to watch there.
 
 **The matrix audit.** Every row of the I/O & Edge-Case Matrix maps to a check that ran and passed
 above. One row had none when the implementation returned — *`routes.yaml` unreadable* — and it now

@@ -426,10 +426,14 @@ export const HEALTH = {
      and its note is the deletion email's own promise, because FR-P2 permits no nudge and this is
      the only message a broken connection ever sends. */
   emailSubject: (site: string) => `${site} needs reconnecting to Inflozo`,
-  emailPreheader: 'Inflozo could not reach your Ghost site with the key it has.',
+  /* TRUE FOR EVERY REASON IN THE TABLE, which is why neither line says what went wrong: a Ghost
+     that is too old (DW-63) LET US IN, and "did not let us in" beside "please update Ghost" was two
+     sentences contradicting each other in one inbox (review, 2026-09-10). The reason sentence that
+     follows is the one that says what happened. */
+  emailPreheader: "Inflozo's daily check found this site needs reconnecting.",
   emailHeading: (site: string) => `Reconnect ${site}`,
   emailBody: (date: string) =>
-    `Inflozo checks every connected site every day. On ${date} this site did not let us in, so ` +
+    `Inflozo checks every connected site every day. On ${date} this site did not pass that check, so ` +
     'nothing can be published to it until the connection is fixed. Your live site is untouched.',
   /** A cause `HEALTH_REASONS` does not name — the email still says what to do about it. */
   emailUnknown: 'Paste your Ghost keys again and Inflozo will check them straight away.',

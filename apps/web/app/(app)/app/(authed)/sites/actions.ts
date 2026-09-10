@@ -651,11 +651,10 @@ export async function recheckPlan(formData: FormData): Promise<void> {
  * check could not be made at all, and that is the one thing this line reads.
  *
  * SOMEBODY ELSE'S SITE DOES NOTHING AND WRITES NOTHING: `siteOf` reads through the caller's own
- * session and `checkSite` scopes every read and write with the same `user_id`, so a forged
- * `site_id` reaches no row and answers `health: null`. That lands on `?health=<forged id>`, which
- * is a card the list does not draw — so nothing is written, nothing is disclosed and the customer
- * sees nothing at all, which is the matrix's "nothing happens" reached by the same one code path
- * every real press takes rather than by a branch that only a forged post would exercise.
+ * session, so a forged `site_id` answers null and this returns quietly before `checkSite` is ever
+ * reached — the matrix's "nothing happens", the way the four actions beside it do it. `checkSite`
+ * scopes every read and write with the same `user_id` besides, so the floor holds even for a
+ * caller that skipped `siteOf`.
  *
  * NO THROTTLE, DELIBERATELY (DW-64, amended by this story). It is the customer's own site, their
  * own key and their own Ghost, and the control exists precisely so somebody who has just fixed a

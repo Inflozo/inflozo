@@ -3,7 +3,13 @@
 
     python3 tools/probe/run-verify-site-health.py --check   # plumbing only: needs no deployment
     python3 tools/probe/run-verify-site-health.py           # + the deployed cron (Review, Deploy)
-    python3 tools/probe/run-verify-site-health.py --url https://app.inflozo.com
+    python3 tools/probe/run-verify-site-health.py --url https://inflozo.com   # the same, spelled out
+
+THE CRON LIVES ON THE APEX, NEVER ON `app.inflozo.com`: `apps/web/routing.ts` rewrites every path
+on the app host under `/app`, so `/api/cron/site-health` is a 404 there by construction — reproduced
+at review with `purge-accounts` as the control — and Vercel invokes the schedule on the apex. A run
+pointed at the app host fails its three `cron-*` steps with 404 and that is the run's answer, not
+the route's (review, 2026-09-10).
 
 WHY IT EXISTS. Story 3.7 rests on claims about two real Ghosts, about Supabase's RLS on a table
 nothing had ever written, and about a scheduled route nothing had ever called — and CLAUDE.md's
@@ -44,7 +50,7 @@ notification row for one of them, reads it back through both their own sessions,
 it in a `finally`; the Admin-API user count is read before and after as its control.
 """
 import argparse, base64, hashlib, importlib.util, json, os, re, subprocess, sys, textwrap, time
-import urllib.error, urllib.request
+import urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, '..', '..', 'apps', 'web')
@@ -116,6 +122,11 @@ STEPS = {
     'cron-run': "the real bearer: 200 or 500 with `{checked, unhealthy, failed}` and `no-store` on "
                 'it. RECORDED rather than asserted green — a real account whose Ghost is genuinely '
                 'unhealthy is a correct 500, and this run must not call that a failure of the route',
+    'routes-stored': "THE ROUTES READ, ALL THE WAY TO THE COLUMN. After `cron-run`, every site the "
+                     'cron just checked whose Ghost is T1 or T3 carries `routes_live_sha256` equal to '
+                     "the sha this run hashed off the wire itself, and `routes_verified_at` inside the "
+                     "run's window — which is `CallResult.text` executed on a 200 that is not JSON, "
+                     'the one path no unit test can reach (review, 2026-09-10)',
     # ── last, because it audits what the run printed.
     'steps-listed': "this file's docstring names every step the run printed, and no step it did not "
                     '— both lists are derived from `STEPS`, so a step added without one fails here. '
@@ -333,6 +344,8 @@ NEEDED = (
 
 
 def main():
+    run_started = time.time()
+    shas = {}
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true',
                     help='plumbing only: the two Ghosts, the app\'s own rule and copy, the '
@@ -361,6 +374,10 @@ def main():
     copy, error = app('{ HEALTH: c.HEALTH, REASONS: h.HEALTH_REASONS, cap: h.EMAIL_CAP_DAYS, batch: h.BATCH }', node_env)
     if error:
         run.step('copy', False, f'the app\'s copy could not be read: {error[0]}')
+        # Every later step reads a word or a figure out of `copy`; without it they would be
+        # tracebacks rather than FAIL lines, and the `finally` that deletes fixtures would never
+        # have started (review, 2026-09-10). Nothing has been created yet, so this is a clean stop.
+        return finish(run, args, 'stopped: the app\'s copy could not be read')
     else:
         words = {k: v for k, v in copy['HEALTH'].items() if isinstance(v, str)}
         run.step('copy', True,
@@ -387,7 +404,7 @@ def main():
         versions[name] = version
         ok = status == 200 and isinstance(version, str)
         control = control and ok
-        run.step('config-200' if name == 'T1' else 'config-200',
+        run.step('config-200',
                  ok, f'{name}: HTTP {status}, version {version!r} (key {("GHOST6" if major == 6 else "GHOST5")}_ADMIN_API_KEY)')
     if not control:
         # STANDING RULE 2: a result whose control did not pass is not a result. Everything below
@@ -401,6 +418,7 @@ def main():
     for name, url, key, major in ghosts:
         status, body, headers = ghost(url, key, 'settings/routes/yaml/', major)
         digest = hashlib.sha256(body).hexdigest() if status == 200 else None
+        shas[name] = digest
         is_json = True
         try:
             json.loads(body)
@@ -498,15 +516,24 @@ def main():
             else:
                 owner, other = ids['a'], ids['-b']
                 site_id = '00000000-0000-4000-8000-%012d' % (stamp % 10 ** 12)
-                # THE SHAPE THIS STORY DECLARES (AD-25), written the way `site-health.ts` writes it.
+                # THE SHAPE THIS STORY DECLARES (AD-25), composed by the app's own `siteHealthData`
+                # and `keysPopupPath` rather than retyped here — a harness that carries its own copy
+                # of the address proves nothing about the one the row will carry (review, 2026-09-10).
+                shape, error = app(
+                    f'({{ link: c.keysPopupPath({json.dumps(site_id)}),'
+                    f' data: h.siteHealthData.parse({{ site_id: {json.dumps(site_id)}, reason: "ghost_unknown_key" }}) }})',
+                    node_env)
+                if error:
+                    shape = {'link': None, 'data': None}
+                    run.step('notice-rls', False, f'the app\'s payload could not be composed: {error[0]}')
                 status, rows = rest(
                     env['SUPABASE_URL'], env['SUPABASE_SECRET_KEY'], 'POST', '/notifications',
                     {'user_id': owner, 'kind': 'site_health',
                      'title': f'{copy["HEALTH"]["unhealthy"]} — harness',
                      'body': copy['REASONS']['ghost_unknown_key'],
-                     'link': f'/sites?manage={site_id}',
-                     'data': {'site_id': site_id, 'reason': 'ghost_unknown_key'}},
-                    prefer='return=representation')
+                     'link': shape['link'],
+                     'data': shape['data']},
+                    prefer='return=representation') if not error else (0, None)
                 row_id = (rows or [{}])[0].get('id') if isinstance(rows, list) else None
                 if status >= 300 or not row_id:
                     run.step('notice-rls', False, f'the site_health row would not insert: HTTP {status} {rows}')
@@ -641,6 +668,20 @@ def main():
     if isinstance(body, dict) and body.get('failed'):
         run.record('cron-run', f'{body["failed"]} site(s) could not be decided — a 500 is the CORRECT '
                                'answer for that, and Vercel\'s log names each one by id and code (DW-46)')
+
+    # ── routes-stored: the hash this run took off the wire is the one the cron just stored.
+    started = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(run_started))
+    status, rows = rest(env['SUPABASE_URL'], env['SUPABASE_SECRET_KEY'], 'GET',
+                        '/sites?select=url,routes_live_sha256,routes_verified_at,last_checked_at'
+                        f'&disconnected_at=is.null&last_checked_at=gte.{started}')
+    hosts = {urllib.parse.urlsplit(env[f'GHOST{n}_URL']).hostname for n in ('6', '5')}
+    checked = [r for r in (rows if isinstance(rows, list) else [])
+               if urllib.parse.urlsplit(r.get('url') or '').hostname in hosts]
+    stored = [r for r in checked if r.get('routes_live_sha256') in set(shas.values())
+              and (r.get('routes_verified_at') or '') >= started]
+    run.step('routes-stored', status == 200 and checked and len(stored) == len(checked),
+             f'HTTP {status}: {len(checked)} site(s) on T1/T3 checked since {started}, '
+             f'{len(stored)} carrying the sha this run hashed itself and a fresh routes_verified_at')
 
     return finish(run, args)
 

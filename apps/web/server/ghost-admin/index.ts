@@ -498,6 +498,9 @@ export async function backfillAdminKeyId(args: {
            set admin_key_id = split_part(v.decrypted_secret, ':', 1)
           from vault.decrypted_secrets v
          where c.site_id = ${args.siteId} and c.user_id = ${args.userId}
+           -- a secret with no colon has no id half, and split_part would answer the WHOLE secret
+           -- into a non-secret column; store() refuses such a key, this refuses it again (review)
+           and position(':' in v.decrypted_secret) > 0
            and c.admin_key_id is null
            and v.id = c.admin_key_vault_ref
         returning c.user_id, c.admin_key_id

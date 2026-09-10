@@ -1579,7 +1579,8 @@ reason: It is the user's own site, their own key and their own Ghost, and the bu
   now, not tomorrow) and `last_checked_at` is now on the row as a basis, so the figure is the only thing
   missing and it is the owner's. What 3.7 DID add is R-98's guard on both: the row refuses a second press
   while one is in flight (`useSubmitting`), so the accidental double-tap this entry was mostly about no
-  longer reaches the server. The remaining case is somebody pressing it deliberately, once a second, on
+  longer reaches the server **with scripts on** — with scripts off the form posts natively and a second
+  press is a second post, which is the browser's own behaviour and the one this entry still leaves open. The remaining case is somebody pressing it deliberately, once a second, on
   their own site — and the story that gives the owner a reason to care about that cost decides the rule.
 
 ### DW-65: four writers share site_settings, and the last one wins
@@ -1603,7 +1604,7 @@ reason: supabase-js speaks PostgREST and PostgREST has no `||` for jsonb, so the
   **AMENDED 2026-09-10 by Story 3.7, and it stays open.** The unattended writer this entry predicted now
   exists: the daily cron calls `probeSite`, whose read-then-write of `site_settings` is the fifth path onto
   that column. It collides with nothing today for a reason worth writing down rather than assuming — the
-  cron is the ONLY writer that runs while nobody is looking, at 05:40 once a day, and every other writer is
+  cron is the ONLY writer that runs while nobody is looking, once a day at the hour `vercel.json` schedules, and every other writer is
   a button somebody has to press. Two runs of the cron cannot overlap on one site (one batch, in order), and
   a customer pressing **Re-check connection** during the daily pass would meet it — which is the case this
   entry describes and which needs the same fraction of a second it always did. The second unprivileged SQL

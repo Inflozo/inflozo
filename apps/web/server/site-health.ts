@@ -3,12 +3,13 @@ import { hostOf, keysPopupPath, HEALTH } from '@/lib/connect-rule'
 import { sendEmail } from '@/lib/email'
 import { healthEmail } from '@/lib/health-email'
 import {
-  emailAllowed,
   healthOf,
-  HEALTH_REASONS,
-  transitionOf,
+  reasonSentence,
+  siteHealthData,
+  writePlan,
   type Health,
   type HealthReason,
+  type SiteHealthData,
 } from '@/lib/health-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { APP } from '@/routing'
@@ -38,13 +39,15 @@ import { probeSite } from '@/server/site-probe'
  * A TRANSITION AND ONLY A TRANSITION WRITES A NOTIFICATION OR SENDS A MAIL. An unhealthy site
  * checked again tomorrow moves `last_checked_at` and nothing else; a site that flaps twice inside a
  * week writes two rows and sends ONE message (FR-C5's own sentence, and FR-P2's guarantee that
- * Inflozo does not nudge). Recovery stamps `resolved_at` on the row it opened and clears
- * `last_health_email_at`, so the next genuine outage is a fresh transition rather than one the cap
- * is still holding down — AD-25 names `resolved_at` as what makes the prune exemption safe.
+ * Inflozo does not nudge). Recovery stamps `resolved_at` on the row it opened — AD-25 names
+ * `resolved_at` as what makes the prune exemption safe — and LEAVES `last_health_email_at` ALONE:
+ * the cap is "regardless of transitions" (FR-C5), and clearing the stamp on recovery was what made
+ * it unreachable (review, 2026-09-10; `writePlan`'s header in `lib/health-rule.ts`).
  *
- * THIS IS THE FIRST EMITTER OF `notifications`, SO IT DECLARES THE `site_health` PAYLOAD AND
- * VALIDATES ON WRITE (AD-25). `link` is the Manage keys popup, which is what "Reconnect needed" is
- * for; `data` is `{ site_id, reason }` and carries no user text, because E13 builds its reader
+ * THIS IS THE FIRST EMITTER OF `notifications`, SO THE `site_health` PAYLOAD IS DECLARED —
+ * `siteHealthData`, beside the reasons in `lib/health-rule.ts` — AND PARSED ON WRITE (AD-25).
+ * `link` is the Manage keys popup, which is what "Reconnect needed" is for; `data` is
+ * `{ site_id, reason }` and carries no user text, because E13 builds its reader
  * over rows three epics wrote and a reader cannot re-escape what it did not compose. The site's
  * TITLE is user text and rides in `title`/`body`, the two columns a notification centre draws.
  *
@@ -128,8 +131,8 @@ export async function checkSite(args: {
   siteId: string
   userId: string
   route: string
-}): Promise<{ health: Health | null; reason: string | null; changed: boolean }> {
-  const undecided = (code: string) => ({ health: null, reason: code, changed: false })
+}): Promise<{ health: Health | null; reason: string | null }> {
+  const undecided = (code: string) => ({ health: null, reason: code })
   const admin = supabaseAdmin()
 
   const { data: before, error: readError } = await admin
@@ -165,7 +168,10 @@ export async function checkSite(args: {
 
   // ── DW-78: the Admin key's public id half, filled where it is null, from the key already in the
   //    store. One statement, inside the chokepoint, no-op on every record that has it. Never fatal:
-  //    a missing mask is not a wrong one, and it is not what this check is about.
+  //    a missing mask is not a wrong one, and it is not what this check is about. It runs WHETHER OR
+  //    NOT the probe passed, unlike the routes read below: a refused key still has an id half, and
+  //    the customer who opens Manage keys from an amber card is exactly the one who needs the mask
+  //    drawn beside "Added" to see which key Ghost refused (review, 2026-09-10).
   try {
     await backfillAdminKeyId({ siteId: args.siteId, userId: args.userId, route: args.route })
   } catch (thrown) {
@@ -184,55 +190,64 @@ export async function checkSite(args: {
   }
 
   const now = new Date()
-  const transition = transitionOf({ was: before.health, now: health })
-  const mayEmail = emailAllowed({ transition, lastEmailAt: before.last_health_email_at, now })
+  // ── THE PLAN IS PURE (`lib/health-rule.ts`) and this function only carries it out.
+  const { update, transition, mayEmail } = writePlan({ before, health, routes, now })
 
-  // ── THE ROW. Four server-asserted columns, and `last_health_email_at` moves only on the two
-  //    events that own it: a send (stamped) and a recovery (cleared). `.select('id')` so a write
-  //    that matched no row is not silence — PostgREST answers an update that hit nothing with no
-  //    error and no rows (`writeSite`'s own finding, one file over).
+  // ── THE ROW, AS A COMPARE-AND-SET. `.eq('health', before.health)` and `.is('disconnected_at',
+  //    null)`: the cron's pass and a customer's Re-check can run on one site at once, and without
+  //    the first clause both read `healthy`, both see `opened`, and two rows and two emails follow;
+  //    without the second, a disconnect between the read above and this write is written over
+  //    (review, 2026-09-10). A write that matched nothing is the OTHER run's — undecided, and this
+  //    caller says so. `.select('id')` is what makes that visible: PostgREST answers an update
+  //    that hit nothing with no error and no rows (`writeSite`'s own finding, one file over).
   const { data: written, error: writeError } = await admin
     .from('sites')
-    .update({
-      health,
-      last_checked_at: now.toISOString(),
-      ...(routes ? { routes_live_sha256: routes.sha256, routes_verified_at: now.toISOString() } : {}),
-      ...(mayEmail ? { last_health_email_at: now.toISOString() } : {}),
-      ...(transition === 'resolved' ? { last_health_email_at: null } : {}),
-    })
+    .update(update)
     .eq('id', args.siteId)
     .eq('user_id', args.userId)
+    .eq('health', before.health)
+    .is('disconnected_at', null)
     .select('id')
   if (writeError || !written?.length) {
     console.error('site-health: write failed', {
       siteId: args.siteId,
-      code: writeError?.code ?? 'no_such_site',
+      code: writeError?.code ?? 'lost_race',
     })
-    return undecided(writeError?.code ?? 'no_such_site')
+    return undecided(writeError?.code ?? 'lost_race')
   }
 
   if (transition === 'opened') {
     await openNotice({ ...args, reason, at: now, row: before })
     // THE EMAIL IS LAST AND IS NEVER FATAL. `lib/email.ts` never throws and never blocks the thing
     // it reports on: the row already says the site is unhealthy, and a send that failed must not
-    // undo what it reports on. `last_health_email_at` is stamped either way, deliberately — an
-    // unstamped retry tomorrow would be the reminder FR-P2 forbids.
-    if (mayEmail) await notify({ siteId: args.siteId, userId: args.userId, reason, at: now, row: before })
-    else console.log('site-health: email capped', { siteId: args.siteId })
+    // undo what it reports on. THE STAMP FOLLOWS THE SEND, and only a send that landed: it exists
+    // for the rolling cap alone (an unhealthy site never sends on day two — that is `transitionOf`,
+    // not the stamp), so stamping a failed send would hold the cap over the one message FR-P1
+    // promises for seven days (review, 2026-09-10).
+    if (!mayEmail) console.log('site-health: email capped', { siteId: args.siteId })
+    else if (await notify({ siteId: args.siteId, userId: args.userId, reason, at: now, row: before })) {
+      const { error } = await admin
+        .from('sites')
+        .update({ last_health_email_at: now.toISOString() })
+        .eq('id', args.siteId)
+        .eq('user_id', args.userId)
+      if (error) console.error('site-health: email stamp failed', { siteId: args.siteId, code: error.code })
+    }
   } else if (transition === 'resolved') {
     await resolveNotice(args.siteId, args.userId, now)
   }
 
-  return { health, reason, changed: transition !== null }
+  return { health, reason }
 }
 
 /** What the customer calls this site, for the two notification columns and the email's subject. */
 const label = (row: Row) => row.title?.trim() || hostOf(row.site_settings?.public_url || row.url)
 
 /**
- * AD-25's `site_health` ROW, AND THIS IS THE SHAPE — declared here because Story 3.7 is the first
- * emitter, and validated on write by construction: every field is composed from a literal, a
- * checked column or `healthOf`'s own code, and nothing is spread in from a caller.
+ * AD-25's `site_health` ROW. ITS PAYLOAD IS `siteHealthData` in `lib/health-rule.ts` — declared
+ * beside the reasons because Story 3.7 is the first emitter, PARSED here before the insert, and
+ * the same schema the card's reader and `resolveNotice` read by, so the writer and its readers
+ * cannot drift apart (review, 2026-09-10: they each spelled the shape for themselves).
  *
  * NEVER FATAL. The row is a record of something that has already happened to `sites.health`; an
  * insert that would not land is a line in the log, not a check that failed.
@@ -254,13 +269,11 @@ async function openNotice(args: {
       // and the Sites card cannot tell the customer two different things about one outage. A cause
       // the table does not name has no sentence and the row carries none: `body` is nullable and a
       // reader that invents one would be claiming what was never decided.
-      body: (args.reason && args.reason in HEALTH_REASONS
-        ? HEALTH_REASONS[args.reason as HealthReason]
-        : null),
+      body: reasonSentence(args.reason),
       // The Manage keys WINDOW, not the full page: "Reconnect needed" exists to be acted on, and
       // `keysPopupPath` is the one place that address is written (standing rule 7).
       link: keysPopupPath(args.siteId),
-      data: { site_id: args.siteId, reason: args.reason },
+      data: siteHealthData.parse({ site_id: args.siteId, reason: args.reason }),
     })
   if (error) console.error('site-health: notice insert failed', { siteId: args.siteId, code: error.code })
 }
@@ -278,10 +291,10 @@ async function resolveNotice(siteId: string, userId: string, at: Date): Promise<
     .eq('user_id', userId)
     .eq('kind', 'site_health')
     .is('resolved_at', null)
-    // `data->>site_id`, because the site a `site_health` row is about lives in its payload — the
-    // table is FR-B7's and has no `site_id` column, and adding one would be the migration this
-    // story is specified not to need.
-    .eq('data->>site_id', siteId)
+    // `data->>site_id` — `siteHealthData`'s own key, because the site a `site_health` row is about
+    // lives in its payload: the table is FR-B7's and has no `site_id` column, and adding one would
+    // be the migration this story is specified not to need.
+    .eq(`data->>${'site_id' satisfies keyof SiteHealthData}`, siteId)
   if (error) console.error('site-health: notice resolve failed', { siteId, code: error.code })
 }
 
@@ -297,12 +310,12 @@ async function notify(args: {
   reason: string | null
   at: Date
   row: Row
-}): Promise<void> {
+}): Promise<boolean> {
   const { data, error } = await supabaseAdmin().auth.admin.getUserById(args.userId)
   const to = data?.user?.email
   if (error || !to) {
     console.error('site-health: no address', { siteId: args.siteId, code: error?.code ?? 'no_address' })
-    return
+    return false
   }
   const sent = await sendEmail({
     to,
@@ -315,4 +328,5 @@ async function notify(args: {
   })
   if (sent.ok) console.log('site-health: email sent', { siteId: args.siteId, id: sent.id })
   else console.error('site-health: email failed', { siteId: args.siteId, status: sent.status })
+  return sent.ok
 }

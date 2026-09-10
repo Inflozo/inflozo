@@ -1,7 +1,7 @@
 import { deadlineLabel } from '../app/(app)/app/(authed)/account/deletion-rule.ts'
 import { HEALTH } from './connect-rule.ts'
 import { emailShell, escape } from './email-shell.ts'
-import { HEALTH_REASONS, type HealthReason } from './health-rule.ts'
+import { reasonSentence, type HealthReason } from './health-rule.ts'
 
 /**
  * FR-P1's THIRD EMAIL — "Reconnect needed", once per healthy→unhealthy transition and never again
@@ -39,7 +39,7 @@ export function healthEmail({
 }): { subject: string; html: string; text: string } {
   const safe = escape(site)
   const date = deadlineLabel(at)
-  const said = (reason && reason in HEALTH_REASONS ? HEALTH_REASONS[reason as HealthReason] : null) ?? HEALTH.emailUnknown
+  const said = reasonSentence(reason) ?? HEALTH.emailUnknown
   const subject = HEALTH.emailSubject(site)
   const opening = HEALTH.emailBody(date)
   const only = HEALTH.emailOnly

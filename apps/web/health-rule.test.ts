@@ -5,14 +5,18 @@ import { join } from 'node:path'
 import { HEALTH, MIN_GHOST_MAJOR } from './lib/connect-rule.ts'
 import {
   BATCH,
+  BUDGET_MS,
   CRON_PATH,
   emailAllowed,
   EMAIL_CAP_DAYS,
   HEALTH_REASONS,
   healthOf,
   openHealthNotices,
+  reasonSentence,
   runHealthChecks,
+  siteHealthData,
   transitionOf,
+  writePlan,
   type Health,
   type HealthDeps,
 } from './lib/health-rule.ts'
@@ -32,6 +36,7 @@ import { healthEmail } from './lib/health-email.ts'
 const HEALTHY = { ok: true }
 const now = new Date('2026-09-10T12:00:00.000Z')
 const daysAgo = (days: number) => new Date(now.getTime() - days * 86_400_000).toISOString()
+const AT_ISO = now.toISOString()
 
 test('a probe that passed on a supported Ghost is healthy, and carries no reason', () => {
   assert.deepEqual(healthOf(HEALTHY, '6.58.0'), { health: 'healthy', reason: null })
@@ -118,6 +123,97 @@ test('BOTH SIDES OF THE ROLLING CAP, and the boundary itself', () => {
   assert.equal(emailAllowed({ ...opened, lastEmailAt: new Date(daysAgo(1)) }), false)
 })
 
+/* ───────── THE WRITE PLAN — what one decided check writes and then does. The review of 2026-09-10
+   found the wiring in `server/site-health.ts` executed by nothing: `if (transition === 'opened')`
+   rewritten as `if (health === 'unhealthy')` — a daily email for every unhealthy site — failed no
+   test. So the plan is pure and these run it through every row of the matrix. */
+
+const SITE_A = '00000000-0000-4000-8000-00000000000a'
+const ROUTES = { sha256: 'b2d675260a6071be426ac6a67ea60da9428f6169e03e25cb14cc2d7ed74381a1' }
+const plan = (was: Health, health: Health, lastEmailAt: string | null, routes: { sha256: string } | null = ROUTES) =>
+  writePlan({ before: { health: was, last_health_email_at: lastEmailAt }, health, routes, now })
+
+test('THE FOUR TRANSITIONS, AS WRITES: only healthy → unhealthy opens and may email', () => {
+  // Daily run, healthy site: the stamp moves, nothing opens, nothing sends.
+  assert.deepEqual(plan('healthy', 'healthy', null), {
+    update: { health: 'healthy', last_checked_at: now.toISOString(), routes_live_sha256: ROUTES.sha256, routes_verified_at: now.toISOString() },
+    transition: null,
+    mayEmail: false,
+  })
+  // Healthy → unhealthy: opened, and the email may go.
+  assert.deepEqual(plan('healthy', 'unhealthy', null).transition, 'opened')
+  assert.equal(plan('healthy', 'unhealthy', null).mayEmail, true)
+  // Unhealthy → unhealthy, the same site the next day: nothing sent, nothing inserted.
+  assert.deepEqual(plan('unhealthy', 'unhealthy', daysAgo(1)), {
+    update: { health: 'unhealthy', last_checked_at: now.toISOString(), routes_live_sha256: ROUTES.sha256, routes_verified_at: now.toISOString() },
+    transition: null,
+    mayEmail: false,
+  })
+  // Unhealthy → healthy: resolved, and a recovery is never an email.
+  assert.equal(plan('unhealthy', 'healthy', daysAgo(1)).transition, 'resolved')
+  assert.equal(plan('unhealthy', 'healthy', daysAgo(1)).mayEmail, false)
+})
+
+test('THE STAMP IS NEVER IN THE UPDATE AND NEVER CLEARED — the cap is "regardless of transitions"', () => {
+  // FR-C5: "regardless of transitions, at most one health email per site per rolling 7 days". The
+  // stamp is written by the caller after a send that LANDED, so it is not in the plan's update…
+  for (const [was, health] of [['healthy', 'unhealthy'], ['unhealthy', 'healthy'], ['healthy', 'healthy']] as [Health, Health][]) {
+    assert.ok(!('last_health_email_at' in plan(was, health, daysAgo(1)).update), `${was} → ${health} touched the stamp`)
+  }
+  // …and the matrix's "two transitions inside 7 days": healthy → unhealthy (emailed, stamped) →
+  // healthy → unhealthy, all in one week — the second opening writes its row and sends NOTHING.
+  // Before the review of 2026-09-10 the recovery cleared the stamp and this second one sent.
+  const second = plan('healthy', 'unhealthy', daysAgo(3))
+  assert.equal(second.transition, 'opened', 'the second outage is still a transition and writes its row')
+  assert.equal(second.mayEmail, false, 'the rolling cap holds across a recovery')
+  // A fortnight later it is past the window, so the clear was never needed for that.
+  assert.equal(plan('healthy', 'unhealthy', daysAgo(EMAIL_CAP_DAYS + 7)).mayEmail, true)
+})
+
+test('an unreadable routes.yaml leaves both routes columns alone, and health is decided without it', () => {
+  // The matrix row: 404, 403 or not-YAML → `readRoutes` answers null → neither column is in the
+  // update, so the last good hash and stamp stand. An unconditional spread would blank them.
+  const { update } = plan('healthy', 'healthy', null, null)
+  assert.deepEqual(update, { health: 'healthy', last_checked_at: now.toISOString() })
+  assert.equal(plan('healthy', 'unhealthy', null, null).transition, 'opened', 'health never depends on the read')
+})
+
+test('THE OUT-OF-TIME RUN IS RED, NOT KILLED', async () => {
+  // BATCH times three calls at the chokepoint's timeout is past the function's limit, and a killed
+  // function answers nothing at all — no 500, no counts, no line (DW-46). With the deadline already
+  // past, the sites not reached are counted as failed and the run answers.
+  let called = 0
+  const deps: HealthDeps = { async check() { called += 1; return { health: 'healthy' as Health, reason: null } } }
+  const { log, errors } = recorder()
+  const counts = await runHealthChecks(deps, [site('a'), site('b'), site('c')], log, Date.now() - 1)
+  assert.deepEqual(counts, { checked: 0, unhealthy: 0, failed: 3 })
+  assert.equal(called, 0)
+  assert.deepEqual(errors[0], ['site-health: out of time', { left: 3 }])
+  assert.ok(BUDGET_MS > 0 && BUDGET_MS < 300_000, 'the budget must leave room under the platform limit')
+})
+
+test("AD-25's PAYLOAD, ONE SHAPE FOR THE WRITER AND ITS READERS", () => {
+  // What `openNotice` parses before the insert is what `openHealthNotices` resolves — a key
+  // renamed on one side fails here rather than drawing a badge with no caption for ever.
+  const data = siteHealthData.parse({ site_id: SITE_A, reason: 'ghost_unknown_key' })
+  const found = openHealthNotices([{ data, created_at: AT_ISO }])
+  assert.deepEqual(found.get(SITE_A), { reason: 'ghost_unknown_key', at: AT_ISO })
+  // No user text: the payload is a site id and a code, and a reason the table does not name is
+  // still a string the reader carries — the sentence is drawn from the table, never stored.
+  assert.throws(() => siteHealthData.parse({ site_id: 'not-a-uuid', reason: null }))
+  assert.throws(() => siteHealthData.parse({ site_id: SITE_A }))
+  assert.deepEqual(Object.keys(siteHealthData.shape).sort(), ['reason', 'site_id'])
+})
+
+test('a reason is looked up by OWN key, so a jsonb code that is a prototype name has no sentence', () => {
+  assert.equal(reasonSentence('ghost_unknown_key'), HEALTH_REASONS.ghost_unknown_key)
+  for (const code of ['toString', 'constructor', '__proto__', 'hasOwnProperty', 'something_new', '', null, undefined]) {
+    assert.equal(reasonSentence(code), null, `${code} must have no sentence`)
+  }
+  // …and `healthOf` decides by the same lookup: a probe code that is a prototype name is undecided.
+  assert.equal(healthOf({ ok: false, code: 'toString' }, '6.58.0').health, null)
+})
+
 test('THE REASON TABLE CARRIES NO NUMBER, NO DATE AND NO DIAGNOSIS', () => {
   const words = Object.values(HEALTH_REASONS).join(' ')
   // COUNTS ARE DERIVED (standing rule 4): the version floor's figure is `MIN_GHOST_MAJOR`'s and the
@@ -167,23 +263,27 @@ test("HEALTH's copy is R-98-shaped, and the card's three states are three words"
 })
 
 test('THE OPEN NOTICES JOIN ON THE PAYLOAD, and refuse a row that is not one', () => {
+  const A = '00000000-0000-4000-8000-00000000000a'
+  const B = '00000000-0000-4000-8000-00000000000b'
   const rows = [
-    { data: { site_id: 'a', reason: 'ghost_unknown_key' }, created_at: '2026-09-09T00:00:00.000Z' },
+    { data: { site_id: A, reason: 'ghost_unknown_key' }, created_at: '2026-09-09T00:00:00.000Z' },
     // An older row for the same site loses: the caller reads newest first and the current outage
     // is the one the card is about.
-    { data: { site_id: 'a', reason: 'ghost_redirected' }, created_at: '2026-08-01T00:00:00.000Z' },
-    { data: { site_id: 'b' }, created_at: '2026-09-08T00:00:00.000Z' },
+    { data: { site_id: A, reason: 'ghost_redirected' }, created_at: '2026-08-01T00:00:00.000Z' },
+    { data: { site_id: B, reason: null }, created_at: '2026-09-08T00:00:00.000Z' },
     // `notifications.data` is jsonb and the client can mark a row read, so nothing may be trusted
-    // about its shape: none of these four may throw and none may reach the map.
+    // about its shape: none of these may throw and none may reach the map — the reader goes
+    // through `siteHealthData`, the declared shape, and a row that is not one is not a notice.
     { data: null, created_at: '2026-09-07T00:00:00.000Z' },
     { data: { site_id: 42 }, created_at: '2026-09-07T00:00:00.000Z' },
+    { data: { site_id: 'a', reason: null }, created_at: '2026-09-07T00:00:00.000Z' },
     { data: 'nope', created_at: '2026-09-07T00:00:00.000Z' },
     { data: { reason: 'ghost_unknown_key' }, created_at: '2026-09-07T00:00:00.000Z' },
   ]
   const found = openHealthNotices(rows)
-  assert.deepEqual(found.get('a'), { reason: 'ghost_unknown_key', at: '2026-09-09T00:00:00.000Z' })
+  assert.deepEqual(found.get(A), { reason: 'ghost_unknown_key', at: '2026-09-09T00:00:00.000Z' })
   // A row with no reason still dates the outage — the card then draws the button and no caption.
-  assert.deepEqual(found.get('b'), { reason: null, at: '2026-09-08T00:00:00.000Z' })
+  assert.deepEqual(found.get(B), { reason: null, at: '2026-09-08T00:00:00.000Z' })
   assert.equal(found.size, 2)
   // A read that failed answers an empty map, never a throw: `sites.health` came out of its own
   // read, so the badge stands and the caption is simply absent.
@@ -276,43 +376,47 @@ test('the cron checks the secret before it reads, backfills oldest-first, and go
   assert.ok(typeof BATCH === 'number' && BATCH > 0)
 })
 
-/* ───────── A ROUTES READ THAT FAILS DOES NOT MAKE A SITE UNHEALTHY, and leaves both columns where
-   they were. The matrix row no stub reaches: `readRoutes` is internal to a module that opens a
-   service-role client at import, so this is read out of the source in `ROUTE`'s own shape above.
-   It is here rather than in a note because the three ways the read can fail — a non-200, a body
-   with no bytes, and a throw — each have to end in the SAME `null`, and a fourth path added later
-   that rethrows would turn an unreadable file into an unhealthy site with nothing to catch it. */
+/* ───────── WHAT ONLY THE SOURCE OF `server/site-health.ts` PROMISES. The decision and the plan
+   are executed above; these are the three things that module must still do with them and that no
+   stub can reach, because it opens a service-role client at import. */
 
 const CHECK = join('server', 'site-health.ts')
 
-test('an unreadable routes.yaml leaves health and both routes columns alone', () => {
+test('the check carries out the plan, and the sites write is a compare-and-set', () => {
   const source = readFileSync(CHECK, 'utf8')
   const flat = source.replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
-  // 1. HEALTH CANNOT DEPEND ON THE READ. `healthOf` takes the probe and the version, full stop —
-  //    a third argument here is the review question, not a refactor.
-  assert.match(
-    flat,
-    /healthOf\(probe, probe\.version\)/,
-    `${CHECK}: health is decided from the probe and the version alone — routes are never an input`,
-  )
-  // 2. BOTH COLUMNS ARE WRITTEN ONLY BEHIND THE ANSWER, so a null read writes neither and the
-  //    last good hash and stamp stand. An unconditional spread would blank them on every 404.
-  assert.match(
-    flat,
-    /\.\.\.\(routes \? \{ routes_live_sha256: routes\.sha256, routes_verified_at: [^}]+\} : \{\}\)/,
-    `${CHECK}: routes_live_sha256 and routes_verified_at must be left where they were on a failed read`,
-  )
-  // 3. EVERY WAY THE READ CAN FAIL ENDS IN THE SAME `null` — counted out of the function's own
-  //    body, so a path added without one fails here rather than escaping as a throw.
+  // 1. HEALTH IS DECIDED FROM THE PROBE AND THE VERSION ALONE, and the plan is the pure one.
+  assert.match(flat, /healthOf\(probe, probe\.version\)/, `${CHECK}: routes are never an input to health`)
+  assert.match(flat, /writePlan\(\{ before, health, routes, now \}\)/, `${CHECK}: the write is the tested plan`)
+  assert.match(flat, /\.update\(update\)/, `${CHECK}: the sites row is written from the plan, not composed inline`)
+  // 2. COMPARE-AND-SET (review, 2026-09-10): the cron and a Re-check on one site both read
+  //    `healthy`; without these two clauses both see `opened` and two rows and two emails follow.
+  assert.match(flat, /\.eq\('health', before\.health\)/, `${CHECK}: the write must be conditional on the health it read`)
+  assert.match(flat, /\.is\('disconnected_at', null\) \.select\('id'\)/, `${CHECK}: a disconnect in the gap is not written over`)
+  // 3. THE STAMP FOLLOWS A SEND THAT LANDED, and only then.
+  assert.match(flat, /else if \(await notify\(/, `${CHECK}: the send decides the stamp`)
+  assert.match(flat, /\.update\(\{ last_health_email_at: now\.toISOString\(\) \}\)/, `${CHECK}: the stamp is its own write, after the send`)
+  assert.doesNotMatch(flat, /last_health_email_at: null/, `${CHECK}: the stamp is never cleared (FR-C5, regardless of transitions)`)
+  // 4. EVERY WAY THE ROUTES READ CAN FAIL ENDS IN THE SAME `null` — counted out of the function's
+  //    own body, so a path added without one fails here rather than escaping as a throw.
   const body = source.slice(source.indexOf('async function readRoutes'))
   const fn = body.slice(0, body.indexOf('\n}\n') + 2)
-  assert.equal(
-    (fn.match(/return null/g) ?? []).length,
-    3,
-    `${CHECK}: readRoutes has three ways to fail — a non-200, no bytes, and a throw — and each must return null`,
-  )
+  assert.equal((fn.match(/return null/g) ?? []).length, 3, `${CHECK}: readRoutes has three ways to fail and each must return null`)
   assert.doesNotMatch(fn, /\bthrow\b/, `${CHECK}: readRoutes must never rethrow; the rest of the check stands`)
-  assert.match(fn, /catch \(thrown\)/, `${CHECK}: the read is wrapped, so a network throw is logged and swallowed`)
+})
+
+test("DW-63: a refused version is reported and NOT stored — `probeSite`'s gate", () => {
+  // `healthOf(HEALTHY, '4.48.0')` going amber is executed above; this is the other half, which no
+  // stub reaches: `ghost_version` is written only behind `versionVerdict`, so the chokepoint never
+  // pins `Accept-Version` to a major it cannot talk to.
+  const PROBE = join('server', 'site-probe.ts')
+  const flat = readFileSync(PROBE, 'utf8').replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
+  assert.match(flat, /const floor = versionVerdict\(version\)/, `${PROBE}: the floor is connect's own rule`)
+  assert.match(
+    flat,
+    /\.\.\.\(version && floor\.ok \? \{ ghost_version: version \} : \{\}\)/,
+    `${PROBE}: ghost_version must be written only when the floor passes (DW-63)`,
+  )
 })
 
 /* ───────── FR-P1's THIRD EMAIL. None of it is reachable from a browser step — the harness sees

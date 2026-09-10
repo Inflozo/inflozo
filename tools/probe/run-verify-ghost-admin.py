@@ -1551,10 +1551,13 @@ const shoot = async (page, name) => {
     const offerHref = `/sites/brand?site=${t1SiteId}`
     const offerAfterSkip = await page.locator(`article a[href="${offerHref}"]`).count()
     const card = await cardOf('Connected').first().innerText().catch(() => '')
+    // STORY 3.7 MOVED THE OFFER INTO THE ⋯ (the owner, 2026-09-10): the row is inside a closed
+    // popover, which `innerText` does not see, so its words are read off the link itself.
+    const offerWords = (await page.locator(`article a[href="${offerHref}"]`).first().textContent().catch(() => '')) || ''
     const href = await cardOf('Connected').first().locator('a[target="_blank"]').getAttribute('href').catch(() => null)
     step('brand-skip',
       afterSkip.length === 0 && page.url().replace(/\?.*$/, '') === `${APP}/sites`
-      && offerAfterSkip === 1 && card.includes(SAY.brand_offer)
+      && offerAfterSkip === 1 && offerWords.includes(SAY.brand_offer) && !card.includes(SAY.brand_offer)
       && card.includes('Connected') && card.includes(`Ghost ${short(T1.version)}`)
       && CHECKED.test(card) && href === pub1.url,
       `Skip left ${afterSkip.length} project(s) — nothing written — and the browser on ${page.url()}; ` +
@@ -1657,7 +1660,16 @@ const shoot = async (page, name) => {
     //    **Use your brand**. This account has no project and room for one, so the caption said a
     //    project would be MADE — and this is where that sentence becomes true or false.
     const offer = () => page.locator(`article a[href="${offerHref}"]`).first()
-    await offer().click()
+    /* STORY 3.7 MOVED THE OFFER INTO THE ⋯ (the owner's instruction of 2026-09-10), so a press
+       is two clicks: the card's menu button by its `popovertarget`, then the row. The locator
+       above is unchanged — it is still the one `<a>` with that href — and the menu stays open
+       while the row is busy (`PanelLink`'s `onOpened` closes it only once the window is up), so
+       every read of `offer()` after a press below still sees it (review, 2026-09-10). */
+    const press = async () => {
+      await page.locator(`button[popovertarget="site-menu-${t1SiteId}"]`).click()
+      await press()
+    }
+    await press()
     await s2cHeading(page).waitFor()
     const saidCreate = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
     /* ── brand-popup: THE OFFER OPENS A WINDOW OVER THE LIST, and the press closes it again.
@@ -1694,7 +1706,7 @@ const shoot = async (page, name) => {
        code at all. The regression is a RETAINED slot, so the retention has to still be there when
        the second press happens. The brand is already applied by now, so the card still carries the
        offer (FR-C4's "skippable and re-runnable") and this is a real press, not a contrivance. */
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     const brandReopened = await brandShape()
     // …and **Skip** — the panel's other way out, and a SECOND server action leaving the popup —
@@ -1707,7 +1719,7 @@ const shoot = async (page, name) => {
        will close the popup"). It is not a fifth behaviour: **Skip** writes nothing at all, so the
        ✕ lands exactly where Skip lands and the offer is still on the card afterwards. That last
        clause is what this drives — the offer has to be there to press again. */
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     const beforeClose = await brandShape()
     await page.locator(`dialog[open] a[href="/sites"][aria-label="${SAY.brand_close}"]`).click()
@@ -1749,7 +1761,7 @@ const shoot = async (page, name) => {
     // Its own matcher: `anyApp` is declared further down, after this step (review 7's own run).
     const appUrls = (u) => u.href.startsWith(APP)
     await page.route(appUrls, holdOpen)
-    await offer().click()
+    await press()
     const offerBusy = await page.locator(`article a[href="${offerHref}"][aria-busy="true"]`).first()
       .waitFor({ timeout: 2500 }).then(() => true).catch(() => false)
     const offerBusyText = (await offer().innerText().catch(() => '')).trim()
@@ -1946,7 +1958,7 @@ const shoot = async (page, name) => {
        at-cap steps below are about to read. Both buttons are the same `Submit`. */
     // `offer()` is the run's own locator for the card's link — by href, so it is the same control
     // whether it is drawn as an `<a>` or, since R-98, as a `next/link`.
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     // INSIDE THE WINDOW. `main form button[type="submit"]` also matched the card's Disconnect
     // submit behind the popup, so `nth(1)` was Use your brand and the press rebranded the row this
@@ -2003,7 +2015,7 @@ const shoot = async (page, name) => {
     //    screen to NAME the project it will brand BEFORE the press — so the caption is read
     //    first, and then what it promised is checked against the row.
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     const namedIt = await says(page, SAY.brand_will_brand.replace('%s', made.name))
     const stillCreate = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
@@ -2055,7 +2067,7 @@ const shoot = async (page, name) => {
     //    The hidden field is blanked in the DOM, which is exactly the stale post a second tab
     //    produces — the page said "we'll make one" before the cap filled.
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     await page.evaluate(() => {
       // NAMED, NOT SWALLOWED. Without the field this step posts S2c's own real decision, which
@@ -2100,7 +2112,7 @@ const shoot = async (page, name) => {
     //    another account's row both look like through the caller's own RLS-scoped read.
     const FORGED_PROJECT = '00000000-0000-4000-8000-00000000dead'
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     await page.evaluate((id) => {
       const f = document.querySelector('input[type="hidden"][name="project_id"]')
@@ -2778,7 +2790,7 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
     const beforeRerun = await projectsOf()
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     const saidRebrand = await says(page, SAY.brand_already_on.replace('%s', beforeRerun[0].name))
     const promisedNew = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
@@ -2838,7 +2850,7 @@ const shoot = async (page, name) => {
     })).body
     const secondId = (second && second[0] && second[0].id) || null
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await offer().click()
+    await press()
     await s2cHeading(page).waitFor()
     const asked = await says(page, SAY.brand_already_on.replace('%s', made.name))
     const askedWhich = await says(page, SAY.brand_which_project)
@@ -2938,7 +2950,7 @@ const shoot = async (page, name) => {
     try {
       await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'free' })
       await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-      await offer().click()
+      await press()
       await s2cHeading(page).waitFor()
       // The cards are drawn in the page's own `updated_at desc, id desc` order, so the FIRST one
       // is what the pre-ruling rule would have ticked. Reading it is what makes this a
