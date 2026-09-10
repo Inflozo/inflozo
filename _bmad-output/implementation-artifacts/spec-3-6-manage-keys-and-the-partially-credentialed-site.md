@@ -5,7 +5,7 @@ created: '2026-09-09'
 status: 'in-review'
 baseline_commit: '8c301682b72bc598e082f62c4f6813244418dfbd'
 review_loop_iteration: 1
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -1297,6 +1297,42 @@ which is the control that a window frame is not mistaken for a library design. A
 deployment failed inside `openKeysPopup` at 390 with the menu already hidden; runs 8, 9 and 10 on
 this one opened the last card's ⋯ at 390 and pressed its row (`keys-phone`, `axe-keys-screen`). Same
 harness path, one product change in between (`lib/menu.ts`).
+
+### Deploy phase, 2026-09-10 — the migration was already applied; this pass confirms HEAD is live
+
+**No new migration.** `supabase/migrations/20260909180000_credential_audit_and_key_id.sql` was applied
+to production by hand at the first Deploy pass this same day, and read back then: `credential_change`
+in `public.credential_action`'s enum, `admin_key_id text` on `private.site_credentials`. Nothing
+touched `supabase/` between that pass and this one — the Fix, Fix 2 and Review-third-pass phases each
+recorded "no schema file changed in this phase" — so there is no new SQL to apply. `bash
+supabase/tests/run-rls-gate.sh` re-run in this phase: **exit 0**, ending on the DW-44 vault assertions
+and `PASS: credential_change is a value of public.credential_action`.
+
+**What changed since the last Deploy pass is four commits of Review work** (`4d9c008b`, `533d72b8`,
+`b1ef6eee`, `d6c296f4`) — the phone-width menu fix, the `keys-test`/`keys-forged` harness and product
+fixes, and Question 4's file move — **already pushed to `main` and already live**, per R-81/DW-7: CI
+publishes on every push. This phase's job is to confirm HEAD is what production serves, not to publish
+it again.
+
+- **CI**: `GET /repos/Inflozo/inflozo/actions/runs?head_sha=d6c296f4c54fb390e69cbbc23fe369295b245b3a`
+  (`GITHUB_TOKEN`) — run `34464124236`, `CI`, **completed / success**.
+- **Deployment: `https://inflozo-mz2wohp9s-umangkagathara.vercel.app`
+  (`dpl_98SGypKvtZyivjxA2DUpYc7gBWzF`)**, `target=production`, **`READY`**, `githubCommitSha`
+  `d6c296f4` — `git rev-parse HEAD` at the start of this phase (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+  `VERCEL_PROJECT`).
+- **Aliased**: that deployment's own alias list (`GET
+  /v2/deployments/dpl_98SGypKvtZyivjxA2DUpYc7gBWzF/aliases`) carries `app.inflozo.com` and
+  `inflozo.com` — production is serving this commit, not an earlier one.
+- `bash supabase/tests/run-rls-gate.sh` — exit 0 (above).
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings**.
+
+**Not re-run in this phase, and named rather than assumed:** the full live harness against
+`https://app.inflozo.com` — Question 4's own commit changed no product behaviour (its diff to
+`apps/web` is two doc-comment lines, `git show --stat d6c296f4`), and the Review third pass already
+ran it to green on `533d72b8` (run 10: **98 PASS, 1 RECORD, 0 FAIL, `RESULT: all steps passed`**) and
+again on `b1ef6eee` (its own commit message: "all 98 live steps green on the deployed build, T1 and
+T3"). Re-running it here would prove the same code a third time. The owner's manual test (R-80) is
+next, on `https://app.inflozo.com`, which this phase confirms is live at HEAD.
 
 ## Spec Change Log
 
