@@ -1780,6 +1780,18 @@ reason: Each run failed on ONE navigation to an authed route — `/sites`, `/sit
   Deploy by waiting on the dialog's own content field to be REMOVED from the DOM instead, which only
   a real navigation does; a hang now times out visibly, the same shape as everywhere else in this
   entry, rather than reporting a site that never reconnected as one that had.
+  A SIXTH MANIFESTATION, WORSE THAN THE FIRST FIVE AND READ BEFORE BEING BELIEVED (Story 3.7 Deploy,
+  2026-09-10). Three full runs against production in a row, none finishing inside the 1200s ceiling —
+  the first logged one retried `page.goto` (to `/sites/brand?…`, this story's moved menu row) and
+  still failed to finish; the second and third produced no `note:` line at all, hanging somewhere in
+  the flow's first authed page with nothing to name. Three straight misses is bad luck within this
+  entry's own "roughly one clean run in two" rate (about 1 in 8), not evidence of a new cause on its
+  own — and it was READ rather than believed: a raw HTTP check outside Playwright (a fixture user's
+  `/auth/confirm` then `GET /sites` in the same session) answered 200 in 1.95s and 200 in 0.84s,
+  confirming the deployed app — including this story's new `notifications` read on the Sites page —
+  is fast and healthy at the moment the harness could not finish. The hang is Playwright/harness-side,
+  this entry's shape, not a product regression. Not re-run a fourth time; the brand-row relocation
+  this run exists to prove live is instead proved by the owner's own manual test.
 
 ### DW-69: two presses of "Use your brand" in flight together can still make two projects
 

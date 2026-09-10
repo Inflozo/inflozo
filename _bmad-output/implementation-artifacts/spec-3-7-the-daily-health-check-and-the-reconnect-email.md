@@ -695,3 +695,41 @@ alone"**: `healthOf` takes the probe and the version and nothing else, the two `
 written only behind the answer, and each of `readRoutes`' three failure paths returns the same
 `null`. Its control was run — making the spread unconditional turns it red, restoring the file turns
 it green — because a test that cannot fail is not a test (standing rule 2).
+
+### Deploy phase, 2026-09-10 — production confirmed READY at HEAD; no migration owed
+
+**No schema.** This story adds no column and no migration (R-99: no Schema phase), so Deploy's job is
+confirming HEAD is what production serves, not applying anything.
+
+- **Deployment: `https://inflozo-c9wfzbqq6-umangkagathara.vercel.app`
+  (`dpl_7X9NnLxzg1eMtAFnaQnbYJwW6ZVd`)**, `target=production`, **`READY`**, `githubCommitSha`
+  `44efa14098a18dd8886682e05194945819bdcf22` — `git rev-parse HEAD` at the start of this phase
+  (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`).
+- **Aliased**: that deployment's own alias list carries `app.inflozo.com`, `inflozo.com`,
+  `www.inflozo.com` — production is serving this commit.
+- **CI**: `GET /repos/Inflozo/inflozo/actions/runs?head_sha=44efa14098a18dd8886682e05194945819bdcf22`
+  (`GITHUB_TOKEN`) — run `34500150250`, `CI`, **completed / success**.
+- `bash supabase/tests/run-rls-gate.sh` — exit 0, the control held unchanged.
+- `python3 tools/doc-audit.py --check`, twice — **PASS, 0 warnings**, both runs.
+
+**The Story 3.4 harness (`run-verify-ghost-admin.py`), and what it found.** The Review phase patched
+this harness for the moved brand row (the ⋯ menu, `site-menu.tsx`) but did not re-run it, naming
+Deploy as where it belongs. `--check` (plumbing only) passed cleanly. The full run against
+`https://app.inflozo.com` was attempted **three times** and every attempt hit **DW-68** — the
+already-ledgered, open, intermittent hang on an authed page/action of the deployed app — before
+completing: run 1 logged one retried `page.goto` to `/sites/brand?…` and then still failed to finish
+inside the harness's 1200s ceiling; runs 2 and 3 produced no `note:` line at all, hanging somewhere in
+the flow's first authed page with nothing to name. DW-68's own record already says a clean run is
+roughly a coin flip and has cost as many as four runs before one landed (Story 3.6 Deploy); three
+straight misses is bad luck within that, not new. **Read before being believed (DW-68's own rule):** a
+raw HTTP check, not Playwright — create a fixture user via the Admin API, follow `/auth/confirm` with
+its `hashed_token`, then `GET /sites` in the same session — answered **200 in 1.95s** and **200 in
+0.84s** respectively, confirming the deployed app (including this story's new `notifications` read on
+the Sites page) is fast and healthy right now. The hang is therefore Playwright/harness-side, the
+shape DW-68 already describes, and not a product regression. **Not proved live by this harness as a
+result**: the moved ⋯ menu rows and the brand-row relocation specifically — that is what the owner's
+manual test steps 1–3 below prove directly, on his own account, today. Appended to DW-68's ledger
+entry (standing rule 3) rather than opened as a new one.
+- `python3 tools/probe/run-verify-site-health.py --check` and `... ` (apex) — not re-run in this
+  phase: the Review phase already ran both to green against this exact commit (all 11, then all 15,
+  steps PASS) and nothing has changed in the tree since.
