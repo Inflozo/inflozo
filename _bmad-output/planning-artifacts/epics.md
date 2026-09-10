@@ -1050,8 +1050,9 @@ Preview-only **sets and clears without any user action**, re-reads the live `rou
 drift, and re-reads Portal's button state and the announcement settings so both canvas shims track the site
 **And** failure sets a **"Reconnect needed"** badge with the reason and date
 **And** the email sends **once per healthy→unhealthy transition** (at most one reminder), is suppressed while
-the outage persists, resets on recovery, and is capped at **one health email per site per rolling 7 days** — a
-flapping site logs to the notifications centre only
+the outage persists, resets on recovery, and is capped at **one health email per site per rolling 7 days, the
+count starting again when the site is fixed** (R-101, 2026-09-10) — a site that stays broken logs to the
+notifications centre only
 **And** ~~on each Ghost release, one broadcast to every account on every plan~~ and ~~that compatibility
 notice is the one carve-out FR-P2 allows to reach email~~ — **both moved to Story 9.1 by the owner's ruling,
 2026-09-10 (DW-87)**: the broadcast is only as good as the library check behind it and no design exists to

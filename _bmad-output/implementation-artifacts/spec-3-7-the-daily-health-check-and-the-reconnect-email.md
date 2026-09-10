@@ -144,8 +144,8 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 | Daily run, first ever check | A site connected before Story 3.3 (**DW-62**) | The same, and it is a BACKFILL: capability, Portal, announcement and brand are populated for the first time | A probe failure is a health failure like any other |
 | Healthy → unhealthy | Ghost answers 401 `UNKNOWN_ADMIN_API_KEY` | `health='unhealthy'`; one `site_health` notification row with the reason, the date and `link=/sites?manage=<id>`; the email sends; `last_health_email_at` stamped | The email failing is logged and the row still stands — a send never undoes what it reports on (`lib/email.ts`) |
 | Unhealthy → unhealthy | The same site the next day | Nothing sent, nothing inserted; `last_checked_at` moves. The open notification row is untouched | N/A |
-| Unhealthy → healthy | The key was re-pasted through Manage keys | `health='healthy'`; the open row gets `resolved_at`; `last_health_email_at` is left alone — the cap is "regardless of transitions" (FR-C5; review 2026-09-10, Question 2) | N/A |
-| Two transitions inside 7 days | Healthy → unhealthy → healthy → unhealthy, all in one week | Two notification rows, **one** email. The second transition is capped and logs only (FR-C5's flapping rule) | N/A |
+| Unhealthy → healthy | The key was re-pasted through Manage keys | `health='healthy'`; the open row gets `resolved_at`; `last_health_email_at` cleared (R-101) | N/A |
+| Two transitions inside 7 days | Healthy → unhealthy → healthy → unhealthy, all in one week | Two notification rows and **two** emails — the fix in between started the count again (**R-101**, owner, 2026-09-10). Healthy → unhealthy → unhealthy is two rows and **one** email: the second is not a transition | N/A |
 | Ghost downgraded to 4.x | `config/` 200, `version` `4.48.0` (**DW-63**) | `health='unhealthy'` with the "no longer supported" reason; `ghost_version` **not** overwritten, so the chokepoint keeps pinning a major it can talk to | N/A |
 | `routes.yaml` unreadable | 404, 403, or a body that is not YAML | Logged by code; `routes_live_sha256` and `routes_verified_at` left where they were; **health unaffected** | N/A |
 | `routes.yaml` read | 200 on either major | `routes_live_sha256` = sha256 of the bytes, `routes_verified_at` stamped. No drift verdict — `routes_last_offered` is null until Epic 7 | N/A |
@@ -287,7 +287,7 @@ per-site action; **Re-check connection** joins it as the frame's own first row. 
 Five layers ran — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the
 Real-infra verifier (R-82) — and every finding below was read at its location before it was rated.
 
-- [ ] [Review][Decision] The rolling 7-day cap can never fire — recovery clears `last_health_email_at`, so a site that flaps inside one week sends two emails. The frozen spec says both "capped at one per rolling 7 days" and "recovery clears the stamp"; the PRD's own FR-C5 says "regardless of transitions, at most one health email per site per rolling 7 days". The code now follows the PRD; the frozen bullet awaits the owner — **Question 2** below.
+- [x] [Review][Decision] **Ruled: option 2 (owner, 2026-09-10) — R-101; the clear is back and the tests say so.** The rolling 7-day cap can never fire — recovery clears `last_health_email_at`, so a site that flaps inside one week sends two emails. The frozen spec says both "capped at one per rolling 7 days" and "recovery clears the stamp"; the PRD's own FR-C5 says "regardless of transitions, at most one health email per site per rolling 7 days". The code now follows the PRD; the frozen bullet awaits the owner — **Question 2** below.
 - [x] [Review][Patch] The cap survives recovery, the stamp is written only for a send that landed, and the whole write plan is pure and executed under `node --test` [apps/web/server/site-health.ts:194-212, apps/web/lib/health-rule.ts]
 - [x] [Review][Patch] The email's preheader and body say "did not let us in" for every reason, including a Ghost that let us in and is too old [apps/web/lib/connect-rule.ts — `HEALTH.emailPreheader`, `HEALTH.emailBody`]
 - [x] [Review][Patch] The `sites` write is not a compare-and-set: a cron pass and a Re-check on the same site can both see `healthy`, both open a row and both email; a disconnect between the read and the write is written over [apps/web/server/site-health.ts:194-212]
@@ -317,10 +317,12 @@ Real-infra verifier (R-82) — and every finding below was read at its location 
 - **Given** that same site **When** the check runs again the next day **Then** nothing is sent and no
   second row is written.
 - **Given** an unhealthy site whose key is re-pasted **When** the next check runs **Then** `health`
-  returns to `healthy` and the open row is stamped `resolved_at`. `last_health_email_at` is **not**
-  cleared — amended at review (2026-09-10): clearing it made the rolling cap unreachable; see Question 2.
-- **Given** a site that goes unhealthy twice inside seven days **When** the second transition happens
-  **Then** a second notification row is written and **no** second email is sent.
+  returns to `healthy`, the open row is stamped `resolved_at`, and `last_health_email_at` is cleared
+  (**R-101**, the owner's ruling on Question 2, 2026-09-10).
+- **Given** a site that goes unhealthy, is fixed, and goes unhealthy again inside seven days **When**
+  the second transition happens **Then** a second notification row is written and a second email is
+  sent — the fix started the count again (**R-101**). **Given** a site that stays unhealthy **When**
+  it is checked again **Then** no row and no email: not a transition.
 - **Given** a Ghost that now reports 4.x **When** the check runs **Then** the site is `unhealthy` with
   its own reason and `ghost_version` is not overwritten (**DW-63**).
 - **Given** a site connected before Story 3.3 **When** the first cron run happens **Then** it is
@@ -400,7 +402,7 @@ email the same person has already received, so this rides its shell, which moves
 
 Two. The first was asked at Create and **ruled the same day**; it is recorded here because the
 ruling moved work out of this story and the propagation it required is listed with it. The second
-was found at review on 2026-09-10 and is **open**.
+was found at review on 2026-09-10 and **ruled the same day** (R-101).
 
 ### Question 1 — the "Ghost released a new version" announcement: build it now, or when there is a library to check?
 
@@ -475,7 +477,11 @@ is kept across a fix. The spec's plan still carries the old line, and it is your
 2. **Start the count again when a site is fixed** — a second break the same week emails again. One
    line of code goes back; the PRD's sentence would need to change to match.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-10).** Filed as **R-101** in `reconcile-designs-decisions.md`.
+The week's count starts again when a site is fixed: `writePlan` clears `last_health_email_at` on a
+recovery, `health-rule.test.ts` asserts it, the matrix row and the acceptance criterion above say
+two emails for break → fix → break in one week, and the PRD's FR-C5 sentence is amended to match.
+The frozen "Recovery resolves" bullet stands as written.
 
 ## Owner's manual test
 
@@ -636,7 +642,7 @@ command below ran at the review's own tree with the patches in; keys by variable
 
 | Command | Answered |
 |---|---|
-| `pnpm check` (Node 24 on PATH) | exit 0 — `apps/web` **268 tests, 268 pass, 0 fail, 0 skipped**; `ghost-shim`, `section-runtime`, `theme-compiler` 1 pass each. New among them: the write plan's four transitions and the cap across a recovery, the out-of-time run, AD-25's payload round trip, the own-key reason lookup, the compare-and-set and DW-63's gate read off the source |
+| `pnpm check` (Node 24 on PATH) | exit 0 — `apps/web` **268 tests, 268 pass, 0 fail, 0 skipped**; `ghost-shim`, `section-runtime`, `theme-compiler` 1 pass each. New among them: the write plan's four transitions and the stamp's two owners (the send and the fix, R-101), the out-of-time run, AD-25's payload round trip, the own-key reason lookup, the compare-and-set and DW-63's gate read off the source |
 | `pnpm build` | exit 0, "Compiled successfully", route table carries `ƒ /api/cron/site-health` beside `ƒ /api/cron/purge-accounts` |
 | `bash supabase/tests/run-rls-gate.sh` | exit 0 — the control held unchanged; **no migration and no column** (R-99) |
 | `python3 tools/doc-audit.py --check`, twice | first run regenerated the story board (expected after a commit), second PASS, 0 warnings |

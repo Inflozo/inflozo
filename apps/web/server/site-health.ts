@@ -40,9 +40,9 @@ import { probeSite } from '@/server/site-probe'
  * checked again tomorrow moves `last_checked_at` and nothing else; a site that flaps twice inside a
  * week writes two rows and sends ONE message (FR-C5's own sentence, and FR-P2's guarantee that
  * Inflozo does not nudge). Recovery stamps `resolved_at` on the row it opened — AD-25 names
- * `resolved_at` as what makes the prune exemption safe — and LEAVES `last_health_email_at` ALONE:
- * the cap is "regardless of transitions" (FR-C5), and clearing the stamp on recovery was what made
- * it unreachable (review, 2026-09-10; `writePlan`'s header in `lib/health-rule.ts`).
+ * `resolved_at` as what makes the prune exemption safe — and clears `last_health_email_at`, so the
+ * week's count starts again when the site is fixed and a second break the same week is told again
+ * (the owner's ruling R-101, 2026-09-10; `writePlan` in `lib/health-rule.ts` is where both live).
  *
  * THIS IS THE FIRST EMITTER OF `notifications`, SO THE `site_health` PAYLOAD IS DECLARED —
  * `siteHealthData`, beside the reasons in `lib/health-rule.ts` — AND PARSED ON WRITE (AD-25).

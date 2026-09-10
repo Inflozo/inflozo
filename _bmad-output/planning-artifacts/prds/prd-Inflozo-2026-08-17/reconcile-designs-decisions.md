@@ -1889,6 +1889,17 @@ typed address; with none recorded there is no comparison.
   and `keys-other-site` split) · ✅ the spec's `## Owner's manual test` step 7 **(corrected
   2026-09-10 — it still promised the disconnect-and-reconnect sentence)**.
 
+**R-101 — The reconnect email's weekly count starts again when the site is fixed.**
+Option 2 of Story 3.7's review Question 2, ruled 2026-09-10. The review found the spec's two
+sentences could not both hold — "at most one email per site per rolling 7 days" and "recovery
+clears `last_health_email_at`" — because every opening follows a recovery, so the cap never held and
+a site that broke, was fixed and broke again in one week was emailed twice. The owner chose that:
+every break a customer has to act on is told once, and a fix resets the count. FR-C5's "regardless
+of transitions" is amended to say so; a site that STAYS broken is still told once (`transitionOf`).
+- Targets: ✅ PRD §5 FR-C5 · ✅ Story 3.7's I/O matrix, acceptance criteria and Question 2 ·
+  ✅ `lib/health-rule.ts` (`writePlan`, `emailAllowed`'s header) and `health-rule.test.ts` ·
+  ✅ `server/site-health.ts`'s header.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

@@ -113,15 +113,13 @@ export function transitionOf({ was, now }: { was: Health; now: Health | null }):
 export const EMAIL_CAP_DAYS = 7
 
 /**
- * ONE EMAIL PER SITE PER ROLLING SEVEN DAYS, AND ONLY ON THE WAY DOWN. THE STAMP SURVIVES
- * RECOVERY: FR-C5's own sentence is "regardless of transitions, at most one health email per site
- * per rolling 7 days", and a recovery that cleared `last_health_email_at` made the cap unreachable
- * — every `opened` follows a `resolved`, so the stamp was always null by the time it was read and
- * a site that flapped inside one week sent two emails (review, 2026-09-10; the spec's frozen
- * "recovery clears" bullet is Question 2 for the owner). A genuine second outage a fortnight later
- * is past the rolling window anyway, which is all the clear was for. Two transitions inside one
- * week therefore write two notification rows and send ONE message — FR-P2's guarantee that
- * Inflozo does not nudge.
+ * ONE EMAIL PER SITE PER ROLLING SEVEN DAYS, AND ONLY ON THE WAY DOWN — AND THE COUNT STARTS
+ * AGAIN WHEN THE SITE IS FIXED (the owner's ruling R-101, 2026-09-10, on the review's Question 2).
+ * `resolved` clears `last_health_email_at`, so a site that breaks, is fixed, and breaks again in
+ * the same week is emailed again: every break a customer has to act on is told once. The cap
+ * below therefore holds only while a stamp stands — a send that landed and no recovery since —
+ * which on the wire is the outage still open, where `transitionOf` already sends nothing. It is
+ * kept as written because it is FR-C5's sentence and the pure guard the tests can reach.
  */
 export function emailAllowed({
   transition,
@@ -147,9 +145,9 @@ export function emailAllowed({
  * unhealthy site, FR-P2's forbidden nudge — failed nothing.
  *
  * `update` is the `sites` patch: `health`, the stamp, the two routes columns only behind a read
- * that answered. `last_health_email_at` IS NOT IN IT: the stamp is written by the caller after a
- * send that LANDED, because a stamp for an email nobody received would hold the cap over the one
- * message FR-P1 promises for seven days (the same review). It is never cleared — see `emailAllowed`.
+ * that answered, and `last_health_email_at: null` on a recovery (R-101). THE STAMP ITSELF IS NOT
+ * IN IT: it is written by the caller after a send that LANDED, because a stamp for an email nobody
+ * received would hold the cap over the one message FR-P1 promises (the same review).
  */
 export function writePlan(args: {
   before: { health: Health; last_health_email_at: string | null }
@@ -157,7 +155,7 @@ export function writePlan(args: {
   routes: { sha256: string } | null
   now: Date
 }): {
-  update: Record<string, string>
+  update: Record<string, string | null>
   transition: 'opened' | 'resolved' | null
   mayEmail: boolean
 } {
@@ -169,6 +167,7 @@ export function writePlan(args: {
       health: args.health,
       last_checked_at: stamp,
       ...(args.routes ? { routes_live_sha256: args.routes.sha256, routes_verified_at: stamp } : {}),
+      ...(transition === 'resolved' ? { last_health_email_at: null } : {}),
     },
     transition,
     mayEmail,

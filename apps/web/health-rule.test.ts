@@ -154,19 +154,19 @@ test('THE FOUR TRANSITIONS, AS WRITES: only healthy → unhealthy opens and may 
   assert.equal(plan('unhealthy', 'healthy', daysAgo(1)).mayEmail, false)
 })
 
-test('THE STAMP IS NEVER IN THE UPDATE AND NEVER CLEARED — the cap is "regardless of transitions"', () => {
-  // FR-C5: "regardless of transitions, at most one health email per site per rolling 7 days". The
-  // stamp is written by the caller after a send that LANDED, so it is not in the plan's update…
-  for (const [was, health] of [['healthy', 'unhealthy'], ['unhealthy', 'healthy'], ['healthy', 'healthy']] as [Health, Health][]) {
+test('THE STAMP IS WRITTEN BY THE SEND AND CLEARED BY THE FIX — R-101', () => {
+  // The stamp is written by the caller after a send that LANDED, so no plan ever sets it…
+  for (const [was, health] of [['healthy', 'unhealthy'], ['healthy', 'healthy'], ['unhealthy', 'unhealthy']] as [Health, Health][]) {
     assert.ok(!('last_health_email_at' in plan(was, health, daysAgo(1)).update), `${was} → ${health} touched the stamp`)
   }
-  // …and the matrix's "two transitions inside 7 days": healthy → unhealthy (emailed, stamped) →
-  // healthy → unhealthy, all in one week — the second opening writes its row and sends NOTHING.
-  // Before the review of 2026-09-10 the recovery cleared the stamp and this second one sent.
-  const second = plan('healthy', 'unhealthy', daysAgo(3))
-  assert.equal(second.transition, 'opened', 'the second outage is still a transition and writes its row')
-  assert.equal(second.mayEmail, false, 'the rolling cap holds across a recovery')
-  // A fortnight later it is past the window, so the clear was never needed for that.
+  // …and a recovery CLEARS it: the owner's ruling R-101 (2026-09-10, the review's Question 2) —
+  // the week's count starts again when the site is fixed, so a second break in the same week is
+  // told again. Option 1, the PRD's "regardless of transitions", was declined.
+  assert.equal(plan('unhealthy', 'healthy', daysAgo(1)).update.last_health_email_at, null)
+  // Which is why, on the wire, a second opening after a fix finds no stamp and may email…
+  assert.equal(plan('healthy', 'unhealthy', null).mayEmail, true)
+  // …while the pure cap still holds against a stamp that stands (FR-C5's sentence, executed).
+  assert.equal(plan('healthy', 'unhealthy', daysAgo(3)).mayEmail, false)
   assert.equal(plan('healthy', 'unhealthy', daysAgo(EMAIL_CAP_DAYS + 7)).mayEmail, true)
 })
 
@@ -396,7 +396,7 @@ test('the check carries out the plan, and the sites write is a compare-and-set',
   // 3. THE STAMP FOLLOWS A SEND THAT LANDED, and only then.
   assert.match(flat, /else if \(await notify\(/, `${CHECK}: the send decides the stamp`)
   assert.match(flat, /\.update\(\{ last_health_email_at: now\.toISOString\(\) \}\)/, `${CHECK}: the stamp is its own write, after the send`)
-  assert.doesNotMatch(flat, /last_health_email_at: null/, `${CHECK}: the stamp is never cleared (FR-C5, regardless of transitions)`)
+  assert.doesNotMatch(flat, /last_health_email_at: null/, `${CHECK}: the clear on recovery is the plan's (R-101), never composed here`)
   // 4. EVERY WAY THE ROUTES READ CAN FAIL ENDS IN THE SAME `null` — counted out of the function's
   //    own body, so a path added without one fails here rather than escaping as a throw.
   const body = source.slice(source.indexOf('async function readRoutes'))
