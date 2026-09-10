@@ -2,10 +2,10 @@
 title: 'Story 3.6 — Manage keys, and a partially credentialed site as an ordinary state'
 type: 'feature'
 created: '2026-09-09'
-status: 'in-review'
+status: 'done'
 baseline_commit: '8c301682b72bc598e082f62c4f6813244418dfbd'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -1791,4 +1791,9 @@ same class 3.4's review fixed for its own steps were fixed here as well while it
 `keys-popup`'s Cancel and Escape waited on `pathname === '/sites'`, which is already true inside
 the popup, and now wait for `?manage=` to leave. (Recorded here so this story cannot be closed on
 3.4's claim — standing rule 3.)
+
+## Owner's test findings
+
+Tested on `app.inflozo.com` on **2026-09-10**, on the deployment confirmed at the Deploy phase
+(`d6c296f4`). **Passed.** No findings. The story moves to Done.
 
