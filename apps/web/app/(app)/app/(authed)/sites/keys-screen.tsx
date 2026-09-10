@@ -93,6 +93,12 @@ export async function KeysScreen({
   if (error?.code === '22P02') gone()
   if (error) {
     console.error('sites/keys: read failed', { code: error.code })
+    // IN THE WINDOW THE THROW WOULD COST THE LIST: the popup sits inside the Sites page's own
+    // `<Suspense>` with no error boundary between it and `app/error.tsx`, so a transient read
+    // failure would replace the whole list with "something went wrong" over a site that is fine.
+    // The window closes instead and the ⋯ row is still there to press again — `brand-screen.tsx`'s
+    // `readFailed` takes the same line (review, 2026-09-10). The full page keeps the error screen.
+    if (popup) redirect('/sites')
     throw new Error('sites/keys: site read failed')
   }
   if (!row) gone()

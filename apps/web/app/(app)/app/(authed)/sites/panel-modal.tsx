@@ -67,7 +67,21 @@ export function PanelModal({
 
   useEffect(() => {
     const el = dialog.current
+    // WHERE FOCUS CAME FROM, so it can go back. A native `<dialog>` returns focus to its opener on
+    // `close()`, but this one is UNMOUNTED when the parameter leaves the URL — every way out is a
+    // navigation — so the platform's own return never runs and focus fell to `<body>`, a keyboard
+    // user losing their place in the list on every Cancel (review, 2026-09-10). The opener is
+    // whatever was focused when the window mounted: the ⋯ row, or the card's brand offer.
+    // The ⋯ row lives inside a popover that is hidden once the window is there, and a hidden
+    // element cannot take focus — so for a row inside a popover it is the popover's INVOKER, the
+    // ⋯ button, that gets focus back, which is where Escape on the menu would have put it.
+    const active = document.activeElement
+    const popover = active?.closest('[popover]')
+    const opener = popover?.id ? document.querySelector(`[popovertarget="${popover.id}"]`) ?? active : active
     if (el && !el.open) el.showModal()
+    return () => {
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true })
+    }
   }, [])
 
   return (

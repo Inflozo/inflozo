@@ -24,9 +24,10 @@ import { skipBrand, useBrand } from './actions'
 
    ONE COMPONENT, TWO CHROMES, AND `panel-modal.tsx` RECORDS WHY THERE ARE TWO. The Sites card's
    offer is a `PanelLink`: its `href` is this route's full page, and a plain click turns into
-   `/sites?brand=…`, this panel in a `<dialog>` over the list — the popup. `connectSite`'s landing is a SERVER ACTION's
-   `redirect()`, and those are not intercepted (executed, 2026-09-10), so the moment straight after
-   a connect stays the full-screen onboarding S2 draws. Both render this file.
+   `/sites?brand=…`, this panel in a `<dialog>` over the list — the popup. `connectSite`'s landing
+   stays the full-screen onboarding S2 draws because the owner ruled it so (Question 7, option 1,
+   2026-09-10), not for a mechanical reason: the popup is a parameter on the list now, and a
+   server action can land on it as easily as anywhere. Both render this file.
 
    ONE DEPARTURE FROM THE FRAME, and it is a fact Inflozo does not have: the frame captions the
    swatch with the accent's NAME ("Burnt orange"). Ghost answers a hex and nothing else (§40), so

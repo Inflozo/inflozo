@@ -1850,6 +1850,45 @@ a screen.
   export is **not** a target and is not edited (R-74): the frames draw a button's resting state and
   say nothing about its in-flight one, so this extrapolates rather than contradicts.
 
+## A22 · Step 7 — Story 3.6's review, two rulings, 2026-09-09
+
+Both were put to the owner in R-83 shape under `## Questions for the owner` in Story 3.6's spec
+(`_bmad-output/implementation-artifacts/spec-3-6-manage-keys-and-the-partially-credentialed-site.md`,
+Questions 1 and 2) and ruled the same day. Filed here on 2026-09-10 by that story's third review,
+which found them cited as rulings in five documents and present in this register in none — the
+register `CLAUDE.md` names as where a ruling lives, and the one thing the gate cannot see.
+
+**R-99 — a story that changes the database pushes the migration FIRST, on its own, before the code
+that needs it.** Option 1 of Question 1, ruled 2026-09-09. The collision was between two approved
+rules — Epic 2's "a migration is applied by hand in the Deploy phase" and DW-7's "CI publishes on
+every push" — and Story 3.6's Dev push put `store()` live against a hosted schema that had neither
+`admin_key_id` nor `credential_change`, so **connecting any Ghost site failed on production** for the
+whole Dev → Review → Deploy window (`42703`, `22P02`, reproduced in rolled-back transactions with
+passing controls). The phase word is `Schema`: `Story <E>.<S> - Schema - <one line>`, pushed before
+Dev; a story with no migration has no Schema phase. Two things it does not do, checked in `ci.yml`:
+the schema push still deploys the tree as it stands (harmlessly), and nothing in CI applies a
+migration — the apply stays a hand step through `SUPABASE_DB_POOLER_URL`.
+- Targets: ✅ `docs/project-context.md` · ✅ `CLAUDE.md` · ✅ `epic-3-context.md` · ✅ the three
+  `_bmad/custom/*.toml` team overrides · ✅ `tools/hooks/commit-msg` and `tools/story-board.py`
+  **(added 2026-09-10 — the hook rejected the very commit the ruling mandates and the board could
+  not place it; a propagation list cannot audit itself)** · ✅ `supabase/tests/rls.sql` and
+  `RLS-TEST.sql` assert both halves of the migration exist, the enum value as well as the column.
+
+**R-100 — Inflozo cannot tell "wrong key" from "another site's key", and must not claim to.**
+Option 1 of Question 2, ruled 2026-09-09. Executed T3 → T1 and T1 → T3 with T1 → T1 200 as the
+control: a Ghost answers 401 `Unknown Admin API Key` to a regenerated key and to a key issued by a
+different install alike, because `api_keys` carries no domain, url or install identity (MEASUREMENTS
+§37, read in Ghost's source). So a pasted key that belongs to another site is refused by THIS
+record's Ghost's own 401, nothing is written, and the sentence is Ghost's. `GET /admin/site/` is kept
+for the one case it genuinely answers — this Ghost now reporting a different public address, a domain
+move — and the comparison is Ghost's recorded answer against Ghost's current one, never against the
+typed address; with none recorded there is no comparison.
+- Targets: ✅ Story 3.6's frozen Boundaries, I/O matrix and acceptance criterion (renegotiated on his
+  word) · ✅ `docs/project-context.md` § Known pitfalls · ✅ `CLAUDE.md` standing rule 1's example ·
+  ✅ MEASUREMENTS §37 · ✅ `EXPERIENCE.md`'s customer-voice row · ✅ the harness (`keys-foreign-key`
+  and `keys-other-site` split) · ✅ the spec's `## Owner's manual test` step 7 **(corrected
+  2026-09-10 — it still promised the disconnect-and-reconnect sentence)**.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

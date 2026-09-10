@@ -61,10 +61,13 @@ LANES = [('backlog', 'Backlog'), ('ready', 'Ready'), ('progress', 'In progress')
 LANE_NAME = dict(LANES)
 
 # The commit vocabulary (R-81): the only phase words a story or step commit may carry.
-PHASES = ['Create', 'Dev', 'Review', 'Deploy', 'Test', 'Fix', 'Done', 'Blocked']
-RANK = {'Create': 0, 'Dev': 1, 'Review': 2, 'Deploy': 3, 'Test': 4, 'Fix': 5, 'Done': 6}
-NEXT_AFTER = {None: 'Create', 'Create': 'Dev', 'Dev': 'Review', 'Review': 'Deploy', 'Deploy': 'Test',
-              'Test': 'Fix', 'Fix': 'Review', 'Done': 'Done'}           # last commit → the phase now
+# `Schema` (R-99, 2026-09-09): a story with a migration pushes it FIRST, on its own, before Dev. It
+# ranks with Dev — the story is being built — and is a phase the board must be able to place, or the
+# very commit the ruling mandates reads as an unreadable commit (Story 3.6's review, 2026-09-10).
+PHASES = ['Create', 'Schema', 'Dev', 'Review', 'Deploy', 'Test', 'Fix', 'Done', 'Blocked']
+RANK = {'Create': 0, 'Schema': 1, 'Dev': 1, 'Review': 2, 'Deploy': 3, 'Test': 4, 'Fix': 5, 'Done': 6}
+NEXT_AFTER = {None: 'Create', 'Create': 'Dev', 'Schema': 'Dev', 'Dev': 'Review', 'Review': 'Deploy',
+              'Deploy': 'Test', 'Test': 'Fix', 'Fix': 'Review', 'Done': 'Done'}  # last commit → the phase now
 LANE_OF = {'Create': 'backlog', 'Review': 'review', 'Deploy': 'review', 'Test': 'test',
            'Fix': 'test', 'Done': 'done'}                               # Dev splits on in-progress
 BUILD_WORDS = {'ready-for-dev': 'not started', 'in-progress': 'in progress', 'in-review': 'being reviewed',

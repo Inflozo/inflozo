@@ -57,10 +57,13 @@ import { checkContentKey } from './content-check'
 export function ContentKeyForm({
   siteId,
   siteUrl,
+  hint,
   error,
   chrome,
 }: {
   siteId: string
+  /** The standing line under the field, as the Admin row has — `KEYS.content.ask`. */
+  hint: string
   /** The PUBLIC url — the address a browser can actually reach, which on Ghost(Pro) is not `sites.url`. */
   siteUrl: string
   /** The server's refusal for this field, read out of the URL by the panel. */
@@ -117,6 +120,7 @@ export function ContentKeyForm({
         value={typed}
         onChange={(event) => setTyped(event.target.value)}
         error={error ?? refused}
+        hint={error ?? refused ? null : hint}
       />
       <div className="flex">
         <Save busy={checking || saving} />

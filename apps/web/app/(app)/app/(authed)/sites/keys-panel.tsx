@@ -37,10 +37,10 @@ import { removeToken, saveKeys, testConnection } from './actions'
    the chrome the press came from — the owner's findings 3 and 5 of 2026-09-10.
 
    AND THE WAY OUT IS THE SAME IN BOTH, WHICH IS WHY IT IS NOT A PROP HERE THE WAY
-   `disconnect-confirm.tsx`'s `cancel` is: the ✕ and Cancel are `<Link href="/sites">`. On the page
-   that is a navigation back to the list; in the popup the same navigation moves the path off the
-   panel's, and `panel-modal.tsx` closes the dialog because of it — one rule for every way out
-   there is, rather than a special control on each of them.
+   `disconnect-confirm.tsx`'s `cancel` is: the ✕ and Cancel are `<Link href="/sites" replace>`. On
+   the page that is a navigation back to the list; in the popup the same navigation takes
+   `?manage=` off the list's URL, and the list stops rendering the `<dialog>` because of it — one
+   rule for every way out there is, rather than a special control on each of them.
 
    NO `'use client'`. Every control here is a real `<form action={serverAction}>` and the ⋯ row
    that reaches it is an `<a href>` with a destination, so the whole surface works with JavaScript
@@ -72,8 +72,9 @@ import { removeToken, saveKeys, testConnection } from './actions'
        A manual press that wrote either would drive that state machine from outside it. So the
        result is drawn and stored nowhere, and the stamp arrives with 3.7. S11e does not draw it
        either.
-     · NO **Remove token** ON A SITE THAT HAS NO TOKEN. Nothing stores one until Epic 7, so that
-       control is drawn on no production site today — which is the correct behaviour, not a gap.
+     · NO **Remove token** ON A SITE THAT HAS NO TOKEN. Only this screen's own Add token puts one
+       there (Epic 7 asks for it at first deploy), so on a site whose owner never added one the
+       control is absent — which is the correct behaviour, not a gap.
 
    ONE DEPARTURE FROM S11e, AND IT IS THE OWNER'S OWN RULING (Question 3, 2026-09-10): the frame
    draws the masked line under **Content API key** only, and this draws it under **Admin API key**
@@ -232,8 +233,8 @@ export type KeysSite = {
 }
 
 /** What the popup's `<dialog aria-labelledby>` points at. One panel is ever in the document, so
-    it is a constant rather than a function of the site id: the dialog is rendered by a LAYOUT,
-    which has no search params and therefore cannot know which site is open. */
+    it is a constant rather than a function of the site id: the Sites list renders the dialog
+    before this panel has been read, and the id is what lets the two meet. */
 export const KEYS_TITLE_ID = 'keys-panel-title'
 
 export function KeysPanel({
@@ -268,7 +269,11 @@ export function KeysPanel({
   // — so a 403 or a 429 from the customer's Ghost read "(HTTP My Blog)" (review, 2026-09-09). The
   // status travels beside the code and the screen has already refused anything that is not digits.
   const subjectFor = (code: string) => (code === 'ghost_refused' ? (status ?? '') : site.name)
-  const said = refused && hasSentence(refused) ? connectMessage(refused as MessageCode, subjectFor(refused)) : null
+  // …and `ghost_refused` without its status is unnamed too: "(HTTP )" is not a sentence.
+  const said =
+    refused && hasSentence(refused) && !(refused === 'ghost_refused' && !status)
+      ? connectMessage(refused as MessageCode, subjectFor(refused))
+      : null
   const errorFor = (which: ConnectField) => (field === which ? said : null)
   // A code with no field of its own — a read that failed, a store that would not answer — is the
   // panel's banner, exactly as the wizard's fieldless refusals are its own.
@@ -342,7 +347,13 @@ export function KeysPanel({
             enables={KEYS.content.enables}
             mask={site.present.content ? site.contentKey?.slice(0, 10) : null}
           >
-            <ContentKeyForm siteId={site.id} siteUrl={site.publicUrl} error={errorFor('content_key')} chrome={chrome} />
+            <ContentKeyForm
+              siteId={site.id}
+              siteUrl={site.publicUrl}
+              hint={KEYS.content.ask}
+              error={errorFor('content_key')}
+              chrome={chrome}
+            />
           </Credential>
 
           <Credential
@@ -443,13 +454,15 @@ function TestResult({
   status: string | null
 }) {
   if (result !== 'ok') {
+    // A CODE THE TABLE DOES NOT NAME IS NOT DRAWN — the panel's own rule for `?keys=`, and it was
+    // not applied here: the fallback was `keys_failed`, "We couldn't save that just now", at
+    // someone who pressed a read-only test (review, 2026-09-10; the same sentence `credential_missing`
+    // was given its own words to escape). `ghost_refused` with no status would print "(HTTP )",
+    // so it is treated as unnamed too. `?test=` is typed by whoever holds the URL.
+    if (!hasSentence(result) || (result === 'ghost_refused' && !status)) return null
     // The same subject rule as the panel's refusals above, and for the same reason.
-    const subject = result === 'ghost_refused' ? (status ?? '') : host
-    return (
-      <Banner kind="error">
-        {hasSentence(result) ? connectMessage(result as MessageCode, subject) : connectMessage('keys_failed')}
-      </Banner>
-    )
+    const subject = result === 'ghost_refused' ? (status as string) : host
+    return <Banner kind="error">{connectMessage(result as MessageCode, subject)}</Banner>
   }
   return (
     <div className="flex flex-col gap-[6px]" role="status">

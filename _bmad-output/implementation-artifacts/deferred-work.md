@@ -2106,3 +2106,64 @@ reason: The mechanism is shared by both windows and was built in Story 3.6's Fix
   every one of those six landings composes its URL from the current search params instead of a constant,
   which is one more thing each of them can get wrong, for a filter that a single keystroke restores. Worth
   doing when the list has more than a handful of cards for anyone, which today it does not.
+
+## Deferred from: code review of spec-3-6-manage-keys-and-the-partially-credentialed-site (2026-09-10, third pass)
+
+### DW-83: the moved-domains lookup picks the newest matching record, not the one that says most
+
+plain: If you have connected the same Ghost site at three addresses and one of them is still connected,
+  the "Moved domains?" note on the newest card may talk about the 90-day safety-net copy (an old,
+  disconnected one) when a live twin exists — or the other way round.
+status: open
+severity: low
+origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
+owner: the story that next touches FR-C8's hint, or Story 3.7 if its health check reads `admin_key_id`
+location: `apps/web/server/ghost-admin/index.ts` (`findSiteByAdminKeyId`, `order by s.created_at desc limit 1`)
+reason: needs a third record carrying the same Admin key id under one account, which nobody has today;
+  the fix is an `order by (s.disconnected_at is null) desc` or returning every match, and either wants
+  the harness seeding two decoys.
+
+### DW-84: closing the keys window while a save is still in flight can re-open it with the answer
+
+plain: If you press Save and then Escape before the answer arrives, the window closes and then comes
+  back with the result you had already walked away from.
+status: open
+severity: low
+origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
+owner: the story that next touches `panel-modal.tsx`
+location: `apps/web/app/(app)/app/(authed)/sites/panel-modal.tsx` (`onClose` → `router.replace('/sites')`) ·
+  `sites/actions.ts` (`keysRedirect` onto `/sites?manage=…`)
+reason: a race a customer has to work to reach — the panel's own saves answer in well under a second —
+  and the answer that arrives is a true one; tracking an in-flight submit across a navigation is more
+  state than the window has today. The cross-tab twin (`credentials_present` read-modify-written by the
+  Content save while another tab stores a key) is the same family and the same reason.
+
+### DW-85: three live-harness controls Manage keys still owes
+
+plain: Three things the API keys screen does right are not yet proved on the live site every run.
+status: open
+severity: low
+origin: Story 3.6 code review, third pass (2026-09-10) — the Verification Gap reviewer
+owner: the next story that touches `tools/probe/run-verify-ghost-admin.py`'s Manage-keys block
+location: `tools/probe/run-verify-ghost-admin.py` (`moved-domains`, `keys-forged`, `brand-ownership`)
+reason: (1) the `?old=live` hint — a matched record that is STILL connected drawing
+  `KEYS.movedStillConnected` — needs a second decoy seeding; (2) a decoy under `OTHER_USER_ID` carrying
+  the same Admin key id producing NO hint, the cross-account control for `findSiteByAdminKeyId`'s
+  `user_id` clause; (3) `useBrand`'s popup branch on a vanished row (`brand-ownership` forges on the full
+  page only). The review added `keys-content`, `keys-test-refused`, `keys-phone`, the ✕, Back and
+  `admin_key_id` conjuncts instead; these three are the remainder, each a seeding rather than a fix.
+
+### DW-86: two Ghost Admin navigation paths in the copy are asserted, not cited
+
+plain: The API keys screen tells you where in Ghost Admin to find your Staff Access Token and where to
+  regenerate keys. Both paths were written from memory of Ghost's screens, not checked against them.
+status: open
+severity: low
+origin: Story 3.6 code review, third pass (2026-09-10) — the Blind Hunter
+owner: Story 3.7, or the first story that opens Ghost Admin's UI in a browser for another reason
+location: `apps/web/lib/connect-rule.ts` (`KEYS.staff.ask`, `KEYS.rollHint`)
+reason: standing rule 1 is about API facts Inflozo depends on; these are wayfinding sentences a
+  customer can correct in one click, and checking them means driving Ghost Admin's UI on T1 and T3,
+  which no probe does yet. `rollHint` also assumes the customer named the integration "Inflozo",
+  which S2b's guide tells them to.
+

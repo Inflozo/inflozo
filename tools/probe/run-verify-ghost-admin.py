@@ -485,6 +485,15 @@ list gone stale — the sibling harness's own note):
   keys-forged    a second account's site id in `/sites/keys?site=…` and forged into each form: the
                  not-found page, and every row of both accounts byte-identical — WATCHED LANDING,
                  not re-read afterwards (standing rule 2)
+  keys-content   the Content API key pasted and saved on T1 — the one Save with a browser half
+                 (FR-C2) and a service-role write — `sites.content_key` and
+                 `credentials_present.content` moved in ONE update, the admin flag untouched, the
+                 row masked with the key's first characters
+  keys-test-refused  the result card's failure shape by a typed URL: `?test=ghost_refused&status=429`
+                 draws Ghost's refusal with the number; a non-digit status and an unnamed code
+                 draw NO sentence rather than a save's
+  keys-phone     at 390 the two columns are one: the address ABOVE the first key row, the rail's
+                 Test connection BELOW the last, the window inside the viewport with no overflow
   moved-domains  FR-C8's hint on the new card, naming 90 days; and the same connect against a
                  record whose `admin_key_id` is null showing NO hint. ⛔ The old record is seeded
                  through the pooler because neither test Ghost has a second reachable address —
@@ -713,6 +722,7 @@ def app_text():
         " keys_other_site: connectMessage('keys_other_site'),"
         " keys_malformed: connectMessage('credential_malformed'),"
         " keys_empty_admin: connectMessage('credential_empty'),"
+        " keys_ghost_refused: connectMessage('ghost_refused', '%s'),"
         " keys_moved: KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS),"
         # S11c's ghost slot, both halves derived from `PLANS` — nothing here names a number.
         " go_pro: goProLabel(),"
@@ -1732,7 +1742,9 @@ const shoot = async (page, name) => {
       if (r.method() !== 'GET' || !r.url().includes('brand=') || !r.headers()['rsc']) return route.continue()
       openFetches += 1
       await new Promise((resolve) => setTimeout(resolve, 3000))
-      return route.continue()
+      // The same `.catch` `holding()` has: a navigation landing inside the hold aborts the request
+      // and a rejected `continue()` would kill the browser half of the run (review, 2026-09-10).
+      return route.continue().catch(() => {})
     }
     // Its own matcher: `anyApp` is declared further down, after this step (review 7's own run).
     const appUrls = (u) => u.href.startsWith(APP)
@@ -3442,7 +3454,7 @@ const shoot = async (page, name) => {
     const openKeys = async (id) => {
       await page.goto(keysUrl(id), { waitUntil: 'load' })
       // The URL row's reason is on this screen and on no other, and it carries no `%s` hole.
-      await page.getByText(SAY.keys_url_reason).first().waitFor()
+      await page.getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
     }
     /* THE SAME PANEL BY THE DOOR THE CUSTOMER USES. `openKeys` above is a document load, which is
        the FULL page (`sites/keys/page.tsx`); this is the ⋯ row's own click, which soft-navigates to
@@ -3458,7 +3470,7 @@ const shoot = async (page, name) => {
       const menu = page.locator(`#site-menu-${id}`)
       await menu.waitFor({ state: 'visible' })
       await menu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
-      await page.locator('dialog[open]').getByText(SAY.keys_url_reason).first().waitFor()
+      await page.locator('dialog[open]').getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
     }
     /* What the screen looks like from outside: is it a window over the list, or a page instead of
        it? Read off the DOM and not off the URL — a URL says which door was used and not what is on
@@ -3503,7 +3515,7 @@ const shoot = async (page, name) => {
     // THE URL IS TEXT. Not a field, not a disabled field, not a readonly one (A9 item 17): the
     // assertion is that no input anywhere on this screen carries the site's address as its value.
     const urlIsText = screen.includes(SAY.keys_url_reason) && screen.includes(pub1.url || T1.url)
-    const urlFields = await page.locator('input').evaluateAll((all, address) =>
+    const urlFields = await page.locator('dialog[open] input').evaluateAll((all, address) =>
       all.filter((i) => (i.value || '').includes(address) || i.name === 'url').length, T1.url)
     // AND NOTHING OFFERS TO REVEAL A KEY — B20 draws an eye and this screen deliberately has none.
     const reveals = await page.evaluate(() =>
@@ -3529,6 +3541,34 @@ const shoot = async (page, name) => {
 
     await axeAt(page, 'keys-screen', async () => { await openKeysPopup(t1SiteId, t1Name) })
     await axeAt(page, 'keys-route', async () => { await openKeys(t1SiteId) })
+
+    // ── keys-phone: ON A PHONE THE TWO COLUMNS BECOME ONE, THE ADDRESS STAYING AT THE TOP — the
+    //    acceptance criterion S11e's collapse added, read off the geometry rather than assumed
+    //    (review, 2026-09-10). The `axe` pass at 390 above sees accessibility and not order.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await openKeysPopup(t1SiteId, t1Name)
+    const phone = await page.evaluate((label) => {
+      const dialog = document.querySelector('dialog[open]')
+      const visible = (el) => el && el.getClientRects().length > 0
+      const address = [...dialog.querySelectorAll('span')].find((s) => s.textContent === label && visible(s))
+      const rows = [...dialog.querySelectorAll('section')].filter(visible)
+      const test = [...dialog.querySelectorAll('button')].find((b) => visible(b) && b.closest('aside'))
+      const top = (el) => (el ? el.getBoundingClientRect().top : NaN)
+      return {
+        addressTop: top(address), firstRowTop: top(rows[0]), lastRowBottom: rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : NaN,
+        testTop: top(test), width: dialog.getBoundingClientRect().width, viewport: window.innerWidth,
+        overflow: document.documentElement.scrollWidth > window.innerWidth,
+      }
+    }, SAY.keys_url_label)
+    await page.keyboard.press('Escape')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    step('keys-phone',
+      phone.addressTop < phone.firstRowTop && phone.testTop > phone.lastRowBottom
+      && phone.width <= phone.viewport && !phone.overflow,
+      `at 390 the address sits ABOVE the first key row (${Math.round(phone.addressTop)} < ` +
+      `${Math.round(phone.firstRowTop)}), the rail's Test connection sits BELOW the last row ` +
+      `(${Math.round(phone.testTop)} > ${Math.round(phone.lastRowBottom)}), the window is ` +
+      `${Math.round(phone.width)}px in a ${phone.viewport}px viewport and nothing runs off the edge = ${!phone.overflow}`)
 
     /* ── keys-popup: THE POPUP'S OWN BEHAVIOUR, and every claim here is one of the owner's four
        findings of 2026-09-10 made checkable. He walked this screen and reported that the top bar
@@ -3559,7 +3599,16 @@ const shoot = async (page, name) => {
     await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_empty', { timeout: 20000 }).catch(() => {})
     const emptySaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
     const afterEmpty = await keysShape()
-    // Cancel: the footer control, which in the popup is the back-anchor and on the page a <Link>.
+    // BACK AFTER A REFUSAL IS THE LIST, not the panel as it stood before the save: the three actions
+    // redirect with `RedirectType.replace` (Change Log 10), which until this step was measured on a
+    // throwaway control and asserted nowhere live (review, 2026-09-10). Two answers have landed in
+    // this window by now — the refusal and the empty press — and one Back must leave it.
+    await page.goBack({ waitUntil: 'load' }).catch(() => {})
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'), { timeout: 20000 }).catch(() => {})
+    const afterKeysBack = await keysShape()
+    const backUrl = new URL(page.url())
+    await openKeysPopup(t1SiteId, t1Name)
+    // Cancel: the footer control — a `<Link href="/sites" replace>` in both chromes (Change Log 14).
     await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).last().click()
     // `!manage`: the pathname is already `/sites` inside the popup (review 7 of 3.4, 2026-09-10).
     await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
@@ -3571,6 +3620,12 @@ const shoot = async (page, name) => {
     await page.keyboard.press('Escape')
     await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
     const afterEscape = await keysShape()
+    // …AND THE ✕ IN THE HEADER, S11e's own, which shares the footer's word as its accessible name
+    // and was driven for the brand window only (review, 2026-09-10).
+    await openKeysPopup(t1SiteId, t1Name)
+    await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).first().click()
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
+    const afterX = await keysShape()
     // …and a typed URL is still the FULL page, which is the half that has to keep working with no
     // script at all (`keys-js-off` reads its markup).
     await openKeys(t1SiteId)
@@ -3582,6 +3637,8 @@ const shoot = async (page, name) => {
       && !afterCancel.panelMounted && !afterCancel.dialogInDom && afterCancel.cardsBehind > 0
       && secondOpen.dialogOpen && secondOpen.panelMounted
       && !afterEscape.panelMounted && !afterEscape.dialogInDom && afterEscape.cardsBehind > 0
+      && !afterX.panelMounted && !afterX.dialogInDom && afterX.cardsBehind > 0
+      && !afterKeysBack.panelMounted && !afterKeysBack.dialogInDom && backUrl.pathname === '/sites' && !backUrl.searchParams.get('manage')
       && typedUrl.panelMounted && !typedUrl.dialogInDom && typedUrl.cardsBehind === 0,
       `THE TOP BAR IS STILL THERE while the window is open = ${onOpen.topBar} — his finding 1, and ` +
       `it holds because /sites?manage= never leaves the route the shell draws that bar for. ` +
@@ -3594,7 +3651,10 @@ const shoot = async (page, name) => {
       `— his finding 4, which used to redirect in silence. Cancel returns to the list with the ` +
       `panel UNMOUNTED = ${!afterCancel.panelMounted} and no dialog left in the DOM = ` +
       `${!afterCancel.dialogInDom}; the ⋯ row opens it A SECOND time = ${secondOpen.dialogOpen}; ` +
-      `Escape does the same as Cancel = ${!afterEscape.panelMounted}; and a typed URL is the FULL ` +
+      `Escape does the same as Cancel = ${!afterEscape.panelMounted}, and so does the header's ✕ ` +
+      `= ${!afterX.panelMounted}. ONE Back after two answers had landed in the window is the LIST ` +
+      `(${JSON.stringify(backUrl.pathname + backUrl.search)}, panel gone = ${!afterKeysBack.panelMounted}) ` +
+      `— the actions redirect by replace, so the window never leaves an entry behind; and a typed URL is the FULL ` +
       `page — panel drawn = ${typedUrl.panelMounted}, no dialog = ${!typedUrl.dialogInDom}, ` +
       `${typedUrl.cardsBehind} Sites cards on it`)
 
@@ -3731,6 +3791,7 @@ const shoot = async (page, name) => {
     let tokenStored = false
     try {
     await openKeys(t1SiteId)
+    const credsBeforeToken = await credsOf(t1SiteId)
     const changesBeforeToken = (await changesFor(t1SiteId)).length
     await page.fill('#keys-staff', STAFF_TOKEN)
     await page.locator('form:has(#keys-staff) button[type="submit"]').click()
@@ -3738,6 +3799,10 @@ const shoot = async (page, name) => {
       const row = await credsOf(t1SiteId)
       return row.staff_token_vault_ref ? row : null
     })) || {}
+    // FROM THIS LINE THERE IS A LIVE TOKEN IN VAULT, so the `finally` knows it from here — not from
+    // after the removal, where an abort between the two left it believing there was none (review,
+    // 2026-09-10). It is cleared again below only once the product's own removal is seen.
+    tokenStored = Boolean(withToken.staff_token_vault_ref)
     await page.getByText(SAY.keys_staff_remove).first().waitFor({ timeout: 20000 }).catch(() => {})
     const tokenSecret = await secretsBehind(withToken.staff_token_vault_ref)
     const presentAfterAdd = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
@@ -3763,7 +3828,12 @@ const shoot = async (page, name) => {
       && presentAfterRemove.disconnected_at === null
       && staffRows.length === 2
       && JSON.stringify(staffRows.map((r) => (r.detail || {}).direction)) === JSON.stringify(['in', 'out'])
-      && staffRows[0].route === 'sites/keys' && staffRows[1].route === 'sites/keys/remove-token',
+      && staffRows[0].route === 'sites/keys' && staffRows[1].route === 'sites/keys/remove-token'
+      // THE ADMIN KEY'S ID HALF IS UNTOUCHED BY BOTH: `store('staff')` upserts the same row with
+      // `coalesce(excluded.admin_key_id, …)`, and a plain `excluded.admin_key_id` would blank the
+      // Admin mask and the moved-domains hint the moment a token was added (review, 2026-09-10).
+      && withToken.admin_key_id === credsBeforeToken.admin_key_id
+      && withoutToken.admin_key_id === credsBeforeToken.admin_key_id,
       `DW-54's staff-removed, live at last — the product had no way in for the token until this ` +
       `screen. ADDED: a vault secret behind staff_token_vault_ref = ${tokenSecret === 1}, ` +
       `credentials_present.staff true = ${(presentAfterAdd.credentials_present || {}).staff === true}, ` +
@@ -3774,7 +3844,8 @@ const shoot = async (page, name) => {
       `${JSON.stringify(presentAfterRemove.disconnected_at)}. Removing degrades, never disconnects. ` +
       `DW-76 wrote ${staffRows.length} credential_change rows for it, ` +
       `${JSON.stringify(staffRows.map((r) => `${r.route} ${(r.detail || {}).direction}`))} — each ` +
-      `stamped with the control that pressed it`)
+      `stamped with the control that pressed it. And admin_key_id was the same before, with and ` +
+      `after the token = ${withToken.admin_key_id === credsBeforeToken.admin_key_id && withoutToken.admin_key_id === credsBeforeToken.admin_key_id}`)
     tokenStored = withoutToken.staff_token_vault_ref !== null
     } finally {
       // Only if the product's own removal did NOT run to completion. It is a no-op on the happy
@@ -3837,7 +3908,9 @@ const shoot = async (page, name) => {
     //    renders on the server, so a form reached by a client transition carries neither.
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
-    const keysHref = await page.locator(`#site-menu-${t1SiteId} a`).first().getAttribute('href')
+    // BY ITS TEXT and not by position — `disconnect-js-off` reads its row the same way, and DOM order
+    // is not the claim (review, 2026-09-10).
+    const keysHref = await page.locator(`#site-menu-${t1SiteId} a`, { hasText: SAY.keys_menu }).first().getAttribute('href')
     await page.goto(keysUrl(t1SiteId), { waitUntil: 'load' })
     const keysForms = await page.locator('form').evaluateAll((forms) =>
       forms.filter((f) => f.querySelector('input[name="site_id"]')).map((f) => ({
@@ -3881,8 +3954,11 @@ const shoot = async (page, name) => {
     const pageRefused = await page.getByText('could not be found', { exact: false }).first()
       .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
     const landings = []
-    for (const which of ['#keys-admin', '#keys-staff', null]) {
+    for (const which of ['#keys-admin', '#keys-content', '#keys-staff', null]) {
       await openKeys(t1SiteId)
+      // The Content form checks the key in the browser before it posts, so it is filled with a key
+      // T1 accepts and the forged id is what the SERVER has to refuse (review, 2026-09-10).
+      if (which === '#keys-content') await page.fill('#keys-content', T1.contentKey)
       const forged = await page.evaluate(({ id, field }) => {
         const form = field
           ? document.querySelector(field).closest('form')
@@ -3902,7 +3978,7 @@ const shoot = async (page, name) => {
       Boolean(victim.id) && pageRefused && landings.every(Boolean) && victimAfter === victimBefore
       && victimCreds === 0,
       `a site id owned by a DIFFERENT account: /sites/keys?site=<id> is the not-found page = ` +
-      `${pageRefused}, and forged into the Admin form, the token form and the Test connection form ` +
+      `${pageRefused}, and forged into the Admin form, the Content form, the token form and the Test connection form ` +
       `and submitted from the fixture's own session, every press was seen to LAND on the not-found ` +
       `page = ${JSON.stringify(landings)} — its ownership read came back empty through RLS. The ` +
       `stranger's row is byte-identical afterwards = ${victimAfter === victimBefore} and it has ` +
@@ -3982,6 +4058,47 @@ const shoot = async (page, name) => {
       `matches and a missing hint is not a wrong one. ⛔ The OLD record is seeded through the pooler: ` +
       `neither test Ghost has a second reachable address, so a real domain move cannot be performed ` +
       `here. The connect, the lookup, the redirect and the hint are all the product's`)
+
+    // ── keys-content: THE CONTENT KEY'S SAVE, the one row whose Save has a browser half (FR-C2's
+    //    check against the customer's own Ghost) and a service-role write behind it — and until
+    //    this step the only save on the screen no live run pressed (review, 2026-09-10). Re-pasted
+    //    rather than regenerated, for `keys-rotate`'s reason.
+    await openKeys(t1SiteId)
+    const contentBefore = (await rowsOf('id,content_key,credentials_present')).find((r) => r.id === t1SiteId) || {}
+    await page.fill('#keys-content', T1.contentKey)
+    await page.locator('form:has(#keys-content) button[type="submit"]').click()
+    const contentAfter = (await until(async () => {
+      const row = (await rowsOf('id,content_key,credentials_present')).find((r) => r.id === t1SiteId) || {}
+      return row.content_key === T1.contentKey && (row.credentials_present || {}).content === true ? row : null
+    })) || {}
+    const contentMask = await page.getByText(T1.contentKey.slice(0, 10), { exact: false }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    step('keys-content',
+      contentAfter.content_key === T1.contentKey && (contentAfter.credentials_present || {}).content === true
+      && (contentAfter.credentials_present || {}).admin === (contentBefore.credentials_present || {}).admin
+      && contentMask,
+      `the Content API key pasted and saved: sites.content_key is the pasted key = ` +
+      `${contentAfter.content_key === T1.contentKey}, credentials_present.content true = ` +
+      `${(contentAfter.credentials_present || {}).content === true} in the SAME update (the mirror ` +
+      `cannot lag the key), the admin flag beside it untouched = ` +
+      `${(contentAfter.credentials_present || {}).admin === (contentBefore.credentials_present || {}).admin}, ` +
+      `and the row draws the key's first characters = ${contentMask}`)
+
+    // ── keys-test-refused: THE RESULT CARD'S FAILURE SHAPE, by a typed URL — `?test=` and `?status=`
+    //    are whoever holds the URL's, so the guard on them is read-only to drive: a three-digit
+    //    status draws Ghost's refusal with that number, and anything else draws NO sentence at all
+    //    (review, 2026-09-10 — the fallback used to be "We couldn't save that just now").
+    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_refused&status=429`, { waitUntil: 'load' })
+    const refusedSaid = await says(page, SAY.keys_ghost_refused.replace('%s', '429'))
+    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_refused&status=abc`, { waitUntil: 'load' })
+    const refusedBlank = !(await says(page, SAY.keys_ghost_refused.split('%s')[0]))
+    await page.goto(`${keysUrl(t1SiteId)}&test=not-a-code`, { waitUntil: 'load' })
+    const unknownBlank = !(await says(page, 'just now'))
+    step('keys-test-refused',
+      refusedSaid && refusedBlank && unknownBlank,
+      `?test=ghost_refused&status=429 draws ${JSON.stringify(SAY.keys_ghost_refused.replace('%s', '429'))} ` +
+      `= ${refusedSaid}; with status=abc it draws no "(HTTP )" sentence = ${refusedBlank}; and a code ` +
+      `the table does not name draws nothing rather than a save's sentence = ${unknownBlank}`)
 
     /* THE REFS `secret-gone` READS ARE RE-TAKEN HERE, and this is not tidying: `keys-rotate` put a
        NEW secret behind T1's ref and `moved-domains` reconnected T3 twice, so the two refs pushed

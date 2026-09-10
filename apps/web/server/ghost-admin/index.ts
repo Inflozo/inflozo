@@ -231,10 +231,10 @@ export async function remove(args: {
       // the guard the review of 2026-09-09 added, because removing a kind that was never stored
       // stamped a removal date for a credential that never existed. An audit row is the same
       // mistake one layer up and worse: `disconnectSite` removes BOTH kinds on every press and
-      // nothing stores a staff token until Epic 7, so an unconditional row would write a false
-      // "the staff credential came out" line into the one record that exists to be trusted, on
-      // every disconnect, for ever. That is DW-76's own argument against `vault_decrypt`, one
-      // table over.
+      // most sites hold no staff token (only Manage keys' own Add token stores one, and Epic 7
+      // asks for it at first deploy), so an unconditional row would write a false "the staff
+      // credential came out" line into the one record that exists to be trusted, on every
+      // disconnect, for ever. That is DW-76's own argument against `vault_decrypt`, one table over.
       if (dropped.count > 0) {
         await audit(
           {

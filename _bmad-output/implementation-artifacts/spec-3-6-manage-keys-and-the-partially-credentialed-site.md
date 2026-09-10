@@ -402,6 +402,44 @@ phase or deferred with a reason.
 - [x] [Review][Defer] "A rolled-back store leaves no row claiming it happened" is asserted in four places and induced nowhere [apps/web/server/ghost-admin/index.ts] — deferred, wants a fault-injection fixture in the RLS gate; DW-80
 - [x] [Review][Defer] A crafted post carrying several credential fields at once can store the Admin key and then redirect saying "Nothing changed" [apps/web/app/(app)/app/(authed)/sites/actions.ts] — deferred, unreachable from the screen's three single-field forms; DW-81
 
+### Review Findings — third pass, 2026-09-10
+
+Five layers ran again on the diff since the baseline — Blind Hunter, Edge Case Hunter, Verification
+Gap, Acceptance Auditor and the Real-infra verifier — and none failed. The verifier drove the live
+harness against production four times (`## Verification` below carries each run): the story's own
+keys steps had never run green on the two-column popup, two stalls were the harness's and one was
+the product's, at phone width. One finding is the owner's; the rest were patched here or deferred
+with a reason. The status stays `in-review`: Deploy and the owner's test follow (R-80).
+
+- [ ] [Review][Decision] **Where S11e lives, and what its status is.** R-74 names `claude-design-export/` as *the* design authority; S11e sits outside it under `design/ManageKeys/` with catalogue status `live` — the status INDEX.md defines as "edit these" — while its own row says "never hand-edited … the authority". See `## Questions for the owner`, Question 4. **Ruled:** _(awaiting the owner)_
+
+- [x] [Review][Patch] **The ⋯ menu on a card low in the list closed itself before its row could be pressed, at 390** — the run's `openKeysPopup` at phone width found the popover already hidden: `openMenu` armed a close-on-scroll listener synchronously in the click handler, and the scroll that brings a ⋯ near the bottom edge into view (a finger's, or a driver's) delivers its `scroll` EVENT on the next frame, after the listener was armed. Armed from the next frame now, and the first row is focused with `preventScroll` [apps/web/lib/menu.ts]
+- [x] [Review][Patch] The harness could not open the popup at all at 1440: `SiteUrl` is rendered twice and `.first()` on the reason text was the phone copy, hidden from `tablet` up — the stall Story 3.4's seventh review recorded. Both `openKeys*` waits filter on visibility, and `keys-screen`'s "no input carries the address" count is scoped to the window (the connect sheet's `name="url"` field sits behind it on `/sites`) [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The three keys actions answered a stale, forged or malformed site id with `notFound()` from inside the popup, which swaps the whole Sites list for the 404 page — `useBrand` and `keys-screen.tsx`'s `gone()` had the popup branch and these did not. `keysGone()` redirects to `/sites` when the post carries `popup=1`; the full page still 404s [apps/web/app/(app)/app/(authed)/sites/actions.ts]
+- [x] [Review][Patch] A failed site read in the popup threw into the list's own `<Suspense>` with no boundary, taking the whole list to `app/error.tsx` over a value that is fine — `brand-screen.tsx`'s `readFailed` had the fix. The window closes instead [apps/web/app/(app)/app/(authed)/sites/keys-screen.tsx]
+- [x] [Review][Patch] Focus fell to `<body>` after every way out of the window — the `<dialog>` is unmounted by a navigation, so the platform's own focus return never runs. `PanelModal` refocuses the opener on unmount: the ⋯ button for a row inside a popover, the offer link on the card [apps/web/app/(app)/app/(authed)/sites/panel-modal.tsx]
+- [x] [Review][Patch] **R-99's `Schema` phase reached the prose and the three team TOMLs and NOT the two tools that enforce and read the phase** — `commit-msg`'s pattern rejected `Story E.S - Schema - …` at commit time, and `story-board.py` had no `Schema` in `PHASES`, `RANK` or `NEXT_AFTER`. Both extended; a propagation list cannot audit itself [tools/hooks/commit-msg · tools/story-board.py]
+- [x] [Review][Patch] R-99 and R-100 were cited as rulings in five documents and filed in the rulings register in none — `reconcile-designs-decisions.md` is where `CLAUDE.md` says a ruling lives, and it is the one thing the gate cannot see. §A22 now carries both with their propagation ledgers [prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md]
+- [x] [Review][Patch] The RLS gate asserted the migration's new COLUMN exists and not its new ENUM VALUE — and `credential_change` is the half production lacked on 2026-09-09 (`22P02`). Asserted now, in all three copies [supabase/tests/rls.sql · RLS-TEST.sql]
+- [x] [Review][Patch] **Owner's manual test step 7 still promised the disconnect-and-reconnect sentence for another site's key**, the promise R-100 withdrew — he would have followed it and filed a false defect. Rewritten to what the screen says [this spec, `## Owner's manual test`]
+- [x] [Review][Patch] A Test connection result the table does not name fell back to "We couldn't save that just now" on a read-only press, and `ghost_refused` with no status printed "(HTTP )" — both now draw nothing, the panel's own rule for `?keys=` [apps/web/app/(app)/app/(authed)/sites/keys-panel.tsx]
+- [x] [Review][Patch] `KEYS.content.ask` was defined, exported to the harness as if on the screen, and rendered nowhere — the Content row now carries it as its standing hint, as the Admin row does [apps/web/app/(app)/app/(authed)/sites/keys-content-form.tsx]
+- [x] [Review][Patch] `keys-token` set `tokenStored` only after the removal, so the `finally` it exists for would have left a live full-Administrator token behind on an abort between the store and the press — set the moment the store is observed. And the step now asserts `admin_key_id` is untouched by the token going in and out (`coalesce` in `store()`'s upsert had no check) [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `holdOpen` returned a bare `route.continue()` after its hold, the rejection `holding()` was given a `.catch` for one review earlier [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] `keys-js-off` read the ⋯ menu's first link by position, true only while Manage keys sits above Disconnect; `disconnect-js-off` was already given `hasText` for this reason [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The "derived from the actions" code-table test saw only literal second arguments: the three empty codes, the malformed ternary, `ghost_refused` and every `config.code` travel through variables and were invisible to it. Named beside the regex with an assertion that each still appears in the source; `keysFieldOf` asserted for the three empty codes [apps/web/connect-rule.test.ts]
+- [x] [Review][Patch] The Content key's save — the one with a browser half and a service-role write — had no live step; Back after a refusal, the header's ✕, the result card's failure shape and the phone-width column order were asserted nowhere. `keys-content`, `keys-test-refused` and `keys-phone` added, `keys-popup` extended, `keys-forged` forges the Content form too [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] Five comments still described the intercepted route the second Fix deleted — `site-menu.tsx`'s row, `keys-panel.tsx`'s way-out and title-id notes, `brand-panel.tsx`'s reason for the connect landing, the harness's Cancel line — and two ("nothing stores a staff token until Epic 7") were falsified by this story's own Add token [sites/site-menu.tsx · keys-panel.tsx · brand-panel.tsx · server/ghost-admin/index.ts · run-verify-ghost-admin.py]
+- [x] [Review][Patch] The catalogue row for S11e placed the rendered `.png` inside the export folder it names; it is one level up [tools/doc-audit.py]
+- [x] [Review][Patch] `HANDOVER.md` said step 6 was opening; it carries a dated paragraph on where step 7 stands and the two rulings a fresh session needs. `epic-3-context.md` tells Story 3.7 that its "Reconnect needed" link into Manage keys is a `PanelLink` with both addresses [HANDOVER.md · epic-3-context.md]
+- [x] [Review][Patch] Three departures the Change Log did not record: the Content row's Save is a Kit `Button` + `BusyLabel` rather than a `Submit`, the staff row draws a hint under its field where S11e draws none, and "Added" is ink-soft where the frame draws it in mint — entries 19 to 21 [this spec, `## Spec Change Log`]
+- [x] [Review][Defer] `findSiteByAdminKeyId` returns the newest match, so with a live and an orphaned twin the hint can name the wrong clock [apps/web/server/ghost-admin/index.ts] — deferred, needs a third seeded record; DW-83
+- [x] [Review][Defer] Escape during an in-flight save re-opens the window with the answer; the Content save's read-modify-write of `credentials_present` can lose a cross-tab store [panel-modal.tsx · actions.ts] — deferred, a race nobody reaches without trying; DW-84
+- [x] [Review][Defer] Three harness controls still owed: the `?old=live` hint, the cross-account decoy for the moved-domains lookup, `useBrand`'s popup branch on a vanished row [tools/probe/run-verify-ghost-admin.py] — deferred, each a seeding; DW-85
+- [x] [Review][Defer] `KEYS.staff.ask` and `KEYS.rollHint` name Ghost Admin's menus from memory, uncited [apps/web/lib/connect-rule.ts] — deferred, wayfinding copy, no probe drives Ghost Admin's UI; DW-86
+
+**Dismissed, with the reason, so they are not re-raised:** the staff field's label is the button's word ("Add token") — S11e draws it that way, two "Paste new" and one "Add token"; the two placeholders, the skeleton's sr-only line and the glyph's "opens in a new tab" are Kit vocabulary and illustrations, not sentences the customer reads; `audit`'s `REMOVALS = 1` is the run's own declared count, defended where it stands; a URL carrying both `?manage=` and `?brand=` is nobody's door; the `Opening…` busy row and the Kit `Submit`'s busy label are driven live on the brand window through the very components Manage keys uses (`PanelLink`, `Submit`), so a second drive would prove the same code twice; a single-field form cannot post two credentials at once (DW-81 already holds the crafted case).
+
 ## Design Notes
 
 **Why no reveal control, and what is drawn instead.** B20 masks each key with its first *and last*
@@ -469,8 +507,9 @@ stored nowhere, and the "· 2 min ago" stamp arrives with 3.7.
 
 ## Questions for the owner
 
-Two came out of the code review on 2026-09-09. The first is urgent — your live site cannot connect a
-Ghost site right now — and the second changes one sentence a customer might read.
+Two came out of the code review on 2026-09-09 — the first was urgent, your live site could not
+connect a Ghost site — and the second changed one sentence a customer might read. A third came from
+your own test on 2026-09-10, and a fourth from the review of 2026-09-10; that one is still yours.
 
 ### Question 1 — the database change and the code arrive in the wrong order, and your live site is broken until they meet
 
@@ -599,6 +638,37 @@ Log, beside the two the story already carries — the frame draws the mask under
 and the screen draws it under both. The reason is on the record: it is the only thing on the screen
 that says WHICH Admin key is stored, and manual test step 5 reads it.
 
+### Question 4 — the new popup design lives outside the folder our rules call the design authority
+
+**What we have.** Since 2 September the rule (R-74) is: one folder, `claude-design-export/`, is
+*the* design — every screen is built from what is in there and nothing in there is ever hand-edited.
+The two-column API keys window you sent on 10 September is a new Claude Design frame, **S11e**, and it
+is what the screen is now built from — but it sits in a different folder, `design/ManageKeys/`, and the
+document index marks it **live**, which our index defines as "a document you edit". Its own
+description says the opposite: "never hand-edited … the authority, not a working document."
+
+**Why it matters.** Two folders that are both "the design" is exactly what R-74 exists to prevent — the
+next person (or the next Claude session) has to know which one wins, and the checks that gate the
+export (`verify-design-pass.py`, the colour test) do not look at the second folder at all. Nothing is
+broken today; it is the rule and the files disagreeing.
+
+**An example.** Someone later adds a "Re-check connection" button to this window. Do they draw it in
+the export folder, where S11 Sites lives, or in `design/ManageKeys/`, where S11e lives? Today there is
+no written answer.
+
+**Your options:**
+
+1. **Move S11e into the export folder beside the other frames, and mark it `record`** (dated, never
+   edited) — one authority, and the export's own checks start covering it. Nothing about the screen
+   changes. **(RECOMMENDED)** — it is one file move and one word in the index, and it makes the rule
+   true again rather than adding an exception to it.
+2. **Leave it where it is and mark it `record`.** The status stops saying "edit me", but there are
+   still two folders, and the export's checks still skip it.
+3. **Leave everything as it is.** Cheapest today; the next frame you send will land wherever that
+   session decides.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 Follow these on the real site after Deploy fills the URLs. You will need the Ghost site you connected
@@ -642,9 +712,12 @@ for Story 3.4 or 3.5, and Ghost Admin open in another tab.
    type `hello` into the Admin API key box — and save. · **See:** it is refused right under that box,
    with a sentence telling you what an Admin API key looks like. Nothing else changed.
 7. **URL:** same · **Screen:** the API keys window · **Do:** *(only if you have a second Ghost site)*
-   paste **that other site's** Admin API key here and save. · **See:** it is refused, and the message
-   says these keys belong to a different Ghost site and that moving a site means disconnecting and
-   connecting the new address.
+   paste **that other site's** Admin API key here and save. · **See:** it is refused right under the
+   box, nothing is saved, and the sentence is the ordinary one — that Ghost refused this Admin API
+   key and to copy it again from the Inflozo integration. It does **not** say the key belongs to a
+   different site: your Ghost gives the same answer to a wrong key and to another site's, so Inflozo
+   cannot tell them apart and does not pretend to *(your ruling at Question 2, R-100; this step was
+   corrected on 2026-09-10 — it still described the old promise)*.
 8. **URL:** same · **Screen:** the API keys window · **Do:** in Ghost Admin open your own profile and
    copy your **Staff Access Token**, paste it into the third block and save. **Dummy data:** your own
    Staff Access Token from Ghost Admin → your avatar → Your profile. · **See:** the third block now
@@ -1107,6 +1180,61 @@ mechanism it describes no longer exists. What IS executed is the row above — t
 leave one window and one list — which is the behaviour the finding asked for either way.
 
 
+### Review phase, third pass, 2026-09-10 — what each command returned (R-82)
+
+Every command below was run in THIS phase; nothing is carried forward. The real services are named
+by the variable each key is held under and never by its value.
+
+**The ground, read before anything else.**
+
+- **Production's schema is at least as new as the code (R-99).** Read through `SUPABASE_DB_POOLER_URL`:
+  `select unnest(enum_range(null::public.credential_action))` → `admin_write, admin_read, vault_decrypt,
+  entitlement_change, admin_flag_change, moderation, credential_change`; `information_schema.columns`
+  for `private.site_credentials` lists `admin_key_id text`. `private.credential_audit` already holds
+  `credential_change` rows from the Deploy phase's live steps. PostgreSQL 17.6.
+- **Production serves HEAD.** Vercel API (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`,
+  `target=production&state=READY`): the latest READY deployment's `githubCommitSha` is `82214783`,
+  which is `git rev-parse HEAD` at the start of this review.
+
+**The live harness, `python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com`,
+against T1 (`GHOST6_*`) and T3 (`GHOST5_*`), four runs on that deployment, before any patch:**
+
+| run | harness | what happened |
+|---|---|---|
+| 1 | as committed | 75 PASS through `probe-failure`, then **`openKeysPopup` timed out**: the reason text resolved 59 times to a HIDDEN span. Reproduces Story 3.4's seventh-review stall exactly. Cause in source: `SiteUrl` is rendered twice and `.first()` is the phone copy, `tablet:hidden` at 1440 |
+| 2 | visibility filter on both `openKeys*` waits | 18 PASS, then `bogus-key` timed out waiting for "Ghost said no" — a step upstream of every change, green in runs 1, 3 and 4 on identical code. Control: `GHOST6_URL/ghost/api/admin/config/` with a bogus key answered **401 in 0.6 s** three times, so Ghost was not slow. A transient in the deployed connect action; not the story's |
+| 3 | same | 75 PASS; the popup OPENED. Then **`keys-screen` failed on one term**: `urlFields === 1` — the count was page-wide and the closed connect sheet's `name="url"` field sits behind the window on `/sites`. Then **`axeAt('keys-screen')` at 390 timed out**: the "Manage API keys" row resolved but was not visible, 62 times |
+| 4 | + the count scoped to the window, + `--shots` | **76 PASS including `keys-screen`**, then the same 390 stall with evidence recorded: viewport 390×900, the menu popover `display:none` and `:popover-open` false, `linkRect` 0×0, no dialog, URL `/sites`. Screenshot in the review's scratchpad: T1's card is the third and last, at the page bottom |
+
+**What run 4 found is the product's, and it is fixed in this phase.** `openMenu` (`lib/menu.ts`) arms
+a close-on-scroll listener synchronously inside the ⋯ click handler; the scroll that brings a ⋯ near
+the bottom edge into view — a finger's on a phone, a driver's scroll-into-view here — delivers its
+`scroll` EVENT on the next frame, AFTER the listener is armed, so the menu hid in the frame it opened.
+It is armed from the next frame now, once that event has been delivered, and the first row is focused
+with `preventScroll`. `axe-menu` at 390 never saw it because it waits for the menu to be visible and
+presses nothing. **This is a hypothesis executed on the deployed build of THIS commit — the
+post-deploy run below is the proof, with the pre-patch runs above as its control** (standing rules 1
+and 2).
+
+**Local, after the patches:**
+
+- `pnpm check` (Node 24 on PATH) — **exit 0**. Lint clean, `tsc --noEmit` clean, **242 tests, 242
+  pass, 0 fail** in `apps/web` (the count is unchanged: the additions are assertions inside existing
+  tests), plus 1 each in the three packages.
+- `pnpm --filter web build` — **exit 0**, "Compiled successfully", `ƒ /app/sites` beside
+  `ƒ /app/sites/keys` and **no intercepted segment** (run at the start of the review, on the tree
+  before the patches; the patches touch no route).
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, ending on the DW-44 vault assertions, and now
+  printing `PASS: credential_change is a value of public.credential_action` right after the
+  `admin_key_id` assertion — the migration's second half, asserted for the first time.
+- `python3 tools/probe/run-verify-ghost-admin.py --check` — **all steps passed**, and it now prints
+  `keys_ghost_refused` out of `lib/connect-rule.ts`.
+- `python3 tools/doc-audit.py --check`, twice — recorded below with the commit.
+
+**Post-deploy run, on this commit's own deployment:** _(recorded in the next Review commit — CI
+publishes this push, and the harness is then driven against it with T1 and T3; every step from
+`keys-screen` on has to be green there for the first time on the two-column window.)_
+
 ## Spec Change Log
 
 Four departures from the Code Map, each recorded here rather than made silently. None changes an
@@ -1263,6 +1391,23 @@ reversed and the rest are new; none changes an acceptance criterion, and two of 
     here as well (standing rule 3). It is not an edit affordance — A9 item 17 stands, the reason line
     under it is unchanged, and there is still no field.
 
+**Three more, found by the third review (2026-09-10) — each was true at the second Fix and not written
+down.**
+
+19. **THE CONTENT ROW'S SAVE IS A KIT `Button` + `BusyLabel`, NOT A `Submit`**, and the ⋯ row is a
+    `PanelLink` `<a>`, where the frozen Boundaries say "every control that starts work is a
+    `Submit`". Both carry R-98's whole behaviour — the label swap, `aria-disabled` + `aria-busy`, the
+    second-press guard — and both are pinned by `busy.test.ts`; the Content form's own header says
+    why `useFormStatus` cannot serve it (its action is never dispatched by the form). The Boundary's
+    literal shape is not what shipped; its behaviour is.
+20. **THE STAFF ROW DRAWS A HINT UNDER ITS FIELD** (`KEYS.staff.ask`, the path to the token in Ghost
+    Admin) where S11e draws none under that row. It is the Admin row's own shape one row down, and
+    the sentence is the one a customer who has never seen a Staff Access Token needs.
+21. **"Added" IS INK-SOFT, NOT THE FRAME'S MINT.** S11e colours the present state's word green; the
+    screen keeps the dot green and the word in the same quiet grey as "Not added", so present and
+    absent read as two states of one thing and not as a pass and a fail — the acceptance criterion
+    "present or absent, and never an error badge", applied to the good half too.
+
 **Two departures from the frames, both drawn from the frame that is nearest and both recorded in
 `lib/connect-rule.ts` with a test over them** (R-74; the precedent is Story 3.4's
 hex-instead-of-colour-name):
@@ -1377,6 +1522,10 @@ answered by Question 3.
   frozen Boundaries say a refused key is refused under its own field, and that does not move.
 
 ### What the Fix did, 2026-09-10
+
+*(A record of the FIRST Fix, kept as written. The intercepting route, `router.back()` and
+`keys-back.tsx` it describes were all removed the same day by the second Fix — Spec Change Log
+entry 14 — after the owner's second test; `panel-modal.tsx` carries what replaced them.)*
 
 **Both findings are closed, and the two things the fix had to hold to are held.** Finding 1's
 "the row keeps its `href` and its destination" and "there stays ONE component drawing the panel":

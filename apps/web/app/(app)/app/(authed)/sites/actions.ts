@@ -1037,11 +1037,22 @@ export async function disconnectSite(formData: FormData): Promise<void> {
 function keysRedirect(url: string): never {
   redirect(url, RedirectType.replace)
 }
+/* A ROW THE ACTION CANNOT FIND IS THE FULL PAGE'S 404 AND THE WINDOW'S "no window" — the same
+   split `keys-screen.tsx`'s `gone()` and `useBrand` make, and it was missed on these three
+   (review, 2026-09-10). A `notFound()` thrown from an action posted INSIDE the popup replaces the
+   whole Sites list with the not-found page over a site that was disconnected in another tab or a
+   forged id; going back to `/sites` discloses exactly the same and leaves the customer his list.
+   The full page still 404s, and `keys-forged` drives it there. */
+function keysGone(formData: FormData): never {
+  if (formData.get('popup') === '1') keysRedirect(SITES_URL)
+  notFound()
+}
 
 /** The row Manage keys acts on, read under the CALLER'S OWN session so RLS decides it exists. */
 async function keysSite(
   at: { userId: string; siteId: string },
   base: string,
+  formData: FormData,
 ): Promise<{
   id: string
   url: string
@@ -1070,12 +1081,12 @@ async function keysSite(
   // is the honest answer; an ACTION that cannot read it has a screen to go back to, and saying
   // "nothing changed" on it beats replacing the customer's work with a boundary. The comment that
   // claimed the two were identical is what a later reader would have trusted (review, 2026-09-09).
-  if (error?.code === '22P02') notFound()
+  if (error?.code === '22P02') keysGone(formData)
   if (error) {
     console.error('sites: keys read failed', { code: error.code })
     keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
   }
-  if (!site) notFound()
+  if (!site) keysGone(formData)
   if (site.disconnected_at) keysRedirect(SITES_URL)
   return site
 }
@@ -1127,7 +1138,7 @@ const KeyFields = z.object({
  */
 export async function saveKeys(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'save keys')
-  if (!at) notFound()
+  if (!at) keysGone(formData)
   const base = keysBase(formData, at.siteId)
   const parsed = KeyFields.safeParse({
     admin_key: formData.get('admin_key') ?? '',
@@ -1153,7 +1164,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
      lands under the box that was empty and never on a neighbour (the frozen Boundaries' rule). */
   if (!adminKey && !contentKey && !staffToken) keysRedirect(KEYS_REFUSED(base, emptyKeyCode(formData)))
 
-  const site = await keysSite(at, base)
+  const site = await keysSite(at, base, formData)
 
   if (adminKey) {
     let belongsHere: string | undefined
@@ -1291,9 +1302,9 @@ export async function saveKeys(formData: FormData): Promise<void> {
  */
 export async function removeToken(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'remove token')
-  if (!at) notFound()
+  if (!at) keysGone(formData)
   const base = keysBase(formData, at.siteId)
-  const site = await keysSite(at, base)
+  const site = await keysSite(at, base, formData)
   try {
     await remove({ siteId: site.id, userId: at.userId, kind: 'staff', route: REMOVE_TOKEN_ROUTE })
   } catch (thrown) {
@@ -1322,9 +1333,9 @@ export async function removeToken(formData: FormData): Promise<void> {
  */
 export async function testConnection(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'test connection')
-  if (!at) notFound()
+  if (!at) keysGone(formData)
   const base = keysBase(formData, at.siteId)
-  const site = await keysSite(at, base)
+  const site = await keysSite(at, base, formData)
   let result: string
   let status: number | undefined
   try {

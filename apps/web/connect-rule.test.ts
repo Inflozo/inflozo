@@ -236,6 +236,11 @@ test('the three Manage-keys codes are in the one table, and each lands under its
   assert.equal(keysFieldOf('credential_malformed'), 'admin_key')
   assert.equal(keysFieldOf('content_key_unknown'), 'content_key')
   assert.equal(keysFieldOf('token_malformed'), 'staff_token')
+  // THE THREE EMPTY-BOX CODES, one per row: each row posts only its own field, so the code names
+  // the row that was pressed and the refusal must land under that box and no other (his finding 4).
+  assert.equal(keysFieldOf('credential_empty'), 'admin_key')
+  assert.equal(keysFieldOf('content_key_empty'), 'content_key')
+  assert.equal(keysFieldOf('token_empty'), 'staff_token')
   // Everything else is the panel's banner, including a code the table does not name at all.
   assert.equal(keysFieldOf('keys_failed'), null)
   assert.equal(keysFieldOf('credential_store_unavailable'), null)
@@ -265,8 +270,25 @@ test('every code Manage keys can answer with has a sentence of its own', () => {
     // The two the chokepoint throws through those calls as `thrown.code`, which no regex can see.
     'credential_missing',
     'credential_store_unavailable',
+    // …AND THE CODES THAT REACH `KEYS_REFUSED` THROUGH A VARIABLE, which the regexes above cannot
+    // see either (review, 2026-09-10): `emptyKeyCode(formData)`'s three, the `token_malformed`
+    // ternary, `config.code ?? 'ghost_refused'`, and what `fetchWithKey` answers as `config.code`.
+    // Named here beside the regex so the list has one home; the assertion below is the same.
+    'credential_empty',
+    'content_key_empty',
+    'token_empty',
+    'token_malformed',
+    'credential_malformed',
+    'ghost_refused',
+    'ghost_unknown_key',
+    'ghost_unauthorized',
+    'ghost_unreachable',
   ])
   assert.ok(codes.size > 0, 'no Manage-keys codes found — the regex has gone stale')
+  // The named ones must still be IN the actions' source, or the list above has gone stale too.
+  for (const code of ['credential_empty', 'content_key_empty', 'token_empty', 'token_malformed', 'ghost_refused']) {
+    assert.ok(source.includes(`'${code}'`), `${code} is named here but no longer appears in sites/actions.ts`)
+  }
   for (const code of codes) {
     assert.ok(
       Object.prototype.hasOwnProperty.call(CONNECT_MESSAGES, code),

@@ -112,12 +112,14 @@ export function SiteMenu({ id, name }: { id: string; name: string }) {
             `server/ghost-admin` (AD-10, §21j), so the card cannot RENDER the panel without a
             pooler round trip per card on the busiest route in the app.
 
-            SO THE WINDOW IS NOT RENDERED BY THIS CARD. The click is a soft navigation to the very
-            address the `href` names, and the list drew it as an intercepted route's own
-            panel in a `<dialog>` over the list — one component, one credential read, taken only
-            when somebody opens it. The `href` and its destination are untouched, which is the
-            JavaScript-off story and an acceptance criterion: with no script the click is a
-            document load and `sites/keys/page.tsx` serves the same panel as a full page. */}
+            SO THE WINDOW IS NOT RENDERED BY THIS CARD. The click is a soft navigation to
+            `/sites?manage=<id>` — a parameter on the list itself — and the list renders the panel
+            in a `<dialog>` over the cards only while that parameter is there: one component, one
+            credential read, taken only when somebody opens it (`panel-modal.tsx` records why it is
+            a parameter and not an intercepted route). The `href` and its destination are
+            untouched, which is the JavaScript-off story and an acceptance criterion: with no
+            script the click is a document load and `sites/keys/page.tsx` serves the same panel as
+            a full page. */}
         <PanelLink
           href={keysPath(id)}
           panel={keysPopupPath(id)}

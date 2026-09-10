@@ -68,18 +68,6 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
   // re-arming and focusing into a menu that is about to hide is not opening it (review, 2026-09-06).
   if (menu.matches(':popover-open')) return
   anchorTo(menu, trigger, placement)
-  requestAnimationFrame(() => {
-    // Now it is shown and has a height: a menu that would run off the bottom (a card's ⋯ in
-    // the last row at 390) or off the top (`up` on a short viewport) flips to the other side
-    // (review, 2026-09-05).
-    const box = menu.getBoundingClientRect()
-    if (placement.side === 'down' && box.bottom > window.innerHeight) {
-      anchorTo(menu, trigger, { ...placement, side: 'up' })
-    } else if (placement.side === 'up' && box.top < 0) {
-      anchorTo(menu, trigger, { ...placement, side: 'down' })
-    }
-    menu.querySelector<HTMLElement>('a[href], button')?.focus()
-  })
   // Fixed coordinates do not follow a scroll, so the menu closes rather than floats away. The
   // listener leaves WITH the menu: closed by Escape, an item or a click outside, it used to stay
   // armed — one more per open — until the next scroll (review, 2026-09-06).
@@ -91,8 +79,29 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     window.removeEventListener('scroll', onScroll, { capture: true })
     menu.removeEventListener('toggle', onToggle)
   }
-  window.addEventListener('scroll', onScroll, { once: true, capture: true, passive: true })
   menu.addEventListener('toggle', onToggle)
+  requestAnimationFrame(() => {
+    // Now it is shown and has a height: a menu that would run off the bottom (a card's ⋯ in
+    // the last row at 390) or off the top (`up` on a short viewport) flips to the other side
+    // (review, 2026-09-05).
+    const box = menu.getBoundingClientRect()
+    if (placement.side === 'down' && box.bottom > window.innerHeight) {
+      anchorTo(menu, trigger, { ...placement, side: 'up' })
+    } else if (placement.side === 'up' && box.top < 0) {
+      anchorTo(menu, trigger, { ...placement, side: 'down' })
+    }
+    // THE MENU MUST NOT CLOSE ON THE SCROLL THAT OPENED IT. Story 3.6's review (2026-09-10) drove
+    // the ⋯ of a card low on the list at 390 on production and the menu was gone before its row
+    // could be pressed: the tap that reaches a ⋯ near the bottom edge is preceded by a scroll —
+    // the finger's, or a driver's scroll-into-view — whose `scroll` EVENT is dispatched on the
+    // next frame, AFTER the click handler had armed the listener below. So the listener is armed
+    // from this frame, once that event has been delivered, and the focus is asked not to scroll,
+    // so stepping into a row cannot be the scroll that closes the menu either.
+    menu.querySelector<HTMLElement>('a[href], button')?.focus({ preventScroll: true })
+    if (menu.matches(':popover-open')) {
+      window.addEventListener('scroll', onScroll, { once: true, capture: true, passive: true })
+    }
+  })
 }
 
 /**

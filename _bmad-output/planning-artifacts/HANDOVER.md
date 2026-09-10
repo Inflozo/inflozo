@@ -2,7 +2,7 @@
 title: Inflozo — handover for a fresh session
 status: live
 created: 2026-08-21
-updated: 2026-09-04
+updated: 2026-09-10
 purpose: everything a new chat needs to continue, without reading the previous conversation
 ---
 
@@ -44,6 +44,15 @@ python3 tools/doc-audit.py --check        # the documentation gate
 ```
 
 ## The immediate task
+
+**Step 7 is running — the stories are being built, on `main`, one phase at a time** (added
+2026-09-10; the paragraphs below it are the record of how step 6 opened and still hold). Epics 1
+and 2 are done and Epic 3 is in flight: Story 3.6 (Manage keys) is in review, 3.7 is next. Two
+rulings from 3.6's review bind every story from here — **R-99**, a story with a migration pushes it
+FIRST as its own `Schema` phase, because CI publishes on every push while the apply is by hand; and
+**R-100**, a pasted key from another Ghost site is refused in Ghost's own words, because Ghost gives
+one 401 to a wrong key and to another site's — both in `reconcile-designs-decisions.md` §A22 and
+bound into the skills by `docs/project-context.md`. The board to watch is `STORY-BOARD.html`.
 
 **Step 6 — the story breakdown — is open.** The owner walked 5b on **2026-09-04** and the date stands
 under `build-sequence.md` step 5b, *The walk* (R-75's gate, a human tick no tool reads).

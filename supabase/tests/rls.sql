@@ -508,6 +508,18 @@ begin
   end if;
   raise notice 'PASS: admin_key_id exists and no client holds a privilege on it';
 
+  -- 5c''. …AND THE MIGRATION'S OTHER HALF, asked the same question. `credential_change` is the enum
+  -- value both `store()` and `remove()` write (DW-76), and it was the half production lacked on
+  -- 2026-09-09 (`22P02`, the incident behind R-99). A migration that applied one statement and
+  -- not the other would leave every assertion above passing (Story 3.6's review, 2026-09-10).
+  if not exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid
+                 join pg_namespace n on n.oid = t.typnamespace
+                 where n.nspname = 'public' and t.typname = 'credential_action'
+                   and e.enumlabel = 'credential_change') then
+    raise exception 'FAIL: public.credential_action has no credential_change value (Story 3.6''s migration)';
+  end if;
+  raise notice 'PASS: credential_change is a value of public.credential_action';
+
   -- 5d. A function with a null ACL is EXECUTE to PUBLIC, which includes anon.
   --
   -- ⚠️ Also de-hardcoded 2026-08-21, for the same reason and found by the same audit:
