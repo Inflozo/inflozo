@@ -177,7 +177,8 @@ re-connect recognise a Ghost install it has met before and print FR-C8's "Moved 
   rows. The Content key's pre-submit browser check needs a client island; keep it as small as
   `content-check.ts`'s caller in `connect-wizard.tsx` and leave the rest server-rendered.
   **AMENDED BY THE OWNER'S TEST (finding 2, 2026-09-10):** the chrome is now
-  `design/ManageKeys/…/S11e Manage Keys Popup.dc.html` — a 900px window, header with a ✕, a body of
+  `claude-design-export/Inflozo/S11e Manage Keys Popup.dc.html` *(moved there from `design/ManageKeys/`
+  on his ruling at Question 4, 2026-09-10)* — a 900px window, header with a ✕, a body of
   two columns (B20's three rows on the left, the context rail on the right with **Test connection**
   on its bottom edge), and a footer of Cancel. Same sentences, same order within each half; the body
   is what scrolls, which is the length complaint answered.
@@ -411,7 +412,7 @@ keys steps had never run green on the two-column popup, two stalls were the harn
 the product's, at phone width. One finding is the owner's; the rest were patched here or deferred
 with a reason. The status stays `in-review`: Deploy and the owner's test follow (R-80).
 
-- [ ] [Review][Decision] **Where S11e lives, and what its status is.** R-74 names `claude-design-export/` as *the* design authority; S11e sits outside it under `design/ManageKeys/` with catalogue status `live` — the status INDEX.md defines as "edit these" — while its own row says "never hand-edited … the authority". See `## Questions for the owner`, Question 4. **Ruled:** _(awaiting the owner)_
+- [x] [Review][Decision] **RULED (option 1, owner, 2026-09-10).** **Where S11e lives, and what its status is.** R-74 names `claude-design-export/` as *the* design authority; S11e sits outside it under `design/ManageKeys/` with catalogue status `live` — the status INDEX.md defines as "edit these" — while its own row says "never hand-edited … the authority". See `## Questions for the owner`, Question 4 — moved into the export as a `record` in this review.
 
 - [x] [Review][Patch] **The ⋯ menu on a card low in the list closed itself before its row could be pressed, at 390** — the run's `openKeysPopup` at phone width found the popover already hidden: `openMenu` armed a close-on-scroll listener synchronously in the click handler, and the scroll that brings a ⋯ near the bottom edge into view (a finger's, or a driver's) delivers its `scroll` EVENT on the next frame, after the listener was armed. Armed from the next frame now, and the first row is focused with `preventScroll` [apps/web/lib/menu.ts]
 - [x] [Review][Patch] The harness could not open the popup at all at 1440: `SiteUrl` is rendered twice and `.first()` on the reason text was the phone copy, hidden from `tablet` up — the stall Story 3.4's seventh review recorded. Both `openKeys*` waits filter on visibility, and `keys-screen`'s "no input carries the address" count is scoped to the window (the connect sheet's `name="url"` field sits behind it on `/sites`) [tools/probe/run-verify-ghost-admin.py]
@@ -669,7 +670,14 @@ no written answer.
 3. **Leave everything as it is.** Cheapest today; the next frame you send will land wherever that
    session decides.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-10).** Done in the same review: the frame is
+`claude-design-export/Inflozo/S11e Manage Keys Popup.dc.html`, beside S11 Sites, with catalogue status
+**record**; the rendered image he looked at is `screenshots/s11e-manage-keys-popup-owner.png` in the
+same export; the folder's `support.js` was byte-identical to the export's own and did not need a
+second copy. `tokens.test.ts` reads every frame under the export, so S11e's colours are now part of
+the palette the app is tested against, and `verify-design-pass.py` and `inventory-gen.py --check`
+were run over the export with it in — recorded in `## Verification`. Every reference to the old
+path was repointed and the repository grepped for it afterwards (standing rule 7).
 
 ## Owner's manual test
 
@@ -1274,6 +1282,16 @@ connection** at its foot, Cancel alone in the footer, the Sites cards and the sh
 it. At 390 the columns are one, the address at the top, and nothing runs off the edge (`keys-phone`
 asserts the geometry). The standing hints under the fields are marigold because that is the Kit's
 `TextInput` hint style everywhere, the wizard included — checked, not a leak of the error state.
+
+**Question 4's ruling, applied and checked (2026-09-10).** `git mv` of the frame into
+`claude-design-export/Inflozo/` and of the rendered `.png` into its `screenshots/`; the folder's
+`support.js` was `cmp`-identical to the export's and was removed rather than duplicated. Then:
+`python3 tools/doc-audit.py --check` twice — the first regenerated the index for the moved row, the
+second **PASS, 0 warnings**; `pnpm check` — **exit 0, 242 pass** (`tokens.test.ts` reads every frame
+under the export, S11e now among them); `python3 tools/verify-design-pass.py` — **every structural
+check passes**; `python3 tools/inventory-gen.py --check` — **current**, the library counts unchanged,
+which is the control that a window frame is not mistaken for a library design. A recursive grep for
+`design/ManageKeys` afterwards finds only quotations and dated records.
 
 **The control for the 390 menu fix, stated rather than implied:** runs 3 and 4 on the previous
 deployment failed inside `openKeysPopup` at 390 with the menu already hidden; runs 8, 9 and 10 on

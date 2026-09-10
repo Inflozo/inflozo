@@ -24,7 +24,8 @@ import { removeToken, saveKeys, testConnection } from './actions'
 
    IT WAS S11d's SINGLE COLUMN AND THE OWNER'S TEST OF THIS STORY CHANGED IT (finding 2, 2026-09-10:
    "It is too long, I want it redesigned as per the artifacts in design/ManageKeys"). That artifact
-   is `S11e Manage Keys Popup.dc.html`, a 900 x 743 window, and its own subtitle states the
+   is `S11e Manage Keys Popup.dc.html` — in `claude-design-export/` beside the other frames since his
+   ruling at Question 4 (2026-09-10) — a 900 x 743 window, and its own subtitle states the
    constraint this file holds to: *"Same content as the long screen, nothing removed."* Every
    sentence S11d drew is still drawn here; what changed is where. The body is what scrolls, not the
    document — `panelBox`'s height cap — which is the length complaint answered.

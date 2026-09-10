@@ -233,7 +233,7 @@ export const ORPHAN_SNAPSHOT_DAYS = 90
  * shown.
  *
  * THE `S11d` CITATIONS BELOW ARE THE WORDS' PROVENANCE AND THEY STILL HOLD; THE CHROME AROUND THEM
- * IS NOW `S11e Manage Keys Popup` (`design/ManageKeys/`), the owner's own frame from his test of
+ * IS NOW `S11e Manage Keys Popup.dc.html` (in the export, by his ruling), the owner's own frame from his test of
  * this story on 2026-09-10 — two columns instead of one long one, because S11d's single column ran
  * off the bottom of a laptop. Its subtitle is the constraint: *"Same content as the long screen,
  * nothing removed."* NOT ONE SENTENCE IN THIS OBJECT MOVED FOR IT, which is how that constraint is

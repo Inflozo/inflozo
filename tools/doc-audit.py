@@ -718,6 +718,17 @@ DOCS = [
  ('tools/doc-audit.py', 'tool', 'This gate',
   'Generates the index and checks documentation propagation. Exits non-zero on drift; a stale index is '
   'regenerated on that first failure, like its sub-tools, so the pre-commit hook\'s one retry passes.'),
+ ('design/claude-design-export/Inflozo/S11e Manage Keys Popup.dc.html', 'record', 'Manage keys — the popup frame (S11e)',
+  "Claude Design's frame for Story 3.6's API keys surface, and THE FRAME THAT SURFACE IS BUILT FROM — "
+  'the owner’s test finding 2 on 2026-09-10, which asked for the long single column to be redesigned '
+  'as this: a 900×743 window holding the SAME content as the long screen with nothing removed, the '
+  'three credential rows on the left and everything the customer reads rather than types in a context '
+  'rail on the right, Test connection at the rail’s foot. It supersedes S11d’s chrome and B20’s stacked '
+  'rows FOR THIS SURFACE ONLY. IT LIVES IN THE EXPORT BESIDE THE OTHER FRAMES BY THE OWNER’S RULING '
+  '(Story 3.6, Question 4, option 1, 2026-09-10): one design authority, so tokens.test.ts and the export’s '
+  'own checks cover it. It arrived in its own folder with a support.js byte-identical to the export’s, '
+  'so only the frame moved; the rendered .png he looked at is screenshots/s11e-manage-keys-popup-owner.png. '
+  'A record: dated, never edited (R-74).'),
 ]
 
 # Catalogue rows for files a later step writes: not reported as gone while they do not exist yet.
@@ -824,20 +835,6 @@ GROUPS = [
   '(tools/export-roster.py), and deleted designs are recorded there with their reason rather than by '
   'deleting a file. Carries hand edits made 2026-08-31 that a re-export would overwrite; '
   'tools/verify-design-pass.py gates them.'),
- ('design/ManageKeys/', 'live', 'Manage keys — the popup frame (S11e)',
-  "Claude Design's frame for Story 3.6's API keys surface, and THE FRAME THAT SURFACE IS NOW "
-  'BUILT FROM \u2014 the owner\u2019s test finding 2 on 2026-09-10, which asked for the long single '
-  'column to be redesigned as this. S11e Manage Keys Popup is a 900\u00d7743 window holding the '
-  'SAME content as the long screen with nothing removed: the three credential rows on the left, '
-  'and everything the customer reads rather than types in a context rail on the right \u2014 the '
-  'address with its \u201cfixed for this connection\u201d reason, the only-the-start line, the '
-  'roll-keys hint, and the Test connection card at the rail\u2019s foot with its result above the '
-  'button. It supersedes S11d\u2019s chrome and B20\u2019s stacked rows FOR THIS SURFACE ONLY; every '
-  'colour, face and radius in it is one claude-design-export/ already uses, so it is that '
-  'vocabulary in a wider frame and not a second one (R-74). The one exception needs no literal: '
-  'the info block is the Kit\u2019s own Banner kind=\"info\". Never hand-edited \u2014 like the export '
-  'beside it, it is Claude Design\u2019s output and the authority, not a working document. The .png '
-  'is the frame rendered, kept because it is what the owner actually looked at.'),
  ('design/mockups/', 'record', 'Interface mockups (27)',
   'Design prompt 1\'s output: marketing pages, editor, dashboard, deploy, routes, style packs. '
   'Design artifacts are non-normative ON BEHAVIOUR — where one disagrees with the PRD, the PRD wins. That has never meant the visual language is up for grabs: the design export is the component reference, and these 27 are SUPERSEDED by it for anything visual (prompt 2 wins over prompt 1). Consult them for intent, not for components.'),
