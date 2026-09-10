@@ -5,7 +5,7 @@ created: '2026-09-09'
 status: 'in-review'
 baseline_commit: '8c301682b72bc598e082f62c4f6813244418dfbd'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -501,6 +501,41 @@ admin origin and the public address differ by design — a customer's first legi
 refused as *"These keys belong to a different Ghost site"*, permanently. It now compares Ghost's answer
 only against Ghost's answer, and does not compare at all when there is none.
 
+### Question 3 — the new design drops the first characters of the Admin API key. Keep them, or let them go?
+
+**What is on screen today.** Under **Admin API key** the screen shows the beginning of the key
+Inflozo has stored, then dots — `65a3f2b1c0… ••••••••••`. The **Content API key** row shows the same
+thing. The new design you sent keeps that line under Content API key and **does not draw it under
+Admin API key**.
+
+**Why it is worth a moment.** Step 5 of your own manual test says: regenerate the Admin key in Ghost,
+paste the new one, and check that *"the beginning of the key shown on the screen is now the new
+one."* Without that line there is nothing to look at — the row says **Added** before the paste and
+**Added** after it, so a save that worked and a save that quietly did not look identical until you
+press **Test connection**.
+
+**An example.** You have `orbitweekly.com` and `sidequest.blog` open in two tabs. You regenerate on
+`orbitweekly.com`, come back, paste, save. With the line, the row changes from `65a3f2b1c0…` to
+`9f10dd47ae…` and you can see the new key landed. Without it, the row reads **Added** both times.
+
+**It costs nothing to keep and it gives nothing away.** That half of the key is not a secret — it
+rides in the header of every request Inflozo makes to your Ghost, which is why this story added a
+column for it. Only the half after the colon is secret, and that one never leaves the server.
+
+**Your options:**
+
+1. **Keep the line under Admin API key exactly as it is today**, and take everything else in the new
+   design as drawn. **(RECOMMENDED)** — it is the only thing on the screen that tells you *which*
+   key is stored, your own test step 5 reads it, and it is one short line on a screen whose length
+   problem is the tall single column, not this.
+2. **Follow the new design exactly** and drop the line. The row says Added or Not added, and **Test
+   connection** becomes the way to check a rotation worked. One line shorter.
+3. **Drop the permanent line, and show it once after a save** — *"Saved. Your Admin API key now
+   starts 9f10dd47ae."* — which fades with the next thing you do. You get the confirmation at the
+   moment it matters and the screen stays as short as the new design.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 Follow these on the real site after Deploy fills the URLs. You will need the Ghost site you connected
@@ -899,3 +934,93 @@ hex-instead-of-colour-name):
   passed. Nothing checks on load — **Test connection** is where a customer asks, and the continuous
   answer is Story 3.7's health badge — so the screen says what it knows. This is also the acceptance
   criterion "present or absent, and never an error badge".
+
+## Owner's test findings
+
+Tested on `app.inflozo.com` on **2026-09-10**. **Two findings**, and they are the same complaint from
+two directions: **the API keys screen is a place you go to, and once you are there it is a long
+scroll.** Neither is a defect in what the screen *does* — the eleven live steps of the Deploy phase
+all held — and neither is about a sentence or a refusal. Both are about the surface's shape, and both
+are fixed inside this story (R-80 as amended), not by a design pass. His words first, then the
+triage.
+
+1. **"Can we show the Manage Keys as a popup on the Sites screen rather than a separate screen for
+   Manage API Keys."**
+
+   *What was seen:* clicking **Manage API keys** in a card's ⋯ menu leaves the Sites list and loads a
+   whole new page. **Disconnect**, one row below it in the same menu, does not — it opens a window
+   over the card you were looking at. Two rows of one menu, two different behaviours.
+
+   *Whose:* **this story's, and it was a deliberate choice made at Dev.** It is Spec Change Log
+   entry 1, written down on 2026-09-09: the Code Map asked for both shapes and only one could be
+   built, and the link won. `site-menu.tsx:96` is a plain `<a href="/sites/keys?site=…">` with no
+   click interception, where the Disconnect row six lines below it intercepts into the card's
+   `<dialog>`. So the finding is not that something broke — it is that the choice was made on an
+   engineering ground and reads wrong to the person using it.
+
+   *The engineering ground, and why it does not survive:* the reason recorded in `site-menu.tsx` and
+   in `keys/page.tsx`'s header is that the panel draws the Admin key's public id half, which lives in
+   `private.site_credentials` and is reachable only through `server/ghost-admin` (AD-10, §21j) — so a
+   dialog rendered by the Sites list would mean one pooler round trip **per card** on the busiest
+   route in the app, or a dialog whose Admin row disagreed with the route's. That is a real cost and
+   it is still real. What it does not justify is the conclusion: a popup does not have to be rendered
+   by the list. **Next.js renders a modal over a list from the route itself** — the panel stays one
+   server-rendered component with one credential read, taken only when somebody actually opens it,
+   and `/sites/keys?site=…` stays exactly where it is for a typed URL, a new tab and a browser with
+   scripts off. Both halves of the Code Map turn out to be buildable after all; the Dev pass chose
+   between them a day too early.
+
+   *What must not be lost in the fix:* the row keeps its `href` and its destination — that is the
+   whole JavaScript-off story and it is an acceptance criterion, not a nicety — and there stays
+   **one** component drawing the panel, so the popup and the page can never disagree.
+
+2. **"It is too long, I want it redesigned as per the artifacts in
+   `/home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/ManageKeys`"**
+
+   *What was seen:* the panel is a single column — title, address, three credential blocks, the line
+   about not being able to read keys back, the roll-keys hint, **Test connection** and its result,
+   then Cancel — stacked one under the other, so on a laptop it runs off the bottom of the screen.
+
+   *Whose:* **this story's.** The single column is what `keys-panel.tsx` draws today and what the
+   frames it was built from — S11d's chrome around B20's rows — draw. Nothing regressed; the shape
+   was always this.
+
+   *The artifact, and where it now sits:* `design/ManageKeys/` is a new Claude Design frame,
+   **S11e Manage Keys Popup**, a 900 × 743 window that holds the same content in two columns —
+   **the three keys on the left, everything you read rather than type in a context rail on the
+   right**: the site address with its "fixed for this connection" reason, the line about only the
+   start of a key being shown, the roll-keys hint, and, sitting at the bottom of the rail, the **Test
+   connection** card with its result above the button. A ✕ in the header, **Cancel** in the footer.
+   Its own subtitle states the constraint the fix must hold to: *"Same content as the long screen,
+   nothing removed."*
+
+   *Checked before it was accepted, rather than assumed (R-74):* every colour, face and radius the
+   new frame uses is one the export already uses — the coral `#FF5941`, the ink `#1C1B1A`, the paper
+   `#F7F5F2`, the line `#E7E2DB`, the mint `#1FA97A`/`#157A58`, the marigold `#8A6100`, Bricolage
+   Grotesque, Inter and JetBrains Mono all appear in the export's own frames, and `#EDEAE6` and
+   `#6E6A64` are in the Calibration Set itself. **One exception, and it needs no literal:** the info
+   block's `#E9EFFC`/`#2A448C` pair is not in the export, and that block is built from the Kit's own
+   `Banner kind="info"` — which is already what `keys-panel.tsx` draws there. So this is not a second
+   interface vocabulary beside the export's; it is the export's vocabulary in a wider frame. It is
+   filed in the repository with a catalogue row and it is what this surface is now built from.
+
+   *One thing the new frame changes rather than rearranges,* and it is the only content difference
+   between it and the screen as built: it draws no masked line under **Admin API key**. That is
+   **Question 3** below, and the Fix waits on it.
+
+**Not a finding, and recorded so it is not read as one:** his third line — *"If you have any queries
+and are not 100% sure, ask me questions before proceeding"* — is an instruction, not a fault. It is
+answered by Question 3.
+
+**The routine calls, made rather than asked** (R-83's other half):
+
+- **The popup is built as a Next.js intercepting route over `/sites`, not as markup the list page
+  renders.** A click from the ⋯ opens the panel over the Sites list; a typed URL, a modified click,
+  a refresh and a scripts-off browser all still get `/sites/keys?site=…` as a full page. One
+  component, one credential read, and only when it is opened.
+- **On a phone the two columns become one.** The site address stays at the top, where it says which
+  site you are looking at; the rest of the rail — the not-readable-back line, the roll-keys hint and
+  the Test connection card — goes below the three keys, in the rail's own order. Step 11 of the
+  manual test is what checks it.
+- **Refusals stay under the field they came in.** The two-column frame draws no error state; the
+  frozen Boundaries say a refused key is refused under its own field, and that does not move.
