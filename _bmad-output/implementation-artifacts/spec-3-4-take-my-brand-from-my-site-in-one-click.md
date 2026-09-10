@@ -5,7 +5,7 @@ created: '2026-09-08'
 status: 'done'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 6
-owner_test: pending
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -2512,3 +2512,95 @@ with your sites still visible behind it.
    places. You would keep the new layout and lose the window.
 
 **Ruled:** _(awaiting the owner)_
+
+
+## Owner's test findings
+
+Tested on `app.inflozo.com` on **2026-09-10**, on the Fix that made the brand offer a popup
+(`f51feb04`). **Three findings**, and not one of them is about what the offer says or which project
+it would brand — all three are about the window it now opens in. The first is shared with Story 3.6,
+tested in the same sitting, and is **one defect in one file**. His words first, then the triage.
+
+1. **"When I click on 'Use this site's brand' link on a site card, the pop up opens but then the top
+   bar with search box and Connect site buttons disappears."**
+
+   *What was seen:* the popup opens over the Sites list as asked and the cards stay behind it — and
+   the bar above them, the one with the search field and **Connect site**, goes.
+
+   *Whose, and it is not this story's alone:* it is **the same defect as Story 3.6's finding 1**,
+   reported in the same sitting about the Manage keys popup, with one cause in one file.
+
+   *Read in the source rather than assumed* (standing rule 1): the top bar is the SHELL's, not the
+   page's. `BARS` (`components/shell/shell.tsx:125-128`) is a two-row table keyed on the **exact**
+   path — `'/'` and `'/sites'` — and `shell.tsx:250` is `const bar = BARS[path]`. A popup is an
+   intercepted route, so it MOVES THE URL: `/sites` becomes `/sites/brand` (or `/sites/keys`), which
+   is not a key in that table, so the shell draws no bar at all. Nothing hides the bar; the shell
+   decides there is none at that address. **Disconnect's dialog is the control that proves it** —
+   the one popup on this screen that has never done this is the one rendered by the card itself,
+   which navigates nowhere, so the URL stays `/sites` and the bar stays with it.
+
+   *What the fix must not do while it is in there:* `/sites/brand`, `/sites/keys` and
+   `/sites/connect` reached DIRECTLY are full pages and have never had a top bar, and must not gain
+   one — a search field and **Connect site** floating over the beat straight after a connect would
+   be a new bug in the shape of a fix. The rule is "the bar belongs to the route BEHIND the popup",
+   not "every path under `/sites`".
+
+   *Where it is fixed:* **once**, in `shell.tsx`, in whichever of the two Fix runs happens first,
+   and re-tested on both popups. It is written into both specs so neither story can be closed on a
+   claim the other made (standing rule 3).
+
+2. **"Make the URL on left side an anchor link and show a new tab icon. On clicking it should open
+   in a new tab."**
+
+   *What was seen:* in the popup's left column, under the site's name, the address is grey mono text
+   and nothing else. On the Sites card one click away the same address IS a link with the new-tab
+   glyph — his own finding 4 on an earlier story, already ruled and already built.
+
+   *Whose:* this story's. `brand-panel.tsx:258` draws the host as a plain `<span>`. The fix is a
+   straight lift of the card's own markup — `<a target="_blank" rel="noreferrer">` with the export's
+   `ExternalLink` glyph at 12 and `label="opens in a new tab"` (`(list)/page.tsx`) — so the two
+   addresses in the app behave the same way and no copy is invented here.
+
+   *One thing the lift has to carry with it:* the panel is handed only `host` today, so the fix
+   passes the URL as well, and it is **the same value the card links** — `public_url || url`
+   (`brand-screen.tsx:129`), the address Inflozo connected or the public one Ghost reports. Never a
+   value read out of the customer's Ghost navigation: `brand-panel.tsx`'s note "NOTHING HERE IS A
+   LINK TO THE CUSTOMER'S SITE" is about the **menu pills** and stays true of them, and is amended
+   to say which it means, because the next reader will otherwise read it as forbidding this.
+
+3. **"Add a cross button too which will close the popup."**
+
+   *What was seen:* the brand popup has no ✕. The Manage keys popup does, at the right edge of its
+   header.
+
+   *Whose:* this story's. `keys-panel.tsx:262` already draws S11e's ✕ as a `<Link href="/sites">` —
+   the same destination its footer **Cancel** has, closed by `panel-modal.tsx`'s path watch. The
+   brand panel's header is a title and a sub and nothing else (`brand-panel.tsx:103-106`). Same
+   markup, same destination, same accessible-name rule.
+
+   *No frame draws it, so it is extrapolated from the nearest one that does* (R-74): S2c is a PAGE
+   in the export and a page has no ✕; S11e is the export's popup and its ✕ is the one this copies.
+
+   *And there is nothing for a second way out to disagree with:* **Skip writes nothing at all** —
+   not even a note that it was pressed (`actions.ts`, `skipBrand`) — so the ✕, the backdrop and
+   Escape land exactly where Skip does, and the offer stays on the card either way.
+
+**One he did not hit, found while triaging these, and it is the same defect as Story 3.6's finding
+3** (standing rule 3 — propagate, never localise): **a REFUSED Use your brand goes to the same
+broken place.** `useBrand` answers a failed read with `brandRedirect(BRAND_FAILED(siteId))`
+(`actions.ts`) — a server action's `redirect()` back onto `/sites/brand?…`. A server action's
+redirect is **not intercepted** (executed 2026-09-10, recorded in `panel-modal.tsx`), so the Sites
+list behind the popup is replaced by the full-page brand screen while the popup stays open on top of
+it: two panels, no list. He did not see it because the happy path leaves to `/sites`, where no
+interception is needed. It is one fix with 3.6's finding 3, and it is listed here so this story
+cannot be closed while the failure path still does it.
+
+**Nothing here belongs to a later story, and nothing needs a sub-story.** `shell.tsx` shipped in
+Story 1.5, which is done — but that file has been right at every address that existed until these
+popups moved the URL under it, so the defect is the popups' and R-80 keeps it with the story whose
+surface shows it. Findings 2 and 3 are S2c's own markup, and two of the three fixes are lifts of
+markup the app already has.
+
+**Question 7 above is still awaiting the owner** and is not answered by any of this. Its option 2 —
+making the post-connect landing a popup too — would change what this Fix builds, so the Fix takes
+findings 2 and 3 (which are the same either way) and holds anything that depends on that ruling.
