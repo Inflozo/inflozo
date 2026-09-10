@@ -1255,8 +1255,30 @@ The three failures, each executed to its cause and fixed in this phase:
   so `axe-sites` audited it as "sites" (a false PASS — recorded here so it is not trusted) and the
   sheet's opener, which lives in the list's top bar, was not there. Harness: the step ends on `/sites`.
 
-**Run 6 — on the deployment of the commit that carries those fixes:** _(recorded below once CI has
-published it.)_
+**Runs 6 to 10 — on the deployment of `533d72b8` (Vercel READY, `githubCommitSha` checked), the
+commit that carries those fixes, `--url https://app.inflozo.com --shots`, T1 and T3:**
+
+| run | what happened |
+|---|---|
+| 6 | 16 PASS, then a `waitFor` timeout in the connect wizard's `malformed` step — untouched by this story, green in every other run. Production answered `/sites` in 0.4 s and both resolvers agreed on the address; a transient |
+| 7 | 6 PASS, then the sign-in's magic-link `page.goto` timed out even after the harness's own retry — Supabase's verify, nothing this story touches. Same class |
+| 8 | **97 PASS, 1 RECORD, 1 FAIL.** Every keys step green — `keys-test` now reads the result in the window, `keys-forged` lands all FOUR forms on the not-found page (the Content form's fix executed), `axe-sheet` and the cascade (`user-gone`, `secret-gone`, `no-secret-leak` over 1542 response bodies) run again. The one failure: `keys-popup`'s new Back assertion read the document the instant the URL was the list's, and the window had not yet left — the harness waits for the dialog to detach before reading (harness only, so runs 9 and 10 are on the same deployment) |
+| 9 | 97 PASS, 1 FAIL: `keys-popup` **green** (one Back after two answers is the list, panel gone); `disconnect-forged` — Story 3.5's — missed its landing wait on a run with two navigation retries, the stranger's row byte-identical and nothing written. It passed in run 8 on this deployment |
+| 10 | **98 PASS, 1 RECORD, 0 FAIL — `RESULT: all steps passed`**, three navigation retries absorbed by the harness. Every step of this story green in one run on the deployed build, for the first time on the two-column window: `keys-screen` · `axe-keys-screen` · `axe-keys-route` · `keys-phone` · `keys-popup` · `keys-malformed` · `keys-foreign-key` · `keys-other-site` · `keys-rotate` · `keys-token` · `keys-test` · `keys-js-off` · `keys-forged` · `moved-domains` · `keys-content` · `keys-test-refused` · `audit` |
+
+**The frame screenshots** (`--shots`, `s11e-{1440,834,390}.png` in the review's scratchpad, taken by
+`keys-screen` with the window open): at 1440 the window is S11e's — header with the title pair and
+the ✕, the three credential rows on the left with the Admin row masked (Question 3), the rail on the
+right with the address and its reason, the not-readable-back line, the roll-keys hint and **Test
+connection** at its foot, Cancel alone in the footer, the Sites cards and the shell's top bar behind
+it. At 390 the columns are one, the address at the top, and nothing runs off the edge (`keys-phone`
+asserts the geometry). The standing hints under the fields are marigold because that is the Kit's
+`TextInput` hint style everywhere, the wizard included — checked, not a leak of the error state.
+
+**The control for the 390 menu fix, stated rather than implied:** runs 3 and 4 on the previous
+deployment failed inside `openKeysPopup` at 390 with the menu already hidden; runs 8, 9 and 10 on
+this one opened the last card's ⋯ at 390 and pressed its row (`keys-phone`, `axe-keys-screen`). Same
+harness path, one product change in between (`lib/menu.ts`).
 
 ## Spec Change Log
 

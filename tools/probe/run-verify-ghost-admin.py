@@ -3606,6 +3606,10 @@ const shoot = async (page, name) => {
     // this window by now — the refusal and the empty press — and one Back must leave it.
     await page.goBack({ waitUntil: 'load' }).catch(() => {})
     await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'), { timeout: 20000 }).catch(() => {})
+    // The address moves on the popstate and the tree follows it: wait for the window to LEAVE
+    // rather than read the document the instant the URL is right (run 8, 2026-09-10, read it
+    // still there). A window that never leaves fails the assertion below either way.
+    await page.locator('dialog[open]').waitFor({ state: 'detached', timeout: 20000 }).catch(() => {})
     const afterKeysBack = await keysShape()
     const backUrl = new URL(page.url())
     await openKeysPopup(t1SiteId, t1Name)
