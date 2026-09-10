@@ -129,6 +129,13 @@ list gone stale — the sibling harness's own note):
                  caption states. (The Sites card's offer is a LINK and needs no form to work with
                  scripts off; it is asserted where it is drawn, in `brand-seed`.)
   axe-brand      axe-core over S2c at 1440 and 390
+  brand-popup    THE OWNER'S ASK OF 2026-09-10: the card's offer opens S2c as a WINDOW over the
+                 Sites list (`@modal/(.)brand` intercepts the link's soft navigation), the press
+                 closes it and leaves the list, **the offer opens it again**, and Skip closes it
+                 too. Every one of those failed before `panel-modal.tsx` watched the path: Next
+                 keeps an unmatched parallel slot's state across a soft navigation, so the window
+                 stayed over the list after the project had been written and the second press
+                 opened nothing at all
   brand-skip     **Skip** writes NOTHING — no project, and no note that it was pressed — the
                  browser returns to `/sites`, and the card still carries the offer link, so it can
                  be taken later. The card itself is unchanged: its title and address as
@@ -1599,8 +1606,56 @@ const shoot = async (page, name) => {
     await offer().click()
     await s2cHeading(page).waitFor()
     const saidCreate = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
+    /* ── brand-popup: THE OFFER OPENS A WINDOW OVER THE LIST, and the press closes it again.
+
+       The owner asked for S2c as a popup on 2026-09-10 ("make the 'Nice site. Want to keep the
+       vibe?' as a popup instead of as a page"), and `@modal/(.)brand` is what does it: the card's
+       offer is a `next/link`, so its click is a soft navigation and Next intercepts it. EVERY
+       claim below is one that failed before `panel-modal.tsx` watched the path — Next keeps an
+       unmatched parallel slot's state across a soft navigation, so the window sat over the list
+       after **Use your brand** had already written the project and the offer then opened nothing
+       the second time. THE SECOND OPEN IS THE ASSERTION THAT MATTERS, and it is the one this
+       harness exists to keep true. */
+    const brandShape = async () => await page.evaluate(() => ({
+      open: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"][open]'),
+      inDom: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"]'),
+      cards: document.querySelectorAll('article').length,
+    }))
+    const brandOpened = await brandShape()
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
     await page.waitForURL((u) => u.pathname === '/sites')
+    // READ BEFORE ANYTHING RELOADS. A reload destroys the client router state, so the popup would
+    // be gone whatever the code did — this assertion has to be taken on the very document the
+    // press left behind or it is a control that cannot fail (standing rule 2).
+    await page.waitForTimeout(400)
+    const brandClosed = await brandShape()
+    /* …AND THE OFFER OPENS IT AGAIN, ON THE SAME DOCUMENT. That last clause is the whole step:
+       reloading first would destroy the client router state and the second open would pass on any
+       code at all. The regression is a RETAINED slot, so the retention has to still be there when
+       the second press happens. The brand is already applied by now, so the card still carries the
+       offer (FR-C4's "skippable and re-runnable") and this is a real press, not a contrivance. */
+    await offer().click()
+    await s2cHeading(page).waitFor()
+    const brandReopened = await brandShape()
+    // …and **Skip** — the panel's other way out, and a SECOND server action leaving the popup —
+    // closes it too. There is no ✕ and no Cancel on S2c: the frame draws two presses and the offer
+    // stays on the card either way, so Skip IS the way out (`skipBrand` writes nothing at all).
+    await skipS2c(page)
+    await page.waitForTimeout(400)
+    const brandSkipped = await brandShape()
+    step('brand-popup',
+      brandOpened.open && brandOpened.cards > 0
+      && !brandClosed.open && brandClosed.cards > 0
+      && brandReopened.open && !brandSkipped.open,
+      `the card's offer opened S2c as a WINDOW over the Sites list — an open <dialog> = ` +
+      `${brandOpened.open} with ${brandOpened.cards} cards still behind it (the owner's ask of ` +
+      `2026-09-10). Pressing ${JSON.stringify(SAY.brand_use)} closed it and left the list: open = ` +
+      `${brandClosed.open}, ${brandClosed.cards} cards. And the offer opened it A SECOND time = ` +
+      `${brandReopened.open} — the press that did nothing while an unmatched parallel slot kept ` +
+      `its state, which is what panel-modal.tsx's path watch exists to prevent. ` +
+      `${JSON.stringify(SAY.brand_skip)} closed it as well = ${!brandSkipped.open}, so BOTH server ` +
+      `actions that leave the panel leave it`)
+
     const seeded = (await until(async () => {
       const list = await projectsOf()
       return list.length ? list : null
@@ -1613,6 +1668,7 @@ const shoot = async (page, name) => {
     // …AND THE DASHBOARD CARD IS PAINTED IN IT. `placeholderFor` prefers `brand.accent` over the
     // preset's, so the wireframe's middle block is the customer's own colour — read off the
     // RENDERED card with getComputedStyle, not off a class attribute.
+
     await page.goto(`${APP}/`, { waitUntil: 'load' })
     await page.getByText(made.name || 'project').first().waitFor()
     const painted = await page.locator('article > div[aria-hidden="true"] > div:last-child > div')

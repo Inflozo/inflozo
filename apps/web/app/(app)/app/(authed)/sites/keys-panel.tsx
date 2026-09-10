@@ -16,7 +16,6 @@ import {
   type ConnectField,
   type MessageCode,
 } from '@/lib/connect-rule'
-import { KeysBack } from './keys-back'
 import { ContentKeyForm } from './keys-content-form'
 import { removeToken, saveKeys, testConnection } from './actions'
 
@@ -35,12 +34,11 @@ import { removeToken, saveKeys, testConnection } from './actions'
    a `<dialog>` over the Sites list, and `keys/page.tsx` renders the same thing as a full page for
    a typed URL, a modified click, a refresh and a scripts-off browser.
 
-   THE WAY OUT IS THE ONE THING THAT DIFFERS — `disconnect-confirm.tsx`'s `cancel` prop is the
-   precedent — and here it is one boolean rather than two nodes, so the ✕'s and Cancel's own look
-   is written once. On the page both are `<Link href="/sites">`; in the popup both are `KeysBack`,
-   an anchor to the same address whose plain click is `router.back()`. That is not a preference: a
-   soft navigation out of an intercepted popup leaves the panel MOUNTED in the slot and the ⋯ row
-   dead on the second press, and `keys-back.tsx` records the measurement.
+   AND THE WAY OUT IS THE SAME IN BOTH, WHICH IS WHY IT IS NOT A PROP HERE THE WAY
+   `disconnect-confirm.tsx`'s `cancel` is: the ✕ and Cancel are `<Link href="/sites">`. On the page
+   that is a navigation back to the list; in the popup the same navigation moves the path off the
+   panel's, and `panel-modal.tsx` closes the dialog because of it — one rule for every way out
+   there is, rather than a special control on each of them.
 
    NO `'use client'`. Every control here is a real `<form action={serverAction}>` and the ⋯ row
    that reaches it is an `<a href>` with a destination, so the whole surface works with JavaScript
@@ -219,7 +217,6 @@ export function KeysPanel({
   refused,
   status,
   tested,
-  popup,
 }: {
   site: KeysSite
   /** `?keys=<code>` — one of the app's own codes, or null. The FIELD is derived, never trusted. */
@@ -228,8 +225,6 @@ export function KeysPanel({
   status: string | null
   /** `?test=ok` or `?test=<code>` — what the last press of Test connection proved. */
   tested: string | null
-  /** Drawn inside the intercepted `<dialog>` over the Sites list, rather than as a full page. */
-  popup: boolean
 }) {
   const field = refused ? keysFieldOf(refused) : null
   // A CODE THE TABLE DOES NOT NAME IS NOT DRAWN AT ALL. `?keys=` is typed by whoever holds the URL,
@@ -246,17 +241,12 @@ export function KeysPanel({
   // panel's banner, exactly as the wizard's fieldless refusals are its own.
   const banner = said && !field ? said : null
 
-  /** S11e's ✕ and its footer Cancel, whose only difference between the two callers is the way out. */
-  const wayOut = (className: string, children: ReactNode, label?: string) =>
-    popup ? (
-      <KeysBack className={className} label={label}>
-        {children}
-      </KeysBack>
-    ) : (
-      <Link href="/sites" aria-label={label} className={className}>
-        {children}
-      </Link>
-    )
+  /** S11e's ✕ and its footer Cancel: one destination, and the same markup in both chromes. */
+  const wayOut = (className: string, children: ReactNode, label?: string) => (
+    <Link href="/sites" aria-label={label} className={className}>
+      {children}
+    </Link>
+  )
   const closeClasses = `flex size-7 shrink-0 items-center justify-center rounded-thumb text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`
 
   return (

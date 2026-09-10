@@ -22,5 +22,5 @@ export default async function InterceptedKeys({
 }: {
   searchParams: Promise<KeysSearchParams>
 }) {
-  return <KeysScreen searchParams={searchParams} popup />
+  return <KeysScreen searchParams={searchParams} />
 }

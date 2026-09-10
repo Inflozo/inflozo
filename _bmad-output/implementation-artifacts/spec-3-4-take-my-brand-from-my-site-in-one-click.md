@@ -5,7 +5,7 @@ created: '2026-09-08'
 status: 'done'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 6
-owner_test: passed
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -1836,20 +1836,30 @@ need a site that is not connected yet, and you will need a menu and an accent co
    `ghost6.inflozo.com` and paste its two keys → **Connect** · **See:** instead of the Sites list, a
    new full screen: **"Nice site. Want to keep the vibe?"** and under it *"We pulled these from
    ghost6.inflozo.com — your call."*
-6. **Do:** look at the card in the middle · **See:** on the left, **YOUR SITE TODAY** with your
-   site's name and address, an **Accent color** dot in your orange with `#D96C3F` beside it, your
-   menu items as small pills, and the line *"Fonts stay yours — pick a pairing once you're in the
-   editor."*; on the right, a small drawing of a homepage with an orange button in it, captioned
-   *"Your homepage, already wearing your brand."*
-7. **Do:** on your phone, open the same screen · **See:** the two halves stack, nothing runs off the
-   edge, and both buttons are reachable.
+6. **Do:** look at it · **See:** *(rewritten for your change of 2026-09-10)* **two columns.** On
+   the **left**, **YOUR SITE TODAY** with your site's name and address, an **Accent color** dot in
+   your orange with `#D96C3F` beside it, your menu items as small pills, the line *"Fonts stay
+   yours — pick a pairing once you're in the editor."*, and at the foot of that column a small
+   drawing of a homepage with an orange button in it, captioned *"Your homepage, already wearing
+   your brand."* On the **right**, **Which project?** if you have more than one, and under it
+   **Use your brand** and **Skip**. Nothing runs off the bottom.
+7. **Do:** on your phone, open the same screen · **See:** the two columns become one — your site's
+   details and the drawing first, then the project options and the two buttons — nothing runs off
+   the edge, and both buttons are reachable.
 8. **Do:** back on the computer, press **Skip** · **See:** the Sites page, your site's card, and on
    it a link offering to use the site's brand. Nothing else changed — the card still reads
    **0 projects**.
-9. **Do:** press that link · **See:** the same screen as step 5, and under **Use your brand** one
+9. **THIS IS THE ONE THAT CHANGED, so try it more than once.** **Do:** press that link · **See:**
+   the same screen as step 6, but this time as a **window over your Sites list** — your cards are
+   still there behind it, the way they are when you press Disconnect. Under **Use your brand**, one
    short line saying what it will do — either that it will make a project for this site, or, if you
-   are already at your project limit, naming the project it will brand instead. **Do:** press **Use
-   your brand** · **See:** the Sites page, and the line was right.
+   are already at your project limit, naming the project it will brand instead. **Do:** press
+   **Use your brand** · **See:** the window closes, you are back on the Sites page, and the line was
+   right. **Do:** press the offer link again, then press **Skip**, then press it a third time ·
+   **See:** the window opens every time and closes every time.
+9b. **Do:** watch the buttons as you press them. **See:** the label changes — **Use your brand**
+   becomes *Taking your brand…*, **Skip** becomes *Skipping…* — and **nothing moves**: the button
+   stays exactly the same size and nothing beside or below it shifts.
 10. **URL:** https://app.inflozo.com/ · **Screen:** your dashboard · **See:** the project's card, and
     the little wireframe drawing on it is painted in **your orange**, not the default.
 11. **URL:** https://app.inflozo.com/sites · **See:** the site's card now reads **1 project**.
@@ -2419,3 +2429,86 @@ the fourteen files above, not only the two screens named — and every route tha
 sweep cannot fix inside this story is written down with its owning epic rather than quietly dropped;
 the editor's own controls (Epics 4–7) are not built yet and inherit the rule through the durable half
 rather than through a patch here.
+
+
+## Owner's change request, 2026-09-10 — S2c as a popup, in two columns
+
+**Asked for in his own words**, straight after the Story 3.6 Fix that made Manage keys a popup:
+
+> "Before proceeding, I also want to make the 'Nice site. Want to keep the vibe?' as a popup instead
+> of as a page. Make the popup as two column. On left show the Your Site Today card. On [the right]
+> show the options for Which Project and buttons below. When clicking the buttons, their labels
+> change and want to ensure that does not change the layout or add any layout shifts."
+
+**Whose:** this story's. S2c is Story 3.4's surface and its `owner_test` had already passed, so this
+is a change request rather than a test finding — it is recorded here because R-80 keeps a surface's
+changes with the story that owns it, and because the next person to read `brand-panel.tsx` needs the
+reason beside the code.
+
+**What was built.** Three things, and the third is the Kit's rather than this screen's:
+
+1. **The popup.** `sites/@modal/(.)brand` intercepts `/sites/brand`, so the Sites card's offer link
+   — a `next/link`, and therefore a soft navigation — opens S2c in a `<dialog>` over the list.
+   `brand-screen.tsx` does the reads once and `brand-panel.tsx` draws the panel, and both routes
+   render them, so the popup and the full page cannot disagree.
+2. **Two columns.** Left: everything READ off the customer's Ghost — logo, title and host, accent,
+   menu, the fonts note, and the mini homepage wearing the accent. Right: everything DECIDED —
+   **Which project?** with the cards, and **Use your brand** / **Skip** below them. Nothing S2c drew
+   was removed; the mini homepage moved into the left column rather than being dropped, because the
+   right half is now the chooser and the drawing is "your site today" as much as the swatch is.
+3. **No layout shift when a label changes.** `kit/submit.tsx` gained `BusyLabel`, which draws the
+   resting and busy labels in ONE grid cell so a control's width is the wider of the two before
+   anything is pressed. Measured, with the old shape beside it as the control: **Skip** was 63px and
+   **Skipping…** 104px — a 41px jump on every press — and both are 104px now. It is in the Kit and
+   not on this screen, so every `Submit` in the app got it, and `keys-content-form.tsx`'s
+   hand-written busy control — the one submit that is not a `Submit` — was given it too.
+
+**What was measured rather than assumed** (standing rule 1), on throwaway Next controls under
+`next dev` 16.3.1, each deleted afterwards:
+
+| driven | result |
+|---|---|
+| the offer link's soft navigation | **intercepted** — dialog over the list |
+| a SERVER ACTION's `redirect()` into the same route | **not intercepted** — the full page, no dialog, no list |
+| `<Link href="/sites">` out of the popup | panel **stayed mounted**; the opener then did nothing |
+| `router.push` + `refresh`, and a `[...catchAll]` slot filler | the same |
+| a server action's `redirect('/sites')` out of the popup — **Use your brand** and **Skip** | the same |
+| `panel-modal.tsx` watching the path | **clean** on all of them, and the second, third and fourth opens worked |
+
+The second row is why S2c has two chromes: **after a connect it is still the full screen S2 draws**,
+because that is where `connectSite`'s redirect lands and no interception applies to it — which suits
+the moment, since that is the onboarding beat rather than an aside over a list. The rest is why
+`PanelModal` watches `usePathname()` instead of each control carrying its own way out.
+
+## Questions for the owner
+
+### Question 7 — after you connect a site, the brand offer is still a full screen. Leave it, or make that a popup too?
+
+**What you asked for.** The "Nice site. Want to keep the vibe?" screen as a popup. It now is one —
+when you reach it from the **Use this site's brand** link on a site's card, it opens as a window over
+your Sites list, in two columns.
+
+**What still happens the other way.** There are two ways to that screen. The other one is
+**straight after you connect a site**: the connect window closes and the brand screen appears. That
+one is still a full screen, and it is not a choice we made — we tested it, and the kind of jump the
+app makes after a connect cannot open a window over the list. Making it one means changing how the
+connect step hands over, which is a change to the connect flow rather than to this screen.
+
+**An example.** You connect `orbitweekly.com`. The connect window closes and "Nice site. Want to keep
+the vibe?" fills the screen — same two columns, same content, just not floating over your list. Later
+you press **Use this site's brand** on the card for `sidequest.blog`, and that one opens as a window
+with your sites still visible behind it.
+
+**Your options:**
+
+1. **Leave it.** The card's link gives you the popup; the moment straight after connecting stays a
+   full screen. **(RECOMMENDED)** — right after connecting there is nothing behind it worth seeing
+   (you have just come out of a window yourself), and it is the shape the original design draws for
+   that moment. It also costs nothing and risks nothing.
+2. **Make the connect landing a popup as well.** One flow, one shape, every time. It means changing
+   how the connect step hands you over — a change inside the connect wizard, tested again end to end
+   — for a difference you see once per site.
+3. **Go the other way: no popup at all**, and put the two-column screen back to being a page in both
+   places. You would keep the new layout and lose the window.
+
+**Ruled:** _(awaiting the owner)_

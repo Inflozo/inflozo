@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, type ComponentProps, type MouseEvent } from 'react'
+import { useEffect, useRef, type ComponentProps, type MouseEvent, type ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Button } from './button'
 
@@ -74,6 +74,46 @@ export function useSubmitting() {
 }
 
 /**
+ * THE LABEL SWAP, AND IT MOVES NOTHING — the owner's ask of 2026-09-10: "When clicking the
+ * buttons, their labels change and want to ensure that does not change the layout or add any
+ * layout shifts."
+ *
+ * `{pending ? busy : children}` is one child at a time, so the button was as wide as whichever
+ * label was showing — **Skip** (34px of text) becoming **Skipping…** widened it mid-press and
+ * shoved its neighbour along, and a control inside a flex row could move the row it sits in.
+ * Both labels are therefore always in the DOM, stacked in ONE grid cell: the button's intrinsic
+ * width is the WIDER of the two, in every language and at every font, without a hardcoded
+ * `min-w` that would be a measurement in a class name (standing rule 4's argument, applied to a
+ * width).
+ *
+ * `invisible` IS `visibility: hidden` AND NOT `opacity`, which is what keeps the hidden half out
+ * of the accessibility tree as well as off the screen — so a reader is told "Skipping…" only
+ * while it is true, and no `aria-hidden` juggling is needed to make that so.
+ *
+ * It is HERE rather than in `Submit` alone because one submit control in the app is not a Kit
+ * button — `keys-content-form.tsx`'s, whose busy state is its own component state because its
+ * form's action is never dispatched by the form. Localising the fix would have left the one
+ * control that already needed a hand-written busy state as the one that still jumped.
+ */
+export function BusyLabel({
+  pending,
+  busy,
+  children,
+}: {
+  pending: boolean
+  busy: string
+  children: ReactNode
+}) {
+  const cell = 'col-start-1 row-start-1 inline-flex items-center justify-center gap-[7px]'
+  return (
+    <span className="grid">
+      <span className={`${cell} ${pending ? 'invisible' : ''}`}>{children}</span>
+      <span className={`${cell} ${pending ? '' : 'invisible'}`}>{busy}</span>
+    </span>
+  )
+}
+
+/**
  * A Kit button that submits its form and SAYS SO: `busy` replaces the label while the action is
  * in flight.
  *
@@ -101,7 +141,9 @@ export function Submit({
         guard(event)
       }}
     >
-      {pending ? busy : children}
+      <BusyLabel pending={pending} busy={busy}>
+        {children}
+      </BusyLabel>
     </Button>
   )
 }

@@ -657,7 +657,7 @@ export async function useBrand(formData: FormData): Promise<void> {
   const chosen = formData.get('project_id')
   if (typeof chosen !== 'string') {
     console.error('sites: use brand refused', { code: 'decision_missing' })
-    redirect(BRAND_FAILED(at.siteId))
+    brandRedirect(BRAND_FAILED(at.siteId))
   }
 
   const supabase = await supabaseServer()
@@ -688,15 +688,15 @@ export async function useBrand(formData: FormData): Promise<void> {
   // (review 4, 2026-09-09) — `sites/page.tsx`'s "A FAILED READ IS NOT AN EMPTY ACCOUNT" is the rule.
   if (siteError) {
     console.error('sites: use brand site read failed', { code: siteError.code })
-    redirect(BRAND_FAILED(at.siteId))
+    brandRedirect(BRAND_FAILED(at.siteId))
   }
   if (!site) notFound()
   const brand = site.site_settings?.brand
   // Nothing to offer is nothing to seed: the page 404s for this site too, so this is a stale post.
-  if (!hasBrand(brand)) redirect(SITES_URL)
+  if (!hasBrand(brand)) brandRedirect(SITES_URL)
   if (projectsError || !projects) {
     console.error('sites: use brand read failed', { code: projectsError?.code })
-    redirect(BRAND_FAILED(site.id))
+    brandRedirect(BRAND_FAILED(site.id))
   }
 
   // ONE RULE, SHARED WITH THE CAPTION S2c PRINTED (`brandTarget`): at the cap the most recently
@@ -721,7 +721,7 @@ export async function useBrand(formData: FormData): Promise<void> {
   // so an empty choice is refused and no project can be made past the limit.
   if (chosen === '' ? Boolean(target) : !picked) {
     revalidatePath(SITES)
-    redirect(BRAND(site.id))
+    brandRedirect(BRAND(site.id))
   }
 
   if (picked) {
@@ -758,7 +758,7 @@ export async function useBrand(formData: FormData): Promise<void> {
       .select('id')
     if (error || !data?.length) {
       console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
-      redirect(BRAND_FAILED(site.id))
+      brandRedirect(BRAND_FAILED(site.id))
     }
   } else {
     // WITH ROOM: a project for the site, named after it. `lib/projects.ts`'s own rules give it its
@@ -784,13 +784,29 @@ export async function useBrand(formData: FormData): Promise<void> {
     })
     if (error) {
       console.error('sites: use brand insert failed', { code: error.code })
-      redirect(BRAND_FAILED(site.id))
+      brandRedirect(BRAND_FAILED(site.id))
     }
   }
 
   revalidatePath(SITES)
   revalidatePath(DASHBOARD)
-  redirect(SITES_URL)
+  brandRedirect(SITES_URL)
+}
+
+/**
+ * S2c ANSWERS ONTO ITSELF, SO IT REPLACES THE HISTORY ENTRY RATHER THAN PUSHING ONE — the same
+ * rule `keysRedirect` above states, and for the same measured reason. Since the owner asked for
+ * the brand offer as a popup (2026-09-10) the Sites card's offer opens an INTERCEPTED route, whose
+ * only sound way out for Escape is `router.back()` (`panel-modal.tsx`); a server action's `redirect()` pushes
+ * by default, so a failed **Use your brand** would have put a second entry under the panel and the
+ * first Back would have returned to the panel-before-the-failure instead of to the list.
+ *
+ * `connectSite`'s OWN redirect onto this screen deliberately does NOT use this. It arrives from
+ * `/sites` and is the customer's first sight of the offer, so it is a real step forward in the
+ * history — and it is not intercepted anyway (executed), so it lands on the full page.
+ */
+function brandRedirect(url: string): never {
+  redirect(url, RedirectType.replace)
 }
 
 /**
@@ -801,7 +817,7 @@ export async function useBrand(formData: FormData): Promise<void> {
  */
 export async function skipBrand(formData: FormData): Promise<void> {
   await siteOf(formData, 'skip brand')
-  redirect(SITES_URL)
+  brandRedirect(SITES_URL)
 }
 
 /**
@@ -970,7 +986,7 @@ export async function disconnectSite(formData: FormData): Promise<void> {
  * MANAGE KEYS REPLACES THE HISTORY ENTRY; IT DOES NOT PUSH ONE. Every one of these three actions
  * answers by redirecting to the screen the customer is already on (`recheckPlan`'s shape), and
  * since the owner's test the screen is usually a POPUP over the Sites list — an intercepted route,
- * whose only sound way out is `router.back()` (`keys-back.tsx` carries the measurement).
+ * whose Escape closes with `router.back()` (`panel-modal.tsx` carries the measurement).
  *
  * A server action's `redirect()` PUSHES by default. Measured on a throwaway control under
  * `next dev`, 2026-09-10: after one push-redirect the first Back returned to the panel as it stood

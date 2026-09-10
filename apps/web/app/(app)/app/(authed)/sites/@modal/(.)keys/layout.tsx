@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { KeysModal } from '../../keys-modal'
+import { PanelModal } from '../../panel-modal'
+import { KEYS_TITLE_ID } from '../../keys-panel'
 
 /**
  * THE DIALOG AROUND THE INTERCEPTED PANEL, AND IT IS A LAYOUT SO THE DIALOG OPENS ONCE.
@@ -9,8 +10,13 @@ import { KeysModal } from '../../keys-modal'
  * the popup would open, close and open again in front of the customer. A layout wraps both, so the
  * window opens on the click and the skeleton inside it is swapped for the panel.
  *
- * `keys-modal.tsx` carries the `'use client'`; everything below this stays a server render.
+ * `panel-modal.tsx` carries the `'use client'` and is shared with the brand offer's popup;
+ * everything below this stays a server render.
  */
 export default function InterceptedKeysLayout({ children }: { children: ReactNode }) {
-  return <KeysModal>{children}</KeysModal>
+  return (
+    <PanelModal labelledBy={KEYS_TITLE_ID} path="/sites/keys">
+      {children}
+    </PanelModal>
+  )
 }

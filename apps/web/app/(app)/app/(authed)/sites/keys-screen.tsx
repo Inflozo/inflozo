@@ -52,15 +52,7 @@ type Row = {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)
 
-export async function KeysScreen({
-  searchParams,
-  popup = false,
-}: {
-  searchParams: Promise<KeysSearchParams>
-  /** Drawn inside `@modal/(.)keys`'s `<dialog>` rather than as the full page. Only the way out
-      differs, and `keys-back.tsx` records why it has to. */
-  popup?: boolean
-}) {
+export async function KeysScreen({ searchParams }: { searchParams: Promise<KeysSearchParams> }) {
   const { site, keys, status, test } = await searchParams
   const siteId = first(site)
   if (!siteId) notFound()
@@ -118,7 +110,6 @@ export async function KeysScreen({
          `?keys=` follows by being a lookup key and never a sentence. */
       status={/^\d{3}$/.test(first(status) ?? '') ? (first(status) as string) : null}
       tested={first(test) ?? null}
-      popup={popup}
     />
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from 'react'
 import { Button } from '@/components/kit/button'
+import { BusyLabel } from '@/components/kit/submit'
 import { TextInput } from '@/components/kit/input'
 import { isRedirect } from '@/lib/action-redirect'
 import { CONNECT_MAX, connectMessage, KEYS } from '@/lib/connect-rule'
@@ -121,7 +122,12 @@ export function ContentKeyForm({
 
 /** R-98's busy half, driven by THIS component's own state rather than by `useFormStatus` — see
     the header: the form's action is never dispatched by the form, so the Kit's `useSubmitting()`
-    could only ever read false here, and its click guard could only ever jam. */
+    could only ever read false here, and its click guard could only ever jam.
+
+    THE LABEL SWAP IS STILL THE KIT'S, though the pending flag is not: `BusyLabel` is what keeps
+    **Save key** from resizing into **Saving…** mid-press (the owner's ask, 2026-09-10). This is
+    the one submit control in the app that is not a `Submit`, so it is the one a fix made only in
+    `Submit` would have missed. */
 function Save({ busy }: { busy: boolean }) {
   return (
     <Button
@@ -131,7 +137,9 @@ function Save({ busy }: { busy: boolean }) {
       aria-disabled={busy || undefined}
       aria-busy={busy || undefined}
     >
-      {busy ? KEYS.content.busy : KEYS.content.save}
+      <BusyLabel pending={busy} busy={KEYS.content.busy}>
+        {KEYS.content.save}
+      </BusyLabel>
     </Button>
   )
 }
