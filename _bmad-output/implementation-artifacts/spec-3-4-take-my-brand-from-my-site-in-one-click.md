@@ -2,7 +2,7 @@
 title: 'Story 3.4 — Take my brand from my site in one click'
 type: 'feature'
 created: '2026-09-08'
-status: 'done'
+status: 'in-review'
 baseline_commit: 'f848baaf4186660296a2f56e7161bc9ab72e4736'
 review_loop_iteration: 6
 owner_test: issues
@@ -2688,6 +2688,14 @@ it was pressed in. Also `acd31327`.
 
 **Question 7's ruling held to:** the connect wizard was not touched and `connectSite` still
 redirects to `/sites/brand?site=…`, the full screen S2 draws.
+
+**AND THE STORY IS BACK IN REVIEW, WHICH IT ALREADY WAS IN FACT.** `status` had said `done` since
+the Done commit of 2026-09-09 and stayed there through the change request and both Fixes, so the
+board — which takes the LATER of the commit trail and the tracker — read `done` as "Deploy next" and
+offered the Deploy prompt for a story with two unreviewed Fixes in it (R-84's own failure mode, and
+exactly what its comments keep guarding against). The spec's frontmatter and
+`sprint-status.yaml` now say `in-review`, which is what it is; Done is written again on the owner's
+word (R-80).
 
 ### What was executed
 
