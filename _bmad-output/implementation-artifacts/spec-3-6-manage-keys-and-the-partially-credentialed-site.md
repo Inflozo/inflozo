@@ -1273,3 +1273,126 @@ the rest; `keys-back.tsx` carries the measurement beside the code it governs (st
 asserts an open `<dialog>` with the Sites cards behind it, and a new `keys-popup` step executes each
 claim above — the refusal that keeps the window open, the way out, **the second open**, Escape, and
 the typed URL that is still the full page. `axe` runs over both shapes.
+
+
+## Owner's test findings
+
+Tested on `app.inflozo.com` on **2026-09-10**, on the Fix that made Manage keys a popup (`f59a11f2`,
+`afd5718d`). **Five findings**, and they are **two causes wearing five faces**: a top bar keyed on
+the URL, and every way this panel answers the customer being a navigation the popup does not
+survive. Nothing he reported is about what the screen says, which key it refuses or what Ghost
+answered — the eleven live steps of Deploy still hold. His words first, then the triage.
+
+1. **"When I click on 'Manage API Keys' menu link on a site card, the pop up opens but then the top
+   bar with search box and Connect site buttons disappears."**
+
+   *Whose:* **shared with Story 3.4's finding 1**, reported in the same sitting about the brand
+   popup, and one defect in one file. The triage is written once, in
+   `spec-3-4-take-my-brand-from-my-site-in-one-click.md`, and in short: the top bar is the SHELL's,
+   `BARS` (`components/shell/shell.tsx:125-128`) is keyed on the **exact** path — `'/'` and
+   `'/sites'` — and `shell.tsx:250` is `const bar = BARS[path]`. A popup is an intercepted route and
+   MOVES the URL to `/sites/keys`, which is not a key in that table, so the shell draws no bar.
+   Disconnect's dialog, rendered by the card and navigating nowhere, is the control that has never
+   done this.
+
+   *Fixed **once**, in `shell.tsx`, and re-tested on both popups* — and without giving a top bar to
+   `/sites/keys`, `/sites/brand` or `/sites/connect` reached directly, which are full pages and have
+   never had one. The rule is "the bar belongs to the route BEHIND the popup", not "every path under
+   `/sites`".
+
+2. **"When that popup opens, it takes some time and while it is still not open I can click the Menu
+   link again. If I do so the popup open on a blank screen instead of the Sites screen."**
+
+   *What was seen:* the ⋯ row is pressed, the window takes a moment — it is a server render with a
+   credential read behind it — and in that moment the row can be pressed again. The second press
+   leaves the panel over nothing.
+
+   *Whose:* this story's, and it has two halves, one of which the project **already has a rule for
+   and did not apply**.
+
+   - **The row does not say it is working.** R-98 — his own ruling out of the Story 3.4 test — says
+     every control that starts work swaps its label and goes `aria-disabled` + `aria-busy` until the
+     work lands. `site-menu.tsx`'s Manage API keys row is an `<a>` whose plain click is a bare
+     `router.push` with no pending state at all. And `apps/web/busy.test.ts` walks the tree for
+     exactly this and did not catch it, so **the check's own reach is part of the finding**: it
+     tests forms and Kit `Submit`s, and this is a link that starts a navigation. The fix leaves a
+     check that would fail.
+   - **The second press is not intercepted.** `(.)keys` intercepts `/sites/keys` on a navigation
+     from `/sites`; the first press has already moved the router to `/sites/keys`, so the second is
+     a navigation from the panel's own address and Next serves `sites/keys/page.tsx` into
+     `children` — the Sites list goes — while the dialog, which `panel-modal.tsx` holds open for as
+     long as the path is the panel's, stays over it. That is the "blank screen": the full-page panel
+     behind a dialog's backdrop, with no list.
+
+   *That second half is a HYPOTHESIS until it is executed* (standing rule 1). It is read off the
+   interception rule and off `panel-modal.tsx`'s own measured table, not driven. The Fix drives it
+   on a throwaway control and records what actually happened, with the control that proves the
+   driver works (standing rule 2).
+
+3. **"When I click Test Connection in the Pop up, It tests it but opens a new popup in the
+   background with Test results. Then both these popup appear on a blank screen."**
+
+   *Whose:* this story's, and it is a measurement **this story already took and did not follow
+   through** (standing rule 3). `testConnection` ends `keysRedirect(KEYS_TESTED(site.id, result,
+   status))` — a server action's `redirect()` back onto `/sites/keys?…&tested=…`. The Fix of
+   2026-09-10 executed and wrote down that **a server action's `redirect()` is not intercepted at
+   all** (`panel-modal.tsx`; `actions.ts`'s `keysRedirect` header). It drew the right conclusion for
+   the brand offer, whose controls leave to `/sites`, and missed that **all three of Manage keys'
+   actions answer ONTO the panel's own URL**. So every press of **Test connection**, every save and
+   every refusal replaces the list behind the window with the full-page panel: the "new popup in the
+   background with Test results" is that full page — holding the fresh answer — and the "blank
+   screen" is the list that is no longer there.
+
+4. **"Also when I click Save Key without any inputs, it does not show any error. May be showing in
+   the background popup?"**
+
+   *Two things, and only one of them is a defect.*
+
+   - *There is no error in a background popup — there is no error at all, by design.* `saveKeys`
+     reads "A form posted with nothing in it is a press with nothing to do, and it says nothing
+     about it" (`actions.ts`) and redirects back to the panel with no reason in the URL. His guess
+     is a good one for everything else on this screen, where a refusal really is on the page behind:
+     that is finding 3's cause, and it applies to a save exactly as it does to a test.
+   - *And the design is thin against his own ruling.* R-98 says a pressed control says it is working.
+     Here a pressed control says nothing, does nothing, and lands the customer back where they were
+     with no word for it. **The routine call, made rather than asked** (R-83's other half): an empty
+     save is refused **under the field it came in**, which is what the frozen Boundaries already
+     require of every other refusal on this screen, with its sentence added to `KEYS` in
+     `lib/connect-rule.ts` so the harness reads it from there (standing rule 4). Each credential row
+     posts only its own field (`keys-panel.tsx`'s three `PasteForm`s), so the refusal lands on the
+     row that was pressed and on no other.
+
+5. **"Overall the user experience is not good and is very buggy. There should be only one perfect
+   popup and that only should be source of truth."**
+
+   *Read as the verdict it is, not as a sixth defect.* Findings 1 to 4 are five faces of two causes,
+   and "one popup, and only that one is the source of truth" is precisely what the second cause
+   breaks: today there can be two panels on screen at once — the popup's and the full page's — and
+   it is the full page, the one he cannot get at, that holds the fresh answer.
+
+   *What it does NOT ask for, and must not be read as asking for:* the full page is not the popup's
+   rival. It is the JavaScript-off route and the typed-URL route and it is an acceptance criterion
+   of this story. One panel COMPONENT (`keys-screen.tsx`) already draws both chromes; what the fix
+   owes is that **only one of them is ever on screen at a time**.
+
+   *The mechanism call, made rather than asked* (R-83's other half): **the popup stays an
+   intercepted route and its three actions stop navigating away** — they answer into the panel that
+   is already open instead of redirecting onto its own URL. That is the smallest change that kills
+   findings 2, 3 and 4's second half at the root and leaves the JavaScript-off path exactly as the
+   frozen Boundaries require: every control is still a real `<form>` posting a server action, and
+   with no script the post is still a document load onto `sites/keys/page.tsx`. The two rejected
+   alternatives are recorded so they are not re-proposed: redirecting to `/sites` and putting the
+   result on the card **loses the result the customer pressed for**, and going back to a full page
+   **undoes his finding 1**.
+
+**One propagation, taken while triaging and named here so it is not read as scope creep**
+(standing rule 3): the site's address is drawn in three places and behaves two ways. The Sites card
+links it with the new-tab glyph; the brand popup does not (Story 3.4's finding 2, being fixed there);
+and `keys-panel.tsx`'s `SiteUrl` (`:187`) draws it as plain mono text in both of its two renders.
+The same lift goes in here at the Fix, so the app has one behaviour for one thing.
+
+**Nothing here belongs to a later story and nothing needs a sub-story.** The only file outside Epic 3
+is `components/shell/shell.tsx`, which Story 1.5 shipped and which has been right at every address
+that existed until these popups moved the URL under it — so the defect is the popups' and R-80 keeps
+it with the story whose surface shows it. `busy.test.ts` widening to cover a navigating link is this
+story's too: it is the check R-98 already demanded, short of the control that walked past it.
