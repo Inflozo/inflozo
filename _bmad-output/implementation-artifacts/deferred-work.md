@@ -2084,3 +2084,25 @@ reason: Unreachable from the product. `keys-panel.tsx` renders three `<form>`s a
   branch, and no other account is reachable. The fix — one transaction across all three, or a refusal of
   multi-field posts — is worth making only if the screen ever grows a combined Save, and it would be that
   change's to make.
+
+## Deferred from: code review of spec-3-4-take-my-brand-from-my-site-in-one-click (2026-09-10)
+
+### DW-82: opening a window over the Sites list drops the list's own filter, and closing it lands on the bare list
+
+plain: If you have typed something into the Sites search box and then open "Use this site's brand" or
+  "Manage API keys" on a card, the search is forgotten — the window opens over the full list, and when
+  it closes you are on the full list too.
+status: open
+severity: low
+origin: Story 3.4 code review, seventh review (2026-09-10) — the Blind Hunter and the Edge Case Hunter
+owner: the story that next touches the Sites list's filter, or whichever of Epic 3's stories the owner
+  reports it on
+location: `apps/web/app/(app)/app/(authed)/sites/panel-link.tsx` (`router.push(panel)` — `brandPopupPath`
+  and `keysPopupPath` carry only the site id) · `panel-modal.tsx` (`router.replace('/sites')`) ·
+  `sites/actions.ts` (`SITES_URL` as every action's landing) · `brand-panel.tsx` and `keys-panel.tsx`
+  (the ✕ and Cancel as `<Link href="/sites">`)
+reason: The mechanism is shared by both windows and was built in Story 3.6's Fix (`acd31327`) on the
+  owner's finding that the windows must live at the list's own address; carrying `?q=` through means
+  every one of those six landings composes its URL from the current search params instead of a constant,
+  which is one more thing each of them can get wrong, for a filter that a single keystroke restores. Worth
+  doing when the list has more than a handful of cards for anyone, which today it does not.

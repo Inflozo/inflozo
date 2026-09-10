@@ -406,7 +406,9 @@ export default async function Sites({
           </Suspense>
         </PanelModal>
       ) : null}
-      {brand ? (
+      {/* `else if`: a URL carrying both parameters draws ONE window, not two stacked
+          `showModal()`s racing to close (review 7, 2026-09-10). Manage keys wins by position. */}
+      {!manage && brand ? (
         <PanelModal labelledBy={BRAND_TITLE_ID}>
           <Suspense fallback={<BrandPanelSkeleton />}>
             <BrandScreen searchParams={searchParams} popup />

@@ -7,8 +7,9 @@ import { BrandSkeleton } from '../brand-skeleton'
  * IT CARRIES `page.tsx`'s OWN WRAPPER, and that is the half a shared drawing cannot supply: a
  * `loading.tsx` stands in for the whole page, so without the centring and `panelBox` the skeleton
  * would paint edge to edge and the panel would then snap into a 900px box — a skeleton that lies
- * about the shape that is coming, which is the rule this file exists under. The popup's own
- * `loading.tsx` needs none of it: its box is the `<dialog>` its layout already opened.
+ * about the shape that is coming, which is the rule this file exists under. The popup needs none
+ * of it: it is a `<Suspense>` fallback (`BrandPanelSkeleton`) inside the `<dialog>` the Sites list
+ * has already opened, not a route with a `loading.tsx` of its own.
  */
 export default function Loading() {
   return (

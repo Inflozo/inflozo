@@ -38,8 +38,15 @@ type Row = {
  * digest, against the epic's "never log" rule, which is about content and not only credentials.
  * Every other reader in this epic logs `{ code }` and nothing else (review 4, 2026-09-09).
  */
-function readFailed(what: string, code: string | undefined): never {
+function readFailed(what: string, code: string | undefined, popup: boolean): never {
   console.error('sites/brand: read failed', { what, code })
+  // IN THE WINDOW THE THROW WOULD COST THE LIST: the popup sits inside the Sites page's own
+  // `<Suspense>` with no error boundary between it and `app/error.tsx`, so a transient read
+  // failure would replace the whole list with "something went wrong" over a site that is fine.
+  // The window closes instead and the offer is still on the card to press again — the same line
+  // `gone()` below takes, and for the same cost (review 7, 2026-09-10). The full page keeps the
+  // error screen, where a retry is the right answer and nothing else is on it.
+  if (popup) redirect('/sites')
   throw new Error(`sites/brand: ${what} read failed`)
 }
 
@@ -109,14 +116,14 @@ export async function BrandScreen({
   // simply names nothing. There is no row it could be, which is what `notFound()` says
   // (review, 2026-09-09).
   if (rowError?.code === '22P02') gone()
-  if (rowError) readFailed('site', rowError.code)
+  if (rowError) readFailed('site', rowError.code, popup)
   if (!row || !hasBrand(brand)) gone()
 
   // A COUNT THAT COULD NOT BE READ IS NOT A COUNT OF ZERO. Falling back to `[]` printed "we'll
   // make a project" and then `useBrand` — whose own read succeeded — refused the stale decision
   // and sent the customer straight back here (review, 2026-09-08). `app/error.tsx` is the screen
   // for a page that cannot answer.
-  if (projectsError) readFailed('projects', projectsError.code)
+  if (projectsError) readFailed('projects', projectsError.code, popup)
   const rows = projects ?? []
   // THE PROJECT FOR THIS SITE WINS ON BOTH SIDES OF THE CAP (the owner's Question 4 ruling,
   // 2026-09-08); only where this site has no project do the two sides differ — at the cap the

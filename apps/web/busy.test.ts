@@ -95,6 +95,14 @@ test('the shared submit control refuses the second press and says why', () => {
   // left set makes the only control that can retry inert for good (review, 2026-09-06).
   assert.match(source, /if \(!pending\) inFlight\.current = false/, 'the in-flight ref must be released')
   assert.match(source, /busy: string/, '`busy` is required, so a control cannot ship without one')
+  // THE LABEL SWAP MOVES NOTHING (the owner's ask of 2026-09-10): both labels are in the DOM in
+  // one grid cell, so the control is already as wide as its busy word. `{pending ? busy : children}`
+  // would satisfy every assertion above and bring the 41px jump back (review 7, 2026-09-10).
+  assert.match(source, /<BusyLabel pending=\{pending\} busy=\{busy\}>/, '`Submit` must render both labels through `BusyLabel`')
+  assert.match(source, /col-start-1 row-start-1/, '`BusyLabel` stacks both labels in ONE grid cell')
+  // …and the one submit control that is not a `Submit` goes through the same cell.
+  const keysForm = readFileSync('app/(app)/app/(authed)/sites/keys-content-form.tsx', 'utf8')
+  assert.match(keysForm, /<BusyLabel /, 'the hand-written Save must use `BusyLabel` too')
 })
 
 /* ── FINDING 2: "I want the loading shimmer to match the cards they show."

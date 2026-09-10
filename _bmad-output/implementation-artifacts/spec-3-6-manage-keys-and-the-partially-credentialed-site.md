@@ -1527,3 +1527,20 @@ is `components/shell/shell.tsx`, which Story 1.5 shipped and which has been righ
 that existed until these popups moved the URL under it — so the defect is the popups' and R-80 keeps
 it with the story whose surface shows it. `busy.test.ts` widening to cover a navigating link is this
 story's too: it is the check R-98 already demanded, short of the control that walked past it.
+
+## Found by Story 3.4's seventh review, 2026-09-10 — the live run stops inside `keys-screen`
+
+Story 3.4's review ran the whole harness against the deployed build of `7964895d` (which carries
+this story's Fix `acd31327`). Every step up to and including `probe-failure` reported; the run then
+timed out in **`keys-screen`**'s `openKeysPopup`: `locator('dialog[open]').getByText(KEYS.urlReason)`
+resolved 58 times to a **hidden** `<span class="text-helper-caption …">` and never became visible,
+so none of `keys-screen`, `keys-popup`, `keys-malformed`, `keys-foreign-key`, `keys-other-site`,
+`keys-rotate`, `keys-token`, `keys-test`, `keys-js-off`, `keys-forged`, `moved-domains`, `user-gone`,
+`secret-gone` or `no-secret-leak` ran. The span is in the document inside an open `<dialog>` and is
+not visible — whether that is the panel, the dialog's own paint, or the locator is **this story's
+Review to find**; Fix record 3 above says the live run was "not run in this phase". Two waits of the
+same class 3.4's review fixed for its own steps were fixed here as well while it was in the file:
+`keys-popup`'s Cancel and Escape waited on `pathname === '/sites'`, which is already true inside
+the popup, and now wait for `?manage=` to leave. (Recorded here so this story cannot be closed on
+3.4's claim — standing rule 3.)
+

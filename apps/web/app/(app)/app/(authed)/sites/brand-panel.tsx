@@ -23,8 +23,8 @@ import { skipBrand, useBrand } from './actions'
    the brand LOOKS like, so it goes with its own half. Nothing S2c drew has been removed.
 
    ONE COMPONENT, TWO CHROMES, AND `panel-modal.tsx` RECORDS WHY THERE ARE TWO. The Sites card's
-   offer is a `PanelLink`, so its plain click opens `/sites?brand=…` over the list and its `href`
-   into a `<dialog>` over the list — the popup. `connectSite`'s landing is a SERVER ACTION's
+   offer is a `PanelLink`: its `href` is this route's full page, and a plain click turns into
+   `/sites?brand=…`, this panel in a `<dialog>` over the list — the popup. `connectSite`'s landing is a SERVER ACTION's
    `redirect()`, and those are not intercepted (executed, 2026-09-10), so the moment straight after
    a connect stays the full-screen onboarding S2 draws. Both render this file.
 
@@ -39,8 +39,10 @@ import { skipBrand, useBrand } from './actions'
    text pills and so does this: an `href` off a value read from someone's Ghost menu is an
    attribute this screen has no reason to write. The SITE'S address is a different thing — it is
    the address Inflozo connected, or the public one Ghost reports for it, and the Sites card has
-   linked it with a new-tab glyph since his finding 4 on Story 3.2. The logo is an `<img>` and is `https:`-only, checked in `brandOf` — `img-src`
-   admits `data:` (`csp.ts:60`) and a `data:` SVG is script.
+   linked it with a new-tab glyph since his finding 4 on Story 3.2.
+
+   THE LOGO IS AN `<img>` AND IS `https:`-ONLY, checked in `brandOf` — `img-src` admits `data:`
+   (`csp.ts:60`) and a `data:` SVG is script.
 
    BOTH CONTROLS ARE `<form action={serverAction}>` WITH A HIDDEN SITE ID, so both work with
    JavaScript off — `site-notices.tsx` is the pattern, and there is no client component here.
@@ -123,6 +125,11 @@ export function BrandPanel({
           markup for markup — the same 28px hit area, the same `X` at 14/1.8, the same
           `<Link href="/sites">` destination its footer Cancel has.
 
+          `replace`, BECAUSE EVERY OTHER WAY OUT REPLACES. Escape and the backdrop leave by
+          `router.replace` (`panel-modal.tsx`) and both presses by `RedirectType.replace`
+          (`brandRedirect`), so the window leaves no history entry behind — and a pushing ✕ was
+          the one gesture after which Back re-opened the popup (review 7, 2026-09-10).
+
           AND THERE IS NOTHING FOR A SECOND WAY OUT TO DISAGREE WITH. **Skip** writes nothing at
           all — not even a note that it was pressed (`actions.ts`) — so the ✕, the backdrop and
           Escape land exactly where Skip does and the offer stays on the card either way. That is
@@ -137,6 +144,7 @@ export function BrandPanel({
         </div>
         <Link
           href="/sites"
+          replace
           aria-label={BRAND_COPY.close}
           className={`flex size-7 shrink-0 items-center justify-center rounded-thumb text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
         >
@@ -254,8 +262,9 @@ export function BrandPanel({
           </form>
 
           {/* Its own `<form>` and not a second button in the one above — a form cannot nest, and
-              Skip posts a different action. It sits under the primary rather than beside it: the
-              rail is 340 wide and both labels grow when pressed, so a row of two would wrap. */}
+              Skip posts a different action. It sits under the primary rather than beside it: at
+              the rail's width (the `tablet:w-` above) both labels grow when pressed, so a row of
+              two would wrap. */}
           <form action={skipBrand}>
             <input type="hidden" name="site_id" value={site.id} />
             {chrome}

@@ -1,12 +1,14 @@
+import { BRAND_TITLE_ID } from './brand-panel'
+
 /**
  * S2c'S OWN SHAPE WHILE IT LOADS, drawn once for both chromes — the window over the Sites list
  * (`/sites?brand=…`) and the full page `connectSite` lands on.
  *
  * It exists for the half of the owner's finding 1 of Story 3.4 that is a LINK rather than a
  * button: the offer was an `<a href>`, so pressing it left the Sites page standing, unchanged,
- * until the next document painted. It is a `next/link` now (`site-notices.tsx`), so the press is a
- * soft navigation and this appears in the same frame — and, because a `Link` prefetches on hover,
- * usually with nothing left to wait for.
+ * until the next document painted. It is a `PanelLink` now (`site-notices.tsx`): the press is a
+ * `router.push` inside a transition, the link says `Opening…` through it, and this is what the
+ * window shows while the panel's two reads run.
  *
  * The shape is `brand-panel.tsx`'s, in its order: the header's two lines, then the two columns —
  * the logo/title/host row, the accent row, the pill line and the mini homepage on the left; the
@@ -80,7 +82,10 @@ export function BrandSkeleton() {
 export function BrandPanelSkeleton() {
   return (
     <>
-      <p className="sr-only">Reading your site&rsquo;s brand&hellip;</p>
+      {/* CARRIES THE TITLE ID: the `<dialog aria-labelledby>` points at it, and until the panel
+          streams in this sentence is the only thing in the window that can name it. The fallback
+          and the panel never coexist, so the id is never doubled (review 7, 2026-09-10). */}
+      <p id={BRAND_TITLE_ID} className="sr-only">Reading your site&rsquo;s brand&hellip;</p>
       {/* `contents`: the skeleton's blocks are the panel's own flex children, so the wrapper that
           hides them from a reader must not become a box between them. */}
       <div aria-hidden className="contents">

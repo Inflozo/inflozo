@@ -66,9 +66,10 @@ export function PanelLink({
     if (pending || !opening.current) return
     opening.current = false
     onOpened?.()
-    // `onOpened` is a fresh closure on every render of the caller, so it is deliberately NOT a
-    // dependency: this must run on `pending` falling and on nothing else. The ref above is what
-    // makes that safe — a render that is not this control's own press never reaches the call.
+    // `onOpened` is a fresh closure on every render of the caller, so with it in the array this
+    // effect runs on renders that are not `pending` falling. That is harmless, and the ref above is
+    // why: a run that is not this control's own press never reaches the call. It stays in the
+    // array for the exhaustive-deps rule, not because the effect wants it (review 7, 2026-09-10).
   }, [pending, onOpened])
 
   return (

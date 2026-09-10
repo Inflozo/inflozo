@@ -97,7 +97,8 @@ const BRAND_FAILED = (base: string) => `${base}&failed=1`
 /* S2c HAS THE SAME TWO CHROMES MANAGE KEYS HAS, and its actions answer onto the same base for the
    same reason — see `keysBase` below. `connectSite`'s own landing is NOT this: the owner ruled at
    Question 7 (option 1, 2026-09-10) that the moment straight after a connect stays a full screen,
-   so line 439 keeps `BRAND(siteId)` and nothing about that hand-over changed. */
+   so `connectSite`'s final `redirect` keeps `BRAND(siteId)` and nothing about that hand-over
+   changed. */
 const brandBase = (formData: FormData, siteId: string) =>
   formData.get('popup') === '1' ? brandPopupPath(siteId) : brandPath(siteId)
 /* STORY 3.5, and the same shape one row up: the card that could not be disconnected is the one
@@ -713,7 +714,14 @@ export async function useBrand(formData: FormData): Promise<void> {
     console.error('sites: use brand site read failed', { code: siteError.code })
     brandRedirect(BRAND_FAILED(base))
   }
-  if (!site) notFound()
+  // IN THE WINDOW, A ROW THAT IS GONE CLOSES THE WINDOW — `brand-screen.tsx`'s `gone()` takes
+  // the same line for the same reason: the popup is rendered by the Sites list, so a `notFound()`
+  // here would swap the list for the 404 page on a site disconnected in another tab. The full
+  // page still 404s, which is what `brand-ownership` executes (review 7, 2026-09-10).
+  if (!site) {
+    if (formData.get('popup') === '1') brandRedirect(SITES_URL)
+    notFound()
+  }
   const brand = site.site_settings?.brand
   // Nothing to offer is nothing to seed: the page 404s for this site too, so this is a stale post.
   if (!hasBrand(brand)) brandRedirect(SITES_URL)
@@ -819,10 +827,13 @@ export async function useBrand(formData: FormData): Promise<void> {
 /**
  * S2c ANSWERS ONTO ITSELF, SO IT REPLACES THE HISTORY ENTRY RATHER THAN PUSHING ONE — the same
  * rule `keysRedirect` above states, and for the same measured reason. Since the owner asked for
- * the brand offer as a popup (2026-09-10) the Sites card's offer opens an INTERCEPTED route, whose
- * only sound way out for Escape is `router.back()` (`panel-modal.tsx`); a server action's `redirect()` pushes
- * by default, so a failed **Use your brand** would have put a second entry under the panel and the
- * first Back would have returned to the panel-before-the-failure instead of to the list.
+ * the brand offer as a popup (2026-09-10) the Sites card's offer opens `/sites?brand=…`, a window
+ * over the list whose every way out — Escape, the backdrop, the ✕ — leaves by `replace`
+ * (`panel-modal.tsx`, `brand-panel.tsx`); a server action's `redirect()` pushes by default, so a
+ * failed **Use your brand** would have put a second entry under the panel and the first Back
+ * would have returned to the panel-before-the-failure instead of to the list. (The first writing
+ * of this named an intercepted route and `router.back()` — the mechanism `acd31327` replaced;
+ * review 7, 2026-09-10.)
  *
  * `connectSite`'s OWN redirect onto this screen deliberately does NOT use this. It arrives from
  * `/sites` and is the customer's first sight of the offer, so it is a real step forward in the

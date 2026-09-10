@@ -1,3 +1,5 @@
+import { KEYS_TITLE_ID } from './keys-panel'
+
 /**
  * S11e's OWN SHAPE WHILE THE PANEL LOADS — R-98, "every route the user reaches has a skeleton in
  * its own shape", and the window over the Sites list is what a soft navigation actually reaches.
@@ -23,7 +25,9 @@ const Bar = ({ className }: { className: string }) => <div className={`rounded-[
 export function KeysSkeleton() {
   return (
     <>
-      <p className="sr-only">Loading your API keys…</p>
+      {/* Carries the title id so the `<dialog aria-labelledby>` names the window while this is
+          all that is in it (review 7 of Story 3.4, 2026-09-10). */}
+      <p id={KEYS_TITLE_ID} className="sr-only">Loading your API keys…</p>
 
       <div aria-hidden className="flex shrink-0 items-start gap-4 border-b border-line-faint p-[18px_20px] tablet:p-[24px_28px]">
         <div className="flex min-w-0 flex-1 flex-col gap-[9px]">

@@ -276,7 +276,10 @@ export function KeysPanel({
 
   /** S11e's ✕ and its footer Cancel: one destination, and the same markup in both chromes. */
   const wayOut = (className: string, children: ReactNode, label?: string) => (
-    <Link href="/sites" aria-label={label} className={className}>
+    // `replace`: Escape, the backdrop and every action leave by replace, so the window never
+    // leaves an entry for Back to re-open (review 7 of Story 3.4, 2026-09-10 — the brand ✕ is
+    // this markup lifted, and it had the same push).
+    <Link href="/sites" replace aria-label={label} className={className}>
       {children}
     </Link>
   )

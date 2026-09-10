@@ -63,6 +63,15 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   painted in the accent under "Your homepage, already wearing your brand." — then **Use your brand**
   and **Skip**. It sits where the connect wizard sits, centred in the same shell. Widths 1440 / 834 /
   390; one coral focus ring; zero axe violations at 1440 and 390.
+  **AND SINCE 2026-09-10 IT IS TWO COLUMNS, AND FROM THE CARD IT IS A WINDOW (the owner's change
+  request of 2026-09-10 and his three findings on it — this sentence is his renegotiation of this
+  block).** Left: everything read off the site, the mini homepage included; right: **Which
+  project?** with the cards, then **Use your brand** over **Skip**, stacked. From the Sites card's
+  offer it opens as a `<dialog>` over the list at `/sites?brand=<id>`, with the shell's top bar
+  still drawn; straight after a connect it is still the full screen (his Question 7, option 1).
+  The address in the left column is a new-tab link, the header carries a ✕ that lands where Skip
+  lands, and a pressed label changes nothing about the layout (`BusyLabel`). One component draws
+  both chromes, so the frame's content is unchanged and only its arrangement moved.
 - **One frame departure, and it is a fact Inflozo does not have:** the frame prints the accent's NAME
   ("Burnt orange"). Ghost answers a hex and nothing else, so the swatch is captioned with the **hex
   in mono** — the card's own idiom for a machine value (the address). Naming a colour would be
@@ -157,7 +166,7 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 | Use your brand, no project | brand present, 0 projects | a project named from the site's title, `linked_site_id` set, `style_pack.brand` written; the site card reads "1 project" and the dashboard card wears the accent | insert fails → the page says so, the site stays connected |
 | Use your brand, at the cap | Free, 1 project already | the caption names that project; pressing brands it — `style_pack.brand` written, **name, slug and `linked_site_id` untouched** | N/A |
 | Cap changed under the page | caption said "make one", a second tab filled the cap | `useBrand` re-counts, writes nothing, and redirects back to S2c with the true caption | N/A |
-| Someone else's site id | `?site=` a stranger's row | the page 404s and the action writes nothing (RLS: the read returns no row) | N/A |
+| Someone else's site id | `?site=` a stranger's row | the page 404s and the action writes nothing (RLS: the read returns no row); as `?brand=` on the list, the window closes onto `/sites` and the list stays (review 7, 2026-09-10) | N/A |
 | Re-run, one project | the card's brand link, pressed again | S2c again; seeding again writes the same pack **onto the same project** — never a second one | N/A |
 | Re-run, two or more projects | the brand link, pressed again | S2c **asks** ("You already put your brand on “X”. Apply it again?") and draws a card per project, each with its own wireframe in its own colours, the project for this site pre-selected | N/A |
 | A card chosen | the customer picks a different project's card | the brand goes onto **that** project's `style_pack`; its name, `slug` and `linked_site_id` are untouched, and the project count does not move | a project id that is not the caller's is not in his own list → nothing written, back to S2c |
@@ -178,7 +187,36 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   optional `brand` object; `placeholderFor` (`:57-66`) returns the preset with `accent` overridden by
   `brand.accent` when it is a valid hex. **Keep `Object.hasOwn`** — the review of 2026-09-05 is in
   that comment. The file's header gains what this story put in the column and that E6 owns it.
-- `apps/web/app/(app)/app/(authed)/sites/brand/page.tsx` -- **new, server component**: S2c. Reads the
+- **SINCE THE OWNER'S CHANGE REQUEST OF 2026-09-10 S2c IS THREE FILES AND TWO CHROMES, and the
+  Code Map did not follow it until review 7** (propagate, never localise):
+  - `sites/brand-screen.tsx` -- **the reads, once**: the site row through the caller's session, the
+    projects list, the plan; `gone()` 404s on the full page and closes the window (`redirect('/sites')`)
+    in the popup, because the popup is rendered by the Sites list and a `notFound()` there would cost
+    the list; `readFailed` takes the same line in the popup since review 7. It is handed `popup` and
+    passes it into both forms as a hidden field.
+  - `sites/brand-panel.tsx` -- **the markup, two columns**: `SiteToday` on the left (logo, title, the
+    address as a new-tab anchor, accent, pills, the fonts line, the mini homepage), the chooser and
+    the two stacked `Submit`s on the right, and the header's ✕ — a `<Link href="/sites" replace>`
+    lifted from `keys-panel.tsx`, named `BRAND_COPY.close`. `BRAND_TITLE_ID` is what the dialog is
+    labelled by.
+  - `sites/brand-skeleton.tsx` -- the drawing, shared: `BrandSkeleton` for `brand/loading.tsx` and
+    `BrandPanelSkeleton` as the window's `<Suspense>` fallback, which carries the title id so the
+    dialog is named while it shows.
+  - `sites/panel-link.tsx` -- **the one control that opens a window over the list** (the card's
+    offer and S11a's Manage keys row): `href` is the full page for a scripts-off or modified click,
+    a plain click `router.push`es `brandPopupPath` inside a transition and says `BRAND_COPY.opening`
+    meanwhile (R-98).
+  - `sites/panel-modal.tsx` -- the `<dialog>` both windows are drawn in; `showModal()` on mount,
+    Escape and the backdrop `router.replace('/sites')`. Its header is the record of why the popup
+    is a query parameter and not an intercepted route.
+  - `sites/(list)/page.tsx` -- `?brand=` (and `?manage=`) draw a `PanelModal` over the list, one at
+    a time; `?failed=` is what `useBrand` answers with inside it.
+  - `lib/probe-rule.ts` -- `brandPopupPath`, `BRAND_COPY.close`, `BRAND_COPY.opening`.
+  - `components/kit/submit.tsx` -- `BusyLabel`, both labels in one grid cell, used by `Submit` and
+    by `keys-content-form.tsx`'s hand-written Save.
+- `apps/web/app/(app)/app/(authed)/sites/brand/page.tsx` -- **the full-page chrome**, now a wrapper:
+  `panelBox` around `BrandScreen`, where `connectSite` still lands (Question 7, option 1). *(As first
+  written, before 2026-09-10:)* S2c. Reads the
   site through `supabaseServer()` (`.eq('id', …)`, RLS scopes it to the caller), `notFound()` on no
   row or no brand, renders the frame from `BRAND_COPY`, posts to the two actions. `robots: noindex`,
   `title: '… · Inflozo'` — `sites/connect/page.tsx` is the pattern for the route's shape, its
@@ -210,8 +248,9 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   create shape the seed copies (`user_id`, `name`, `slug`, `style_pack`) and of `atCap`/`names()`,
   which the seed reuses rather than re-deriving.
 - `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` -- the brand offer as the block list's
-  **first** entry: a plain link to `/sites/brand?site={id}`, **not a Banner** (a Banner tells or
-  asks; this offers). Shown while the site has a readable brand. **DW-57 binds**: the pills line
+  **first** entry: a `PanelLink` whose `href` is `/sites/brand?site={id}` and whose plain click opens
+  `/sites?brand={id}` over the list (since 2026-09-10; a plain link before that), **not a Banner**
+  (a Banner tells or asks; this offers). Shown while the site has a readable brand. **DW-57 binds**: the pills line
   stays metadata, the state line stays the connection's.
 - `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx:82-91` -- `site_settings` is **already selected**;
   the row type gains `brand` and passes it to `SiteNotices`. The projects tally at `:91` and
@@ -344,7 +383,9 @@ their owning epics** (DW-66) — this story leaves the values they need already 
   the frame** (`S2 Onboarding.dc.html:150-196`): the heading and sub-heading, the split card with
   **Your site today**, the accent swatch **captioned with its hex**, the navigation pills, the
   "Fonts stay yours" line, the right half's homepage in the accent, and **Use your brand** beside
-  **Skip** — at 1440, 834 and 390, with zero axe violations at 1440 and 390
+  **Skip** — at 1440, 834 and 390, with zero axe violations at 1440 and 390 *(since the owner's
+  change request of 2026-09-10: the same content in two columns, the homepage at the foot of the
+  left one and the two presses stacked on the right — Boundaries carries the clause)*
 - Given **Use your brand**, when it is pressed, then a project exists for that site with
   `linked_site_id` set and `style_pack.brand.accent` equal to the site's accent; the Sites card reads
   **1 project**; and the dashboard card's placeholder is painted in that accent
@@ -385,7 +426,9 @@ their owning epics** (DW-66) — this story leaves the values they need already 
 - Given a site whose settings carry no accent, no logo and no navigation, when it is connected, then
   the browser goes straight to `/sites`, `/sites/brand?site=` for it 404s, and no link is drawn
 - Given a `?site=` naming another user's row, when the page is opened or either action is posted,
-  then nothing is read, nothing is written and the caller gets a 404 — RLS, not a check
+  then nothing is read, nothing is written and the caller gets a 404 — RLS, not a check; and given
+  the same id as `/sites?brand=`, the window closes onto the Sites list rather than 404ing over it,
+  because the list is what renders the window (review 7, 2026-09-10 — `brand-ownership` drives both)
 - Given every control this story adds, when JavaScript is off, then each is a form that posts a
   server action and works (proved as wiring on the live site, as 3.3's `notices-js-off` is)
 - Given the source tree, when `node --test` runs, then no new `supabaseAdmin()` importer and no new
@@ -1047,7 +1090,116 @@ was showing. Check-popover-validity returns false for an unexpected visibility s
 for an element with no `popover` attribute, so the comment in `project-menu.tsx` was right — and the
 finding built beside it, the shared scope one above, was real and is patched. `brand-ownership`'s landing control — **DW-74**, above.
 
+### Review Findings — seventh review, 2026-09-10
+
+Five layers (blind hunter, edge-case hunter, verification-gap, acceptance auditor, real-infra), on
+the reopened work — the popup, the two columns, `BusyLabel`, and the Fix of the owner's three
+findings of 2026-09-10 — 48 findings, 29 after dedup, 3 dismissed with reasons, 1 deferred, the rest
+patched. Nothing is the owner's to decide. **The one that matters most came from the live run:
+the harness at HEAD could not finish**, first entry below. The `brand-ownership`, `brand-stale`, `brand-popup` and
+`busy-label` steps were extended rather than new steps added, so the docstring's list is unchanged
+in membership.
+
+- [x] [Review][Patch] **THE HARNESS AT HEAD COULD NOT PASS — it crashed unpatched and, patched to
+      finish, failed four of this story's steps on waits and locators the popup left behind.** The
+      real-infra layer ran it three times against the deployed `7964895d`. (1) `holding`'s post-hold
+      `route.continue()` threw on a request a navigation had aborted — outside every `try`, an
+      unhandled rejection that took the browser half down with **no step result printed**. (2) Every
+      wait after a press INSIDE the popup read `pathname === '/sites'`, which is already true there,
+      so `brand-popup` read "Skip closed it = false" 400ms after a wait that waited for nothing,
+      `brand-picker` read the rows before the write ("accent undefined"), and `busy-label`'s `goto`
+      aborted the held POST — which is (1). (3) `busy-label`'s `main form button[type="submit"]`
+      also matched the card's Disconnect behind the window, so `nth(1)` was **Use your brand** and
+      the step rebranded the row it exists to leave alone. (4) `forgeBrand` matched buttons by
+      `textContent`, which `BusyLabel` made both labels concatenated — **no forged press was made**,
+      and `brand-ownership` passed its byte-identical re-read for the wrong reason: the ownership
+      claim was unproven at HEAD. All four fixed: `.catch` on the continue, `!searchParams.get('brand')`
+      on seven waits (and `!manage` on the other window's two), the submits scoped to `dialog[open]`,
+      `innerText` in the forge [`tools/probe/run-verify-ghost-admin.py`]. The deployed screens
+      themselves behaved as Fix record 6 says everywhere the run could read them; the top bar was
+      drawn in every popup state it reached. *The rest of this list was found by the four reading
+      layers; the fixes above are why the record below has two runs.*
+- [x] [Review][Patch] **The ✕ pushed a history entry while every other way out replaced one** —
+      Escape, the backdrop and both actions leave by `replace`, so after the ✕ Back re-opened the
+      window. `replace` on the Link, and on `keys-panel.tsx`'s `wayOut` the markup was lifted from
+      [`sites/brand-panel.tsx`, `sites/keys-panel.tsx`]. `brand-popup` now presses Back after the ✕.
+- [x] [Review][Patch] **A failed read in the window replaced the whole Sites list** — `readFailed`
+      threw inside the list's own `<Suspense>` with no error boundary between it and `app/error.tsx`;
+      `gone()` had been given a popup branch for exactly that cost and `readFailed` had not. In the
+      popup it now closes the window onto `/sites`, the offer still on the card [`sites/brand-screen.tsx`].
+- [x] [Review][Patch] **`useBrand` 404ed the list on a site disconnected in another tab** — the
+      `!site` branch called `notFound()` in both chromes; in the popup it now closes the window, and
+      the full page still 404s, which `brand-ownership` drives [`sites/actions.ts`].
+- [x] [Review][Patch] **`?manage=` and `?brand=` together drew two stacked dialogs** — one `else if`
+      [`sites/(list)/page.tsx`].
+- [x] [Review][Patch] **The dialog had no accessible name while its skeleton showed** —
+      `aria-labelledby` pointed at an id the fallback did not render; both skeletons' `sr-only`
+      sentence now carries the title id [`sites/brand-skeleton.tsx`, `sites/keys-skeleton.tsx`].
+- [x] [Review][Patch] **A refused Use your brand inside the popup was proved by nothing** — `brand-stale`
+      asserted the caption and the row count, both true of the full page too, so `brandBase()` could
+      answer the wrong chrome and stay green. It now reads the dialog, the cards, the bar and the URL
+      after the refusal, the shape `keys-popup` reads [`tools/probe/run-verify-ghost-admin.py`].
+- [x] [Review][Patch] **"No layout shift" was measured once on a laptop and by nothing since** —
+      `busy-label` now takes the pressed control's box and its neighbour's position at rest and
+      inside the hold; `busy.test.ts` asserts `Submit` renders `BusyLabel` and so does the one
+      hand-written Save [`tools/probe/run-verify-ghost-admin.py`, `apps/web/busy.test.ts`].
+- [x] [Review][Patch] **The offer's `Opening…` was handed to the harness and read by nothing** —
+      `brand-popup` now holds the window's RSC fetch and reads the link inside it: the app's own
+      word, `aria-busy`, and one fetch after a second click [`tools/probe/run-verify-ghost-admin.py`].
+- [x] [Review][Patch] **Escape was never pressed on the brand popup** — the other window asserted
+      it; `brand-popup` now does, URL off `?brand=` with the list and bar behind
+      [`tools/probe/run-verify-ghost-admin.py`].
+- [x] [Review][Patch] **The popup's `gone()` branch was never driven** — `brand-ownership` now opens
+      the stranger's id as `/sites?brand=` and asserts the list, no window
+      [`tools/probe/run-verify-ghost-admin.py`].
+- [x] [Review][Patch] **`brandRedirect`'s docstring described the intercepted route and `router.back()`**,
+      both gone since `acd31327` [`sites/actions.ts`]; **a literal "line 439"** beside `brandBase` named
+      a line that had moved [`sites/actions.ts`].
+- [x] [Review][Patch] **Four comments described the `@modal` build**: `brand/loading.tsx`'s "popup's own
+      `loading.tsx`", `brand-skeleton.tsx`'s prefetching `next/link`, `brand-panel.tsx`'s garbled
+      "its `href` into a `<dialog>`" and a run-on paragraph, the harness's "there is no ✕ on S2c" five
+      lines before it presses one [`sites/brand/loading.tsx`, `sites/brand-skeleton.tsx`,
+      `sites/brand-panel.tsx`, `tools/probe/run-verify-ghost-admin.py`].
+- [x] [Review][Patch] **`panel-link.tsx` said `onOpened` was "deliberately NOT a dependency" over an
+      array that lists it** — the comment now says why it is there and why that is harmless
+      [`sites/panel-link.tsx`].
+- [x] [Review][Patch] **"the rail is 340 wide" beside `tablet:w-[360px]`** — the number is gone from
+      the prose [`sites/brand-panel.tsx`].
+- [x] [Review][Patch] **"`KEYS.cancel` is the same word on the other popup's ✕"** — it is "Cancel"
+      and this one is "Close"; the comment now says why they differ, and `BRAND_COPY.offer`'s orphaned
+      JSDoc is back on `offer` [`apps/web/lib/probe-rule.ts`]. `probe-rule.test.ts` covers `close`,
+      `opening` and `brandPopupPath`.
+- [x] [Review][Patch] **The spec's frozen block, AC 2, the stranger's-id AC and the matrix row still
+      described the single-page S2c**, with no renegotiation clause where three earlier rulings have
+      one; **the Code Map** named none of `brand-screen`, `brand-panel`, `brand-skeleton`,
+      `panel-link`, `panel-modal`, `BusyLabel` or the `?brand=` parameter; **the change request** still
+      ended on `PanelModal` watching `usePathname()`, its table read as contradicting the ✕, and the
+      one control whose label does change width was unnamed. All amended in this spec.
+- [x] [Review][Defer] **Opening the offer from a filtered list drops `?q=`, and every way out lands
+      on bare `/sites`** [`sites/panel-link.tsx`, `sites/panel-modal.tsx`] — deferred, the popup
+      mechanism is shared with Manage keys (Story 3.6) and this is its shape on both; **DW-82**.
+
+*Out of scope, propagated:* the same live run then stopped inside **Story 3.6's** `keys-screen` —
+`openKeysPopup`'s caption locator resolved 58 times to a hidden span inside an open `<dialog>` —
+so none of 3.6's fourteen popup steps ran. Recorded in 3.6's spec under its own heading; that
+story's Fix (`acd31327`) has not had its Review.
+
+*Dismissed, with reasons:* Escape pressed while an action is in flight and then a `&failed=1`
+re-opening the window — a refusal the customer should see, and it is the same document; the removed
+`aria-busy` on the skeleton wrappers — the wrappers are `aria-hidden`, so the attribute was never
+announced, and the `sr-only` sentence is the signal; the 400ms sleep in `brand-popup` after **Use
+your brand** — it fails red rather than passing falsely, the harness's own note says why the URL
+cannot be waited on there.
+
 ## Spec Change Log
+
+**Review 7, 2026-09-10.** Twenty-nine findings from five layers on the reopened work, twenty-five
+patched, one deferred as DW-82, three dismissed; no question for the owner. The first is the live
+run's: the harness at HEAD could not finish, on four defects the popup left in it, all fixed. Two of
+the code patches change behaviour: the ✕ replaces the history entry as every other way out does, and a failed read or a
+vanished site inside the window closes the window instead of taking the Sites list with it. The rest
+are proof — four harness steps extended and two unit tests — and prose that still described the
+intercepted route.
 
 **Review, 2026-09-08.** Fourteen findings from five layers, all patched inside the story; no
 behaviour was added that the frozen sections did not already promise, and one change is put to the
@@ -2509,10 +2661,22 @@ reason beside the code.
 | a server action's `redirect('/sites')` out of the popup — **Use your brand** and **Skip** | the same |
 | `panel-modal.tsx` watching the path | **clean** on all of them, and the second, third and fourth opens worked |
 
+*(Every row above was measured on the INTERCEPTED route. On `/sites?brand=` — where the popup lives
+since `acd31327` — a `<Link href="/sites">` out of the window is an ordinary same-route navigation
+and works, which is what the ✕ is; the table is kept as the record of why the route moved, not as a
+description of the code. Review 7, 2026-09-10.)*
+
 The second row is why S2c has two chromes: **after a connect it is still the full screen S2 draws**,
 because that is where `connectSite`'s redirect lands and no interception applies to it — which suits
-the moment, since that is the onboarding beat rather than an aside over a list. The rest is why
-`PanelModal` watches `usePathname()` instead of each control carrying its own way out.
+the moment, since that is the onboarding beat rather than an aside over a list. The rest was why
+`PanelModal` watched the path while the route was intercepted; on the query parameter there is no
+path to watch and it no longer does (`panel-modal.tsx`).
+
+**One control whose label does change width, by decision:** the card's offer link says `Opening…`
+while the window loads (`PanelLink`), and it is not a `BusyLabel` — it is a left-aligned link in a
+block of its own, so its width is set by nothing beside it and a centred two-label cell would itself
+have been the shift. Nothing else on the card moves when it is pressed. Named here so the ask "no
+layout shift" is read as being about the BUTTONS, which is what it said (review 7, 2026-09-10).
 
 ## Questions for the owner
 
@@ -2732,3 +2896,47 @@ tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com`. It drives 
 DEPLOYED site and this Fix is not deployed until CI publishes this commit (DW-7), so it is the
 Review phase's, against T1 and T3. The owner's manual test (R-80) is his, on the production domains,
 after Deploy.
+
+## Review 7 record — what was executed, and what each service answered (R-82)
+
+**Local, on the review's own patches.** `pnpm check` (Node 24) — **exit 0**: lint clean, `tsc
+--noEmit` clean, **242 tests, 242 pass, 0 fail** (the two assertions this review added to
+`busy.test.ts` and the four to `probe-rule.test.ts` among them). `pnpm --filter web build` — **exit
+0**, "Compiled successfully", `ƒ /app/sites` and `ƒ /app/sites/brand` both present. `python3
+tools/probe/run-verify-ghost-admin.py --check` — **all steps passed**. `python3 tools/doc-audit.py
+--check`, twice — PASS.
+
+**The real services, before any patch — the real-infra layer's run against what was deployed.**
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `GET /v4/aliases` and
+  `/v13/deployments/{id}`): `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` all alias
+  `dpl_9kXi2ozd1z3EAEt9NrZyNUc6YVKA`, **READY**, `target: production`, `meta.githubCommitSha` equal
+  to `7964895d` — `git rev-parse HEAD` at the start of this review. READY production builds also
+  exist for `224e2e0a`, `acd31327` and `f51feb04`, so every in-scope commit was published and the
+  newest was live. **The code reviewed is the code deployed.**
+- **Supabase**, read-only through `SUPABASE_DB_POOLER_URL` with the app's own driver, as the
+  schema control R-99 asks for: `private.site_credentials.admin_key_id`, `private.credential_audit`
+  and the `credential_change` enum value are all present — Story 3.6's migration is applied. This
+  story adds no migration: `git show --stat -- supabase/` is empty for all four in-scope commits.
+- **The deployed site, unauthenticated** (`curl -s -o /dev/null -w '%{http_code} %{redirect_url}'`):
+  `/sites/brand?site=0000…`, `/sites/brand`, `/sites?brand=x` and `/sites` each answer **307 to
+  `/sign-in`**; the `/app/…` spellings answer 308 to the public path. Nothing 500s — the negative
+  control.
+- **The full harness, three runs, T1 `GHOST6_*` and T3 `GHOST5_*` and `app.inflozo.com`.** Run 1:
+  the browser half died on an unhandled `route.continue: Route is already handled!` from the
+  post-hold continue — `FAIL browser: node exited 1 with no result`, no UI step reported. Run 2:
+  the DW-68 hang at `unreachable`, never reached the popup. Run 3, on a scratchpad copy with the one
+  `.catch` added so every step would report: **69 PASS, 1 RECORD, 4 FAIL** — `brand-popup`,
+  `busy-label`, `brand-picker`, `brand-ownership`, each for the harness reason the findings list
+  gives — and then the timeout inside Story 3.6's `keys-screen`. Every one of this story's other
+  steps passed, `brand-screen` (the new-tab anchor, the ✕ named Close, the pills with no `href`),
+  `brand-logo`, `brand-failed-line`, `brand-js-off`, `axe-brand`, `brand-skip`, `brand-seed`,
+  `skeleton-shape`, `brand-atcap`, `brand-stale`, `brand-forged-project`, `brand-none`,
+  `brand-rerun`, `brand-picker-js-off`, `axe-brand-picker` and `brand-atcap-picker` among them, and
+  `topBar = true` in every popup state `brand-popup` reached — the owner's finding 1 held live.
+
+**Not yet run: the harness with this review's own patches against the deployed site.** They change
+what the harness asserts (Back after the ✕, Escape, the offer's `Opening…`, the refusal inside the
+window, the stranger's id as `?brand=`, the width measurement, the popup's `gone()`) and two of them
+change the app (the ✕ replaces; a failed read or a vanished site closes the window), so the run
+belongs on the deployment CI makes of this commit. It is the second half of this record, below.
+

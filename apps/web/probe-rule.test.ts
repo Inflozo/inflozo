@@ -6,6 +6,7 @@ import {
   BRAND_COPY,
   brandOf,
   brandPath,
+  brandPopupPath,
   brandTarget,
   capabilityOf,
   hasBrand,
@@ -492,4 +493,12 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
   // ONE OFFER URL. The Sites card's link and the two redirects are the same address, and it was
   // typed out in both places (review, 2026-09-08).
   assert.equal(brandPath('abc'), '/sites/brand?site=abc')
+  // THE POPUP'S ADDRESS is a parameter on the Sites list — the path never leaves the one the
+  // shell's top bar belongs to (the owner's finding 1 of 2026-09-10).
+  assert.equal(brandPopupPath('abc'), '/sites?brand=abc')
+  // The two words this story's Fix added: the ✕ says what it does, and the offer says it is
+  // working while the window loads (R-98) — an ellipsis, as every busy label in the app ends.
+  assert.equal(BRAND_COPY.close, 'Close')
+  assert.ok(BRAND_COPY.opening.endsWith('…'), 'a busy label ends in an ellipsis')
+  assert.notEqual(BRAND_COPY.opening, BRAND_COPY.offer)
 })

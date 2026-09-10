@@ -140,7 +140,11 @@ list gone stale — the sibling harness's own note):
                  intercepted popup lives at the panel's own URL). The press closes it and leaves
                  the list, the offer opens it again, Skip closes it too, and **the ✕ is a fourth
                  way out** (his ask, item 3) that leaves the offer on the card — it writes nothing,
-                 exactly as Skip writes nothing
+                 exactly as Skip writes nothing; Back after it re-opens nothing (the ✕ replaces,
+                 as every other way out does); the offer itself reads BRAND_COPY.opening with
+                 `aria-busy` inside a held fetch and a second click starts no second one (R-98,
+                 step 25 of his test); and Escape is the fifth way out, leaving the URL off
+                 `?brand=` with the list and the bar still there
   brand-skip     **Skip** writes NOTHING — no project, and no note that it was pressed — the
                  browser returns to `/sites`, and the card still carries the offer link, so it can
                  be taken later. The card itself is unchanged: its title and address as
@@ -204,7 +208,9 @@ list gone stale — the sibling harness's own note):
                  is untouched, because `useFormStatus` is a form's status and not a page's. Driven
                  on **Skip**, which writes nothing, so the assertion cannot disturb the row the
                  at-cap steps read next. `held > 0` is its control: a press whose POST was never
-                 held would resolve before the read and could not fail
+                 held would resolve before the read and could not fail. AND NOTHING MOVES (his
+                 ask of 2026-09-10): the pressed control's box and its neighbour's position are
+                 measured at rest and inside the hold and must be identical
   brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
                  owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
                  will brand before the press, and pressing it writes `style_pack.brand` onto that
@@ -217,7 +223,9 @@ list gone stale — the sibling harness's own note):
                  project. Every other step presses a real button and so posts a real project id,
                  which takes the other half of `useBrand`'s guard; the paywall's own half was
                  resting on a line nothing asserted, and the matrix's "cap changed under the page"
-                 row had no proof at any level
+                 row had no proof at any level. Pressed IN THE WINDOW, so the refusal must answer
+                 inside it — `/sites?brand=…`, dialog open, cards and bar behind — which is
+                 `brandBase()` executed (the twin of Manage keys' finding 3)
   brand-forged-project  ...AND THE OTHER HALF OF THAT SAME TERNARY. A press carrying a project_id
                  no project of this caller's carries — what a deleted project and another account's
                  row both look like through his own RLS-scoped read — writes nothing and returns to
@@ -401,7 +409,8 @@ list gone stale — the sibling harness's own note):
   brand-ownership  THE GUARD BETWEEN TWO ACCOUNTS FOR STORY 3.4's TWO ACTIONS, which is not
                  `ownership`'s: these write `projects` through the CALLER'S OWN session, so RLS
                  is the guard rather than an `.eq('user_id')`. The second account's real site id
-                 is opened as `/sites/brand?site=` (not found) and then forged into S2c's own
+                 is opened as `/sites/brand?site=` (not found), as `/sites?brand=` (the window
+                 closes onto the list rather than 404ing over it), and then forged into S2c's own
                  **Use your brand** and **Skip** forms and submitted from the fixture's session:
                  the caller's projects are byte-identical afterwards and none is linked to the
                  stranger's site. The acceptance criterion says "when the page is opened OR
@@ -982,7 +991,9 @@ const skipS2c = async (page) => {
   const landed = page.url()
   // `exact`, because the shell's own skip-to-content control is a LINK named "Skip to content".
   await page.getByRole('button', { name: SAY.brand_skip, exact: true }).click()
-  await page.waitForURL((u) => u.pathname === '/sites')
+  // `!brand`: pressed inside the popup the pathname is ALREADY `/sites`, so a bare pathname wait
+  // returned at once and every read after it raced the action (review 7, 2026-09-10).
+  await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
   return landed
 }
 const same = (a, b) => Math.abs(a - b) < 0.5
@@ -1659,7 +1670,10 @@ const shoot = async (page, name) => {
     }))
     const brandOpened = await brandShape()
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
-    await page.waitForURL((u) => u.pathname === '/sites')
+    // `!brand`, NOT the bare pathname: inside the popup the pathname is already `/sites`, so the
+    // first writing of this wait returned before the action had answered and the "closed" read
+    // below saw the window still open (review 7, 2026-09-10 — the run's own FAIL).
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
     // READ BEFORE ANYTHING RELOADS. A reload destroys the client router state, so the popup would
     // be gone whatever the code did — this assertion has to be taken on the very document the
     // press left behind or it is a control that cannot fail (standing rule 2).
@@ -1674,8 +1688,8 @@ const shoot = async (page, name) => {
     await s2cHeading(page).waitFor()
     const brandReopened = await brandShape()
     // …and **Skip** — the panel's other way out, and a SECOND server action leaving the popup —
-    // closes it too. There is no ✕ and no Cancel on S2c: the frame draws two presses and the offer
-    // stays on the card either way, so Skip IS the way out (`skipBrand` writes nothing at all).
+    // closes it too. The frame draws two presses and no Cancel, and the offer stays on the card
+    // either way (`skipBrand` writes nothing at all); the ✕ below is the owner's addition.
     await skipS2c(page)
     await page.waitForTimeout(400)
     const brandSkipped = await brandShape()
@@ -1691,12 +1705,58 @@ const shoot = async (page, name) => {
     await page.waitForTimeout(400)
     const afterClose = await brandShape()
     const offerStillThere = await offer().count()
+    /* AND THE ✕ LEAVES NO ENTRY BEHIND. Every way out of the window replaces the history entry
+       (`panel-modal.tsx`, `brandRedirect`), and the ✕ was the one that pushed: Back after it
+       re-opened the popup (review 7, 2026-09-10). The history here is [/sites, /sites], so Back
+       lands on a list with no `?brand=` — with the push it was [/sites, /sites?brand=, /sites]
+       and Back re-drew the window. Discriminating on the fixed code AND on the old. */
+    await page.goBack({ waitUntil: 'load' }).catch(() => {})
+    await page.waitForTimeout(600)
+    const backUrlBrand = new URL(page.url()).searchParams.get('brand')
+    const afterBack = await brandShape()
+    /* …AND ESCAPE IS THE FIFTH, and it is the only one `panel-modal.tsx` itself performs: the
+       native element closes without navigating, so `onClose` has to move the URL off `?brand=`
+       or the address bar names a window that is not on screen. `keys-popup` asserts this on the
+       other window; this one never had (review 7, 2026-09-10). Then the offer opens it AGAIN,
+       so the Escape run is proved to have left nothing mounted. */
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    /* THE OFFER SAYS IT IS WORKING (R-98, step 25 of the owner's test): the window's RSC fetch is
+       HELD and the link is read inside the hold — it must say BRAND_COPY.opening, be `aria-busy`,
+       and a second click inside the hold must start no second fetch. `brand_opening` was handed
+       to this run and read by nothing (review 7, 2026-09-10). A local counter, not `held`, so the
+       POST control of `busy-label` below stays its own. */
+    let openFetches = 0
+    const holdOpen = async (route) => {
+      const r = route.request()
+      if (r.method() !== 'GET' || !r.url().includes('brand=') || !r.headers()['rsc']) return route.continue()
+      openFetches += 1
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+      return route.continue()
+    }
+    await page.route(anyApp, holdOpen)
+    await offer().click()
+    const offerBusy = await page.locator(`article a[href="${offerHref}"][aria-busy="true"]`).first()
+      .waitFor({ timeout: 2500 }).then(() => true).catch(() => false)
+    const offerBusyText = (await offer().innerText().catch(() => '')).trim()
+    await offer().click({ force: true }).catch(() => {})
+    await s2cHeading(page).waitFor()
+    await page.unroute(anyApp, holdOpen)
+    const fetchesInHold = openFetches
+    const escOpened = await brandShape()
+    await page.keyboard.press('Escape')
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
+    await page.waitForTimeout(400)
+    const brandAfterEscape = await brandShape()
     step('brand-popup',
       brandOpened.open && brandOpened.cards > 0 && brandOpened.topBar
       && !brandClosed.open && brandClosed.cards > 0 && brandClosed.topBar
       && brandReopened.open && brandReopened.topBar && !brandSkipped.open
       && beforeClose.open && !afterClose.open && !afterClose.inDom
-      && afterClose.cards > 0 && afterClose.topBar && offerStillThere === 1,
+      && afterClose.cards > 0 && afterClose.topBar && offerStillThere === 1
+      && !backUrlBrand && !afterBack.inDom
+      && offerBusy && offerBusyText === SAY.brand_opening && fetchesInHold === 1
+      && escOpened.open && !brandAfterEscape.open && !brandAfterEscape.inDom && brandAfterEscape.cards > 0 && brandAfterEscape.topBar,
       `the card's offer opened S2c as a WINDOW over the Sites list — an open <dialog> = ` +
       `${brandOpened.open} with ${brandOpened.cards} cards still behind it AND THE TOP BAR STILL ` +
       `DRAWN = ${brandOpened.topBar}, which is his test finding of 2026-09-10: the bar went with ` +
@@ -1707,7 +1767,14 @@ const shoot = async (page, name) => {
       `actions that leave the panel leave it. AND THE ✕ IS A FOURTH WAY OUT (his ask, item 3): ` +
       `open = ${beforeClose.open} → pressed → open = ${afterClose.open}, nothing left in the DOM ` +
       `= ${!afterClose.inDom}, ${afterClose.cards} cards, and the offer is still on the card ` +
-      `(${offerStillThere}) — it writes nothing, exactly as Skip writes nothing`)
+      `(${offerStillThere}) — it writes nothing, exactly as Skip writes nothing. BACK AFTER THE ✕ ` +
+      `re-opens nothing: brand param = ${JSON.stringify(backUrlBrand)}, dialog in DOM = ` +
+      `${afterBack.inDom} (the ✕ replaces, as every other way out does). THE OFFER SAID IT WAS ` +
+      `WORKING inside a held fetch: aria-busy = ${offerBusy}, reading ${JSON.stringify(offerBusyText)} ` +
+      `(the app's own BRAND_COPY.opening), and a second click in the hold started ${fetchesInHold} ` +
+      `fetch(es) in all — one. AND ESCAPE IS THE FIFTH WAY OUT: open = ${escOpened.open} → Escape → ` +
+      `open = ${brandAfterEscape.open}, in DOM = ${brandAfterEscape.inDom}, ${brandAfterEscape.cards} cards and ` +
+      `the bar = ${brandAfterEscape.topBar}`)
 
     const seeded = (await until(async () => {
       const list = await projectsOf()
@@ -1771,7 +1838,10 @@ const shoot = async (page, name) => {
       if (!match(route.request())) return route.continue()
       held += 1
       await new Promise((r) => setTimeout(r, 4000))
-      return route.continue()
+      // `.catch`: a navigation that lands during the hold aborts the held request, and a
+      // `continue()` on it then throws — OUTSIDE any step's try, as an unhandled rejection that
+      // took the whole browser half down with no step result printed (review 7, 2026-09-10).
+      return route.continue().catch(() => {})
     }
     const holdPost = holding((r) => r.method() === 'POST')
 
@@ -1864,8 +1934,17 @@ const shoot = async (page, name) => {
     // whether it is drawn as an `<a>` or, since R-98, as a `next/link`.
     await offer().click()
     await s2cHeading(page).waitFor()
-    const submits = page.locator('main form button[type="submit"]')
+    // INSIDE THE WINDOW. `main form button[type="submit"]` also matched the card's Disconnect
+    // submit behind the popup, so `nth(1)` was Use your brand and the press rebranded the row this
+    // step exists to leave alone (review 7, 2026-09-10 — the run's own FAIL).
+    const submits = page.locator('dialog[open] form button[type="submit"]')
     const idle = (await submits.allInnerTexts()).map((t) => t.trim())
+    // THE OWNER'S ASK OF 2026-09-10 — "ensure that does not change the layout or add any layout
+    // shifts" — measured, not read: the pressed control's box and its neighbour's position before
+    // the press and inside the hold. `{pending ? busy : children}` passes every other assertion
+    // in this step and moved Skip by 41px (review 7, 2026-09-10).
+    const boxIdle = await boxOf(submits.nth(1))
+    const siblingIdle = await boxOf(submits.nth(0))
     await page.route(anyApp, holdPost)
     await submits.nth(1).click()
     /* WAITED FOR, NOT READ ON THE NEXT LINE. `pending` turns true on the render AFTER the submit,
@@ -1879,14 +1958,25 @@ const shoot = async (page, name) => {
     // `useFormStatus` is the FORM's status, so the button in the other form is untouched — the
     // screen says which control is working rather than that the screen is.
     const siblingText = (await submits.nth(0).innerText().catch(() => '')).trim()
+    const boxBusy = await boxOf(submits.nth(1))
+    const siblingBusy = await boxOf(submits.nth(0))
+    const noShift = boxIdle.width === boxBusy.width && boxIdle.height === boxBusy.height
+      && boxIdle.x === boxBusy.x && boxIdle.y === boxBusy.y
+      && siblingIdle.x === siblingBusy.x && siblingIdle.y === siblingBusy.y
     // The navigation lands FIRST and the handler is removed after it: `unroute` does not abort a
     // hold that is already running, and removing it mid-flight is one less thing to reason about.
-    await page.waitForURL((u) => u.pathname === '/sites')
+    // `!brand`: the press is inside the popup, where the pathname is already `/sites` — the bare
+    // wait returned at once, the `goto` below aborted the held POST, and the hold's late
+    // `continue()` crashed the run (review 7, 2026-09-10).
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
     await page.unroute(anyApp, holdPost)
     await page.waitForSelector('text=Connected')
     step('busy-label',
       held > 0 && wentBusy && idle[1] === SAY.brand_skip && busyText === SAY.brand_skipping
-      && busyAttr === 'true' && disabledAttr === 'true' && siblingText === SAY.brand_use,
+      && busyAttr === 'true' && disabledAttr === 'true' && siblingText === SAY.brand_use && noShift,
+      `NOTHING MOVED: the pressed control was ${boxIdle.width}×${boxIdle.height} at rest and ` +
+      `${boxBusy.width}×${boxBusy.height} busy, its neighbour at y ${siblingIdle.y} then ` +
+      `${siblingBusy.y} (his ask of 2026-09-10, measured). ` +
       `held ${held} POST(s) and read S2c's buttons inside the hold: the pressed one went from ` +
       `${JSON.stringify(idle[1])} to ${JSON.stringify(busyText)} — the app's own ` +
       `BRAND_COPY.skipping — with aria-busy=${busyAttr} and aria-disabled=${disabledAttr} ` +
@@ -1904,7 +1994,7 @@ const shoot = async (page, name) => {
     const namedIt = await says(page, SAY.brand_will_brand.replace('%s', made.name))
     const stillCreate = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
-    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand')) // pressed in the popup — see review 7
     await page.waitForSelector('text=Connected')
     const afterCap = await projectsOf()
     // NOT `same`: that name is a module-level helper up in the wizard's locators, and a
@@ -1964,15 +2054,26 @@ const shoot = async (page, name) => {
     const staleLanded = await pressAndLand(SAY.brand_use)
     const afterStale = await projectsOf()
     const trueCaption = await says(page, SAY.brand_will_brand.replace('%s', made.name))
+    /* AND THE REFUSAL ANSWERED INSIDE THE WINDOW. This press was made in the popup, so `useBrand`
+       redirected onto `brandBase()`'s popup address — `/sites?brand=…` — and the list is still
+       behind the re-drawn panel with the bar over it. With `brandBase` answering the full page
+       instead, every assertion above still held: S2c's heading and caption are on the full page
+       too. This is "the one he did not hit" made checkable (review 7, 2026-09-10). */
+    const staleShape = await brandShape()
+    const staleUrl = new URL(page.url())
+    const staleInWindow = staleShape.open && staleShape.cards > 0 && staleShape.topBar
+      && staleUrl.pathname === '/sites' && Boolean(staleUrl.searchParams.get('brand'))
     step('brand-stale',
-      staleLanded && afterStale.length === 1 && afterStale[0].id === made.id && trueCaption,
+      staleLanded && afterStale.length === 1 && afterStale[0].id === made.id && trueCaption && staleInWindow,
       `at the Free cap, a press carrying an EMPTY decision — the body S2c itself emits before any ` +
       `project exists, and what a second tab that filled the cap leaves behind — wrote nothing: ` +
       `${afterStale.length} project, still the same row (${afterStale[0]?.id === made.id}), and the ` +
       `browser is back on S2c with the TRUE caption naming it = ${trueCaption} rather than the ` +
       `promise it was posted with (the action's POST was seen to answer first = ${staleLanded}, ` +
       `because a re-read that raced the press would report "nothing written" for the wrong ` +
-      `reason). The cap refuses, not just the staleness`)
+      `reason). The cap refuses, not just the staleness. AND IT ANSWERED IN THE WINDOW: dialog ` +
+      `open = ${staleShape.open}, ${staleShape.cards} cards behind it, bar = ${staleShape.topBar}, ` +
+      `at ${staleUrl.pathname}?brand=… = ${Boolean(staleUrl.searchParams.get('brand'))}`)
 
     // ── AND THE OTHER HALF OF THAT TERNARY. `brand-stale` posts the EMPTY decision, so it takes
     //    `chosen === '' ? Boolean(target)`; every other step presses a real button, so `picked` is
@@ -2668,7 +2769,7 @@ const shoot = async (page, name) => {
     const saidRebrand = await says(page, SAY.brand_already_on.replace('%s', beforeRerun[0].name))
     const promisedNew = await page.getByText(SAY.brand_will_create).isVisible().catch(() => false)
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
-    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand')) // pressed in the popup — see review 7
     await page.waitForSelector('text=Connected')
     const afterRerun = await projectsOf()
     // NOT `cardOf('Connected').first()`: `pro-connect-t3` has connected T3, so there are TWO
@@ -2775,7 +2876,7 @@ const shoot = async (page, name) => {
     // one the rule would have picked on its own.
     await page.locator(`input[name="project_id"][value="${secondId}"]`).check()
     await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
-    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand')) // pressed in the popup — see review 7
     await page.waitForSelector('text=Connected')
     const afterPick = await projectsOf()
     const chosenRow = afterPick.find((r) => r.id === secondId) || {}
@@ -3036,6 +3137,20 @@ const shoot = async (page, name) => {
     //    the guard is RLS itself rather than an `.eq()`: a stranger's site id reads back no row
     //    and `useBrand` throws `notFound()` before it can decide anything.
     const foreignPage = await rendered(`${APP}/sites/brand?site=${foreignId}`)
+    /* THE SAME ID IN THE POPUP'S ADDRESS. `brand-screen.tsx`'s `gone()` 404s on the full page and
+       redirects to `/sites` in the window — because a `notFound()` inside the list's own
+       `<Suspense>` would take the whole Sites list with it. Nothing had driven that branch
+       (review 7, 2026-09-10): the list must be there, and no window. */
+    await page.goto(`${APP}/sites?brand=${foreignId}`, { waitUntil: 'load' })
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'), { timeout: NAV_TIMEOUT })
+      .catch(() => {})
+    await page.waitForSelector('text=Connected').catch(() => {})
+    const foreignPopup = await page.evaluate(() => ({
+      brandParam: new URL(location.href).searchParams.get('brand'),
+      dialogInDom: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"]'),
+      cards: document.querySelectorAll('article').length,
+    }))
+    const foreignPopupClosed = !foreignPopup.brandParam && !foreignPopup.dialogInDom && foreignPopup.cards > 0
     const projectsBefore = await projectsOf()
     // The forge is made on S2c ITSELF — the fixture's own, legitimately on screen — so both hidden
     // fields and React's `$ACTION_*` are the real ones and only the site id is a stranger's.
@@ -3043,8 +3158,12 @@ const shoot = async (page, name) => {
       await page.goto(`${APP}${offerHref}`, { waitUntil: 'load' })
       await s2cHeading(page).waitFor()
       return page.evaluate(([id, name]) => {
+        // `innerText`, not `textContent`: `BusyLabel` keeps BOTH labels in the button and hides
+        // one with `visibility: hidden`, which `innerText` omits and `textContent` concatenates —
+        // so this found no button, pressed nothing, and the byte-identical re-read passed for the
+        // wrong reason (review 7, 2026-09-10 — the run's own FAIL).
         const button = [...document.querySelectorAll('button[type="submit"]')]
-          .find((b) => b.textContent.trim() === name)
+          .find((b) => b.innerText.trim() === name)
         if (!button) return false
         button.form.querySelector('input[name="site_id"]').value = id
         button.click()
@@ -3082,19 +3201,22 @@ const shoot = async (page, name) => {
       : (new URL(forgedUseUrl).searchParams.get('failed') === '1' ? 'failed-redirect' : null)
     const afterUse = await projectsOf()
     const forgedSkip = await forgeBrand(SAY.brand_skip)
-    const forgedSkipLanded = await page.waitForURL((u) => u.pathname === '/sites')
+    const forgedSkipLanded = await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
       .then(() => true).catch(() => false)
     const afterForgedSkip = await projectsOf()
     // NOT A RE-READ COMPARED WITH ITSELF: nothing may now be LINKED to the stranger's site, which
     // is the one row `useBrand` could have written if RLS had let it through.
     const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
     step('brand-ownership',
-      foreignPage.saw === 'not-found' && forgedUse && forgedSkip
+      foreignPage.saw === 'not-found' && foreignPopupClosed && forgedUse && forgedSkip
       && Boolean(forgedUseLanded) && forgedSkipLanded
       && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
       && projectsById(afterUse) === projectsById(projectsBefore)
       && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
       `/sites/brand?site= a row a DIFFERENT account owns rendered ${JSON.stringify(foreignPage.saw)} — ` +
+      `and as /sites?brand= the WINDOW closed onto the list (brand param ` +
+      `${JSON.stringify(foreignPopup.brandParam)}, dialog ${foreignPopup.dialogInDom}, ` +
+      `${foreignPopup.cards} cards), never the 404 over the list — ` +
       `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
       `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
       `submitted from the fixture's session — and EACH POST WAS SEEN TO LAND before the rows were ` +
@@ -3437,14 +3559,15 @@ const shoot = async (page, name) => {
     const afterEmpty = await keysShape()
     // Cancel: the footer control, which in the popup is the back-anchor and on the page a <Link>.
     await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).last().click()
-    await page.waitForURL((u) => u.pathname === '/sites')
+    // `!manage`: the pathname is already `/sites` inside the popup (review 7 of 3.4, 2026-09-10).
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
     const afterCancel = await keysShape()
     // AND THE ROW OPENS IT AGAIN. This is the regression the whole step exists for: with the panel
     // left mounted, the second press changed the URL and drew nothing at all.
     await openKeysPopup(t1SiteId, t1Name)
     const secondOpen = await keysShape()
     await page.keyboard.press('Escape')
-    await page.waitForURL((u) => u.pathname === '/sites')
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
     const afterEscape = await keysShape()
     // …and a typed URL is still the FULL page, which is the half that has to keep working with no
     // script at all (`keys-js-off` reads its markup).
