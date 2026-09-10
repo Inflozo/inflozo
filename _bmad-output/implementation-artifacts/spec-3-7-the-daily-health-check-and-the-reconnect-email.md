@@ -373,7 +373,8 @@ email the same person has already received, so this rides its shell, which moves
 
 ## Questions for the owner
 
-One, and it is about how much of this story to build now.
+One, asked at Create and **ruled the same day**. It is recorded here because the ruling moved
+work out of this story and the propagation it required is listed with it.
 
 ### Question 1 — the "Ghost released a new version" announcement: build it now, or when there is a library to check?
 
@@ -412,7 +413,16 @@ it would announce has not shipped.
    really available: we already established that Ghost's release notes cannot be read as structured
    data, so somebody writes the sentence either way.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-10).** Split out, and filed as **DW-87** with its home named:
+**Story 9.1** — A1 Headers' content model, stylesheet and designs #1-4, the first story that ships
+designs to customers and the first in which any design declares `ghostCompat`. Propagated the same
+day (standing rule 3): Story 3.7's two compatibility bullets in `epics.md` are struck with this
+ruling's date, Story 9.1 gains the acceptance criterion, **AD-25** is amended so the spine says E3
+writes `site_health` and **E9** writes `ghost_compat` rather than E3 writing both, and
+`epic-3-context.md`'s requirement line says the same. **This story is unchanged by the ruling** — it
+was already specified without the broadcast, and everything the notice will need to travel is built
+here: the `notifications` rows, the email shell and FR-P1's "Reconnect needed" channel the notice
+rides. The receiving story adds a trigger and a template, not a mechanism.
 
 ## Owner's manual test
 

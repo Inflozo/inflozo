@@ -316,13 +316,13 @@ below is §8's, not re-derived. Coverage was checked mechanically: 132 FRs extra
 | **E0** De-risking Spikes | *none* — two blocking spikes (the FR-D4 mark path, and §7.6's verify-at-build list) |
 | **E1** Foundations & Design System | FR-A1 · FR-B3 · FR-B4 · FR-B5 · FR-P1 emails (1)–(2) |
 | **E2** Accounts & Passkeys | FR-A2 · FR-A3 · FR-A4 · FR-A5 · FR-A6 |
-| **E3** Sites & Connections | FR-C1 · FR-C2 · FR-C3 · FR-C4 · FR-C5 · FR-C6 · FR-C8 · FR-P1 email (3) |
+| **E3** Sites & Connections | FR-C1 · FR-C2 · FR-C3 · FR-C4 · **FR-C5 (the health check half — the compatibility watch is E9's, DW-87)** · FR-C6 · FR-C8 · FR-P1 email (3) |
 | **E4** Section Runtime Platform | FR-F1–F8 · FR-G3 · FR-G7 · FR-G8 · FR-H1 · FR-H3 · FR-H5 · FR-H7 · FR-H8 · **FR-Q6 (the string-catalog format half)** |
 | **E5** Editor Shell | FR-D1–D22 · FR-H2 · FR-H4 · FR-H6 |
 | **E6** Style Packs | FR-E1 · FR-E2 · FR-E3 · FR-E4 · FR-E5 |
 | **E7** Compiler, Deploy & Routes | FR-I1–I6 · FR-J1–J17 · FR-K5 · FR-Q1–Q5 · FR-Q7–Q10 · **FR-Q6 (the Translations surface and `locales/` emission half)** · FR-P1 email (5) |
 | **E8** Asset Library | FR-K1 · FR-K2 · FR-K3 · FR-K4 · FR-K6 |
-| **E9** The Shell Block | **FR-G1 · FR-G4 · FR-G5 · FR-G6, for Group 1 only** (Headers & Navigation, Announcement Bars, Footers) |
+| **E9** The Shell Block | **FR-G1 · FR-G4 · FR-G5 · FR-G6, for Group 1 only** (Headers & Navigation, Announcement Bars, Footers) · **FR-C5 (the compatibility watch, moved from E3 on 2026-09-10 — DW-87)** |
 | **E10** The Gated Library Pipeline | **FR-G1 · FR-G4 · FR-G5 · FR-G6, for every category outside Group 1** |
 | **E11** Starters | FR-G2 · FR-O1 · FR-O2 · FR-O3 · FR-O4 |
 | **E12** Billing & Entitlements | FR-L1–L5 · FR-P1 emails (4) and (6) · FR-P2 |
@@ -385,7 +385,7 @@ before the purge.
 A user connects their own Ghost site with **one credential pair**, sees it validated, takes their brand from
 it in one click, and manages several sites whose health is checked daily. The Staff Access Token is not asked
 for here.
-**FRs covered:** FR-C1, FR-C2, FR-C3, FR-C4, FR-C5, FR-C6, FR-C8, FR-P1 email (3).
+**FRs covered:** FR-C1, FR-C2, FR-C3, FR-C4, FR-C5 (the daily health check; its compatibility watch is E9's — DW-87), FR-C6, FR-C8, FR-P1 email (3).
 
 ### Epic 4: Section Runtime Platform
 
@@ -515,7 +515,7 @@ owning epics and say which half.
 | FR-C2 | E3 | FR-E1 | E6 | FR-I5 | E7 | FR-L2 | E12 |
 | FR-C3 | E3 | FR-E2 | E6 | FR-I6 | E7 | FR-L3 | E12 |
 | FR-C4 | E3 | FR-E3 | E6 | FR-J1 | E7 | FR-L4 | E12 |
-| FR-C5 | E3 | FR-E4 | E6 | FR-J2 | E7 | FR-L5 | E12 |
+| FR-C5 | E3 · E9 | FR-E4 | E6 | FR-J2 | E7 | FR-L5 | E12 |
 | FR-C6 | E3 | FR-E5 | E6 | FR-J3 | E7 | FR-M1 | E13 |
 | FR-C7 | E13 | FR-F1 | E4 | FR-J4 | E7 | FR-M2 | E13 |
 | FR-C8 | E3 | FR-F2 | E4 | FR-J5 | E7 | FR-M3 | E13 |
@@ -1029,6 +1029,13 @@ entry lands in the story that next changes the log, and this is it)
 
 ### Story 3.7: The daily health check, the reconnect email and the compatibility watch
 
+*The compatibility watch left this story on 2026-09-10 — the owner's ruling at Story 3.7's Question 1,
+option 1 (**DW-87**). It is built by **Story 9.1**, the first story that ships designs to customers and
+the first in which any design declares `ghostCompat`; there is no library for the broadcast to verify
+until then. The title is kept as written so the sprint tracker's key for this story does not move. What
+3.7 builds is the daily check, the "Reconnect needed" badge, the once-per-transition email and the two
+⋯ rows the owner added the same day.*
+
 As a user who deployed once and stopped signing in,
 I want to be told when my site needs attention,
 So that I find out from Inflozo rather than from a broken page.
@@ -1045,15 +1052,15 @@ drift, and re-reads Portal's button state and the announcement settings so both 
 **And** the email sends **once per healthy→unhealthy transition** (at most one reminder), is suppressed while
 the outage persists, resets on recovery, and is capped at **one health email per site per rolling 7 days** — a
 flapping site logs to the notifications centre only
-**And** on each Ghost release, **one broadcast to every account on every plan**: normally a confirmation that
-the library was verified against it using each design's `ghostCompat`, and where the release does affect shipped
-designs, a notice naming the affected categories and recommending a redeploy
-**And** that compatibility notice is the **one carve-out FR-P2 allows to reach email**, and it rides the
-"Reconnect needed" channel because the population at risk is exactly the population that stopped signing in
-**And** the notification rows are written by this epic (AD-25) into the table Story 1.2 created, and the
+**And** ~~on each Ghost release, one broadcast to every account on every plan~~ and ~~that compatibility
+notice is the one carve-out FR-P2 allows to reach email~~ — **both moved to Story 9.1 by the owner's ruling,
+2026-09-10 (DW-87)**: the broadcast is only as good as the library check behind it and no design exists to
+check. This story still builds the channel that notice will ride — FR-P1's "Reconnect needed" email and its
+shell — so the receiving story adds a trigger and a template, not a mechanism
+**And** the `site_health` notification rows are written by this epic (AD-25) into the table Story 1.2 created, and the
 scheduled job has one owning epic and one home (AD-33).
 
-**FRs:** FR-C5 (the check, the watch), FR-P1 email (3). · **Frame:** `S11 Sites.dc.html` S11a (the badge) · `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 (the notice). The email is a transactional send, not a drawn surface. · **Owner test:** yes (the badge and the email). ·
+**FRs:** FR-C5 (the check), FR-P1 email (3). *(FR-C5's compatibility watch is Story 9.1's — DW-87.)* · **Frame:** `S11 Sites.dc.html` S11a (the badge and its ⋯ menu). `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 draw the notifications centre, which is Story 13.4's reader over the rows this story writes. The email is a transactional send, not a drawn surface. · **Owner test:** yes (the badge, the two new ⋯ rows and the email). ·
 **Verification:** real Resend send and a deliberately broken credential on T3 (R-82).
 
 ### Story 3.8: First Run — the three doors after the first sign-in
@@ -3546,8 +3553,9 @@ So that I can start using Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** **FR-C5's compatibility watch is built here** *(moved from Story 3.7 by the owner's ruling, 2026-09-10; **DW-87**)*, because this is the first story in which any design declares `ghostCompat` and therefore the first story in which the broadcast has anything to verify: on each Ghost release, **one broadcast to every account on every plan** — normally a confirmation that the library was verified against it using each design's `ghostCompat`, and where the release does affect shipped designs, a notice naming the affected categories and recommending a redeploy through FR-J14. It is the **one carve-out FR-P2 allows to reach email** and it **rides the "Reconnect needed" channel Story 3.7 already built** — the `notifications` rows, the email shell and the send path all exist, so this story adds a trigger and a template and no mechanism. The rows are the `ghost_compat` kind, which **AD-25 now names E9's** rather than E3's. **If this story overruns its session, this is the piece that moves to Story 9.4** — A1's owner gate — never a design: the epic's own sizing note says to resize the later stories of a run, and this is not a design
 
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P1 email (3)'s one carve-out, FR-B7 (the `ghost_compat` rows). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
 
 #### Story 9.2: A1 — designs #5–8
 

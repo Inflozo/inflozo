@@ -2167,3 +2167,38 @@ reason: standing rule 1 is about API facts Inflozo depends on; these are wayfind
   which no probe does yet. `rollHint` also assumes the customer named the integration "Inflozo",
   which S2b's guide tells them to.
 
+
+### DW-87: the Ghost-release compatibility broadcast has no library to check, and is split out of Story 3.7
+
+plain: Each time the Ghost team releases a new version, Inflozo is meant to send one announcement to every
+  customer — either "we checked our ready-made sections against it and all is well", or "these kinds of
+  sections are affected, we recommend re-publishing". The check behind that announcement is a test of
+  Inflozo's own library of sections, and **there is no library yet** — the sections are built in Epics 9,
+  10 and 11. Building the announcement now would be a box to type a message into with nothing behind it.
+  So it waits for the story that first puts sections in front of customers.
+status: open
+severity: medium
+origin: Story 3.7 Create (2026-09-10) — the owner's ruling at Question 1, option 1
+owner: **Story 9.1** — A1 Headers' content model, stylesheet and designs #1-4, the first story that ships
+  designs to customers and the first in which any design declares `ghostCompat`. Epic 7's redeploy path
+  (FR-J14) exists by then, so the notice has somewhere to send people. **One caveat for whoever picks it
+  up, not a second-guess of the ruling:** epics.md flags Story 9.1 as the one story in each category run
+  that "does strictly more than the others" and names A1 as the calibration point for session sizing. If
+  9.1 overruns, this is the piece to move to A1's owner gate (Story 9.4) rather than something the
+  category itself owes — the epic's own note says to resize the later stories, and this is not a design.
+location: `_bmad-output/planning-artifacts/epics.md` (Story 3.7's ACs, where the two compatibility bullets
+  are struck with this ruling's date; Story 9.1, which gains the AC) ·
+  `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md`
+  (AD-25, amended: E3 writes `site_health`, E9 writes `ghost_compat`) ·
+  `apps/web/lib/health-email.ts` and `apps/web/lib/email-shell.ts` (Story 3.7 builds the channel this
+  notice rides — FR-P1's "Reconnect needed" send — so the receiving story writes a second template on the
+  same shell and no new send path)
+reason: FR-C5 asks for a broadcast "using each design's `ghostCompat`" and FR-P2 admits it as one of two
+  carve-outs precisely because it names affected shipped designs. `packages/library` holds a
+  `package.json` and nothing else, and `ghostCompat` appears nowhere in the tree — so today the
+  announcement could only be an owner-authored message with no verification behind it, and no
+  "re-publish" for anyone to follow. Ghost's release notes are unusable as structured data (executed),
+  so a human writes the sentence in either case; what waits is the CHECK, not the writing. Story 3.7
+  builds everything the notice needs to travel — the `notifications` rows, the email shell and the
+  "Reconnect needed" channel FR-P1 makes it ride — so the receiving story adds a trigger and a template,
+  not a mechanism.
