@@ -534,7 +534,12 @@ column for it. Only the half after the colon is secret, and that one never leave
    starts 9f10dd47ae."* — which fades with the next thing you do. You get the confirmation at the
    moment it matters and the screen stays as short as the new design.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-10)** — *"Keep the line under Admin API key as it is today."*
+So `keys-panel.tsx`'s `Mask` stays on the Admin row, fed by `admin_key_id`, and the rest of S11e is
+taken as drawn. This is a DEPARTURE FROM THE FRAME and the Fix records it as one in the Spec Change
+Log, beside the two the story already carries — the frame draws the mask under Content API key only,
+and the screen draws it under both. The reason is on the record: it is the only thing on the screen
+that says WHICH Admin key is stored, and manual test step 5 reads it.
 
 ## Owner's manual test
 
@@ -1005,8 +1010,10 @@ triage.
    filed in the repository with a catalogue row and it is what this surface is now built from.
 
    *One thing the new frame changes rather than rearranges,* and it is the only content difference
-   between it and the screen as built: it draws no masked line under **Admin API key**. That is
-   **Question 3** below, and the Fix waits on it.
+   between it and the screen as built: it draws no masked line under **Admin API key**. That was
+   **Question 3** above and the owner ruled it on 2026-09-10 — **the line stays**, exactly as the
+   screen draws it today. Everything else in S11e is taken as drawn, so the Fix has nothing left
+   to decide and no content to remove.
 
 **Not a finding, and recorded so it is not read as one:** his third line — *"If you have any queries
 and are not 100% sure, ask me questions before proceeding"* — is an instruction, not a fault. It is
