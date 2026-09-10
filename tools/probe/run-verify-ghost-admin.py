@@ -1734,14 +1734,16 @@ const shoot = async (page, name) => {
       await new Promise((resolve) => setTimeout(resolve, 3000))
       return route.continue()
     }
-    await page.route(anyApp, holdOpen)
+    // Its own matcher: `anyApp` is declared further down, after this step (review 7's own run).
+    const appUrls = (u) => u.href.startsWith(APP)
+    await page.route(appUrls, holdOpen)
     await offer().click()
     const offerBusy = await page.locator(`article a[href="${offerHref}"][aria-busy="true"]`).first()
       .waitFor({ timeout: 2500 }).then(() => true).catch(() => false)
     const offerBusyText = (await offer().innerText().catch(() => '')).trim()
     await offer().click({ force: true }).catch(() => {})
     await s2cHeading(page).waitFor()
-    await page.unroute(anyApp, holdOpen)
+    await page.unroute(appUrls, holdOpen)
     const fetchesInHold = openFetches
     const escOpened = await brandShape()
     await page.keyboard.press('Escape')

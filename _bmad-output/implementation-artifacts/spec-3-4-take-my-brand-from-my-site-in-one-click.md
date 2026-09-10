@@ -2158,6 +2158,15 @@ This is the build the owner re-tests steps 17–21 against.
 
 **Deployment:** https://app.inflozo.com (`dpl_C7wC4tQYGK97LKkSgGPxDTmRScrT`)
 
+**Deploy (2026-09-10), the seventh review's own build.** App code only — no migration. The push of
+`acd45156` built on CI: GitHub Actions run `34449306428` **completed / success** (`GITHUB_TOKEN`),
+and the production deployment `dpl_4iruz2K1tt2y4EBjvVQKcPbnDjKz` is **READY**, `target: production`,
+`meta.githubCommitSha` equal to `acd45156`, aliased to `app.inflozo.com` — confirmed through the
+Vercel API (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`). The full harness ran on it: every one of this story's
+steps green, 75 PASS in all; the run's one FAIL is Story 3.6's `keys-screen` (Review 7 record).
+
+**Deployment:** https://app.inflozo.com (`dpl_4iruz2K1tt2y4EBjvVQKcPbnDjKz`)
+
 **Commands:**
 - `pnpm check` (root: `eslint .`, `tsc --noEmit`, `node --test '*.test.ts'`) -- expected: exit 0,
   every existing test still green plus the new `probe-rule` and `style-pack` cases
@@ -2934,9 +2943,38 @@ tools/probe/run-verify-ghost-admin.py --check` — **all steps passed**. `python
   `brand-rerun`, `brand-picker-js-off`, `axe-brand-picker` and `brand-atcap-picker` among them, and
   `topBar = true` in every popup state `brand-popup` reached — the owner's finding 1 held live.
 
-**Not yet run: the harness with this review's own patches against the deployed site.** They change
-what the harness asserts (Back after the ✕, Escape, the offer's `Opening…`, the refusal inside the
-window, the stranger's id as `?brand=`, the width measurement, the popup's `gone()`) and two of them
-change the app (the ✕ replaces; a failed read or a vanished site closes the window), so the run
-belongs on the deployment CI makes of this commit. It is the second half of this record, below.
+**The second half — the review's own patches, on the review's own deployment.** The Review commit
+`acd45156` built on CI (`GITHUB_TOKEN`, `actions/runs?head_sha=acd45156ac87…`): run `34449306428`
+**completed / success**, and `app.inflozo.com` then aliased `dpl_4iruz2K1tt2y4EBjvVQKcPbnDjKz`,
+**READY**, `target: production`, `meta.githubCommitSha` equal to `acd45156` — confirmed through the
+Vercel API (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) before a byte of the run below was trusted.
+
+**Deployment:** https://app.inflozo.com (`dpl_4iruz2K1tt2y4EBjvVQKcPbnDjKz`)
+
+`python3 tools/probe/run-verify-ghost-admin.py`, T1 `GHOST6_*`, T3 `GHOST5_*`, the deployed site —
+**two runs. Run 1** died at `brand-popup` on `Cannot access 'anyApp' before initialization`: the
+`Opening…` check this review added used a matcher declared further down the file; it now has its own
+(`appUrls`), a change to the harness alone. **Run 2: 75 PASS, 1 RECORD, 1 FAIL — every one of this
+story's steps green**, and the FAIL is the same timeout inside Story 3.6's `keys-screen` (its
+caption resolved 58× to a hidden span), recorded in that story's spec. What the extended steps
+answered, in the run's own words:
+
+- `brand-popup`: Use your brand closed the window (`open = false`, cards and bar still there), Skip
+  closed it (`true`), the ✕ closed it and **Back after the ✕ re-opened nothing** (brand param
+  `null`, dialog in DOM `false`), the offer **said `Opening…` with `aria-busy`** inside the held
+  fetch and a second click started one fetch in all, and **Escape** closed it with the list and the
+  bar behind.
+- `busy-label`: **NOTHING MOVED** — the pressed control was 315×44 at rest and 315×44 busy, its
+  neighbour at the same y before and inside the hold; the press was Skip → `Skipping…`,
+  `aria-busy`, `aria-disabled`, the other form's button untouched, `held 1`.
+- `brand-stale`: the refusal **answered in the window** — dialog open, 1 card behind it, bar drawn,
+  at `/sites?brand=…` — with the true caption and nothing written.
+- `brand-ownership`: the stranger's id as `/sites/brand?site=` rendered not-found; **as
+  `/sites?brand=` the window closed onto the list** (2 cards, no dialog); both forged forms were
+  really pressed this time (`true`, `true`), each POST seen to land, the rows byte-identical, none
+  linked to the stranger's site.
+- `brand-picker` (the run's other FAIL of the first round): the chosen row carries the accent, the
+  pack merged and the preset floor run — the rows were read after the write this time.
+
+Story stays **in review**. Done is the owner's (R-80).
 
