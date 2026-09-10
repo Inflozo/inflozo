@@ -232,6 +232,13 @@ export const ORPHAN_SNAPSHOT_DAYS = 90
  * out of this file, so the screen and the harness cannot disagree about what the customer was
  * shown.
  *
+ * THE `S11d` CITATIONS BELOW ARE THE WORDS' PROVENANCE AND THEY STILL HOLD; THE CHROME AROUND THEM
+ * IS NOW `S11e Manage Keys Popup` (`design/ManageKeys/`), the owner's own frame from his test of
+ * this story on 2026-09-10 — two columns instead of one long one, because S11d's single column ran
+ * off the bottom of a laptop. Its subtitle is the constraint: *"Same content as the long screen,
+ * nothing removed."* NOT ONE SENTENCE IN THIS OBJECT MOVED FOR IT, which is how that constraint is
+ * checkable rather than claimed — the harness prints this list and the Fix left it identical.
+ *
  * NO NUMBER IS IN HERE, and `connect-rule.test.ts` asserts it over this object as it does over
  * `DISCONNECT`: the orphan clock's figure is `ORPHAN_SNAPSHOT_DAYS`'s, and nothing else on this
  * screen counts anything. `movedDomains` takes the days rather than spelling them.

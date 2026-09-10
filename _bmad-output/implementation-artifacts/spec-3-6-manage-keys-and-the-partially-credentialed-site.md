@@ -1029,7 +1029,9 @@ Four departures from the Code Map, each recorded here rather than made silently.
 acceptance criterion; three are the Code Map disagreeing with itself and one is a test that had to
 be widened rather than weakened.
 
-1. **The ⋯ row NAVIGATES; it does not open a dialog over the card.** The Code Map asked for both:
+1. **The ⋯ row NAVIGATES; it does not open a dialog over the card.** *(REVERSED by the Fix of
+   2026-09-10 — see entry 8 below. Kept as written because this log is a record of what was decided
+   when, and this is what the Dev pass decided and why.)* The Code Map asked for both:
    `site-menu.tsx`'s entry says "same `<a href>`-intercepted-into-a-`<dialog>` shape as Disconnect",
    and `(list)/page.tsx`'s says "the card's **link** to `/sites/keys?site=…` is the ⋯ row" with no
    credential read added to that page. Only one of the two can be built. **The link wins**, because
