@@ -4,7 +4,7 @@ type: 'chore'
 created: '2026-09-11'
 status: 'ready-for-dev'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
-closes_deferred: [DW-3, DW-5, DW-6, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
+closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
 ---
 
 ## In plain English
@@ -107,7 +107,7 @@ table is derived from it at Create time and must be re-derived at Dev if it has 
 | **D — the missing controls** | DW-16, DW-20, DW-28, DW-34, DW-79, DW-80, DW-85 | Four checks and one harness, all in existing patterns |
 | **E — the two walls of prose** | DW-73 | Sub-bullets in the epic context, a subject line in the catalogue |
 | **F — verify, then close** | DW-31, DW-56 | Both look already resolved; execute before believing it |
-| **G — the owner's** | DW-18 *(marketing half)*, DW-72 | Questions 1 and 2 below |
+| **G — the owner's, all three ruled 2026-09-11** | DW-18 *(marketing half)*, DW-72, DW-22 | Questions 1–3 below, and the reading key he is creating |
 
 ### Deliberately left open, and by whom
 
@@ -137,8 +137,7 @@ behind a private address) · DW-65 (atomicity wants a second unprivileged SQL pa
 architectural addition) · DW-81, DW-82, DW-84 (each unreachable from the product, or a race a
 customer has to work to reach).
 
-**Cannot be closed from this repository.** DW-22 (a read-scoped Resend key is the owner's to
-create — see the note under *Questions*) · DW-32 (1) and (2) (a post to a Server Function's build
+**Cannot be closed from this repository.** DW-32 (1) and (2) (a post to a Server Function's build
 generated action id, and a real AAGUID buffer captured from the owner's own device) · DW-41 (it
 needs GoTrue to fail from the live site) · DW-68 (the control that would name the cause is the one
 that cannot be driven; the first move — a harness sign-in against an arbitrary deployment URL —
@@ -296,8 +295,11 @@ it) · DW-75's ledger half.
 
 - [ ] `apps/web/app/(app)/app/(authed)/not-found.tsx` — **new.** M9's words in the app's Kit,
   rendered inside the shell. One control — *Take me home* to `/` — because *Browse sections* has no
-  destination (UX-DR3: absent, not greyed). The house comment records every departure from the
-  frame and why.
+  destination (UX-DR3: absent, not greyed). **The second sentence drops its count, ruled by the
+  owner 2026-09-11 (Question 3, option 1):** *"We looked everywhere — it's not in any of them."*
+  The frame's *"We looked through all 18 variants"* is not copied, because a count written down
+  goes stale and nothing would catch it on a 404 page (standing rule 4). The house comment records
+  every departure from the frame and why.
 - [ ] `apps/web/app/(app)/app/(authed)/[...unbuilt]/page.tsx` — **new**, and this is the half a
   nested `not-found.tsx` cannot do: an unmatched URL renders the **root** not-found, so a catch-all
   inside the group is what puts `/assets`, `/billing`, `/suggestions` and `/docs` inside the shell.
@@ -428,14 +430,34 @@ it) · DW-75's ledger half.
   the measurement. If it did not, **do not fix it here**: record what the ancestor actually is and
   leave the entry open with the owner's question about whether scripts-off is a committed mode.
 
-### Group G — the owner's (Questions below)
+### Group G — the owner's (all three ruled 2026-09-11)
 
-- [ ] **Question 1** — implement the option he picks for the marketing content-security policy,
-  then re-execute the console read on `inflozo.com` (the entry's measurement: two blocked inline
-  scripts and an uncaught `Minified React error #412`).
-- [ ] **Question 2** — route `useBrand`'s created project name through the taken-names idiom in
-  `lib/projects.ts` with the suffix he picks. One line plus its test.
-- [ ] **Question 3** — the 404's second sentence, whose count must not be written down.
+- [ ] **DW-18, ruled option 1** — `apps/web/csp.ts`'s `policy()`: the **marketing** branch's
+  `script-src` gains `'unsafe-inline'`; the app branch is **untouched** and keeps
+  `'nonce-…' 'strict-dynamic'`. `csp.test.ts` already asserts both sides and gains one more: the
+  app policy must **never** carry `'unsafe-inline'` in `script-src`, so a future edit to the shared
+  function cannot leak the relaxation across the host split. Then re-execute the Playwright console
+  read on `https://inflozo.com/` — the entry's measurement was two blocked inline scripts and an
+  uncaught `Minified React error #412`; expect zero blocked and no page error. The control is the
+  app host in the same run: `app.inflozo.com/sign-in` still reports zero blocked with the nonce.
+  **One claim to execute rather than assert** (standing rule 1): CSP Level 3's inline-blocking
+  algorithm is documented to **ignore `'unsafe-inline'` whenever the policy also carries a
+  nonce-source or hash-source**, which would make the relaxation inert on the app host rather than
+  dangerous there. That is a reason to be *less* worried, not a reason to relax the app policy — so
+  the test above holds the host split by assertion, and the claim itself is checked in the same
+  Playwright run by reading whether an unnonced inline script on the app host is still blocked.
+- [ ] **DW-72, ruled "Blog 2"** — `useBrand`'s create branch routes the project name through the
+  taken-names idiom in `apps/web/lib/projects.ts`. `copyName`'s "Copy of X" wording is **not** what
+  is reused: the suffix is the plain numeric one `nextUntitled` already appends, so two sites both
+  titled *Blog* give **Blog** and **Blog 2**. One line plus its case in `projects.test.ts`.
+- [ ] **DW-22, the key** — `tools/probe/.env.example` carries the `RESEND_READ_API_KEY` slot and
+  the instructions (added at Create, 2026-09-11). At Dev, once the owner has pasted the value into
+  the gitignored `tools/probe/.env`: execute `GET https://api.resend.com/emails` with it and
+  **with the control beside it** — the send-only `RESEND_API_KEY` must still answer
+  `401 restricted_api_key`, a bogus key `400 validation_error`, and no key `401 missing_api_key`.
+  A green read with no control is not a result (standing rule 2). Record the four answers in
+  `## Verification`; that is what closes the entry. **If the key does not arrive before Dev ends,
+  DW-22 stays open with the slot in place** — it blocks nothing else here.
 
 ### The close itself
 
@@ -563,6 +585,13 @@ carry the right permission. This question is only about the public marketing sit
    rule with no extra machinery, but every visit then costs a server run instead of being served
    from the cache: slower for the visitor and a real bill at marketing-page traffic.
 
+**Ruled: option 1 (owner, 2026-09-11).** *"Relax the rule for the public site only, and leave the
+app's strict rule exactly as it is."* So `policy()`'s marketing branch gains `'unsafe-inline'` in
+`script-src` and the app branch is untouched — and `csp.test.ts` gains an assertion that the app
+policy can never carry it, so a later edit to the one shared function cannot walk the relaxation
+across the host split. **DW-18's app half closes with Group A anyway**, because the catch-all route
+makes the app host's unmatched URLs dynamic and nonce-carrying.
+
 ### Question 2 — two Ghost sites with the same name make two projects with the same name. What should the second one be called?
 
 If you connect two Ghost sites that happen to have the same title — say both are called **Blog** —
@@ -578,6 +607,10 @@ Today the dashboard shows: **Blog**, **Blog**.
    copy, it is a different site, so the word would be telling you something untrue.
 3. **"Blog (blog.zeta.com)".** Names the site it came from, so it is the clearest — but it is long
    and will be cut off on a narrow card.
+
+**Ruled: option 1 (owner, 2026-09-11).** *"Blog 2."* The plain numeric suffix `nextUntitled`
+already appends — so `copyName`'s "Copy of X" wording is explicitly **not** what `useBrand` reuses,
+which was the whole reason the entry could not be patched by a reviewer.
 
 ### Question 3 — the 404 page's joke counts something. Counts go stale.
 
@@ -602,16 +635,32 @@ notices, because nobody tests a 404 page's joke.
 3. **Keep "18" exactly as drawn.** Faithful to the design, and knowingly accepts that it will be
    wrong one day.
 
-### Not a question, but it needs you (DW-22)
+**Ruled: option 1 (owner, 2026-09-11).** *"Drop the number, keep the joke."* The in-shell
+not-found reads *"This page shuffled itself out of existence. We looked everywhere — it's not in
+any of them."* It is recorded as departure 3 from `M9 404` in Design Notes, under standing rule 4.
+
+### Question 4 — the reading key, and where it goes (DW-22)
 
 Nothing in this repository can check whether an email actually **arrived** — the Resend key we hold
-is send-only. Today "did it arrive" is you, opening your inbox. That is tolerable for one magic
-link. It will not be tolerable for **Epic 12**, which builds five or six emails whose whole point is
-delivery.
+is send-only. Today "did it arrive" is you, opening your inbox. Tolerable for one magic link; not
+tolerable for **Epic 12**, whose five or six emails are acceptance-tested on delivery.
 
-The fix is one credential: **a second Resend key with read access**, beside the sending one. Only
-you can create it. Nothing in this story is blocked by it; it is here so it is not discovered at
-Epic 12.
+**Ruled: he is creating the key (owner, 2026-09-11)** — *"Let me know where to paste that key? I will create it and paste it in the file."* The slot is in place:
+
+1. **Resend dashboard → API Keys → Create API Key.** Give it the permission that is **not**
+   *"Sending access"* — sending-only is exactly what the existing key has, and it answers
+   `401 restricted_api_key` to every read. Name it something like `inflozo-probe-read`.
+2. **Paste it into `tools/probe/.env`** on the line `RESEND_READ_API_KEY=`. That file is
+   gitignored and the pre-commit scan blocks a staged value. **Not** into
+   `tools/probe/.env.example`, which is committed and holds only the empty slot and the
+   instructions.
+3. **It goes nowhere else.** Not Vercel, not `apps/web`. The app keeps the send-only key on
+   purpose, so a leak of the app's environment cannot read the mail log. This key is for probes on
+   your machine.
+
+Dev then executes one read with its control beside it — the send-only key must still be refused —
+and that is what closes the entry. If the key is not in place by the end of Dev, nothing here is
+blocked: the entry stays open with the slot waiting.
 
 ## Owner's manual test
 
@@ -659,6 +708,10 @@ alone. Named below is what each group must hit.*
   control failing on a scratch build; `run-verify-ghost-admin.py` with the three new seedings;
   DW-34's local render with its screenshots and axe result.
 - **Group F:** the scripts-off read on two routes, one with a skeleton and one without.
+- **Group G:** the Playwright console read on `https://inflozo.com/` (expect zero blocked scripts
+  and no page error, where it reported two blocked and `Minified React error #412`) with
+  `app.inflozo.com/sign-in` as the control in the same run; the four Resend answers — the new
+  reading key, the send-only key, a bogus key, no key — recorded verbatim.
 - **Everything:** `python3 tools/doc-audit.py --check` and CI green, the deploy job reached.
 
 ## Spec Change Log
