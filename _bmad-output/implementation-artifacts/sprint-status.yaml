@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: '2026-09-10'
+last_updated: '2026-09-11'
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -67,7 +67,7 @@ development_status:
   3-5-my-sites-their-caps-and-disconnecting-one: done
   3-6-manage-keys-and-a-partially-credentialed-site-as-an-ordinary: done
   3-7-the-daily-health-check-the-reconnect-email-and-the-compatibi: done
-  3-8-first-run-the-three-doors-after-the-first-sign-in: backlog
+  3-8-first-run-the-three-doors-after-the-first-sign-in: ready-for-dev
   epic-3-retrospective: optional
 
   epic-4: backlog
