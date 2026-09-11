@@ -197,6 +197,27 @@ test('exactly one catch-all under (authed), at the group root, and it only calls
 })
 
 /*
+ * EVERY PAGE UNDER (authed) DECLARES A TITLE, and this is not tidiness — it is what stops the
+ * not-found page from having none. `not-found.tsx` is a boundary and not a route segment, so no
+ * `metadata` export of its own reaches the document: the title of a `notFound()` page is the
+ * title of the SEGMENT that was being rendered. Measured rather than reasoned (Story 3.9, on the
+ * deployed site): before the catch-all declared one, axe-core reported `document-title`, impact
+ * serious, at all three widths, and the tab read the raw url.
+ */
+test('every page under (authed) declares a title — the not-found page inherits it', () => {
+  const missing = pages()
+    .filter((page) => page.startsWith(`(authed)${'/'}`))
+    .filter((page) => !/export (const metadata|async function generateMetadata)/
+      .test(readFileSync(join(APP, page), 'utf8')))
+  assert.deepEqual(
+    missing,
+    [],
+    'these pages declare no metadata, so a notFound() raised inside one renders a document with no ' +
+      '<title> — an axe `document-title` violation on a page nobody tests:\n  ' + missing.join('\n  '),
+  )
+})
+
+/*
  * …and the page it hands them to. `not-found.tsx` must sit INSIDE `(authed)`, because that is what
  * makes the shell — sidebar, account menu, `<main>` — the frame around it rather than Next's own
  * unstyled page replacing the route. DW-74's arrival control depends on the sentence being inside

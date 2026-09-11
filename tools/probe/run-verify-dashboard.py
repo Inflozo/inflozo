@@ -71,6 +71,7 @@ PG_DIR = os.path.join(WEB, 'node_modules', 'postgres')
 PROJECTS = os.path.join(WEB, 'lib', 'projects.ts')
 PLAN = os.path.join(WEB, 'lib', 'plan.ts')
 NOT_FOUND = os.path.join(WEB, 'lib', 'not-found.ts')
+FIRST_RUN = os.path.join(WEB, 'lib', 'first-run.ts')
 
 # `load_env`, `Admin`, `playwright_dir` and `axe_path` are the passkeys harness's, imported rather
 # than re-typed — the same reason `run-verify-ghost-admin.py` imports them. A second copy of the
@@ -94,13 +95,15 @@ def app_text():
         f"import {{ NAME_MAX, UNTITLED }} from 'file://{PROJECTS}';"
         f"import {{ capSentence }} from 'file://{PLAN}';"
         f"import {{ NOT_FOUND }} from 'file://{NOT_FOUND}';"
+        f"import {{ BLANK_DOOR }} from 'file://{FIRST_RUN}';"
         "console.log(JSON.stringify({"
         " untitled: UNTITLED,"
         " name_max: NAME_MAX,"
         " at_cap: capSentence('free'),"
         " not_found_title: NOT_FOUND.title,"
         " not_found_sub: NOT_FOUND.sub,"
-        " not_found_home: NOT_FOUND.home }))")
+        " not_found_home: NOT_FOUND.home,"
+        " blank_door: BLANK_DOOR.title }))")
     proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
                           capture_output=True, text=True, timeout=60)
     lines = [l for l in proc.stdout.splitlines() if l.startswith('{')]
@@ -154,6 +157,31 @@ const overlayState = (page, selector) =>
     return { visible, reachable, focusables: focusables.length, w: Math.round(box.width), h: Math.round(box.height) }
   }, selector)
 
+/* POST A FORM PAST THE CLIENT'S COURTESY — the only way to ask DW-20's question of the SERVER.
+   The delete confirm's own `onSubmit` calls `preventDefault()` while the typed name does not match,
+   and the button is `aria-disabled` until it does. That guard is right and it is not the control:
+   the claim is that `deleteProject` RE-CHECKS, so the post has to arrive. A CLONE of the form
+   carries every hidden field React put there — the `$ACTION_*` pair included — and carries none of
+   React's listeners, so `requestSubmit()` on it is exactly the crafted post a server must refuse.
+   It is also what a scripts-off browser sends, which is the other reason this is the faithful shape
+   rather than a trick. */
+const postForm = (page, selector, patch) =>
+  page.evaluate(({ sel, values }) => {
+    const form = document.querySelector(sel)
+    if (!form) return false
+    const clone = form.cloneNode(true)
+    clone.style.display = 'none'
+    for (const [name, value] of Object.entries(values)) {
+      const field = clone.querySelector(`[name="${name}"]`) ||
+        clone.querySelector('input[type="text"]')
+      if (!field) return false
+      field.value = value
+    }
+    document.body.appendChild(clone)
+    clone.requestSubmit()
+    return true
+  }, { sel: selector, values: patch })
+
 const axeOver = async (page, label, width) => {
   await page.addScriptTag({ path: process.env.AXE_PATH })
   const r = await page.evaluate(() =>
@@ -169,6 +197,14 @@ const axeOver = async (page, label, width) => {
   const page = await context.newPage()
   const consoleErrors = []
   const blocked = []
+  /* EVERY POST THIS RUN MAKES, counted. A negative assertion needs a positive control (standing
+     rule 2): "the row survived" is also what a post that never left the browser looks like, and
+     the clone below submits a form React is not listening to — so whether it reached the server at
+     all is a thing to watch rather than assume. */
+  const posts = []
+  page.on('response', (r) => {
+    if (r.request().method() === 'POST') posts.push(`${r.status()} ${new URL(r.url()).pathname}`)
+  })
   page.on('console', (m) => {
     const t = m.text()
     if (/Content Security Policy|Refused to (execute|load)/i.test(t)) blocked.push(t.slice(0, 120))
@@ -180,6 +216,35 @@ const axeOver = async (page, label, width) => {
     await page.goto(`${APP}/`, { waitUntil: 'load' })
     step('signed-in', page.url().startsWith(`${APP}/`) && !page.url().includes('/sign-in'),
          `landed on ${page.url()}`)
+
+    /* FIRST RUN IS IN THE WAY, and correctly so (Story 3.8): an account with NOTHING is redirected
+       from `/` to `/start` and sent back the moment it has anything. A brand-new fixture is exactly
+       that account, so the dashboard this harness is about is not reachable until a project exists.
+       The BLANK CANVAS door opens the very sheet the dashboard opens — same component, same action
+       — so the run goes through the door the customer would. */
+    const onStart = page.url().includes('/start')
+    let createForm = null
+    if (onStart) {
+      await page.getByRole('button', { name: SAY.blank_door, exact: false }).first().click()
+      await page.waitForSelector('#new-project-sheet[open]', { timeout: 20000 })
+      /* THE CREATE FORM'S OWN MARKUP, KEPT — the only moment in this run when it exists. At the
+         Free cap the sheet draws D4b's upgrade tile INSTEAD of the form (which is the client's
+         refusal, and it is right), so there is nothing left to post and `createProject`'s own
+         `atCap` could be deleted with every visible check still green. That is exactly DW-20's
+         claim, so the form is stashed here and re-posted at the cap below. Its `$ACTION_*` fields
+         are the build's, not the render's, so a stored copy still reaches the same action. */
+      createForm = await page.evaluate(() => {
+        const f = document.querySelector('#new-project-sheet form')
+        return f ? f.outerHTML : null
+      })
+      await page.locator('#new-project-sheet button[type="submit"]').first().click()
+      await page.waitForURL((u) => !u.pathname.endsWith('/start'), { timeout: 30000 }).catch(() => {})
+      await page.goto(`${APP}/`, { waitUntil: 'load' })
+    }
+    record('first-run', onStart
+      ? `the new account landed on /start (Story 3.8's First Run) and came through the ` +
+        `${JSON.stringify(SAY.blank_door)} door, which opens the same sheet the dashboard opens`
+      : 'the new account landed straight on the dashboard — First Run did not claim it')
 
     // ── prefetch: the console noise DW-17's tail recorded, measured on a plain dashboard load.
     await page.waitForTimeout(2500)
@@ -217,12 +282,13 @@ const axeOver = async (page, label, width) => {
          `${centred.vw}x${centred.vh} viewport — off centre by ${dx}px across and ${dy}px down ` +
          `(flush to the top-left, the defect, is (0, 0))`)
 
-    // Make the ONE project the Free cap allows, through the sheet the customer uses.
-    await page.locator(`${sheetSel} button[type="submit"]`).first().click()
-    await page.waitForFunction(() => document.querySelectorAll('article').length > 0, null, { timeout: 20000 })
-      .catch(() => null)
+    /* The ONE project the Free cap allows already exists — First Run's blank door made it above.
+       So this press is the CAP's first proof rather than a create, and the sheet is left closed. */
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
     const made = await projectsOf(USER_ID)
-    step('created', made.length === 1, `${made.length} project row(s) after one press of the sheet`)
+    step('created', made.length === 1,
+         `${made.length} project row(s) — the Free cap's one, made through the sheet`)
 
     // ── overlays, the ⋯ menu and the account menu, now that a card exists.
     for (const [label, trigger, sel] of [
@@ -254,43 +320,36 @@ const axeOver = async (page, label, width) => {
       document.activeElement !== null && document.activeElement.hasAttribute('data-cancel'))
     step('cancel-focus', onCancel, `focus is on the Cancel button when the confirm opens = ${onCancel}`)
 
-    // ── delete-typed: the WRONG name is refused and the row survives.
-    const before = await rowsJson(USER_ID)
-    const typed = page.locator('dialog[open] input[type="text"]').first()
-    await typed.fill('definitely not the name')
-    await page.locator('dialog[open] button[type="submit"]').first().click()
-    await page.waitForTimeout(2500)
-    const afterWrong = await rowsJson(USER_ID)
-    step('delete-typed', afterWrong === before,
-         `a delete with the wrong name typed left the account's rows byte-identical = ` +
-         `${afterWrong === before} (${(await projectsOf(USER_ID)).length} row(s))`)
-
-    // …and the right name really does delete it, so the refusal above is a refusal and not a
-    // delete that never ran (standing rule 2).
-    const name = made[0].name
-    await typed.fill(name)
-    await page.locator('dialog[open] button[type="submit"]').first().click()
-    await page.waitForFunction(() => document.querySelectorAll('article').length === 0, null, { timeout: 20000 })
-      .catch(() => null)
-    const afterRight = await projectsOf(USER_ID)
-    step('delete-control', afterRight.length === 0,
-         `the same form with the exact name deleted it: ${afterRight.length} row(s) left`)
-
-    // ── cap: a SECOND project on Free is refused, and the pooler says so.
-    for (const press of [1, 2]) {
+    // ── cap: a SECOND project on Free is refused — by the SERVER, not only by the sheet.
+    {
       await page.goto(`${APP}/`, { waitUntil: 'load' })
       await page.getByRole('button', { name: /New project/i }).first().click()
-      await page.waitForTimeout(400)
-      await page.locator(`${sheetSel} button[type="submit"]`).first().click()
-      await page.waitForTimeout(3000)
-      if (press === 1) continue
-      const rows = await projectsOf(USER_ID)
+      await page.waitForTimeout(600)
+      // The client's half: at the cap the sheet draws the upgrade tile and the app's own sentence.
       const said = (await page.locator(sheetSel).innerText().catch(() => '')).replace(/\s+/g, ' ')
-      step('cap', rows.length === 1 && said.includes(SAY.at_cap),
-           `after a second press at the Free cap the account holds ${rows.length} project row(s), ` +
-           `and the sheet says ${JSON.stringify(SAY.at_cap)} = ${said.includes(SAY.at_cap)}`)
+      const noForm = await page.locator(`${sheetSel} button[type="submit"]`).count()
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(300)
+      // The SERVER's half: the create form as it was under the cap, posted again now.
+      const postsBefore = posts.length
+      const reposted = Boolean(createForm) && await page.evaluate((html) => {
+        const holder = document.createElement('div')
+        holder.style.display = 'none'
+        holder.innerHTML = html
+        document.body.appendChild(holder)
+        holder.querySelector('form').requestSubmit()
+        return true
+      }, createForm)
+      await page.waitForTimeout(4000)
+      const rows = await projectsOf(USER_ID)
+      step('cap', rows.length === 1 && said.includes(SAY.at_cap) && noForm === 0 && reposted
+           && posts.length > postsBefore,
+           `at the Free cap the sheet draws the upgrade tile and no create form (${noForm} submit ` +
+           `button(s)) and says ${JSON.stringify(SAY.at_cap)} = ${said.includes(SAY.at_cap)}; and ` +
+           `the create form AS IT WAS UNDER THE CAP, re-posted past that (reached the server: ` +
+           `${JSON.stringify(posts.slice(postsBefore))}), left the account at ${rows.length} ` +
+           `project row(s) — which is createProject's own atCap, the half the sheet hides`)
     }
-    await page.keyboard.press('Escape')
 
     // ── cross-rename / cross-delete: a SECOND account's row, forged into this account's forms.
     const [stranger] = await sql`
@@ -304,38 +363,78 @@ const axeOver = async (page, label, width) => {
       await page.waitForTimeout(300)
       await page.getByRole('button', { name: which === 'rename' ? /^Rename/i : /^Delete/i }).first().click()
       await page.waitForSelector('dialog[open]', { timeout: 10000 })
-      const forged = await page.evaluate(({ id, kind, strangerName }) => {
-        const form = document.querySelector('dialog[open] form')
-        if (!form) return false
-        const field = form.querySelector('input[name="id"]')
-        if (!field) return false
-        field.value = id
-        const text = form.querySelector('input[type="text"]')
-        if (text) {
-          // The typed confirm must be RIGHT for the stranger's row, or the refusal proves only
-          // that the name did not match — which is the other step's claim, not this one's.
-          text.value = kind === 'delete' ? strangerName : 'Renamed by a stranger'
-          text.dispatchEvent(new Event('input', { bubbles: true }))
-        }
-        form.querySelector('button[type="submit"]').click()
-        return true
-      }, { id: stranger.id, kind: which, strangerName: stranger.name })
+      const postsBefore = posts.length
+      // The typed confirm is set RIGHT FOR THE STRANGER'S ROW, or a refusal would prove only that
+      // the name did not match — which is `delete-typed`'s claim, not this one's.
+      const forged = await postForm(page, 'dialog[open] form', {
+        id: stranger.id,
+        [which === 'delete' ? 'typed' : 'name']:
+          which === 'delete' ? stranger.name : 'Renamed by a stranger',
+      })
       await page.waitForTimeout(3000)
+      const reached = posts.length > postsBefore
       const after = JSON.stringify(await sql`select * from public.projects where id = ${stranger.id}`)
-      step(`cross-${which}`, forged && after === strangerBefore,
+      step(`cross-${which}`, forged && reached && after === strangerBefore,
            `a project id owned by a DIFFERENT account was forged into this account's ${which} form ` +
-           `and submitted (forged = ${forged}); the stranger's row is byte-identical afterwards = ` +
-           `${after === strangerBefore}`)
+           `and submitted (forged = ${forged}, and it REACHED the server: ` +
+           `${JSON.stringify(posts.slice(postsBefore))}); the stranger's row is byte-identical ` +
+           `afterwards = ${after === strangerBefore}`)
       await page.keyboard.press('Escape')
     }
     await sql`delete from public.projects where id = ${stranger.id}`
+
+    /* ── delete-typed AND delete-control COME LAST OF THE DASHBOARD STEPS, because the control
+       really does delete the account's only project — and an account with nothing is sent to
+       /start by First Run (Story 3.8), so every step above that needs a card would find none.
+       Executed rather than reasoned: the first ordering put the cap proof after this and it waited
+       thirty seconds for a "New project" button on the First Run screen. */
+    // ── delete-typed: the WRONG name is refused and the row survives.
+    const name = made[0].name
+    /* THE CLONE'S POST IS A REAL NAVIGATION, so the dialog is gone afterwards and the second post
+       needs the confirm opened again — the first writing of this step reused a form that no longer
+       existed, and its control silently did nothing while the refusal above "passed" (found on the
+       deployed site, 2026-09-11). */
+    const openConfirm = async () => {
+      await page.goto(`${APP}/`, { waitUntil: 'load' })
+      await page.locator('button[aria-label^="Options for "]').first().click()
+      await page.waitForTimeout(300)
+      await page.getByRole('button', { name: /^Delete/i }).first().click()
+      await page.waitForSelector('dialog[open]', { timeout: 10000 })
+    }
+    await openConfirm()
+    const before = await rowsJson(USER_ID)
+    const postsBeforeWrong = posts.length
+    const postedWrong = await postForm(page, 'dialog[open] form', { typed: 'definitely not the name' })
+    await page.waitForTimeout(3000)
+    const wrongReached = posts.length > postsBeforeWrong
+    const afterWrong = await rowsJson(USER_ID)
+    step('delete-typed', postedWrong && wrongReached && afterWrong === before,
+         `a delete POSTED with the wrong name typed — past the client's own greyed button, which is ` +
+         `a courtesy and not the control — REACHED THE SERVER (${JSON.stringify(posts.slice(postsBeforeWrong))}) ` +
+         `and left the account's rows byte-identical = ${afterWrong === before} ` +
+         `(${(await projectsOf(USER_ID)).length} row(s))`)
+
+    // …and the right name really does delete it, so the refusal above is a refusal and not a
+    // delete that never ran (standing rule 2). Same form, same route, one value different.
+    await openConfirm()
+    const postedRight = await postForm(page, 'dialog[open] form', { typed: name })
+    await page.waitForTimeout(4000)
+    const afterRight = await projectsOf(USER_ID)
+    step('delete-control', postedRight && afterRight.length === 0,
+         `the same form with the exact name ${JSON.stringify(name)} deleted it: ` +
+         `${afterRight.length} row(s) left`)
 
     // ── not-found: every unbuilt destination, and one nonsense URL, INSIDE the shell.
     const landings = []
     for (const path of [...UNBUILT, '/nothing-here-3-9']) {
       blocked.length = 0
-      const r = await page.goto(`${APP}${path}`, { waitUntil: 'load' })
-      await page.waitForTimeout(1200)
+      // ONE RETRY, and `domcontentloaded`: a cold serverless start on an unmatched url overran the
+      // 30s default once on a run where every other landing was instant (executed, 2026-09-11).
+      // The assertions below are about the DOCUMENT, so waiting for every subresource buys nothing.
+      let r = await page.goto(`${APP}${path}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+        .catch(() => null)
+      if (!r) r = await page.goto(`${APP}${path}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+      await page.waitForTimeout(1500)
       const seen = await page.evaluate(() => {
         const main = document.querySelector('main')
         return {
@@ -363,8 +462,8 @@ const axeOver = async (page, label, width) => {
     // ── axe over the in-shell not-found, at the three widths.
     for (const width of [1440, 834, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 800 : 900 })
-      await page.goto(`${APP}/nothing-here-3-9`, { waitUntil: 'load' })
-      await page.waitForTimeout(800)
+      await page.goto(`${APP}/nothing-here-3-9`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+      await page.waitForTimeout(1000)
       await axeOver(page, 'not-found', width)
     }
   } catch (error) {
@@ -495,6 +594,7 @@ def main():
             print(f'  postgres driver: {"resolved" if os.path.isdir(PG_DIR) else "NOT FOUND"}')
             print(f'  the app says at the cap: {json.dumps(says["at_cap"])}')
             print(f'  the not-found says:      {json.dumps(says["not_found_title"])}')
+            print(f'  First Run\'s blank door:  {json.dumps(says["blank_door"])}')
             status, read = admin.call('GET', f'/admin/users/{made[0]}')
             ok = status == 200 and read.get('id') == made[0]
             print(f'  {"PASS" if ok else "FAIL"}  admin round trip: create, read back ({status})')
