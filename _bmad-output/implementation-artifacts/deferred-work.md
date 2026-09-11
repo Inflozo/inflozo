@@ -1836,6 +1836,14 @@ plain: While checking Story 3.4 against the live site, the test browser sometime
   moment. The test now tries the page once more and says out loud that it had to, so the problem
   cannot hide; nobody has yet found what causes it.
 status: open
+  STORY 3.9 REVIEW (2026-09-11) — FOUR CONSECUTIVE RUNS FAILED TO FINISH, and the review's reading is
+  that this is NOT DW-68 but its neighbour: one died on `net::ERR_NETWORK_CHANGED` (this machine), and
+  three hit the 2700s ceiling. The site answered 200 on both hosts in under a second while the fourth
+  was timing out, and `run-verify-dashboard.py` and `run-verify-passkeys.py` both passed against the
+  same deployment in the same hour — so browser-driven runs against this deployment do complete. What
+  changed is the run's LENGTH: `moved-domains` performs a full disconnect-and-reconnect through the UI
+  per hint, which Story 3.9 took from two to five. Recorded here so a future session does not read the
+  timeouts as this entry's 60-second stall; the length problem is DW-92.
 severity: medium
 origin: Story 3.4 Review (2026-09-08) — seven consecutive full harness runs against app.inflozo.com,
   each losing exactly one navigation out of roughly fifty
@@ -2082,7 +2090,11 @@ reason: Both are append-only by construction — every story adds its findings t
 plain: A safety test that proves nobody can put your brand on someone else's site still passes every
   time. What is flaky is only the part that checks the button press reached the server at all, so the
   test sometimes goes red without anything being wrong. It costs nothing on the live site.
-status: done 2026-09-11 (Story 3.9)
+status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+  `run-verify-ghost-admin.py` did not complete a run in four attempts (the spec's `## Verification`,
+  Executed at Review, with the control: the site answered 200 on both hosts and two other browser
+  harnesses passed against the same deployment). So the change below is IN the harness and has never
+  been executed. Closing it needs one completed run, which is what DW-92 is about.
 resolution: Story 3.9 (2026-09-11) — the arrival control is reliable because the page changed
   under it. `brand-ownership` reads the landing out of `<main>`, and Next's default not-found
   REPLACED the route rather than filling the landmark — which is the entry's own eighth-run datum.
@@ -2352,7 +2364,11 @@ reason: The mechanism is shared by both windows and was built in Story 3.6's Fix
 plain: If you have connected the same Ghost site at three addresses and one of them is still connected,
   the "Moved domains?" note on the newest card may talk about the 90-day safety-net copy (an old,
   disconnected one) when a live twin exists — or the other way round.
-status: done 2026-09-11 (Story 3.9)
+status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+  `run-verify-ghost-admin.py` did not complete a run in four attempts (the spec's `## Verification`,
+  Executed at Review, with the control: the site answered 200 on both hosts and two other browser
+  harnesses passed against the same deployment). So the change below is IN the harness and has never
+  been executed. Closing it needs one completed run, which is what DW-92 is about.
 resolution: Story 3.9 (2026-09-11) — `findSiteByAdminKeyId`'s `order by` gains `(s.disconnected_at
   is null) desc` ahead of `s.created_at desc`, so a live twin outranks an old disconnected one and
   the hint the customer is shown is about a record he can still open. Proved by DW-85 (1)'s
@@ -2388,7 +2404,11 @@ reason: a race a customer has to work to reach — the panel's own saves answer 
 ### DW-85: three live-harness controls Manage keys still owes
 
 plain: Three things the API keys screen does right are not yet proved on the live site every run.
-status: done 2026-09-11 (Story 3.9)
+status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+  `run-verify-ghost-admin.py` did not complete a run in four attempts (the spec's `## Verification`,
+  Executed at Review, with the control: the site answered 200 on both hosts and two other browser
+  harnesses passed against the same deployment). So the change below is IN the harness and has never
+  been executed. Closing it needs one completed run, which is what DW-92 is about.
 resolution: Story 3.9 (2026-09-11) — all three seedings are in `run-verify-ghost-admin.py`'s
   `moved-domains` and `brand-ownership`: (1) the same decoy with `disconnected_at` nulled draws
   `KEYS.movedStillConnected` and NOT the snapshot wording; (2) a decoy under `OTHER_USER_ID`
@@ -2485,7 +2505,16 @@ plain: If someone browses with JavaScript switched off, some screens never get p
   broken for anyone with JavaScript on, which is everybody by default. The question underneath it is
   whether Inflozo promises to work at all without JavaScript, and that is the owner's call, not a
   developer's.
-status: open
+status: done 2026-09-11 (Story 3.9 review) — RULED, and the ruling is that nothing is built
+resolution: The owner ruled it at Story 3.9's Question 5 (option 1, 2026-09-11): *"Say plainly that
+  the app needs JavaScript, and keep the no-JavaScript promise only where it is already true — the
+  forms."* So the streaming stays, every route keeps its own skeleton (R-98) and its first paint, and
+  no route is changed. The entry closes on the DECISION, not on a change — which is why it is closed
+  rather than left for a story that would spend on it.
+  PROPAGATED (standing rule 3), because the risk this entry really carries is a later session reading
+  a passing `js-off` step as a promise: the posture is now a scope statement in
+  `ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` § *Where the floor stops*, beside R-6's, and the
+  two harness steps that prove the forms half cite it.
 severity: low
 origin: Story 3.9 Dev (2026-09-11), verifying DW-56 — MEASURED on the deployed site with a real
   session, not reasoned
@@ -2545,3 +2574,28 @@ reason: `document.title` in the error boundary and `inert`/`aria-hidden` on the 
   ceremony pending — presence simulation off — and running the dashboard harness's focus probe plus axe
   over the card is the repeatable form; a throwing route for the error page exists only on a local
   build, which no harness starts today.
+
+### DW-92: the Ghost-admin harness can no longer finish a run, so its own newest controls have never executed
+
+plain: The big automated check that drives a real browser against the live site has grown long enough
+  that it runs out of time before it finishes — four tries in a row. Everything it newly checks is
+  therefore written down but never actually run. It needs a way to run one section on its own.
+status: open
+severity: medium
+origin: Story 3.9 review (2026-09-11) — four consecutive attempts, one network death and three 2700s
+  timeouts, with the site answering 200 on both hosts throughout and two sibling harnesses passing
+owner: the next story that needs a `run-verify-ghost-admin.py` step executed — which is the next story
+  to touch connect, Manage keys or Use your brand, and immediately Story 3.9's own re-run
+location: tools/probe/run-verify-ghost-admin.py (`run_browser`'s `limit`, `moved-domains`'s
+  `movedAgain()`, and the absence of a step filter) · the steps owed a run: the three `rendered()`
+  retargets, DW-74's `notFoundInMain`, DW-85 (1)(2)(3), DW-83's two-record seeding
+reason: `moved-domains` drives a real disconnect-and-reconnect through the product's UI for every hint
+  it asserts; Story 3.9's Dev phase took that from two to four and its review to five, and the Dev
+  phase had ALREADY measured the first post-seeding run hitting the old 1200s ceiling "with the browser
+  half still working" — which is why the ceiling is 2700s, and it is not enough either. Raising it
+  again is the wrong move on its own: the run is one `node` process with no step filter, so proving a
+  single step costs the whole suite, and `capture_output=True` buffers the child so a timed-out run can
+  print no notes at all. THE FIX THE REVIEW WOULD MAKE, not made here because it is a tool change with
+  its own catalogue row and this story is a sweep: a `--only <step>` argument that runs the named steps
+  and their seedings, the way `--check` already selects a subset. Then a story that changes one step
+  pays for one step. Until it exists, every closure resting on this harness is owed a full run.

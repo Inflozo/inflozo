@@ -309,7 +309,8 @@ it) · DW-75's ledger half.
   a real HTTP 404 rather than committing 200 before the page runs.
 - [x] `apps/web/app-routes.test.ts` (or its sibling) — assert the catch-all does not shadow a built
   route: every route directly under `(authed)` still resolves to its own page.
-- [x] `tools/probe/run-verify-ghost-admin.py` — `rendered()` stops matching Next's `could not be
+- [ ] `tools/probe/run-verify-ghost-admin.py` — **CODE LANDED, RUN OWED** (four attempts, none
+  completed — see `## Verification`, Executed at Review). `rendered()` stops matching Next's `could not be
   found` and matches the app's own sentence; `brand-none`, `brand-ownership` and the `?site=`
   forgery follow it. **DW-74's arrival control becomes reliable in the same change**: the forged
   press now lands on a page whose sentence is inside `<main>`, which is the "what varies is when it
@@ -368,7 +369,8 @@ it) · DW-75's ledger half.
   `passkeyPending`. It costs nothing visually, it is what "the OS window is the only thing in
   focus" already means, and axe does not audit an inert subtree. **Re-run axe on S1c held open** —
   the entry's measurement was 1 `color-contrast` violation over 9 nodes, impact serious.
-- [x] **DW-61** — `banner.tsx`'s content slot from `<span>` to `<div>`. `<span>` is phrasing
+- [ ] **DW-61 — the change is deployed; the LOOK is owed** (the owner's manual test step 5, and the
+  harness steps that assert the notices' boxes are in the unexecuted run above) — `banner.tsx`'s content slot from `<span>` to `<div>`. `<span>` is phrasing
   content and cannot legally contain the `<form>` four notice blocks and the passkey nudge put in
   it. **Look at every Banner at all three widths after the change** — inline to block is a real
   layout difference even when the flex parent absorbs it — and re-run the harness steps that assert
@@ -402,7 +404,7 @@ it) · DW-75's ledger half.
   **local** `next build && next start`, screenshot at all three widths, axe run, route removed
   before the commit. Nothing throwing reaches production. Record the screenshots and the axe result
   in `## Verification`; that is the "rendered once and axe run on it" the entry asks for.
-- [x] **DW-85** — three seedings in `run-verify-ghost-admin.py`: (1) a matched record that is
+- [ ] **DW-85 — CODE LANDED, RUN OWED** (the same four attempts) — three seedings in `run-verify-ghost-admin.py`: (1) a matched record that is
   **still connected**, drawing `KEYS.movedStillConnected`; (2) a decoy under `OTHER_USER_ID`
   carrying the same Admin key id, producing **no** hint — the cross-account control for
   `findSiteByAdminKeyId`'s `user_id` clause; (3) `useBrand`'s **popup** branch on a vanished row
@@ -498,10 +500,12 @@ had not run. Every patch was applied in the Review commit; the defers are ledger
   `brandRetry` in `lib/probe-rule.ts` (paint the winner's project · retry the slug with room ·
   re-render at the cap), pure and under `probe-rule.test.ts`, and the name is re-derived from the
   re-read.
-- [x] [Review][Patch] DW-83's order was never in front of two matching records at once — every
+- [ ] [Review][Patch] DW-83's order was never in front of two matching records at once — every
   seeding had one candidate, so reverting `(s.disconnected_at is null) desc` left every step green
   [tools/probe/run-verify-ghost-admin.py:4127] — `moved-domains` now seeds a live OLDER decoy beside
-  a disconnected NEWER one and asserts the live hint; ledger DW-83 amended.
+  a disconnected NEWER one and asserts the live hint. **The seeding is written and UNEXECUTED: the
+  harness did not complete a run in four attempts (DW-92), so this patch is owed the same run as the
+  three it was written beside.** Ledger DW-83 reopened with its code landed and its proof owed.
 - [x] [Review][Patch] The dashboard harness's "a way home" was satisfied by the sidebar's own
   Projects row, and the catch-all's status was recorded rather than asserted
   [tools/probe/run-verify-dashboard.py:443] — `home` now reads the page's own button inside
@@ -541,6 +545,10 @@ had not run. Every patch was applied in the Review commit; the defers are ledger
 - [x] [Review][Defer] DW-5's register row still has no mechanism that announces the expiry —
   GitHub sends `github-authentication-token-expiration` on every answer and `check-access.py`
   could read it [tools/probe/check-access.py] — deferred, pre-existing shape; **DW-90**.
+- [x] [Review][Defer] The Ghost-admin harness cannot finish a run — four attempts, so every control
+  it newly carries is unexecuted and it needs a `--only <step>` filter
+  [tools/probe/run-verify-ghost-admin.py] — deferred, a tool change with its own catalogue row;
+  **DW-92**, and it blocks the re-run DW-74, DW-83 and DW-85 are owed.
 - [x] [Review][Defer] DW-34's title and DW-37's `inert` are pinned by no repeatable control —
   delete either line and every gate stays green [apps/web/app/(app)/app/error.tsx:52,
   apps/web/app/(app)/app/sign-in/sign-in-form.tsx:156] — deferred, wants a local-build harness
@@ -768,7 +776,15 @@ This is the ledger's **DW-89**, and it is a decision and not a patch, which is w
    customer, to serve a mode almost nobody uses.
 3. **Decide later, when a customer asks.** Leave DW-89 open with no owner; nothing is spent.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-11).** *"Say plainly that the app needs JavaScript, and keep the
+no-JavaScript promise only where it is already true — the forms."* So **nothing is built and nothing
+is changed**: every route keeps its own skeleton (R-98) and its streaming first paint, and DW-89
+closes as ruled rather than waiting for a story. The posture is now written where a future session
+will meet it — EXPERIENCE.md § *Where the floor stops*, beside the other scope statements — because
+the thing that would otherwise go wrong is a later session reading the harness's passing `js-off`
+step as "the app works without JavaScript" and building to it. **The promise the forms already keep
+is the whole promise, and it is proved, not asserted:** `js-off` and `keys-js-off` post the connect
+wizard with scripts off on every run.
 
 ## Owner's manual test
 
@@ -1120,7 +1136,47 @@ RESULT: all steps passed   exit 0 — the rows are found by the label's PREFIX a
 2. `node did not finish inside 2700s` with **no note written at all**, and the account count one
    LOWER at the end than at the start — a hang from the first browser step, DW-68's shape, on a
    run that overlapped the Review checkpoint's deploy. Not a result.
-3. The run recorded below, with DW-83's new two-record seeding in `moved-domains`.
+3. Timed out at 2700s, no notes, the fixture swept.
+4. Timed out at 2700s, no notes, the fixture swept — **run alone, against the deployed checkpoint,
+   with DW-83's new two-record seeding in `moved-domains`.**
+
+**FOUR ATTEMPTS, NO COMPLETED RUN. The three retargeted steps, DW-85's three seedings and DW-83's
+new one are WRITTEN AND UNEXECUTED**, and this record says so rather than inferring them from the
+code being present. What the attempts do establish:
+
+```
+the control, taken at 15:20 while attempt 4 was timing out:
+  https://app.inflozo.com/sign-in   200 in 0.74s        dig @1.1.1.1 app.inflozo.com  -> answered
+  https://inflozo.com/              200 in 1.22s        the local stub resolved it too
+  run-verify-dashboard.py           all steps passed, against this same deployment, 14:0x
+  run-verify-passkeys.py            all steps passed, alone, 13:00
+```
+
+So the site is up, this machine's DNS is answering, and browser-driven runs against this deployment
+DO complete — two of them did. **The likeliest cause is the run's LENGTH, not a hang**, and it is
+this story's own doing: `moved-domains` drives a full disconnect-and-reconnect through the product's
+UI for every hint it checks, DW-85 took that from two to four, and the review's DW-83 seeding took it
+to five. The Dev phase already measured the shape — its own comment records the first run after the
+seedings landing hitting the **old 1200s ceiling "with the browser half still working"**, which is
+why the ceiling was raised to 2700s. It is now not enough either. `capture_output=True` gives the
+child a pipe, so Node buffers and a timed-out run can print no notes at all: "no notes" is not
+evidence of an early hang, which is why nothing here claims one.
+
+**What this costs, stated rather than absorbed:** DW-74, DW-83 and DW-85 are amended back to open
+with their code landed and their proof owed; the two task boxes that rest only on this harness are
+un-ticked. DW-67's PAGE half is unaffected — `run-verify-dashboard.py` proved it on the deployed
+site, in `<main>`, at 404, with zero axe violations at three widths. The harness needs a way to run
+one step, which is **DW-92**.
+
+**AND THE SENTENCE THAT WAS HERE BEFORE IT WAS TRUE IS THE REVIEW'S OWN WORST FINDING.** This block
+said *"the run recorded below"* while attempt 4 was still running and nothing was below it. The
+Deploy phase read that, wrote *"both already ran green against this exact commit at Review"* in its
+own record (`94776a20`, pushed), and flipped the three checkboxes that rest on this harness. **The
+dashboard half of that sentence is true; the ghost-admin half was not.** A pushed commit is not
+edited (the message stands as history); the correction is here, in the live document, and in the
+change log. It is standing rule 2 caught happening — *a result whose control did not pass is not a
+result*, and a result that has not finished is not one either — and it is why the record below says
+what each attempt actually did rather than what it was expected to do.
 
 ### Executed at Schema — the four constraints (2026-09-11)
 
@@ -1337,3 +1393,16 @@ retarget, DW-61, DW-85) are flipped here: the code for all three is in the Revie
 verified in its own record above; only the checklist had not caught up. `owner_test: pending` and
 every step in `## Owner's manual test` now carries the live URL. Story stays `in-review`: Done is
 the owner's (R-80).
+
+**2026-09-11 — Review, after Deploy, and a correction to the record.** The owner ruled Question 5
+(option 1) and it is propagated: DW-89 closes on the decision, the posture is a scope statement in
+`EXPERIENCE.md` § *Where the floor stops*, and the `js-off` step cites it so a passing step is never
+read as a promise about the app.
+**The correction.** The Review block above briefly said *"the run recorded below"* about a
+`run-verify-ghost-admin.py` run that was still going; the Deploy commit (`94776a20`) read it, wrote
+*"both already ran green against this exact commit at Review"*, and flipped three checkboxes on that
+reading. The dashboard harness did run green; **the ghost-admin harness has not completed a run in
+four attempts** and its three retargeted steps and four seedings remain unexecuted. The pushed commit
+stands as history; the live record is corrected here, the boxes are un-ticked, and DW-74, DW-83 and
+DW-85 go back to open with their code landed and their proof owed. Standing rule 2, caught in this
+story rather than by the next one.

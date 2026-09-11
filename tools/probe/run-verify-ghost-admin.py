@@ -73,8 +73,12 @@ list gone stale — the sibling harness's own note):
                  FIELD as it is typed, before anything is submitted
   js-off         the keys form is PROGRESSIVELY ENHANCED — `method=post`, an `action` attribute that
                  posts to the page, and React 19's encoded `$ACTION_*` hidden fields — so a scripts-off
-                 browser submits it natively to the server action. (Whether the authed shell paints
-                 it visibly without JS is DW-56, a shell question, not this story's.)
+                 browser submits it natively to the server action. THE FORM IS WHAT THIS PROVES, and
+                 the form is the whole of what the app promises without JavaScript: the owner ruled at
+                 Story 3.9's Question 5 (2026-09-11) that the app needs JavaScript and the promise is
+                 kept only where it is already true — a route whose page streams stays on its skeleton
+                 with scripts off, deliberately (DW-89; EXPERIENCE.md § Where the floor stops). The
+                 shell's own no-JS paint was DW-56 and is closed: R-98's route-group move did it.
   http-connect   a plain-http address SUBMITTED after the warning: the browser skips its check, the
                  server's own call carries the key, the deployed function receives a 301 (read off the
                  audit) and answers `ghost_redirected`, and NO site connects
@@ -1272,8 +1276,11 @@ const shoot = async (page, name) => {
       njMethod.toLowerCase() === 'post' && njAction !== null && njPE.length > 0,
       `the keys form is a progressively-enhanced server action: method=${JSON.stringify(njMethod)}, an action ` +
       `attribute present (${JSON.stringify(njAction)}, posts to the page), and React's ${njPE.length} ${JSON.stringify(njPE)} ` +
-      `hidden field(s) a scripts-off POST carries. (Whether the authed shell paints it visibly without JS is ` +
-      `DW-56, a shell question, not this story's.)`)
+      `hidden field(s) a scripts-off POST carries. THIS IS A CLAIM ABOUT THE FORM AND NOT ABOUT THE ` +
+      `APP: the owner ruled (Question 5 of Story 3.9, 2026-09-11) that Inflozo needs JavaScript and ` +
+      `keeps the no-JavaScript promise only where it already holds, which is here — a streaming route ` +
+      `stays on its skeleton with scripts off by design (DW-89). The shell's own no-JS paint was DW-56 ` +
+      `and R-98 closed it.`)
 
     // ── A plain-http address SUBMITTED. The field warned as it was typed; the customer submits
     //    anyway. The browser skips its Content-key check (`skipped_http`) and the server's own call

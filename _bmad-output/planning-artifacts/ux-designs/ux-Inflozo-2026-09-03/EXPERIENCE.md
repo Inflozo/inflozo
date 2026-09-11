@@ -541,6 +541,18 @@ fix.
 check and **warns before the edit lands, never blocks** — responsibility transfers to the user at
 that point, and the warning is what makes the transfer fair.
 
+**The app needs JavaScript, and the forms are the part that does not** (the owner's ruling at Story
+3.9's Question 5, option 1, 2026-09-11; DW-89). Measured on the deployed site with a real session and
+scripts off: the connect wizard renders **all three key fields and its submit**, and posts — every
+control in this app is a plain `<form action={…}>`, which is why. But a route whose page streams stays
+on its skeleton for ever, because Next swaps the fallback for the real content with an inline script:
+`/` and `/account` read "Loading…" and never change. That is **a scope statement and not a defect to
+fix** — the alternative is every screen waiting for all its data before showing anything, which costs
+every customer's first paint to serve a mode almost nobody uses, and R-98's per-route skeleton is the
+thing being traded away. **So: no surface promises to work without JavaScript, and the forms' promise
+is kept because it is already true and is proved on every run** (`run-verify-ghost-admin.py`'s
+`js-off` and `keys-js-off`). A passing `js-off` step is evidence about the FORMS, never about the app.
+
 ## Responsive & Platform
 
 Three widths for Inflozo's own surfaces: **1440 · 834 · 390**, per `DESIGN.md` § Layout & Spacing.
