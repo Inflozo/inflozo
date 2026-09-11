@@ -2,7 +2,7 @@
 title: 'Story 4.2 — The section runtime: one source, two emitters, proven to agree'
 type: 'feature'
 created: '2026-09-11'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'fa35a3715feab0402447f80efe8a8748ae7fdd01'
 owner_test: none
 review_loop_iteration: 0
@@ -143,50 +143,50 @@ from the vocabulary so a later story cannot silently forget one.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/library/src/vocabulary.ts` -- add `safeCssColor(value, fallbackToken)`: parse to
+- [x] `packages/library/src/vocabulary.ts` -- add `safeCssColor(value, fallbackToken)`: parse to
       `#rgb`/`#rrggbb`/`#rrggbbaa`, `rgb()`/`rgba()`, `hsl()`/`hsla()`, else return the fallback
       token -- AD-36 #4's rule belongs beside its three siblings, in the one place both emitters and
       4.3's shim read (Story 4.1's review found duplicated copies had already drifted).
-- [ ] `packages/section-runtime/src/marks.ts` -- AD-4's single serializer over `strong|em|u|a`, with
+- [x] `packages/section-runtime/src/marks.ts` -- AD-4's single serializer over `strong|em|u|a`, with
       `newTab`/`rel` on the `a` mark, the per-prop `PropDef.marks` allow-list, R-27's `tokens`
       allow-list, and FR-Q3's plain-text lock truncating `marks` to `[]` -- it does not exist and
       AD-4 names this exact file.
-- [ ] `packages/section-runtime/src/core.ts` -- the shared walk lifted from `compile.js`: the token
+- [x] `packages/section-runtime/src/core.ts` -- the shared walk lifted from `compile.js`: the token
       and user-text machinery, directive consumption, `bindExpr`/`bindValue`, FR-H8's always-present
       guard with its default-by-kind, `data-bind-style` through `safeCssColor`, and the refusal for
       every directive this story does not emit -- one implementation is the whole claim.
-- [ ] `packages/section-runtime/src/index.ts` -- export `renderCanvas(doc, src, input)` and
+- [x] `packages/section-runtime/src/index.ts` -- export `renderCanvas(doc, src, input)` and
       `renderTheme(doc, src, input)` plus `RENDERED_DIRECTIVES` -- the injected `doc` is AD-1's "a
       DOM global it did not receive as an argument", made structural.
-- [ ] `packages/section-runtime/reference-tokens.css` -- the full custom-property contract at one set
+- [x] `packages/section-runtime/reference-tokens.css` -- the full custom-property contract at one set
       of values, covering every FR-E1 row and every property `reference-design/style.css` reads,
       light and dark -- without it a design's CSS resolves to nothing and the canvas renders blank.
-- [ ] `packages/section-runtime/src/agreement.test.ts` -- move `tools/stress/test-renderer-agreement.js`
+- [x] `packages/section-runtime/src/agreement.test.ts` -- move `tools/stress/test-renderer-agreement.js`
       here, jsdom supplied by the test, keeping every existing check (the file prints its own count;
       do not restate it anywhere) and adding one for marks, one
       for the always-on guard and one for `data-bind-style` -- in-package is the only way `pnpm check`
       and therefore CI ever runs the epic's central claim.
-- [ ] `packages/section-runtime/src/ad36.test.ts` -- move `tools/stress/test-ad36.js` here, adding
+- [x] `packages/section-runtime/src/ad36.test.ts` -- move `tools/stress/test-ad36.js` here, adding
       the colour vector (inert **and** legitimate) -- AD-36's own rule is that the test is part of
       the invariant.
-- [ ] `packages/section-runtime/src/tokens.test.ts` -- assert every `var(--…)` in
+- [x] `packages/section-runtime/src/tokens.test.ts` -- assert every `var(--…)` in
       `reference-design/style.css` names a property the contract declares -- an unset custom property
       fails silently, so the contract is decorative without this.
-- [ ] `packages/section-runtime/package.json` -- add `jsdom` as a **devDependency** -- the tests need
+- [x] `packages/section-runtime/package.json` -- add `jsdom` as a **devDependency** -- the tests need
       a document to inject; the runtime itself takes one.
-- [ ] `tools/stress/compile.js` -- replace the body with a thin CommonJS adapter over
+- [x] `tools/stress/compile.js` -- replace the body with a thin CommonJS adapter over
       `@inflozo/section-runtime`, keeping its exported names, and delete the two moved test files --
       `build.js`'s 70-section gscan harness must keep running against **one** implementation.
-- [ ] `tools/doc-audit.py` -- repoint the two catalogue rows for the moved proofs and the row for
+- [x] `tools/doc-audit.py` -- repoint the two catalogue rows for the moved proofs and the row for
       `compile.js` -- a file under `tools/` that moves without its row turns the gate red.
-- [ ] `CLAUDE.md` · `HANDOVER.md` · `build-sequence.md` · `epics.md` -- update every reference to the
+- [x] `CLAUDE.md` · `HANDOVER.md` · `build-sequence.md` · `epics.md` -- update every reference to the
       two moved proofs to their new paths, say the proofs now run in CI, and **replace their stale
       check counts with wording that cannot go stale** ("every check the file prints") -- standing
       rule 7: end a move by grepping for the old name; standing rule 4: counts are derived.
-- [ ] `.../ARCHITECTURE-SPINE.md` -- amend AD-36's fourth bullet in the `*(Story 4.2, 2026-09-11)*`
+- [x] `.../ARCHITECTURE-SPINE.md` -- amend AD-36's fourth bullet in the `*(Story 4.2, 2026-09-11)*`
       style AD-2 already uses: the colour parser lives in `packages/library` and `ghost-shim` calls
       it, for the same reason AD-36 #1 already moved out of the shim -- propagate, never localise.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-93 with
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-93 with
       `status: done 2026-09-11 (Story 4.2)` and a `resolution:` line -- it names this story as owner.
 
 **Acceptance Criteria:**
@@ -234,6 +234,55 @@ The theme form, verbatim from FR-H8:
 ```
 
 ## Verification
+
+**Recorded — the Dev run, 2026-09-11, Node 24.18.1.** The baseline was captured BEFORE the move, so
+a check lost in the move would be visible rather than inferred (standing rule 2).
+
+| Gate | Before (baseline) | After |
+|---|---|---|
+| the AD-36 proof | `tools/stress/test-ad36.js` — 14 checks | `packages/section-runtime/src/ad36.test.ts` — 16 tests, every baseline check carried over plus the AD-36 #4 colour vector, inert and legitimate |
+| the agreement proof | `tools/stress/test-renderer-agreement.js` — 10 checks | `packages/section-runtime/src/agreement.test.ts` — 18 tests, every baseline check carried over plus marks, the always-on guard, `data-bind-style`, DW-93, the directive partition, per-directive refusal, and the nested-guard regression below |
+| the token proof | — (new) | `src/tokens.test.ts` (4) in-package, plus 3 byte-level checks in `tools/stress/test-vocabulary.mjs`, which went 14 → 17 |
+| `pnpm check` | exit 0 | exit 0 — lint, 5 typechecks, 365 package tests (`section-runtime` 2 → 41), and `test-vocabulary.mjs` |
+| `node build.js` — FR-J17 proxy | 103/103 .hbs · 2380 elements · 201 links / 215 images / 86 headings · 943 CSS declarations | identical |
+| `node build.js` — AD-34 leak assertions | clean | clean |
+| `node build.js` — file count | 197 | 197 |
+| `node gate.js theme` | Ghost 5 via gscan 4.49.7: 0/0 · Ghost 6 via gscan 6.4.2: 0/0 | identical |
+| `python3 tools/doc-audit.py --check` | PASS | PASS |
+
+**One defect was found by executing this story's own change, and it is not this story's.** FR-H8's
+unconditional guard put a `{{#if}}` inside a NESTED repeat for the first time, and the emitted theme
+came out carrying `<!--{{#if url}}-->`. `Tokens.resolve` unwrapped comment-parked markers ONCE, at
+the top, but a substitution can re-introduce a comment-wrapped marker belonging to a token not yet
+substituted. Reproduced against the pre-4.2 compiler at the baseline commit, where it is worse: the
+nested `{{#foreach tags}}` itself shipped inside an HTML comment, so **every row it rendered was
+invisible on the live site**. It never fired because nothing guarded inside a nested repeat until
+now. The unwrap moved inside the substitution loop, with the executed evidence in the comment above
+it and a regression test in `agreement.test.ts`.
+
+**Two deviations from the task list, both forced by AD-1 and neither weakening a check.**
+
+1. **`src/tokens.test.ts` cannot read a file.** The task says it asserts every `var(--…)` in
+   `reference-design/style.css` names a declared property — but AD-1 bans `node:fs` in a core
+   package and the test-file exemption gives back only `node:test` and `node:assert`, which is the
+   same constraint `tools/doc-audit.py`'s row for `test-vocabulary.mjs` already states. The contract
+   is therefore DATA in `src/tokens.ts`; `reference-tokens.css` is emitted from it; `src/tokens.test.ts`
+   asserts the contract in memory (every FR-E1 / Appendix D.0 row present, light and dark declaring
+   the same property set, no undeclared `var()` inside a value); and `tools/stress/test-vocabulary.mjs`
+   reads the BYTES of both files and fails on drift or on an undeclared property — the same split the
+   reference markup already uses, and it runs in `pnpm test` and so in CI. A `var(--x, <fallback>)`
+   is allowed to be undeclared, because a design-local property the design sets on the element itself
+   (AD-3's carve-out, `--ref-accent`) is legitimately unset at the root and the fallback is what makes
+   an unset custom property loud instead of silent.
+2. **`jsdom` needs no `@types/jsdom`.** It ships no declarations, and pulling in the DOM lib to type
+   four members would undo AD-1's point. `src/jsdom.d.ts` declares exactly the surface the tests use
+   and types the document as the runtime's own `RuntimeDocument`, so a test cannot hand the runtime
+   more DOM than the runtime declares it takes.
+
+**`data-text` refuses.** It is not in Boundaries' *Never* list and not in the Execution task list
+either. The refusal is the reversible choice — a leak is not — and the partition test makes the
+decision visible to the story that renders it.
+
 
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, including the three new

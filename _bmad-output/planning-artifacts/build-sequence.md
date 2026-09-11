@@ -54,7 +54,7 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | **Architecture — step 1** | ✅ **DONE.** `architecture-Inflozo-2026-08-19/` — the invariants (AD-1 upward, and the file is the count), full schema + RLS, and **four stress-test rounds plus a reliability round** whose findings are applied. `ARCHITECTURE-SPINE.md` is the artifact; `MEASUREMENTS.md` is the executed evidence, and it has grown every round since |
 | **T1 / T3 droplets** | ✅ **PROVISIONED** — `ghost6.inflozo.com` (Ghost 6.58.0) is **T1**, `ghost5.inflozo.com` (Ghost 5.130.6) is **T3**. Both seeded, both credentialed in `tools/probe/.env`, both used by rounds 3 and 4 |
 | **E0(b) platform spike — step 2** | ✅ **DONE to the limit of what is reachable.** The register has grown every round and every item executable without a Ghost(Pro) site is closed **by execution against both real Ghosts** — **the file is the count, not a number written here** (standing rule 3). What remains is blocked by choice, not by effort: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling, belongs to that epic), 35–36 (deferred by owner decision in round 4). **Item 34 was closed by execution on 2026-08-21** — Round 4's only SUSPECTED security finding, refuted |
-| **E0(a) mark-emission spike — step 2** | ✅ **DONE.** Both emitters exist and are proven to agree **node by node** — `tools/stress/test-renderer-agreement.js`, 8 checks — which is §7.3's exit criterion made runnable. Plus `test-ad36.js`, 13 checks. Both defects this document named are fixed. `spike-compiler/` is **retired**, not repaired |
+| **E0(a) mark-emission spike — step 2** | ✅ **DONE.** Both emitters exist and are proven to agree **node by node** — §7.3's exit criterion made runnable — plus AD-36's vectors. **Story 4.2 moved both proofs into `packages/section-runtime/src/{agreement,ad36}.test.ts`, so `pnpm check` and therefore CI run them**; each file prints its own check count and none is written here (standing rule 3). Both defects this document named are fixed. `spike-compiler/` is **retired**, not repaired |
 | **The live Supabase project** | ✅ **matches the schema.** Reset and re-applied by the owner 2026-08-20 in the dashboard: every assertion passes and container and hosted agree exactly on the policy count (the harness prints both; this file does not restate them). F13 confirmed on the real platform: 4 users → 4 profiles → 4 entitlements |
 | **Reliability** | ✅ **NFR-4's restore drill run for the first time — and the backup did not work.** Two silent defects, both fixed and written up as `RESTORE-RUNBOOK.md`. Deliberate failures were also run against a real Ghost: four behaved, one did not (register 39) |
 | **Documentation gate** | ✅ **`tools/doc-audit.py`** — three propagation audits were run by hand and every one found something, always in the most recently added thing. Now a script with the harness's contract: **it exits non-zero on drift.** Run `--check` at the end of every round and before any commit that adds a document (AD-36b) |
@@ -229,9 +229,9 @@ instructions. One of them is actively wrong (see the ⚠️ on spike (a)).
 
 | | |
 |---|---|
-| Both emitters, sharing one code path | `tools/stress/compile.js` — the `users` parameter is the only difference between them, which is what makes §7.3's "agree by construction" a property of the code |
-| §7.3's exit criterion, runnable | `tools/stress/test-renderer-agreement.js` — 8 checks comparing canvas and theme **node by node** |
-| The escaping and injection invariants | `tools/stress/test-ad36.js` — 13 checks: AD-36's four vectors, AD-4/AD-5, FR-H8's guard rule |
+| Both emitters, sharing one code path | `packages/section-runtime/src/core.ts` — ONE walk, with the two required differences (a repeat expands rows here and becomes `{{#foreach}}` there; a binding resolves to a value here and becomes a mustache there) marked in the code and asserted positively. **Story 4.2 moved it out of `tools/stress/compile.js`**, which is now a thin CommonJS adapter over it for the gscan harness |
+| §7.3's exit criterion, runnable | `packages/section-runtime/src/agreement.test.ts` — canvas and theme compared **node by node**. It runs in `pnpm check`, and therefore in CI; the file prints its own check count |
+| The escaping and injection invariants | `packages/section-runtime/src/ad36.test.ts` — AD-36's vectors, AD-4/AD-5, FR-H8's guard rule, each asserting the attack is inert **and** the legitimate case still works. Same: in `pnpm check`, count printed by the file |
 | The register | `architecture-.../VERIFY-AT-BUILD.md` — everything reachable closed by execution. **The file is the count**; it has grown every round and any number written here goes stale (standing rule 3) |
 | The evidence | `architecture-.../MEASUREMENTS.md` — every claim with the command that produced it. **The file is the count** |
 
@@ -285,7 +285,7 @@ that had produced three convincing false results was cleared.
 > **What is actually correct, and is built:** user text escapes by **HTML numeric entity** — every
 > `{` and `}` a user typed becomes `&#123;` / `&#125;`, after HTML-escaping `&` first. Handlebars
 > never sees a mustache and the browser decodes the exact characters back. Proven end to end on a
-> 70-section theme, and pinned in `test-ad36.js` and `test-renderer-agreement.js`.
+> 70-section theme, and pinned in `packages/section-runtime/src/{ad36,agreement}.test.ts`.
 >
 > Anyone re-reading this prompt as an instruction would rebuild a defect that four rounds of
 > execution removed.
@@ -1262,8 +1262,9 @@ one per category — and sections-inventory.md is GENERATED from them; `python3 
 --check` printing "current" is the test, and it passes today for every category.
 
 SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GUESS:
-  - E0's two spikes ran and closed at step 2 (tools/stress/test-renderer-agreement.js,
-    MEASUREMENTS.md): write Epic 0 with its goal and "closed by execution", and no stories.
+  - E0's two spikes ran and closed at step 2 (the agreement proof — since Story 4.2 at
+    packages/section-runtime/src/agreement.test.ts — and MEASUREMENTS.md): write Epic 0 with its
+    goal and "closed by execution", and no stories.
   - Section 8's pilot table names the five pilots by roster NUMBER (A1 #1, A17 #1, A22 #1, A24 #1,
     A4 #2); the number is the identity and `python3 tools/export-roster.py` gives the current name.
   - E1's schema story is whole-model by section 8 (SCHEMA.sql and RLS-TEST.sql already exist);

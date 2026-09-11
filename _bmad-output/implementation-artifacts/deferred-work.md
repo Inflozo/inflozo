@@ -2634,7 +2634,14 @@ plain: The proof-of-concept compiler has a rule for "if this piece of content is
   only content is a user-authored attribute (an image whose source the customer picked). There the
   marker is left behind and nothing is hidden. No test section uses that shape today, so nothing
   breaks; the real compiler in Story 4.2 replaces this code and must get it right.
-status: open
+status: done 2026-09-11 (Story 4.2)
+resolution: Story 4.2 (2026-09-11) — the harness's `applyProps` is gone; `packages/section-runtime`'s
+  prop loop now reads `data-empty` on the `data-prop-attr` element, hides the element when the FIRST
+  entry's prop is unset (the same first-entry rule the bound-attribute branch uses, so the two agree),
+  and a final sweep removes every surviving `data-empty` in scope — so the marker cannot leak whichever
+  branch consumed it. Asserted on BOTH emitters by `packages/section-runtime/src/agreement.test.ts`,
+  "DW-93 — data-empty=\"hide\" on data-prop-attr hides the element on both emitters", which also checks
+  that a prop that IS set keeps the element.
 severity: low
 origin: Story 4.1 review (2026-09-11) — Edge Case Hunter, deferred as pre-existing harness behaviour
 owner: Story 4.2 — the two emitters replace `applyProps`; the validator already treats `data-prop-attr`

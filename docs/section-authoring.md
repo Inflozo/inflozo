@@ -217,7 +217,21 @@ a `data-*` attribute that is not below and is not a declared control on the root
 
 ### The proven eight
 
-These were executed in `tools/stress/compile.js` and keep their names and grammar unchanged.
+**`data-empty` is an OVERRIDE, not a switch** *(Story 4.2)*. FR-H8 says the unguarded state is
+unreachable, so **every** Ghost binding compiles inside a guard whether or not a design writes
+`data-empty`, and the behaviour **defaults by kind**: a text binding defaults to `fallback` (the
+static value the prop held), and a binding into a URL-valued attribute — `href`, `src`, `poster` —
+defaults to `hide`, guarding the **element** and never the attribute. Writing `data-empty` chooses
+the other one. The guard is always the **bound field**, never a helper argument.
+
+**Not every directive below is rendered yet, and the rest REFUSE rather than leak.** Story 4.2's
+runtime emits the proven eight plus `data-bind-style` and `data-module`; everything else in the set
+throws with a sentence naming the directive, until the story that owns it lands. The partition is
+derived from this vocabulary and asserted by a test, so a directive added here cannot be silently
+forgotten by the runtime.
+
+
+These were executed in the stress harness and keep their names and grammar unchanged; since Story 4.2 the implementation is `packages/section-runtime` and `tools/stress/compile.js` is a thin adapter over it.
 
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
@@ -225,7 +239,7 @@ These were executed in `tools/stress/compile.js` and keep their names and gramma
 | `data-prop-attr` | `attr:path` list, `;`-separated | the value onto the attribute | the same, through the marker path |
 | `data-bind` | `path` or `path\|helper:arg` — a helper always takes its argument | the Ghost value, resolved | `{{path}}` / `{{helper path param="arg"}}` |
 | `data-bind-attr` | `attr:spec` list, `;`-separated | the resolved value onto the attribute | the mustache, carried through serialization as an opaque token |
-| `data-empty` | `hide` · `fallback` | `hide` removes the element | `hide` wraps the element in `{{#if field}}` |
+| `data-empty` | `hide` · `fallback` | `hide` removes the element; `fallback` keeps the authored text or attribute | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}` |
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
 | `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |

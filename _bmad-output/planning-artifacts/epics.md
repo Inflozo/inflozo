@@ -257,7 +257,7 @@ project doc in, canvas DOM and `.hbs` text out — performs no I/O, holds no clo
 Next.js, Supabase or Node. Arrows point one way; **a design that needs the shell has been designed wrong.**
 
 - Packages and their dependency rule: `packages/library` (data, depends on nothing) → `packages/section-runtime`, `packages/ghost-shim`, `packages/theme-compiler` (pure) → `apps/web` (shell) → platform. Tailwind styles `apps/web` and **only** `apps/web`; the design stylesheets are flat CSS in `packages/library`, excluded from Tailwind's content globs.
-- **AD-1** the core is the same code on both sides, proven by `tools/stress/test-renderer-agreement.js` comparing node by node, with the two differences that *must* exist asserted positively.
+- **AD-1** the core is the same code on both sides, proven by `packages/section-runtime/src/agreement.test.ts` comparing node by node, with the two differences that *must* exist asserted positively. *(Story 4.2 moved the proof there from `tools/stress/`, where CI never ran it.)*
 - **AD-2** the section library is data, never code · **AD-3** a control is one attribute on the section root and a design switch replaces the set · **AD-4** user text is text-plus-marks and becomes markup at exactly one place · **AD-5** brace-safe emission.
 - **AD-6** every RLS-protected table carries `user_id` and every policy has one shape · **AD-7** server-only data is a table with RLS on and no policy · **AD-8** the client never writes a fact the server asserts · **AD-9** immutable columns are frozen by trigger · **AD-31** AD-8 and AD-9 bind columns and RLS is not the mechanism.
 - **AD-10** two Ghost APIs, two paths, and they never swap; the write allowlist stays at four.
@@ -361,7 +361,7 @@ Prove the two premises this document has twice been damaged by building on, befo
 them. **Owns no FRs; owns two blocking spikes.**
 **FRs covered:** none.
 **Status: closed by execution.** Both spikes ran and closed at step 2 — the mark path in
-`tools/stress/` (`test-ad36.js`, `test-renderer-agreement.js`) and the verify-at-build list in
+`packages/section-runtime/src/{ad36,agreement}.test.ts` (moved there by Story 4.2 so `pnpm check` runs them) and the verify-at-build list in
 `MEASUREMENTS.md` and `VERIFY-AT-BUILD.md`. **This epic therefore carries no stories.**
 
 ### Epic 1: Foundations & Design System
@@ -542,8 +542,10 @@ Prove the two premises before the work that rests on them. **Owns no FRs.**
 
 - **(a) The FR-D4 mark-emission spike.** The mark path is demonstrated end-to-end with a runnable test
   covering all four marks, paste normalisation and the escaping cases; the brace-safe emission rule that
-  replaced the original escaping remedy is **AD-5**, and the assertions live in `tools/stress/test-ad36.js`.
-  `tools/stress/test-renderer-agreement.js` additionally proves the two-emitter agreement AD-1 rests on.
+  replaced the original escaping remedy is **AD-5**, and the assertions live in
+  `packages/section-runtime/src/ad36.test.ts`. `packages/section-runtime/src/agreement.test.ts`
+  additionally proves the two-emitter agreement AD-1 rests on. *(Both were in `tools/stress/` until
+  Story 4.2 moved them into the package, which is what puts them in `pnpm check` and so in CI.)*
 - **(b) The platform-verification spike.** Every §7.6 verify-at-build item executed against a real Ghost and
   recorded in `MEASUREMENTS.md` and `VERIFY-AT-BUILD.md`, against T1 `ghost6.inflozo.com` (6.58.0) and T3
   `ghost5.inflozo.com` (5.130.6).
@@ -1189,7 +1191,7 @@ So that "what you see is what ships" is proven by construction rather than argue
 **When** the runtime renders
 **Then** two emitters produce canvas DOM and `.hbs` text from the same core, which performs **no I/O, holds no
 clock, and imports nothing from Next.js, Supabase or Node**
-**And** `tools/stress/test-renderer-agreement.js` compares the two **node by node** — element tree, classes and
+**And** `packages/section-runtime/src/agreement.test.ts` compares the two **node by node** — element tree, classes and
 attribute names identical, because those three are what a design's stylesheet selects on
 **And** the **two differences that must exist** are asserted **positively**, so nobody can "fix" them into
 agreement: a repeat expands against real rows on one side and becomes `{{#foreach}}` on the other, and a binding

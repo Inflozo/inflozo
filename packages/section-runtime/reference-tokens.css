@@ -1,0 +1,122 @@
+/* GENERATED from packages/section-runtime/src/tokens.ts — edit the contract, not this file.
+   tools/stress/test-vocabulary.mjs fails if the two drift. */
+
+:root {
+  --bg-page: #fbfaf7;
+  --bg-surface: #ffffff;
+  --text-body: #1c1a17;
+  --text-muted: #6b655c;
+  --border-hairline: #e3ded4;
+  --border-fade: rgba(28, 26, 23, 0.08);
+  --accent: #8a3b12;
+  --text-on-accent: #fffaf5;
+  --bg-contrast: #1c1a17;
+  --text-on-contrast: #f6f2ea;
+  --accent-on-contrast: #e8a87c;
+  --bg-elevated: #ffffff;
+  --bg-hover: #f3efe7;
+  --negative: #a3231b;
+  --plate: #f6f2ea;
+  --figures-tabular: "tnum" 1;
+  --drop-cap-ratio: 3;
+  --scrim: rgba(28, 26, 23, 0.45);
+  --radius-pill: 999px;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --radius-card: 10px;
+  --radius-control: 6px;
+  --space-section: 4.5rem;
+  --space-section-compact: 2.5rem;
+  --space-section-spacious: 7rem;
+  --space-gap: 1.5rem;
+  --site-width: 72rem;
+  --space-gutter: 1.5rem;
+  --button-fill: #8a3b12;
+  --button-border: 1px solid transparent;
+  --button-radius: 6px;
+  --shadow-card: 0 1px 2px rgba(28, 26, 23, 0.06), 0 8px 24px rgba(28, 26, 23, 0.06);
+  --link-color: #8a3b12;
+  --link-decoration: underline;
+  --tag-accent: var(--border-hairline);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) {
+    --bg-page: #14120f;
+    --bg-surface: #1c1a17;
+    --text-body: #f0ebe2;
+    --text-muted: #a49c90;
+    --border-hairline: #332f29;
+    --border-fade: rgba(240, 235, 226, 0.10);
+    --accent: #e8a87c;
+    --text-on-accent: #231107;
+    --bg-contrast: #f6f2ea;
+    --text-on-contrast: #1c1a17;
+    --accent-on-contrast: #8a3b12;
+    --bg-elevated: #252220;
+    --bg-hover: #2d2926;
+    --negative: #e4736a;
+    --plate: #211e1b;
+    --figures-tabular: "tnum" 1;
+    --drop-cap-ratio: 3;
+    --scrim: rgba(10, 9, 8, 0.6);
+    --radius-pill: 999px;
+    --font-heading: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --radius-card: 10px;
+    --radius-control: 6px;
+    --space-section: 4.5rem;
+    --space-section-compact: 2.5rem;
+    --space-section-spacious: 7rem;
+    --space-gap: 1.5rem;
+    --site-width: 72rem;
+    --space-gutter: 1.5rem;
+    --button-fill: #e8a87c;
+    --button-border: 1px solid transparent;
+    --button-radius: 6px;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.45);
+    --link-color: #e8a87c;
+    --link-decoration: underline;
+    --tag-accent: var(--border-hairline);
+  }
+}
+
+:root[data-mode="dark"] {
+  --bg-page: #14120f;
+  --bg-surface: #1c1a17;
+  --text-body: #f0ebe2;
+  --text-muted: #a49c90;
+  --border-hairline: #332f29;
+  --border-fade: rgba(240, 235, 226, 0.10);
+  --accent: #e8a87c;
+  --text-on-accent: #231107;
+  --bg-contrast: #f6f2ea;
+  --text-on-contrast: #1c1a17;
+  --accent-on-contrast: #8a3b12;
+  --bg-elevated: #252220;
+  --bg-hover: #2d2926;
+  --negative: #e4736a;
+  --plate: #211e1b;
+  --figures-tabular: "tnum" 1;
+  --drop-cap-ratio: 3;
+  --scrim: rgba(10, 9, 8, 0.6);
+  --radius-pill: 999px;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --radius-card: 10px;
+  --radius-control: 6px;
+  --space-section: 4.5rem;
+  --space-section-compact: 2.5rem;
+  --space-section-spacious: 7rem;
+  --space-gap: 1.5rem;
+  --site-width: 72rem;
+  --space-gutter: 1.5rem;
+  --button-fill: #e8a87c;
+  --button-border: 1px solid transparent;
+  --button-radius: 6px;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --link-color: #e8a87c;
+  --link-decoration: underline;
+  --tag-accent: var(--border-hairline);
+}
+

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./reference-tokens.css": "./reference-tokens.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "24.13.4",
+    "jsdom": "30.0.1",
     "typescript": "7.0.2"
   }
 }

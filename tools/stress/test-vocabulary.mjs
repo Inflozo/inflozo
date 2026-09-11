@@ -27,6 +27,8 @@ const REPO = join(here, '..', '..')
 const { A, ORDER, source } = require('./sections.js')
 const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
+const { REFERENCE_TOKENS, TOKEN_NAMES, referenceTokensCss } =
+  await import(join(REPO, 'packages/section-runtime/src/tokens.ts'))
 
 let failed = 0
 let n = 0
@@ -109,6 +111,43 @@ check('every refusal code the validator can return has a test that it fires', ()
   const untested = codes.filter((c) => !tests.includes(`'${c}'`))
   if (untested.length) throw new Error(`no test fires ${untested.join(', ')}`)
   if (codes.length < 10) throw new Error('the code extraction found too few codes to be real')
+})
+
+// ── Story 4.2's reference token contract, checked against the BYTES ─────────────────────────────
+// An unset custom property fails SILENTLY: the declaration is dropped and the element renders with
+// whatever it inherited. So the contract is decorative unless something asserts that what a design
+// READS is what the token block DECLARES. The in-memory half of this is
+// `packages/section-runtime/src/tokens.test.ts`; this half reads the files, for the same reason the
+// reference markup is checked here — AD-1 bans `node:fs` inside a core package's test.
+
+check('the emitted reference-tokens.css has not drifted from the contract', () => {
+  const onDisk = readFileSync(join(REPO, 'packages/section-runtime/reference-tokens.css'), 'utf8')
+  if (onDisk !== referenceTokensCss()) {
+    throw new Error('reference-tokens.css is stale — regenerate it from src/tokens.ts')
+  }
+})
+
+check("every var(--…) the reference design reads is declared, or carries its own fallback", () => {
+  const css = readFileSync(join(REPO, 'packages/library/fixtures/reference-design/style.css'), 'utf8')
+  const declared = new Set(TOKEN_NAMES)
+  const undeclared = []
+  // `var(--x)` with no fallback must name a token; `var(--x, <fallback>)` is a design-local property
+  // the design sets on the element itself (AD-3's carve-out) and is legitimately unset at the root.
+  for (const m of css.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])/g)) {
+    if (m[2] === ')' && !declared.has(m[1])) undeclared.push(m[1])
+  }
+  if (undeclared.length) {
+    throw new Error(`the reference design reads ${[...new Set(undeclared)].join(', ')}, which the token contract does not declare`)
+  }
+  if (!/var\(/.test(css)) throw new Error('the extraction found no var(--…) at all, so it proves nothing')
+})
+
+check('the token contract is reachable in both modes and declares no empty value', () => {
+  for (const mode of ['light', 'dark']) {
+    const values = Object.entries(REFERENCE_TOKENS[mode])
+    if (values.length !== TOKEN_NAMES.length) throw new Error(`${mode} declares ${values.length} of ${TOKEN_NAMES.length}`)
+    for (const [k, v] of values) if (String(v).trim() === '') throw new Error(`${mode} ${k} is empty`)
+  }
 })
 
 console.log(`\n${failed ? `${failed} of ${n} checks FAILED` : `${n} checks passed — the grammar describes what was executed.`}\n`)

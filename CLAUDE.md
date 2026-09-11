@@ -193,7 +193,20 @@ category" — or derive it at generation time.
 ```bash
 python3 tools/doc-audit.py --check                       # documentation gate
 python3 tools/verify-design-pass.py                      # the rulings are in the export
-cd tools/stress && node test-ad36.js && node test-renderer-agreement.js && node test-vocabulary.mjs
+pnpm check                                               # lint + typecheck + every package test
+```
+
+**Since Story 4.2 the two proofs of the two-emitter claim run inside `pnpm check`, and therefore in
+CI** — `packages/section-runtime/src/agreement.test.ts` (§7.3's exit criterion: canvas and theme
+compared node by node) and `src/ad36.test.ts` (AD-36's vectors, each asserting the attack is inert
+**and** the legitimate case still works). Each file prints its own check count; never write one down.
+They used to live in `tools/stress/`, which is a separate npm project whose `node_modules` CI never
+installs — so the epic's central claim was asserted on a laptop and nowhere else.
+
+The 70-section gscan harness still lives there and still needs its own install:
+
+```bash
+cd tools/stress && npm install && node build.js && node gate.js theme   # expect 0 errors / 0 warnings, both majors
 ```
 
 The database proof is `architecture-.../RLS-TEST.sql` — run it against a PostgreSQL 17 container with

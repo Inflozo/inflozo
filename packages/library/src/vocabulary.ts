@@ -55,6 +55,31 @@ export function safeUrl(value: unknown): string {
   return SAFE_SCHEME.test(probe) ? v : '#'
 }
 
+/** AD-36 (4). A Ghost tag's `accent_color` is stored VERBATIM: `red;}body{display:none`,
+ *  `#fff;background:url(x)`, `#fff;width:100vw` and `#f00;/* c *\/color:red` were all accepted on both
+ *  live majors. The value crossing into a CSS declaration is therefore not necessarily a colour, and a
+ *  character filter that got lucky twice is not a validator. This PARSES: a hex form, or one of the four
+ *  colour functions whose whole argument list is numbers and separators — no nested `(`, so no `url()`,
+ *  no `var()`, and nothing carrying `;` or `}` can match either arm. Anything else falls back to the
+ *  pack token, which is AD-36's stated remedy rather than a repair of the hostile value.
+ *
+ *  The half no build-time gate can reach is named in AD-36 itself: on the THEME side the emitted
+ *  `style="--tag-accent: {{accent_color}}"` is correct Handlebars and the value arrives at render, on
+ *  the customer's site, after every gate has run. This function closes the canvas completely and is the
+ *  same copy `packages/ghost-shim` calls at render on the other side (AD-36 amended, Story 4.2). */
+export function safeCssColor(value: unknown, fallbackToken: string): string {
+  const fallback = /^--[a-zA-Z0-9-]+$/.test(fallbackToken) ? `var(${fallbackToken})` : 'inherit'
+  const v = String(value == null ? '' : value).trim()
+  if (/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) return v
+  const fn = /^(?:rgba?|hsla?)\(([^()]*)\)$/i.exec(v)
+  if (fn === null) return fallback
+  // split on every legal separator — `,`, `/` and whitespace — then require each part to be a bare
+  // number. One linear pass, so no nested quantifier over the same class to backtrack on.
+  const parts = (fn[1] ?? '').split(/[,/\s]+/).filter((p) => p !== '')
+  const isNumber = (p: string) => /^[-+]?(?:\d+\.?\d*|\.\d+)(?:%|deg|turn|rad|grad)?$/.test(p)
+  return parts.length >= 3 && parts.length <= 4 && parts.every(isNumber) ? v : fallback
+}
+
 /** The ten legal `bindingContext` values. There is deliberately no `page`: a page and a post are
  *  ONE resource, and what differs is the product, which `compileTarget` expresses (FR-G3). */
 export const BINDING_CONTEXTS = [
@@ -103,6 +128,10 @@ export const ADJACENCY_NEEDS = [
 
 /** AD-4: the four marks a `richtext` prop may allow, and there are no others. */
 export const MARKS = ['strong', 'em', 'u', 'a'] as const
+
+/** R-27 / D9: an `a` mark carries `newTab?` and `rel?`, and the rel values are a closed set. Here
+ *  rather than in the serializer because 4.5's Link Picker offers exactly this list — one copy. */
+export const LINK_RELS = ['nofollow', 'noreferrer', 'sponsored'] as const
 
 /** The four closed member states (§7.3 gap row 4). The paid-vs-free test is not a plain path. */
 export const MEMBER_STATES = ['everyone', 'anonymous', 'free', 'paid'] as const

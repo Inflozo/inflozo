@@ -218,15 +218,15 @@ DOCS = [
  ('prds/.../encode-report-batch1.md', 'record', 'Encode report', 'Batch record.'),
 
  # ── runnable tools ───────────────────────────────────────────────────────────
- ('tools/stress/compile.js', 'tool', 'The compiler',
-  'Both emitters — canvas and theme — sharing one code path. The `users` parameter is the only '
-  'difference between them, which is what makes "the canvas and the shipped theme agree by '
-  'construction" a property of the code rather than a promise.'),
- ('tools/stress/test-renderer-agreement.js', 'tool', 'Proof the two renderers agree',
-  '8 checks comparing canvas and theme node by node. E0(a)\'s exit criterion, made runnable.'),
- ('tools/stress/test-ad36.js', 'tool', 'Proof of AD-36',
-  '13 checks: the four injection vectors, the brace escaping, and the media-guard rule. Each asserts '
-  'the attack is inert AND that the legitimate case still works.'),
+ ('tools/stress/compile.js', 'tool', 'The compiler — now a thin adapter',
+  'Story 4.2 MOVED the pipeline into `packages/section-runtime` (`src/core.ts` is the shared walk, '
+  '`src/marks.ts` AD-4\'s serializer, `src/index.ts` the two emitters, `reference-tokens.css` the '
+  'custom-property contract). What is left here is the CommonJS adapter `build.js` needs: the same '
+  'exported names over one implementation. The two proofs moved with it — the agreement proof is '
+  '`packages/section-runtime/src/agreement.test.ts` and AD-36\'s is `src/ad36.test.ts` — because '
+  '`tools/stress/` is a separate npm project whose `node_modules` CI never installs, so a proof left '
+  'here ran on a laptop and nowhere else. Both now run under `pnpm check`, and each file prints its '
+  'own check count.'),
  ('tools/stress/build.js', 'tool', 'The stress fixture',
   'Builds a deliberately heavy 70-section theme and prints the compile budget. The measurement '
   'behind AD-11.'),

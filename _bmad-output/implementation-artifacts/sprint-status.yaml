@@ -73,7 +73,7 @@ development_status:
 
   epic-4: in-progress
   4-1-the-registry-format-and-the-annotated-html-authoring-vocabul: done
-  4-2-the-section-runtime-one-source-two-emitters-proven-to-agree: ready-for-dev
+  4-2-the-section-runtime-one-source-two-emitters-proven-to-agree: in-progress
   4-3-the-ghost-helper-shim-and-its-contract-tests-against-recorde: backlog
   4-4-orbit-weekly-and-the-three-fixtures: backlog
   4-5-the-controls-engine-and-the-control-vocabulary: backlog

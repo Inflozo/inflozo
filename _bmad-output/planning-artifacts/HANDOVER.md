@@ -317,8 +317,13 @@ the steps and the copy-ready text, and keep the reasoning brief unless he asks f
 
 ```bash
 python3 tools/doc-audit.py --check     # documentation gate — must pass
-cd tools/stress && node test-ad36.js && node test-renderer-agreement.js
+pnpm check                             # lint + typecheck + every package test
 ```
+
+Since Story 4.2 the agreement proof and the AD-36 proof are
+`packages/section-runtime/src/agreement.test.ts` and `src/ad36.test.ts`, so `pnpm check` — and
+therefore CI — runs them. Each file prints its own check count. The 70-section gscan harness is
+still `cd tools/stress && npm install && node build.js && node gate.js theme`.
 
 The database proof is `architecture-.../RLS-TEST.sql`; run it against a Postgres 17 container with
 `PRELUDE.sql` then `SCHEMA.sql` first. It is a **gate** — it aborts on failure rather than printing
