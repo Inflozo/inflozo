@@ -145,6 +145,11 @@ const NO_SKELETON: Record<string, string> = {
     'them, and a plain click goes to /sites?manage=… instead — the window over the list, whose ' +
     'skeleton is keys-skeleton.tsx inside the list page\'s own <Suspense> (the owner\'s test of ' +
     '3.6, findings 2, 3 and 5: a popup that is a parameter on a route the URL never leaves)',
+  [join(AUTHED, '[...unbuilt]')]:
+    'Story 3.9\'s catch-all, and the ONE route whose skeleton would be a defect rather than an ' +
+    'omission: a loading.tsx is a Suspense boundary, so Next commits the status line before the ' +
+    'page runs and this route\'s notFound() would land inside an already-successful 200 (R-98\'s ' +
+    'second effect, DW-67). There is also nothing to stream — it calls notFound() and nothing else',
   [join(AUTHED, 'sites', 'disconnect')]:
     'the same, one row down: S11a\'s ⋯ "Disconnect" is an <a href="/sites/disconnect?site=…"> whose ' +
     'click JavaScript turns into the card\'s <dialog>, and it is a PLAIN anchor and not a <Link>, so ' +

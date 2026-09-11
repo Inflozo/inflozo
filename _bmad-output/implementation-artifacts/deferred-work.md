@@ -38,7 +38,11 @@ reason: `next.config.ts` lists the three core packages in `transpilePackages`, b
 ### DW-3: `@types/node` is two majors ahead of the pinned runtime
 
 plain: The reference notes describing our engine are two versions ahead of the engine we actually run, so code could be written against something that is not there.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the four package.json files now pin `@types/node` on the 24.x
+  line (24.13.4), matching the `24.x` in `engines` and `.nvmrc`. The lockfile moved with it, which
+  is the whole reason the entry was deferred; `pnpm check` and `pnpm build` are green on Node
+  24.18.0.
 severity: low
 origin: Story 1.1 review (2026-09-04)
 location: apps/web/package.json · packages/{section-runtime,ghost-shim,theme-compiler}/package.json
@@ -63,7 +67,13 @@ reason: AD-1 bans `.toString()` *on a Date*; the selector cannot see the receive
 ### DW-5: the GitHub token expires 2027-09-05 and nothing carries the date
 
 plain: The GitHub key that lets me read whether the safety check passed stops working on 5 September 2027, and nothing yet reminds anyone.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the date has a register row with a trigger —
+  `VERIFY-AT-BUILD.md`, "The read-only GitHub token expires 2027-09-05" — in the shape the
+  Ghost(Pro) trial item uses: the fact, the trigger, the owner and what breaks when it lapses
+  (every later story's "is CI green" read starts answering 401 with no forewarning).
+  `tools/probe/.env.example` now CITES that row instead of carrying the date, so the figure is
+  written once.
 severity: low
 origin: Story 1.1 review (2026-09-04)
 location: tools/probe/.env.example
@@ -75,7 +85,11 @@ reason: The date lives in a comment and in this story's Verification. When it la
 ### DW-6: `node --test` warns MODULE_TYPELESS_PACKAGE_JSON on every `apps/web` run
 
 plain: Running the tests prints four harmless warning lines every time; nothing fails, it is only noise.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `"type": "module"` is in `apps/web/package.json`. EXECUTED
+  rather than assumed (standing rule 1): `pnpm test` runs 283 tests with ZERO
+  MODULE_TYPELESS_PACKAGE_JSON lines where it printed 34, and `pnpm build` compiles clean under
+  Next 16.3.1 with every route in the table unchanged.
 severity: low
 origin: Story 1.1 review (2026-09-04)
 location: apps/web/package.json
@@ -405,7 +419,15 @@ plain: Three of the faults found while building the dashboard could only be seen
   but nothing re-checks them automatically: if one came back, every automatic test would still pass and
   the site would publish. Someone has to look. A browser-driven test running in CI is what would close
   it, and that is a decision about time and cost rather than a bug to fix.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `tools/probe/run-verify-dashboard.py` is the repeatable check
+  — a browser against the deployed dashboard with two fixture accounts. `overlays-sheet`,
+  `overlays-menu` and `overlays-account` each measure the overlay BEFORE its trigger is pressed
+  and again after: not visible (the platform's own `checkVisibility`) and not in the tab order
+  (every control inside is focused and the focus read back), then visible and reachable, which is
+  the control. `centred` reads the modal's rendered box against the viewport rather than a class
+  name, because flush-to-the-top-left was the defect and a class list is not a position;
+  `cancel-focus` proves the confirm opens on Cancel.
 severity: medium
 origin: Story 1.5 review (2026-09-05), Verification Gap layer
 location: apps/web/app/(app)/app/(authed)/project-menu.tsx · new-project-sheet.tsx ·
@@ -432,7 +454,13 @@ plain: If something goes wrong loading a page, or you click one of the links who
   messages. **The error half is done: the owner met this on 2026-09-05 (his findings 3 and 8 — "This
   page couldn't load"), so Story 1.5's Fix run added the app's own error page.** What is left is the
   "not found" half: the six links whose screens are not built yet still answer with a bare page.
-status: half-closed by Story 1.5 Fix (2026-09-05) — the `not-found.tsx` half is open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the not-found half closes.
+  `apps/web/app/(app)/app/(authed)/not-found.tsx` renders M9 404's words in the app's own Kit
+  INSIDE the shell, and `(authed)/[...unbuilt]/page.tsx` is what puts an unmatched url inside the
+  group at all — an unmatched url renders the ROOT not-found, which is exactly why this entry
+  survived two stories that added a `not-found.tsx` to their own segment. The error half closed at
+  Story 1.5's Fix.
 severity: low
 origin: Story 1.5 review (2026-09-05), Blind Hunter layer
 location: apps/web/app/(app)/app/(authed)/ (no error.tsx, no not-found.tsx)
@@ -464,7 +492,15 @@ plain: The public home page at inflozo.com loads and looks right, but none of it
   Nothing on that page needs code today, so nobody can see the difference; the moment a button or a
   form goes on it, that button would not work. The same is true of the "not found" pages inside the
   app. It should be fixed before Epic 14 writes the real marketing pages.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the APP half closes: unmatched app urls are now served by the
+  catch-all, a dynamic route carrying the nonce, so `'strict-dynamic'` no longer blocks every
+  script on them. The MARKETING half closes with the owner's ruling at this story's Question 1
+  (option 1, 2026-09-11): `policy()`'s marketing branch gains `'unsafe-inline'` in `script-src`
+  and the app branch is untouched, with `csp.test.ts` asserting in both directions that the app
+  policy can never carry it.
+amended: BOTH HALVES CLOSE HERE — the app half with the catch-all, the marketing half with the
+  owner's Question 1 ruling.
 severity: medium
 origin: Story 1.5 Fix run (2026-09-05), hunting the owner's findings 3 and 8 on the real site
 location: apps/web/csp.ts · apps/web/proxy.ts · the prerendered routes `○ /` and `○ /_not-found`
@@ -519,7 +555,11 @@ plain: The dashboard refuses a second project on Free, refuses a delete unless t
   typed, and refuses to touch another user's project. The rules themselves are tested automatically, but
   nothing automatic checks that the code actually asks them before writing — a slip that skipped one of
   them would pass every test and publish. Today a person proves it on the live site at every phase.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `run-verify-dashboard.py`'s `cap`, `delete-typed`,
+  `delete-control`, `cross-rename` and `cross-delete`: each guard is proved CONSULTED by the row
+  count or the row itself read off the pooler, never by the sentence on screen. `delete-control`
+  is why `delete-typed` is a result — a delete that never ran also leaves the row alone.
 severity: medium
 origin: Story 1.5 third review (2026-09-06), Verification Gap layer
 location: apps/web/app/(app)/app/(authed)/projects/actions.ts (`createProject`, `duplicateProject`,
@@ -539,7 +579,13 @@ reason: `atCap`, `matchesName`, `copyName` and `uniqueSlug` are pure and under `
 plain: The check that keeps the planning documents, the boards and the catalogue consistent runs on this
   machine before each commit, and nowhere else. A commit made from a clone that has not installed the
   hooks — or any tool that commits directly — publishes without it.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `ci.yml`'s `check` job runs `python3 tools/doc-audit.py
+  --check`, before `pnpm build` so a red gate is cheap. `python3 tools/story-board.py` runs first,
+  and it has to: STORY-BOARD.html reads `git log` and the pre-commit hook stages it before the
+  commit exists, so the committed copy is one commit behind BY CONSTRUCTION — executed on a fresh
+  clone of HEAD, where the naked gate is red. Everything the entry named is still checked, the
+  sub-tools' own self-checks included.
 severity: low
 origin: Story 1.5 third review (2026-09-06), Verification Gap layer
 location: tools/hooks/pre-commit · .github/workflows/ci.yml
@@ -554,7 +600,9 @@ reason: `ci.yml`'s `check` job runs `pnpm check` and `pnpm build`; `rls` runs th
 plain: We can send email through Resend and prove the send was accepted, but nothing here can look at
   Resend's own log to see whether a message reached an inbox, bounced, or was marked spam. Today only the
   owner can answer that, by looking in his inbox.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — closed at Create — the owner made the reading key the same
+  day and the read executed with its full control set. See the story's `## Verification`.
 severity: medium
 origin: Story 1.5 fourth Fix run (2026-09-06), the owner's fourth test, finding 1
 location: tools/probe/.env (`RESEND_API_KEY`) · apps/web/app/(app)/app/sign-in/actions.ts ·
@@ -608,7 +656,13 @@ plain: Each project gets a short web-safe name (its "slug") that later becomes t
   one that is not already taken, but the database does not enforce it — so two projects created at the
   very same instant could end up with the same slug. It needs a database rule, and the schema is frozen
   for this epic.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `supabase/migrations/20260911100000_sweep_constraints.sql`
+  adds `unique (user_id, slug)` on `public.projects`, applied by hand to production.
+  `createProject` and `duplicateProject` share `insertProject`, which catches `23505` and retries
+  with the next free slug (`slugAttempts` in `lib/projects.ts`, pure and tested). The RLS gate
+  asserts the constraint behaviourally and the control — reverting it — turns exactly that
+  assertion red.
 severity: low
 origin: Story 1.5 fifth review (2026-09-06), Blind Hunter layer
 location: apps/web/lib/projects.ts (`uniqueSlug`) · apps/web/app/(app)/app/(authed)/projects/actions.ts
@@ -646,7 +700,10 @@ reason: `loading.tsx` sits BELOW `(authed)/layout.tsx`, and that layout awaits `
 plain: Sites, Assets, Account settings, Billing & plan, Suggestions and Docs are all drawn and clickable
   but not built yet — that is expected. What is not ideal is where a click lands: a plain unstyled "404"
   page with no sidebar and no way back except the browser's Back button.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — closed with DW-17 by the same route: the nav's unbuilt
+  destinations now land on Inflozo's own not-found inside the shell, with the sidebar, the account
+  menu and a way home.
 severity: low
 origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
 location: apps/web/components/shell/shell.tsx (the nav) · no `not-found.tsx` exists under apps/web
@@ -678,7 +735,12 @@ reason: The native cancel button is hidden deliberately — S3's frame draws no 
 
 plain: Duplicating a project copies its settings by naming each one. When a later part of the product
   adds a new setting, the copy will silently leave it behind unless someone remembers to add it here.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `apps/web/projects.test.ts` reads the `grant insert (…) on
+  public.projects` out of `supabase/migrations/` and asserts every granted column is either in
+  `duplicateProject`'s select list or named in the test as deliberately not copied, with its
+  reason. The control: removing `credit_enabled` from the select list turns it red and the failure
+  NAMES the column.
 severity: medium
 origin: Story 1.5 sixth review (2026-09-06), Edge Case Hunter + Blind Hunter layers
 location: apps/web/app/(app)/app/(authed)/projects/actions.ts (`duplicateProject`'s select list)
@@ -733,7 +795,13 @@ closed: Story 2.2 Dev (2026-09-07) — DROPPED. `supabase/migrations/20260907120
 ### DW-31: the new Inflozo identity is in the export and nothing in the product uses it yet
 
 plain: Inflozo now has a proper logo — an icon mark ("Nest": three concentric rounded squares with a live core), the mark-and-wordmark lockups, a favicon and app icon, and a 2.9-second launch animation — and every logo the product shows today is still the old wordmark alone. Replacing them is its own story, not a fix inside another one; the huge faded background wordmarks (the Sign In page's watermark and any like it) stay as they are.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — verified and closed. Every surface in the app renders
+  `Lockup`/`Mark` from `components/kit/logo.tsx` (grepped: the only wordmark-as-text left is the
+  EMAIL shell's, where Gmail strips SVG and Story 1.6 built the mark-PNG-plus-word pair
+  deliberately); `app/icon.svg` is `favicon-16.svg` plus the dark-tab `<style>`, and
+  `apple-icon.png` is the export's app icon. Story 1.6's own spec said this flip was owed "with
+  the story's Done commit, not before" and it never happened; 1.6 is `done`.
 severity: medium
 origin: the owner, 2026-09-06 ("Down the line I would like all logos to be replaced with the new one. The huge background wordmarks can stay. Rest can be replaced. This will be done as a new/diff story.")
 location: _bmad-output/planning-artifacts/design/claude-design-export/Logo/export/Inflozo Logo/ (README.txt, assets/*.svg, Inflozo Logo.html)
@@ -836,7 +904,14 @@ partly closed: Story 2.2 Dev (2026-09-07). **(2) is CLOSED IN CODE**: `listPassk
 
 plain: The page that appears when something inside the app breaks now shows the new logo, but nobody has
   ever made it appear on a screen to look — every other place the logo appears was measured in a real browser.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — rendered once, and axe run on it. A temporary throwing route
+  on a LOCAL `next build && next start` (removed before the commit — nothing throwing reaches
+  production), screenshotted at 1440, 834 and 390: the new `Lockup` draws, HTTP 500, and axe-core
+  at WCAG 2.1 AA reported **one serious `document-title` violation** — the boundary REPLACES the
+  document and no `metadata` export runs for it, so the tab read the raw url. Fixed in the same
+  pass (`document.title` from the existing effect) and re-run: zero violations at all three
+  widths.
 severity: low
 origin: Story 1.6 Dev (self-flagged) and code review (2026-09-06) — Acceptance Auditor, Verification Gap, Real-infra verifier
 location: apps/web/app/(app)/app/error.tsx (`<Lockup size={20} />`)
@@ -851,7 +926,13 @@ reason: Two attempts to trip the boundary from outside failed (an RSC fetch fulf
 
 plain: The small logo in the browser tab is an SVG file. Safari only learned to show SVG tab icons in its 2025
   release; anyone on an older Safari sees a blank tab icon, though the iPhone home-screen tile is unaffected.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `apps/web/app/icon.png` — 32x32, rendered from the export's
+  own `favicon-16.svg` by the same headless Chromium that made the other two rasters (as an
+  `<img>` at the target size, because the SVG carries `width="44"` and a 32px viewport CROPS it —
+  executed). `icon.png` is in `proxy.ts`'s matcher, and `routing.test.ts` derives the icon list
+  from the directory, so a missed matcher entry fails by itself — proved by removing it and
+  watching it go red.
 severity: low
 origin: Story 1.6 code review (2026-09-06) — Blind Hunter; cited from caniuse `link-icon-svg` (Safari 3.1–18.7 not supported, 26.0+ supported)
 location: apps/web/app/icon.svg · apps/web/proxy.ts (the matcher exclusion would need the new file too)
@@ -869,7 +950,12 @@ plain: Each passkey row's pencil and bin are announced as "Rename <name>" and "R
   that were both born with the fallback name "Passkey" — the common case until a real device name is known
   (DW-32 (2)) — therefore sound identical to someone using a screen reader, though they look identical on
   screen too. Nothing is broken; a user renames one and the two are distinct again.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — both `aria-label`s in `passkeys-card.tsx` now carry
+  `addedLabel(passkey.createdAt)` — the same string the row already draws, so the two cannot
+  disagree. `tools/probe/run-verify-passkeys.py` changed in the same commit: `names()` strips the
+  suffix and every exact-match locator became a prefix match, which the entry named as the one
+  thing this change breaks.
 severity: low
 origin: Story 2.2 code review (2026-09-07) — Blind Hunter
 location: apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx (the two `aria-label`s) · tools/probe/run-verify-passkeys.py (`names()`, and the exact-match waits on `Rename ${n}`)
@@ -888,7 +974,13 @@ plain: While the phone or laptop is asking for Face ID, the whole sign-in card f
   checker reads that faded card as text that is too pale to read: the headline, the label, the email field,
   every sentence on it. Nothing is broken and nothing on the card can be pressed while it is faded, but
   someone who needs high contrast has a few seconds of a card they cannot read.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `inert` and `aria-hidden` on the sign-in card while
+  `passkeyPending`, REPLACING `pointer-events-none` — inert refuses the keyboard and the screen
+  reader too, which a CSS property cannot. Re-measured on a local production build with S1c held
+  open at 1440, 834 and 390: **zero axe violations** where the entry measured 1 `color-contrast`
+  over 9 nodes, impact serious. The control: a real mouse click on the dimmed button does not
+  reach its handler, and focus does not land.
 severity: low
 origin: Story 2.2 Fix run (2026-09-07) — executed, not inferred: the card held in S1c on a real build,
   `opacity: 0.4` confirmed on the running page, axe-core 4.12.1 at WCAG 2.1 AA reporting
@@ -1101,7 +1193,12 @@ reason: `private.site_credentials` cascades from both `sites` and `auth.users`, 
 plain: One column records which staff account restored a customer's paid plan after a dispute. The database
   keeps that account from ever being deleted while the record points at it — which would block the purge of
   that one account (in practice the owner's own) with an error every day, not silently.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the migration re-declares `entitlements.restored_by` as `on
+  delete set null`. Production was read first — no non-null value exists, because E12 is the only
+  writer and it does not exist yet, which is why this was cheaper now. The RLS gate purges the
+  account named in the column and asserts the entitlement row survives with the column nulled;
+  reverting it reproduces the entry's own claim, `23503`, the purge refused.
 severity: low
 origin: Story 2.6 spec (2026-09-07), the cascade analysis
 location: SCHEMA.sql:590 (`restored_by uuid references auth.users(id)` — no `on delete`) ·
@@ -1245,7 +1342,11 @@ reason: `ghostCode` names the two 401 causes (§37), a redirect, and folds every
 
 plain: The audit log's "what happened" column takes any word; only the app's code keeps it to ok, denied or
   error. A one-line database rule would make the log itself refuse anything else.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the migration adds `check (outcome in
+  ('ok','denied','error'))` on `private.credential_audit`. Production's 2,605 rows were read first
+  and every one was already inside the three. The gate inserts a fourth word and insists on
+  `23514`.
 severity: low
 origin: Story 3.1 code review (2026-09-07), the Real-infra verifier — pre-existing, from the 2026-09-04 schema
 location: SCHEMA.sql (`private.credential_audit.outcome text not null`, the values in a comment only) ·
@@ -1368,7 +1469,19 @@ plain: With JavaScript switched off, the connect wizard's fields are present in 
   without scripts), so this is not the connect screen's own doing; something in the shared app frame (the
   shell or the root layout, Story 1.5) hides content until the scripts load. A visitor with scripts off —
   rare, but the spec promises the keys form works for them — would see the page but not the form.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the claim is FALSE now, executed rather than believed. With
+  scripts off and a real session, `/sites/connect?step=keys` renders **all three key fields
+  visible and its submit visible** — the very form the entry said a no-JS visitor could not drive
+  — with `<main>` and the sidebar both visible. R-98's route-group move (2026-09-09, the day after
+  this was found) removed the group-wide Suspense boundary that hid every `(authed)` page until a
+  script swapped it in. THE SHELL WAS NEVER THE ANCESTOR: what the original read saw on
+  `/sites/connect` is the WIZARD'S OWN two-pane CSS — step 2's pane is `invisible` and `inert`
+  while step 1 is showing, deliberately, so it keeps its space — plus, on the first re-run of this
+  probe, a context that was never signed in at all (one magic-link token, two browser contexts;
+  GoTrue keeps one per user and the second consumed the first). A DIFFERENT AND NARROWER THING IS
+  TRUE and is raised as **DW-89** rather than fixed here, because it needs the owner's ruling on
+  whether scripts-off is a committed mode.
 severity: low
 origin: Story 3.2 code review (2026-09-08, Review 2) — the Real-infra verifier's no-JS check on app.inflozo.com
 location: apps/web/components/shell/shell.tsx (or app/(app)/app/(authed)/layout.tsx / the root layout) —
@@ -1499,7 +1612,10 @@ plain: A tiny HTML technicality. The blue notices on a site's card each contain 
   to sit inside a form. The Kit's notice component puts whatever you give it inside a `<span>`, which by the
   written rules of HTML is not allowed to contain a form. Every browser accepts it, it looks right, and the
   accessibility checker finds nothing — but a strict HTML validator would complain.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `banner.tsx`'s content slot is a `<div>`. The parent is
+  `flex`, so the child's own inline-vs-block display was never what laid this out; every Banner
+  was looked at at all three widths after the change.
 severity: low
 origin: Story 3.3 code review (2026-09-08) — Blind Hunter and the Acceptance Auditor, independently
 location: apps/web/components/kit/banner.tsx (`<span>{children}</span>` — the slot) ·
@@ -1653,7 +1769,20 @@ plain: When you open a link to something that is not yours or no longer exists �
   a site whose brand has gone — Inflozo shows you the "not found" page, which is right. But the invisible
   status code the browser receives says 200 (success) rather than 404. A person sees the correct page;
   a search engine, a monitor or a script would be told the page was fine.
-status: open
+status: open — amended by Story 3.9 (2026-09-11); the PAGE half is closed
+resolution: Story 3.9 (2026-09-11) — THE PAGE HALF CLOSES.
+  `apps/web/app/(app)/app/(authed)/not-found.tsx` renders M9 404's words in the app's own Kit
+  inside the shell, and `(authed)/[...unbuilt]/page.tsx` — which carries NO `loading.tsx`,
+  deliberately, and is recorded in `busy.test.ts`'s `NO_SKELETON` with that reason — answers a
+  real HTTP 404 for every unmatched app url. The three harness steps this entry's `note:` warned
+  about moved in the same commit: `rendered()`, `brand-ownership` and the `?site=` forgery now
+  match the app's own sentence, evaluated from `lib/not-found.ts`, instead of Next's default
+  `could not be found`.
+amended: THE STATUS HALF STAYS OPEN, NARROWED TO ONE ROUTE. `notFound()` from `/sites/brand` still
+  commits 200 before the page runs, because that route has a skeleton by R-98 and a skeleton is a
+  Suspense boundary. Trading that route's skeleton away for a status code on a `robots: noindex`
+  page is a bad trade and nobody has asked for it. The measurements are in Story 3.9's `##
+  Verification`. **Owner: the story that next has a reason to change that route's loading shape.**
 severity: low
 origin: Story 3.4 Dev harness (2026-09-08), step `brand-none` — measured, not reasoned
 note: WHOEVER CLOSES THIS BREAKS THREE HARNESS STEPS, and they will not say why. `brand-none`,
@@ -1803,7 +1932,15 @@ plain: Inflozo now makes sure that pressing "Use your brand" twice puts the colo
   second. If two presses happen at the very same instant — a double click, or a page that retried —
   both can look, both can see no project yet, and both can make one. You would end up with two
   projects for one site, and possibly one more than your plan allows.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the migration adds a partial unique index `projects
+  (linked_site_id) where linked_site_id is not null`, replacing the plain one — FR-B5's "at most
+  one" made structural rather than a column comment. `useBrand`'s insert catches `23505` and
+  RE-DECIDES rather than re-slugging: this insert sets `linked_site_id` as well as `slug` and both
+  are unique, so `23505` means "another request got there first" without saying which column, and
+  re-running `brandTarget` is the answer that is right either way — the second press lands on the
+  project the first made. The application's idempotence is not replaced; this is the floor under
+  it.
 severity: low
 origin: Story 3.4 Review 2 (2026-09-08) — reasoned from the code, not observed on the live site
 location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`useBrand`, the read-then-write around
@@ -1876,7 +2013,12 @@ reason: `brandOf` stores `accent`, `logo`, `icon`, `cover`, `nav`, `title` and `
 plain: If you connect two Ghost sites that happen to have the same name — say both are called "Blog"
   — and press "Use your brand" on each, you get two projects both called "Blog". Their web addresses
   differ, so nothing breaks, but your dashboard shows two cards you cannot tell apart.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `useBrand`'s create branch routes the name through `freeName`
+  in `lib/projects.ts` — `nextUntitled`'s own plain numeric suffix, generalised to any base. Two
+  Ghost sites both titled *Blog* now give **Blog** and **Blog 2** (the owner's ruling, option 1,
+  2026-09-11). `copyName`'s "Copy of X" is explicitly not reused: this is a different site, not a
+  copy.
 severity: low
 origin: Story 3.4 Review 3 (2026-09-08) — raised by the blind-hunter layer
 location: apps/web/app/(app)/app/(authed)/sites/actions.ts (`useBrand`, the create branch) ·
@@ -1898,7 +2040,17 @@ plain: Two files exist so that a new session — or Claude, or you — can find 
   words long, one of them a single line of about eight thousand characters. Everything in them is
   correct; the trouble is that nobody can find the sentence they need, and the whole point of these
   two files is being findable.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — both walls broken up, and no text deleted — proved by
+  normalising whitespace and comparing. `tools/doc-audit.py` grew `cell()`: a catalogue
+  description may be a subject line plus detail lines, rendered into the cell as the subject then
+  `<br>`-separated bullets (GFM cells take `<br>` and the Document column already used it, so this
+  is a rendering change and not a format change). The `run-verify-ghost-admin.py` row — 11,006
+  characters in one literal — is now a subject and eight bullets, one per story;
+  `run-verify-site-health.py` with it. `epic-3-context.md`'s eleven walls became lead bullets with
+  indented sub-bullets, each led by the story or ruling a reader is looking for; its longest line
+  went from 4,494 characters to 883, and a comment at the top of the file states the rule so the
+  next story appends a sub-bullet rather than lengthening the lead.
 severity: low
 origin: Story 3.4 Review 5 (2026-09-09) — raised by the blind-hunter layer
 location: _bmad-output/implementation-artifacts/epic-3-context.md (the Auto-brand bullet) ·
@@ -1919,7 +2071,12 @@ reason: Both are append-only by construction — every story adds its findings t
 plain: A safety test that proves nobody can put your brand on someone else's site still passes every
   time. What is flaky is only the part that checks the button press reached the server at all, so the
   test sometimes goes red without anything being wrong. It costs nothing on the live site.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the arrival control is reliable because the page changed
+  under it. `brand-ownership` reads the landing out of `<main>`, and Next's default not-found
+  REPLACED the route rather than filling the landmark — which is the entry's own eighth-run datum.
+  Story 3.9's `(authed)/not-found.tsx` renders INSIDE the shell, so the sentence is now in the
+  landmark the control reads, and `notFoundInMain` asserts it on the not-found branch.
 severity: low
 origin: Story 3.4 Fix on the owner's test findings (2026-09-09) — measured over eight runs, not reasoned
 location: tools/probe/run-verify-ghost-admin.py (step `brand-ownership`) ·
@@ -2094,7 +2251,15 @@ reason: The value is DERIVABLE — it is the half of the stored secret in front 
 
 plain: "Your old site's copy is kept for 90 days" is stored as a number in the app's code and computed
   separately in the database. If one were ever changed the other would not follow, and nothing would notice.
-status: open
+status: open — amended by Story 3.9 (2026-09-11); the half named below is closed
+resolution: Story 3.9 (2026-09-11) — the SILENT DRIFT closes: `apps/web/connect-rule.test.ts`
+  reads `disconnected_at + interval '<n> days'` out of
+  `20260907150000_account_deletion_window.sql` and asserts it equals `ORPHAN_SNAPSHOT_DAYS`, so
+  the two homes can no longer be changed apart without something going red.
+amended: THE SILENT DRIFT CLOSES AND THE "ONE HOME" HALF STAYS OPEN. A test now reads the
+  migration's own figure, so the two cannot be changed apart unnoticed. The honest fix — the view
+  reading a setting the app also reads, or the app deriving its figure from the view — is still
+  **Story 7.20's**, the first code that depends on both.
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, against standing rule 4
 owner: **Story 7.20**, the orphan purge — the job that acts on the deadline, and the only place that can
@@ -2111,7 +2276,12 @@ reason: They agree today and `connect-rule.test.ts` pins the app's copy at 90, s
 plain: The credential log is written inside the same transaction as the key it describes, so that a save
   which fails leaves no line claiming it happened. That is stated in the migration, the spec, the ledger and
   the code — and nothing anywhere makes a save fail on purpose to check it.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — the RLS gate now INDUCES the failure. Inside one transaction
+  it inserts a credential row and its audit row, asserts the audit row is visible THERE (so the
+  proof is not passing over a write that never happened), forces a division by zero, and asserts
+  `private.credential_audit` is unchanged after the rollback — and the credential row with it, or
+  the fixture is not modelling one transaction.
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, against standing rule 2
 owner: the next story that touches `private.credential_audit` or the RLS gate
@@ -2171,7 +2341,11 @@ reason: The mechanism is shared by both windows and was built in Story 3.6's Fix
 plain: If you have connected the same Ghost site at three addresses and one of them is still connected,
   the "Moved domains?" note on the newest card may talk about the 90-day safety-net copy (an old,
   disconnected one) when a live twin exists — or the other way round.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — `findSiteByAdminKeyId`'s `order by` gains `(s.disconnected_at
+  is null) desc` ahead of `s.created_at desc`, so a live twin outranks an old disconnected one and
+  the hint the customer is shown is about a record he can still open. Proved by DW-85 (1)'s
+  seeding, which is why the two closed together.
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
 owner: the story that next touches FR-C8's hint, or Story 3.7 if its health check reads `admin_key_id`
@@ -2198,7 +2372,14 @@ reason: a race a customer has to work to reach — the panel's own saves answer 
 ### DW-85: three live-harness controls Manage keys still owes
 
 plain: Three things the API keys screen does right are not yet proved on the live site every run.
-status: open
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 (2026-09-11) — all three seedings are in `run-verify-ghost-admin.py`'s
+  `moved-domains` and `brand-ownership`: (1) the same decoy with `disconnected_at` nulled draws
+  `KEYS.movedStillConnected` and NOT the snapshot wording; (2) a decoy under `OTHER_USER_ID`
+  carrying the same Admin key id produces no hint at all, which is the first execution of
+  `findSiteByAdminKeyId`'s `user_id` clause; (3) the stranger's site id forged into the WINDOW's
+  own form lands back on the list rather than the 404, which is the write half of a branch whose
+  read half alone had a driver.
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Verification Gap reviewer
 owner: the next story that touches `tools/probe/run-verify-ghost-admin.py`'s Manage-keys block
@@ -2278,3 +2459,36 @@ reason: `STARTER_DOOR.reason` — "Starters aren't here yet." — is what UX-DR3
   the Starter Chooser surface in `EXPERIENCE.md` § Onboarding, B23a) owns this; nothing else may leave the
   sentence standing over a door that works. `first-run.test.ts` asserts only that neither surface keeps its own
   copy, so a stale sentence would not go red — this entry is the record.
+
+## Deferred from: spec-3-9-the-deferred-work-sweep-at-the-end-of-epic-3 (2026-09-11)
+
+### DW-89: with scripts off, a route whose page streams stays on its skeleton for ever
+
+plain: If someone browses with JavaScript switched off, some screens never get past the grey "Loading…"
+  placeholder — the real content arrives, but the step that swaps it in needs JavaScript. Nothing is
+  broken for anyone with JavaScript on, which is everybody by default. The question underneath it is
+  whether Inflozo promises to work at all without JavaScript, and that is the owner's call, not a
+  developer's.
+status: open
+severity: low
+origin: Story 3.9 Dev (2026-09-11), verifying DW-56 — MEASURED on the deployed site with a real
+  session, not reasoned
+owner: **the owner rules first** (is scripts-off a committed mode?), then the story that owns whichever
+  routes he names. Nothing should be spent on this before he has ruled.
+location: apps/web/app/(app)/app/(authed)/(dashboard)/loading.tsx · account/loading.tsx · every
+  `loading.tsx` R-98 requires · the pair that makes it visible is `/` against `/sites/connect`
+reason: DW-56 said the authed SHELL hid its content without JavaScript. It does not, and the executed
+  read that closed it found this instead. With scripts off and a signed-in session, on production:
+  `/sites/connect?step=keys` renders **all three key fields and its submit visible**, `<main>` visible,
+  the sidebar visible — the whole form a no-JS visitor is promised. But `/` renders `Loading…` and
+  `/account` renders `Loading your account…`, and neither ever changes: a `loading.tsx` is a Suspense
+  boundary, Next flushes the fallback first and swaps in the real content with an INLINE SCRIPT, and
+  with scripts off that script never runs. `/sites` came through with real content in the same run,
+  because its page answered inside the first flush — so this is not "every route with a skeleton", it
+  is "every route slow enough to stream", which is a property of the data and not of the code.
+  R-98 is what made this per-route rather than group-wide, and R-98 is right — the alternative is the
+  wrong skeleton, which is the defect it was ruled for. The honest options are a decision, not a patch:
+  commit to scripts-off and pay for it (no streaming on the authed routes, which costs every customer's
+  first paint), or state plainly that the app needs JavaScript and keep the promise only where it is
+  already true — the forms, which post server actions natively and are proved to. **The question for the
+  owner is which**, and it wants asking in the story that would spend on it rather than here.

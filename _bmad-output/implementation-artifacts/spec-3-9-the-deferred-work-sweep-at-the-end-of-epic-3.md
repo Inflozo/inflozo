@@ -294,19 +294,19 @@ it) · DW-75's ledger half.
 
 ### Group A — the branded not-found (DW-17, DW-26, DW-67, DW-74, DW-18's app half)
 
-- [ ] `apps/web/app/(app)/app/(authed)/not-found.tsx` — **new.** M9's words in the app's Kit,
+- [x] `apps/web/app/(app)/app/(authed)/not-found.tsx` — **new.** M9's words in the app's Kit,
   rendered inside the shell. One control — *Take me home* to `/` — because *Browse sections* has no
   destination (UX-DR3: absent, not greyed). **The second sentence drops its count, ruled by the
   owner 2026-09-11 (Question 3, option 1):** *"We looked everywhere — it's not in any of them."*
   The frame's *"We looked through all 18 variants"* is not copied, because a count written down
   goes stale and nothing would catch it on a 404 page (standing rule 4). The house comment records
   every departure from the frame and why.
-- [ ] `apps/web/app/(app)/app/(authed)/[...unbuilt]/page.tsx` — **new**, and this is the half a
+- [x] `apps/web/app/(app)/app/(authed)/[...unbuilt]/page.tsx` — **new**, and this is the half a
   nested `not-found.tsx` cannot do: an unmatched URL renders the **root** not-found, so a catch-all
   inside the group is what puts `/assets`, `/billing`, `/suggestions` and `/docs` inside the shell.
   It calls `notFound()` and nothing else. **No `loading.tsx` on it** — that is what lets it answer
   a real HTTP 404 rather than committing 200 before the page runs.
-- [ ] `apps/web/app-routes.test.ts` (or its sibling) — assert the catch-all does not shadow a built
+- [x] `apps/web/app-routes.test.ts` (or its sibling) — assert the catch-all does not shadow a built
   route: every route directly under `(authed)` still resolves to its own page.
 - [ ] `tools/probe/run-verify-ghost-admin.py` — `rendered()` stops matching Next's `could not be
   found` and matches the app's own sentence; `brand-none`, `brand-ownership` and the `?site=`
@@ -328,42 +328,42 @@ it) · DW-75's ledger half.
 
 ### Group B — the code that needs the migration (DW-24, DW-69)
 
-- [ ] `apps/web/app/(app)/app/(authed)/projects/actions.ts` — `createProject` and
+- [x] `apps/web/app/(app)/app/(authed)/projects/actions.ts` — `createProject` and
   `duplicateProject` catch `23505` on the slug index and retry `uniqueSlug`; the comment beside
   `uniqueSlug` in `lib/projects.ts` stops saying the database has no backstop.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` — `useBrand` catches `23505` on the
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` — `useBrand` catches `23505` on the
   `linked_site_id` index and re-runs `brandTarget`, which lands the press on the project the other
   press made. **The existing idempotence is not replaced** — it is what handles the common case and
   is proved live by `brand-rerun` and `brand-picker`; this is the structural floor under it.
-- [ ] `apps/web/projects.test.ts` — the retry's decision is pure and tested; the catch itself is in
+- [x] `apps/web/projects.test.ts` — the retry's decision is pure and tested; the catch itself is in
   a `'use server'` module and is covered by the harness.
 
 ### Group C — the named one-liners
 
-- [ ] **DW-3** — `@types/node` to the `24.x` line in `apps/web` and the three core packages, one
+- [x] **DW-3** — `@types/node` to the `24.x` line in `apps/web` and the three core packages, one
   `pnpm install`, `pnpm check` and `pnpm build` green. The lockfile moves; that is the entry's
   whole reason for deferring it and is fine inside a story that owns the install.
-- [ ] **DW-6** — `"type": "module"` in `apps/web/package.json`, then **execute**: `pnpm test`
+- [x] **DW-6** — `"type": "module"` in `apps/web/package.json`, then **execute**: `pnpm test`
   (the four MODULE_TYPELESS_PACKAGE_JSON lines must be gone) and `pnpm build` (Next 16.3.1 under
   an ESM package is a claim about an external platform — standing rule 1). **If the build objects,
   record the output in `## Verification`, revert, and leave DW-6 open with the evidence.** Do not
   argue with it either way.
-- [ ] **DW-5** — a row in `…/VERIFY-AT-BUILD.md` for the GitHub token's **2027-09-05** expiry, in
+- [x] **DW-5** — a row in `…/VERIFY-AT-BUILD.md` for the GitHub token's **2027-09-05** expiry, in
   the shape the Ghost(Pro) trial row uses: the fact, the trigger, the owning epic, and what breaks
   when it lapses (every later story's "CI is green" read starts answering 401 with no forewarning).
   `tools/probe/.env.example`'s comment cites the register row rather than carrying the date alone.
-- [ ] **DW-21** — one step in `ci.yml`'s `check` job: `python3 tools/doc-audit.py --check`. Place
+- [x] **DW-21** — one step in `ci.yml`'s `check` job: `python3 tools/doc-audit.py --check`. Place
   it **before** `pnpm build` so a red gate is cheap. Note in the job's comment that the sub-tools
   regenerate on failure locally and that `--check` in CI only reports.
-- [ ] **DW-35** — `apps/web/app/icon.png`, rendered from
+- [x] **DW-35** — `apps/web/app/icon.png`, rendered from
   `…/Logo/export/Inflozo Logo/assets/favicon-16.svg` by the same headless-Chromium command that
   made the two existing rasters, plus `icon.png` in `proxy.ts:99`'s matcher. `routing.test.ts`
   derives the icon list from the directory, so a missed matcher entry fails by itself. Verify the
   SVG still wins on a modern browser.
-- [ ] **DW-36** — append `addedLabel` to both `aria-label`s in `passkeys-card.tsx`, and change
+- [x] **DW-36** — append `addedLabel` to both `aria-label`s in `passkeys-card.tsx`, and change
   `run-verify-passkeys.py`'s `names()` and its two exact-match `waitForFunction`s in the same
   commit. The harness locates rows by the exact label; this is the one change that breaks it.
-- [ ] **DW-37** — `inert` and `aria-hidden` on the dimmed contents of the sign-in card while
+- [x] **DW-37** — `inert` and `aria-hidden` on the dimmed contents of the sign-in card while
   `passkeyPending`. It costs nothing visually, it is what "the OS window is the only thing in
   focus" already means, and axe does not audit an inert subtree. **Re-run axe on S1c held open** —
   the entry's measurement was 1 `color-contrast` violation over 9 nodes, impact serious.
@@ -372,7 +372,7 @@ it) · DW-75's ledger half.
   it. **Look at every Banner at all three widths after the change** — inline to block is a real
   layout difference even when the flex parent absorbs it — and re-run the harness steps that assert
   the notices' boxes.
-- [ ] **DW-83** — `findSiteByAdminKeyId`'s `order by` gains `(s.disconnected_at is null) desc`
+- [x] **DW-83** — `findSiteByAdminKeyId`'s `order by` gains `(s.disconnected_at is null) desc`
   ahead of `s.created_at desc`, so a live twin outranks an old disconnected one. The decoy seeding
   that proves it is DW-85 (1) and (2), below, which is why the two are done together.
 
@@ -389,15 +389,15 @@ it) · DW-75's ledger half.
     the Free cap, a delete refused when the typed name does not match, a rename and a delete
     refused across two fixture users — each asserted on the **row count** read back off the pooler,
     the way `run-verify-ghost-admin.py` reads. Its control is a refusal the server must give.
-- [ ] `apps/web/projects.test.ts` (**DW-28**) — read the `projects` insert grant out of
+- [x] `apps/web/projects.test.ts` (**DW-28**) — read the `projects` insert grant out of
   `supabase/migrations/` and assert every non-identity column is either in `duplicateProject`'s
   select list or named in the file as deliberately not copied (`linked_site_id` is the one that
   already is). The test names the column it found, so a future widening reads as an instruction.
-- [ ] `apps/web/connect-rule.test.ts` (**DW-79**) — read `interval '90 days'` out of
+- [x] `apps/web/connect-rule.test.ts` (**DW-79**) — read `interval '90 days'` out of
   `20260907150000_account_deletion_window.sql` and assert it equals `ORPHAN_SNAPSHOT_DAYS`. This
   closes the **silent drift**, which is the whole of the entry; **the "one home" refactor stays
   Story 7.20's** and the entry is amended to say so rather than closed twice.
-- [ ] **DW-34** — render `apps/web/app/(app)/app/error.tsx` once. A temporary throwing route on a
+- [x] **DW-34** — render `apps/web/app/(app)/app/error.tsx` once. A temporary throwing route on a
   **local** `next build && next start`, screenshot at all three widths, axe run, route removed
   before the commit. Nothing throwing reaches production. Record the screenshots and the axe result
   in `## Verification`; that is the "rendered once and axe run on it" the entry asks for.
@@ -409,21 +409,21 @@ it) · DW-75's ledger half.
 
 ### Group E — the two walls of prose (DW-73)
 
-- [ ] `tools/doc-audit.py` — a catalogue row's description may be a **subject line plus detail
+- [x] `tools/doc-audit.py` — a catalogue row's description may be a **subject line plus detail
   lines**, rendered into the cell as the subject followed by `<br>`-separated bullets. GFM table
   cells take `<br>` and the **Document** column already uses it, so this is a rendering change and
   not a format change. Then re-shape the `run-verify-ghost-admin.py` row (11,625 characters) into a
   short subject and one bullet per story, and the `run-verify-site-health.py` row (4,402) with it.
   **No text is deleted** — it is broken into lines.
-- [ ] `_bmad-output/implementation-artifacts/epic-3-context.md` — sub-bullets per story under each
+- [x] `_bmad-output/implementation-artifacts/epic-3-context.md` — sub-bullets per story under each
   requirement bullet, so a session can find the sentence that contradicts it. The Auto-brand bullet
   and the 4,528-character line are the two worst; do the file, not the two lines.
-- [ ] `python3 tools/doc-audit.py --check` green, and `INDEX.md` re-read by eye — a table that
+- [x] `python3 tools/doc-audit.py --check` green, and `INDEX.md` re-read by eye — a table that
   renders wrongly is the one failure this change can cause.
 
 ### Group F — verify, then close (DW-31, DW-56)
 
-- [ ] **DW-31** — grep the app for any wordmark-only drawing, confirm `Lockup`/`Mark` is what every
+- [x] **DW-31** — grep the app for any wordmark-only drawing, confirm `Lockup`/`Mark` is what every
   surface renders, confirm `app/icon.svg` and `apple-icon.png` are the new marks, then flip the
   entry to `done` citing Story 1.6 and the line in its spec that says the flip was owed.
 - [ ] **DW-56** — re-execute the scripts-off read on `app.inflozo.com/sites/connect` and on one
@@ -433,7 +433,7 @@ it) · DW-75's ledger half.
 
 ### Group G — the owner's (all three ruled 2026-09-11)
 
-- [ ] **DW-18, ruled option 1** — `apps/web/csp.ts`'s `policy()`: the **marketing** branch's
+- [x] **DW-18, ruled option 1** — `apps/web/csp.ts`'s `policy()`: the **marketing** branch's
   `script-src` gains `'unsafe-inline'`; the app branch is **untouched** and keeps
   `'nonce-…' 'strict-dynamic'`. `csp.test.ts` already asserts both sides and gains one more: the
   app policy must **never** carry `'unsafe-inline'` in `script-src`, so a future edit to the shared
@@ -447,7 +447,7 @@ it) · DW-75's ledger half.
   dangerous there. That is a reason to be *less* worried, not a reason to relax the app policy — so
   the test above holds the host split by assertion, and the claim itself is checked in the same
   Playwright run by reading whether an unnonced inline script on the app host is still blocked.
-- [ ] **DW-72, ruled "Blog 2"** — `useBrand`'s create branch routes the project name through the
+- [x] **DW-72, ruled "Blog 2"** — `useBrand`'s create branch routes the project name through the
   taken-names idiom in `apps/web/lib/projects.ts`. `copyName`'s "Copy of X" wording is **not** what
   is reused: the suffix is the plain numeric one `nextUntitled` already appends, so two sites both
   titled *Blog* give **Blog** and **Blog 2**. One line plus its case in `projects.test.ts`.

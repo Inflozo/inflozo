@@ -364,175 +364,224 @@ DOCS = [
   'runtime in a header the proxy writes and a layout reads, and no pure test can see that join. Creates '
   'and deletes its own account. Run at Review and Deploy; APP_ORIGIN points it at a local build.'),
  ('tools/probe/run-verify-site-health.py', 'tool', 'Daily site-health harness',
-  "FR-C5's daily health check, its cron door, AD-25's notification row and FR-P1's third email, "
-  'executed against T1, T3, the live Supabase, the real Resend and the deployed route (R-82). '
-  'Story 3.7. Its docstring\'s step list is DERIVED from a STEPS table in its own source and a '
-  'steps-listed assertion fails the run if the two ever disagree — the sibling harness\'s '
-  'hand-typed list went stale three times inside one story. What it executes: the app\'s own copy, '
-  'read out of lib/connect-rule.ts and lib/health-rule.ts with node --experimental-strip-types and '
-  'printed rather than retyped, the rolling cap and the batch size with it; GET /admin/config/ 200 '
-  'on both majors as the HEALTHY CONTROL first (standing rule 2), each version recorded; GET '
-  '/settings/routes/yaml/ 200 on both majors with the ADMIN key alone — no Staff token — the '
-  'sha256 of the bytes recorded (that is what routes_live_sha256 holds) and the body recorded as '
-  'NOT JSON, which is why CallResult had to start carrying text; a TAMPERED copy of T3\'s key — '
-  'one hex digit of its kid, a key Ghost has never issued — answering 401 UNKNOWN_ADMIN_API_KEY, '
-  'so the unhealthy CAUSE is executed with T3 untouched and nothing to reset; then the app\'s own '
-  'whole chain over what the wire just said, ghostCode(401, envelope) -> ghost_unknown_key -> '
-  'unhealthy with its sentence, plus 4.48.0 -> ghost_too_old (DW-63, the branch no server can '
-  'produce since neither test Ghost is a Ghost 4) and ghost_unreachable -> UNDECIDED, which is what '
-  'keeps FR-P2\'s no-nudges true when somebody\'s Ghost is briefly offline. The first writing of '
-  "that step fed Ghost's own code straight into healthOf and went red, correctly. due-select runs "
-  "the CRON'S OWN QUERY against the live table — two claims about PostgREST that no unit test can "
-  'reach and that would each have failed as a 400 at 05:40 with nobody watching: the jsonb filter '
-  'credentials_present->>admin=eq.true, and a NULLS FIRST order on last_checked_at, which is what '
-  "makes the first run DW-62's backfill; it records how many sites are due and how many have never "
-  'been checked at all. notice-rls is the '
-  'one claim no other gate covers: two throwaway users, one site_health row written for the first '
-  "with the service role, then read back through EACH ONE'S OWN session — the owner sees it, the "
-  'other sees nothing, an insert and a delete from a user session are both 403, and the resolve is '
-  "stamped THROUGH THE data->>site_id FILTER resolveNotice really uses — notifications is FR-B7's "
-  'table and has no site_id column, so a jsonb path in an UPDATE filter is a claim about PostgREST '
-  'and a 400 there would mean recovery never resolved anything in production — after which the row '
-  'leaves the open set the card reads; every fixture is deleted in a '
-  'finally and the Admin-API user count is the control. schedule reads both sides and restates '
-  "neither: vercel.json's crons carries the path lib/health-rule.ts's CRON_PATH names and a route.ts "
-  'is really there. resend sends FR-P1\'s third email FOR REAL, composed by the app\'s own '
-  'healthEmail, RESEND_FROM -> RESEND_TEST_INBOX, its id recorded (a User-Agent is set because '
-  'Resend sits behind Cloudflare bot protection that answers urllib\'s default with 403 "error code '
-  '1010" — check-access.py:45-49 records the same quirk). Then, with a deployment: the cron with no '
-  'Authorization and with a wrong bearer are both 401 from THE ROUTE — body Unauthorized, '
-  'x-matched-path naming it, cache-control no-store, so a platform 401 cannot pass for the control — '
-  'and the real bearer is RECORDED rather than asserted green, because a real account whose Ghost is '
-  'genuinely unhealthy makes 500 the correct answer. WHAT IT DELIBERATELY DOES NOT DO: it never '
-  'regenerates a key and never disconnects anything, so it proves the CAUSE and not the round trip '
-  '— the card going amber, the email arriving, the second press sending nothing and the recovery '
-  "clearing it are the owner's manual test on the deployed site, which is R-80's gate for a UI story "
-  'and the one place a real regenerate belongs. No key, no address and no site title is ever '
-  'printed. --check runs everything but the deployed cron and needs no deployment. Story 3.7.'),
+   # DW-73, as the row above: a subject line and one bullet per concern. No text deleted.
+   (
+    "FR-C5's daily health check, its cron door, AD-25's notification row and FR-P1's third email, "
+    'executed against T1, T3, the live Supabase, the real Resend and the deployed route (R-82).',
+    "Story 3.7. Its docstring's step list is DERIVED from a STEPS table in its own source and a "
+    "steps-listed assertion fails the run if the two ever disagree — the sibling harness's "
+    'hand-typed list went stale three times inside one story.',
+    "What it executes: the app's own copy, read out of lib/connect-rule.ts and lib/health-rule.ts "
+    'with node --experimental-strip-types and printed rather than retyped, the rolling cap and '
+    'the batch size with it; GET /admin/config/ 200 on both majors as the HEALTHY CONTROL first '
+    '(standing rule 2), each version recorded; GET /settings/routes/yaml/ 200 on both majors with '
+    'the ADMIN key alone — no Staff token — the sha256 of the bytes recorded (that is what '
+    'routes_live_sha256 holds) and the body recorded as NOT JSON, which is why CallResult had to '
+    "start carrying text; a TAMPERED copy of T3's key — one hex digit of its kid, a key Ghost has "
+    'never issued — answering 401 UNKNOWN_ADMIN_API_KEY, so the unhealthy CAUSE is executed with '
+    "T3 untouched and nothing to reset; then the app's own whole chain over what the wire just "
+    'said, ghostCode(401, envelope) -> ghost_unknown_key -> unhealthy with its sentence, plus '
+    '4.48.0 -> ghost_too_old (DW-63, the branch no server can produce since neither test Ghost is '
+    "a Ghost 4) and ghost_unreachable -> UNDECIDED, which is what keeps FR-P2's no-nudges true "
+    "when somebody's Ghost is briefly offline. The first writing of that step fed Ghost's own "
+    'code straight into healthOf and went red, correctly.',
+    "due-select runs the CRON'S OWN QUERY against the live table — two claims about PostgREST "
+    'that no unit test can reach and that would each have failed as a 400 at 05:40 with nobody '
+    'watching: the jsonb filter credentials_present->>admin=eq.true, and a NULLS FIRST order on '
+    "last_checked_at, which is what makes the first run DW-62's backfill; it records how many "
+    'sites are due and how many have never been checked at all.',
+    'notice-rls is the one claim no other gate covers: two throwaway users, one site_health row '
+    "written for the first with the service role, then read back through EACH ONE'S OWN session — "
+    'the owner sees it, the other sees nothing, an insert and a delete from a user session are '
+    'both 403, and the resolve is stamped THROUGH THE data->>site_id FILTER resolveNotice really '
+    "uses — notifications is FR-B7's table and has no site_id column, so a jsonb path in an "
+    'UPDATE filter is a claim about PostgREST and a 400 there would mean recovery never resolved '
+    'anything in production — after which the row leaves the open set the card reads; every '
+    'fixture is deleted in a finally and the Admin-API user count is the control.',
+    "schedule reads both sides and restates neither: vercel.json's crons carries the path "
+    "lib/health-rule.ts's CRON_PATH names and a route.ts is really there. resend sends FR-P1's "
+    "third email FOR REAL, composed by the app's own healthEmail, RESEND_FROM -> "
+    'RESEND_TEST_INBOX, its id recorded (a User-Agent is set because Resend sits behind '
+    "Cloudflare bot protection that answers urllib's default with 403 \"error code 1010\" — "
+    'check-access.py:45-49 records the same quirk). Then, with a deployment: the cron with no '
+    'Authorization and with a wrong bearer are both 401 from THE ROUTE — body Unauthorized, '
+    'x-matched-path naming it, cache-control no-store, so a platform 401 cannot pass for the '
+    'control — and the real bearer is RECORDED rather than asserted green, because a real account '
+    'whose Ghost is genuinely unhealthy makes 500 the correct answer.',
+    'WHAT IT DELIBERATELY DOES NOT DO: it never regenerates a key and never disconnects anything, '
+    'so it proves the CAUSE and not the round trip — the card going amber, the email arriving, '
+    "the second press sending nothing and the recovery clearing it are the owner's manual test on "
+    "the deployed site, which is R-80's gate for a UI story and the one place a real regenerate "
+    'belongs. No key, no address and no site title is ever printed. --check runs everything but '
+    'the deployed cron and needs no deployment. Story 3.7.',
+   )),
+ ('tools/probe/run-verify-dashboard.py', 'tool', 'Dashboard invariants and guards harness',
+  # DW-73's shape from the start: a subject line and one bullet per concern.
+  (
+   "The dashboard's two repeatable controls, driven through the real UI on the deployed site with "
+   'two throwaway accounts and read back off the transaction pooler. Story 3.9.',
+   'DW-16, the browser-only half: the ⋯ project menu, the New Project Sheet and the account menu '
+   'are each NOT VISIBLE and NOT IN THE TAB ORDER before their trigger is pressed — measured with '
+   "the platform's own checkVisibility and by trying to focus every control inside — and each "
+   'appears when it is, which is the control (an assertion that something is hidden proves nothing '
+   'unless the showing is proved too). The modal is CENTRED, read off its rendered box against the '
+   'viewport rather than off a class name, because flush-to-the-top-left was the defect and a '
+   'class list is not a position; and the delete confirm opens with focus on Cancel, which only '
+   "kit/dialog.ts's openOnCancel makes true. Every one of these survives pnpm lint, pnpm "
+   'typecheck, pnpm test and the RLS gate.',
+   'DW-20, the guards half: the four project actions are CONSULTED, not merely correct. A second '
+   'project at the Free cap is refused and the account still holds one row; a delete with the '
+   'wrong name typed is refused and the row survives, then the exact name deletes it so the '
+   'refusal is a refusal and not a delete that never ran; and a SECOND account\'s project id '
+   "forged into this account's rename and delete forms writes nothing, the stranger's row "
+   'byte-identical afterwards. Every assertion is the row count or the row itself off the pooler, '
+   'never the sentence on screen.',
+   "STORY 3.9's not-found with them, because the destinations are on this screen: every drawn "
+   'destination the app has no page for — DERIVED from the shell\'s NAV and the account menu\'s '
+   'rows, never listed — plus one nonsense URL, each rendering Inflozo\'s own not-found INSIDE '
+   'the shell with the sentence in <main>, the sidebar drawn and a way home. The HTTP status is '
+   'RECORDED beside it (DW-67) and the blocked-script count asserted zero (DW-18\'s app half: the '
+   'catch-all is dynamic and carries the nonce, where the prerendered root not-found had every '
+   'script on it blocked). axe-core at WCAG 2.1 AA at 1440, 834 and 390.',
+   '--check is the plumbing alone — keys present, playwright, axe and the postgres driver '
+   "resolvable, the app's own sentences evaluated out of lib/{projects,plan,not-found}.ts, and one "
+   'real admin create-read-delete — so it runs before the story is deployed. No key is ever '
+   'printed, and both fixture accounts are deleted in a finally with the Admin-API user count read '
+   'before and after, so a leak is loud.',
+  )),
  ('tools/probe/run-verify-ghost-admin.py', 'tool', 'Connect wizard and Admin chokepoint harness',
-  'FR-C1/FR-C2 driven through the real UI on the deployed site, and read back off the wire and off '
-  'the transaction pooler. Story 3.1 drove a bearer-gated verify route because the Admin chokepoint '
-  'had no product caller; Story 3.2 built that caller — the connect wizard — deleted the route '
-  '(DW-48) and retargeted this harness at the product. One throwaway Free account signs in from a '
-  'generated magic link and drives /sites: with nothing connected the page is the EMPTY SCREEN the '
-  "owner asked for at his test (finding 7, 2026-09-08) — his own title and subtitle, read out of "
-  'the app rather than retyped, a drawing and two "Connect site" buttons — over the shell top bar '
-  'Sites now shares with Projects, whose field says "Search sites…" and which carries no bell '
-  '(Story 13.4\'s). Its button opens S11b, and the sheet is measured at BOTH steps: one box, '
-  'because a box that shrank 57px between them was findings 1 and 2. "Where do I find these?" is a '
-  'link, not the frame\'s bordered box (finding 3). /sites/connect is S2b·1 with the integration '
-  'screenshot really served, "Done — next" is a link to S2b·2 with three fields and no Staff Access '
-  'Token, an http:// address warns under the field as it is typed, a malformed Admin key is refused '
-  'before Vault and before the network, a kid Ghost never issued answers ghost_unknown_key (§37 — '
-  'keys do not expire), and a wrong Content API key is caught by the BROWSER with zero POSTs leaving '
-  'the page (counted, not assumed). Then T1 connects for real and the wire shows the sites row with '
-  'its ghost_version, content_key, site_settings.public_url and credentials_present, the pooler a '
-  'private.site_credentials row and a live vault.secrets row behind its ref, and '
-  'private.credential_audit an admin_read for config/ with a NULL site_id and then one for site/ '
-  'carrying the new id. The card is read off its rendered boxes for the layout the owner finalised '
-  '(findings 4 and 6): the new-tab glyph on the address, and "Connected" below the pills and just '
-  'above "Checked …". The shell\'s field on Sites finds a site by its title and by its address. '
-  "The same address again answers already_connected; T3 on the Free account "
-  "answers Appendix F.1's own cap sentence, composed from PLANS rather than typed here. axe-core at "
-  'WCAG 2.1 AA over every surface it drives at 1440 and 390. Then GoTrue deletes the user and the secret must '
-  'be gone — the cascade path of DW-44 — and every response body the run received is swept for the '
-  'keys it typed. Its CONTROLS: §21j re-executed over PostgREST (vault and the private table 404, '
-  '/rest/v1/sites 200) and the Admin-API user count before and after. --check is the keys, that '
-  'control, and whether playwright, axe and the postgres driver resolve; it creates nothing and '
-  'needs no deployment. DW-54 records the Story 3.1 proofs that lost their driver with the route '
-  'and which story re-drives each; `re-adopt` here already re-drives the key rotation. STORY 3.3 '
-  'ADDED THE PROBES, and with them the decrypt path DW-54 had left with no product caller: the '
-  'connect action now runs FR-C2\'s four probes on the STORED key through call(), so a connect '
-  'leaves two vault_decrypt rows and two more admin_read rows carrying the site id, and the row '
-  'comes back capability full / source probe (hostSettings is absent on both majors, so '
-  'self-hosted and unlimited) with site_settings carrying one code_injection boolean, '
-  'portal_button and its source, and the announcement\'s three values beside 3.2\'s public_url. '
-  'settings-keys re-executes, every run, that the INTEGRATION key really answers all six keys the '
-  'probes read — §15h item 21 measured the announcement three with a staff token. injection-live '
-  'is the ONE write this project makes to a test Ghost, ruled by the owner on 2026-09-08: the '
-  "harness sets the Site-footer code-injection box on BOTH servers with its own staff token — the "
-  'integration key is refused, 403 on Ghost 6 and 501 on Ghost 5 — and restores exactly what it '
-  'found in a finally, passing or failing. The product\'s allowlist is untouched and still denies '
-  'every non-GET. no-payload-leak then proves neither codeinjection payload reaches the row, a '
-  'response body or the rendered HTML; injection-notice drives the one-time sky notice and its Got '
-  'it; portal-question and plan-question drive the only two questions FR-C8 allows, each seeded on '
-  "the fixture's own row through the service role because no Ghost and no Ghost(Pro) plan can "
-  'produce them here (⛔ §4 T4); and preview-notice reads B15 off the deployed card at 1440, 834 '
-  'and 390 — the chip on the STATE line beside Connected (DW-57), Export theme zip and Ship it '
-  'absent because neither path exists (UX-DR3) — then presses Re-check plan and watches a '
-  'self-hosted Ghost clear itself back to full. The review of 2026-09-08 added ownership, which '
-  "forges a SECOND account's site id into a notice form and proves the row does not move: the four "
-  'new actions write under the service role, so one .eq(user_id) inside the action is the whole '
-  'guard between two accounts and nothing had ever executed it. STORY 3.4 ADDED FR-C4\'s BRAND: '
-  'brand-keys re-executes, in both modes, that the keys BRAND_KEYS names (the brand reader takes '
-  'them off the same settings payload the announcement reader already reads) are really there on '
-  'both majors, and records the CONTAINER of each — navigation '
-  'is a JSON string, as announcement_visibility is (MEASUREMENTS §40) — and a connect whose site '
-  'has a brand now lands on S2c rather than the list, so every connect in the run passes through '
-  'it. brand-screen reads S2c against the row the probe just wrote (the swatch really painted in '
-  'the accent and captioned with the HEX, the menu as text pills with no links), brand-js-off '
-  'proves both its controls are forms, axe-brand runs at 1440 and 390, brand-skip proves Skip '
-  'writes nothing and leaves the offer on the card, brand-seed drives the offer link and Use your '
-  'brand to a project named from the site with linked_site_id set — FR-B5\'s first writer — a '
-  'style_pack.brand.accent equal to the site\'s, the card\'s tally at "1 project" and the dashboard '
-  'card computed in that colour, brand-atcap proves the owner\'s Question 1 ruling live (the '
-  'caption NAMES the project before the press and nothing else about it moves), brand-rerun '
-  'presses the offer a SECOND time on Pro — the one state in the run with room to spare, and until '
-  'the review of 2026-09-08 the one that made a second project for the same site — and brand-none '
-  'proves a site with nothing to offer draws no link and renders the NOT-FOUND page, as does a '
-  '?site= naming a row no account carries (the HTTP status is 200 because /sites/brand has its '
-  'OWN loading.tsx since R-98 and the shell has streamed before notFound() throws — the '
-  'group-wide (authed)/loading.tsx that used to be the reason is gone; measured rather than '
-  'excused, DW-67 amended). '
-  'brand-picker drives the owner\'s Question 3 ruling — with more than one project the second '
-  'press ASKS instead of telling and draws a card per project carrying that project\'s own 64x44 '
-  'wireframe in its own Style-Pack colours (FR-B1\'s placeholder, no preview claimed), the card '
-  'for this site pre-selected so touching nothing writes what Question 1 ruled, and the two '
-  'drawings asserted DISTINCT with getComputedStyle. brand-stale posts the EMPTY decision S2c '
-  'itself emits at the cap and proves nothing is written and the caption comes back true — the '
-  "paywall's own half of useBrand's guard, which every other step walks past by pressing a real "
-  'button; brand-picker-js-off reads the chooser off a FRESH document and finds real radio inputs '
-  'inside the posting form, one pre-checked, because axe-brand and brand-js-off both run before '
-  'any project exists and so had never seen a chooser; axe-brand-picker runs axe with the cards '
-  "drawn; and brand-atcap-picker proves the owner's Question 4 ruling in the only state that "
-  'reaches it — a DOWNGRADE, Pro with two projects and then Free — where the ticked card is the '
-  "site's own project and carries the This site's project label, printing the row the PRE-RULING "
-  "rule would have ticked as its discriminating control, and carrying the owner's Question 6 "
-  'ruling too — the caption over the cards keeps the limit and names NO project, because the cards '
-  'do, asserted with the control that the naming sentence is gone from that screen while '
-  'brand-atcap proves it alive at the cap with one project. brand-logo renders the <img> HALF of the '
-  'logo slot — what a customer whose Ghost carries a logo sees, and the branch no run had ever '
-  'drawn because logo is an empty string on both majors (MEASUREMENTS §40); the row is patched '
-  'through the SERVICE ROLE and put back in a finally, so no Ghost is written. brand-failed-line '
-  "proves the matrix's insert fails -> the page says so BOTH WAYS: useBrand's failure "
-  'branches all redirect to &failed=1, and the sentence they redirect to had been asserted by its '
-  'own string length and nothing else at any level. '
-  'brand-ownership asks the cross-account question of the two ACTIONS, which is not ownership\'s: '
-  'a second account\'s real site id is forged into S2c\'s own Use your brand and Skip forms and '
-  'submitted from the fixture\'s session, and the caller\'s projects are byte-identical afterwards '
-  'with none linked to the stranger\'s site — these write through the caller\'s own session, so RLS '
-  'is the guard rather than an .eq(user_id). --check also parses the embedded Playwright script '
-  'before it spends anything (browser-js): the script is a Python string until node reads it, so no '
-  'test in the repository can see a redeclaration in it, and one surfaced only mid-run. It catches '
-  'a REDECLARATION and not the shadowing class beside it — a block-scoped const that puts an '
-  'earlier caller in its temporal dead zone is valid syntax and node --check exits 0 on it, '
-  'executed rather than assumed (review 3, 2026-09-08). '
-  "STORY 3.4's OWNER TEST ADDED R-98's OWN TWO, and brand-forged-project with them: busy-label "
-  'HOLDS the POST and reads S2c\'s pressed button inside the hold — it swaps to the app\'s own '
-  'busy sentence with aria-busy and aria-disabled and never disabled, while the button in the '
-  'OTHER form is untouched, which is useFormStatus being a form\'s status and not a page\'s; '
-  "skeleton-shape reads the STREAMED DOCUMENT of / and of /sites and asserts each carries its own "
-  'loading sentence and its own fallback drawing and NOT the other\'s — the pair is the control, '
-  'because before the route groups /sites streamed the dashboard\'s project cards; '
-  'skeleton-soft-nav RECORDS, and deliberately does not assert, the path a sidebar press takes '
-  'between two commits; and brand-forged-project posts a project_id the caller does not carry and '
-  "proves nothing is written — the !picked half of useBrand's guard, which every step that "
-  'presses a real button walks past, and with the clause gone the post makes a project past the '
-  'Free cap. '
-  'Note that --check is no longer '
-  'plumbing alone — it re-executes settings-keys and brand-keys against both live Ghosts, so it '
-  'needs every key the full run does, the two staff tokens included; it still starts no browser '
-  'and creates nothing. Stories 3.2, 3.3 and 3.4.'),
+   # DW-73: a subject line and one bullet per story, rendered into the cell as the subject then
+   # `<br>`-separated lines (`cell()` above). NO TEXT WAS DELETED when this was broken up on
+   # 2026-09-11 — it was one literal of 11,006 characters, rendered into ONE INDEX.md table cell.
+   (
+    'FR-C1/FR-C2 driven through the real UI on the deployed site, and read back off the wire and '
+    'off the transaction pooler.',
+    'Story 3.1 drove a bearer-gated verify route because the Admin chokepoint had no product '
+    'caller; Story 3.2 built that caller — the connect wizard — deleted the route (DW-48) and '
+    'retargeted this harness at the product. One throwaway Free account signs in from a generated '
+    'magic link and drives /sites: with nothing connected the page is the EMPTY SCREEN the owner '
+    'asked for at his test (finding 7, 2026-09-08) — his own title and subtitle, read out of the '
+    'app rather than retyped, a drawing and two "Connect site" buttons — over the shell top bar '
+    'Sites now shares with Projects, whose field says "Search sites…" and which carries no bell '
+    "(Story 13.4's). Its button opens S11b, and the sheet is measured at BOTH steps: one box, "
+    'because a box that shrank 57px between them was findings 1 and 2. "Where do I find these?" '
+    "is a link, not the frame's bordered box (finding 3).",
+    '/sites/connect is S2b·1 with the integration screenshot really served, "Done — next" is a '
+    'link to S2b·2 with three fields and no Staff Access Token, an http:// address warns under '
+    'the field as it is typed, a malformed Admin key is refused before Vault and before the '
+    'network, a kid Ghost never issued answers ghost_unknown_key (§37 — keys do not expire), and '
+    'a wrong Content API key is caught by the BROWSER with zero POSTs leaving the page (counted, '
+    'not assumed). Then T1 connects for real and the wire shows the sites row with its '
+    'ghost_version, content_key, site_settings.public_url and credentials_present, the pooler a '
+    'private.site_credentials row and a live vault.secrets row behind its ref, and '
+    'private.credential_audit an admin_read for config/ with a NULL site_id and then one for '
+    'site/ carrying the new id. The card is read off its rendered boxes for the layout the owner '
+    'finalised (findings 4 and 6): the new-tab glyph on the address, and "Connected" below the '
+    "pills and just above \"Checked …\". The shell's field on Sites finds a site by its title and "
+    'by its address. The same address again answers already_connected; T3 on the Free account '
+    "answers Appendix F.1's own cap sentence, composed from PLANS rather than typed here. "
+    'axe-core at WCAG 2.1 AA over every surface it drives at 1440 and 390. Then GoTrue deletes '
+    'the user and the secret must be gone — the cascade path of DW-44 — and every response body '
+    'the run received is swept for the keys it typed. Its CONTROLS: §21j re-executed over '
+    'PostgREST (vault and the private table 404, /rest/v1/sites 200) and the Admin-API user count '
+    'before and after. --check is the keys, that control, and whether playwright, axe and the '
+    'postgres driver resolve; it creates nothing and needs no deployment. DW-54 records the Story '
+    '3.1 proofs that lost their driver with the route and which story re-drives each; `re-adopt` '
+    'here already re-drives the key rotation.',
+    'STORY 3.3 ADDED THE PROBES, and with them the decrypt path DW-54 had left with no product '
+    "caller: the connect action now runs FR-C2's four probes on the STORED key through call(), so "
+    'a connect leaves two vault_decrypt rows and two more admin_read rows carrying the site id, '
+    'and the row comes back capability full / source probe (hostSettings is absent on both '
+    'majors, so self-hosted and unlimited) with site_settings carrying one code_injection '
+    "boolean, portal_button and its source, and the announcement's three values beside 3.2's "
+    'public_url. settings-keys re-executes, every run, that the INTEGRATION key really answers '
+    'all six keys the probes read — §15h item 21 measured the announcement three with a staff '
+    'token. injection-live is the ONE write this project makes to a test Ghost, ruled by the '
+    'owner on 2026-09-08: the harness sets the Site-footer code-injection box on BOTH servers '
+    'with its own staff token — the integration key is refused, 403 on Ghost 6 and 501 on Ghost 5 '
+    "— and restores exactly what it found in a finally, passing or failing. The product's "
+    'allowlist is untouched and still denies every non-GET. no-payload-leak then proves neither '
+    'codeinjection payload reaches the row, a response body or the rendered HTML; '
+    'injection-notice drives the one-time sky notice and its Got it; portal-question and '
+    "plan-question drive the only two questions FR-C8 allows, each seeded on the fixture's own "
+    'row through the service role because no Ghost and no Ghost(Pro) plan can produce them here '
+    '(⛔ §4 T4); and preview-notice reads B15 off the deployed card at 1440, 834 and 390 — the '
+    'chip on the STATE line beside Connected (DW-57), Export theme zip and Ship it absent because '
+    'neither path exists (UX-DR3) — then presses Re-check plan and watches a self-hosted Ghost '
+    'clear itself back to full. The review of 2026-09-08 added ownership, which forges a SECOND '
+    "account's site id into a notice form and proves the row does not move: the four new actions "
+    'write under the service role, so one .eq(user_id) inside the action is the whole guard '
+    'between two accounts and nothing had ever executed it.',
+    "STORY 3.4 ADDED FR-C4's BRAND: brand-keys re-executes, in both modes, that the keys "
+    'BRAND_KEYS names (the brand reader takes them off the same settings payload the announcement '
+    'reader already reads) are really there on both majors, and records the CONTAINER of each — '
+    'navigation is a JSON string, as announcement_visibility is (MEASUREMENTS §40) — and a '
+    'connect whose site has a brand now lands on S2c rather than the list, so every connect in '
+    'the run passes through it. brand-screen reads S2c against the row the probe just wrote (the '
+    'swatch really painted in the accent and captioned with the HEX, the menu as text pills with '
+    'no links), brand-js-off proves both its controls are forms, axe-brand runs at 1440 and 390, '
+    'brand-skip proves Skip writes nothing and leaves the offer on the card, brand-seed drives '
+    'the offer link and Use your brand to a project named from the site with linked_site_id set — '
+    "FR-B5's first writer — a style_pack.brand.accent equal to the site's, the card's tally at \"1 "
+    "project\" and the dashboard card computed in that colour, brand-atcap proves the owner's "
+    'Question 1 ruling live (the caption NAMES the project before the press and nothing else '
+    'about it moves), brand-rerun presses the offer a SECOND time on Pro — the one state in the '
+    'run with room to spare, and until the review of 2026-09-08 the one that made a second '
+    'project for the same site — and brand-none proves a site with nothing to offer draws no link '
+    'and renders the NOT-FOUND page, as does a ?site= naming a row no account carries (the HTTP '
+    'status is 200 because /sites/brand has its OWN loading.tsx since R-98 and the shell has '
+    'streamed before notFound() throws — the group-wide (authed)/loading.tsx that used to be the '
+    'reason is gone; measured rather than excused, DW-67 amended).',
+    "brand-picker drives the owner's Question 3 ruling — with more than one project the second "
+    "press ASKS instead of telling and draws a card per project carrying that project's own 64x44 "
+    "wireframe in its own Style-Pack colours (FR-B1's placeholder, no preview claimed), the card "
+    'for this site pre-selected so touching nothing writes what Question 1 ruled, and the two '
+    'drawings asserted DISTINCT with getComputedStyle. brand-stale posts the EMPTY decision S2c '
+    'itself emits at the cap and proves nothing is written and the caption comes back true — the '
+    "paywall's own half of useBrand's guard, which every other step walks past by pressing a real "
+    'button; brand-picker-js-off reads the chooser off a FRESH document and finds real radio '
+    'inputs inside the posting form, one pre-checked, because axe-brand and brand-js-off both run '
+    'before any project exists and so had never seen a chooser; axe-brand-picker runs axe with '
+    "the cards drawn; and brand-atcap-picker proves the owner's Question 4 ruling in the only "
+    'state that reaches it — a DOWNGRADE, Pro with two projects and then Free — where the ticked '
+    "card is the site's own project and carries the This site's project label, printing the row "
+    'the PRE-RULING rule would have ticked as its discriminating control, and carrying the '
+    "owner's Question 6 ruling too — the caption over the cards keeps the limit and names NO "
+    'project, because the cards do, asserted with the control that the naming sentence is gone '
+    'from that screen while brand-atcap proves it alive at the cap with one project.',
+    'brand-logo renders the <img> HALF of the logo slot — what a customer whose Ghost carries a '
+    'logo sees, and the branch no run had ever drawn because logo is an empty string on both '
+    'majors (MEASUREMENTS §40); the row is patched through the SERVICE ROLE and put back in a '
+    "finally, so no Ghost is written. brand-failed-line proves the matrix's insert fails -> the "
+    "page says so BOTH WAYS: useBrand's failure branches all redirect to &failed=1, and the "
+    'sentence they redirect to had been asserted by its own string length and nothing else at any '
+    'level. brand-ownership asks the cross-account question of the two ACTIONS, which is not '
+    "ownership's: a second account's real site id is forged into S2c's own Use your brand and "
+    "Skip forms and submitted from the fixture's session, and the caller's projects are "
+    "byte-identical afterwards with none linked to the stranger's site — these write through the "
+    "caller's own session, so RLS is the guard rather than an .eq(user_id). --check also parses "
+    'the embedded Playwright script before it spends anything (browser-js): the script is a '
+    'Python string until node reads it, so no test in the repository can see a redeclaration in '
+    'it, and one surfaced only mid-run. It catches a REDECLARATION and not the shadowing class '
+    'beside it — a block-scoped const that puts an earlier caller in its temporal dead zone is '
+    'valid syntax and node --check exits 0 on it, executed rather than assumed (review 3, '
+    '2026-09-08).',
+    "STORY 3.4's OWNER TEST ADDED R-98's OWN TWO, and brand-forged-project with them: busy-label "
+    "HOLDS the POST and reads S2c's pressed button inside the hold — it swaps to the app's own "
+    'busy sentence with aria-busy and aria-disabled and never disabled, while the button in the '
+    "OTHER form is untouched, which is useFormStatus being a form's status and not a page's; "
+    'skeleton-shape reads the STREAMED DOCUMENT of / and of /sites and asserts each carries its '
+    "own loading sentence and its own fallback drawing and NOT the other's — the pair is the "
+    "control, because before the route groups /sites streamed the dashboard's project cards; "
+    'skeleton-soft-nav RECORDS, and deliberately does not assert, the path a sidebar press takes '
+    'between two commits; and brand-forged-project posts a project_id the caller does not carry '
+    "and proves nothing is written — the !picked half of useBrand's guard, which every step that "
+    'presses a real button walks past, and with the clause gone the post makes a project past the '
+    'Free cap.',
+    'Note that --check is no longer plumbing alone — it re-executes settings-keys and brand-keys '
+    'against both live Ghosts, so it needs every key the full run does, the two staff tokens '
+    'included; it still starts no browser and creates nothing. Stories 3.2, 3.3 and 3.4.',
+   )),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '
@@ -946,6 +995,26 @@ def inventory():
     return sorted(out)
 
 
+def cell(blurb, escape=None):
+    """A catalogue description, rendered into ONE table cell.
+
+    DW-73, Story 3.9. A description may be a plain string — most are — or a SEQUENCE whose first
+    item is a subject line and whose rest are detail lines. The long rows had grown append-only,
+    one story at a time, into single literals of thousands of characters that `INDEX.md` rendered
+    as one unbroken cell: correct, and unreadable, in the two highest-traffic paragraphs in the
+    repository. Nothing is deleted by this; the same text is broken into lines.
+
+    A RENDERING CHANGE AND NOT A FORMAT CHANGE. GFM table cells accept `<br>` and the **Document**
+    column has always used it, so there is no new mechanism and no new parser — a row that is still
+    a string renders exactly as it did. `escape` is passed for the HTML card, where each part is
+    escaped and the `<br>` between them is not."""
+    e = escape or (lambda x: x)
+    if isinstance(blurb, str):
+        return e(blurb)
+    subject, *details = blurb
+    return e(subject) + ''.join(f'<br>• {e(d)}' for d in details)
+
+
 def describe(rel):
     """Exact entry first, then the first matching group."""
     s = short(rel)
@@ -1135,9 +1204,9 @@ points at a file that is gone, or if this file is out of date.
         md.append(f'\n## {st.title()} — {STATUS[st]}\n')
         md.append('| Document | What it is |\n|---|---|')
         for rel, _s, title, blurb, _e in sorted(items, key=lambda r: r[2]):
-            md.append(f'| **[{title}]({rel})**<br>`{short(rel)}` | {blurb} |')
+            md.append(f'| **[{title}]({rel})**<br>`{short(rel)}` | {cell(blurb)} |')
         for _s, title, blurb, members in sorted(gs, key=lambda g: g[1]):
-            md.append(f'| **{title}** *({len(members)} files)*<br>`{short(members[0]).rsplit("/",1)[0]}/` | {blurb} |')
+            md.append(f'| **{title}** *({len(members)} files)*<br>`{short(members[0]).rsplit("/",1)[0]}/` | {cell(blurb)} |')
         md.append('')
     md_txt = '\n'.join(md)
 
@@ -1154,10 +1223,10 @@ points at a file that is gone, or if this file is out of date.
         for rel, _s, title, blurb, _x in items:
             cards.append(
                 f'<a class="doc" href="{e(os.path.relpath(os.path.join(ROOT, rel), PLAN))}">'
-                f'<h3>{e(title)}</h3><code>{e(short(rel))}</code><p>{e(blurb)}</p></a>')
+                f'<h3>{e(title)}</h3><code>{e(short(rel))}</code><p>{cell(blurb, e)}</p></a>')
         for _s, title, blurb, members in gs:
             cards.append(f'<div class="doc grp"><h3>{e(title)} <span class="cnt">{len(members)}</span></h3>'
-                         f'<code>{e(short(members[0]).rsplit("/",1)[0])}/</code><p>{e(blurb)}</p></div>')
+                         f'<code>{e(short(members[0]).rsplit("/",1)[0])}/</code><p>{cell(blurb, e)}</p></div>')
         cards.append('</div></section>')
 
     html_txt = f"""<!doctype html>

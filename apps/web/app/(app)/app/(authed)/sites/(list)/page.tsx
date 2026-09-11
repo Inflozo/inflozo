@@ -184,6 +184,7 @@ export default async function Sites({
         .is('disconnected_at', null)
         .order('created_at', { ascending: false }),
       // FR-B5: at most one site per project, so the card's "n projects" is a tally of this column.
+      // Since Story 3.9 that is a partial unique index and not only a sentence (DW-69).
       supabase.from('projects').select('linked_site_id'),
       /* STORY 3.7 — THE OPEN `site_health` ROWS, ONE READ FOR THE WHOLE LIST. `sites.health` says
          WHETHER a connection needs attention; this says WHY and SINCE WHEN, which is the record of

@@ -20,6 +20,27 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # THE DOCUMENTATION GATE, AND IT RUNS FIRST (DW-21, Story 3.9). Until now it ran only in the
+      # local pre-commit hook, so a commit from a clone that has not run
+      # `git config core.hooksPath tools/hooks` — or any tool that commits directly — published
+      # without it, and `story-board.py`'s self-check is what decides whether the owner ever SEES
+      # an open question (R-83/R-84). Before `pnpm build` because a red gate should be cheap.
+      # `ubuntu-latest` ships python3 and `doc-audit.py` imports stdlib only (os, re, sys,
+      # subprocess, html, datetime), so there is nothing to install.
+      #
+      # THE BOARD IS REGENERATED FIRST, AND WITHOUT IT THIS JOB WOULD BE RED ON EVERY PUSH —
+      # executed on a fresh clone of HEAD before it was written, not reasoned: STORY-BOARD.html
+      # reads `git log`, the pre-commit hook stages it BEFORE the commit exists, so the committed
+      # copy is one commit behind BY CONSTRUCTION (the post-commit hook fixes the working tree,
+      # which CI does not have). Regenerating it here costs a second and leaves the gate checking
+      # everything DW-21 actually named: the catalogue, INDEX.md, the tuple and inventory
+      # derivations, and every sub-tool's own SELF-CHECK — `story-board.py` exits non-zero on a
+      # question block that claims neither a ruling nor `_(awaiting the owner)_`, which is the one
+      # that decides whether the owner sees it. Nothing is committed; the runner's tree is thrown
+      # away. `--check` here only REPORTS — locally its sub-tools regenerate on the first failure
+      # and the hook retries once and stages them, and in CI there is nothing to stage.
+      - run: python3 tools/story-board.py
+      - run: python3 tools/doc-audit.py --check
       - run: pnpm check
       - run: pnpm build
 

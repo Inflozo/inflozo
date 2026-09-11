@@ -246,11 +246,19 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
               {/* The frame's trailing pair (`:90-91`). The state is set and the dialog opened in
                   the one handler: the click is a discrete event, so React flushes this render
                   before the browser paints the open dialog, and `openOnCancel` finds the same
-                  Cancel button either way. */}
+                  Cancel button either way.
+
+                  BOTH LABELS CARRY THE DATE (DW-36, Story 3.9). Two passkeys born with the same
+                  fallback name gave a screen-reader user four buttons reading "Rename Passkey",
+                  "Remove Passkey", "Rename Passkey", "Remove Passkey" — nothing in the accessible
+                  name said WHICH, and the date is the one thing on the row that already tells them
+                  apart on screen. It is the same `addedLabel` the row draws, so the two cannot
+                  disagree. `run-verify-passkeys.py` locates rows by the exact label and changed in
+                  the same commit; it is the one change that breaks that harness. */}
               <span className="ml-auto flex gap-[2px]">
                 <button
                   type="button"
-                  aria-label={`Rename ${passkey.name}`}
+                  aria-label={`Rename ${passkey.name}, ${addedLabel(passkey.createdAt)}`}
                   onClick={() => {
                     setSelected(passkey)
                     openOnCancel(rename.current)
@@ -261,7 +269,7 @@ export function PasskeysCard({ passkeys }: { passkeys: PasskeyRow[] | null }) {
                 </button>
                 <button
                   type="button"
-                  aria-label={`Remove ${passkey.name}`}
+                  aria-label={`Remove ${passkey.name}, ${addedLabel(passkey.createdAt)}`}
                   onClick={() => {
                     setSelected(passkey)
                     openOnCancel(revoke.current)

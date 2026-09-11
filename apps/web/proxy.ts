@@ -85,9 +85,11 @@ export async function proxy(req: NextRequest) {
   return res
 }
 
-// `icon.svg`, `apple-icon.png` and `brand/` join the exclusion with Story 1.6's identity, and
-// `connect/` with Story 3.2's Ghost Admin screenshot: on app.inflozo.com every path the proxy
-// sees is rewritten to /app/… (`routing.ts`), which would send the root-served icons, the email's
+// `icon.svg`, `icon.png`, `apple-icon.png` and `brand/` join the exclusion with Story 1.6's
+// identity — `icon.png` with Story 3.9's DW-35, the tab icon for a Safari older than 26, which
+// shows nothing at all for an SVG one — and `connect/` with Story 3.2's Ghost Admin screenshot: on
+// app.inflozo.com every path the proxy sees is rewritten to /app/… (`routing.ts`), which would
+// send the root-served icons, the email's
 // mark and the wizard's picture to a 404. Excluded here they are served by Next's own static
 // handling on both hosts; `routing.test.ts` covers `route()`, so the control is the deployed curl
 // in the story's Verification — and `routing.test.ts` reads this literal back, walks every folder
@@ -96,4 +98,4 @@ export async function proxy(req: NextRequest) {
 // as in Next's own docs, so the text the test reads is the pattern Next runs. Each excluded folder
 // is a PREFIX reserved for static files: a page route must never be placed under `brand/` or
 // `connect/`, because it would escape the proxy — no rewrite, no CSP, no session refresh.
-export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|apple-icon.png|brand/|connect/).*)'] }
+export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|icon.png|apple-icon.png|brand/|connect/).*)'] }

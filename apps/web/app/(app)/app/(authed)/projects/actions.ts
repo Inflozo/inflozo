@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, capSentence, type PlanId } from '@/lib/plan'
-import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
+import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
 import { defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
@@ -60,7 +60,10 @@ const idOf = (formData: FormData) => {
  * answer and not a constraint violation.
  * ponytail: count-then-insert; a double submit is refused by the sheet's form while an action is
  * in flight (a label swap alone did not stop React queueing the second — review, 2026-09-06), and
- * a trigger on projects reading entitlements is the upgrade if a race ever lands two.
+ * a trigger on projects reading entitlements is the upgrade if a race ever lands two. THE SLUG
+ * half of that race is no longer open — `unique (user_id, slug)` refuses it and `insertProject`
+ * retries (DW-24, Story 3.9) — but the CAP's half is: the count and the insert are still two
+ * statements, and only a trigger can close that one.
  */
 async function names() {
   const user = await signedIn()
@@ -85,6 +88,41 @@ async function names() {
 }
 
 /**
+ * THE INSERT, WITH THE DATABASE'S OWN ANSWER TAKEN SERIOUSLY — DW-24, and the half of it that is
+ * code rather than schema.
+ *
+ * `uniqueSlug` reads the taken slugs and then inserts, which is a read-then-write: two of one
+ * customer's own requests overlapping can both read the same free slug. Since 2026-09-11
+ * `public.projects` carries `unique (user_id, slug)`, so the loser is refused with `23505` instead
+ * of two rows sharing a slug that FR-J10 turns into a theme name.
+ *
+ * `23505` FROM THESE TWO INSERTS CAN ONLY BE THE SLUG, and that is a property of what they write
+ * rather than of the table: `projects` has exactly two unique constraints on insertable columns —
+ * this one and the partial one on `linked_site_id` — and NEITHER caller here sets
+ * `linked_site_id` (`duplicateProject` deliberately leaves it out of its select list so it cannot
+ * be spread in). `useBrand` in `sites/actions.ts` DOES set it, which is why its retry re-decides
+ * rather than re-slugs.
+ *
+ * Both callers share this, so the retry is in one place and not in each of them — and a third
+ * insert added later gets it by using this rather than by remembering to.
+ */
+async function insertProject(
+  supabase: Awaited<ReturnType<typeof supabaseServer>>,
+  row: Record<string, unknown>,
+  base: string,
+  slugs: readonly string[],
+) {
+  let last = null
+  for (const slug of slugAttempts(base, slugs)) {
+    const { error } = await supabase.from('projects').insert({ ...row, slug })
+    if (!error) return null
+    if (error.code !== '23505') return error
+    last = error
+  }
+  return last
+}
+
+/**
  * The page's `atCap` was drawn from an older count — a second tab filled the cap since — so
  * the page is re-rendered with the true one before the refusal is answered: the sheet then
  * opens as D4b and S3c's tile appears, rather than D4a with a live Create (review, 2026-09-05).
@@ -102,12 +140,12 @@ export async function createProject(_previous: ActionResult | null, _formData: F
   if (atCap(plan, taken.length)) return refusedAtCap(plan)
 
   const name = nextUntitled(taken)
-  const { error } = await supabase.from('projects').insert({
-    user_id: user.id,
-    name,
-    slug: uniqueSlug(slugify(name), slugs),
-    style_pack: defaultStylePack(),
-  })
+  const error = await insertProject(
+    supabase,
+    { user_id: user.id, name, style_pack: defaultStylePack() },
+    slugify(name),
+    slugs,
+  )
   if (error) return logged('create', error, COULD_NOT.create)
 
   revalidatePath(DASHBOARD)
@@ -160,9 +198,7 @@ export async function duplicateProject(_previous: ActionResult | null, formData:
   if (!source) return logged('duplicate', null, COULD_NOT.duplicate)
 
   const name = copyName(source.name, taken)
-  const { error } = await supabase
-    .from('projects')
-    .insert({ ...source, user_id: user.id, name, slug: uniqueSlug(slugify(name), slugs) })
+  const error = await insertProject(supabase, { ...source, user_id: user.id, name }, slugify(name), slugs)
   if (error) return logged('duplicate', error, COULD_NOT.duplicate)
 
   revalidatePath(DASHBOARD)

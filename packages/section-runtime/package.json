@@ -14,7 +14,7 @@
     "@inflozo/library": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "26.4.1",
+    "@types/node": "24.13.4",
     "typescript": "7.0.2"
   }
 }

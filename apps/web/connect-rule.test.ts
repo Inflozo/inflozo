@@ -529,3 +529,44 @@ test('the card tallies projects per site and pluralises the pill', () => {
   // A malformed Content key is answered under its own field, with its own sentence.
   assert.match(connectMessage('content_key_malformed'), /Content API key/)
 })
+
+/**
+ * DW-79 — THE 90-DAY ORPHAN WINDOW IS WRITTEN DOWN TWICE, IN TWO LANGUAGES.
+ *
+ * `ORPHAN_SNAPSHOT_DAYS` is the app's copy and `disconnected_at + interval '90 days'` is the
+ * database's. They agree today, and the test above pins the app's figure at 90 — so a silent drift
+ * needs someone to edit the SQL alone, which is exactly the edit nothing would catch. This reads
+ * the SQL's own figure back.
+ *
+ * IT READS THE COMMENT TOO, AND THAT IS DELIBERATE — the opposite of `deletion-rule.test.ts`'s
+ * rule, for the opposite reason. There, prose naming another interval is NOT a stamp and had to be
+ * stripped. Here the migration's sentence IS the only place the orphan window is written in SQL:
+ * the view that will compute it is Story 7.20's, built beside the snapshot it deletes. When 7.20
+ * writes that view this test needs no change — the expression it matches is the one the entry
+ * names and the one the view will carry.
+ *
+ * WHAT THIS DOES NOT CLOSE, and the entry is amended to say so rather than closed twice: the
+ * honest fix is ONE HOME — the view reading a setting the app also reads, or the app deriving its
+ * figure from the view — and choosing between those belongs to Story 7.20, the first code that
+ * depends on both. This closes the silent drift, which is the half that was costing something now.
+ */
+test('the 90-day orphan window agrees between the app and the migration', async () => {
+  const { readFileSync } = await import('node:fs')
+  const MIGRATION = '../../supabase/migrations/20260907150000_account_deletion_window.sql'
+  const sql = readFileSync(MIGRATION, 'utf8')
+  const written = [...sql.matchAll(/disconnected_at\s*\+\s*interval '(\d+) days'/g)].map((m) => Number(m[1]))
+  assert.ok(
+    written.length > 0,
+    `${MIGRATION} no longer writes the orphan clock as \`disconnected_at + interval '<n> days'\` — ` +
+      'this test reads that figure rather than restating it, so either the expression moved (point ' +
+      'this at its new home) or the clock is gone.',
+  )
+  for (const days of written) {
+    assert.equal(
+      days,
+      ORPHAN_SNAPSHOT_DAYS,
+      `the migration computes the orphan deadline at ${days} days and the app tells the customer ` +
+        `${ORPHAN_SNAPSHOT_DAYS} — one of the two was changed alone, which is DW-79 exactly.`,
+    )
+  }
+})

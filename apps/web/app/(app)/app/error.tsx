@@ -41,8 +41,16 @@ export default function AppError({
 }) {
   // The digest only: logs carry no user content (spine, Security floor), and the message of a
   // production error is a digest anyway.
+  //
+  // AND THE DOCUMENT'S TITLE, because this boundary REPLACES the document and no `metadata` export
+  // runs for it — measured, not reasoned: rendered once on a local production build for DW-34
+  // (Story 3.9, the first time this page has ever been on a screen) the document carried no
+  // `<title>` at all and axe-core reported `document-title`, impact serious, at all three widths.
+  // A tab reading the raw URL is also the one thing a customer looking at a failed page cannot
+  // work around. `document.title` from the effect is how a client boundary sets one.
   useEffect(() => {
     console.error('app: unhandled error', { digest: error.digest })
+    document.title = 'Something went wrong · Inflozo'
   }, [error])
 
   // `<main>` and not a `<div>`: this boundary replaces the whole document, OUTSIDE the shell's

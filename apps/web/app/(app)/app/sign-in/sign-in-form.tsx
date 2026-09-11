@@ -143,13 +143,27 @@ export function SignInForm({
       // line with the frame's 36px padding untouched. At 390 the card is `width:100%` inside the
       // page's 24px padding — the frame's own shape — so mobile still wraps, as the frame draws it.
       aria-busy={passkeyPending || undefined}
+      /* S1c, AND WHAT IT MEANS TO SOMEONE WHO IS NOT LOOKING AT IT (DW-37, Story 3.9). The frame
+         dims the card's contents to 40% while the OS sheet is up, and axe-core read that exactly as
+         it is written — 1 `color-contrast` violation over 9 nodes, impact serious, measured on a
+         real build. Nothing is broken: nothing on the card can be pressed while it is faded, and
+         the OS window is the only thing in focus. `inert` is that sentence said to the browser
+         rather than only to the eye — the subtree stops being focusable, stops taking clicks, and
+         is not exposed to assistive technology, which is also why axe does not audit it. It
+         REPLACES `pointer-events-none`, which was the same intent expressed in CSS alone.
+         `aria-hidden` beside it is what the entry names; it is redundant with `inert` in every
+         browser that has `inert`, and it costs nothing in the one that does not. */
+      inert={passkeyPending || undefined}
+      aria-hidden={passkeyPending || undefined}
       className={`relative z-10 flex w-full max-w-[440px] flex-col rounded-lg bg-surface shadow-lg ${
         sent ? 'items-center gap-5 p-[32px_24px] text-center tablet:p-[44px_36px]' : 'gap-[22px] p-[32px_24px] tablet:gap-6 tablet:p-[40px_36px]'
       } ${
         // S1c dims the card's CONTENTS to .4 and leaves the card and its shadow whole
-        // (`S1 Sign In.dc.html:131-141`); and a card at 40% must not still take a click while
-        // the OS sheet is up — a second ceremony or a magic link mid-ceremony (review, 2026-09-06).
-        passkeyPending ? 'pointer-events-none [&>*]:opacity-40' : ''
+        // (`S1 Sign In.dc.html:131-141`). The card at 40% must not still take a click while the OS
+        // sheet is up — a second ceremony or a magic link mid-ceremony (review, 2026-09-06) — and
+        // since Story 3.9 `inert` above is what refuses that, rather than `pointer-events-none`:
+        // it refuses the keyboard and the screen reader too, which a CSS property cannot.
+        passkeyPending ? '[&>*]:opacity-40' : ''
       }`}
     >
       {sent ? (

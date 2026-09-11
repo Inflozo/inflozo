@@ -46,9 +46,30 @@ export function policy(host: string, nonce: string, dev = false): string {
   // nonce is what decides there: a request that carries one is an app request.
   const app = isApp || Boolean(nonce)
 
+  /* THE MARKETING HOST TAKES `'unsafe-inline'` AND THE APP HOST NEVER DOES — the owner's ruling
+     at Story 3.9's Question 1, option 1 (2026-09-11), closing DW-18's marketing half.
+     Marketing is PRERENDERED, so its HTML was written at build time and carries no nonce; under
+     `script-src 'self'` the browser therefore blocked Next's own inline bootstrap and the page
+     threw an uncaught minified React error 412 (written without its `#`: `tokens.test.ts` reads a
+     three-digit hash as a colour literal and the tokens are the only colour vocabulary) — two
+     blocked scripts, re-measured on
+     production 2026-09-11 before this change. Nothing on that page needs a script today, so
+     nobody could see it; the moment Epic 14 puts a "Start free" button there, the button would
+     do nothing, silently.
+     THE RELAXATION CANNOT REACH THE APP. It is a different origin, and the branch below is the
+     host split itself — but a shared function is exactly where a later edit walks a relaxation
+     across a split, so `csp.test.ts` asserts that the app policy can NEVER carry
+     `'unsafe-inline'` in `script-src`, in both directions.
+     ONE CLAIM EXECUTED RATHER THAN ASSERTED (standing rule 1): CSP Level 3's inline-checking
+     algorithm IGNORES `'unsafe-inline'` whenever the policy also carries a nonce-source or a
+     hash-source, so the relaxation would be INERT on the app host rather than dangerous there.
+     That is a reason to be less worried, not a reason to relax the app policy — the test above
+     holds the split by assertion, and the claim itself is read in the same Playwright run that
+     re-measures this, by asking whether an unnonced inline script on the app host is still
+     blocked. */
   const scriptSrc = app
     ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`
-    : `script-src 'self'${dev ? " 'unsafe-eval'" : ''}`
+    : `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`
 
   return [
     `default-src 'self'`,

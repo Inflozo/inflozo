@@ -159,3 +159,55 @@ test('every inflozo.com image the email template names is a file under public/',
     assert.ok(existsSync(join('public', path)), `the email points at /${path}, which is not under public/ — the mark would be a blank cell in every sign-in email`)
   }
 })
+
+/*
+ * STORY 3.9 — the catch-all that puts the unbuilt destinations inside the shell (DW-17, DW-26).
+ *
+ * `(authed)/[...unbuilt]/page.tsx` matches every url under the group that no real route claimed,
+ * and calls `notFound()`. The thing worth asserting is that it cannot claim a url a real route
+ * wants: Next resolves a STATIC segment before a dynamic one and a dynamic one before a catch-all,
+ * so the danger is not precedence but SHAPE — a second catch-all, or one nested deeper, and two
+ * routes are competing for the same urls with only the framework's tie-break between them and
+ * every screen in the app.
+ *
+ * This is the structural half. The executed half is the deployed-site read in the story's
+ * `## Verification`: the six unbuilt destinations answer the app's own 404, and every built route
+ * still answers its own page.
+ */
+test('exactly one catch-all under (authed), at the group root, and it only calls notFound()', () => {
+  const catchAlls = pages().filter((p) => p.includes('[...'))
+  assert.deepEqual(
+    catchAlls,
+    [join('(authed)', '[...unbuilt]', 'page.tsx')],
+    'the catch-all must be the only one and must sit directly under (authed): nested deeper it stops ' +
+      'covering its siblings, and a second one competes with it for every unmatched url.',
+  )
+  const source = readFileSync(join(APP, catchAlls[0]), 'utf8')
+  assert.match(
+    source,
+    /notFound\(\)/,
+    'the catch-all must call notFound() — it is the route that hands an unmatched url to (authed)/not-found.tsx.',
+  )
+  assert.ok(
+    !existsSync(join(APP, '(authed)', '[...unbuilt]', 'loading.tsx')),
+    'the catch-all must have NO loading.tsx: a skeleton is a Suspense boundary, and Next commits the ' +
+      'status line before the page runs — notFound() would then land inside an already-successful 200 ' +
+      '(R-98, DW-67). busy.test.ts records it in NO_SKELETON with the same reason.',
+  )
+})
+
+/*
+ * …and the page it hands them to. `not-found.tsx` must sit INSIDE `(authed)`, because that is what
+ * makes the shell — sidebar, account menu, `<main>` — the frame around it rather than Next's own
+ * unstyled page replacing the route. DW-74's arrival control depends on the sentence being inside
+ * `<main>`, which is only true when the boundary is under the layout that draws one.
+ */
+test('(authed) has its own not-found, and it does not draw a second <main>', () => {
+  const file = join(APP, '(authed)', 'not-found.tsx')
+  assert.ok(existsSync(file), 'apps/web/app/(app)/app/(authed)/not-found.tsx is what renders a 404 inside the shell')
+  assert.doesNotMatch(
+    readFileSync(file, 'utf8'),
+    /^\s*(return\s+)?<main[\s>]/m,
+    'the not-found sits inside the shell, which already declares the one <main>.',
+  )
+})

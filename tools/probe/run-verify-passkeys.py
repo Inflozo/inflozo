@@ -233,9 +233,17 @@ const axe = async (page, label) => {
          : r.violations.map((v) => `${v.id} x${v.nodes.length}`).join(', '))
 }
 
+/* THE ROW'S NAME, OUT OF ITS BUTTON'S ACCESSIBLE NAME — and since Story 3.9 that name carries the
+   DATE as well (DW-36): two passkeys born with the same fallback name gave a screen-reader user
+   four buttons reading "Rename Passkey" / "Remove Passkey" twice over, with nothing saying which.
+   The label is now `Rename <name>, added <date>`, so every locator here matches the PREFIX and
+   every read strips the suffix. This file and `passkeys-card.tsx` change together or this harness
+   stops finding rows — which is exactly what DW-36's entry said the one risk was.
+   The regex is written out at each site rather than hoisted: three of the four run INSIDE the page
+   through `$$eval`/`waitForFunction`, where a module-scope const is not in scope. */
 const names = (page) =>
   page.$$eval('[aria-label^="Rename "]', (els) =>
-    els.map((e) => e.getAttribute('aria-label').replace(/^Rename /, '')),
+    els.map((e) => e.getAttribute('aria-label').replace(/^Rename /, '').replace(/, added .*$/, '')),
   )
 
 ;(async () => {
@@ -326,7 +334,7 @@ const names = (page) =>
     record('rename-keyboard', `the rename dialog is still open right after Enter = ${openAfterEnter}`)
     await page.waitForFunction(
       (n) => [...document.querySelectorAll('[aria-label^="Rename "]')]
-        .some((e) => e.getAttribute('aria-label') === `Rename ${n}`),
+        .some((e) => e.getAttribute('aria-label').replace(/^Rename /, '').replace(/, added .*$/, '') === n),
       NEW, { timeout: 20000 },
     )
     wire = await passkeys()
@@ -375,7 +383,7 @@ const names = (page) =>
     // credential the harness never revoked.
     for (const extra of (await names(page)).filter((n) => n !== NEW)) {
       const rows = (await names(page)).length
-      await page.locator(`[aria-label="Remove ${extra}"]`).first().click()
+      await page.locator(`[aria-label^="Remove ${extra},"]`).first().click()
       await page.waitForSelector('dialog[open]')
       await page.getByRole('button', { name: 'Remove passkey' }).click()
       await page.waitForFunction((n) => document.querySelectorAll('[aria-label^="Rename "]').length === n,
@@ -383,7 +391,7 @@ const names = (page) =>
     }
 
     // ── revoke: focus first, then the act
-    await page.locator(`[aria-label="Remove ${NEW}"]`).click()
+    await page.locator(`[aria-label^="Remove ${NEW},"]`).click()
     await page.waitForSelector('dialog[open]')
     const onCancel = await page.evaluate(() =>
       document.activeElement !== null && document.activeElement.hasAttribute('data-cancel'))
@@ -393,7 +401,7 @@ const names = (page) =>
     await page.getByRole('button', { name: 'Remove passkey' }).click()
     await page.waitForFunction(
       (n) => ![...document.querySelectorAll('[aria-label^="Rename "]')]
-        .some((e) => e.getAttribute('aria-label') === `Rename ${n}`),
+        .some((e) => e.getAttribute('aria-label').replace(/^Rename /, '').replace(/, added .*$/, '') === n),
       NEW, { timeout: 20000 },
     )
     wire = await passkeys()

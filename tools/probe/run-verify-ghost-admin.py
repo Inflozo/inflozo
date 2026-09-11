@@ -592,6 +592,7 @@ CONNECT_ACTIONS = os.path.join(WEB, 'app', '(app)', 'app', '(authed)', 'sites', 
 CONNECT_RULE = os.path.join(WEB, 'lib', 'connect-rule.ts')
 PROBE_RULE = os.path.join(WEB, 'lib', 'probe-rule.ts')
 PLAN = os.path.join(WEB, 'lib', 'plan.ts')
+NOT_FOUND_COPY = os.path.join(WEB, 'lib', 'not-found.ts')
 PG_DIR = os.path.join(WEB, 'node_modules', 'postgres')
 
 
@@ -630,6 +631,7 @@ def app_text():
         f"import {{ connectMessage, DISCONNECT, HTTP_WARNING, KEYS, ORPHAN_SNAPSHOT_DAYS, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
         f"import {{ BRAND_COPY, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
         f"import {{ goProLabel, siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
+        f"import {{ NOT_FOUND }} from 'file://{os.path.abspath(NOT_FOUND_COPY)}';"
         "console.log(JSON.stringify({"
         " credential_malformed: connectMessage('credential_malformed'),"
         " ghost_unknown_key: connectMessage('ghost_unknown_key'),"
@@ -724,7 +726,15 @@ def app_text():
         " keys_empty_admin: connectMessage('credential_empty'),"
         " keys_ghost_refused: connectMessage('ghost_refused', '%s'),"
         " keys_moved: KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS),"
+        # STORY 3.9, DW-85 (1): the OTHER hint — the matched record is still CONNECTED, so
+        # there is no 90-day clock to promise and the snapshot clause is dropped.
+        " keys_moved_live: KEYS.movedStillConnected,"
         # S11c's ghost slot, both halves derived from `PLANS` — nothing here names a number.
+        # STORY 3.9 — the app's OWN not-found sentence. Until this story the three steps below
+        # matched Next's default string `could not be found`, because there was no app page to
+        # match; DW-67's `note:` is the record of why they had to move in the same change.
+        " not_found_title: NOT_FOUND.title,"
+        " not_found_sub: NOT_FOUND.sub,"
         " go_pro: goProLabel(),"
         " at_cap: siteCapSentence('free') }))")
     try:
@@ -2151,8 +2161,13 @@ const shoot = async (page, name) => {
        after 48 steps. Same family as the `const same` shadowing Dev hit: a helper lives at the
        level every step that needs it can see. `node --check` cannot see this one — it is valid
        syntax — so the rule is the placement, not a check. */
-    /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders Next's own 404
-       page, and the HTTP status beside it is MEASURED rather than excused or predicted: a route
+    /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders INFLOZO'S OWN 404
+       since Story 3.9 — `(authed)/not-found.tsx`, inside the shell — where it rendered Next's
+       unstyled default before, which is why every `saw` locator here now waits for
+       `SAY.not_found_title` (evaluated from `lib/not-found.ts`) instead of Next's string `could
+       not be found`. DW-67's `note:` said this change would break three steps silently if it were
+       made anywhere else; it is made here, in the same commit.
+       The HTTP status beside it is MEASURED rather than excused or predicted: a route
        whose segment has a `loading.tsx` streams its shell first, so the status line is committed
        before the page component ever runs and `notFound()` lands in an already-successful
        response. Until R-98 that was true of EVERY page in `(authed)`, because one boundary sat
@@ -2168,7 +2183,7 @@ const shoot = async (page, name) => {
       // and run 4 read the skeleton and reported "not the not-found page" about a page that had
       // not rendered yet. Racing the two possible outcomes also makes a failure say which it saw.
       const saw = await Promise.race([
-        page.getByText('could not be found', { exact: false }).first()
+        page.getByText(SAY.not_found_title, { exact: true }).first()
           .waitFor({ timeout: 20000 }).then(() => 'not-found').catch(() => null),
         s2cHeading(page).waitFor({ timeout: 20000 }).then(() => 'S2c').catch(() => null),
       ])
@@ -2464,7 +2479,7 @@ const shoot = async (page, name) => {
       field.form.querySelector('button[type="submit"]').click()
       return true
     }, stranger.id)
-    const forgedLanded = await page.getByText('could not be found', { exact: false }).first()
+    const forgedLanded = await page.getByText(SAY.not_found_title, { exact: true }).first()
       .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
     const strangerRow = ((await wire(`/sites?id=eq.${stranger.id}&select=*`)).body || [])[0] || {}
     const strangerAfter = JSON.stringify({
@@ -2734,7 +2749,7 @@ const shoot = async (page, name) => {
     const routeSays = async (site) => {
       await page.goto(`${APP}/sites/disconnect?site=${site}`, { waitUntil: 'load' }).catch(() => {})
       const saw = await Promise.race([
-        page.getByText('could not be found', { exact: false }).first()
+        page.getByText(SAY.not_found_title, { exact: true }).first()
           .waitFor({ timeout: 20000 }).then(() => 'not-found').catch(() => null),
         page.waitForURL((u) => u.pathname === '/sites', { timeout: 20000 })
           .then(() => 'sites').catch(() => null),
@@ -3204,6 +3219,31 @@ const shoot = async (page, name) => {
     // `useBrand`, whose site read returns no row through RLS, so it calls `notFound()` and the
     // not-found page renders; the forged **Skip** redirects to `/sites`. Either one proves the
     // round trip completed before the rows are re-read (review 5, 2026-09-09).
+    /* ── DW-85 (3), STORY 3.9: THE ACTION'S POPUP BRANCH, which this step had never driven. The
+       forge below is made on the FULL PAGE, where `useBrand`'s vanished-row answer is `notFound()`.
+       From inside the WINDOW the answer is deliberately different — `formData.get('popup') === '1'`
+       redirects to `/sites` instead, because a `notFound()` raised inside the list's own
+       `<Suspense>` would replace the Sites list with the 404 page. Only the READ half of that
+       branch had a driver (`foreignPopup` above); the WRITE half had none, so the popup line could
+       have been deleted with every step here still green. Same forge, same stranger's id, opened
+       through `?brand=` on the fixture's OWN site so the window is really a window. */
+    await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
+    const popupOpen = await page.locator('dialog[aria-labelledby="brand-panel-title"]')
+      .waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false)
+    const forgedPopup = popupOpen && await page.evaluate((id) => {
+      const form = [...document.querySelectorAll('dialog[open] form')]
+        .find((f) => f.querySelector('input[name="site_id"]') && f.querySelector('input[name="popup"]'))
+      if (!form) return false
+      form.querySelector('input[name="site_id"]').value = id
+      form.querySelector('button[type="submit"]').click()
+      return true
+    }, foreignId)
+    const popupLanded = forgedPopup && await page
+      .waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'), { timeout: NAV_TIMEOUT })
+      .then(() => true).catch(() => false)
+    const popupCards = await page.locator('article').count()
+    const afterPopup = await projectsOf()
+
     const forgedUse = await forgeBrand(SAY.brand_use)
     /* THE POST HAS TWO OBSERVABLE LANDINGS AND THE CONTROL TAKES EITHER, because what it is here
        to prove is that the press REACHED the server — not which branch the server then chose.
@@ -3215,7 +3255,7 @@ const shoot = async (page, name) => {
        beneath it (no row written, nothing linked to the stranger's site) passed every time.
        Which landing happened is RECORDED, so a run says which branch it exercised rather than
        hiding the difference (executed 2026-09-09, runs 2 and 5). */
-    const sawNotFound = await page.getByText('could not be found', { exact: false }).first()
+    const sawNotFound = await page.getByText(SAY.not_found_title, { exact: true }).first()
       .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
     /* AND WHERE IT ACTUALLY WENT, read after the wait rather than waited on: `page.waitForURL` is
        wrapped by the DW-68 retry, so racing one against the locator spent a second 20s and two
@@ -3223,6 +3263,15 @@ const shoot = async (page, name) => {
     const forgedUseUrl = page.url()
     const forgedUseSaw = (await page.locator('main').evaluate((el) => el.textContent).catch(() => ''))
       .replace(/\s+/g, ' ').trim().slice(0, 140)
+    /* DW-74's OWN DATUM, NOW ASSERTED RATHER THAN RECORDED. The eighth run established that the
+       press DID land — on `/sites/brand?site=<the stranger's id>` with `<main>` EMPTY, because
+       Next's default not-found page REPLACES the route instead of filling the landmark. So the
+       sentence this control waits for lived outside the landmark it was read from, and "what
+       varies is when it appears, not which branch was taken". Story 3.9's `(authed)/not-found.tsx`
+       renders INSIDE the shell, so the sentence is now in `<main>` where the control reads — which
+       is the half of DW-74 that is a fix and not a measurement. Only asserted on the not-found
+       branch: a `failed-redirect` lands on S2c and correctly carries no such sentence. */
+    const notFoundInMain = forgedUseSaw.includes(SAY.not_found_title)
     const forgedUseLanded = sawNotFound ? 'not-found'
       : (new URL(forgedUseUrl).searchParams.get('failed') === '1' ? 'failed-redirect' : null)
     const afterUse = await projectsOf()
@@ -3235,7 +3284,9 @@ const shoot = async (page, name) => {
     const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
     step('brand-ownership',
       foreignPage.saw === 'not-found' && foreignPopupClosed && forgedUse && forgedSkip
-      && Boolean(forgedUseLanded) && forgedSkipLanded
+      && Boolean(forgedUseLanded) && (!sawNotFound || notFoundInMain) && forgedSkipLanded
+      && forgedPopup && popupLanded && popupCards > 0
+      && projectsById(afterPopup) === projectsById(projectsBefore)
       && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
       && projectsById(afterUse) === projectsById(projectsBefore)
       && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
@@ -3249,9 +3300,15 @@ const shoot = async (page, name) => {
       `re-read (the forged Use reached useBrand and was refused, landing on ` +
       `${JSON.stringify(forgedUseLanded)} — "not-found" is its site read coming back EMPTY through ` +
       `RLS and "failed-redirect" is that read erroring, and both are the server answering this ` +
-      `press. It ended on ${JSON.stringify(forgedUseUrl)} showing ${JSON.stringify(forgedUseSaw)}; ` +
-      `the forged Skip redirected to /sites = ` +
-      `${forgedSkipLanded}), because a byte-identical re-read proves nothing about a press that ` +
+      `press. It ended on ${JSON.stringify(forgedUseUrl)} showing ${JSON.stringify(forgedUseSaw)}, ` +
+      `with the not-found sentence INSIDE <main> = ${notFoundInMain} — DW-74's eighth run found ` +
+      `that landmark empty, which is the whole reason this control was unreliable; ` +
+      `and the same id forged into the WINDOW'S own form (popup=1, opened = ${forgedPopup}) landed ` +
+      `back on the LIST rather than on the 404 = ${popupLanded} with ${popupCards} card(s) still ` +
+      `drawn and nothing written, which is DW-85 (3) — the write half of the popup branch, whose ` +
+      `read half alone had a driver. ` +
+      `The forged Skip redirected to /sites = ` +
+      `${forgedSkipLanded}, because a byte-identical re-read proves nothing about a press that ` +
       `never arrived. The caller still has ${afterUse.length} project, ` +
       `byte-identical to the ${projectsBefore.length} it had before ` +
       `(${projectsById(afterUse) === projectsById(projectsBefore)}` +
@@ -3972,7 +4029,7 @@ const shoot = async (page, name) => {
     })).body || [])[0] || {}
     const victimBefore = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
     await page.goto(keysUrl(victim.id), { waitUntil: 'load' }).catch(() => {})
-    const pageRefused = await page.getByText('could not be found', { exact: false }).first()
+    const pageRefused = await page.getByText(SAY.not_found_title, { exact: true }).first()
       .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
     const landings = []
     for (const which of ['#keys-admin', '#keys-content', '#keys-staff', null]) {
@@ -3990,7 +4047,7 @@ const shoot = async (page, name) => {
         form.querySelector('button[type="submit"]').click()
         return true
       }, { id: victim.id, field: which })
-      landings.push(forged && await page.getByText('could not be found', { exact: false }).first()
+      landings.push(forged && await page.getByText(SAY.not_found_title, { exact: true }).first()
         .waitFor({ timeout: 20000 }).then(() => true).catch(() => false))
     }
     const victimAfter = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
@@ -4062,21 +4119,69 @@ const shoot = async (page, name) => {
     const movedTo = await movedAgain()
     const hinted = await says(page, SAY.keys_moved)
     const onOneCard = await page.locator('article', { hasText: SAY.keys_moved.slice(0, 24) }).count()
+    /* ── DW-85 (1), STORY 3.9: THE OTHER HINT, `?old=live`. The decoy above is DISCONNECTED, so
+       the hint promises the 90-day snapshot. A matched record that is STILL CONNECTED has no clock
+       at all — `disconnected_at` is what the clock is derived from (DW-43) — so the sentence drops
+       the snapshot clause and says the other site is still connected instead. That branch had never
+       been drawn by any run. Same decoy, `disconnected_at` nulled. */
+    await sql`update public.sites set disconnected_at = null where id = ${decoy.id}`
+    const movedLiveTo = await movedAgain()
+    const hintedLive = await says(page, SAY.keys_moved_live)
+    const hintedLiveWrong = await says(page, SAY.keys_moved)
+    await sql`update public.sites set disconnected_at = now() where id = ${decoy.id}`
+
+    /* ── DW-85 (2): THE CROSS-ACCOUNT CONTROL for `findSiteByAdminKeyId`'s `user_id` clause. A
+       decoy under a DIFFERENT account carrying the SAME Admin key id must produce NO hint — two
+       customers connecting the same Ghost is not a domain move and is none of either's business.
+       Nothing had ever executed that clause: every decoy before this one was the caller's own, so
+       deleting `and c.user_id = …` would have left every step here green.
+       IT IS ALSO DW-83's PROOF, which is why the two entries closed together: with the caller's own
+       decoy gone and only the stranger's left, a lookup that ignored `user_id` would find the
+       stranger's row and hint about a site the caller cannot see. */
+    await sql`delete from private.site_credentials where site_id = ${decoy.id}`
+    const foreignDecoy = ((await insert('/sites', {
+      user_id: OTHER_USER_ID, url: 'https://another-account.inflozo.com', title: 'Another account',
+      disconnected_at: new Date().toISOString(),
+    })).body || [])[0] || {}
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${foreignDecoy.id}, ${OTHER_USER_ID}, ${kidOf(T3.adminKey)})
+    `
+    await movedAgain()
+    const hintedAcross = await says(page, SAY.keys_moved) || await says(page, SAY.keys_moved_live)
+    // The credential row goes now; the `sites` row goes with `OTHER_USER_ID` itself, which the
+    // Python half deletes in its `finally` — the same cleanup every other foreign fixture rides on.
+    await sql`delete from private.site_credentials where site_id = ${foreignDecoy.id}`
+
     // …AND THE NEGATIVE CONTROL. A record whose `admin_key_id` is null NEVER matches — which is
     // every record connected before this story's migration — so the same connect prints no hint.
-    await sql`update private.site_credentials set admin_key_id = null where site_id = ${decoy.id}`
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${decoy.id}, ${USER_ID}, null)
+      on conflict (site_id) do update set admin_key_id = null
+    `
     await movedAgain()
     const hintedAgain = await says(page, SAY.keys_moved)
     await sql`delete from private.site_credentials where site_id = ${decoy.id}`
     step('moved-domains',
-      Boolean(decoy.id) && hinted && onOneCard === 1 && !hintedAgain,
+      Boolean(decoy.id) && hinted && onOneCard === 1 && !hintedAgain
+      && hintedLive && !hintedLiveWrong && Boolean(foreignDecoy.id) && !hintedAcross,
       `a connect whose Admin key id matches ANOTHER record this caller holds: the redirect carried ` +
       `?moved= (${JSON.stringify(new URL(movedTo).search)}) and FR-C8's hint is on that ONE card ` +
       `(${onOneCard} of them) reading the app's own ${JSON.stringify(SAY.keys_moved)} — the 90 days ` +
       `derived from ORPHAN_SNAPSHOT_DAYS, not typed into the sentence. THE CONTROL: with the same ` +
       `record's admin_key_id set to NULL — which is every record connected before this story's ` +
       `migration — the identical connect printed NO hint = ${!hintedAgain}, because a null never ` +
-      `matches and a missing hint is not a wrong one. ⛔ The OLD record is seeded through the pooler: ` +
+      `matches and a missing hint is not a wrong one. STORY 3.9 ADDED TWO MORE SEEDINGS (DW-85): ` +
+      `with the SAME record still CONNECTED the hint is the other one — ` +
+      `${JSON.stringify(SAY.keys_moved_live)} = ${hintedLive}, and the snapshot wording did NOT ` +
+      `also appear = ${!hintedLiveWrong}, because a record that was never let go has no 90-day ` +
+      `clock to promise (the redirect carried ${JSON.stringify(new URL(movedLiveTo).search)}); and ` +
+      `a decoy carrying the same Admin key id under a DIFFERENT ACCOUNT produced NO hint at all = ` +
+      `${!hintedAcross}, which is the first execution of findSiteByAdminKeyId's user_id clause — ` +
+      `two customers connecting the same Ghost is not a domain move. That seeding is also DW-83's ` +
+      `proof: the lookup now orders a still-connected match ahead of an old disconnected one. ` +
+      `⛔ The OLD record is seeded through the pooler: ` +
       `neither test Ghost has a second reachable address, so a real domain move cannot be performed ` +
       `here. The connect, the lookup, the redirect and the hint are all the product's`)
 

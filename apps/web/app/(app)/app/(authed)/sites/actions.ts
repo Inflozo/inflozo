@@ -21,7 +21,7 @@ import {
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
 import { brandPath, brandPopupPath, brandTarget, hasBrand } from '@/lib/probe-rule'
-import { NAME_MAX, nextUntitled, slugify, uniqueSlug } from '@/lib/projects'
+import { freeName, NAME_MAX, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
 import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { call, fetchWithKey, findSiteByAdminKeyId, remove, store } from '@/server/ghost-admin'
@@ -816,7 +816,11 @@ export async function useBrand(formData: FormData): Promise<void> {
     brandRedirect(base)
   }
 
-  if (picked) {
+  /* THE BRAND ONTO A PROJECT THAT ALREADY EXISTS — lifted out of the `picked` branch by Story 3.9
+     so the insert's `23505` retry below can reach the SAME write (DW-69). It was inline, and a
+     second copy of a five-line style-pack merge with four measured corrections in its comment is
+     exactly the kind of duplication that drifts. Nothing about its behaviour changed. */
+  const paint = async (project: { id: string; style_pack: unknown }) => {
     // ONTO THE PROJECT THE SCREEN NAMED OR THE CUSTOMER CHOSE, and NOTHING ELSE about it moves —
     // not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. THREE ways to
     // be here and the write is the same: AT THE CAP the project for this site, or the most
@@ -840,18 +844,22 @@ export async function useBrand(formData: FormData): Promise<void> {
     // put it straight back, so the floor held for the hole and not for the wrong shape while the
     // sentence above claimed both (review 4, 2026-09-09). Every other key of a pack E6 wrote is
     // still carried through untouched; it is the one required field that is repaired.
-    const prev = picked.style_pack
+    const prev = project.style_pack
     const held = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : {}) as Record<string, unknown>
     const pack = { ...defaultStylePack(), ...held, ...(typeof held.preset === 'string' ? {} : { preset: DEFAULT_PRESET }) }
     const { data, error } = await supabase
       .from('projects')
       .update({ style_pack: { ...pack, brand } })
-      .eq('id', picked.id)
+      .eq('id', project.id)
       .select('id')
     if (error || !data?.length) {
       console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
       brandRedirect(BRAND_FAILED(base))
     }
+  }
+
+  if (picked) {
+    await paint(picked)
   } else {
     // WITH ROOM: a project for the site, named after it. `lib/projects.ts`'s own rules give it its
     // name and slug — a Ghost title longer than the field allows is clamped, a site with no title
@@ -864,18 +872,56 @@ export async function useBrand(formData: FormData): Promise<void> {
     // Ghost(Pro) is not the admin domain the row's `url` holds.
     const shown = hostOf(site.site_settings?.public_url || site.url)
     const named = (site.title ?? '').trim().slice(0, NAME_MAX).trim() || shown.slice(0, NAME_MAX)
-    const name = named || nextUntitled(projects.map((row) => row.name))
-    const { error } = await supabase.from('projects').insert({
-      user_id: at.userId,
-      name,
-      slug: uniqueSlug(slugify(name), projects.map((row) => row.slug)),
-      style_pack: { ...defaultStylePack(), brand },
-      // FR-B5's binding, and this is its first writer: it is what turns the Sites card's tally
-      // from "0 projects" into "1 project".
-      linked_site_id: site.id,
-    })
-    if (error) {
-      console.error('sites: use brand insert failed', { code: error.code })
+    // DW-72, THE OWNER'S QUESTION 2 RULING ("Blog 2"): two Ghost sites with the same title used to
+    // give two dashboard cards with the same name and nothing to tell them apart. `freeName` is
+    // `nextUntitled`'s own plain numeric suffix, generalised to any base — NOT `copyName`'s
+    // "Copy of X", because this is a different site and not a copy of anything.
+    const taken = projects.map((row) => row.name)
+    const name = named ? freeName(named, taken) : nextUntitled(taken)
+    const slugs = projects.map((row) => row.slug)
+
+    /* THE INSERT, AND THE RACE UNDER IT — DW-69, and this is the half that is code.
+       `brandTarget` is a read-then-write: two presses in flight together can both see "no project
+       for this site yet" and both insert one. Since 2026-09-11 the partial unique index on
+       `linked_site_id` refuses the loser with `23505`, which makes FR-B5's "at most one" a
+       property of the DATABASE rather than a sentence in a column comment. The existing
+       idempotence is not replaced — it is what handles the ordinary second press and is proved
+       live by `brand-rerun` and `brand-picker`; this is the structural floor under it.
+
+       THE RETRY RE-DECIDES RATHER THAN RE-SLUGS, because this insert sets `linked_site_id` as well
+       as `slug` and BOTH are unique: `23505` here means "another request got there first" without
+       saying which column, and re-running the decision is the one answer that is right either way.
+       Re-read, re-run `brandTarget`, and if a project for this site now exists the press lands on
+       it — which is exactly what the customer's second press was always supposed to do. If there
+       is still none, the collision was the slug and the next attempt takes the next free one. */
+    let inserted = null
+    for (const slug of slugAttempts(slugify(name), slugs)) {
+      const { error } = await supabase.from('projects').insert({
+        user_id: at.userId,
+        name,
+        slug,
+        style_pack: { ...defaultStylePack(), brand },
+        // FR-B5's binding, and this is its first writer: it is what turns the Sites card's tally
+        // from "0 projects" into "1 project".
+        linked_site_id: site.id,
+      })
+      inserted = error
+      if (!error) break
+      if (error.code !== '23505') break
+      const { data: fresh } = await supabase
+        .from('projects')
+        .select('id, name, slug, style_pack, linked_site_id')
+        .order('updated_at', { ascending: false })
+        .order('id', { ascending: false })
+      const won = fresh ? brandTarget(atCap(plan, fresh.length), fresh, site.id) : undefined
+      if (won) {
+        await paint(won)
+        inserted = null
+        break
+      }
+    }
+    if (inserted) {
+      console.error('sites: use brand insert failed', { code: inserted.code })
       brandRedirect(BRAND_FAILED(base))
     }
   }

@@ -62,7 +62,14 @@ export function Banner({
       <span className="flex shrink-0 items-center" style={{ height: rowHeight ?? '1lh' }}>
         {icon}
       </span>
-      <span>{children}</span>
+      {/* A `<div>` AND NOT A `<span>` (DW-61, Story 3.9). `<span>` is phrasing content and cannot
+          legally contain the `<form>` that four of the site-card notices and the passkey nudge put
+          in this slot — the pattern arrived with the owner's own two-button ruling at his test of
+          2.1. Every browser accepts it and axe reported nothing, but a strict validator does not,
+          and unlike `<p>` there is no reparse to make it visible. The parent is `flex`, so the
+          child's own inline-vs-block display was never what laid this out; every Banner was looked
+          at at 1440, 834 and 390 after the change. */}
+      <div className="min-w-0">{children}</div>
     </div>
   )
 }

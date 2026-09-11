@@ -24,8 +24,33 @@ test('the nonce and strict-dynamic are on the app host only', () => {
   assert.equal(app['script-src'], `'self' 'nonce-${N}' 'strict-dynamic'`)
 
   const marketing = directives(policy(MARKETING, ''))
-  assert.equal(marketing['script-src'], `'self'`)
+  assert.equal(marketing['script-src'], `'self' 'unsafe-inline'`)
   assert.ok(!policy(MARKETING, '').includes('nonce'), 'marketing must carry no nonce — it stays prerendered')
+})
+
+/**
+ * DW-18's marketing half, the owner's Question 1 ruling (option 1, 2026-09-11) — and the guard on
+ * it. `policy()` is ONE function serving two hosts, which is exactly the shape in which a later
+ * edit walks a relaxation across the split without anyone noticing: the app host would keep
+ * looking correct (`'nonce-…' 'strict-dynamic'` still there) while `'unsafe-inline'` sat beside
+ * them. Asserted in both directions, at every combination of host and nonce the function takes,
+ * so it cannot be satisfied by the one case someone happened to think of.
+ */
+test("'unsafe-inline' is the marketing host's alone — the app policy may never carry it", () => {
+  for (const nonce of [N, '']) {
+    for (const host of [APP, 'localhost:3000']) {
+      const csp = policy(host, nonce)
+      if (!csp.includes('strict-dynamic')) continue          // that combination is not an app request
+      assert.ok(
+        !directives(csp)['script-src'].includes("'unsafe-inline'"),
+        `the app policy carries 'unsafe-inline' in script-src (host ${host}, nonce ${JSON.stringify(nonce)}) — ` +
+          "the relaxation is the MARKETING host's alone (DW-18, the owner's ruling of 2026-09-11), and " +
+          'this function serves both.',
+      )
+    }
+  }
+  // …and it really is there on the other side, so this test cannot pass by the relaxation being gone.
+  assert.ok(directives(policy(MARKETING, ''))['script-src'].includes("'unsafe-inline'"))
 })
 
 test('a nonce marks an app request even without the app host — localhost has no host split', () => {

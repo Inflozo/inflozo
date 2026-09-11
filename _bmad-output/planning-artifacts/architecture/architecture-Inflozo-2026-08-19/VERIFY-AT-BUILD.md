@@ -48,6 +48,35 @@ with the command that produced it.
 | 20 | The NQL build Ghost actually resolves at runtime (`"catalog:"` in Ghost's `package.json`) | E0(b) | **E7** (FR-I2) | **CLOSED BY EXECUTION 2026-08-20, and the premise was wrong.** Neither major runs what FR-I2 was proved against. **Ghost 5.130.6 resolves `@tryghost/nql` 0.12.7** (nql-lang 0.6.3); **Ghost 6.58.0 resolves 0.13.4** (nql-lang 0.7.0). The proof covered 0.13.x, so it covered Ghost 6 and **never covered Ghost 5** — which NFR-7 supports publicly and T3 tests permanently. This is AD-34's pattern a third time, after gscan and `member-count.js`. **Executed at runtime on both, identical, no defect reproduced:** relative dates (`published_at:>=now-30d`) and nested parentheses (`(tag:a+featured:true),(tag:b)`) both work. FR-I2's rules hold — now on observed grounds rather than on a version neither major runs. §15g. |
 | 21 | The announcement-bar seed against a running Ghost — all three settings readable, and that clearing the content stops the script | E0(b) | **E3** (FR-C4 connect read) · E5 (the shim) | **CLOSED BY EXECUTION 2026-08-20.** All three settings are readable through the Admin API with the Owner's Staff Access Token — `announcement_content`, `announcement_visibility` (a JSON **string**, `"[\"visitors\"]"`, not an array) and `announcement_background`. FR-C4's seed is executable exactly as designed. §15h. |
 
+## ⛔ The read-only GitHub token expires 2027-09-05 (DW-5)
+
+**Status: OPEN with a date, recorded 2026-09-11 by Story 3.9.** Until now the date lived in one
+comment in `tools/probe/.env.example` and in Story 1.1's `## Verification`, which is a note and not
+a register row — and this document is where this project keeps a dated external fact with a trigger,
+alongside the Ghost(Pro) trial below.
+
+**The fact.** `GITHUB_TOKEN` in `tools/probe/.env` is a fine-grained token scoped to this repository
+and to reads only — no organisation membership, every write refused 403, both executed rather than
+assumed, and strictly weaker than the SSH key on this machine, which can push. **It expires
+2027-09-05.**
+
+**Trigger — before 2027-09-05, and the sooner half of "whenever a CI read starts answering 401".**
+There is nothing to buy and nothing to wait for: the owner issues a new fine-grained token with the
+same scope and pastes it into `tools/probe/.env`, which is gitignored.
+
+**Consequence when it lapses, and it is the reason this has a row rather than a comment: nothing
+announces it.** Every story from then on reads "did CI go green" through this token (DW-7 made CI
+the publishing gate, so that read is how a story knows its own push published). GitHub answers
+**401** to an expired token exactly as it does to a wrong one, so the first symptom is a probe
+reporting a failure that is not there — on a story that has nothing to do with it, with no
+forewarning, on a day nobody is looking for a credential problem.
+
+**Owner:** whichever story is in flight on the day it lapses inherits it; the register row exists so
+that story spends a minute rather than an afternoon. **Definition of done:** a new token in
+`tools/probe/.env`, this row's date updated to the new expiry, and
+`tools/probe/.env.example`'s comment left pointing here rather than carrying a second copy of the
+date (standing rule 4 — a figure written twice is a figure that goes stale once).
+
 ## ⛔ Owner action — Dodo's annual renewal notice (VERIFY item 6, statutory half)
 
 **Status: OPEN, assigned to the owner, 2026-08-20.** The event-catalogue half of item 6 is closed by

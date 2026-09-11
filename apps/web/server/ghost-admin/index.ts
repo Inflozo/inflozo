@@ -442,6 +442,17 @@ export async function fetchWithKey(args: {
  * A NULL `admin_key_id` NEVER MATCHES. A record connected before Story 3.6 has none, and the
  * comparison is an equality, so an older record simply produces no hint -- which is the right
  * answer: a missing hint is not a wrong one.
+ *
+ * A LIVE TWIN OUTRANKS A DISCONNECTED ONE (DW-83, Story 3.9). Where the same Ghost has been
+ * connected at three addresses, `created_at desc` alone returned the NEWEST match -- which may be
+ * an old disconnected record while a live twin exists, and the two draw DIFFERENT hints: the live
+ * one is `?old=live`'s "it is still connected", the disconnected one talks about the 90-day
+ * safety-net copy. So the order asks "is it still connected" FIRST and only then "which is
+ * newest": a hint about a record the customer can still open beats a hint about one he cannot.
+ * `(s.disconnected_at is null) desc` sorts true before false, and `created_at desc` still breaks
+ * the tie within each group, so the single-match case -- every case anyone has today -- is
+ * unchanged. Proved by the two decoys `moved-domains` now seeds (DW-85 (1) and (2)), which is why
+ * the two entries were closed together.
  */
 export async function findSiteByAdminKeyId(args: {
   userId: string
@@ -456,7 +467,7 @@ export async function findSiteByAdminKeyId(args: {
        where c.user_id = ${args.userId}
          and c.admin_key_id = ${args.kid}
          and c.site_id <> ${args.exceptSiteId}
-       order by s.created_at desc
+       order by (s.disconnected_at is null) desc, s.created_at desc
        limit 1
     `
     return row ? { siteId: row.site_id, url: row.url, disconnectedAt: row.disconnected_at } : null
