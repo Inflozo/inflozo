@@ -437,6 +437,15 @@ also need a Ghost site's API URL and its two keys, as in Story 3.2.
 
 ## Verification
 
+**Deploy, 2026-09-11.** No Schema phase (this story adds no migration), so Deploy is confirming the
+app-code push already built and went live through CI (DW-7). Checked against the real Vercel API
+(`VERCEL_TOKEN`, `VERCEL_TEAM_ID` from `tools/probe/.env`): the `inflozo` project's deployment for
+`4fb27804` (the head of the Review push) is `READY` and carries the production aliases
+`app.inflozo.com` and `inflozo.com`. `curl -I https://app.inflozo.com/` (signed out) answered
+**307 → /sign-in**, confirming the live site is serving this build.
+
+**Deployment:** `dpl_CgWvPrv8uYTz3XDiFgjh9sCeaioW` — https://app.inflozo.com (commit `4fb27804`)
+
 **R-82: the review and the owner's test run on the real infrastructure**, never on mocks alone —
 record what each service returned by the key's variable name, never its value.
 
