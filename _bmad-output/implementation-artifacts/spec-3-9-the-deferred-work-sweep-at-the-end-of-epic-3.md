@@ -4,7 +4,7 @@ type: 'chore'
 created: '2026-09-11'
 status: 'in-review'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
-owner_test: issues
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 # DW-89 was added (closed at Review). DW-67, DW-74, DW-79, DW-83 and DW-85 were REMOVED on
 # 2026-09-11: the Review re-opened them with their proof owed, and this field is a closure
@@ -1524,6 +1524,47 @@ resolution dropped when both fields present  caught      (escaped until DW-4 gai
 **The figures are unchanged by all of it** — `12 medium / 37 low / 43 closed` over 92 entries, the
 five part-closed entries still reading open, re-derived after every patch. Gate: `story-board.py
 --check` and `doc-audit.py --check` green twice.
+
+### Executed at Deploy, after the Fix and Review — nothing under `apps/`, `packages/` or `supabase/` since the last Deploy (2026-09-11)
+
+**R-82.** Nothing to migrate: `git diff --name-only 94776a20..HEAD -- supabase/` is empty, so R-99
+is not engaged and this Deploy record is confirmation only, exactly as the Fix and Review records
+already established. What changed since the last Deploy (`94776a20`) is `tools/story-board.py`, this
+spec, and `deferred-work.md`'s header — a local tool and two documents, none of it `apps/`,
+`packages/` or `supabase/` (`git diff --name-only 94776a20..HEAD | grep -E '^(apps|packages|supabase)/'`
+→ **none**). There is nothing new for the customer's browser to run.
+
+**The deployment CI's push already produced, read back rather than assumed:**
+
+```
+GET /repos/Inflozo/inflozo/actions/runs?head_sha=be20f4f79b76b40c006711848a6e974dff4ac8a8
+  → run 34590914359, CI, completed / success
+
+GET /v6/deployments?projectId=<VERCEL_PROJECT>&teamId=<VERCEL_TEAM_ID>, latest 5:
+  dpl_9fYbAwWeMvQeXDjNT6HtDeDaaxUx  READY  production  githubCommitSha be20f4f7…  ← this commit
+  dpl_7ma9vv47Vxgv6bukAzFNRhTq6z3K  READY  production  githubCommitSha d8579f64…  (the Fix push)
+  dpl_4ZGoV47tY5iXfmSNvGtcmG7Yo777  READY  production  githubCommitSha 975864e9…  (the Test push)
+  dpl_CPJbDnou1H4SdLMWMmCXXtWocLGX  READY  production  githubCommitSha 56231e9d…
+  dpl_7WqTJ1adfNq8zR9b4RtxqEZj4SB4  READY  production  githubCommitSha 1653b1c8…
+```
+
+**Deployment: `dpl_9fYbAwWeMvQeXDjNT6HtDeDaaxUx`**, `target=production`, **`READY`**,
+`githubCommitSha be20f4f79b76b40c006711848a6e974dff4ac8a8` — `git rev-parse HEAD` at the start of
+this phase.
+
+**Aliased** — `GET /v2/deployments/{id}/aliases`: `inflozo.com`, `app.inflozo.com`,
+`www.inflozo.com`, `inflozo-umangkagathara.vercel.app`, `inflozo-probe.vercel.app`. Production is
+serving this commit.
+
+No key value was printed at any point; every call is recorded by its variable name
+(`VERCEL_TOKEN`/`VERCEL_PROJECT`/`VERCEL_TEAM_ID`, `GITHUB_TOKEN`).
+
+**What this does and does not clear.** `tools/story-board.py` never runs on Vercel — it is a local
+generator the owner runs on his own machine, and `## Owner's manual test` step 7 already says so.
+This Deploy record exists only to confirm the thing R-99 exists to catch — that production is not
+*behind* what was reviewed — and it is: `READY` at this exact commit, on both domains. Steps 1–6 are
+unaffected: no file they depend on is in this range. `owner_test` stays `pending` for all seven
+steps.
 
 ## Spec Change Log
 
