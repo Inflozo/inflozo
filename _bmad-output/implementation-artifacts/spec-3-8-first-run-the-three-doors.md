@@ -2,9 +2,9 @@
 title: 'Story 3.8 — First Run: the three doors after the first sign-in'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'c5f21b8f1ae81d238a804bcd4eeae716df9fd5c0'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
