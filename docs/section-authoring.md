@@ -222,14 +222,18 @@ unreachable, so **every** Ghost binding compiles inside a guard whether or not a
 `data-empty`, and the behaviour **defaults by kind**: a text binding defaults to `fallback` (the
 static value the prop held), and a binding into a URL-valued attribute — `href`, `src`, `poster` —
 defaults to `hide`, guarding the **element** and never the attribute. Writing `data-empty` chooses
-the other one. The guard is always the **bound field**, never a helper argument.
+the other one. The guard is always the **bound field**, never a helper argument. On a list-form
+`data-bind-attr` the media case is **any** entry into a URL attribute, and the element is guarded on
+that entry's field. A **content** prop into a URL attribute (`data-prop-attr="src:hero"`) is not a
+binding and keeps the authored placeholder when unset; `data-empty="hide"` hides it. The canvas falls
+back wherever Handlebars' `{{#if}}` would — `''`, `0`, `false` and `[]` are all empty — and a
+`data-empty` value outside `hide`/`fallback` is refused, not ignored.
 
 **Not every directive below is rendered yet, and the rest REFUSE rather than leak.** Story 4.2's
 runtime emits the proven eight plus `data-bind-style` and `data-module`; everything else in the set
 throws with a sentence naming the directive, until the story that owns it lands. The partition is
 derived from this vocabulary and asserted by a test, so a directive added here cannot be silently
 forgotten by the runtime.
-
 
 These were executed in the stress harness and keep their names and grammar unchanged; since Story 4.2 the implementation is `packages/section-runtime` and `tools/stress/compile.js` is a thin adapter over it.
 
@@ -243,6 +247,13 @@ These were executed in the stress harness and keep their names and grammar uncha
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
 | `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |
+| `data-bind-style` | `--custom-property:spec` | the value through `safeCssColor` — hex, `rgb()`/`hsl()` or the pack's accent token; a **named** colour is not parsed and falls back too | `style="{{#if field}}--prop: {{path}}{{/if}}"` — the value is Ghost's at render |
+| `data-module` | a module name | consumed | consumed — 4.7's registry reads the name |
+
+**Every directive value is validated by this table's grammar before the runtime reads it** *(Story 4.2
+review)*: a `data-repeat`, `data-repeat-limit` or `data-partial` value that is not its grammar is
+refused by name, never interpolated into `{{#foreach}}`, and a `data-partial` or `data-repeat-limit`
+with no `data-repeat` on the element is refused rather than shipped.
 
 ```html
 <a class="card__link" data-bind-attr="href:url">

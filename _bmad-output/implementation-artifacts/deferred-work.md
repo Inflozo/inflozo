@@ -2652,3 +2652,57 @@ reason: not fixed in the review because the harness is the CONTROL this story's 
   and its emitters are throwaway; adding a `hide` path there would be a behaviour the agreement test
   then has to cover for code 4.2 deletes. The leak gate would catch a surviving `data-empty` the
   moment a fixture used the shape.
+
+## Deferred from: code review of spec-4-2-the-section-runtime-one-source-two-emitters-proven-to-agree (2026-09-11)
+
+### DW-94: the documentation gate does not walk `packages/`, so the two moved proofs left the catalogue
+
+plain: The index of project documents cannot list files that live in the code packages, so the two
+  test files that prove "what you see is what ships" are no longer listed on their own — a reader
+  finds them only through the compiler's row. Nothing is unproven; it is only harder to find.
+status: open
+severity: low
+origin: Story 4.2 (2026-09-11) — deviation 3 of the Dev run, recorded in the spec; raised as a
+  finding by the review because a decision taken by omission had no owning document
+owner: unassigned — the first story that adds a second document-shaped file under `packages/`
+  (a design's `behaviour.js` in Story 4.7, or the snapshot harness in 4.10) decides whether `BASES`
+  in `tools/doc-audit.py` widens to `packages/` or whether the catalogue stays a planning index
+location: tools/doc-audit.py `BASES`; the `tools/stress/compile.js` catalogue row names both proofs
+reason: widening `BASES` pulls every future design's files into the gate, which is a decision about
+  what the catalogue IS, not a fix; the compiler's row keeps `INDEX.md` truthful meanwhile
+
+### DW-95: AD-36 now promises that `ghost-shim` calls `safeCssColor`, and no story task says so
+
+plain: The rulebook says the part of the product that imitates Ghost on the editing canvas will use
+  the same colour-checking function the canvas uses. That part is Story 4.3's, and 4.3's task list
+  does not yet mention it — so it could be built without the check and nobody would notice until a
+  hostile tag colour reached the canvas through the shim.
+status: open
+severity: medium
+origin: Story 4.2 review (2026-09-11) — Blind Hunter and Acceptance Auditor: two code comments and
+  the SPINE's AD-36 #4 amendment named the call in the present tense while `packages/ghost-shim`
+  is still the stub
+owner: Story 4.3 — when the shim renders a recorded Ghost `accent_color` (or any colour-valued
+  field) on the canvas, it calls `safeCssColor(value, '--accent')` from `@inflozo/library`, and its
+  contract tests carry the hostile vector `red;}body{display:none` beside the legitimate `#f0f`
+location: packages/library/src/vocabulary.ts `safeCssColor`; ARCHITECTURE-SPINE.md AD-36 bullet 4
+reason: not this story's — the shim does not exist yet; the comments were reworded to the future
+  tense in the review so nothing claims a call that is not there
+
+### DW-96: `tidy` strips a blank line inside user text on the canvas but not in the theme
+
+plain: If a customer types a paragraph with an empty line in the middle of it, the editing canvas
+  drops that empty line while the published site keeps it — only visible in a section styled to
+  preserve line breaks, which none of the first designs is.
+status: open
+severity: low
+origin: Story 4.2 review (2026-09-11) — Edge Case Hunter; pre-existing in the stress harness, which
+  ran the same trim on both paths
+owner: Story 4.10 — the five pilots are the first designs whose stylesheets could set
+  `white-space: pre`; if any does, `renderCanvas` stops running `tidy` over the user's text
+location: packages/section-runtime/src/core.ts `tidy` (`renderCanvas` runs it after user content is
+  in the DOM; `renderTheme` runs it before `substitute`)
+reason: no design in the reference set or the 70-section fixture preserves whitespace, so the
+  difference is unobservable today; the fix is a one-line ordering change in the story that can
+  observe it
+

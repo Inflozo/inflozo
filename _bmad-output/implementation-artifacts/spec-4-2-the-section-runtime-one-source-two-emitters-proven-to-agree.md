@@ -2,10 +2,10 @@
 title: 'Story 4.2 — The section runtime: one source, two emitters, proven to agree'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'fa35a3715feab0402447f80efe8a8748ae7fdd01'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -206,6 +206,41 @@ from the vocabulary so a later story cannot silently forget one.
 - Given this story has **no screen**, then it carries no frame and no owner test (`owner_test: none`);
   the first surface built on this runtime is Epic 5's canvas.
 
+### Review Findings
+
+*Code review, 2026-09-11 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier), all completed. Every "no test observes X" below is backed by the
+Verification Gap layer's mutation run: 19 single-line mutations of `core.ts`/`marks.ts`, of which only
+2 made any test fail. Severity is the reviewer's, by consequence for the canvas user and the live site.*
+
+- [x] [Review][Patch] **high** — the theme interpolates `data-repeat`, `data-repeat-limit` and `data-partial` into Handlebars source unvalidated (AD-36 #2, the spec's own *Always*): `data-repeat='posts}}<script>'` ships a live script; the library's `DIRECTIVES[d].parse` already holds each grammar and the runtime does not call it [packages/section-runtime/src/core.ts:520]
+- [x] [Review][Patch] **medium** — `data-partial` / `data-repeat-limit` on an element with no `data-repeat` survive into BOTH outputs (AC 3 "matches nothing in the output" fails); refuse them [packages/section-runtime/src/core.ts:505]
+- [x] [Review][Patch] **high** — a nested `data-repeat` on the canvas resolves its source against the ROOT ghost context, not the outer row (`{{#foreach tags}}` inside `{{#foreach posts}}` reads `post.tags` on the site); executed: the canvas showed the top-level `tags` row. `@site.*` inside a row resolves against the row and falls back, where Handlebars reads the root [packages/section-runtime/src/core.ts:531]
+- [x] [Review][Patch] **medium** — a `hide` guard on the repeat root itself lands OUTSIDE `{{#foreach}}` on the theme (guard evaluated in the outer context) and on the canvas a clone that removed itself is re-inserted by `el.before(clone)`; a `data-prop … data-empty="hide"` on the root makes `replaceWith` a no-op and the block vanishes [packages/section-runtime/src/core.ts:302,528]
+- [x] [Review][Patch] **medium** — `formatDate` maps `MMMM` to the SHORT month and has no `D`/`YY`, while the vocabulary's own example is `D MMM YYYY`: the canvas prints the literal `D` and `Jan` where the site prints `14` and `January` [packages/section-runtime/src/core.ts:398]
+- [x] [Review][Patch] **low** — the `data-bind-style` refusal reads the attribute after removing it, so the sentence always ends `got null` [packages/section-runtime/src/core.ts:373]
+- [x] [Review][Patch] **medium** — `data-bind-style` is the one bound prop with no FR-H8 guard, and the emitters disagree when the value is absent (theme: an invalid empty declaration, so the root default; canvas: `var(--accent)`) [packages/section-runtime/src/core.ts:372]
+- [x] [Review][Patch] **medium** — a URL attribute in a NON-first `data-bind-attr` entry (`alt:title;src:feature_image`) gets the attribute guarded, not the element, contrary to FR-H8 [packages/section-runtime/src/core.ts:324]
+- [x] [Review][Patch] **medium** — two directives on one element share one `data-empty` and the first loop removes it, so the second silently gets the kind default [packages/section-runtime/src/core.ts:296]
+- [x] [Review][Patch] **low** — `data-empty="HIDE"` is silently ignored and a `data-prop-attr` entry with no path is treated as unset, where `data-bind-attr` throws — the runtime does not refuse the way it refuses bad bind specs [packages/section-runtime/src/core.ts:264,465]
+- [x] [Review][Patch] **medium** — emptiness: Handlebars' `{{#if}}` takes the else branch for `''`, `0`, `false` and `[]` (`handlebars/lib/handlebars/helpers/if.js:16`, `utils.js:93`, read in 4.7.9), the canvas only for `null`/`undefined` — a cleared field shows `''` on the canvas and the fallback on the site [packages/section-runtime/src/core.ts:420,440]
+- [x] [Review][Patch] **low** — a `data-bind` element with child markup and no value keeps the children on the canvas and flattens them in the theme's `{{else}}` [packages/section-runtime/src/core.ts:315]
+- [x] [Review][Patch] **low** — a `RichText` value reaching `data-prop-attr` renders `[object Object]` on the canvas and serialised marks inside an attribute on the theme [packages/section-runtime/src/core.ts:467]
+- [x] [Review][Patch] **low** — robustness: a repeat source that is a string expands one row per character and an object throws; two repeats with one `data-partial` name silently overwrite; `get()` reads inherited properties (`constructor`); a numeric epoch date is Invalid Date; a non-array `marks`/`rel` throws out of the whole render [packages/section-runtime/src/core.ts:531,523,198,399; packages/section-runtime/src/marks.ts:69,116]
+- [x] [Review][Patch] **low** — `safeCssColor` accepts separator-valid but CSS-invalid forms (`rgb(1/2/3)`, `rgb(1 2 3 4)`), so the declaration is dropped by the browser instead of falling back to the token [packages/library/src/vocabulary.ts:78]
+- [x] [Review][Patch] **low** — a second copy of the binding grammar (`bindValue` re-splits the spec after `bindExpr` parsed it) and a third copy of the custom-property regex (*Never*: no second copy of the binding grammar) [packages/section-runtime/src/core.ts:420,378]
+- [x] [Review][Patch] **medium** — the suite is blind to: a leak of `data-prop`/`data-prop-attr`/`data-bind-style`/`data-module`/`data-partial` (the leak test renders only `feedSrc`); the attribute-form fallback guard; the `a` mark (`safeUrl` on `href`, `newTab`, `rel`), FR-Q3's lock and range validation; `data-partial` extraction; `data-prop` + `hide`; `data-repeat-limit` slicing; the date format; the `data-bind-style` refusal — 17 of 19 mutations passed green [packages/section-runtime/src/agreement.test.ts:149; packages/section-runtime/src/ad36.test.ts]
+- [x] [Review][Patch] **low** — `tokens.test.ts` writes the block count down (`>= 3`) and the partition test's union assertion cannot fail because `REFUSED_DIRECTIVES` is defined as the complement [packages/section-runtime/src/tokens.test.ts:52; packages/section-runtime/src/agreement.test.ts:353]
+- [x] [Review][Patch] **medium** — "each file prints its own check count" is written in six documents and is false: `node --test` prints one summary for the package, and the files that printed their own counts were deleted [CLAUDE.md:202; HANDOVER.md:325; build-sequence.md:57,233; INDEX.md via tools/doc-audit.py:238; ARCHITECTURE-SPINE.md:386]
+- [x] [Review][Patch] **low** — prose that misdirects: two comments say `packages/ghost-shim` calls `safeCssColor` in the present tense (the shim is 4.3's and does not exist); `vocabulary.ts:4` cites the deleted `tools/stress/test-ad36.js`; the SPINE says Story 4.2 "moved all three" when `safeUrl` moved in 4.1; `RenderInput.content`'s comment says flat dotted keys while `get()` walks nested objects; the `[data-mode]` comment names the canvas where the PRD (FR-E4) names the visitor's override; `docs/section-authoring.md`'s table has no row for `data-bind-style`/`data-module`, does not state that a content prop into a URL attribute defaults to `fallback` while a binding defaults to `hide`, and does not say named colours fall back; `tools/stress/README.md` and CLAUDE.md do not say `build.js` now needs Node 24 and a root `pnpm install`; HANDOVER's "immediate task" still says Story 3.6 is in review; the stub's `name` export and its test survive [packages/section-runtime/src/core.ts:69,383; packages/library/src/vocabulary.ts:4,69; docs/section-authoring.md:230]
+- [x] [Review][Patch] **low** — two decisions taken by omission have no owning document: `tools/doc-audit.py`'s `BASES` not walking `packages/` (the two proofs left the catalogue), and the shim's call to `safeCssColor` that AD-36 now promises for Story 4.3 [_bmad-output/implementation-artifacts/deferred-work.md]
+- [x] [Review][Patch] **low** — R-82 on the page: the Real-infra verifier read T1 and T3 live (`GET /ghost/api/admin/config/` → 6.58.0 and 5.130.6, a zeroed secret → 401) to confirm the gscan majors `gate.js` pairs; the spec's Verification should cite that call rather than "no real infrastructure is touched" [this spec, ## Verification]
+- [x] [Review][Defer] **low** — `tidy` runs on the canvas AFTER user content is in the DOM and on the theme BEFORE substitution, so a blank line inside a user's text under `white-space: pre` is stripped on the canvas only [packages/section-runtime/src/core.ts:548,568] — deferred, pre-existing in the harness; DW entry below
+
+**Dismissed as noise (4):** `npm install` EACCES in `tools/stress` (sandbox, the tree was already installed); the lockfile absent from the review diff (the reviewer's own exclusion — it is committed with `jsdom@30.0.1`); the "non-numeric limit regression" (closed by the first patch, which refuses it); a duplicated attribute in one `data-bind-attr` list (a design error with no consequence past that design).
+
+**Questions for the owner:** none — every finding is either a fact about Handlebars/Ghost cited in its source or a patch with one correct shape.
+
 ## Design Notes
 
 **Why the proofs move, given the epic's AC names `tools/stress/test-renderer-agreement.js`.** The
@@ -324,6 +359,36 @@ decision visible to the story that renders it.
 | negative control on the token-drift check | the extraction flags `var(--nope)` by name and correctly ignores `var(--local, 1px)`, so the matrix's last row fails when it should |
 
 **Manual checks (if no CLI):**
-- No real infrastructure is touched by this story: the runtime is pure by construction and holds no
-  clock, no network and no database (R-82's real-service rule has nothing to bind to here; Story
-  4.3's recorded-Ghost contract tests are the first in this epic that does).
+- The runtime itself touches no real infrastructure: it is pure by construction and holds no clock,
+  no network and no database. **What R-82 binds to here is the gscan pairing the harness rests on,
+  and the review read it live** (2026-09-11, keys by variable name only): `GET /ghost/api/admin/config/`
+  on T1 `ghost6.inflozo.com` answered 200 with version **6.58.0** (`GHOST6_VERSION`) and on T3
+  `ghost5.inflozo.com` 200 with **5.130.6** (`GHOST5_VERSION`), so `gate.js`'s gscan 6.4.2 ↔ Ghost 6.x
+  and gscan 4.49.7 ↔ Ghost 5.x pairing is checked against the live majors; the negative control, the
+  same `kid` with a zeroed secret, answered 401 `UnauthorizedError` on both. Nothing was uploaded or
+  activated (the reset protocol was not invoked). Story 4.3's recorded-Ghost contract tests are the
+  first in this epic that write to one.
+
+**Re-verified by the review, 2026-09-11, after every patch was applied (Node 24.18.1):**
+
+| Command | Result |
+|---|---|
+| `pnpm check` | exit 0 — lint clean with no suppression comment, 5 typechecks, `section-runtime` 41 → 49 tests all passing (the review added the vectors its mutation run showed were missing), `test-vocabulary.mjs` 17/17 |
+| `cd tools/stress && node build.js` | 103/103 .hbs · 2380 elements · 201 links / 215 images / 86 headings · 943 CSS declarations · AD-34 leak assertions clean — identical to the baseline and to the Dev run |
+| `cd tools/stress && node gate.js theme` | Ghost 5 via gscan 4.49.7: 0/0 · Ghost 6 via gscan 6.4.2: 0/0 — identical |
+| gscan on the two NEW attribute forms — `alt="{{#if title}}{{title}}{{else}}authored{{/if}}"`, `src="{{#if f}}{{img_url f size="800"}}{{else}}/x.jpg{{/if}}"` and `style="{{#if accent_color}}--tag-accent: {{accent_color}}{{/if}}"` — in a partial appended to a copy of the 70-section theme | 0 errors / 0 warnings on both majors. **Control:** the same copy with `{{ghost_head}}` removed from `default.hbs` reports `GS040-GH-REQ` on both, so the run sees what it should (an `onload` attribute, tried first, is NOT something gscan flags — that control did not pass and was replaced) |
+| the Verification Gap layer's mutation run (19 single-line mutations of `core.ts`/`marks.ts`) | at the Dev commit only 2 of 19 made a test fail; the review's added tests cover each of the 17 that passed green: the leak fixture derived from `RENDERED_DIRECTIVES`, the attribute-form fallback, the `a` mark / lock / range, partial extraction, `data-prop` + `hide`, limit slicing, the date format, the style refusal |
+| the nested-canvas defect, executed at the Dev commit | `posts[0].tags = [post-tag]`, root `tags = [TOP-LEVEL]`: the canvas rendered `TOP-LEVEL` inside the card. Fixed (outer-first, per-row recursion) and asserted |
+| `python3 tools/doc-audit.py --check` | PASS, twice |
+
+**What the review changed, in one paragraph.** Every directive value is now read through one
+`consume()` that runs the library's own `parse` for that directive before the value reaches any syntax
+(AD-36 #2 closed for `data-repeat`, `data-repeat-limit`, `data-partial`, and a bad `data-empty` or
+`data-prop-attr` refused rather than ignored); a repeat modifier with no repeat refuses; the canvas
+expands repeats outer-first so a nested repeat reads its row and `@site.*` reads the root, as
+Handlebars does; a guard on the repeated element itself lands inside the block; emptiness mirrors
+`{{#if}}` (`''`, `0`, `false`, `[]`); the media guard is any URL entry in a list; `data-empty` is
+shared by every directive on its element and swept once; `data-bind-style` carries FR-H8's guard and
+an absent value leaves an empty `style` on both emitters; `formatDate` knows `MMMM`, `D` and `YY`;
+`safeCssColor` accepts only CSS's two argument shapes; and `CUSTOM_PROPERTY_RE` is the one copy of
+that grammar. The 70-section harness and its gscan verdict did not move.

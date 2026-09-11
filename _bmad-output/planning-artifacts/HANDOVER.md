@@ -46,8 +46,9 @@ python3 tools/doc-audit.py --check        # the documentation gate
 ## The immediate task
 
 **Step 7 is running — the stories are being built, on `main`, one phase at a time** (added
-2026-09-10; the paragraphs below it are the record of how step 6 opened and still hold). Epics 1
-and 2 are done and Epic 3 is in flight: Story 3.6 (Manage keys) is in review, 3.7 is next. Two
+2026-09-10; the paragraphs below it are the record of how step 6 opened and still hold). Epics 1,
+2 and 3 are done and Epic 4 is in flight: Story 4.1 is done, 4.2 (the section runtime) is in
+review, 4.3 is next — `sprint-status.yaml` and the story board are the live state. Two
 rulings from 3.6's review bind every story from here — **R-99**, a story with a migration pushes it
 FIRST as its own `Schema` phase, because CI publishes on every push while the apply is by hand; and
 **R-100**, a pasted key from another Ghost site is refused in Ghost's own words, because Ghost gives
@@ -322,8 +323,9 @@ pnpm check                             # lint + typecheck + every package test
 
 Since Story 4.2 the agreement proof and the AD-36 proof are
 `packages/section-runtime/src/agreement.test.ts` and `src/ad36.test.ts`, so `pnpm check` — and
-therefore CI — runs them. Each file prints its own check count. The 70-section gscan harness is
-still `cd tools/stress && npm install && node build.js && node gate.js theme`.
+therefore CI — runs them, and the package's test run prints its own count. The 70-section gscan harness
+is still `cd tools/stress && npm install && node build.js && node gate.js theme`, after a root
+`pnpm install` and on Node 24, because `compile.js` is now an adapter over the TypeScript package.
 
 The database proof is `architecture-.../RLS-TEST.sql`; run it against a Postgres 17 container with
 `PRELUDE.sql` then `SCHEMA.sql` first. It is a **gate** — it aborts on failure rather than printing

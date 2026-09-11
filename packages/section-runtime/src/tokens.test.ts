@@ -49,9 +49,11 @@ test('every value is non-empty, and every var(--…) inside one names a declared
 
 test('the emitted stylesheet declares every property, in both modes', () => {
   const css = referenceTokensCss()
+  const blocks = (css.match(/:root/g) ?? []).length // derived: one declaration per property per :root block
+  assert.ok(blocks > 0, 'the stylesheet has no blocks')
   for (const name of TOKEN_NAMES) {
     const occurrences = css.split(`${name}:`).length - 1
-    assert.ok(occurrences >= 3, `${name} is declared ${occurrences} times; light + both dark blocks is 3`)
+    assert.equal(occurrences, blocks, `${name} is declared ${occurrences} times across ${blocks} blocks`)
   }
   assert.ok(css.includes('prefers-color-scheme: dark'), 'the system-preference block is missing')
   assert.ok(css.includes('[data-mode="dark"]'), 'the explicit-mode block is missing')

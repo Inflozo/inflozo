@@ -36,7 +36,7 @@ export type RichText = { text: string; marks?: readonly Mark[]; plainText?: bool
 /** What a content prop may hold. A bare string is the ordinary case; the object form carries marks. */
 export type PropValue = string | number | boolean | RichText | null | undefined
 
-const isRich = (v: unknown): v is RichText =>
+export const isRich = (v: unknown): v is RichText =>
   typeof v === 'object' && v !== null && typeof (v as RichText).text === 'string'
 
 /** AD-5 rule 1: `&` first, then every brace the user typed becomes an HTML NUMERIC ENTITY.
@@ -66,7 +66,8 @@ function openTag(m: Mark): string {
   // AD-36 (1) reaches a user's own link too: on the canvas this href is a same-origin URL inside
   // the owner's authenticated session, so the scheme check is not a theme-only concern.
   const attrs = [`href="${escapeUserText(safeUrl(m.href))}"`]
-  const rel = new Set((m.rel ?? []).filter((r) => REL_SET.has(r)))
+  // a stored record is data from a database, not a type: a non-array `rel` is no rel, not a throw
+  const rel = new Set((Array.isArray(m.rel) ? m.rel : []).filter((r) => REL_SET.has(r)))
   if (m.newTab === true) {
     attrs.push('target="_blank"')
     rel.add('noreferrer') // a `_blank` link hands the opener to the destination otherwise
@@ -113,9 +114,11 @@ export function serializeMarks(
     rich && value.plainText === true ? [] : def?.type === 'richtext' ? (def.marks ?? []) : []
   const allow: ReadonlySet<string> = new Set(allowed.filter((m) => MARK_SET.has(m)))
 
-  const marks = (rich ? (value.marks ?? []) : [])
+  const marks = (rich && Array.isArray(value.marks) ? value.marks : [])
     .filter(
       (m) =>
+        typeof m === 'object' &&
+        m !== null &&
         allow.has(m.mark) &&
         Number.isInteger(m.start) &&
         Number.isInteger(m.end) &&

@@ -28,7 +28,7 @@ import {
   splitFirst,
 } from '@inflozo/library'
 import type { PropDef } from '@inflozo/library'
-import { escapeUserText, serializeMarks } from './marks.ts'
+import { escapeUserText, isRich, serializeMarks } from './marks.ts'
 import type { PropValue } from './marks.ts'
 
 // ─── the injected DOM, typed by the members this file actually uses ──────────
@@ -53,6 +53,7 @@ export type RuntimeElement = {
   contains(other: RuntimeElement): boolean
   cloneNode(deep: boolean): RuntimeElement
   remove(): void
+  append(node: RuntimeNode): void
   before(node: RuntimeNode): void
   after(node: RuntimeNode): void
   replaceWith(node: RuntimeNode): void
@@ -66,7 +67,8 @@ export type RuntimeDocument = {
 // ─── what a render is given ──────────────────────────────────────────────────
 
 export type RenderInput = {
-  /** the user's content, keyed by the flat dotted prop paths `content.json` declares */
+  /** the user's content: nested objects addressed by the dotted prop paths `content.json`
+   *  declares — `cta.url` reads `content.cta.url` */
   content?: Readonly<Record<string, unknown>>
   /** the Ghost render context a binding resolves against. Canvas only — the theme defers it. */
   ghost?: Readonly<Record<string, unknown>>
@@ -195,13 +197,36 @@ const all = (scope: RuntimeElement, selector: string): RuntimeElement[] => [
   ...(scope.matches(selector) ? [scope] : []),
 ]
 
+/** Own properties only: Handlebars resolves `constructor` or `toString` to nothing, so the canvas
+ *  must too, or a path typo renders `function String() { [native code] }` here and blank there. */
 const get = (o: unknown, path: string): unknown =>
-  path.split('.').reduce<unknown>((a, k) => (a == null ? a : (a as Record<string, unknown>)[k]), o)
+  path.split('.').reduce<unknown>((a, k) => {
+    if (a == null || typeof a !== 'object') return undefined
+    return Object.prototype.hasOwnProperty.call(a, k) ? (a as Record<string, unknown>)[k] : undefined
+  }, o)
+
+/** Handlebars' `{{#if}}` takes the `{{else}}` branch for `''`, `0`, `false`, `null`, `undefined`
+ *  and `[]` — `helpers/if.js:16` with `utils.js` `isEmpty`, read in handlebars 4.7.9, the version
+ *  Ghost's `express-hbs` pins. The canvas mirrors that exactly, so a cleared field falls back HERE
+ *  the way it falls back on the live site, rather than showing an empty string. */
+const isEmpty = (v: unknown): boolean =>
+  v == null || v === '' || v === false || v === 0 || (Array.isArray(v) && v.length === 0)
+
+/** A content prop is "unset" when it holds nothing a reader would see. */
+const propEmpty = (v: unknown): boolean => v == null || v === '' || (isRich(v) && v.text === '')
 
 const depth = (el: RuntimeElement): number => {
   let d = 0
   for (let p: RuntimeElement | null = el; p !== null; p = p.parentElement) d++
   return d
+}
+
+/** True when `el` sits inside another `data-repeat` that is itself inside `scope`. */
+const insideRepeat = (el: RuntimeElement, scope: RuntimeElement): boolean => {
+  for (let p = el.parentElement; p !== null && p !== scope; p = p.parentElement) {
+    if (p.getAttribute('data-repeat') !== null) return true
+  }
+  return false
 }
 
 /** Static text authored by the DESIGN, on its way back into the emitted string. Not user text —
@@ -211,6 +236,25 @@ const escStatic = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 const escAttr = (s: string): string => escStatic(s).replace(/"/g, '&quot;')
+
+/** THE directive reader. Every rendered directive is read through here: the value is validated by
+ *  the library's own grammar for that directive — the one copy 4.1's validator uses — and refused
+ *  by name before it can reach any syntax, then the attribute is consumed. This is AD-36 (2) made
+ *  mechanical: `data-repeat`, `data-repeat-limit` and `data-partial` used to be interpolated into
+ *  `{{#foreach}}` unvalidated (Story 4.2 review — `data-repeat='posts}}<script>'` shipped a live
+ *  script), and the fix that closes the class is that nothing reads a directive any other way.
+ *  `data-empty` is the one exception to the consume: it is shared by every directive on its element
+ *  and is swept at the end of the walk, so the first reader cannot rob the second. */
+function consume(el: RuntimeElement, name: string): string | null {
+  const v = el.getAttribute(name)
+  if (v === null) return null
+  const d = DIRECTIVES[name]
+  if (d === undefined) throw new Error(`"${name}" is not in the vocabulary`)
+  const bad = d.parse(v) // null when legal
+  if (bad !== null) throw new Error(`AD-36: ${name}=${JSON.stringify(v)} — ${bad}`)
+  if (name !== 'data-empty') el.removeAttribute(name)
+  return v
+}
 
 /** AD-36 (2), as ONE copy of the grammar: the library parses the spec and this rebuilds the
  *  mustache from the validated parts. Nothing here concatenates an unvalidated string into syntax. */
@@ -244,11 +288,11 @@ type Guard = 'hide' | 'fallback'
  *    media → `hide`, the element it occupies — and a binding into a URL-valued attribute IS the
  *            media case, which is what makes the default mechanical rather than a judgement
  *
- *  `data-empty` overrides either way. */
-function guardMode(el: RuntimeElement, firstAttr?: string): Guard {
-  const declared = el.getAttribute('data-empty')
+ *  `data-empty` overrides either way, and a value outside `hide`/`fallback` is refused, not ignored. */
+function guardMode(el: RuntimeElement, media: boolean): Guard {
+  const declared = consume(el, 'data-empty')
   if (declared === 'hide' || declared === 'fallback') return declared
-  return firstAttr !== undefined && URL_ATTRS.has(firstAttr) ? 'hide' : 'fallback'
+  return media ? 'hide' : 'fallback'
 }
 
 /** The guard field is `guardField(spec)` — the BOUND FIELD, never a helper argument. The spike
@@ -265,7 +309,9 @@ function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, toke
 
 /** Refuse, by name, every directive in 4.1's closed set that this story does not emit. A directive
  *  left in the output would be styled by the design's own stylesheet and would leak past AD-34's
- *  gate as a silently-ignored attribute, so "not implemented" must be a throw and never a no-op. */
+ *  gate as a silently-ignored attribute, so "not implemented" must be a throw and never a no-op.
+ *  The same rule covers a repeat MODIFIER with no repeat to modify: `data-partial` and
+ *  `data-repeat-limit` off a `data-repeat` have no consumer and would survive verbatim. */
 function refuseUnrendered(root: RuntimeElement): void {
   for (const d of REFUSED_DIRECTIVES) {
     if (all(root, `[${d}]`).length === 0) continue
@@ -274,6 +320,11 @@ function refuseUnrendered(root: RuntimeElement): void {
         `It is in the authoring vocabulary and the story that owns it will render it; until then a ` +
         `design using it is refused rather than compiled with the directive ignored.`,
     )
+  }
+  for (const d of ['data-partial', 'data-repeat-limit']) {
+    if (all(root, `[${d}]:not([data-repeat])`).length > 0) {
+      throw new Error(`"${d}" modifies a data-repeat and this element has none — it would ship verbatim`)
+    }
   }
 }
 
@@ -287,13 +338,18 @@ function emitBindings(
   users: UserText | null,
   ctx: unknown,
 ): void {
+  // Handlebars resolves `@site`, `@custom` and every other `@data` variable from the ROOT, wherever
+  // the expression sits; a row inside `{{#foreach}}` does not shadow it. The canvas does the same.
+  const resolve = (spec: string): string | null =>
+    bindValue(spec, spec.startsWith('@') ? (input.ghost ?? {}) : ctx)
+
   for (const el of all(scope, '[data-bind]')) {
-    const spec = el.getAttribute('data-bind') ?? ''
+    const spec = consume(el, 'data-bind') ?? ''
     const field = guardField(spec)
-    const mode = guardMode(el)
+    const mode = guardMode(el, false)
+    // The authored text, FLATTENED: `{{else}}` can only carry text, so a design's child markup
+    // inside a bound element is text on both emitters, whether or not a value arrives.
     const authored = el.textContent ?? ''
-    el.removeAttribute('data-bind')
-    el.removeAttribute('data-empty')
     if (users !== null) {
       // ─────────── THE DIFFERENCE (2) — theme: the binding becomes a mustache ───────────
       const expr = bindExpr(spec)
@@ -308,11 +364,12 @@ function emitBindings(
       }
     } else {
       // ─────────── THE DIFFERENCE (2) — canvas: the binding resolves to a value ───────────
-      const v = bindValue(spec, ctx)
+      const v = resolve(spec)
       if (v === null) {
         // the guard removes the ELEMENT, which is what {{#if}} does on the other side; `fallback`
         // leaves the authored text exactly where it is, which is what {{else}} does
         if (mode === 'hide') el.remove()
+        else el.textContent = authored
       } else {
         el.textContent = v
       }
@@ -320,19 +377,19 @@ function emitBindings(
   }
 
   for (const el of all(scope, '[data-bind-attr]')) {
-    const entries = (el.getAttribute('data-bind-attr') ?? '').split(';').filter((e) => e.trim() !== '')
-    const firstAttr =
-      entries.length > 0 ? assertBindableAttr(splitFirst((entries[0] as string).trim(), ':')[0]) : undefined
-    const mode = guardMode(el, firstAttr)
-    el.removeAttribute('data-bind-attr')
-    el.removeAttribute('data-empty')
-    let firstField: string | undefined
+    const entries = (consume(el, 'data-bind-attr') ?? '')
+      .split(';')
+      .filter((e) => e.trim() !== '')
+      .map((e) => {
+        const [rawAttr, rawSpec] = splitFirst(e.trim(), ':')
+        return { attr: assertBindableAttr(rawAttr), spec: rawSpec ?? '' } // AD-36 (3), on BOTH emitters
+      })
+    // FR-H8: the media case is ANY entry into a URL-valued attribute, not only the first — a design
+    // writing `alt:title;src:feature_image` guards the element on `feature_image`, never `alt`.
+    const guardEntry = entries.find((e) => URL_ATTRS.has(e.attr)) ?? entries[0]
+    const mode = guardMode(el, guardEntry !== undefined && URL_ATTRS.has(guardEntry.attr))
     let removed = false
-    for (const [i, entry] of entries.entries()) {
-      const [rawAttr, rawSpec] = splitFirst(entry.trim(), ':')
-      const attr = assertBindableAttr(rawAttr) // AD-36 (3), on BOTH emitters
-      const spec = rawSpec ?? ''
-      if (i === 0) firstField = guardField(spec)
+    for (const { attr, spec } of entries) {
       if (users !== null) {
         // ─────────── THE DIFFERENCE (2) — theme ───────────
         const expr = bindExpr(spec)
@@ -348,79 +405,85 @@ function emitBindings(
         )
       } else {
         // ─────────── THE DIFFERENCE (2) — canvas ───────────
-        const v = bindValue(spec, ctx)
+        const v = resolve(spec)
         if (v === null) {
-          if (i === 0 && mode === 'hide') {
+          if (mode === 'hide' && guardEntry !== undefined && spec === guardEntry.spec) {
             el.remove()
             removed = true
             break
           }
-          continue // a later null entry sets nothing and leaves the authored attribute alone
+          continue // a null entry sets nothing and leaves the authored attribute alone
         }
         // AD-36 (1) on the canvas too: a `javascript:` URL here runs on Inflozo's own origin.
         el.setAttribute(attr, URL_ATTRS.has(attr) ? safeUrl(v) : v)
       }
     }
-    if (!removed && users !== null && mode === 'hide' && firstField !== undefined) {
-      wrapGuard(doc, el, firstField, tokens)
+    if (!removed && users !== null && mode === 'hide' && guardEntry !== undefined) {
+      wrapGuard(doc, el, guardField(guardEntry.spec), tokens)
     }
   }
 
   // AD-3's single carve-out (row 12): an inline `style` may set ONE bound CSS custom property.
   for (const el of all(scope, '[data-bind-style]')) {
-    const [prop, rawSpec] = splitFirst(el.getAttribute('data-bind-style') ?? '', ':')
-    el.removeAttribute('data-bind-style')
-    if (!/^--[a-zA-Z0-9-]+$/.test(prop) || rawSpec === undefined) {
-      throw new Error(
-        `AD-3: data-bind-style is "--custom-property:path" — a custom property and nothing else; got ` +
-          `${JSON.stringify(el.getAttribute('data-bind-style'))}`,
-      )
-    }
+    const [prop, rawSpec] = splitFirst(consume(el, 'data-bind-style') ?? '', ':')
+    const spec = rawSpec ?? ''
     if (users !== null) {
       // ─────────── THE DIFFERENCE (2) — theme ───────────
+      // FR-H8 here too: an absent value leaves an EMPTY style attribute, so the element reads the
+      // root default of the property — the same thing the canvas does below.
       // AD-36 (4), and the ceiling this runtime cannot close: the emitted mustache is correct
       // Handlebars and the VALUE arrives at render, on the customer's site, after every build-time
-      // gate has run. AD-36's own text says so. `packages/ghost-shim` calls `safeCssColor` on the
-      // canvas side, which is the half that is reachable — same copy, one rule.
-      el.setAttribute('style', `${prop}: ${tokens.put(bindExpr(rawSpec))}`)
+      // gate has run. AD-36's own text says so. The canvas below is the half that is reachable, and
+      // Story 4.3's shim will read the same `safeCssColor` when it renders a recorded value here.
+      el.setAttribute(
+        'style',
+        tokens.put(`{{#if ${guardField(spec)}}}${prop}: ${bindExpr(spec)}{{/if}}`),
+      )
     } else {
       // ─────────── THE DIFFERENCE (2) — canvas ───────────
-      el.setAttribute('style', `${prop}: ${safeCssColor(bindValue(rawSpec, ctx), COLOUR_FALLBACK_TOKEN)}`)
+      const v = resolve(spec)
+      el.setAttribute('style', v === null ? '' : `${prop}: ${safeCssColor(v, COLOUR_FALLBACK_TOKEN)}`)
     }
   }
 }
 
 /** AD-1 bans `Intl`, `toLocale*` and `Date.toString`/`getHours` because each reads the machine
  *  rather than the argument. UTC getters are the safe form, so the formatter is written from them
- *  and is deliberately small. */
+ *  and is deliberately small — the tokens Ghost's `{{date}}` examples use (moment's `YYYY`, `YY`,
+ *  `MMMM`, `MMM`, `MM`, `DD`, `D`). Any other token is left as typed, which the canvas then shows,
+ *  so an unsupported format is visible rather than silently different. */
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS_LONG = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
 
 export function formatDate(raw: unknown, fmt?: string): string {
-  const d = new Date(String(raw))
+  const d = new Date(typeof raw === 'number' ? raw : String(raw))
   if (Number.isNaN(d.getTime())) return ''
   const p2 = (x: number) => String(x).padStart(2, '0')
   const map: Record<string, string> = {
     YYYY: String(d.getUTCFullYear()),
-    MMMM: MONTHS[d.getUTCMonth()] as string,
+    YY: p2(d.getUTCFullYear() % 100),
+    MMMM: MONTHS_LONG[d.getUTCMonth()] as string,
     MMM: MONTHS[d.getUTCMonth()] as string,
     MM: p2(d.getUTCMonth() + 1),
     DD: p2(d.getUTCDate()),
+    D: String(d.getUTCDate()),
   }
-  // longest key first, so MMMM is not eaten by MM
-  return (fmt ?? 'YYYY-MM-DD').replace(/YYYY|MMMM|MMM|MM|DD/g, (k) => map[k] as string)
+  // longest key first, so MMMM is not eaten by MM and DD is not eaten by D
+  return (fmt ?? 'YYYY-MM-DD').replace(/YYYY|YY|MMMM|MMM|MM|DD|D/g, (k) => map[k] as string)
 }
 
 /** The canvas counterpart of `bindExpr`: same spec, same grammar, a value instead of a mustache.
- *  It re-parses through `bindExpr` first so an invalid spec fails IDENTICALLY on both emitters — a
- *  design the compiler refuses must not silently render on the canvas. */
+ *  ONE parse — `parseBindSpec` — so an invalid spec fails IDENTICALLY on both emitters and the
+ *  grammar is never re-derived here. A design the compiler refuses must not silently render. */
 export function bindValue(spec: string, ctx: unknown): string | null {
-  bindExpr(spec) // validate: AD-36 (2), both sides
-  const [path, helper] = splitFirst(spec, '|')
-  const raw = get(ctx, path)
-  if (raw == null) return null
-  if (helper === undefined) return String(raw)
-  const [name, arg] = splitFirst(helper, ':')
-  if (name === 'date') return formatDate(raw, arg) // the format argument is HONOURED
+  const parsed = parseBindSpec(spec)
+  if (typeof parsed === 'string') throw new Error(`AD-36: ${parsed}`)
+  const raw = get(ctx, parsed.path)
+  if (isEmpty(raw)) return null
+  if (parsed.helper === 'date') return formatDate(raw, parsed.arg) // the format argument is HONOURED
   return String(raw) // img_url: the size is a Ghost-side concern (4.3's shim owns it)
 }
 
@@ -434,13 +497,13 @@ function applyProps(
   const tokenValues = input.tokens ?? {}
 
   for (const el of all(scope, '[data-prop]')) {
-    const path = el.getAttribute('data-prop') ?? ''
+    const path = consume(el, 'data-prop') ?? ''
     const v = get(content, path) as PropValue
-    el.removeAttribute('data-prop')
-    if (v == null) {
+    const mode = guardMode(el, false)
+    if (propEmpty(v)) {
       // FR-H8's text default, on a prop rather than a binding: the authored text stays. `hide` is
       // the explicit override, and DW-93's class — the marker must never survive either way.
-      if (el.getAttribute('data-empty') === 'hide') el.remove()
+      if (mode === 'hide') el.remove()
       continue
     }
     if (users !== null) {
@@ -456,31 +519,36 @@ function applyProps(
 
   // ONE attribute, a semicolon-separated LIST (`data-prop-attr2` is retired — Story 4.1).
   for (const el of all(scope, '[data-prop-attr]')) {
-    const entries = (el.getAttribute('data-prop-attr') ?? '').split(';').filter((e) => e.trim() !== '')
-    const mode = guardMode(el)
-    el.removeAttribute('data-prop-attr')
+    const entries = (consume(el, 'data-prop-attr') ?? '').split(';').filter((e) => e.trim() !== '')
+    const mode = guardMode(el, false)
     let firstMissing = false
     for (const [i, entry] of entries.entries()) {
       const [rawAttr, rawPath] = splitFirst(entry.trim(), ':')
       const attr = assertBindableAttr(rawAttr) // AD-36 (3)
-      const v = get(content, rawPath ?? '')
-      if (v == null) {
+      const raw = get(content, rawPath ?? '')
+      if (propEmpty(raw)) {
         if (i === 0) firstMissing = true
         continue
       }
+      // An attribute holds TEXT: a rich value contributes its text and never its marks.
+      const v = isRich(raw) ? raw.text : raw
       // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Here rather
       // than in the escaper, because a scheme is only meaningful where the context is known.
-      const safe = URL_ATTRS.has(attr) ? safeUrl(v) : v
-      el.setAttribute(attr, users !== null ? users.put(rawPath ?? '', safe as PropValue) : String(safe))
+      const safe = URL_ATTRS.has(attr) ? safeUrl(v) : String(v)
+      el.setAttribute(attr, users !== null ? users.put(rawPath ?? '', safe) : safe)
     }
     // DW-93: the harness removed only its own attribute here and implemented no `hide`, so an
     // element whose only content is a user-picked image kept a dead `data-empty` and never hid.
     if (firstMissing && mode === 'hide') el.remove()
   }
 
-  // Whatever `data-empty` the prop loops read is consumed here, so none can survive into output.
-  for (const el of all(scope, '[data-empty]')) el.removeAttribute('data-empty')
-  for (const el of all(scope, '[data-module]')) el.removeAttribute('data-module')
+  // `data-empty` is read, never consumed, by the loops above — it is shared by every directive on
+  // its element — so it is swept here, and none can survive into output.
+  for (const el of all(scope, '[data-empty]')) {
+    consume(el, 'data-empty')
+    el.removeAttribute('data-empty')
+  }
+  for (const el of all(scope, '[data-module]')) consume(el, 'data-module')
 }
 
 export type ThemeOutput = { template: string; partials: Record<string, string> }
@@ -500,49 +568,76 @@ function renderTree(
   const partials: Record<string, string> = {}
   const ghost = input.ghost ?? {}
 
-  // R1 decision 7 part B: deepest-first. Outer-first lifts the parent out of the tree with the
-  // inner `data-repeat` attribute still on it, and it ships verbatim.
-  const repeats = [...root.querySelectorAll('[data-repeat]')].sort((a, b) => depth(b) - depth(a))
-  for (const el of repeats) {
-    if (!root.contains(el)) continue
-    const source = el.getAttribute('data-repeat') ?? ''
-    const limit = el.getAttribute('data-repeat-limit')
-    const partialName = el.getAttribute('data-partial')
-    el.removeAttribute('data-repeat')
-    el.removeAttribute('data-repeat-limit')
-    el.removeAttribute('data-partial')
-
-    if (users !== null) {
-      // ─────────── THE DIFFERENCE (1) — theme: the repeat becomes {{#foreach}} ───────────
-      emitBindings(doc, el, input, tokens, users, ghost)
-      applyProps(el, input, users)
-      const body = el.outerHTML
+  if (users !== null) {
+    // ─────────── THE DIFFERENCE (1) — theme: the repeat becomes {{#foreach}} ───────────
+    // R1 decision 7 part B: deepest-first. Outer-first lifts the parent out of the tree with the
+    // inner `data-repeat` attribute still on it, and it ships verbatim.
+    const repeats = [...root.querySelectorAll('[data-repeat]')].sort((a, b) => depth(b) - depth(a))
+    for (const el of repeats) {
+      if (!root.contains(el)) continue
+      const source = consume(el, 'data-repeat') ?? ''
+      const limit = consume(el, 'data-repeat-limit')
+      const partialName = consume(el, 'data-partial')
+      // The body is everything INSIDE the block, and a guard on the repeated element itself is part
+      // of it: `wrapGuard` parks its comments as siblings, so the element is walked inside a holder
+      // whose innerHTML is the body. Read from `el.outerHTML` instead, the `{{#if}}` landed OUTSIDE
+      // `{{#foreach}}` and was evaluated against the wrong context (Story 4.2 review).
+      const holder = doc.createElement('div')
+      el.replaceWith(holder)
+      holder.append(el)
+      emitBindings(doc, holder, input, tokens, users, ghost)
+      applyProps(holder, input, users)
+      const body = holder.innerHTML
       const open = `{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`
       let replacement: string
       if (partialName !== null) {
+        if (partialName in partials) throw new Error(`data-partial "${partialName}" is declared twice`)
         partials[partialName] = body
         replacement = `${open}\n  {{> "${partialName}"}}\n{{/foreach}}`
       } else {
         replacement = `${open}\n${body}\n{{/foreach}}`
       }
-      el.replaceWith(doc.createComment(tokens.put(replacement)))
-    } else {
-      // ─────────── THE DIFFERENCE (1) — canvas: the repeat expands against real rows ───────────
-      const n = limit === null ? undefined : Number(limit)
-      const rows = ((get(ghost, source) ?? []) as unknown[]).slice(0, n)
-      for (const row of rows) {
-        const clone = el.cloneNode(true)
-        emitBindings(doc, clone, input, tokens, null, row)
-        applyProps(clone, input, null)
-        el.before(clone)
-      }
-      el.remove()
+      holder.replaceWith(doc.createComment(tokens.put(replacement)))
     }
+  } else {
+    // ─────────── THE DIFFERENCE (1) — canvas: the repeat expands against real rows ───────────
+    expandRepeats(doc, root, input, tokens, ghost)
   }
 
   emitBindings(doc, root, input, tokens, users, ghost)
   applyProps(root, input, users)
   return { root, partials }
+}
+
+/** The canvas half of THE DIFFERENCE (1), OUTER-first and recursive: each row is cloned into the
+ *  tree, then the repeats INSIDE that clone expand against the row — which is what `{{#foreach}}`
+ *  does on the other side, where `{{#foreach tags}}` inside `{{#foreach posts}}` reads each post's
+ *  tags. Deepest-first, which the theme needs, resolved every nested source against the ROOT context
+ *  and showed the site's top-level tags on every card (Story 4.2 review, executed). */
+function expandRepeats(
+  doc: RuntimeDocument,
+  scope: RuntimeElement,
+  input: RenderInput,
+  tokens: Tokens,
+  ctx: unknown,
+): void {
+  for (const el of all(scope, '[data-repeat]').filter((e) => !insideRepeat(e, scope))) {
+    const source = consume(el, 'data-repeat') ?? ''
+    const limit = consume(el, 'data-repeat-limit')
+    consume(el, 'data-partial')
+    const raw = get(source.startsWith('@') ? (input.ghost ?? {}) : ctx, source)
+    const rows = Array.isArray(raw) ? raw.slice(0, limit === null ? undefined : Number(limit)) : []
+    for (const row of rows) {
+      // Inserted BEFORE it is walked, so a guard that removes the clone (a `hide` on the repeated
+      // element itself) is final rather than undone by a later insert.
+      const clone = el.cloneNode(true)
+      el.before(clone)
+      expandRepeats(doc, clone, input, tokens, row)
+      emitBindings(doc, clone, input, tokens, null, row)
+      applyProps(clone, input, null)
+    }
+    el.remove()
+  }
 }
 
 const tidy = (html: string): string => html.replace(/^\s*[\r\n]/gm, '').trim()

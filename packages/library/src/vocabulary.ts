@@ -1,7 +1,7 @@
 // The authoring vocabulary, as data. AD-34: "the rules are data in `packages/library`".
 //
 // Four of the constants below are LIFTED UNCHANGED from `tools/stress/compile.js`, where they were
-// executed and attacked for four rounds (AD-36, `tools/stress/test-ad36.js`): the binding-path
+// executed and attacked for four rounds (AD-36, `packages/section-runtime/src/ad36.test.ts`): the binding-path
 // grammar, the helper table, the bindable-attribute allow-list and its URL subset, and the safe
 // scheme rule. They live here so 4.2's two emitters inherit ONE copy rather than growing a second.
 //
@@ -65,19 +65,27 @@ export function safeUrl(value: unknown): string {
  *
  *  The half no build-time gate can reach is named in AD-36 itself: on the THEME side the emitted
  *  `style="--tag-accent: {{accent_color}}"` is correct Handlebars and the value arrives at render, on
- *  the customer's site, after every gate has run. This function closes the canvas completely and is the
- *  same copy `packages/ghost-shim` calls at render on the other side (AD-36 amended, Story 4.2). */
+ *  the customer's site, after every gate has run. This function closes the canvas completely; the
+ *  canvas emitter calls it, and Story 4.3's `packages/ghost-shim` WILL call the same copy when it
+ *  renders a recorded Ghost value on the canvas (AD-36 amended, Story 4.2; DW entry owned by 4.3). */
 export function safeCssColor(value: unknown, fallbackToken: string): string {
-  const fallback = /^--[a-zA-Z0-9-]+$/.test(fallbackToken) ? `var(${fallbackToken})` : 'inherit'
+  const fallback = CUSTOM_PROPERTY_RE.test(fallbackToken) ? `var(${fallbackToken})` : 'inherit'
   const v = String(value == null ? '' : value).trim()
   if (/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) return v
   const fn = /^(?:rgba?|hsla?)\(([^()]*)\)$/i.exec(v)
   if (fn === null) return fallback
-  // split on every legal separator — `,`, `/` and whitespace — then require each part to be a bare
-  // number. One linear pass, so no nested quantifier over the same class to backtrack on.
-  const parts = (fn[1] ?? '').split(/[,/\s]+/).filter((p) => p !== '')
+  // The two argument shapes CSS Color 4 admits, and no other: the legacy comma form `n, n, n[, a]`
+  // and the modern space form `n n n[ / a]`. A separator-valid but CSS-invalid list — `rgb(1/2/3)`,
+  // `rgb(1 2 3 4)`, a trailing comma — is a declaration the browser DROPS, which leaves the element
+  // inheriting instead of falling back to the token; so it is refused here (Story 4.2 review). Each
+  // part must be a bare number. One linear pass, so no nested quantifier to backtrack on.
+  const args = (fn[1] ?? '').trim()
+  const comma = args.split(/\s*,\s*/)
+  const space = args.split(/\s*\/\s*/).flatMap((side, i) => (i === 0 ? side.split(/\s+/) : [side]))
+  const parts = comma.length > 1 ? comma : space
+  const legalShape = comma.length > 1 ? comma.length === 3 || comma.length === 4 : /^\S+\s+\S+\s+\S+(\s*\/\s*\S+)?$/.test(args)
   const isNumber = (p: string) => /^[-+]?(?:\d+\.?\d*|\.\d+)(?:%|deg|turn|rad|grad)?$/.test(p)
-  return parts.length >= 3 && parts.length <= 4 && parts.every(isNumber) ? v : fallback
+  return legalShape && parts.every(isNumber) ? v : fallback
 }
 
 /** The ten legal `bindingContext` values. There is deliberately no `page`: a page and a post are
@@ -221,6 +229,10 @@ export function parseTokenTemplate(value: string): string[] | string {
  *  — `--ref-accent: var(--accent)` — because §7.3 forbids a hex outside the Style Pack and a
  *  literal in a design file is exactly that (review 1); the BOUND form is `data-bind-style`. */
 export const INLINE_STYLE_RE = /^\s*--[a-zA-Z0-9-]+\s*:\s*var\(--[a-zA-Z0-9-]+\)\s*;?\s*$/
+
+/** The one grammar for a custom-property NAME — `data-bind-style`'s target, `safeCssColor`'s fallback
+ *  token and the runtime all read this copy (Story 4.2 review: it had been written three times). */
+export const CUSTOM_PROPERTY_RE = /^--[a-zA-Z0-9-]+$/
 
 const attrList = (parseOne: (attr: string, rest: string) => string | null) => (v: string) => {
   for (const entry of v.split(';')) {
@@ -368,7 +380,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     summary: 'row 12 · a bound Ghost value into ONE inline CSS custom property — "--tag-accent:accent_color"',
     parse: (v) => {
       const [prop, spec] = splitFirst(v, ':')
-      if (!/^--[a-zA-Z0-9-]+$/.test(prop)) {
+      if (!CUSTOM_PROPERTY_RE.test(prop)) {
         return fail(`"${prop}" is not a CSS custom property — AD-3's carve-out sets a custom property and nothing else`)
       }
       if (spec === undefined) return fail('data-bind-style is "--custom-property:path"')

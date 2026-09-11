@@ -328,9 +328,14 @@ test('data-bind-style — the canvas parses the colour and the theme emits the m
   const { canvas, theme } = agree(src, { ghost: { accent_color: '#f0f' } })
   assert.ok(canvas.includes('style="--tag-accent: #f0f"'), `canvas did not set the colour: ${canvas}`)
   assert.ok(
-    theme.includes('style="--tag-accent: {{accent_color}}"'),
-    `theme must defer the colour to Ghost — AD-3's stated legal form: ${theme}`,
+    theme.includes('style="{{#if accent_color}}--tag-accent: {{accent_color}}{{/if}}"'),
+    `theme must defer the colour to Ghost inside FR-H8's guard — AD-3's stated legal form: ${theme}`,
   )
+  // FR-H8 on the carve-out: an ABSENT value leaves an empty style on both, so the element reads the
+  // property's root default here and on the live site alike — never the fallback token
+  const absent = renderCanvas(doc(), src, { ghost: {} })
+  assert.ok(absent.includes('style=""'), `an absent colour must leave an empty style, got ${absent}`)
+  assert.throws(() => renderCanvas(doc(), '<li data-bind-style="nope">t</li>', {}), /AD-36: data-bind-style="nope"/)
 })
 
 // ── R1 decision 7's other half. A token can only be parked in a DOM where a node is legal, so a
@@ -351,12 +356,12 @@ test('a guard inside a nested repeat is not left wrapped in an HTML comment', ()
 // ── The partition, asserted so a directive added to the vocabulary later cannot be silently
 //    forgotten by the runtime. ──
 test('every consumed directive is either rendered or refused by name — no third state', () => {
+  // RENDERED ∪ REFUSED = CONSUMED holds by DEFINITION (REFUSED is the complement), so the checks
+  // that can actually fail are: every rendered name is a vocabulary name, and the two are disjoint.
   const partition = [...RENDERED_DIRECTIVES, ...REFUSED_DIRECTIVES].sort()
-  assert.deepEqual(
-    partition,
-    [...CONSUMED_DIRECTIVES].sort(),
-    'RENDERED ∪ REFUSED must equal CONSUMED_DIRECTIVES exactly',
-  )
+  for (const d of RENDERED_DIRECTIVES) {
+    assert.ok(CONSUMED_DIRECTIVES.includes(d), `the runtime renders "${d}", which the vocabulary does not consume`)
+  }
   assert.equal(
     new Set(partition).size,
     partition.length,
@@ -373,4 +378,125 @@ test('a directive this story does not emit is refused by name on both emitters, 
     assert.throws(() => renderCanvas(doc(), src, {}), refusesByName, `${d}: canvas must refuse BY NAME`)
     assert.throws(() => renderTheme(doc(), src, {}), refusesByName, `${d}: theme must refuse BY NAME`)
   }
+})
+
+// ── Story 4.2 review: the leak check over EVERY rendered directive, not only the feed's five. A
+//    directive left in by both emitters compared equal and passed `agree()`; the mutation run
+//    proved five of the ten could leak with the suite green. The fixture is derived from
+//    `RENDERED_DIRECTIVES` so a directive added to the set later is covered by construction. ──
+const everyDirectiveSrc = `<section class="all" data-module="cards">
+     <h1 class="h" data-prop="title" data-empty="hide">t</h1>
+     <a class="a" data-prop-attr="href:link">l</a>
+     <article class="c" data-repeat="posts" data-repeat-limit="2" data-partial="card">
+       <h2 data-bind="title">t</h2>
+       <img data-bind-attr="src:feature_image|img_url:800">
+       <li data-bind-style="--tag-accent:accent_color">x</li>
+     </article>
+   </section>`
+
+test('no rendered directive survives — every member of RENDERED_DIRECTIVES is in the fixture', () => {
+  for (const d of RENDERED_DIRECTIVES) {
+    assert.ok(everyDirectiveSrc.includes(`${d}=`), `the leak fixture does not exercise ${d}`)
+  }
+  const input: RenderInput = {
+    content: { title: 'T', link: '/x' },
+    ghost: { posts: [{ title: 'a', feature_image: '/a.jpg', accent_color: '#fff' }, { title: 'b' }, { title: 'c' }] },
+  }
+  const canvas = renderCanvas(doc(), everyDirectiveSrc, input)
+  const theme = renderTheme(doc(), everyDirectiveSrc, input)
+  for (const [name, html] of [
+    ['canvas', canvas],
+    ['theme', theme.template],
+    ['partial', theme.partials['card'] ?? ''],
+  ] as const) {
+    assert.ok(!CONSUMED_DIRECTIVE_RE.test(html), `${name} leaked a directive: ${html}`)
+    for (const d of CONSUMED_DIRECTIVES) {
+      assert.ok(!new RegExp(`\\b${d}=`).test(html), `${name} leaked the directive ${d}: ${html}`)
+    }
+  }
+  assert.ok('card' in theme.partials, 'the partial was not extracted')
+  // the limit is honoured on the canvas: three rows, limit 2, two articles
+  assert.equal((canvas.match(/<article/g) ?? []).length, 2, `the canvas ignored data-repeat-limit: ${canvas}`)
+  // a repeat modifier with no repeat to modify is refused, never left in
+  assert.throws(() => renderCanvas(doc(), '<div data-partial="x">y</div>', {}), /modifies a data-repeat/)
+  assert.throws(() => renderTheme(doc(), '<div data-repeat-limit="3">y</div>', {}), /modifies a data-repeat/)
+})
+
+// ── FR-H8's attribute-form fallback — the half of "unconditional" the suite never observed. ──
+test('FR-H8 — a text attribute binding is guarded in place, and an absent value keeps the authored one', () => {
+  const src = '<img class="i" alt="authored" data-bind-attr="alt:title">'
+  const { canvas, theme } = agree(src, { ghost: {} })
+  assert.ok(theme.includes('alt="{{#if title}}{{title}}{{else}}authored{{/if}}"'), theme)
+  assert.ok(canvas.includes('alt="authored"'), canvas)
+  // the media case is ANY entry into a URL attribute, not only the first: the ELEMENT is guarded on
+  // the URL entry's field, never the attribute
+  const mixed = '<img class="i" alt="a" data-bind-attr="alt:title;src:feature_image">'
+  const t = renderTheme(doc(), mixed, {}).template
+  assert.ok(/\{\{#if feature_image\}\}<img/.test(t), `the element must be guarded on the URL field: ${t}`)
+  assert.ok(!/src="\{\{#if/.test(t), `the URL attribute must never be guarded in place: ${t}`)
+  const c = renderCanvas(doc(), mixed, { ghost: { title: 'x' } })
+  assert.equal(c, '', `an absent image must hide the element on the canvas: ${c}`)
+})
+
+// ── Handlebars' `{{#if}}` is falsy on '', 0, false and [] — cited in core.ts — and the canvas must
+//    fall back where the site does. ──
+test('FR-H8 — a cleared field falls back on the canvas the way {{#if}} does on the site', () => {
+  for (const cleared of ['', 0, false, []]) {
+    const c = renderCanvas(doc(), '<p data-bind="excerpt">authored</p>', { ghost: { excerpt: cleared } })
+    assert.ok(c.includes('>authored<'), `${JSON.stringify(cleared)} did not fall back: ${c}`)
+  }
+  // ...and on a content prop, `hide` fires for an empty string too
+  const hidden = renderCanvas(doc(), '<h1 data-prop="title" data-empty="hide">t</h1>', { content: { title: '' } })
+  assert.equal(hidden, '')
+  // an authored child element is text on both emitters, value or no value
+  const { canvas, theme } = agree('<h2 class="h" data-bind="title"><span class="x">Post</span> title</h2>', { ghost: {} })
+  assert.ok(!/<span/.test(canvas) && canvas.includes('Post title'), canvas)
+  assert.ok(theme.includes('{{else}}Post title{{/if}}'), theme)
+})
+
+// ── THE DIFFERENCE (1), nested: the canvas expands an inner repeat against the OUTER ROW, which is
+//    what {{#foreach tags}} inside {{#foreach posts}} reads on the site. ──
+test('a nested repeat on the canvas reads the outer row, and @site reads the root, like Handlebars', () => {
+  const src = `<section><article class="o" data-repeat="posts"><h2 data-bind="title">T</h2><span class="s" data-bind="@site.title">S</span><ul><li class="i" data-repeat="tags"><a data-bind="name">n</a></li></ul></article></section>`
+  const canvas = renderCanvas(doc(), src, {
+    ghost: {
+      '@site': { title: 'SITE' },
+      posts: [{ title: 'P1', tags: [{ name: 'post-tag-a' }, { name: 'post-tag-b' }] }, { title: 'P2' }],
+      tags: [{ name: 'TOP-LEVEL' }],
+    },
+  })
+  assert.ok(!canvas.includes('TOP-LEVEL'), `the inner repeat read the root context: ${canvas}`)
+  assert.equal((canvas.match(/post-tag-/g) ?? []).length, 2, canvas)
+  assert.equal((canvas.match(/SITE/g) ?? []).length, 2, `@site must resolve inside a row: ${canvas}`)
+  assert.ok(canvas.includes('P2'), canvas)
+  // a non-array source expands to nothing rather than one row per character
+  const none = renderCanvas(doc(), '<ul><li data-repeat="posts">x</li></ul>', { ghost: { posts: 'abc' } })
+  assert.equal(none, '<ul></ul>')
+})
+
+// ── a guard on the REPEATED ELEMENT itself lands inside the block on the theme, and a removed
+//    clone stays removed on the canvas. ──
+test('a hide guard on the repeat root sits inside {{#foreach}} and hides the row on the canvas', () => {
+  const src = '<ul class="l"><li class="r" data-repeat="posts" data-bind-attr="href:url">x</li></ul>'
+  const theme = renderTheme(doc(), src, {}).template
+  assert.ok(/\{\{#foreach posts\}\}\s*\{\{#if url\}\}<li/.test(theme), `the guard is outside the block: ${theme}`)
+  const canvas = renderCanvas(doc(), src, { ghost: { posts: [{ url: '/a' }, {}, { url: '/c' }] } })
+  assert.equal((canvas.match(/<li/g) ?? []).length, 2, `a row with no url must be hidden: ${canvas}`)
+  const prop = '<ul class="l"><li class="r" data-repeat="posts" data-prop="label" data-empty="hide">x</li></ul>'
+  const { canvas: pc, theme: pt } = bothWays(prop, { ghost: { posts: [{}, {}] } })
+  assert.equal(pc, '<ul class="l"></ul>')
+  assert.ok(pt.includes('{{#foreach posts}}') && !/<li/.test(pt), pt)
+})
+
+test('the canvas honours the date format the way Ghost does, and refuses a bad data-empty', () => {
+  const c = renderCanvas(doc(), '<time data-bind="published_at|date:D MMMM YYYY">d</time>', {
+    ghost: { published_at: '2026-03-04T10:00:00Z' },
+  })
+  assert.equal(c, '<time>4 March 2026</time>')
+  assert.throws(() => renderCanvas(doc(), '<p data-bind="x" data-empty="HIDE">t</p>', {}), /data-empty/)
+  assert.throws(() => renderCanvas(doc(), '<a data-prop-attr="href">t</a>', {}), /AD-36: data-prop-attr/)
+  // a rich value into an attribute contributes its text, never its marks, on both emitters
+  const rich = { link: { text: '/go', marks: [{ start: 0, end: 3, mark: 'strong' }] } }
+  const { canvas, theme } = bothWays('<a data-prop-attr="href:link">x</a>', { content: rich })
+  assert.ok(canvas.includes('href="/go"') && theme.includes('href="/go"'), `${canvas} | ${theme}`)
 })

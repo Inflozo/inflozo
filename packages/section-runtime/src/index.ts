@@ -33,5 +33,3 @@ export type {
   ThemeOutput,
 } from './core.ts'
 export type { Mark, PropValue, RichText } from './marks.ts'
-
-export const name = '@inflozo/section-runtime'

@@ -155,7 +155,10 @@ const block = (selector: string, values: Readonly<Record<string, string>>) =>
 
 /** The stylesheet, emitted from the contract. FR-E4 owns mode RESOLUTION in Epic 6; the three
  *  blocks here are the minimum that makes both modes reachable on the canvas — system preference,
- *  and an explicit `data-mode` the canvas sets when the user previews a mode. AD-30: the token
+ *  and an explicit `data-mode`, which FR-E4 defines as the VISITOR's override written by the
+ *  `mode-toggle` module; the canvas reuses that same attribute to preview a mode, deliberately, so
+ *  no fourth mode signal exists. FR-E4's other input, the owner's server-rendered `scheme-*` body
+ *  class, is Epic 6's to add to this block. AD-30: the token
  *  block is one of the only two files in a generated theme that may mention a mode. */
 export function referenceTokensCss(): string {
   return [

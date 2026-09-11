@@ -225,8 +225,8 @@ DOCS = [
   'exported names over one implementation. The two proofs moved with it — the agreement proof is '
   '`packages/section-runtime/src/agreement.test.ts` and AD-36\'s is `src/ad36.test.ts` — because '
   '`tools/stress/` is a separate npm project whose `node_modules` CI never installs, so a proof left '
-  'here ran on a laptop and nowhere else. Both now run under `pnpm check`, and each file prints its '
-  'own check count.'),
+  'here ran on a laptop and nowhere else. Both now run under `pnpm check`, and the package\'s test '
+  'run prints its own count.'),
  ('tools/stress/build.js', 'tool', 'The stress fixture',
   'Builds a deliberately heavy 70-section theme and prints the compile budget. The measurement '
   'behind AD-11.'),

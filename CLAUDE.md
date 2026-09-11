@@ -199,11 +199,13 @@ pnpm check                                               # lint + typecheck + ev
 **Since Story 4.2 the two proofs of the two-emitter claim run inside `pnpm check`, and therefore in
 CI** — `packages/section-runtime/src/agreement.test.ts` (§7.3's exit criterion: canvas and theme
 compared node by node) and `src/ad36.test.ts` (AD-36's vectors, each asserting the attack is inert
-**and** the legitimate case still works). Each file prints its own check count; never write one down.
+**and** the legitimate case still works). The package's test run prints its own count; never write one down.
 They used to live in `tools/stress/`, which is a separate npm project whose `node_modules` CI never
 installs — so the epic's central claim was asserted on a laptop and nowhere else.
 
-The 70-section gscan harness still lives there and still needs its own install:
+The 70-section gscan harness still lives there and still needs its own install — and, since its
+`compile.js` is now an adapter over the TypeScript package, a root `pnpm install` first and Node 24
+(type stripping; the shell's default is 22):
 
 ```bash
 cd tools/stress && npm install && node build.js && node gate.js theme   # expect 0 errors / 0 warnings, both majors

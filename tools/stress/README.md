@@ -2,8 +2,9 @@
 
 Closes **Round 1 decision 10**, open since round 1 and blocking `MEASUREMENTS.md` §13c.
 
-    npm install
-    node build.js          # compile 70 sections over 7 templates, assemble, gate, zip
+    pnpm install           # at the repo root, once — compile.js resolves @inflozo/section-runtime through the workspace
+    npm install            # here
+    node build.js          # compile 70 sections over 7 templates, assemble, gate, zip — Node 24 (type stripping)
     node gate.js theme     # the AD-34 two-checker verdict (gscan 4.49.7 + 6.4.2)
 
 `sections.js` holds eight annotated-HTML archetypes sized from `sections-inventory.md`

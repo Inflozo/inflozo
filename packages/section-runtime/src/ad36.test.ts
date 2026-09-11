@@ -140,7 +140,65 @@ test('AD-36 (4) — a legitimate bound colour still works, in every form Ghost s
   // the theme emits AD-3's stated legal form; the value arrives at Ghost's render, which AD-36's
   // own note says no build-time gate can reach
   const theme = renderTheme(doc(), '<li data-bind-style="--tag-accent:accent_color">t</li>', {}).template
-  assert.ok(theme.includes('style="--tag-accent: {{accent_color}}"'), `theme form changed: ${theme}`)
+  assert.ok(
+    theme.includes('style="{{#if accent_color}}--tag-accent: {{accent_color}}{{/if}}"'),
+    `theme form changed: ${theme}`,
+  )
+})
+
+// ── (2) again, on the three directive values that used to be interpolated into `{{#foreach}}` and
+//    `{{> "…"}}` unvalidated (Story 4.2 review): the library's own grammar refuses each, by name.
+test('AD-36 (2) — a crafted repeat source, limit or partial name is refused, never interpolated', () => {
+  for (const src of [
+    `<ul><li data-repeat='posts}}<script>alert(1)</script>{{#foreach x'>x</li></ul>`,
+    `<ul><li data-repeat="posts" data-repeat-limit='3"}}<script>'>x</li></ul>`,
+    `<ul><li data-repeat="posts" data-partial='p"}}<script>'>x</li></ul>`,
+    `<ul><li data-repeat="posts" data-repeat-limit="abc">x</li></ul>`,
+    `<ul><li data-repeat="posts" data-repeat-limit="0">x</li></ul>`,
+  ]) {
+    assert.throws(() => renderTheme(doc(), src, {}), /AD-36/, `theme accepted ${src}`)
+    assert.throws(() => renderCanvas(doc(), src, { ghost: { posts: [{}] } }), /AD-36/, `canvas accepted ${src}`)
+  }
+  // ...and the legitimate case still works, with the limit carried and the partial extracted
+  const good = renderTheme(doc(), `<ul><li data-repeat="posts" data-repeat-limit="3" data-partial="card">x</li></ul>`, {})
+  assert.ok(good.template.includes('{{#foreach posts limit="3"}}'), good.template)
+  assert.ok(good.template.includes('{{> "card"}}'), good.template)
+  assert.equal(good.partials['card'], '<li>x</li>')
+  assert.throws(
+    () => renderTheme(doc(), `<ul><li data-repeat="posts" data-partial="card">x</li><li data-repeat="tags" data-partial="card">y</li></ul>`, {}),
+    /declared twice/,
+  )
+})
+
+// ── (1) on the one sink user MARKS introduce: the `a` mark's href, on both emitters ──
+test('AD-36 (1) — an `a` mark is scheme-checked, its rel is an allow-list, and the lock strips it', () => {
+  const schema = { body: { type: 'richtext', marks: ['a', 'strong'] } } as unknown as RenderInput['schema']
+  const link = (extra: object) => ({
+    body: { text: 'read this', marks: [{ start: 0, end: 4, mark: 'a', href: 'javascript:alert(1)', ...extra }] },
+  })
+  for (const render of [
+    (c: RenderInput['content']) => renderCanvas(doc(), '<p data-prop="body">x</p>', { content: c, schema }),
+    (c: RenderInput['content']) => renderTheme(doc(), '<p data-prop="body">x</p>', { content: c, schema }).template,
+  ]) {
+    assert.ok(render(link({})).includes('<a href="#">read</a>'), `a javascript: href survived a mark: ${render(link({}))}`)
+    const out = render(link({ href: 'https://ok.example/', newTab: true, rel: ['sponsored', 'evil'] }))
+    assert.ok(out.includes('<a href="https://ok.example/" target="_blank" rel="noreferrer sponsored">read</a>'), out)
+    const locked = render({ body: { ...link({}).body, plainText: true } })
+    assert.ok(!/<a/.test(locked) && locked.includes('read this'), `FR-Q3's lock did not strip the mark: ${locked}`)
+    const outOfRange = render({ body: { text: 'ab', marks: [{ start: 0, end: 9, mark: 'strong' }] } })
+    assert.ok(!/<strong/.test(outOfRange), `a mark past the end of the text was emitted: ${outOfRange}`)
+    const malformed = render({ body: { text: 'ab', marks: 'strong' as unknown as [] } })
+    assert.ok(malformed.includes('ab'), `a malformed mark list threw instead of rendering the text: ${malformed}`)
+  }
+})
+
+test('AD-36 (4) — a separator-valid but CSS-invalid colour falls back rather than being dropped', () => {
+  for (const bad of ['rgb(1/2/3)', 'rgb(1 2 3 4)', 'rgb(1,2,3,)', 'rgb(1,2)', 'hsl(1 2)', 'rgb(1, 2 3)']) {
+    assert.equal(safeCssColor(bad, '--accent'), 'var(--accent)', `accepted ${bad}`)
+  }
+  for (const good of ['rgb(1 2 3 / 50%)', 'rgb(1 2 3)', 'hsl(120deg 50% 50% / 0.5)', 'rgba(1, 2, 3, 0.5)']) {
+    assert.equal(safeCssColor(good, '--accent'), good, `refused ${good}`)
+  }
 })
 
 // ── what already held, re-asserted so a future change cannot quietly undo it ──
