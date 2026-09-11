@@ -260,7 +260,7 @@ invisible on the live site**. It never fired because nothing guarded inside a ne
 now. The unwrap moved inside the substitution loop, with the executed evidence in the comment above
 it and a regression test in `agreement.test.ts`.
 
-**Two deviations from the task list, both forced by AD-1 and neither weakening a check.**
+**Three deviations from the task list, none of them weakening a check.**
 
 1. **`src/tokens.test.ts` cannot read a file.** The task says it asserts every `var(--…)` in
    `reference-design/style.css` names a declared property — but AD-1 bans `node:fs` in a core
@@ -278,6 +278,14 @@ it and a regression test in `agreement.test.ts`.
    four members would undo AD-1's point. `src/jsdom.d.ts` declares exactly the surface the tests use
    and types the document as the runtime's own `RuntimeDocument`, so a test cannot hand the runtime
    more DOM than the runtime declares it takes.
+
+3. **The two proof rows could not be REPOINTED; they were removed and folded into one.** The task
+   says repoint them, but `tools/doc-audit.py`'s `BASES` does not walk `packages/`, so a row whose
+   path is `packages/section-runtime/src/agreement.test.ts` has nothing to check and the gate rejects
+   it. The `tools/stress/compile.js` row now names both new paths in its own prose, so `INDEX.md`
+   still tells a reader where the proofs live, and the gate stays green — but the two proofs are no
+   longer separately indexed. Widening `BASES` to `packages/` is its own change (it would pull in
+   every design's future `behaviour.js`) and is not made here.
 
 **`data-text` refuses.** It is not in Boundaries' *Never* list and not in the Execution task list
 either. The refusal is the reversible choice — a leak is not — and the partition test makes the
@@ -301,6 +309,19 @@ decision visible to the story that renders it.
   `spike-compiler/RETIRED.md`), which is never edited.
 - `python3 tools/doc-audit.py --check` -- expected: exits 0 (run twice; sub-tools regenerate on the
   first failure).
+
+**Re-verified independently at `28486205`, after the Dev commit, on Node 24.18.1** (standing rule 2
+— a result nobody re-ran is a report, not a result):
+
+| Command | Result |
+|---|---|
+| `pnpm check` | exit 0 — `section-runtime` 41/41, `test-vocabulary.mjs` 17/17 |
+| `cd tools/stress && node build.js` | 103/103 .hbs · 2380 elements · 201 links / 215 images / 86 headings · 943 CSS declarations · AD-34 leak assertions clean — identical to the baseline |
+| `cd tools/stress && node gate.js theme` | Ghost 5 via gscan 4.49.7: ERRORS 0 WARNINGS 0 · Ghost 6 via gscan 6.4.2: ERRORS 0 WARNINGS 0 — identical to the baseline |
+| `python3 tools/doc-audit.py --check` | PASS (twice; the first run regenerated, as its sub-tools do) |
+| `grep -rn "test-renderer-agreement\|test-ad36" --include=*.md --include=*.py .` | every remaining hit is a `record` document (`MEASUREMENTS.md`, `spike-compiler/RETIRED.md`, `reconcile-designs.md`) or a completed story's own spec — no live document still points at the old paths |
+| suppression scan over `packages/section-runtime` | no `eslint-disable`, `@ts-ignore`, `@ts-expect-error` or `@ts-nocheck` — AD-1 passes as the gate, not as a note |
+| negative control on the token-drift check | the extraction flags `var(--nope)` by name and correctly ignores `var(--local, 1px)`, so the matrix's last row fails when it should |
 
 **Manual checks (if no CLI):**
 - No real infrastructure is touched by this story: the runtime is pure by construction and holds no
