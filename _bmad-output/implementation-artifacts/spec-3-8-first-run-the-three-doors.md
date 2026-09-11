@@ -532,7 +532,7 @@ because CI deploys the fixes only on the push that closes this phase.
 | `tools/probe/run-verify-first-run.mjs` against the **patched local production build** | Supabase + the build | **24/24**, the two reverse-guard steps included: `/start` with a site **307 → /**, with a project **307 → /** |
 | Browser on the patched build: Blank canvas → Create | the build | sheet closed, doors gone, landed on `/` — the dashboard on the app host; **Projects carries `aria-current="page"` on `/start`** |
 | axe-core 4.12.1 over `/start` at 1440, 834, 390 on the patched build, with an `img` without `alt` as the positive control | the build | **zero violations** at all three; no sideways scrolling; the greyed door is a `BUTTON`, `aria-disabled`, `aria-describedby` its reason, in the Tab order; the control was reported |
-| `tools/probe/run-verify-first-run.mjs` against **app.inflozo.com** after CI deploys this commit | the deployed site | *recorded below when the deploy lands* |
+| `tools/probe/run-verify-first-run.mjs` against **app.inflozo.com** after CI deployed `48791072` (run `34558832932`: check, rls, deploy all green) | the deployed site | **24/24** — the same steps as the local build, on production: `/start` with a site **307 → /**, with a project **307 → /**, bare `/` with nothing **307 → /start**, every query string **200** |
 
 ## Spec Change Log
 
