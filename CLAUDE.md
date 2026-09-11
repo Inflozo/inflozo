@@ -193,7 +193,7 @@ category" — or derive it at generation time.
 ```bash
 python3 tools/doc-audit.py --check                       # documentation gate
 python3 tools/verify-design-pass.py                      # the rulings are in the export
-cd tools/stress && node test-ad36.js && node test-renderer-agreement.js
+cd tools/stress && node test-ad36.js && node test-renderer-agreement.js && node test-vocabulary.mjs
 ```
 
 The database proof is `architecture-.../RLS-TEST.sql` — run it against a PostgreSQL 17 container with

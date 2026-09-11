@@ -13,9 +13,14 @@ import tsParser from '@typescript-eslint/parser'
 // Membership is derived from the directory, never listed — a hardcoded list has gone stale
 // twice in this repo, and the three-package version of this constant already missed a fourth
 // package, every `.tsx`, and every `.js`: all of them linted with no ban at all (executed).
-// `library` is data only (AD-2) and is excluded rather than enumerated around.
+//
+// `library` used to be excluded WHOLE, because AD-2 makes it data only. Story 4.1 put source in it
+// (AD-34: "the rules are data in `packages/library`"), and a whole-package exclusion is a hole the
+// moment that happens: the contract both emitters read would have linted with no AD-1 ban at all.
+// The exclusion therefore names the DATA directories only — a design's `behaviour.js` legitimately
+// reaches `document`, and nothing else in the package may.
 const CORE = ['packages/*/**/*.{ts,tsx,mts,cts,js,mjs,cjs}']
-const NOT_CORE = ['packages/library/**']
+const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**']
 
 // Derived from the runtime, never a hand list — a hardcoded membership list has gone stale twice.
 const builtins = builtinModules.flatMap((m) => {

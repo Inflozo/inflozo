@@ -24,7 +24,16 @@ fallback.
 ### DW-1: `packages/library` declares no entry point, so the dependency arrow cannot resolve
 
 plain: The shared parts store has no way in yet, so no other part of the code can take anything out of it; the first story that needs to will build the door.
-status: open
+status: done 2026-09-11 (Story 4.1)
+resolution: Story 4.1 (2026-09-11) — `packages/library/package.json` now carries
+  `"exports": { ".": "./src/index.ts" }`, a `tsconfig.json`, `typecheck` and `test` scripts and the
+  two devDeps the other three packages carry, so `pnpm -r` stops skipping it. The entry shape is a
+  MODULE after all, not the data-file map this entry guessed at: AD-34 places the authoring rules —
+  the closed directive set, the allow-lists and the validator over them — in this package, and they
+  are shared with the compile gate, so there is code to export beside the data. AD-2 is unweakened:
+  a DESIGN is still four files plus two schemas and nothing imports one. The proof crosses the
+  boundary as this entry asked — `packages/section-runtime/src/index.test.ts` imports
+  `@inflozo/library` and reads `DIRECTIVES` and `BINDING_CONTEXTS`, and `pnpm check` is green.
 severity: medium
 origin: Story 1.1 review (2026-09-04)
 location: packages/library/package.json
@@ -2463,6 +2472,12 @@ plain: Each time the Ghost team releases a new version, Inflozo is meant to send
   10 and 11. Building the announcement now would be a box to type a message into with nothing behind it.
   So it waits for the story that first puts sections in front of customers.
 status: open
+resolution: Story 4.1 (2026-09-11) closed the BLOCKING half and nothing else. `ghostCompat`
+  { minVersion, helpers[], deprecatedAt? } now has a definition, a type and a validation rule in
+  `packages/library` and a worked example in `docs/section-authoring.md`, so FR-C5's compatibility
+  watch has a field to read — it had none, which is why DW-87 named it. The entry stays OPEN because
+  the other half is unchanged: the library still holds no design, so there is nothing to check and
+  nothing to broadcast about. Owner is still Story 9.1.
 severity: medium
 origin: Story 3.7 Create (2026-09-10) — the owner's ruling at Question 1, option 1
 owner: **Story 9.1** — A1 Headers' content model, stylesheet and designs #1-4, the first story that ships

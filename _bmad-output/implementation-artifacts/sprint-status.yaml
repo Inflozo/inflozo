@@ -71,8 +71,8 @@ development_status:
   3-9-the-deferred-work-sweep-at-the-end-of-epic-3: done
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-the-registry-format-and-the-annotated-html-authoring-vocabul: ready-for-dev
+  epic-4: in-progress
+  4-1-the-registry-format-and-the-annotated-html-authoring-vocabul: in-progress
   4-2-the-section-runtime-one-source-two-emitters-proven-to-agree: backlog
   4-3-the-ghost-helper-shim-and-its-contract-tests-against-recorde: backlog
   4-4-orbit-weekly-and-the-three-fixtures: backlog

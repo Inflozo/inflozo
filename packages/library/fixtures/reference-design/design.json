@@ -1,0 +1,33 @@
+{
+  "name": "Reference — every directive once",
+  "tier": "free",
+  "bindingContext": ["posts", "tags", "tag"],
+  "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
+  "controlSchema": [
+    { "name": "cols", "type": "stepper", "values": ["2", "3", "4"], "default": "3" },
+    { "name": "card", "type": "segmented", "values": ["flat", "outlined", "raised"], "default": "raised" },
+    { "name": "meta", "type": "named-select", "values": ["none", "date", "author-date"], "default": "author-date" },
+    { "name": "align", "type": "segmented", "values": ["start", "center"], "default": "start" },
+    { "name": "badge", "type": "toggle", "values": ["on", "off"], "default": "on" },
+    { "name": "rule", "type": "segmented", "values": ["none", "line"], "default": "none",
+      "disabledBy": { "control": "align", "whenValue": "center", "reason": "a centred head has no rule to sit under" } }
+  ],
+  "dataBindings": {
+    "latest": { "source": "posts", "filter": "featured:true", "limit": 9, "order": "published_at desc" }
+  },
+  "ghostCompat": {
+    "minVersion": "5.0.0",
+    "helpers": ["foreach", "get", "img_url", "date", "pagination", "t"]
+  },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "feed",
+    "containment": "none",
+    "ground": "surface",
+    "itemCount": "many",
+    "mediaPlacement": "top",
+    "emphasis": "the first card is flagged, and nothing else is emphasised"
+  }
+}

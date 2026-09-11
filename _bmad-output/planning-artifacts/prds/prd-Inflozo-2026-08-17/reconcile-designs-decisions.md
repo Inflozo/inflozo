@@ -1918,8 +1918,10 @@ a section on another page — and it would give a customer who wants the footer'
 differently no way to separate them at all. There is therefore no shared prop, no shared namespace to
 hang one on, and no cross-category carry; FR-D19 parks against the category union and nothing wider.
 - Targets: ✅ Story 4.1's spec (Always, Never, the Code Map and the ruling under `## Questions for the
-  owner`) · ⬜ `docs/section-authoring.md`, which states it as a rule of the content model (Story 4.1's
-  Dev run) · ✅ `epic-4-context.md`. **Deliberately not touched:** `reconcile-designs.md` — it is a
+  owner`) · ✅ `docs/section-authoring.md` §1, which states it as a rule of the content model and is
+  enforced in two places by `packages/library` — a `data-prop` naming a prop its category's union does
+  not declare is refused, and `assembleEntry` refuses a `content.json` from another category (Story
+  4.1's Dev run, 2026-09-11) · ✅ `epic-4-context.md`. **Deliberately not touched:** `reconcile-designs.md` — it is a
   `record` and its three asks stay as the history of what was open (standing rule 5); `prd.md` FR-G3,
   which already says `contentSchema` is the category's union and needed no amendment, only a decision
   that nothing widens it.

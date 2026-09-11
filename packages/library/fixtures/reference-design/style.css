@@ -1,0 +1,37 @@
+/* Flat, `var(--…)` only, consuming Style Pack custom properties. No nesting (forbidden despite
+   being Baseline — the emitted CSS must stay flat and hand-editable), no utility classes, and
+   explicitly outside any Tailwind processing the Next.js app adopts. Every control below selects
+   on its `data-` attribute on the section root (AD-3). */
+
+.ref {
+  background: var(--bg-surface);
+  padding-block: var(--space-section);
+  color: var(--text-body);
+}
+.ref[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.ref[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.ref[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
+.ref[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
+.ref[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
+
+.ref__grid { display: grid; gap: var(--space-gap); }
+.ref[data-cols="2"] .ref__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ref[data-cols="3"] .ref__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ref[data-cols="4"] .ref__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.ref[data-card="raised"] .ref__card { box-shadow: var(--shadow-card); border-radius: var(--radius-card); }
+.ref[data-card="outlined"] .ref__card { border: 1px solid var(--border-hairline); }
+.ref[data-card="flat"] .ref__card { background: none; }
+
+.ref[data-meta="none"] .ref__date { display: none; }
+.ref[data-align="center"] .ref__head { text-align: center; }
+.ref[data-badge="off"] .ref__flag { display: none; }
+.ref[data-rule="line"] .ref__head { border-block-end: 1px solid var(--border-hairline); }
+
+/* The one value a stylesheet cannot know when it is authored: the tag's own accent, set on the
+   element by `data-bind-style` (AD-3's carve-out). The stylesheet only READS the variable. */
+.ref__tag { border-inline-start: 3px solid var(--tag-accent, var(--border-hairline)); }
+.ref__note { border-inline-start: 3px solid var(--ref-accent, var(--border-hairline)); }
+
+@media (max-width: 834px) { .ref[data-cols="4"] .ref__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 390px) { .ref__grid { grid-template-columns: minmax(0, 1fr); } }

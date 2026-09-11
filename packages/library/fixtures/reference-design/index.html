@@ -1,0 +1,70 @@
+<!-- The reference design: every directive in the vocabulary, exactly once.
+     It is a FIXTURE, not a library entry. It lives outside `designs/` and carries no category id,
+     so nothing can read it as a design. It opens directly in a browser and renders as plain HTML,
+     which is most of why annotated HTML won (PRD §7.3). -->
+<section class="ref" data-bg="surface" data-spacing="comfortable" data-divider="line"
+         data-cols="3" data-card="raised" data-meta="author-date" data-align="start"
+         data-badge="on" data-rule="none"
+         data-module="reveal" data-needs="section-above">
+
+  <header class="ref__head">
+    <p class="ref__eyebrow" data-prop="eyebrow" data-empty="fallback">Issue 42</p>
+    <h2 class="ref__title" data-prop="title">Latest posts</h2>
+    <p class="ref__sub" data-prop="subtitle" data-empty="fallback">Everything we have published.</p>
+    <a class="ref__all" data-prop="cta.label" data-prop-attr="href:cta.url;title:cta.title">View all</a>
+    <button class="ref__search" type="button" data-ghost-search data-t="reference.search_open">Search</button>
+    <p class="ref__count" data-text="Read by {total_members} readers">Read by 12,000 readers</p>
+    <div class="ref__body" data-helper="content"></div>
+  </header>
+
+  <ul class="ref__logos">
+    <li class="ref__logo" data-items="logos">
+      <img class="ref__logo-img" data-prop-attr="src:logos[].src;alt:logos[].alt" src="/logo.svg" alt="">
+      <span class="ref__logo-name" data-prop="logos[].name">A partner</span>
+    </li>
+  </ul>
+
+  <div class="ref__grid">
+    <article class="ref__card" data-repeat="latest" data-repeat-limit="9" data-partial="reference-card">
+      <a class="ref__card-link" data-bind-attr="href:url">
+        <img class="ref__card-img" data-bind-attr="src:feature_image|img_url:m"
+             data-bind-srcset="feature_image|img_url" data-empty="hide" src="/placeholder.jpg" alt="">
+      </a>
+      <span class="ref__rank" data-index="number">1</span>
+      <span class="ref__flag" data-when="first" data-t="reference.editors_pick">Editors pick</span>
+      <ul class="ref__tags">
+        <li class="ref__tag" data-repeat="tags" data-repeat-limit="3"
+            data-bind-style="--tag-accent:accent_color">
+          <a class="ref__tag-link" data-bind-attr="href:url"><span data-bind="name">Topic</span></a>
+        </li>
+      </ul>
+      <h3 class="ref__card-title" data-bind="title">A sample post title</h3>
+      <p class="ref__excerpt" data-if="custom_excerpt" data-bind="custom_excerpt">The excerpt the author wrote.</p>
+      <p class="ref__excerpt-alt" data-else data-bind="excerpt">The excerpt Ghost generated.</p>
+      <time class="ref__date" data-bind="published_at|date:D MMM YYYY" data-empty="hide">14 Mar 2026</time>
+    </article>
+  </div>
+
+  <div class="ref__gate" data-members="anonymous">
+    <form class="ref__form" data-members-form="subscribe">
+      <label class="ref__label" for="ref-email" data-t="reference.email_label">Email address</label>
+      <input class="ref__input" id="ref-email" type="email" name="email" required
+             data-t-attr="aria-label:reference.email_label" placeholder="you@example.com">
+      <button class="ref__submit" type="submit" data-prop="submitLabel">Subscribe</button>
+    </form>
+    <noscript class="ref__noscript">Subscribing needs JavaScript. With it off, nothing happens.</noscript>
+  </div>
+  <p class="ref__thanks" data-members="paid" data-prop="paidNote">Thank you for subscribing.</p>
+
+  <div class="ref__tagline" data-target="tag.hbs">
+    <p class="ref__tag-desc" data-bind="tag.description" data-empty="hide">About this topic.</p>
+  </div>
+
+  <nav class="ref__pager" aria-label="Pagination">
+    <a class="ref__prev" data-pagination="prev" href="#">Newer</a>
+    <ol class="ref__numbers" data-pagination="numbers"></ol>
+    <a class="ref__next" data-pagination="next" href="#">Older</a>
+  </nav>
+
+  <p class="ref__note" style="--ref-accent: #2f6fed" data-prop="note" data-empty="fallback">Every directive, once.</p>
+</section>

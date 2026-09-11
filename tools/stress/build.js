@@ -238,7 +238,12 @@ const tGate = process.hrtime.bigint();
 const allFiles = walk(OUT);
 const hbsFiles = allFiles.filter((f) => f.endsWith('.hbs'));
 const leaks = [];
-const DIRECTIVE = /data-(repeat|bind|bind-attr|prop|prop-attr|partial|empty)\b/;
+// The set is DERIVED from packages/library, never restated (standing rule 4). The seven names
+// this line used to carry were the spike's, and they were stale the moment §7.3's gap table was
+// answered — the settled vocabulary is more than three times that. The three directives absent
+// from CONSUMED_DIRECTIVES survive on purpose: Portal and sodo-search read them on the live site.
+const { CONSUMED_DIRECTIVES } = require('../../packages/library/src/vocabulary.ts');
+const DIRECTIVE = new RegExp(`\\s(?:${CONSUMED_DIRECTIVES.join('|')})\\s*[=>]`);
 for (const f of textFiles) {
   const s = fs.readFileSync(f, 'utf8');
   if (DIRECTIVE.test(s)) leaks.push(`directive attribute survived in ${path.relative(OUT, f)}`);

@@ -2,7 +2,7 @@
 title: 'Story 4.1 — The registry format and the annotated-HTML authoring vocabulary'
 type: 'feature'
 created: '2026-09-11'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'cc325fe175e64fb00c9da73b9d7c568b8d2779b6'
 owner_test: none
 review_loop_iteration: 0
@@ -175,7 +175,7 @@ thing that was proven to work.
 
 **Execution:**
 
-- [ ] `docs/section-authoring.md` -- **write the deliverable.** Four parts: (1) the registry entry
+- [x] `docs/section-authoring.md` -- **write the deliverable.** Four parts: (1) the registry entry
       format, field by field, and the statement — absent from every document today — that an entry
       is **assembled** from the design's directory path, its `design.json`, its category's
       `content.json` and the four files, so "registry entry" and "`design.json`" are not the same
@@ -186,59 +186,59 @@ thing that was proven to work.
       (3) the directive vocabulary — every directive, its grammar, what each emitter does with it,
       and a worked example; (4) the refusals, each with the reason. Carry the zero-width-entity
       warning the design export's kits use, because a literal `{{ … }}` in an example renders empty.
-- [ ] `tools/doc-audit.py` -- one `DOCS` tuple for `docs/section-authoring.md`, status `live`, then
+- [x] `tools/doc-audit.py` -- one `DOCS` tuple for `docs/section-authoring.md`, status `live`, then
       `--generate` and `--check` twice.
-- [ ] `packages/library/package.json` -- add `exports`, `typecheck` and `test` scripts and the two
+- [x] `packages/library/package.json` -- add `exports`, `typecheck` and `test` scripts and the two
       devDeps, matching the other three packages. **Closes DW-1** — the three existing `workspace:*`
       arrows resolve, and `packages/section-runtime/src/index.test.ts` proves it with an import that
       crosses the boundary.
-- [ ] `packages/library/tsconfig.json` -- the same four lines the other packages carry.
-- [ ] `packages/library/src/vocabulary.ts` -- the contract as data, which is where AD-34 says it
+- [x] `packages/library/tsconfig.json` -- the same four lines the other packages carry.
+- [x] `packages/library/src/vocabulary.ts` -- the contract as data, which is where AD-34 says it
       belongs: the closed directive set, the bindable-attribute allow-list and its URL subset, the
       helper table with each helper's argument rule, the binding-path grammar, the safe-scheme rule,
       the `bindingContext` values, the `compileTarget` values and their refusal rules. Behaviour
       lifted unchanged from `tools/stress/compile.js`; the new directives added in the same shape.
-- [ ] `packages/library/src/registry.ts` -- the `SectionRegistryEntry`, `DesignJson` and
+- [x] `packages/library/src/registry.ts` -- the `SectionRegistryEntry`, `DesignJson` and
       `CategoryContent` types, plus the function that assembles an entry from a directory,
       a `design.json` and a `content.json` — including the mechanical `quickControls[]` recovery
       and the generation of `controlSchema` and `contentSchema` from the authored source. Plain
       `type` aliases and `const` objects; `erasableSyntaxOnly` forbids `enum`.
-- [ ] `packages/library/src/validate.ts` -- the validator, returning a list of failures rather than
+- [x] `packages/library/src/validate.ts` -- the validator, returning a list of failures rather than
       throwing on the first: every directive in the closed set, every value parsing under its
       grammar, every bound attribute allow-listed, every guard derived from a bound field, every
       inline token declared by its prop, every control attribute on the root matching
       `controlSchema` in both directions, the `style` carve-out, the `bindingContext` /
       `compileTarget` rules, and no `quickControls` hand-written.
-- [ ] `packages/library/src/index.ts` -- re-export the three modules; this is the entry `exports`
+- [x] `packages/library/src/index.ts` -- re-export the three modules; this is the entry `exports`
       points at.
-- [ ] `packages/library/fixtures/reference-design/` -- `index.html`, `style.css` and `design.json`
+- [x] `packages/library/fixtures/reference-design/` -- `index.html`, `style.css` and `design.json`
       exercising **every** directive once, plus `packages/library/fixtures/content.json`. Outside
       `designs/` and carrying no category id, so it can never be read as a library design.
-- [ ] `packages/library/src/validate.test.ts` -- the runnable check: the fixture validates clean, and
+- [x] `packages/library/src/validate.test.ts` -- the runnable check: the fixture validates clean, and
       every refusal in the I/O matrix fires — each asserted with its hostile case refused **and** its
       legitimate neighbour still accepted, so a validator that refuses everything cannot pass
       (AD-36's pattern, standing rule 2). Every input is an in-memory string: **a test in a core
       package cannot read a file**, because `node:fs` is banned there and the test-file exemption
       gives back only `node:test` and `node:assert` (`eslint.config.js:30-32`).
-- [ ] `tools/stress/sections.js` · `tools/stress/compile.js` -- retire `data-prop-attr2`: the one
+- [x] `tools/stress/sections.js` · `tools/stress/compile.js` -- retire `data-prop-attr2`: the one
       archetype that uses it takes the list form, and `compile.js:208`'s two-name loop drops to one.
       **Then re-run the harness's own gates** — the agreement test, the AD-36 test and the two-major
       gscan gate — and record that each returned what it returned before. Editing a control without
       re-running it turns the control into an assertion.
-- [ ] `tools/stress/test-vocabulary.mjs` + its `tools/doc-audit.py` catalogue row -- **the control**,
+- [x] `tools/stress/test-vocabulary.mjs` + its `tools/doc-audit.py` catalogue row -- **the control**,
       placed where the thing it controls lives: it imports `sections.js`'s eight archetypes and the
       new validator and asserts every archetype passes. It belongs here and not in the package for
       the reason above, and it joins the harness line CLAUDE.md already runs as a gate
       (`node test-ad36.js && node test-renderer-agreement.js`). `tools/stress/` is CommonJS while the
       packages are ESM, which is why the new file is `.mjs`.
-- [ ] `eslint.config.js` -- narrow `NOT_CORE` from `packages/library/**` to the data directories
+- [x] `eslint.config.js` -- narrow `NOT_CORE` from `packages/library/**` to the data directories
       (`designs/`, `fixtures/`), so the new source is purity-linted while a design's `behaviour.js`,
       which legitimately reaches `document`, is not.
-- [ ] `.../ARCHITECTURE-SPINE.md` -- amend **AD-2**'s Rule (the assembly statement, and AD-35's
+- [x] `.../ARCHITECTURE-SPINE.md` -- amend **AD-2**'s Rule (the assembly statement, and AD-35's
       `provisional` marker, which AD-2's field list omits) and **AD-34**'s leak assertion (the
       canonical directive set is now this story's set, not the seven names it lists). Grep the
       repository for the old seven-name set afterwards (standing rule 7).
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close **DW-1** with
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close **DW-1** with
       `status: done <date>` and a `resolution:` line. Leave DW-2 open (nothing in `apps/web` reads
       the library yet) and DW-87 open with a note that its blocking half — `ghostCompat` having no
       definition — is closed, while the library still holds no design to check.
@@ -395,6 +395,22 @@ than silently skipping it, and re-runs the sheet below.
   --exclude-dir=.git .` -- expected: exactly one hit, this line. It returns two today — AD-34 `:367`
   and this line — and AD-34 is the one the story amends (standing rule 7: the old seven-name list is
   exactly the thing a propagation list misses).
+
+**Recorded — the Dev run, 2026-09-11, Node 24.18.1.** The harness's own gates returned exactly what
+they returned before the `data-prop-attr2` rewrite, which is what makes the control still a control
+(standing rule 2). Captured before the edit and again after:
+
+| Gate | Before | After |
+|---|---|---|
+| `node test-ad36.js` | 13 checks passed | 13 checks passed |
+| `node test-renderer-agreement.js` | 8 checks passed | 8 checks passed |
+| `node build.js` — FR-J17 proxy | 103/103 .hbs · 2380 elements · 201 links / 215 images / 86 headings · 943 CSS declarations | identical |
+| `node build.js` — AD-34 leak assertions | clean | clean |
+| `node gate.js theme` | Ghost 5 via gscan 4.49.7: 0/0 · Ghost 6 via gscan 6.4.2: 0/0 | identical |
+| `node test-vocabulary.mjs` | — (new) | 13 checks passed; all eight archetypes and the on-disk fixture validate clean |
+| `pnpm check` | — | exit 0, `packages/library` among the packages for the first time (26 new tests) |
+| `python3 tools/doc-audit.py --check` | — | PASS, twice |
+| the standing-rule-7 grep for the old seven-name directive list | 2 hits (AD-34 and the spec's own line) | 1 hit (the spec's own line) |
 
 **Manual checks:**
 - `docs/section-authoring.md` opens with every §7.3 construct present — walk the gap table row by

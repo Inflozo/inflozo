@@ -163,13 +163,18 @@ function emitBindings(scope, tokens) {
     if (guard === 'hide') wrapGuard(el, spec.split('|')[0], tokens);
   }
   for (const el of all('[data-bind-attr]')) {
-    const [rawAttr, spec] = splitFirst(el.getAttribute('data-bind-attr'), ':');
-    const attr = assertBindableAttr(rawAttr);           // AD-36 (3)
-    const expr = bindExpr(spec);
+    const entries = el.getAttribute('data-bind-attr').split(';').filter((e) => e.trim() !== '');
     const guard = el.getAttribute('data-empty');
-    el.setAttribute(attr, tokens.put(expr));
+    let first;
+    for (const entry of entries) {
+      const [rawAttr, spec] = splitFirst(entry.trim(), ':');
+      const attr = assertBindableAttr(rawAttr);         // AD-36 (3)
+      el.setAttribute(attr, tokens.put(bindExpr(spec)));
+      if (first === undefined) first = spec;
+    }
     el.removeAttribute('data-bind-attr'); el.removeAttribute('data-empty');
-    if (guard === 'hide') wrapGuard(el, spec.split('|')[0], tokens);
+    // the PATH of the FIRST binding, not the built expression -- see wrapGuard.
+    if (guard === 'hide' && first !== undefined) wrapGuard(el, first.split('|')[0], tokens);
   }
 }
 
@@ -205,9 +210,14 @@ function applyProps(scope, content, users) {
     el.textContent = v == null ? el.textContent : (users ? users.put(v) : String(v));
     el.removeAttribute('data-prop'); el.removeAttribute('data-empty');
   }
-  for (const a of ['data-prop-attr', 'data-prop-attr2']) {
-    for (const el of all(`[${a}]`)) {
-      const [rawAttr, path] = splitFirst(el.getAttribute(a), ':');
+  // ONE attribute, a semicolon-separated LIST. `data-prop-attr2` is retired (Story 4.1): it was
+  // never normative -- FR-G3 and 7.3 name eight directives and it was not among them, and it
+  // existed only because an HTML attribute cannot repeat. A numbered wart is not a thing to write
+  // 466 designs in.
+  for (const el of all('[data-prop-attr]')) {
+    for (const entry of el.getAttribute('data-prop-attr').split(';')) {
+      if (entry.trim() === '') continue;
+      const [rawAttr, path] = splitFirst(entry.trim(), ':');
       const attr = assertBindableAttr(rawAttr);         // AD-36 (3)
       const v = get(content, path);
       // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Doing it here
@@ -219,8 +229,8 @@ function applyProps(scope, content, users) {
         const safe = URL_ATTRS.has(attr) ? safeUrl(v) : v;
         el.setAttribute(attr, users ? users.put(safe) : String(safe));
       }
-      el.removeAttribute(a);
     }
+    el.removeAttribute('data-prop-attr');
   }
   for (const el of all('[data-module]')) el.removeAttribute('data-module');
 }
@@ -352,14 +362,18 @@ function applyCanvasBindings(scope, ctx) {
     el.textContent = v;
   }
   for (const el of all('[data-bind-attr]')) {
-    const [rawAttr, spec] = splitFirst(el.getAttribute('data-bind-attr'), ':');
-    const attr = assertBindableAttr(rawAttr);        // AD-36 (3), both sides
-    const v = bindValue(spec, ctx);
+    const entries = el.getAttribute('data-bind-attr').split(';').filter((e) => e.trim() !== '');
     const guard = el.getAttribute('data-empty');
     el.removeAttribute('data-bind-attr'); el.removeAttribute('data-empty');
-    if (v == null) { if (guard === 'hide') el.remove(); continue; }
-    // AD-36 (1) on the canvas too: a javascript: URL here runs on Inflozo's own origin.
-    el.setAttribute(attr, URL_ATTRS.has(attr) ? safeUrl(v) : v);
+    for (const entry of entries) {
+      const [rawAttr, spec] = splitFirst(entry.trim(), ':');
+      const attr = assertBindableAttr(rawAttr);      // AD-36 (3), both sides
+      const v = bindValue(spec, ctx);
+      // FR-H8: the guard is decided by the FIRST binding, matching the theme path's single {{#if}}
+      if (v == null) { if (entry === entries[0] && guard === 'hide') el.remove(); break; }
+      // AD-36 (1) on the canvas too: a javascript: URL here runs on Inflozo's own origin.
+      el.setAttribute(attr, URL_ATTRS.has(attr) ? safeUrl(v) : v);
+    }
   }
   for (const el of all('[data-module]')) el.removeAttribute('data-module');
 }

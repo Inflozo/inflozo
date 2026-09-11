@@ -133,7 +133,7 @@ const A = {
   <h2 class="gal__title" data-prop="title">Gallery</h2>
   <div class="gal__grid">
     ${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<figure class="gal__fig">
-      <img class="gal__img" data-prop-attr="src:img${n}.src" src="/g${n}.jpg" alt="" data-prop-attr2="alt:img${n}.alt">
+      <img class="gal__img" data-prop-attr="src:img${n}.src;alt:img${n}.alt" src="/g${n}.jpg" alt="">
       <figcaption class="gal__cap" data-prop="img${n}.caption" data-empty="fallback">Caption ${n}</figcaption>
     </figure>`).join('\n    ')}
   </div>

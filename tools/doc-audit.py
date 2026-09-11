@@ -234,6 +234,14 @@ DOCS = [
   'Runs the gscan version each Ghost major actually BUNDLES — 4.49.7 for Ghost 5, 6.4.2 for Ghost 6. '
   'Running one gscan twice with different flags looks equivalent and is not.'),
  ('tools/stress/sections.js', 'tool', 'Fixture sections', 'The annotated HTML the fixture compiles.'),
+ ('tools/stress/test-vocabulary.mjs', 'tool', 'Proof the vocabulary describes what was executed',
+  "Story 4.1's control. Runs packages/library's validator over sections.js's eight EXECUTED "
+  'archetypes and over the on-disk reference fixture: if the settled grammar cannot describe the '
+  'sections that were compiled and gated for four rounds, it does not describe the thing that was '
+  'proven to work. It lives here and not in the package because a test in a core package cannot '
+  'read a file (AD-1 bans node:fs there), which is also what makes it the place the in-memory '
+  'reference markup and the on-disk fixture are checked against each other. .mjs because '
+  'tools/stress is CommonJS and the packages are ESM.'),
  ('tools/probe/check-access.py', 'tool', 'Credential check',
   'Verifies every live credential works. Prints verdicts only — it has no code path that can reach '
   'a secret, written that way after two keys leaked into a transcript.'),
@@ -786,6 +794,16 @@ DOCS = [
   'phase, review on the real infrastructure, every question in plain English with options, the owner '
   'tests every screen himself, the story board is the tracker — plus where things are and the known '
   'pitfalls. Edit the block, never the skills; the numbers in it cite reconcile-designs-decisions.md.'),
+ ('docs/section-authoring.md', 'live', 'Authoring a section — the registry format and the directive vocabulary',
+  'FR-G3\'s "documented deliverable", settled in Story 4.1 and binding on every design E9-E11 '
+  'authors. Four parts: the registry entry and the statement that it is ASSEMBLED from the design '
+  'directory, its design.json, its category content.json and the four files (so "registry entry" '
+  'and "design.json" are different lists); the two authored files with a worked example of each, '
+  'carrying R-102 as a rule of the content model; every directive with its grammar, what each '
+  'emitter does with it and an example, walking PRD 7.3\'s gap table row by row including the '
+  'struck row 8 and the five exit constructs; and every refusal with its reason. The contract '
+  'itself is data in packages/library/src (AD-34), and the eight executed archetypes are its '
+  'control - tools/stress/test-vocabulary.mjs.'),
  ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds the development-loop rulings',
   'The override BMAD merges into bmad-build at run time: states the four rules before the first plan '
   "step, requires the spec's three owner-facing sections and `owner_test: pending` for any story with a "
