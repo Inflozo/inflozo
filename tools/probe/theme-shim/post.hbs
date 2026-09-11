@@ -1,0 +1,61 @@
+{{!< default}}
+{{!--
+  Template two: the post-scoped half of FR-H5. `{{excerpt}}`, `{{reading_time}}`, `{{custom_excerpt}}`,
+  `{{tags}}`, `{{authors}}` and the post's own `{{date}}` are reachable only from inside {{#post}},
+  which is exactly why a one-template probe could not have recorded them.
+--}}
+{{#post}}
+<pre id="probe">
+POST|slug=[{{slug}}]
+POST|id=[{{id}}]
+POST|title=[{{title}}]
+POST|url=[{{url}}]
+POST|url_absolute=[{{url absolute="true"}}]
+POST|feature_image=[{{feature_image}}]
+POST|feature_image_alt=[{{feature_image_alt}}]
+POST|visibility=[{{visibility}}]
+POST|access=[{{access}}]
+POST|featured=[{{featured}}]
+POST|comment_count=[{{comment_count}}]
+POST|post_class=[{{post_class}}]
+
+EXCERPT|excerpt=[{{excerpt}}]
+EXCERPT|excerpt_words_10=[{{excerpt words="10"}}]
+EXCERPT|excerpt_characters_40=[{{excerpt characters="40"}}]
+EXCERPT|custom_excerpt=[{{custom_excerpt}}]
+
+READ|reading_time=[{{reading_time}}]
+READ|reading_time_minute=[{{reading_time minute="1 min" minutes="% mins"}}]
+
+DATE|site_tz_iso=[{{date published_at format="YYYY-MM-DDTHH:mm:ssZ"}}]
+DATE|utc_iso=[{{date published_at format="YYYY-MM-DDTHH:mm:ssZ" timezone="UTC"}}]
+DATE|utc_d_mmm_yyyy=[{{date published_at format="D MMM YYYY" timezone="UTC"}}]
+DATE|default=[{{date published_at}}]
+DATE|d_mmm_yyyy=[{{date published_at format="D MMM YYYY"}}]
+DATE|yyyy_mm_dd=[{{date published_at format="YYYY-MM-DD"}}]
+DATE|mmmm_d_yyyy=[{{date published_at format="MMMM D, YYYY"}}]
+DATE|yy=[{{date published_at format="YY"}}]
+DATE|dd=[{{date published_at format="DD"}}]
+DATE|timeago=[{{date published_at timeago="true"}}]
+
+TAGS|tags=[{{tags}}]
+TAGS|tags_plain=[{{tags autolink="false"}}]
+TAGS|tags_sep=[{{tags separator=" / " autolink="false"}}]
+TAGS|primary_tag=[{{primary_tag.name}}]
+TAGS|primary_tag_slug=[{{primary_tag.slug}}]
+TAGS|primary_tag_accent=[{{primary_tag.accent_color}}]
+
+AUTHORS|authors=[{{authors}}]
+AUTHORS|authors_plain=[{{authors autolink="false"}}]
+AUTHORS|primary_author=[{{primary_author.name}}]
+AUTHORS|primary_author_url=[{{primary_author.url}}]
+AUTHORS|primary_author_image=[{{primary_author.profile_image}}]
+
+MATCH|visibility_public=[{{#match visibility "public"}}YES{{else}}NO{{/match}}]
+TRUTHY|is_post=[{{#is "post"}}YES{{else}}NO{{/is}}]
+
+__IMG_URL_BLOCK__
+</pre>
+<pre id="raw-content">{{content}}</pre>
+<pre id="raw-tags">{{tags}}</pre>
+{{/post}}

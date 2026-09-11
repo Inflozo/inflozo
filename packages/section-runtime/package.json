@@ -12,6 +12,7 @@
     "test": "node --test 'src/**/*.test.ts'"
   },
   "dependencies": {
+    "@inflozo/ghost-shim": "workspace:*",
     "@inflozo/library": "workspace:*"
   },
   "devDependencies": {

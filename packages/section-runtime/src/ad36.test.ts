@@ -10,7 +10,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
-import { safeCssColor, safeUrl } from '@inflozo/library'
+import { IMAGE_SIZES, safeCssColor, safeUrl } from '@inflozo/library'
 import { assertBindableAttr, bindExpr, renderCanvas, renderTheme } from './index.ts'
 import type { RenderInput } from './index.ts'
 
@@ -61,7 +61,7 @@ test('ordinary and relative links are untouched', () => {
 // ── (2) a design author breaks out of a helper argument into raw theme text ──────
 // Round 4:  size:800"}}<script>alert(1)</script>{{"  ->  a live <script> in the emitted .hbs
 test('a crafted helper argument is refused at compile time', () => {
-  const attack = 'src:featureImage|img_url:800"}}<script>alert(1)</scr' + 'ipt>{{"'
+  const attack = 'src:featureImage|img_url:m"}}<script>alert(1)</scr' + 'ipt>{{"'
   assert.throws(
     () => compile(`<img data-bind-attr='${attack}'>`),
     /AD-36/,
@@ -70,13 +70,37 @@ test('a crafted helper argument is refused at compile time', () => {
 })
 
 test('quote-in-arg, brace-in-path and unknown-helper are all refused', () => {
-  assert.throws(() => bindExpr('a|img_url:8"x'), /AD-36/, 'a quote in the arg must be refused')
+  assert.throws(() => bindExpr('a|img_url:m"x'), /AD-36/, 'a quote in the arg must be refused')
   assert.throws(() => bindExpr('a}}{{b'), /AD-36/, 'a path containing braces must be refused')
   assert.throws(() => bindExpr('a|nosuch:1'), /AD-36/, 'an unknown helper must be refused')
 })
 
+// ── Story 4.3: `img_url:800` is not a looseness, it is a live defect ────────────
+// Ghost generates a rendition per declared `image_sizes` key and returns the ORIGINAL for anything
+// else, reporting nothing — so a 4000px photograph serves behind a 300px card on the customer's
+// site. The grammar therefore narrows to FR-J2's five keys, and the refusal NAMES them, because the
+// failure it prevents is invisible. `800` was a width, and a width was never a key.
+test('a size that is not an image_sizes key is refused, naming the five keys', () => {
+  for (const bad of ['800', '1600', 'medium', 'XL']) {
+    assert.throws(
+      () => bindExpr(`feature_image|img_url:${bad}`),
+      (e: unknown) => {
+        const m = (e as Error).message
+        assert.match(m, /AD-36/)
+        for (const k of Object.keys(IMAGE_SIZES)) assert.ok(m.includes(k), `the refusal must name "${k}": ${m}`)
+        return true
+      },
+      `img_url:${bad} must be refused — Ghost has no rendition for it and says nothing`,
+    )
+  }
+  // and the legitimate case still works — every key, through the same parse (AD-36's paired test)
+  for (const k of Object.keys(IMAGE_SIZES)) {
+    assert.equal(bindExpr(`feature_image|img_url:${k}`), `{{img_url feature_image size="${k}"}}`)
+  }
+})
+
 test('the legitimate binding vocabulary is unchanged', () => {
-  assert.equal(bindExpr('featureImage|img_url:800'), '{{img_url featureImage size="800"}}')
+  assert.equal(bindExpr('featureImage|img_url:m'), '{{img_url featureImage size="m"}}')
   assert.equal(bindExpr('publishedAt|date:YYYY'), '{{date publishedAt format="YYYY"}}')
   assert.equal(bindExpr('post.title'), '{{post.title}}')
   assert.equal(bindExpr('@site.logo'), '{{@site.logo}}')
@@ -226,7 +250,7 @@ test('a date-helper text binding guards on the field, not on "format"', () => {
 })
 
 test('an img_url attribute binding still guards on the field', () => {
-  const img = compile('<img data-bind-attr="src:feature_image|img_url:800" data-empty="hide">')
+  const img = compile('<img data-bind-attr="src:feature_image|img_url:m" data-empty="hide">')
   assert.ok(/\{\{#if feature_image\}\}/.test(img), `attribute guard regressed: ${img}`)
 })
 

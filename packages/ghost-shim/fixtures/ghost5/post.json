@@ -1,0 +1,156 @@
+{
+  "captured": "2026-09-11",
+  "command": "python3 tools/probe/record-shim.py",
+  "ghost_major": "5",
+  "ghost_version": "5.130",
+  "http": 200,
+  "image_sizes": {
+    "l": 1200,
+    "m": 750,
+    "s": 400,
+    "xl": 2000,
+    "xs": 150
+  },
+  "input": {
+    "author": {
+      "bio": "Writes about systems and the long tail of maintenance.",
+      "cover_image": null,
+      "name": "Priya Raman",
+      "profile_image": null,
+      "slug": "priya-raman",
+      "url": "https://ghost5.inflozo.com/author/priya-raman/",
+      "website": null
+    },
+    "members": {
+      "comped": 0,
+      "free": 57,
+      "paid": 0,
+      "total": 57
+    },
+    "post": {
+      "access": true,
+      "created_at": "2026-08-20T08:08:47.000+00:00",
+      "custom_excerpt": null,
+      "excerpt": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for A brief history of the sidebar",
+      "featured": false,
+      "id": "6a86b60f6444934864da331b",
+      "published_at": "2025-07-18T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "a-brief-history-of-the-sidebar",
+      "title": "A brief history of the sidebar",
+      "updated_at": "2026-08-20T08:08:47.000+00:00",
+      "url": "https://ghost5.inflozo.com/a-brief-history-of-the-sidebar/",
+      "visibility": "public"
+    },
+    "post_authors": [
+      {
+        "name": "Umang",
+        "profile_image": null,
+        "slug": "umang",
+        "url": "https://ghost5.inflozo.com/author/umang/"
+      }
+    ],
+    "post_tags": [
+      {
+        "accent_color": null,
+        "name": "Systems",
+        "slug": "systems",
+        "url": "https://ghost5.inflozo.com/tag/systems/",
+        "visibility": "public"
+      }
+    ],
+    "tag": {
+      "accent_color": null,
+      "description": null,
+      "feature_image": null,
+      "name": "Archive",
+      "slug": "archive",
+      "url": "https://ghost5.inflozo.com/tag/archive/",
+      "visibility": "public"
+    }
+  },
+  "note": "AD-23: every Ghost fact in this repository enters here. Nothing is written against a paraphrase of this file and no helper is implemented before its recording exists.",
+  "path": "/a-brief-history-of-the-sidebar/",
+  "raw": {
+    "content": {
+      "head": "<p>A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt ",
+      "length": 328
+    },
+    "tags": "<a href=\"/tag/systems/\">Systems</a>"
+  },
+  "site": "https://ghost5.inflozo.com",
+  "template": "post",
+  "uploaded_image": "https://ghost5.inflozo.com/content/images/2026/09/inflozo-shim-probe-5.png",
+  "values": {
+    "AUTHORS": {
+      "authors": "<a href=\"/author/umang/\">Umang</a>",
+      "authors_plain": "Umang",
+      "primary_author": "Umang",
+      "primary_author_image": "",
+      "primary_author_url": "https://ghost5.inflozo.com/author/umang/"
+    },
+    "DATE": {
+      "d_mmm_yyyy": "18 Jul 2025",
+      "dd": "18",
+      "default": "Jul 18, 2025",
+      "mmmm_d_yyyy": "July 18, 2025",
+      "site_tz_iso": "2025-07-18T12:00:00+00:00",
+      "timeago": "a year ago",
+      "utc_d_mmm_yyyy": "18 Jul 2025",
+      "utc_iso": "2025-07-18T12:00:00+00:00",
+      "yy": "25",
+      "yyyy_mm_dd": "2025-07-18"
+    },
+    "EXCERPT": {
+      "custom_excerpt": "",
+      "excerpt": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "excerpt_characters_40": "A brief history of the sidebar. This fix",
+      "excerpt_words_10": "A brief history of the sidebar. This fixture post exists"
+    },
+    "IMG": {
+      "feature_absolute": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_l": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_m": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_nosize": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_notakey": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_s": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_webp": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_xl": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_xs": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
+    },
+    "MATCH": {
+      "visibility_public": "YES"
+    },
+    "POST": {
+      "access": "true",
+      "comment_count": "<script\n    data-ghost-comment-count=\"6a86b60f6444934864da331b\"\n    data-ghost-comment-count-empty=\"\"\n    data-ghost-comment-count-singular=\"comment\"\n    data-ghost-comment-count-plural=\"comments\"\n    data-ghost-comment-count-tag=\"span\"\n    data-ghost-comment-count-class-name=\"\"\n    data-ghost-comment-count-autowrap=\"true\"\n>\n</script>",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for A brief history of the sidebar",
+      "featured": "false",
+      "id": "6a86b60f6444934864da331b",
+      "post_class": "post tag-systems",
+      "slug": "a-brief-history-of-the-sidebar",
+      "title": "A brief history of the sidebar",
+      "url": "/a-brief-history-of-the-sidebar/",
+      "url_absolute": "https://ghost5.inflozo.com/a-brief-history-of-the-sidebar/",
+      "visibility": "public"
+    },
+    "READ": {
+      "reading_time": "1 min read",
+      "reading_time_minute": "1 min"
+    },
+    "TAGS": {
+      "primary_tag": "Systems",
+      "primary_tag_accent": "",
+      "primary_tag_slug": "systems",
+      "tags": "<a href=\"/tag/systems/\">Systems</a>",
+      "tags_plain": "Systems",
+      "tags_sep": "Systems"
+    },
+    "TRUTHY": {
+      "is_post": "YES"
+    }
+  }
+}

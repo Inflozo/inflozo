@@ -1,0 +1,2 @@
+/* the probe theme's only asset — it exists so {{asset}} has something real to version */
+body { font-family: system-ui, sans-serif; }

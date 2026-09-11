@@ -24,7 +24,9 @@ import { JSDOM } from 'jsdom'
 import {
   CONSUMED_DIRECTIVES,
   CONSUMED_DIRECTIVE_RE,
+  IMAGE_SIZES,
 } from '@inflozo/library'
+import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
 import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, renderCanvas, renderTheme } from './index.ts'
 import type { RenderInput, RuntimeElement } from './index.ts'
@@ -35,8 +37,8 @@ const doc = () => new JSDOM('<body></body>').window.document
 //   - strip Handlebars BLOCKS ({{#foreach}}, {{#if}}, {{else}}, {{/…}}): they wrap elements and have
 //     no canvas counterpart by design — leaving them in would compare the emitters' differences.
 //   - collapse every remaining INLINE mustache to a quote-free token X. The theme legitimately emits
-//     `src="{{img_url feature_image size="800"}}"` — valid Handlebars that gscan passes 0/0, but NOT
-//     valid HTML, so a raw parse mistakes the inner `size="800"` for a stray attribute. Canvas values
+//     `src="{{img_url feature_image size="m"}}"` — valid Handlebars that gscan passes 0/0, but NOT
+//     valid HTML, so a raw parse mistakes the inner `size="m"` for a stray attribute. Canvas values
 //     carry no mustaches, so this is a no-op there. AD-5's user braces are numeric entities
 //     (`&#123;`), never `{{`, so they are untouched.
 const htmlSafe = (html: string) =>
@@ -120,7 +122,7 @@ test('AD-3 control attributes survive identically on both emitters', () => {
 //    emits one body inside {{#foreach}}, so one row is the honest comparison. ──
 const feedSrc = `<section class="feed" data-cols="three">
      <article class="card" data-repeat="posts" data-repeat-limit="3">
-       <img class="card__img" data-bind-attr="src:feature_image|img_url:800" data-empty="hide">
+       <img class="card__img" data-bind-attr="src:feature_image|img_url:m" data-empty="hide">
        <h2 class="card__title" data-bind="title">t</h2>
        <time class="card__date" data-bind="published_at|date:MMM DD, YYYY">d</time>
        <a class="card__link" data-bind-attr="href:url">go</a>
@@ -194,7 +196,7 @@ test('AD-36 — the URL scheme check runs on both emitters, not just the theme',
 // ── FR-H8's guard: absent data removes the element on the canvas and wraps it in {{#if}} on the
 //    theme. Different mechanisms, same user-visible outcome — which is what agreement means here. ──
 test("FR-H8 — an empty media binding hides the element on both, by each emitter's own mechanism", () => {
-  const src = `<section class="c"><img class="m" data-bind-attr="src:feature_image|img_url:800" data-empty="hide"><h2 class="t" data-bind="title">t</h2></section>`
+  const src = `<section class="c"><img class="m" data-bind-attr="src:feature_image|img_url:m" data-empty="hide"><h2 class="t" data-bind="title">t</h2></section>`
   const { canvas } = bothWays(src, { ghost: { title: 'Only a title' } }) // no feature_image
   assert.ok(!/<img/.test(canvas), `canvas kept a media element with no data: ${canvas}`)
   assert.ok(/Only a title/.test(canvas), `canvas lost the sibling that DOES have data: ${canvas}`)
@@ -290,9 +292,9 @@ test("FR-H8 — the guard is always present, and defaults by kind", () => {
 
   // media defaults to `hide` because `src` is a URL attribute, and the ELEMENT is guarded, never
   // the attribute (an unguarded srcset renders a malformed relative URL and live 404s)
-  const media = renderTheme(doc(), `<img data-bind-attr="src:feature_image|img_url:800">`, {}).template
+  const media = renderTheme(doc(), `<img data-bind-attr="src:feature_image|img_url:m">`, {}).template
   assert.ok(/\{\{#if feature_image\}\}/.test(media), `media did not default to hide: ${media}`)
-  assert.ok(/src="\{\{img_url feature_image size="800"\}\}"/.test(media), `the attribute was guarded: ${media}`)
+  assert.ok(/src="\{\{img_url feature_image size="m"\}\}"/.test(media), `the attribute was guarded: ${media}`)
 })
 
 test('FR-H8 — the guard is the bound FIELD, never a helper argument', () => {
@@ -353,6 +355,247 @@ test('a guard inside a nested repeat is not left wrapped in an HTML comment', ()
   assert.ok(/\{\{#if url\}\}<a/.test(theme), `the nested guard is not live Handlebars: ${theme}`)
 })
 
+// ═══ Story 4.3 — the three directives the shim owns, and the {{#get}} repeat ═══
+//
+// The node-by-node proof extended, with the two intended differences still asserted POSITIVELY so
+// nobody can "fix" them into agreement. One new kind of difference appears here and is named: a
+// BARE HELPER whose output is Ghost's own markup — `{{navigation}}`, `{{content}}`, `{{comments}}`
+// — has a subtree on the canvas and a single mustache in the theme. That is NFR-6(c3)'s exclusion
+// region arriving inside the agreement proof: Ghost emits that markup and no theme can predict it,
+// so the comparison stops at the element and the helper itself is asserted on each side instead.
+
+/** `agree()`, with the CHILDREN of every element carrying `class="ghost-own"` removed first. Used
+ *  only for the bare helpers that render Ghost's own markup; everything else compares whole. */
+function agreeOutsideGhostMarkup(src: string, input: RenderInput = {}) {
+  const strip = (html: string) => {
+    const body = new JSDOM(`<body>${html}</body>`).window.document.body
+    for (const el of body.querySelectorAll('.ghost-own')) el.textContent = ''
+    return body.innerHTML
+  }
+  const canvas = renderCanvas(doc(), src, input)
+  const theme = renderTheme(doc(), src, input).template
+  assert.deepEqual(
+    skeleton(strip(htmlSafe(canvas))),
+    skeleton(strip(htmlSafe(theme))),
+    'RENDERERS DISAGREE outside the Ghost-owned subtree',
+  )
+  return { canvas, theme }
+}
+
+test('data-bind-srcset — one candidate per image_sizes key on both emitters, from the one map', () => {
+  const src = `<section class="c"><img class="i" data-bind-srcset="feature_image|img_url" src="/ph.jpg" alt=""></section>`
+  const hosted = 'https://site.example/content/images/2026/01/a.jpg'
+  const { canvas, theme } = agree(src, { ghost: { feature_image: hosted }, site: SITE })
+
+  // THE DIFFERENCE (2), positively: the theme is mustaches, the canvas is the recorded URL shape.
+  for (const [key, width] of Object.entries(IMAGE_SIZES)) {
+    assert.ok(
+      theme.includes(`{{img_url feature_image size="${key}"}} ${width}w`),
+      `the theme is missing the ${key} candidate: ${theme}`,
+    )
+    // NOT normalised: the canvas candidate is the sized URL, character for character, and the
+    // width descriptor beside it comes from the same map.
+    assert.ok(
+      canvas.includes(`${imgUrl(hosted, key, { siteUrl: SITE?.url, absolute: true })} ${width}w`),
+      `the canvas is missing the ${key} candidate: ${canvas}`,
+    )
+  }
+  // FR-J5: `img_url` emits no srcset of its own, so nothing here may have asked it to
+  assert.ok(!/img_url[^}]*srcset/.test(theme), theme)
+  // and the canvas never shows the ORIGINAL where the site serves a rendition
+  assert.ok(!canvas.includes(`${hosted} `), `the canvas passed the original through: ${canvas}`)
+})
+
+test('FR-H8 — an empty srcset binding hides the ELEMENT, and the guard encloses it', () => {
+  const src = `<img class="i" data-bind-srcset="feature_image|img_url">`
+  const theme = renderTheme(doc(), src, { site: SITE }).template
+  const canvas = renderCanvas(doc(), src, { ghost: {}, site: SITE })
+  assert.match(theme, /\{\{#if feature_image\}\}\s*<img/, `the guard does not enclose the element: ${theme}`)
+  assert.equal(canvas, '', `an empty srcset binding must hide the element: ${canvas}`)
+  // an unguarded srcset renders a malformed attribute the browser resolves as a relative URL —
+  // live 404s on the customer's site — so the attribute is never the thing that is guarded
+  assert.ok(!/srcset="\{\{#if/.test(theme), `the ATTRIBUTE was guarded instead of the element: ${theme}`)
+})
+
+test('data-helper — a scalar helper agrees exactly, mustache against resolved value', () => {
+  const src = `<section class="c"><span class="m" data-helper="total_members">1,000</span></section>`
+  const { canvas, theme } = agree(src, { site: SITE })
+  assert.ok(theme.includes('{{total_members}}'), theme)
+  // MEASUREMENTS §15f: 57 members renders "50+", and the count helpers are ALWAYS a string
+  assert.ok(canvas.includes('>50+<'), canvas)
+  assert.ok(!/\{\{/.test(canvas), `the canvas emitted a mustache: ${canvas}`)
+})
+
+test('data-helper="content_api_key" renders an inert placeholder and no key', () => {
+  const src = `<span class="k" data-helper="content_api_key">x</span>`
+  const canvas = renderCanvas(doc(), src, { site: SITE })
+  const theme = renderTheme(doc(), src, { site: SITE }).template
+  assert.ok(canvas.includes(CONTENT_API_KEY_PLACEHOLDER), canvas)
+  assert.ok(!/[0-9a-f]{26}/.test(canvas), `something key-shaped reached the canvas: ${canvas}`)
+  assert.ok(theme.includes('{{content_api_key}}'), theme)
+})
+
+test('data-helper — Ghost-own markup: the canvas draws it, the theme defers, the rest agrees', () => {
+  const src = `<section class="c"><nav class="ghost-own" data-helper="navigation"></nav><h2 class="t" data-bind="title">t</h2></section>`
+  const { canvas, theme } = agreeOutsideGhostMarkup(src, { ghost: { title: 'A post' }, site: SITE })
+  assert.ok(theme.includes('{{navigation}}'), theme)
+  // Ghost's own navigation partial, recorded on both majors and rebuilt from the shim's items
+  assert.ok(canvas.includes('<ul class="nav">'), canvas)
+  assert.ok(canvas.includes('<li class="nav-essay nav-current"><a href="/essay/">Essay</a></li>') ||
+    canvas.includes('<li class="nav-essay"><a href="/essay/">Essay</a></li>'), canvas)
+  assert.ok(canvas.includes('>A post<'), canvas)
+})
+
+test('data-helper="content" refuses when Story 4.4 has not handed it a fixture', () => {
+  const src = `<div class="ghost-own" data-helper="content"></div>`
+  assert.throws(() => renderCanvas(doc(), src, {}), /FR-H3/)
+  // and renders the fixture when there is one — the trusted, Inflozo-authored case
+  const out = renderCanvas(doc(), src, { fixtures: { content: '<p>style guide</p>' } })
+  assert.ok(out.includes('<p>style guide</p>'), out)
+  // the theme side never resolves it at all
+  assert.ok(renderTheme(doc(), src, {}).template.includes('{{content}}'))
+})
+
+test('data-pagination — prev and next agree, and the first page has no Newer link', () => {
+  const src = `<nav class="p">
+      <a class="prev" data-pagination="prev" href="#">Newer</a>
+      <span class="n" data-pagination="numbers">1 / 1</span>
+      <a class="next" data-pagination="next" href="#">Older</a>
+    </nav>`
+  // the RECORDED middle page: 2 of 3, both links present, so the shapes line up
+  const middle: RenderInput = { site: { ...SITE, pagination: { page: 2, pages: 3, limit: 12, total: 33 } }, target: 'index.hbs' }
+  const { canvas, theme } = agree(src, middle)
+  assert.ok(theme.includes('{{page_url pagination.prev}}'), theme)
+  assert.ok(theme.includes('{{page_url pagination.next}}'), theme)
+  assert.match(theme, /\{\{#if pagination.prev\}\}/, theme)
+  assert.ok(theme.includes('{{pagination.page}} / {{pagination.pages}}'), theme)
+  // recorded on both majors: page 2 of 3 -> prev is "/" and next is "/page/3/"
+  assert.ok(canvas.includes('href="/"'), canvas)
+  assert.ok(canvas.includes('href="/page/3/"'), canvas)
+  assert.ok(canvas.includes('>2 / 3<'), canvas)
+
+  // the first page: {{#if pagination.prev}} takes the else branch on the site, and the canvas
+  // removes the element — the same behaviour by each emitter's own mechanism (FR-H8's pattern)
+  const first = renderCanvas(doc(), src, { site: SITE, target: 'index.hbs' })
+  assert.ok(!first.includes('class="prev"'), `the first page kept a Newer link: ${first}`)
+  assert.ok(first.includes('href="/page/2/"'), first)
+})
+
+test('R-7 — data-pagination off a paginated target is refused on both emitters', () => {
+  const src = `<a data-pagination="next" href="#">Older</a>`
+  for (const target of ['post.hbs', 'page.hbs', 'error.hbs', undefined]) {
+    const input: RenderInput = { site: SITE, target }
+    assert.throws(() => renderCanvas(doc(), src, input), /R-7/, `canvas allowed pagination on ${target}`)
+    assert.throws(() => renderTheme(doc(), src, input), /R-7/, `theme allowed pagination on ${target}`)
+  }
+  // and the legitimate placement still works, on every paginated target
+  for (const target of ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs']) {
+    assert.doesNotThrow(() => renderTheme(doc(), src, { site: SITE, target }))
+  }
+})
+
+test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas expands the caller rows', () => {
+  const src = `<ul class="f"><li class="c" data-repeat="featuredCraft"><h3 data-bind="title">t</h3></li></ul>`
+  const input: RenderInput = {
+    dataBindings: { featuredCraft: { source: 'posts', filter: 'tag:craft+featured:true', limit: 3, order: 'published_at desc' } },
+    // ONE row for the structural comparison, for the same reason the {{#foreach}} case uses one:
+    // the theme emits one body inside the block, so one row is the honest shape comparison.
+    getRows: { featuredCraft: [{ title: 'one' }] },
+    site: SITE,
+  }
+  const { canvas, theme } = agree(src, input)
+  // THE DIFFERENCE (1), positively: a {{#get}} plus the {{#foreach}} over ITS rows, and the filter
+  // comes from the DECLARATION — there is no place in the markup where one could be composed.
+  assert.ok(
+    theme.includes('{{#get "posts" filter="tag:craft+featured:true" limit="3" order="published_at desc"}}'),
+    theme,
+  )
+  assert.ok(theme.includes('{{#foreach posts}}'), theme)
+  assert.ok(theme.includes('{{/get}}'), theme)
+  // the pre-4.3 emission was `{{#foreach featuredCraft}}` over a key that is not a context path,
+  // so the block rendered nothing at all on the live site
+  assert.ok(!theme.includes('{{#foreach featuredCraft}}'), `the key was emitted as a context path: ${theme}`)
+  assert.ok(canvas.includes('>one<'), canvas)
+  // and the canvas expands one clone per row the caller fetched — the shim builds the query, the
+  // editor runs it, because AD-1 bans `fetch` inside a core package
+  const two = renderCanvas(doc(), src, { ...input, getRows: { featuredCraft: [{ title: 'one' }, { title: 'two' }] } })
+  assert.equal((two.match(/<li/g) ?? []).length, 2, two)
+  assert.ok(two.includes('>two<'), two)
+
+  // one number, one place: the query declares its own limit
+  assert.throws(
+    () => renderTheme(doc(), `<ul><li data-repeat="featuredCraft" data-repeat-limit="2">x</li></ul>`, input),
+    /One number, one place/,
+  )
+  // an undeclared key is still a plain context path, which is what a {{#foreach}} is for
+  const plain = renderTheme(doc(), `<ul><li data-repeat="posts">x</li></ul>`, {}).template
+  assert.ok(plain.includes('{{#foreach posts}}'), plain)
+})
+
+test('data-bind-attr with img_url puts the SIZED url on the canvas, not the original', () => {
+  // The mutation this exists for: `bindValue` returned `String(raw)` for `img_url` until Story 4.3,
+  // so the canvas showed the ORIGINAL image where the site serves a rendition — a card loading a
+  // 2400px photograph behind a 300px slot, which nobody would notice. Every structural check in
+  // this file passed with that defect in place, so the assertion has to be on the VALUE.
+  const hosted = 'https://site.example/content/images/2026/01/a.jpg'
+  const src = '<img class="i" data-bind-attr="src:feature_image|img_url:m" src="/ph.jpg" alt="">'
+  const { canvas, theme } = agree(src, { ghost: { feature_image: hosted }, site: SITE })
+  assert.ok(theme.includes('{{img_url feature_image size="m"}}'), theme)
+  // compared character for character, against the shim's recorded shape — and ABSOLUTE, because
+  // Ghost answers a same-origin request with a relative URL and a relative URL on the canvas
+  // resolves against Inflozo's own origin
+  assert.ok(
+    canvas.includes(`src="${imgUrl(hosted, 'm', { siteUrl: SITE?.url, absolute: true })}"`),
+    `the canvas is not showing the sized URL: ${canvas}`,
+  )
+  assert.ok(!canvas.includes(`src="${hosted}"`), `the canvas passed the ORIGINAL through: ${canvas}`)
+  assert.ok(canvas.includes('/size/w750/'), canvas)
+  // and an image Ghost does not host comes back verbatim — the recording says so, and a design
+  // binding a seeded feature image is exactly this case
+  const external = 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+  const ext = renderCanvas(doc(), src, { ghost: { feature_image: external }, site: SITE })
+  assert.ok(ext.includes(`src="${external}"`), ext)
+})
+
+test('NFR-3 — a Ghost URL field is http/https only, narrower than the USER allow-list', () => {
+  // The spine's Conventions row: "Every Ghost-sourced value is scheme-validated (http/https only)".
+  // `safeUrl` also permits `mailto:` and `tel:`, because a user's Link Picker legitimately produces
+  // one — so a GHOST binding and a USER prop deliberately take different doors, and this asserts
+  // both, because a guard that blocks everything is not a guard (AD-36).
+  const ghostSrc = '<img class="i" data-bind-attr="src:@site.logo">'
+  const userSrc = '<a class="l" data-prop-attr="href:link">x</a>'
+  for (const hostile of ['javascript:alert(1)', 'data:text/html,<script>x</script>', 'mailto:a@b.c', 'tel:+1']) {
+    const out = renderCanvas(doc(), ghostSrc, { ghost: { '@site': { logo: hostile } }, site: SITE })
+    assert.ok(out.includes('src="#"'), `a Ghost ${hostile.split(':')[0]}: URL was not rejected: ${out}`)
+  }
+  // the legitimate Ghost value beside it still works
+  const okOut = renderCanvas(doc(), ghostSrc, {
+    ghost: { '@site': { logo: 'https://site.example/content/images/2026/01/logo.png' } },
+    site: SITE,
+  })
+  assert.ok(okOut.includes('src="https://site.example/content/images/2026/01/logo.png"'), okOut)
+  // and a USER mailto: is a feature, not a compromise — the same character string, the other door
+  const mail = renderCanvas(doc(), userSrc, { content: { link: 'mailto:hello@example.com' } })
+  assert.ok(mail.includes('href="mailto:hello@example.com"'), mail)
+  assert.ok(renderCanvas(doc(), userSrc, { content: { link: 'javascript:alert(1)' } }).includes('href="#"'))
+})
+
+test('NFR-3 — an excerpt renders text-only and sanitised, as a text node', () => {
+  const src = '<p class="e" data-bind="excerpt">authored</p>'
+  const canvas = renderCanvas(doc(), src, { ghost: { excerpt: 'A body <b>with</b> markup &amp; an entity' } })
+  assert.ok(canvas.includes('A body with markup &amp; an entity'), canvas)
+  assert.ok(!canvas.includes('<b>'), `the excerpt kept an element: ${canvas}`)
+  // never through innerHTML: a <script> in an excerpt is characters, not a node
+  const hostile = renderCanvas(doc(), src, { ghost: { excerpt: '<script>alert(1)</script>ok' } })
+  assert.ok(!hostile.includes('<script'), `an excerpt reached the DOM as markup: ${hostile}`)
+  assert.ok(hostile.includes('alert(1)ok'), hostile)
+  // custom_excerpt and a dotted path are the same field
+  const dotted = renderCanvas(doc(), '<p data-bind="post.custom_excerpt">a</p>', {
+    ghost: { post: { custom_excerpt: '<em>x</em>y' } },
+  })
+  assert.ok(dotted.includes('xy') && !dotted.includes('<em>'), dotted)
+})
+
 // ── The partition, asserted so a directive added to the vocabulary later cannot be silently
 //    forgotten by the runtime. ──
 test('every consumed directive is either rendered or refused by name — no third state', () => {
@@ -387,12 +630,25 @@ test('a directive this story does not emit is refused by name on both emitters, 
 const everyDirectiveSrc = `<section class="all" data-module="cards">
      <h1 class="h" data-prop="title" data-empty="hide">t</h1>
      <a class="a" data-prop-attr="href:link">l</a>
+     <span class="m" data-helper="total_members">1,000</span>
      <article class="c" data-repeat="posts" data-repeat-limit="2" data-partial="card">
        <h2 data-bind="title">t</h2>
-       <img data-bind-attr="src:feature_image|img_url:800">
+       <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url">
        <li data-bind-style="--tag-accent:accent_color">x</li>
      </article>
+     <a class="n" data-pagination="next" href="#">Older</a>
    </section>`
+
+/** Story 4.3's three directives need the shim's inputs, and `data-pagination` needs a PAGINATED
+ *  target or it refuses (R-7). One place, so every case below reads the same connected site. */
+const SITE: RenderInput['site'] = {
+  url: 'https://site.example',
+  major: '6',
+  members: { total: 57, paid: 0 },
+  pagination: { page: 1, pages: 3, limit: 12, total: 33 },
+  navigation: [{ label: 'Essay', url: '/essay/' }, { label: 'Notes', url: '/notes/' }],
+  currentUrl: '/',
+}
 
 test('no rendered directive survives — every member of RENDERED_DIRECTIVES is in the fixture', () => {
   for (const d of RENDERED_DIRECTIVES) {
@@ -400,7 +656,15 @@ test('no rendered directive survives — every member of RENDERED_DIRECTIVES is 
   }
   const input: RenderInput = {
     content: { title: 'T', link: '/x' },
-    ghost: { posts: [{ title: 'a', feature_image: '/a.jpg', accent_color: '#fff' }, { title: 'b' }, { title: 'c' }] },
+    ghost: {
+      posts: [
+        { title: 'a', feature_image: 'https://site.example/content/images/2026/01/a.jpg', accent_color: '#fff' },
+        { title: 'b' },
+        { title: 'c' },
+      ],
+    },
+    site: SITE,
+    target: 'index.hbs',
   }
   const canvas = renderCanvas(doc(), everyDirectiveSrc, input)
   const theme = renderTheme(doc(), everyDirectiveSrc, input)

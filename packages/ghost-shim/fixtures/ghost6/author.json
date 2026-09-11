@@ -1,0 +1,96 @@
+{
+  "captured": "2026-09-11",
+  "command": "python3 tools/probe/record-shim.py",
+  "ghost_major": "6",
+  "ghost_version": "6.58",
+  "http": 200,
+  "image_sizes": {
+    "l": 1200,
+    "m": 750,
+    "s": 400,
+    "xl": 2000,
+    "xs": 150
+  },
+  "input": {
+    "author": {
+      "bio": "Writes about systems and the long tail of maintenance.",
+      "cover_image": null,
+      "name": "Priya Raman",
+      "profile_image": null,
+      "slug": "priya-raman",
+      "url": "https://ghost6.inflozo.com/author/priya-raman/",
+      "website": null
+    },
+    "members": {
+      "comped": 0,
+      "free": 57,
+      "paid": 0,
+      "total": 57
+    },
+    "post": {
+      "access": true,
+      "created_at": "2026-08-20T08:09:20.000+00:00",
+      "custom_excerpt": null,
+      "excerpt": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for A brief history of the sidebar",
+      "featured": false,
+      "id": "6a86b6303b29cb6183c01227",
+      "published_at": "2025-07-18T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "a-brief-history-of-the-sidebar",
+      "title": "A brief history of the sidebar",
+      "updated_at": "2026-08-20T08:09:20.000+00:00",
+      "url": "https://ghost6.inflozo.com/a-brief-history-of-the-sidebar/",
+      "visibility": "public"
+    },
+    "post_authors": [
+      {
+        "name": "Umang",
+        "profile_image": null,
+        "slug": "umang",
+        "url": "https://ghost6.inflozo.com/author/umang/"
+      }
+    ],
+    "post_tags": [
+      {
+        "accent_color": null,
+        "name": "Systems",
+        "slug": "systems",
+        "url": "https://ghost6.inflozo.com/tag/systems/",
+        "visibility": "public"
+      }
+    ],
+    "tag": {
+      "accent_color": null,
+      "description": null,
+      "feature_image": null,
+      "name": "Archive",
+      "slug": "archive",
+      "url": "https://ghost6.inflozo.com/tag/archive/",
+      "visibility": "public"
+    }
+  },
+  "note": "AD-23: every Ghost fact in this repository enters here. Nothing is written against a paraphrase of this file and no helper is implemented before its recording exists.",
+  "path": "/author/priya-raman/",
+  "raw": {},
+  "site": "https://ghost6.inflozo.com",
+  "template": "author",
+  "uploaded_image": "https://ghost6.inflozo.com/content/images/2026/09/inflozo-shim-probe-7.png",
+  "values": {
+    "AUTHOR": {
+      "bio": "Writes about systems and the long tail of maintenance.",
+      "cover_image": "",
+      "name": "Priya Raman",
+      "profile_image": "",
+      "slug": "priya-raman",
+      "url": "/author/priya-raman/",
+      "website": ""
+    },
+    "PAGE": {
+      "pagination_page": "1",
+      "pagination_pages": "1",
+      "posts_on_page": "11"
+    }
+  }
+}

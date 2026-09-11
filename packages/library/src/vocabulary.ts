@@ -20,9 +20,23 @@ export const PATH_RE = /^(\.\.\/)*@?[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9
  *  which is what lets a lexical validator resolve it with no tree. */
 export const PROP_PATH_RE = /^[A-Za-z_][A-Za-z0-9_]*(\[\])?(\.[A-Za-z_][A-Za-z0-9_]*(\[\])?)*$/
 
+/** FR-J2's NORMATIVE `image_sizes` map, in ONE place — read by the shim, by the probe theme that
+ *  records real Ghost output, by the gscan harness and by `HELPERS.img_url` below. Ghost generates a
+ *  rendition per declared key and `{{img_url size="m"}}` resolves against THIS map; with a size that
+ *  is not a key Ghost silently returns the ORIGINAL image and nothing reports it (gscan does not
+ *  validate `image_sizes` at all), so a 4000px photograph serves behind a 300px card on a live site.
+ *  Three ceilings exist and FR-J2 keeps them apart deliberately: these five size Ghost-hosted CONTENT
+ *  images; FR-J3's `400/800/1600 + original` covers theme-BUNDLED assets; FR-K2 caps UPLOADS at 2400. */
+export const IMAGE_SIZES: Readonly<Record<string, number>> = {
+  xs: 150, s: 400, m: 750, l: 1200, xl: 2000,
+}
+
 /** Each helper's argument is checked against that helper's OWN rule. Never concatenated. */
 export const HELPERS: Readonly<Record<string, { param: string; ok: (a: string) => boolean }>> = {
-  img_url: { param: 'size', ok: (a) => /^[a-z0-9_]+$/i.test(a) },
+  // Story 4.3 NARROWED this from `/^[a-z0-9_]+$/i`, which accepted `800` — not a key at all, and a
+  // live defect rather than a looseness: the refusal has to name the keys, because the failure it
+  // prevents is SILENT on the customer's site.
+  img_url: { param: 'size', ok: (a) => Object.prototype.hasOwnProperty.call(IMAGE_SIZES, a) },
   date: { param: 'format', ok: (a) => /^[A-Za-z0-9 ,:/.\-]+$/.test(a) },
 }
 
@@ -180,7 +194,8 @@ export function parseBindSpec(spec: string): { path: string; helper?: string; ar
   }
   const h = HELPERS[name]!
   if (arg === undefined || !h.ok(arg)) {
-    return fail(`helper "${name}" got an invalid ${h.param} argument ${JSON.stringify(arg)} — the argument is validated against that helper's own rule, never interpolated (AD-36 2)`)
+    const keys = name === 'img_url' ? ` The ${h.param} must be one of FR-J2's image_sizes keys: ${Object.keys(IMAGE_SIZES).join(' · ')} — Ghost has no rendition for anything else and silently serves the original.` : ''
+    return fail(`helper "${name}" got an invalid ${h.param} argument ${JSON.stringify(arg)} — the argument is validated against that helper's own rule, never interpolated (AD-36 2).${keys}`)
   }
   return { path, helper: name, arg }
 }

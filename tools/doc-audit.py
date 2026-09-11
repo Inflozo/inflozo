@@ -253,6 +253,16 @@ DOCS = [
  ('tools/probe/seed-ghost.py', 'tool', 'Ghost fixture seeder', 'Seeds both Ghosts identically.'),
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
+ ('tools/probe/record-shim.py', 'tool', 'Ghost helper-shim recorder',
+  "AD-23's recorder for the Ghost helper shim (Story 4.3). Uploads one image and a probe theme "
+  'carrying FR-J2\'s NORMATIVE image_sizes map — read from packages/library, never restated, '
+  "because NFR-6(c2) says Ghost's resize behaviour follows the theme's own map — renders every "
+  'FR-H5 helper into a parseable block on both majors, and writes '
+  'packages/ghost-shim/fixtures/ghost{5,6}/ with the capture date and the command. It restores the '
+  'previous theme, creates no content, touches no setting, and REDACTS the Content API key to its '
+  'shape. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a '
+  'paraphrase; the recorded facts that mattered are that a Ghost-hosted absolute URL comes back '
+  'RELATIVE, and that `size="800"` silently returns the ORIGINAL image.'),
  ('tools/probe/configure-supabase-auth.py', 'tool', 'Supabase Auth configuration',
   "Writes the live project's Auth settings — Resend as custom SMTP, the 15-minute OTP expiry, the "
   'branded sign-in template and the branded email-change template, the site URL, Supabase\'s own '

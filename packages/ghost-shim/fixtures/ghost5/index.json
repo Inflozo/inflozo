@@ -1,0 +1,181 @@
+{
+  "captured": "2026-09-11",
+  "command": "python3 tools/probe/record-shim.py",
+  "ghost_major": "5",
+  "ghost_version": "5.130",
+  "http": 200,
+  "image_sizes": {
+    "l": 1200,
+    "m": 750,
+    "s": 400,
+    "xl": 2000,
+    "xs": 150
+  },
+  "input": {
+    "author": {
+      "bio": "Writes about systems and the long tail of maintenance.",
+      "cover_image": null,
+      "name": "Priya Raman",
+      "profile_image": null,
+      "slug": "priya-raman",
+      "url": "https://ghost5.inflozo.com/author/priya-raman/",
+      "website": null
+    },
+    "members": {
+      "comped": 0,
+      "free": 57,
+      "paid": 0,
+      "total": 57
+    },
+    "post": {
+      "access": true,
+      "created_at": "2026-08-20T08:08:47.000+00:00",
+      "custom_excerpt": null,
+      "excerpt": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for A brief history of the sidebar",
+      "featured": false,
+      "id": "6a86b60f6444934864da331b",
+      "published_at": "2025-07-18T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "a-brief-history-of-the-sidebar",
+      "title": "A brief history of the sidebar",
+      "updated_at": "2026-08-20T08:08:47.000+00:00",
+      "url": "https://ghost5.inflozo.com/a-brief-history-of-the-sidebar/",
+      "visibility": "public"
+    },
+    "post_authors": [
+      {
+        "name": "Umang",
+        "profile_image": null,
+        "slug": "umang",
+        "url": "https://ghost5.inflozo.com/author/umang/"
+      }
+    ],
+    "post_tags": [
+      {
+        "accent_color": null,
+        "name": "Systems",
+        "slug": "systems",
+        "url": "https://ghost5.inflozo.com/tag/systems/",
+        "visibility": "public"
+      }
+    ],
+    "tag": {
+      "accent_color": null,
+      "description": null,
+      "feature_image": null,
+      "name": "Archive",
+      "slug": "archive",
+      "url": "https://ghost5.inflozo.com/tag/archive/",
+      "visibility": "public"
+    }
+  },
+  "note": "AD-23: every Ghost fact in this repository enters here. Nothing is written against a paraphrase of this file and no helper is implemented before its recording exists.",
+  "path": "/",
+  "raw": {
+    "nav-items": "NAV|label=[Ghost 5 Home]|url=[/]|current=[]\nNAV|label=[Ghost 5 About]|url=[/about/]|current=[]\n",
+    "nav-items-secondary": "NAV|label=[Sign up]|url=[#/portal/]|current=[]\n",
+    "navigation": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home nav-current\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https://ghost5.inflozo.com/about/\">Ghost 5 About</a></li>\n</ul>\n",
+    "navigation-secondary": "<ul class=\"nav\">\n    <li class=\"nav-sign-up nav-current\"><a href=\"#/portal/\">Sign up</a></li>\n</ul>\n",
+    "pagination": "<nav class=\"pagination\">\n    <span class=\"page-number\">Page 1 of 3</span>\n        <a class=\"older-posts\" href=\"/page/2/\">Older Posts <span aria-hidden=\"true\">&rarr;</span></a>\n</nav>\n"
+  },
+  "site": "https://ghost5.inflozo.com",
+  "template": "index",
+  "uploaded_image": "https://ghost5.inflozo.com/content/images/2026/09/inflozo-shim-probe-5.png",
+  "values": {
+    "ASSET": {
+      "no_such": "/assets/css/nope.css?v=b76693f133",
+      "screen_css": "/assets/css/screen.css?v=b76693f133"
+    },
+    "CORE": {
+      "content_api_key_shape": {
+        "charclass": "hex",
+        "length": 26,
+        "note": "the value is deliberately absent \u2014 FR-H5: a real key has no business in a snapshot, a screenshot or a support session"
+      },
+      "content_api_url": "https://ghost5.inflozo.com/ghost/api/content/",
+      "total_members": "50+",
+      "total_paid_members": "0"
+    },
+    "GET": {
+      "authors": "priya-raman,tom-whitlock,umang,",
+      "craft_featured": "on-typography-and-restraint,notes-from-a-slow-rebuild,the-paragraph-is-the-unit,",
+      "filter": "tag:craft+featured:true",
+      "ids_one": "6a86ba276444934864da34dc",
+      "tags_visible": "archive,craft,field-notes,interviews,",
+      "tiers": "default-product,"
+    },
+    "IMG": {
+      "external_absolute": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_l": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_m": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_nosize": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_notakey": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_s": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_webp": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_xl": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "external_xs": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "hosted_absolute": "https://ghost5.inflozo.com/content/images/size/w150/2026/09/inflozo-shim-probe-5.png",
+      "hosted_l": "/content/images/size/w1200/2026/09/inflozo-shim-probe-5.png",
+      "hosted_m": "/content/images/size/w750/2026/09/inflozo-shim-probe-5.png",
+      "hosted_nosize": "/content/images/2026/09/inflozo-shim-probe-5.png",
+      "hosted_notakey": "/content/images/2026/09/inflozo-shim-probe-5.png",
+      "hosted_s": "/content/images/size/w400/2026/09/inflozo-shim-probe-5.png",
+      "hosted_webp": "/content/images/size/w150/format/webp/2026/09/inflozo-shim-probe-5.png",
+      "hosted_xl": "/content/images/size/w2000/2026/09/inflozo-shim-probe-5.png",
+      "hosted_xs": "/content/images/size/w150/2026/09/inflozo-shim-probe-5.png",
+      "relative_absolute": "https://ghost5.inflozo.com/content/images/size/w150/2026/01/relative-probe.jpg",
+      "relative_l": "/content/images/size/w1200/2026/01/relative-probe.jpg",
+      "relative_m": "/content/images/size/w750/2026/01/relative-probe.jpg",
+      "relative_nosize": "/content/images/2026/01/relative-probe.jpg",
+      "relative_notakey": "/content/images/2026/01/relative-probe.jpg",
+      "relative_s": "/content/images/size/w400/2026/01/relative-probe.jpg",
+      "relative_webp": "/content/images/size/w150/format/webp/2026/01/relative-probe.jpg",
+      "relative_xl": "/content/images/size/w2000/2026/01/relative-probe.jpg",
+      "relative_xs": "/content/images/size/w150/2026/01/relative-probe.jpg"
+    },
+    "MATCH": {
+      "locale_false": "NO",
+      "locale_true": "YES",
+      "op_gt": "YES"
+    },
+    "MEMBER": {
+      "allow_self_signup": "true",
+      "if_member": "ANONYMOUS",
+      "paid_enabled": "true"
+    },
+    "PAGE": {
+      "page_url_next": "/page/2/",
+      "page_url_prev": "",
+      "pagination_limit": "12",
+      "pagination_next": "2",
+      "pagination_page": "1",
+      "pagination_pages": "3",
+      "pagination_prev": "",
+      "pagination_total": "33",
+      "posts_on_page": "12"
+    },
+    "SITE": {
+      "accent_color": "#0da51e",
+      "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "description": "Thoughts, stories and ideas.",
+      "icon": "",
+      "locale": "en",
+      "logo": "",
+      "posts_per_page": "12",
+      "timezone": "Etc/UTC",
+      "title": "Ghost5",
+      "url": "https://ghost5.inflozo.com"
+    },
+    "TEXT": {
+      "encode": "a%20b%26c",
+      "t_unknown": "Older posts"
+    },
+    "TRUTHY": {
+      "has_slug_home": "NO",
+      "is_index": "YES",
+      "is_post": "NO"
+    }
+  }
+}

@@ -6,7 +6,7 @@ updated: 2026-09-11
 
 # Document index
 
-**127 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**128 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -110,6 +110,7 @@ points at a file that is gone, or if this file is out of date.
 | **[First Run harness](tools/probe/run-verify-first-run.mjs)**<br>`tools/probe/run-verify-first-run.mjs` | Story 3.8's I/O matrix executed against the DEPLOYED app and the live Supabase (R-82): a GoTrue fixture account with nothing answers 307 -> /start on a bare /, 200 on any query string, the doors in the frame order with Recommended on the first; a site row, a disconnected site row and a project row each flip the answer the way the rule says, and /start sends an account with anything back to / (the reverse guard the review added). Raw HTTP, no browser: the two halves of the rule meet at runtime in a header the proxy writes and a layout reads, and no pure test can see that join. Creates and deletes its own account. Run at Review and Deploy; APP_ORIGIN points it at a local build. |
 | **[Fixture sections](tools/stress/sections.js)**<br>`tools/stress/sections.js` | The annotated HTML the fixture compiles. |
 | **[Ghost fixture seeder](tools/probe/seed-ghost.py)**<br>`tools/probe/seed-ghost.py` | Seeds both Ghosts identically. |
+| **[Ghost helper-shim recorder](tools/probe/record-shim.py)**<br>`tools/probe/record-shim.py` | AD-23's recorder for the Ghost helper shim (Story 4.3). Uploads one image and a probe theme carrying FR-J2's NORMATIVE image_sizes map — read from packages/library, never restated, because NFR-6(c2) says Ghost's resize behaviour follows the theme's own map — renders every FR-H5 helper into a parseable block on both majors, and writes packages/ghost-shim/fixtures/ghost{5,6}/ with the capture date and the command. It restores the previous theme, creates no content, touches no setting, and REDACTS the Content API key to its shape. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a paraphrase; the recorded facts that mattered are that a Ghost-hosted absolute URL comes back RELATIVE, and that `size="800"` silently returns the ORIGINAL image. |
 | **[Ghost provisioning](tools/probe/provision-ghost.sh)**<br>`tools/probe/provision-ghost.sh` | Builds a probe Ghost from scratch. |
 | **[Ghost(Pro) probe](tools/probe/run-verify-ghostpro.py)**<br>`tools/probe/run-verify-ghostpro.py` | Written and waiting for a Ghost(Pro) Starter trial. Blocks public launch. |
 | **[Inventory roster generator](tools/inventory-gen.py)**<br>`tools/inventory-gen.py` | Writes Appendix A's totals and the numbered roster of every category in sections-inventory.md from the export (R-16 — the drawings are the roster). It owns exactly two things per category: the count in the heading and the lines between its roster markers; the normative prose around them stays hand-authored. --check is run by doc-audit and fails on drift. |

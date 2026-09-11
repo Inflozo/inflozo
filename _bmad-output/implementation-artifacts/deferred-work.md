@@ -2677,7 +2677,7 @@ plain: The rulebook says the part of the product that imitates Ghost on the edit
   the same colour-checking function the canvas uses. That part is Story 4.3's, and 4.3's task list
   does not yet mention it — so it could be built without the check and nobody would notice until a
   hostile tag colour reached the canvas through the shim.
-status: open
+status: done 2026-09-11 (Story 4.3)
 severity: medium
 origin: Story 4.2 review (2026-09-11) — Blind Hunter and Acceptance Auditor: two code comments and
   the SPINE's AD-36 #4 amendment named the call in the present tense while `packages/ghost-shim`
@@ -2688,6 +2688,15 @@ owner: Story 4.3 — when the shim renders a recorded Ghost `accent_color` (or a
 location: packages/library/src/vocabulary.ts `safeCssColor`; ARCHITECTURE-SPINE.md AD-36 bullet 4
 reason: not this story's — the shim does not exist yet; the comments were reworded to the future
   tense in the review so nothing claims a call that is not there
+resolution: CLOSED by Story 4.3 (2026-09-11). `packages/ghost-shim` exports
+  `ghostColor(value) = safeCssColor(value, COLOUR_FALLBACK_TOKEN)` with `COLOUR_FALLBACK_TOKEN`
+  `'--accent'`, and `packages/section-runtime/src/core.ts`'s `data-bind-style` canvas branch calls
+  `ghostColor` rather than importing `safeCssColor` itself — so there is one copy, reached through
+  one door. `contract.test.ts` asserts the four hostile values MEASUREMENTS §21e recorded Ghost
+  accepting verbatim all fall back to `var(--accent)`, that `#f0f` and `rgb(255, 0, 255)` survive,
+  that the connected site's own RECORDED `accent_color` survives on both majors, and that
+  `ghostColor(v)` and `safeCssColor(v, '--accent')` return the same string — which is the assertion
+  that a second parser has not grown. AD-36 bullet 4's future tense is now past tense.
 
 ### DW-96: `tidy` strips a blank line inside user text on the canvas but not in the theme
 
@@ -2706,3 +2715,25 @@ reason: no design in the reference set or the 70-section fixture preserves white
   difference is unobservable today; the fix is a one-line ordering change in the story that can
   observe it
 
+
+### DW-97: `data-pagination="numbers"` emits a page indicator, and the doc's own example draws a list of links
+
+plain: A section can show "page 2 of 3" but not a row of clickable page numbers — 1 2 3 — because
+  Ghost does not tell a theme how to draw one. The authoring guide's example shows an empty list
+  waiting for numbers, so the two do not agree and somebody has to decide which is right.
+status: open
+severity: low
+origin: Story 4.3 (2026-09-11) — the directive came off the refused list and had to emit something.
+  `docs/section-authoring.md` § 3's example is `<ol class="pager__numbers" data-pagination="numbers"></ol>`,
+  which reads as a list of numbered page links, and Ghost's pagination context carries only `page`
+  and `pages` with no way to loop a range in Handlebars. A list of links would therefore have to be
+  an Inflozo partial counting something Ghost does not expose, which is a mechanism no story owns.
+owner: the owner — the question is plain English and has an example, so it belongs under
+  `## Questions for the owner` in the first story that authors a design carrying pagination
+  (Story 4.10's paginated-feed pilot is the first that can). Until then the indicator ships and the
+  authoring guide says so, so nothing is silently different.
+location: packages/section-runtime/src/core.ts (the `data-pagination` loop, `numbers` branch);
+  docs/section-authoring.md § 3 "The three the shim owns"; packages/section-runtime/src/agreement.test.ts
+reason: settling it here would be inventing a decision the owner never made (standing rule 6), and
+  the indicator form is the one both emitters can produce identically from Ghost's own context — so
+  the lazy form is also the only one currently provable

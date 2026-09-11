@@ -12,6 +12,7 @@
 const fs = require('fs'); const path = require('path'); const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 const { renderSection, UserText, T0, T1, U0, U1 } = require('./compile');
+const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
 const { stressStack, source } = require('./sections');
 
 const OUT = path.join(__dirname, 'theme');
@@ -145,7 +146,11 @@ write('package.json', JSON.stringify({
   author: { name: 'Inflozo', email: 'hello@inflozo.com' },
   config: {
     posts_per_page: 12, card_assets: true,
-    image_sizes: { xs: { width: 150 }, s: { width: 400 }, m: { width: 800 }, l: { width: 1600 }, xl: { width: 2400 } },
+    // FR-J2's NORMATIVE map, READ rather than restated (standing rule: counts are derived). This
+    // literal disagreed with the PRD on three of its five keys — m/l/xl were 800/1600/2400 — so the
+    // harness gated a theme whose renditions no shipped design would ever ask for, and Story 4.3's
+    // recordings would have been a faithful recording of the WRONG theme (NFR-6(c2)).
+    image_sizes: Object.fromEntries(Object.entries(IMAGE_SIZES).map(([k, w]) => [k, { width: w }])),
     custom: {
       color_scheme: { type: 'select', options: ['Auto', 'Light', 'Dark'], default: 'Auto' },
       dark_accent_colour: { type: 'color', default: '#8ab4f8' },

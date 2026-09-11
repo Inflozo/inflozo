@@ -2,7 +2,7 @@
 title: 'Story 4.3 — The Ghost helper shim, and its contract tests against recorded real-Ghost output'
 type: 'feature'
 created: '2026-09-11'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '52c8c71c5243c17acd1705cc4796ffcb72b90feb'
 owner_test: none
 review_loop_iteration: 0
@@ -165,42 +165,42 @@ image URLs rather than normalising them away. The three directives the shim owns
 
 **Execution:**
 
-- [ ] `packages/library/src/vocabulary.ts` -- add `IMAGE_SIZES` as FR-J2's normative map and narrow
+- [x] `packages/library/src/vocabulary.ts` -- add `IMAGE_SIZES` as FR-J2's normative map and narrow
   `HELPERS.img_url.ok` to its keys -- the shim cannot build a rendition URL for a size Ghost has no
   rendition for, and `800` fails **silently** on a live site.
-- [ ] `packages/section-runtime/src/{ad36,agreement}.test.ts` -- move the eight `img_url:800` uses to
+- [x] `packages/section-runtime/src/{ad36,agreement}.test.ts` -- move the eight `img_url:800` uses to
   a real key and add the refusal of `800` -- keep every existing assertion; this is a narrowing, not
   a weakening.
-- [ ] `tools/stress/build.js` -- read `IMAGE_SIZES` instead of its own literal -- one copy (standing
+- [x] `tools/stress/build.js` -- read `IMAGE_SIZES` instead of its own literal -- one copy (standing
   rule 3); three of its five widths were wrong against FR-J2.
-- [ ] `tools/probe/theme-shim/` -- a probe theme whose `package.json` carries the normative map, and
+- [x] `tools/probe/theme-shim/` -- a probe theme whose `package.json` carries the normative map, and
   whose `index.hbs`, `post.hbs`, `tag.hbs`, `author.hbs` and `error.hbs` render every FR-H5 helper
   into `KEY|name=[…]` lines -- template-scoped helpers (pagination, `@member`, `{{#match}}`, the
   post-only fields) are only reachable from the template that owns them.
-- [ ] `tools/probe/record-shim.py` -- upload one image to each Ghost's content store, upload and
+- [x] `tools/probe/record-shim.py` -- upload one image to each Ghost's content store, upload and
   activate the probe theme, read every template back, write `packages/ghost-shim/fixtures/ghost5/`
   and `ghost6/` with capture date and command, restore the previous theme -- AD-23, and the seeded
   feature images are external URLs that no Ghost will resize.
-- [ ] `packages/ghost-shim/src/` -- the shim, written against the recordings: `img_url` (sized URL
+- [x] `packages/ghost-shim/src/` -- the shim, written against the recordings: `img_url` (sized URL
   and `srcset` candidates), `date`, `reading_time`, `excerpt`/`custom_excerpt` (text-only, sanitised),
   `title`, `url`, `tags`, `authors`, `navigation`, `asset`, `#match`, `#if @member`, truthy helpers,
   the pagination context, the four core helpers, `t`, and `#get` → a Content API query from a
   `DataBinding` -- FR-H5's list is the contract and governs Appendix B on any difference.
-- [ ] `packages/ghost-shim/src/` -- the three NFR-3 carve-outs, here so both renderers inherit them:
+- [x] `packages/ghost-shim/src/` -- the three NFR-3 carve-outs, here so both renderers inherit them:
   Ghost URL fields `http`/`https` only, every Content-API value a **text node**, excerpts sanitised;
   and `safeCssColor(value, '--accent')` on every colour-valued Ghost field -- closes **DW-95**.
-- [ ] `packages/ghost-shim/src/contract.test.ts` -- NFR-6(c2): every shimmed helper asserted against
+- [x] `packages/ghost-shim/src/contract.test.ts` -- NFR-6(c2): every shimmed helper asserted against
   the recording for **each major**, offline, image URLs compared not normalised, and a missing
   recording failing by name -- standing rule 2.
-- [ ] `packages/section-runtime/src/core.ts` -- call the shim; move `data-bind-srcset`,
+- [x] `packages/section-runtime/src/core.ts` -- call the shim; move `data-bind-srcset`,
   `data-helper` and `data-pagination` from `REFUSED_DIRECTIVES` to `RENDERED_DIRECTIVES`; emit
   `{{#get}}` where `data-repeat` names a `dataBindings` key -- the partition test keeps the two lists
   derived from `CONSUMED_DIRECTIVES`, so nothing is silently forgotten.
-- [ ] `packages/section-runtime/src/agreement.test.ts` -- extend the node-by-node proof over the three
+- [x] `packages/section-runtime/src/agreement.test.ts` -- extend the node-by-node proof over the three
   new directives and the `{{#get}}` repeat -- the two intended differences stay asserted positively.
-- [ ] `docs/section-authoring.md` -- the three directives move from refused to rendered, with the
+- [x] `docs/section-authoring.md` -- the three directives move from refused to rendered, with the
   `image_sizes` keys named -- the authoring contract is a shipped deliverable.
-- [ ] `.../ARCHITECTURE-SPINE.md` AD-36 bullet 4 · `deferred-work.md` DW-95 -- the spine's future
+- [x] `.../ARCHITECTURE-SPINE.md` AD-36 bullet 4 · `deferred-work.md` DW-95 -- the spine's future
   tense becomes present, DW-95 closes with its resolution -- a finding is not closed until it reaches
   an owning document (standing rule 3).
 
@@ -290,3 +290,65 @@ written down because FR-H5 lists it and a reader will look for it here.
 - `grep` the emitted output and the test output for a real Content API key: absent.
 - Record the before/after of every gate in a table, baseline captured **before** the change, so a
   check lost in the narrowing is visible rather than inferred (standing rule 2).
+
+---
+
+## Verification — run 2026-09-11
+
+**Every gate, baseline before the change and result after.** The baseline was taken by extracting
+`52c8c71c` (the spec's `baseline_commit`) into a scratch tree and running the same commands there, so
+a check lost in the narrowing would be visible rather than inferred (standing rule 2).
+
+| Gate | Baseline (52c8c71c) | After | |
+|---|---|---|---|
+| `pnpm check` | exit 0 | **exit 0** | lint + typecheck + every package test |
+| `packages/ghost-shim` tests | 1 (the package names itself) | **26**, all against recordings from T1 and T3 | the stub test is gone; it asserted a constant |
+| `packages/section-runtime` tests | 50 | **62** | the twelve new ones are Story 4.3's directives and NFR-3's carve-outs |
+| `packages/library` tests | pass | **pass** | `parseBindSpec`'s hostile-arg refusal still fires with the narrowed grammar |
+| `tools/stress` `node build.js` | 197 files · AD-34 clean | **197 files · AD-34 clean** | unchanged file count, as the spec required |
+| `node gate.js theme` — Ghost 5 via gscan 4.49.7 | 0 errors / 0 warnings | **0 / 0** | |
+| `node gate.js theme` — Ghost 6 via gscan 6.4.2 | 0 errors / 0 warnings | **0 / 0** | |
+| emitted `image_sizes` | `xs 150 · s 400 · m 800 · l 1600 · xl 2400` | **`xs 150 · s 400 · m 750 · l 1200 · xl 2000`** | three of five keys were wrong against FR-J2; now READ from `IMAGE_SIZES` |
+| `python3 tools/doc-audit.py --check` | PASS | **PASS**, twice | `record-shim.py` catalogued; the first run regenerated the index, as it does |
+
+**`python3 tools/probe/record-shim.py`** — R-82, the real infrastructure. Both majors reported the
+image uploaded, the theme uploaded, activated and **restored** (`theme RESTORED -> 'casper'` on each),
+and wrote six dated recordings per major: `index`, `index-page-2`, `post`, `tag`, `author`, `error`.
+T1 reported `6.58`, T3 `5.130`. Keys were read from `tools/probe/.env` by variable name and never
+printed. No post was created, no post edited, no setting touched.
+
+**The four facts the recording settled, none of which was written down anywhere before:**
+
+1. A **Ghost-hosted absolute URL comes back RELATIVE** — `https://site/content/images/2026/09/x.png`
+   at `size="m"` is `/content/images/size/w750/2026/09/x.png`. A canvas that passed the value through
+   would show the original; one that pasted Ghost's answer onto its own origin would 404. Both forms
+   are recorded and the shim reproduces each.
+2. **`size="800"` returns byte-for-byte what omitting `size=` returns** — the original image, with
+   nothing reported. That is the recording behind narrowing `HELPERS.img_url`, and the contract test
+   asserts the equality so the day Ghost changes it, the refusal is re-examined rather than assumed.
+3. **`{{date}}`'s default format is `MMM D, YYYY`**, not `YYYY-MM-DD`. The runtime's `formatDate` had
+   the latter, which was a paraphrase and was wrong on both live majors.
+4. **`{{reading_time}}` floors at one minute.** The recorded post's API `reading_time` was **0** and
+   the helper printed `1 min read`, so a shim trusting the field prints "0 min read" on every short
+   post.
+
+**Manual checks.**
+- Each recording carries `captured`, `command` and `ghost_version`, and the contract test asserts all
+  three plus that the recording was made under FR-J2's map — a recording captured under any other
+  `image_sizes` is a faithful recording of the wrong theme (NFR-6(c2)) and fails by name.
+- `grep` for both real Content API keys across the test output, `packages/`, `tools/probe/theme-shim/`
+  and the emitted theme: **absent**. No 26-hex string appears in any fixture; the recorder keeps the
+  key's shape and the shim emits an inert placeholder whose length differs from a key's.
+- **Mutation run, because a contract test that would pass against a broken shim is not a control.**
+  Fourteen deliberate defects were introduced one at a time and every one was caught: the sized-URL
+  segment, the default date format, the member bracket, the reading-time floor, the excerpt word
+  count, the external-URL pass-through, the Ghost URL narrowing, the `{{#get}}` render-context
+  refusal, the key placeholder, the nav slug, `page_url`'s first page, the srcset candidate list (two
+  ways), and `bindValue`'s `img_url` pass-through. The last one is why
+  `agreement.test.ts` now asserts the sized URL as a **value**: every structural check in that file
+  passed with the pass-through defect in place.
+
+**Open, and tracked rather than decided:** `data-pagination="numbers"` emits the page indicator and
+not a list of numbered page links, because Ghost's pagination context carries only `page` and `pages`
+and Handlebars cannot loop a range. `docs/section-authoring.md`'s own example draws a list, so the two
+disagree — **DW-97**, for the owner, in the first story that authors a paginated design.

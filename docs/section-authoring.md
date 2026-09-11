@@ -230,10 +230,11 @@ back wherever Handlebars' `{{#if}}` would — `''`, `0`, `false` and `[]` are al
 `data-empty` value outside `hide`/`fallback` is refused, not ignored.
 
 **Not every directive below is rendered yet, and the rest REFUSE rather than leak.** Story 4.2's
-runtime emits the proven eight plus `data-bind-style` and `data-module`; everything else in the set
-throws with a sentence naming the directive, until the story that owns it lands. The partition is
-derived from this vocabulary and asserted by a test, so a directive added here cannot be silently
-forgotten by the runtime.
+runtime emits the proven eight plus `data-bind-style` and `data-module`; **Story 4.3 added
+`data-bind-srcset`, `data-helper` and `data-pagination`**, the three the Ghost helper shim owns.
+Everything else in the set throws with a sentence naming the directive, until the story that owns it
+lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
+here cannot be silently forgotten by the runtime.
 
 These were executed in the stress harness and keep their names and grammar unchanged; since Story 4.2 the implementation is `packages/section-runtime` and `tools/stress/compile.js` is a thin adapter over it.
 
@@ -249,6 +250,33 @@ These were executed in the stress harness and keep their names and grammar uncha
 | `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |
 | `data-bind-style` | `--custom-property:spec` | the value through `safeCssColor` — hex, `rgb()`/`hsl()` or the pack's accent token; a **named** colour is not parsed and falls back too | `style="{{#if field}}--prop: {{path}}{{/if}}"` — the value is Ghost's at render |
 | `data-module` | a module name | consumed | consumed — 4.7's registry reads the name |
+
+**The three the shim owns** *(Story 4.3)*. Each is asserted against **recorded real-Ghost output**
+from both majors — `packages/ghost-shim/fixtures/`, captured by `python3 tools/probe/record-shim.py`
+— so the canvas column below is a recording and not a description.
+
+| Directive | Grammar | Canvas | Theme |
+|---|---|---|---|
+| `data-bind-srcset` | `path\|img_url` — the size list is the shim's | one candidate per `image_sizes` key, at the recorded sized URLs | `srcset="{{img_url path size="xs"}} 150w, …"`, one candidate per key from the one map |
+| `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple |
+| `data-pagination` | `prev` · `next` · `numbers` | `prev`/`next` get the resolved `page_url` and the element is removed where the page does not exist; `numbers` shows `page / pages` | `prev`/`next` emit `href="{{page_url pagination.prev}}"` inside `{{#if pagination.prev}}`; `numbers` emits `{{pagination.page}} / {{pagination.pages}}` |
+
+**`data-pagination` restricts the design to a paginated target and the runtime refuses otherwise**
+(R-7): a `{{pagination}}` outside a paginated context is a FATAL render, not a warning, so a render
+that does not name a paginated target is refused rather than compiled. **`numbers` emits the page
+indicator, not a list of numbered page links**, and the reason is Ghost's: the pagination context
+carries `page` and `pages` and Handlebars has no way to loop a range, so numbered links would have
+to be an Inflozo partial counting something Ghost does not expose. Tracked as an open question
+rather than settled here.
+
+**`img_url`'s size argument is one of FR-J2's five `image_sizes` keys — `xs` · `s` · `m` · `l` ·
+`xl`** — and anything else is refused **by name at bind time**. This is not strictness for its own
+sake: Ghost generates a rendition per declared key and returns the **original** image for any other
+`size=`, reporting nothing (gscan does not validate `image_sizes` at all), so a card would serve a
+4000-pixel photograph behind a 300-pixel slot on the customer's site with nothing reporting it.
+Recorded on both majors: `size="800"` returned exactly what `size=` omitted entirely. The widths
+live in `packages/library`'s `IMAGE_SIZES` and are read by the shim, the probe theme and the gscan
+harness — never restated.
 
 **Every directive value is validated by this table's grammar before the runtime reads it** *(Story 4.2
 review)*: a `data-repeat`, `data-repeat-limit` or `data-partial` value that is not its grammar is
@@ -288,10 +316,10 @@ the page is empty. `guardField()` is the derivation, and it is one function both
 | 3 | two-armed conditional | `data-if="path"` + `data-else` on the sibling |
 | 4 | member state over four closed values | `data-members="everyone\|anonymous\|free\|paid"` |
 | 5 | positional helpers | `data-when="first\|last\|even\|odd"`, `data-index="number\|index"` |
-| 6 | pagination | `data-pagination="prev\|next\|numbers"` |
+| 6 | pagination | `data-pagination="prev\|next\|numbers"` — rendered since 4.3; paginated targets only (R-7) |
 | 7 | nested repeats | **no directive** — deepest-first ordering, already executed |
 | 8 | ~~group-by / change detection~~ | **STRUCK (R-1)** — a header on a key change is not a compiler construct, it is the `group-headings` **behaviour module**. The row is kept struck because "add a group-by directive" is a proposal that would otherwise be made again. |
-| 9 | bare-helper binding, no path | `data-helper="content\|comments\|navigation\|total_members\|statusCode\|message\|content_api_key"` |
+| 9 | bare-helper binding, no path | `data-helper="content\|comments\|navigation\|total_members\|statusCode\|message\|content_api_key"` — rendered since 4.3, by the shim |
 | 10 | compile-target-conditional wrapper | `data-target="page.hbs"` on the subtree |
 | 11 | mixed literal-and-bound attribute value | `data-bind-attr` gains R-27's `{token}` form |
 | 12 | bound value into an inline custom property | `data-bind-style="--tag-accent:accent_color"` |
@@ -439,7 +467,14 @@ carries **no** English literal in a `placeholder`, a `<noscript>` or anywhere el
 
 **Exit 4 · `srcset`.** The binding grammar produces exactly one expression per attribute, which is
 not enough for a responsive image set, so it gets its own directive. The sizes are the shim's, not
-the design's. A media guard must **enclose** it — the guard hides the element, never the attribute.
+the design's. A media guard must **enclose** it — the guard hides the element, never the attribute:
+an unguarded `srcset` renders a malformed attribute the browser resolves as a relative URL, which is
+a live 404 on the customer's site.
+
+**`sizes` is NOT emitted and is not bindable** *(Story 4.3)*. `srcset` says what files exist;
+`sizes` says how much of the viewport the image occupies, which is a fact about the **design's own
+layout** — the design knows it and the runtime cannot. So a design writes `sizes` as an ordinary
+static attribute in its markup, and `data-bind-srcset` emits the candidate list beside it.
 
 ```html
 <img class="hero__img" data-bind-attr="src:feature_image|img_url:l"
@@ -484,6 +519,8 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a bound attribute not on the allow-list — `onload`, `style` | AD-36 (3). `data-bind-attr="onload:featureImage"` once emitted a live event handler, with a gate on the far side of the pipeline the only thing standing between that design and a shipped theme. |
 | a binding path with a brace, quote, whitespace or backslash | AD-36 (2). The path is parsed and the mustache rebuilt from validated parts, never concatenated. |
 | an unknown helper, or an argument outside that helper's own rule | AD-36 (2). `img_url:800"}}<script>…` emitted a live script into every theme built from that design. A helper with no argument is refused too — the harness accepted one by accident and emitted `size="undefined"`. |
+| an `img_url` size that is not an `image_sizes` key | *(Story 4.3)* Ghost returns the **original** image and reports nothing, so the defect is invisible until a customer's page loads a 4000-pixel file behind a 300-pixel card. `800` was a width, and a width was never a key. |
+| `data-pagination` on a design whose targets are not all paginated | R-7. `{{pagination}}` outside a paginated context is a FATAL render. Refused by the validator against `compileTarget` **and** by the runtime against the render's own target. |
 | `srcset` in `data-bind-attr` or `data-prop-attr` | one expression per attribute cannot make a candidate list — that is `data-bind-srcset` — and a user-authored list would carry a later candidate's scheme past `safeUrl`. |
 | a URL whose scheme is not `http`, `https`, `mailto`, `tel` or relative | AD-36 (1). Reduced to an inert, **visible** `#` — never silently dropped. `java\nscript:` is **rejected, not repaired**. |
 | `data-empty` on an element with nothing to guard | FR-H8. A guard with no field emits `{{#if}}` on nothing — present, and empty. |

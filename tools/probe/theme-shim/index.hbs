@@ -1,0 +1,71 @@
+{{!< default}}
+{{!--
+  AD-23's recording surface, template one: everything FR-H5 lists that is reachable WITHOUT a post,
+  a tag, an author or an error. `record-shim.py` reads the block below back and writes it to
+  packages/ghost-shim/fixtures/. The two placeholders it substitutes before zipping are
+  __IMG_URL_BLOCK__ (one line per FR-J2 image_sizes KEY, derived from the library's one copy) and
+  __UPLOADED__ (the Ghost-hosted image the recorder uploads — every seeded feature image is an
+  external static.ghost.org URL that no Ghost will ever resize, so nothing already on the box can
+  exercise a rendition).
+--}}
+<pre id="probe">
+SITE|title=[{{@site.title}}]
+SITE|url=[{{@site.url}}]
+SITE|description=[{{@site.description}}]
+SITE|logo=[{{@site.logo}}]
+SITE|icon=[{{@site.icon}}]
+SITE|cover_image=[{{@site.cover_image}}]
+SITE|accent_color=[{{@site.accent_color}}]
+SITE|locale=[{{@site.locale}}]
+SITE|timezone=[{{@site.timezone}}]
+SITE|posts_per_page=[{{@config.posts_per_page}}]
+
+CORE|total_members=[{{total_members}}]
+CORE|total_paid_members=[{{total_paid_members}}]
+CORE|content_api_url=[{{content_api_url}}]
+CORE|content_api_key=[{{content_api_key}}]
+
+ASSET|screen_css=[{{asset "css/screen.css"}}]
+ASSET|no_such=[{{asset "css/nope.css"}}]
+
+TEXT|t_unknown=[{{t "Older posts"}}]
+TEXT|encode=[{{encode "a b&c"}}]
+
+MEMBER|if_member=[{{#if @member}}SIGNED_IN{{else}}ANONYMOUS{{/if}}]
+MEMBER|paid_enabled=[{{@site.paid_members_enabled}}]
+MEMBER|allow_self_signup=[{{@site.allow_self_signup}}]
+
+MATCH|locale_true=[{{#match @site.locale @site.locale}}YES{{else}}NO{{/match}}]
+MATCH|locale_false=[{{#match @site.locale "zz-ZZ"}}YES{{else}}NO{{/match}}]
+MATCH|op_gt=[{{#match @config.posts_per_page ">" 1}}YES{{else}}NO{{/match}}]
+
+TRUTHY|is_index=[{{#is "index"}}YES{{else}}NO{{/is}}]
+TRUTHY|is_post=[{{#is "post"}}YES{{else}}NO{{/is}}]
+TRUTHY|has_slug_home=[{{#has slug="home"}}YES{{else}}NO{{/has}}]
+
+PAGE|pagination_page=[{{pagination.page}}]
+PAGE|pagination_pages=[{{pagination.pages}}]
+PAGE|pagination_limit=[{{pagination.limit}}]
+PAGE|pagination_total=[{{pagination.total}}]
+PAGE|pagination_next=[{{pagination.next}}]
+PAGE|pagination_prev=[{{pagination.prev}}]
+PAGE|page_url_next=[{{#if pagination.next}}{{page_url pagination.next}}{{/if}}]
+PAGE|page_url_prev=[{{#if pagination.prev}}{{page_url pagination.prev}}{{/if}}]
+PAGE|posts_on_page=[{{posts.length}}]
+
+__IMG_URL_BLOCK__
+
+GET|filter=[tag:craft+featured:true]
+GET|craft_featured=[{{#get "posts" filter="tag:craft+featured:true" limit="3" order="published_at desc"}}{{#foreach posts}}{{slug}},{{/foreach}}{{else}}BLOCK_DID_NOT_RUN{{/get}}]
+GET|tags_visible=[{{#get "tags" filter="visibility:public" limit="4" order="name asc"}}{{#foreach tags}}{{slug}},{{/foreach}}{{/get}}]
+GET|authors=[{{#get "authors" limit="3" order="name asc"}}{{#foreach authors}}{{slug}},{{/foreach}}{{/get}}]
+GET|tiers=[{{#get "tiers" filter="type:paid+visibility:public" limit="5"}}{{#foreach tiers}}{{slug}},{{/foreach}}{{else}}NO_ROWS{{/get}}]
+GET|ids_one=[{{#get "posts" limit="1"}}{{#foreach posts}}{{id}}{{/foreach}}{{/get}}]
+</pre>
+<pre id="raw-navigation">{{navigation}}</pre>
+<pre id="raw-navigation-secondary">{{navigation type="secondary"}}</pre>
+<pre id="raw-nav-items">{{#foreach @site.navigation}}NAV|label=[{{this.label}}]|url=[{{this.url}}]|current=[{{this.current}}]
+{{/foreach}}</pre>
+<pre id="raw-nav-items-secondary">{{#foreach @site.secondary_navigation}}NAV|label=[{{this.label}}]|url=[{{this.url}}]|current=[{{this.current}}]
+{{/foreach}}</pre>
+<pre id="raw-pagination">{{pagination}}</pre>

@@ -88,6 +88,9 @@ importers:
 
   packages/section-runtime:
     dependencies:
+      '@inflozo/ghost-shim':
+        specifier: workspace:*
+        version: link:../ghost-shim
       '@inflozo/library':
         specifier: workspace:*
         version: link:../library

@@ -19,17 +19,37 @@ import {
   CONSUMED_DIRECTIVES,
   DIRECTIVES,
   HELPERS,
+  IMAGE_SIZES,
+  PAGINATED_TARGETS,
   URL_ATTRS,
   assertBindableAttr as parseBindableAttr,
   guardField,
   parseBindSpec,
-  safeCssColor,
   safeUrl,
   splitFirst,
 } from '@inflozo/library'
-import type { PropDef } from '@inflozo/library'
+import type { DataBinding, PropDef } from '@inflozo/library'
+// Story 4.3. The spine's package table says the three core packages may depend on `library` AND on
+// each other, so this import is inside the dependency rule. The DOM is injected because AD-1 forbids
+// reaching a global; the shim is PURE, so there is nothing to inject around it and threading it
+// through the walk would be more code for no property.
+import {
+  bareHelper,
+  formatDate,
+  getExpr,
+  ghostColor,
+  ghostUrl,
+  imgUrl,
+  navigationItems,
+  pageUrl,
+  paginationContext,
+  srcset,
+  stripTags,
+} from '@inflozo/ghost-shim'
 import { escapeUserText, isRich, serializeMarks } from './marks.ts'
 import type { PropValue } from './marks.ts'
+
+export { formatDate }
 
 // ─── the injected DOM, typed by the members this file actually uses ──────────
 // AD-1: "a DOM global it did not receive as an argument". Declaring the surface rather than
@@ -81,6 +101,36 @@ export type RenderInput = {
    *  substitutes last, over the whole emitted file tree. Omitted, the theme emitter makes its own
    *  and substitutes immediately, which is the single-section case. */
   users?: UserText
+  /** Story 4.3 — what the SHIM needs to imitate the connected Ghost on the canvas. Every field is
+   *  a value the caller fetched; nothing here is read from a machine (AD-1). */
+  site?: {
+    /** the connected site's URL. `img_url` needs it to recognise a same-origin image as
+     *  Ghost-hosted, and Ghost answers with a RELATIVE sized URL, so the canvas re-absolutises. */
+    url?: string
+    /** which Ghost major the connected site runs — `{{total_members}}` brackets differ */
+    major?: '5' | '6'
+    /** the member counts the site reported, for the two count helpers */
+    members?: { total?: number; paid?: number }
+    /** `{{navigation}}`'s items, from the connection's settings snapshot */
+    navigation?: readonly { label?: unknown; url?: unknown; current?: unknown }[]
+    /** the pagination context this render sits on */
+    pagination?: Readonly<Record<string, unknown>>
+    /** the archive the feed sits on — `/` on the home feed, `/tag/craft/` on a tag archive */
+    paginationBase?: string
+    /** the page being previewed, so `{{navigation}}` can mark the current item */
+    currentUrl?: string
+  }
+  /** Story 4.4's fixtures. `{{content}}` and `{{comments}}` resolve to what the shim is HANDED; with
+   *  none, the shim refuses rather than inventing a body (FR-H3). */
+  fixtures?: Readonly<Record<string, string>>
+  /** `design.json`'s `dataBindings` — the `{{#get}}` declarations a `data-repeat` names by key. */
+  dataBindings?: Readonly<Record<string, DataBinding>>
+  /** the rows the CALLER fetched for each `dataBindings` key. The shim builds the query; the editor
+   *  runs it, because AD-1 bans `fetch` in a core package. */
+  getRows?: Readonly<Record<string, readonly unknown[]>>
+  /** the compile target this render is for. `data-pagination` requires a paginated one (R-7) — a
+   *  `{{pagination}}` outside a paginated context is a FATAL render, not a warning. */
+  target?: string
 }
 
 // R2-7: the compiler's own tokens are built from C0 control characters, which a section author's
@@ -181,11 +231,16 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   'data-repeat-limit',
   'data-partial',
   'data-module',
+  // Story 4.3 — the three the shim owns. They come off the refused list in the same pass that
+  // builds the shim, because a shim nothing calls proves nothing.
+  'data-bind-srcset',
+  'data-helper',
+  'data-pagination',
 ]
 
-/** Derived, not written down. `data-t`/`data-t-attr` are 4.9's, `data-bind-srcset`/`data-helper`/
- *  `data-pagination` are 4.3's shim, `data-needs` is AD-37's compile-time placement question, and
- *  the rest are later stories'. They REFUSE rather than leak. */
+/** Derived, not written down. `data-t`/`data-t-attr` are 4.9's, `data-needs` is AD-37's
+ *  compile-time placement question, and the rest are later stories'. They REFUSE rather than
+ *  leak. */
 export const REFUSED_DIRECTIVES: readonly string[] = CONSUMED_DIRECTIVES.filter(
   (d) => !RENDERED_DIRECTIVES.includes(d),
 )
@@ -266,15 +321,23 @@ export function bindExpr(spec: string): string {
   return `{{${parsed.helper} ${parsed.path} ${h.param}="${parsed.arg ?? ''}"}}`
 }
 
+/** FR-J5 / exit construct 4. `{{img_url}}` returns a single URL string and emits NO `srcset` at
+ *  all, so the THEME composes one — one candidate per FR-J2 `image_sizes` key, from the one map,
+ *  each expression built by `bindExpr` so the path and the size are validated rather than
+ *  interpolated (AD-36 2). The `sizes` attribute is NOT emitted and is not bindable: it describes
+ *  the design's own layout, which the design knows and the runtime does not. */
+export function srcsetExpr(path: string): string {
+  return Object.entries(IMAGE_SIZES)
+    .map(([key, width]) => `${bindExpr(`${path}|img_url:${key}`)} ${width}w`)
+    .join(', ')
+}
+
 export function assertBindableAttr(attr: string): string {
   const bad = parseBindableAttr(attr)
   if (bad !== null) throw new Error(`AD-36: ${bad}`)
   return attr.toLowerCase()
 }
 
-/** AD-3's carve-out has no second colour to fall back to that the runtime can know, so it uses the
- *  pack's own accent token — FR-E1's `accent`, present in every pack and in `reference-tokens.css`. */
-const COLOUR_FALLBACK_TOKEN = '--accent'
 
 // ─── FR-H8, and the defect it was written from ───────────────────────────────
 
@@ -328,6 +391,20 @@ function refuseUnrendered(root: RuntimeElement): void {
   }
 }
 
+/** R-7, half one, made a refusal rather than a warning: `{{pagination}}` outside a paginated
+ *  context is a FATAL render. `compileTarget` is where the library states it (`validate.ts`'s
+ *  `pagination-target`); this is the same rule at render, because a render with no target named is
+ *  a render that cannot show it is legal. */
+function refuseUnpaginated(root: RuntimeElement, target?: string): void {
+  if (all(root, '[data-pagination]').length === 0) return
+  if (target !== undefined && PAGINATED_TARGETS.has(target)) return
+  throw new Error(
+    `data-pagination restricts this design to a paginated target (R-7) and this render names ` +
+      `${target === undefined ? 'none' : `"${target}"`}. Paginated: ${[...PAGINATED_TARGETS].join(', ')}. ` +
+      `A {{pagination}} outside a paginated context is a FATAL render, not a warning.`,
+  )
+}
+
 /** `users` is the WHOLE of the difference between the emitters at the binding sites: a `UserText`
  *  on the theme path, `null` on the canvas path. */
 function emitBindings(
@@ -341,7 +418,7 @@ function emitBindings(
   // Handlebars resolves `@site`, `@custom` and every other `@data` variable from the ROOT, wherever
   // the expression sits; a row inside `{{#foreach}}` does not shadow it. The canvas does the same.
   const resolve = (spec: string): string | null =>
-    bindValue(spec, spec.startsWith('@') ? (input.ghost ?? {}) : ctx)
+    bindValue(spec, spec.startsWith('@') ? (input.ghost ?? {}) : ctx, input.site)
 
   for (const el of all(scope, '[data-bind]')) {
     const spec = consume(el, 'data-bind') ?? ''
@@ -415,11 +492,117 @@ function emitBindings(
           continue // a null entry sets nothing and leaves the authored attribute alone
         }
         // AD-36 (1) on the canvas too: a `javascript:` URL here runs on Inflozo's own origin.
-        el.setAttribute(attr, URL_ATTRS.has(attr) ? safeUrl(v) : v)
+        // Story 4.3: through `ghostUrl`, not `safeUrl`. This is a GHOST binding, and the spine's
+        // Conventions row scopes Ghost-sourced values to `http`/`https` only — narrower than the
+        // user allow-list, which also permits `mailto:` and `tel:` because a Link Picker
+        // legitimately produces one. A `mailto:` arriving in `@site.logo` is not a feature.
+        el.setAttribute(attr, URL_ATTRS.has(attr) ? ghostUrl(v) : v)
       }
     }
     if (!removed && users !== null && mode === 'hide' && guardEntry !== undefined) {
       wrapGuard(doc, el, guardField(guardEntry.spec), tokens)
+    }
+  }
+
+  // ── Story 4.3, exit construct 4: a responsive image SET ────────────────────
+  // The binding grammar produces one expression per attribute and a candidate list needs several,
+  // which is the whole reason this directive exists. FR-H8 applies and the guard encloses the
+  // ELEMENT: an unguarded `srcset` renders a malformed attribute the browser resolves as a relative
+  // URL, producing live 404s on the customer's site.
+  for (const el of all(scope, '[data-bind-srcset]')) {
+    const spec = consume(el, 'data-bind-srcset') ?? ''
+    const path = splitFirst(spec, '|')[0] as string
+    const mode = guardMode(el, true) // a candidate list is the media case BY DEFINITION
+    if (users !== null) {
+      // ─────────── THE DIFFERENCE (2) — theme ───────────
+      el.setAttribute('srcset', tokens.put(srcsetExpr(path)))
+      if (mode === 'hide') wrapGuard(doc, el, guardField(spec), tokens)
+    } else {
+      // ─────────── THE DIFFERENCE (2) — canvas ───────────
+      const v = resolve(path)
+      if (v === null) {
+        if (mode === 'hide') el.remove()
+        continue
+      }
+      el.setAttribute('srcset', srcset(v, {
+        siteUrl: input.site?.url,
+        absolute: input.site?.url !== undefined,
+      }))
+    }
+  }
+
+  // ── Story 4.3, §7.3 gap row 9: a BARE helper, with no bound path ───────────
+  // `data-bind` cannot express one, because there is no path to bind. On the theme each is its own
+  // mustache; on the canvas the shim resolves it — and `{{content}}`/`{{comments}}` REFUSE when
+  // Story 4.4's fixture is absent, rather than rendering an empty body or an invented one (FR-H3).
+  for (const el of all(scope, '[data-helper]')) {
+    const name = consume(el, 'data-helper') ?? ''
+    if (users !== null) {
+      // ─────────── THE DIFFERENCE (2) — theme ───────────
+      // Double braces, never triple: compile CI asserts zero `{{{` in emitted output, and Ghost's
+      // `{{content}}` is already a SafeString.
+      el.textContent = tokens.put(`{{${name}}}`)
+      continue
+    }
+    // ─────────── THE DIFFERENCE (2) — canvas ───────────
+    if (name === 'navigation') {
+      // The shim returns DATA and the nodes are built here, because NFR-3 puts every Ghost value in
+      // a TEXT NODE and a shim with no DOM cannot break that rule by accident. The markup is Ghost's
+      // own navigation partial, recorded on both majors.
+      const ul = doc.createElement('ul')
+      ul.setAttribute('class', 'nav')
+      for (const item of navigationItems(input.site?.navigation ?? [], { currentUrl: input.site?.currentUrl })) {
+        const li = doc.createElement('li')
+        li.setAttribute('class', item.className)
+        const a = doc.createElement('a')
+        a.setAttribute('href', ghostUrl(item.url))
+        a.textContent = item.label
+        li.append(a)
+        ul.append(li)
+      }
+      el.textContent = ''
+      el.append(ul)
+      continue
+    }
+    if (name === 'content' || name === 'comments') {
+      // The ONE place a canvas render writes markup rather than a text node, and it is sanctioned:
+      // these are Inflozo-authored fixtures (FR-H3), trusted by construction, which is exactly why
+      // they can be rendered when a customer's real body HTML never is.
+      el.innerHTML = bareHelper(name, { fixtures: input.fixtures })
+      continue
+    }
+    el.textContent = bareHelper(name, {
+      ghost: input.ghost,
+      major: input.site?.major,
+      members: input.site?.members,
+      fixtures: input.fixtures,
+    })
+  }
+
+  // ── Story 4.3, §7.3 gap row 6: Ghost's NATIVE pagination ──────────────────
+  // `numbers` emits the page indicator and not a list of page links, and the reason is Ghost's:
+  // the pagination context carries `page` and `pages` and Handlebars has no way to loop a range,
+  // so a list of numbered links would have to be an Inflozo partial rendering something Ghost
+  // cannot count. Tracked as an open question rather than decided here (DW entry).
+  for (const el of all(scope, '[data-pagination]')) {
+    const which = consume(el, 'data-pagination') ?? ''
+    if (which === 'numbers') {
+      el.textContent = users !== null
+        ? tokens.put('{{pagination.page}} / {{pagination.pages}}')
+        : ((c) => `${c.page} / ${c.pages}`)(paginationContext(input.site?.pagination ?? {}))
+      continue
+    }
+    const field = `pagination.${which}`
+    if (users !== null) {
+      // ─────────── THE DIFFERENCE (2) — theme ───────────
+      el.setAttribute('href', tokens.put(`{{page_url ${field}}}`))
+      wrapGuard(doc, el, field, tokens)
+    } else {
+      // ─────────── THE DIFFERENCE (2) — canvas ───────────
+      const ctxPage = paginationContext(input.site?.pagination ?? {})
+      const n = which === 'prev' ? ctxPage.prev : ctxPage.next
+      if (n === null) el.remove() // the first page has no Newer link, exactly as {{#if}} does
+      else el.setAttribute('href', pageUrl(n, input.site?.paginationBase ?? '/'))
     }
   }
 
@@ -434,7 +617,7 @@ function emitBindings(
       // AD-36 (4), and the ceiling this runtime cannot close: the emitted mustache is correct
       // Handlebars and the VALUE arrives at render, on the customer's site, after every build-time
       // gate has run. AD-36's own text says so. The canvas below is the half that is reachable, and
-      // Story 4.3's shim will read the same `safeCssColor` when it renders a recorded value here.
+      // since Story 4.3 it reads the same `safeCssColor` through `ghostColor`.
       el.setAttribute(
         'style',
         tokens.put(`{{#if ${guardField(spec)}}}${prop}: ${bindExpr(spec)}{{/if}}`),
@@ -442,49 +625,41 @@ function emitBindings(
     } else {
       // ─────────── THE DIFFERENCE (2) — canvas ───────────
       const v = resolve(spec)
-      el.setAttribute('style', v === null ? '' : `${prop}: ${safeCssColor(v, COLOUR_FALLBACK_TOKEN)}`)
+      // DW-95: through the SHIM, which calls the library's one copy. AD-36 bullet 4 promises
+      // exactly this call, and until Story 4.3 it was a comment rather than a call.
+      el.setAttribute('style', v === null ? '' : `${prop}: ${ghostColor(v)}`)
     }
   }
 }
 
-/** AD-1 bans `Intl`, `toLocale*` and `Date.toString`/`getHours` because each reads the machine
- *  rather than the argument. UTC getters are the safe form, so the formatter is written from them
- *  and is deliberately small — the tokens Ghost's `{{date}}` examples use (moment's `YYYY`, `YY`,
- *  `MMMM`, `MMM`, `MM`, `DD`, `D`). Any other token is left as typed, which the canvas then shows,
- *  so an unsupported format is visible rather than silently different. */
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const MONTHS_LONG = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
-
-export function formatDate(raw: unknown, fmt?: string): string {
-  const d = new Date(typeof raw === 'number' ? raw : String(raw))
-  if (Number.isNaN(d.getTime())) return ''
-  const p2 = (x: number) => String(x).padStart(2, '0')
-  const map: Record<string, string> = {
-    YYYY: String(d.getUTCFullYear()),
-    YY: p2(d.getUTCFullYear() % 100),
-    MMMM: MONTHS_LONG[d.getUTCMonth()] as string,
-    MMM: MONTHS[d.getUTCMonth()] as string,
-    MM: p2(d.getUTCMonth() + 1),
-    DD: p2(d.getUTCDate()),
-    D: String(d.getUTCDate()),
-  }
-  // longest key first, so MMMM is not eaten by MM and DD is not eaten by D
-  return (fmt ?? 'YYYY-MM-DD').replace(/YYYY|YY|MMMM|MMM|MM|DD|D/g, (k) => map[k] as string)
-}
+// `formatDate` used to live here. Story 4.3 moved it to `packages/ghost-shim`, where FR-H5 puts
+// `{{date}}`, and the recording caught a real drift in the move: the DEFAULT format here was
+// `YYYY-MM-DD`, which was a paraphrase — `{{date published_at}}` prints `Jul 18, 2025` on both live
+// majors. It is re-exported above so nothing that imported it from here breaks.
 
 /** The canvas counterpart of `bindExpr`: same spec, same grammar, a value instead of a mustache.
  *  ONE parse — `parseBindSpec` — so an invalid spec fails IDENTICALLY on both emitters and the
  *  grammar is never re-derived here. A design the compiler refuses must not silently render. */
-export function bindValue(spec: string, ctx: unknown): string | null {
+export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']): string | null {
   const parsed = parseBindSpec(spec)
   if (typeof parsed === 'string') throw new Error(`AD-36: ${parsed}`)
   const raw = get(ctx, parsed.path)
   if (isEmpty(raw)) return null
   if (parsed.helper === 'date') return formatDate(raw, parsed.arg) // the format argument is HONOURED
-  return String(raw) // img_url: the size is a Ghost-side concern (4.3's shim owns it)
+  // NFR-3's third carve-out, and it lives in the shim so both renderers inherit it: an excerpt is
+  // TEXT-ONLY and SANITISED. It reaches the page as a text node either way, so the sanitiser's job
+  // here is that markup in a body does not become visible angle brackets on the canvas while the
+  // site shows Ghost's own stripped plaintext.
+  if (/(^|\.)(excerpt|custom_excerpt)$/.test(parsed.path)) return stripTags(raw)
+  if (parsed.helper === 'img_url') {
+    // Story 4.3: this used to be `String(raw)`, so the canvas showed the ORIGINAL image where the
+    // site serves a rendition — a card loading a 2400px photograph behind a 300px slot, which
+    // nobody would notice. Ghost answers a same-origin request with a RELATIVE sized URL (recorded),
+    // so the canvas asks for the absolute form: a relative URL on the canvas resolves against
+    // Inflozo's own origin and 404s.
+    return imgUrl(raw, parsed.arg, { siteUrl: site?.url, absolute: site?.url !== undefined })
+  }
+  return String(raw)
 }
 
 function applyProps(
@@ -564,6 +739,7 @@ function renderTree(
   const root = doc.createElement('div')
   root.innerHTML = src
   refuseUnrendered(root)
+  refuseUnpaginated(root, input.target)
 
   const partials: Record<string, string> = {}
   const ghost = input.ghost ?? {}
@@ -588,14 +764,30 @@ function renderTree(
       emitBindings(doc, holder, input, tokens, users, ghost)
       applyProps(holder, input, users)
       const body = holder.innerHTML
-      const open = `{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`
+      // §7.3 gap row 2 / exit construct 1, and the half that was missing until Story 4.3: a
+      // `data-repeat` naming a `dataBindings` KEY is a `{{#get}}`, not a `{{#foreach}}`. It used to
+      // emit `{{#foreach <key>}}` over a name that is not a context path, so the block silently
+      // rendered nothing. The query comes from the DECLARATION — there is no place in the markup
+      // where a filter could be composed (AD-36).
+      const query = (input.dataBindings ?? {})[source]
+      const open = query === undefined
+        ? `{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`
+        : `${getExpr(source, input.dataBindings)}\n{{#foreach ${query.source}}}`
+      const close = query === undefined ? '{{/foreach}}' : '{{/foreach}}\n{{/get}}'
+      if (query !== undefined && limit !== null) {
+        throw new Error(
+          `data-repeat="${source}" names the {{#get}} query "${source}", which declares its own ` +
+            `limit in dataBindings, and the element also carries data-repeat-limit. One number, ` +
+            `one place: the query's.`,
+        )
+      }
       let replacement: string
       if (partialName !== null) {
         if (partialName in partials) throw new Error(`data-partial "${partialName}" is declared twice`)
         partials[partialName] = body
-        replacement = `${open}\n  {{> "${partialName}"}}\n{{/foreach}}`
+        replacement = `${open}\n  {{> "${partialName}"}}\n${close}`
       } else {
-        replacement = `${open}\n${body}\n{{/foreach}}`
+        replacement = `${open}\n${body}\n${close}`
       }
       holder.replaceWith(doc.createComment(tokens.put(replacement)))
     }
@@ -625,8 +817,14 @@ function expandRepeats(
     const source = consume(el, 'data-repeat') ?? ''
     const limit = consume(el, 'data-repeat-limit')
     consume(el, 'data-partial')
-    const raw = get(source.startsWith('@') ? (input.ghost ?? {}) : ctx, source)
-    const rows = Array.isArray(raw) ? raw.slice(0, limit === null ? undefined : Number(limit)) : []
+    // A `dataBindings` key is not a context path: the shim builds the Content API query and the
+    // EDITOR runs it (AD-1 bans `fetch` here), so the rows arrive as an input.
+    const query = (input.dataBindings ?? {})[source]
+    const raw = query === undefined
+      ? get(source.startsWith('@') ? (input.ghost ?? {}) : ctx, source)
+      : input.getRows?.[source]
+    const cap = query === undefined ? limit : (query.limit === undefined ? null : String(query.limit))
+    const rows = Array.isArray(raw) ? raw.slice(0, cap === null ? undefined : Number(cap)) : []
     for (const row of rows) {
       // Inserted BEFORE it is walked, so a guard that removes the clone (a `hide` on the repeated
       // element itself) is final rather than undone by a later insert.
