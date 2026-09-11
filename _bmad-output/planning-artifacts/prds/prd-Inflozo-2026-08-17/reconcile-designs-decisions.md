@@ -1900,6 +1900,30 @@ of transitions" is amended to say so; a site that STAYS broken is still told onc
   ✅ `lib/health-rule.ts` (`writePlan`, `emailAllowed`'s header) and `health-rule.test.ts` ·
   ✅ `server/site-health.ts`'s header.
 
+## A23 · Step 7 — Story 4.1's Create, one ruling on the section content model, 2026-09-11
+
+Taken as Story 4.1 (the registry format and the annotated-HTML authoring vocabulary) was planned. The
+question went to the owner in R-83's shape because `reconcile-designs.md` marks it three times as an
+FR-G3 ask with **"no owner; needs one"** — and a `record` cannot be amended to answer itself. He ruled
+the same day, on the option the spec had been built on, so nothing in the story's plan moved.
+
+**R-102 — a content prop never crosses a category boundary.** Option 1 of Story 4.1's Question 1,
+ruled 2026-09-11: *"Each section keeps its own words."* FR-G3 makes `contentSchema` the **category's**
+union, while `reconcile-designs.md` asks three times where a prop two categories both want should live
+— `email*` shared between A22 and A3-4 (`:501`), `newsletter*` (`:754`), summarised at `:811`. The
+owner ruled that the union is the widest a prop ever reaches: two categories that ask for the same
+thing each carry their own prop, and a customer who wants the same words in both types them twice.
+**The refusal is the load-bearing half.** A shared prop would mean editing a footer silently rewrites
+a section on another page — and it would give a customer who wants the footer's signup to read
+differently no way to separate them at all. There is therefore no shared prop, no shared namespace to
+hang one on, and no cross-category carry; FR-D19 parks against the category union and nothing wider.
+- Targets: ✅ Story 4.1's spec (Always, Never, the Code Map and the ruling under `## Questions for the
+  owner`) · ⬜ `docs/section-authoring.md`, which states it as a rule of the content model (Story 4.1's
+  Dev run) · ✅ `epic-4-context.md`. **Deliberately not touched:** `reconcile-designs.md` — it is a
+  `record` and its three asks stay as the history of what was open (standing rule 5); `prd.md` FR-G3,
+  which already says `contentSchema` is the category's union and needed no amendment, only a decision
+  that nothing widens it.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

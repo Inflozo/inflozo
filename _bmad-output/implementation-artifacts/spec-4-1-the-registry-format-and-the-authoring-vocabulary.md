@@ -61,6 +61,10 @@ thing that was proven to work.
   `quickControls[]` is **recovered mechanically** as the first 3–5 of the design's own control
   list, read from the design and never from the category union — so a hand-written
   `quickControls` in a `design.json` is a validation failure, not an override.
+- **The category's union is the widest a prop ever reaches** — the owner's ruling on Question 1
+  (option 1, 2026-09-11): each kind of section keeps its own words. Two categories that ask for the
+  same thing each carry their own prop; there is no shared prop, no shared namespace and no
+  cross-category carry, so editing a footer can never rewrite a section on another page.
 - **`bindingContext` has no `page` value** and takes only `none · post · posts · tag · tags ·
   author · authors · tiers · error · private`. **`compileTarget` is a refusal, not a hint** (R-7):
   a design declaring pagination is restricted to paginated targets, and one declaring a `{{#get}}`
@@ -75,11 +79,10 @@ thing that was proven to work.
 - Every commit runs `python3 tools/doc-audit.py --check` first and pushes green (R-81).
 
 **Ask First:**
-- Whether content a customer types in one category's section is shared with another category's —
-  under `## Questions for the owner`. The spec is written to the recommended option, so Dev is not
-  blocked; a ruling the other way changes `contentSchema`'s shape and nothing else.
+- Question 1 is ruled and nothing else is outstanding.
 - Any construct in §7.3's list that cannot be expressed without contradicting an approved decision
-  — flag it, do not invent a decision the owner never made (standing rule 6).
+  — flag it, do not invent a decision the owner never made (standing rule 6). It goes under
+  `## Questions for the owner` in R-83 shape and the run stops there.
 
 **Never:**
 - **No renderer and no emitter.** Story 4.2 owns the two emitters and their node-by-node agreement;
@@ -91,6 +94,9 @@ thing that was proven to work.
 - **No design is authored.** The library's own designs belong to E9–E11. The one markup file this
   story writes is a **fixture** that exercises every directive, lives outside `designs/`, and
   carries no category id, so it can never be mistaken for a library entry.
+- **No cross-category shared prop, and no shared-prop namespace to hang one on.** It is the option
+  the owner did not take — do not reintroduce it as a convenience when `email*` or `newsletter*`
+  turns up in a second category's union.
 - No new runtime dependency. The validator is a lexical check over directive tokens and their
   values; the tree-aware parse is 4.2's, with 4.2's parser.
 - Never edit the design export (R-74), and never hand-edit a generated file.
@@ -158,7 +164,8 @@ thing that was proven to work.
   row 8 struck), R-16 (`:91`, the category unions are not regenerated — the input this story's
   generator will one day read).
 - `.../reconcile-designs.md` `:501`, `:753`, `:754`, `:811` -- the FR-G3 asks marked "**no owner;
-  needs one**". Two are answered by reading normative documents (below); the third is the owner's.
+  needs one**". Two are answered by reading normative documents (below); the third — cross-category
+  shared props — is **ruled by the owner on 2026-09-11** and closes with this story, refused.
 - `tools/export-roster.py` -- every live category and design as JSON (`n`, `name`, `tuple`,
   `modules`, `descriptor`). The identity source a later story's registry check reads; not consumed
   here, because no design is authored here.
@@ -172,7 +179,10 @@ thing that was proven to work.
       format, field by field, and the statement — absent from every document today — that an entry
       is **assembled** from the design's directory path, its `design.json`, its category's
       `content.json` and the four files, so "registry entry" and "`design.json`" are not the same
-      list; (2) the `design.json` and `content.json` shapes with a complete worked example of each;
+      list; (2) the `design.json` and `content.json` shapes with a complete worked example of each,
+      **carrying R-102 as a stated rule of the content model** — the category's union is the widest
+      a prop reaches, and this is the one ⬜ left on that ruling's propagation list in
+      `reconcile-designs-decisions.md` § A23, to be ticked there when it lands;
       (3) the directive vocabulary — every directive, its grammar, what each emitter does with it,
       and a worked example; (4) the refusals, each with the reason. Carry the zero-width-entity
       warning the design export's kits use, because a literal `{{ … }}` in an example renders empty.
@@ -353,7 +363,15 @@ different things — a footer signup is terser than a section built to sell the 
 does want the same words in both, she types them twice; if she does not, option 2 gives her no way
 to separate them at all.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-11).** *"Each section keeps its own words."* The spec was already
+written to this option, so nothing in the build moves. What the ruling settles is the other
+direction: `contentSchema` stays **the category's union and nothing wider**, and a cross-category
+shared prop — one `newsletter.heading` or `email.label` reaching across category boundaries — is
+now a thing this story must **not** add, and a later story must not add either without coming back
+here. The three FR-G3 asks in `reconcile-designs.md` that ask for cross-category shared props
+(`email*` ×5 with A3-4 at `:501`, `newsletter*` at `:754`, summarised at `:811`) are answered by
+this ruling and close with it; a design in two categories that wants the same words carries the
+prop twice, once per category union.
 
 ## Verification
 
