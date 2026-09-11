@@ -2,9 +2,9 @@
 title: 'Story 3.7 — The daily health check, the reconnect email, and the card''s connection controls'
 type: 'feature'
 created: '2026-09-10'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'a0748b7ad9a4a6fda3cb557544f8bbc80ebb6003'
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
 
@@ -733,3 +733,8 @@ entry (standing rule 3) rather than opened as a new one.
 - `python3 tools/probe/run-verify-site-health.py --check` and `... ` (apex) — not re-run in this
   phase: the Review phase already ran both to green against this exact commit (all 11, then all 15,
   steps PASS) and nothing has changed in the tree since.
+
+## Owner's test findings
+
+Tested on `app.inflozo.com` on **2026-09-11**, on the deployment confirmed at the Deploy phase
+(`44efa140`). **Passed.** No findings. The story moves to Done.
