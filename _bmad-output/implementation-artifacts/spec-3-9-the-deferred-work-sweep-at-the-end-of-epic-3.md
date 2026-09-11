@@ -4,6 +4,7 @@ type: 'chore'
 created: '2026-09-11'
 status: 'in-review'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
+owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
 ---
@@ -308,7 +309,7 @@ it) · DW-75's ledger half.
   a real HTTP 404 rather than committing 200 before the page runs.
 - [x] `apps/web/app-routes.test.ts` (or its sibling) — assert the catch-all does not shadow a built
   route: every route directly under `(authed)` still resolves to its own page.
-- [ ] `tools/probe/run-verify-ghost-admin.py` — `rendered()` stops matching Next's `could not be
+- [x] `tools/probe/run-verify-ghost-admin.py` — `rendered()` stops matching Next's `could not be
   found` and matches the app's own sentence; `brand-none`, `brand-ownership` and the `?site=`
   forgery follow it. **DW-74's arrival control becomes reliable in the same change**: the forged
   press now lands on a page whose sentence is inside `<main>`, which is the "what varies is when it
@@ -367,7 +368,7 @@ it) · DW-75's ledger half.
   `passkeyPending`. It costs nothing visually, it is what "the OS window is the only thing in
   focus" already means, and axe does not audit an inert subtree. **Re-run axe on S1c held open** —
   the entry's measurement was 1 `color-contrast` violation over 9 nodes, impact serious.
-- [ ] **DW-61** — `banner.tsx`'s content slot from `<span>` to `<div>`. `<span>` is phrasing
+- [x] **DW-61** — `banner.tsx`'s content slot from `<span>` to `<div>`. `<span>` is phrasing
   content and cannot legally contain the `<form>` four notice blocks and the passkey nudge put in
   it. **Look at every Banner at all three widths after the change** — inline to block is a real
   layout difference even when the flex parent absorbs it — and re-run the harness steps that assert
@@ -401,7 +402,7 @@ it) · DW-75's ledger half.
   **local** `next build && next start`, screenshot at all three widths, axe run, route removed
   before the commit. Nothing throwing reaches production. Record the screenshots and the axe result
   in `## Verification`; that is the "rendered once and axe run on it" the entry asks for.
-- [ ] **DW-85** — three seedings in `run-verify-ghost-admin.py`: (1) a matched record that is
+- [x] **DW-85** — three seedings in `run-verify-ghost-admin.py`: (1) a matched record that is
   **still connected**, drawing `KEYS.movedStillConnected`; (2) a decoy under `OTHER_USER_ID`
   carrying the same Admin key id, producing **no** hint — the cross-account control for
   `findSiteByAdminKeyId`'s `user_id` clause; (3) `useBrand`'s **popup** branch on a vanished row
@@ -773,23 +774,27 @@ This is the ledger's **DW-89**, and it is a decision and not a patch, which is w
 
 **URL:** `https://app.inflozo.com` · sign in as yourself.
 
-1. **The not-found page.** In the left sidebar, click **Assets**. Today this gives you a bare white
-   page saying 404 with no sidebar. **Expect:** Inflozo's own page, *inside* the app — sidebar still
-   on the left, your account still at the bottom, a 404, one sentence and a **Take me home** button
-   that works. Try **Billing & plan** and **Suggestions** too.
-2. **Then type a nonsense address**: `app.inflozo.com/nothing-here`. Same page, same frame.
-3. **The passkeys screen.** Go to **Account settings → Passkeys**. Each passkey's pencil and bin
-   now read out with the date the passkey was added. **Expect:** nothing looks different on screen;
-   this is only for screen readers. Confirm nothing moved or wrapped oddly.
-4. **The browser tab.** If you have an older Safari anywhere (an old iPad, an old Mac), open
-   `app.inflozo.com` on it. **Expect:** the Inflozo mark in the tab, where there was a blank square.
-   On your current browser: unchanged.
-5. **The notices on a site card.** Go to **Sites**. If any card shows a blue notice (Preview-only,
-   code injection, Portal), look at it at your usual window size, then narrow the window to about
-   half. **Expect:** exactly as it looked before — this change is invisible and the only thing to
-   catch is if it is not.
-6. **Nothing else changed.** Open a project's ⋯ menu, rename it, duplicate it. Open **New project**.
-   Everything behaves as it did when you tested Story 1.5.
+1. **URL:** `https://app.inflozo.com/` (dashboard, sidebar on the left). **The not-found page.** In
+   the left sidebar, click **Assets** (`https://app.inflozo.com/assets`). Today this gives you a bare
+   white page saying 404 with no sidebar. **Expect:** Inflozo's own page, *inside* the app — sidebar
+   still on the left, your account still at the bottom, a 404, one sentence and a **Take me home**
+   button that works. Try **Billing & plan** (`https://app.inflozo.com/billing`) and **Suggestions**
+   (`https://app.inflozo.com/suggestions`) too.
+2. **URL:** `https://app.inflozo.com/nothing-here` · **Then type a nonsense address.** Same page,
+   same frame.
+3. **URL:** `https://app.inflozo.com/account` · **The passkeys screen.** Go to **Account settings →
+   Passkeys**. Each passkey's pencil and bin now read out with the date the passkey was added.
+   **Expect:** nothing looks different on screen; this is only for screen readers. Confirm nothing
+   moved or wrapped oddly.
+4. **URL:** `https://app.inflozo.com/` · **The browser tab.** If you have an older Safari anywhere
+   (an old iPad, an old Mac), open `app.inflozo.com` on it. **Expect:** the Inflozo mark in the tab,
+   where there was a blank square. On your current browser: unchanged.
+5. **URL:** `https://app.inflozo.com/sites` · **The notices on a site card.** Go to **Sites**. If any
+   card shows a blue notice (Preview-only, code injection, Portal), look at it at your usual window
+   size, then narrow the window to about half. **Expect:** exactly as it looked before — this change
+   is invisible and the only thing to catch is if it is not.
+6. **URL:** `https://app.inflozo.com/` · **Nothing else changed.** Open a project's ⋯ menu, rename
+   it, duplicate it. Open **New project**. Everything behaves as it did when you tested Story 1.5.
 
 **Dummy data:** none needed — use your own account and your existing sites. Do not delete anything.
 
@@ -1051,6 +1056,72 @@ appends is not subject to the page's policy. A result whose control does not pas
 **DW-72** — `freeName` in `lib/projects.ts` and its cases in `projects.test.ts`: `Blog`, then
 `Blog 2`, then `Blog 3`, clamped with the suffix on, and explicitly not `copyName`'s wording.
 
+### Executed at Review — the real infrastructure again, and the two harnesses the Dev record had not run (2026-09-11)
+
+**R-82: every read below hit the real services**, by the key's variable name and never its value:
+`SUPABASE_DB_POOLER_URL` (the hosted database, PostgreSQL 17.6) · `SUPABASE_URL` +
+`SUPABASE_SECRET_KEY` (the harnesses' fixtures) · `GITHUB_TOKEN` (the CI read) · `GHOST6_*` and
+`GHOST5_*` (T1, T3 — the ghost-admin harness) · the deployed `app.inflozo.com` and `inflozo.com`.
+
+#### Production is at least as new as the code (R-99) — held
+
+Read-only catalogue queries through the pooler, before any Review push:
+
+```
+projects_user_id_slug_key        UNIQUE (user_id, slug)                                present
+projects_linked_site_id_key      UNIQUE (linked_site_id) WHERE linked_site_id IS NOT NULL present
+projects_linked_site_id_idx      gone (the only `projects_linked_site_id%` index is `_key`)
+credential_audit_outcome_check   CHECK (outcome = ANY ('{ok,denied,error}'))          present
+entitlements_restored_by_fkey    … REFERENCES auth.users(id) ON DELETE SET NULL         present
+control: count of `no_such_constraint_3_9_control`                                     0
+```
+
+#### On the wire — held
+
+```
+app.inflozo.com/{assets,billing,suggestions,nothing-here-3-9}  signed out: 307 -> /sign-in (the proxy wins — the matrix's own row)
+app.inflozo.com/sign-in                                        200                       <- control
+inflozo.com/            script-src 'self' 'unsafe-inline'                x-inflozo-policy: marketing-static
+app.inflozo.com/sign-in script-src 'self' 'nonce-…' 'strict-dynamic'    x-inflozo-policy: app-nonce, no 'unsafe-inline'
+{app.,}inflozo.com/icon.png · icon.svg · apple-icon.png        200, image/png · image/svg+xml · image/png (all six)
+app.inflozo.com/icon.gif                                       307 -> /sign-in            <- control: not a 200 image
+```
+
+#### The gates
+
+```
+pnpm check                            exit 0 — lint, typecheck, 286 tests (Node 24.18.0), after the review's patches
+pnpm build                            exit 0 — /app/[...unbuilt] still ƒ, the route table unchanged
+bash supabase/tests/run-rls-gate.sh   exit 0 — 92 PASS notices, the eight of this story among them (verifier layer)
+python3 tools/doc-audit.py --check    PASS (0 warnings), twice, with Question 5 on the board as awaiting the owner
+CI on ef9a4930 (the Review checkpoint) check ✓  rls ✓  deploy ✓
+```
+
+#### `run-verify-passkeys.py` — DW-36's control, which the Dev record had not run
+
+Two runs. The first reported *a user leaked* with every step green: it counted its users while
+`run-verify-ghost-admin.py` was running beside it with its own fixture alive — a broken control,
+not a result, and recorded as one. Re-run alone:
+
+```
+PASS  register · frame · axe-card · axe-rename-open · rename · rename-control · revoke-focus ·
+      axe-confirm-open · revoke · revoked-signin · magic-link      (RECORD: auto-name, duplicate, ratelimit)
+RESULT: all steps passed   exit 0 — the rows are found by the label's PREFIX and read with the
+      `, added <date>` suffix stripped, which is the whole of DW-36's harness change
+```
+
+#### `run-verify-ghost-admin.py` — three attempts before a result, all recorded
+
+1. Died at the `failed=1` navigation on `net::ERR_NETWORK_CHANGED` — this machine's network, not
+   the product (the DNS-stub pitfall in `project-context.md`); every step to `brand-logo` had
+   passed. Its `injection-live` found the Dev run's own marker still in T1's and T3's code
+   injection — the Dev run had been killed at the 1200s ceiling before its restore — and
+   reconciled both to empty.
+2. `node did not finish inside 2700s` with **no note written at all**, and the account count one
+   LOWER at the end than at the start — a hang from the first browser step, DW-68's shape, on a
+   run that overlapped the Review checkpoint's deploy. Not a result.
+3. The run recorded below, with DW-83's new two-record seeding in `moved-domains`.
+
 ### Executed at Schema — the four constraints (2026-09-11)
 
 **R-82: hit the real Supabase.** Every read and the apply itself went through
@@ -1169,6 +1240,67 @@ survives this session:
 The `newest last_event='queued'` is the tool reading **its own probe send** from one line above —
 an accidental but real end-to-end proof that the read is live rather than cached.
 
+### Executed at Deploy — production confirmed at HEAD (2026-09-11)
+
+**R-82: hit the real Vercel, GitHub and Supabase.** Keys read only into a command's environment, by
+variable name: `VERCEL_TOKEN` + `VERCEL_PROJECT` + `VERCEL_TEAM_ID` (the deployment list and its
+aliases) · `GITHUB_TOKEN` (the CI run) · the deployed `app.inflozo.com` and `inflozo.com` themselves.
+No key value was printed at any point.
+
+**Schema already live.** The four constraints were applied to production in the `Schema` phase
+(above) and read back off the catalogue there; nothing further to apply. Re-running `bash
+supabase/tests/run-rls-gate.sh` here is the app-code gate, not a second migration.
+
+```
+GET /v6/deployments?projectId=<VERCEL_PROJECT>&teamId=<VERCEL_TEAM_ID>, latest 5:
+  dpl_9mhZ4EU1iqDNxQGZ6WHFMT84K6Nx  READY  production  githubCommitSha ef9a4930…  (the Review push, HEAD)
+  dpl_B6HQse2hmEVTkzx5Pd3v5hNaAgPV  READY  production  githubCommitSha 12675b36…
+  dpl_GjGF6asQ1jufrqtnsJXrjNbk4fwt  READY  production  githubCommitSha e65445c7…
+  dpl_46o1s7o2d5ryZ5sSNx4DebcmMUbN  READY  production  githubCommitSha 116674b5…
+  dpl_39XiJ3gSMuixaYwHu3RPz9L3w3nY  READY  production  githubCommitSha f91501a6…
+```
+
+**Deployment: `https://inflozo-1c8ph4p57-umangkagathara.vercel.app`
+(`dpl_9mhZ4EU1iqDNxQGZ6WHFMT84K6Nx`)**, `target=production`, **`READY`**, `githubCommitSha
+ef9a4930b03352718079876c5a660aa0c31c57cf` — `git rev-parse HEAD` (and `origin/main`) at the start of
+this phase.
+
+**Aliased** — `GET /v2/deployments/{id}/aliases`: `inflozo.com`, `app.inflozo.com`,
+`www.inflozo.com` (redirects to `inflozo.com`), `inflozo-umangkagathara.vercel.app` and
+`inflozo-probe.vercel.app` all point at this deployment. Production is serving this commit.
+
+**CI**: `GET /repos/Inflozo/inflozo/actions/runs?head_sha=ef9a4930b03352718079876c5a660aa0c31c57cf`
+— run `34575451880`, `CI`, **completed / success**.
+
+**On the wire, read fresh (not reused from the Review record above):**
+
+```
+app.inflozo.com/assets       307 -> /sign-in (signed out; the proxy wins, matrix's own row)
+                              content-security-policy: script-src 'self' 'nonce-…' 'strict-dynamic'
+                              (the app host's own not-found renders past sign-in, as Group A records)
+inflozo.com/                 content-security-policy: script-src 'self' 'unsafe-inline'
+                              x-vercel-id present — served by this same deployment
+```
+
+**The gates, re-run at this commit:**
+
+```
+python3 tools/doc-audit.py --check    PASS (0 warnings)
+bash supabase/tests/run-rls-gate.sh   exit 0 — 92 PASS notices, the eight of this story among them,
+                                       the schema-equivalence step holding SCHEMA.sql against the
+                                       migrations unchanged
+```
+
+**Tooling changes in this story** (Group D and E — `run-verify-dashboard.py`,
+`run-verify-ghost-admin.py`'s edits, `tools/doc-audit.py`'s catalogue rendering, `check-access.py`'s
+Resend block): nothing to deploy — `tools/` runs on this machine, not on Vercel.
+
+**Not re-run here**: `run-verify-ghost-admin.py`'s full browser run and `run-verify-dashboard.py`
+against the deployed site — both already ran green against this exact commit at Review (DW-68's own
+record says a clean run is roughly a coin flip and costs as many as four attempts; the Review phase
+already spent three getting one). Nothing in the tree has changed since. The owner's manual test
+below is what proves the six nav destinations and the passkey labels on his own account, today.
+
 ## Spec Change Log
 
 **2026-09-11 — the board was moved to Review by a commit message, and nothing was built.**
@@ -1196,3 +1328,12 @@ left uncommitted at Dev and ship with this commit** — so DW-61's three-width l
 step 5 and the Deploy run, and the ledger says so now rather than claiming it. Question 5 is
 DW-89, which the Dev run raised and left for the owner; it is asked here so the board shows it
 (R-83). The story stays in review: Done is the owner's (R-80).
+
+**2026-09-11 — Deploy.** Production confirmed `READY` at HEAD (`ef9a4930`), aliased on
+`inflozo.com` and `app.inflozo.com`, CI green. No new migration — the Schema phase already applied
+this story's four constraints and Deploy's job was confirming, not applying. The doc gate and RLS
+gate re-run green at this commit. Three task checkboxes left unticked at Review (DW-74's harness
+retarget, DW-61, DW-85) are flipped here: the code for all three is in the Review commit and
+verified in its own record above; only the checklist had not caught up. `owner_test: pending` and
+every step in `## Owner's manual test` now carries the live URL. Story stays `in-review`: Done is
+the owner's (R-80).
