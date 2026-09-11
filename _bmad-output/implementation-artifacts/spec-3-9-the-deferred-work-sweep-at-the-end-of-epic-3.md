@@ -2,7 +2,8 @@
 title: 'Story 3.9 — The deferred-work sweep at the end of Epic 3'
 type: 'chore'
 created: '2026-09-11'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
 ---
@@ -265,12 +266,12 @@ it) · DW-75's ledger half.
 
 ### Schema phase — pushed first, on its own (R-99)
 
-- [ ] **Read production before writing the migration.** Through `SUPABASE_DB_POOLER_URL`: any
+- [x] **Read production before writing the migration.** Through `SUPABASE_DB_POOLER_URL`: any
   `(user_id, slug)` duplicated in `projects`; any `linked_site_id` carried by two projects; any
   `private.credential_audit.outcome` outside `('ok','denied','error')`; any non-null
   `entitlements.restored_by`. **A constraint that would fail on live data stops the run and becomes
   a question for the owner**, not a `not valid` constraint added quietly.
-- [ ] `supabase/migrations/20260911100000_sweep_constraints.sql` — **new**, four statements:
+- [x] `supabase/migrations/20260911100000_sweep_constraints.sql` — **new**, four statements:
   `unique (user_id, slug)` on `public.projects` (**DW-24**); a partial unique index
   `projects (linked_site_id) where linked_site_id is not null`, FR-B5's "at most one" made
   structural rather than a comment (**DW-69**); `check (outcome in ('ok','denied','error'))` on
@@ -278,18 +279,18 @@ it) · DW-75's ledger half.
   `on delete set null` — drop and re-add the bare constraint, the one user reference in the schema
   that cascades neither way (**DW-45**). Each statement carries the DW id and the FR it makes
   structural in a comment beside it.
-- [ ] `…/SCHEMA.sql` — the same four, in the cumulative picture, replacing the comments that stood
+- [x] `…/SCHEMA.sql` — the same four, in the cumulative picture, replacing the comments that stood
   in for them. `:243`'s plain `create index on public.projects (linked_site_id)` is **replaced**,
   not duplicated, by the partial unique index.
-- [ ] `…/RLS-TEST.sql` — four assertions, each of which turns red if its constraint is reverted
+- [x] `…/RLS-TEST.sql` — four assertions, each of which turns red if its constraint is reverted
   (the file is mutation-tested and is the count of its own assertions), **plus DW-80's fixture**:
   begin, insert a credential row and its audit row, force a failure, roll back, assert
   `private.credential_audit` is unchanged. Then `cp` both files into `supabase/tests/`.
-- [ ] `bash supabase/tests/run-rls-gate.sh` green, and **the control**: revert one constraint in a
+- [x] `bash supabase/tests/run-rls-gate.sh` green, and **the control**: revert one constraint in a
   scratch copy and watch the gate go red.
-- [ ] **Apply the migration by hand to production** before the Dev phase pushes code that depends
+- [x] **Apply the migration by hand to production** before the Dev phase pushes code that depends
   on it — this is the whole of R-99, and Story 3.6 is why it exists.
-- [ ] Commit and push alone: `Story 3.9 - Schema - four constraints the ledger asked for`.
+- [x] Commit and push alone: `Story 3.9 - Schema - four constraints the ledger asked for`.
 
 ### Group A — the branded not-found (DW-17, DW-26, DW-67, DW-74, DW-18's app half)
 
@@ -725,6 +726,75 @@ alone. Named below is what each group must hit.*
   `app.inflozo.com/sign-in` as the control in the same run; the four Resend answers — the new
   reading key, the send-only key, a bogus key, no key — recorded verbatim.
 - **Everything:** `python3 tools/doc-audit.py --check` and CI green, the deploy job reached.
+
+### Executed at Schema — the four constraints (2026-09-11)
+
+**R-82: hit the real Supabase.** Every read and the apply itself went through
+`SUPABASE_DB_POOLER_URL` (the hosted database; the direct host is IPv6-only). No key value was
+printed at any point.
+
+**1. Production read BEFORE the migration was written** — the task that decides whether a
+constraint may be added VALID or has to become a question for the owner. All four were clear:
+
+```
+duplicate (user_id, slug) in public.projects                  -> (none)
+linked_site_id carried by two projects                        -> (none)
+private.credential_audit.outcome outside ok/denied/error      -> (none)
+  the outcomes actually present: ok 2203, error 390, denied 12  (2605 rows)
+non-null public.entitlements.restored_by                      -> (none)
+entitlements_restored_by_fkey, as it stood                    -> FOREIGN KEY (restored_by) REFERENCES auth.users(id)
+row counts                                                    -> projects 4, entitlements 9, credential_audit 2605
+```
+
+So all four are added **valid**, not `not valid`.
+
+**2. The RLS gate, green** — `bash supabase/tests/run-rls-gate.sh`, PostgreSQL 17 in its own
+container, every migration applied then the proof. Its step 3 also diffs the database the
+migrations build against the one `SCHEMA.sql` describes, which is what proves the cumulative
+picture was edited to match the migration rather than approximately:
+
+```
+PASS (DW-24): a second project with a taken slug is refused by the database (23505)
+PASS (DW-24): the same slug under a DIFFERENT account is still allowed
+PASS (DW-69): a second project on one linked site is refused by the database (23505)
+PASS (DW-69): two projects with a null linked_site_id are still allowed
+PASS (DW-53): the audit log refuses an unknown outcome (23514)
+PASS (DW-53): the three real outcomes still write
+PASS (DW-45): purging the restorer nulls the column and the entitlement row survives
+PASS (DW-80): a store that fails inside its transaction leaves no audit row behind
+exit 0
+```
+
+**3. THE CONTROL — each constraint reverted in a scratch copy, one at a time** (standing rule 2: a
+gate that cannot fail is not a gate). The revert is made in the migration **and** in `SCHEMA.sql`,
+so the schema-equivalence step still passes and the failure that arrives is the assertion's:
+
+```
+DW-24 reverted -> exit 3  ERROR: FAIL (DW-24): one account took the slug `blog` twice
+DW-69 reverted -> exit 3  ERROR: FAIL (DW-69): two projects claimed the same linked_site_id
+DW-53 reverted -> exit 3  ERROR: FAIL (DW-53): private.credential_audit accepted an outcome outside ok/denied/error
+DW-45 reverted -> exit 3  ERROR: update or delete on table "users" violates foreign key constraint
+                                 "entitlements_restored_by_fkey" on table "entitlements"
+```
+
+DW-45's revert reproduces the entry's exact claim — `23503`, the purge refused — rather than a
+sentence about it. DW-69's **first** attempt went red on `SCHEMA DRIFT` instead, because deleting
+the unique index left the plain one behind in the migration only; re-run as a true revert (the
+plain index restored on both sides) it goes red on its own assertion, which is the result recorded
+above.
+
+**4. Applied by hand to production** (R-99), then read back off the catalogue:
+
+```
+projects_user_id_slug_key      CREATE UNIQUE INDEX … ON public.projects USING btree (user_id, slug)
+projects_linked_site_id_key    CREATE UNIQUE INDEX … ON public.projects USING btree (linked_site_id)
+                                 WHERE (linked_site_id IS NOT NULL)
+projects_linked_site_id_idx    — gone, replaced rather than joined
+credential_audit_outcome_check CHECK ((outcome = ANY (ARRAY['ok','denied','error'])))
+entitlements_restored_by_fkey  FOREIGN KEY (restored_by) REFERENCES auth.users(id) ON DELETE SET NULL
+```
+
+The database is now ahead of the code, which is the whole of R-99.
 
 ### Executed at Create — DW-22, the Resend reading key (2026-09-11)
 

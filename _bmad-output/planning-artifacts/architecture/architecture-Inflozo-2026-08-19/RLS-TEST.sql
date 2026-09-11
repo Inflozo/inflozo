@@ -1250,3 +1250,111 @@ begin
   if n <> 0 then raise exception 'FAIL (DW-44): the site row survived the account being deleted'; end if;
   raise notice 'PASS (DW-44): deleting an account takes its sites'' secrets out of the vault';
 end $$;
+
+-- ── STORY 3.9 — the four constraints of 20260911100000, and the rollback DW-80 named ─────────────
+--
+-- BEHAVIOURAL, NOT CATALOGUE. Each of the first four does the thing the constraint forbids and
+-- insists on the refusal, so reverting one statement in the migration turns exactly one assertion
+-- red — which is the control the Schema phase runs (revert in a scratch copy, watch the gate fail).
+-- A `select … from pg_constraint` would pass on a constraint that existed and did not bite.
+--
+-- The fifth is DW-80's, and it is a different shape: it INDUCES the failure the claim is about.
+-- "A store that rolls back leaves no audit row" was asserted in the migration, the spec, the ledger
+-- and the code, and induced nowhere — a structural claim with no control is still a claim without
+-- a control (standing rule 2). This is the container's job precisely because inducing the failure
+-- means reaching past the application into its transaction.
+do $$
+declare
+  a    uuid = '55555555-5555-5555-5555-555555555555';
+  b    uuid = '66666666-6666-6666-6666-666666666666';
+  site uuid = 'aaaaaaaa-0000-0000-0000-000000000039';
+  n int;
+begin
+  delete from auth.users where id in (a, b);
+  insert into auth.users(id) values (a), (b);
+  insert into public.sites(id, user_id, url) values (site, a, 'https://sweep-39.example');
+
+  -- (1) DW-24 — `unique (user_id, slug)`, scoped to the OWNER and not global.
+  insert into public.projects(user_id, name, slug, style_pack) values (a, 'One', 'blog', '{}');
+  begin
+    insert into public.projects(user_id, name, slug, style_pack) values (a, 'Two', 'blog', '{}');
+    raise exception 'FAIL (DW-24): one account took the slug `blog` twice';
+  exception when unique_violation then
+    raise notice 'PASS (DW-24): a second project with a taken slug is refused by the database (%)', sqlstate;
+  end;
+  -- and the half that would be a bug if the constraint were global: B may have a `blog` too.
+  insert into public.projects(user_id, name, slug, style_pack) values (b, 'Theirs', 'blog', '{}');
+  raise notice 'PASS (DW-24): the same slug under a DIFFERENT account is still allowed';
+
+  -- (2) DW-69 — the partial unique index on `linked_site_id`, FR-B5's "at most one" made structural.
+  update public.projects set linked_site_id = site where user_id = a and slug = 'blog';
+  begin
+    insert into public.projects(user_id, name, slug, style_pack, linked_site_id)
+      values (a, 'Second brand', 'blog-2', '{}', site);
+    raise exception 'FAIL (DW-69): two projects claimed the same linked_site_id';
+  exception when unique_violation then
+    raise notice 'PASS (DW-69): a second project on one linked site is refused by the database (%)', sqlstate;
+  end;
+  -- PARTIAL, so the ordinary state — no brand link at all — is not made unique by accident.
+  insert into public.projects(user_id, name, slug, style_pack) values (a, 'Unlinked one', 'u1', '{}');
+  insert into public.projects(user_id, name, slug, style_pack) values (a, 'Unlinked two', 'u2', '{}');
+  raise notice 'PASS (DW-69): two projects with a null linked_site_id are still allowed';
+
+  -- (3) DW-53 — the audit log's `outcome` refuses a fourth word.
+  begin
+    insert into private.credential_audit(action, user_id, route, outcome)
+      values ('admin_read', a, '/sweep-39', 'maybe');
+    raise exception 'FAIL (DW-53): private.credential_audit accepted an outcome outside ok/denied/error';
+  exception when check_violation then
+    raise notice 'PASS (DW-53): the audit log refuses an unknown outcome (%)', sqlstate;
+  end;
+  insert into private.credential_audit(action, user_id, route, outcome)
+    values ('admin_read', a, '/sweep-39', 'ok');
+  raise notice 'PASS (DW-53): the three real outcomes still write';
+
+  -- (4) DW-45 — `restored_by` set-nulls instead of refusing the purge.
+  update public.entitlements set restored_by = b where user_id = a;
+  delete from auth.users where id = b;
+  select count(*) into n from public.entitlements where user_id = a and restored_by is null;
+  if n <> 1 then
+    raise exception 'FAIL (DW-45): purging the account named in restored_by did not null the column';
+  end if;
+  select count(*) into n from public.entitlements where user_id = a;
+  if n <> 1 then
+    raise exception 'FAIL (DW-45): the entitlement row did not survive the purge of the account it named';
+  end if;
+  raise notice 'PASS (DW-45): purging the restorer nulls the column and the entitlement row survives';
+
+  -- (5) DW-80 — INDUCE the rollback. `store()` writes the credential row and its audit row inside
+  --     one `sql().begin()`; the claim is that a failure anywhere in that block leaves NO audit row
+  --     behind. The savepoint below is that transaction, the division by zero is the failure, and
+  --     the counts on both sides are the control: the audit row is visible INSIDE the block (so the
+  --     assertion is not passing over a write that never happened) and gone after the rollback.
+  select count(*) into n from private.credential_audit where route = '/sweep-39-rollback';
+  if n <> 0 then raise exception 'FAIL (DW-80): the fixture route already carries a row'; end if;
+  begin
+    insert into private.site_credentials(site_id, user_id, admin_key_vault_ref)
+      values (site, a, gen_random_uuid());
+    insert into private.credential_audit(action, user_id, site_id, route, outcome)
+      values ('credential_change', a, site, '/sweep-39-rollback', 'ok');
+    select count(*) into n from private.credential_audit where route = '/sweep-39-rollback';
+    if n <> 1 then
+      raise exception 'FAIL (DW-80): the audit row was not visible inside its own transaction — this proof would pass over nothing';
+    end if;
+    perform 1 / 0;                     -- the store failing after both writes
+  exception
+    when division_by_zero then null;   -- the implicit savepoint rolls both writes back
+    when others then raise;
+  end;
+  select count(*) into n from private.credential_audit where route = '/sweep-39-rollback';
+  if n <> 0 then
+    raise exception 'FAIL (DW-80): a rolled-back store left % audit row(s) claiming it happened', n;
+  end if;
+  select count(*) into n from private.site_credentials where site_id = site;
+  if n <> 0 then
+    raise exception 'FAIL (DW-80): the rolled-back credential row survived — the fixture is not modelling one transaction';
+  end if;
+  raise notice 'PASS (DW-80): a store that fails inside its transaction leaves no audit row behind';
+
+  delete from auth.users where id in (a, b);
+end $$;

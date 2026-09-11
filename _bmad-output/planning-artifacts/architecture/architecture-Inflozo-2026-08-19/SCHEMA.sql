@@ -231,7 +231,8 @@ create table public.projects (
   posts_per_page integer not null default 12               -- FR-Q1; emitted as a JSON number (FR-J2)
                  check (posts_per_page >= 1),
   credit_enabled boolean not null default true,           -- FR-J15: Pro may disable; locked on for Free at the exit
-  linked_site_id uuid references public.sites(id) on delete set null,  -- FR-B5: at most one
+  linked_site_id uuid references public.sites(id) on delete set null,  -- FR-B5: at most one — the partial
+                                                          -- unique index below, not this sentence, is what enforces it
   thumb_path    text,                                     -- FR-B1: unused in v1, retained so capture needs no migration
   -- AD1: the single monotonic revision every local doc carries as its base_revision
   revision      bigint not null default 0,
@@ -240,7 +241,16 @@ create table public.projects (
   updated_at    timestamptz not null default now()
 );
 create index on public.projects (user_id, updated_at desc);
-create index on public.projects (linked_site_id);
+-- STORY 3.9, DW-24: the backstop under `uniqueSlug`'s read-then-write. FR-J10 makes the slug the
+-- theme's name and keeps `slug` out of the update grant, so a collision could never be repaired by
+-- a rename either. Scoped to the OWNER: two customers may each have a `blog`.
+alter table public.projects add constraint projects_user_id_slug_key unique (user_id, slug);
+-- STORY 3.9, DW-69: FR-B5's "at most one" made structural. This REPLACES the plain index that stood
+-- here — a unique index serves every read the plain one served, and two indexes on one column is a
+-- second thing to keep in step. Partial because `null` is the ordinary state of a project that was
+-- never brand-linked.
+create unique index projects_linked_site_id_key
+  on public.projects (linked_site_id) where linked_site_id is not null;
 alter table public.profiles add constraint profiles_free_editable_fk
   foreign key (free_editable_project_id) references public.projects(id) on delete set null;
 
@@ -599,7 +609,10 @@ create table public.entitlements (
   -- the dispute edges, both directions (FR-L2)
   disputed_at       timestamptz,
   restored_at       timestamptz,
-  restored_by       uuid references auth.users(id),       -- deliberately manual: an unverified auto-restore flips twice
+  restored_by       uuid references auth.users(id) on delete set null,  -- deliberately manual: an unverified
+                                                          -- auto-restore flips twice. STORY 3.9, DW-45: `on delete
+                                                          -- set null` — the one bare user reference in this schema,
+                                                          -- which refused the purge of the account it named.
   restored_reason   text,
   restored_term_end timestamptz,                          -- restores the REMAINDER of the original paid term
   last_event_id     text,
@@ -764,7 +777,8 @@ create table private.credential_audit (
   site_id        uuid,
   route          text not null,                          -- the server route that acted
   allowlist_item text,                                   -- P8's item, for action = 'admin_write'
-  outcome        text not null,                          -- 'ok' | 'denied' | 'error'
+  outcome        text not null                           -- STORY 3.9, DW-53: the three values were a COMMENT and
+                 check (outcome in ('ok','denied','error')),  -- the TypeScript union was their only guard,
   detail         jsonb not null default '{}'::jsonb      -- never a secret, never a credential
 );
 create index on private.credential_audit (occurred_at desc);
