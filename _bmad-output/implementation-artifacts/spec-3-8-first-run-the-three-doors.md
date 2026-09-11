@@ -262,6 +262,12 @@ also need a Ghost site's API URL and its two keys, as in Story 3.2.
 9. **URL:** same · **Screen:** First Run at phone size · **Do:** on the fresh account, narrow the
    browser window to phone width (or open it on your phone). · **See:** the three cards stacked one
    above the other, each still readable, nothing cut off and no sideways scrolling.
+10. **URL:** same · **Screen:** First Run at tablet size · **Do:** widen the window again to about
+    the width of an iPad held upright (roughly 800–850 across). · **See:** the three cards still
+    side by side but narrow, with the titles wrapping onto two or three lines. Nothing cut off, no
+    sideways scrolling. **This is the width worth looking hardest at** — it is the one the design
+    was never drawn at. If you would rather the cards stacked here too, say so and it changes
+    inside this story.
 
 ## Verification
 
@@ -270,8 +276,9 @@ record what each service returned by the key's variable name, never its value.
 
 **Commands:**
 
-- `cd apps/web && pnpm check` — expected: lint, `tsc` and `node --test` all green, `first-run.test.ts`
-  included (Node 24 on PATH).
+- `pnpm check` **from the repo root, not from `apps/web`** — expected: lint, `tsc` and `node --test`
+  all green, `first-run.test.ts` included (Node 24 on PATH). *(Dev: `check` is a ROOT script — run
+  from `apps/web` it answers `Command "check" not found`, which is what this line used to say.)*
 - `cd apps/web && node --test first-run.test.ts` — expected: every matrix row green, and the
   shared-sentence assertion green. **From `apps/web`, not from the repo root:** the source assertions
   read their files by relative path, which is `busy.test.ts`'s own idiom and what `pnpm test` does.
@@ -290,6 +297,51 @@ record what each service returned by the key's variable name, never its value.
   no tooltip, no top bar on the route, Connect's `href`, Blank opening the dashboard's own sheet and
   Cancel closing it, and the greyed door opening nothing. The remaining rows are the owner's, on the
   deployed site: a real sign-up and a real connect against T1.
+
+### Re-executed at the end of Dev, independently of the implementation run (R-82)
+
+**2026-09-11, on a PRODUCTION build (`next build` + `next start -p 3100`) against the REAL
+Supabase.** Keys named, never printed.
+
+| Command | Service | Returned |
+|---|---|---|
+| `pnpm check` (repo root, Node 24) | — | exit 0 · **275 tests, 275 pass, 0 fail**, the seven `first-run.test.ts` tests among them |
+| `python3 tools/doc-audit.py --check` ×2 | — | exit 0 both times · `documentation gate: PASS (0 warning(s))` |
+| `bash supabase/tests/run-rls-gate.sh` | PostgreSQL 17 container | exit 0, **unchanged** — this story adds no SQL |
+| `pnpm build` | — | exit 0 · **`/app/start` in the route table** |
+| the matrix probe — raw HTTP, **no browser, therefore no JavaScript at all** | **Supabase**: GoTrue admin + PostgREST (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`) | three fixture accounts created **HTTP 200** and deleted **HTTP 200**; site and project rows inserted **HTTP 201** |
+| axe-core 4.12.1 driven by Playwright over `/start` | — | **zero violations** (WCAG 2.0/2.1 A + AA) at 1440, 834 and 390; no sideways scrolling at any width |
+
+**Every matrix row that can be induced, executed — each with its control:**
+
+- **First sign-in** — a bare `/` answered **307 → `/start`**, with no JavaScript involved anywhere.
+- **Has a project** — the *same* account answered **307** with nothing and **200, with the project
+  on the page**, after one row was inserted. That before/after is the control: it is the rule that
+  decides, not the account.
+- **Has a site only** — **200**, and it is S3b's own empty screen ("Every great site starts
+  somewhere."), never First Run.
+- **Disconnected only** — a site row carrying `disconnected_at` left the answer at **307 → `/start`**
+  (FR-C6: a record Inflozo kept is not a site).
+- **Restored / sign-out-failed** — `?restored=1`, `?signed-out-failed=1`, `?q=` and `?anything=else`
+  each answered **200**, and the restored sentence was still on the page that rendered.
+- **Scripts off** — `/start` is served **whole** by the server (the heading, the three doors, the
+  starter's reason, the footer line), Connect is a plain `<a href="/sites/connect">`, and **both
+  `<dialog>` elements are served closed**, so Blank canvas opens nothing — parity with the
+  dashboard's own New project button, not a regression.
+- **Projects read failed · Sites read failed** — the two rows that cannot be induced without
+  breaking the database. Covered by `first-run.test.ts`'s pure cases (`unread: true`, `sites: null`),
+  which ran and passed.
+
+**The criteria that needed a browser:** Blank canvas opens the dashboard's own sheet and Cancel
+closes it; the greyed starter door opens nothing; all three doors are reachable by Tab — the greyed
+one included, because P0-0 keeps it in the order — and each takes the **coral focus ring**, measured
+settling to `0 0 0 2px #c2381f`. *(Read in the same tick as the keypress it measures transparent:
+the card carries `transition`, so the ring animates in. A harness trap, not a defect — noted because
+it cost two passes to see.)*
+
+The probe is throwaway by design — it creates and deletes its own accounts — and is **not** in the
+permanent harness. Re-driving `/start` on the deployed site belongs to Review and to the owner's
+test below.
 
 ## Spec Change Log
 

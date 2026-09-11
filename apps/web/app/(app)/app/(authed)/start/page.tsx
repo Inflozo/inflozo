@@ -17,7 +17,7 @@ import { Doors } from './doors'
    full-page handshake, which redirects on success to 3.4's brand offer and makes the project;
    Blank opens the sheet the dashboard opens; Starter is greyed until Epic 11. What this story adds
    is a screen and a redirect, and no column and no migration: NOTHING IS REMEMBERED about First
-   Run (the owner's Question 1 ruling, option 1, 2026-09-11), so `(dashboard)/page.tsx` derives it
+   Run (the owner's Question 1 ruling, option 1, 2026-09-11), so `(dashboard)/layout.tsx` derives it
    from two counts on every render and `lib/first-run.ts` is the whole of the rule.
 
    WHY A ROUTE AND NOT A BRANCH INSIDE THE DASHBOARD: a `loading.tsx` can only draw one shape, and
