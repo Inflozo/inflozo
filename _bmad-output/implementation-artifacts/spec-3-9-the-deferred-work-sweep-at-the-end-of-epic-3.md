@@ -6,7 +6,11 @@ status: 'in-review'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
 owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
-closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
+# DW-89 was added (closed at Review). DW-67, DW-74, DW-79, DW-83 and DW-85 were REMOVED on
+# 2026-09-11: the Review re-opened them with their proof owed, and this field is a closure
+# INSTRUCTION — the format has the orchestrator write `status: done <date>` for every id named here,
+# skipping only ids already done, so leaving them would close work whose proof is owed.
+closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-69, DW-72, DW-73, DW-80, DW-89]
 ---
 
 ## In plain English
@@ -263,6 +267,20 @@ it) · DW-75's ledger half.
   every route without its own skeleton, `/sites/connect` included.
   `tools/probe/run-verify-ghost-admin.py`'s `js-off` and `keys-js-off` steps are the driver.
 
+**Group F — the board that reads this ledger** *(added at the Fix, 2026-09-11: the owner's finding
+was on this surface, and the map has to name the file the story changed).*
+
+- `tools/story-board.py` — `dw_word()` / `dw_closed()` / `DW_WORDS` (the status vocabulary),
+  `load_deferred()` (carries `resolution:`), the Deferred tally in `render()` (one bucket word per
+  close; a red chip for a word it cannot read) and `dw_entry()` (labels a note by state). This is
+  the **only** file in `tools/` that decides closure from a ledger status — checked at Review, so a
+  second reader cannot drift from it.
+- `.claude/skills/bmad-loop-sweep/deferred-work-format.md` — **read-only, and the authority**: it
+  defines `status: done <date>`, `resolution:`, `closes_deferred:` and the append-only rule. The
+  board is built to match it; when they disagree, this file wins.
+- `_bmad-output/implementation-artifacts/deferred-work.md` — the ledger itself. **Its entries are not
+  edited by this group**; only its header gained the sentence naming the canonical word.
+
 ## Tasks & Acceptance
 
 ### Schema phase — pushed first, on its own (R-99)
@@ -481,6 +499,11 @@ it) · DW-75's ledger half.
   `closes_deferred`: `status: done 2026-09-11` plus a `resolution:` line naming this story and what
   changed. For DW-67, DW-79 and DW-18: **amend, do not close** the half that remains, and say which
   half. **No entry is deleted and no id is renumbered.**
+  **Amended twice since this box was ticked, and the ledger — not this line — is the record.**
+  DW-18 *did* close both halves, on the owner's Question 1 ruling; and the Review added **DW-74,
+  DW-83 and DW-85** to the amend-don't-close list when the Ghost-admin harness failed to complete a
+  run. Those five amended ids were removed from `closes_deferred` at the Review of 2026-09-11 —
+  the field is an instruction to close, so naming an entry whose proof is owed would close it.
 - [x] Standing rule 7 — grep the repository for every DW id this story touched and for the old
   strings it replaced (`could not be found`, the wordmark-only drawing, the `<span>` slot), and
   fix what the grep finds. A propagation list cannot audit itself.
@@ -812,9 +835,21 @@ wizard with scripts off on every run.
 6. **URL:** `https://app.inflozo.com/` · **Nothing else changed.** Open a project's ⋯ menu, rename
    it, duplicate it. Open **New project**. Everything behaves as it did when you tested Story 1.5.
 
+7. **The story board — this is the one you found the problem on.** Not a website: open
+   `_bmad-output/planning-artifacts/STORY-BOARD.html` on your machine (the same file you always
+   open), and press **Deferred**. **Expect** the row of counts at the top to read **12 medium ·
+   37 low · 43 closed**, adding up to the 92 entries named beside the heading — where it read
+   *18 medium · 59 low · 15 closed* when you reported this. Open the **Closed** list underneath and
+   confirm it holds 43. **Then check the part-finished five:** in the open list find **DW-74**,
+   **DW-83** or **DW-85** and open it — each should say **Resolution:** (not *Closed:*) and still sit
+   among the open entries, because their code has landed but their proof is still owed. If any of
+   those three says *Closed:*, that is the thing to report.
+
 **Dummy data:** none needed — use your own account and your existing sites. Do not delete anything.
 
-**Tell us:** anything on the not-found page that reads oddly, sits wrong, or is missing a way back.
+**Tell us:** anything on the not-found page that reads oddly, sits wrong, or is missing a way back —
+and, for step 7, any count that does not match, or a red **unreadable status** chip (that chip is new
+and means an entry was written with a word the board does not know; it should not appear today).
 
 ## Verification
 
@@ -1357,6 +1392,13 @@ record says a clean run is roughly a coin flip and costs as many as four attempt
 already spent three getting one). Nothing in the tree has changed since. The owner's manual test
 below is what proves the six nav destinations and the passkey labels on his own account, today.
 
+> **This paragraph is wrong and is kept as written because it is what the Deploy phase believed.**
+> Two sentences in it are false, both corrected below and in the Change Log: **the Ghost-admin
+> harness did NOT run green** — it has not completed a run in four attempts, which is DW-92 and is
+> why DW-74, DW-83 and DW-85 stay open; and *"nothing in the tree has changed since"* stopped being
+> true at the Fix, which changed `tools/story-board.py`. Read `### Executed at Fix` and
+> `### Executed at Review, after the Fix` below before relying on anything above this line.
+
 ### Executed at Fix — the owner's finding, its control, and what the board now counts (2026-09-11)
 
 **R-82, honestly scoped.** This Fix changes one local tool, `tools/story-board.py`. `git diff
@@ -1385,7 +1427,12 @@ DW-74: closed=False  resolution=yes      DW-83: closed=False  resolution=yes
 DW-85: closed=False  resolution=yes
 ```
 
-**The generated page, read back off disk** (`STORY-BOARD.html`, not the in-memory model):
+**The generated page, read back off disk** (`STORY-BOARD.html`, not the in-memory model), **scoped
+to the Deferred panel** — `h.split('id="pd-deferred"', 1)[1].split('</section>', 1)[0]`. The scoping
+is load-bearing and the first draft of this section did not say so: grepping the whole file gives 40
+and 6, because this spec's own prose about the fix is rendered into the page and carries the words.
+A reviewer re-running it unscoped gets figures that disagree, which is a control that fails to
+reproduce (found at Review, 2026-09-11):
 
 ```
 chips                 : ['12 medium', '37 low', '43 closed']
@@ -1419,6 +1466,64 @@ that defines it — `.claude/skills/bmad-loop-sweep/deferred-work-format.md`, §
 is later completed* (line 85), § *Sweep annotations* (line 187), § *Closure declared by a story*
 (line 210), and its line 23, *"The file is append-only — never rewrite or delete existing entries"*,
 which is why the ledger was not touched by this Fix at all.
+
+### Executed at Review, after the Fix — five layers, and a self-check that was weaker than it claimed (2026-09-11)
+
+**R-82.** Five review layers ran, the Real-infra verifier among them, and it hit the real services
+independently of this record: Vercel (`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`) →
+production `READY` at `githubCommitSha d8579f64`, the story's HEAD, aliased on `inflozo.com`,
+`app.inflozo.com` and `www.inflozo.com`; GitHub Actions (`GITHUB_TOKEN`) → run `34589575352`,
+**completed / success**, with a bogus sha returning 0 runs as the negative control; the hosted
+database through `SUPABASE_DB_POOLER_URL` → this story's four Schema-phase constraints and every
+column and enum label still present, with a query for a non-existent constraint returning 0 rows as
+the control; and both live domains answering (`inflozo.com` 200, `app.inflozo.com/sign-in` 200,
+`/assets` 307 → `/sign-in` signed out, the matrix's own row). No key value was printed at any point;
+every call is recorded by its variable name. **R-99 is not engaged** — no migration in this range
+(`git diff --name-only 56231e9d..HEAD -- supabase/` is empty).
+
+**The control that mattered was against this story's own self-check.** A review layer claimed the
+new label assertion could not catch the regression its failure message named. Executed, and it was
+right: swapping the two labels (open entries reading *Closed*, closures reading *Resolution*) left
+`demo()` **passing**, because the assertion only checked that both strings appeared somewhere in the
+panel. The assertion claimed more than it tested — standing rule 2, on this story's own instrument.
+Each label is now anchored to its own entry's card. A mutation battery is the record:
+
+```
+labels SWAPPED (escaped before)              caught
+predicate back to exact-match 'closed'       caught
+a `resolution:` note closes an entry         caught      (the inverse regression)
+a `closed:` note closes an open entry        caught
+unreadable word folded back into severity    caught
+first-token reading (punctuation bug)        caught
+chip word back to the raw status             caught
+resolution dropped when both fields present  caught      (escaped until DW-4 gained both)
+```
+
+**What the layers found and what was done** — every finding fixed inside this story:
+
+- **`closes_deferred` still named the five entries the Review deliberately re-opened** (three layers,
+  independently). The format makes this field an instruction: the orchestrator writes `status: done
+  <date>` for **every** id named, skipping only ids already done — so DW-74, DW-83 and DW-85 would
+  have been closed with their proof owed, one layer above the defect `dw_closed` exists to prevent.
+  Removed; **DW-89**, closed by this story at Review and never declared, was added. Derived from the
+  ledger rather than hand-edited.
+- **`dw_closed` still closed on a `closed:` note** while refusing `resolution:` — the asymmetry its
+  own docstring argues against, and inert only because no open entry happens to carry one. The
+  predicate now asks the status line and nothing else.
+- **The status word was read order-dependently**: the first space-separated token, stripped
+  afterwards, so `closed—Story 3.6` read **open**. It is now the first run of letters.
+- **A status word the board cannot read was silently counted as open** (three layers) — the exact
+  silent-miscount class this story exists to end. It now gets its own red **unreadable status** chip:
+  visible to the owner rather than blocking a commit. None exists in the live ledger today.
+- **Prose corrected against the executed numbers**: 28 entries moved, not 26, and the old predicate
+  counted **15**, not 17 — DW-48 and DW-76 were also being shown as open. The "read back off disk"
+  control now states that it is scoped to the Deferred panel, without which it does not reproduce.
+- **Standing rule 3**: the vocabulary reached the ledger's own header, where the next person writing
+  `closed` will read it, and the Code Map gained the file this Fix changed.
+
+**The figures are unchanged by all of it** — `12 medium / 37 low / 43 closed` over 92 entries, the
+five part-closed entries still reading open, re-derived after every patch. Gate: `story-board.py
+--check` and `doc-audit.py --check` green twice.
 
 ## Spec Change Log
 
@@ -1485,6 +1590,20 @@ the recorded fix would have rewritten 26 correctly-formatted entries into a word
 or a platform is a hypothesis until read in the thing that defines it — the board's source is
 evidence about the board, never about the ledger it reads.
 
+**2026-09-11 — Review, after the Fix. The instrument was weaker than its own failure message.**
+Five layers over the Fix diff. The finding that matters was against the check itself: swapping the
+two note labels left `demo()` passing, because the assertion tested only that both strings appeared
+somewhere in the panel while its message claimed an entry was mislabelled. It is now anchored per
+entry, and a mutation battery of eight is recorded under `## Verification` — seven caught before the
+fixture was extended, eight after. **The second finding was one layer above the code:**
+`closes_deferred` still declared the five entries the Review had deliberately re-opened, and that
+field is an instruction to close, not a description — a sweep reading it would have marked DW-74,
+DW-83 and DW-85 done with their proof owed. That is the same regression `dw_closed` was written to
+prevent, which is why three independent layers found it and none of them found it in the code.
+**The standing lesson:** this story's defect, its Fix's defect and its Review's defect are one
+shape — *a record that says work is finished when it is not*. It appeared as a status word, as a
+companion field, and as a frontmatter list. Whatever declares completion is the thing to distrust.
+
 ## Owner's test findings
 
 Tested on the story board (`_bmad-output/planning-artifacts/STORY-BOARD.html`) on 2026-09-11, after
@@ -1508,17 +1627,31 @@ Done. One finding.
    completed*, and again at § *Closure declared by a story*), its companion line is **`resolution:`**
    (§ *Sweep annotations*), and the declaration a story makes is **`closes_deferred:`** — the field
    this spec's frontmatter carries. Story 3.9 wrote all three exactly as specified. The board never
-   learned that vocabulary: it closed on `d['status'] == 'closed'` alone, a word the format does not
-   define anywhere, so the 26 canonical closes fell through to the open branch and the 17
-   hand-written `closed` entries were the only ones it could count. **The panel was reporting the
-   inverse of the truth** — the off-format entries as closed, the correctly-formatted ones as open.
+   learned that vocabulary: it closed on `d['status'] == 'closed'` alone — a word the format does not
+   define anywhere, tested by **exact string equality**. **The panel was reporting the inverse of the
+   truth**: the off-format entries as closed, the correctly-formatted ones as open.
 
-   *The fix, and where:* [`story-board.py:614`](../../tools/story-board.py#L614) — `dw_closed()` now
-   reads the status **word** (first token, stripped of the markdown a hand-written entry wraps it in)
-   and accepts both spellings; [`load_deferred:605`](../../tools/story-board.py#L605) carries
-   `resolution:` beside `closed:`; [`:1524`](../../tools/story-board.py#L1524) collapses every close
-   to one bucket word, because the canonical status carries a date and counting the raw string would
-   mint a chip per entry; [`dw_entry:855`](../../tools/story-board.py#L855) labels the note by state.
+   *Twenty-eight entries were being shown as open, not twenty-six* — the count the first draft of
+   this section got wrong by comparing against the wrong number. Two of them are neither canonical
+   nor exactly `closed`: **DW-48** (`status: closed by Story 3.2 (Dev, 2026-09-08) — …`, trailing
+   prose) and **DW-76** (`status: **closed** — Story 3.6 Dev, …`, markdown-wrapped). Seventeen
+   entries carry the status *word* `closed`; the old equality reached only the **15** spelled exactly
+   so, which is why the control below reads 15 and not 17. Those two are the reason the fix reads a
+   status **word** rather than comparing a string, and the fixture's `'**closed** — see above'`
+   assertion is DW-76's shape.
+
+   *The fix, and where* — each link names the symbol, because a line number in prose drifts the next
+   time the file is touched and one of these already had:
+   [`dw_word()`](../../tools/story-board.py#L617) takes the status word as the first run of letters,
+   so markdown wrapping and whatever crowds it (`**closed**`, `closed—Story 3.6`) fall away;
+   [`dw_closed()`](../../tools/story-board.py#L627) accepts both spellings and **asks nothing but the
+   status line**; [`load_deferred()`](../../tools/story-board.py#L605) carries `resolution:` beside
+   `closed:`; the [tally](../../tools/story-board.py#L1541) collapses every close to one bucket word,
+   because the canonical status carries a date and counting the raw string would mint a chip per
+   entry, and gives a status word it cannot read
+   [its own red chip](../../tools/story-board.py#L1542) rather than folding it into a severity count;
+   [`dw_entry()`](../../tools/story-board.py#L867) labels the note by state and joins both notes when
+   an entry carries each.
 
    *What the fix must not do, and is asserted from both sides:* the five part-closed entries (DW-67,
    DW-74, DW-79, DW-83, DW-85) each carry a `resolution:` line **while still `open`**, their code

@@ -3,6 +3,18 @@
 Findings that are real, are not this story's to fix, and would otherwise be lost. The story board
 reads this file. An entry is closed by the story that fixes it, never by deleting the row.
 
+**The words this file uses, and there are only two.** `status: open`, and `status: done <date>` with
+a `resolution:` line saying what closed it — the canonical format,
+`.claude/skills/bmad-loop-sweep/deferred-work-format.md` § *When a deferred item is later completed*.
+**Write `done`, not `closed`.** Entries above written before that format arrived say `closed`, some
+with prose or `**bold**` around it; the board reads those too, and they are legacy rather than a
+second spelling to copy. It reads the first *word* of the status line and shows anything it does not
+know as a red **unreadable status** chip rather than guessing — which is the fix for the day in
+September 2026 when 28 finished entries sat in the open counts because the board knew only `closed`
+(Story 3.9's owner test). A `resolution:` or `closed:` note **never** closes an entry by itself: the
+status line does, because several entries carry a note while deliberately staying open with their
+code landed and their proof owed.
+
 Besides the fields the format defines, every entry carries **`plain:` — one sentence a non-engineer
 reads**, because the owner sees this ledger on the story board and `reason:` is written for a
 developer. Write it in the owner's language: what is not right, and what it costs him. The board

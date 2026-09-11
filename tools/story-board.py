@@ -611,23 +611,35 @@ def load_deferred(text):
     return out
 
 
+DW_WORDS = ('open', 'done', 'closed')    # every status word this board can read; anything else is shown, never guessed
+
+
+def dw_word(d):
+    """An entry's status word: the first run of letters in its `status:` line, so the markdown a
+    hand-written entry wraps it in (`**closed**`) and whatever punctuation follows it (`closed—Story
+    3.6`, `done 2026-09-11 (Story 3.9)`) fall away. Reading the first space-separated TOKEN instead
+    was order-dependent and got `closed—Story` wrong, which is the same class of defect as the one
+    this pair was written to end."""
+    m = re.search(r'[a-z]+', (d.get('status') or '').lower())
+    return m.group(0) if m else ''
+
+
 def dw_closed(d):
-    """Is this entry finished? Read from the STATUS WORD — the first token, stripped of the markdown
-    a hand-written entry wraps it in (`**closed**`).
+    """Is this entry finished? Decided by the status word and NOTHING else.
 
     The ledger's canonical vocabulary is `open` and `done <date>` — the format that owns the file,
     `.claude/skills/bmad-loop-sweep/deferred-work-format.md` § *When a deferred item is later
-    completed*. `closed` is what the entries written by hand before that format arrived say. BOTH
-    must read as closed, and until 2026-09-11 this board read only `closed`: every entry closed the
-    canonical way counted as still OPEN, so the owner's test of Story 3.9 saw `15 closed` while 43
-    were, and the 26 that story closed were scattered through the open severity chips.
+    completed*. `closed` is what the entries written by hand before that format arrived say, and both
+    must read. This board read only `closed` until the owner's test of Story 3.9 (2026-09-11), so
+    every canonically-closed entry counted as still open; the spec of that story holds the figures
+    and the control, which is where a count belongs rather than in this sentence.
 
-    A `resolution:` line is NOT evidence of closure and is deliberately not consulted here: the five
-    entries Story 3.9 part-closed each carry one while staying `open`, their code landed and their
-    proof owed. Reading it as a close would have marked unproved work done — the exact failure
-    standing rule 2 names."""
-    word = re.sub(r'[^a-z]', '', d['status'].split(' ')[0].lower())
-    return word in ('done', 'closed') or bool(d['closed'])
+    **A companion field is not evidence of closure, and neither `resolution:` nor `closed:` is
+    consulted here.** The entries Story 3.9 part-closed each carry a note while staying `open`, their
+    code landed and their proof owed; closing on the note would mark unproved work done, which is
+    the failure standing rule 2 names. The status line is the one place the ledger says what an entry
+    is, so it is the one place this asks."""
+    return dw_word(d) in ('done', 'closed')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -852,7 +864,7 @@ def dw_entry(d, closed, tone):
     # The owner reads the first line; `reason` is the developer's note under it.
     # A part-closed entry carries a `resolution:` while it is still open, so the label follows the
     # STATE — calling that "Closed" would tell the owner work was finished that still owes its proof.
-    note = d['closed'] or d['resolution']
+    note = ' — '.join(x for x in (d['closed'], d['resolution']) if x)
     body = ((f'<p class="lede">{md(d["plain"])}</p>' if d['plain'] else '')
             + (f'<p class="why"><b>{"Closed" if closed else "Resolution"}:</b> {md(note)}</p>' if note else '')
             + (f'<p class="why">{md(d["reason"])}</p>' if d['reason'] else '')
@@ -1522,11 +1534,20 @@ def render(ctx):
         tally, part = {}, {False: [], True: []}
         for d in ctx['deferred']:
             closed = dw_closed(d)
-            tone = 's-good' if closed else SEV_TONE.get(d['severity'], 's-mute')
-            # One bucket word for every closed entry, whatever its status line spells: the canonical
-            # close carries its date (`done 2026-09-11 (Story 3.9)`), so counting the raw status
-            # would mint a chip per entry instead of a count.
-            word = 'closed' if closed else (d['severity'] or 'unrated')
+            if closed:
+                # One bucket word for every closed entry, whatever its status line spells: the
+                # canonical close carries its date (`done 2026-09-11 (Story 3.9)`), so counting the
+                # raw status would mint a chip per entry instead of a count.
+                tone, word = 's-good', 'closed'
+            elif dw_word(d) not in DW_WORDS:
+                # A status word this board cannot read is SHOWN, never folded into a severity count.
+                # Silently reading an unknown word as open is exactly how 26 closed entries sat in
+                # the open chips until the owner found them by eye (Story 3.9). The board already
+                # refuses rather than guesses for a repeated DW id and for an unsigned ruling; this
+                # is the same reflex, priced as a chip he can see instead of a blocked commit.
+                tone, word = 's-crit', 'unreadable status'
+            else:
+                tone, word = SEV_TONE.get(d['severity'], 's-mute'), (d['severity'] or 'unrated')
             tally[(tone, word)] = tally.get((tone, word), 0) + 1
             part[closed].append(dw_entry(d, closed, tone))
         # Counted from the rows, never written down: a new severity word needs no edit here.
@@ -2070,6 +2091,7 @@ severity: low
 reason: The offline copy is laxer than hosted Supabase.
 status: closed
 closed: Story 1.2 — the stand-in carries the same policy.
+resolution: Story 3.9 — re-checked by the sweep and left as it stands.
 
 ### DW-5: Three live-harness controls the keys screen still owes
 origin: code review of spec-3-6-manage-keys.md, 2026-09-10
@@ -2078,6 +2100,13 @@ severity: low
 reason: The seedings need a second decoy.
 status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
 resolution: Story 3.9 — all three seedings are in the harness, and none has been executed.
+
+### DW-6: A status word no reader knows
+origin: code review of spec-1-4-magic-link.md, 2026-09-10
+location: n/a
+severity: low
+reason: The ledger's words are open and done; this entry was written with neither.
+status: superseded
 """
 
 
@@ -2205,18 +2234,37 @@ def demo():
     # they count as ONE chip whatever date the status carries, and a `resolution:` on an entry that
     # is still open closes NOTHING — that last one is the regression that would mark unproved work
     # done, so it is asserted from both sides.
-    assert dw_closed({'status': 'done 2026-09-11 (Story 3.9)', 'closed': ''}), 'the canonical close does not read'
-    assert dw_closed({'status': 'closed', 'closed': ''}) and dw_closed({'status': '**closed** — see above', 'closed': ''}), \
+    assert dw_closed({'status': 'done 2026-09-11 (Story 3.9)'}), 'the canonical close does not read'
+    assert dw_closed({'status': 'closed'}) and dw_closed({'status': '**closed** — see above'}), \
         'the hand-written close does not read'
-    assert not dw_closed({'status': 'open — amended by Story 3.9; THE CODE LANDED', 'closed': ''}), \
+    # …including when the next word crowds the status with no space. `closed—Story 3.6` read OPEN
+    # while this took the first space-separated token and stripped afterwards.
+    assert dw_closed({'status': 'closed—Story 3.6'}) and dw_word({'status': 'closed by Story 3.2 (Dev)'}) == 'closed', \
+        'punctuation or a following word still swallows the status word'
+    assert not dw_closed({'status': 'open — amended by Story 3.9; THE CODE LANDED'}), \
         'a part-closed entry reads as closed'
-    assert not dw_closed({'status': 'open', 'closed': ''}), 'an open entry reads as closed'
+    assert not dw_closed({'status': 'open'}), 'an open entry reads as closed'
+    # A NOTE IS NOT A CLOSURE, from either field: this is the shape the five part-closed entries
+    # already have, and closing on it would report unproved work as done.
+    assert not dw_closed({'status': 'open — THE PROOF IS OWED', 'closed': 'Story 3.9 — the page half.'}), \
+        'a `closed:` note closes an entry whose status says open'
+    assert dw_word({'status': 'opne'}) not in DW_WORDS and dw_word({}) == '', 'an unreadable status word is not detected'
     dwp = out.split('id="pd-deferred"', 1)[1].split('</section>', 1)[0]
     assert '<span class="st s-good solid">2 closed</span>' in dwp, \
         f'the two closed entries are not one chip of 2: {re.findall(r"solid\">(\d+ [a-z]+)<", dwp)}'
     assert '<h3 class="sub">Closed <span class="fine">2</span>' in dwp, 'the Closed section did not take both'
-    assert '<b>Resolution:</b>' in dwp and '<b>Closed:</b>' in dwp, \
-        'an open entry\'s resolution is labelled as a closure, or a closure lost its note'
+    assert '<span class="st s-crit solid">1 unreadable status</span>' in dwp, \
+        f'a status word the board cannot read was folded into a severity count: {re.findall(r"solid.>(\d+ [a-z ]+)<", dwp)}'
+    # EACH LABEL ANCHORED TO ITS OWN ENTRY. Asserting both strings appear somewhere in the panel let
+    # a straight SWAP of the two labels pass — the assertion claimed more than it tested, which is
+    # the review finding that caught it (2026-09-11).
+    cards = re.findall(r'<li class="[^"]*"><details>.*?</details></li>', dwp, re.S)
+    lis = {re.search(r'DW-\d+', c).group(0): c for c in cards if re.search(r'DW-\d+', c)}
+    # DW-4 carries BOTH a legacy `closed:` and a sweep's `resolution:` — neither may be dropped.
+    assert '<b>Closed:</b>' in lis['DW-4'] and 'the stand-in carries' in lis['DW-4'] \
+        and 'left as it stands' in lis['DW-4'], 'a closed entry lost one of its two notes, or is mislabelled'
+    assert '<b>Resolution:</b>' in lis['DW-5'] and '<b>Closed:</b>' not in lis['DW-5'], \
+        "a part-closed entry's resolution is labelled as a closure"
     assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
     # A `**N. …**` heading starts a question; an option line, which begins with a bare digit, does not.
     # Before this, spec 1.2's four questions read as one and three of them were invisible.
