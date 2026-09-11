@@ -408,14 +408,38 @@ they returned before the `data-prop-attr2` rewrite, which is what makes the cont
 | `node build.js` — AD-34 leak assertions | clean | clean |
 | `node gate.js theme` | Ghost 5 via gscan 4.49.7: 0/0 · Ghost 6 via gscan 6.4.2: 0/0 | identical |
 | `node test-vocabulary.mjs` | — (new) | 13 checks passed; all eight archetypes and the on-disk fixture validate clean |
-| `pnpm check` | — | exit 0, `packages/library` among the packages for the first time (26 new tests) |
+| `pnpm check` | — | exit 0, `packages/library` among the packages for the first time (27 new tests) |
 | `python3 tools/doc-audit.py --check` | — | PASS, twice |
 | the standing-rule-7 grep for the old seven-name directive list | 2 hits (AD-34 and the spec's own line) | 1 hit (the spec's own line) |
 
-**Manual checks:**
-- `docs/section-authoring.md` opens with every §7.3 construct present — walk the gap table row by
-  row against the document, including the struck row 8, and the five exit constructs.
-- `packages/library/fixtures/reference-design/index.html` opens directly in a browser and renders as
-  plain HTML, which is most of why annotated HTML won (§7.3).
+**Re-run independently, same day, after the implementation returned** — every line above executed a
+second time by the session that dispatched it rather than taken on report (standing rule 2, applied
+to the report as well as to the code): `test-ad36.js` 13, `test-renderer-agreement.js` 8,
+`build.js` 103/103 · 2380 · 201/215/86 · 943 with the leak assertions clean, `gate.js theme` 0/0 on
+gscan 4.49.7 and 0/0 on gscan 6.4.2, `test-vocabulary.mjs` 13, `pnpm check` exit 0, the
+documentation gate PASS twice, and the standing-rule-7 grep down to its one self-referential hit.
+
+**The matrix audit found one row asserted in one direction only** and it is now covered both ways.
+Row 11's expected behaviour is that an un-allow-listed inline token **stays literal text**; the
+suite refused a prop that *declares* a token outside the closed set but asserted nothing about a
+prop whose *value* carries one. `validate.test.ts` gains that half — a prop value reading
+`Hi {members}, see {unknownToken}` validates clean — which is the half a customer actually sees, and
+it is provable here as non-refusal because substitution is 4.2's emitters, not this story's.
+
+**Manual checks — run, not deferred:**
+- `docs/section-authoring.md` walked row by row against PRD §7.3: rows 1–7 and 9–14 each carry a
+  named directive and a worked example, **row 8 is present and marked STRUCK (R-1)** rather than
+  silently absent, and all five exit constructs are tabled (1 and 2 pointing back at rows 2 and 4).
+- `packages/library/fixtures/reference-design/index.html` opened in headless Chromium over `file://`:
+  331 characters of visible text ("Issue 42 … Latest posts"), **zero page errors**. It renders as
+  readable plain HTML with no stylesheet and no script, which is most of why annotated HTML won
+  (§7.3). It links no `style.css` by design — a design source is a fragment the compiler assembles,
+  not a standalone page — so the section's computed background is transparent, which is expected and
+  not a missing stylesheet.
+
+**No external service was touched.** No key in `tools/probe/.env` was read by this story: it adds no
+call to Ghost (T1/T3), Supabase, Vercel, Resend or Dodo, and the Review phase re-runs the sheet above
+rather than a probe (R-82 — the rule is satisfied by there being no real infrastructure in scope,
+stated rather than skipped).
 
 ## Spec Change Log

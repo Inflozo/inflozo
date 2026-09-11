@@ -166,6 +166,18 @@ test('an inline token a prop does not declare cannot be declared at all outside 
   clean(validateCategoryContent(good), 'a prop declaring {members}')
 })
 
+test('an un-allow-listed token inside a prop VALUE stays literal text — it is not refused (R-27)', () => {
+  // The other half of the row above, and the half that says what the customer sees. Substitution
+  // is over the prop's DECLARED tokens only, so an undeclared brace run is never a candidate for
+  // it and never an error either: it stays the characters that were typed. Provable here as
+  // non-refusal, because this story ships no renderer — 4.2's emitters execute the substitution.
+  const withStray: CategoryContent = {
+    category: 'a22',
+    props: { h: { type: 'text', tokens: ['members'], default: 'Hi {members}, see {unknownToken}' } },
+  }
+  clean(validateCategoryContent(withStray), "a prop value carrying {unknownToken}")
+})
+
 test('a control attribute on the root is refused in both directions (AD-3)', () => {
   const withCols = '<section data-bg="s" data-spacing="c" data-divider="l" data-cols="3"></section>'
   assert.ok(codes(validateMarkup(withCols, { controls: [] })).includes('root-control-undeclared'))
