@@ -599,12 +599,35 @@ def load_deferred(text):
                     'severity': f.get('severity', ''), 'reason': f.get('reason', ''),
                     'plain': f.get('plain', ''),      # the owner's sentence; reason is the developer's
                     'origin': org, 'location': f.get('location', ''),
-                    'closed': f.get('closed', ''), 'story': st.group(1) if st else ''})
+                    # `resolution:` is the canonical companion to a close; `closed:` is what the
+                    # hand-written entries used. Kept APART, never folded: a resolution is not
+                    # evidence of closure — see dw_closed.
+                    'closed': f.get('closed', ''), 'resolution': f.get('resolution', ''),
+                    'story': st.group(1) if st else ''})
     if not out:
         out = [{'id': '', 'title': t, 'status': 'open', 'severity': '', 'reason': '', 'plain': '',
-                'origin': '', 'location': '', 'closed': '', 'story': ''}
+                'origin': '', 'location': '', 'closed': '', 'resolution': '', 'story': ''}
                for t in re.findall(r'^[-*] (.*)$', text, re.M)]
     return out
+
+
+def dw_closed(d):
+    """Is this entry finished? Read from the STATUS WORD — the first token, stripped of the markdown
+    a hand-written entry wraps it in (`**closed**`).
+
+    The ledger's canonical vocabulary is `open` and `done <date>` — the format that owns the file,
+    `.claude/skills/bmad-loop-sweep/deferred-work-format.md` § *When a deferred item is later
+    completed*. `closed` is what the entries written by hand before that format arrived say. BOTH
+    must read as closed, and until 2026-09-11 this board read only `closed`: every entry closed the
+    canonical way counted as still OPEN, so the owner's test of Story 3.9 saw `15 closed` while 43
+    were, and the 26 that story closed were scattered through the open severity chips.
+
+    A `resolution:` line is NOT evidence of closure and is deliberately not consulted here: the five
+    entries Story 3.9 part-closed each carry one while staying `open`, their code landed and their
+    proof owed. Reading it as a close would have marked unproved work done — the exact failure
+    standing rule 2 names."""
+    word = re.sub(r'[^a-z]', '', d['status'].split(' ')[0].lower())
+    return word in ('done', 'closed') or bool(d['closed'])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -827,8 +850,11 @@ def dw_entry(d, closed, tone):
             + (f'<a class="st s-mute" href="#{e(d["story"])}">Story {e(d["story"])}</a>' if d['story'] else '')
             + '</summary>')
     # The owner reads the first line; `reason` is the developer's note under it.
+    # A part-closed entry carries a `resolution:` while it is still open, so the label follows the
+    # STATE — calling that "Closed" would tell the owner work was finished that still owes its proof.
+    note = d['closed'] or d['resolution']
     body = ((f'<p class="lede">{md(d["plain"])}</p>' if d['plain'] else '')
-            + (f'<p class="why"><b>Closed:</b> {md(d["closed"])}</p>' if d['closed'] else '')
+            + (f'<p class="why"><b>{"Closed" if closed else "Resolution"}:</b> {md(note)}</p>' if note else '')
             + (f'<p class="why">{md(d["reason"])}</p>' if d['reason'] else '')
             + (f'<span class="where">{e(d["location"])}</span>' if d['location'] else '')
             + (f'<span class="from">Raised by {e(d["origin"])}</span>' if d['origin'] else ''))
@@ -1495,9 +1521,12 @@ def render(ctx):
     if ctx['deferred']:
         tally, part = {}, {False: [], True: []}
         for d in ctx['deferred']:
-            closed = d['status'] == 'closed' or bool(d['closed'])
+            closed = dw_closed(d)
             tone = 's-good' if closed else SEV_TONE.get(d['severity'], 's-mute')
-            word = d['status'] if closed else (d['severity'] or 'unrated')
+            # One bucket word for every closed entry, whatever its status line spells: the canonical
+            # close carries its date (`done 2026-09-11 (Story 3.9)`), so counting the raw status
+            # would mint a chip per entry instead of a count.
+            word = 'closed' if closed else (d['severity'] or 'unrated')
             tally[(tone, word)] = tally.get((tone, word), 0) + 1
             part[closed].append(dw_entry(d, closed, tone))
         # Counted from the rows, never written down: a new severity word needs no edit here.
@@ -2025,6 +2054,30 @@ location: app/sign-in/page.tsx
 severity: medium
 reason: Supabase Auth limits magic links per address already; a page-level limit is E15's hardening work.
 status: open
+
+### DW-3: The deploy job runs before the gate
+origin: code review of spec-1-1-repository.md, 2026-09-10
+location: .github/workflows/ci.yml
+severity: medium
+reason: A red gate could publish; the deploy job needs the check job.
+status: done 2026-09-11 (Story 3.9)
+resolution: Story 3.9 — deploy now declares needs:[check, rls].
+
+### DW-4: The container's storage stand-in permits deletes
+origin: code review of spec-1-2-data-model.md, 2026-09-10
+location: supabase/tests/PRELUDE.sql
+severity: low
+reason: The offline copy is laxer than hosted Supabase.
+status: closed
+closed: Story 1.2 — the stand-in carries the same policy.
+
+### DW-5: Three live-harness controls the keys screen still owes
+origin: code review of spec-3-6-manage-keys.md, 2026-09-10
+location: tools/probe/run-verify-ghost-admin.py
+severity: low
+reason: The seedings need a second decoy.
+status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+resolution: Story 3.9 — all three seedings are in the harness, and none has been executed.
 """
 
 
@@ -2147,6 +2200,23 @@ def demo():
     assert dup_dw_ids('### DW-1: a\n### DW-2: b\n### DW-1: c\n') == ['DW-1']
     assert dup_dw_ids('### DW-1: a\n### DW-2: b\n') == []
     assert 'A retry count belongs in configuration' in out, 'an entry with no plain: lost its reason'
+    # The ledger's canonical close is `status: done <date>`, and this board read only `closed` until
+    # the owner's test of Story 3.9 found 26 closed entries counted as open. Both spellings close,
+    # they count as ONE chip whatever date the status carries, and a `resolution:` on an entry that
+    # is still open closes NOTHING — that last one is the regression that would mark unproved work
+    # done, so it is asserted from both sides.
+    assert dw_closed({'status': 'done 2026-09-11 (Story 3.9)', 'closed': ''}), 'the canonical close does not read'
+    assert dw_closed({'status': 'closed', 'closed': ''}) and dw_closed({'status': '**closed** — see above', 'closed': ''}), \
+        'the hand-written close does not read'
+    assert not dw_closed({'status': 'open — amended by Story 3.9; THE CODE LANDED', 'closed': ''}), \
+        'a part-closed entry reads as closed'
+    assert not dw_closed({'status': 'open', 'closed': ''}), 'an open entry reads as closed'
+    dwp = out.split('id="pd-deferred"', 1)[1].split('</section>', 1)[0]
+    assert '<span class="st s-good solid">2 closed</span>' in dwp, \
+        f'the two closed entries are not one chip of 2: {re.findall(r"solid\">(\d+ [a-z]+)<", dwp)}'
+    assert '<h3 class="sub">Closed <span class="fine">2</span>' in dwp, 'the Closed section did not take both'
+    assert '<b>Resolution:</b>' in dwp and '<b>Closed:</b>' in dwp, \
+        'an open entry\'s resolution is labelled as a closure, or a closure lost its note'
     assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
     # A `**N. …**` heading starts a question; an option line, which begins with a bare digit, does not.
     # Before this, spec 1.2's four questions read as one and three of them were invisible.

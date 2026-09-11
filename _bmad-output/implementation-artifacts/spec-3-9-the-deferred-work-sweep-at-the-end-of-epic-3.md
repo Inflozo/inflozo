@@ -1357,6 +1357,69 @@ record says a clean run is roughly a coin flip and costs as many as four attempt
 already spent three getting one). Nothing in the tree has changed since. The owner's manual test
 below is what proves the six nav destinations and the passkey labels on his own account, today.
 
+### Executed at Fix — the owner's finding, its control, and what the board now counts (2026-09-11)
+
+**R-82, honestly scoped.** This Fix changes one local tool, `tools/story-board.py`. `git diff
+--name-only` reports **no file under `apps/`, `packages/` or `supabase/`**, so no deployed surface,
+no Supabase, Vercel, Resend, Dodo or Ghost endpoint is involved and none was called — saying
+otherwise would be the assertion standing rule 1 forbids. The real thing this fix reads is the real
+ledger, 92 entries, and the real page it generates; both were executed, with a control.
+
+**The control first (standing rule 2).** The old predicate was re-applied to the same 92 entries in
+the same process as the new one:
+
+```
+CONTROL (old predicate) : {'medium': 18, 'low': 59, 'closed': 15}
+AFTER   (dw_closed)     : {'medium': 12, 'low': 37, 'closed': 43}
+```
+
+The control **reproduces the owner's reported `18 medium / 59 low / 15 closed` exactly**, so the new
+figures are this change and not an unrelated edit to the ledger. 28 entries move; the total stays 92.
+
+**The five part-closed entries stay open** — the regression that would have marked unproved work
+done. `dw_closed` was asked directly:
+
+```
+DW-67: closed=False  resolution=yes      DW-79: closed=False  resolution=yes
+DW-74: closed=False  resolution=yes      DW-83: closed=False  resolution=yes
+DW-85: closed=False  resolution=yes
+```
+
+**The generated page, read back off disk** (`STORY-BOARD.html`, not the in-memory model):
+
+```
+chips                 : ['12 medium', '37 low', '43 closed']
+Closed section header : 43
+entries total         : 92
+Resolution: labels = 5    Closed: labels = 39
+```
+
+Five `Resolution:` labels is exactly the five part-closed entries; 39 `Closed:` notes is the 13
+entries carrying a `closed:` line plus the 26 carrying a `resolution:` on a closed entry.
+
+**The self-check catches it, and that was proved rather than assumed.** `demo()`'s fixture had only
+`open` entries, which is why nothing caught this. It now carries a canonical `done <date>` close, a
+hand-written `closed` close and a part-closed `open` entry with a `resolution:`. Running the new
+assertions against the **old** predicate reports which fail:
+
+```
+assertions the OLD predicate fails: ['done 2026-09-11 (Story 3.9)', '**closed** — see above']
+```
+
+so the check is load-bearing rather than decorative.
+
+```
+python3 tools/story-board.py --check   → "STORY-BOARD.html was stale and has been regenerated" (exit 1, expected on the first run)
+python3 tools/story-board.py --check   → "story board: current" (exit 0)
+python3 tools/doc-audit.py --check     → "documentation gate: PASS (0 warning(s))" ×2
+```
+
+**What was read, not asserted.** The vocabulary this fix teaches the board was taken from the file
+that defines it — `.claude/skills/bmad-loop-sweep/deferred-work-format.md`, § *When a deferred item
+is later completed* (line 85), § *Sweep annotations* (line 187), § *Closure declared by a story*
+(line 210), and its line 23, *"The file is append-only — never rewrite or delete existing entries"*,
+which is why the ledger was not touched by this Fix at all.
+
 ## Spec Change Log
 
 **2026-09-11 — the board was moved to Review by a commit message, and nothing was built.**
@@ -1407,6 +1470,21 @@ stands as history; the live record is corrected here, the boxes are un-ticked, a
 DW-85 go back to open with their code landed and their proof owed. Standing rule 2, caught in this
 story rather than by the next one.
 
+**2026-09-11 — Fix, and a triage that had to be corrected before it could be applied.** The owner's
+test found the Deferred panel unchanged by this story's closures. The finding was triaged, in this
+spec, as a drift in the ledger, with the fix written down as "rewrite 26 `status:` lines to
+`status: closed`". **That triage was wrong and nearly cost the ledger.** It was derived from
+`tools/story-board.py`'s code plus the hand-written entries that agree with it; the canonical
+format — `.claude/skills/bmad-loop-sweep/deferred-work-format.md`, which owns this file — was never
+opened. It specifies `status: done <date>` with a `resolution:` line, declared by `closes_deferred:`,
+which is precisely what this story wrote, and it opens by saying the ledger is append-only. Applying
+the recorded fix would have rewritten 26 correctly-formatted entries into a word no format defines.
+**The real defect is in the board**, which closed on `d['status'] == 'closed'` alone. Corrected under
+`## Owner's test findings`, fixed in `tools/story-board.py`, and the ledger was not touched.
+**The general rule, and it is the one this story already broke once:** a claim about a format, a tool
+or a platform is a hypothesis until read in the thing that defines it — the board's source is
+evidence about the board, never about the ledger it reads.
+
 ## Owner's test findings
 
 Tested on the story board (`_bmad-output/planning-artifacts/STORY-BOARD.html`) on 2026-09-11, after
@@ -1416,17 +1494,37 @@ Done. One finding.
    still reads `18 medium` / `59 low` / `15 closed` — the same shape it would show if this story had
    closed nothing.
 
-   *Whose:* this story's, and it is a vocabulary drift (standing rule 7), not a board bug.
-   `deferred-work.md` has one word for a finished entry, `status: closed` (bare), used by all 15
-   entries closed before this story. This story instead wrote `status: done 2026-09-11 (Story 3.9)`
-   on the 26 entries it closed outright (25 named in `closes_deferred`, plus DW-89, closed at
-   Review). `tools/story-board.py`'s tally (`closed = d['status'] == 'closed' or bool(d['closed'])`)
-   recognises only the literal word `closed` or a `closed:` field; `done …` falls through to the
-   open branch and is tallied by severity instead. That is exactly the `18/59/15` the owner saw: the
-   pre-existing 15, unchanged, and the 26 this story closed hiding inside the open chips. The five
-   partial closures (DW-67, DW-74, DW-79, DW-83, DW-85) are unaffected and correctly read
-   `status: open — amended by Story 3.9 …`.
+   **The triage this section first carried was wrong, and correcting it is half the finding.** It
+   said the ledger was off-format and named the fix as rewriting 26 `status:` lines to
+   `status: closed`. That was read off the board's own code and off the hand-written entries that
+   happen to agree with it; **the format that owns the file was never opened.** Standing rule 1 —
+   cite or execute, never assert — and it was broken on this project's own documents rather than on
+   Ghost. Had it been applied, it would have rewritten 26 correctly-formatted entries into a word no
+   format defines, inside a ledger whose first rule is that it is append-only.
 
-   *Fix:* change `status: done 2026-09-11 (Story 3.9)` to `status: closed` on those 26 entries,
-   keeping each `resolution:` line as the record of what closed it. No change to `story-board.py` —
-   the vocabulary it reads has always been `closed`.
+   *Whose, in fact:* **`tools/story-board.py`'s.**
+   `.claude/skills/bmad-loop-sweep/deferred-work-format.md` is the canonical format for this ledger.
+   Its vocabulary for a finished entry is **`status: done <date>`** (§ *When a deferred item is later
+   completed*, and again at § *Closure declared by a story*), its companion line is **`resolution:`**
+   (§ *Sweep annotations*), and the declaration a story makes is **`closes_deferred:`** — the field
+   this spec's frontmatter carries. Story 3.9 wrote all three exactly as specified. The board never
+   learned that vocabulary: it closed on `d['status'] == 'closed'` alone, a word the format does not
+   define anywhere, so the 26 canonical closes fell through to the open branch and the 17
+   hand-written `closed` entries were the only ones it could count. **The panel was reporting the
+   inverse of the truth** — the off-format entries as closed, the correctly-formatted ones as open.
+
+   *The fix, and where:* [`story-board.py:614`](../../tools/story-board.py#L614) — `dw_closed()` now
+   reads the status **word** (first token, stripped of the markdown a hand-written entry wraps it in)
+   and accepts both spellings; [`load_deferred:605`](../../tools/story-board.py#L605) carries
+   `resolution:` beside `closed:`; [`:1524`](../../tools/story-board.py#L1524) collapses every close
+   to one bucket word, because the canonical status carries a date and counting the raw string would
+   mint a chip per entry; [`dw_entry:855`](../../tools/story-board.py#L855) labels the note by state.
+
+   *What the fix must not do, and is asserted from both sides:* the five part-closed entries (DW-67,
+   DW-74, DW-79, DW-83, DW-85) each carry a `resolution:` line **while still `open`**, their code
+   landed and their proof owed — the Review phase put them back deliberately. `dw_closed` therefore
+   never consults that field; reading it as a close would mark unproved work done, which is the exact
+   failure standing rule 2 names. Their note renders under **Resolution:**, not **Closed:**.
+
+   *Counts, over the same 92 entries:* `12 medium` / `37 low` / **`43 closed`**, where the board read
+   `18 medium` / `59 low` / `15 closed` before.
