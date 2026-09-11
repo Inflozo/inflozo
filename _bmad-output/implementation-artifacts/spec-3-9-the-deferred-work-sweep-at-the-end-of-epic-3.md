@@ -2,9 +2,9 @@
 title: 'Story 3.9 — The deferred-work sweep at the end of Epic 3'
 type: 'chore'
 created: '2026-09-11'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 # DW-89 was added (closed at Review). DW-67, DW-74, DW-79, DW-83 and DW-85 were REMOVED on
 # 2026-09-11: the Review re-opened them with their proof owed, and this field is a closure
