@@ -2,7 +2,7 @@
 title: 'Story 4.2 — The section runtime: one source, two emitters, proven to agree'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'fa35a3715feab0402447f80efe8a8748ae7fdd01'
 owner_test: none
 review_loop_iteration: 1
@@ -392,3 +392,16 @@ shared by every directive on its element and swept once; `data-bind-style` carri
 an absent value leaves an empty `style` on both emitters; `formatDate` knows `MMMM`, `D` and `YY`;
 `safeCssColor` accepts only CSS's two argument shapes; and `CUSTOM_PROPERTY_RE` is the one copy of
 that grammar. The 70-section harness and its gscan verdict did not move.
+
+### Deploy, 2026-09-11 — nothing to deploy
+
+This story's diff is `packages/section-runtime` (new package), `safeCssColor` in
+`packages/library/src/vocabulary.ts`, the `tools/stress/compile.js` adapter and the two moved test
+files' deletion, and documentation; `apps/web` is unchanged. `apps/web/next.config.ts` already listed
+`@inflozo/section-runtime` in `transpilePackages` before this story (Epic 1) and no file under
+`apps/web` imports `@inflozo/section-runtime` (checked by grep) — the runtime ships nothing the app
+runs yet. There is no schema change either. Deploy for an app-code story is confirming the production
+Vercel deployment; deploy for a schema story is applying the migration; this story is neither — it is
+tooling, and tooling's Deploy step is nothing, because the push changes no deployed surface or
+database. `owner_test: none` stands unchanged, so there is no manual test for the owner to run. The
+story moves straight to Done.
