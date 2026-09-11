@@ -777,4 +777,19 @@ an accidental but real end-to-end proof that the read is live rather than cached
 
 ## Spec Change Log
 
-*To be filled by the Dev and Review runs.*
+**2026-09-11 — the board was moved to Review by a commit message, and nothing was built.**
+DW-22 was closed at Create (above) because the owner pasted the key that same hour and verifying it
+was two minutes' work. It was committed as `Story 3.9 - Dev - …`, and **that token is how the story
+board learns a phase finished**: `story-board.py`'s `NEXT_AFTER` maps the newest commit's phase to
+*the phase now*, so `Dev` in the trail read as "Dev is finished, Review is next" and the card jumped
+two lanes while `sprint-status.yaml` still said `ready-for-dev`. The owner caught it — he had not
+sent the Build prompt.
+
+**Nothing was lost and nothing was built.** One of the thirty entries is closed; the other
+twenty-nine, the migration and every code change are untouched and still owed. Corrected by this
+commit, which carries `Create` and puts the card back in *not started*. **The rule for the rest of
+this story, and it is general:** a commit's phase token is a claim about the story's position, not a
+label for the work in the diff — opportunistic work done outside a phase is committed under the
+phase the story is actually *in*, never the phase the work resembles.
+
+*The rest to be filled by the Dev and Review runs.*
