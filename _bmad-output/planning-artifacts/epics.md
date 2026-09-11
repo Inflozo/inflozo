@@ -1090,6 +1090,42 @@ Project Sheet; Start from a starter is greyed with its reason in the caption unt
 **Owner test:** yes. · **Verification:** a fresh throwaway account on `app.inflozo.com` lands on First Run
 and, after connecting T1, never sees it again (R-82).
 
+### Story 3.9: The deferred-work sweep at the end of Epic 3
+
+*Added 2026-09-11 by the owner: stop at the end of Epic 3, go through every open entry in the
+deferred-work ledger, and close the ones we now know enough to close — leaving untouched anything
+that waits on a capability a later epic builds.*
+
+As the owner watching a ledger that has only ever grown,
+I want every deferred item that can be finished now to be finished now,
+So that the list left open is the list that is genuinely blocked, and nothing closable is hiding
+behind it.
+
+**Acceptance Criteria:**
+
+**Given** the deferred-work ledger at the end of Epic 3
+**When** every open entry is triaged
+**Then** each one is either closed by a change that makes its claim false, or left open with the
+story that owns it named — and **no entry is deleted or renumbered**
+**And** the six drawn-but-unbuilt nav destinations land on **Inflozo's own not-found page inside the
+shell**, answering HTTP 404, rather than on the framework's bare 404 outside it
+**And** one migration makes four sentences structural that were comments: a project's slug unique
+per user, FR-B5's "at most one project per site", the credential log's three outcomes, and the one
+user reference in the schema that cascades neither way
+**And** the checks the ledger says are missing exist and each has a control that fails when the
+thing it protects is reverted (standing rule 2)
+**And** the two documents a fresh session reads first are findable rather than walls of prose
+**And** `pnpm check`, `pnpm build`, the RLS gate and the documentation gate are all green, with the
+documentation gate now running in CI as well as in the local hook.
+
+**FRs:** none new — this story makes existing FRs structural (FR-B5, FR-J10) and closes verification
+debt against FR-A5, FR-B2, FR-B3, FR-C3 and FR-C8. · **Frame:** `M9 404.dc.html`, extrapolated into
+the app shell under R-74; the departures are recorded in the spec. · **Owner test:** yes (the
+not-found page, and a pass over the screens the small fixes touch). · **Verification:** the
+constraints read back off the production pooler after the hand-applied migration, the deployed site
+driven for the 404s and the dashboard guards, the RLS gate with its control (R-82, R-99).
+
+
 *Exit:* T1–T3 connected and validated **with the token absent**, and the partially credentialed state
 round-tripped through Manage keys; on T4 the connect-time probe sets Preview-only and clears it when the probe
 changes. **The deploy-error half of the Starter path is verified at the E4/E7 joint gate**, because FR-C2 makes
