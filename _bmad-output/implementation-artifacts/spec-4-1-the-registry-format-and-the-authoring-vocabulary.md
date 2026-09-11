@@ -2,7 +2,7 @@
 title: 'Story 4.1 — The registry format and the annotated-HTML authoring vocabulary'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'cc325fe175e64fb00c9da73b9d7c568b8d2779b6'
 owner_test: none
 review_loop_iteration: 1
@@ -494,5 +494,16 @@ before plus the added checks, which is what keeps an edited control a control (s
 call to Ghost (T1/T3), Supabase, Vercel, Resend or Dodo, and the Review phase re-runs the sheet above
 rather than a probe (R-82 — the rule is satisfied by there being no real infrastructure in scope,
 stated rather than skipped).
+
+### Deploy, 2026-09-11 — nothing to deploy
+
+This story's diff is `packages/library` only (`registry.ts`, `vocabulary.ts`, `validate.ts`,
+`validate.test.ts`, `index.ts`, the fixture, and their two config files) plus documentation; `apps/web`
+is unchanged, and `apps/web` does not yet import `@inflozo/library` (no `@inflozo/library` reference
+anywhere under `apps/web`, checked by grep). There is no schema change either. Deploy for an
+app-code story is confirming the production Vercel deployment; deploy for a schema story is applying
+the migration; this story is neither — it is tooling, and tooling's Deploy step is nothing, because the
+push carries no change any deployed surface or database can observe. `owner_test: none` stands
+unchanged, so there is no manual test for the owner to run. The story moves straight to Done.
 
 ## Spec Change Log
