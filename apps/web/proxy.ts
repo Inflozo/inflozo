@@ -8,7 +8,7 @@
 // file is beyond `node --test`. Keep it thin on purpose.
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { isApp as isAppPath, route } from './routing.ts'
+import { isApp as isAppPath, route, SEARCH_HEADER } from './routing.ts'
 import { policy, policyName, requestHeaders } from './csp.ts'
 // `cookies.ts`, not `server.ts`: the leaf exists so this symbol is reachable without dragging
 // `next/headers` and the whole server client into the proxy bundle (review, 2026-09-05).
@@ -65,6 +65,10 @@ export async function proxy(req: NextRequest) {
   // be deleted by a later edit with lint, types, every test and the build all still green.
   const headers = new Headers(req.headers)
   for (const [name, value] of Object.entries(requestHeaders(nonce, csp))) headers.set(name, value)
+  // A THIRD, AND IT IS NOT THE CSP'S — `SEARCH_HEADER` in routing.ts says why a layout needs the
+  // query string handed to it. Set on every app request, EMPTY INCLUDED, so a header a client sent
+  // is always overwritten rather than believed.
+  if (isApp) headers.set(SEARCH_HEADER, search)
 
   const res =
     decision.kind === 'rewrite'

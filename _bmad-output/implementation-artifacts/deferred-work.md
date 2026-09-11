@@ -494,7 +494,10 @@ plain: The very first screen a brand-new customer should see after signing up �
 status: closed
 closed: Story 3.2 Create (2026-09-08) — the owner ruled option 1 of its Question 1: First Run is Story 3.8,
   the last story of Epic 3, planned after 3.4 so the Recommended door runs connect → auto-brand → a project;
-  added to `epics.md` and `sprint-status.yaml` in the same commit
+  added to `epics.md` and `sprint-status.yaml` in the same commit. **BUILT by Story 3.8 (Dev, 2026-09-11):**
+  S2a is `app/(app)/app/(authed)/start/`, reached from `/` while the account has no project and no connected
+  site, with `lib/first-run.ts` holding the rule and every word of the screen. Nothing is remembered about it
+  (the owner's Question 1 ruling, option 1, 2026-09-11), so no column and no migration.
 severity: medium
 origin: Story 1.5 owner test, second round (2026-09-06) — the owner compared the New project window to S2a, which surfaced this
 location: _bmad-output/planning-artifacts/epics.md · _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/S2 Onboarding.dc.html
@@ -2256,3 +2259,19 @@ reason: FR-C5 asks for a broadcast "using each design's `ghostCompat`" and FR-P2
   builds everything the notice needs to travel — the `notifications` rows, the email shell and the
   "Reconnect needed" channel FR-P1 makes it ride — so the receiving story adds a trigger and a template,
   not a mechanism.
+
+### DW-88: First Run's starter door carries a reason sentence that Epic 11 must take away with it
+
+plain: The welcome screen shows three choices and the middle one — "start from a ready-made site" — is greyed out with a short line saying starters aren't ready yet. When the ready-made sites are actually built, that line has to go, or the screen will keep apologising for something that now works.
+status: open
+severity: low
+origin: Story 3.8 Dev (2026-09-11)
+location: apps/web/lib/first-run.ts · apps/web/app/(app)/app/(authed)/start/doors.tsx · apps/web/app/(app)/app/(authed)/new-project-sheet.tsx
+reason: `STARTER_DOOR.reason` — "Starters aren't here yet." — is what UX-DR3 requires of a control that cannot
+  act YET: greyed, with the sentence in the helper-caption slot. It is read by BOTH surfaces that draw the door,
+  First Run's `doors.tsx` and the New Project Sheet, from the one module, so the day Epic 11's starter chooser
+  exists the field is deleted once and both doors come alive together — `greyedProps` and `fieldTone` take an
+  optional `Greyed`, so removing the reason IS removing the grey. The story that builds the chooser (Epic 11,
+  the Starter Chooser surface in `EXPERIENCE.md` § Onboarding, B23a) owns this; nothing else may leave the
+  sentence standing over a door that works. `first-run.test.ts` asserts only that neither surface keeps its own
+  copy, so a stale sentence would not go red — this entry is the record.

@@ -21,6 +21,25 @@ export const isApp = (pathname: string) => pathname === '/app' || pathname.start
  */
 export const stripApp = (pathname: string) => (isApp(pathname) ? pathname.slice(4) || '/' : pathname)
 
+/**
+ * THE REQUEST'S QUERY STRING, HANDED TO THE SERVER COMPONENTS THAT CANNOT SEE IT (Story 3.8).
+ *
+ * A `page.tsx` is given `searchParams` and a `layout.tsx` is not — Next's own rule — and First
+ * Run's redirect HAS to be decided in the layout: a `loading.tsx` lets Next flush the shell
+ * before the page resolves, so a `redirect()` from inside the page can only be delivered as a
+ * CLIENT navigation. Measured on a production build (Story 3.8, Dev): `/` answered 200 and the
+ * customer watched the dashboard's project-card skeleton for ~150ms before the welcome screen —
+ * which is the owner's own finding 2 on Story 3.4 — and with scripts off the redirect never
+ * arrived at all. From the layout, above that boundary, the same `redirect()` is a real 307.
+ *
+ * `proxy.ts` sets it on EVERY app request, empty string included, so a value sent by a client is
+ * always overwritten rather than believed. It is read with `searchHeader()` below.
+ */
+export const SEARCH_HEADER = 'x-inflozo-search'
+
+/** `''` or a leading `?`, as `route()` takes it — so "is anything on the URL" is one question. */
+export const hasSearch = (header: string | null | undefined): boolean => Boolean(header)
+
 /** `host` is the raw Host header; `search` is `''` or a leading `?`. */
 export function route(host: string, pathname: string, search: string): Route {
   // Exact hosts, lowercased and without the port. `startsWith('app.')` and

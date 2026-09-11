@@ -7,6 +7,7 @@ import { Button, IconButton } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { AlertCircle, X } from '@/components/kit/icons'
 import { PackCell } from '@/components/kit/pack-cell'
+import { STARTER_DOOR, type Door } from '@/lib/first-run'
 import { capSentence, goProLabel, includesProjects, type PlanId } from '@/lib/plan'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import { PRESETS } from '@/lib/style-pack'
@@ -37,15 +38,13 @@ import { createProject, type ActionResult } from './projects/actions'
    reason, no Style Pack row, the upgrade block, and Create project drawn disabled. The page
    decides which from the project count; an `at_cap` that arrives anyway (a race) flips it. */
 
-type Door = { title: string; consequence: string; reason?: string }
-
+/* THE STARTER DOOR IS NOT THIS FILE'S ANY MORE (Story 3.8). S2a draws the same door on `/start`,
+   and two surfaces describing a starter in two sentences is a disagreement waiting to happen — so
+   both import `STARTER_DOOR` from `lib/first-run.ts` and `first-run.test.ts` asserts that neither
+   keeps a copy. The `Door` shape travels with it; it was identical on both sides. */
 const DOORS: Door[] = [
   { title: 'Blank canvas', consequence: 'An empty page and every design.' },
-  {
-    title: 'Start from a starter',
-    consequence: 'Ten full sites, ready to wear your brand.',
-    reason: "Starters aren't here yet.",
-  },
+  STARTER_DOOR,
   {
     title: 'Redesign one of my sites',
     consequence: 'We look at your posts and suggest whole-site designs.',

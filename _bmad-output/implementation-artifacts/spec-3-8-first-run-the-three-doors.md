@@ -2,7 +2,7 @@
 title: 'Story 3.8 — First Run: the three doors after the first sign-in'
 type: 'feature'
 created: '2026-09-11'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'c5f21b8f1ae81d238a804bcd4eeae716df9fd5c0'
 owner_test: pending
 review_loop_iteration: 0
@@ -99,7 +99,9 @@ at all. No column, no migration, **no Schema phase**.
   between the heading, the card row and the footer line; the card row's gap 24.
 - `apps/web/app/(app)/app/(authed)/(dashboard)/page.tsx:60-84` — the projects read, `unread`,
   `atCap`; **:78-82** is the "a failed read is not an empty account" scar the redirect inherits.
-  **:200** renders `<NewProjectSheet>`. The redirect goes in above the render.
+  **:200** renders `<NewProjectSheet>`. *(Dev: the page is UNCHANGED. The redirect went into a new
+  `(dashboard)/layout.tsx` instead — `loading.tsx` beside the page is a Suspense boundary, so a
+  redirect from the page can only be delivered as a client navigation; see `## Spec Change Log`.)*
 - `apps/web/app/(app)/app/(authed)/sites/connect/page.tsx` — the Connect door's destination, and
   the precedent for a full-screen onboarding beat centred inside the shell.
 - `apps/web/app/(app)/app/(authed)/sites/brand/page.tsx:8-13` — where `connectSite` lands next;
@@ -121,32 +123,36 @@ at all. No column, no migration, **no Schema phase**.
 
 **Execution:**
 
-- [ ] `apps/web/lib/first-run.ts` — **new.** S2a's words (heading, the three doors with their
+- [x] `apps/web/lib/first-run.ts` — **new.** S2a's words (heading, the three doors with their
   titles, consequences and the Recommended mark, the footer line) and `showsFirstRun()`, the pure
   rule over `{ unread, projects, sites, hasQuery }`. Export the starter door's two sentences by
   name so the sheet can import them.
-- [ ] `apps/web/app/(app)/app/(authed)/new-project-sheet.tsx` — import the starter door's
+- [x] `apps/web/app/(app)/app/(authed)/new-project-sheet.tsx` — import the starter door's
   `consequence` and `reason` from `lib/first-run.ts` instead of holding its own copies. One home
   for one sentence.
-- [ ] `apps/web/app/(app)/app/(authed)/start/page.tsx` — **new.** S2a inside the shell, centred as
+- [x] `apps/web/app/(app)/app/(authed)/start/page.tsx` — **new.** S2a inside the shell, centred as
   `/sites/connect` is; `resolveEntitlement` for the sheet's `plan`; renders `<NewProjectSheet
   atCap={false} …>` so the Blank door has something to open; `metadata.title`, `robots: noindex`.
-- [ ] `apps/web/app/(app)/app/(authed)/start/doors.tsx` — **new**, client. The three cards: Connect
+- [x] `apps/web/app/(app)/app/(authed)/start/doors.tsx` — **new**, client. The three cards: Connect
   as an `<a href="/sites/connect">` with the Recommended badge, Starter greyed with its reason,
   Blank as a button calling `openNewProject()`. One focus ring (`ring`), 44px touch targets at 390.
-- [ ] `apps/web/app/(app)/app/(authed)/start/loading.tsx` — **new.** Three card outlines in the
+- [x] `apps/web/app/(app)/app/(authed)/start/loading.tsx` — **new.** Three card outlines in the
   doors' own shape (the 140px band, the title, the two-line body), `aria-busy`, an `sr-only` line.
-- [ ] `apps/web/app/(app)/app/(authed)/(dashboard)/page.tsx` — read the connected-site count **only
-  when** the projects read succeeded and returned none, then `redirect('/start')` on
-  `showsFirstRun(...)`. Filter `disconnected_at is null`, through the user's own session, `head`
-  count only.
-- [ ] `apps/web/first-run.test.ts` — **new.** Every row of the matrix against `showsFirstRun`, plus
+- [x] `apps/web/app/(app)/app/(authed)/(dashboard)/layout.tsx` — **new, and it is the LAYOUT rather
+  than the page: measured, see the Change Log.** Reads the connected-site count **only when** the
+  projects read succeeded and returned none, then `redirect('/start')` on `showsFirstRun(...)`.
+  Filter `disconnected_at is null`, through the user's own session, `head` count only.
+- [x] `apps/web/routing.ts` · `apps/web/proxy.ts` — `SEARCH_HEADER`, set by the proxy on every app
+  request (empty included, so a client-sent one is always overwritten) and read by the layout: Next
+  gives `searchParams` to a page and not to a layout, and "any query string renders the dashboard"
+  is half the rule.
+- [x] `apps/web/first-run.test.ts` — **new.** Every row of the matrix against `showsFirstRun`, plus
   an assertion that `new-project-sheet.tsx` and `doors.tsx` both read the starter sentences from
   `lib/first-run.ts` (read out of the source, `busy.test.ts`'s idiom).
-- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` — amend the
+- [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` — amend the
   **First Run** row: built at `/start`, reached from `/` while the account has no project and no
   connected site, and the four departures below. Propagate, never localise (standing rule 3).
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` — note against **DW-19** that the
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` — note against **DW-19** that the
   screen it named is built, and open an entry for the starter door's reason sentence to be removed
   by Epic 11 when the chooser exists.
 
@@ -266,11 +272,62 @@ record what each service returned by the key's variable name, never its value.
 
 - `cd apps/web && pnpm check` — expected: lint, `tsc` and `node --test` all green, `first-run.test.ts`
   included (Node 24 on PATH).
-- `node --test apps/web/first-run.test.ts` — expected: every matrix row green, and the shared-sentence
-  assertion green.
+- `cd apps/web && node --test first-run.test.ts` — expected: every matrix row green, and the
+  shared-sentence assertion green. **From `apps/web`, not from the repo root:** the source assertions
+  read their files by relative path, which is `busy.test.ts`'s own idiom and what `pnpm test` does.
 - `python3 tools/doc-audit.py --check` — expected: exit 0, twice, after the EXPERIENCE.md amendment.
 - `bash supabase/tests/run-rls-gate.sh` — expected: green and **unchanged**; this story adds no SQL.
 - A real sign-up on `app.inflozo.com` with a throwaway address (R-82), then a real connect against
   **T1** `ghost6.inflozo.com` with `GHOST6_*` from `tools/probe/.env` — expected: First Run on the
   first landing, the handshake, S2c, a project, and the dashboard on the next sign-in.
 - axe-core over `/start` at 1440, 834 and 390 — expected: zero violations, the greyed door included.
+  **Dev, 2026-09-11 — RUN, on a PRODUCTION BUILD (`next build` + `next start`) against the real
+  Supabase, with a fixture account created and deleted through GoTrue's admin API:** zero axe
+  violations (WCAG 2.0/2.1 A and AA) at all three widths, no sideways scrolling at any of them, and
+  every behaviour of the matrix — `/` answering **307 → /start**, `?restored=1`, `?signed-out-failed=1`,
+  `?q=` and `?anything=else` each answering **200**, the heading, the three doors in the frame's order,
+  **Recommended** on the first card only, the footer line, the starter door's reason on the page and in
+  no tooltip, no top bar on the route, Connect's `href`, Blank opening the dashboard's own sheet and
+  Cancel closing it, and the greyed door opening nothing. The remaining rows are the owner's, on the
+  deployed site: a real sign-up and a real connect against T1.
+
+## Spec Change Log
+
+- **2026-09-11, Dev — the redirect moved from `(dashboard)/page.tsx` to a new
+  `(dashboard)/layout.tsx`, and it is a measurement, not a preference.** `(dashboard)/loading.tsx`
+  is a Suspense boundary, so Next flushes the shell the moment the page awaits anything — and a
+  `redirect()` **after** that flush cannot be an HTTP redirect. Executed on a production build
+  (`next build` + `next start`, a real fixture account with no project and no site): `/` answered
+  **200** with the dashboard document, the customer watched the **project-card skeleton for ~150ms**
+  and only then arrived at the welcome screen, and with scripts off the redirect never arrived at
+  all. Two things that is — the owner's finding 2 on Story 3.4 ("I want the loading shimmer to match
+  the cards they show") reintroduced on the first screen a new customer ever sees, and a first run
+  that needs JavaScript to begin. The control that pins the cause on the boundary rather than on the
+  call: with `loading.tsx` moved away, the identical `redirect()` in the page answered **307 →
+  /start**. `generateMetadata` was tried and streams the same way (also executed). From the layout,
+  above the boundary, it is a real **307** before a byte of the dashboard is sent — verified on the
+  same production build. Deleting the skeleton would also have fixed it and would have undone R-98.
+- **2026-09-11, Dev — `SEARCH_HEADER` in `routing.ts`, set by `proxy.ts`.** A layout is not given
+  `searchParams` (Next's own rule), and "any query string renders the dashboard" is half the rule,
+  so the proxy hands the request's search string over. Set on **every** app request, empty string
+  included, so a header a client sent is always overwritten rather than believed; `first-run.test.ts`
+  asserts the proxy is its only writer. Spoofing it can only *suppress* First Run, never forge it.
+- **2026-09-11, Dev — the illustrations are scaled and clipped at 834, which is an extrapolated
+  width (departure 4).** The frame's drawings are drawn for a 352px card; at 834 the app's one
+  collapse rule leaves a card ~117px wide inside its padding, and measured there the connect card's
+  two 56px circles had squashed into **ovals** (a flex item's default is to shrink) and the starter
+  fan spilled over the card's own edges onto the page. `shrink-0`, `overflow-hidden` on the band and
+  `tablet:scale-[.6] desktop:scale-100` on each drawing. 1440 and 390 are untouched.
+- **2026-09-11, Dev — `lib/first-run.ts` exports `needsSiteCount` beside `showsFirstRun`.** The
+  layout must know whether the site count is worth a round trip *before* it spends one, and a caller
+  restating those three conditions would be a second decider: one that drifted a condition stricter
+  would pass `sites: null` and lose First Run with every test still green. It is the rule's own cheap
+  half — `showsFirstRun = needsSiteCount(...) && sites === 0` — and the test asserts the coupling.
+- **2026-09-11, Dev — `sites` is `number | null` and `null` means BOTH "not read" and "the read
+  failed".** They are the same answer (render the dashboard), and collapsing them keeps the rule one
+  expression. The matrix's two rows are still tested apart, because the layout reaches them by two
+  different paths.
+- **2026-09-11, Dev — the sheet imports the whole `STARTER_DOOR`, not just its two sentences.** Its
+  `title` was already identical, and the local `Door` type was identical too, so both travel with it
+  and the sheet keeps no copy of anything. `first-run.test.ts` fails if either surface reintroduces
+  one, by looking for the sentence itself rather than for the import.
