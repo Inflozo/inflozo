@@ -20,7 +20,7 @@ import {
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
-import { brandPath, brandPopupPath, brandTarget, hasBrand } from '@/lib/probe-rule'
+import { brandPath, brandPopupPath, brandRetry, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { freeName, NAME_MAX, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
 import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
@@ -877,7 +877,7 @@ export async function useBrand(formData: FormData): Promise<void> {
     // `nextUntitled`'s own plain numeric suffix, generalised to any base — NOT `copyName`'s
     // "Copy of X", because this is a different site and not a copy of anything.
     const taken = projects.map((row) => row.name)
-    const name = named ? freeName(named, taken) : nextUntitled(taken)
+    let name = named ? freeName(named, taken) : nextUntitled(taken)
     const slugs = projects.map((row) => row.slug)
 
     /* THE INSERT, AND THE RACE UNDER IT — DW-69, and this is the half that is code.
@@ -891,9 +891,16 @@ export async function useBrand(formData: FormData): Promise<void> {
        THE RETRY RE-DECIDES RATHER THAN RE-SLUGS, because this insert sets `linked_site_id` as well
        as `slug` and BOTH are unique: `23505` here means "another request got there first" without
        saying which column, and re-running the decision is the one answer that is right either way.
-       Re-read, re-run `brandTarget`, and if a project for this site now exists the press lands on
-       it — which is exactly what the customer's second press was always supposed to do. If there
-       is still none, the collision was the slug and the next attempt takes the next free one. */
+       Re-read, and if a project for this site now exists the press lands on it — which is exactly
+       what the customer's second press was always supposed to do. If there is still none and the
+       account has ROOM, the collision was the slug and the next attempt takes the next free one,
+       with the name re-derived from the rows that now exist so DW-72 holds under the race too. If
+       there is still none and the account is now AT THE CAP — a create in another tab took the
+       last slot — the answer is the stale-decision guard's above: re-render S2c with the true
+       cards and act on nothing. NOT `brandTarget`: at the cap with no project for this site it
+       answers the newest project, which is right for a caption and wrong for a write nobody
+       chose (review, 2026-09-11 — the first draft painted onto that project). The decision is
+       `brandRetry`, pure and under `probe-rule.test.ts`. */
     let inserted = null
     for (const slug of slugAttempts(slugify(name), slugs)) {
       const { error } = await supabase.from('projects').insert({
@@ -913,12 +920,19 @@ export async function useBrand(formData: FormData): Promise<void> {
         .select('id, name, slug, style_pack, linked_site_id')
         .order('updated_at', { ascending: false })
         .order('id', { ascending: false })
-      const won = fresh ? brandTarget(atCap(plan, fresh.length), fresh, site.id) : undefined
-      if (won) {
-        await paint(won)
+      const next = fresh ? brandRetry(atCap(plan, fresh.length), fresh, site.id) : 'fail'
+      if (next === 'fail') break
+      if (next === 'refresh') {
+        revalidatePath(SITES)
+        brandRedirect(base)
+      }
+      if (next !== 'retry') {
+        await paint(next)
         inserted = null
         break
       }
+      const names = fresh!.map((row) => row.name)
+      name = named ? freeName(named, names) : nextUntitled(names)
     }
     if (inserted) {
       console.error('sites: use brand insert failed', { code: inserted.code })

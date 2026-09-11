@@ -106,7 +106,9 @@ python3 tools/doc-audit.py --check     # must pass; exits non-zero on drift
 
 It is installed as a **pre-commit hook** — the hooks live in `tools/hooks/` and are installed once per
 clone with `git config core.hooksPath tools/hooks`; a `commit-msg` hook there also enforces the story
-commit shape, and a `post-commit` hook regenerates the story board — so a red gate blocks the commit. Two things it does *not*
+commit shape, and a `post-commit` hook regenerates the story board — so a red gate blocks the commit. **Since Story 3.9
+(DW-21) CI's `check` job runs the same `--check` before `pnpm build`**, after regenerating the story
+board on a full-history checkout, so a clone without the hook still cannot publish a red gate. Two things it does *not*
 do, and both have bitten: it verifies the catalogue and the generated artifacts but **does not verify
 propagation** — it passed while FR-G7 still said 31 modules. And its sub-tools **regenerate on
 failure**, so a first failure right after a commit is normal (the hook retries once and stages them).

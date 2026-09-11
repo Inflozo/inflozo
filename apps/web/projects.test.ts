@@ -183,7 +183,11 @@ test('duplicateProject carries every column the insert grant allows, or says why
   )
 
   const source = readFileSync('app/(app)/app/(authed)/projects/actions.ts', 'utf8')
-  const select = source.match(/\.select\('([^']*)'\)\s*\n\s*\.eq\('id', id\)/)
+  // Anchored INSIDE duplicateProject: the first `.select(...).eq('id', id)` in the file could one
+  // day be another action's, and the test would silently read the wrong column list (review, 2026-09-11).
+  const start = source.indexOf('export async function duplicateProject')
+  assert.ok(start >= 0, 'duplicateProject was not found in projects/actions.ts')
+  const select = source.slice(start).match(/\.select\('([^']*)'\)\s*\n\s*\.eq\('id', id\)/)
   assert.ok(select, "duplicateProject's `.select(...)` was not found — it is what decides which columns a copy carries")
   const copied = new Set(select[1].split(',').map((c) => c.trim()))
 
@@ -197,6 +201,19 @@ test('duplicateProject carries every column the insert grant allows, or says why
       'FR-B5 allows a project at most one site. Carrying it forward would make a duplicate inherit ' +
       'the original\'s binding — two projects pointing at one site — and since Story 3.9 the ' +
       'database refuses the second with 23505 rather than merely disapproving (DW-69)',
+  }
+  // …and a column named here as deliberately NOT copied must really not reach the insert: either
+  // absent from the select, or selected and then OVERRIDDEN in the spread (`user_id`, `name`).
+  // `insertProject`'s "23505 can only be the slug" rests on `linked_site_id` never being spread in
+  // (review, 2026-09-11).
+  const spread = source.slice(start).match(/\{\s*\.\.\.source,([^}]*)\}/)
+  assert.ok(spread, "duplicateProject's `{ ...source, … }` insert was not found")
+  const overridden = new Set(spread[1].split(',').map((c) => c.trim().split(':')[0]).filter(Boolean))
+  for (const column of Object.keys(NOT_COPIED)) {
+    assert.ok(
+      !copied.has(column) || overridden.has(column),
+      `${column} is selected by duplicateProject and not overridden, yet NOT_COPIED says it is not carried — one of the two is wrong`,
+    )
   }
   const missed = [...granted].filter((c) => !copied.has(c) && !(c in NOT_COPIED))
   assert.deepEqual(

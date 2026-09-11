@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # THE WHOLE HISTORY, because `story-board.py` below derives every story's phase from
+          # `git log`'s `Story E.S - Phase` lines: on the default one-commit checkout the board it
+          # regenerates — and then checks against itself — is built from one commit, so a malformed
+          # phase line that turns the board red locally stayed green here (review of 3.9, 2026-09-11).
+          fetch-depth: 0
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:

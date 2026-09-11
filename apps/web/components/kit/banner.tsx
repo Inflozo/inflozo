@@ -68,8 +68,10 @@ export function Banner({
           2.1. Every browser accepts it and axe reported nothing, but a strict validator does not,
           and unlike `<p>` there is no reparse to make it visible. The parent is `flex`, so the
           child's own inline-vs-block display was never what laid this out; every Banner was looked
-          at at 1440, 834 and 390 after the change. */}
-      <div className="min-w-0">{children}</div>
+          at at 1440, 834 and 390 after the change. NO CLASS ON IT, deliberately: a `min-w-0` here
+          would also let a long unbroken string shrink and wrap where it used to overflow, which is
+          a second change nobody asked for and the entry says this one is invisible. */}
+      <div>{children}</div>
     </div>
   )
 }

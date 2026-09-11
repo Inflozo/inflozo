@@ -207,7 +207,7 @@ test('exactly one catch-all under (authed), at the group root, and it only calls
 test('every page under (authed) declares a title — the not-found page inherits it', () => {
   const missing = pages()
     .filter((page) => page.startsWith(`(authed)${'/'}`))
-    .filter((page) => !/export (const metadata|async function generateMetadata)/
+    .filter((page) => !/export (const metadata|(async )?function generateMetadata)/
       .test(readFileSync(join(APP, page), 'utf8')))
   assert.deepEqual(
     missing,

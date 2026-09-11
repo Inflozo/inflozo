@@ -956,6 +956,9 @@ resolution: Story 3.9 (2026-09-11) — both `aria-label`s in `passkeys-card.tsx`
   disagree. `tools/probe/run-verify-passkeys.py` changed in the same commit: `names()` strips the
   suffix and every exact-match locator became a prefix match, which the entry named as the one
   thing this change breaks.
+  What this does NOT do (review, 2026-09-11): `addedLabel` is day-granular, so two passkeys
+  registered on ONE day with the fallback name still read alike. Accepted: the date is what the row
+  shows on screen and the entry's own fix; a finer label would put a time on the row nobody asked for.
 severity: low
 origin: Story 2.2 code review (2026-09-07) — Blind Hunter
 location: apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx (the two `aria-label`s) · tools/probe/run-verify-passkeys.py (`names()`, and the exact-match waits on `Rename ${n}`)
@@ -981,6 +984,11 @@ resolution: Story 3.9 (2026-09-11) — `inert` and `aria-hidden` on the sign-in 
   open at 1440, 834 and 390: **zero axe violations** where the entry measured 1 `color-contrast`
   over 9 nodes, impact serious. The control: a real mouse click on the dimmed button does not
   reach its handler, and focus does not land.
+  Review (2026-09-11): `inert` also hides the button's own "Waiting for your device…" from assistive
+  technology for as long as the OS sheet has focus, which is the sheet's moment and not the card's;
+  and it blurred the pressed button with nothing restoring focus, so a cancelled sheet left a
+  screen-reader user on <body>. `passkey-button.tsx` now returns focus to the button when the
+  ceremony ends. No run holds the ceremony pending to observe either — DW-91.
 severity: low
 origin: Story 2.2 Fix run (2026-09-07) — executed, not inferred: the card held in S1c on a real build,
   `opacity: 0.4` confirmed on the running page, axe-core 4.12.1 at WCAG 2.1 AA reporting
@@ -1614,8 +1622,9 @@ plain: A tiny HTML technicality. The blue notices on a site's card each contain 
   accessibility checker finds nothing — but a strict HTML validator would complain.
 status: done 2026-09-11 (Story 3.9)
 resolution: Story 3.9 (2026-09-11) — `banner.tsx`'s content slot is a `<div>`. The parent is
-  `flex`, so the child's own inline-vs-block display was never what laid this out; every Banner
-  was looked at at all three widths after the change.
+  `flex`, so the child's own inline-vs-block display was never what laid this out; the look at all three widths is OWED ON THE DEPLOYED SITE, not claimed: the change was left
+  uncommitted at Dev and ships with the Review commit (2026-09-11), so the owner's manual test step 5
+  and the Deploy run are where every Banner is looked at (review, standing rule 2).
 severity: low
 origin: Story 3.3 code review (2026-09-08) — Blind Hunter and the Acceptance Auditor, independently
 location: apps/web/components/kit/banner.tsx (`<span>{children}</span>` — the slot) ·
@@ -1785,7 +1794,9 @@ amended: THE STATUS HALF STAYS OPEN, NARROWED TO ONE ROUTE. `notFound()` from `/
   Verification`. **Owner: the story that next has a reason to change that route's loading shape.**
 severity: low
 origin: Story 3.4 Dev harness (2026-09-08), step `brand-none` — measured, not reasoned
-note: WHOEVER CLOSES THIS BREAKS THREE HARNESS STEPS, and they will not say why. `brand-none`,
+note: (as it stood before Story 3.9 — the three steps MOVED in the same commit as the page, per this
+  note, and now match the app's own `NOT_FOUND.title`, evaluated from `lib/not-found.ts` by `app_text()`,
+  so a re-wording moves the screen and the steps together. Kept for the record.) WHOEVER CLOSES THIS BREAKS THREE HARNESS STEPS, and they will not say why. `brand-none`,
   `brand-ownership` and the `?site=` forgery all recognise the not-found page by matching Next's own
   default string, `could not be found` (`run-verify-ghost-admin.py`'s `rendered()`). The fix for this
   entry is a real `not-found.tsx` drawn from the export's `M9 404`, whose words will not be those —
@@ -2346,6 +2357,11 @@ resolution: Story 3.9 (2026-09-11) — `findSiteByAdminKeyId`'s `order by` gains
   is null) desc` ahead of `s.created_at desc`, so a live twin outranks an old disconnected one and
   the hint the customer is shown is about a record he can still open. Proved by DW-85 (1)'s
   seeding, which is why the two closed together.
+  Review (2026-09-11): the two seedings above put ONE matching record in front of the `order by` at a
+  time, and with one candidate any order returns it — reverting the change left every step green.
+  `moved-domains` now also seeds a live OLDER decoy beside a disconnected NEWER one and asserts the
+  live hint, the one arrangement where `created_at desc` alone answers the wrong row; that run is
+  in the spec's `## Verification`, Executed at Review.
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
 owner: the story that next touches FR-C8's hint, or Story 3.7 if its health check reads `admin_key_id`
@@ -2492,3 +2508,40 @@ reason: DW-56 said the authed SHELL hid its content without JavaScript. It does 
   first paint), or state plainly that the app needs JavaScript and keep the promise only where it is
   already true — the forms, which post server actions natively and are proved to. **The question for the
   owner is which**, and it wants asking in the story that would spend on it rather than here.
+
+### DW-90: the GitHub token's expiry has a register row but still no mechanism that announces it
+
+plain: The date the read-only GitHub key stops working is now written in the right place, but nothing
+  will ever read that place on the day. GitHub itself tells a caller when a key expires, on every
+  answer — the access-check tool could read that and warn a month ahead, so the date is never typed.
+status: open
+severity: low
+origin: Story 3.9 review (2026-09-11), on DW-5's closure
+owner: whichever story next touches `tools/probe/check-access.py`
+location: tools/probe/check-access.py · VERIFY-AT-BUILD.md "The read-only GitHub token expires"
+reason: GitHub answers a fine-grained token's requests with a `github-authentication-token-expiration`
+  header. `check-access.py` already calls the API with `GITHUB_TOKEN`; reading that header and printing
+  `[warn]` inside 30 days is derived (standing rule 4 — the register row's date would then be the
+  second copy, not the first) and executable, where the row alone still relies on a probe answering
+  401 on a day nobody is looking for a credential problem. Not built in 3.9: the entry's fix was the
+  register row, and this is an addition to a tool with its own catalogue description.
+
+### DW-91: two of Story 3.9's closures have no repeatable control — the error page's title and the sign-in card's `inert`
+
+plain: Two small fixes were checked by hand once and nothing checks them again: the tab title on the
+  "something went wrong" page, and the sign-in card refusing clicks and the keyboard while the
+  passkey sheet is up. Either could quietly come undone.
+status: open
+severity: low
+origin: Story 3.9 review (2026-09-11), verification-gap layer, on DW-34 and DW-37
+owner: the first story to add a local-build step to a harness (DW-34's own note names
+  `run-verify-dashboard.py --url` on a `next build && next start` as the shape), or Story 12.x's
+  sign-in work for the passkey half
+location: apps/web/app/(app)/app/error.tsx:52 · apps/web/app/(app)/app/sign-in/sign-in-form.tsx:156 ·
+  tools/probe/run-verify-passkeys.py
+reason: `document.title` in the error boundary and `inert`/`aria-hidden` on the pending card are each
+  pinned by nothing: delete either line and `pnpm check`, the RLS gate and both harnesses stay green
+  (executed at the review). The passkeys harness drives a CDP virtual authenticator, so holding the
+  ceremony pending — presence simulation off — and running the dashboard harness's focus probe plus axe
+  over the card is the repeatable form; a throwing route for the error page exists only on a local
+  build, which no harness starts today.

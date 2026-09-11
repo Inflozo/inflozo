@@ -47,10 +47,16 @@ export default function AppError({
   // (Story 3.9, the first time this page has ever been on a screen) the document carried no
   // `<title>` at all and axe-core reported `document-title`, impact serious, at all three widths.
   // A tab reading the raw URL is also the one thing a customer looking at a failed page cannot
-  // work around. `document.title` from the effect is how a client boundary sets one.
+  // work around. `document.title` from the effect is how a client boundary sets one — and the
+  // cleanup puts the old one back, so a page `reset()` has healed does not keep a tab that says
+  // it failed (review, 2026-09-11).
   useEffect(() => {
     console.error('app: unhandled error', { digest: error.digest })
+    const was = document.title
     document.title = 'Something went wrong · Inflozo'
+    return () => {
+      document.title = was
+    }
   }, [error])
 
   // `<main>` and not a `<div>`: this boundary replaces the whole document, OUTSIDE the shell's

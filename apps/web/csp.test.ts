@@ -39,14 +39,16 @@ test('the nonce and strict-dynamic are on the app host only', () => {
 test("'unsafe-inline' is the marketing host's alone — the app policy may never carry it", () => {
   for (const nonce of [N, '']) {
     for (const host of [APP, 'localhost:3000']) {
-      const csp = policy(host, nonce)
+      for (const dev of [false, true]) {                        // the dev branch is a branch too
+      const csp = policy(host, nonce, dev)
       if (!csp.includes('strict-dynamic')) continue          // that combination is not an app request
       assert.ok(
         !directives(csp)['script-src'].includes("'unsafe-inline'"),
-        `the app policy carries 'unsafe-inline' in script-src (host ${host}, nonce ${JSON.stringify(nonce)}) — ` +
+        `the app policy carries 'unsafe-inline' in script-src (host ${host}, nonce ${JSON.stringify(nonce)}, dev ${dev}) — ` +
           "the relaxation is the MARKETING host's alone (DW-18, the owner's ruling of 2026-09-11), and " +
           'this function serves both.',
       )
+      }
     }
   }
   // …and it really is there on the other side, so this test cannot pass by the relaxation being gone.

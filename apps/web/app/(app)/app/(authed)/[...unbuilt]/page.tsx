@@ -5,9 +5,11 @@ import { notFound } from 'next/navigation'
  * THE HALF A `not-found.tsx` CANNOT DO — DW-17, DW-26 and DW-18's app half.
  *
  * An UNMATCHED url renders the ROOT not-found, never a nested one. That is why DW-17 stayed open
- * through two stories that each added a `not-found.tsx`-shaped file to their own segment: the six
- * drawn-but-unbuilt nav destinations (`/assets`, `/billing`, `/suggestions`, `/docs`, and anything
- * typed) matched no route at all, so nothing inside `(authed)` was ever asked. This route matches
+ * through two stories that each added a `not-found.tsx`-shaped file to their own segment: the
+ * drawn-but-unbuilt nav destinations (`/assets`, `/billing`, `/suggestions` today — the list is
+ * DERIVED from the shell's own hrefs by `run-verify-dashboard.py`, never written down; the docs
+ * row is an external link and never reaches this route — and anything typed) matched no route at
+ * all, so nothing inside `(authed)` was ever asked. This route matches
  * them, which puts them inside the group, and `notFound()` from here then finds the group's own
  * boundary — the shell, the sidebar and the account menu around Inflozo's own page.
  *

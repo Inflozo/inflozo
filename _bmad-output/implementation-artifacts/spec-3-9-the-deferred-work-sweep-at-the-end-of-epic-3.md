@@ -2,7 +2,7 @@
 title: 'Story 3.9 — The deferred-work sweep at the end of Epic 3'
 type: 'chore'
 created: '2026-09-11'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
@@ -314,17 +314,17 @@ it) · DW-75's ledger half.
   press now lands on a page whose sentence is inside `<main>`, which is the "what varies is when it
   appears, not which branch was taken" the entry's eighth run established. Re-run the step enough
   times to show it — it failed three of four before.
-- [ ] Measure and record the **status code** on both shapes: the catch-all (expect 404) and
+- [x] Measure and record the **status code** on both shapes: the catch-all (expect 404) and
   `notFound()` from `/sites/brand`, which has a skeleton and therefore still commits 200. **DW-67
   closes its page half and stays open, narrowed**, for that one remaining route; amend the entry
   with the measurement rather than closing it.
-- [ ] Measure the two `Failed to load resource` console lines a dashboard load produces today
+- [x] Measure the two `Failed to load resource` console lines a dashboard load produces today
   (`<Link>` prefetching `/sites` and `/assets`) and record whether the catch-all ends them.
-- [ ] **DW-18's app half**: the app host's unmatched URLs are now served by a dynamic route that
+- [x] **DW-18's app half**: the app host's unmatched URLs are now served by a dynamic route that
   carries the nonce, so the `'strict-dynamic'` policy no longer blocks every script on them.
   Re-execute the Playwright console read on `app.inflozo.com/<nonsense>` — the entry's measurement
   was "every script on it blocked". The marketing half is **Question 1**.
-- [ ] axe at 1440, 834 and 390 on the in-shell not-found: zero violations, one coral focus ring.
+- [x] axe at 1440, 834 and 390 on the in-shell not-found: zero violations, one coral focus ring.
 
 ### Group B — the code that needs the migration (DW-24, DW-69)
 
@@ -378,7 +378,7 @@ it) · DW-75's ledger half.
 
 ### Group D — the missing controls
 
-- [ ] `tools/probe/run-verify-dashboard.py` — **new**, `run-verify-all.py`'s pattern, plus its row
+- [x] `tools/probe/run-verify-dashboard.py` — **new**, `run-verify-all.py`'s pattern, plus its row
   in `tools/doc-audit.py`'s `DOCS` (a new file under `tools/` without one fails the gate). It
   drives the deployed dashboard with a fixture user and asserts:
   - **DW-16**: each of the three overlays — the ⋯ project menu, the New Project Sheet, the account
@@ -426,7 +426,7 @@ it) · DW-75's ledger half.
 - [x] **DW-31** — grep the app for any wordmark-only drawing, confirm `Lockup`/`Mark` is what every
   surface renders, confirm `app/icon.svg` and `apple-icon.png` are the new marks, then flip the
   entry to `done` citing Story 1.6 and the line in its spec that says the flip was owed.
-- [ ] **DW-56** — re-execute the scripts-off read on `app.inflozo.com/sites/connect` and on one
+- [x] **DW-56** — re-execute the scripts-off read on `app.inflozo.com/sites/connect` and on one
   route that **does** carry a skeleton. If R-98's route-group move closed it, close the entry with
   the measurement. If it did not, **do not fix it here**: record what the ancestor actually is and
   leave the entry open with the owner's question about whether scripts-off is a committed mode.
@@ -474,15 +474,84 @@ it) · DW-75's ledger half.
 
 ### The close itself
 
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` — for every entry in
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` — for every entry in
   `closes_deferred`: `status: done 2026-09-11` plus a `resolution:` line naming this story and what
   changed. For DW-67, DW-79 and DW-18: **amend, do not close** the half that remains, and say which
   half. **No entry is deleted and no id is renumbered.**
-- [ ] Standing rule 7 — grep the repository for every DW id this story touched and for the old
+- [x] Standing rule 7 — grep the repository for every DW id this story touched and for the old
   strings it replaced (`could not be found`, the wordmark-only drawing, the `<span>` slot), and
   fix what the grep finds. A propagation list cannot audit itself.
 - [ ] `python3 tools/doc-audit.py --check`, `pnpm check`, `pnpm build`,
   `bash supabase/tests/run-rls-gate.sh` — all green before the Done commit.
+
+### Review Findings
+
+*The review of 2026-09-11 — five layers (blind hunter, edge cases, verification gap, acceptance
+audit, real-infra verifier) over the diff since `f91501a6`, plus the two harnesses the Dev record
+had not run. Every patch was applied in the Review commit; the defers are ledger entries.*
+
+- [x] [Review][Patch] `useBrand`'s `23505` retry painted onto a project nobody chose — at the cap
+  with no project for the site, `brandTarget` answers the newest project, which is right for a
+  caption and wrong for a write; and the name was not re-derived on retry, so two same-titled sites
+  racing still made two *Blog* cards [apps/web/app/(app)/app/(authed)/sites/actions.ts:911] — now
+  `brandRetry` in `lib/probe-rule.ts` (paint the winner's project · retry the slug with room ·
+  re-render at the cap), pure and under `probe-rule.test.ts`, and the name is re-derived from the
+  re-read.
+- [x] [Review][Patch] DW-83's order was never in front of two matching records at once — every
+  seeding had one candidate, so reverting `(s.disconnected_at is null) desc` left every step green
+  [tools/probe/run-verify-ghost-admin.py:4127] — `moved-domains` now seeds a live OLDER decoy beside
+  a disconnected NEWER one and asserts the live hint; ledger DW-83 amended.
+- [x] [Review][Patch] The dashboard harness's "a way home" was satisfied by the sidebar's own
+  Projects row, and the catch-all's status was recorded rather than asserted
+  [tools/probe/run-verify-dashboard.py:443] — `home` now reads the page's own button inside
+  `<main>` by `NOT_FOUND.home`; `not-found-status` is a step asserting 404 on every catch-all
+  landing; a browser timeout is a named FAIL, not a traceback.
+- [x] [Review][Patch] `projects.test.ts`'s DW-28 read took the first `.select(…).eq('id', id)` in
+  the whole file and never held a `NOT_COPIED` column out of the select
+  [apps/web/projects.test.ts:179] — anchored inside `duplicateProject`; a `NOT_COPIED` column must
+  be absent or overridden in the spread.
+- [x] [Review][Patch] `connect-rule.test.ts`'s DW-79 read was pinned to one migration file, so
+  Story 7.20's view would never be read [apps/web/connect-rule.test.ts:555] — reads every
+  `supabase/migrations/*.sql`.
+- [x] [Review][Patch] `app-routes.test.ts`'s title test rejected a sync `generateMetadata`
+  [apps/web/app-routes.test.ts:210] — both function shapes accepted.
+- [x] [Review][Patch] `csp.test.ts`'s guard never called `policy(…, dev = true)`, and `csp.ts`'s
+  comment described a Playwright read no harness carries [apps/web/csp.test.ts:39,
+  apps/web/csp.ts:64] — the dev branch is in the loop; the comment cites the Dev execution.
+- [x] [Review][Patch] `error.tsx`'s `document.title` stayed after `reset()` healed the page
+  [apps/web/app/(app)/app/error.tsx:52] — the effect's cleanup restores the previous title.
+- [x] [Review][Patch] `inert` on the sign-in card blurred the pressed passkey button with nothing
+  restoring focus, so a cancelled OS sheet left a screen-reader user on `<body>`
+  [apps/web/app/(app)/app/sign-in/passkey-button.tsx:119] — focus returns to the button when the
+  ceremony ends; the trade-off (the button's own busy label is hidden from AT while the sheet has
+  focus) is recorded under DW-37.
+- [x] [Review][Patch] CI regenerated the story board from a one-commit checkout, so the board it
+  checked was built from a history of one [.github/workflows/ci.yml:16] — `fetch-depth: 0`.
+- [x] [Review][Patch] The ghost-admin harness wrote its timeout twice (the number and the failure
+  string) [tools/probe/run-verify-ghost-admin.py:4313] — one `limit`.
+- [x] [Review][Patch] The catch-all's docstring counted "six" destinations and named `/docs`, which
+  is an external link that never reaches it [apps/web/app/(app)/app/(authed)/[...unbuilt]/page.tsx:9]
+  — derived wording.
+- [x] [Review][Patch] Propagation: DW-67's `note:` still threatened a change already made; DW-61's
+  resolution claimed a three-width look the Verification does not record, on a change that was
+  uncommitted at Dev; DW-36 did not say same-day twins stay identical; `CLAUDE.md`'s gate
+  paragraph still described the hook alone after DW-21 put the gate in CI
+  [_bmad-output/implementation-artifacts/deferred-work.md, CLAUDE.md:107] — all four amended.
+- [x] [Review][Defer] DW-5's register row still has no mechanism that announces the expiry —
+  GitHub sends `github-authentication-token-expiration` on every answer and `check-access.py`
+  could read it [tools/probe/check-access.py] — deferred, pre-existing shape; **DW-90**.
+- [x] [Review][Defer] DW-34's title and DW-37's `inert` are pinned by no repeatable control —
+  delete either line and every gate stays green [apps/web/app/(app)/app/error.tsx:52,
+  apps/web/app/(app)/app/sign-in/sign-in-form.tsx:156] — deferred, wants a local-build harness
+  step; **DW-91**.
+
+*Dismissed as noise or by design: a signed-out visitor to an unbuilt URL gets the proxy's 307 (the
+edge-case matrix says so); the not-found's second sentence is the owner's ruled wording; the spec's
+"amend, do not close" for DW-18 predates the Question 1 ruling that closed its marketing half;
+DW-21 as two CI steps is recorded in its resolution; `slugAttempts(…, 0)`, a whole-table insert
+grant, an empty catalogue tuple, a nav href with a query string and a dashboard fixture that does
+not land on `/start` are shapes nothing in the repository produces; the migration's two
+`restored_by` statements are already applied and re-runnable.*
 
 **Acceptance Criteria:**
 
@@ -675,6 +744,31 @@ Dev then executes one read with its control beside it — the send-only key must
 and that is what closes the entry. If the key is not in place by the end of Dev, nothing here is
 blocked: the entry stays open with the slot waiting.
 
+### Question 5 — some screens never finish loading with JavaScript switched off. Does Inflozo promise to work without it?
+
+While checking an old note (DW-56) the Dev run measured something narrower: with JavaScript
+switched off in the browser, and signed in, the **connect wizard shows all its fields and its
+button** — the whole form a no-JavaScript visitor is promised. But the **Projects page and the
+Account page stay on their grey "Loading…" placeholder for ever**: the real content arrives, but
+the step that swaps it in needs JavaScript. Nobody with JavaScript on — which is everybody by
+default — sees any of this.
+
+*Example:* a visitor with a strict privacy extension that blocks scripts opens `app.inflozo.com`.
+They can sign in and they can connect a site, but the Projects page says "Loading…" and never
+changes.
+
+This is the ledger's **DW-89**, and it is a decision and not a patch, which is why it is here.
+
+1. **Say plainly that the app needs JavaScript, and keep the no-JavaScript promise only where it
+   is already true — the forms (RECOMMENDED).** Nothing changes for anyone; a one-line sentence on
+   the sign-in page if you want one. Every screen keeps its fast first paint.
+2. **Commit to working without JavaScript everywhere.** Every screen would have to wait for all
+   its data before showing anything — no grey placeholder, and a slower first paint for every
+   customer, to serve a mode almost nobody uses.
+3. **Decide later, when a customer asks.** Leave DW-89 open with no owner; nothing is spent.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 **URL:** `https://app.inflozo.com` · sign in as yourself.
@@ -726,6 +820,236 @@ alone. Named below is what each group must hit.*
   `app.inflozo.com/sign-in` as the control in the same run; the four Resend answers — the new
   reading key, the send-only key, a bogus key, no key — recorded verbatim.
 - **Everything:** `python3 tools/doc-audit.py --check` and CI green, the deploy job reached.
+
+### Executed at Dev — the code, the deployed site and the two harnesses (2026-09-11)
+
+**R-82: every one of these hit the real infrastructure.** The services, by the variable name of the
+key that reached them and never the value: `SUPABASE_URL` · `SUPABASE_SECRET_KEY` ·
+`SUPABASE_DB_POOLER_URL` (the hosted database) · `GITHUB_TOKEN` (the CI read) · `GHOST6_*` (T1,
+6.58.0) and `GHOST5_*` (T3, 5.130.6) · `RESEND_API_KEY` and `RESEND_READ_API_KEY` (at Create,
+above) · the deployed `app.inflozo.com` and `inflozo.com`, which Vercel published from CI.
+
+#### The gates, all four green
+
+```
+pnpm check                       exit 0 — lint, typecheck, 284 tests over the four packages, Node 24.18.0
+pnpm build                       exit 0 — Next 16.3.1, every route in the table (below)
+bash supabase/tests/run-rls-gate.sh   exit 0 — PostgreSQL 17, every migration then the proof
+python3 tools/doc-audit.py --check    PASS (0 warnings)
+CI on e65445c7 and 12675b36      check ✓  rls ✓  deploy ✓
+```
+
+#### Group A — the branded not-found
+
+**The BEFORE reading, taken on production before the Dev push** (a pair, not an assertion):
+
+```
+https://app.inflozo.com/assets            404  "404 This page could not be found."
+                                          <main> ABSENT   10 scripts blocked by CSP
+https://app.inflozo.com/billing           404  same
+https://app.inflozo.com/nothing-here-3-9  404  same
+https://app.inflozo.com/sign-in           200  0 blocked      ← the control, and it passed
+```
+
+**The AFTER reading, `run-verify-dashboard.py` against the deployed site:**
+
+```
+PASS  not-found: 4 of 4 unmatched destinations render Inflozo's own not-found INSIDE the shell —
+      the sentence in <main>, the sidebar drawn and a way home:
+      ["/assets 404","/billing 404","/suggestions 404","/nothing-here-3-9 404"]
+PASS  not-found-csp: 4 of 4 report ZERO blocked scripts; per page [0,0,0,0]     ← DW-18's app half
+PASS  axe-not-found-1440 / -834 / -390: zero violations at WCAG 2.1 AA
+RECORD prefetch: a dashboard load produced NO `Failed to load resource` line     ← DW-17's tail
+```
+
+**The status code, measured on both shapes** (DW-67): the catch-all answers a real **404** on every
+one of the four above, because it carries no `loading.tsx`. `notFound()` from `/sites/brand`, which
+has a skeleton by R-98, still commits **200** — recorded by `brand-none`, unchanged, and the entry
+is amended with it rather than closed.
+
+**"The catch-all shadows nothing" is executed, not reasoned** — the build's own route table:
+
+```
+┌ ○ /                    ├ ƒ /app/account          ├ ƒ /app/sites/connect
+├ ○ /_not-found          ├ ƒ /app/auth/confirm     ├ ƒ /app/sites/disconnect
+├ ƒ /api/cron/…          ├ ƒ /app/kit              ├ ƒ /app/sites/keys
+├ ƒ /app                 ├ ƒ /app/restore          ├ ƒ /app/snapshots/[id]/download
+├ ƒ /app/[...unbuilt]    ├ ƒ /app/sign-in          ├ ƒ /app/start
+├ ƒ /app/sites           ├ ƒ /app/sites/brand      └ ○ /icon.png · /icon.svg · /apple-icon.png
+```
+
+Every built route keeps its own entry and the catch-all is `ƒ` — dynamic, so it carries the nonce,
+which is the whole of DW-18's app half.
+
+**A FINDING THIS RUN PRODUCED, fixed in the same story.** The first deployed axe run reported
+**`document-title`, impact serious, at all three widths**: `not-found.tsx` is a BOUNDARY and not a
+route segment, so no `metadata` export of its own reaches the document — the title of a `notFound()`
+page is the title of the segment that was rendering. An unmatched url has no segment but the
+catch-all, so the tab read the raw url. The catch-all now declares `metadata`, and
+`app-routes.test.ts` gained a test that every page under `(authed)` declares one, so the boundary
+can always inherit a title. Re-run: zero violations at 1440, 834 and 390.
+
+#### Group B and the Schema phase's code
+
+The four constraints were applied to production in the `Schema` phase (above) and the code that
+needs them went in this one, which is the whole of R-99. `slugAttempts` and `freeName` are pure and
+under `node --test`; the `23505` catches themselves are in `'use server'` modules and are covered by
+the harness against the live database.
+
+#### Group C — the named one-liners
+
+```
+DW-3  @types/node 26.4.1 -> 24.13.4 in apps/web and the three core packages; pnpm install moved
+      the lockfile; pnpm check and pnpm build green on Node 24.18.0 (the runtime `engines` pins)
+DW-6  "type": "module" in apps/web/package.json. EXECUTED, standing rule 1:
+        pnpm test  -> 283 tests, 0 failures, and ZERO MODULE_TYPELESS_PACKAGE_JSON lines (34 before)
+        pnpm build -> exit 0 under Next 16.3.1, route table unchanged
+      Next did NOT object, so nothing is reverted and nothing is left open.
+DW-5  the register row is in VERIFY-AT-BUILD.md with its trigger; .env.example cites it
+DW-21 ci.yml's check job runs the doc gate — and it ran, green, on this story's own two pushes
+DW-35 app/icon.png, 32x32, from the export's favicon-16.svg. On the deployed site, both hosts:
+        app.inflozo.com/icon.svg 200 image/svg+xml   inflozo.com/icon.svg 200 image/svg+xml
+        app.inflozo.com/icon.png 200 image/png       inflozo.com/icon.png 200 image/png
+        app.inflozo.com/apple-icon.png 200 image/png inflozo.com/apple-icon.png 200 image/png
+      The control: deleting `icon.png` from proxy.ts's matcher turns routing.test.ts red by itself
+      ("/icon.png is inside the matcher — the app host would rewrite it to /app/icon.png").
+DW-37 S1c held open on a local production build, at 1440, 834 and 390:
+        {"busy":"true","inert":true,"ariaHidden":"true","childOpacity":"0.4",
+         "focusTook":false,"realClickSeen":false}   axe violations = 0
+      Where the entry measured 1 `color-contrast` over 9 nodes, impact serious. `focusTook:false`
+      and `realClickSeen:false` are the control for removing `pointer-events-none`: a REAL mouse
+      click at the button's own coordinates does not reach its handler, and focus does not land.
+      (The first two attempts at holding S1c were broken tests and are recorded as such below.)
+```
+
+#### Group D — the missing controls
+
+`tools/probe/run-verify-dashboard.py`, new, against the deployed site with two fixture accounts,
+every result read off `SUPABASE_DB_POOLER_URL`:
+
+```
+PASS  overlays-sheet   before the press: visible=false, 0 of 8 controls focusable;
+                       after: visible=true, 4 of 8
+PASS  overlays-menu    before: visible=false, 0 of 3 focusable; after: visible=true, 3 of 3
+PASS  overlays-account before: visible=false, 0 of 6 focusable; after: visible=true, 5 of 6
+PASS  centred          the sheet's box is 560x496 at (440, 202) in a 1440x900 viewport —
+                       off centre by 0px across and 0px down (the defect is (0, 0))
+PASS  cancel-focus     focus is on the Cancel button when the confirm opens
+PASS  cap              at the Free cap the sheet draws the upgrade tile and NO create form, and
+                       says "Free includes 1 project. Pro gives you 25."; the create form as it
+                       was UNDER the cap, re-posted past that, reached the server (200 /) and left
+                       the account at 1 project row
+PASS  cross-rename     a second account's project id forged into this account's rename form
+                       reached the server (200 /); the stranger's row is byte-identical after
+PASS  cross-delete     the same for delete
+PASS  delete-typed     a delete POSTED with the wrong name reached the server (200 /) and left the
+                       rows byte-identical
+PASS  delete-control   the same form with the exact name deleted it: 0 rows left
+RESULT: all steps passed
+```
+
+**Two things this run taught, and both are in the harness now.** The client's own guard is a
+COURTESY and not the control — the delete button is `aria-disabled` until the typed name matches
+and the form's `onSubmit` calls `preventDefault()`, so a press never reaches `deleteProject` with a
+wrong name and DW-20's question would go unasked. The harness posts a CLONE of the form, which
+carries React's `$ACTION_*` fields and none of its listeners: exactly the crafted post a server must
+refuse, and exactly what a scripts-off browser sends. And **the first version of `delete-typed`
+passed for the wrong reason** — its control had silently done nothing, because the clone's post is a
+real navigation and the dialog was gone by the time the control ran. Every post is now counted on
+the wire and named in the step's own detail, so "the row survived" can never again mean "nothing was
+sent" (standing rule 2).
+
+**DW-28's control** — removing `credit_enabled` from `duplicateProject`'s select list turns
+`projects.test.ts` red, and the failure NAMES the column. **DW-79's** reads the migration's own
+figure; changing either side alone goes red.
+
+**DW-34** — `apps/web/app/(app)/app/error.tsx` rendered for the first time, on a LOCAL
+`next build && next start` with a temporary throwing route (removed before the commit; nothing
+throwing reaches production). HTTP 500, the new `Lockup` drawn, screenshotted at 1440, 834 and 390,
+and axe-core at WCAG 2.1 AA: **one serious `document-title` violation**, fixed in the same pass and
+re-run to **zero**. That is the same defect the not-found page had, found twice in one story by the
+same instrument.
+
+#### Group E — the two walls
+
+```
+tools/doc-audit.py   run-verify-ghost-admin.py's row: ONE literal of 11,006 characters
+                     -> a subject line and eight bullets, one per story
+                     run-verify-site-health.py's row: 4,131 -> a subject and six bullets
+epic-3-context.md    11 bullets broken into lead + sub-bullets; longest line 4,494 -> 883 chars
+```
+
+**No text was deleted, and that is proved rather than promised:** both catalogue rows and the whole
+epic context compare byte-identical to their originals after normalising whitespace and bullet
+markers. `doc-audit.py --check` green, `INDEX.md` re-read by eye.
+
+*(A defect this change caused and caught: the first edit left the ghost-admin row at a two-space
+indent, and the site-health edit's `^ \('` boundary search then walked straight over it and deleted
+the entry. Caught by comparing the parsed `DOCS` list against `git show HEAD:` — rows lost: none,
+rows added: none, text changed: none — which is now how both edits are verified.)*
+
+#### Group F — verify, then close
+
+**DW-31** — grepped: every surface in the app renders `Lockup`/`Mark` from
+`components/kit/logo.tsx`. The one wordmark-as-text left is `lib/email-shell.ts`, where Gmail strips
+SVG and Story 1.6 built the mark-PNG-plus-word pair on purpose (`identity.test.ts` asserts the rule
+over `.tsx` for exactly that reason). `app/icon.svg` is `favicon-16.svg` plus the dark-tab `<style>`;
+`apple-icon.png` is the export's app icon. Flipped to `done` citing Story 1.6, which is `done` and
+whose own spec said the flip was owed.
+
+**DW-56 — re-executed on the deployed site with a real session, and the claim is false now:**
+
+```
+scripts OFF, signed in:
+  /sites/connect?step=keys   main visible, sidebar visible, fields [true,true,true], submit visible
+  /sites/connect             main visible, sidebar visible, fields [false,false,false]   ← step 2's
+                             pane is `invisible` + `inert` while step 1 shows, deliberately
+  /sites                     main visible, sidebar visible, real content
+  /                          main visible, sidebar visible, "Loading…"          ← see DW-89
+  /account                   main visible, sidebar visible, "Loading your account…"
+```
+
+R-98's route-group move closed it. **The shell was never the ancestor**: what the original read saw
+is the wizard's own two-pane CSS. A NARROWER thing is true and is raised as **DW-89** rather than
+fixed here, because it needs the owner's ruling on whether scripts-off is a committed mode: a route
+whose page streams stays on its skeleton, because Next's swap is an inline script.
+
+*(The first two passes of this probe were broken tests and are recorded as such: one signed a second
+browser context in with a magic-link token the first had already consumed — GoTrue keeps one per
+user — and read "never signed in" as "the shell is invisible"; the other read only the first field
+on the page, which is step 2's hidden one.)*
+
+#### Group G — the owner's
+
+**DW-18's marketing half, re-executed on `https://inflozo.com/` with the app host as the control in
+the same run:**
+
+```
+                              BEFORE (2026-09-11, pre-push)      AFTER
+https://inflozo.com/          2 blocked, 1 page error            0 blocked, 0 page errors
+                              (minified React error 412)
+https://app.inflozo.com/sign-in   0 blocked, 0 errors            0 blocked, 0 errors   ← control
+```
+
+On the wire: `inflozo.com` sends `script-src 'self' 'unsafe-inline'` with
+`x-inflozo-policy: marketing-static`; `app.inflozo.com` sends
+`script-src 'self' 'nonce-…' 'strict-dynamic'` with `x-inflozo-policy: app-nonce`.
+
+**The inline-source claim, executed rather than asserted** (standing rule 1). An UNNONCED inline
+script injected into the SERVED DOCUMENT of each host:
+
+```
+https://inflozo.com/            ran = true   (0 CSP refusals)  — the relaxation is real there
+https://app.inflozo.com/sign-in ran = false  (1 CSP refusal naming the nonce policy)
+```
+
+So the app host still refuses an inline script, which is what the host split is for. *The first
+attempt at this was a broken test and is recorded as one:* injecting with `page.evaluate` reported
+"it ran" on BOTH hosts, because `evaluate` runs in Playwright's own privileged world and a node it
+appends is not subject to the page's policy. A result whose control does not pass is not a result.
+
+**DW-72** — `freeName` in `lib/projects.ts` and its cases in `projects.test.ts`: `Blog`, then
+`Blog 2`, then `Blog 3`, clamped with the suffix on, and explicitly not `copyName`'s wording.
 
 ### Executed at Schema — the four constraints (2026-09-11)
 
@@ -863,3 +1187,12 @@ label for the work in the diff — opportunistic work done outside a phase is co
 phase the story is actually *in*, never the phase the work resembles.
 
 *The rest to be filled by the Dev and Review runs.*
+
+**2026-09-11 — Review.** Five layers over the diff since `f91501a6`, and the two harnesses the Dev
+record had not run (`run-verify-passkeys.py` for DW-36, `run-verify-ghost-admin.py` for the
+retargeted steps and DW-85). Findings under `### Review Findings`; every patch applied in the
+Review commit; DW-90 and DW-91 opened. **The banner change (DW-61) and the harness timeout were
+left uncommitted at Dev and ship with this commit** — so DW-61's three-width look is the owner's
+step 5 and the Deploy run, and the ledger says so now rather than claiming it. Question 5 is
+DW-89, which the Dev run raised and left for the owner; it is asked here so the board shows it
+(R-83). The story stays in review: Done is the owner's (R-80).

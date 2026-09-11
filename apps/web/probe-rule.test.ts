@@ -7,6 +7,7 @@ import {
   brandOf,
   brandPath,
   brandPopupPath,
+  brandRetry,
   brandTarget,
   capabilityOf,
   hasBrand,
@@ -501,4 +502,21 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
   assert.equal(BRAND_COPY.close, 'Close')
   assert.ok(BRAND_COPY.opening.endsWith('…'), 'a busy label ends in an ellipsis')
   assert.notEqual(BRAND_COPY.opening, BRAND_COPY.offer)
+})
+
+/* STORY 3.9 (review, 2026-09-11) — the decision `useBrand` makes after a `23505`. */
+test('brandRetry: paint the project the other press made, retry the slug with room, refresh at the cap', () => {
+  const site = 'site-1'
+  const mine = { id: 'p1', linked_site_id: site }
+  const other = { id: 'p2', linked_site_id: null }
+  // the race was two brand presses: the winner's project is the one to paint, cap or no cap
+  assert.equal(brandRetry(false, [other, mine], site), mine)
+  assert.equal(brandRetry(true, [other, mine], site), mine)
+  // the race was a slug collision with room left: take the next free slug
+  assert.equal(brandRetry(false, [other], site), 'retry')
+  assert.equal(brandRetry(false, [], site), 'retry')
+  // a create elsewhere filled the cap: never paint onto a project nobody chose — re-render instead
+  assert.equal(brandRetry(true, [other], site), 'refresh')
+  // …which is exactly where brandTarget answers differently, and why this is not brandTarget
+  assert.equal(brandTarget(true, [other], site), other)
 })

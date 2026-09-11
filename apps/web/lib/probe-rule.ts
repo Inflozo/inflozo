@@ -379,6 +379,27 @@ export function brandTarget<T extends { id: string; linked_site_id?: string | nu
 }
 
 /**
+ * WHAT `useBrand` DOES AFTER THE DATABASE REFUSED ITS INSERT WITH `23505` (Story 3.9, DW-69; the
+ * shape was fixed at its review, 2026-09-11). The insert sets two unique columns — `slug` and
+ * `linked_site_id` — so the refusal does not say which collided, and this re-reads the rows and
+ * decides:
+ *   - the project for THIS site now exists → it is the one to paint; the other press made it;
+ *   - none, and there is room → `'retry'`: the collision was the slug, take the next free one;
+ *   - none, and the account is now at the cap → `'refresh'`: a create elsewhere took the last
+ *     slot, so re-render S2c with the true cards and write nothing — the stale-decision guard's
+ *     own answer. NOT `brandTarget`'s "newest project": that is right for a caption and wrong
+ *     for a write the customer never chose.
+ * Pure, so the three branches are read in a test; the action walks the answer.
+ */
+export function brandRetry<T extends { id: string; linked_site_id?: string | null }>(
+  capped: boolean,
+  projects: T[],
+  siteId: string,
+): T | 'retry' | 'refresh' {
+  return projects.find((row) => row.linked_site_id === siteId) ?? (capped ? 'refresh' : 'retry')
+}
+
+/**
  * THE THEME-NAME PREFIX FR-J10 FREEZES AT FIRST DEPLOY — `inflozo-{project-slug}`. At CONNECT
  * there is no project and no name, so "test the frozen name against the allowlist" has nothing to
  * test; the question the rule asks instead is whether the allowlist could EVER admit an Inflozo

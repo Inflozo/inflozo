@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import { Button } from '@/components/kit/button'
 import { Passkey } from '@/components/kit/icons'
 import { isRedirect } from '@/lib/action-redirect'
@@ -57,7 +57,8 @@ export function PasskeyButton({
     if (!browserSupportsWebAuthn()) setSupported(false)
   }, [])
 
-  async function signIn() {
+  async function signIn(event: MouseEvent<HTMLButtonElement>) {
+    const pressed = event.currentTarget
     let navigating = false
     if (busy) return
     // First, so that every path below — the unsupported one included — leaves no stale banner
@@ -120,6 +121,12 @@ export function PasskeyButton({
       if (!navigating) {
         setBusy(false)
         onPending(false)
+        // THE CARD WAS `inert` WHILE THE SHEET WAS UP (DW-37), which blurs whatever had focus and
+        // restores nothing: a screen-reader user who cancelled the OS sheet was left on <body>,
+        // with the error line un-hiding somewhere they were not. Focus goes back to the button
+        // that started the ceremony, so the next Tab and the next announcement start from it
+        // (review, 2026-09-11).
+        pressed.focus()
       }
     }
   }

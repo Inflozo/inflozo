@@ -64,9 +64,10 @@ export function policy(host: string, nonce: string, dev = false): string {
      algorithm IGNORES `'unsafe-inline'` whenever the policy also carries a nonce-source or a
      hash-source, so the relaxation would be INERT on the app host rather than dangerous there.
      That is a reason to be less worried, not a reason to relax the app policy — the test above
-     holds the split by assertion, and the claim itself is read in the same Playwright run that
-     re-measures this, by asking whether an unnonced inline script on the app host is still
-     blocked. */
+     holds the split by assertion, and the claim itself was EXECUTED at Story 3.9's Dev
+     (2026-09-11, the spec's `## Verification`): an unnonced inline script injected into the served
+     document RAN on inflozo.com and was REFUSED on app.inflozo.com. No harness repeats that read;
+     the test above is what stands guard. */
   const scriptSrc = app
     ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`
     : `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`

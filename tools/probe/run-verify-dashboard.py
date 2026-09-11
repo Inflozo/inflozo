@@ -49,6 +49,7 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, and it exits non-zero if any ste
                  inside `<main>` — and the HTTP status is RECORDED beside it (DW-67: a route with
                  a skeleton commits 200 before the page runs; the catch-all has none, so it can
                  answer a real 404)
+  not-found-status DW-67: every catch-all landing answers a real 404 (asserted since the review)
   not-found-csp  DW-18's app half: an unmatched app URL is now served by a DYNAMIC route carrying
                  the nonce, so the console reports ZERO blocked scripts where it reported ten
   prefetch       DW-17's tail: the two `Failed to load resource` lines a dashboard load used to
@@ -435,14 +436,18 @@ const axeOver = async (page, label, width) => {
         .catch(() => null)
       if (!r) r = await page.goto(`${APP}${path}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
       await page.waitForTimeout(1500)
-      const seen = await page.evaluate(() => {
+      const seen = await page.evaluate((homeLabel) => {
         const main = document.querySelector('main')
         return {
           main: main ? main.innerText.replace(/\s+/g, ' ').trim().slice(0, 120) : null,
           sidebar: Boolean(document.querySelector('nav[aria-label="Sections"]')),
-          home: Boolean([...document.querySelectorAll('a')].find((a) => a.getAttribute('href') === '/')),
+          // THE PAGE'S OWN BUTTON, INSIDE <main>, BY ITS OWN WORDS. Any `<a href="/">` on the page
+          // is satisfied by the sidebar's Projects row, which every in-shell page carries — so the
+          // first draft of this read stayed green with the button deleted (review, 2026-09-11).
+          home: Boolean(main && [...main.querySelectorAll('a[href="/"]')]
+            .some((a) => a.textContent.replace(/\s+/g, ' ').trim() === homeLabel)),
         }
-      })
+      }, SAY.not_found_home)
       landings.push({ path, status: r ? r.status() : 0, ...seen, blocked: blocked.length })
     }
     const inShell = landings.filter((l) => l.main && l.main.includes(SAY.not_found_title) && l.sidebar && l.home)
@@ -450,8 +455,12 @@ const axeOver = async (page, label, width) => {
          `${inShell.length} of ${landings.length} unmatched destinations render Inflozo's own ` +
          `not-found INSIDE the shell — the sentence in <main>, the sidebar drawn and a way home: ` +
          JSON.stringify(landings.map((l) => `${l.path} ${l.status}`)))
-    record('not-found-status',
-      'DW-67: the catch-all carries no skeleton, so it can answer a real status — ' +
+    // ASSERTED, NOT RECORDED: every landing here is the catch-all's, and the catch-all has no
+    // skeleton, so a 200 would mean a Suspense boundary came back above it — a re-added
+    // group-level loading.tsx puts every notFound() back at 200 and nothing else goes red
+    // (review, 2026-09-11). `/sites/brand`'s 200 is DW-67's remaining half and is not read here.
+    step('not-found-status', landings.every((l) => l.status === 404),
+      'DW-67: the catch-all carries no skeleton, so it answers a real 404 — ' +
       JSON.stringify(landings.map((l) => ({ path: l.path, status: l.status }))))
     const csp = landings.filter((l) => l.blocked === 0)
     step('not-found-csp', csp.length === landings.length,
@@ -491,7 +500,19 @@ def run_browser(cfg):
         # SECRETS GO IN THE ENVIRONMENT, never in argv: argv is world-readable in `ps`.
         child = dict(os.environ, PW_DIR=pw, PG_DIR=os.path.abspath(PG_DIR),
                      AXE_PATH=axe_path() or '', **cfg)
-        proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=900)
+        try:
+            proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=900)
+        except subprocess.TimeoutExpired as timed_out:
+            # A hang is a FAIL with a name, not a traceback (review, 2026-09-11; the sibling
+            # harness's pattern). What the child had already written is printed so the run says
+            # how far it got.
+            hung = timed_out.stdout.decode() if isinstance(timed_out.stdout, bytes) else (timed_out.stdout or '')
+            for line in hung.splitlines():
+                if line.lstrip().startswith('note:'):
+                    print(f'  {line.strip()}')
+            return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 900s'}]
+        except FileNotFoundError:
+            return [{'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'}]
     for line in proc.stdout.splitlines():
         if line.startswith('STEPS:'):
             return json.loads(line[len('STEPS:'):])

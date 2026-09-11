@@ -551,9 +551,12 @@ test('the card tallies projects per site and pluralises the pill', () => {
  * depends on both. This closes the silent drift, which is the half that was costing something now.
  */
 test('the 90-day orphan window agrees between the app and the migration', async () => {
-  const { readFileSync } = await import('node:fs')
-  const MIGRATION = '../../supabase/migrations/20260907150000_account_deletion_window.sql'
-  const sql = readFileSync(MIGRATION, 'utf8')
+  const { readdirSync, readFileSync } = await import('node:fs')
+  // EVERY migration, not the one that wrote it first: Story 7.20's view will carry the same
+  // expression in a later file, and a test pinned to one path would never read it (review, 2026-09-11).
+  const MIGRATION = '../../supabase/migrations'
+  const sql = readdirSync(MIGRATION).filter((f) => f.endsWith('.sql')).sort()
+    .map((f) => readFileSync(`${MIGRATION}/${f}`, 'utf8')).join('\n')
   const written = [...sql.matchAll(/disconnected_at\s*\+\s*interval '(\d+) days'/g)].map((m) => Number(m[1]))
   assert.ok(
     written.length > 0,

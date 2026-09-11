@@ -4128,6 +4128,29 @@ const shoot = async (page, name) => {
     const movedLiveTo = await movedAgain()
     const hintedLive = await says(page, SAY.keys_moved_live)
     const hintedLiveWrong = await says(page, SAY.keys_moved)
+
+    /* ── DW-83, ITS OWN SEEDING (review of Story 3.9, 2026-09-11). Every seeding above puts ONE
+       matching record in front of `findSiteByAdminKeyId`, and with one candidate any `order by`
+       returns it — so `(s.disconnected_at is null) desc` could be reverted with every step here
+       still green. This is the one arrangement where the old order and the new disagree: the
+       LIVE decoy is the OLDER record (it is the one seeded first, above, still with
+       `disconnected_at` null) and a SECOND, NEWER decoy is DISCONNECTED, both carrying the same
+       Admin key id under the same caller. `created_at desc` alone returns the newer, disconnected
+       one and hints about a 90-day clock that is not running; the order the entry asked for
+       returns the live one. */
+    const newer = ((await insert('/sites', {
+      user_id: USER_ID, url: 'https://older-address.inflozo.com', title: 'Older address',
+      disconnected_at: new Date().toISOString(),
+    })).body || [])[0] || {}
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${newer.id}, ${USER_ID}, ${kidOf(T3.adminKey)})
+    `
+    await movedAgain()
+    const hintedOrdered = await says(page, SAY.keys_moved_live)
+    const hintedOrderedWrong = await says(page, SAY.keys_moved)
+    await sql`delete from private.site_credentials where site_id = ${newer.id}`
+    await sql`delete from public.sites where id = ${newer.id}`
     await sql`update public.sites set disconnected_at = now() where id = ${decoy.id}`
 
     /* ── DW-85 (2): THE CROSS-ACCOUNT CONTROL for `findSiteByAdminKeyId`'s `user_id` clause. A
@@ -4165,7 +4188,8 @@ const shoot = async (page, name) => {
     await sql`delete from private.site_credentials where site_id = ${decoy.id}`
     step('moved-domains',
       Boolean(decoy.id) && hinted && onOneCard === 1 && !hintedAgain
-      && hintedLive && !hintedLiveWrong && Boolean(foreignDecoy.id) && !hintedAcross,
+      && hintedLive && !hintedLiveWrong && Boolean(foreignDecoy.id) && !hintedAcross
+      && Boolean(newer.id) && hintedOrdered && !hintedOrderedWrong,
       `a connect whose Admin key id matches ANOTHER record this caller holds: the redirect carried ` +
       `?moved= (${JSON.stringify(new URL(movedTo).search)}) and FR-C8's hint is on that ONE card ` +
       `(${onOneCard} of them) reading the app's own ${JSON.stringify(SAY.keys_moved)} — the 90 days ` +
@@ -4179,8 +4203,10 @@ const shoot = async (page, name) => {
       `clock to promise (the redirect carried ${JSON.stringify(new URL(movedLiveTo).search)}); and ` +
       `a decoy carrying the same Admin key id under a DIFFERENT ACCOUNT produced NO hint at all = ` +
       `${!hintedAcross}, which is the first execution of findSiteByAdminKeyId's user_id clause — ` +
-      `two customers connecting the same Ghost is not a domain move. That seeding is also DW-83's ` +
-      `proof: the lookup now orders a still-connected match ahead of an old disconnected one. ` +
+      `two customers connecting the same Ghost is not a domain move. AND DW-83'S OWN PROOF, added ` +
+      `at the review: with the LIVE decoy left as the OLDER record and a NEWER, DISCONNECTED twin ` +
+      `seeded beside it, the hint was the live one = ${hintedOrdered} and NOT the snapshot one = ` +
+      `${!hintedOrderedWrong} — the one arrangement where created_at alone answers the wrong row. ` +
       `⛔ The OLD record is seeded through the pooler: ` +
       `neither test Ghost has a second reachable address, so a real domain move cannot be performed ` +
       `here. The connect, the lookup, the redirect and the hint are all the product's`)
@@ -4303,7 +4329,17 @@ def run_browser(cfg):
         child = dict(os.environ, PW_DIR=pw, PG_DIR=os.path.abspath(PG_DIR),
                      AXE_PATH=axe_path() or '', **cfg)
         try:
-            proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=1200)
+            # 2700s SINCE STORY 3.9, AND THE INCREASE IS A COST THAT WAS PAID FOR, not a hang being
+            # tolerated. DW-85's two new seedings each need their OWN connect to carry their own
+            # answer — the still-connected decoy must draw `movedStillConnected`, and the
+            # cross-account decoy must draw NOTHING — so `moved-domains` now runs `movedAgain()`
+            # five times instead of two (the review added DW-83's own two-record seeding), and each is a real disconnect-and-reconnect through the
+            # product's own UI. The first run after they landed hit the old 1200s ceiling with the
+            # browser half still working (2026-09-11), which is the measurement behind this number.
+            # DW-68's hang problem is a DIFFERENT thing and this does not paper over it: a hang
+            # still ends here, still prints the notes the child had written, and still fails.
+            limit = 2700
+            proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=limit)
         except subprocess.TimeoutExpired as timed_out:
             # THE NOTES SURVIVE THE HANG. `TimeoutExpired` carries what the child had already
             # written, and this is the ONE case the retry count exists for — a run that hung —
@@ -4321,7 +4357,7 @@ def run_browser(cfg):
             for line in hung.splitlines():
                 if line.lstrip().startswith('note:'):
                     print(f'  {line.strip()}')
-            return [{'name': 'browser', 'ok': False, 'detail': 'node did not finish inside 1200s'}]
+            return [{'name': 'browser', 'ok': False, 'detail': f'node did not finish inside {limit}s'}]
         except FileNotFoundError:
             return [{'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'}]
     # THE BROWSER'S OWN NOTES REACH THE OUTPUT ON A PASSING RUN TOO. Everything but the result
