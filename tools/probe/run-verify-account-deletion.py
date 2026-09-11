@@ -81,8 +81,14 @@ list gone stale — the sibling harness's own note):
                  deleted", offers no Restore, and `restore_account()` with A's own bearer is `false`
   axe-past       axe-core over `/restore` after the deadline
 
-WHAT IT CANNOT PROVE: that the email arrived. `RESEND_API_KEY` is send-only (DW-22, executed twice),
-so the app logs Resend's status and id and the owner's manual test step 5 is the delivery check.
+WHAT IT DOES NOT YET PROVE: that the email arrived. `RESEND_API_KEY` is send-only and answers every
+READ with `401 restricted_api_key`, so this harness asserts the hand-off and the owner's manual test
+step 5 is the delivery check. THAT IS NOW A CHOICE RATHER THAN A WALL: `RESEND_READ_API_KEY` exists
+since 2026-09-11 (DW-22 closed, Story 3.9) and `GET https://api.resend.com/emails/{id}` answers
+`last_event` — `delivered`, `bounced`, `complained`. `check-access.py` reads it with the sending key
+refused beside it as the control. Epic 12, whose emails are acceptance-tested on delivery, is where
+a harness first asserts `last_event`; adding it here wants the message id the app logged, which this
+run does not capture.
 `--to ADDRESS` makes A that address, so the run's one real send lands in an inbox a human can open
 (the sibling harness's own escape hatch); without it A is a `deletion-harness-<stamp>@inflozo.com`
 address the owner's domain receives.

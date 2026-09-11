@@ -131,6 +131,28 @@ def main():
         say(OK if st in (200, 201) else BAD, 'Resend key -> send an email',
             f'HTTP {st} — ' + ('queued, check the inbox' if st in (200,201) else str(body)[:110]))
 
+    # The READING key (DW-22, closed 2026-09-11). The sending key above answers every READ with
+    # `401 restricted_api_key`, so until this key existed nothing here could see whether a message
+    # ARRIVED — only that Resend accepted it. The control is on the line below the result: a green
+    # read beside a sending key that is still refused is what makes the 200 the KEY's doing rather
+    # than an open endpoint (standing rule 2).
+    rr = e.get('RESEND_READ_API_KEY')
+    if rr:
+        st, body = http('https://api.resend.com/emails', {'Authorization': f'Bearer {rr}'})
+        rows = body.get('data', []) if isinstance(body, dict) else []
+        newest = rows[0].get('last_event') if rows else None
+        say(OK if st == 200 else BAD, 'Resend reading key -> read the log',
+            f'HTTP {st}, {len(rows)} row(s), newest last_event={newest!r}' if st == 200
+            else f'HTTP {st} — ' + str(body)[:110])
+        if rk:
+            st2, body2 = http('https://api.resend.com/emails', {'Authorization': f'Bearer {rk}'})
+            refused = st2 == 401 and 'restricted_api_key' in str(body2)
+            say(OK if refused else BAD, '  control: the SENDING key still cannot read',
+                f'HTTP {st2} {str(body2)[:60]}' if not refused else 'HTTP 401 restricted_api_key')
+    else:
+        say(SKIP, 'Resend reading key', 'RESEND_READ_API_KEY unset — delivery cannot be read '
+                                        '(DW-22; Epic 12 needs it)')
+
     # ---------------------------------------------------------------- Ghost
     for M in ('5', '6'):
         u = e.get(f'GHOST{M}_URL')

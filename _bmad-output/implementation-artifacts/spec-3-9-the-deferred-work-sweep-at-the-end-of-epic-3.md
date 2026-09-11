@@ -450,14 +450,26 @@ it) · DW-75's ledger half.
   taken-names idiom in `apps/web/lib/projects.ts`. `copyName`'s "Copy of X" wording is **not** what
   is reused: the suffix is the plain numeric one `nextUntitled` already appends, so two sites both
   titled *Blog* give **Blog** and **Blog 2**. One line plus its case in `projects.test.ts`.
-- [ ] **DW-22, the key** — `tools/probe/.env.example` carries the `RESEND_READ_API_KEY` slot and
-  the instructions (added at Create, 2026-09-11). At Dev, once the owner has pasted the value into
-  the gitignored `tools/probe/.env`: execute `GET https://api.resend.com/emails` with it and
-  **with the control beside it** — the send-only `RESEND_API_KEY` must still answer
-  `401 restricted_api_key`, a bogus key `400 validation_error`, and no key `401 missing_api_key`.
-  A green read with no control is not a result (standing rule 2). Record the four answers in
-  `## Verification`; that is what closes the entry. **If the key does not arrive before Dev ends,
-  DW-22 stays open with the slot in place** — it blocks nothing else here.
+- [x] **DW-22 — DONE AT CREATE (2026-09-11), because the owner made the key the same day.**
+  `tools/probe/.env.example` carries the `RESEND_READ_API_KEY` slot and the instructions; the owner
+  pasted the value into the gitignored `tools/probe/.env`; the read was executed with its full
+  control set and the output is in `## Verification` below. Three things landed with it, and the
+  last two are the propagation (standing rule 3), not extras:
+  - `tools/probe/check-access.py` — the read gets a **home in a tool nobody has to rewrite**: it
+    lists `/emails`, reports the row count and the newest `last_event`, and prints **the control on
+    the line below** — the sending key must still answer `401 restricted_api_key`. An unset reading
+    key is a `skip` naming DW-22, never a silent pass. No new file and no new catalogue row: this
+    is the access-check tool and this is an access check.
+  - `tools/probe/run-verify-account-deletion.py:84` and `run-verify-email-change.py:55` — both
+    docstrings said **"no key in this repository can read Resend's log"**, which is now false.
+    Corrected to say what is actually true: the *harness* does not assert delivery (neither run has
+    the message id to look up — one send is GoTrue's, the other is not captured), and Epic 12 is
+    where a harness first asserts `last_event`. The wall became a gap.
+  - `tools/doc-audit.py:328` — the account-deletion catalogue row carried the same claim, and
+    `INDEX.md` is generated from it. Corrected at the source, regenerated, gate green.
+  **What is NOT built, on purpose:** no delivery-reading probe. The entry's fix was one credential,
+  and it exists; a harness that asserts `last_event` wants an app-sent message id, which is Epic
+  12's to produce. Building one now would be a tool with no caller.
 
 ### The close itself
 
@@ -713,6 +725,55 @@ alone. Named below is what each group must hit.*
   `app.inflozo.com/sign-in` as the control in the same run; the four Resend answers — the new
   reading key, the send-only key, a bogus key, no key — recorded verbatim.
 - **Everything:** `python3 tools/doc-audit.py --check` and CI green, the deploy job reached.
+
+### Executed at Create — DW-22, the Resend reading key (2026-09-11)
+
+The owner created the key and pasted it into `tools/probe/.env`. Executed from this machine, three
+endpoints × four keys. **No key value was printed at any point** (`grep-excludes-probe-env`: a value
+that reaches stdout has leaked).
+
+```
+GET https://api.resend.com/emails        /domains     /api-keys
+  the READING key  -> 200               -> 200       -> 200
+  the SENDING key  -> 401 restricted_api_key   (same)      (same)
+  a bogus key      -> 400 validation_error     (same)      (same)
+  no key at all    -> 401 missing_api_key      (same)      (same)
+```
+
+**The control set is the point.** The sending key's `401 restricted_api_key` on the same endpoint in
+the same run is what makes the reading key's `200` the key's doing rather than an open endpoint
+(standing rule 2). The bogus and no-key rows separate Resend's own refusal from Cloudflare refusing
+the client before Resend sees it — the `403 / error code: 1010` that the first pass of DW-22 in
+2026-09-06 mistook for Resend's answer.
+
+**And the claim under the entry, which is delivery and not access:**
+
+```
+GET /emails        -> 200, 20 rows, has_more=true
+  2026-09-11 03:09:10+00   last_event = delivered
+  2026-09-11 03:08:12+00   last_event = delivered
+  2026-09-10 15:48:29+00   last_event = delivered   (… 20 rows, all delivered)
+GET /emails/{id}   -> 200
+  fields: bcc, cc, created_at, from, html, id, last_event, message_id, object,
+          reply_to, scheduled_at, subject, text, to
+  last_event = delivered
+```
+
+So `last_event` is readable **per message** as well as on the list — `delivered`, `bounced`,
+`complained` — which is exactly the three outcomes DW-22 said nothing here could see. The entry is
+closed on the capability, not on a harness.
+
+Re-executed through `tools/probe/check-access.py` after the block was added, which is the form that
+survives this session:
+
+```
+[  ok  ] Resend key -> send an email                  HTTP 200 — queued, check the inbox
+[  ok  ] Resend reading key -> read the log           HTTP 200, 20 row(s), newest last_event='queued'
+[  ok  ]   control: the SENDING key still cannot read HTTP 401 restricted_api_key
+```
+
+The `newest last_event='queued'` is the tool reading **its own probe send** from one line above —
+an accidental but real end-to-end proof that the read is live rather than cached.
 
 ## Spec Change Log
 

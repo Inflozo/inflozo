@@ -52,10 +52,14 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, exiting non-zero if any step fai
   axe-*          axe-core at WCAG 2.1 AA over /account in three states (closed, the dialog open,
                  the pending banner showing) at 1440 AND 390
 
-WHAT IT CANNOT PROVE: that the email arrived. DW-22 — `RESEND_API_KEY` is send-only and no key in
-this repository can read Resend's log — so what is asserted is the HAND-OFF (`email_change_sent_at`
-moved, or did not) and the link GoTrue stored for it, and delivery is step 4 of the owner's manual
-test. Nor does it flip the passkey flag: `email-change-rule.test.ts` pins that `changeEmail` guards
+WHAT IT DOES NOT YET PROVE: that the email arrived. What is asserted is the HAND-OFF
+(`email_change_sent_at` moved, or did not) and the link GoTrue stored for it; delivery is step 4 of
+the owner's manual test. DW-22 IS CLOSED (Story 3.9, 2026-09-11) and the sentence that used to
+stand here — "no key in this repository can read Resend's log" — is no longer true:
+`RESEND_READ_API_KEY` reads `last_event` off `GET /emails/{id}`, with the send-only key's
+`401 restricted_api_key` as the control (`check-access.py`). This send is GoTrue's rather than the
+app's, so there is no message id in our own logs to look up; Epic 12's app-sent emails are where a
+harness first asserts delivery. Nor does it flip the passkey flag: `email-change-rule.test.ts` pins that `changeEmail` guards
 on the session alone.
 
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
