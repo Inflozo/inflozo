@@ -56,16 +56,20 @@ at all. No column, no migration, **no Schema phase**.
 - **R-98 on both halves:** the route carries its own `loading.tsx` drawing the three cards *this*
   route shows, and any control that starts work says so.
 
+- **Nothing is remembered about First Run** — the owner's ruling on Question 1 (option 1,
+  2026-09-11). It is not a one-time event with a mark against the account; it is simply what
+  "Projects" looks like while you have no site and no project, and it stops being that the moment
+  you have one. So the rule is derived from the two counts on every render and from nothing stored.
+
 **Ask First:**
 
-- Whether First Run is shown **once** or keeps standing in for the Projects page while the account
-  has nothing — the question below. Build option 1 unless the owner rules otherwise; option 2 adds
-  a remembered mark and nothing else.
+- Nothing outstanding. Question 1 is ruled; if a second decision surfaces during Dev, it goes under
+  `## Questions for the owner` in R-83 shape and the run stops there.
 
 **Never:**
 
-- **No migration, no new column, no new `auth.users` metadata key** under option 1. If the owner
-  rules option 2, the mark is a metadata key in `nudge.ts`'s idiom — still no migration.
+- **No migration, no new column, and no `auth.users` metadata key.** A remembered "seen it" mark is
+  the option the owner did not take — do not reintroduce one as a convenience.
 - **Nothing behind the starter door.** Epic 11 owns the chooser; this story greys the door.
 - **The New Project Sheet is not re-implemented.** `<NewProjectSheet>` and `openNewProject()` are
   imported as the dashboard imports them.
@@ -212,7 +216,10 @@ any of them. On Tuesday she signs in again.
    **New project** button. The welcome screen was a one-time event: Inflozo puts a mark on her
    account the first time it shows, and never shows it again.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-11).** *"She sees the three cards again."* So Inflozo stores
+nothing: the welcome screen is what the Projects page is while the account has no site and no
+project. The spec was already written to this option, so nothing in the build moves — what the
+ruling settles is that the remembered mark of option 2 is now a thing this story must **not** add.
 
 ## Owner's manual test
 
@@ -233,9 +240,8 @@ also need a Ghost site's API URL and its two keys, as in Story 3.2.
 4. **URL:** same · **Screen:** First Run · **Do:** click **Blank canvas**. · **See:** the **New
    project** sheet you know from the dashboard opens over the screen. Close it with **Cancel**.
 5. **URL:** same · **Screen:** First Run · **Do:** click **Projects** in the left nav. · **See:**
-   the same welcome screen — you have nothing yet, so this *is* your Projects page. *(If you ruled
-   option 2 on the question above, you will see the empty Projects page instead. Either is right;
-   tell me if it is not the one you ruled.)*
+   the same welcome screen — you have nothing yet, so this *is* your Projects page, which is what
+   you ruled on 2026-09-11. Nothing anywhere says "you have already seen this".
 6. **URL:** same · **Screen:** First Run · **Do:** click **Connect your Ghost site** and go through
    the handshake as in Story 3.2. **Dummy data:** your Ghost's API URL, Admin API key and Content
    API key. · **See:** the two-step handshake, then the **"Nice site. Want to keep the vibe?"**
