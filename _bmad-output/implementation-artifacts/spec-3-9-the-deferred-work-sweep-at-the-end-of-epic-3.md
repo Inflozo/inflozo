@@ -2,9 +2,9 @@
 title: 'Story 3.9 — The deferred-work sweep at the end of Epic 3'
 type: 'chore'
 created: '2026-09-11'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
 ---
