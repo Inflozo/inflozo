@@ -59,7 +59,7 @@ development_status:
   2-6-the-purge-the-cascade-and-the-anonymisation: done
   epic-2-retrospective: optional
 
-  epic-3: done
+  epic-3: in-progress
   3-1-the-server-side-admin-proxy-and-vault-credential-storage: done
   3-2-the-connect-wizard-url-integration-guide-and-the-two-keys: done
   3-3-the-connect-time-probes-preview-only-code-injection-portal-a: done
@@ -68,7 +68,7 @@ development_status:
   3-6-manage-keys-and-a-partially-credentialed-site-as-an-ordinary: done
   3-7-the-daily-health-check-the-reconnect-email-and-the-compatibi: done
   3-8-first-run-the-three-doors-after-the-first-sign-in: done
-  3-9-the-deferred-work-sweep-at-the-end-of-epic-3: done
+  3-9-the-deferred-work-sweep-at-the-end-of-epic-3: review
   epic-3-retrospective: optional
 
   epic-4: backlog

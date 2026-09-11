@@ -2,9 +2,9 @@
 title: 'Story 3.9 — The deferred-work sweep at the end of Epic 3'
 type: 'chore'
 created: '2026-09-11'
-status: 'done'
+status: 'in-review'
 baseline_commit: 'f91501a6651847d08db17e1b4e2a5624e1209862'
-owner_test: passed
+owner_test: issues
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 closes_deferred: [DW-3, DW-5, DW-6, DW-22, DW-16, DW-17, DW-18, DW-20, DW-21, DW-24, DW-26, DW-28, DW-31, DW-34, DW-35, DW-36, DW-37, DW-45, DW-53, DW-56, DW-61, DW-67, DW-69, DW-72, DW-73, DW-74, DW-79, DW-80, DW-83, DW-85]
 ---
@@ -1406,3 +1406,27 @@ four attempts** and its three retargeted steps and four seedings remain unexecut
 stands as history; the live record is corrected here, the boxes are un-ticked, and DW-74, DW-83 and
 DW-85 go back to open with their code landed and their proof owed. Standing rule 2, caught in this
 story rather than by the next one.
+
+## Owner's test findings
+
+Tested on the story board (`_bmad-output/planning-artifacts/STORY-BOARD.html`) on 2026-09-11, after
+Done. One finding.
+
+1. **The Deferred work panel's chips do not show this story's closures.** *What was seen:* the panel
+   still reads `18 medium` / `59 low` / `15 closed` — the same shape it would show if this story had
+   closed nothing.
+
+   *Whose:* this story's, and it is a vocabulary drift (standing rule 7), not a board bug.
+   `deferred-work.md` has one word for a finished entry, `status: closed` (bare), used by all 15
+   entries closed before this story. This story instead wrote `status: done 2026-09-11 (Story 3.9)`
+   on the 26 entries it closed outright (25 named in `closes_deferred`, plus DW-89, closed at
+   Review). `tools/story-board.py`'s tally (`closed = d['status'] == 'closed' or bool(d['closed'])`)
+   recognises only the literal word `closed` or a `closed:` field; `done …` falls through to the
+   open branch and is tallied by severity instead. That is exactly the `18/59/15` the owner saw: the
+   pre-existing 15, unchanged, and the 26 this story closed hiding inside the open chips. The five
+   partial closures (DW-67, DW-74, DW-79, DW-83, DW-85) are unaffected and correctly read
+   `status: open — amended by Story 3.9 …`.
+
+   *Fix:* change `status: done 2026-09-11 (Story 3.9)` to `status: closed` on those 26 entries,
+   keeping each `resolution:` line as the record of what closed it. No change to `story-board.py` —
+   the vocabulary it reads has always been `closed`.
