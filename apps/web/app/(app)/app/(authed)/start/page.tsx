@@ -42,9 +42,10 @@ import { Doors } from './doors'
       to 28px below tablet — S3b's own display size, so the two empty screens read as one hand. */
 
 export const metadata: Metadata = {
-  /* THE SAME TITLE THE DASHBOARD WEARS, and that is the owner's ruling rather than an oversight:
-     the welcome screen IS what Projects looks like while you have no site and no project, and the
-     nav item the customer clicked to get here says Projects. */
+  /* THE SAME TITLE THE DASHBOARD WEARS — a judgement call made in Dev, and it follows from the
+     owner's ruling rather than being one: the welcome screen IS what Projects looks like while you
+     have no site and no project, and the nav item marked current while you are here says Projects
+     (`shell.tsx`'s `isActive`). */
   title: 'Projects · Inflozo',
   robots: { index: false, follow: false },
 }
@@ -66,9 +67,11 @@ export default async function FirstRun() {
       <Doors />
       <p className="text-ui text-ink-soft">{FIRST_RUN.footer}</p>
       {/* THE BLANK DOOR'S DESTINATION, and it is the dashboard's own sheet rather than a copy —
-          `openNewProject()` finds it by id. `atCap={false}` is a fact and not an assumption: this
-          screen is only ever drawn for an account with no project at all, and `createProject`
-          re-counts server-side anyway, so a sheet that raced a second tab still refuses. */}
+          `openNewProject()` finds it by id. `atCap={false}` is a fact because `layout.tsx` makes
+          it one: an account with a project is sent to `/` before this renders, and `createProject`
+          re-counts server-side anyway, so a sheet that raced a second tab still refuses. After a
+          Create the action re-renders this route and that same layout lands the customer on the
+          dashboard with the new project on it (review, 2026-09-11). */}
       <NewProjectSheet atCap={false} plan={plan} />
     </div>
   )

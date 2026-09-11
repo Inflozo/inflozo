@@ -33,7 +33,7 @@ export const stripApp = (pathname: string) => (isApp(pathname) ? pathname.slice(
  * arrived at all. From the layout, above that boundary, the same `redirect()` is a real 307.
  *
  * `proxy.ts` sets it on EVERY app request, empty string included, so a value sent by a client is
- * always overwritten rather than believed. It is read with `searchHeader()` below.
+ * always overwritten rather than believed. It is read with `hasSearch()` below.
  */
 export const SEARCH_HEADER = 'x-inflozo-search'
 

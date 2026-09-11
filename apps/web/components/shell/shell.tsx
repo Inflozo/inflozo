@@ -52,7 +52,10 @@ const NAV = [
  * strip, so "am I on the dashboard" is one answer at both addresses and one function under test.
  */
 // A segment, never a prefix — `routing.ts:13` records `startsWith('/app')` eating /apply.
-const isActive = (path: string, href: string) => path === href || (href !== '/' && path.startsWith(`${href}/`))
+// `/start` IS Projects: the welcome screen is what the Projects page looks like while the account
+// has nothing (the owner's Question 1 ruling on Story 3.8), so the item is current there too.
+const isActive = (path: string, href: string) =>
+  path === href || (href === '/' ? path === '/start' : path.startsWith(`${href}/`))
 
 /** The one opener: the button is in the layout and the sheet is rendered by the page. */
 export const openNewProject = () => {

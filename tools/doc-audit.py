@@ -352,6 +352,14 @@ DOCS = [
   'the first execution of the list-v2 hypothesis lib/storage-drain.ts rests on — and needs no '
   'deployment. --url points a Review run at a deployment URL; it defaults to the apex, which '
   'routing.ts passes through to the same handler Vercel invokes. Story 2.6.'),
+ ('tools/probe/run-verify-first-run.mjs', 'tool', 'First Run harness',
+  "Story 3.8's I/O matrix executed against the DEPLOYED app and the live Supabase (R-82): a GoTrue "
+  'fixture account with nothing answers 307 -> /start on a bare /, 200 on any query string, the doors '
+  'in the frame order with Recommended on the first; a site row, a disconnected site row and a project '
+  'row each flip the answer the way the rule says, and /start sends an account with anything back to / '
+  '(the reverse guard the review added). Raw HTTP, no browser: the two halves of the rule meet at '
+  'runtime in a header the proxy writes and a layout reads, and no pure test can see that join. Creates '
+  'and deletes its own account. Run at Review and Deploy; APP_ORIGIN points it at a local build.'),
  ('tools/probe/run-verify-site-health.py', 'tool', 'Daily site-health harness',
   "FR-C5's daily health check, its cron door, AD-25's notification row and FR-P1's third email, "
   'executed against T1, T3, the live Supabase, the real Resend and the deployed route (R-82). '
@@ -913,7 +921,7 @@ def short(path):
 
 
 BASES = ('_bmad-output/planning-artifacts', 'tools', 'docs', '_bmad/custom')
-EXT = ('.md', '.html', '.sql', '.js', '.py', '.sh', '.txt', '.toml')
+EXT = ('.md', '.html', '.sql', '.js', '.mjs', '.py', '.sh', '.txt', '.toml')
 
 
 def inventory():

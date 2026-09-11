@@ -2269,9 +2269,12 @@ origin: Story 3.8 Dev (2026-09-11)
 location: apps/web/lib/first-run.ts · apps/web/app/(app)/app/(authed)/start/doors.tsx · apps/web/app/(app)/app/(authed)/new-project-sheet.tsx
 reason: `STARTER_DOOR.reason` — "Starters aren't here yet." — is what UX-DR3 requires of a control that cannot
   act YET: greyed, with the sentence in the helper-caption slot. It is read by BOTH surfaces that draw the door,
-  First Run's `doors.tsx` and the New Project Sheet, from the one module, so the day Epic 11's starter chooser
-  exists the field is deleted once and both doors come alive together — `greyedProps` and `fieldTone` take an
-  optional `Greyed`, so removing the reason IS removing the grey. The story that builds the chooser (Epic 11,
+  First Run's `doors.tsx` and the New Project Sheet, from the one module. The day Epic 11's starter chooser
+  exists the field is deleted once, and the COMPILER then names both surfaces: `doors.tsx` reads
+  `STARTER_DOOR.reason` into a greyed `<button>` drawn by hand, and the sheet's `GreyedDoor` reads it too —
+  neither "comes alive" on its own (review, 2026-09-11 — the entry used to say they would); Epic 11 rewrites
+  each as a live door, and the sentence's "Ten" leaves with it, derived from the roster the chooser draws
+  (standing rule 4). The story that builds the chooser (Epic 11,
   the Starter Chooser surface in `EXPERIENCE.md` § Onboarding, B23a) owns this; nothing else may leave the
   sentence standing over a door that works. `first-run.test.ts` asserts only that neither surface keeps its own
   copy, so a stale sentence would not go red — this entry is the record.

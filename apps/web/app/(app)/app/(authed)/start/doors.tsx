@@ -31,7 +31,9 @@ import { BLANK_DOOR, CONNECT_DOOR, FIRST_RUN, STARTER_DOOR } from '@/lib/first-r
    `greyedProps` puts `aria-disabled` on the card, which is doing two jobs — it says the option is
    inactive, and it is what makes P0-0's grey legitimate to axe-core, whose colour-contrast rule
    skips an aria-disabled element and its descendants (new-project-sheet.tsx's GreyedDoor carries
-   the measurement). It stays in the Tab order, so the reason is read with it.
+   the measurement). It stays in the Tab order, so the reason is read with it — and it is a
+   `<button>` like its live sibling, never a bare `<div>`: a Tab stop with no role is announced as
+   nothing but its text (review, 2026-09-11).
 
    THE ILLUSTRATIONS ARE THE FRAME'S OWN DRAWINGS, tokenised: every colour S2a paints them with has
    a `--color-*`, because no .tsx may carry a hex (`tokens.test.ts`). The one rounding is the
@@ -43,7 +45,7 @@ import { BLANK_DOOR, CONNECT_DOOR, FIRST_RUN, STARTER_DOOR } from '@/lib/first-r
 const card = 'flex w-full flex-col gap-5 rounded border p-7 text-left shadow-sm'
 /** The two doors that can be pressed, with the frame's hover: lift 2px, shadow up one step. */
 const live = `border-line bg-surface transition hover:-translate-y-[2px] hover:shadow-md ${ring}`
-const title = 'font-display text-[22px] font-bold tracking-[-0.01em]'
+const title = 'font-display text-[22px] font-bold'
 const body = 'text-ui leading-[1.5]'
 /** The 140px illustration band every card opens with. `overflow-hidden` is not decoration: the
     drawings are the frame's own sizes and the CELL is not — at 834 three columns leave a card
@@ -103,7 +105,11 @@ export function Doors() {
       </a>
 
       {/* ── 2. STARTER — greyed with its reason. Epic 11 owns the chooser (DW-88). */}
-      <div {...greyedProps(STARTER_ID, STARTER_GREYED)} className={`${card} ${fieldTone(STARTER_GREYED)} ${ring}`}>
+      <button
+        type="button"
+        {...greyedProps(STARTER_ID, STARTER_GREYED)}
+        className={`${card} ${fieldTone(STARTER_GREYED)} ${ring}`}
+      >
         <span aria-hidden className={band}>
           {/* Three mini-pages, fanned — the frame's own sizes, rotations and offsets (`:43-47`). */}
           <span className={`relative flex h-[140px] w-[236px] items-center justify-center ${fits}`}>
@@ -129,7 +135,7 @@ export function Doors() {
           <span className={`${body} text-ink-faint`}>{STARTER_DOOR.consequence}</span>
           {reason(STARTER_ID, STARTER_GREYED)}
         </span>
-      </div>
+      </button>
 
       {/* ── 3. BLANK — the same sheet the dashboard opens, not a copy of it. With scripts off a
              `<dialog>` cannot be shown, which is the dashboard's own "New project" behaviour at

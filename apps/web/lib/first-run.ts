@@ -12,9 +12,11 @@
    nothing stored — no column, no migration, no `auth.users` metadata key. A remembered "seen it"
    mark is the option he did not take, and it is not to be reintroduced as a convenience.
 
-   NO COUNT IS TYPED IN HERE either (standing rule 4): the starter door's sentence names ten
-   because the shipped New Project Sheet already does, and S2a's own "Three ready-made sites" is
-   the frame quoting a roster that has since grown (Appendix E). One sentence, one module. */
+   ONE COUNT IS TYPED IN HERE, and it is named so it cannot hide (standing rule 4): the starter
+   door's sentence says "Ten" because the shipped New Project Sheet already did, and S2a's own
+   "Three ready-made sites" is the frame quoting a roster that has since grown (Appendix E). It
+   leaves with the reason sentence — Epic 11's chooser draws the roster and derives its count
+   (DW-88). One sentence, one module, and the heading and footer carry no digit at all. */
 
 /** S2a's card: a title, one line of consequence, and — where it cannot act yet — its reason. */
 export type Door = {
@@ -99,8 +101,9 @@ export const needsSiteCount = (state: Omit<FirstRunState, 'sites'>): boolean =>
  *
  * ANY query string renders the dashboard — `restoreAccount` lands on `/?restored=1` and a failed
  * sign-out on `/?signed-out-failed=1`, and both sentences are on the dashboard. One rule needs no
- * list of hints to keep in step with, and gives a typed `/?` as the way to the empty Projects
- * page while you still have nothing.
+ * list of hints to keep in step with. (A bare `/?` is NOT a query string: WHATWG URL drops it and
+ * the proxy hands `''` — executed at review, 2026-09-11 — so there is no typed escape hatch to the
+ * empty Projects page, and the owner's ruling wants none: the doors ARE that page.)
  */
 export const showsFirstRun = (state: FirstRunState): boolean =>
   needsSiteCount(state) && state.sites === 0

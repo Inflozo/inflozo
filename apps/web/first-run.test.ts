@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   BLANK_DOOR,
@@ -22,6 +22,8 @@ import { hasSearch } from './routing.ts'
 
 const AUTHED = join('app', '(app)', 'app', '(authed)')
 const DASHBOARD = join(AUTHED, '(dashboard)', 'layout.tsx')
+const START_LAYOUT = join(AUTHED, 'start', 'layout.tsx')
+const READER = join('server', 'first-run.ts')
 const SHEET = join(AUTHED, 'new-project-sheet.tsx')
 const DOORS = join(AUTHED, 'start', 'doors.tsx')
 const START = join(AUTHED, 'start', 'page.tsx')
@@ -93,9 +95,13 @@ test('“any query string” is the whole rule — no list of hints to keep in s
   assert.equal(hasSearch(''), false)
   assert.equal(hasSearch(null), false)
   assert.equal(hasSearch(undefined), false)
-  for (const search of ['?restored=1', '?signed-out-failed=1', '?q=', '?anything=else', '?']) {
+  for (const search of ['?restored=1', '?signed-out-failed=1', '?q=', '?anything=else']) {
     assert.equal(hasSearch(search), true, search)
   }
+  // A bare `/?` is NOT a query string: WHATWG URL drops it, so the proxy hands `''` and the redirect
+  // fires. There is no typed escape hatch and the rule promises none (review, 2026-09-11).
+  assert.equal(new URL('http://a/?').search, '')
+  assert.equal(hasSearch(new URL('http://a/?').search), false)
 })
 
 test('S2a’s words are the module’s, in the frame’s order, with Recommended on the first', () => {
@@ -148,29 +154,53 @@ test('the three doors each reach the thing that is already built', () => {
 })
 
 test('the dashboard asks the rule, and asks Postgres for the one count the rule needs', () => {
-  const page = source(DASHBOARD)
-  assert.match(page, /showsFirstRun\(/, 'the redirect is decided by the rule, not by a branch here')
-  assert.match(page, /redirect\('\/start'\)/, 'First Run is its own route, so it gets its own skeleton')
+  const layout = source(DASHBOARD)
+  const reader = source(READER)
+  assert.match(layout, /showsFirstRun\(/, 'the redirect is decided by the rule, not by a branch here')
+  assert.match(layout, /redirect\('\/start'\)/, 'First Run is its own route, so it gets its own skeleton')
   // AND IT IS THE LAYOUT, NOT THE PAGE. `(dashboard)/loading.tsx` is a Suspense boundary, so a
   // redirect from inside the page is delivered as a CLIENT navigation — measured on a production
-  // build: 200, the project-card skeleton for ~150ms, and nothing at all with scripts off. The
-  // file this test reads IS the assertion; `(dashboard)/page.tsx` must not carry one of its own.
-  assert.ok(DASHBOARD.endsWith('layout.tsx'), 'the guard belongs above the loading boundary')
+  // build: 200, the project-card skeleton for ~150ms, and nothing at all with scripts off.
   assert.doesNotMatch(
     source(join(AUTHED, '(dashboard)', 'page.tsx')),
     /redirect\(/,
     'a redirect from the page is flushed after the shell and cannot be a 307 — it belongs in layout.tsx',
   )
   // FR-C6: a disconnected record is a record Inflozo kept, and it is not a site.
-  assert.match(page, /\.is\('disconnected_at', null\)/, 'a disconnected record must not count as a site')
+  assert.match(reader, /\.is\('disconnected_at', null\)/, 'a disconnected record must not count as a site')
   // No row crosses the wire for a count.
-  assert.match(page, /count: 'exact', head: true/, 'the site count is a head count')
+  assert.match(reader, /count: 'exact', head: true/, 'the site count is a head count')
   // The rule is fed the whole URL, not the hints this page happens to know the names of — and a
   // layout is not given `searchParams`, so the proxy hands it over and nothing else may.
-  assert.match(page, /hasSearch\(head\.get\(SEARCH_HEADER\)\)/, 'ANY query string suppresses the redirect')
-  assert.match(readFileSync('proxy.ts', 'utf8'), /headers\.set\(SEARCH_HEADER, search\)/,
-    'the proxy is the only writer of the search header, so a client cannot send one')
+  assert.match(layout, /hasSearch\(head\.get\(SEARCH_HEADER\)\)/, 'ANY query string suppresses the redirect')
   // NOTHING IS REMEMBERED — the owner's Question 1 ruling. A mark against the account is the
   // option he did not take, so no such column or metadata key may appear here.
-  assert.doesNotMatch(page, /first_run|firstRunSeen|user_metadata\.first/, 'First Run stores nothing')
+  for (const text of [layout, reader]) assert.doesNotMatch(text, /first_run|firstRunSeen|user_metadata\.first/, 'First Run stores nothing')
+})
+
+test('the proxy is the ONLY writer of the search header, so a client cannot send one', () => {
+  // Every .ts/.tsx in the app, read: a second `.set(SEARCH_HEADER` anywhere would let a value a
+  // client sent be believed, and the review sentence that made this claim had no check behind it.
+  const files = readdirSync('.', { recursive: true, encoding: 'utf8' }).filter(
+    (f) => /\.tsx?$/.test(f) && !f.endsWith('.test.ts') && !f.startsWith('node_modules') && !f.startsWith('.next'),
+  )
+  assert.ok(files.length > 20, `expected the app's sources, got ${files.length}`)
+  const writers = files.filter((f) => /\.set\(\s*SEARCH_HEADER\b/.test(source(f)))
+  assert.deepEqual(writers, ['proxy.ts'])
+  assert.match(source('proxy.ts'), /if \(isApp\) headers\.set\(SEARCH_HEADER, search\)/, 'set on every app request, empty included')
+})
+
+test('/start guards its other side: an account with anything is sent back to Projects', () => {
+  // Executed on app.inflozo.com before this existed (review, 2026-09-11): a project made from the
+  // welcome screen's own Blank door left the customer on the three doors, and a typed `/start`
+  // drew them over an account with work. The layout, not the page — `start/loading.tsx` is a
+  // Suspense boundary, the same measurement as the dashboard's.
+  const layout = source(START_LAYOUT)
+  assert.match(layout, /!showsFirstRun\(/, 'the reverse of the one rule, not a second rule')
+  assert.match(layout, /readFirstRun\(false\)/, 'a query string on /start means nothing')
+  assert.match(layout, /redirect\('\/'\)/, 'an account with a project or a site is sent to Projects')
+  assert.doesNotMatch(source(START), /redirect\(/, 'the guard belongs above the loading boundary, never in the page')
+  // ONE reader for both layouts, so there is one decider and not two restatements of the reads.
+  assert.match(source(DASHBOARD), /from '@\/server\/first-run'/)
+  assert.match(layout, /from '@\/server\/first-run'/)
 })
