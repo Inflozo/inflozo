@@ -113,6 +113,11 @@ console.log('AD-36 — untrusted value into an interpreting sink\n');
   const plain = g('<p data-bind="title" data-empty="hide">x</p>');
   assert(/\{\{#if title\}\}/.test(plain), 'plain guard regressed: ' + plain);
   ok('a plain field binding still guards correctly');
+
+  const listed = g('<a data-bind-attr="href:url;title:custom_excerpt" data-empty="hide">x</a>');
+  assert(/\{\{#if url\}\}/.test(listed) && !/\{\{#if custom_excerpt\}\}/.test(listed), 'list-form guard is not on the first field: ' + listed);
+  assert(/href="\{\{url\}\}"/.test(listed) && /title="\{\{custom_excerpt\}\}"/.test(listed), 'list form dropped an entry: ' + listed);
+  ok('a list-form attribute binding guards on the FIRST field and emits every entry');
 }
 
 console.log(`\n${n} checks passed.`);

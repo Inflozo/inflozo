@@ -27,16 +27,20 @@ export const HELPERS: Readonly<Record<string, { param: string; ok: (a: string) =
 }
 
 /** The attributes a design may bind. `style` and every `on*` are absent BY CONSTRUCTION — AD-36 (3).
- *  One addition to the executed set: `data-portal`, which §7.3 gap row 11 needs for the mixed
- *  literal-and-bound form (`signup/{tier}`) and which has no other way in. */
+ *  Three edits to the executed set, each with its reason: `data-portal` is ADDED, because §7.3 gap
+ *  row 11's mixed form (`signup/{tier}`) has no other way in; `placeholder` is ADDED, because it is
+ *  a visitor-facing string and exit construct 3 (`data-t-attr`) must be able to reach it; `srcset`
+ *  is REMOVED, because one expression per attribute is not enough for a candidate list — that is
+ *  why `data-bind-srcset` exists — and a user-authored srcset would let a later candidate carry a
+ *  scheme `safeUrl` never sees (review 1). */
 export const BINDABLE_ATTRS: ReadonlySet<string> = new Set([
-  'href', 'src', 'srcset', 'alt', 'title', 'id', 'datetime', 'value', 'poster',
+  'href', 'src', 'alt', 'title', 'id', 'datetime', 'value', 'poster', 'placeholder',
   'aria-label', 'aria-labelledby', 'aria-describedby', 'aria-hidden', 'width', 'height',
   'data-portal',
 ])
 
 /** The subset whose value the browser (or Portal) resolves as a URL. */
-export const URL_ATTRS: ReadonlySet<string> = new Set(['href', 'src', 'srcset', 'poster'])
+export const URL_ATTRS: ReadonlySet<string> = new Set(['href', 'src', 'poster'])
 
 const SAFE_SCHEME = /^(https?:|mailto:|tel:)/i
 
@@ -96,6 +100,9 @@ export const BARE_HELPERS = [
 export const ADJACENCY_NEEDS = [
   'section-above', 'image-above', 'last-before-footer', 'share-emitted', 'duplicate-post',
 ] as const
+
+/** AD-4: the four marks a `richtext` prop may allow, and there are no others. */
+export const MARKS = ['strong', 'em', 'u', 'a'] as const
 
 /** The four closed member states (§7.3 gap row 4). The paid-vs-free test is not a plain path. */
 export const MEMBER_STATES = ['everyone', 'anonymous', 'free', 'paid'] as const
@@ -181,8 +188,10 @@ export function parseTokenTemplate(value: string): string[] | string {
 }
 
 /** AD-3's single carve-out, made machine-checkable: an inline `style` may set ONE CSS custom
- *  property and nothing else. `style="color: red"` is refused. */
-export const INLINE_STYLE_RE = /^\s*--[a-zA-Z0-9-]+\s*:[^;:{}]*;?\s*$/
+ *  property and nothing else. `style="color: red"` is refused. A STATIC value must be a pack token
+ *  — `--ref-accent: var(--accent)` — because §7.3 forbids a hex outside the Style Pack and a
+ *  literal in a design file is exactly that (review 1); the BOUND form is `data-bind-style`. */
+export const INLINE_STYLE_RE = /^\s*--[a-zA-Z0-9-]+\s*:\s*var\(--[a-zA-Z0-9-]+\)\s*;?\s*$/
 
 const attrList = (parseOne: (attr: string, rest: string) => string | null) => (v: string) => {
   for (const entry of v.split(';')) {
@@ -404,6 +413,11 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
  *  answered. The three that survive do so because something on the live site reads them. */
 export const CONSUMED_DIRECTIVES: readonly string[] =
   Object.keys(DIRECTIVES).filter((k) => DIRECTIVES[k]?.emitted !== true)
+
+/** The leak assertion itself, so the harness and its tests run ONE regex. A directive is an
+ *  attribute NAME: it ends at whitespace, `=`, `/` or `>` — a valueless `data-else` followed by
+ *  `class="x"` is a leak too (review 1 found the first version matched only `=` and `>`). */
+export const CONSUMED_DIRECTIVE_RE = new RegExp(`\\s(?:${CONSUMED_DIRECTIVES.join('|')})(?=[\\s=/>])`)
 
 /** `data-prop-attr2` was never normative — FR-G3 and §7.3 name eight directives and it is not among
  *  them. It existed only because an HTML attribute cannot repeat; the list form replaced it. Named

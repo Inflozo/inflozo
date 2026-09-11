@@ -242,8 +242,7 @@ const leaks = [];
 // this line used to carry were the spike's, and they were stale the moment §7.3's gap table was
 // answered — the settled vocabulary is more than three times that. The three directives absent
 // from CONSUMED_DIRECTIVES survive on purpose: Portal and sodo-search read them on the live site.
-const { CONSUMED_DIRECTIVES } = require('../../packages/library/src/vocabulary.ts');
-const DIRECTIVE = new RegExp(`\\s(?:${CONSUMED_DIRECTIVES.join('|')})\\s*[=>]`);
+const { CONSUMED_DIRECTIVE_RE: DIRECTIVE } = require('../../packages/library/src/vocabulary.ts');
 for (const f of textFiles) {
   const s = fs.readFileSync(f, 'utf8');
   if (DIRECTIVE.test(s)) leaks.push(`directive attribute survived in ${path.relative(OUT, f)}`);

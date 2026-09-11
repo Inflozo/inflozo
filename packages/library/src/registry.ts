@@ -34,7 +34,8 @@ export type PropDef = {
   tokens?: string[]
 }
 
-/** One `content.json`, per CATEGORY. `props` is FLAT and keyed by dotted path — `cta.url`,
+/** One `content.json`, per CATEGORY, at `designs/{category}/content.json` — beside the design
+ *  directories it is the union for. `props` is FLAT and keyed by dotted path — `cta.url`,
  *  `items[].label` — so a prop inside a repeat resolves with no tree walk. */
 export type CategoryContent = {
   category: string
@@ -49,11 +50,14 @@ export type DataBinding = {
   filter?: string
   limit?: number
   order?: string
+  /** R-20's hand-picked order: N single-id gets, in this order, no cap (the panel warns past 25 —
+   *  that is 4.5's sidebar, not this validator). Exclusive with `filter`, `limit` and `order`. */
+  ids?: string[]
 }
 
 /** `design.json` — what an AUTHOR writes. Not the registry entry. */
 export type DesignJson = {
-  /** the design's own number within its category; identity is `{categoryId}/{n}` from the path */
+  /** the display name — "Three-up cards". Identity is `{categoryId}/{n}`, from the path, never here */
   name: string
   tier: 'free' | 'pro'
   /** sets, not scalars: `sections-inventory.md` already declares them as sets in normative prose,
@@ -103,13 +107,18 @@ export type SectionRegistryEntry = {
   ghostCompat: { minVersion: string; helpers: string[]; deprecatedAt?: string }
   darkCapabilities: string[]
   previewSeed: string
+  /** FR-G5's tuple — carried so the "no two designs in a category share one" assertion has
+   *  something in the registry to read (review 1) */
+  descriptor: DesignJson['descriptor']
   provisional?: boolean
 }
 
 /** FR-G3: "the first 3–5 entries of a DESIGN's own control list, in order, ARE its Quick Controls".
  *  Read from the design level, never from the category union — the union is the storage domain
  *  FR-D19 parks against, not a sidebar. The three universal controls never appear here, and they
- *  never appear in a `controlSchema` either, so no filtering is needed. */
+ *  never appear in a `controlSchema` either, so no filtering is needed. A design that declares
+ *  fewer than three controls has fewer Quick Controls — FR-F3 says designs legitimately expose
+ *  different controls, and a floor would invent a rule (review 1, routine call). */
 export function recoverQuickControls(controlSchema: readonly ControlDef[]): string[] {
   return controlSchema.slice(0, 5).map((c) => c.name)
 }
@@ -159,6 +168,7 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
     ghostCompat: d.ghostCompat,
     darkCapabilities: d.darkCapabilities,
     previewSeed: d.previewSeed,
+    descriptor: d.descriptor,
   }
   if (input.js !== undefined) entry.js = input.js
   if (d.dataBindings !== undefined) entry.dataBindings = d.dataBindings

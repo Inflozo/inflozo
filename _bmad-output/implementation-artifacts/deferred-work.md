@@ -2471,7 +2471,7 @@ plain: Each time the Ghost team releases a new version, Inflozo is meant to send
   Inflozo's own library of sections, and **there is no library yet** — the sections are built in Epics 9,
   10 and 11. Building the announcement now would be a box to type a message into with nothing behind it.
   So it waits for the story that first puts sections in front of customers.
-status: open
+status: open — amended by Story 4.1 (2026-09-11); the ghostCompat-definition half is closed
 resolution: Story 4.1 (2026-09-11) closed the BLOCKING half and nothing else. `ghostCompat`
   { minVersion, helpers[], deprecatedAt? } now has a definition, a type and a validation rule in
   `packages/library` and a worked example in `docs/section-authoring.md`, so FR-C5's compatibility
@@ -2626,3 +2626,22 @@ reason: `moved-domains` drives a real disconnect-and-reconnect through the produ
   its own catalogue row and this story is a sweep: a `--only <step>` argument that runs the named steps
   and their seedings, the way `--check` already selects a subset. Then a story that changes one step
   pays for one step. Until it exists, every closure resting on this harness is owed a full run.
+
+### DW-93: the stress harness never removes `data-empty` from a prop-attribute-only element, and implements no `hide` for it
+
+plain: The proof-of-concept compiler has a rule for "if this piece of content is empty, hide the
+  element". It applies that rule to text and to Ghost-bound attributes, but not to an element whose
+  only content is a user-authored attribute (an image whose source the customer picked). There the
+  marker is left behind and nothing is hidden. No test section uses that shape today, so nothing
+  breaks; the real compiler in Story 4.2 replaces this code and must get it right.
+status: open
+severity: low
+origin: Story 4.1 review (2026-09-11) — Edge Case Hunter, deferred as pre-existing harness behaviour
+owner: Story 4.2 — the two emitters replace `applyProps`; the validator already treats `data-prop-attr`
+  as guardable, so the emitters must honour `data-empty="hide"` on it (an empty user-picked image
+  hides the element, never the attribute — FR-H8)
+location: tools/stress/compile.js `applyProps` (the `data-prop-attr` loop removes only its own attribute)
+reason: not fixed in the review because the harness is the CONTROL this story's grammar was lifted from
+  and its emitters are throwaway; adding a `hide` path there would be a behaviour the agreement test
+  then has to cover for code 4.2 deletes. The leak gate would catch a surviving `data-empty` the
+  moment a fixture used the shape.

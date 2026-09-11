@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && node tools/stress/test-vocabulary.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "build": "pnpm --filter @inflozo/web build"
   },

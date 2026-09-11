@@ -13,7 +13,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  DIRECTIVES, guardField, parseBindSpec, safeUrl, assertBindableAttr,
+  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, DIRECTIVES, guardField, parseBindSpec, parseTokenTemplate,
+  safeUrl, assertBindableAttr,
 } from './vocabulary.ts'
 import { assembleEntry, recoverQuickControls, parseDesignDir } from './registry.ts'
 import type { CategoryContent, DesignJson } from './registry.ts'
@@ -39,18 +40,20 @@ const EVERY_DIRECTIVE = `
   <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url"
        data-empty="hide" alt="">
   <ul><li data-items="logos"><span data-prop="logos[].name">A partner</span></li></ul>
-  <div data-repeat="latest" data-repeat-limit="9" data-partial="ref-card">
+  <div data-repeat="latest" data-partial="ref-card">
     <span data-index="number">1</span>
     <span data-when="first">First</span>
-    <em data-bind-style="--tag-accent:accent_color" data-bind="name">Topic</em>
+    <em data-repeat="tags" data-repeat-limit="3" data-bind-style="--tag-accent:accent_color" data-bind="name">Topic</em>
     <p data-if="custom_excerpt" data-bind="custom_excerpt">Authored</p>
     <p data-else data-bind="excerpt">Generated</p>
   </div>
   <div data-members="anonymous">
     <form data-members-form="subscribe">
+      <input type="email" data-t-attr="aria-label:ref.email;placeholder:ref.email_placeholder">
       <button data-t="ref.subscribe" data-t-attr="aria-label:ref.subscribe">Subscribe</button>
     </form>
   </div>
+  <a data-members="free" data-bind-attr="data-portal:signup/{tier}" href="#">Upgrade</a>
   <button data-ghost-search>Search</button>
   <p data-text="Read by {total_members} readers">Read by 12,000 readers</p>
   <div data-helper="content"></div>
@@ -60,7 +63,7 @@ const EVERY_DIRECTIVE = `
     <ol data-pagination="numbers"></ol>
     <a data-pagination="next" href="#">Older</a>
   </nav>
-  <p style="--ref-accent: #2f6fed">A note.</p>
+  <p style="--ref-accent: var(--accent)">A note.</p>
 </section>`
 
 test('the reference markup exercises every directive in the closed set', () => {
@@ -153,10 +156,72 @@ test('the guard is derived from the bound field, never from a helper argument (F
 test('an inline style beyond AD-3\'s carve-out is refused; one custom property is not', () => {
   refuses('inline-style',
     '<p style="color: red">x</p>',
-    '<p style="--tag-accent: #2f6fed">x</p>')
+    '<p style="--tag-accent: var(--accent)">x</p>')
   refuses('inline-style',
-    '<p style="--a: red; display: none">x</p>',
-    '<p style="--a: red;">x</p>')
+    '<p style="--a: var(--x); display: none">x</p>',
+    '<p style="--a: var(--x);">x</p>')
+  // §7.3: no hex outside the Style Pack — a static custom property must consume a pack token
+  refuses('inline-style',
+    '<p style="--tag-accent: #2f6fed">x</p>',
+    '<p style="--tag-accent: var(--accent)">x</p>')
+})
+
+test('the token form of data-bind-attr is accepted; a stray brace is refused (R-27, row 11)', () => {
+  refuses('bad-value',
+    '<a data-bind-attr="data-portal:signup/{tier">x</a>',
+    '<a data-bind-attr="data-portal:signup/{tier}">x</a>')
+  assert.equal(typeof parseTokenTemplate('a}b'), 'string')
+  assert.equal(typeof parseTokenTemplate('{a b}'), 'string')
+  assert.deepEqual(parseTokenTemplate('Read in {reading_time} minutes'), ['reading_time'])
+})
+
+test('a guard on a token-template binding is refused; on a plain first entry it is not', () => {
+  refuses('guard-on-template',
+    '<a data-bind-attr="data-portal:signup/{tier}" data-empty="hide">x</a>',
+    '<a data-bind-attr="href:url;data-portal:signup/{tier}" data-empty="hide">x</a>')
+})
+
+test('the lexical shape checks: duplicates, orphan modifiers, both arms on one element, empty markup', () => {
+  refuses('duplicate-attribute',
+    '<p data-bind="title" data-bind="excerpt">x</p>',
+    '<p data-bind="title">x</p>')
+  refuses('orphan-repeat-modifier',
+    '<li data-repeat-limit="3">x</li>',
+    '<li data-repeat="tags" data-repeat-limit="3">x</li>')
+  refuses('orphan-repeat-modifier',
+    '<li data-partial="card">x</li>',
+    '<li data-repeat="posts" data-partial="card">x</li>')
+  refuses('if-and-else',
+    '<p data-if="a" data-else data-bind="a">x</p>',
+    '<p data-if="a" data-bind="a">x</p>')
+  assert.deepEqual(codes(validateMarkup('', { controls: [] })), ['no-root'])
+  assert.deepEqual(codes(validateMarkup('<!-- nothing -->', { controls: [] })), ['no-root'])
+})
+
+test('a data-target the design cannot compile to is refused; a declared one is not', () => {
+  const opts = { controls: [], compileTarget: ['index.hbs', 'tag.hbs'] }
+  assert.ok(codes(validateMarkup(root('<div data-target="page.hbs">x</div>'), opts)).includes('target-not-declared'))
+  clean(validateMarkup(root('<div data-target="tag.hbs">x</div>'), opts), 'a declared target')
+})
+
+test('a declared query is referenced, and its limit is authored once (review 1)', () => {
+  const dataBindings = { latest: { source: 'posts', limit: 9 } }
+  assert.ok(codes(validateMarkup(root('<div data-repeat="latst">x</div>'), { controls: [], dataBindings }))
+    .includes('binding-unreferenced'), 'a key typo leaves the real key unreferenced')
+  assert.ok(codes(validateMarkup(root('<div data-repeat="latest" data-repeat-limit="9">x</div>'), { controls: [], dataBindings }))
+    .includes('limit-authored-twice'))
+  clean(validateMarkup(root('<div data-repeat="latest">x</div>'), { controls: [], dataBindings }), 'a referenced query')
+  clean(validateMarkup(root('<div data-repeat="tags" data-repeat-limit="3">x</div>'), { controls: [], dataBindings: {} }),
+    'a context-path repeat keeps its own limit')
+})
+
+test('the leak assertion is one regex, and it sees a valueless directive mid-tag (AD-34)', () => {
+  assert.ok(CONSUMED_DIRECTIVE_RE.test('<p data-else class="x">'), 'a valueless directive before another attribute')
+  assert.ok(CONSUMED_DIRECTIVE_RE.test('<p data-else/>'))
+  assert.ok(CONSUMED_DIRECTIVE_RE.test('<p data-bind="title">'))
+  assert.ok(!CONSUMED_DIRECTIVE_RE.test('<p data-elsewhere="1" data-bindings="2">'), 'a longer name is not a directive')
+  assert.ok(!CONSUMED_DIRECTIVE_RE.test('<form data-members-form="subscribe" data-ghost-search>'), 'the emitted three survive on purpose')
+  for (const d of CONSUMED_DIRECTIVES) assert.ok(CONSUMED_DIRECTIVE_RE.test(`<p ${d}>`), d)
 })
 
 test('an inline token a prop does not declare cannot be declared at all outside the closed set', () => {
@@ -190,11 +255,24 @@ test('the three universal controls sit on every section root', () => {
     .includes('universal-control-missing'))
 })
 
-test('a content prop the category does not declare is refused (R-102)', () => {
-  const content: CategoryContent = { category: 'a4', props: { title: { type: 'text' } } }
-  const f = validateMarkup(root('<p data-prop="newsletter.heading">x</p>'), { controls: [], content })
-  assert.deepEqual(codes(f), ['unknown-prop'])
-  clean(validateMarkup(root('<p data-prop="title">x</p>'), { controls: [], content }), 'a declared prop')
+test('a content prop the category does not declare is refused (R-102), in every directive that names one', () => {
+  const content: CategoryContent = {
+    category: 'a4',
+    props: { title: { type: 'text' }, 'cta.url': { type: 'url' }, logos: { type: 'array' }, 'logos[].alt': { type: 'text' } },
+  }
+  const o = { controls: [], content }
+  assert.deepEqual(codes(validateMarkup(root('<p data-prop="newsletter.heading">x</p>'), o)), ['unknown-prop'])
+  assert.deepEqual(codes(validateMarkup(root('<a data-prop-attr="href:cta.url;title:email.label">x</a>'), o)), ['unknown-prop'])
+  assert.deepEqual(codes(validateMarkup(root('<li data-items="partners">x</li>'), o)), ['unknown-prop'])
+  clean(validateMarkup(root('<p data-prop="title">x</p><a data-prop-attr="href:cta.url">x</a><li data-items="logos"></li>'), o), 'declared props')
+})
+
+test('a directive and its prop must agree in kind', () => {
+  const content: CategoryContent = { category: 'a4', props: { title: { type: 'text' }, logos: { type: 'array' } } }
+  const o = { controls: [], content }
+  assert.deepEqual(codes(validateMarkup(root('<li data-items="title">x</li>'), o)), ['prop-type-mismatch'])
+  assert.deepEqual(codes(validateMarkup(root('<p data-prop="logos">x</p>'), o)), ['prop-type-mismatch'])
+  clean(validateMarkup(root('<li data-items="logos">x</li><p data-prop="title">x</p>'), o), 'matching kinds')
 })
 
 // ─── design.json ─────────────────────────────────────────────────────────────
@@ -269,6 +347,64 @@ test('a hand-written quickControls[] is refused; the recovered one is the first 
   clean(validateDesignJson(design()), 'a design.json with no quickControls')
 })
 
+test('every other design.json refusal fires, and its neighbour does not', () => {
+  const only = (over: Record<string, unknown>, code: string) =>
+    assert.ok(codes(validateDesignJson({ ...DESIGN, ...over } as DesignJson)).includes(code), `${code} should fire`)
+  only({ id: 'a17/1' }, 'id-authored')
+  only({ tier: 'gold' }, 'bad-tier')
+  only({ bindingContext: [] }, 'binding-context-missing')
+  only({ bindingContext: ['posts', 'posts'] }, 'duplicate-context')
+  only({ compileTarget: [] }, 'compile-target-missing')
+  only({ compileTarget: ['index.hbs', 'index.hbs'] }, 'duplicate-target')
+  only({ compileTarget: ['any'] }, 'bad-compile-target')
+  only({ dataBindings: { x: { source: 'posts', filter: 'tag:{{evil}}' } } }, 'bad-get-filter')
+  only({ dataBindings: { 'my key': { source: 'posts' } } }, 'bad-get-key')
+  only({ dataBindings: { posts: { source: 'posts' } } }, 'bad-get-key')
+  only({ dataBindings: { picks: { source: 'posts', ids: [] } } }, 'bad-get-ids')
+  only({ dataBindings: { picks: { source: 'posts', ids: ['abc'], limit: 3 } } }, 'bad-get-ids')
+  only({ controlSchema: [{ name: 'Cols', type: 'stepper', values: ['2'], default: '2' }] }, 'bad-control-name')
+  only({ controlSchema: [
+    { name: 'cols', type: 'stepper', values: ['2'], default: '2' },
+    { name: 'cols', type: 'stepper', values: ['2'], default: '2' },
+  ] }, 'duplicate-control')
+  only({ controlSchema: [{ name: 'rule', type: 'toggle', values: ['on', 'off'], default: 'on',
+    disabledBy: { control: 'align', whenValue: 'center', reason: 'r' } }] }, 'dependency-unknown')
+  only({ controlSchema: [{ name: 'rule', type: 'toggle', values: ['on', 'off'], default: 'on',
+    disabledBy: { control: 'rule', whenValue: 'off', reason: 'r' } }] }, 'dependency-self')
+  only({ controlSchema: [
+    { name: 'align', type: 'segmented', values: ['start', 'center'], default: 'start' },
+    { name: 'rule', type: 'toggle', values: ['on', 'off'], default: 'on',
+      disabledBy: { control: 'align', whenValue: 'middle', reason: 'r' } },
+  ] }, 'dependency-value')
+  only({ previewSeed: '' }, 'preview-seed-missing')
+  only({ ghostCompat: undefined }, 'ghost-compat-missing')
+  only({ ghostCompat: { minVersion: 'banana', helpers: [] } }, 'bad-min-version')
+  only({ ghostCompat: { minVersion: '5.0.0', helpers: 'foreach' } }, 'ghost-compat-helpers')
+  only({ descriptor: { ...DESIGN.descriptor, ground: '' } }, 'descriptor-missing')
+  only({ descriptor: undefined }, 'descriptor-missing')
+  // and the neighbours: a hand-picked order, and the reference design.json
+  clean(validateDesignJson(design({ dataBindings: { picks: { source: 'posts', ids: ['a1', 'b2', 'c3'] } } })),
+    'a hand-picked order (R-20)')
+  clean(validateDesignJson(design()), 'the reference design.json')
+})
+
+test('content.json refusals: marks, tokens, orphan items, unsafe defaults, the category id', () => {
+  const only = (props: CategoryContent['props'], code: string, category = 'a22') =>
+    assert.ok(codes(validateCategoryContent({ category, props })).includes(code), `${code} should fire`)
+  only({ h: { type: 'richtext', marks: ['script'] } }, 'bad-mark')
+  only({ h: { type: 'text', marks: ['strong'] } }, 'marks-on-plain-prop')
+  only({ u: { type: 'url', tokens: ['members'] } }, 'tokens-on-non-text')
+  only({ 'logos[].alt': { type: 'text' } }, 'orphan-item-prop')
+  only({ logos: { type: 'text' }, 'logos[].alt': { type: 'text' } }, 'orphan-item-prop')
+  only({ u: { type: 'url', default: 'javascript:alert(1)' } }, 'unsafe-default-url')
+  only({}, 'bad-category', 'A-22')
+  clean(validateCategoryContent({ category: 'a22', props: {
+    h: { type: 'richtext', marks: ['strong', 'em', 'u', 'a'], tokens: ['members'] },
+    u: { type: 'url', default: 'https://example.com/' },
+    logos: { type: 'array' }, 'logos[].alt': { type: 'text' },
+  } }), 'a sound content.json')
+})
+
 test('a universal control may not be redeclared per design (R-23)', () => {
   const f = validateDesignJson(design({
     controlSchema: [{ name: 'spacing', type: 'segmented', values: ['a', 'b'], default: 'a' }],
@@ -310,6 +446,7 @@ test('an entry is assembled from the path, the design, the category content and 
   assert.equal(e.id, 'a17/1')
   assert.equal(e.category, 'a17')
   assert.equal(e.contentSchema, content.props, 'contentSchema is the CATEGORY\'s union')
+  assert.equal(e.descriptor, DESIGN.descriptor, 'the entry carries the tuple FR-G5 asserts over')
   assert.deepEqual(e.quickControls, ['cols', 'card', 'gap', 'meta', 'image'])
   assert.deepEqual(parseDesignDir('a3/12'), { category: 'a3', n: '12' })
   assert.equal(parseDesignDir('a3'), null)
@@ -341,6 +478,7 @@ test('validateDesign runs design.json, content.json and markup as one', () => {
       ],
       compileTarget: ['index.hbs', 'tag.hbs'],
       dataBindings: { latest: { source: 'posts', limit: 9 } },
+      bindingContext: ['posts', 'tags'],
     }),
     content,
   })

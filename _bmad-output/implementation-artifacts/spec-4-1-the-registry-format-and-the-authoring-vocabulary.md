@@ -2,10 +2,10 @@
 title: 'Story 4.1 — The registry format and the annotated-HTML authoring vocabulary'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'cc325fe175e64fb00c9da73b9d7c568b8d2779b6'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -125,7 +125,7 @@ thing that was proven to work.
 
 - `tools/stress/sections.js` -- **the control.** Eight annotated-HTML archetypes, mean 39.1 elements
   and 21.0 directives each. Universal control attributes at `:16-20` (`data-bg`, `data-spacing`,
-  `data-divider`); `data-prop-attr2` at the header archetype is the wart to retire.
+  `data-divider`); `data-prop-attr2` at the gallery archetype (`gal__img`) is the wart to retire.
 - `tools/stress/compile.js` -- **the executed grammar, and the source to lift from.** `safeUrl`
   `:93`, `PATH_RE` `:110`, `HELPERS` `:111-115`, `BINDABLE_ATTRS` `:118-122`, `URL_ATTRS` `:123`,
   `assertBindableAttr` `:125`, `bindExpr` `:134`, `emitBindings` `:153`, `wrapGuard` `:186` (and the
@@ -274,6 +274,38 @@ thing that was proven to work.
   "matches the frame" criterion and no `## Owner's manual test`. R-74's other half still binds: the
   design export is read-only.
 
+### Review Findings
+
+Review 1, 2026-09-11 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier). The verifier re-executed every line of the Verification sheet and
+reproduced every number, with a negative control that fired. No finding is the owner's to decide:
+each is a patch inside an approved ruling, or noise. Three routine calls, stated rather than asked:
+R-20's hand-picked order takes the shape `ids: [...]` on a declared query; a STATIC inline custom
+property must consume a pack token, because §7.3 forbids a hex outside the Style Pack; and Quick
+Controls are the first three to five of the design's list, fewer only when the design declares fewer.
+
+- [x] [Review][Patch] The AD-34 leak regex misses a valueless directive followed by another attribute (`<p data-else class="x">`), and the agreement test still carries a hand list of nine names [tools/stress/build.js:246, tools/stress/test-renderer-agreement.js:119] — one `CONSUMED_DIRECTIVE_RE` in the library, consumed by both, asserted in the package test
+- [x] [Review][Patch] The canvas emitter `break`s the list-form `data-bind-attr` loop on the first null, so later attributes are never set while the theme emits them; no test drives a two-entry list through either emitter; the doc never says which entry the guard derives from [tools/stress/compile.js:373]
+- [x] [Review][Patch] The four AD-36 rules were copied into the library, not moved: `compile.js` keeps its own `PATH_RE`, `HELPERS`, `BINDABLE_ATTRS`, `URL_ATTRS`, `safeUrl`, and the copies already differ [tools/stress/compile.js:88-136] — the harness now requires the library's
+- [x] [Review][Patch] A declared query's `limit` is authored twice — `dataBindings.latest.limit` and `data-repeat-limit` on the same element — and the fixture and doc teach it [packages/library/fixtures/reference-design/index.html, docs/section-authoring.md §3 row 2]
+- [x] [Review][Patch] A `data-repeat` key typo (`latst`) validates clean and a declared query nothing references validates clean; a `dataBindings` key may collide with a `{{#get}}` source name [packages/library/src/validate.ts]
+- [x] [Review][Patch] R-20's hand-picked order (N single-id gets, no cap, the panel warns past 25) has no shape in `DataBinding` — §7.3 row 2 names it and Always says the vocabulary is settled completely [packages/library/src/registry.ts]
+- [x] [Review][Patch] Rows 6, 10 and 14 have no worked `html` example in the document (AC 1); row 11's token form is in neither fixture nor test, and the unbalanced-brace refusal is untested [docs/section-authoring.md §3]
+- [x] [Review][Patch] Rows 11/13: the spec's Design Notes say "the same token allow-list" while the code and doc take a binding path — two token grammars under one R-27 label; the spec's wording is the loose one and is amended to say which grammar governs which text [this spec, Design Notes]
+- [x] [Review][Patch] A static inline `style="--x: #2f6fed"` passes and the fixture teaches it — a literal hex in a design file [packages/library/src/vocabulary.ts INLINE_STYLE_RE, fixture line 71]
+- [x] [Review][Patch] Exit 3 cannot reach `placeholder`; the fixture hard-codes an English placeholder and a `<noscript>` sentence — the thing the catalog exists to prevent [packages/library/src/vocabulary.ts BINDABLE_ATTRS, fixture]
+- [x] [Review][Patch] `assembleEntry` drops the structural descriptor, so FR-G5's tuple check has nothing to read; only `emphasis` — the one field no machine reads — is validated [packages/library/src/registry.ts, validate.ts]
+- [x] [Review][Patch] Fifteen refusal codes have no test that they fire, while the doc claims every refusal is paired; nothing asserts the coverage [packages/library/src/validate.test.ts] — a derived "every code has a test" check joins the control
+- [x] [Review][Patch] Lexical checks the scan can answer but does not: a directive written twice on one tag, `data-repeat-limit`/`data-partial` without `data-repeat`, `data-if` with `data-else` on the same element, a guard on a token-template binding (emits `{{#if signup/{tier}}}` — the round-4 defect's shape), empty markup, `disabledBy.whenValue` outside the other control's values or a self-dependency, duplicate `bindingContext`/`compileTarget` entries, `ghostCompat.helpers` not an array, `minVersion` not a version, marks outside AD-4's `strong·em·u·a`, tokens on a `url`/`image` prop, `x[].y` with no `x` array, a `data-items` on a non-array prop, a `url` prop default that `safeUrl` would reduce [packages/library/src/validate.ts]
+- [x] [Review][Patch] `srcset` stays in `BINDABLE_ATTRS` though `data-bind-srcset` now owns it, and `safeUrl` checks only a srcset's first candidate [packages/library/src/vocabulary.ts:33-40] — removed from the allow-list, so the vector is closed by construction
+- [x] [Review][Patch] `tools/stress/test-vocabulary.mjs` restates its check count and truncates the root tag on a quoted `>`; the AD-34 amendment restates a multiplier [tools/stress/test-vocabulary.mjs:46, ARCHITECTURE-SPINE.md AD-34]
+- [x] [Review][Patch] The story's control runs outside every automated path — `pnpm check` and CI never run `test-vocabulary.mjs`, so the fixture can drift from the grammar with a green gate [package.json]
+- [x] [Review][Patch] Document gaps: a bare helper is refused and the doc's grammar does not say so; "declared per category" names a shape that does not exist; `content.json`'s path on disk is never stated; the §1 table says the four files contribute three; `DesignJson.name`'s comment calls it a number [docs/section-authoring.md, packages/library/src/registry.ts]
+- [x] [Review][Patch] Propagation left behind: `epic-4-context.md`'s cross-story bullet still says the library has no entry point; DW-87's note is in a third status shape the ledger does not use; the spec's Code Map names the header archetype for `data-prop-attr2` when it was the gallery [epic-4-context.md:81, deferred-work.md DW-87, this spec Code Map]
+- [x] [Review][Defer] `compile.js`'s `applyProps` never removes `data-empty` from a `data-prop-attr`-only element and implements no `hide` for it [tools/stress/compile.js:210-230] — deferred, pre-existing harness behaviour; 4.2's emitters replace it
+
+Dismissed as noise (9): a protocol-relative URL is an off-site link, not a script vector; `validateMarkup` without `controls` skips the root checks by design; `data-target` is checked only when the design's targets are passed, by design; `data-module` on several subtrees is how a design declares several modules; the ≈15 cap is approximate and the sidebar's; a `data-empty="fallback"` on a `data-prop` is the archetype pattern; the guard deriving from the FIRST binding is a rule, now documented; the compile-time `AD-5 rule 2` log line is pre-existing and informational; the `warning past 25` is the panel's (4.5), not the validator's.
+
 ## Design Notes
 
 **The vocabulary, settled.** The eight proven directives keep their executed names. The table below
@@ -286,7 +318,7 @@ static and bound text uses R-27's per-prop token allow-list, never a general sub
 | §7.3 | Construct | Directive |
 |---|---|---|
 | 1 | repeat over a **content-prop** array, baked at compile as N blocks | `data-items="path"` — distinct from `data-repeat`, which names a Ghost source |
-| 2 | `{{#get}}` with filter / limit / order | `data-repeat="<key>"` where the key resolves in `design.json`'s `dataBindings` to `{ source, filter?, limit?, order? }`, each validated |
+| 2 | `{{#get}}` with filter / limit / order | `data-repeat="<key>"` where the key resolves in `design.json`'s `dataBindings` to `{ source, filter?, limit?, order? }` — or `{ source, ids[] }` for R-20's hand-picked order, one single-id get per entry, no cap — each validated; the query's `limit` is the only limit |
 | 3 | two-armed conditional | `data-if="path"` + `data-else` on the sibling (`data-empty` stays the one-armed guard) |
 | 4 | member state over four closed values | `data-members="everyone \| anonymous \| free \| paid"` |
 | 5 | positional helpers | `data-when="first \| last \| even \| odd"`, `data-index` for the printed number |
@@ -295,9 +327,9 @@ static and bound text uses R-27's per-prop token allow-list, never a general sub
 | 8 | *group-by* | **struck (R-1)** — it is the `group-headings` behaviour module, not a directive |
 | 9 | bare-helper binding (no path) | `data-helper="<closed list>"` — `content`, `comments`, `navigation`, `total_members`, `statusCode`, … |
 | 10 | compile-target-conditional wrapper | `data-target="page.hbs"` on the subtree |
-| 11 | mixed literal-and-bound attribute value | `data-bind-attr` gains R-27's `{token}` form |
+| 11 | mixed literal-and-bound attribute value | `data-bind-attr` gains the `{token}` form — each `{…}` is a **binding path** under AD-36's grammar; R-27's three-name allow-list governs the customer's text in a content prop, not a design-authored directive (review 1 settled the wording) |
 | 12 | bound value into an inline custom property | `data-bind-style="--tag-accent:accent_color"` — AD-3's carve-out made machine-checkable by construction, since the directive can write nothing else |
-| 13 | static-and-bound text in one node | `data-text="Read by {count} readers"` with the same token allow-list |
+| 13 | static-and-bound text in one node | `data-text="Read by {count} readers"` — the same binding-path form as row 11 |
 | 14 | adjacency as a compile-time **input** | `data-needs="<closed list>"` — the compiler answers from the placement list; there is no runtime lookup (AD-37, R-8) |
 | exit 3 | chrome strings | `data-t="key"`, `data-t-attr="attr:key"`; JS-written strings emit `data-i18n-*` (4.9 owns the catalog) |
 | exit 4 | `srcset` / `sizes` | `data-bind-srcset="path\|img_url"`, since one expression per attribute is not enough |
@@ -436,6 +468,27 @@ it is provable here as non-refusal because substitution is 4.2's emitters, not t
   (§7.3). It links no `style.css` by design — a design source is a fragment the compiler assembles,
   not a standalone page — so the section's computed background is transparent, which is expected and
   not a missing stylesheet.
+
+**Recorded — the Review run, 2026-09-11, Node 24.18.1.** Every line above re-executed by the review's
+Real-infra verifier before a patch was applied (every number reproduced; one negative control — an
+injected `data-bound="title"` on a scratch copy of the fixture — refused with its untouched copy
+clean), and again by the reviewing session after every patch landed:
+
+| Gate | Dev record | After the review's patches |
+|---|---|---|
+| `node test-ad36.js` | 13 | 14 — one added: the list-form guard is on the FIRST field and every entry emits |
+| `node test-renderer-agreement.js` | 8 | 10 — two added: the list form lands on both emitters; a later null sets nothing, a first null hides |
+| `node build.js` — FR-J17 proxy · AD-34 leak assertions | 103/103 · 2380 · 201/215/86 · 943 · clean | identical, with the leak regex now `CONSUMED_DIRECTIVE_RE` from the library |
+| `node gate.js theme` | 0/0 on gscan 4.49.7 · 0/0 on gscan 6.4.2 | identical |
+| `node test-vocabulary.mjs` | 13 | 14 — one added: every refusal code in `validate.ts` has a test that fires it, derived from the source |
+| `pnpm check` | exit 0, 27 library tests | exit 0, 36 library tests; the root `test` script now runs `test-vocabulary.mjs`, so CI runs the control |
+| `python3 tools/doc-audit.py --check` ×2 | PASS | PASS |
+| the standing-rule-7 grep | 1 hit (the spec's own line) | 1 hit |
+
+The harness — the control this grammar was lifted from — was edited by the review (it now consumes
+the library's four AD-36 rules and `safeUrl` instead of its own copies, and the canvas list-form
+loop no longer stops at a later null), so its gates were re-run and returned what they returned
+before plus the added checks, which is what keeps an edited control a control (standing rule 2).
 
 **No external service was touched.** No key in `tools/probe/.env` was read by this story: it adds no
 call to Ghost (T1/T3), Supabase, Vercel, Resend or Dodo, and the Review phase re-runs the sheet above

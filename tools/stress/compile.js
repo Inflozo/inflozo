@@ -65,6 +65,11 @@ class UserText {
 const splitFirst = (s, ch) => { const i = s.indexOf(ch); return i === -1 ? [s, undefined] : [s.slice(0, i), s.slice(i + 1)]; };
 const get = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 
+// The four AD-36 rules and the scheme check are the LIBRARY's since Story 4.1 (review 1): this
+// harness used to carry its own copies, and they had already drifted. One copy, consumed here.
+const { PATH_RE, HELPERS, BINDABLE_ATTRS, URL_ATTRS, safeUrl } =
+  require('../../packages/library/src/vocabulary.ts');
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AD-36 — an untrusted value never reaches an interpreting sink un-validated.
 //
@@ -87,18 +92,8 @@ const get = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 //     ghost-shim. A user-typed link is equally a stranger to the visitor who clicks it, and on the
 //     canvas the same value is a same-origin URL inside the owner's authenticated session -- so the
 //     check belongs in the shared core, over BOTH sources.
-const SAFE_SCHEME = /^(https?:|mailto:|tel:)/i;
 // A value with no scheme at all is relative and therefore same-origin: '/about', '#top', 'x.png'.
 // The colon test is what separates 'foo/bar:baz' (a path) from 'javascript:...' (a scheme).
-function safeUrl(value) {
-  const v = String(value == null ? '' : value).trim();
-  // Control characters and whitespace inside a scheme are how `java\nscript:` slips past a naive
-  // prefix test; strip them before deciding, and reject rather than repair.
-  const probe = v.replace(/[\u0000-\u0020]/g, '').toLowerCase();
-  const scheme = probe.match(/^([a-z0-9+.-]*):/);
-  if (!scheme) return v;                       // relative — no scheme to abuse
-  return SAFE_SCHEME.test(probe) ? v : '#';    // '#' is inert and visible; never silently dropped
-}
 
 // (2)+(3) The binding vocabulary is a grammar, not a template. Every part is validated and the
 //     mustache is rebuilt from the validated parts.
@@ -107,20 +102,9 @@ function safeUrl(value) {
 // the first run refused `@site.logo` -- a grammar that rejects the language it is parsing is a
 // broken parser, not a strict one. What it still refuses is every character the breakout needed:
 // braces, quotes, whitespace, backslash.
-const PATH_RE   = /^(\.\.\/)*@?[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/;
-const HELPERS   = {
-  // arg is constrained per helper, by enum where the vocabulary is closed
-  img_url: { param: 'size',   ok: (a) => /^[a-z0-9_]+$/i.test(a) },
-  date:    { param: 'format', ok: (a) => /^[A-Za-z0-9 ,:/.\-]+$/.test(a) },
-};
 // The attributes a design may bind. An event handler is not on it, and neither is `style` --
 // AD-3's carve-out emits its custom property through the stylesheet path, not through a binding.
-const BINDABLE_ATTRS = new Set([
-  'href', 'src', 'srcset', 'alt', 'title', 'id', 'datetime', 'value', 'poster',
-  'aria-label', 'aria-labelledby', 'aria-describedby', 'aria-hidden', 'width', 'height',
-]);
 // The subset of those whose value the browser resolves as a URL.
-const URL_ATTRS = new Set(['href', 'src', 'srcset', 'poster']);
 
 function assertBindableAttr(attr) {
   const a = String(attr).toLowerCase();
@@ -370,7 +354,7 @@ function applyCanvasBindings(scope, ctx) {
       const attr = assertBindableAttr(rawAttr);      // AD-36 (3), both sides
       const v = bindValue(spec, ctx);
       // FR-H8: the guard is decided by the FIRST binding, matching the theme path's single {{#if}}
-      if (v == null) { if (entry === entries[0] && guard === 'hide') el.remove(); break; }
+      if (v == null) { if (entry === entries[0] && guard === 'hide') { el.remove(); break; } continue; }
       // AD-36 (1) on the canvas too: a javascript: URL here runs on Inflozo's own origin.
       el.setAttribute(attr, URL_ATTRS.has(attr) ? safeUrl(v) : v);
     }

@@ -25,11 +25,13 @@ const here = dirname(fileURLToPath(import.meta.url))
 const REPO = join(here, '..', '..')
 
 const { A, ORDER, source } = require('./sections.js')
-const { DIRECTIVES, UNIVERSAL_CONTROLS, validateMarkup, validateDesign } =
+const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
 
 let failed = 0
+let n = 0
 const check = (label, fn) => {
+  n++
   try {
     fn()
     console.log(`  ok  ${label}`)
@@ -43,9 +45,8 @@ const say = (f) => f.map((x) => `${x.code}: ${x.message}`).join('\n       ')
 /** The root's control attributes, which is what exit construct 5 says the sidebar generates FROM
  *  `controlSchema`. Derived from the markup here because the archetypes predate `design.json`. */
 function rootControls(html) {
-  const open = html.slice(html.indexOf('<'))
-  const tag = open.slice(0, open.indexOf('>'))
-  const names = [...tag.matchAll(/\s(data-[\w-]+)\s*=/g)].map((m) => m[1])
+  const [root] = scanTags(html)                       // the validator's own scan, not a second one
+  const names = root ? root.attrs.map(([k]) => k).filter((k) => k.startsWith('data-')) : []
   return names
     .filter((n) => DIRECTIVES[n] === undefined)
     .map((n) => n.slice('data-'.length))
@@ -100,6 +101,15 @@ check('no archetype still carries the retired data-prop-attr2', () => {
   if (Object.keys(A).length !== ORDER.length) throw new Error('ORDER and A have drifted apart')
 })
 
-const n = ORDER.length + 5
+check('every refusal code the validator can return has a test that it fires', () => {
+  // Derived from the source, never a hand list — a code added without a test fails this line.
+  const src = readFileSync(join(REPO, 'packages/library/src/validate.ts'), 'utf8')
+  const tests = readFileSync(join(REPO, 'packages/library/src/validate.test.ts'), 'utf8')
+  const codes = [...new Set([...src.matchAll(/push\(out, '([a-z-]+)'/g)].map((m) => m[1]))]
+  const untested = codes.filter((c) => !tests.includes(`'${c}'`))
+  if (untested.length) throw new Error(`no test fires ${untested.join(', ')}`)
+  if (codes.length < 10) throw new Error('the code extraction found too few codes to be real')
+})
+
 console.log(`\n${failed ? `${failed} of ${n} checks FAILED` : `${n} checks passed — the grammar describes what was executed.`}\n`)
 process.exit(failed ? 1 : 0)

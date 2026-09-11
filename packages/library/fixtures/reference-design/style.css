@@ -29,7 +29,8 @@
 .ref[data-rule="line"] .ref__head { border-block-end: 1px solid var(--border-hairline); }
 
 /* The one value a stylesheet cannot know when it is authored: the tag's own accent, set on the
-   element by `data-bind-style` (AD-3's carve-out). The stylesheet only READS the variable. */
+   element by `data-bind-style` (AD-3's carve-out). The stylesheet only READS the variable. A STATIC
+   inline custom property (`--ref-accent`) must itself be a pack token: no hex outside the Style Pack. */
 .ref__tag { border-inline-start: 3px solid var(--tag-accent, var(--border-hairline)); }
 .ref__note { border-inline-start: 3px solid var(--ref-accent, var(--border-hairline)); }
 

@@ -25,7 +25,7 @@
   </ul>
 
   <div class="ref__grid">
-    <article class="ref__card" data-repeat="latest" data-repeat-limit="9" data-partial="reference-card">
+    <article class="ref__card" data-repeat="latest" data-partial="reference-card">
       <a class="ref__card-link" data-bind-attr="href:url">
         <img class="ref__card-img" data-bind-attr="src:feature_image|img_url:m"
              data-bind-srcset="feature_image|img_url" data-empty="hide" src="/placeholder.jpg" alt="">
@@ -49,11 +49,12 @@
     <form class="ref__form" data-members-form="subscribe">
       <label class="ref__label" for="ref-email" data-t="reference.email_label">Email address</label>
       <input class="ref__input" id="ref-email" type="email" name="email" required
-             data-t-attr="aria-label:reference.email_label" placeholder="you@example.com">
+             data-t-attr="aria-label:reference.email_label;placeholder:reference.email_placeholder">
       <button class="ref__submit" type="submit" data-prop="submitLabel">Subscribe</button>
     </form>
-    <noscript class="ref__noscript">Subscribing needs JavaScript. With it off, nothing happens.</noscript>
+    <noscript class="ref__noscript" data-t="reference.no_js">Subscribing needs JavaScript. With it off, nothing happens.</noscript>
   </div>
+  <a class="ref__upgrade" data-members="free" data-bind-attr="data-portal:signup/{tier}" data-t="reference.upgrade" href="#">Upgrade</a>
   <p class="ref__thanks" data-members="paid" data-prop="paidNote">Thank you for subscribing.</p>
 
   <div class="ref__tagline" data-target="tag.hbs">
@@ -66,5 +67,5 @@
     <a class="ref__next" data-pagination="next" href="#">Older</a>
   </nav>
 
-  <p class="ref__note" style="--ref-accent: #2f6fed" data-prop="note" data-empty="fallback">Every directive, once.</p>
+  <p class="ref__note" style="--ref-accent: var(--accent)" data-prop="note" data-empty="fallback">Every directive, once.</p>
 </section>

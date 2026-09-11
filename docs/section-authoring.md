@@ -38,9 +38,13 @@ It is built — `assembleEntry()` in `registry.ts` — from four inputs:
 |---|---|
 | the design's directory path, `designs/{category}/{n}` | `id`, `category` |
 | the design's `design.json` | `name`, `tier`, `bindingContext`, `compileTarget`, `controlSchema`, `dataBindings`, `ghostCompat`, `darkCapabilities`, `previewSeed`, and AD-35's `provisional` |
-| the **category's** `content.json` | `contentSchema` |
-| the four files | `html`, `css`, `js` |
+| the **category's** `content.json`, at `designs/{category}/content.json` | `contentSchema` |
+| the design's other three files — `index.html`, `style.css`, `behaviour.js` | `html`, `css`, `js` |
 | recovered, never written | `quickControls[]` |
+
+(`design.json` is the fourth file and has its own row. The entry also carries the structural
+descriptor tuple, so FR-G5's "no two designs in a category share one" has something in the registry
+to read.)
 
 So **"registry entry" and "`design.json`" are different lists**, and reading one as the other is the
 mistake this section exists to remove. `design.json` carries no `id` — identity is the path, and an
@@ -56,7 +60,8 @@ A registry entry therefore describes **one design against its category's shared 
 control list, in order — read from the design level, never from the category's union, which is the
 storage domain FR-D19 parks against and not a sidebar. A `quickControls` array written into a
 `design.json` is a **validation failure**, not an override: the two documents cannot drift if only
-one of them is authored.
+one of them is authored. A design that declares fewer than three controls has fewer Quick Controls;
+FR-F3 says designs legitimately expose different controls, and a floor would be an invented rule.
 
 ### The rule of the content model — R-102
 
@@ -114,7 +119,9 @@ category's union, the answer is to declare it again there — not to reach for a
 **`bindingContext` and `compileTarget` are sets, not scalars.** `sections-inventory.md` already
 declares them as sets in its own normative prose — *"`bindingContext: tags` (+ `posts` on the
 designs that show them)"* — and FR-D12 / FR-D13 filter by **intersection**, which a set answers and
-a scalar cannot. Both are declared per category, or per design where a category's designs differ.
+a scalar cannot. Both are written in **every** `design.json` — a category's designs usually share
+the set, and FR-G3's "per design where a category's designs differ" is answered by each design
+carrying its own; there is no category-level field to declare them once.
 
 **`bindingContext` takes ten values and there is no `page`:**
 `none · post · posts · tag · tags · author · authors · tiers · error · private`.
@@ -145,7 +152,13 @@ all refused (R-23).
 
 **A query is declared here and referenced by key from the markup** — never written into an
 attribute. That is what makes AD-36's "validated, never interpolated" hold by construction: there is
-nowhere in the markup a filter could be composed.
+nowhere in the markup a filter could be composed. A key is a lowercase identifier and never a source
+name (`posts`), which a `data-repeat` would read as a context path; every declared query must be
+referenced by a `data-repeat`, so a misspelt key (`latst`) fails as an unreferenced declaration. The
+query's `limit` is the only limit: a `data-repeat-limit` on the same element is refused as a second
+copy of one number. **R-20's hand-picked order** is `"ids": ["…", "…"]` in place of `filter`,
+`limit` and `order` — one single-id get per entry, in that order, with no cap; the sidebar warns
+past 25 (4.5), the validator does not.
 
 ### `content.json` — one per **category**
 
@@ -175,7 +188,13 @@ and `{anythingElse}` a customer types stays **literal text**. The token set is c
 `members · term · n` — and free-form substitution is refused: an untrusted string reaching a
 substitution pass is AD-36's subject, and an allow-list by construction is the only shape that
 closes it rather than filtering it. A `richtext` prop also carries a per-prop **mark** allow-list
-over the four permitted marks.
+over the four permitted marks — `strong · em · u · a` (AD-4) — and a `url` prop's authored default
+must pass the scheme rule as written, since a default is the author's text and not a visitor's.
+
+**Two brace grammars, deliberately.** R-27's tokens are for the **customer's** text in a content
+prop, closed to three names. A `{…}` in a **design-authored** directive value — `data-text`,
+`data-bind-attr` — is a **binding path** under AD-36's path grammar, because the author is naming a
+Ghost value, not typing prose. They share a spelling and nothing else.
 
 ### `style.css`
 
@@ -204,7 +223,7 @@ These were executed in `tools/stress/compile.js` and keep their names and gramma
 |---|---|---|---|
 | `data-prop` | a content prop path | the customer's literal text into the DOM | a marker, spliced into the emitted string after serialization |
 | `data-prop-attr` | `attr:path` list, `;`-separated | the value onto the attribute | the same, through the marker path |
-| `data-bind` | `path` or `path\|helper:arg` | the Ghost value, resolved | `{{path}}` / `{{helper path param="arg"}}` |
+| `data-bind` | `path` or `path\|helper:arg` — a helper always takes its argument | the Ghost value, resolved | `{{path}}` / `{{helper path param="arg"}}` |
 | `data-bind-attr` | `attr:spec` list, `;`-separated | the resolved value onto the attribute | the mustache, carried through serialization as an opaque token |
 | `data-empty` | `hide` · `fallback` | `hide` removes the element | `hide` wraps the element in `{{#if field}}` |
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
@@ -227,7 +246,9 @@ directives now take a **semicolon-separated list**, which removes a numbered war
 466 designs are written in. It is refused **by name**, so the message says what to write instead.
 
 **A guard is derived from the bound FIELD, never from a helper argument.** `data-empty="hide"` on
-`data-bind="published_at|date:YYYY"` guards on `published_at`. The spike parsed the field back out
+`data-bind="published_at|date:YYYY"` guards on `published_at`. On a list-form `data-bind-attr` the
+guard is the **first** entry's field — put the one that decides visibility first — and a first
+entry that is a token template is refused, because a template has no single field to guard on. The spike parsed the field back out
 of the built expression and took the last token, which is the **format string** — so it emitted a
 guard on an identifier that does not exist, the block never rendered, and the content was silently
 and permanently lost. A garbage guard is *present*, which is why "is there a guard?" passes while
@@ -269,7 +290,7 @@ baked at compile as N static blocks. Per-item props are written in full.
 by key. There is no attribute in which one can be composed, so AD-36 holds by construction.
 
 ```html
-<article class="card" data-repeat="latest" data-repeat-limit="9" data-partial="post-card">…</article>
+<article class="card" data-repeat="latest" data-partial="post-card">…</article>
 ```
 ```json
 "dataBindings": { "latest": { "source": "posts", "filter": "featured:true", "limit": 9,
@@ -305,6 +326,14 @@ page**, and the specs say so.
 **Row 6 · pagination.** Ghost's own. It restricts the design's `compileTarget` (R-7), and that
 restriction is checked when the design is validated, not when it renders.
 
+```html
+<nav class="pager" aria-label="Pagination">
+  <a class="pager__prev" data-pagination="prev" href="#">Newer</a>
+  <ol class="pager__numbers" data-pagination="numbers"></ol>
+  <a class="pager__next" data-pagination="next" href="#">Older</a>
+</nav>
+```
+
 **Row 7 · nesting** needs nothing new. Repeats are processed **deepest-first** so an inner repeat's
 tokens exist before the outer replacement carries them into the string; forward order ships them
 raw. Executed, and the reason is written beside the code in `compile.js`.
@@ -316,7 +345,14 @@ raw. Executed, and the reason is written beside the code in `compile.js`.
 ```
 
 **Row 10 · per-target markup.** A26–A28 aside, the case this exists for is A24's
-`@page.show_title_and_feature_image` guard, which belongs on `page.hbs` and nowhere else.
+`@page.show_title_and_feature_image` guard, which belongs on `page.hbs` and nowhere else. A
+`data-target` may name only a template the design's `compileTarget` includes.
+
+```html
+<header class="post__head" data-target="page.hbs" data-if="@page.show_title_and_feature_image">
+  <h1 class="post__title" data-bind="title">Page title</h1>
+</header>
+```
 
 **Row 11 and row 13 · the token form.** Any value mixing static and bound text uses one mechanism:
 each `{…}` run is a binding path, everything else is literal, and a stray brace is refused rather
@@ -346,6 +382,11 @@ saw. A design therefore **states what it needs to know** and the compiler answer
 placement list and bakes the answer in. There is no runtime `{{#if}}` for it and no probe (AD-37,
 R-8, R-19).
 
+```html
+<section class="band" data-bg="surface" data-spacing="comfortable" data-divider="line"
+         data-needs="section-above">…</section>
+```
+
 ### The five exit constructs
 
 | Exit | Construct | Directive |
@@ -365,7 +406,11 @@ element. 4.9 owns the catalog and its format; this document owns only how markup
 ```html
 <button class="hdr__menu" type="button" data-t="a1.menu_open"
         data-t-attr="aria-label:a1.menu_open">Menu</button>
+<input class="form__email" type="email" data-t-attr="aria-label:a22.email;placeholder:a22.email_placeholder">
 ```
+
+A `placeholder` is a visitor-facing string like any other, so `data-t-attr` reaches it; a design
+carries **no** English literal in a `placeholder`, a `<noscript>` or anywhere else a visitor reads.
 
 **Exit 4 · `srcset`.** The binding grammar produces exactly one expression per attribute, which is
 not enough for a responsive image set, so it gets its own directive. The sizes are the shim's, not
@@ -413,7 +458,8 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | `data-prop-attr2` | retired; the list form replaced it. Named, so the message says what to write. |
 | a bound attribute not on the allow-list — `onload`, `style` | AD-36 (3). `data-bind-attr="onload:featureImage"` once emitted a live event handler, with a gate on the far side of the pipeline the only thing standing between that design and a shipped theme. |
 | a binding path with a brace, quote, whitespace or backslash | AD-36 (2). The path is parsed and the mustache rebuilt from validated parts, never concatenated. |
-| an unknown helper, or an argument outside that helper's own rule | AD-36 (2). `img_url:800"}}<script>…` emitted a live script into every theme built from that design. |
+| an unknown helper, or an argument outside that helper's own rule | AD-36 (2). `img_url:800"}}<script>…` emitted a live script into every theme built from that design. A helper with no argument is refused too — the harness accepted one by accident and emitted `size="undefined"`. |
+| `srcset` in `data-bind-attr` or `data-prop-attr` | one expression per attribute cannot make a candidate list — that is `data-bind-srcset` — and a user-authored list would carry a later candidate's scheme past `safeUrl`. |
 | a URL whose scheme is not `http`, `https`, `mailto`, `tel` or relative | AD-36 (1). Reduced to an inert, **visible** `#` — never silently dropped. `java\nscript:` is **rejected, not repaired**. |
 | `data-empty` on an element with nothing to guard | FR-H8. A guard with no field emits `{{#if}}` on nothing — present, and empty. |
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |
@@ -421,7 +467,14 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `{{#get}}` + `error.hbs` or `private.hbs` | R-7. An error page that queries the database compounds the outage. |
 | a hand-written `quickControls[]` | FR-G3. It is recovered from the design's own control list; two authored copies drift. |
 | an `id` in `design.json` | identity is the directory path. A second source can disagree with it. |
-| an inline `style` beyond one custom property | AD-3's carve-out is exactly one declaration wide, and the boundary is machine-checkable. |
+| an inline `style` beyond one custom property, or one whose value is not a pack token | AD-3's carve-out is exactly one declaration wide, and the boundary is machine-checkable. A static value is `var(--…)`: §7.3 allows no hex outside the Style Pack, and the bound form is `data-bind-style`. |
+| a `data-repeat-limit` on a declared query, a query nothing references, a key that is a source name | one number in one place; a dead query is a misspelt repeat; `posts` as a key is ambiguous with the context path. |
+| a `data-empty` on a token-template binding | the guard is the first entry's field, and a template has none. |
+| a directive twice on one element · `data-repeat-limit` / `data-partial` with no `data-repeat` · `data-if` with `data-else` on one element · empty markup | a browser keeps the first duplicate silently; an orphan modifier is silently ignored; the two arms are siblings; a source with no root is nothing. |
+| a `data-items` on a non-array prop, a `data-prop` on an array or image prop | the compiler would bake an array as text or repeat over a string. |
+| a control disabled by itself, or by a value the other control does not have | the greyed-with-reason state could never fire (R-33). |
+| a mark outside `strong · em · u · a`, tokens on a `url`/`image` prop, an `x[].y` with no `x` array, a `url` default that fails the scheme rule | AD-4's four marks; only text is substituted into; an item needs its array; an author's default is not user input. |
+| a duplicated `bindingContext`/`compileTarget` value, a `minVersion` that is not a version, `helpers` that is not a list | sets are sets; FR-C5's watch compares a version and a helper list. |
 | a root control attribute absent from `controlSchema`, **or** a declared control absent from the root | AD-3. The stylesheet must never select on an attribute the design does not own, and a control nothing carries is a sidebar writing into the void. |
 | a universal control redeclared per design | R-23. Narrowing a universal's values is legal with a stated reason; renaming, inventing and `Inherit` are not. |
 | a control with no values, or a default outside them | every control is closed-valued — that is what makes the data-attribute selector viable at all. |
@@ -441,6 +494,10 @@ parse and belong to Story 4.2, which brings one for the emitters:
 3. a media guard that does not enclose its `srcset`,
 4. a bare `{{ … }}` written into authored markup where `data-helper` belongs — section source is
    annotated HTML, **not** Handlebars, and today only review catches an author who forgets it.
+
+One more belongs to Story 4.6, not 4.2: a `data-repeat` over a **context path that does not exist**
+(`post.tagz`) is lexically a path and needs the binding matrix to refuse. Until then only the
+declared-query direction is checked — every declared key must be referenced.
 
 The ceiling is written down rather than left to be rediscovered; a `ponytail:` comment at the head of
 `validate.ts` names it and the upgrade path.

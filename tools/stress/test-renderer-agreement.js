@@ -18,6 +18,7 @@
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
 const { renderCanvas, renderSection, UserText } = require('./compile.js');
+const { CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE } = require('../../packages/library/src/vocabulary.ts');
 
 let n = 0;
 const ok = (label) => { n++; console.log('  ok  ' + label); };
@@ -116,8 +117,9 @@ agree('a Ghost-bound repeat agrees, structure for structure', feedSrc, {}, onePo
 {
   const { canvas, theme } = bothWays(feedSrc, {}, onePost);
   for (const [name, html] of [['canvas', canvas], ['theme', theme]]) {
-    for (const d of ['data-repeat', 'data-repeat-limit', 'data-bind', 'data-bind-attr',
-                     'data-prop', 'data-prop-attr', 'data-partial', 'data-empty', 'data-module']) {
+    // Derived from the library, never a hand list (review 1 found nine names here).
+    assert(!CONSUMED_DIRECTIVE_RE.test(html), `${name} leaked a directive: ${html}`);
+    for (const d of CONSUMED_DIRECTIVES) {
       assert(!new RegExp(`\\b${d}=`).test(html), `${name} leaked the directive ${d}: ${html}`);
     }
   }
@@ -167,6 +169,21 @@ agree('a Ghost-bound repeat agrees, structure for structure', feedSrc, {}, onePo
   const { theme } = bothWays(src, {}, { title: 'x', feature_image: 'y' });
   assert(/\{\{#if feature_image\}\}/.test(theme), 'theme guard is not on the bound field: ' + theme);
   ok('FR-H8 — an empty media binding hides the element on both, by each emitter\'s own mechanism');
+}
+
+// ── The list form of data-bind-attr (Story 4.1): every entry lands on both emitters, and the guard
+//    is the FIRST entry's field. Review 1 found this branch ran under no test on either side. ──
+{
+  const src = `<section class="c"><a class="l" data-bind-attr="href:url;title:custom_excerpt" data-empty="hide">x</a></section>`;
+  const { canvas, theme } = agree('data-bind-attr list form — both entries land on both emitters',
+    src, {}, { url: 'https://s.example/1', custom_excerpt: 'An excerpt' });
+  assert(/href="https:\/\/s\.example\/1"/.test(canvas) && /title="An excerpt"/.test(canvas), 'canvas missed an entry: ' + canvas);
+  assert(/\{\{#if url\}\}/.test(theme) && !/\{\{#if custom_excerpt\}\}/.test(theme), 'guard is not on the FIRST entry: ' + theme);
+  const later = bothWays(src, {}, { url: 'https://s.example/1' }).canvas;   // second entry null
+  assert(/<a/.test(later) && /href=/.test(later), 'a null LATER entry must not remove the element or drop the first: ' + later);
+  const first = bothWays(src, {}, { custom_excerpt: 'x' }).canvas;          // first entry null
+  assert(!/<a/.test(first), 'a null FIRST entry with hide must remove the element: ' + first);
+  ok('data-bind-attr list form — the guard is the first entry\'s field, and a later null sets nothing');
 }
 
 console.log(`\n${n} checks passed — the two emitters agree.`);
