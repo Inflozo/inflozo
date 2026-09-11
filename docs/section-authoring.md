@@ -382,7 +382,7 @@ restriction is checked when the design is validated, not when it renders.
 ```html
 <nav class="pager" aria-label="Pagination">
   <a class="pager__prev" data-pagination="prev" href="#">Newer</a>
-  <ol class="pager__numbers" data-pagination="numbers"></ol>
+  <span class="pager__numbers" data-pagination="numbers">1 / 1</span>
   <a class="pager__next" data-pagination="next" href="#">Older</a>
 </nav>
 ```

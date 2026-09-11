@@ -2716,18 +2716,21 @@ reason: no design in the reference set or the 70-section fixture preserves white
   observe it
 
 
-### DW-97: `data-pagination="numbers"` emits a page indicator, and the doc's own example draws a list of links
+### DW-97: `data-pagination="numbers"` emits a page indicator, and a row of clickable page numbers is a mechanism no story owns
 
 plain: A section can show "page 2 of 3" but not a row of clickable page numbers — 1 2 3 — because
-  Ghost does not tell a theme how to draw one. The authoring guide's example shows an empty list
-  waiting for numbers, so the two do not agree and somebody has to decide which is right.
+  Ghost does not tell a theme how to draw one. Somebody has to decide whether Inflozo should ever
+  offer the clickable row, since building it means counting something Ghost does not hand us.
 status: open
 severity: low
 origin: Story 4.3 (2026-09-11) — the directive came off the refused list and had to emit something.
-  `docs/section-authoring.md` § 3's example is `<ol class="pager__numbers" data-pagination="numbers"></ol>`,
-  which reads as a list of numbered page links, and Ghost's pagination context carries only `page`
+  `docs/section-authoring.md` § 3's example WAS `<ol class="pager__numbers" data-pagination="numbers"></ol>`,
+  which reads as a list of numbered page links, while Ghost's pagination context carries only `page`
   and `pages` with no way to loop a range in Handlebars. A list of links would therefore have to be
   an Inflozo partial counting something Ghost does not expose, which is a mechanism no story owns.
+  **The example was corrected to the indicator form in the same story** (`<span … >1 / 1</span>`), so
+  the guide no longer contradicts what ships and the only thing still open is the product question
+  below — the contradiction is closed, the decision is not.
 owner: the owner — the question is plain English and has an example, so it belongs under
   `## Questions for the owner` in the first story that authors a design carrying pagination
   (Story 4.10's paginated-feed pilot is the first that can). Until then the indicator ships and the

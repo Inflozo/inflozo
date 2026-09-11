@@ -340,15 +340,51 @@ printed. No post was created, no post edited, no setting touched.
   and the emitted theme: **absent**. No 26-hex string appears in any fixture; the recorder keeps the
   key's shape and the shim emits an inert placeholder whose length differs from a key's.
 - **Mutation run, because a contract test that would pass against a broken shim is not a control.**
-  Fourteen deliberate defects were introduced one at a time and every one was caught: the sized-URL
-  segment, the default date format, the member bracket, the reading-time floor, the excerpt word
-  count, the external-URL pass-through, the Ghost URL narrowing, the `{{#get}}` render-context
-  refusal, the key placeholder, the nav slug, `page_url`'s first page, the srcset candidate list (two
-  ways), and `bindValue`'s `img_url` pass-through. The last one is why
-  `agreement.test.ts` now asserts the sized URL as a **value**: every structural check in that file
-  passed with the pass-through defect in place.
+  Each of these was introduced alone and caught: the sized-URL segment, the default date format, the
+  member bracket, the reading-time floor, the excerpt word count, the external-URL pass-through, the
+  Ghost URL narrowing, the `{{#get}}` render-context refusal, the key placeholder, the nav slug,
+  `page_url`'s first page, the srcset candidate list (two ways), and `bindValue`'s `img_url`
+  pass-through. The last one is why `agreement.test.ts` now asserts the sized URL as a **value**:
+  every structural check in that file passed with the pass-through defect in place. The list is the
+  record; no total is written down, because a count restated is a count that goes stale
+  (standing rule 4) and the defects above are the thing that was actually run.
+
+**Independently re-verified before the Dev phase closed, by a second pass that did not write the
+code.** The claims above that a reader would otherwise have to take on trust were re-executed:
+
+- **Offline is a control, not a reading.** The 26 contract tests were run inside a network namespace
+  with no interfaces (`unshare -rn`): 26 pass, 0 fail. NFR-6(c2)'s "no network" therefore holds
+  against a kernel that would refuse a socket, not against an inspection of the imports.
+- **The absent-recording failure was provoked.** With a recording file removed the suite fails rather
+  than shrinking; and because `fixtures/index.ts` is generated from what is on disk
+  (`record-shim.py` `:361-365`), a genuinely missing recording drops its import and `recording()`
+  throws naming the helper and `python3 tools/probe/record-shim.py` — which the suite's own control
+  test asserts for a missing template, a missing value and a missing input.
+- **The restore was checked against the live boxes, not against the recorder's own log.** A read-only
+  `GET themes/` on each (staff token by variable name, `GHOST6_STAFF_ACCESS_TOKEN` /
+  `GHOST5_STAFF_ACCESS_TOKEN` — themes are refused to an integration key) reports **`casper` active
+  on both**, with `inflozo-probe-shim` installed and inactive beside the earlier stories' probe
+  themes. R-82 satisfied by control.
+- **A sample of the mutation run was reproduced from scratch**: `w750` → `750w` in the sized-URL
+  segment (caught by three tests), the reading-time floor `1` → `0` (caught), and the Ghost URL
+  narrowing removed so `mailto:`/`tel:` pass through (caught). `src/index.ts` was restored byte-identical
+  and the suite re-run green after each.
+- **One rule-1 gap was found and closed by a source read.** `withCommas` is applied above 50 for both
+  majors, but neither recording reaches four digits — both boxes sat at 57, which brackets to `50+`
+  and carries no comma — and MEASUREMENTS §15f executed only 45 and 57. `'1,200+'` was therefore an
+  unexecuted claim about Ghost inside the story whose premise is cite-or-execute. Settled by **reading
+  `core/frontend/utils/member-count.js` at both target tags**: `v5.130.6` (T3) and `v6.58.0` (T1) both
+  insert the separator above 50 via Ghost's own `numberWithCommas()` → `toLocaleString()`, v5 returns
+  the raw number at ≤ 50 where v6 comma-formats, and v6's total includes `gift` where v5's does not —
+  each of which the shim already did. The behaviour was right; only the citation was missing, and it
+  now sits beside the code (standing rule 3). The same read strengthens the above-100,000 refusal: the
+  two majors do not agree there either, so a single shape would be wrong on one of them.
 
 **Open, and tracked rather than decided:** `data-pagination="numbers"` emits the page indicator and
 not a list of numbered page links, because Ghost's pagination context carries only `page` and `pages`
-and Handlebars cannot loop a range. `docs/section-authoring.md`'s own example draws a list, so the two
-disagree — **DW-97**, for the owner, in the first story that authors a paginated design.
+and Handlebars cannot loop a range. The authoring guide's example was an empty `<ol>`, which read as a
+list of links and contradicted what ships; **the example was corrected to the indicator form in this
+story**, so the guide and the runtime now agree. What stays open is only the product question — should
+Inflozo ever offer a clickable row of page numbers, given it would mean counting something Ghost does
+not expose — **DW-97**, for the owner, in the first story that authors a paginated design (4.10 is the
+first that can). Nothing ships differently from what the guide says in the meantime.

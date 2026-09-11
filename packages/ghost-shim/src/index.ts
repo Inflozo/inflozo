@@ -243,6 +243,14 @@ export function contentApiUrl(siteUrl: unknown): string {
   return s === '' ? '' : `${s}/ghost/api/content/`
 }
 
+// The thousands separator above 50 is Ghost's own `numberWithCommas()`, which is `toLocaleString()`.
+// READ IN SOURCE at both target versions on 2026-09-11 — `core/frontend/utils/member-count.js` at
+// tags `v5.130.6` (T3) and `v6.58.0` (T1) — because neither recording reaches four digits: both
+// boxes sat at 57, which brackets to `50+` and so carries no comma, and MEASUREMENTS §15f executed
+// only 45 and 57. Without that read, `1,200+` would have been this story's own rule-1 violation:
+// an unexecuted claim about Ghost, in the story whose premise is cite-or-execute. `String(n)` with
+// a regex rather than `toLocaleString()` because AD-1 bans every locale-sensitive read; the two
+// agree for an integer under the `en` default, which is the only case that reaches here.
 const withCommas = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
 /** `{{total_members}}` and `{{total_paid_members}}`, ALWAYS as a string (FR-H5).
@@ -259,8 +267,11 @@ const withCommas = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d)
  *  caller passes the count its own connected site reported, which is why that half needs no branch
  *  here.
  *
- *  Above 100,000 MEASUREMENTS records only "`humanNumber` lowercased" and no execution, so this
- *  REFUSES rather than guessing a shape (standing rule 1: cite or execute, never assert). */
+ *  Above 100,000 this REFUSES rather than guessing a shape (standing rule 1). MEASUREMENTS records
+ *  only "`humanNumber` lowercased" and no execution, and the same source read as `withCommas` above
+ *  shows the two majors do not even agree there — Ghost 5 humanises the bracket, Ghost 6 rounds to
+ *  the nearest 10,000 first — so a single shape would be wrong on one of them. A site that big is
+ *  not a case this project has ever had; capture it before relying on it. */
 export function totalMembers(count: unknown, major: '5' | '6'): string {
   const n = Math.max(0, Math.floor(Number(count) || 0))
   if (n <= 50) return major === '6' ? withCommas(n) : String(n)
