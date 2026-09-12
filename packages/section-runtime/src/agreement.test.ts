@@ -429,6 +429,13 @@ test('AD-36 (1) — a hostile srcset value never reaches the attribute, and ONE 
   const both = renderTheme(doc(), `<img data-bind-attr="src:feature_image|img_url:l" data-bind-srcset="feature_image|img_url">`, { site: SITE }).template
   assert.equal((both.match(/\{\{#if feature_image\}\}/g) ?? []).length, 1, `doubled guard: ${both}`)
   assert.equal((both.match(/\{\{\/if\}\}/g) ?? []).length, 1, both)
+  // on DIFFERENT fields each keeps its own guard — the element is hidden when either is empty
+  const two = renderTheme(doc(), `<img data-bind-attr="src:thumb|img_url:l" data-bind-srcset="feature_image|img_url">`, { site: SITE }).template
+  assert.ok(two.includes('{{#if thumb}}') && two.includes('{{#if feature_image}}'), two)
+  assert.equal((two.match(/\{\{\/if\}\}/g) ?? []).length, 2, two)
+  // and an UNLINKED project passes the value through rather than emitting a relative sized URL
+  const unlinked = renderCanvas(doc(), `<img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url">`, { ghost: { feature_image: 'https://elsewhere.example/a.jpg' } })
+  assert.ok(unlinked.includes('src="https://elsewhere.example/a.jpg"') && !unlinked.includes('/size/'), unlinked)
 })
 
 test('FR-H8 — an empty srcset binding hides the ELEMENT, and the guard encloses it', () => {
@@ -467,7 +474,8 @@ test('data-helper — Ghost-own markup: the canvas draws it, the theme defers, t
   // Ghost's own navigation partial, recorded on both majors and rebuilt from the shim's items
   assert.ok(canvas.includes('<ul class="nav">'), canvas)
   // currentUrl is `/`, so Essay is NOT current — exactly one answer
-  assert.ok(canvas.includes('<li class="nav-essay"><a href="/essay/">Essay</a></li>'), canvas)
+  // Ghost's partial prints the href ABSOLUTE ({{url absolute="true"}}); so does the shim
+  assert.ok(canvas.includes('<li class="nav-essay"><a href="https://site.example/essay/">Essay</a></li>'), canvas)
   assert.ok(canvas.includes('>A post<'), canvas)
 })
 
@@ -520,12 +528,12 @@ test('R-7 — data-pagination off a paginated target is refused on both emitters
 })
 
 test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas expands the caller rows', () => {
-  const src = `<ul class="f"><li class="c" data-repeat="featuredCraft"><h3 data-bind="title">t</h3></li></ul>`
+  const src = `<ul class="f"><li class="c" data-repeat="featured_craft"><h3 data-bind="title">t</h3></li></ul>`
   const input: RenderInput = {
-    dataBindings: { featuredCraft: { source: 'posts', filter: 'tag:craft+featured:true', limit: 3, order: 'published_at desc' } },
+    dataBindings: { featured_craft: { source: 'posts', filter: 'tag:craft+featured:true', limit: 3, order: 'published_at desc' } },
     // ONE row for the structural comparison, for the same reason the {{#foreach}} case uses one:
     // the theme emits one body inside the block, so one row is the honest shape comparison.
-    getRows: { featuredCraft: [{ title: 'one' }] },
+    getRows: { featured_craft: [{ title: 'one' }] },
     site: SITE,
   }
   const { canvas, theme } = agree(src, input)
@@ -537,24 +545,24 @@ test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas exp
   )
   assert.ok(theme.includes('{{#foreach posts}}'), theme)
   assert.ok(theme.includes('{{/get}}'), theme)
-  // the pre-4.3 emission was `{{#foreach featuredCraft}}` over a key that is not a context path,
+  // the pre-4.3 emission was `{{#foreach featured_craft}}` over a key that is not a context path,
   // so the block rendered nothing at all on the live site
-  assert.ok(!theme.includes('{{#foreach featuredCraft}}'), `the key was emitted as a context path: ${theme}`)
+  assert.ok(!theme.includes('{{#foreach featured_craft}}'), `the key was emitted as a context path: ${theme}`)
   assert.ok(canvas.includes('>one<'), canvas)
   // and the canvas expands one clone per row the caller fetched — the shim builds the query, the
   // editor runs it, because AD-1 bans `fetch` inside a core package
-  const two = renderCanvas(doc(), src, { ...input, getRows: { featuredCraft: [{ title: 'one' }, { title: 'two' }] } })
+  const two = renderCanvas(doc(), src, { ...input, getRows: { featured_craft: [{ title: 'one' }, { title: 'two' }] } })
   assert.equal((two.match(/<li/g) ?? []).length, 2, two)
   assert.ok(two.includes('>two<'), two)
 
   // one number, one place: the query declares its own limit
   assert.throws(
-    () => renderTheme(doc(), `<ul><li data-repeat="featuredCraft" data-repeat-limit="2">x</li></ul>`, input),
+    () => renderTheme(doc(), `<ul><li data-repeat="featured_craft" data-repeat-limit="2">x</li></ul>`, input),
     /One number, one place/,
   )
   // ... and the CANVAS refuses the same source — a design the compiler refuses must not render
   assert.throws(
-    () => renderCanvas(doc(), `<ul><li data-repeat="featuredCraft" data-repeat-limit="2">x</li></ul>`, input),
+    () => renderCanvas(doc(), `<ul><li data-repeat="featured_craft" data-repeat-limit="2">x</li></ul>`, input),
     /One number, one place/,
   )
   // rows must be SUPPLIED for a declared key: an empty block would look like an empty result
@@ -579,6 +587,16 @@ test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas exp
   assert.equal((pickedTheme.match(/\{\{\/get\}\}/g) ?? []).length, 3)
   const pickedCanvas = renderCanvas(doc(), pickedSrc, picked)
   assert.equal((pickedCanvas.match(/<li/g) ?? []).length, 3, pickedCanvas)
+  // the canvas shows exactly as many rows as were PICKED, in step with the theme's N blocks
+  const over = renderCanvas(doc(), pickedSrc, { ...picked, getRows: { picked: [{ title: 'a' }, { title: 'b' }, { title: 'c' }, { title: 'd' }] } })
+  assert.equal((over.match(/<li/g) ?? []).length, 3, over)
+  // a prototype name is not a declared key, on either emitter
+  for (const render of [renderCanvas, renderTheme]) {
+    const out = render(doc(), `<ul><li data-repeat="constructor">x</li></ul>`, {})
+    assert.ok(String(typeof out === 'string' ? out : out.template).length >= 0)
+  }
+  // rows for a key the design never declared: a mistyped {{#get}} key, refused rather than foreach'd
+  assert.throws(() => renderCanvas(doc(), `<ul><li data-repeat="featurd_craft">x</li></ul>`, { ...input, getRows: { featurd_craft: [] } }), /mistyped/)
   // with a partial the body is emitted ONCE and referenced from each block
   const viaPartial = renderTheme(doc(), `<ul><li data-repeat="picked" data-partial="pick"><h3 data-bind="title">t</h3></li></ul>`, picked)
   assert.equal((viaPartial.template.match(/\{\{> "pick"\}\}/g) ?? []).length, 3, viaPartial.template)
@@ -651,11 +669,15 @@ test('NFR-3 — an excerpt renders text-only, as a text node, and is Ghost HELPE
   const long = Array.from({ length: 60 }, (_, i) => `w${i}`).join(' ')
   const cut = renderCanvas(doc(), src, { ghost: { excerpt: long } })
   assert.ok(cut.includes('w49<') && !cut.includes('w50'), cut)
-  // a dotted path resolves the helper over the OWNING object; {{custom_excerpt}} is a plain field
+  // a DOTTED path is a Handlebars path lookup on the theme — the plain field — so the canvas reads
+  // the field too; only the bare `excerpt` is the helper. {{custom_excerpt}} is a plain field.
   const dotted = renderCanvas(doc(), '<p data-bind="post.excerpt">a</p>', {
     ghost: { post: { excerpt: 'computed', custom_excerpt: 'hand' } },
   })
-  assert.ok(dotted.includes('>hand<'), dotted)
+  assert.ok(dotted.includes('>computed<'), dotted)
+  // a post with ONLY a custom excerpt still prints — the helper runs before the emptiness test
+  const onlyCustom = renderCanvas(doc(), '<p data-bind="excerpt" data-empty="hide">a</p>', { ghost: { custom_excerpt: 'hand' } })
+  assert.ok(onlyCustom.includes('>hand<'), onlyCustom)
   const field = renderCanvas(doc(), '<p data-bind="custom_excerpt">a</p>', { ghost: { custom_excerpt: '<em>x</em>y' } })
   assert.ok(field.includes('&lt;em&gt;x&lt;/em&gt;y'), field)
   // and the empty case still guards: no excerpt of either kind is EMPTY

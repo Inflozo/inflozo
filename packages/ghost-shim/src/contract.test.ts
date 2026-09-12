@@ -246,6 +246,14 @@ test('{{img_url}} — a relative /content/images/ path is sized the same way', (
   })
 })
 
+test('{{img_url}} — an UNLINKED project cannot size: the value passes through unchanged', () => {
+  // no siteUrl means no origin to resolve a sized URL against; a relative sized URL would 404 on
+  // Inflozo's own origin, so the shim returns what it was given (and srcset repeats it per key)
+  const relative = '/content/images/2026/01/relative-probe.jpg'
+  for (const key of Object.keys(IMAGE_SIZES)) assert.equal(imgUrl(relative, key), relative)
+  assert.ok(srcsetCandidates(relative).every((c) => c.url === relative))
+})
+
 test('{{img_url}} — an image Ghost does not host comes back VERBATIM, at every size', () => {
   // The recording, not a guess: Ghost has no rendition for a file it does not serve, so it returns
   // the URL untouched. The shim reproduces that and does not invent a `/size/` segment for it — a
@@ -360,7 +368,8 @@ test('{{reading_time}} floors at one minute, the way Ghost does', () => {
 test('{{excerpt}} — Ghost own fallback, with words= and characters= as recorded', () => {
   assertBoth('{{excerpt}}', (major) => {
     const post = input<{ excerpt: string; custom_excerpt: string | null }>(major, 'post', 'post', '{{excerpt}}')
-    // the recorded post has NO custom excerpt, so what the recording proves is the computed half;
+    // the recorded post has NO custom excerpt (a third of the seed does, none with markup), so what
+    // the recording proves is the computed half;
     // the recorded excerpt is shorter than the 50-word default, which is why the default is
     // observable only as "not truncated" here (read in source: meta/generate-excerpt.js)
     assert.equal(post.custom_excerpt, null, 'the recorded post grew a custom excerpt — re-read this test')
@@ -460,6 +469,9 @@ test('{{total_members}} — the recorded count produces the recorded string, on 
   assert.equal(bareHelper('total_members'), totalMembers(SAMPLE_MEMBERS.total, '6'))
   assert.match(bareHelper('total_members'), /\+$/)
   assert.equal(bareHelper('total_paid_members'), totalMembers(SAMPLE_MEMBERS.paid, '6'))
+  // LINKED is "a site", and a linked site with no count refuses rather than posing as the sample
+  assert.throws(() => bareHelper('total_members', { siteUrl: 'https://s.example' }), /needs members.total/)
+  assert.equal(bareHelper('total_members', { siteUrl: 'https://s.example', members: { total: 57 }, major: '5' }), '50+')
 })
 
 test('{{content_api_key}} renders an inert placeholder and the key is absent from the output', () => {
@@ -507,13 +519,15 @@ test('{{navigation}} rebuilds Ghost own markup from the recorded items', () => {
     // Ghost marks the item whose url IS the page being rendered, which is why the shim takes the
     // current URL rather than trusting the item's own `current` field — `@site.navigation` carries
     // it empty (recorded), and Ghost's own partial computes it.
-    const items = navigationItems(lines, { currentUrl: rec.path })
+    // the shim absolutises a site-relative item as Ghost's partial does — the href is compared byte
+    // for byte below, not re-absolutised by this test
+    const items = navigationItems(lines, { currentUrl: rec.path, siteUrl: rec.site })
     // Ghost's own navigation partial, reproduced from the shim's items. The shim returns DATA and
     // never a node, because NFR-3 puts every Ghost value in a text node and a function with no DOM
     // cannot break that rule by accident.
     const site = rec.site
     const built = `<ul class="nav">\n${items
-      .map((i) => `    <li class="${i.className}"><a href="${i.url.startsWith('/') ? site + i.url : i.url}">${i.label}</a></li>`)
+      .map((i) => `    <li class="${i.className}"><a href="${i.url}">${i.label}</a></li>`)
       .join('\n')}\n</ul>\n`
     assert.equal(built, nav, 'the navigation markup drifted from Ghost')
   })
@@ -569,13 +583,13 @@ test('{{#match}}, {{#is}} and {{#if @member}} agree with the recorded arms', () 
 
 test('{{#get}} builds the Content API query from the DECLARATION, and the recording proves it ran', () => {
   const bindings: Record<string, DataBinding> = {
-    featuredCraft: { source: 'posts', filter: 'tag:craft+featured:true', limit: 3, order: 'published_at desc' },
+    featured_craft: { source: 'posts', filter: 'tag:craft+featured:true', limit: 3, order: 'published_at desc' },
     picked: { source: 'posts', ids: ['aaa', 'bbb'] },
   }
   assertBoth('{{#get}}', (major) => {
     const filter = recorded(major, 'index', 'GET', 'filter', '{{#get}}')
     const rows = recorded(major, 'index', 'GET', 'craft_featured', '{{#get}}')
-    const declared = bindings['featuredCraft'] as DataBinding
+    const declared = bindings['featured_craft'] as DataBinding
     assert.equal(declared.filter, filter, 'the declaration and the recorded filter differ')
     assert.ok(rows !== 'BLOCK_DID_NOT_RUN', 'the recorded {{#get}} returned nothing — the fixture proves nothing')
     const slugs = rows.split(',').filter((s) => s !== '')
@@ -583,13 +597,13 @@ test('{{#get}} builds the Content API query from the DECLARATION, and the record
       slugs.length <= (declared.limit as number),
       `Ghost returned ${slugs.length} rows for limit="${declared.limit}"`,
     )
-    const [q] = getQuery('featuredCraft', bindings)
+    const [q] = getQuery('featured_craft', bindings)
     assert.deepEqual(q, {
       resource: 'posts',
       params: { filter: filter, limit: '3', order: 'published_at desc' },
     })
     assert.deepEqual(
-      getExprs('featuredCraft', bindings),
+      getExprs('featured_craft', bindings),
       [`{{#get "posts" filter="${filter}" limit="3" order="published_at desc"}}`],
     )
   })
@@ -599,10 +613,17 @@ test('{{#get}} builds the Content API query from the DECLARATION, and the record
     '{{#get "posts" filter="id:aaa" limit="1"}}',
     '{{#get "posts" filter="id:bbb" limit="1"}}',
   ])
-  assert.throws(() => getExprs('none', { none: { source: 'posts', ids: [] } }), /at least one id/)
+  // the LIBRARY's declaration grammar runs at emission too — one copy, called twice
+  assert.throws(() => getExprs('none', { none: { source: 'posts', ids: [] } }), /bad-get-ids/)
+  assert.throws(() => getExprs('sp', { sp: { source: 'posts', ids: ['a b'] } }), /bad-get-ids/)
+  assert.throws(() => getExprs('both', { both: { source: 'posts', ids: ['a'], limit: 2 } }), /bad-get-ids/)
+  assert.throws(() => getExprs('big', { big: { source: 'posts', limit: 500 } }), /bad-get-limit/)
+  assert.throws(() => getExprs('camelKey', { camelKey: { source: 'posts' } }), /bad-get-key/)
+  assert.throws(() => getExprs('o', { o: { source: 'posts', order: '@x' } }), /TEMPLATE-level context only/)
+  assert.throws(() => getExprs('bs', { bs: { source: 'posts', filter: 'tag:x\\' } }), /quote, a backslash or a line break/)
   // AD-36 (2) at EMISSION: a value that would close the expression is refused, validator or not
-  assert.throws(() => getExprs('q', { q: { source: 'posts', filter: 'tag:x" }}<script>' } }), /quote or a line break/)
-  assert.throws(() => getExprs('q', { q: { source: 'posts', order: 'slug asc\n' } }), /quote or a line break/)
+  assert.throws(() => getExprs('q', { q: { source: 'posts', filter: 'tag:x" }}<script>' } }), /quote, a backslash or a line break/)
+  assert.throws(() => getExprs('q', { q: { source: 'posts', order: 'slug asc\n' } }), /quote, a backslash or a line break/)
   // a literal that merely CONTAINS "this" is a legitimate NQL value
   assert.equal(getExprs('w', { w: { source: 'posts', filter: 'tag:this-week' } })[0], '{{#get "posts" filter="tag:this-week"}}')
   // an undeclared key, and a filter reaching for the current row
@@ -653,6 +674,7 @@ test('AD-36 / DW-95 — a Ghost colour that is not a colour falls back, and a re
     'red;}body{display:none',
     '#fff;background:url(x)',
     '#fff;width:100vw',
+    '#f00;/* c */color:red',
     'red',
   ]) {
     assert.equal(ghostColor(hostile), 'var(--accent)', `${hostile} was not neutralised`)
@@ -676,6 +698,7 @@ test('{{t}} prints the key when the catalog has no entry, as Ghost does, and fil
   })
   assert.equal(t('pager.older', { n: 3 }, { 'pager.older': '{n} older posts' }), '3 older posts')
   assert.equal(t('pager.older', {}, { 'pager.older': '{n} older posts' }), '{n} older posts', 'an unfilled placeholder stays VISIBLE')
+  assert.equal(t('constructor'), 'constructor', 'a prototype name is a key like any other')
 })
 
 // ─── the bare helpers ─────────────────────────────────────────────────────────
@@ -700,7 +723,7 @@ test('data-helper="total_members" reads the recorded count through the bracket f
   assertBoth('{{total_members}} via data-helper', (major) => {
     const members = input<{ total: number }>(major, 'index', 'members', '{{total_members}}')
     assert.equal(
-      bareHelper('total_members', { members, major }),
+      bareHelper('total_members', { members, major, siteUrl: recording(major, 'index', '{{total_members}}').site }),
       recorded(major, 'index', 'CORE', 'total_members', '{{total_members}}'),
     )
   })

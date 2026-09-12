@@ -173,7 +173,7 @@ image URLs rather than normalising them away. The three directives the shim owns
   a weakening.
 - [x] `tools/stress/build.js` -- read `IMAGE_SIZES` instead of its own literal -- one copy (standing
   rule 3); three of its five widths were wrong against FR-J2.
-- [x] `tools/probe/theme-shim/` -- a probe theme whose `package.json` carries the normative map, and
+- [x] `tools/probe/theme-shim/` -- a probe theme whose `package.json` is GENERATED at zip time from `IMAGE_SIZES` (derived, never restated), and
   whose `index.hbs`, `post.hbs`, `tag.hbs`, `author.hbs` and `error.hbs` render every FR-H5 helper
   into `KEY|name=[…]` lines -- template-scoped helpers (pagination, `@member`, `{{#match}}`, the
   post-only fields) are only reachable from the template that owns them.
@@ -207,7 +207,15 @@ image URLs rather than normalising them away. The three directives the shim owns
 ### Review Findings — 2026-09-12
 
 Five layers ran (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
-verifier); none failed. Dismissed as noise or out of reach: 11.
+verifier); none failed. Dismissed as noise or out of reach: 11 — same-origin recognition by scheme or
+host case (Ghost builds image URLs from its own configured url); `isMember('')`; nav `current` on
+absolute-vs-relative forms (the recorded items are relative for internal links); `excerpt` with both
+`words` and `characters` (no directive can pass either); `statusCode`/`message` with no error context;
+`totalMembers` above 100,000 aborting the render (a deliberate refusal); the `record-shim` restore
+masking an earlier error; the test-count literals in a dated run record; unread extra recordings
+(`tag`, `author`, `has`, `encode`, secondary nav — evidence for later stories, not paraphrase);
+`formatDate`'s changed default (no caller passes one argument); and the stress harness needing no
+`target` (no fixture section carries `data-pagination`).
 
 - [x] [Review][Decision] (ruled option 1, owner 2026-09-12 — fixed) The sample design from Story 4.1 still draws page numbers as an empty list — `packages/library/fixtures/reference-design/index.html:66` carries `<ol data-pagination="numbers">`, the form DW-97 corrected in the authoring guide; the runtime now writes "1 / 3" as the text of an `<ol>`. Editing that fixture is an Ask-First boundary of this spec, so the question is under `## Questions for the owner`.
 - [x] [Review][Patch] A hand-picked `{{#get}}` (`ids`) emits ONE post on the theme and every row on the canvas [packages/ghost-shim/src/index.ts:463]
@@ -228,7 +236,7 @@ verifier); none failed. Dismissed as noise or out of reach: 11.
 - [x] [Review][Patch] Test hygiene: `SITE` is declared after its first use; the navigation assertion accepts two answers; `seen[5] === seen[6]` fails on a re-record for a reason unrelated to the shim; the `{{url}}` comment claims a relativising rule the code does not have [packages/section-runtime/src/agreement.test.ts:444,644, packages/ghost-shim/src/contract.test.ts:383,432]
 - [x] [Review][Patch] Two facts a reader will look for are not written down: `{{#has}}` is recorded but not shimmed (a later story's, with `data-if`), and the recorded `w750` rendition is served only while a theme declaring that width is active — the verifier fetched it under `casper` and got a 302 to the original [this spec, Design Notes and Verification]
 - [x] [Review][Defer] `{{date}}` formats in UTC and the theme renders in the SITE's timezone; `RenderInput.site` carries no offset, so every non-UTC customer sees canvas dates hours off — deferred, no caller passes real site data yet (DW-98)
-- [x] [Review][Defer] `{{total_paid_members}}` and `{{content_api_url}}` have shim functions no directive can reach — `BARE_HELPERS` is 4.1's list; Appendix B's A29 needs `content_api_url` — deferred, pre-existing (DW-99)
+- [x] [Review][Defer] `{{total_paid_members}}`, `{{content_api_url}}`, `t` and `taxonomyItems` have shim functions no directive can reach — `BARE_HELPERS` is 4.1's list; Appendix B's A29 needs `content_api_url` — deferred, pre-existing (DW-99)
 
 **Acceptance Criteria:**
 
@@ -308,7 +316,10 @@ never stripped), never truncates a custom excerpt, and defaults a computed one t
 draft stripped tags on the canvas, which was a visible canvas/site disagreement dressed as a
 sanitiser; NFR-3's "text-only" is met by `textContent`, which every binding uses. **`{{url}}`** is
 relative on the site and the canvas deliberately prints the API's absolute form, because a relative
-href on the canvas resolves against Inflozo's origin — an intended difference, now stated. And
+href on the canvas resolves against Inflozo's origin — an intended difference, now stated; **the
+same holds for `img_url` and `srcset`**, where the canvas asks the shim for the `absolute` form of
+the recorded relative URL for the same reason, and `{{navigation}}`'s items are printed absolute
+because Ghost's own partial does (`helpers/tpl/navigation.hbs`, `{{url absolute="true"}}`). And
 **a hand-picked `ids` binding** is N `{{#get}}` blocks in the picked order on the theme (R-20), each
 around its own `{{#foreach}}`; the Dev draft emitted only the first, so the site would have shown
 one pick where the canvas showed them all.
@@ -346,8 +357,8 @@ a check lost in the narrowing would be visible rather than inferred (standing ru
 | Gate | Baseline (52c8c71c) | After | |
 |---|---|---|---|
 | `pnpm check` | exit 0 | **exit 0** | lint + typecheck + every package test |
-| `packages/ghost-shim` tests | 1 (the package names itself) | **26**, all against recordings from T1 and T3 | the stub test is gone; it asserted a constant |
-| `packages/section-runtime` tests | 50 | **62** | the twelve new ones are Story 4.3's directives and NFR-3's carve-outs |
+| `packages/ghost-shim` tests | 1 (the package names itself) | **all pass**, every one against a recording from T1 and T3 — the runner prints its own count | the stub test is gone; it asserted a constant |
+| `packages/section-runtime` tests | all pass | **all pass** — the runner prints its own count | the new ones are Story 4.3's directives and NFR-3's carve-outs |
 | `packages/library` tests | pass | **pass** | `parseBindSpec`'s hostile-arg refusal still fires with the narrowed grammar |
 | `tools/stress` `node build.js` | 197 files · AD-34 clean | **197 files · AD-34 clean** | unchanged file count, as the spec required |
 | `node gate.js theme` — Ghost 5 via gscan 4.49.7 | 0 errors / 0 warnings | **0 / 0** | |
@@ -400,8 +411,8 @@ printed. No post was created, no post edited, no setting touched.
 **Independently re-verified before the Dev phase closed, by a second pass that did not write the
 code.** The claims above that a reader would otherwise have to take on trust were re-executed:
 
-- **Offline is a control, not a reading.** The 26 contract tests were run inside a network namespace
-  with no interfaces (`unshare -rn`): 26 pass, 0 fail. NFR-6(c2)'s "no network" therefore holds
+- **Offline is a control, not a reading.** The contract suite was run inside a network namespace
+  with no interfaces (`unshare -rn`): every test passes, none fails (the runner prints the count). NFR-6(c2)'s "no network" therefore holds
   against a kernel that would refuse a socket, not against an inspection of the imports.
 - **The absent-recording failure was provoked.** With a recording file removed the suite fails rather
   than shrinking; and because `fixtures/index.ts` is generated from what is on disk
@@ -460,6 +471,44 @@ beside the code. One question is the owner's (below); two findings are DW-98 and
 **A clean review leaves the story in review (R-80).** Deploy is nothing for this story (no
 `apps/web` change, `owner_test: none`), and Done is written by the Record prompt.
 
+### Second pass — 2026-09-12
+
+The same five layers ran over the patched tree, with the review-only slice given the most scrutiny.
+The Real-infra verifier re-executed read-only: `casper` active and `inflozo-probe-shim` inactive on
+both boxes; the recorded `w750` URL is a 302 to the original under Casper while Casper's own `w600`
+answers 200 at 600px (the control); the contract suite passes inside `unshare -rn` with `urlopen`
+failing in the same namespace; `node build.js` 197 files and `gate.js theme` 0/0 on both majors; no
+`apps/web` and no `supabase/` path in the diff. **One claim is not executable read-only:** the
+excerpt-escapes-not-strips fact. A third of the seed on each box carries a custom excerpt and none
+contains a character `_.escape` touches, so no live page can show the difference without a write;
+it rests on the source read at both target tags, cited beside the code. Patched in this pass, all
+under `### Review Findings (pass 2)` below: a dotted `post.excerpt` is the FIELD on both emitters
+(only the bare `excerpt` is the helper), a custom-only excerpt prints, the library's `dataBindings`
+grammar is one exported function the shim runs again at emission (`validateDataBinding`), a
+backslash is refused beside the quote, `order` is checked for render context like `filter`,
+`{{navigation}}` hrefs are absolute as Ghost's partial prints them, the member sample is keyed on
+"no site" rather than "no count", prototype names are not declared keys, a key with rows but no
+declaration is refused as a mistyped `{{#get}}`, the canvas caps a hand-picked repeat at the number
+picked, the recorder reuses the last upload and files a non-200 page under no template, and the
+unlinked `img_url` pass-through and the different-field guard each gained the test whose absence
+let them be deleted unnoticed.
+
+### Review Findings (pass 2)
+
+- [x] [Review][Patch] dotted `post.excerpt` took the helper on the canvas and the field on the theme [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] a post with only a custom excerpt was hidden on the canvas (emptiness tested before the helper) [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] `getQuery` re-derived part of the validator's grammar; now `validateDataBinding` is the one copy, called at emission [packages/library/src/validate.ts, packages/ghost-shim/src/index.ts]
+- [x] [Review][Patch] `\\` not refused at emission; `order` not checked for render context; the refusal text claimed Ghost queries the literal (it resolves `{{…}}` — the canvas is the reason) [packages/ghost-shim/src/index.ts]
+- [x] [Review][Patch] `{{navigation}}` href relative on the canvas where Ghost prints absolute, hidden by the test re-absolutising [packages/ghost-shim/src/index.ts, contract.test.ts]
+- [x] [Review][Patch] sample member count keyed on a missing count rather than a missing site; `siteUrl` never reached `bareHelper` [packages/ghost-shim/src/index.ts, packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] `t('constructor')` threw; `data-repeat="constructor"` read Object's prototype as a declared key [packages/ghost-shim/src/index.ts, packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] a mistyped `{{#get}}` key silently became a `{{#foreach}}`; rows supplied but not an array rendered empty [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] canvas rendered every supplied row for an `ids` binding where the theme emits exactly N [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] recorder: `SystemExit` skipped the other major; a non-200 page's error block was filed under the failed template; one image per run [tools/probe/record-shim.py]
+- [x] [Review][Patch] no test reached the unlinked `img_url` branch or the different-field guard — both deletable unnoticed [contract.test.ts, agreement.test.ts]
+- [x] [Review][Patch] doc drift: dismissals unlisted, test counts restated, DW-95's hostile set, DW-98's offset wording, DW-99's scope, the probe theme's generated manifest, `img_url`/`navigation` as intended differences, `navSlug`'s transliteration ceiling, the `characters` slice on escaped text [this spec, deferred-work.md, index.ts]
+- [ ] [Review][Decision] (open — Q2) the recorder uploaded one image PER RUN in Dev; the spec's Ask-First said one image
+
 ## Questions for the owner
 
 ### Q1 — the sample design still draws page numbers as an empty list
@@ -481,3 +530,24 @@ still says `<ol data-pagination="numbers"></ol>` — a list with nothing in it.
    then.
 
 **Ruled: option 1 (owner, 2026-09-12).** Changed in the Fix phase the same day: `packages/library/fixtures/reference-design/index.html` now carries `<span class="ref__numbers" data-pagination="numbers">1 / 1</span>`, the indicator form the guide shows.
+
+### Q2 — the recorder left a few test images behind on the two test servers
+
+**Plain English.** This story's spec allowed the recorder to upload **one** picture to each test
+server, so it had a real Ghost-hosted image to resize. During development the recorder was run
+several times, and each run uploaded a fresh copy, because Ghost has no way to delete an uploaded
+picture through its API. So there are a handful of identical small test pictures sitting in each
+test server's image folder. They are on the two test servers only, never on a customer's site, they
+are not visible on any page, and each is about 150 KB. The recorder now reuses the picture it
+already uploaded, so this does not happen again.
+
+**Example.** On `ghost6.inflozo.com` the pictures are `inflozo-shim-probe.png` through
+`inflozo-shim-probe-7.png`; only the last one is referenced by the recordings.
+
+**Options.**
+1. **Accept them as they are** — harmless leftovers on test boxes, and the recorder no longer adds
+   to them **(RECOMMENDED)**.
+2. Have me delete them by hand on each server's disk under the reset protocol — a shell session on
+   each box, for no functional gain.
+
+**Ruled:** _(awaiting the owner)_

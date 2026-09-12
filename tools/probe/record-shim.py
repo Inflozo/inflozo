@@ -13,10 +13,11 @@ repository, so writing the URL builder from memory and recording afterwards woul
 that agrees with the code because both came from the same guess — standing rule 2's failure exactly.
 
 What it writes to the servers, and nothing else (the story's "Ask First" boundary):
-  * ONE image into the content store, PER RUN — Ghost has no image-delete API, so every re-record
-    leaves the previous upload behind (the fixtures already carry `-5.png` and `-7.png`). Every seeded
-    feature image is an external static.ghost.org URL that no Ghost will ever resize, so nothing
-    already on either box can exercise a rendition.
+  * ONE image into the content store — reused on every later run while it still answers 200, so the
+    boundary holds per story. Earlier runs uploaded one each (Ghost has no image-delete API; the
+    leftovers `-1` … `-7.png` on the two boxes are the record of that, accepted by the owner — see the
+    spec's Q2). Every seeded feature image is an external static.ghost.org URL that no Ghost will
+    ever resize, so nothing already on either box can exercise a rendition.
   * the probe theme, uploaded and activated, with the PREVIOUS theme restored at the end — exactly
     as run-verify-all.py already does.
 It creates no post, edits no post and touches no setting. The uploaded image URL reaches the theme
@@ -241,14 +242,18 @@ def record(g, label):
     sizes = image_sizes()
     print(f'    image_sizes (read from packages/library/src/vocabulary.ts): {sizes}')
 
-    st, res = g.upload_image(make_png(), 'inflozo-shim-probe.png')
-    uploaded = res['images'][0]['url']
-    print(f'    image uploaded HTTP {st} -> {uploaded}')
+    uploaded = previous_upload(g)
+    if uploaded:
+        print(f'    image REUSED from the last recording -> {uploaded}')
+    else:
+        st, res = g.upload_image(make_png(), 'inflozo-shim-probe.png')
+        uploaded = res['images'][0]['url']
+        print(f'    image uploaded HTTP {st} -> {uploaded}')
 
     themes = g.api('GET', 'themes/')['themes']
     previous = next((t['name'] for t in themes if t.get('active')), None)
     if previous is None:
-        raise SystemExit('no active theme reported — refusing to activate the probe with nothing to restore')
+        raise RuntimeError('no active theme reported — refusing to activate the probe with nothing to restore')
     st, res = g.upload_theme(zip_theme(sizes, uploaded))
     name = res['themes'][0]['name']
     print(f'    theme uploaded HTTP {st} -> {name!r} (previous active: {previous!r})')
@@ -300,6 +305,10 @@ def record(g, label):
         for tname, path in targets:
             st, html = g.page(path)
             values, raw = parse(html)
+            # a non-200 on any template but `error` is error.hbs rendered in its place — its probe
+            # block must not be filed under the template that failed
+            if st != 200 and tname != 'error':
+                values = {}
             if not values:
                 print(f'    [{tname}] HTTP {st} {path} — NO PROBE BLOCK (recording NOT written)')
                 stale = os.path.join(FIXTURES, f'ghost{g.major}', f'{tname}.json')
@@ -341,6 +350,18 @@ def record(g, label):
                 'a paraphrase of this file and no helper is implemented before its recording exists.',
         'templates': out,
     }
+
+
+def previous_upload(g):
+    """The image the LAST recording sized, if it still answers — so a re-run uploads nothing and the
+    'one image' boundary holds per story, not per run (Ghost has no image-delete API)."""
+    try:
+        rec = json.load(open(os.path.join(FIXTURES, f'ghost{g.major}', 'index.json')))
+        url = rec['uploaded_image']
+        st, _ = g.page(url[len(g.url):]) if url.startswith(g.url) else (0, '')
+        return url if st == 200 else None
+    except (OSError, KeyError, ValueError):
+        return None
 
 
 def member_counts(g):

@@ -127,7 +127,8 @@ export type RenderInput = {
   /** `design.json`'s `dataBindings` — the `{{#get}}` declarations a `data-repeat` names by key. */
   dataBindings?: Readonly<Record<string, DataBinding>>
   /** the rows the CALLER fetched for each `dataBindings` key. The shim builds the query; the editor
-   *  runs it, because AD-1 bans `fetch` in a core package. */
+   *  runs it, because AD-1 bans `fetch` in a core package. Every declared key MUST have an entry —
+   *  `[]` while the query is in flight — because an absent entry is refused, not rendered empty. */
   getRows?: Readonly<Record<string, readonly unknown[]>>
   /** the compile target this render is for. `data-pagination` requires a paginated one (R-7) — a
    *  `{{pagination}}` outside a paginated context is a FATAL render, not a warning. */
@@ -369,8 +370,15 @@ function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, toke
   el.after(doc.createComment(tokens.put('{{/if}}')))
   guarded.set(el, field)
 }
-/** which field each element is already guarded on, so two directives on one element emit one guard */
+/** which field each element is already guarded on, so two directives on one element — `data-bind`,
+ *  `data-bind-attr`, `data-bind-srcset` or `data-pagination`, any pair — emit ONE guard when they
+ *  guard on the same field, and one each when they do not */
 const guarded = new WeakMap<RuntimeElement, string>()
+
+/** an OWN property or nothing — `dataBindings['constructor']` must not be Object's function */
+function own<T>(o: Readonly<Record<string, T>> | undefined, k: string): T | undefined {
+  return o !== undefined && Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined
+}
 
 const oneNumberOnePlace = (source: string): string =>
   `data-repeat="${source}" names the {{#get}} query "${source}", which declares its own limit in ` +
@@ -419,10 +427,9 @@ function refuseUnpaginated(root: RuntimeElement, target?: string): void {
  *  pagination, a query outside a paginated context is not illegal by itself. */
 function refuseGetOnForbiddenTarget(root: RuntimeElement, input: RenderInput): void {
   if (input.target === undefined || !GET_FORBIDDEN_TARGETS.has(input.target)) return
-  const declared = input.dataBindings ?? {}
   for (const el of all(root, '[data-repeat]')) {
     const key = el.getAttribute('data-repeat') ?? ''
-    if (key in declared) {
+    if (own(input.dataBindings, key) !== undefined) {
       throw new Error(
         `data-repeat="${key}" is a {{#get}} and this render names "${input.target}". An error page ` +
           `that queries the database compounds the outage it is reporting (R-7).`,
@@ -583,7 +590,7 @@ function emitBindings(
       // own navigation partial, recorded on both majors.
       const ul = doc.createElement('ul')
       ul.setAttribute('class', 'nav')
-      for (const item of navigationItems(input.site?.navigation ?? [], { currentUrl: input.site?.currentUrl })) {
+      for (const item of navigationItems(input.site?.navigation ?? [], { currentUrl: input.site?.currentUrl, siteUrl: input.site?.url })) {
         const li = doc.createElement('li')
         li.setAttribute('class', item.className)
         const a = doc.createElement('a')
@@ -605,6 +612,7 @@ function emitBindings(
     }
     el.textContent = bareHelper(name, {
       ghost: input.ghost,
+      siteUrl: input.site?.url,
       major: input.site?.major,
       members: input.site?.members,
       fixtures: input.fixtures,
@@ -675,18 +683,19 @@ function emitBindings(
 export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']): string | null {
   const parsed = parseBindSpec(spec)
   if (typeof parsed === 'string') throw new Error(`AD-36: ${parsed}`)
+  // A BARE `excerpt` on the theme is Ghost's HELPER, not the field: it prefers `custom_excerpt`,
+  // escapes, and truncates a computed excerpt to 50 words (read in source — see the shim). The
+  // canvas resolves it over the current object BEFORE the emptiness test, because a post with only
+  // a custom excerpt still prints. A DOTTED `post.excerpt` is a Handlebars path lookup — the plain
+  // field — and so is `custom_excerpt`; both fall through. NFR-3's carve-out — text-only — is
+  // `textContent`, which every binding uses.
+  if (parsed.helper === undefined && parsed.path === 'excerpt') {
+    const text = excerpt((ctx ?? {}) as { custom_excerpt?: unknown; excerpt?: unknown })
+    return text === '' ? null : text
+  }
   const raw = get(ctx, parsed.path)
   if (isEmpty(raw)) return null
   if (parsed.helper === 'date') return formatDate(raw, parsed.arg) // the format argument is HONOURED
-  // `{{excerpt}}` on the theme is Ghost's HELPER, not the field: it prefers `custom_excerpt`,
-  // escapes, and truncates a computed excerpt to 50 words (read in source — see the shim). The
-  // canvas therefore resolves it over the OWNING object. `{{custom_excerpt}}` is a plain field and
-  // falls through. NFR-3's carve-out — text-only — is `textContent`, which every binding uses.
-  if (parsed.helper === undefined && /(^|\.)excerpt$/.test(parsed.path)) {
-    const owner = parsed.path.includes('.') ? get(ctx, parsed.path.replace(/\.excerpt$/, '')) : ctx
-    const text = excerpt((owner ?? {}) as { custom_excerpt?: unknown; excerpt?: unknown })
-    return text === '' ? null : text
-  }
   if (parsed.helper === 'img_url') {
     // Story 4.3: this used to be `String(raw)`, so the canvas showed the ORIGINAL image where the
     // site serves a rendition — a card loading a 2400px photograph behind a 300px slot, which
@@ -806,7 +815,7 @@ function renderTree(
       // emit `{{#foreach <key>}}` over a name that is not a context path, so the block silently
       // rendered nothing. The query comes from the DECLARATION — there is no place in the markup
       // where a filter could be composed (AD-36).
-      const query = (input.dataBindings ?? {})[source]
+      const query = own(input.dataBindings, source)
       if (query !== undefined && limit !== null) throw new Error(oneNumberOnePlace(source))
       // ONE block per query: a filter binding is one, a hand-picked `ids` binding is N in the picked
       // order (R-20) — each its own {{#get}} around its own {{#foreach}}, because the order is the
@@ -854,19 +863,28 @@ function expandRepeats(
     consume(el, 'data-partial')
     // A `dataBindings` key is not a context path: the shim builds the Content API query and the
     // EDITOR runs it (AD-1 bans `fetch` here), so the rows arrive as an input.
-    const query = (input.dataBindings ?? {})[source]
+    const query = own(input.dataBindings, source)
     if (query !== undefined && limit !== null) throw new Error(oneNumberOnePlace(source))
-    if (query !== undefined && input.getRows?.[source] === undefined) {
+    const supplied = own(input.getRows, source)
+    if (query !== undefined && !Array.isArray(supplied)) {
       throw new Error(
-        `data-repeat="${source}" is a {{#get}} and no rows were supplied for it in getRows. The ` +
-          `editor runs the query the shim built; an empty block here would be indistinguishable ` +
-          `from a query that returned nothing.`,
+        `data-repeat="${source}" is a {{#get}} and no rows were supplied for it in getRows (pass ` +
+          `[] while the query is in flight). The editor runs the query the shim built; an empty ` +
+          `block here would be indistinguishable from a query that returned nothing.`,
       )
+    }
+    if (query === undefined && supplied !== undefined) {
+      // rows were fetched for a key the design does not declare: almost certainly a mistyped key,
+      // which would otherwise become a silent {{#foreach}} over a name that is not a context path
+      throw new Error(`data-repeat="${source}" has rows in getRows but no dataBindings entry — a {{#get}} key is declared in design.json (mistyped?).`)
     }
     const raw = query === undefined
       ? get(source.startsWith('@') ? (input.ghost ?? {}) : ctx, source)
-      : input.getRows?.[source]
-    const cap = query === undefined ? limit : (query.limit === undefined ? null : String(query.limit))
+      : supplied
+    // a hand-picked order shows exactly as many rows as it picked, in step with the theme's N blocks
+    const cap = query === undefined
+      ? limit
+      : query.ids !== undefined ? String(query.ids.length) : (query.limit === undefined ? null : String(query.limit))
     const rows = Array.isArray(raw) ? raw.slice(0, cap === null ? undefined : Number(cap)) : []
     for (const row of rows) {
       // Inserted BEFORE it is walked, so a guard that removes the clone (a `hide` on the repeated

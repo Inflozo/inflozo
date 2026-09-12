@@ -265,7 +265,10 @@ Three things the review of Story 4.3 settled about those rows, each read in Ghos
 (`helpers/excerpt.js` at both target versions, `meta/generate-excerpt.js`): **`data-bind="excerpt"`
 is Ghost's helper, not the field** — it prefers `custom_excerpt`, escapes the text (a `<em>` in a
 custom excerpt prints literally, on the site and on the canvas), never truncates a custom excerpt and
-cuts a computed one to 50 words; `data-bind="custom_excerpt"` is the plain field. **`data-bind-srcset`
+cuts a computed one to 50 words; `data-bind="custom_excerpt"` is the plain field, and so is any
+**dotted** form (`post.excerpt`, `../excerpt`), because Handlebars only calls a helper for a bare
+name. `words=`/`characters=` cannot be passed through `data-bind` — the helper takes no argument in
+the binding grammar. **`data-bind-srcset`
 does not honour `data-empty="fallback"`** — a candidate list is the media case, so the guard always
 encloses the element, and an `<img>` carrying both `src:…|img_url:l` and `data-bind-srcset` on the
 same field gets **one** guard. **A `dataBindings` entry with `ids`** compiles to one `{{#get}}` per

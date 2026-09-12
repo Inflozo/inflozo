@@ -230,6 +230,40 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
 
 const CONTROL_NAME_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
 
+/** The grammar of ONE `dataBindings` entry, in one place: `validateDesignJson` runs it over a
+ *  design, and `@inflozo/ghost-shim`'s `getQuery` runs it again at EMISSION, because the runtime is
+ *  handed `dataBindings` as an input and never runs the design validator — a filter the validator
+ *  never saw would otherwise reach a `{{#get}}` by concatenation (AD-36 2, Story 4.3 review). */
+export function validateDataBinding(k: string, b: DataBinding): Failure[] {
+  const out: Failure[] = []
+  if (!/^[a-z][a-z0-9_]*$/.test(k) || (GET_SOURCES as readonly string[]).includes(k)) {
+    push(out, 'bad-get-key', `dataBindings key "${k}" — a key is a lowercase identifier the markup names in data-repeat, and it may not be a source name (${GET_SOURCES.join(', ')}), which a data-repeat would read as a context path instead.`)
+  }
+  if (b.ids !== undefined) {
+    // R-20: hand-picked order is N single-id gets, in this order, and there is no cap — the
+    // panel warns past 25, which is 4.5's sidebar and not a refusal.
+    if (!Array.isArray(b.ids) || b.ids.length === 0 || !b.ids.every((id) => typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id))) {
+      push(out, 'bad-get-ids', `dataBindings.${k}.ids must be a non-empty list of ids (letters, digits, _ and -) — a hand-picked order is one single-id get per entry (R-20).`)
+    }
+    if (b.filter !== undefined || b.limit !== undefined || b.order !== undefined) {
+      push(out, 'bad-get-ids', `dataBindings.${k} declares ids AND a filter, limit or order. A hand-picked order IS the filter, the limit and the order (R-20) — declare one or the other.`)
+    }
+  }
+  if (!(GET_SOURCES as readonly string[]).includes(b.source)) {
+    push(out, 'bad-get-source', `dataBindings.${k}.source "${b.source}" is not queryable. Sources: ${GET_SOURCES.join(', ')}.`)
+  }
+  if (b.limit !== undefined && (!Number.isInteger(b.limit) || b.limit < 1 || b.limit > 100)) {
+    push(out, 'bad-get-limit', `dataBindings.${k}.limit must be 1–100. limit="all" is capped at 100 (FR-H2) and trips gscan on 6.x.`)
+  }
+  if (b.filter !== undefined && !/^[A-Za-z0-9_.:,+\-[\]'"\s]+$/.test(b.filter)) {
+    push(out, 'bad-get-filter', `dataBindings.${k}.filter carries a character NQL does not use. A filter is declared here and referenced by key from the markup, never written into an attribute — so it is validated once, never interpolated (AD-36).`)
+  }
+  if (b.order !== undefined && !/^[a-z_]+ (asc|desc)$/.test(b.order)) {
+    push(out, 'bad-get-order', `dataBindings.${k}.order must be "<field> asc" or "<field> desc" — got ${JSON.stringify(b.order)}.`)
+  }
+  return out
+}
+
 export function validateDesignJson(design: DesignJson, markup?: string): Failure[] {
   const out: Failure[] = []
   const d = design as DesignJson & { quickControls?: unknown; id?: unknown }
@@ -288,34 +322,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
       push(out, 'get-target', `this design performs a {{#get}} and lists ${illegal.join(', ')} among its targets. An error page that queries the database compounds the outage it is reporting (R-7).`)
     }
   }
-  for (const k of keys) {
-    const b = dataBindings[k]!
-    if (!/^[a-z][a-z0-9_]*$/.test(k) || (GET_SOURCES as readonly string[]).includes(k)) {
-      push(out, 'bad-get-key', `dataBindings key "${k}" — a key is a lowercase identifier the markup names in data-repeat, and it may not be a source name (${GET_SOURCES.join(', ')}), which a data-repeat would read as a context path instead.`)
-    }
-    if (b.ids !== undefined) {
-      // R-20: hand-picked order is N single-id gets, in this order, and there is no cap — the
-      // panel warns past 25, which is 4.5's sidebar and not a refusal.
-      if (!Array.isArray(b.ids) || b.ids.length === 0 || !b.ids.every((id) => typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id))) {
-        push(out, 'bad-get-ids', `dataBindings.${k}.ids must be a non-empty list of ids (letters, digits, _ and -) — a hand-picked order is one single-id get per entry (R-20).`)
-      }
-      if (b.filter !== undefined || b.limit !== undefined || b.order !== undefined) {
-        push(out, 'bad-get-ids', `dataBindings.${k} declares ids AND a filter, limit or order. A hand-picked order IS the filter, the limit and the order (R-20) — declare one or the other.`)
-      }
-    }
-    if (!(GET_SOURCES as readonly string[]).includes(b.source)) {
-      push(out, 'bad-get-source', `dataBindings.${k}.source "${b.source}" is not queryable. Sources: ${GET_SOURCES.join(', ')}.`)
-    }
-    if (b.limit !== undefined && (!Number.isInteger(b.limit) || b.limit < 1 || b.limit > 100)) {
-      push(out, 'bad-get-limit', `dataBindings.${k}.limit must be 1–100. limit="all" is capped at 100 (FR-H2) and trips gscan on 6.x.`)
-    }
-    if (b.filter !== undefined && !/^[A-Za-z0-9_.:,+\-[\]'"\s]+$/.test(b.filter)) {
-      push(out, 'bad-get-filter', `dataBindings.${k}.filter carries a character NQL does not use. A filter is declared here and referenced by key from the markup, never written into an attribute — so it is validated once, never interpolated (AD-36).`)
-    }
-    if (b.order !== undefined && !/^[a-z_]+ (asc|desc)$/.test(b.order)) {
-      push(out, 'bad-get-order', `dataBindings.${k}.order must be "<field> asc" or "<field> desc" — got ${JSON.stringify(b.order)}.`)
-    }
-  }
+  for (const k of keys) out.push(...validateDataBinding(k, dataBindings[k]!))
 
   const schema: ControlDef[] = Array.isArray(d.controlSchema) ? d.controlSchema : []
   const seen = new Set<string>()

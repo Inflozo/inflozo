@@ -21,10 +21,10 @@
 // through `innerHTML` by accident. `eslint.config.js` is the gate; this paragraph is the reason.
 
 import {
-  GET_SOURCES,
   IMAGE_SIZES,
   safeCssColor,
   safeUrl,
+  validateDataBinding,
 } from '@inflozo/library'
 import type { DataBinding } from '@inflozo/library'
 
@@ -223,9 +223,15 @@ export function excerpt(
   post: { custom_excerpt?: unknown; excerpt?: unknown },
   opts: { words?: number; characters?: number } = {},
 ): string {
-  const custom = textValue(post.custom_excerpt)
+  // chosen by TRUTHINESS, as Ghost's `if (this.custom_excerpt) … else if (this.excerpt)` is: a
+  // cleared `0` or `false` is no excerpt, which is also what the theme's `{{#if excerpt}}` sees
+  const pick = (v: unknown): string => (v ? textValue(v) : '')
+  const custom = pick(post.custom_excerpt)
   if (custom !== '') return custom
-  const text = textValue(post.excerpt)
+  const text = pick(post.excerpt)
+  // ponytail: Ghost slices the ESCAPED string, so `&` counts as `&amp;`'s five characters there and
+  // one here — a cut that lands differently only when the first N characters carry `& < > " '`.
+  // The recorded post carries none. Escape-slice-unescape when a recording shows the difference.
   if (opts.characters !== undefined) return text.slice(0, opts.characters)
   const words = opts.words ?? EXCERPT_DEFAULT_WORDS
   // sliced from the ORIGINAL, never split and rejoined: the recorded excerpt keeps its line breaks
@@ -281,7 +287,9 @@ export const SAMPLE_MEMBERS: Readonly<{ total: number; paid: number }> = { total
  *  returns a comma-formatted string and Ghost 5 a raw number; and Ghost 6's total counts GIFT
  *  subscriptions where Ghost 5's does not, so a site with gifts reports two different counts. The
  *  caller passes the count its own connected site reported, which is why that half needs no branch
- *  here.
+ *  here. Note the honest consequence: below 100,000 the `major` argument changes no CHARACTER of the
+ *  output — a string on 6 and a number on 5 print the same digits — so it is threaded through for
+ *  the day a bracket is recorded where they differ, not for an effect it has today.
  *
  *  Above 100,000 this REFUSES rather than guessing a shape (standing rule 1). MEASUREMENTS records
  *  only "`humanNumber` lowercased" and no execution, and the same source read as `withCommas` above
@@ -313,7 +321,7 @@ export function t(
   params: Readonly<Record<string, unknown>> = {},
   catalog: Readonly<Record<string, string>> = {},
 ): string {
-  const template = catalog[key] ?? key
+  const template = Object.prototype.hasOwnProperty.call(catalog, key) ? (catalog[key] as string) : key
   return template.replace(/\{([A-Za-z0-9_.]+)\}/g, (m, name: string) =>
     Object.prototype.hasOwnProperty.call(params, name) ? textValue(params[name]) : m,
   )
@@ -356,29 +364,37 @@ export function assetUrl(path: unknown, version: unknown): string {
 //     <ul class="nav">
 //         <li class="nav-essay"><a href="https://site/essay/">Essay</a></li>
 //     </ul>
-// and `nav-whats-is-that` for a label of "Whats is that?". The shim returns the ITEMS and the class
-// each one carries; the caller builds the nodes, because NFR-3 says a Ghost value reaches the page
-// as a text node and a function with no DOM cannot break that rule.
+// and `nav-whats-is-that` for a label of "Whats is that?". Ghost's partial prints the href
+// ABSOLUTE (`{{url absolute="true"}}`, `helpers/tpl/navigation.hbs`) where `@site.navigation`
+// carries `/essay/` — so the shim absolutises against the site it is given, and the contract test
+// compares the URL byte for byte. The shim returns the ITEMS and the class each one carries; the
+// caller builds the nodes, because NFR-3 says a Ghost value reaches the page as a text node and a
+// function with no DOM cannot break that rule.
 
 export type NavItem = { label: string; url: string; current: boolean; className: string }
 
 /** Ghost's own slug shape for a nav class, from the recording: lowercase, every run of non-alphanumerics
- *  becomes one hyphen, no leading or trailing hyphen. */
+ *  becomes one hyphen, no leading or trailing hyphen.
+ *  ponytail: Ghost's `slugify` (`@tryghost/string`) also TRANSLITERATES — `Café` is `cafe` there and
+ *  `caf` here. The recordings carry ASCII labels only; record a non-ASCII label before relying on it. */
 export function navSlug(label: unknown): string {
   return textValue(label).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
 export function navigationItems(
   items: readonly { label?: unknown; url?: unknown; current?: unknown }[] = [],
-  opts: { currentUrl?: string } = {},
+  opts: { currentUrl?: string; siteUrl?: string } = {},
 ): NavItem[] {
+  const site = opts.siteUrl === undefined ? '' : stripSlash(opts.siteUrl)
   return items.map((i) => {
     const url = ghostUrl(i.url)
     const current = i.current === true || (opts.currentUrl !== undefined && url === opts.currentUrl)
     const slug = navSlug(i.label)
     return {
       label: textValue(i.label),
-      url,
+      // a site-relative item is printed absolute, as Ghost's partial does; an unlinked project has
+      // no origin and keeps the relative form
+      url: site !== '' && url.startsWith('/') && url !== '#' ? `${site}${url}` : url,
       current,
       className: `nav-${slug}${current ? ' nav-current' : ''}`,
     }
@@ -474,14 +490,15 @@ export type ContentQuery = {
 }
 
 /** FR-H5, and a registry-level constraint binding every design authored later: a `{{#get}}` filter
- *  may reference only TEMPLATE-level context, never the current render context. Handlebars is
- *  synchronous and `{{#get}}` is not, so a filter naming the current row cannot be resolved — it
- *  would silently query for the literal text. */
+ *  may reference only TEMPLATE-level context, never the current render context. Ghost's `get.js`
+ *  DOES resolve `{{…}}` inside a filter against the render context (read in source, both majors) —
+ *  the refusal is not because Ghost cannot, it is because the CANVAS cannot: the editor runs the
+ *  query before the row exists, so a filter naming the row would be a query the canvas can never
+ *  reproduce, and the two emitters would disagree by construction. */
 const RENDER_CONTEXT = /[{}@]|(?<![\w-])this\.|\.\.\//
 /** `getExprs` builds Handlebars from these by interpolation, so a character that could close the
- *  hash or the mustache is refused HERE, at emission — `validate.ts` admits `"` in a filter and the
- *  runtime is handed `dataBindings` without ever running the validator (AD-36 2). */
-const BREAKS_EXPR = /["\n\r]/
+ *  hash or the mustache — or escape the closing quote — is refused HERE, at emission (AD-36 2). */
+const BREAKS_EXPR = /["\\\n\r]/
 
 export function getQuery(
   key: string,
@@ -494,26 +511,28 @@ export function getQuery(
         `referenced by key from the markup — declared: ${Object.keys(bindings).join(', ') || '(none)'}.`,
     )
   }
-  if (!(GET_SOURCES as readonly string[]).includes(b.source)) {
-    throw new Error(`dataBindings.${key}.source "${b.source}" is not queryable — ${GET_SOURCES.join(', ')}.`)
-  }
   for (const v of [b.filter, b.order, ...(b.ids ?? [])]) {
     if (v !== undefined && BREAKS_EXPR.test(String(v))) {
-      throw new Error(`dataBindings.${key} carries a quote or a line break, which would close the {{#get}} expression it is written into (AD-36 2).`)
+      throw new Error(`dataBindings.${key} carries a quote, a backslash or a line break, which would close the {{#get}} expression it is written into (AD-36 2).`)
     }
   }
+  for (const [what, v] of [['filter', b.filter], ['order', b.order]] as const) {
+    if (v !== undefined && RENDER_CONTEXT.test(v)) {
+      throw new Error(
+        `dataBindings.${key}.${what} references render context. A {{#get}} hash may name TEMPLATE-level ` +
+          `context only (FR-H5): the editor runs the query before the row exists, so the canvas could ` +
+          `never reproduce a query that names the current row.`,
+      )
+    }
+  }
+  // the LIBRARY's grammar for the declaration — key, source, ids, limit, filter, order — run again
+  // here because the runtime never runs the design validator (one copy, called twice)
+  const failures = validateDataBinding(key, b)
+  if (failures.length > 0) throw new Error(failures.map((f) => `${f.code}: ${f.message}`).join(' '))
   if (b.ids !== undefined) {
     // R-20's hand-picked order: N single-id gets, IN THIS ORDER. One query each, because the order
     // is the point and a filter would return them in the API's order instead.
-    if (b.ids.length === 0) throw new Error(`dataBindings.${key}.ids is empty — a hand-picked order names at least one id (R-20).`)
     return b.ids.map((id) => ({ resource: b.source, params: { filter: `id:${id}`, limit: '1' } }))
-  }
-  if (b.filter !== undefined && RENDER_CONTEXT.test(b.filter)) {
-    throw new Error(
-      `dataBindings.${key}.filter references render context. A {{#get}} filter may name TEMPLATE-level ` +
-        `context only (FR-H5): Handlebars is synchronous and {{#get}} is not, so a filter naming the ` +
-        `current row would query for its literal text.`,
-    )
   }
   const params: Record<string, string> = {}
   if (b.filter !== undefined) params['filter'] = b.filter
@@ -572,9 +591,15 @@ export function bareHelper(name: string, ctx: ShimContext = {}): string {
       // the caller builds the nodes from `navigationItems` — see NFR-3 above
       throw new Error('{{navigation}} resolves to a list of items: call navigationItems() and build nodes')
     case 'total_members':
-      return totalMembers(ctx.members?.total ?? SAMPLE_MEMBERS.total, ctx.major ?? '6')
-    case 'total_paid_members':
-      return totalMembers(ctx.members?.paid ?? SAMPLE_MEMBERS.paid, ctx.major ?? '6')
+    case 'total_paid_members': {
+      const which = name === 'total_members' ? 'total' : 'paid'
+      // UNLINKED is "no site", not "no count": a linked site whose count did not arrive must not
+      // show the sample as if it were real, so it refuses naming the missing input instead
+      if (ctx.siteUrl === undefined) return totalMembers(SAMPLE_MEMBERS[which], '6')
+      const n = ctx.members?.[which]
+      if (n === undefined) throw new Error(`{{${name}}} on a linked site needs members.${which}, and none was supplied.`)
+      return totalMembers(n, ctx.major ?? '6')
+    }
     case 'content_api_url':
       return contentApiUrl(ctx.siteUrl)
     case 'content_api_key':

@@ -2693,7 +2693,7 @@ resolution: CLOSED by Story 4.3 (2026-09-11). `packages/ghost-shim` exports
   `'--accent'`, and `packages/section-runtime/src/core.ts`'s `data-bind-style` canvas branch calls
   `ghostColor` rather than importing `safeCssColor` itself — so there is one copy, reached through
   one door. `contract.test.ts` asserts the four hostile values MEASUREMENTS §21e recorded Ghost
-  accepting verbatim all fall back to `var(--accent)`, that `#f0f` and `rgb(255, 0, 255)` survive,
+  accepting verbatim — and the bare word `red` beside them — all fall back to `var(--accent)`, that `#f0f` and `rgb(255, 0, 255)` survive,
   that the connected site's own RECORDED `accent_color` survives on both majors, and that
   `ghostColor(v)` and `safeCssColor(v, '--accent')` return the same string — which is the assertion
   that a second parser has not grown. AD-36 bullet 4's future tense is now past tense.
@@ -2757,12 +2757,14 @@ origin: Story 4.3 review (2026-09-12) — Blind Hunter. The shim formats from UT
 owner: the story that first hands the canvas a connected site's settings snapshot (FR-C2 — Epic 5's
   canvas, or 4.6's binding matrix if it reads the connection). The editor may use `Intl` (it is
   `apps/web`, not a core package): it computes the site's offset for the post's instant and passes a
-  numeric offset in minutes; the shim applies it before formatting. AD-1 stays intact.
+  per-value offset (the site's IANA `timezone` name resolved at the post's own instant, because one
+  offset is wrong across a DST boundary inside a single page of posts); the shim applies it before
+  formatting. AD-1 stays intact.
 location: packages/ghost-shim/src/index.ts `formatDate`; packages/section-runtime/src/core.ts `RenderInput.site`
 reason: not this story's — no caller passes real site data yet, and the recording condition is
   asserted rather than assumed, so the gap fails loudly the day a non-UTC recording is made
 
-### DW-99: `{{total_paid_members}}` and `{{content_api_url}}` have shim functions no directive can reach
+### DW-99: `{{total_paid_members}}`, `{{content_api_url}}`, `{{t}}` and `{{tags}}`/`{{authors}}` have shim functions no directive can reach
 
 plain: The imitation of Ghost knows how to print the paid-member count and the API address, but no
   section can ask for them yet, because the list of things a section may ask for by name was fixed in
@@ -2772,7 +2774,9 @@ severity: low
 origin: Story 4.3 review (2026-09-12) — Acceptance Auditor. `bareHelper` resolves both (the review
   added the cases) and `contract.test.ts` asserts both against the recordings, but `BARE_HELPERS` in
   `packages/library/src/vocabulary.ts` is 4.1's closed list and `data-helper` refuses any other name.
-  Appendix B's A29 filter design needs `content_api_url` beside `content_api_key`.
+  Appendix B's A29 filter design needs `content_api_url` beside `content_api_key`. The review's
+  second pass adds `t()` (reachable only through 4.9's `data-t`) and `taxonomyItems` (no directive
+  renders a tag or author list yet) to the same class: shimmed, recorded, asserted, unreachable.
 owner: the first story that authors a design needing either (Story 4.10's pilots are the first that
   can) — it adds the two names to `BARE_HELPERS`, and the partition test in `agreement.test.ts`
   already asserts every rendered directive value is exercised.
