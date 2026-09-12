@@ -507,7 +507,7 @@ let them be deleted unnoticed.
 - [x] [Review][Patch] recorder: `SystemExit` skipped the other major; a non-200 page's error block was filed under the failed template; one image per run [tools/probe/record-shim.py]
 - [x] [Review][Patch] no test reached the unlinked `img_url` branch or the different-field guard — both deletable unnoticed [contract.test.ts, agreement.test.ts]
 - [x] [Review][Patch] doc drift: dismissals unlisted, test counts restated, DW-95's hostile set, DW-98's offset wording, DW-99's scope, the probe theme's generated manifest, `img_url`/`navigation` as intended differences, `navSlug`'s transliteration ceiling, the `characters` slice on escaped text [this spec, deferred-work.md, index.ts]
-- [ ] [Review][Decision] (open — Q2) the recorder uploaded one image PER RUN in Dev; the spec's Ask-First said one image
+- [x] [Review][Decision] (ruled option 1, owner 2026-09-12 — accepted) the recorder uploaded one image PER RUN in Dev; the spec's Ask-First said one image
 
 ## Questions for the owner
 
@@ -550,4 +550,4 @@ already uploaded, so this does not happen again.
 2. Have me delete them by hand on each server's disk under the reset protocol — a shell session on
    each box, for no functional gain.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-12).** The leftovers stay; `record-shim.py` reuses the recorded upload while it still answers 200, so the one-image boundary holds per story from here on.
