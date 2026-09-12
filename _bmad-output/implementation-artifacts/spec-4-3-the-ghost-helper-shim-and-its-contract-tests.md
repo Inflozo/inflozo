@@ -2,7 +2,7 @@
 title: 'Story 4.3 — The Ghost helper shim, and its contract tests against recorded real-Ghost output'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-review'
+status: 'done'
 baseline_commit: '52c8c71c5243c17acd1705cc4796ffcb72b90feb'
 owner_test: none
 review_loop_iteration: 0
