@@ -2,7 +2,7 @@
 title: 'Story 4.3 — The Ghost helper shim, and its contract tests against recorded real-Ghost output'
 type: 'feature'
 created: '2026-09-11'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '52c8c71c5243c17acd1705cc4796ffcb72b90feb'
 owner_test: none
 review_loop_iteration: 0
@@ -204,6 +204,32 @@ image URLs rather than normalising them away. The three directives the shim owns
   tense becomes present, DW-95 closes with its resolution -- a finding is not closed until it reaches
   an owning document (standing rule 3).
 
+### Review Findings — 2026-09-12
+
+Five layers ran (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier); none failed. Dismissed as noise or out of reach: 11.
+
+- [ ] [Review][Decision] (open — `## Questions for the owner`) The sample design from Story 4.1 still draws page numbers as an empty list — `packages/library/fixtures/reference-design/index.html:66` carries `<ol data-pagination="numbers">`, the form DW-97 corrected in the authoring guide; the runtime now writes "1 / 3" as the text of an `<ol>`. Editing that fixture is an Ask-First boundary of this spec, so the question is under `## Questions for the owner`.
+- [x] [Review][Patch] A hand-picked `{{#get}}` (`ids`) emits ONE post on the theme and every row on the canvas [packages/ghost-shim/src/index.ts:463]
+- [x] [Review][Patch] `getExpr` interpolates `filter`/`order`/ids into Handlebars with no emit-time refusal of `"`, braces or newlines — the runtime never runs `validate.ts` [packages/ghost-shim/src/index.ts:447]
+- [x] [Review][Patch] `RENDER_CONTEXT`'s `\bthis\b` refuses a legitimate `tag:this-week` [packages/ghost-shim/src/index.ts:426]
+- [x] [Review][Patch] `data-bind-srcset` on the canvas bypasses `ghostUrl` — `feature_image = javascript:alert(1)` lands in `srcset` verbatim [packages/section-runtime/src/core.ts:527]
+- [x] [Review][Patch] `data-bind-srcset` honours `data-empty="fallback"`, which emits an unguarded `srcset` [packages/section-runtime/src/core.ts:515]
+- [x] [Review][Patch] An element carrying both `data-bind-attr="src:…|img_url:l"` and `data-bind-srcset` — the guide's own example — is wrapped in two identical guards [packages/section-runtime/src/core.ts:519]
+- [x] [Review][Patch] The canvas ignores `data-repeat-limit` on a `{{#get}}` key the theme refuses, and renders empty when `getRows` carries no entry for a declared key [packages/section-runtime/src/core.ts:822]
+- [x] [Review][Patch] R-7 half two — a `{{#get}}` repeat rendered for `error.hbs`/`private.hbs` is not refused at render, though pagination is [packages/section-runtime/src/core.ts:398]
+- [x] [Review][Patch] Excerpts are tag-STRIPPED on the canvas where Ghost ESCAPES them (`helpers/excerpt.js` at v5.130.6 and v6.58.0: `_.escape` before `downsize`), a custom excerpt is never truncated by Ghost, and a computed excerpt defaults to 50 words (`meta/generate-excerpt.js`) — three canvas/site disagreements [packages/ghost-shim/src/index.ts:220, packages/section-runtime/src/core.ts:653]
+- [x] [Review][Patch] The count helpers render `0` on an unlinked project; FR-H5 says a sample value [packages/ghost-shim/src/index.ts:508]
+- [x] [Review][Patch] `{{t}}` is in the ticked task line and in FR-H5, is recorded (`TEXT|t_unknown`), and has no function [packages/ghost-shim/src/index.ts]
+- [x] [Review][Patch] `{{tags}}`/`{{authors}}` are "shimmed" by lambdas inside the test file — the shim exports nothing for them [packages/ghost-shim/src/contract.test.ts:399]
+- [x] [Review][Patch] `img_url` on an unlinked project turns a relative `/content/images/` path into a relative sized URL that resolves against Inflozo's origin [packages/ghost-shim/src/index.ts:131]
+- [x] [Review][Patch] `record-shim.py` exits 0 on a failed major, activates the probe theme outside the `try`, proceeds with no previous theme to restore, and leaves a stale JSON for a template that rendered no probe block [tools/probe/record-shim.py:251,298,405]
+- [x] [Review][Patch] Propagation misses: AD-36 #1 still says the allowlist "covers user and Ghost values alike"; `safeCssColor`'s comment says the shim "WILL call"; `data-bind-srcset`'s summary says "srcset and sizes" [ARCHITECTURE-SPINE.md:382, packages/library/src/vocabulary.ts:83,436]
+- [x] [Review][Patch] Test hygiene: `SITE` is declared after its first use; the navigation assertion accepts two answers; `seen[5] === seen[6]` fails on a re-record for a reason unrelated to the shim; the `{{url}}` comment claims a relativising rule the code does not have [packages/section-runtime/src/agreement.test.ts:444,644, packages/ghost-shim/src/contract.test.ts:383,432]
+- [x] [Review][Patch] Two facts a reader will look for are not written down: `{{#has}}` is recorded but not shimmed (a later story's, with `data-if`), and the recorded `w750` rendition is served only while a theme declaring that width is active — the verifier fetched it under `casper` and got a 302 to the original [this spec, Design Notes and Verification]
+- [x] [Review][Defer] `{{date}}` formats in UTC and the theme renders in the SITE's timezone; `RenderInput.site` carries no offset, so every non-UTC customer sees canvas dates hours off — deferred, no caller passes real site data yet (DW-98)
+- [x] [Review][Defer] `{{total_paid_members}}` and `{{content_api_url}}` have shim functions no directive can reach — `BARE_HELPERS` is 4.1's list; Appendix B's A29 needs `content_api_url` — deferred, pre-existing (DW-99)
+
 **Acceptance Criteria:**
 
 - Given a helper in FR-H5's list, when its contract test runs offline, then it is asserted against a
@@ -265,9 +291,27 @@ function, two allowlists, named where each applies.
 
 **What this story does not build, and who does.** `{{content}}` and `{{comments}}` resolve to Story
 4.4's fixtures; the shim defines the seam and refuses when handed nothing. `{{t}}`'s catalog is
-Story 4.9's; the shim resolves a key and its `{placeholder}` params against a catalog it is given.
-`{{#foreach}}` is already the runtime's, built in 4.2 — the shim adds nothing to it, and this is
-written down because FR-H5 lists it and a reader will look for it here.
+Story 4.9's; the shim resolves a key and its `{placeholder}` params against a catalog it is given,
+and prints the key when there is no entry — recorded (`TEXT|t_unknown`). `{{#foreach}}` is already
+the runtime's, built in 4.2 — the shim adds nothing to it, and this is written down because FR-H5
+lists it and a reader will look for it here. **`{{#has}}`** is recorded (`TRUTHY|has_slug_home`) and
+not shimmed: it is the conditional story's (`data-if`/`data-else`), which is the only directive that
+could reach it. **`{{tags}}` / `{{authors}}`** are `taxonomyItems` — items, not markup, as
+`{{navigation}}` is — and no directive reaches them yet either; the recording and the contract test
+are what a later story authors against.
+
+**Three things settled by the review (2026-09-12), each read in Ghost's source rather than asserted.**
+`{{excerpt}}` on the theme is Ghost's *helper*, not the field: it prefers `custom_excerpt`,
+**escapes** the text before truncating (so `<em>` in a custom excerpt is printed literally and is
+never stripped), never truncates a custom excerpt, and defaults a computed one to 50 words
+(`core/frontend/helpers/excerpt.js` at v5.130.6 and v6.58.0; `meta/generate-excerpt.js`). The Dev
+draft stripped tags on the canvas, which was a visible canvas/site disagreement dressed as a
+sanitiser; NFR-3's "text-only" is met by `textContent`, which every binding uses. **`{{url}}`** is
+relative on the site and the canvas deliberately prints the API's absolute form, because a relative
+href on the canvas resolves against Inflozo's origin — an intended difference, now stated. And
+**a hand-picked `ids` binding** is N `{{#get}}` blocks in the picked order on the theme (R-20), each
+around its own `{{#foreach}}`; the Dev draft emitted only the first, so the site would have shown
+one pick where the canvas showed them all.
 
 ## Verification
 
@@ -322,7 +366,11 @@ printed. No post was created, no post edited, no setting touched.
 1. A **Ghost-hosted absolute URL comes back RELATIVE** — `https://site/content/images/2026/09/x.png`
    at `size="m"` is `/content/images/size/w750/2026/09/x.png`. A canvas that passed the value through
    would show the original; one that pasted Ghost's answer onto its own origin would 404. Both forms
-   are recorded and the shim reproduces each.
+   are recorded and the shim reproduces each. *(Review, 2026-09-12: the rendition behind that URL is
+   served only while a theme declaring `m: 750` is ACTIVE — fetched under `casper` it is a 302 to the
+   original, while Casper's own `w600` answers 200 at 600px. The shim's contract is the URL Ghost
+   prints, not the bytes behind it, so this changes nothing in the code; it is written here so the
+   next reader who fetches the recorded URL does not conclude the recording is wrong.)*
 2. **`size="800"` returns byte-for-byte what omitting `size=` returns** — the original image, with
    nothing reported. That is the recording behind narrowing `HELPERS.img_url`, and the contract test
    asserts the equality so the day Ghost changes it, the refusal is re-examined rather than assumed.
@@ -388,3 +436,48 @@ story**, so the guide and the runtime now agree. What stays open is only the pro
 Inflozo ever offer a clickable row of page numbers, given it would mean counting something Ghost does
 not expose — **DW-97**, for the owner, in the first story that authors a paginated design (4.10 is the
 first that can). Nothing ships differently from what the guide says in the meantime.
+
+---
+
+## Review — run 2026-09-12
+
+**Five layers, none failed; R-82 on the real infrastructure.** The Real-infra verifier re-executed
+the story's claims read-only against T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`, keys by
+variable name (`GHOST6_STAFF_ACCESS_TOKEN`, `GHOST5_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`,
+`GHOST5_CONTENT_API_KEY`), never printed: `GET /ghost/api/admin/themes/` reports `casper` active and
+`inflozo-probe-shim` installed and inactive on both; the uploaded probe image answers 200 on both;
+the Content API returns the recorded `title`, `published_at` and `reading_time` for the recorded post
+on both, with `filter=slug:no-such-post-xyz` → `posts: []` as the control; the contract suite passes
+inside `unshare -rn` with `urlopen` on the same namespace failing to resolve, as the control. No
+migration in the diff, so R-99 has nothing to check; no `apps/web` path in the diff, so nothing
+app-facing deployed. Supabase, Vercel, Resend and Dodo are untouched by this story.
+
+**What the review changed, all under `### Review Findings`.** Every patch was applied; the suites
+after them: the runner prints its own count (`pnpm check`). The three Ghost facts the patches rest on
+were read in source at both target tags (`helpers/excerpt.js`, `meta/generate-excerpt.js`), cited
+beside the code. One question is the owner's (below); two findings are DW-98 and DW-99.
+
+**A clean review leaves the story in review (R-80).** Deploy is nothing for this story (no
+`apps/web` change, `owner_test: none`), and Done is written by the Record prompt.
+
+## Questions for the owner
+
+### Q1 — the sample design still draws page numbers as an empty list
+
+**Plain English.** Story 4.1 shipped a sample design the tools check against. It has a spot for page
+numbers written as an empty list — the form the authoring guide used to show. This story settled
+that Ghost cannot give a theme a row of clickable page numbers (DW-97), so the guide now shows a
+plain "2 / 3" indicator instead. The sample design was not updated, because this story's spec says
+that sample is Story 4.1's and must not be edited without asking. Nothing is broken by leaving it:
+the sample is only ever validated, never drawn.
+
+**Example.** The guide now says `<span data-pagination="numbers">1 / 1</span>`. The sample design
+still says `<ol data-pagination="numbers"></ol>` — a list with nothing in it.
+
+**Options.**
+1. **Change the sample to the indicator form now, in this story's Fix phase** — one line, and the
+   sample agrees with the guide **(RECOMMENDED)**.
+2. Leave it until DW-97 is decided in Story 4.10 — the sample stays out of step with the guide until
+   then.
+
+**Ruled:** _(awaiting the owner)_

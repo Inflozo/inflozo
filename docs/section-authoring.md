@@ -261,6 +261,17 @@ from both majors — `packages/ghost-shim/fixtures/`, captured by `python3 tools
 | `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple |
 | `data-pagination` | `prev` · `next` · `numbers` | `prev`/`next` get the resolved `page_url` and the element is removed where the page does not exist; `numbers` shows `page / pages` | `prev`/`next` emit `href="{{page_url pagination.prev}}"` inside `{{#if pagination.prev}}`; `numbers` emits `{{pagination.page}} / {{pagination.pages}}` |
 
+Three things the review of Story 4.3 settled about those rows, each read in Ghost's own source
+(`helpers/excerpt.js` at both target versions, `meta/generate-excerpt.js`): **`data-bind="excerpt"`
+is Ghost's helper, not the field** — it prefers `custom_excerpt`, escapes the text (a `<em>` in a
+custom excerpt prints literally, on the site and on the canvas), never truncates a custom excerpt and
+cuts a computed one to 50 words; `data-bind="custom_excerpt"` is the plain field. **`data-bind-srcset`
+does not honour `data-empty="fallback"`** — a candidate list is the media case, so the guard always
+encloses the element, and an `<img>` carrying both `src:…|img_url:l` and `data-bind-srcset` on the
+same field gets **one** guard. **A `dataBindings` entry with `ids`** compiles to one `{{#get}}` per
+id, in the picked order (R-20), each around its own `{{#foreach}}` — use `data-partial` so the body
+is emitted once and referenced from each.
+
 **`data-pagination` restricts the design to a paginated target and the runtime refuses otherwise**
 (R-7): a `{{pagination}}` outside a paginated context is a FATAL render, not a warning, so a render
 that does not name a paginated target is refused rather than compiled. **`numbers` emits the page

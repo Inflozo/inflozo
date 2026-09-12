@@ -86,6 +86,17 @@ function agree(src: string, input: RenderInput = {}) {
 }
 
 // ── a static section: no repeat, no binding. The two must be structurally identical. ──
+/** Story 4.3's three directives need the shim's inputs, and `data-pagination` needs a PAGINATED
+ *  target or it refuses (R-7). One place, so every case below reads the same connected site. */
+const SITE: RenderInput['site'] = {
+  url: 'https://site.example',
+  major: '6',
+  members: { total: 57, paid: 0 },
+  pagination: { page: 1, pages: 3, limit: 12, total: 33 },
+  navigation: [{ label: 'Essay', url: '/essay/' }, { label: 'Notes', url: '/notes/' }],
+  currentUrl: '/',
+}
+
 test('a static section agrees exactly', () => {
   agree(
     `<section class="hero" data-align="center" data-density="roomy">
@@ -406,6 +417,20 @@ test('data-bind-srcset — one candidate per image_sizes key on both emitters, f
   assert.ok(!canvas.includes(`${hosted} `), `the canvas passed the original through: ${canvas}`)
 })
 
+test('AD-36 (1) — a hostile srcset value never reaches the attribute, and ONE guard wraps an <img> bound twice', () => {
+  const src = `<img class="i" data-bind-srcset="feature_image|img_url" alt="">`
+  for (const hostile of ['javascript:alert(1)', 'data:text/html,<script>', 'mailto:x@y']) {
+    assert.equal(renderCanvas(doc(), src, { ghost: { feature_image: hostile }, site: SITE }), '', hostile)
+  }
+  // data-empty="fallback" is NOT honoured on a candidate list — the theme would emit an unguarded srcset
+  const fb = renderTheme(doc(), `<img data-bind-srcset="feature_image|img_url" data-empty="fallback">`, { site: SITE }).template
+  assert.ok(/^\{\{#if feature_image\}\}<img/.test(fb.trim()), fb)
+  // the authoring guide's own hero: src AND srcset bound on the same element, on the same field
+  const both = renderTheme(doc(), `<img data-bind-attr="src:feature_image|img_url:l" data-bind-srcset="feature_image|img_url">`, { site: SITE }).template
+  assert.equal((both.match(/\{\{#if feature_image\}\}/g) ?? []).length, 1, `doubled guard: ${both}`)
+  assert.equal((both.match(/\{\{\/if\}\}/g) ?? []).length, 1, both)
+})
+
 test('FR-H8 — an empty srcset binding hides the ELEMENT, and the guard encloses it', () => {
   const src = `<img class="i" data-bind-srcset="feature_image|img_url">`
   const theme = renderTheme(doc(), src, { site: SITE }).template
@@ -441,8 +466,8 @@ test('data-helper — Ghost-own markup: the canvas draws it, the theme defers, t
   assert.ok(theme.includes('{{navigation}}'), theme)
   // Ghost's own navigation partial, recorded on both majors and rebuilt from the shim's items
   assert.ok(canvas.includes('<ul class="nav">'), canvas)
-  assert.ok(canvas.includes('<li class="nav-essay nav-current"><a href="/essay/">Essay</a></li>') ||
-    canvas.includes('<li class="nav-essay"><a href="/essay/">Essay</a></li>'), canvas)
+  // currentUrl is `/`, so Essay is NOT current — exactly one answer
+  assert.ok(canvas.includes('<li class="nav-essay"><a href="/essay/">Essay</a></li>'), canvas)
   assert.ok(canvas.includes('>A post<'), canvas)
 })
 
@@ -527,6 +552,36 @@ test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas exp
     () => renderTheme(doc(), `<ul><li data-repeat="featuredCraft" data-repeat-limit="2">x</li></ul>`, input),
     /One number, one place/,
   )
+  // ... and the CANVAS refuses the same source — a design the compiler refuses must not render
+  assert.throws(
+    () => renderCanvas(doc(), `<ul><li data-repeat="featuredCraft" data-repeat-limit="2">x</li></ul>`, input),
+    /One number, one place/,
+  )
+  // rows must be SUPPLIED for a declared key: an empty block would look like an empty result
+  assert.throws(() => renderCanvas(doc(), src, { ...input, getRows: {} }), /no rows were supplied/)
+  // R-7 half two, at render: a {{#get}} named for the error page is refused on both emitters
+  for (const render of [renderCanvas, renderTheme]) {
+    assert.throws(() => render(doc(), src, { ...input, target: 'error.hbs' }), /compounds the outage/)
+  }
+  // R-20: a hand-picked order is N {{#get}} blocks in the picked order, each around its own
+  // {{#foreach}} — the first draft emitted only the first, so the site showed ONE pick
+  const picked: RenderInput = {
+    dataBindings: { picked: { source: 'posts', ids: ['aaa', 'bbb', 'ccc'] } },
+    getRows: { picked: [{ title: 'a' }, { title: 'b' }, { title: 'c' }] },
+  }
+  const pickedSrc = `<ul class="p"><li class="c" data-repeat="picked"><h3 data-bind="title">t</h3></li></ul>`
+  const pickedTheme = renderTheme(doc(), pickedSrc, picked).template
+  assert.deepEqual(
+    pickedTheme.match(/\{\{#get "posts" filter="id:[a-z]+" limit="1"\}\}/g),
+    ['{{#get "posts" filter="id:aaa" limit="1"}}', '{{#get "posts" filter="id:bbb" limit="1"}}', '{{#get "posts" filter="id:ccc" limit="1"}}'],
+    pickedTheme,
+  )
+  assert.equal((pickedTheme.match(/\{\{\/get\}\}/g) ?? []).length, 3)
+  const pickedCanvas = renderCanvas(doc(), pickedSrc, picked)
+  assert.equal((pickedCanvas.match(/<li/g) ?? []).length, 3, pickedCanvas)
+  // with a partial the body is emitted ONCE and referenced from each block
+  const viaPartial = renderTheme(doc(), `<ul><li data-repeat="picked" data-partial="pick"><h3 data-bind="title">t</h3></li></ul>`, picked)
+  assert.equal((viaPartial.template.match(/\{\{> "pick"\}\}/g) ?? []).length, 3, viaPartial.template)
   // an undeclared key is still a plain context path, which is what a {{#foreach}} is for
   const plain = renderTheme(doc(), `<ul><li data-repeat="posts">x</li></ul>`, {}).template
   assert.ok(plain.includes('{{#foreach posts}}'), plain)
@@ -580,20 +635,31 @@ test('NFR-3 — a Ghost URL field is http/https only, narrower than the USER all
   assert.ok(renderCanvas(doc(), userSrc, { content: { link: 'javascript:alert(1)' } }).includes('href="#"'))
 })
 
-test('NFR-3 — an excerpt renders text-only and sanitised, as a text node', () => {
+test('NFR-3 — an excerpt renders text-only, as a text node, and is Ghost HELPER on the canvas too', () => {
   const src = '<p class="e" data-bind="excerpt">authored</p>'
-  const canvas = renderCanvas(doc(), src, { ghost: { excerpt: 'A body <b>with</b> markup &amp; an entity' } })
-  assert.ok(canvas.includes('A body with markup &amp; an entity'), canvas)
-  assert.ok(!canvas.includes('<b>'), `the excerpt kept an element: ${canvas}`)
+  // Ghost's helper ESCAPES the text (read in source, helpers/excerpt.js at both target tags), so a
+  // `<b>` in an excerpt is a LITERAL on the site — and a text node of it is the same literal here.
+  const canvas = renderCanvas(doc(), src, { ghost: { excerpt: 'A body <b>with</b> markup' } })
+  assert.ok(canvas.includes('A body &lt;b&gt;with&lt;/b&gt; markup'), canvas)
   // never through innerHTML: a <script> in an excerpt is characters, not a node
   const hostile = renderCanvas(doc(), src, { ghost: { excerpt: '<script>alert(1)</script>ok' } })
   assert.ok(!hostile.includes('<script'), `an excerpt reached the DOM as markup: ${hostile}`)
-  assert.ok(hostile.includes('alert(1)ok'), hostile)
-  // custom_excerpt and a dotted path are the same field
-  const dotted = renderCanvas(doc(), '<p data-bind="post.custom_excerpt">a</p>', {
-    ghost: { post: { custom_excerpt: '<em>x</em>y' } },
+  assert.ok(hostile.includes('alert(1)&lt;/script&gt;ok'), hostile)
+  // {{excerpt}} prefers custom_excerpt and never truncates it; a computed one is 50 words
+  const custom = renderCanvas(doc(), src, { ghost: { excerpt: 'computed', custom_excerpt: 'written by hand' } })
+  assert.ok(custom.includes('>written by hand<'), custom)
+  const long = Array.from({ length: 60 }, (_, i) => `w${i}`).join(' ')
+  const cut = renderCanvas(doc(), src, { ghost: { excerpt: long } })
+  assert.ok(cut.includes('w49<') && !cut.includes('w50'), cut)
+  // a dotted path resolves the helper over the OWNING object; {{custom_excerpt}} is a plain field
+  const dotted = renderCanvas(doc(), '<p data-bind="post.excerpt">a</p>', {
+    ghost: { post: { excerpt: 'computed', custom_excerpt: 'hand' } },
   })
-  assert.ok(dotted.includes('xy') && !dotted.includes('<em>'), dotted)
+  assert.ok(dotted.includes('>hand<'), dotted)
+  const field = renderCanvas(doc(), '<p data-bind="custom_excerpt">a</p>', { ghost: { custom_excerpt: '<em>x</em>y' } })
+  assert.ok(field.includes('&lt;em&gt;x&lt;/em&gt;y'), field)
+  // and the empty case still guards: no excerpt of either kind is EMPTY
+  assert.equal(renderCanvas(doc(), '<p data-bind="excerpt" data-empty="hide">a</p>', { ghost: {} }), '')
 })
 
 // ── The partition, asserted so a directive added to the vocabulary later cannot be silently
@@ -639,16 +705,6 @@ const everyDirectiveSrc = `<section class="all" data-module="cards">
      <a class="n" data-pagination="next" href="#">Older</a>
    </section>`
 
-/** Story 4.3's three directives need the shim's inputs, and `data-pagination` needs a PAGINATED
- *  target or it refuses (R-7). One place, so every case below reads the same connected site. */
-const SITE: RenderInput['site'] = {
-  url: 'https://site.example',
-  major: '6',
-  members: { total: 57, paid: 0 },
-  pagination: { page: 1, pages: 3, limit: 12, total: 33 },
-  navigation: [{ label: 'Essay', url: '/essay/' }, { label: 'Notes', url: '/notes/' }],
-  currentUrl: '/',
-}
 
 test('no rendered directive survives — every member of RENDERED_DIRECTIVES is in the fixture', () => {
   for (const d of RENDERED_DIRECTIVES) {

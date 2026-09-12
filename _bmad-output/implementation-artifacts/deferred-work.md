@@ -2740,3 +2740,42 @@ location: packages/section-runtime/src/core.ts (the `data-pagination` loop, `num
 reason: settling it here would be inventing a decision the owner never made (standing rule 6), and
   the indicator form is the one both emitters can produce identically from Ghost's own context — so
   the lazy form is also the only one currently provable
+
+## Deferred from: code review of spec-4-3-the-ghost-helper-shim-and-its-contract-tests (2026-09-12)
+
+### DW-98: `{{date}}` on the canvas is UTC while the site renders in the SITE's timezone
+
+plain: A site set to, say, New York time shows a post dated "Jul 18" on the live site while the
+  canvas — which only knows UTC — could show "Jul 19" for the same post if it was published late in
+  the evening. Nobody sees this yet because no story hands the canvas real site data.
+status: open
+severity: medium
+origin: Story 4.3 review (2026-09-12) — Blind Hunter. The shim formats from UTC getters because AD-1
+  bans `Intl` and every timezone read; both recording sites are `Etc/UTC` and `contract.test.ts`
+  asserts that condition by name. `RenderInput.site` carries no offset, so a connected site in any
+  other zone is silently hours off on the canvas — a WYSIWYG gap on every date.
+owner: the story that first hands the canvas a connected site's settings snapshot (FR-C2 — Epic 5's
+  canvas, or 4.6's binding matrix if it reads the connection). The editor may use `Intl` (it is
+  `apps/web`, not a core package): it computes the site's offset for the post's instant and passes a
+  numeric offset in minutes; the shim applies it before formatting. AD-1 stays intact.
+location: packages/ghost-shim/src/index.ts `formatDate`; packages/section-runtime/src/core.ts `RenderInput.site`
+reason: not this story's — no caller passes real site data yet, and the recording condition is
+  asserted rather than assumed, so the gap fails loudly the day a non-UTC recording is made
+
+### DW-99: `{{total_paid_members}}` and `{{content_api_url}}` have shim functions no directive can reach
+
+plain: The imitation of Ghost knows how to print the paid-member count and the API address, but no
+  section can ask for them yet, because the list of things a section may ask for by name was fixed in
+  Story 4.1 and does not include them.
+status: open
+severity: low
+origin: Story 4.3 review (2026-09-12) — Acceptance Auditor. `bareHelper` resolves both (the review
+  added the cases) and `contract.test.ts` asserts both against the recordings, but `BARE_HELPERS` in
+  `packages/library/src/vocabulary.ts` is 4.1's closed list and `data-helper` refuses any other name.
+  Appendix B's A29 filter design needs `content_api_url` beside `content_api_key`.
+owner: the first story that authors a design needing either (Story 4.10's pilots are the first that
+  can) — it adds the two names to `BARE_HELPERS`, and the partition test in `agreement.test.ts`
+  already asserts every rendered directive value is exercised.
+location: packages/library/src/vocabulary.ts `BARE_HELPERS`; packages/ghost-shim/src/index.ts `bareHelper`
+reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a review of 4.3 does not do
+  on its own; the functions exist so the change is one line when its story arrives

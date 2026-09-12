@@ -13,8 +13,10 @@ repository, so writing the URL builder from memory and recording afterwards woul
 that agrees with the code because both came from the same guess — standing rule 2's failure exactly.
 
 What it writes to the servers, and nothing else (the story's "Ask First" boundary):
-  * ONE image into the content store. Every seeded feature image is an external static.ghost.org URL
-    that no Ghost will ever resize, so nothing already on either box can exercise a rendition.
+  * ONE image into the content store, PER RUN — Ghost has no image-delete API, so every re-record
+    leaves the previous upload behind (the fixtures already carry `-5.png` and `-7.png`). Every seeded
+    feature image is an external static.ghost.org URL that no Ghost will ever resize, so nothing
+    already on either box can exercise a rendition.
   * the probe theme, uploaded and activated, with the PREVIOUS theme restored at the end — exactly
     as run-verify-all.py already does.
 It creates no post, edits no post and touches no setting. The uploaded image URL reaches the theme
@@ -245,15 +247,18 @@ def record(g, label):
 
     themes = g.api('GET', 'themes/')['themes']
     previous = next((t['name'] for t in themes if t.get('active')), None)
+    if previous is None:
+        raise SystemExit('no active theme reported — refusing to activate the probe with nothing to restore')
     st, res = g.upload_theme(zip_theme(sizes, uploaded))
     name = res['themes'][0]['name']
     print(f'    theme uploaded HTTP {st} -> {name!r} (previous active: {previous!r})')
-    g.api('PUT', f'themes/{name}/activate/')
-    print(f'    theme activated')
-    time.sleep(2)
 
     out = {}
     try:
+        # inside the try, so a failure anywhere after this line still restores the previous theme
+        g.api('PUT', f'themes/{name}/activate/')
+        print(f'    theme activated')
+        time.sleep(2)
         # which resources to render. Chosen from the site itself so the recorder never assumes the
         # seed, and RECORDED, so the fixture says what it was read from.
         _, d = g.content('posts/?limit=all&include=tags,authors&filter=visibility:public'
@@ -297,6 +302,10 @@ def record(g, label):
             values, raw = parse(html)
             if not values:
                 print(f'    [{tname}] HTTP {st} {path} — NO PROBE BLOCK (recording NOT written)')
+                stale = os.path.join(FIXTURES, f'ghost{g.major}', f'{tname}.json')
+                if os.path.exists(stale):
+                    os.remove(stale)  # a recording from an earlier run must not pose as this one
+                    print(f'    [{tname}] removed the stale recording from an earlier run')
                 continue
             # {{content}} is Story 4.4's fixture, not this story's: the recording keeps its SHAPE as
             # evidence and never its body, which is the customer's HTML and not a Ghost fact.
@@ -317,9 +326,8 @@ def record(g, label):
             print(f'    [{tname}] HTTP {st} {path} — {sum(len(v) for v in values.values())} values, '
                   f'{len(raw)} raw blocks')
     finally:
-        if previous:
-            g.api('PUT', f'themes/{previous}/activate/')
-            print(f'    theme RESTORED -> {previous!r}')
+        g.api('PUT', f'themes/{previous}/activate/')
+        print(f'    theme RESTORED -> {previous!r}')
 
     return {
         'ghost_major': g.major,
@@ -404,6 +412,7 @@ def read_version(g):
 
 if __name__ == '__main__':
     env = load_env()
+    failed = False
     for M in (sys.argv[1:] or ['5', '6']):
         try:
             g = Ghost(env[f'GHOST{M}_URL'], env[f'GHOST{M}_STAFF_ACCESS_TOKEN'], M,
@@ -423,6 +432,10 @@ if __name__ == '__main__':
             found = write_fixture_index(FIXTURES)
             print(f'    regenerated packages/ghost-shim/fixtures/index.ts over {len(found)} recordings')
         except urllib.error.HTTPError as e:
+            failed = True
             print(f'  HTTP {e.code}: {e.read()[:400].decode("utf8", "replace")}')
         except Exception as e:
+            failed = True
             print(f'  ERROR: {type(e).__name__}: {e}')
+    # a partial recording must not look like a complete one to a caller or a script
+    sys.exit(1 if failed else 0)

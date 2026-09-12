@@ -18,6 +18,7 @@
 import {
   CONSUMED_DIRECTIVES,
   DIRECTIVES,
+  GET_FORBIDDEN_TARGETS,
   HELPERS,
   IMAGE_SIZES,
   PAGINATED_TARGETS,
@@ -35,8 +36,9 @@ import type { DataBinding, PropDef } from '@inflozo/library'
 // through the walk would be more code for no property.
 import {
   bareHelper,
+  excerpt,
   formatDate,
-  getExpr,
+  getExprs,
   ghostColor,
   ghostUrl,
   imgUrl,
@@ -44,7 +46,6 @@ import {
   pageUrl,
   paginationContext,
   srcset,
-  stripTags,
 } from '@inflozo/ghost-shim'
 import { escapeUserText, isRich, serializeMarks } from './marks.ts'
 import type { PropValue } from './marks.ts'
@@ -366,7 +367,14 @@ function guardMode(el: RuntimeElement, media: boolean): Guard {
 function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, tokens: Tokens): void {
   el.before(doc.createComment(tokens.put(`{{#if ${field}}}`)))
   el.after(doc.createComment(tokens.put('{{/if}}')))
+  guarded.set(el, field)
 }
+/** which field each element is already guarded on, so two directives on one element emit one guard */
+const guarded = new WeakMap<RuntimeElement, string>()
+
+const oneNumberOnePlace = (source: string): string =>
+  `data-repeat="${source}" names the {{#get}} query "${source}", which declares its own limit in ` +
+  `dataBindings, and the element also carries data-repeat-limit. One number, one place: the query's.`
 
 // ─── the walk ────────────────────────────────────────────────────────────────
 
@@ -403,6 +411,24 @@ function refuseUnpaginated(root: RuntimeElement, target?: string): void {
       `${target === undefined ? 'none' : `"${target}"`}. Paginated: ${[...PAGINATED_TARGETS].join(', ')}. ` +
       `A {{pagination}} outside a paginated context is a FATAL render, not a warning.`,
   )
+}
+
+/** R-7, half two, at render: a `{{#get}}` on the error or private template compounds the outage it
+ *  is reporting. `validate.ts`'s `get-target` states it for the design; this is the same rule for a
+ *  render that NAMES one of those targets. A render naming no target is not refused here — unlike
+ *  pagination, a query outside a paginated context is not illegal by itself. */
+function refuseGetOnForbiddenTarget(root: RuntimeElement, input: RenderInput): void {
+  if (input.target === undefined || !GET_FORBIDDEN_TARGETS.has(input.target)) return
+  const declared = input.dataBindings ?? {}
+  for (const el of all(root, '[data-repeat]')) {
+    const key = el.getAttribute('data-repeat') ?? ''
+    if (key in declared) {
+      throw new Error(
+        `data-repeat="${key}" is a {{#get}} and this render names "${input.target}". An error page ` +
+          `that queries the database compounds the outage it is reporting (R-7).`,
+      )
+    }
+  }
 }
 
 /** `users` is the WHOLE of the difference between the emitters at the binding sites: a `UserText`
@@ -512,19 +538,25 @@ function emitBindings(
   for (const el of all(scope, '[data-bind-srcset]')) {
     const spec = consume(el, 'data-bind-srcset') ?? ''
     const path = splitFirst(spec, '|')[0] as string
-    const mode = guardMode(el, true) // a candidate list is the media case BY DEFINITION
+    // A candidate list is the media case BY DEFINITION, so `data-empty="fallback"` is not honoured
+    // here: a fallback would be an unguarded `srcset`, the malformed attribute named above.
+    consume(el, 'data-empty')
     if (users !== null) {
       // ─────────── THE DIFFERENCE (2) — theme ───────────
       el.setAttribute('srcset', tokens.put(srcsetExpr(path)))
-      if (mode === 'hide') wrapGuard(doc, el, guardField(spec), tokens)
+      // ONE guard per element: `src:feature_image|img_url:l` on the same <img> — the authoring
+      // guide's own example — has already wrapped it on the same field.
+      if (guarded.get(el) !== guardField(spec)) wrapGuard(doc, el, guardField(spec), tokens)
     } else {
       // ─────────── THE DIFFERENCE (2) — canvas ───────────
       const v = resolve(path)
-      if (v === null) {
-        if (mode === 'hide') el.remove()
+      // AD-36 (1): `srcset` is a URL sink like `src`, and it takes its own door — through `ghostUrl`.
+      const safe = v === null ? '#' : ghostUrl(v)
+      if (safe === '#') {
+        el.remove()
         continue
       }
-      el.setAttribute('srcset', srcset(v, {
+      el.setAttribute('srcset', srcset(safe, {
         siteUrl: input.site?.url,
         absolute: input.site?.url !== undefined,
       }))
@@ -646,11 +678,15 @@ export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']
   const raw = get(ctx, parsed.path)
   if (isEmpty(raw)) return null
   if (parsed.helper === 'date') return formatDate(raw, parsed.arg) // the format argument is HONOURED
-  // NFR-3's third carve-out, and it lives in the shim so both renderers inherit it: an excerpt is
-  // TEXT-ONLY and SANITISED. It reaches the page as a text node either way, so the sanitiser's job
-  // here is that markup in a body does not become visible angle brackets on the canvas while the
-  // site shows Ghost's own stripped plaintext.
-  if (/(^|\.)(excerpt|custom_excerpt)$/.test(parsed.path)) return stripTags(raw)
+  // `{{excerpt}}` on the theme is Ghost's HELPER, not the field: it prefers `custom_excerpt`,
+  // escapes, and truncates a computed excerpt to 50 words (read in source — see the shim). The
+  // canvas therefore resolves it over the OWNING object. `{{custom_excerpt}}` is a plain field and
+  // falls through. NFR-3's carve-out — text-only — is `textContent`, which every binding uses.
+  if (parsed.helper === undefined && /(^|\.)excerpt$/.test(parsed.path)) {
+    const owner = parsed.path.includes('.') ? get(ctx, parsed.path.replace(/\.excerpt$/, '')) : ctx
+    const text = excerpt((owner ?? {}) as { custom_excerpt?: unknown; excerpt?: unknown })
+    return text === '' ? null : text
+  }
   if (parsed.helper === 'img_url') {
     // Story 4.3: this used to be `String(raw)`, so the canvas showed the ORIGINAL image where the
     // site serves a rendition — a card loading a 2400px photograph behind a 300px slot, which
@@ -740,6 +776,7 @@ function renderTree(
   root.innerHTML = src
   refuseUnrendered(root)
   refuseUnpaginated(root, input.target)
+  refuseGetOnForbiddenTarget(root, input)
 
   const partials: Record<string, string> = {}
   const ghost = input.ghost ?? {}
@@ -770,25 +807,23 @@ function renderTree(
       // rendered nothing. The query comes from the DECLARATION — there is no place in the markup
       // where a filter could be composed (AD-36).
       const query = (input.dataBindings ?? {})[source]
-      const open = query === undefined
-        ? `{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`
-        : `${getExpr(source, input.dataBindings)}\n{{#foreach ${query.source}}}`
+      if (query !== undefined && limit !== null) throw new Error(oneNumberOnePlace(source))
+      // ONE block per query: a filter binding is one, a hand-picked `ids` binding is N in the picked
+      // order (R-20) — each its own {{#get}} around its own {{#foreach}}, because the order is the
+      // point and one get with an `id:a,id:b` filter would answer in the API's order.
+      const opens = query === undefined
+        ? [`{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`]
+        : getExprs(source, input.dataBindings).map((g) => `${g}\n{{#foreach ${query.source}}}`)
       const close = query === undefined ? '{{/foreach}}' : '{{/foreach}}\n{{/get}}'
-      if (query !== undefined && limit !== null) {
-        throw new Error(
-          `data-repeat="${source}" names the {{#get}} query "${source}", which declares its own ` +
-            `limit in dataBindings, and the element also carries data-repeat-limit. One number, ` +
-            `one place: the query's.`,
-        )
-      }
-      let replacement: string
+      let inner: string
       if (partialName !== null) {
         if (partialName in partials) throw new Error(`data-partial "${partialName}" is declared twice`)
         partials[partialName] = body
-        replacement = `${open}\n  {{> "${partialName}"}}\n${close}`
+        inner = `  {{> "${partialName}"}}`
       } else {
-        replacement = `${open}\n${body}\n${close}`
+        inner = body
       }
+      const replacement = opens.map((open) => `${open}\n${inner}\n${close}`).join('\n')
       holder.replaceWith(doc.createComment(tokens.put(replacement)))
     }
   } else {
@@ -820,6 +855,14 @@ function expandRepeats(
     // A `dataBindings` key is not a context path: the shim builds the Content API query and the
     // EDITOR runs it (AD-1 bans `fetch` here), so the rows arrive as an input.
     const query = (input.dataBindings ?? {})[source]
+    if (query !== undefined && limit !== null) throw new Error(oneNumberOnePlace(source))
+    if (query !== undefined && input.getRows?.[source] === undefined) {
+      throw new Error(
+        `data-repeat="${source}" is a {{#get}} and no rows were supplied for it in getRows. The ` +
+          `editor runs the query the shim built; an empty block here would be indistinguishable ` +
+          `from a query that returned nothing.`,
+      )
+    }
     const raw = query === undefined
       ? get(source.startsWith('@') ? (input.ghost ?? {}) : ctx, source)
       : input.getRows?.[source]

@@ -63,17 +63,6 @@ export function textValue(value: unknown): string {
   return value == null ? '' : String(value)
 }
 
-const ENTITIES: Readonly<Record<string, string>> = {
-  '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&#x27;': "'", '&nbsp;': ' ',
-}
-
-/** NFR-3: "excerpts render text-only and sanitised". Tags out, entities back to characters, and
- *  never through `innerHTML` — the result is a text node like every other Ghost value. */
-export function stripTags(value: unknown): string {
-  return textValue(value)
-    .replace(/<[^>]*>/g, '')
-    .replace(/&(?:amp|lt|gt|quot|#39|#x27|nbsp);/g, (e) => ENTITIES[e] ?? e)
-}
 
 // ─── {{img_url}} — the recorded shape, and the reason it is not a pass-through ─
 //
@@ -132,6 +121,9 @@ export function imgUrl(url: unknown, size?: string, opts: ImgUrlOptions = {}): s
   const path = site !== '' && raw.startsWith(site + '/') ? raw.slice(site.length) : raw
   // Not Ghost's to serve — recorded verbatim at every size, and `absolute` does not touch it either.
   if (!path.startsWith(HOSTED_PREFIX)) return raw
+  // An UNLINKED project has no origin to size against: a relative sized URL would resolve against
+  // Inflozo's own origin and 404 — the failure named above — so the value passes through unsized.
+  if (site === '') return raw
 
   const rest = path.slice(HOSTED_PREFIX.length).replace(EXISTING, '')
   const sized = size === undefined
@@ -215,16 +207,34 @@ export function readingTime(
 
 // ─── {{excerpt}} / {{custom_excerpt}} ─────────────────────────────────────────
 // Recorded: `words="10"` takes the first ten whitespace-separated words; `characters="40"` takes the
-// first forty characters, with no ellipsis. Always text-only and sanitised (NFR-3).
+// first forty characters, with no ellipsis. The recorded post has no custom excerpt, so the rest is
+// READ IN SOURCE (2026-09-12, `core/frontend/helpers/excerpt.js` at v5.130.6 and v6.58.0, and
+// `meta/generate-excerpt.js`): the helper takes `custom_excerpt` if set, else `excerpt`; it
+// `_.escape`s the text BEFORE truncating, so a `<em>` in a custom excerpt is printed LITERALLY on the
+// site and is never stripped — the first draft of this shim stripped tags, which was a visible
+// canvas/site disagreement dressed as a sanitiser; a custom excerpt is never truncated (`characters`
+// is reset to its full length and `words` dropped); a computed excerpt defaults to 50 words.
+// NFR-3's "text-only and sanitised" is met by the caller assigning `textContent`: a Ghost value
+// reaches the page as a text node, and an escaped string in a text node IS the literal Ghost shows.
+
+export const EXCERPT_DEFAULT_WORDS = 50
 
 export function excerpt(
-  value: unknown,
+  post: { custom_excerpt?: unknown; excerpt?: unknown },
   opts: { words?: number; characters?: number } = {},
 ): string {
-  const text = stripTags(value)
+  const custom = textValue(post.custom_excerpt)
+  if (custom !== '') return custom
+  const text = textValue(post.excerpt)
   if (opts.characters !== undefined) return text.slice(0, opts.characters)
-  if (opts.words !== undefined) return text.split(/\s+/).filter((w) => w !== '').slice(0, opts.words).join(' ')
-  return text
+  const words = opts.words ?? EXCERPT_DEFAULT_WORDS
+  // sliced from the ORIGINAL, never split and rejoined: the recorded excerpt keeps its line breaks
+  const re = /\S+/g
+  for (let n = 1; ; n++) {
+    const m = re.exec(text)
+    if (m === null) return text
+    if (n === words) return text.slice(0, m.index + m[0].length)
+  }
 }
 
 // ─── the four core helpers (Appendix B) ───────────────────────────────────────
@@ -252,6 +262,12 @@ export function contentApiUrl(siteUrl: unknown): string {
 // a regex rather than `toLocaleString()` because AD-1 bans every locale-sensitive read; the two
 // agree for an integer under the `en` default, which is the only case that reaches here.
 const withCommas = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+/** FR-H5: "the two count helpers render a SAMPLE value on an unlinked project and the real rounded
+ *  string on a linked one". The sample is a routine choice (review, 2026-09-12): a count that shows
+ *  the rounded `N+` shape a real site over 50 members has, so a design is authored against the
+ *  common shape rather than against an exact small number. */
+export const SAMPLE_MEMBERS: Readonly<{ total: number; paid: number }> = { total: 1234, paid: 120 }
 
 /** `{{total_members}}` and `{{total_paid_members}}`, ALWAYS as a string (FR-H5).
  *
@@ -284,6 +300,44 @@ export function totalMembers(count: unknown, major: '5' | '6'): string {
     )
   }
   return `${withCommas(Math.floor(n / step) * step)}+`
+}
+
+// ─── {{t}} ────────────────────────────────────────────────────────────────────
+// Recorded: `{{t "Older posts"}}` with no locale file prints the key itself, on both majors
+// (TEXT|t_unknown). The catalog is Story 4.9's; this resolves a key and its `{placeholder}` params
+// against whatever catalog it is HANDED, and prints the key when the catalog has no entry — which is
+// exactly what Ghost does.
+
+export function t(
+  key: string,
+  params: Readonly<Record<string, unknown>> = {},
+  catalog: Readonly<Record<string, string>> = {},
+): string {
+  const template = catalog[key] ?? key
+  return template.replace(/\{([A-Za-z0-9_.]+)\}/g, (m, name: string) =>
+    Object.prototype.hasOwnProperty.call(params, name) ? textValue(params[name]) : m,
+  )
+}
+
+// ─── {{tags}} / {{authors}} ───────────────────────────────────────────────────
+// Recorded, both majors: `{{tags}}` is `<a href="/tag/systems/">Systems</a>` joined by `, ` — the
+// href RELATIVE, the API's absolute url with the site's origin dropped, like `{{url}}` — and
+// `autolink="false"` is the names joined by the separator. The shim returns the ITEMS; the caller
+// builds the nodes (NFR-3, as `{{navigation}}`).
+
+export const TAXONOMY_SEPARATOR = ', '
+
+export type TaxonomyItem = { name: string; url: string }
+
+export function taxonomyItems(
+  rows: readonly { name?: unknown; url?: unknown }[] = [],
+  opts: { siteUrl?: string } = {},
+): TaxonomyItem[] {
+  const site = opts.siteUrl === undefined ? '' : stripSlash(opts.siteUrl)
+  return rows.map((r) => {
+    const url = ghostUrl(r.url)
+    return { name: textValue(r.name), url: site !== '' && url.startsWith(site + '/') ? url.slice(site.length) : url }
+  })
 }
 
 // ─── {{asset}} ────────────────────────────────────────────────────────────────
@@ -423,7 +477,11 @@ export type ContentQuery = {
  *  may reference only TEMPLATE-level context, never the current render context. Handlebars is
  *  synchronous and `{{#get}}` is not, so a filter naming the current row cannot be resolved — it
  *  would silently query for the literal text. */
-const RENDER_CONTEXT = /\{|\}|@|\bthis\b|\.\.\//
+const RENDER_CONTEXT = /[{}@]|(?<![\w-])this\.|\.\.\//
+/** `getExprs` builds Handlebars from these by interpolation, so a character that could close the
+ *  hash or the mustache is refused HERE, at emission — `validate.ts` admits `"` in a filter and the
+ *  runtime is handed `dataBindings` without ever running the validator (AD-36 2). */
+const BREAKS_EXPR = /["\n\r]/
 
 export function getQuery(
   key: string,
@@ -439,9 +497,15 @@ export function getQuery(
   if (!(GET_SOURCES as readonly string[]).includes(b.source)) {
     throw new Error(`dataBindings.${key}.source "${b.source}" is not queryable — ${GET_SOURCES.join(', ')}.`)
   }
+  for (const v of [b.filter, b.order, ...(b.ids ?? [])]) {
+    if (v !== undefined && BREAKS_EXPR.test(String(v))) {
+      throw new Error(`dataBindings.${key} carries a quote or a line break, which would close the {{#get}} expression it is written into (AD-36 2).`)
+    }
+  }
   if (b.ids !== undefined) {
     // R-20's hand-picked order: N single-id gets, IN THIS ORDER. One query each, because the order
     // is the point and a filter would return them in the API's order instead.
+    if (b.ids.length === 0) throw new Error(`dataBindings.${key}.ids is empty — a hand-picked order names at least one id (R-20).`)
     return b.ids.map((id) => ({ resource: b.source, params: { filter: `id:${id}`, limit: '1' } }))
   }
   if (b.filter !== undefined && RENDER_CONTEXT.test(b.filter)) {
@@ -458,15 +522,18 @@ export function getQuery(
   return [{ resource: b.source, params }]
 }
 
-/** The theme half of the same declaration — `{{#get "posts" filter="…" limit="…"}}`. Built from the
- *  VALIDATED parts, never concatenated from markup (AD-36 2). */
-export function getExpr(key: string, bindings: Readonly<Record<string, DataBinding>> = {}): string {
-  const queries = getQuery(key, bindings)
-  const first = queries[0] as ContentQuery
-  const hash = Object.entries(first.params)
-    .map(([k, v]) => ` ${k}="${v}"`)
-    .join('')
-  return `{{#get "${first.resource}"${hash}}}`
+/** The theme half of the same declaration — `{{#get "posts" filter="…" limit="…"}}`, ONE PER QUERY:
+ *  a filter binding is one block, a hand-picked `ids` binding is N blocks in the picked order
+ *  (R-20). The first draft emitted only the first, so a hand-picked section shipped ONE post on the
+ *  live site while the canvas showed every pick. Built from the VALIDATED parts, never concatenated
+ *  from markup (AD-36 2). */
+export function getExprs(key: string, bindings: Readonly<Record<string, DataBinding>> = {}): string[] {
+  return getQuery(key, bindings).map((q) => {
+    const hash = Object.entries(q.params)
+      .map(([k, v]) => ` ${k}="${v}"`)
+      .join('')
+    return `{{#get "${q.resource}"${hash}}}`
+  })
 }
 
 // ─── the bare helpers (`data-helper`, §7.3 gap row 9) ─────────────────────────
@@ -505,7 +572,11 @@ export function bareHelper(name: string, ctx: ShimContext = {}): string {
       // the caller builds the nodes from `navigationItems` — see NFR-3 above
       throw new Error('{{navigation}} resolves to a list of items: call navigationItems() and build nodes')
     case 'total_members':
-      return totalMembers(ctx.members?.total ?? 0, ctx.major ?? '6')
+      return totalMembers(ctx.members?.total ?? SAMPLE_MEMBERS.total, ctx.major ?? '6')
+    case 'total_paid_members':
+      return totalMembers(ctx.members?.paid ?? SAMPLE_MEMBERS.paid, ctx.major ?? '6')
+    case 'content_api_url':
+      return contentApiUrl(ctx.siteUrl)
     case 'content_api_key':
       return contentApiKey()
     case 'statusCode':

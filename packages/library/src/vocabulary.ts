@@ -80,8 +80,8 @@ export function safeUrl(value: unknown): string {
  *  The half no build-time gate can reach is named in AD-36 itself: on the THEME side the emitted
  *  `style="--tag-accent: {{accent_color}}"` is correct Handlebars and the value arrives at render, on
  *  the customer's site, after every gate has run. This function closes the canvas completely; the
- *  canvas emitter calls it, and Story 4.3's `packages/ghost-shim` WILL call the same copy when it
- *  renders a recorded Ghost value on the canvas (AD-36 amended, Story 4.2; DW entry owned by 4.3). */
+ *  canvas emitter reaches it through `packages/ghost-shim`'s `ghostColor`, which IS this function with the
+ *  pack's accent token — one copy, one door (AD-36 amended, Story 4.2; DW-95 closed by Story 4.3). */
 export function safeCssColor(value: unknown, fallbackToken: string): string {
   const fallback = CUSTOM_PROPERTY_RE.test(fallbackToken) ? `var(${fallbackToken})` : 'inherit'
   const v = String(value == null ? '' : value).trim()
@@ -433,7 +433,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   },
   'data-bind-srcset': {
     // exit 4 — the binding grammar produces one expression per attribute, and srcset needs a set.
-    summary: 'exit 4 · a responsive image set — "feature_image|img_url"; the shim emits Ghost-shaped srcset and sizes',
+    summary: 'exit 4 · a responsive image set — "feature_image|img_url"; the shim emits a Ghost-shaped srcset, one candidate per image_sizes key (sizes is the design\'s own attribute, never emitted)',
     guardable: true,
     parse: (v) => {
       const [path, helper] = splitFirst(v, '|')

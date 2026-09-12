@@ -30,13 +30,16 @@ import type { DataBinding } from '@inflozo/library'
 import { CAPTURE_COMMAND, RECORDINGS } from '../fixtures/index.ts'
 import {
   CONTENT_API_KEY_PLACEHOLDER,
+  EXCERPT_DEFAULT_WORDS,
+  SAMPLE_MEMBERS,
+  TAXONOMY_SEPARATOR,
   assetUrl,
   bareHelper,
   contentApiKey,
   contentApiUrl,
   excerpt,
   formatDate,
-  getExpr,
+  getExprs,
   getQuery,
   ghostColor,
   ghostUrl,
@@ -50,7 +53,8 @@ import {
   readingTime,
   srcset,
   srcsetCandidates,
-  stripTags,
+  t,
+  taxonomyItems,
   totalMembers,
 } from './index.ts'
 
@@ -353,34 +357,45 @@ test('{{reading_time}} floors at one minute, the way Ghost does', () => {
   })
 })
 
-test('{{excerpt}} — Ghost own fallback, text-only, with words= and characters= as recorded', () => {
+test('{{excerpt}} — Ghost own fallback, with words= and characters= as recorded', () => {
   assertBoth('{{excerpt}}', (major) => {
     const post = input<{ excerpt: string; custom_excerpt: string | null }>(major, 'post', 'post', '{{excerpt}}')
-    assert.equal(excerpt(post.excerpt), recorded(major, 'post', 'EXCERPT', 'excerpt', '{{excerpt}}'))
+    // the recorded post has NO custom excerpt, so what the recording proves is the computed half;
+    // the recorded excerpt is shorter than the 50-word default, which is why the default is
+    // observable only as "not truncated" here (read in source: meta/generate-excerpt.js)
+    assert.equal(post.custom_excerpt, null, 'the recorded post grew a custom excerpt — re-read this test')
+    assert.ok(post.excerpt.split(/\s+/).length < EXCERPT_DEFAULT_WORDS)
+    assert.equal(excerpt(post), recorded(major, 'post', 'EXCERPT', 'excerpt', '{{excerpt}}'))
     assert.equal(
-      excerpt(post.excerpt, { words: 10 }),
+      excerpt(post, { words: 10 }),
       recorded(major, 'post', 'EXCERPT', 'excerpt_words_10', '{{excerpt words="10"}}'),
     )
     assert.equal(
-      excerpt(post.excerpt, { characters: 40 }),
+      excerpt(post, { characters: 40 }),
       recorded(major, 'post', 'EXCERPT', 'excerpt_characters_40', '{{excerpt characters="40"}}'),
     )
     assert.equal(
-      excerpt(post.custom_excerpt),
+      textValueOf(post.custom_excerpt),
       recorded(major, 'post', 'EXCERPT', 'custom_excerpt', '{{custom_excerpt}}'),
     )
-    // NFR-3: text-only and sanitised. Never through innerHTML, so a body that carries markup
-    // arrives as characters and not as elements.
-    assert.equal(stripTags('<script>alert(1)</script>ok &amp; fine'), 'alert(1)ok & fine')
   })
+  // READ IN SOURCE (helpers/excerpt.js at v5.130.6 and v6.58.0, 2026-09-12): a custom excerpt wins,
+  // is never truncated, and markup in it is ESCAPED, never stripped — the first draft stripped tags,
+  // which was a visible canvas/site disagreement. A text node of the escaped string is the literal.
+  assert.equal(excerpt({ custom_excerpt: '<em>x</em>y', excerpt: 'z' }, { words: 1 }), '<em>x</em>y')
+  assert.equal(excerpt({ excerpt: 'a b c' }, { words: 2 }), 'a b')
+  const long = Array.from({ length: EXCERPT_DEFAULT_WORDS + 5 }, (_, i) => `w${i}`).join(' ')
+  assert.equal(excerpt({ excerpt: long }).split(' ').length, EXCERPT_DEFAULT_WORDS)
 })
+const textValueOf = (v: unknown): string => (v == null ? '' : String(v))
 
 test('{{title}} and {{url}} come through as the recorded strings', () => {
   assertBoth('{{title}} / {{url}}', (major) => {
     const post = input<{ title: string; url: string }>(major, 'post', 'post', '{{title}}')
     assert.equal(post.title, recorded(major, 'post', 'POST', 'title', '{{title}}'))
-    // {{url}} is RELATIVE and {{url absolute="true"}} is not — the API field is the absolute form,
-    // so the canvas must relativise rather than print what the API handed it.
+    // {{url}} is RELATIVE and {{url absolute="true"}} is not — the API field is the absolute form.
+    // The canvas deliberately prints the ABSOLUTE form: a relative href on the canvas would resolve
+    // against Inflozo's origin. The relation between the two is what is asserted here.
     const rel = recorded(major, 'post', 'POST', 'url', '{{url}}')
     const abs = recorded(major, 'post', 'POST', 'url_absolute', '{{url absolute="true"}}')
     assert.equal(post.url, abs, 'the API url is not the absolute form the helper prints')
@@ -396,9 +411,12 @@ test('{{tags}} and {{authors}} — the recorded names, separators and autolink f
     const tags = input<{ name: string; url: string }[]>(major, 'post', 'post_tags', '{{tags}}')
     const authors = input<{ name: string; url: string }[]>(major, 'post', 'post_authors', '{{authors}}')
     const site = recording(major, 'post', '{{tags}}').site
-    const plain = (rows: { name: string }[], sep = ', ') => rows.map((r) => r.name).join(sep)
+    // the SHIM's items, and Ghost's own markup rebuilt from them — as {{navigation}} is
+    const plain = (rows: { name: string; url: string }[], sep = TAXONOMY_SEPARATOR) =>
+      taxonomyItems(rows, { siteUrl: site }).map((r) => r.name).join(sep)
     const linked = (rows: { name: string; url: string }[]) =>
-      rows.map((r) => `<a href="${ghostUrl(r.url).slice(site.length)}">${r.name}</a>`).join(', ')
+      taxonomyItems(rows, { siteUrl: site }).map((r) => `<a href="${r.url}">${r.name}</a>`).join(TAXONOMY_SEPARATOR)
+    assert.ok(taxonomyItems(tags, { siteUrl: site }).every((i) => i.url.startsWith('/')), 'the href is relative, as recorded')
 
     assert.equal(plain(tags), recorded(major, 'post', 'TAGS', 'tags_plain', '{{tags autolink="false"}}'))
     assert.equal(plain(tags, ' / '), recorded(major, 'post', 'TAGS', 'tags_sep', '{{tags separator=" / "}}'))
@@ -411,7 +429,6 @@ test('{{tags}} and {{authors}} — the recorded names, separators and autolink f
 // ─── the four core helpers ────────────────────────────────────────────────────
 
 test('{{total_members}} — the recorded count produces the recorded string, on each major', () => {
-  const seen: Record<Major, string> = { 5: '', 6: '' }
   assertBoth('{{total_members}}', (major) => {
     const members = input<{ total: number; paid: number }>(major, 'index', 'members', '{{total_members}}')
     const want = recorded(major, 'index', 'CORE', 'total_members', '{{total_members}}')
@@ -420,16 +437,13 @@ test('{{total_members}} — the recorded count produces the recorded string, on 
       totalMembers(members.paid, major),
       recorded(major, 'index', 'CORE', 'total_paid_members', '{{total_paid_members}}'),
     )
-    seen[major] = want
     // FR-H5: always a string, never a number
     assert.equal(typeof totalMembers(members.total, major), 'string')
   })
-  // The two majors are expressed, never averaged. Where the recordings agree the shim agrees; where
-  // they differ it reproduces each side's own string. Both boxes sat at the same count when this was
-  // captured, so what is asserted here is the agreement AT THAT COUNT — and the divergence
-  // MEASUREMENTS §15f executed (Ghost 6 comma-formats at ≤ 50 and counts gift subscriptions, Ghost 5
-  // does neither) is asserted below at the count where it is visible.
-  assert.equal(seen[5], seen[6], 'the recordings disagree at this count and the shim does not')
+  // The two majors are expressed, never averaged: each side is asserted against ITS OWN recording
+  // above, and nothing here asserts the two boxes hold the same count. The divergence MEASUREMENTS
+  // §15f executed (Ghost 6 comma-formats at ≤ 50 and counts gift subscriptions, Ghost 5 does
+  // neither) produces identical strings for every count under 1,000, so it is not observable below.
   assert.equal(totalMembers(1234, '6'), totalMembers(1234, '5'))
   assert.equal(totalMembers(45, '6'), '45')
   assert.equal(totalMembers(45, '5'), '45')
@@ -442,6 +456,10 @@ test('{{total_members}} — the recorded count produces the recorded string, on 
   assert.equal(totalMembers(10001, '6'), '10,000+')
   // above 100,000 MEASUREMENTS records only "humanNumber lowercased" and no execution
   assert.throws(() => totalMembers(200000, '6'), /not recorded/)
+  // FR-H5: a SAMPLE value on an unlinked project, in the rounded shape a real site over 50 has
+  assert.equal(bareHelper('total_members'), totalMembers(SAMPLE_MEMBERS.total, '6'))
+  assert.match(bareHelper('total_members'), /\+$/)
+  assert.equal(bareHelper('total_paid_members'), totalMembers(SAMPLE_MEMBERS.paid, '6'))
 })
 
 test('{{content_api_key}} renders an inert placeholder and the key is absent from the output', () => {
@@ -570,13 +588,23 @@ test('{{#get}} builds the Content API query from the DECLARATION, and the record
       resource: 'posts',
       params: { filter: filter, limit: '3', order: 'published_at desc' },
     })
-    assert.equal(
-      getExpr('featuredCraft', bindings),
-      `{{#get "posts" filter="${filter}" limit="3" order="published_at desc"}}`,
+    assert.deepEqual(
+      getExprs('featuredCraft', bindings),
+      [`{{#get "posts" filter="${filter}" limit="3" order="published_at desc"}}`],
     )
   })
-  // R-20: a hand-picked order is N single-id gets, IN THAT ORDER
+  // R-20: a hand-picked order is N single-id gets, IN THAT ORDER — on BOTH halves
   assert.deepEqual(getQuery('picked', bindings).map((q) => q.params['filter']), ['id:aaa', 'id:bbb'])
+  assert.deepEqual(getExprs('picked', bindings), [
+    '{{#get "posts" filter="id:aaa" limit="1"}}',
+    '{{#get "posts" filter="id:bbb" limit="1"}}',
+  ])
+  assert.throws(() => getExprs('none', { none: { source: 'posts', ids: [] } }), /at least one id/)
+  // AD-36 (2) at EMISSION: a value that would close the expression is refused, validator or not
+  assert.throws(() => getExprs('q', { q: { source: 'posts', filter: 'tag:x" }}<script>' } }), /quote or a line break/)
+  assert.throws(() => getExprs('q', { q: { source: 'posts', order: 'slug asc\n' } }), /quote or a line break/)
+  // a literal that merely CONTAINS "this" is a legitimate NQL value
+  assert.equal(getExprs('w', { w: { source: 'posts', filter: 'tag:this-week' } })[0], '{{#get "posts" filter="tag:this-week"}}')
   // an undeclared key, and a filter reaching for the current row
   assert.throws(() => getQuery('nope', bindings), /names no dataBindings key/)
   assert.throws(
@@ -637,6 +665,17 @@ test('AD-36 / DW-95 — a Ghost colour that is not a colour falls back, and a re
     // and it is the library's one copy, not a second parser grown here
     assert.equal(ghostColor(accent), safeCssColor(accent, '--accent'))
   })
+})
+
+// ─── {{t}} ────────────────────────────────────────────────────────────────────
+
+test('{{t}} prints the key when the catalog has no entry, as Ghost does, and fills {placeholders}', () => {
+  assertBoth('{{t}}', (major) => {
+    // the probe theme ships no locales/, so this is the recorded no-entry case
+    assert.equal(t('Older posts'), recorded(major, 'index', 'TEXT', 't_unknown', '{{t "Older posts"}}'))
+  })
+  assert.equal(t('pager.older', { n: 3 }, { 'pager.older': '{n} older posts' }), '3 older posts')
+  assert.equal(t('pager.older', {}, { 'pager.older': '{n} older posts' }), '{n} older posts', 'an unfilled placeholder stays VISIBLE')
 })
 
 // ─── the bare helpers ─────────────────────────────────────────────────────────
