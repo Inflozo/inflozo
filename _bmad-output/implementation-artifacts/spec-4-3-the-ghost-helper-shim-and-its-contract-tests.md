@@ -209,7 +209,7 @@ image URLs rather than normalising them away. The three directives the shim owns
 Five layers ran (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier); none failed. Dismissed as noise or out of reach: 11.
 
-- [ ] [Review][Decision] (open — `## Questions for the owner`) The sample design from Story 4.1 still draws page numbers as an empty list — `packages/library/fixtures/reference-design/index.html:66` carries `<ol data-pagination="numbers">`, the form DW-97 corrected in the authoring guide; the runtime now writes "1 / 3" as the text of an `<ol>`. Editing that fixture is an Ask-First boundary of this spec, so the question is under `## Questions for the owner`.
+- [x] [Review][Decision] (ruled option 1, owner 2026-09-12 — fixed) The sample design from Story 4.1 still draws page numbers as an empty list — `packages/library/fixtures/reference-design/index.html:66` carries `<ol data-pagination="numbers">`, the form DW-97 corrected in the authoring guide; the runtime now writes "1 / 3" as the text of an `<ol>`. Editing that fixture is an Ask-First boundary of this spec, so the question is under `## Questions for the owner`.
 - [x] [Review][Patch] A hand-picked `{{#get}}` (`ids`) emits ONE post on the theme and every row on the canvas [packages/ghost-shim/src/index.ts:463]
 - [x] [Review][Patch] `getExpr` interpolates `filter`/`order`/ids into Handlebars with no emit-time refusal of `"`, braces or newlines — the runtime never runs `validate.ts` [packages/ghost-shim/src/index.ts:447]
 - [x] [Review][Patch] `RENDER_CONTEXT`'s `\bthis\b` refuses a legitimate `tag:this-week` [packages/ghost-shim/src/index.ts:426]
@@ -480,4 +480,4 @@ still says `<ol data-pagination="numbers"></ol>` — a list with nothing in it.
 2. Leave it until DW-97 is decided in Story 4.10 — the sample stays out of step with the guide until
    then.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-12).** Changed in the Fix phase the same day: `packages/library/fixtures/reference-design/index.html` now carries `<span class="ref__numbers" data-pagination="numbers">1 / 1</span>`, the indicator form the guide shows.
