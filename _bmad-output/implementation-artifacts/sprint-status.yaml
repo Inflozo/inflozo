@@ -76,7 +76,7 @@ development_status:
   4-2-the-section-runtime-one-source-two-emitters-proven-to-agree: done
   4-3-the-ghost-helper-shim-and-its-contract-tests-against-recorde: done
   4-4-orbit-weekly-and-the-three-fixtures: done
-  4-5-the-controls-engine-and-the-control-vocabulary: review
+  4-5-the-controls-engine-and-the-control-vocabulary: done
   4-6-context-aware-binding-and-empty-value-guards: backlog
   4-7-core-and-the-behaviour-module-registry: backlog
   4-8-the-baseline-floor-and-the-three-tools-that-enforce-it: backlog
