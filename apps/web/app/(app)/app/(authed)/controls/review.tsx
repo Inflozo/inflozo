@@ -22,10 +22,21 @@ import { Sidebar, type Edit } from '@/components/controls/sidebar'
    a CONTENT, item or data change re-renders the section with `renderCanvas`, timed, and the last duration
    is on the iframe as `data-render-ms` for the review harness (NFR-1's 100 ms).
 
+   THE PAGE IS A WORKSPACE THE HEIGHT OF THE WINDOW, as S4 draws the editor (`S4 Editor.dc.html:28`, `:62-63`):
+   the window never scrolls; the canvas fills its pane and scrolls INSIDE ITSELF, and the panel scrolls on its
+   own — one scroller under the wheel wherever it is, and never two scrollbars side by side. Both bars are
+   slim, with no arrow buttons: `::-webkit-scrollbar`, because the standard `scrollbar-width: thin` still
+   draws arrows in Chromium on Linux and Windows, and Chrome ignores the `::-webkit-` rules on any element
+   that sets the standard ones. ponytail: Firefox keeps its own bar — add `scrollbar-width` under an
+   `@supports` for it if it is ever the owner's browser.
+   This replaced a canvas sized to its section inside a scrolling page (the owner's findings 5 and 6,
+   2026-09-13): with the window's scrollbar beside the panel's it "looks really bad", and because the section
+   grows taller as it widens, collapsing the panel locked the sized iframe into a scrollbar with nothing to
+   scroll — 15px of arrows at a 0px range, measured with real scrollbars on production.
+
    THE PANEL IS DOCKED, as S4c draws the editor's Controls sidebar (`S4 Editor.dc.html:337`): 280 wide, flush
-   to the right edge, a hairline on its left, paper, no radius, the section's name over it — and the height
-   of the viewport, scrolling on its own while the canvas column scrolls with the page (the owner's finding 3,
-   2026-09-13; it was a rounded card 48px in from the edge). It COLLAPSES to a 44px rail with one "Show
+   to the right edge, a hairline on its left, paper, no radius, the section's name over it (the owner's
+   finding 3, 2026-09-13; it was a rounded card 48px in from the edge). It COLLAPSES to a 44px rail with one "Show
    controls" button, D8's Layers rail mirrored (`D8 Editor Below 1440.dc.html:194`) — no frame draws a
    collapse at full width, so the editor's own is Story 5.1's to settle (DW-114). Below `tablet` the panel
    stacks under the canvas and does not collapse. */
@@ -130,22 +141,7 @@ export function Review({
   useEffect(() => {
     let alive = true
     const el = frame.current
-    const ready = () => {
-      const c = canvas()
-      if (!c || !el) return
-      paint(current.current)
-      // THE IFRAME IS AS TALL AS THE SECTION, so the page scrolls once rather than twice. Its border counts:
-      // the app's box-sizing is border-box, and a height of the section alone left the canvas document 2px
-      // taller than its window — an inner scrollbar that caught the wheel and held the page still (the
-      // owner's finding 2, measured on production 2026-09-13). The section's height is rounded UP for the
-      // same reason: a fraction short is a scrollbar too.
-      const fit = () => {
-        el.style.height = `${Math.ceil(c.mount.getBoundingClientRect().height) + el.offsetHeight - el.clientHeight}px`
-      }
-      const View = c.doc.defaultView?.ResizeObserver
-      if (View) new View(fit).observe(c.mount)
-      fit()
-    }
+    const ready = () => paint(current.current)
     void loadIcons().then((m) => {
       if (!alive) return
       icons.current = m.iconDrawing
@@ -161,20 +157,20 @@ export function Review({
   }, [])
 
   return (
-    <div className="flex flex-1 flex-col tablet:flex-row">
-      <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-8 tablet:px-12 tablet:py-12">
+    <div className="flex flex-1 flex-col tablet:h-dvh tablet:flex-none tablet:flex-row tablet:overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 px-4 py-6 tablet:px-8">
         {children}
         <iframe
           ref={frame}
           src="controls/frame"
           title="The controls sample section"
-          className="block min-h-[480px] w-full rounded border border-line bg-surface"
+          className="block h-[70dvh] w-full rounded border border-line bg-surface tablet:h-auto tablet:min-h-0 tablet:flex-1"
         />
       </div>
       <aside
         id="section-controls"
         aria-label="Section controls"
-        className={`flex flex-col gap-3 border-t border-line bg-paper p-4 tablet:sticky tablet:top-0 tablet:h-dvh tablet:w-[280px] tablet:shrink-0 tablet:self-start tablet:overflow-y-auto tablet:border-l tablet:border-t-0 ${collapsed ? 'tablet:hidden' : ''}`}
+        className={`flex flex-col gap-3 border-t border-line bg-paper p-4 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-line-strong [&::-webkit-scrollbar]:w-2 tablet:h-full tablet:w-[280px] tablet:shrink-0 tablet:overflow-y-auto tablet:border-l tablet:border-t-0 ${collapsed ? 'tablet:hidden' : ''}`}
       >
         <div className="flex items-center justify-between gap-2">
           <span className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">{entry.name}</span>
@@ -203,7 +199,7 @@ export function Review({
         />
       </aside>
       {collapsed ? (
-        <div className="hidden w-11 shrink-0 flex-col items-center border-l border-line bg-paper py-[6px] tablet:sticky tablet:top-0 tablet:flex tablet:h-dvh tablet:self-start">
+        <div className="hidden w-11 shrink-0 flex-col items-center border-l border-line bg-paper py-[6px] tablet:flex tablet:h-full">
           <button
             ref={show}
             type="button"

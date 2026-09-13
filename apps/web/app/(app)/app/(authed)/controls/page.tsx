@@ -24,8 +24,8 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
 export default function ControlsReview() {
   const entry = sample()
 
-  // No `main` here: the shell owns the page's one `<main>` (kit/page.tsx). The heading scrolls with the
-  // canvas; the panel docks to the right edge (review.tsx).
+  // No `main` here: the shell owns the page's one `<main>` (kit/page.tsx). The heading sits over the canvas
+  // pane; the panel docks to the right edge, and neither moves the window (review.tsx).
   return (
     <Review
       entry={entry}

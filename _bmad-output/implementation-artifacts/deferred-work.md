@@ -3051,4 +3051,7 @@ reason: Story 5.1's acceptance criteria give a "collapsible left Layers panel" a
   moving between the two toggles) or put the choice to the owner in R-83 shape — not silently drop it. The
   same finding's canvas half carries over: the review page's canvas scrolled 2 px on its own and held the
   page still, and 5.1's canvas, which "keeps its own scroll" (Story 5.22), must have exactly one scroller
-  under the wheel.
+  under the wheel. The owner's two later findings the same day settle how: the review page is now S4's
+  workspace — a window that never scrolls, a canvas that scrolls inside its own frame, a panel that scrolls on
+  its own — with slim 8 px `::-webkit-scrollbar` bars and no arrow buttons, because two scrollbars side by side
+  "looks really bad" and a canvas sized to its section left a scrollbar with nothing to scroll.

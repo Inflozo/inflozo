@@ -672,7 +672,7 @@ on Background role, and none on Card tint.
   refits with a 0 px range; the Link popover at 1092–1432 of 1440, with its control — anchored at the
   trigger (left 1177) it would have ended at 1517; axe-core at WCAG 2.1 AA zero violations at 1440 and 390.
 - `pnpm check` → exit 0 after the fix.
-- **After the fix, on production** — **Vercel** `GET /v6/deployments` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+- **After findings 1–4 were fixed, on production** — **Vercel** `GET /v6/deployments` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
   `VERCEL_PROJECT`) → the production deployment for `166f87d0` READY; the same harness against
   `https://app.inflozo.com/controls` → every check PASS with the local figures above (inner range 0 px, the wheel
   moving the page 320 px and the canvas 0, the panel flush at 0 px, 900 tall, square, 280 wide; the reset an
@@ -680,6 +680,17 @@ on Background role, and none on Card tint.
   axe zero violations at 1440 and 390), and the Supabase fixture user deleted with the count back at 9.
   Negative control, signed out: `curl -sI https://app.inflozo.com/controls` → 307 to `/sign-in`,
   `/controls/frame` → 303.
+- **Findings 5 and 6, before, on production at `166f87d0`, with real scrollbars** (Chromium launched without
+  `--hide-scrollbars`): collapsed, the canvas carried a 15 px scrollbar at a 0 px range at 1440, 1536 and
+  1920; the window scrolled 436 px (1440) and 526 px (1536, 1920) beside the panel.
+- **Findings 5 and 6, after, on the local dev server** (the real Supabase project, same fixture sign-in, users
+  9 → 9): at 1440×900, 1536×864 and 1920×1080, expanded and collapsed, the window's scroll range 0 px, the canvas
+  showing its 8 px bar exactly when it has something to scroll (a 281–503 px range), and the canvas filling its
+  pane to 24 px above the window's foot; a 400 px wheel over the canvas scrolled the canvas 281 px and the
+  window 0; with Content open the panel 900 px tall at the right edge, square, 280 wide, an 8 px bar, and a
+  wheel over it scrolled the panel 300 px and the window 0; findings 1, 3 and 4's checks still PASS; axe-core
+  at WCAG 2.1 AA zero violations at 1440 and 390, with a positive control — an image with no `alt` injected
+  into the same page is reported as `image-alt`.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
@@ -695,7 +706,7 @@ the sample. Deploy records the deployment it runs on under "## Verification".
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|-----------|------------|---------------------|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in as you normally do. | — | Your dashboard. |
-| 2 | `https://app.inflozo.com/controls` | Controls review | Type the address into the browser. | — | On the left, a sample section: a small line "This week at Orbit Weekly", the heading "Seven links, checked by hand", a picture, three feature cards with small icons, a "Read the latest issue" link and a "From the archive" list of three post titles. On the right, a panel flush against the window's right edge and as tall as the window, with square corners: the sample's name at its top beside a small panel button, then a white card holding Columns, Card style, Alignment, Show icons and Rule under heading; below it the headings Content, Arrangement, Style and Data; "Reset this design" at the very bottom. Nowhere a pixel size, a percentage or a colour code. With the mouse over the section, the mouse wheel scrolls the whole page, and the section has no scrollbar of its own. |
+| 2 | `https://app.inflozo.com/controls` | Controls review | Type the address into the browser. | — | On the left, a sample section: a small line "This week at Orbit Weekly", the heading "Seven links, checked by hand", a picture, three feature cards with small icons, a "Read the latest issue" link and a "From the archive" list of three post titles. On the right, a panel flush against the window's right edge and as tall as the window, with square corners: the sample's name at its top beside a small panel button, then a white card holding Columns, Card style, Alignment, Show icons and Rule under heading; below it the headings Content, Arrangement, Style and Data; "Reset this design" at the very bottom. Nowhere a pixel size, a percentage or a colour code. The page itself never scrolls: the section scrolls inside its own frame and the panel scrolls on its own, each with one slim scrollbar and no arrow buttons. |
 | 3 | same | Panel, white card | Press − beside Columns, then press the small reset arrow that appears beside its name. | — | The cards re-flow into two columns the moment you press, and a small curved arrow appears beside Columns (hovering it says "Reset Columns"). Pressing it brings back three columns, and the arrow goes away. |
 | 4 | same | Panel, white card | Set Alignment to Centre. Press Line under "Rule under heading". Set Alignment back to Left. | — | The heading centres, and "Rule under heading" turns grey with "Not available while the heading is centred." under it; pressing Line does nothing. Back at Left, the rule returns as it was. |
 | 5 | same | Panel, Style | Open Style. Press Contrast under Background role, then press Accent. | — | Card tint; a grey note beginning "There is no image focus here."; then Background role, Vertical spacing and Top divider. Background role shows five swatches — Base, Surface, Accent, Contrast, Image — with Accent and Image grey and "This design is drawn for plain grounds, so accent and image are not offered." under them, and a small moon with the words "Dark override" beside its name; Card tint has no moon. Contrast turns the section dark at once; Accent does nothing. |
@@ -710,7 +721,7 @@ the sample. Deploy records the deployment it runs on under "## Verification".
 | 14 | same | Content, Picture | Press Replace and choose another picture. | — | The section's picture changes. |
 | 15 | same | Panel, Data | Open Data. Set Show to 5 and Order to Oldest. | — | "From the archive" lists five titles, oldest first. In the panel the posts are grey, and a grey "+ Add post" reads "These come from Ghost, so there is nothing to add here." — you choose how many and in what order, never which. |
 | 16 | same | Panel foot | Press "Reset this design". | — | Every setting returns to how it started — three columns, Left, Base background, three posts newest first — while the words you changed and the features you added stay. |
-| 17 | same | Panel, top | Press the small panel button beside the sample's name. Then press the same button on the thin strip left at the right edge. | — | The panel folds away to a thin strip and the section widens to fill the space; pressing the strip's button brings the panel back as it was. |
+| 17 | same | Panel, top | Press the small panel button beside the sample's name. Then press the same button on the thin strip left at the right edge. | — | The panel folds away to a thin strip and the section widens to fill the space, with no extra scrollbar appearing; pressing the strip's button brings the panel back as it was. |
 | 18 | same | Whole page | Reload the page. | — | Everything is back to the sample. Saving arrives with the editor. |
 
 If a step shows something different, note its number and what you saw — those are fixed inside this
@@ -729,7 +740,8 @@ Review. Four findings, each reproduced on production before it was fixed and fix
    production:* the canvas document was 2 px taller than its window (990 against 988), and a 400 px wheel over
    it moved the canvas 2 px and the page 0. *Cause:* the iframe was sized to the section's height, but the
    app's `box-sizing: border-box` spent 2 px of that on its border. *Fixed:* the height adds the border and
-   rounds the section's height up (`controls/review.tsx`'s `fit`).
+   rounds the section's height up (`controls/review.tsx`'s `fit`). *Superseded by finding 6's fix, which
+   removed the sizing altogether.*
 3. **The panel should be a sidebar like the left menu: flush to the right edge, no rounded corners, with a
    collapse button.** *Whose:* the look is S4c's — the editor's Controls sidebar is drawn 280 wide, flush
    right, a hairline on its left, paper, square (`S4 Editor.dc.html:337`); the review page had drawn it as a
@@ -743,7 +755,29 @@ Review. Four findings, each reproduced on production before it was fixed and fix
    is wider than a sidebar field. *Fixed:* `openPopover` (`apps/web/components/kit/select.tsx`), which every
    picker opens through, slides a popover left until it fits inside an 8 px gutter.
 
-*Asked alongside, and answered in the session:* whether this page is only a picture of how controls would
+Tested again the same day, on the Fix deployment (`166f87d0`). Two more findings.
+
+5. **Collapsing the panel put scrollbar arrows in the canvas; expanding it took them away.** *Measured on
+   production with real scrollbars* (Playwright hides them unless told otherwise): collapsed, the canvas
+   carried a 15 px vertical scrollbar at a 0 px scroll range, at 1440, 1536 and 1920. *Cause:* the section
+   grows taller as it widens, so a canvas sized to its own section settles with the scrollbar showing —
+   without it the section is a few pixels too tall, with it the section fits. *Fixed by finding 6's change:*
+   nothing is sized to the section any more.
+6. **Two scrollbars side by side on the right — the panel's and the page's — "looks really bad"; how do
+   other page builders do it?** *Measured:* the window scrolled 436 px at 1440 beside the panel's own scroll.
+   *How builders do it, and how Inflozo's own editor is drawn:* the editor is a workspace exactly the height
+   of the window that never scrolls, and each pane scrolls itself — the canvas inside its own frame, the
+   settings panel on its own. That is Webflow's, Framer's and Shopify's theme editor's shape, and it is S4's:
+   a 1440×900 frame whose canvas pane fills its height (`S4 Editor.dc.html:28`, `:62-63`), with Story 5.22's
+   "the canvas keeps its own scroll". Not a decision of the owner's, because the frame already draws it.
+   *Fixed:* `controls/review.tsx` is that workspace at `tablet` and up — the window never scrolls, the canvas
+   iframe fills its pane and scrolls inside itself, the panel scrolls on its own; below `tablet` the canvas is
+   70 % of the screen's height over the stacked panel. Both scrollbars are a slim 8 px bar with no arrow
+   buttons, drawn with `::-webkit-scrollbar` — the standard `scrollbar-width: thin` still drew arrows in
+   Chromium on Linux, checked on a plain test box, and Chrome ignores the `::-webkit-` rules on an element
+   that sets the standard ones. The canvas-sizing code from finding 2 was deleted.
+
+*Asked alongside finding 4, and answered in the session:* whether this page is only a picture of how controls would
 look. The sample section is made up — it exists to exercise every kind of control — but the panel is not a
 mock-up: its components and the engine behind them are the ones Epic 5 mounts in the editor, and every real
 section draws its own settings through them.

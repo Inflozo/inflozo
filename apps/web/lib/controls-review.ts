@@ -118,7 +118,7 @@ export function canvasDocument(): string {
     `<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">` +
     `<title>${esc('Controls sample')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
-    `<style data-order="2-document">body{margin:0}</style>` +
+    `<style data-order="2-document">::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}::-webkit-scrollbar-button{display:none}body{margin:0}</style>` +
     `<style data-order="3-sample">${css}</style></head>` +
     `<body><div id="canvas"></div></body></html>`
 }
