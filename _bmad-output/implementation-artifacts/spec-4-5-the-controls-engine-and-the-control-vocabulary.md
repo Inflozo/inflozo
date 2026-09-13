@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-13'
 status: 'in-review'
 baseline_commit: '4a67e48655e8d3b2870681c6048c6ad764994c29'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
@@ -814,6 +814,15 @@ on Background role, and none on Card tint.
   not called. **No migration**, so no R-99 schema check was owed.
 - After the review's patches: `pnpm check` green (lint, typecheck, every package's tests, the new proofs
   included), `node gate.js theme` ERRORS 0 WARNINGS 0 on both majors, `python3 tools/doc-audit.py --check` PASS.
+
+**What ran at Deploy, 2026-09-13** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` read into the
+environment by name; no migration, no Ghost call — same as Review):
+- **Vercel** `GET /v6/deployments?target=production` → the newest production deployment is `8b2c32a2`
+  (the Review commit, current HEAD), READY.
+- **Negative control, signed out:** `curl -sI https://app.inflozo.com/controls` → 307 to `/sign-in`;
+  `/controls/frame` → 303, unchanged from Review.
+
+`Deployment: https://app.inflozo.com/controls (dpl_95fsAd5f1RiHhm1BVpuweoxJH1qD, 8b2c32a2, READY)`
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
