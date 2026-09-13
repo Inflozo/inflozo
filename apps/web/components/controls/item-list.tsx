@@ -20,7 +20,11 @@ import { arrowKeys, openMenu } from '@/lib/menu'
    At the ceiling Add greys with its sentence (:113-114). REMOVE NEVER GREYS (R-12, :142-176): at the floor
    it still presses, and the floor sentence appears under the list and clears on the next edit. Reorder is
    a drag on the handle (a 2° tilt while it moves, none under reduced motion) or ⌥↑/⌥↓ on the focused
-   handle, announced politely in the engine's words. Pressing a row's name opens that item's fields
+   handle, announced politely in the engine's words. WHILE A ROW IS DRAGGED, A DASHED EMPTY SLOT THE ROW'S
+   SIZE SHOWS WHERE IT WILL LAND and the rows between slide aside to make room (the owner's finding 9,
+   2026-09-13, for every editable list — EXPERIENCE.md § the reorderable list). P0-3 draws no drop state, so
+   the slot is the Kit's own dashed border, the "+ Add" button's. Nothing moves in the DOM until the drop:
+   the other rows are TRANSLATED, so the dragged handle keeps its pointer capture and its focus. Pressing a row's name opens that item's fields
    beneath the list — P0-3 selects the item on canvas; with no canvas selection yet (Epic 5), the fields
    open here.
 
@@ -57,6 +61,9 @@ export function ItemList({
   const [open, setOpen] = useState<number | null>(null)
   const [said, setSaid] = useState('')
   const [drag, setDrag] = useState<{ from: number; to: number; dy: number } | null>(null)
+  // every row's top and height as the drag began, relative to the list — the slot is read against these,
+  // never against rows that are already sliding, which would chase itself
+  const layout = useRef<{ tops: number[]; heights: number[]; gap: number }>({ tops: [], heights: [], gap: 0 })
   const [focusAt, setFocusAt] = useState<number | null>(null)
   const start = useRef(0)
   const rows = useRef<HTMLUListElement>(null)
@@ -85,6 +92,18 @@ export function ItemList({
     commit(moved.state)
   }
 
+  /** How far a row between the origin and the slot slides, and where the dashed slot is drawn. */
+  const { tops, heights, gap } = layout.current
+  const shift = (i: number) => {
+    if (drag === null || i === drag.from) return 0
+    const by = (heights[drag.from] ?? 0) + gap
+    if (drag.from < drag.to && i > drag.from && i <= drag.to) return -by
+    if (drag.to < drag.from && i >= drag.to && i < drag.from) return by
+    return 0
+  }
+  const slotTop =
+    drag === null ? 0 : drag.to > drag.from ? (tops[drag.to] ?? 0) + (heights[drag.to] ?? 0) - (heights[drag.from] ?? 0) : (tops[drag.to] ?? 0)
+
   const range = list.min !== undefined && list.max !== undefined ? `${list.min}–${list.max} · ${list.count} used` : `${list.count} used`
 
   return (
@@ -96,7 +115,15 @@ export function ItemList({
         <span className="font-mono text-[10px] text-ink-soft">{range}</span>
       </div>
 
-      <ul ref={rows} aria-labelledby={`${id}-label`} className="flex list-none flex-col gap-[3px]">
+      <ul ref={rows} aria-labelledby={`${id}-label`} className="relative flex list-none flex-col gap-[3px]">
+        {drag !== null ? (
+          <li
+            aria-hidden
+            data-drop-slot
+            style={{ top: slotTop, height: heights[drag.from] ?? 0 }}
+            className="pointer-events-none absolute inset-x-0 rounded-sm border border-dashed border-line-strong bg-paper-sunk"
+          />
+        ) : null}
         {items.map((_, i) => {
           const name = nameOf(i)
           const lifted = drag?.from === i
@@ -105,10 +132,10 @@ export function ItemList({
             <li
               key={i}
               data-row={i}
-              style={lifted ? { translate: `0 ${drag.dy}px` } : undefined}
+              style={lifted ? { translate: `0 ${drag.dy}px` } : drag !== null ? { translate: `0 ${shift(i)}px` } : undefined}
               className={`relative flex items-center gap-2 rounded-sm border bg-surface p-2 ${
                 open === i ? 'border-coral shadow-[0_0_0_2px_var(--color-coral-wash)]' : 'border-line'
-              } ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : ''}`}
+              } ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : drag !== null ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
             >
               <button
                 type="button"
@@ -127,17 +154,21 @@ export function ItemList({
                   if (event.button !== 0) return
                   event.currentTarget.setPointerCapture(event.pointerId)
                   start.current = event.clientY
+                  const els = [...(rows.current?.querySelectorAll<HTMLElement>('[data-row]') ?? [])]
+                  const t = els.map((el) => el.offsetTop)
+                  const h = els.map((el) => el.offsetHeight)
+                  layout.current = { tops: t, heights: h, gap: t.length > 1 ? t[1]! - t[0]! - h[0]! : 0 }
                   setDrag({ from: i, to: i, dy: 0 })
                 }}
                 onPointerMove={(event) => {
                   if (drag === null || drag.from !== i) return
-                  // the slot is how many OTHER rows the pointer has passed the middle of
-                  const others = [...(rows.current?.querySelectorAll<HTMLElement>('[data-row]') ?? [])].filter((_, j) => j !== i)
-                  const to = others.filter((el) => {
-                    const box = el.getBoundingClientRect()
-                    return box.top + box.height / 2 < event.clientY
-                  }).length
-                  setDrag({ from: i, to, dy: event.clientY - start.current })
+                  // the slot is how many OTHER rows the dragged row's middle has passed the middle of, as they
+                  // stood when the drag began
+                  const at = layout.current
+                  const dy = event.clientY - start.current
+                  const middle = (at.tops[i] ?? 0) + (at.heights[i] ?? 0) / 2 + dy
+                  const to = at.tops.filter((top, j) => j !== i && top + (at.heights[j] ?? 0) / 2 < middle).length
+                  setDrag({ from: i, to, dy })
                 }}
                 onPointerUp={() => {
                   if (drag === null) return

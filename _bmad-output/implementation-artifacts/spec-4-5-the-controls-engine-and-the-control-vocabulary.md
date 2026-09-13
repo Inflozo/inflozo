@@ -710,6 +710,14 @@ on Background role, and none on Card tint.
   `https://app.inflozo.com/controls` the same 11 checks PASS with the local figures (popovers 8–648 and 252–892 of
   900, the search visible; the Category list 320 px, 42 rows, scrolling inside itself, Zodiac reached and
   chosen), and the 29 workspace checks for findings 1–6 re-run with no FAIL; the fixture users deleted, 9 → 9.
+- **Finding 9, on the local dev server** (the real Supabase project, users 9 → 9), five features on the list:
+  control — no slot before any drag, and the canvas's five titles readable; dragging row 4 up to position 2 and
+  row 1 down to position 4, each time a dashed, `aria-hidden` slot one row tall showed at exactly the landing
+  row's original top (341 and 427), that row had slid aside (341 → 384, 427 → 384), the drop produced exactly
+  the predicted order on the canvas, and the slot was gone with every row back on its resting top; `⌥↓` still
+  moved a row one place — 12 of 12 PASS. The first run of this check read no titles (a class name from the unit
+  test's inline markup, not the sample's) and its order checks failed; it was corrected, and each order check
+  now also requires five titles and an order that differs from the start.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
@@ -731,7 +739,7 @@ the sample. Deploy records the deployment it runs on under "## Verification".
 | 5 | same | Panel, Style | Open Style. Press Contrast under Background role, then press Accent. | — | Card tint; a grey note beginning "There is no image focus here."; then Background role, Vertical spacing and Top divider. Background role shows five swatches — Base, Surface, Accent, Contrast, Image — with Accent and Image grey and "This design is drawn for plain grounds, so accent and image are not offered." under them, and a small moon with the words "Dark override" beside its name; Card tint has no moon. Contrast turns the section dark at once; Accent does nothing. |
 | 6 | same | Panel, Content → Features | Open Content and find Features. Press "+ Add feature" until it stops working. | — | "2–6 · 3 used" beside Features, and three rows each with a handle, a name and a "…" button. Every press adds a card reading "A new feature" with a star; after the sixth, the button goes grey with "The row holds 6 features. Remove one to add another." |
 | 7 | same | Features | On any row press "…" then Remove, until two remain; then press Remove once more. | — | Cards disappear one at a time. At two, Remove still presses but nothing disappears: "A feature row needs at least 2 features." appears under the list instead, and goes away after your next change. |
-| 8 | same | Features | Drag the bottom row up to the top by its handle. Then press Tab until a row's handle is highlighted and press Option+Down (Alt+Down on Windows). | — | The cards on the left follow the new order when you drop; with the keys, the row moves down one place. |
+| 8 | same | Features | Drag the bottom row up to the top by its handle. Then press Tab until a row's handle is highlighted and press Option+Down (Alt+Down on Windows). | — | While you drag, the row lifts and a dashed empty box shows where it will land, the other rows sliding aside; the cards on the left follow the new order when you drop. With the keys, the row moves down one place. |
 | 9 | same | Features | Press a row's name to open it and press its Icon. Scroll the grid a little, then type in the search. Switch Outline · Filled · Both to Filled, then to Both, and press the solid heart. | `heart` | At the top: Outline · Filled · Both, set to Outline, and "All categories". The icons sit under Tabler's category names — Animals, Arrows, Badges and on. Searching shows the outline heart under Shapes; Filled shows the solid heart instead; Both shows the two side by side. Pressing the solid heart puts it on that card. The picker's foot says "Tabler Icons · MIT". |
 | 10 | same | Content, "Read the latest issue" | Press its Link field and type in the search. Pick the post, then press Done. | `night` | A Posts group listing "The night shift at the Port of Algeciras", then the chips Sign up · Sign in · Account · Upgrade and a Ghost search chip. After picking: "Open in new tab" and three Rel switches, and the field then shows the post. |
 | 11 | same | The same Link field | Open it again, press Upgrade, press Done. Open it once more, press Ghost search, press Done. | — | First the field reads "Portal · Upgrade" with `account/plans` under it — never "upgrade" — and no new-tab or Rel options were offered. Then it reads "Ghost search". |
@@ -813,6 +821,23 @@ Tested a third time the same day, on `776790c2`. Two more findings.
    (`apps/web/components/kit/select.tsx`'s `Menu` and `Select`). The icon grid's scrollbar, still drawn with
    arrows, now takes the same slim bar — one Kit class, `slimScrollbar` in `components/kit/greyed.ts`, for the
    panel, the link results, the menus and the grid.
+
+Tested a fourth time the same day. One more finding, and one question answered.
+
+9. **Dragging a feature works, but nothing shows where it will land; every editable list should show a
+   dotted empty space.** *Whose:* this story's — P0-3 draws the drag handle and the tilt but no drop state, so
+   the gap was the build's. *Fixed:* while a row is dragged, a dashed slot the size of the row, in the Kit's
+   own dashed border (the "+ Add" button's), sits where it will land, and the rows between slide aside; nothing
+   reorders until the drop. The rows are translated rather than moved in the DOM, so the dragged handle keeps its
+   pointer capture and focus, and the slot is read against where the rows stood when the drag began, so it
+   never chases rows that are already sliding (`apps/web/components/controls/item-list.tsx`). *For every other
+   list:* the rule is written into EXPERIENCE.md § State Patterns ("Reordering by drag"), and DW-116 carries it
+   to Story 5.4's Layers and Story 5.19's hand-picked list.
+
+*Asked:* whether the canvas's icon picker, its text controls and inline editing are later stories. Checked in
+`epics.md`: selection and click-to-edit are Story 5.2's, inline editing with the four-mark toolbar and link
+search Story 5.3's — but opening the icon picker from an icon on the canvas is in no story. Logged as DW-115,
+with Story 5.3 proposed and the placement put to the owner in the session.
 
 *Asked alongside finding 4, and answered in the session:* whether this page is only a picture of how controls would
 look. The sample section is made up — it exists to exercise every kind of control — but the panel is not a

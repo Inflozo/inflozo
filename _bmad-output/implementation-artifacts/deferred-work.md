@@ -3079,3 +3079,23 @@ reason: FR-F1's Icon Picker is built (Story 4.5) and every design's icon prop ed
   export with no story is exactly how a surface goes missing at launch. The story that takes it adds one
   acceptance criterion — "clicking an icon slot on the canvas, filled or empty, opens the Icon Picker anchored
   to it; the empty slot shows only while its section is selected" — and mounts the existing component.
+
+### DW-116: every other draggable list must show the dashed landing slot the item list now shows
+
+plain: When you drag a feature to a new place in the settings panel, a dashed empty box now shows where it will
+  land. The owner asked for the same on every list that can be dragged — the Layers panel and a hand-picked list
+  of posts — and those lists are built in later stories.
+status: open
+severity: low
+origin: Story 4.5 owner's test (2026-09-13) — finding 9: "it should show a dotted empty space when being moved
+  … Same behaviour will other editable lists too."
+owner: Story 5.4 (The Layers panel, reordering, and the two kinds of singleton) and Story 5.19 (The Data group
+  and the main-feed designation — the hand-picked post list); Story 5.2's section drag handle wherever it
+  reorders sections.
+location: EXPERIENCE.md § State Patterns, "Reordering by drag" · `apps/web/components/controls/item-list.tsx`
+  (the pattern: rows translated rather than moved in the DOM, so the handle keeps its pointer capture and focus;
+  the slot read against the rows' positions as the drag began) · `epics.md` Stories 5.4 and 5.19
+reason: the rule now lives in EXPERIENCE.md, which every UI story reads, but neither story's acceptance criteria
+  name the slot, and a list built without it is exactly the finding the owner just had to raise. Each adds one
+  criterion — "while a row is dragged, a dashed empty slot the size of the row shows where it will land" — and
+  lifts the item list's drag rather than inventing a second one.
