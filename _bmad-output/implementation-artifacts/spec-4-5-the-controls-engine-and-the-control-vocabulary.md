@@ -691,6 +691,12 @@ on Background role, and none on Card tint.
   wheel over it scrolled the panel 300 px and the window 0; findings 1, 3 and 4's checks still PASS; axe-core
   at WCAG 2.1 AA zero violations at 1440 and 390, with a positive control — an image with no `alt` injected
   into the same page is reported as `image-alt`.
+- **Findings 5 and 6, after, on production** — Vercel's production deployment for `776790c2` READY; the same
+  real-scrollbar harness against `https://app.inflozo.com/controls` → all 29 checks PASS with the local figures
+  above (window range 0 px at every width, expanded and collapsed; the canvas bar present exactly when there is a
+  range; the wheel scrolling the canvas 281 px and the window 0; the panel scrolling itself 300 px; findings 1, 3
+  and 4 still held; axe zero violations at 1440 and 390 with its `image-alt` control caught); the Supabase fixture
+  deleted, users 9 → 9; signed out, `/controls` → 307 to `/sign-in` and `/controls/frame` → 303.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
