@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <rect width="600" height="600" fill="#E7E9E2"/>
+  <rect x="170" y="70" width="260" height="460" rx="6" fill="#2F4A3E"/>
+  <rect x="170" y="70" width="18" height="460" fill="#233A30"/>
+  <text x="310" y="250" text-anchor="middle" font-family="Georgia, serif" font-size="54" font-weight="700" fill="#F4EFE6">Users</text>
+  <rect x="250" y="280" width="120" height="4" fill="#D96C3F"/>
+  <text x="310" y="450" text-anchor="middle" font-family="Georgia, serif" font-size="20" fill="#F4EFE6">C. Ward-Henninger</text>
+</svg>

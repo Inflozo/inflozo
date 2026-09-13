@@ -47,7 +47,12 @@ reason: The three core packages each declare `"@inflozo/library": "workspace:*"`
 ### DW-2: `apps/web` declares no dependency on the core packages, so `transpilePackages` is inert
 
 plain: The website has not been told it is allowed to use the four building blocks, so a setting that connects them currently does nothing.
-status: open
+status: done 2026-09-13 (Story 4.4)
+resolution: Story 4.4 — `apps/web/package.json` declares `"@inflozo/library": "workspace:*"` and
+  `next.config.ts` lists it first in `transpilePackages`, because the style-guide review page
+  (`app/(app)/app/(authed)/style-guide/`) is the first app code to import a core package. `next build`
+  compiles it, JSON import attributes included. The other three entries stay as they were and become live
+  the day an app file imports them, each adding its own `workspace:*` line.
 severity: low
 origin: Story 1.1 review (2026-09-04)
 location: apps/web/package.json · apps/web/next.config.ts
@@ -2783,3 +2788,49 @@ owner: the first story that authors a design needing either (Story 4.10's pilots
 location: packages/library/src/vocabulary.ts `BARE_HELPERS`; packages/ghost-shim/src/index.ts `bareHelper`
 reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a review of 4.3 does not do
   on its own; the functions exist so the change is one line when its story arrives
+
+### DW-100: `cards.js` has no no-JS sentence and no edit-safe row
+
+plain: The editing canvas will run Ghost's four little card scripts (the ones that open a question box or
+  play audio), but nobody has written down what those cards do when scripts are off, or whether they are safe
+  to run while someone is editing.
+status: open
+severity: low
+origin: Story 4.4 (2026-09-13) — spec task "propagate"; `reconcile-designs.md:4100`.
+owner: Story 4.7 (`core` and the behaviour-module registry)
+location: packages/library/orbit-weekly/vendor/cards/js/ · FR-J4 · registry §7 · FR-D20's edit-safe table
+reason: FR-H3(1) has the canvas load the four vendored scripts, so they run while editing, but `cards.js`
+  sits outside FR-J4's repo-authored module set, so it has neither the no-JS degradation sentence nor the
+  `edit-safe` declaration every module carries. The line the reconcile proposed: "`cards.js` — with JS off the
+  audio/video players are inert, gallery rows lose proportion, the toggle stays in its authored state". Story
+  4.4's review page loads them unconditionally, which is right for a review surface and undecided for E5's canvas.
+
+### DW-101: C4 lists an NFT card, and Ghost has no Lexical renderer for one on either major
+
+plain: The drawing of the sample article shows a "collectible" card near the end, but Ghost's current editor
+  cannot make that card at all, so the real recorded article leaves it out.
+status: open
+severity: low
+origin: Story 4.4 Dev (2026-09-13) — executed. `kg-default-nodes` 2.2.0 (Ghost 6.58.0) and 2.0.1 (Ghost
+  5.130.6) carry no `nft` node directory; `kg-nft-card` exists only in the mobiledoc renderer
+  (`kg-default-cards/.../embed/nft.js`), which R-66 excludes. `tools/probe/record-cards.py` refuses any corpus
+  card without a Lexical renderer by name, so the fixture omits it rather than recording an empty snapshot.
+owner: A33's category gate (Epic 10) with R-67 — whose "`kg-nft-card` stays unstyled deliberately" already
+  points the same way; C4's CARDS row and A25-0's inventory should say NFT is legacy-only.
+location: C Post Body.dc.html:1913-1929 (C4 "What the fixture covers" → CARDS) · packages/library/orbit-weekly/corpus.json
+reason: the export is never edited (R-74); the design note belongs to the category that owns the card treatments.
+
+### DW-102: the fixture's audio and video cards carry no media, so their players play nothing
+
+plain: The sample article's audio player and video look right, but pressing play does nothing, because no
+  sound or video file was made for the sample publication.
+status: open
+severity: low
+origin: Story 4.4 Dev (2026-09-13). The corpus points the audio and video cards at
+  `https://orbit-weekly.example/media/…`, which nothing serves; the review page's CSP (`default-src 'self'`,
+  no `media-src`) blocks the load and the browser logs it. The cards' chrome, thumbnails and Ghost's player
+  scripts all render and bind.
+owner: E5 (the editing canvas), if a playable preview is wanted — a short internally-produced clip served
+  same-origin, and the recording re-run.
+location: packages/library/orbit-weekly/corpus.json (`audio`, `video-*`) · apps/web/lib/style-guide.ts `withImages`
+reason: no encoder is installed to produce a licence-clean video, and nothing in Story 4.4's acceptance plays media.

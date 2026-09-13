@@ -133,6 +133,13 @@ const NO_SKELETON: Record<string, string> = {
     'the internal component gallery, reachable only by typing the path — a skeleton of every ' +
     'control for a page that IS every control is work nobody asked for. It now inherits NOTHING ' +
     'rather than the dashboard\'s cards, which is the point of the route groups',
+  [join(AUTHED, 'style-guide')]:
+    'Story 4.4\'s internal fixture review, the kit\'s sibling and exempt for the kit\'s reason: nothing ' +
+    'links to it, so it is reached only by typing the path — a document load with the browser\'s own ' +
+    'progress on it, never a soft navigation that would show a route skeleton',
+  [join(AUTHED, 'style-guide', 'variations')]:
+    'the same page\'s variation sheet, reached only from a plain <a href> on the page above it — a ' +
+    'document load, never a soft navigation',
   [join(AUTHED, 'sites', 'connect')]:
     'no soft navigation reaches it, so a route skeleton is never what the browser shows. The ' +
     '"Connect site" opener is an <a href> whose click JavaScript turns into the sheet, and the ' +

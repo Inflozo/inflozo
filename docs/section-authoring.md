@@ -577,3 +577,58 @@ declared-query direction is checked — every declared key must be referenced.
 
 The ceiling is written down rather than left to be rediscovered; a `ponytail:` comment at the head of
 `validate.ts` names it and the upgrade path.
+
+---
+
+## 5 · What a design previews against — Orbit Weekly and the three fixtures
+
+*(Story 4.4.)* Every design's `previewSeed` is `"orbit-weekly"`, and that value now resolves:
+`orbitWeekly.resolvePreviewSeed('orbit-weekly')` in `@inflozo/library` returns the Source resolver and
+the fixtures; any other seed refuses by name. The data is `packages/library/orbit-weekly/`, the code
+is `packages/library/src/orbit-weekly.ts`, and the proof is `src/orbit-weekly.test.ts`.
+
+**The sample publication.** One file, `dataset.json`: feed posts, tags (six topics plus `newsletter`),
+writers with portraits and bios, tiers (one Free, the rest paid), newsletters, navigation, brand and a
+dozen press logos, all imagery drawn for it under `images/`. Its size is FR-H3's two rules, not a
+number — the feed renders a first page, a middle page carrying both links and a partial last page, and
+never equals `posts_per_page` — and the test asserts the rules. Every writer's archive fills because a
+post may carry more than one author, as in Ghost; a card still shows one byline (`primary_author`).
+
+**The fields a design may bind to** are the Content API's, by the dotted paths the shim reads — a
+post's `id slug title url excerpt custom_excerpt feature_image feature_image_alt feature_image_caption
+published_at updated_at created_at reading_time visibility featured access`, its `tags[]`, `authors[]`,
+`primary_tag`, `primary_author`; a tag's `name slug url description accent_color visibility count.posts`;
+an author's `name slug url bio profile_image cover_image website location count.posts`. Every count is
+derived from the feed. Every URL sits on the reserved origin `https://orbit-weekly.example`, which the
+canvas maps to where the images are served; a dataset image is never sized, because there is no Ghost
+to size it (a rendition is asserted against `packages/ghost-shim/fixtures/` instead).
+
+**A `dataBindings` entry fills from `orbitWeekly.resolveSource(binding)`**, which is what the editor
+hands `getRows` on an unlinked project. It evaluates the grammar the Data group composes —
+`field:value`, `field:-value`, `field:[a,b]`, joined by `+` — over `featured`, `tag`/`tags`,
+`primary_tag`, `author`/`authors`, `primary_author`, `id`, `slug`, `visibility` on posts (and the
+matching fields on tags, authors and tiers). An `or` (`,`), parentheses or a comparison **refuse by
+name** rather than guess. With no `order` or `limit`, Ghost's own defaults apply, and those are asserted
+against what both test servers returned, not restated. A filter that matches nothing is `[]`, and the
+design draws its own empty state. A pager needing more pages than the feed has reads
+`orbitWeekly.deepPagination()` — the depth is carried in `pagination` and no post is invented.
+
+**`data-helper="content"` and `data-helper="comments"` resolve to the fixtures**, passed as
+`RenderInput.fixtures = orbitWeekly.previewFixtures()`; without them the shim still refuses (FR-H3).
+
+| Fixture | What it is | Where |
+|---|---|---|
+| 1 · the style-guide post | C4's article, *The four hundred domains that refuse to move* — one of each card in C4's order, **Ghost's own bytes**, recorded on both majors by `python3 tools/probe/record-cards.py` and split per block. Its variation sheet carries every class-affecting variant FR-H3 enumerates, labelled, from the same run. | `fixtures/ghost{5,6}/article.json` · `variations.json` · `variations.html` |
+| 2 · the comments block | FR-H3's thread shape, drawn in Ghost's colours inside a dashed outline in both states, because `{{comments}}` emits a script and no DOM — nothing a theme writes reaches inside it. | `orbitWeekly.commentsFixture('member' \| 'signedout')` |
+| 3 · the style-guide page | The same body created as a Ghost **page** (it prints byte-identical on both majors), and a page subject carrying `show_title_and_feature_image` for both states of the guard. | `fixtures/ghost{5,6}/page.json` · `orbitWeekly.subject('page')` |
+
+The fixtures are in **no** Source and **no** count; they are reachable only as preview subjects
+(`orbitWeekly.subject('post' | 'page')`). Three facts the recording settled, each now asserted: the
+NFT card has **no Lexical renderer on either major**, so it is not in the fixture; the toggle card
+renders **closed** only — open is what `toggle.js` sets on a click; and the signup card renders
+`display: none` until Portal un-hides it, so the canvas does the same one thing Portal does.
+
+**Looking at it.** `/style-guide` (behind sign-in, noindex, reached by typing the path) renders the
+three fixtures inside `<main><article class="gh-content">`, loading the theme stylesheet, then the
+simulated `cards.min.css` — the complement of the cards the user designed, today every chunk — then the
+four vendored card scripts from `orbit-weekly/vendor/`. `/style-guide/variations` is the sheet.

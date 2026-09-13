@@ -2,7 +2,7 @@
 title: 'Story 4.4 — Orbit Weekly and the three fixtures'
 type: 'feature'
 created: '2026-09-13'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '4d903f1b80a445bbb74dbc314b5082386fb6889f'
 owner_test: pending
 review_loop_iteration: 0
@@ -247,7 +247,7 @@ it on, beside the existing component gallery.
 
 **Execution:**
 
-- [ ] `packages/library/orbit-weekly/dataset.json` -- author the publication as one data file: feed
+- [x] `packages/library/orbit-weekly/dataset.json` -- author the publication as one data file: feed
   posts, tags, authors with portraits and bios, tiers, navigation, brand, and the pagination contexts --
   one file rather than six because it is data with one consumer, and the row shape is fixed by what the
   shim reads by dotted path (`record-shim.py:284-296`), not by a new type. Compose it with
@@ -256,12 +256,12 @@ it on, beside the existing component gallery.
   a pager reads only `pagination` (`reconcile-designs.md:4206`). The composition is Q2's ruling, and the
   test asserts the rules rather than the figures. One tier is Free, so five are paid; at least one
   newsletter is paid, and the `newsletter` tag carries posts so A22's default binds to something.
-- [ ] `packages/library/orbit-weekly/images/` -- author the imagery as SVG: a feature-image pool the feed
+- [x] `packages/library/orbit-weekly/images/` -- author the imagery as SVG: a feature-image pool the feed
   draws from, author portraits, and the brand mark -- "internally produced" (`prd.md:313`) and SVG
   because it is deterministic, licence-clean, diffs readably and needs no generator; `record-shim.py:128`'s
   `make_png` is the fallback if a raster is ever genuinely required. One author has **no** portrait and
   several posts **no** feature image, because the frames draw those cases (`a27-kit.js:44-61`).
-- [ ] `tools/probe/record-cards.py` -- the recorder: author the card corpus as a Lexical document, create
+- [x] `tools/probe/record-cards.py` -- the recorder: author the card corpus as a Lexical document, create
   it on T1 and T3 through the Admin API, read the rendered `html` back through the Content API, split it
   per card root class, and write `packages/library/orbit-weekly/fixtures/{ghost5,ghost6}/` with the
   capture date, the command, the Ghost version and the renderer version -- AD-23, and Ghost's own
@@ -272,10 +272,10 @@ it on, beside the existing component gallery.
   documented root classes must come back on both majors. Lexical only -- never the mobiledoc renderer
   (R-66). Per Q1's ruling the recorder makes **two** bodies in one run from one corpus -- the readable
   article and the variation sheet below -- so neither can drift from the other's renderer version.
-- [ ] `packages/library/orbit-weekly/fixtures/` -- the recordings themselves, checked in with their
+- [x] `packages/library/orbit-weekly/fixtures/` -- the recordings themselves, checked in with their
   `capture.json` and a generated `index.ts` -- so a Ghost target bump surfaces as a visible fixture diff
   rather than as silent canvas drift (`prd.md:487`), and the diff is per-card because the split is.
-- [ ] `packages/library/orbit-weekly/fixtures/variations.html` -- Q1's second artefact: every
+- [x] `packages/library/orbit-weekly/fixtures/variations.html` -- Q1's second artefact: every
   class-affecting variant FR-H3 enumerates (`prd.md:319` -- image ×3 widths ×caption, gallery 1-5 images
   ×caption, video ×3 widths ×loop, callout ×9 colours ×emoji, button ×2 alignments, product ×rating
   ×button ×image, `header_v2` ×4 layouts ×swapped, signup ×4 layouts, cta ×9 backgrounds ×2 layouts
@@ -284,32 +284,32 @@ it on, beside the existing component gallery.
   it: it is what FR-Q7's card panels preview against and what 4.11 compares, which is why it may hold
   nine callouts where the article holds one. The header card lives **here** and stays out of the
   readable article, which is what C4's ABSENT row asks for.
-- [ ] `packages/library/orbit-weekly/fixtures/comments.html` + `page.html` -- fixture 2 and fixture 3.
+- [x] `packages/library/orbit-weekly/fixtures/comments.html` + `page.html` -- fixture 2 and fixture 3.
   Comments: the count and thread shape FR-H3 states (`prd.md:321`), drawn as `a28-kit.js:91-139` draws
   it -- Ghost's own colours inside the dashed outline, with the signed-out state -- because
   `{{comments}}` emits one `<script>` and no DOM, so nothing a theme writes reaches inside it
   (`MEASUREMENTS.md:598-616`). Page: the **same body** on a `page.hbs` fixture, so A24's
   `@page.show_title_and_feature_image` guard has both of its states (`prd.md:323`).
-- [ ] `packages/library/src/orbit-weekly.ts` -- the code half: the dataset loader, the fixture accessors,
+- [x] `packages/library/src/orbit-weekly.ts` -- the code half: the dataset loader, the fixture accessors,
   and **`resolveSource(binding)`** -- the one genuinely missing mechanism. `expandRepeats` refuses a
   declared `{{#get}}` key with no rows (`core.ts:869-875`) and nothing evaluates a filter offline today,
   so this turns a `DataBinding` (`registry.ts:48-56`) into rows from the bundled data. Pure: no `fetch`,
   no `fs`, no `Date.now`, no `Intl` (AD-1). Mirrors `ghost-shim`'s `src/` + data split.
-- [ ] `packages/library/src/orbit-weekly.test.ts` -- the I/O matrix, every row, plus the composition
+- [x] `packages/library/src/orbit-weekly.test.ts` -- the I/O matrix, every row, plus the composition
   proof: the two size rules asserted as **rules** (a middle page and a partial page exist, and the feed
   never equals `posts_per_page`), every Source non-empty, the combined filter non-empty, no fixture in
   any row set or any count, and a missing recording failing by name with the capture command. In `src/`
   because `package.json`'s `test` globs `src/**/*.test.ts`.
-- [ ] `packages/library/{package.json,tsconfig.json}` · `src/index.ts` · `eslint.config.js` -- wire the
+- [x] `packages/library/{package.json,tsconfig.json}` · `src/index.ts` · `eslint.config.js` -- wire the
   data in: a second `exports` key for the dataset, `resolveJsonModule` and `orbit-weekly` in `include`
   (copy `packages/ghost-shim/tsconfig.json:3-6`), the re-export, and `orbit-weekly/` added to
   `NOT_CORE` (`eslint.config.js:23`) so authored data is not linted as core code.
-- [ ] `packages/library/orbit-weekly/vendor/` -- the four card behaviour scripts vendored from Ghost
+- [x] `packages/library/orbit-weekly/vendor/` -- the four card behaviour scripts vendored from Ghost
   (audio, gallery, toggle, video -- `research-ghost-koenig-cards.md:533-545`), each carrying its source
   path, Ghost version and MIT notice -- excluding a card drops its JS as well as its CSS
   (`prd.md:373`), so without these the players are inert, gallery proportions collapse and toggles never
   open. Vendored from the pinned target by the recorder, never retyped.
-- [ ] `apps/web/app/(app)/app/(authed)/style-guide/page.tsx` -- the owner's surface, and the only reason
+- [x] `apps/web/app/(app)/app/(authed)/style-guide/page.tsx` -- the owner's surface, and the only reason
   this story is testable before E5's editor exists: the three fixtures rendered inside
   `<main><article class="gh-content">` (`prd.md:319-320`; the class is named because `.kg-width-*` and
   every scoped selector depend on it), loading **the theme stylesheet, then the simulated
@@ -317,17 +317,17 @@ it on, beside the existing component gallery.
   Sibling of `kit/page.tsx:34-58` in every respect: `robots: noindex`, behind the session guard, no
   state, no client component. The simulated bundle is the **complement of the derived exclude list** —
   no card is designed yet, so today it carries every chunk.
-- [ ] `apps/web/{package.json,next.config.ts}` · `apps/web/busy.test.ts` -- add the `workspace:*`
+- [x] `apps/web/{package.json,next.config.ts}` · `apps/web/busy.test.ts` -- add the `workspace:*`
   dependency and `@inflozo/library` to `transpilePackages`, **closing DW-2**; and add the new route to
   the exemption list with its reason, copying `[join(AUTHED, 'kit')]` `:131-134` -- reachable only by
   typing the path, so no soft navigation ever shows a route skeleton.
-- [ ] `docs/section-authoring.md` -- document the dataset and the three fixtures: what `previewSeed`
+- [x] `docs/section-authoring.md` -- document the dataset and the three fixtures: what `previewSeed`
   now resolves to, the field shape a design may bind to, and that `content`/`comments` resolve to these
   fixtures -- the authoring contract is a shipped deliverable and `:261` already forward-references this
   story.
-- [ ] `tools/doc-audit.py` -- a catalogue row for `tools/probe/record-cards.py`, copying `:253`/`:256` --
+- [x] `tools/doc-audit.py` -- a catalogue row for `tools/probe/record-cards.py`, copying `:253`/`:256` --
   a new file under `tools/` without one blocks the commit. Files under `packages/` need no row.
-- [ ] `prd.md` FR-H3(2) and §7.6 item 15 · `deferred-work.md` -- propagate (standing rule 3): FR-H3(2)
+- [x] `prd.md` FR-H3(2) and §7.6 item 15 · `deferred-work.md` -- propagate (standing rule 3): FR-H3(2)
   still calls item 15 open and describes a thread a theme might style, which the executed fact refuted
   (`MEASUREMENTS.md:598-616`, VAB item 15 closed) -- rewrite it to say `{{comments}}` emits a script
   only, the canvas count is the fixture's, and no count exists with JS off; close **DW-2**; and open one
@@ -374,6 +374,28 @@ it on, beside the existing component gallery.
   no count is written down that a tool derives.
 
 ## Spec Change Log
+
+**Dev, 2026-09-13 — five departures from the task wording, each forced by a constraint the spec also states.**
+
+1. **`comments.html` and `page.html` are not files.** A core package can read data only by a static JSON
+   import (AD-1), so an `.html` fixture cannot reach `bareHelper`. Fixture 2 is
+   `orbitWeekly.commentsFixture(state)` — drawn from `dataset.json`'s threads in `a28-kit.js`'s palette —
+   and fixture 3 is `fixtures/ghost{5,6}/page.json`, the article created as a real Ghost **page**, plus
+   `subjects.page` for the guard. `fixtures/variations.html` does exist, generated by the recorder.
+2. **The corpus is its own file**, `orbit-weekly/corpus.json`, because the test must assert every corpus block
+   against the recording and cannot read the recorder. Every card in `article` is a reference into `variants`,
+   which is what makes "no variant only in the article" true by construction.
+3. **The review page renders the fixture in an iframe served by `style-guide/frame/route.ts`.** Inline in the
+   app the post body inherits Tailwind's reset and Ghost's card CSS reaches the shell; a `srcdoc` would write
+   the nonce into parent markup, which `app/(app)/app/layout.tsx` refuses. The route guards itself like
+   `snapshots/[id]/download/route.ts`. `/style-guide/variations` is a second page for step 8.
+4. **The vendored set is every CSS and JS chunk**, not only the four scripts, because the simulated
+   `cards.min.css` has to be built from something; each file carries source path, Ghost version and the MIT
+   notice, and `vendor/LICENSE-ghost.txt` is Ghost's own LICENSE, read over SSH.
+5. **Two executed facts overrode the frame.** C4's NFT card has no Lexical renderer on either major, so it is
+   not in the corpus (DW-101; the owner's test script already omits it). The toggle renderer emits only
+   `data-kg-toggle-state="close"`, so Design Notes (2)'s "the article uses the state the frame draws" is moot:
+   the article shows it closed and the sheet shows the same bytes opened as `toggle.js` opens them.
 
 ## Design Notes
 
@@ -436,6 +458,55 @@ to each server. Nothing here should try to fake a rendition.
   versions the recording was taken at.
 - `git status --porcelain packages/library/orbit-weekly/fixtures` after a second recorder run --
   expected: empty. The recording is deterministic, which is what makes a target bump a visible diff.
+
+**What ran, 2026-09-13 (Dev):**
+- `python3 tools/probe/record-cards.py` — **exit 0**. T3 `ghost5.inflozo.com`: install 5.130.6 (site API
+  `5.130`), `@tryghost/kg-default-nodes` **2.0.1**. T1 `ghost6.inflozo.com`: install 6.58.0 (site API `6.58`),
+  kg-default-nodes **2.2.0**. On each: the article, the variation sheet and the page recorded block for block against the corpus, three
+  documents returned to draft, control passed (all four root classes). Every chunk in T1's `core/frontend/src/cards/` vendored.
+- **The refusal fired for real first.** The first run was VOID and wrote nothing: the corpus expected
+  `kg-card-hascaption` on a captioned code card and Ghost 5 printed `figure.kg-code-card` without it. The
+  expectation was wrong and was removed; the recording is what Ghost printed.
+- **Second run: every file under `fixtures/` and `vendor/` byte-identical** (md5 over both trees). The Content
+  API defaults are read after the drafts are back, or the fixture documents would sit in the recorded feed.
+- **Majors:** the page body equals the article body on each major; no block differs in its class set between
+  the majors; many blocks differ in bytes (link `?ref=<site host>` from outbound link tagging, the
+  video poster — a spacer URL on 5, a data GIF on 6 — `aspect-ratio` on the video, the signup placeholder).
+  Kept apart, never normalised; a class-set difference must be declared in `orbit-weekly.test.ts`.
+- **Portal** un-hides `[data-lexical-signup-form]` (read in `cdn.jsdelivr.net/ghost/portal@~2/umd/portal.min.js`);
+  the review document does the same.
+- `pnpm check` — green. `next build` — green; `/app/style-guide`, `/app/style-guide/frame` and
+  `/app/style-guide/variations` are dynamic, and their `.nft.json` traces carry the images, the vendored chunks
+  and `reference-tokens.css`. `tools/stress` gate — 0/0 on both majors.
+- **In a browser** (Playwright 1.61.1 Chromium, the app's own CSP with a nonce): at 1440 and 390 the scripts run,
+  the toggle goes `close → open` on click, gallery rows get their `flex` ratios, the signup band shows, no image
+  is broken, and the page does not scroll sideways at 390. The only console errors are the CSP blocking the two
+  media URLs (DW-102). Not yet walked on the deployed site — that is Deploy and the owner's test.
+
+**Re-verified by the orchestrating session, 2026-09-13, before the Dev commit:**
+- **Real services hit, and by which keys.** The Ghost test servers only: T3 `ghost5.inflozo.com` and T1
+  `ghost6.inflozo.com`, through `GHOST5_URL` / `GHOST5_STAFF_ACCESS_TOKEN` / `GHOST5_CONTENT_API_KEY` and
+  the `GHOST6_` trio (read by `record-shim.py`'s `load_env`, never printed), plus SSH to both hosts for the
+  renderer version and the vendored chunks. **Supabase, Vercel, Resend and Dodo were not hit in Dev**: the
+  story writes no row, sends no mail and takes no payment, and the review page's sign-in guard reaches
+  Supabase only once deployed — that is the review's and the owner's test's to hit.
+- `python3 tools/probe/record-cards.py` (second, independent run) — **exit 0**. T3: install 5.130.6,
+  kg-default-nodes 2.0.1, 24 renderer directories; article 30 blocks / 20416 bytes, variations 78 blocks /
+  89100 bytes, page 30 blocks / 20416 bytes; control passed. T1: install 6.58.0, kg-default-nodes 2.2.0, 25
+  renderer directories; article 30 / 20476, variations 78 / 89400, page 30 / 20476; control passed. md5 over
+  every file under `fixtures/` and `vendor/` before and after: **byte-identical**.
+- **Negative control on the servers, after the run:** Content API `posts/slug/inflozo-style-guide-article/`,
+  `posts/slug/inflozo-style-guide-variations/` and `pages/slug/inflozo-style-guide-page/` each answered
+  **404** on T1 and on T3 — the three documents are back in draft and in no public feed — while the control
+  `posts/?limit=1` answered **200** with one row on both.
+- `python3 tools/probe/record-cards.py --self-check` — **exit 0**, offline. Added so the matrix's two
+  recorder rows are covered by a check that runs, not only by the live VOID above: the control refuses when
+  one documented root class is missing and passes with all four; a card with no renderer is refused **by
+  name** and passes once the renderer exists; a block that renders to nothing is refused; the split is
+  lossless. The control was factored into `control()` for it, behaviour unchanged (the live run above is
+  after the change).
+- `pnpm check` (Node 24) — **exit 0**; `packages/library`'s run lists every orbit-weekly test as passed,
+  none skipped.
 
 **Manual checks (if no CLI):**
 - The review page beside `C Post Body.dc.html` C4, both open: C4's five coverage rows, the drawn block

@@ -20,6 +20,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@inflozo/library':
+        specifier: workspace:*
+        version: link:../../packages/library
       '@supabase/auth-js':
         specifier: 2.115.0
         version: 2.115.0

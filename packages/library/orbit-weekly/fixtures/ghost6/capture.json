@@ -1,0 +1,149 @@
+{
+  "captured": "2026-09-13",
+  "command": "python3 tools/probe/record-cards.py",
+  "content_api_defaults": {
+    "authors": {
+      "limit": 15,
+      "rows": [
+        {
+          "name": "Priya Raman",
+          "slug": "priya-raman"
+        },
+        {
+          "name": "Tom Whitlock",
+          "slug": "tom-whitlock"
+        },
+        {
+          "name": "Umang",
+          "slug": "umang"
+        }
+      ]
+    },
+    "posts": {
+      "limit": 15,
+      "rows": [
+        {
+          "published_at": "2026-08-20T08:28:14.000+00:00",
+          "slug": "probe-gated-post"
+        },
+        {
+          "published_at": "2025-08-12T12:00:00.000+00:00",
+          "slug": "on-typography-and-restraint"
+        },
+        {
+          "published_at": "2025-08-11T12:00:00.000+00:00",
+          "slug": "the-cost-of-clever"
+        },
+        {
+          "published_at": "2025-08-10T12:00:00.000+00:00",
+          "slug": "a-quiet-week-in-the-archive"
+        },
+        {
+          "published_at": "2025-08-09T12:00:00.000+00:00",
+          "slug": "what-the-grid-gets-wrong"
+        },
+        {
+          "published_at": "2025-08-08T12:00:00.000+00:00",
+          "slug": "notes-from-a-slow-rebuild"
+        },
+        {
+          "published_at": "2025-08-07T12:00:00.000+00:00",
+          "slug": "reading-the-margins"
+        },
+        {
+          "published_at": "2025-08-06T12:00:00.000+00:00",
+          "slug": "against-the-redesign"
+        },
+        {
+          "published_at": "2025-08-05T12:00:00.000+00:00",
+          "slug": "small-tools-sharp-edges"
+        },
+        {
+          "published_at": "2025-08-04T12:00:00.000+00:00",
+          "slug": "the-shape-of-an-interview"
+        },
+        {
+          "published_at": "2025-08-03T12:00:00.000+00:00",
+          "slug": "how-we-pick-our-defaults"
+        },
+        {
+          "published_at": "2025-08-02T12:00:00.000+00:00",
+          "slug": "a-field-guide-to-whitespace"
+        },
+        {
+          "published_at": "2025-08-01T12:00:00.000+00:00",
+          "slug": "ten-years-of-one-layout"
+        },
+        {
+          "published_at": "2025-07-31T12:00:00.000+00:00",
+          "slug": "the-paragraph-is-the-unit"
+        },
+        {
+          "published_at": "2025-07-30T12:00:00.000+00:00",
+          "slug": "why-we-stopped-measuring"
+        }
+      ]
+    },
+    "tags": {
+      "limit": 15,
+      "rows": [
+        {
+          "name": "Archive",
+          "slug": "archive"
+        },
+        {
+          "name": "Craft",
+          "slug": "craft"
+        },
+        {
+          "name": "Field Notes",
+          "slug": "field-notes"
+        },
+        {
+          "name": "Interviews",
+          "slug": "interviews"
+        },
+        {
+          "name": "Systems",
+          "slug": "systems"
+        },
+        {
+          "name": "Tooling",
+          "slug": "tooling"
+        }
+      ]
+    },
+    "tiers": {
+      "limit": 3,
+      "rows": [
+        {
+          "monthly_price": null,
+          "name": "Free",
+          "slug": "free",
+          "type": "free"
+        },
+        {
+          "monthly_price": 500,
+          "name": "Ghost6",
+          "slug": "default-product",
+          "type": "paid"
+        },
+        {
+          "monthly_price": 1500,
+          "name": "Ghost6 Pro",
+          "slug": "ghost6-pro",
+          "type": "paid"
+        }
+      ]
+    }
+  },
+  "ghost_install": "6.58.0",
+  "ghost_major": "6",
+  "ghost_version": "6.58",
+  "note": "AD-23: the style-guide body enters here. Every block is Ghost's own bytes, split per top-level element; nothing in this directory is hand-written and nothing is normalised.",
+  "renderer": {
+    "package": "@tryghost/kg-default-nodes",
+    "version": "2.2.0"
+  },
+  "site": "https://ghost6.inflozo.com"
+}

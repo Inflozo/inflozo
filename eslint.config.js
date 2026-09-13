@@ -19,8 +19,10 @@ import tsParser from '@typescript-eslint/parser'
 // moment that happens: the contract both emitters read would have linted with no AD-1 ban at all.
 // The exclusion therefore names the DATA directories only — a design's `behaviour.js` legitimately
 // reaches `document`, and nothing else in the package may.
+// Story 4.4 added `orbit-weekly/`: authored and recorded data, plus Ghost's vendored card scripts,
+// which reach `document` because that is their whole job. Its CODE half is `src/orbit-weekly.ts`.
 const CORE = ['packages/*/**/*.{ts,tsx,mts,cts,js,mjs,cjs}']
-const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**']
+const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**', 'packages/library/orbit-weekly/**']
 
 // Derived from the runtime, never a hand list — a hardcoded membership list has gone stale twice.
 const builtins = builtinModules.flatMap((m) => {

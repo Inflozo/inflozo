@@ -1,0 +1,2395 @@
+{
+  "note": "Story 4.4's card corpus — ONE source rendered twice by tools/probe/record-cards.py. `article` is C4's readable post in C4's drawn order (C Post Body.dc.html:1706-1908); every card in it is a REFERENCE into `variants`, so the variation sheet (every variant, in declared order) carries each of them and no variant can appear only in the article. `root` is the class (or element) the recorder requires on the variant's own top-level element; `expect` are the class-affecting classes the variant exists to carry. Image, media and link URLs sit on the reserved origin https://orbit-weekly.example, which no Ghost rewrites, so every recorded byte is Ghost's and the consumer maps that origin to where the dataset's images are served. The NFT card is absent: no Lexical renderer exists for it on either major (kg-nft-card lives only in the mobiledoc renderer, which R-66 excludes).",
+  "article": [
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "The domains are the tell. Fifteen years on the same address, renewed every October by someone who never expected an audience and got one anyway. I have been keeping a list since 2019, and it has never once grown.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "What they share is not taste. Some are beautiful and most are not. It is a refusal to move — off the address, off the software, off the habit — which turns out to be the rarest thing on the web.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "callout-accent",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Who is actually paying",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "extended-heading",
+        "version": 1,
+        "tag": "h2"
+      }
+    },
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Three of the four hundred are paid for by estates. Two are paid for by universities that forgot they were paying. The rest are individuals, and their renewal dates cluster in October for a reason nobody has explained to my satisfaction.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "quote",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "I asked eleven of them why October. The answers divided cleanly:",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "list-bullet",
+    "bookmark-thumbnail",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "The renewal arithmetic",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "extended-heading",
+        "version": 1,
+        "tag": "h3"
+      }
+    },
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "A domain costs about twelve dollars a year. Hosting a static site costs nothing at three of the four common hosts. The whole obligation, then, is one dollar a month and one afternoon a decade.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "table",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "The counting itself is unglamorous. I run one request a month against each address and record what comes back, which is ",
+            "type": "extended-text",
+            "version": 1
+          },
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "fourteen lines of shell",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "link",
+            "version": 1,
+            "rel": null,
+            "target": null,
+            "title": null,
+            "url": "https://orbit-weekly.example/the-list/"
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " and a text file:",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "code",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Anything that answers ",
+            "type": "extended-text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "200",
+            "type": "extended-text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " twice in a row goes on the list. Anything that answers ",
+            "type": "extended-text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 16,
+            "mode": "normal",
+            "style": "",
+            "text": "000",
+            "type": "extended-text",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": " for three months comes off it, and I check by hand before it does.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "toggle",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "What the pages look like",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "extended-heading",
+        "version": 1,
+        "tag": "h2"
+      }
+    },
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Seven of them, photographed on the same afternoon at the same window width, in the order they were registered:",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "gallery-5-caption",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "There is an audio version of the interviews, if you would rather hear the October answers in the original voices:",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "audio",
+    "video-wide-caption",
+    "embed",
+    "divider",
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "The list",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "extended-heading",
+        "version": 1,
+        "tag": "h2"
+      }
+    },
+    {
+      "text": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Four hundred and one addresses, with their first archive capture and who renews them where I could find out. It is a spreadsheet because it was always a spreadsheet.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "paragraph",
+        "version": 1
+      }
+    },
+    "file-title-caption",
+    "product-rating-image",
+    "button-center",
+    "signup-full-dark"
+  ],
+  "variants": [
+    {
+      "id": "image-regular-caption",
+      "card": "image",
+      "label": "image · regular · caption",
+      "root": "kg-image-card",
+      "expect": [
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "image",
+        "version": 1,
+        "src": "https://orbit-weekly.example/images/feature-03.svg",
+        "width": 1600,
+        "height": 900,
+        "alt": "Terraced hills at dusk",
+        "caption": "Terraced hills at dusk.",
+        "cardWidth": "regular",
+        "title": "",
+        "href": ""
+      }
+    },
+    {
+      "id": "image-regular",
+      "card": "image",
+      "label": "image · regular · no caption",
+      "root": "kg-image-card",
+      "expect": [],
+      "node": {
+        "type": "image",
+        "version": 1,
+        "src": "https://orbit-weekly.example/images/feature-03.svg",
+        "width": 1600,
+        "height": 900,
+        "alt": "Terraced hills at dusk",
+        "caption": "",
+        "cardWidth": "regular",
+        "title": "",
+        "href": ""
+      }
+    },
+    {
+      "id": "image-wide-caption",
+      "card": "image",
+      "label": "image · wide · caption",
+      "root": "kg-image-card",
+      "expect": [
+        "kg-width-wide",
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "image",
+        "version": 1,
+        "src": "https://orbit-weekly.example/images/feature-03.svg",
+        "width": 1600,
+        "height": 900,
+        "alt": "Terraced hills at dusk",
+        "caption": "Terraced hills at dusk.",
+        "cardWidth": "wide",
+        "title": "",
+        "href": ""
+      }
+    },
+    {
+      "id": "image-wide",
+      "card": "image",
+      "label": "image · wide · no caption",
+      "root": "kg-image-card",
+      "expect": [
+        "kg-width-wide"
+      ],
+      "node": {
+        "type": "image",
+        "version": 1,
+        "src": "https://orbit-weekly.example/images/feature-03.svg",
+        "width": 1600,
+        "height": 900,
+        "alt": "Terraced hills at dusk",
+        "caption": "",
+        "cardWidth": "wide",
+        "title": "",
+        "href": ""
+      }
+    },
+    {
+      "id": "image-full-caption",
+      "card": "image",
+      "label": "image · full · caption",
+      "root": "kg-image-card",
+      "expect": [
+        "kg-width-full",
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "image",
+        "version": 1,
+        "src": "https://orbit-weekly.example/images/feature-03.svg",
+        "width": 1600,
+        "height": 900,
+        "alt": "Terraced hills at dusk",
+        "caption": "Terraced hills at dusk.",
+        "cardWidth": "full",
+        "title": "",
+        "href": ""
+      }
+    },
+    {
+      "id": "image-full",
+      "card": "image",
+      "label": "image · full · no caption",
+      "root": "kg-image-card",
+      "expect": [
+        "kg-width-full"
+      ],
+      "node": {
+        "type": "image",
+        "version": 1,
+        "src": "https://orbit-weekly.example/images/feature-03.svg",
+        "width": 1600,
+        "height": 900,
+        "alt": "Terraced hills at dusk",
+        "caption": "",
+        "cardWidth": "full",
+        "title": "",
+        "href": ""
+      }
+    },
+    {
+      "id": "gallery-1",
+      "card": "gallery",
+      "label": "gallery · 1 image · no caption",
+      "root": "kg-gallery-card",
+      "expect": [],
+      "node": {
+        "type": "gallery",
+        "version": 1,
+        "images": [
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-01.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-01.svg",
+            "alt": "Homepage 1",
+            "caption": ""
+          }
+        ],
+        "caption": ""
+      }
+    },
+    {
+      "id": "gallery-2",
+      "card": "gallery",
+      "label": "gallery · 2 images · no caption",
+      "root": "kg-gallery-card",
+      "expect": [],
+      "node": {
+        "type": "gallery",
+        "version": 1,
+        "images": [
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-01.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-01.svg",
+            "alt": "Homepage 1",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-02.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-02.svg",
+            "alt": "Homepage 2",
+            "caption": ""
+          }
+        ],
+        "caption": ""
+      }
+    },
+    {
+      "id": "gallery-3",
+      "card": "gallery",
+      "label": "gallery · 3 images · no caption",
+      "root": "kg-gallery-card",
+      "expect": [],
+      "node": {
+        "type": "gallery",
+        "version": 1,
+        "images": [
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-01.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-01.svg",
+            "alt": "Homepage 1",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-02.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-02.svg",
+            "alt": "Homepage 2",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-03.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-03.svg",
+            "alt": "Homepage 3",
+            "caption": ""
+          }
+        ],
+        "caption": ""
+      }
+    },
+    {
+      "id": "gallery-4",
+      "card": "gallery",
+      "label": "gallery · 4 images · no caption",
+      "root": "kg-gallery-card",
+      "expect": [],
+      "node": {
+        "type": "gallery",
+        "version": 1,
+        "images": [
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-01.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-01.svg",
+            "alt": "Homepage 1",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-02.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-02.svg",
+            "alt": "Homepage 2",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-03.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-03.svg",
+            "alt": "Homepage 3",
+            "caption": ""
+          },
+          {
+            "row": 1,
+            "src": "https://orbit-weekly.example/images/feature-04.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-04.svg",
+            "alt": "Homepage 4",
+            "caption": ""
+          }
+        ],
+        "caption": ""
+      }
+    },
+    {
+      "id": "gallery-5",
+      "card": "gallery",
+      "label": "gallery · 5 images · no caption",
+      "root": "kg-gallery-card",
+      "expect": [],
+      "node": {
+        "type": "gallery",
+        "version": 1,
+        "images": [
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-01.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-01.svg",
+            "alt": "Homepage 1",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-02.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-02.svg",
+            "alt": "Homepage 2",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-03.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-03.svg",
+            "alt": "Homepage 3",
+            "caption": ""
+          },
+          {
+            "row": 1,
+            "src": "https://orbit-weekly.example/images/feature-04.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-04.svg",
+            "alt": "Homepage 4",
+            "caption": ""
+          },
+          {
+            "row": 1,
+            "src": "https://orbit-weekly.example/images/feature-05.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-05.svg",
+            "alt": "Homepage 5",
+            "caption": ""
+          }
+        ],
+        "caption": ""
+      }
+    },
+    {
+      "id": "gallery-5-caption",
+      "card": "gallery",
+      "label": "gallery · 5 images · caption",
+      "root": "kg-gallery-card",
+      "expect": [
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "gallery",
+        "version": 1,
+        "images": [
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-01.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-01.svg",
+            "alt": "Homepage 1",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-02.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-02.svg",
+            "alt": "Homepage 2",
+            "caption": ""
+          },
+          {
+            "row": 0,
+            "src": "https://orbit-weekly.example/images/feature-03.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-03.svg",
+            "alt": "Homepage 3",
+            "caption": ""
+          },
+          {
+            "row": 1,
+            "src": "https://orbit-weekly.example/images/feature-04.svg",
+            "width": 1600,
+            "height": 1100,
+            "fileName": "feature-04.svg",
+            "alt": "Homepage 4",
+            "caption": ""
+          },
+          {
+            "row": 1,
+            "src": "https://orbit-weekly.example/images/feature-05.svg",
+            "width": 1600,
+            "height": 900,
+            "fileName": "feature-05.svg",
+            "alt": "Homepage 5",
+            "caption": ""
+          }
+        ],
+        "caption": "Seven homepages, August 2026. Two have not changed since 2011."
+      }
+    },
+    {
+      "id": "video-regular",
+      "card": "video",
+      "label": "video · regular · no loop",
+      "root": "kg-video-card",
+      "expect": [],
+      "node": {
+        "type": "video",
+        "version": 1,
+        "src": "https://orbit-weekly.example/media/scrolling-one-of-them.mp4",
+        "caption": "",
+        "fileName": "scrolling-one-of-them.mp4",
+        "mimeType": "video/mp4",
+        "width": 1600,
+        "height": 900,
+        "duration": 9,
+        "thumbnailSrc": "https://orbit-weekly.example/images/feature-04.svg",
+        "customThumbnailSrc": "",
+        "thumbnailWidth": 1600,
+        "thumbnailHeight": 900,
+        "cardWidth": "regular",
+        "loop": false
+      }
+    },
+    {
+      "id": "video-wide",
+      "card": "video",
+      "label": "video · wide · no loop",
+      "root": "kg-video-card",
+      "expect": [
+        "kg-width-wide"
+      ],
+      "node": {
+        "type": "video",
+        "version": 1,
+        "src": "https://orbit-weekly.example/media/scrolling-one-of-them.mp4",
+        "caption": "",
+        "fileName": "scrolling-one-of-them.mp4",
+        "mimeType": "video/mp4",
+        "width": 1600,
+        "height": 900,
+        "duration": 9,
+        "thumbnailSrc": "https://orbit-weekly.example/images/feature-04.svg",
+        "customThumbnailSrc": "",
+        "thumbnailWidth": 1600,
+        "thumbnailHeight": 900,
+        "cardWidth": "wide",
+        "loop": false
+      }
+    },
+    {
+      "id": "video-full",
+      "card": "video",
+      "label": "video · full · no loop",
+      "root": "kg-video-card",
+      "expect": [
+        "kg-width-full"
+      ],
+      "node": {
+        "type": "video",
+        "version": 1,
+        "src": "https://orbit-weekly.example/media/scrolling-one-of-them.mp4",
+        "caption": "",
+        "fileName": "scrolling-one-of-them.mp4",
+        "mimeType": "video/mp4",
+        "width": 1600,
+        "height": 900,
+        "duration": 9,
+        "thumbnailSrc": "https://orbit-weekly.example/images/feature-04.svg",
+        "customThumbnailSrc": "",
+        "thumbnailWidth": 1600,
+        "thumbnailHeight": 900,
+        "cardWidth": "full",
+        "loop": false
+      }
+    },
+    {
+      "id": "video-regular-loop",
+      "card": "video",
+      "label": "video · regular · loop",
+      "root": "kg-video-card",
+      "expect": [],
+      "node": {
+        "type": "video",
+        "version": 1,
+        "src": "https://orbit-weekly.example/media/scrolling-one-of-them.mp4",
+        "caption": "",
+        "fileName": "scrolling-one-of-them.mp4",
+        "mimeType": "video/mp4",
+        "width": 1600,
+        "height": 900,
+        "duration": 9,
+        "thumbnailSrc": "https://orbit-weekly.example/images/feature-04.svg",
+        "customThumbnailSrc": "",
+        "thumbnailWidth": 1600,
+        "thumbnailHeight": 900,
+        "cardWidth": "regular",
+        "loop": true
+      }
+    },
+    {
+      "id": "video-wide-caption",
+      "card": "video",
+      "label": "video · wide · caption",
+      "root": "kg-video-card",
+      "expect": [
+        "kg-width-wide",
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "video",
+        "version": 1,
+        "src": "https://orbit-weekly.example/media/scrolling-one-of-them.mp4",
+        "caption": "Scrolling one of them end to end, at the speed its author reads.",
+        "fileName": "scrolling-one-of-them.mp4",
+        "mimeType": "video/mp4",
+        "width": 1600,
+        "height": 900,
+        "duration": 9,
+        "thumbnailSrc": "https://orbit-weekly.example/images/feature-04.svg",
+        "customThumbnailSrc": "",
+        "thumbnailWidth": 1600,
+        "thumbnailHeight": 900,
+        "cardWidth": "wide",
+        "loop": false
+      }
+    },
+    {
+      "id": "callout-grey",
+      "card": "callout",
+      "label": "callout · grey · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-grey"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "grey"
+      }
+    },
+    {
+      "id": "callout-white",
+      "card": "callout",
+      "label": "callout · white · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-white"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "white"
+      }
+    },
+    {
+      "id": "callout-blue",
+      "card": "callout",
+      "label": "callout · blue · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-blue"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "blue"
+      }
+    },
+    {
+      "id": "callout-green",
+      "card": "callout",
+      "label": "callout · green · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-green"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "green"
+      }
+    },
+    {
+      "id": "callout-yellow",
+      "card": "callout",
+      "label": "callout · yellow · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-yellow"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "yellow"
+      }
+    },
+    {
+      "id": "callout-red",
+      "card": "callout",
+      "label": "callout · red · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-red"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "red"
+      }
+    },
+    {
+      "id": "callout-pink",
+      "card": "callout",
+      "label": "callout · pink · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-pink"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "pink"
+      }
+    },
+    {
+      "id": "callout-purple",
+      "card": "callout",
+      "label": "callout · purple · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-purple"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "purple"
+      }
+    },
+    {
+      "id": "callout-accent",
+      "card": "callout",
+      "label": "callout · accent · emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-accent"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "💡",
+        "backgroundColor": "accent"
+      }
+    },
+    {
+      "id": "callout-accent-no-emoji",
+      "card": "callout",
+      "label": "callout · accent · no emoji",
+      "root": "kg-callout-card",
+      "expect": [
+        "kg-callout-card-accent"
+      ],
+      "node": {
+        "type": "callout",
+        "version": 1,
+        "calloutText": "If you are looking for the list itself, it is at the end of this issue — and every link on it was checked the week this went out.",
+        "calloutEmoji": "",
+        "backgroundColor": "accent"
+      }
+    },
+    {
+      "id": "button-center",
+      "card": "button",
+      "label": "button · center",
+      "root": "kg-button-card",
+      "expect": [
+        "kg-align-center"
+      ],
+      "node": {
+        "type": "button",
+        "version": 1,
+        "buttonText": "Read the full list",
+        "alignment": "center",
+        "buttonUrl": "https://orbit-weekly.example/the-list/"
+      }
+    },
+    {
+      "id": "button-left",
+      "card": "button",
+      "label": "button · left",
+      "root": "kg-button-card",
+      "expect": [
+        "kg-align-left"
+      ],
+      "node": {
+        "type": "button",
+        "version": 1,
+        "buttonText": "Read the full list",
+        "alignment": "left",
+        "buttonUrl": "https://orbit-weekly.example/the-list/"
+      }
+    },
+    {
+      "id": "product-rating-image",
+      "card": "product",
+      "label": "product · rating · no button · image",
+      "root": "kg-product-card",
+      "expect": [],
+      "node": {
+        "type": "product",
+        "version": 1,
+        "productImageSrc": "https://orbit-weekly.example/images/book-users.svg",
+        "productImageWidth": 600,
+        "productImageHeight": 600,
+        "productTitle": "Users, by Colin Ward-Henninger",
+        "productDescription": "The best book about people who keep websites, written by someone who kept one for twenty years.",
+        "productRatingEnabled": true,
+        "productStarRating": 4,
+        "productButtonEnabled": false,
+        "productButton": "Find a copy",
+        "productUrl": "https://orbit-weekly.example/users/"
+      }
+    },
+    {
+      "id": "product-full",
+      "card": "product",
+      "label": "product · rating · button · image",
+      "root": "kg-product-card",
+      "expect": [],
+      "node": {
+        "type": "product",
+        "version": 1,
+        "productImageSrc": "https://orbit-weekly.example/images/book-users.svg",
+        "productImageWidth": 600,
+        "productImageHeight": 600,
+        "productTitle": "Users, by Colin Ward-Henninger",
+        "productDescription": "The best book about people who keep websites, written by someone who kept one for twenty years.",
+        "productRatingEnabled": true,
+        "productStarRating": 4,
+        "productButtonEnabled": true,
+        "productButton": "Find a copy",
+        "productUrl": "https://orbit-weekly.example/users/"
+      }
+    },
+    {
+      "id": "product-no-rating",
+      "card": "product",
+      "label": "product · no rating · button · image",
+      "root": "kg-product-card",
+      "expect": [],
+      "node": {
+        "type": "product",
+        "version": 1,
+        "productImageSrc": "https://orbit-weekly.example/images/book-users.svg",
+        "productImageWidth": 600,
+        "productImageHeight": 600,
+        "productTitle": "Users, by Colin Ward-Henninger",
+        "productDescription": "The best book about people who keep websites, written by someone who kept one for twenty years.",
+        "productRatingEnabled": false,
+        "productStarRating": 4,
+        "productButtonEnabled": true,
+        "productButton": "Find a copy",
+        "productUrl": "https://orbit-weekly.example/users/"
+      }
+    },
+    {
+      "id": "product-no-image",
+      "card": "product",
+      "label": "product · rating · button · no image",
+      "root": "kg-product-card",
+      "expect": [],
+      "node": {
+        "type": "product",
+        "version": 1,
+        "productImageSrc": "",
+        "productImageWidth": null,
+        "productImageHeight": null,
+        "productTitle": "Users, by Colin Ward-Henninger",
+        "productDescription": "The best book about people who keep websites, written by someone who kept one for twenty years.",
+        "productRatingEnabled": true,
+        "productStarRating": 4,
+        "productButtonEnabled": true,
+        "productButton": "Find a copy",
+        "productUrl": "https://orbit-weekly.example/users/"
+      }
+    },
+    {
+      "id": "product-bare",
+      "card": "product",
+      "label": "product · no rating · no button · no image",
+      "root": "kg-product-card",
+      "expect": [],
+      "node": {
+        "type": "product",
+        "version": 1,
+        "productImageSrc": "",
+        "productImageWidth": null,
+        "productImageHeight": null,
+        "productTitle": "Users, by Colin Ward-Henninger",
+        "productDescription": "The best book about people who keep websites, written by someone who kept one for twenty years.",
+        "productRatingEnabled": false,
+        "productStarRating": 4,
+        "productButtonEnabled": false,
+        "productButton": "Find a copy",
+        "productUrl": "https://orbit-weekly.example/users/"
+      }
+    },
+    {
+      "id": "header-regular",
+      "card": "header_v2",
+      "label": "header v2 · regular",
+      "root": "kg-header-card",
+      "expect": [
+        "kg-v2"
+      ],
+      "node": {
+        "type": "header",
+        "version": 2,
+        "size": "small",
+        "style": "dark",
+        "buttonEnabled": true,
+        "buttonUrl": "https://orbit-weekly.example/the-list/",
+        "buttonText": "Read the list",
+        "header": "The four hundred domains",
+        "subheader": "Every October, a few hundred people renew an address nobody visits.",
+        "backgroundImageSrc": "https://orbit-weekly.example/images/feature-06.svg",
+        "accentColor": "#D96C3F",
+        "alignment": "center",
+        "backgroundColor": "#232019",
+        "backgroundImageWidth": 1600,
+        "backgroundImageHeight": 900,
+        "backgroundSize": "cover",
+        "textColor": "#F4EFE6",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "layout": "regular",
+        "swapped": false
+      }
+    },
+    {
+      "id": "header-wide",
+      "card": "header_v2",
+      "label": "header v2 · wide",
+      "root": "kg-header-card",
+      "expect": [
+        "kg-v2"
+      ],
+      "node": {
+        "type": "header",
+        "version": 2,
+        "size": "small",
+        "style": "dark",
+        "buttonEnabled": true,
+        "buttonUrl": "https://orbit-weekly.example/the-list/",
+        "buttonText": "Read the list",
+        "header": "The four hundred domains",
+        "subheader": "Every October, a few hundred people renew an address nobody visits.",
+        "backgroundImageSrc": "https://orbit-weekly.example/images/feature-06.svg",
+        "accentColor": "#D96C3F",
+        "alignment": "center",
+        "backgroundColor": "#232019",
+        "backgroundImageWidth": 1600,
+        "backgroundImageHeight": 900,
+        "backgroundSize": "cover",
+        "textColor": "#F4EFE6",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "layout": "wide",
+        "swapped": false
+      }
+    },
+    {
+      "id": "header-full",
+      "card": "header_v2",
+      "label": "header v2 · full",
+      "root": "kg-header-card",
+      "expect": [
+        "kg-v2"
+      ],
+      "node": {
+        "type": "header",
+        "version": 2,
+        "size": "small",
+        "style": "dark",
+        "buttonEnabled": true,
+        "buttonUrl": "https://orbit-weekly.example/the-list/",
+        "buttonText": "Read the list",
+        "header": "The four hundred domains",
+        "subheader": "Every October, a few hundred people renew an address nobody visits.",
+        "backgroundImageSrc": "https://orbit-weekly.example/images/feature-06.svg",
+        "accentColor": "#D96C3F",
+        "alignment": "center",
+        "backgroundColor": "#232019",
+        "backgroundImageWidth": 1600,
+        "backgroundImageHeight": 900,
+        "backgroundSize": "cover",
+        "textColor": "#F4EFE6",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "layout": "full",
+        "swapped": false
+      }
+    },
+    {
+      "id": "header-split",
+      "card": "header_v2",
+      "label": "header v2 · split",
+      "root": "kg-header-card",
+      "expect": [
+        "kg-v2",
+        "kg-layout-split"
+      ],
+      "node": {
+        "type": "header",
+        "version": 2,
+        "size": "small",
+        "style": "dark",
+        "buttonEnabled": true,
+        "buttonUrl": "https://orbit-weekly.example/the-list/",
+        "buttonText": "Read the list",
+        "header": "The four hundred domains",
+        "subheader": "Every October, a few hundred people renew an address nobody visits.",
+        "backgroundImageSrc": "https://orbit-weekly.example/images/feature-06.svg",
+        "accentColor": "#D96C3F",
+        "alignment": "center",
+        "backgroundColor": "#232019",
+        "backgroundImageWidth": 1600,
+        "backgroundImageHeight": 900,
+        "backgroundSize": "cover",
+        "textColor": "#F4EFE6",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "layout": "split",
+        "swapped": false
+      }
+    },
+    {
+      "id": "header-split-swapped",
+      "card": "header_v2",
+      "label": "header v2 · split · swapped",
+      "root": "kg-header-card",
+      "expect": [
+        "kg-v2",
+        "kg-layout-split",
+        "kg-swapped"
+      ],
+      "node": {
+        "type": "header",
+        "version": 2,
+        "size": "small",
+        "style": "dark",
+        "buttonEnabled": true,
+        "buttonUrl": "https://orbit-weekly.example/the-list/",
+        "buttonText": "Read the list",
+        "header": "The four hundred domains",
+        "subheader": "Every October, a few hundred people renew an address nobody visits.",
+        "backgroundImageSrc": "https://orbit-weekly.example/images/feature-06.svg",
+        "accentColor": "#D96C3F",
+        "alignment": "center",
+        "backgroundColor": "#232019",
+        "backgroundImageWidth": 1600,
+        "backgroundImageHeight": 900,
+        "backgroundSize": "cover",
+        "textColor": "#F4EFE6",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "layout": "split",
+        "swapped": true
+      }
+    },
+    {
+      "id": "signup-regular",
+      "card": "signup",
+      "label": "signup · regular",
+      "root": "kg-signup-card",
+      "expect": [],
+      "node": {
+        "type": "signup",
+        "version": 1,
+        "alignment": "left",
+        "backgroundColor": "#F4F0E9",
+        "backgroundImageSrc": "",
+        "backgroundSize": "cover",
+        "textColor": "#232019",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "buttonText": "Subscribe",
+        "disclaimer": "No spam. Unsubscribe any time.",
+        "header": "Get the list every Thursday",
+        "layout": "regular",
+        "subheader": "Seven links, checked by hand. No tracking pixels, because I never got round to adding any.",
+        "successMessage": "Check your inbox to confirm.",
+        "swapped": false
+      }
+    },
+    {
+      "id": "signup-wide",
+      "card": "signup",
+      "label": "signup · wide",
+      "root": "kg-signup-card",
+      "expect": [],
+      "node": {
+        "type": "signup",
+        "version": 1,
+        "alignment": "left",
+        "backgroundColor": "#F4F0E9",
+        "backgroundImageSrc": "",
+        "backgroundSize": "cover",
+        "textColor": "#232019",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "buttonText": "Subscribe",
+        "disclaimer": "No spam. Unsubscribe any time.",
+        "header": "Get the list every Thursday",
+        "layout": "wide",
+        "subheader": "Seven links, checked by hand. No tracking pixels, because I never got round to adding any.",
+        "successMessage": "Check your inbox to confirm.",
+        "swapped": false
+      }
+    },
+    {
+      "id": "signup-full",
+      "card": "signup",
+      "label": "signup · full",
+      "root": "kg-signup-card",
+      "expect": [],
+      "node": {
+        "type": "signup",
+        "version": 1,
+        "alignment": "left",
+        "backgroundColor": "#F4F0E9",
+        "backgroundImageSrc": "",
+        "backgroundSize": "cover",
+        "textColor": "#232019",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "buttonText": "Subscribe",
+        "disclaimer": "No spam. Unsubscribe any time.",
+        "header": "Get the list every Thursday",
+        "layout": "full",
+        "subheader": "Seven links, checked by hand. No tracking pixels, because I never got round to adding any.",
+        "successMessage": "Check your inbox to confirm.",
+        "swapped": false
+      }
+    },
+    {
+      "id": "signup-split",
+      "card": "signup",
+      "label": "signup · split",
+      "root": "kg-signup-card",
+      "expect": [
+        "kg-layout-split"
+      ],
+      "node": {
+        "type": "signup",
+        "version": 1,
+        "alignment": "left",
+        "backgroundColor": "#F4F0E9",
+        "backgroundImageSrc": "https://orbit-weekly.example/images/feature-07.svg",
+        "backgroundSize": "cover",
+        "textColor": "#232019",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "buttonText": "Subscribe",
+        "disclaimer": "No spam. Unsubscribe any time.",
+        "header": "Get the list every Thursday",
+        "layout": "split",
+        "subheader": "Seven links, checked by hand. No tracking pixels, because I never got round to adding any.",
+        "successMessage": "Check your inbox to confirm.",
+        "swapped": false
+      }
+    },
+    {
+      "id": "signup-full-dark",
+      "card": "signup",
+      "label": "signup · full · dark ground",
+      "root": "kg-signup-card",
+      "expect": [
+        "kg-width-full"
+      ],
+      "node": {
+        "type": "signup",
+        "version": 1,
+        "alignment": "left",
+        "backgroundColor": "#232019",
+        "backgroundImageSrc": "",
+        "backgroundSize": "cover",
+        "textColor": "#F4EFE6",
+        "buttonColor": "#D96C3F",
+        "buttonTextColor": "#FFFFFF",
+        "buttonText": "Subscribe",
+        "disclaimer": "No spam. Unsubscribe any time.",
+        "header": "Get the list every Thursday",
+        "layout": "full",
+        "subheader": "Seven links, checked by hand. No tracking pixels, because I never got round to adding any.",
+        "successMessage": "Check your inbox to confirm.",
+        "swapped": false
+      }
+    },
+    {
+      "id": "cta-none",
+      "card": "cta",
+      "label": "cta · none · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-none",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "none",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-white",
+      "card": "cta",
+      "label": "cta · white · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-white",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "white",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-grey",
+      "card": "cta",
+      "label": "cta · grey · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-grey",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-blue",
+      "card": "cta",
+      "label": "cta · blue · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-blue",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "blue",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-green",
+      "card": "cta",
+      "label": "cta · green · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-green",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "green",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-yellow",
+      "card": "cta",
+      "label": "cta · yellow · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-yellow",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "yellow",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-red",
+      "card": "cta",
+      "label": "cta · red · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-red",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "red",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-pink",
+      "card": "cta",
+      "label": "cta · pink · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-pink",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "pink",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-purple",
+      "card": "cta",
+      "label": "cta · purple · minimal · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-bg-purple",
+        "kg-cta-minimal"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "purple",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-immersive",
+      "card": "cta",
+      "label": "cta · grey · immersive · dividers · sponsor · no image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-immersive"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "immersive",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-minimal-image",
+      "card": "cta",
+      "label": "cta · grey · minimal · dividers · sponsor · image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-minimal",
+        "kg-cta-has-img"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "https://orbit-weekly.example/images/feature-08.svg",
+        "imageWidth": 1600,
+        "imageHeight": 900
+      }
+    },
+    {
+      "id": "cta-immersive-image",
+      "card": "cta",
+      "label": "cta · grey · immersive · dividers · sponsor · image",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-immersive",
+        "kg-cta-has-img"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "immersive",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "https://orbit-weekly.example/images/feature-08.svg",
+        "imageWidth": 1600,
+        "imageHeight": 900
+      }
+    },
+    {
+      "id": "cta-immersive-centred",
+      "card": "cta",
+      "label": "cta · grey · immersive · centred",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-centered"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "immersive",
+        "alignment": "center",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-no-dividers",
+      "card": "cta",
+      "label": "cta · grey · minimal · no dividers · sponsor",
+      "root": "kg-cta-card",
+      "expect": [
+        "kg-cta-no-dividers"
+      ],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": false,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": true,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "cta-no-sponsor",
+      "card": "cta",
+      "label": "cta · grey · minimal · dividers · no sponsor",
+      "root": "kg-cta-card",
+      "expect": [],
+      "node": {
+        "type": "call-to-action",
+        "version": 1,
+        "layout": "minimal",
+        "alignment": "left",
+        "textValue": "<p><span style=\"white-space: pre-wrap;\">The August list is sponsored by readers who renew their own domains every October.</span></p>",
+        "showButton": true,
+        "showDividers": true,
+        "buttonText": "Become a supporter",
+        "buttonUrl": "https://orbit-weekly.example/support/",
+        "buttonColor": "#232019",
+        "buttonTextColor": "#FFFFFF",
+        "hasSponsorLabel": false,
+        "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED</span></p>",
+        "backgroundColor": "grey",
+        "linkColor": "text",
+        "imageUrl": "",
+        "imageWidth": null,
+        "imageHeight": null
+      }
+    },
+    {
+      "id": "file-title-caption",
+      "card": "file",
+      "label": "file · title · caption",
+      "root": "kg-file-card",
+      "expect": [],
+      "node": {
+        "type": "file",
+        "version": 1,
+        "src": "https://orbit-weekly.example/files/orbit-weekly-aug-2026.csv",
+        "fileTitle": "The August list, as a spreadsheet",
+        "fileCaption": "Every domain, its first capture, and who renews it",
+        "fileName": "orbit-weekly-aug-2026.csv",
+        "fileSize": 24576
+      }
+    },
+    {
+      "id": "file-title",
+      "card": "file",
+      "label": "file · title · no caption",
+      "root": "kg-file-card",
+      "expect": [],
+      "node": {
+        "type": "file",
+        "version": 1,
+        "src": "https://orbit-weekly.example/files/orbit-weekly-aug-2026.csv",
+        "fileTitle": "The August list, as a spreadsheet",
+        "fileCaption": "",
+        "fileName": "orbit-weekly-aug-2026.csv",
+        "fileSize": 24576
+      }
+    },
+    {
+      "id": "file-caption",
+      "card": "file",
+      "label": "file · no title · caption",
+      "root": "kg-file-card",
+      "expect": [],
+      "node": {
+        "type": "file",
+        "version": 1,
+        "src": "https://orbit-weekly.example/files/orbit-weekly-aug-2026.csv",
+        "fileTitle": "",
+        "fileCaption": "Every domain, its first capture, and who renews it",
+        "fileName": "orbit-weekly-aug-2026.csv",
+        "fileSize": 24576
+      }
+    },
+    {
+      "id": "file-bare",
+      "card": "file",
+      "label": "file · no title · no caption",
+      "root": "kg-file-card",
+      "expect": [],
+      "node": {
+        "type": "file",
+        "version": 1,
+        "src": "https://orbit-weekly.example/files/orbit-weekly-aug-2026.csv",
+        "fileTitle": "",
+        "fileCaption": "",
+        "fileName": "orbit-weekly-aug-2026.csv",
+        "fileSize": 24576
+      }
+    },
+    {
+      "id": "toggle",
+      "card": "toggle",
+      "label": "toggle · closed, as rendered",
+      "root": "kg-toggle-card",
+      "expect": [],
+      "node": {
+        "type": "toggle",
+        "version": 1,
+        "heading": "Why not just use the Internet Archive?",
+        "content": "<p>Because the Archive tells you a page existed, not that someone is still paying for it. Those are different questions, and only the second one predicts next October.</p>"
+      }
+    },
+    {
+      "id": "code",
+      "card": "code",
+      "label": "code · no caption",
+      "root": "pre",
+      "expect": [],
+      "node": {
+        "type": "codeblock",
+        "version": 1,
+        "code": "#!/usr/bin/env bash\nwhile read -r host; do\n  code=$(curl -sS -o /dev/null -w '%{http_code}' \\\n    --max-time 10 \"https://$host/\" || echo 000)\n  printf '%s\\t%s\\t%s\\n' \"$(date -I)\" \"$host\" \"$code\"\ndone < hosts.txt >> log.tsv",
+        "language": "bash",
+        "caption": ""
+      }
+    },
+    {
+      "id": "code-caption",
+      "card": "code",
+      "label": "code · caption",
+      "root": "kg-code-card",
+      "expect": [],
+      "node": {
+        "type": "codeblock",
+        "version": 1,
+        "code": "#!/usr/bin/env bash\nwhile read -r host; do\n  code=$(curl -sS -o /dev/null -w '%{http_code}' \\\n    --max-time 10 \"https://$host/\" || echo 000)\n  printf '%s\\t%s\\t%s\\n' \"$(date -I)\" \"$host\" \"$code\"\ndone < hosts.txt >> log.tsv",
+        "language": "bash",
+        "caption": "Fourteen lines of shell, and a text file."
+      }
+    },
+    {
+      "id": "bookmark-thumbnail",
+      "card": "bookmark",
+      "label": "bookmark · thumbnail · no caption",
+      "root": "kg-bookmark-card",
+      "expect": [],
+      "node": {
+        "type": "bookmark",
+        "version": 1,
+        "url": "https://perennial.orbit-weekly.example/the-web-is-not-a-feed/",
+        "metadata": {
+          "icon": "https://orbit-weekly.example/images/icon.svg",
+          "title": "The Web Is Not A Feed, And Never Was",
+          "description": "An argument for the personal site, made by someone who has kept one since 2004 and has the logs to prove it.",
+          "author": "Perennial Notes",
+          "publisher": "perennial.orbit-weekly.example",
+          "thumbnail": "https://orbit-weekly.example/images/feature-05.svg"
+        },
+        "caption": ""
+      }
+    },
+    {
+      "id": "bookmark-thumbnail-caption",
+      "card": "bookmark",
+      "label": "bookmark · thumbnail · caption",
+      "root": "kg-bookmark-card",
+      "expect": [
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "bookmark",
+        "version": 1,
+        "url": "https://perennial.orbit-weekly.example/the-web-is-not-a-feed/",
+        "metadata": {
+          "icon": "https://orbit-weekly.example/images/icon.svg",
+          "title": "The Web Is Not A Feed, And Never Was",
+          "description": "An argument for the personal site, made by someone who has kept one since 2004 and has the logs to prove it.",
+          "author": "Perennial Notes",
+          "publisher": "perennial.orbit-weekly.example",
+          "thumbnail": "https://orbit-weekly.example/images/feature-05.svg"
+        },
+        "caption": "Kept since 2004, and quoted twice in this issue."
+      }
+    },
+    {
+      "id": "bookmark-bare",
+      "card": "bookmark",
+      "label": "bookmark · no thumbnail · no caption",
+      "root": "kg-bookmark-card",
+      "expect": [],
+      "node": {
+        "type": "bookmark",
+        "version": 1,
+        "url": "https://perennial.orbit-weekly.example/the-web-is-not-a-feed/",
+        "metadata": {
+          "icon": "https://orbit-weekly.example/images/icon.svg",
+          "title": "The Web Is Not A Feed, And Never Was",
+          "description": "An argument for the personal site, made by someone who has kept one since 2004 and has the logs to prove it.",
+          "author": "Perennial Notes",
+          "publisher": "perennial.orbit-weekly.example",
+          "thumbnail": ""
+        },
+        "caption": ""
+      }
+    },
+    {
+      "id": "bookmark-caption",
+      "card": "bookmark",
+      "label": "bookmark · no thumbnail · caption",
+      "root": "kg-bookmark-card",
+      "expect": [
+        "kg-card-hascaption"
+      ],
+      "node": {
+        "type": "bookmark",
+        "version": 1,
+        "url": "https://perennial.orbit-weekly.example/the-web-is-not-a-feed/",
+        "metadata": {
+          "icon": "https://orbit-weekly.example/images/icon.svg",
+          "title": "The Web Is Not A Feed, And Never Was",
+          "description": "An argument for the personal site, made by someone who has kept one since 2004 and has the logs to prove it.",
+          "author": "Perennial Notes",
+          "publisher": "perennial.orbit-weekly.example",
+          "thumbnail": ""
+        },
+        "caption": "Kept since 2004, and quoted twice in this issue."
+      }
+    },
+    {
+      "id": "audio",
+      "card": "audio",
+      "label": "audio",
+      "root": "kg-audio-card",
+      "expect": [],
+      "node": {
+        "type": "audio",
+        "version": 1,
+        "duration": 1268,
+        "mimeType": "audio/mpeg",
+        "src": "https://orbit-weekly.example/media/episode-12.mp3",
+        "title": "Episode 12 — The domains are the tell",
+        "thumbnailSrc": "https://orbit-weekly.example/images/episode-12.svg"
+      }
+    },
+    {
+      "id": "embed",
+      "card": "embed",
+      "label": "embed · video",
+      "root": "kg-embed-card",
+      "expect": [],
+      "node": {
+        "type": "embed",
+        "version": 1,
+        "url": "https://video.orbit-weekly.example/scrolling-one-of-them",
+        "embedType": "video",
+        "html": "<iframe width=\"200\" height=\"113\" title=\"Scrolling one of them\" frameborder=\"0\" srcdoc=\"<body style='margin:0;display:grid;place-items:center;height:100vh;background:#E4E1DA'><svg xmlns='http://www.w3.org/2000/svg' width='68' height='48' viewBox='0 0 68 48'><rect width='68' height='48' rx='12' fill='#232019' fill-opacity='.72'/><path d='M27 14v20l18-10z' fill='#fff'/></svg></body>\"></iframe>",
+        "metadata": {
+          "title": "Scrolling one of them",
+          "provider_name": "Orbit Weekly",
+          "thumbnail_url": "https://orbit-weekly.example/images/feature-04.svg",
+          "thumbnail_width": 1600,
+          "thumbnail_height": 900
+        },
+        "caption": ""
+      }
+    },
+    {
+      "id": "quote",
+      "card": "blockquote",
+      "label": "blockquote · standard",
+      "root": "blockquote",
+      "expect": [],
+      "node": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "A site that outlives three platform migrations is not nostalgic. It is just paid for.",
+            "type": "extended-text",
+            "version": 1
+          },
+          {
+            "type": "linebreak",
+            "version": 1
+          },
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "Perennial Notes, 2019",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "extended-quote",
+        "version": 1
+      }
+    },
+    {
+      "id": "quote-alt",
+      "card": "blockquote",
+      "label": "blockquote · alternative (aside)",
+      "root": "kg-blockquote-alt",
+      "expect": [],
+      "node": {
+        "children": [
+          {
+            "detail": 0,
+            "format": 0,
+            "mode": "normal",
+            "style": "",
+            "text": "A site that outlives three platform migrations is not nostalgic. It is just paid for.",
+            "type": "extended-text",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "aside",
+        "version": 1
+      }
+    },
+    {
+      "id": "list-bullet",
+      "card": "list",
+      "label": "list · bulleted",
+      "root": "ul",
+      "expect": [],
+      "node": {
+        "children": [
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Four said the date meant nothing at all, and were mildly annoyed to be asked.",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "listitem",
+            "version": 1,
+            "value": 1
+          },
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Three said it was simply when they had money, which is the honest version of the same answer.",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "listitem",
+            "version": 1,
+            "value": 2
+          },
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Two said October was when their first host used to bill them. That host closed in 2013.",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "listitem",
+            "version": 1,
+            "value": 3
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "list",
+        "version": 1,
+        "listType": "bullet",
+        "start": 1,
+        "tag": "ul"
+      }
+    },
+    {
+      "id": "list-number",
+      "card": "list",
+      "label": "list · numbered",
+      "root": "ol",
+      "expect": [],
+      "node": {
+        "children": [
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Four said the date meant nothing at all, and were mildly annoyed to be asked.",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "listitem",
+            "version": 1,
+            "value": 1
+          },
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Three said it was simply when they had money, which is the honest version of the same answer.",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "listitem",
+            "version": 1,
+            "value": 2
+          },
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Two said October was when their first host used to bill them. That host closed in 2013.",
+                "type": "extended-text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "listitem",
+            "version": 1,
+            "value": 3
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "list",
+        "version": 1,
+        "listType": "number",
+        "start": 1,
+        "tag": "ol"
+      }
+    },
+    {
+      "id": "table",
+      "card": "table",
+      "label": "table · through the HTML card (Lexical has no table node)",
+      "root": "table",
+      "expect": [],
+      "node": {
+        "type": "html",
+        "version": 1,
+        "html": "<table><thead><tr><th>Cohort</th><th>Still live</th><th>Moved</th><th>Gone</th></tr></thead><tbody><tr><td>Registered before 2000</td><td>61</td><td>14</td><td>109</td></tr><tr><td>2000 – 2009</td><td>183</td><td>52</td><td>240</td></tr><tr><td>2010 – 2014</td><td>156</td><td>88</td><td>301</td></tr></tbody></table>"
+      }
+    },
+    {
+      "id": "divider",
+      "card": "divider",
+      "label": "divider",
+      "root": "hr",
+      "expect": [],
+      "node": {
+        "type": "horizontalrule",
+        "version": 1
+      }
+    }
+  ]
+}

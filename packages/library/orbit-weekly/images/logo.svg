@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120">
+  <g fill="none" stroke="#D96C3F" stroke-width="7"><circle cx="60" cy="60" r="26"/><ellipse cx="60" cy="60" rx="50" ry="18" transform="rotate(-24 60 60)"/></g>
+  <circle cx="104" cy="40" r="7" fill="#232019"/>
+  <text x="130" y="78" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="#232019">Orbit Weekly</text>
+</svg>

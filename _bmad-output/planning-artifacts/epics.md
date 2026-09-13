@@ -140,7 +140,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 - **FR-H1** The Ghost data surface available for binding is catalogued in Appendix B — deliberately two different lists, because `{{#get}}` accepts a narrower set than the Content API exposes.
 - **FR-H2** The Data control group; exactly **one section per paginated template is the designated main feed**, bound to the native paginated context and sized by `posts_per_page` or the route's own `limit:`, and it alone exposes the Pagination style control. All other feeds are `{{#get}}`-driven with a fixed count. The main feed owns the template's empty state, and designation has a defined lifecycle.
-- **FR-H3** The Orbit Weekly sample dataset — 32 feed posts sized so a middle page and a partial page both exist — plus three fixtures: the style-guide post generated from Ghost's own renderers, the comments fixture at 14 comments across 9 threads, and the style-guide page.
+- **FR-H3** The Orbit Weekly sample dataset — a feed sized so a middle page and a partial page both exist — plus three fixtures: the style-guide post generated from Ghost's own renderers, the comments fixture at 14 comments across 9 threads, and the style-guide page.
 - **FR-H4** With a linked site, real content is fetched **client-side** with SWR caching, batching and de-duplication, and silent fallback that **names the cause**. The canvas never reads post or page body HTML. Zero items has three distinct behaviours.
 - **FR-H5** Canvas rendering and helper shim: sections render from their annotated-HTML source, Handlebars is never parsed in the browser, and the shim implements the Appendix B subset. Two of Ghost's own injected surfaces are shimmed — Portal's floating button and the announcement strip — and neither is a section.
 - **FR-H6** Tier-bound surfaces show live tier data; **tier presence never implies tier purchasability**; the paywall is a template surface with its own editor, not a placeable section; every member ask is gated on the site's own capability flag; a member's own details are never server-rendered.
@@ -1255,12 +1255,14 @@ So that a section drops in looking finished and a reading design has something r
 
 **Given** the bundled dataset
 **When** a canvas renders unlinked
-**Then** it carries **32 feed posts** — sized so that at `posts_per_page` 12 there is a first page, a **true
-middle page** carrying both a previous and a next link, and a partial last page — plus 6 tags, 3 authors with
-portraits and bios, 2 tiers, nav and brand assets, all imagery internally produced
-**And** **every Data-group Source returns a usable set**: 8 of the 32 are `featured`, each of the 6 tags carries
-at least 3 posts, each of the 3 authors at least 6, and featured posts are spread across tags and authors so a
-combined filter also returns something
+**Then** its feed is sized by FR-H3's two rules — at `posts_per_page` 12 there is a first page, a **true
+middle page** carrying both a previous and a next link, and a partial last page, and the feed never equals
+`posts_per_page` — at the owner's Q2 sizes (Story 4.4, 2026-09-13: 52 posts, 15 featured, 16 authors with
+portraits and bios, 6 tiers, 5 newsletters, twelve press logos), plus tags, nav and brand assets, all imagery
+internally produced
+**And** **every Data-group Source returns a usable set**: featured, every tag (at least 3 posts), every author
+(at least 6, by co-authorship), and featured posts are spread across tags and authors so a combined filter also
+returns something
 **And** **(1) the style-guide post** is generated **from Ghost's own renderers, never hand-written** — each
 `render*Node` output snapshotted into a checked-in fixture — covering every class-affecting card variant, and it
 renders **inside the same wrapper the shipped theme uses**, loading **the theme stylesheet, then a simulated
@@ -1497,7 +1499,7 @@ near-zero marginal cost — **no second matrix exists**
 **And** the scan's scope includes **the fixture renders and the six synthesized templates**, not only placed
 designs
 **And** the matrix **pins its fixtures**: A32 on a gated `post.hbs`, A33 on the style-guide post, A34 on the
-32-post feed at all three of its pages, A25 on the style-guide post *and* page, the six synthesized stacks as
+bundled feed at its first, a middle and its partial last page, A25 on the style-guide post *and* page, the six synthesized stacks as
 themselves, and **an empty tag pinned as a fixture** so the main feed's empty state is a render like any other
 **And** **reduced motion is a matrix case with the query forced, and 200% browser zoom is a viewport case**
 (UX-DR21)

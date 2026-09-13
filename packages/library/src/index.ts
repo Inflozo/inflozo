@@ -5,3 +5,7 @@
 export * from './vocabulary.ts'
 export * from './registry.ts'
 export * from './validate.ts'
+// Story 4.4 — the bundled sample publication, its three fixtures and the offline Source resolver. A
+// namespace rather than a flat re-export: `posts`, `tags` and `site` are too general to claim at the
+// package root.
+export * as orbitWeekly from './orbit-weekly.ts'

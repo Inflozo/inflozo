@@ -263,6 +263,16 @@ DOCS = [
   'shape. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a '
   'paraphrase; the recorded facts that mattered are that a Ghost-hosted absolute URL comes back '
   'RELATIVE, and that `size="800"` silently returns the ORIGINAL image.'),
+ ('tools/probe/record-cards.py', 'tool', 'Style-guide fixture recorder',
+  "AD-23's recorder for Story 4.4's style-guide body. Reads packages/library/orbit-weekly/corpus.json "
+  '(one Lexical corpus), creates it on T1 and T3 as a post, a variation-sheet post and a page, reads the '
+  'rendered html back through the Content API, returns all three to draft in a finally, and splits the '
+  'body per block losslessly. Writes packages/library/orbit-weekly/fixtures/ghost{5,6}/ with the capture '
+  'date, command, Ghost and renderer versions and the Content API default order and limit the Source '
+  'resolver is asserted against, plus variations.html and a generated index.ts; vendors Ghost\'s card '
+  'CSS and JS chunks verbatim from T1 over SSH. The control (the four documented root classes on both '
+  'majors) and every per-block check void the run and write nothing. Also covers '
+  'packages/library/src/orbit-weekly.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/probe/configure-supabase-auth.py', 'tool', 'Supabase Auth configuration',
   "Writes the live project's Auth settings — Resend as custom SMTP, the 15-minute OTP expiry, the "
   'branded sign-in template and the branded email-change template, the site URL, Supabase\'s own '
