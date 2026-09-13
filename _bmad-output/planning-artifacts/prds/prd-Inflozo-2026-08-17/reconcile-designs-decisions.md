@@ -1943,11 +1943,21 @@ ruled the same day.
 category, for 10 Slim; and the Archive Headers session (30 August, `A29 Archive Headers - Spec.md:1195`)
 said the product "is not being asked for a 'same as the page' value". The PRD kept five throughout
 (`prd.md:271`, `:948`; `sections-inventory.md:35`). **He asked whether "None" looks the same as "Base", and
-on every page Inflozo builds it does:** a template is an ordered list of sections, each its own partial and
-none placed inside another (`prd.md:222`, `:631`), so what is behind a section is the page, painted in the
-pack's background colour — which is Base. **A design that paints no ground of its own locks the row with
-no value marked and says why** (R-69), as `A1-4 Overlay.dc.html:86` already draws it; 10 Slim is built that
-way — not at "None", and not locked at Base — and its root carries no `data-bg`.
+challenged the first answer — "on every page" — which overreached.** Re-checked the same day across every
+category (the sweep is recorded in Story 4.5's spec, `## Verification`): **for a section in the normal stack
+it does** — sections are placed one after another, never inside one another (`prd.md:222`, `:631`), so the
+page is behind them, painted in the pack's background colour, which is Base. **It does not for the designs
+that sit over something else:** A1·4's header over the hero picture, A6·13's card over the footer, every bar
+or card that pins or floats over scrolling content (A1's sticky headers, A2's sticky bars and 11 Toast,
+A3·16, A22·14, A24·13, A29·14, A32·11, A34·7), and the paywall, pagination and card treatments that render
+inside the article or the feed. **None of those takes its see-through look from the Background row** — each
+is locked, keeps a ground of its own, or has its own control — and his rulings refuse see-through while
+pinned (`A1 Headers - Spec.md:347`; `A2 Announcement Bars - Spec.md:66`). No drawn row anywhere offers a
+see-through choice, so the five roles remove nothing. **A design whose look is what is behind it locks the
+row with no value marked and says why** (R-69), as `A1-4 Overlay.dc.html:86` draws it and A22·14, A15·5,
+A14·9 and A16·10 draw in their own words; 10 Slim is built that way — not at "None", and not locked at Base —
+and such a root carries no `data-bg`. A design that merely paints no ground in the stack may still lock at a
+value (A20·14 at Background).
 - Targets: ✅ Story 4.5's spec (Always, Never, the I/O matrix, Design Notes and the ruling) · ✅
   `epic-4-context.md` · ⬜ `docs/section-authoring.md` (the no-value lock) · ⬜ `deferred-work.md`, an entry
   for A28's category story, whose frames draw "None" (both in Story 4.5's Dev run). **Deliberately not

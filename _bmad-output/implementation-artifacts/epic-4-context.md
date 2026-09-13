@@ -44,9 +44,11 @@ Build the machine every design in the library is authored against — **before a
 - **Section source is annotated HTML, not Handlebars**, and its directive vocabulary is a documented, shipped deliverable. `css` is plain CSS consuming Style Pack custom properties only, authored outside the app's build pipeline and **explicitly excluded from any Tailwind processing** — utility classes are structurally incompatible with token-only styling. `contentSchema` declares which inline binding tokens each prop accepts; **anything else in braces stays literal text** — an allow-list by construction, never a general substitution pass.
 - **The control vocabulary is closed and visual:** Segmented Control, Stepper, Toggle, Named Select, Swatch Row (pack roles, never a colour picker), Image Picker, Icon Picker (curated Tabler, inline SVG once per use, licence text shipped in the theme), Link Picker, Text Field/Area, Date Picker, Item List. **No units, no hex, no CSS concepts at section level**, and width is never a per-section control. Item List is offered only where the user **authored** the array; a Ghost-bound repeat gets a count instead, because an Add button there would be a lie. The ≈ 15 visible-control cap governs **a single design**, not the category's union; the three universal controls (Background role, Vertical spacing, Top divider) are declared once and exempt. A design may offer **fewer values** of a universal control and must say why — renaming, inventing and an `Inherit` value are all refused.
   - **R-103 (owner, 2026-09-13) — Background role keeps its five roles; there is no "None".** A design
-    that paints no ground of its own locks the row with no value marked and its own sentence, as A1·4 is
-    drawn, and its root carries no `data-bg`; A28's 10 Slim is built that way. On every page Inflozo
-    builds, "None" would look exactly like Base: sections are never placed inside one another.
+    whose look is what is behind it locks the row with no value marked and its own sentence, as A1·4 is
+    drawn, and its root carries no `data-bg`; A28's 10 Slim is built that way. "None" would look like Base
+    for a section in the normal stack, but not for what sits over something else — A1·4 over the hero,
+    pinned and floating bars and cards, A6·13 over the footer — and none of those takes its see-through
+    look from the row: each is locked, keeps its own ground, or has its own control.
   - **R-104 (owner, 2026-09-13) — the icon picker offers every Tabler icon, outline and filled, grouped by
     Tabler's own categories**, with Outline · Filled · Both deciding which styles show. No curated subset;
     the nine-platform rule stays with the social-link rows that read Ghost's nine fields.

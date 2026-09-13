@@ -72,9 +72,10 @@ working sidebar and put it beside a sample section on one internal page, the way
   Surface · Accent · Contrast · Image, `prd.md:948` — five, and no sixth, R-103), Vertical spacing
   (Compact · Comfortable · Spacious), Top divider (None · Line · Fade), at the schema defaults
   `sections-inventory.md:800` names — Base, Comfortable, None. Exempt from the cap, never a Quick
-  Control, narrowed only with a reason, never renamed or added to. **A design that paints no ground of
-  its own locks the row with no value marked and says why** (R-69), as `A1-4 Overlay.dc.html:86` draws
-  it — "Transparent over the hero is this design" — and its root carries no `data-bg`.
+  Control, narrowed only with a reason, never renamed or added to. **A design whose look is what is
+  behind it locks the row with no value marked and says why** (R-69), as `A1-4 Overlay.dc.html:86` draws
+  it — "Transparent over the hero is this design" — and its root carries no `data-bg`; locking at one
+  value stays available to a design that merely paints no ground in the stack (A20·14 at Background).
 - **A Ghost-bound repeat is never an Item List** (FR-F1): it gets P0-3's Ghost-sourced card — a live
   Count (1–100, FR-H2) and Order, read-only rows, and Add, Remove and drag greyed with "These come from
   Ghost, so there is nothing to add here." (owner-ruled 3 September 2026, `P0-3 Item List
@@ -394,11 +395,18 @@ working sidebar and put it beside a sample section on one internal page, the way
   record and the one attribute function; §7.3 (`prd.md:559`) says the closed-value rule is the controls'
   and names the content editors; R-104 reaches FR-F1 (`prd.md:267`), Appendix C's Icon Picker row
   (`:950`) and DESIGN.md § Icons (`:556-561`), which stop saying "curated" and say the whole set, outline
-  and filled, grouped by Tabler's own categories; open ledger entries for the four things found here and
-  owned elsewhere — A28's 10 Slim, drawn locked at "None", is built as A1·4's no-value lock (R-103), a
-  formatted, localised display of an authored date, Image focus (R-51, P0-9) with no owning story and no
-  emission rule under AD-3, and Tabler's licence file and FR-J3's icon budget in the emitted theme (R-26,
-  no Epic 7 story); tick R-103's and R-104's targets in `reconcile-designs-decisions.md` §A24 as each
+  and filled, grouped by Tabler's own categories; open ledger entries for what was found here and is
+  owned elsewhere — A28's 10 Slim, drawn locked at "None", is built as A1·4's no-value lock (R-103); a
+  formatted, localised display of an authored date; Image focus (R-51, P0-9) with no owning story and no
+  emission rule under AD-3; Tabler's licence file and FR-J3's icon budget in the emitted theme (R-26, no
+  Epic 7 story); the callout card's panel carries a "Background role" of its own with other values (Base ·
+  Surface · Tint · Accent, `P0 Editor Primitives - Spec.md:586`), one name with two value sets against R-53,
+  for the card-panels story (FR-Q7); A1·4 needs to know whether the section below it carries a picture
+  (`A1 Headers - Spec.md:183`, R-8) while the adjacency vocabulary asks only about the section above
+  (`packages/library/src/vocabulary.ts:147-149`), for A1's category story; and category spec tables that
+  list the universal row open where the drawn panel locks it (`A22 Newsletter - Spec.md:1271` against
+  `A22-14 Slide-in Card.dc.html:67`, with more found in A19, A22, A24, A25 and A31), which every category
+  story must build from the panel; tick R-103's and R-104's targets in `reconcile-designs-decisions.md` §A24 as each
   lands; add Story 4.5's Dev sub-bullets to the epic context -- a finding is not closed until it reaches
   the document that governs it.
 
@@ -479,9 +487,12 @@ than obeyed literally.
   5.19's.
 - R-69's no-value-marked case reaches a universal control too, and A1·4 draws it: its Background row is
   "LOCKED" with no colour marked and "Transparent over the hero is this design" under it
-  (`A1-4 Overlay.dc.html:86`). R-103 makes that the shape for every design that paints no ground of its
-  own — A28's 10 Slim included, whose frame says "None" — so its root carries no `data-bg` and nothing
-  paints over what is behind. A dependency's `inForce` is still always one of its control's own values.
+  (`A1-4 Overlay.dc.html:86`). R-103 makes that the shape for a design whose look is what is behind it —
+  A22·14, A15·5, A14·9 and A16·10 draw the same lock with a word in the value slot ("None", "Transparent",
+  "the set is the ground"), and A28's 10 Slim draws it as "None" — so its root carries no `data-bg` and
+  nothing paints over what is behind. The build draws the lock as A1·4 does, "LOCKED" and the sentence,
+  because a word like "None" in that slot reads as a sixth value. A dependency's `inForce` is still always
+  one of its control's own values.
 - The absent note sits where the control would have been, in its group (`P0 Editor Primitives -
   Spec.md:67-68`), not pinned to the panel foot as B2 drew it before P0-0 existed.
 - Open in new tab is on by default for an external URL, as P0-1 draws it. New tab and rel are not
@@ -593,6 +604,17 @@ on Background role, and none on Card tint.
 - **For R-103**, `A1-4 Overlay.dc.html:86` draws the no-value lock, and `prd.md:222` (FR-D5) with `:631`
   (§7.4) make a template an ordered list of sections, each compiled as its own partial and none placed
   inside another.
+- **R-103 re-checked on the owner's challenge, the same day** — every category's spec and drawn panel,
+  swept by descriptor tuple (`python3 tools/export-roster.py`: every design whose ground is `transparent`,
+  and the `overlay`, `sticky` and `edge rail` archetypes) and by text (`transparent`, `over the hero`,
+  `overlap`, `sticky`, `pinned`, `floating`, `Background role` near `LOCKED`). Something other than the
+  page sits behind: A1·4, the hero (`A1 Headers - Spec.md:319-321`); A6·13's card, the footer (`A6 CTA
+  Banners - Spec.md:681`, `:719`); every pinned or floating bar or card — A1's sticky headers
+  (`A1 Headers - Spec.md:211`, `:347`), A2's sticky bars, 10 Pill and 11 Toast (`A2 Announcement Bars -
+  Spec.md:56-66`, `:556`, `:604`), A3·16, A22·14, A24·13, A29·14, A32·11 and A34·7; and A32, A33 and A34,
+  which render inside the article or the feed (`A32 Paywall - Spec.md:49`, `:401`; `A25 Post Content
+  Layouts - Spec.md:212-213`). In every one the see-through look comes from a locked row, the design's own
+  ground or a control of its own, and no drawn row offers a see-through choice.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
@@ -659,16 +681,36 @@ behind a section is the page itself, and the page is painted in Base.
 
 **Ruled: option 1 (owner, 2026-09-13).** Five choices and no "None" — recorded as **R-103**.
 
-He asked in return whether "None" looks the same as "Base". **It does, on every page Inflozo builds.** A
-template is an ordered list of sections, each compiled as its own partial and none placed inside another
-(`prd.md:222`, `:631`), so what sits behind any section is the page — and the page is painted in the style
-pack's background colour, which is the colour Base is (`packages/section-runtime/src/tokens.ts:21`; R-23
-named that swatch Base). That holds in light and in dark. Slim's own question imagined it "dropped inside a
-coloured panel", which Inflozo never does. And the one design drawn to show something other than the page
-behind it — A1·4, the header over the hero picture — needs no "None" either: its row is drawn LOCKED, with
-no colour marked and "Transparent over the hero is this design" under it (`A1-4 Overlay.dc.html:86`). **So
-Slim is built the same way — locked, no colour marked, its own sentence — rather than locked at Base as
-option 1 above said;** it looks the same either way, and nothing on its root asks for a colour.
+He asked in return whether "None" looks the same as "Base", and then — rightly — challenged the first
+answer, which said it did "on every page". **Checked across every category on 2026-09-13** (the sweep is
+under "## Verification"):
+
+- **For a section in the normal stack of the page, yes.** Sections are placed one after another, never
+  inside one another (`prd.md:222`, `:631`), so the page is behind them, painted in the style pack's
+  background colour — the colour Base is (`packages/section-runtime/src/tokens.ts:21`; R-23 named that
+  swatch Base). The "no ground of its own" designs all sit here — Comments Slim, the Big Type designs, the
+  full-bleed gallery and video, Tag Collections' Slim — and their drawings that imagine being "dropped
+  inside" a panel describe a placement Inflozo does not have.
+- **Not everywhere, and that is where the first answer overreached.** The header drawn over the hero
+  picture (A1·4 Overlay) has the hero behind it; A6·13 Overlap's card hangs over the top of the footer;
+  everything that pins or floats has scrolling content behind it — headers and announcement bars set to
+  Sticky, A2·11 Toast, A3·16 Mini Bar, A22·14 Slide-in Card, A24·13 and A29·14 Sticky, A32·11 Sticky Bar,
+  A34·7's pinned pill; and the paywall, pagination and card treatments render inside the article or the
+  feed.
+- **None of those takes its see-through look from the Background row.** Each is locked with its reason
+  (A1·4: "Transparent over the hero is this design", `A1-4 Overlay.dc.html:86`; A22·14: "None — the card is
+  its own plane", `A22-14 Slide-in Card.dc.html:67`), keeps a solid or 92–94% ground of its own, or has its
+  own control — and his own rulings refuse see-through while pinned (`A1 Headers - Spec.md:347`, `A2
+  Announcement Bars - Spec.md:66`). **No design anywhere lets a person choose a see-through ground from the
+  row**: every "None" or "Transparent" in the drawings is a locked row describing the design. So five
+  choices takes nothing away, and where "None" would look different it would be the option those rulings
+  refuse.
+
+**The consequence built here:** a design whose look is what is behind it locks the row with no colour
+marked and its own sentence, as A1·4 draws it — A22·14, A15·5, A14·9, A16·10 and Slim (A28·10) draw the same
+lock in their own words — and its root carries no `data-bg`; a design that merely paints no ground in the
+stack may lock at a colour instead (A20·14 at Background), which looks the same on the page. **Slim is
+therefore built locked with no colour marked, rather than locked at Base as option 1 above said.**
 
 ### Q2 — Which icons does the icon picker offer?
 
