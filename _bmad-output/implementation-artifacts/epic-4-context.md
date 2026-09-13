@@ -161,6 +161,10 @@ Build the machine every design in the library is authored against — **before a
     before the editor; Epic 5 mounts its components rather than drawing them again.
 - **Greyed versus absent is a designed distinction and a user must be able to tell them apart.** Could-never → **absent**, and the panel says why. Could-but-not-now → **greyed**, always with the reason as one sentence in the helper-caption slot, **never a tooltip and never hidden**. The dependency is declared in the schema so the sidebar, the validator and the compiler read one source. **Remove never greys** — at the floor it stays visible and active, and clicking it produces the floor and the reason as one sentence under the list.
 - **Reorder is drag with a keyboard equivalent.** Per-control and whole-section reset exist. Every change paints optimistically **within one frame** and the re-render completes inside the **100 ms** budget. Mode-scoped controls carry a moon badge when a dark override exists, captioned "Dark override" — colour never carries the only signal.
+  - **Story 4.5's owner test (2026-09-13) — a dragged row shows a dashed slot the size of the row where it
+    will land**, the rows between slide aside, nothing reorders until the drop, and every editable list does
+    it (item list, Layers, a hand-picked post list). Opening the Icon Picker from a canvas icon slot is
+    Story 5.3's (DW-115), not this epic's.
 - **The Link Picker is Ghost-aware:** internal resources, Portal actions (Upgrade compiles to `account/plans`, never `upgrade`, which Portal does not parse), external URL, email, and Ghost search via a single `data-ghost-search` attribute. `newTab` and `rel` are part of the **stored mark record**, not editor-only state. A link to a page Ghost does not publish is a Text Field plus a Link Picker that **renders nothing until a destination is set**, so it can never ship broken.
 
 ## Cross-Story Dependencies
