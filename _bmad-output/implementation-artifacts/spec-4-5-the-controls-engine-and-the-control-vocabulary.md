@@ -672,7 +672,14 @@ on Background role, and none on Card tint.
   refits with a 0 px range; the Link popover at 1092–1432 of 1440, with its control — anchored at the
   trigger (left 1177) it would have ended at 1517; axe-core at WCAG 2.1 AA zero violations at 1440 and 390.
 - `pnpm check` → exit 0 after the fix.
-- **Owed at Review:** the same harness against production once CI has deployed the Fix commit.
+- **After the fix, on production** — **Vercel** `GET /v6/deployments` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+  `VERCEL_PROJECT`) → the production deployment for `166f87d0` READY; the same harness against
+  `https://app.inflozo.com/controls` → every check PASS with the local figures above (inner range 0 px, the wheel
+  moving the page 320 px and the canvas 0, the panel flush at 0 px, 900 tall, square, 280 wide; the reset an
+  icon; collapse and expand with focus following; the Link popover at 1092–1432 of 1440 against a 1517 control;
+  axe zero violations at 1440 and 390), and the Supabase fixture user deleted with the count back at 9.
+  Negative control, signed out: `curl -sI https://app.inflozo.com/controls` → 307 to `/sign-in`,
+  `/controls/frame` → 303.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
