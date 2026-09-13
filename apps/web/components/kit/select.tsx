@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { anchorTo, arrowKeys } from '@/lib/menu'
 import { Check, ChevronDown, ChevronRight, Trash } from './icons'
-import { fieldTone, greyedProps, labelTone, reason, ring, valueTone, type Greyed } from './greyed'
+import { fieldTone, greyedProps, labelTone, reason, ring, slimScrollbar, valueTone, type Greyed } from './greyed'
 
 /* Editor Sidebar Kit.dc.html:109 — select rows and menus. A closed select may carry a mini
    thumbnail; a font row renders a live "Aa" in the face itself; a dropdown marks the active
@@ -22,13 +22,41 @@ type Placement = { side: 'up' | 'down'; align: 'left' | 'right' }
  */
 export function openPopover(pop: HTMLElement, trigger: HTMLElement, placement: Placement, focus?: HTMLElement | null) {
   if (pop.matches(':popover-open')) return
+  pop.style.maxHeight = ''
+  pop.style.overflowY = ''
   anchorTo(pop, trigger, placement)
+  /* KEEP IT ON SCREEN — at open AND EVERY TIME IT CHANGES SIZE. A picker grows after it opens: the link
+     popover's search results arrive as the user types, and measured on the controls review (the owner's
+     finding 7 on Story 4.5, 2026-09-13) "e" grew it from its trigger to a bottom edge at 1335 of a 900 window,
+     or, opened upward, past the top. So it is moved, never flipped, once open: a popover that jumped to the
+     trigger's other side with each keystroke would be worse than one that slides. Too tall for the window,
+     it is capped and scrolls; off an edge, it slides back inside an 8 px gutter (finding 4's right edge
+     included). */
+  const keepInside = () => {
+    if (!pop.matches(':popover-open')) return
+    let box = pop.getBoundingClientRect()
+    if (box.height > window.innerHeight - 16) {
+      pop.style.maxHeight = 'calc(100dvh - 16px)'
+      pop.style.overflowY = 'auto'
+      box = pop.getBoundingClientRect()
+    }
+    if (box.top < 8 || box.bottom > window.innerHeight - 8) {
+      pop.style.top = `${Math.max(8, Math.min(box.top, window.innerHeight - box.height - 8))}px`
+      pop.style.bottom = 'auto'
+    }
+    if (box.left < 8 || box.right > window.innerWidth - 8) {
+      pop.style.left = `${Math.max(8, Math.min(box.left, window.innerWidth - box.width - 8))}px`
+      pop.style.right = 'auto'
+    }
+  }
+  const resized = new ResizeObserver(keepInside)
   const onScroll = (event: Event) => {
     if (event.target instanceof Node && pop.contains(event.target)) return
     if (pop.matches(':popover-open')) pop.hidePopover()
   }
   const onToggle = (event: Event) => {
     if ((event as ToggleEvent).newState !== 'closed') return
+    resized.disconnect()
     window.removeEventListener('scroll', onScroll, { capture: true })
     pop.removeEventListener('toggle', onToggle)
     const at = document.activeElement
@@ -37,27 +65,12 @@ export function openPopover(pop: HTMLElement, trigger: HTMLElement, placement: P
   pop.addEventListener('toggle', onToggle)
   if (!trigger.hasAttribute('popovertarget')) pop.showPopover()
   requestAnimationFrame(() => {
+    // At open, and only at open, a side that cannot hold it flips to the other (review, 2026-09-05).
     const box = pop.getBoundingClientRect()
     if (placement.side === 'down' && box.bottom > window.innerHeight) anchorTo(pop, trigger, { ...placement, side: 'up' })
     else if (placement.side === 'up' && box.top < 0) anchorTo(pop, trigger, { ...placement, side: 'down' })
-    // Neither side holds it — a tall picker opened from mid-screen: pin it inside the viewport rather than
-    // letting its search and its Style row run off an edge, and let it scroll if the viewport is shorter
-    // than it (measured on the controls review, 2026-09-13: the icon picker's top sat above the viewport).
-    const flipped = pop.getBoundingClientRect()
-    if (flipped.top < 8 || flipped.bottom > window.innerHeight - 8) {
-      pop.style.top = `${Math.max(8, window.innerHeight - flipped.height - 8)}px`
-      pop.style.bottom = 'auto'
-      pop.style.maxHeight = 'calc(100dvh - 16px)'
-      pop.style.overflowY = 'auto'
-    }
-    // …and the same across: a picker wider than its trigger, opened from the sidebar at the right edge,
-    // ran past the viewport (the owner's finding 4 on Story 4.5 — the link popover's right edge at 1449 of
-    // 1440). Slid left until it fits, never past the left gutter.
-    const across = pop.getBoundingClientRect()
-    if (across.right > window.innerWidth - 8 || across.left < 8) {
-      pop.style.left = `${Math.max(8, Math.min(across.left, window.innerWidth - across.width - 8))}px`
-      pop.style.right = 'auto'
-    }
+    keepInside()
+    resized.observe(pop)
     ;(focus ?? pop.querySelector<HTMLElement>('input, a[href], button:not([tabindex="-1"])'))?.focus({ preventScroll: true })
     if (pop.matches(':popover-open')) window.addEventListener('scroll', onScroll, { capture: true, passive: true })
   })
@@ -99,7 +112,8 @@ export function Select({
           live
             ? (event) => {
                 const pop = document.getElementById(`${id}-menu`)
-                if (pop) openPopover(pop, event.currentTarget, { side: 'down', align: 'left' })
+                // focus lands on the row in force, so a long list opens scrolled to it
+                if (pop) openPopover(pop, event.currentTarget, { side: 'down', align: 'left' }, pop.querySelector<HTMLElement>('[aria-current="true"]'))
               }
             : undefined
         }
@@ -115,7 +129,7 @@ export function Select({
           id={`${id}-menu`}
           popover="auto"
           onKeyDown={arrowKeys}
-          className="max-h-[60vh] overflow-y-auto border-0 bg-transparent p-0"
+          className="border-0 bg-transparent p-0"
         >
           <Menu
             label={label}
@@ -171,7 +185,9 @@ export function Menu({ label, items }: { label: string; items: MenuItem[] }) {
   return (
     <ul
       aria-label={label}
-      className="flex w-[210px] list-none flex-col gap-px rounded border border-line bg-surface p-[6px] shadow-lg"
+      // A long menu scrolls INSIDE its own box, about nine rows tall, so its border and radius stay whole — the
+      // icon picker's category list ran the height of the window (the owner's finding 8 on Story 4.5).
+      className={`flex max-h-[min(320px,60vh)] w-[210px] list-none flex-col gap-px overflow-y-auto rounded border border-line bg-surface p-[6px] shadow-lg ${slimScrollbar}`}
     >
       {items.map((item, i) => (
         <li key={item.label} className="flex flex-col">

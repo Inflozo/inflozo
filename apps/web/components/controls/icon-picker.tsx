@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react'
 import { iconSvg } from '@inflozo/section-runtime'
-import { ring } from '@/components/kit/greyed'
+import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronDown } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { Segmented } from '@/components/kit/segmented'
@@ -265,7 +265,7 @@ export function IconPicker({
         </div>
         <div aria-hidden className="h-px bg-line" />
 
-        <div ref={scroller} onKeyDown={gridKeys} className="flex max-h-[300px] flex-col gap-3 overflow-y-auto pr-1">
+        <div ref={scroller} onKeyDown={gridKeys} className={`flex max-h-[300px] flex-col gap-3 overflow-y-auto pr-1 ${slimScrollbar}`}>
           {mod === null ? (
             <span className="text-[11.5px] text-ink-soft">Loading the icons…</span>
           ) : groups.length === 0 ? (

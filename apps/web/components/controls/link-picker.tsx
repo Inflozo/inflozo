@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { LINK_RELS, PORTAL_ACTIONS } from '@inflozo/library'
 import type { Link as LinkRecord } from '@inflozo/library'
 import { Button } from '@/components/kit/button'
-import { ring } from '@/components/kit/greyed'
+import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronDown, Globe, Link, LinkOff, PageGlyph, Person, PostGlyph, Search, TagGlyph } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { openPopover } from '@/components/kit/select'
@@ -159,8 +159,10 @@ export function LinkPicker({
         popover="auto"
         role="dialog"
         aria-label={`${label} — choose a destination`}
-        className="max-h-[min(640px,85vh)] w-[340px] max-w-[calc(100vw-16px)] flex-col gap-2 overflow-y-auto rounded border border-line bg-surface p-[10px] shadow-lg open:flex"
+        className="max-h-[min(640px,85vh)] w-[340px] max-w-[calc(100vw-16px)] flex-col gap-2 overflow-hidden rounded border border-line bg-surface p-[10px] shadow-lg open:flex"
       >
+        {/* The search stays at the top and the chosen destination with Done at the foot; only the results
+            between them scroll (the owner's finding 7 on Story 4.5: a search for "e" lists dozens of rows). */}
         <SearchInput
           id={`${id}-q`}
           label="Search pages, posts — or paste a URL"
@@ -176,68 +178,70 @@ export function LinkPicker({
           }}
         />
 
-        {groups.map((g) => (
-          <div key={g.key} role="group" aria-labelledby={`${id}-${g.key}`} className="flex flex-col gap-px">
-            <span id={`${id}-${g.key}`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
-              {g.label}
-            </span>
-            {g.rows.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => choose({ href: r.url, ref: { kind: g.kind, id: r.id } })}
-                className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
-              >
-                {g.icon}
-                <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">{matched(r.title, q)}</span>
-                <span className="shrink-0 text-[10.5px] text-ink-soft">{r.meta}</span>
-              </button>
-            ))}
-          </div>
-        ))}
+        <div className={`-mx-[10px] flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-[10px] ${slimScrollbar}`}>
+          {groups.map((g) => (
+            <div key={g.key} role="group" aria-labelledby={`${id}-${g.key}`} className="flex flex-col gap-px">
+              <span id={`${id}-${g.key}`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
+                {g.label}
+              </span>
+              {g.rows.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => choose({ href: r.url, ref: { kind: g.kind, id: r.id } })}
+                  className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
+                >
+                  {g.icon}
+                  <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">{matched(r.title, q)}</span>
+                  <span className="shrink-0 text-[10.5px] text-ink-soft">{r.meta}</span>
+                </button>
+              ))}
+            </div>
+          ))}
 
-        {address !== null ? (
-          <button
-            type="button"
-            onClick={() => choose({ href: address, ...(isWeb(address) ? { newTab: true } : {}) })}
-            className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
-          >
-            <Globe size={14} className="shrink-0 text-ink-soft" />
-            <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">Link to {q}</span>
-          </button>
-        ) : null}
-
-        {groups.length > 0 || address !== null ? <div aria-hidden className="mx-1 my-[2px] h-px bg-line" /> : null}
-
-        <div role="group" aria-labelledby={`${id}-portal`} className="flex flex-col gap-px">
-          <span id={`${id}-portal`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
-            Portal actions
-          </span>
-          <div className="flex flex-wrap gap-[6px] px-2 pb-[6px] pt-[2px]">
-            {Object.entries(PORTAL_ACTIONS).map(([action, words]) => (
-              <button key={action} type="button" aria-pressed={draft?.portal === action} onClick={() => choose({ portal: action })} className={chip(draft?.portal === action)}>
-                {words}
-              </button>
-            ))}
-          </div>
-          <span id={`${id}-site`} className="px-2 pt-[2px] font-mono text-[10.5px] tracking-[0.06em] text-ink-soft">
-            SITE
-          </span>
-          <div role="group" aria-labelledby={`${id}-site`} className="flex flex-wrap gap-[6px] px-2 pb-[2px] pt-[4px]">
-            <button type="button" aria-pressed={draft?.search === true} onClick={() => choose({ search: true })} className={chip(draft?.search === true)}>
-              <Search size={12} className="text-ink-soft" />
-              Ghost search
+          {address !== null ? (
+            <button
+              type="button"
+              onClick={() => choose({ href: address, ...(isWeb(address) ? { newTab: true } : {}) })}
+              className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
+            >
+              <Globe size={14} className="shrink-0 text-ink-soft" />
+              <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">Link to {q}</span>
             </button>
+          ) : null}
+
+          {groups.length > 0 || address !== null ? <div aria-hidden className="mx-1 my-[2px] h-px bg-line" /> : null}
+
+          <div role="group" aria-labelledby={`${id}-portal`} className="flex flex-col gap-px">
+            <span id={`${id}-portal`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
+              Portal actions
+            </span>
+            <div className="flex flex-wrap gap-[6px] px-2 pb-[6px] pt-[2px]">
+              {Object.entries(PORTAL_ACTIONS).map(([action, words]) => (
+                <button key={action} type="button" aria-pressed={draft?.portal === action} onClick={() => choose({ portal: action })} className={chip(draft?.portal === action)}>
+                  {words}
+                </button>
+              ))}
+            </div>
+            <span id={`${id}-site`} className="px-2 pt-[2px] font-mono text-[10.5px] tracking-[0.06em] text-ink-soft">
+              SITE
+            </span>
+            <div role="group" aria-labelledby={`${id}-site`} className="flex flex-wrap gap-[6px] px-2 pb-[2px] pt-[4px]">
+              <button type="button" aria-pressed={draft?.search === true} onClick={() => choose({ search: true })} className={chip(draft?.search === true)}>
+                <Search size={12} className="text-ink-soft" />
+                Ghost search
+              </button>
+            </div>
           </div>
+
+          <p className="flex items-center gap-[7px] px-2 pb-[2px] pt-1 text-[11.5px] text-ink-soft">
+            <Globe size={13} className="shrink-0" />
+            Paste a URL or type an email address to link outside the site
+          </p>
         </div>
 
-        <p className="flex items-center gap-[7px] px-2 pb-[2px] pt-1 text-[11.5px] text-ink-soft">
-          <Globe size={13} className="shrink-0" />
-          Paste a URL or type an email address to link outside the site
-        </p>
-
         {draft !== null ? (
-          <div className="flex flex-col gap-[10px] border-t border-line pt-[10px]">
+          <div className="flex shrink-0 flex-col gap-[10px] border-t border-line pt-[10px]">
             <div className="flex items-center gap-[9px] rounded-sm border border-line bg-paper px-[10px] py-[9px]">
               {d.kind === 'internal' ? <PostGlyph /> : <Link size={14} className="shrink-0 text-ink-soft" />}
               <span className="flex min-w-0 flex-1 flex-col gap-px">

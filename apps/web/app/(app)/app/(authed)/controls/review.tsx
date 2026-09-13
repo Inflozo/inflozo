@@ -5,7 +5,7 @@ import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, renderCanvas, stampControls, withData } from '@inflozo/section-runtime'
 import type { ControlState, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
-import { ring } from '@/components/kit/greyed'
+import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Panel } from '@/components/kit/icons'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
@@ -25,10 +25,7 @@ import { Sidebar, type Edit } from '@/components/controls/sidebar'
    THE PAGE IS A WORKSPACE THE HEIGHT OF THE WINDOW, as S4 draws the editor (`S4 Editor.dc.html:28`, `:62-63`):
    the window never scrolls; the canvas fills its pane and scrolls INSIDE ITSELF, and the panel scrolls on its
    own — one scroller under the wheel wherever it is, and never two scrollbars side by side. Both bars are
-   slim, with no arrow buttons: `::-webkit-scrollbar`, because the standard `scrollbar-width: thin` still
-   draws arrows in Chromium on Linux and Windows, and Chrome ignores the `::-webkit-` rules on any element
-   that sets the standard ones. ponytail: Firefox keeps its own bar — add `scrollbar-width` under an
-   `@supports` for it if it is ever the owner's browser.
+   the Kit's `slimScrollbar` (`components/kit/greyed.ts`); the canvas document carries the same rule in CSS.
    This replaced a canvas sized to its section inside a scrolling page (the owner's findings 5 and 6,
    2026-09-13): with the window's scrollbar beside the panel's it "looks really bad", and because the section
    grows taller as it widens, collapsing the panel locked the sized iframe into a scrollbar with nothing to
@@ -170,7 +167,7 @@ export function Review({
       <aside
         id="section-controls"
         aria-label="Section controls"
-        className={`flex flex-col gap-3 border-t border-line bg-paper p-4 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-line-strong [&::-webkit-scrollbar]:w-2 tablet:h-full tablet:w-[280px] tablet:shrink-0 tablet:overflow-y-auto tablet:border-l tablet:border-t-0 ${collapsed ? 'tablet:hidden' : ''}`}
+        className={`flex flex-col gap-3 border-t border-line bg-paper p-4 ${slimScrollbar} tablet:h-full tablet:w-[280px] tablet:shrink-0 tablet:overflow-y-auto tablet:border-l tablet:border-t-0 ${collapsed ? 'tablet:hidden' : ''}`}
       >
         <div className="flex items-center justify-between gap-2">
           <span className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">{entry.name}</span>

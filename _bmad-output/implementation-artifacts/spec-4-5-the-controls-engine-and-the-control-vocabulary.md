@@ -697,6 +697,15 @@ on Background role, and none on Card tint.
   range; the wheel scrolling the canvas 281 px and the window 0; the panel scrolling itself 300 px; findings 1, 3
   and 4 still held; axe zero violations at 1440 and 390 with its `image-alt` control caught); the Supabase fixture
   deleted, users 9 → 9; signed out, `/controls` → 307 to `/sign-in` and `/controls/frame` → 303.
+- **Findings 7 and 8, before, on production at `d25b194a`** (same fixture sign-in, users 9 → 9): searching "e"
+  and "the" in both Link fields left the popover off the window every time — top 451 and bottom 1335 (79 rows),
+  top 653 and bottom 1293 (76 rows); the check for finding 8 did not reach the category list on that run (its
+  row locator matched the drag handle), and was corrected before the fix was measured.
+- **Findings 7 and 8, after, on the local dev server** (the real Supabase project, users 9 → 9): all 11 checks
+  PASS — both Link fields, both queries, the popover wholly inside the window (8–648 and 252–892 of 900) with its
+  search field visible; the Category list 320 px tall with 42 rows, scrolling inside its own list, on screen
+  (183–503), its last category, Zodiac, reachable and chosen; and the 29 workspace checks for findings 1–6 re-run
+  with no FAIL.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
@@ -782,6 +791,24 @@ Tested again the same day, on the Fix deployment (`166f87d0`). Two more findings
    buttons, drawn with `::-webkit-scrollbar` — the standard `scrollbar-width: thin` still drew arrows in
    Chromium on Linux, checked on a plain test box, and Chrome ignores the `::-webkit-` rules on an element
    that sets the standard ones. The canvas-sizing code from finding 2 was deleted.
+
+Tested a third time the same day, on `776790c2`. Two more findings.
+
+7. **Searching in the Link field adds a long list with a scrollbar, and the top of it cannot be seen.**
+   *Measured on production:* searching "e" in the Link field listed 79 rows and ran the popover from its trigger
+   to a bottom edge at 1335 of a 900 window (the Archive link's, 76 rows, to 1293); opened upward from low in
+   the panel, the same growth runs past the top. *Cause:* `openPopover` placed a popover once, when it opened,
+   and a search result list grows it afterwards. *Fixed:* `openPopover` keeps a popover inside the window
+   every time it changes size (a `ResizeObserver` while it is open) — it slides rather than flipping, so it
+   does not jump sides as the user types; and the link popover keeps its search at the top and the chosen
+   destination with Done at the foot, with only the results scrolling between them
+   (`apps/web/components/controls/link-picker.tsx`).
+8. **The icon picker's Category list is very long.** *Measured:* 42 rows, the height of the window. *Fixed:*
+   every Kit menu is at most 320 px — about nine rows — and scrolls inside its own box, so its border and
+   radius stay whole; a select opens with focus on the row in force, so a long list opens scrolled to it
+   (`apps/web/components/kit/select.tsx`'s `Menu` and `Select`). The icon grid's scrollbar, still drawn with
+   arrows, now takes the same slim bar — one Kit class, `slimScrollbar` in `components/kit/greyed.ts`, for the
+   panel, the link results, the menus and the grid.
 
 *Asked alongside finding 4, and answered in the session:* whether this page is only a picture of how controls would
 look. The sample section is made up — it exists to exercise every kind of control — but the panel is not a

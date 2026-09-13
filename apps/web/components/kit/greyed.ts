@@ -58,3 +58,11 @@ export const valueTone = (greyed?: Greyed) => (greyed ? 'text-ink-faint' : 'text
 
 /** One ring, everywhere (Calibration Set, 2026-09-04). Never the 40% coral wash. */
 export const ring = 'outline-none focus-visible:shadow-focus'
+
+/** One scrollbar for everything that scrolls inside the app's panels and popovers: a slim 8 px bar with a
+ *  round thumb and NO arrow buttons (the owner's findings on Story 4.5, 2026-09-13 — arrows in the canvas,
+ *  two bars side by side). `::-webkit-scrollbar` and not the standard `scrollbar-width: thin`, which still
+ *  draws arrows in Chromium on Linux and Windows; and never both on one element, because Chrome ignores the
+ *  `::-webkit-` rules wherever the standard ones are set. ponytail: Firefox keeps its own bar. */
+export const slimScrollbar =
+  '[&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-line-strong [&::-webkit-scrollbar]:w-2'
