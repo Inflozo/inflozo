@@ -1,0 +1,635 @@
+---
+title: 'Story 4.5 — The controls engine and the control vocabulary'
+type: 'feature'
+created: '2026-09-13'
+status: 'ready-for-dev'
+baseline_commit: '4a67e48655e8d3b2870681c6048c6ad764994c29'
+owner_test: pending
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
+---
+
+## In plain English
+
+Every section in the library already lists its own settings — how many columns, which way it lines
+up, what sits behind it — but nothing yet turns that list into something a person can press, so
+nobody can change how a section looks. This story builds that panel out of words and pictures only,
+never pixel sizes or colour codes: a setting another one has switched off turns grey and says why in
+a sentence, a list such as a row of features can be added to, trimmed and put in a new order by
+dragging or with the keyboard, and a link can point at a post, a Portal page such as Upgrade, Ghost's
+own search, a web address or an email. You will see it on one internal page — a sample section on the
+left and its panel on the right, every change showing on the section the moment you make it — which is
+how the panel will behave inside the editor once Epic 5 builds it.
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** Every design declares its controls in `design.json`, but the declaration is a shape with
+nothing behind it. `ControlDef.type` is a free string (`packages/library/src/registry.ts:16`), the
+three universal controls are three names with no values (`vocabulary.ts:133`), a dependency can be
+declared but nothing ever greys a control, and nothing turns an instance's values into the section
+root's `data-*` attributes — the runtime has no control input and ships whatever the author typed on
+the root (`packages/section-runtime/src/core.ts:90-136`, `:785`). The content half of the vocabulary —
+a link that can be a Portal action or Ghost search, an icon, a date, an item list — has no value shape
+and no editor, and the runtime refuses `data-items` outright (`core.ts:394-408`), so an authored list
+cannot render at all. Until this exists, 4.10's pilots cannot be edited and Epic 5 has no panel to
+mount.
+
+**Approach:** Close the vocabulary as data in `packages/library` and refuse everything outside it;
+build the pure engine where the architecture puts it, `packages/section-runtime/src/controls.ts`
+(`ARCHITECTURE-SPINE.md:622`), and make **both emitters read it through one door** — they stamp the
+resolved controls on the root and render `data-items`, link records, icons and image ids themselves, so
+a greyed or illegal value cannot reach either output; then compose the Kit's existing controls into a
+working sidebar and put it beside a sample section on one internal page, the way `/kit` and
+`/style-guide` were shown before the editor existed.
+
+## Boundaries & Constraints
+
+**Always:**
+- **The export decides what the panel is built from; the PRD and the rulings decide what it does**
+  (R-74). The frames: `Editor Sidebar Kit.dc.html` (every control's anatomy) · `S4 Editor.dc.html` S4c
+  (the Quick Controls card over the accordion groups) · `B Missing Surfaces.dc.html` B2 (a design's own
+  panel) · `P0-0 Greyed Control Pattern.dc.html` (greyed and absent) · `P0-3 Item List Controls.dc.html`
+  (the authored list and the Ghost-sourced card) · `P0-1 Inline Text Toolbar.dc.html` (its link
+  popover) · `P0-2 Icon Slot and Picker.dc.html` (its picker) · `D5 Canvas Markers and Template
+  Switcher.dc.html` ("Reset this design"). Where a frame's behaviour disagrees with a ruling, the ruling
+  is built and Design Notes names the row.
+- **One source for the sidebar, the validator and both emitters** (FR-F7). The value an emitter writes
+  for a control comes from `resolveControls()` and nowhere else; a greyed control's own stored value, a
+  value outside its offered set and an unknown control name never reach either output.
+- **Controls are closed-valued; content props hold content.** The five control types — `segmented ·
+  stepper · toggle · named-select · swatch-row` — write `data-{name}` on the root (AD-3). The content
+  editors — Text Field (`text`), Text Area (`richtext`), Link Picker (`url`), Image Picker (`image`),
+  Icon Picker (`icon`), Date Picker (`date`), Item List (`array`) — edit `contentSchema` props. No
+  units, no hex, no CSS keyword and no `Inherit` anywhere (FR-F2, R-23).
+- **Greyed versus absent is P0-0's, unchanged** (UX-DR3, R-33, R-68): greyed keeps the value in force
+  legible, puts one sentence in the caption slot, stays in the tab order `aria-disabled` and never
+  `disabled` (`apps/web/components/kit/greyed.ts:19-35`), and is never a tooltip; one value switched off
+  inside a live control greys the same way; a control that could never act is not drawn and its group
+  carries one note in its place. **Remove never greys** (R-12, UX-DR4).
+- **The universal trio is declared once, in full** (FR-F3, R-23): Background role (Swatch Row, the
+  roles of `prd.md:948` — Question 1), Vertical spacing (Compact · Comfortable · Spacious), Top divider
+  (None · Line · Fade), at the schema defaults `sections-inventory.md:800` names — Base, Comfortable,
+  None. Exempt from the cap, never a Quick Control, narrowed only with a reason, never renamed or added
+  to.
+- **A Ghost-bound repeat is never an Item List** (FR-F1): it gets P0-3's Ghost-sourced card — a live
+  Count (1–100, FR-H2) and Order, read-only rows, and Add, Remove and drag greyed with "These come from
+  Ghost, so there is nothing to add here." (owner-ruled 3 September 2026, `P0-3 Item List
+  Controls.dc.html:94`).
+- **Every new sink is closed by allow-list in the shared core, with a test that the vector is inert and
+  the legitimate case still works** (AD-36): link attributes are a closed set, a Portal action is one of
+  four, an icon is a key of the vendored set drawn from Tabler's own nodes, and an image is an asset id
+  resolved only through `RenderInput.assets` (AD-27(b)).
+- **Purity** (AD-1): `controls.ts` takes no clock, no `Intl` and no locale method; the Date Picker's
+  timezone name is handed in, never read from a machine.
+- **Cite or execute.** Portal's and Ghost search's click behaviour was read in their source for this
+  spec (Design Notes); nothing about them is asserted beyond that.
+- **Counts are derived.** No count of icons, controls, designs or refusals is written into code, docs or
+  tests.
+
+**Ask First:**
+- **Question 1 and Question 2 gate the tasks that name them** — the Background role's value list, and
+  which icons the picker carries.
+- A new directive, a change to AD-3's one-attribute rule, a fifth mark, or any npm dependency — drag,
+  popovers, dates and icons are met by the platform and by vendored data.
+- Anything that reaches into Epic 5's stories: dark-override authoring and emission (5.6, AD-30), carry
+  / park / default (5.11), Source, hand-picked and the main feed (5.19), the inline toolbar (5.3),
+  Member Visibility (5.4), undo and persistence (5.8).
+
+**Never:**
+- Never edit the design export (R-74).
+- Never install `@tabler/icons` or ship icons as a sprite or a font; the curated set is vendored data
+  with Tabler's MIT licence beside it (R-26, R-92).
+- Never offer a live Add, Remove or drag on a Ghost-bound repeat.
+- Never a colour picker, a slider, or a pixel, rem, percent or hex value at section level (Appendix C,
+  `prd.md:1006`).
+- No editor route, no canvas selection, no persistence and no design switching — the review page is an
+  internal surface like `/kit`.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| A control change | `card` set to `raised` | the canvas root's `data-card` is written inside the input handler; both emitters stamp `data-card="raised"` | N/A |
+| Greyed by a dependency | `align=center`, stored `rule=line`, `rule.disabledBy.inForce: "none"` | `rule` greys with its reason; both emitters write `none`; the stored `line` is kept and returns when `align` changes back | setting `rule` returns the reason and changes nothing |
+| A narrowed universal | the design offers Background role as Base · Surface · Contrast | Accent and Image greyed inside the live row with the design's reason; Base in force by default | setting Accent returns the reason |
+| Stored junk | `controls.card = "12px"`; a stored name `x" onload="y` | the default is stamped; the unknown name is stamped nowhere | ignored, never thrown — a stored record is data, not a type |
+| Add at the ceiling | 6 features, `max: 6` | Add greyed with the ceiling sentence; Duplicate refused the same way | `addItem` returns the sentence |
+| Remove at the floor | 2 features, `min: 2` | Remove stays active; the floor sentence appears under the list; nothing is removed; the sentence clears on the next edit | `removeItem` returns the sentence |
+| Reorder | item 3 moved to 1, by drag or `⌥↑` | the array and the canvas order change together; "Moved to position 1 of 3" is announced | an index out of range is refused |
+| An authored array renders | `features` with N items | N copies on both emitters, identical trees, per-item props read from item i; zero items renders nothing | a `data-items` inside another `data-items` or inside a `data-repeat` refuses by name |
+| A Portal link | `{ "portal": "account/plans" }` | `href="#" data-portal="account/plans"` on both emitters; never `upgrade` | an action outside the four is an unset link |
+| Ghost search | `{ "search": true }` | `href="#" data-ghost-search` | any other `search` value is an unset link |
+| An external link | `{ "href": "https://x.example/", "newTab": true, "rel": ["sponsored", "evil"] }` | `target="_blank" rel="noreferrer sponsored"` | `javascript:` becomes `#` (AD-36 1); an unknown rel is dropped |
+| FR-F8's unset destination | `archive.link` empty, `data-empty="hide"` on its element | the element is absent from the canvas and from the theme | N/A |
+| An icon | `features[0].icon = "rocket"` | Tabler's rocket inline, once, `aria-hidden="true"`, stroke `currentColor`, identical on both emitters | a name not in the set (`"><script>`) is an empty slot: the element renders nothing |
+| An image | `image = "feature-03"` with `assets` mapping it | `src` is the mapped URL on both emitters | an id with no entry, or a URL stored in its place, is unset |
+| A date | `nextIssue = "2026-10-01"` | the value in `datetime` and as text, unconverted | anything but `YYYY-MM-DD` is unset |
+| Editing text that carries marks | `"Hello world"` with `strong` 6–11, edited to `"Hello, world"` | `strong` becomes 7–12 | a mark the edit cuts through is clamped to what survives, or dropped if nothing does |
+| The Ghost-sourced Count | `latest` declared `limit: 3`, Count set to 5 | the canvas shows 5 rows; the theme's `{{#get}}` carries `limit="5"`; a hand-picked `ids` binding has no Count | a stored 0, 101 or 3.5 is ignored and the declared limit stands |
+| The cap | a design with more than 15 controls of its own | refused as `control-cap`; the universal trio and the Data group are not counted | N/A |
+| One name, one value set | two designs of a category declare `columns` with different values | `categoryControlUnion` refuses, naming both | R-53 |
+| Section reset | several controls, an Order and a Count changed | every control and data control back to its default; the words, the items and stored dark overrides untouched | N/A |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `packages/library/src/registry.ts` — the entry the engine reads. `ControlDef` `:12-24` (`type: string`
+  with "4.5 owns the engine" `:15`, `disabledBy` `:21`, `darkOverride` `:23`), `PropDef` `:27-35` (no
+  label, no `icon` or `date`), `DataBinding` `:48-56` (the comment `:53-54` names this story as the
+  warns-past-25 panel; that panel is 5.19's), `DesignJson` `:59-86`, `SectionRegistryEntry` `:89-114`,
+  `recoverQuickControls` `:122-124` (the first five, no floor — ruled at 4.1), `assembleEntry`
+  `:149-177`.
+- `packages/library/src/vocabulary.ts` — the rules as data. `BINDABLE_ATTRS` `:50-54` (already carries
+  `data-portal`), `safeUrl` `:64-70` (http, https, mailto, tel, relative), `UNIVERSAL_CONTROLS` `:133`
+  (names only, read as names by `validate.ts:152`, `:219-222`, `:333` and
+  `tools/stress/test-vocabulary.mjs:55` — keep the list and derive it), `MARKS` `:152`, `LINK_RELS`
+  `:156` ("4.5's Link Picker offers exactly this list"), `data-items` `:338-344`, `data-ghost-search`
+  `:459-463`, `CONSUMED_DIRECTIVES` `:470-471`.
+- `packages/library/src/validate.ts` — `validateMarkup` `:68-227` (root controls `:143-155` and
+  `:211-224`, the prop-kind check `:179-184`), the control block of `validateDesignJson` `:327-359`
+  (executed during planning: it accepts `"12px"`, `"#ff0000"`, `"Inherit"`, an unknown type, a
+  dependency cycle and thirty controls), `validateCategoryContent` `:387-421`, `validateDesign`
+  `:425-439` (hands the markup check control NAMES only, `:432-433`). `validate.test.ts` control cases
+  `:246-256`, `:285-292`, `:343-348`, `:365-378`, `:408-434` — `only()` asserts one code, so new
+  required fields change these fixtures.
+- `tools/stress/test-vocabulary.mjs` — binds this story three ways: the on-disk reference validates
+  clean `:83-91`, it uses every directive `:93-97` (so no new directive), and every refusal code has a
+  test `:106-114`.
+- `packages/library/fixtures/reference-design/design.json:6-14`, `index.html:5-8` (the root's
+  hand-written controls and universals), `style.css:11-15` (the only universal selectors anywhere),
+  `fixtures/content.json:1-19`.
+- `packages/library/src/orbit-weekly.ts` — the review page's sample data: `posts()` `:75`, `tags()`
+  `:78`, `authors()` `:79`, `site()` `:82` (`timezone: "Etc/UTC"`), `resolveSource` `:248`; the image
+  pool is `packages/library/orbit-weekly/images/`.
+- `packages/section-runtime/src/core.ts` — the one walk. `RenderInput` `:90-136`, `UserText` `:185-217`
+  (the mark allow-list is looked up by path, `:214`), `RENDERED_DIRECTIVES` `:225-241` and the derived
+  `REFUSED_DIRECTIVES` `:246-248`, `refuseUnrendered` `:394-408`, `applyProps` `:710-772` (`data-prop`
+  `:719-738`, `data-prop-attr` `:741-763` with the scheme check `:757`), `renderTree` `:777-846`,
+  `expandRepeats` `:853-900` (the pattern `data-items` copies; a query's limit caps rows `:885-888`),
+  `renderTheme` `:905-917`, `renderCanvas` `:920-923`.
+- `packages/section-runtime/src/marks.ts` — `Mark` `:21-28`, `RichText` `:34`, `openTag` `:64-77` (the
+  link attributes today), `serializeMarks` `:103-165`.
+- `packages/section-runtime/src/agreement.test.ts` (the control-attribute survival case `:118-131`) and
+  `ad36.test.ts` (the scheme vector `:24-58`, the `a`-mark vector `:197-217`) — the proofs to extend.
+- `packages/section-runtime/src/tokens.ts` — `REFERENCE_TOKENS` `:69`; the swatch colours come from here,
+  because `apps/web` may carry no colour literal (`apps/web/tokens.test.ts:125`).
+- `eslint.config.js:22-25` — `CORE` is derived, so `controls.ts` and `icons.ts` are linted under AD-1
+  with no edit; `:98-126` bans `performance` and `Date.now` in every package file, tests included, which
+  is why the 100 ms measurement happens in the browser.
+- `apps/web/components/kit/` — the look the panel is built from, all stateless today: `greyed.ts:13-51`,
+  `segmented.tsx:11-66` (moon `:34`, every option a tab stop `:51`), `stepper.tsx:6-49`,
+  `toggle.tsx:7-44`, `swatch-row.tsx:12-63` (`:45`), `select.tsx` `Select` `:9-41` and `Menu`
+  `:74-102`, `moon-badge.tsx:7-11`, `quick-controls-card.tsx:6-10`, `accordion.tsx:8-37`,
+  `labels.tsx:6-38`, `input.tsx` `TextInput` `:23-119` (controlled) and `Multiline` `:121-137`
+  (uncontrolled), `image-control.tsx` `AssetRow` `:7`, `button.tsx` `AddButton` `:84-91` and
+  `IconButton` `:94`, `icons.tsx:9-18` (Tabler is the library's, not the app's — R-92),
+  `tooltip.tsx:4-5` (never a reason).
+- `apps/web/lib/menu.ts` — `anchorTo` `:36`, `openMenu` `:66`, `arrowKeys` `:112`, `nextIndex` `:141`:
+  every menu in the app is `popover="auto"`, placed from the trigger's rect.
+- `apps/web/app/(app)/app/(authed)/kit/page.tsx:34-56` (the review surface, and why `force-static`
+  cannot return) and `style-guide/frame/route.ts:5-32` with `apps/web/lib/style-guide.ts` — the shapes
+  the new page copies; `apps/web/next.config.ts:8-28`; `busy.test.ts:123-142`;
+  `app-routes.test.ts:44,56,136,207`; `style-guide.test.ts:84-103`; `csp.ts:72-88` (scripts need a
+  nonce, inline styles do not).
+- `supabase/migrations/20260904120000_complete_schema.sql:248-249` — an instance already stores
+  `controls`, `parkedControls` and `darkOverrides`; nothing reads them, and the engine takes the same
+  slice as plain values.
+- **Read-only evidence.** `prd.md` FR-F1 `:267`, FR-F2 `:268`, FR-F3 `:269`, the universal paragraph
+  `:271`, FR-F4 `:272`, FR-F5 `:273`, FR-F8 `:274`, FR-F6 `:275`, FR-F7 `:276`, §7.3 `:559`, the Portal
+  set `:928`, Appendix C `:939-1006`, NFR-1 `:473`, E4 and E5 ownership `:796`, `:804`;
+  `sections-inventory.md:35`, `:800`; `reconcile-designs-decisions.md` R-12 `:468-479`, R-23 `:663-674`,
+  R-26 `:741-752`, R-27 `:756-768`, R-33 `:846-851`, R-50/R-53/R-56 `:1006-1012`, R-68/R-69
+  `:1075-1076`, R-92 `:1668-1679`; `ARCHITECTURE-SPINE.md` layers `:56-61`, AD-1 `:92-96`, AD-3
+  `:105-109`, AD-4 `:111-117`, AD-27 `:307-314`, AD-30 `:331-339`, capability map `:622`;
+  `MEASUREMENTS.md` §29c `:2276-2293`; `epics.md` UX-DR3/4/10/19 `:288-289`, `:295`, `:304`, Stories
+  5.3 `:1586`, 5.4 `:1635`, 5.6 `:1678`, 5.11 `:1820`, 5.19 `:2039`; `EXPERIENCE.md` `:148-150`,
+  `:285-289`, `:454-461`, `:475-478`, `:518-524`; `DESIGN.md` `:180-183`, `:333-338`, `:438-455`,
+  `:479-483`, `:509-524`, `:556-561`.
+- **The frames** (the export, never edited): `Editor Sidebar Kit.dc.html` `:25`, `:32-39`, `:44-48`,
+  `:63-66`, `:85-93`, `:99-104`, `:109-112`, `:132-153`, `:177-179`, `:195-198`, `:256-262`; `S4
+  Editor.dc.html` S4c `:337-363`; `B Missing Surfaces.dc.html` B2 `:472-619`; `P0-0 Greyed Control
+  Pattern.dc.html` `:24-25`, `:70`, `:80-82`, `:130-131`, `:140-165`; `P0-3 Item List Controls.dc.html`
+  `:25`, `:35-52`, `:59-97`, `:101-134`, `:138-172`; `P0-1 Inline Text Toolbar.dc.html` `:66-135`; `P0-2
+  Icon Slot and Picker.dc.html` `:56-173`, `:267-292`; `D5 Canvas Markers and Template Switcher.dc.html`
+  `:93`, `:352`; `S14 Editor Cards.dc.html` `:174-190`; `A26-8 Tag Row.dc.html` `:69-82` (FR-F8 drawn);
+  `P0 Editor Primitives - Spec.md` P0·0 `:18-113`, the link popover `:167-196`, P0·2 `:220-286`, P0·3
+  `:290-342`, the library rules `:611-703`, P0·9's absent sentence `:748-755`; for Question 1, `A28
+  Comments - Spec.md:39-45` and `A29 Archive Headers - Spec.md:1195`.
+
+## Tasks & Acceptance
+
+**Execution:**
+
+- [ ] `packages/library/src/vocabulary.ts` -- declare the control vocabulary as data: `CONTROL_TYPES`
+  (the five), `UNIVERSALS` (each a full control — label, type, values, default — with Background role
+  marked mode-scoped, FR-D7), `UNIVERSAL_CONTROLS` derived from it, `PORTAL_ACTIONS` (Sign up · Sign in ·
+  Account · Upgrade → `signup · signin · account · account/plans`, `prd.md:928`), `CONTROL_CAP` (15,
+  FR-F3) and the refused CSS-wide words (`inherit · initial · unset · revert`) -- AD-34: the rules are
+  data in the library, one copy for the validator, the engine and the panel. **Gated by Question 1** for
+  Background role's values.
+- [ ] `packages/library/src/registry.ts` -- widen the entry: `ControlDef` gains `type` as the closed
+  union, a required `label` and `group` (`arrangement` or `style`), optional `valueLabels`, and
+  `disabledBy.inForce`; `DesignJson` and `SectionRegistryEntry` gain `universals` (per universal:
+  `values`, `default?`, `reason`) and `absent` (`{ group, note }`), carried by `assembleEntry`; `PropDef`
+  gains a required `label`, the `icon` and `date` types, and on an `array` `min`, `max`, `item`, `atMin`
+  and `atMax`; one `Link` type that a `url` prop and the `a` mark share (`href?` · `portal?` · `search?`
+  · `ref?` · `newTab?` · `rel?`); and `categoryControlUnion(designs)`, which refuses one name carrying
+  two value sets (R-53); correct the comment at `:53-54` -- FR-F7's one schema per design and one union
+  per category from one source: the union is generated, never authored.
+- [ ] `tools/vendor-icons.py` · `packages/library/icons/tabler.json` ·
+  `packages/library/icons/LICENSE-tabler.txt` · `packages/library/src/icons.ts` ·
+  `packages/library/src/icons.test.ts` -- vendor the curated set: download `@tabler/icons` at a pinned
+  version from the npm registry, refuse to write unless the tarball's `sha512` matches the pinned
+  integrity and its `LICENSE` is MIT, select icons by **Question 2's ruled rule** from Tabler's own
+  `icons.json` categories and `tabler-nodes-outline.json` drawings, and write the set with its version,
+  capture date and command, beside Tabler's licence text verbatim; `icons.ts` exports the lookup, the
+  chip map (All · Arrows → Arrows · Interface → System · Media → Media · Commerce → E-commerce · Social /
+  Brands → the nine) and the licence text; the test asserts the nine Ghost platforms are present (`P0
+  Editor Primitives - Spec.md:260-261`), every drawing uses only `path` with `d`, `fill`, `opacity` and
+  `stroke`, and no drawing carries a brace; add `icons` to the package `tsconfig.json` `include` with
+  `resolveJsonModule` (Story 4.4's `orbit-weekly` wiring) and a catalogue row for the script in
+  `tools/doc-audit.py` -- R-26 and R-92: Tabler is the sections' set, drawn inline, and its licence
+  travels with it. **Gated by Question 2.**
+- [ ] `packages/library/src/validate.ts` · `packages/library/src/validate.test.ts` -- the refusals, each
+  fired alone by a test (`test-vocabulary.mjs:106-114` derives the list): an unknown control type; a
+  missing label or group; values that break their type's grammar (`on`/`off` for a toggle, ascending
+  consecutive integers for a stepper, kebab words for the rest, the roles for a swatch row) and a
+  `valueLabels` key that is not a value; `inherit` or another CSS-wide word anywhere; more than
+  `CONTROL_CAP` own controls; a dependency cycle; an `inForce` outside the values; a universal narrowing
+  that is empty, not a subset, missing its reason, or drops the default without naming another; an
+  absent note that is empty or names no group; a root control value outside its offered set
+  (`validateMarkup` gains an optional `controlValues`, so the stress archetypes that pass names still
+  validate); a prop with no label, an array whose bounds disagree or lack their sentences, an icon
+  default not in the set, a date default that is not `YYYY-MM-DD`; `data-prop` accepts `icon` and `date`
+  props (`:179-184`); update the existing fixtures so each case still fires only its own code, and
+  correct the comment at `:243-244` -- one refusal per rule the panel, the validator and the emitters
+  share.
+- [ ] `packages/library/fixtures/reference-design/design.json` · `packages/library/fixtures/content.json`
+  -- give every control a label and group and every prop a label -- the on-disk reference must keep
+  validating clean end to end (`test-vocabulary.mjs:83-91`).
+- [ ] `packages/library/fixtures/controls/1/{design.json,index.html,style.css}` ·
+  `packages/library/fixtures/controls/content.json` -- the sample the review page renders: a small
+  feature-row section, flat CSS over the reference tokens only, using only directives the runtime
+  renders, with the controls, content and words Design Notes lists; assembled through the real
+  `assembleEntry` and kept outside `designs/` -- the panel can only be proved against a design, and no
+  category exists yet.
+- [ ] `packages/section-runtime/src/marks.ts` -- add `linkAttributes(link)`, the one function that turns
+  a link record into its closed attribute set (`href` through `safeUrl`, `data-portal` from
+  `PORTAL_ACTIONS`, a valueless `data-ghost-search`, `target` and `rel` from `LINK_RELS`, and nothing for
+  a record with no valid destination), and have `openTag` (`:64-77`) call it; add `editText(value,
+  next)`, which shifts marks after the edited run and clamps or drops the ones it cuts -- AD-4: marks
+  become markup at one place, and a sidebar edit must not lose a customer's bold.
+- [ ] `packages/section-runtime/src/controls.ts` · `packages/section-runtime/src/controls.test.ts` -- the
+  engine, pure: `resolveControls` (every declared control and universal → its value in force), `sidebar`
+  (Quick Controls as `recoverQuickControls` returns them, then Content in markup order via the library's
+  `scanTags`, Arrangement, Style with the universal trio at its foot, and Data only when the design
+  declares a query — each row carrying label, options, marked value, greyed reason, moon, changed flag,
+  and each group its absent notes), `setControl`, `resetControl`, `resetSection`, `addItem`,
+  `duplicateItem`, `removeItem`, `moveItem` with its announcement, `setData`, and `withData` for the
+  Ghost-sourced Count and Order; the test is the I/O matrix, every row, with the floor and ceiling
+  sentences read from `content.json` and never written in code -- the capability map's home for FR-F
+  (`ARCHITECTURE-SPINE.md:622`).
+- [ ] `packages/section-runtime/src/core.ts` -- one door: `RenderInput` gains `controlSchema`,
+  `universals`, `controls`, `data` and `assets`; `renderTree` (`:777-846`) stamps `resolveControls` on
+  the root when a schema is given (the authored root stands when it is not, so every existing render is
+  unchanged), merges `withData` into `dataBindings`, renders `data-items` on both emitters (canvas: one
+  copy per item, props read from item i; theme: N static copies whose user text is parked like any
+  other, the mark allow-list still looked up by the `[]` path), writes a link record through
+  `linkAttributes` on a `data-prop-attr` `href` entry (`:741-763`), draws an `icon` prop's nodes inline,
+  and resolves an `image` prop through `assets`; add `data-items` to `RENDERED_DIRECTIVES` (`:225-241`)
+  -- AD-3 and FR-F7 by construction: neither emitter can write a value the engine did not resolve, and an
+  authored list gets its render path (`docs/section-authoring.md:343-354`).
+- [ ] `packages/section-runtime/src/agreement.test.ts` · `packages/section-runtime/src/ad36.test.ts` ·
+  `packages/section-runtime/src/index.ts` -- prove it and export it: both emitters stamp identical
+  control attributes and produce identical `data-items` trees, link attributes, inline icons and image
+  sources, and a greyed control's stored value is in neither output; each new vector is inert and its
+  legitimate case works — a Portal action outside the four, a `javascript:` link, a `search` that is not
+  `true`, a rel outside the list, an icon name carrying markup, an item title carrying `{{title}}`, a
+  stored control name carrying a quote -- §7.3's exit criterion covers everything this story adds, in
+  `pnpm check` and therefore in CI.
+- [ ] `docs/section-authoring.md` -- the authoring contract for controls: the five types and their
+  grammars, `label`, `group`, `valueLabels`, `disabledBy` with `inForce`, the universal trio and
+  narrowing with a reason, absent notes, the cap, the content editors and their value shapes (a link
+  record, an icon name, an asset id, a date), array bounds and their sentences, `data-items` rendered
+  since 4.5 (the partition note `:232-237`), how a link and an icon are emitted, where Tabler's licence
+  lives, and the new refusal rows; correct the warns-past-25 owner at `:159-161` to 5.19 -- a shipped
+  deliverable that every design in Epics 9–11 is written against.
+- [ ] `apps/web/components/kit/{segmented,stepper,toggle,swatch-row,select,accordion,input,image-control,button}.tsx`
+  · `apps/web/app/(app)/app/(authed)/kit/page.tsx` -- give the Kit's controls their behaviour without
+  changing what they draw: optional value and change props; a radio group as one tab stop moved with
+  the arrows (`lib/menu.ts:141`'s `nextIndex`); one option greyed inside a live row; a controlled
+  `Multiline`; a greyed `AddButton`; an actionable `AssetRow`; no hooks in these files, so `/kit` still
+  renders them statically; update `/kit`'s call sites where a prop's shape moves -- R-74: the panel is
+  built from the Kit, never beside it.
+- [ ] `apps/web/components/controls/{sidebar,item-list,link-picker,icon-picker,image-picker}.tsx` -- the
+  client components Epic 5 will mount: the sidebar draws `sidebar()`'s model with the Kit's pieces —
+  the Quick Controls card, the four accordions (a group's absent note after its own controls and before
+  the universal trio), the moon badge with the words "Dark override" beside it (UX-DR8), a "Reset" beside
+  a changed control's label, "Reset this design" at the panel foot, the Swatch Row's roles in the
+  reference token colours (Base `--bg-page`, Surface `--bg-surface`, Accent `--accent`, Contrast
+  `--bg-contrast`, Image the Kit's image glyph), Text Field and Text Area as the Kit's `TextInput` and
+  `Multiline` editing through `editText`, and the Date Picker as the Kit's input with `type="date"` and
+  the site's timezone in its caption; the item list
+  is P0-3's authored list (range line, a Move button per row with pointer drag — 2° tilt, none under
+  reduced motion — and `⌥↑`/`⌥↓` announced politely, the overflow's Duplicate and Remove, the floor
+  sentence, and a selected row opening that item's fields beneath the list) and P0-3's Ghost-sourced
+  card; the link picker is P0-1's popover over sample resources (Pages · Posts · Tags · Authors, each
+  omitted when empty; the four Portal chips always last; the Ghost search chip; one "Link to …" row for
+  a pasted URL or typed email; Open in new tab, on by default for an external URL, and the three rel
+  toggles, both offered only for a URL or an internal destination; the closed field reading `Portal ·
+  Upgrade` over `account/plans`); the icon picker is P0-2's (search over names and tags, the six chips,
+  the recent eight with its empty sentence, 38 px cells, the no-match sentence, "Tabler Icons · MIT",
+  Remove icon from a filled slot); the image picker is the Kit's asset row over the sample pool; every
+  popover is `popover="auto"` placed by `lib/menu.ts`, takes focus and returns it -- Epic 5 mounts these
+  rather than drawing them again.
+- [ ] `apps/web/lib/controls-review.ts` · `apps/web/app/(app)/app/(authed)/controls/{page.tsx,review.tsx,frame/route.ts}`
+  -- the owner's surface: the page (server, `metadata` with a title and `robots: noindex`, behind the
+  session guard, dynamic, no `<main>`) reads the sample off disk, assembles and validates it, and hands the client the entry, the
+  reference token values for the swatches, the Orbit Weekly rows for the query, the link picker's
+  resources and the image pool; `review.tsx` holds the instance, writes a control's resolved attributes
+  onto the canvas root inside the input handler, and re-renders the section with `renderCanvas` for
+  content; `frame/route.ts` guards itself like `style-guide/frame/route.ts:17-32` and serves the canvas
+  document — reference tokens, the sample's stylesheet, an empty mount point and no script, so no nonce
+  is needed -- Story 4.4's review-page shape, because the editor does not exist yet and R-80 needs a
+  deployed screen.
+- [ ] `apps/web/package.json` · `apps/web/next.config.ts` · `apps/web/busy.test.ts` ·
+  `apps/web/controls.test.ts` -- add `@inflozo/section-runtime` as a `workspace:*` dependency (already in
+  `transpilePackages`, `next.config.ts:19-24`); trace the files the review reads for both routes (copy
+  `:8-12`, `:25-28`); exempt `controls` in `NO_SKELETON` with its reason (copy `:132-142` — reached only
+  by typing the path); test that the frame route guards before building a body, that the canvas document
+  carries no script, that every directory the review reads is traced, and that the assembled sample
+  validates clean -- the fences `style-guide.test.ts:84-103` put around Story 4.4's page.
+- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md`
+  · `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` ·
+  `_bmad-output/implementation-artifacts/deferred-work.md` ·
+  `_bmad-output/implementation-artifacts/epic-4-context.md` -- propagate (standing rule 3), then grep
+  the repository for every old name and shape (standing rule 7): AD-4 (`:115-116`) gains the shared link
+  record and the one attribute function; §7.3 (`prd.md:559`) says the closed-value rule is the controls'
+  and names the content editors; if Question 1 rules option 2, FR-F3, Appendix C, `sections-inventory.md:35`
+  and R-23's wording; open ledger entries for the three gaps found here and owned elsewhere — a
+  formatted, localised display of an authored date, Image focus (R-51, P0-9) with no owning story and no
+  emission rule under AD-3, and Tabler's licence file and FR-J3's icon budget in the emitted theme (R-26,
+  no Epic 7 story); add Story 4.5's sub-bullets to the epic context -- a finding is not closed until it
+  reaches the document that governs it.
+
+**Acceptance Criteria:**
+
+- Given the review page open beside `Editor Sidebar Kit.dc.html`, `S4 Editor.dc.html` S4c, `B Missing
+  Surfaces.dc.html` B2, `P0-0 Greyed Control Pattern.dc.html` and `P0-3 Item List Controls.dc.html`, when
+  the panel is compared, then **it matches the frames**: a Quick Controls card holding the design's first
+  three to five controls, then Content, Arrangement, Style and Data in that order (Arrangement, not
+  Layout — FR-F3), every control drawn as the Kit draws it, the greyed row and the absent note as P0-0
+  draws them, the authored list and the Ghost-sourced card as P0-3 draws them, the link popover as `P0-1
+  Inline Text Toolbar.dc.html` draws it and the icon picker as `P0-2 Icon Slot and Picker.dc.html` draws
+  it — and no universal control in the Quick Controls card.
+- Given the sidebar, when a control, a content field or an item changes, then the canvas paints the
+  change in the same frame as the input, and a content re-render completes inside 100 ms — measured in
+  the browser at Review on the deployed page under 4× CPU throttle and recorded under Verification,
+  because NFR-1's gate is manual-only (`prd.md:473`).
+- Given only a keyboard, when the owner's test is walked, then every control, popover and list works: a
+  radio group is one tab stop moved with the arrows, a popover takes focus and returns it on close, an
+  item moves with `⌥↑`/`⌥↓` and is announced, and a greyed control stays reachable and is read with its
+  reason (UX-DR10) — and axe-core at WCAG 2.1 AA reports zero violations on the page.
+- Given a control another control disables, when the section renders on either emitter, then the root
+  carries the value in force and never the stored one, and the sidebar, the validator and both emitters
+  took it from the one declaration (FR-F7).
+- Given the sample and the reference fixture, when they are validated, then both are clean, and every
+  refusal the validator gained fires in a test on its own.
+- Given the designs of one category, when its union is generated, then it is derived from their control
+  lists and a name carrying two value sets is refused (FR-F7, R-53).
+- Given the link picker, when a destination is chosen, then the Portal chips are always all four and
+  always last, Upgrade compiles to `account/plans`, Ghost search compiles to `data-ghost-search`, and
+  new tab and rel are stored in the link record and compiled from it, offered only where they can act
+  (FR-F6).
+- Given an icon placed in a section, when it renders, then it is Tabler's drawing inline where it is
+  used, once per use, with no sprite and no font, and Tabler's MIT licence text ships beside the set in
+  the library (FR-F1, R-26).
+- Given a mode-scoped control with a stored dark override, when the panel is drawn, then it carries the
+  moon badge and the words "Dark override", and a mode-scoped control without one carries neither
+  (FR-F5, UX-DR8).
+- Given a changed control, when its "Reset" is pressed, then it returns to its default and the Reset
+  leaves; and when "Reset this design" is pressed, then every control and data control returns to its
+  default while the words, the items and the stored dark overrides stay (FR-F4).
+- Given a link to a page Ghost does not publish, when its destination is empty, then its row renders
+  nothing on either emitter, and it appears once a destination is set (FR-F8).
+- Given the gate, when `python3 tools/doc-audit.py --check`, `pnpm check` and the `tools/stress` gscan
+  gate run, then all are green with 0 errors and 0 warnings on both majors, and no count a tool derives
+  is written down.
+
+## Spec Change Log
+
+## Design Notes
+
+**Controls and content are two halves of one vocabulary.** §7.3 says every Appendix C type resolves to
+a finite set of named values (`prd.md:559`). That is true of the five types that write the root and
+false of the seven that edit content — a heading is free text, a link is a record, a picture is an id.
+So the five live in `controlSchema` and the seven are what a `contentSchema` prop's type selects; the
+panel composes both and the validator holds each to its own rule. The PRD sentence is corrected rather
+than obeyed literally.
+
+**Where a ruling overrides a frame, and where a frame is extrapolated.**
+- S4c names the second accordion "Design" and puts Density and Colours in the Quick Controls card; FR-F3
+  names the group Arrangement, and the universal controls are never Quick Controls. Built as FR-F3.
+- The category kits draw the trio as a group of its own; FR-F3 names four groups. The trio sits as one
+  block at the foot of Style, in the kits' order.
+- A Quick Control appears once. S4c repeats the design picker in its accordion, not a control.
+- No frame draws a per-control reset. It takes the style of D5's "Reset this design" line (12 px,
+  ink-soft) and sits beside the label of a control whose value differs from its default. "Reset this
+  design" is D5's and has no confirm — D5 draws none, and S14's confirm exists because a card reset
+  reaches every post — and it resets controls only, S14's "Posts keep their content." rule.
+- P0-3 greys the Ghost-sourced list's Add, Remove and drag; FR-F1 says a Ghost-bound repeat never gets
+  an Item List. They agree: P0-3's first line is that the Ghost-sourced list "is **not** this" — it is a
+  Count and an Order over read-only rows, which is what FR-F1 asks for, and its greyed Add tells the
+  truth rather than lying. Only Count and Order are built; Source, hand-picked and the main feed are
+  5.19's.
+- R-69's no-value-marked case is the Data group's Order at Hand-picked, 5.19's. A root control always
+  carries one of its values, so `inForce` is always one of them here.
+- The absent note sits where the control would have been, in its group (`P0 Editor Primitives -
+  Spec.md:67-68`), not pinned to the panel foot as B2 drew it before P0-0 existed.
+- Open in new tab is on by default for an external URL, as P0-1 draws it. New tab and rel are not
+  offered for Portal, search or email, because they could never act there (R-68).
+- The Date Picker has no frame: it is the Kit's input with the browser's own calendar, which is what
+  "calendar popover" asks for without a date library.
+
+**One link record, two homes.** A `url` prop and an `a` mark hold the same record; a bare string in a
+`url` prop is still a URL link, so every existing fixture and test stays valid. `ref` is kept for Epic 7's
+compile-time re-validation (FR-F6) and this story renders `href`:
+
+```json
+{ "href": "https://orbit-weekly.example/the-night-shift-at-the-port-of-algeciras/",
+  "ref": { "kind": "post", "id": "905700000000000000000001" } }
+{ "portal": "account/plans" }
+{ "search": true }
+```
+
+**Why `href="#"` is right for Portal and search — read in source, 2026-09-13.** `portal@~2.51` (served
+to Ghost 5.130.6) binds `querySelectorAll("[data-portal]")` to a `clickHandler` whose first statement
+is `a.preventDefault()`, then reads `dataset.portal`; `portal@~2.69` (Ghost 6.58.0) does the same in an
+async handler; `sodo-search@~1.8` binds `[data-ghost-search]` to a handler that calls
+`e.preventDefault()` and opens the popup (`MEASUREMENTS.md` §29c records the triggers). The hash never
+moves the page while the script runs, and with JavaScript off nothing happens — which P0-4 already says.
+
+**Icons are data, not a dependency.** Tabler publishes every outline icon as a list of path nodes
+(`tabler-nodes-outline.json`), so the vendored set is those nodes plus the category and tags search
+needs; the emitted `<svg>` wraps them in Tabler's own attributes (24 viewBox, stroke 2, round caps and
+joins, `currentColor`) with `aria-hidden="true"`. `ponytail:` the runtime imports the set eagerly, which
+puts it in the review page's bundle; the editor's loading budget is NFR-1's and Epic 5's to spend.
+
+**An image is an id, and the render resolves it** (AD-27(b)). Both emitters look the id up in
+`RenderInput.assets`; the review page hands them the Orbit Weekly pool, and Epic 7 will hand them the
+theme's asset paths, so no core code learns what an asset URL looks like.
+
+**A date is the site's wall-clock day, stored unconverted** (`prd.md:952`). `YYYY-MM-DD` in the site's
+timezone: nothing converts it, so no clock and no `Intl` enters the core. Printing it as a written-out,
+localised date needs the locale and Ghost's timezone handling, and is recorded as a gap rather than
+invented here.
+
+**The sample section**, `packages/library/fixtures/controls/`. Controls, in order: **Columns** (stepper
+2 · 3 · 4, default 3, Arrangement) · **Card style** (named select Flat · Outlined · Raised, default
+Outlined, Style) · **Alignment** (segmented Left · Centre, values `start`/`center`, default Left,
+Arrangement) · **Show icons** (toggle, on, Style) · **Rule under heading** (segmented None · Line,
+default Line, Style; disabled while Alignment is Centre, in force None: "Not available while the
+heading is centred.") · **Image position** (segmented Top · Side, Arrangement) · **Card tint** (segmented
+None · Soft · Strong, Style, mode-scoped). Background role narrowed to Base · Surface · Contrast: "This
+design is drawn for plain grounds, so accent and image are not offered." One absent note in Style, in
+P0-9's own words: "There is no image focus here. This design places your photograph at its own shape,
+so nothing is cropped and there is nothing for focus to choose." Content: the eyebrow "This week at
+Orbit Weekly"; the heading "Seven links, checked by hand"; **Next issue**, a date, 2026-10-01; a picture,
+`feature-03`, described as "Cargo cranes over a harbour at night"; the link "Read the latest issue"; an archive row "Browse the archive" with no destination;
+**Features** (2–6, item "feature": Seven links with the link icon, Checked by hand with a check, Every
+Thursday with a calendar; a new one lands as "A new feature" with a star; floor "A feature row needs at
+least 2 features."; ceiling "The row holds 6 features. Remove one to add another."); and **From the
+archive**, a `{{#get}}` of the latest three posts. The review page starts with one stored dark override,
+on Background role, and none on Card tint.
+
+## Verification
+
+**Commands:**
+- `python3 tools/doc-audit.py --check` -- expected: exits 0; run twice, since its sub-tools regenerate on
+  the first failure.
+- `PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH pnpm check` -- expected: green, including
+  `controls.test.ts`, `agreement.test.ts`, `ad36.test.ts`, `validate.test.ts`, `icons.test.ts` and
+  `tools/stress/test-vocabulary.mjs`.
+- `cd tools/stress && npm install && node build.js && node gate.js theme` -- expected: 0 errors and 0
+  warnings on both majors, with the runtime now stamping controls and rendering `data-items`.
+- `python3 tools/vendor-icons.py`, run twice -- expected: exits 0 having checked the tarball's integrity
+  and MIT licence, and the second run leaves `git status --porcelain packages/library/icons` empty.
+- **Real infrastructure, at Review (R-82):** Playwright against `https://app.inflozo.com/controls`,
+  signed in through Supabase's `generate_link` as `tools/probe/run-verify-dashboard.py` does (the
+  `SUPABASE_` keys, read into the environment only) -- expected: every step of the owner's test holds;
+  axe-core at WCAG 2.1 AA reports zero violations; the item list reorders with the keyboard alone; under
+  4× CPU throttle the control attribute is written in the input's own frame and a content re-render
+  finishes inside 100 ms, both recorded here. Negative control: `curl -sI
+  https://app.inflozo.com/controls` with no session answers 307 to `/sign-in`, and `/controls/frame`
+  answers 303.
+- **Deploy:** `GET https://api.vercel.com/v6/deployments` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and
+  `VERCEL_PROJECT` -- expected: production READY at the Review commit.
+- **No migration and no Ghost call.** This story changes no table, so R-99 owes no Schema phase; the
+  canvas calls no Ghost, so the test servers T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com` are not
+  touched, and the two Ghost facts it relies on were read in source, below.
+
+**What ran at Create, 2026-09-13:**
+- `npm view @tabler/icons version dist.tarball license` → `3.46.0`,
+  `https://registry.npmjs.org/@tabler/icons/-/icons-3.46.0.tgz`, `MIT`. The tarball, downloaded and
+  unpacked in the scratchpad, carries `icons.json` (a `category` and `tags` per icon),
+  `tabler-nodes-outline.json` (every outline icon as `path` nodes using only `d`, `fill`, `opacity` and
+  `stroke`) and `LICENSE`; all nine Ghost platforms exist as `brand-*` icons; the everyday icons Question
+  2 names sit under Communication (`mail`), Map (`map-pin`, `rocket`), Shapes (`heart`) and Buildings
+  (`home`).
+- `curl -sL https://cdn.jsdelivr.net/ghost/portal@~2.51/umd/portal.min.js`, the same for `portal@~2.69`,
+  and `https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js` → the `preventDefault()`
+  handlers quoted in Design Notes.
+
+**Manual checks (if no CLI):**
+- The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
+  the groups in order, each control's anatomy, the greyed row, the absent note, the two lists, the link
+  popover and the icon picker.
+
+## Owner's manual test
+
+The app is at `app.inflozo.com`. This page is internal — nothing links to it and search engines are told
+to ignore it — so it is reached by typing its address. **Nothing on it is saved**: reloading brings back
+the sample. Deploy records the deployment it runs on under "## Verification".
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|-----|--------|-----------|------------|---------------------|
+| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in as you normally do. | — | Your dashboard. |
+| 2 | `https://app.inflozo.com/controls` | Controls review | Type the address into the browser. | — | On the left, a sample section: a small line "This week at Orbit Weekly", the heading "Seven links, checked by hand", a picture, three feature cards with small icons, a "Read the latest issue" link and a "From the archive" list of three post titles. On the right, a panel: a white card holding Columns, Card style, Alignment, Show icons and Rule under heading; below it the headings Content, Arrangement, Style and Data; "Reset this design" at the very bottom. Nowhere a pixel size, a percentage or a colour code. |
+| 3 | same | Panel, white card | Press − beside Columns, then press the "Reset" that appears beside it. | — | The cards re-flow into two columns the moment you press, and a small "Reset" appears beside Columns. Pressing it brings back three columns, and "Reset" goes away. |
+| 4 | same | Panel, white card | Set Alignment to Centre. Press Line under "Rule under heading". Set Alignment back to Left. | — | The heading centres, and "Rule under heading" turns grey with "Not available while the heading is centred." under it; pressing Line does nothing. Back at Left, the rule returns as it was. |
+| 5 | same | Panel, Style | Open Style. Press Contrast under Background role, then press Accent. | — | Card tint; a grey note beginning "There is no image focus here."; then Background role, Vertical spacing and Top divider. Background role shows five swatches — Base, Surface, Accent, Contrast, Image — with Accent and Image grey and "This design is drawn for plain grounds, so accent and image are not offered." under them, and a small moon with the words "Dark override" beside its name; Card tint has no moon. Contrast turns the section dark at once; Accent does nothing. |
+| 6 | same | Panel, Content → Features | Open Content and find Features. Press "+ Add feature" until it stops working. | — | "2–6 · 3 used" beside Features, and three rows each with a handle, a name and a "…" button. Every press adds a card reading "A new feature" with a star; after the sixth, the button goes grey with "The row holds 6 features. Remove one to add another." |
+| 7 | same | Features | On any row press "…" then Remove, until two remain; then press Remove once more. | — | Cards disappear one at a time. At two, Remove still presses but nothing disappears: "A feature row needs at least 2 features." appears under the list instead, and goes away after your next change. |
+| 8 | same | Features | Drag the bottom row up to the top by its handle. Then press Tab until a row's handle is highlighted and press Option+Down (Alt+Down on Windows). | — | The cards on the left follow the new order when you drop; with the keys, the row moves down one place. |
+| 9 | same | Features | Press a row's name to open it, press its Icon, and type in the search. | `rocket` | A rocket in the grid; pressing it turns that card's icon into a rocket. The picker's foot says "Tabler Icons · MIT". |
+| 10 | same | Content, "Read the latest issue" | Press its Link field and type in the search. Pick the post, then press Done. | `night` | A Posts group listing "The night shift at the Port of Algeciras", then the chips Sign up · Sign in · Account · Upgrade and a Ghost search chip. After picking: "Open in new tab" and three Rel switches, and the field then shows the post. |
+| 11 | same | The same Link field | Open it again, press Upgrade, press Done. Open it once more, press Ghost search, press Done. | — | First the field reads "Portal · Upgrade" with `account/plans` under it — never "upgrade" — and no new-tab or Rel options were offered. Then it reads "Ghost search". |
+| 12 | same | Content, Archive link | Paste the address into its Link field, press the "Link to …" row that appears, then Done. Open it again and press Remove link. | `https://orbit-weekly.example/archive/` | "Browse the archive" appears on the section only once the link is set, and disappears again when it is removed. |
+| 13 | same | Content, Next issue | Pick another day in the calendar. | 1 November 2026 | The section shows 2026-11-01 — the plain stored form; a written-out date is a later story's. Under the field, the site's time zone: Etc/UTC. |
+| 14 | same | Content, Picture | Press Replace and choose another picture. | — | The section's picture changes. |
+| 15 | same | Panel, Data | Open Data. Set Show to 5 and Order to Oldest. | — | "From the archive" lists five titles, oldest first. In the panel the posts are grey, and a grey "+ Add post" reads "These come from Ghost, so there is nothing to add here." — you choose how many and in what order, never which. |
+| 16 | same | Panel foot | Press "Reset this design". | — | Every setting returns to how it started — three columns, Left, Base background, three posts newest first — while the words you changed and the features you added stay. |
+| 17 | same | Whole page | Reload the page. | — | Everything is back to the sample. Saving arrives with the editor. |
+
+If a step shows something different, note its number and what you saw — those are fixed inside this
+story (R-80), not later.
+
+## Questions for the owner
+
+### Q1 — Does every section's Background row offer a sixth choice, "None — show whatever is behind"?
+
+Every section has a Background row. The product document gives it five choices from your style pack:
+**Base, Surface, Accent, Contrast and Image**. This story writes that list once, for the whole library,
+and your rulings disagree about a sixth:
+
+- **27 August (R-23):** "An Inherit value is refused", and the two designs that had one lose it.
+- **29 August, when the Comments designs were drawn:** the row gains a new value — "None: show whatever
+  is behind" — "available in every category", replacing the word Inherit.
+- **30 August, when the Archive Headers designs were drawn:** "there is no 'Inherit' choice anywhere …
+  the product is not being asked for a 'same as the page' value."
+
+The product document still lists five.
+
+**An example.** The Comments design "10 Slim" is drawn with its background locked at **None**. With
+five choices it is locked at **Base** instead. On a real page the two look the same, because what sits
+behind a section is the page itself, and the page is painted in Base.
+
+**The options:**
+
+1. **Five choices, no "None" (RECOMMENDED).** Matches the product document, R-23, your later 30 August
+   ruling and this story's own checklist. Slim is locked at Base when the Comments designs are built,
+   and looks the same. No section carries a swatch that usually looks exactly like Base.
+2. **Six choices, "None" added everywhere.** Matches the 29 August ruling and the Slim drawing. The
+   product document, the control table and R-23 are rewritten to say so, and every section shows six
+   swatches, two of which usually look alike.
+
+**Ruled:** _(awaiting the owner)_
+
+### Q2 — Which icons does the icon picker offer?
+
+The rulings say the picker offers "a curated set from Tabler Icons" that includes the nine social
+networks Ghost stores, but nobody has chosen which icons are in it. Tabler has 5,130 outline icons today
+(version 3.46.0, checked on 13 September), filed under 41 categories of Tabler's own. The picker is drawn
+with six filters: All, Arrows, Interface, Media, Commerce and Social.
+
+**An example.** Someone building a features row wants an envelope for "Email us", a map pin for "Visit
+us" and a rocket for "Launch". Tabler files those under Communication, Map and Map — none of them one of
+the drawn filters.
+
+**The options:**
+
+1. **Every Tabler outline icon except its brand logos, plus exactly the nine social networks
+   (RECOMMENDED).** About 4,700 icons, chosen by one rule nobody has to keep up. Search finds anything,
+   and the filters use Tabler's own categories. The editor loads about 1.2 MB of icon drawings when the
+   picker opens; a customer's site only ever carries the icons actually placed on it.
+2. **A hand-picked set of about 400**, like the drawn picker's "Search 420 icons". Smaller and quicker to
+   browse, but someone chooses every icon, you review the list, and a customer will sometimes look for an
+   icon that is not there.
+3. **Only Tabler's categories that match the drawn filters — Arrows, System, Media and E-commerce — plus
+   the nine networks.** About 1,400 icons and about a third of that download, also chosen by rule, but it
+   leaves out everyday icons such as the envelope, the map pin, the heart and the house.
+
+**Ruled:** _(awaiting the owner)_
