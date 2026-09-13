@@ -580,6 +580,16 @@ to each server. Nothing here should try to fake a rendition.
 - **Not yet done, and the owner's:** the walk of `/style-guide` on the deployed site (R-80). The deployed Dev
   build answered a **307** to `/sign-in` on `/style-guide` and a **303** on `/style-guide/frame` without a session.
 
+**What ran, 2026-09-13 (Deploy):**
+- No migration in this story's diff (confirmed above at Review), so no schema step is owed.
+- `GET https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT&teamId=$VERCEL_TEAM_ID&target=production&limit=3`
+  with `VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT` (read into the environment only, never printed) —
+  production's newest deployment `dpl_6X3MVkMCfQ9rGdHdknvZF7FcSmyk` is **READY** at commit `be6a3bcb` (HEAD),
+  the Review commit — CI's `deploy` job already promoted it on push, and the domain aliases were unchanged.
+- `curl -sI https://app.inflozo.com/style-guide` — **307** to `/sign-in` (no session), matching the Dev/Review
+  finding above. `curl -sI https://app.inflozo.com/style-guide/frame` — **303**, likewise matching.
+- **Deployment: `dpl_6X3MVkMCfQ9rGdHdknvZF7FcSmyk` (`https://app.inflozo.com`), commit `be6a3bcb`.**
+
 **Manual checks (if no CLI):**
 - The review page beside `C Post Body.dc.html` C4, both open: C4's five coverage rows, the drawn block
   order, the 720 measure, and the two stylesheets in the right order with the four scripts present.
@@ -587,7 +597,8 @@ to each server. Nothing here should try to fake a rendition.
 ## Owner's manual test
 
 The app is at `app.inflozo.com`. This page is internal — it is not linked from anywhere and search
-engines are told to ignore it — so it is reached by typing the address. Deploy fills in the final URL.
+engines are told to ignore it — so it is reached by typing the address. It is live now, at the
+deployment recorded under "## Verification".
 
 1. **Sign in.** Go to `https://app.inflozo.com` and sign in as you normally do. You should land on
    your dashboard.
