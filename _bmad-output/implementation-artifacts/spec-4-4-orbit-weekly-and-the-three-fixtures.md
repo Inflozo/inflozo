@@ -2,9 +2,9 @@
 title: 'Story 4.4 — Orbit Weekly and the three fixtures'
 type: 'feature'
 created: '2026-09-13'
-status: 'in-review'
+status: 'done'
 baseline_commit: '4d903f1b80a445bbb74dbc314b5082386fb6889f'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
