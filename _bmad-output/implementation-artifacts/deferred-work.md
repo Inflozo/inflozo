@@ -3055,3 +3055,27 @@ reason: Story 5.1's acceptance criteria give a "collapsible left Layers panel" a
   workspace — a window that never scrolls, a canvas that scrolls inside its own frame, a panel that scrolls on
   its own — with slim 8 px `::-webkit-scrollbar` bars and no arrow buttons, because two scrollbars side by side
   "looks really bad" and a canvas sized to its section left a scrollbar with nothing to scroll.
+
+### DW-115: clicking an icon on the canvas to open the icon picker belongs to no story
+
+plain: In the editor, clicking an icon on the page itself should open the icon picker, and a section that is
+  selected should show a dashed box where an icon can go. The picker exists since Story 4.5, but it opens only
+  from the settings panel, and no planned story makes it open from the page.
+status: open
+severity: medium
+origin: Story 4.5 owner's question (2026-09-13) — "we are yet to build the icon picker on click of icons on
+  canvas … I assume these are part of later stories?" Checked against `epics.md`: selection and click-to-edit
+  text are Story 5.2's, inline editing, the four-mark toolbar and the link picker Story 5.3's; the icon slot
+  appears in neither, nor anywhere else.
+owner: unowned — proposed Story 5.3 (Inline editing, the four marks and the link picker), the story that makes
+  a section's content editable where it is drawn; Story 5.2 if the owner prefers it with selection, since the
+  empty slot is shown only while a section is selected.
+location: `P0-2 Icon Slot and Picker.dc.html` · `P0 Editor Primitives - Spec.md:220-224` (a slot is filled or
+  empty — a dashed 20 px placeholder visible only while the section is selected; the picker "opens from any
+  slot click (either state)") · `apps/web/components/controls/icon-picker.tsx` (the picker, opened today only
+  from its field in the panel) · `epics.md` Stories 5.2 and 5.3
+reason: FR-F1's Icon Picker is built (Story 4.5) and every design's icon prop edits through the sidebar, so
+  nothing is blocked; but P0-2 draws the canvas slot as the picker's primary entry, and a behaviour drawn in the
+  export with no story is exactly how a surface goes missing at launch. The story that takes it adds one
+  acceptance criterion — "clicking an icon slot on the canvas, filled or empty, opens the Icon Picker anchored
+  to it; the empty slot shows only while its section is selected" — and mounts the existing component.
