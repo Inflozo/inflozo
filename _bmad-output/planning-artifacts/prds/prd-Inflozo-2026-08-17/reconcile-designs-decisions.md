@@ -751,6 +751,9 @@ subset explicitly includes the nine Ghost social platforms.
 (the emission rule and the budget) · FR-Q7 · P0 · every icon slot in the library · a licence line in
 the emitted theme.
 
+*Widened by **R-104** (§A24, 2026-09-13): the set is every Tabler icon, outline and filled, grouped by
+Tabler's own categories — there is no curated subset. Inline, once per use, and the licence line stand.*
+
 ---
 
 **R-27 · Inline tokens in authored text: a short allow-list per field**
@@ -1925,6 +1928,45 @@ hang one on, and no cross-category carry; FR-D19 parks against the category unio
   `record` and its three asks stay as the history of what was open (standing rule 5); `prd.md` FR-G3,
   which already says `contentSchema` is the category's union and needed no amendment, only a decision
   that nothing widens it.
+
+## A24 · Step 7 — Story 4.5's Create, two rulings on the control vocabulary, 2026-09-13
+
+Taken as Story 4.5 (the controls engine and the control vocabulary) was planned, because that story writes
+the vocabulary once for the whole library and two things in it had no single answer. Both went to the
+owner in R-83's shape under `## Questions for the owner` in
+`_bmad-output/implementation-artifacts/spec-4-5-the-controls-engine-and-the-control-vocabulary.md` and were
+ruled the same day.
+
+**R-103 — Background role keeps its five roles, and there is no "None".** Question 1, option 1, ruled
+2026-09-13. Three rulings disagreed: R-23 (27 August) refused an `Inherit` value; the Comments session
+(29 August, `A28 Comments - Spec.md:1253-1276`) gave the shared row "None: show whatever is behind" in every
+category, for 10 Slim; and the Archive Headers session (30 August, `A29 Archive Headers - Spec.md:1195`)
+said the product "is not being asked for a 'same as the page' value". The PRD kept five throughout
+(`prd.md:271`, `:948`; `sections-inventory.md:35`). **He asked whether "None" looks the same as "Base", and
+on every page Inflozo builds it does:** a template is an ordered list of sections, each its own partial and
+none placed inside another (`prd.md:222`, `:631`), so what is behind a section is the page, painted in the
+pack's background colour — which is Base. **A design that paints no ground of its own locks the row with
+no value marked and says why** (R-69), as `A1-4 Overlay.dc.html:86` already draws it; 10 Slim is built that
+way — not at "None", and not locked at Base — and its root carries no `data-bg`.
+- Targets: ✅ Story 4.5's spec (Always, Never, the I/O matrix, Design Notes and the ruling) · ✅
+  `epic-4-context.md` · ⬜ `docs/section-authoring.md` (the no-value lock) · ⬜ `deferred-work.md`, an entry
+  for A28's category story, whose frames draw "None" (both in Story 4.5's Dev run). **Deliberately not
+  touched:** the export (R-74) and `reconcile-designs.md` (a `record`); `prd.md` FR-F3 and Appendix C, which
+  already say five.
+
+**R-104 — the icon picker offers every Tabler icon, outline and filled, grouped by Tabler's own
+categories.** Question 2, ruled 2026-09-13, widening option 1: *"Every tabler icon - grouped by how tabler
+does it in category. Include Outlines and Filled icons too. User should be able to choose from
+Filled/Outline/Both and then also see icson grouped by Categories."* There is no curated subset: every icon
+Tabler publishes, brand logos included, each in the category Tabler files it under, with its filled drawing
+where Tabler has one; the picker's Outline · Filled · Both decides which styles show, and Tabler's
+categories replace the six drawn filters. It widens D1's and R-26's curated subset and supersedes P0-2's
+"curated" header and its Social group of exactly nine; the nine-platform rule stays with the social-link
+rows that read Ghost's nine fields.
+- Targets: ✅ Story 4.5's spec · ✅ `epic-4-context.md` · ✅ the R-26 row above · ⬜ `prd.md` FR-F1 (`:267`)
+  and Appendix C's Icon Picker row (`:950`) · ⬜ `DESIGN.md` § Icons (`:556-561`) · ⬜
+  `docs/section-authoring.md` (all three in Story 4.5's Dev run). **Deliberately not touched:** the export,
+  whose P0-2 frame stays as drawn (R-74).
 
 ## B · Approved decisions superseded by this session
 

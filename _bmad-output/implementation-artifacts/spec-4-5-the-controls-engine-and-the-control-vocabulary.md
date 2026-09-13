@@ -68,19 +68,21 @@ working sidebar and put it beside a sample section on one internal page, the way
   `disabled` (`apps/web/components/kit/greyed.ts:19-35`), and is never a tooltip; one value switched off
   inside a live control greys the same way; a control that could never act is not drawn and its group
   carries one note in its place. **Remove never greys** (R-12, UX-DR4).
-- **The universal trio is declared once, in full** (FR-F3, R-23): Background role (Swatch Row, the
-  roles of `prd.md:948` — Question 1), Vertical spacing (Compact · Comfortable · Spacious), Top divider
-  (None · Line · Fade), at the schema defaults `sections-inventory.md:800` names — Base, Comfortable,
-  None. Exempt from the cap, never a Quick Control, narrowed only with a reason, never renamed or added
-  to.
+- **The universal trio is declared once, in full** (FR-F3, R-23): Background role (Swatch Row: Base ·
+  Surface · Accent · Contrast · Image, `prd.md:948` — five, and no sixth, R-103), Vertical spacing
+  (Compact · Comfortable · Spacious), Top divider (None · Line · Fade), at the schema defaults
+  `sections-inventory.md:800` names — Base, Comfortable, None. Exempt from the cap, never a Quick
+  Control, narrowed only with a reason, never renamed or added to. **A design that paints no ground of
+  its own locks the row with no value marked and says why** (R-69), as `A1-4 Overlay.dc.html:86` draws
+  it — "Transparent over the hero is this design" — and its root carries no `data-bg`.
 - **A Ghost-bound repeat is never an Item List** (FR-F1): it gets P0-3's Ghost-sourced card — a live
   Count (1–100, FR-H2) and Order, read-only rows, and Add, Remove and drag greyed with "These come from
   Ghost, so there is nothing to add here." (owner-ruled 3 September 2026, `P0-3 Item List
   Controls.dc.html:94`).
 - **Every new sink is closed by allow-list in the shared core, with a test that the vector is inert and
   the legitimate case still works** (AD-36): link attributes are a closed set, a Portal action is one of
-  four, an icon is a key of the vendored set drawn from Tabler's own nodes, and an image is an asset id
-  resolved only through `RenderInput.assets` (AD-27(b)).
+  four, an icon is a key of the vendored set whose drawing is rebuilt from validated path attributes, and
+  an image is an asset id resolved only through `RenderInput.assets` (AD-27(b)).
 - **Purity** (AD-1): `controls.ts` takes no clock, no `Intl` and no locale method; the Date Picker's
   timezone name is handed in, never read from a machine.
 - **Cite or execute.** Portal's and Ghost search's click behaviour was read in their source for this
@@ -89,8 +91,10 @@ working sidebar and put it beside a sample section on one internal page, the way
   tests.
 
 **Ask First:**
-- **Question 1 and Question 2 gate the tasks that name them** — the Background role's value list, and
-  which icons the picker carries.
+- **Both questions are ruled (owner, 2026-09-13) and nothing waits on them** — R-103: Background role
+  keeps its five roles and there is no "None"; R-104: the icon picker offers every Tabler icon, outline
+  and filled, grouped by Tabler's own categories. Read the rulings under "## Questions for the owner"
+  before the tasks.
 - A new directive, a change to AD-3's one-attribute rule, a fifth mark, or any npm dependency — drag,
   popovers, dates and icons are met by the platform and by vendored data.
 - Anything that reaches into Epic 5's stories: dark-override authoring and emission (5.6, AD-30), carry
@@ -99,8 +103,9 @@ working sidebar and put it beside a sample section on one internal page, the way
 
 **Never:**
 - Never edit the design export (R-74).
-- Never install `@tabler/icons` or ship icons as a sprite or a font; the curated set is vendored data
-  with Tabler's MIT licence beside it (R-26, R-92).
+- Never install `@tabler/icons` or ship icons as a sprite or a font; the whole set, outline and filled
+  (R-104), is vendored data with Tabler's MIT licence beside it (R-26, R-92).
+- Never a "None", or any sixth Background role value (R-103).
 - Never offer a live Add, Remove or drag on a Ghost-bound repeat.
 - Never a colour picker, a slider, or a pixel, rem, percent or hex value at section level (Appendix C,
   `prd.md:1006`).
@@ -114,6 +119,7 @@ working sidebar and put it beside a sample section on one internal page, the way
 | A control change | `card` set to `raised` | the canvas root's `data-card` is written inside the input handler; both emitters stamp `data-card="raised"` | N/A |
 | Greyed by a dependency | `align=center`, stored `rule=line`, `rule.disabledBy.inForce: "none"` | `rule` greys with its reason; both emitters write `none`; the stored `line` is kept and returns when `align` changes back | setting `rule` returns the reason and changes nothing |
 | A narrowed universal | the design offers Background role as Base · Surface · Contrast | Accent and Image greyed inside the live row with the design's reason; Base in force by default | setting Accent returns the reason |
+| A no-value lock (R-103) | a design declares Background role `values: []` with its reason | the row greyed with nothing marked and the reason under it; no `data-bg` on either emitter's root | setting any role returns the reason |
 | Stored junk | `controls.card = "12px"`; a stored name `x" onload="y` | the default is stamped; the unknown name is stamped nowhere | ignored, never thrown — a stored record is data, not a type |
 | Add at the ceiling | 6 features, `max: 6` | Add greyed with the ceiling sentence; Duplicate refused the same way | `addItem` returns the sentence |
 | Remove at the floor | 2 features, `min: 2` | Remove stays active; the floor sentence appears under the list; nothing is removed; the sentence clears on the next edit | `removeItem` returns the sentence |
@@ -123,7 +129,7 @@ working sidebar and put it beside a sample section on one internal page, the way
 | Ghost search | `{ "search": true }` | `href="#" data-ghost-search` | any other `search` value is an unset link |
 | An external link | `{ "href": "https://x.example/", "newTab": true, "rel": ["sponsored", "evil"] }` | `target="_blank" rel="noreferrer sponsored"` | `javascript:` becomes `#` (AD-36 1); an unknown rel is dropped |
 | FR-F8's unset destination | `archive.link` empty, `data-empty="hide"` on its element | the element is absent from the canvas and from the theme | N/A |
-| An icon | `features[0].icon = "rocket"` | Tabler's rocket inline, once, `aria-hidden="true"`, stroke `currentColor`, identical on both emitters | a name not in the set (`"><script>`) is an empty slot: the element renders nothing |
+| An icon | `features[0].icon = "rocket"`, and `"heart-filled"` | the outline rocket in Tabler's stroke wrapper and the filled heart in its fill wrapper, inline, once, `aria-hidden="true"`, `currentColor`, identical on both emitters | a name not in the set (`"><script>`) is an empty slot; a drawing whose path attributes fail validation is not emitted; a design with an icon prop rendered without `icons` refuses by name |
 | An image | `image = "feature-03"` with `assets` mapping it | `src` is the mapped URL on both emitters | an id with no entry, or a URL stored in its place, is unset |
 | A date | `nextIssue = "2026-10-01"` | the value in `datetime` and as text, unconverted | anything but `YYYY-MM-DD` is unset |
 | Editing text that carries marks | `"Hello world"` with `strong` 6–11, edited to `"Hello, world"` | `strong` becomes 7–12 | a mark the edit cuts through is clamped to what survives, or dropped if nothing does |
@@ -202,7 +208,8 @@ working sidebar and put it beside a sample section on one internal page, the way
   set `:928`, Appendix C `:939-1006`, NFR-1 `:473`, E4 and E5 ownership `:796`, `:804`;
   `sections-inventory.md:35`, `:800`; `reconcile-designs-decisions.md` R-12 `:468-479`, R-23 `:663-674`,
   R-26 `:741-752`, R-27 `:756-768`, R-33 `:846-851`, R-50/R-53/R-56 `:1006-1012`, R-68/R-69
-  `:1075-1076`, R-92 `:1668-1679`; `ARCHITECTURE-SPINE.md` layers `:56-61`, AD-1 `:92-96`, AD-3
+  `:1075-1076`, R-92 `:1668-1679`, and §A24's R-103 and R-104, added with the rulings;
+  `ARCHITECTURE-SPINE.md` layers `:56-61`, AD-1 `:92-96`, AD-3
   `:105-109`, AD-4 `:111-117`, AD-27 `:307-314`, AD-30 `:331-339`, capability map `:622`;
   `MEASUREMENTS.md` §29c `:2276-2293`; `epics.md` UX-DR3/4/10/19 `:288-289`, `:295`, `:304`, Stories
   5.3 `:1586`, 5.4 `:1635`, 5.6 `:1678`, 5.11 `:1820`, 5.19 `:2039`; `EXPERIENCE.md` `:148-150`,
@@ -213,10 +220,14 @@ working sidebar and put it beside a sample section on one internal page, the way
   Editor.dc.html` S4c `:337-363`; `B Missing Surfaces.dc.html` B2 `:472-619`; `P0-0 Greyed Control
   Pattern.dc.html` `:24-25`, `:70`, `:80-82`, `:130-131`, `:140-165`; `P0-3 Item List Controls.dc.html`
   `:25`, `:35-52`, `:59-97`, `:101-134`, `:138-172`; `P0-1 Inline Text Toolbar.dc.html` `:66-135`; `P0-2
-  Icon Slot and Picker.dc.html` `:56-173`, `:267-292`; `D5 Canvas Markers and Template Switcher.dc.html`
+  Icon Slot and Picker.dc.html` `:56-173`, `:267-292` (its chips, its "curated" header and its Social group
+  of nine are superseded by R-104); `A1-4 Overlay.dc.html:86` with `A1 Headers - Spec.md:351` (the
+  no-value lock R-103 builds on); `D5 Canvas Markers and Template Switcher.dc.html`
   `:93`, `:352`; `S14 Editor Cards.dc.html` `:174-190`; `A26-8 Tag Row.dc.html` `:69-82` (FR-F8 drawn);
   `P0 Editor Primitives - Spec.md` P0·0 `:18-113`, the link popover `:167-196`, P0·2 `:220-286`, P0·3
-  `:290-342`, the library rules `:611-703`, P0·9's absent sentence `:748-755`; for Question 1, `A28
+  `:290-342`, the library rules `:611-703`, P0·9's absent sentence `:748-755`; for R-103, `prd.md:222` (FR-D5) and `:631` (§7.4 — a
+  template is an ordered list of sections, one partial each, none inside another), `A28 Comments -
+  Spec.md:1253-1276` (Slim's "coloured panel" premise), and for the rulings it settled, `A28
   Comments - Spec.md:39-45` and `A29 Archive Headers - Spec.md:1195`.
 
 ## Tasks & Acceptance
@@ -228,11 +239,11 @@ working sidebar and put it beside a sample section on one internal page, the way
   marked mode-scoped, FR-D7), `UNIVERSAL_CONTROLS` derived from it, `PORTAL_ACTIONS` (Sign up · Sign in ·
   Account · Upgrade → `signup · signin · account · account/plans`, `prd.md:928`), `CONTROL_CAP` (15,
   FR-F3) and the refused CSS-wide words (`inherit · initial · unset · revert`) -- AD-34: the rules are
-  data in the library, one copy for the validator, the engine and the panel. **Gated by Question 1** for
-  Background role's values.
+  data in the library, one copy for the validator, the engine and the panel; Background role's five roles
+  are R-103's.
 - [ ] `packages/library/src/registry.ts` -- widen the entry: `ControlDef` gains `type` as the closed
   union, a required `label` and `group` (`arrangement` or `style`), optional `valueLabels`, and
-  `disabledBy.inForce`; `DesignJson` and `SectionRegistryEntry` gain `universals` (per universal:
+  `disabledBy.inForce`; `DesignJson` and `SectionRegistryEntry` gain `universals` (an empty `values` is R-103's no-value lock; per universal:
   `values`, `default?`, `reason`) and `absent` (`{ group, note }`), carried by `assembleEntry`; `PropDef`
   gains a required `label`, the `icon` and `date` types, and on an `array` `min`, `max`, `item`, `atMin`
   and `atMax`; one `Link` type that a `url` prop and the `a` mark share (`href?` · `portal?` · `search?`
@@ -241,25 +252,29 @@ working sidebar and put it beside a sample section on one internal page, the way
   per category from one source: the union is generated, never authored.
 - [ ] `tools/vendor-icons.py` · `packages/library/icons/tabler.json` ·
   `packages/library/icons/LICENSE-tabler.txt` · `packages/library/src/icons.ts` ·
-  `packages/library/src/icons.test.ts` -- vendor the curated set: download `@tabler/icons` at a pinned
-  version from the npm registry, refuse to write unless the tarball's `sha512` matches the pinned
-  integrity and its `LICENSE` is MIT, select icons by **Question 2's ruled rule** from Tabler's own
-  `icons.json` categories and `tabler-nodes-outline.json` drawings, and write the set with its version,
-  capture date and command, beside Tabler's licence text verbatim; `icons.ts` exports the lookup, the
-  chip map (All · Arrows → Arrows · Interface → System · Media → Media · Commerce → E-commerce · Social /
-  Brands → the nine) and the licence text; the test asserts the nine Ghost platforms are present (`P0
-  Editor Primitives - Spec.md:260-261`), every drawing uses only `path` with `d`, `fill`, `opacity` and
-  `stroke`, and no drawing carries a brace; add `icons` to the package `tsconfig.json` `include` with
-  `resolveJsonModule` (Story 4.4's `orbit-weekly` wiring) and a catalogue row for the script in
-  `tools/doc-audit.py` -- R-26 and R-92: Tabler is the sections' set, drawn inline, and its licence
-  travels with it. **Gated by Question 2.**
+  `packages/library/src/icons.test.ts` · `packages/library/{package.json,tsconfig.json}` -- vendor the
+  whole set (R-104): download `@tabler/icons` at a pinned version from the npm registry, refuse to write
+  unless the tarball's `sha512` matches the pinned integrity and its `LICENSE` is MIT, and write every icon
+  from Tabler's own files — its category and its tags (as strings) from `icons.json`, its outline drawing
+  from `tabler-nodes-outline.json`, and its filled drawing, where Tabler has one, from
+  `tabler-nodes-filled.json` — with the version, capture date and command, beside Tabler's licence text
+  verbatim; a filled icon's key is its name plus `-filled`, and the script refuses to write if an outline
+  name already ends that way; `icons.ts` exports the lookup, the category list derived from the set and
+  sorted, and the licence text, through its own `exports` subpath (`./icons`) so importing the
+  vocabulary never pulls the drawings; the test asserts every icon has a category, the nine Ghost
+  platforms are present (`P0 Editor Primitives - Spec.md:260-261`), outline drawings use only `path` with
+  `d`, `fill`, `opacity` and `stroke` and filled ones only `path` with `d` and `fill`, and no drawing
+  carries a brace; add `icons` to the `tsconfig.json` `include` with `resolveJsonModule` (Story 4.4's
+  `orbit-weekly` wiring) and a catalogue row for the script in `tools/doc-audit.py` -- R-26, R-92 and
+  R-104: Tabler is the sections' set, drawn inline and whole, and its licence travels with it.
 - [ ] `packages/library/src/validate.ts` · `packages/library/src/validate.test.ts` -- the refusals, each
   fired alone by a test (`test-vocabulary.mjs:106-114` derives the list): an unknown control type; a
   missing label or group; values that break their type's grammar (`on`/`off` for a toggle, ascending
   consecutive integers for a stepper, kebab words for the rest, the roles for a swatch row) and a
   `valueLabels` key that is not a value; `inherit` or another CSS-wide word anywhere; more than
   `CONTROL_CAP` own controls; a dependency cycle; an `inForce` outside the values; a universal narrowing
-  that is empty, not a subset, missing its reason, or drops the default without naming another; an
+  that is not a subset, has no reason, or drops the default without naming another (an empty list is
+  R-103's no-value lock and needs only its reason); a root that carries a no-value-locked universal; an
   absent note that is empty or names no group; a root control value outside its offered set
   (`validateMarkup` gains an optional `controlValues`, so the stress archetypes that pass names still
   validate); a prop with no label, an array whose bounds disagree or lack their sentences, an icon
@@ -283,7 +298,8 @@ working sidebar and put it beside a sample section on one internal page, the way
   next)`, which shifts marks after the edited run and clamps or drops the ones it cuts -- AD-4: marks
   become markup at one place, and a sidebar edit must not lose a customer's bold.
 - [ ] `packages/section-runtime/src/controls.ts` · `packages/section-runtime/src/controls.test.ts` -- the
-  engine, pure: `resolveControls` (every declared control and universal → its value in force), `sidebar`
+  engine, pure: `resolveControls` (every declared control and universal → its value in force, and no
+  entry for a no-value lock), `sidebar`
   (Quick Controls as `recoverQuickControls` returns them, then Content in markup order via the library's
   `scanTags`, Arrangement, Style with the universal trio at its foot, and Data only when the design
   declares a query — each row carrying label, options, marked value, greyed reason, moon, changed flag,
@@ -293,13 +309,16 @@ working sidebar and put it beside a sample section on one internal page, the way
   sentences read from `content.json` and never written in code -- the capability map's home for FR-F
   (`ARCHITECTURE-SPINE.md:622`).
 - [ ] `packages/section-runtime/src/core.ts` -- one door: `RenderInput` gains `controlSchema`,
-  `universals`, `controls`, `data` and `assets`; `renderTree` (`:777-846`) stamps `resolveControls` on
+  `universals`, `controls`, `data`, `assets` and `icons`; `renderTree` (`:777-846`) stamps `resolveControls` on
   the root when a schema is given (the authored root stands when it is not, so every existing render is
   unchanged), merges `withData` into `dataBindings`, renders `data-items` on both emitters (canvas: one
   copy per item, props read from item i; theme: N static copies whose user text is parked like any
   other, the mark allow-list still looked up by the `[]` path), writes a link record through
-  `linkAttributes` on a `data-prop-attr` `href` entry (`:741-763`), draws an `icon` prop's nodes inline,
-  and resolves an `image` prop through `assets`; add `data-items` to `RENDERED_DIRECTIVES` (`:225-241`)
+  `linkAttributes` on a `data-prop-attr` `href` entry (`:741-763`), draws an `icon` prop from `icons` —
+  the library's lookup, handed in so the core never imports the drawings — rebuilding each `<path>` from
+  validated attributes inside Tabler's stroke wrapper, or its fill wrapper for a `-filled` key, and
+  refusing by name a design with an icon prop rendered without the lookup, and resolves an `image` prop
+  through `assets`; add `data-items` to `RENDERED_DIRECTIVES` (`:225-241`)
   -- AD-3 and FR-F7 by construction: neither emitter can write a value the engine did not resolve, and an
   authored list gets its render path (`docs/section-authoring.md:343-354`).
 - [ ] `packages/section-runtime/src/agreement.test.ts` · `packages/section-runtime/src/ad36.test.ts` ·
@@ -307,7 +326,8 @@ working sidebar and put it beside a sample section on one internal page, the way
   control attributes and produce identical `data-items` trees, link attributes, inline icons and image
   sources, and a greyed control's stored value is in neither output; each new vector is inert and its
   legitimate case works — a Portal action outside the four, a `javascript:` link, a `search` that is not
-  `true`, a rel outside the list, an icon name carrying markup, an item title carrying `{{title}}`, a
+  `true`, a rel outside the list, an icon name carrying markup, a lookup handing back a drawing with a
+  hostile `d` or an extra attribute, a no-value-locked universal, an item title carrying `{{title}}`, a
   stored control name carrying a quote -- §7.3's exit criterion covers everything this story adds, in
   `pnpm check` and therefore in CI.
 - [ ] `docs/section-authoring.md` -- the authoring contract for controls: the five types and their
@@ -340,9 +360,13 @@ working sidebar and put it beside a sample section on one internal page, the way
   omitted when empty; the four Portal chips always last; the Ghost search chip; one "Link to …" row for
   a pasted URL or typed email; Open in new tab, on by default for an external URL, and the three rel
   toggles, both offered only for a URL or an internal destination; the closed field reading `Portal ·
-  Upgrade` over `account/plans`); the icon picker is P0-2's (search over names and tags, the six chips,
-  the recent eight with its empty sentence, 38 px cells, the no-match sentence, "Tabler Icons · MIT",
-  Remove icon from a filled slot); the image picker is the Kit's asset row over the sample pool; every
+  Upgrade` over `account/plans`); the icon picker is P0-2's, reshaped by R-104 (search over names and
+  tags; a segmented Outline · Filled · Both deciding which styles show, at Outline when it opens — the
+  style the drawn picker shows; a select of "All categories" and each of Tabler's categories in place of
+  the drawn chips, which cannot hold them; the grid grouped under Tabler's category names, as P0-2 already
+  groups its grid under caps labels, with Both showing an icon's two styles side by side; the recent
+  eight with its empty sentence; 38 px cells; the no-match sentence; "Tabler Icons · MIT"; Remove icon
+  from a filled slot; the drawings loaded when the picker first opens); the image picker is the Kit's asset row over the sample pool; every
   popover is `popover="auto"` placed by `lib/menu.ts`, takes focus and returns it -- Epic 5 mounts these
   rather than drawing them again.
 - [ ] `apps/web/lib/controls-review.ts` · `apps/web/app/(app)/app/(authed)/controls/{page.tsx,review.tsx,frame/route.ts}`
@@ -351,7 +375,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   reference token values for the swatches, the Orbit Weekly rows for the query, the link picker's
   resources and the image pool; `review.tsx` holds the instance, writes a control's resolved attributes
   onto the canvas root inside the input handler, and re-renders the section with `renderCanvas` for
-  content; `frame/route.ts` guards itself like `style-guide/frame/route.ts:17-32` and serves the canvas
+  content, handing it the icon lookup it loads from `@inflozo/library/icons` when it mounts; `frame/route.ts` guards itself like `style-guide/frame/route.ts:17-32` and serves the canvas
   document — reference tokens, the sample's stylesheet, an empty mount point and no script, so no nonce
   is needed -- Story 4.4's review-page shape, because the editor does not exist yet and R-80 needs a
   deployed screen.
@@ -368,12 +392,15 @@ working sidebar and put it beside a sample section on one internal page, the way
   `_bmad-output/implementation-artifacts/epic-4-context.md` -- propagate (standing rule 3), then grep
   the repository for every old name and shape (standing rule 7): AD-4 (`:115-116`) gains the shared link
   record and the one attribute function; §7.3 (`prd.md:559`) says the closed-value rule is the controls'
-  and names the content editors; if Question 1 rules option 2, FR-F3, Appendix C, `sections-inventory.md:35`
-  and R-23's wording; open ledger entries for the three gaps found here and owned elsewhere — a
+  and names the content editors; R-104 reaches FR-F1 (`prd.md:267`), Appendix C's Icon Picker row
+  (`:950`) and DESIGN.md § Icons (`:556-561`), which stop saying "curated" and say the whole set, outline
+  and filled, grouped by Tabler's own categories; open ledger entries for the four things found here and
+  owned elsewhere — A28's 10 Slim, drawn locked at "None", is built as A1·4's no-value lock (R-103), a
   formatted, localised display of an authored date, Image focus (R-51, P0-9) with no owning story and no
   emission rule under AD-3, and Tabler's licence file and FR-J3's icon budget in the emitted theme (R-26,
-  no Epic 7 story); add Story 4.5's sub-bullets to the epic context -- a finding is not closed until it
-  reaches the document that governs it.
+  no Epic 7 story); tick R-103's and R-104's targets in `reconcile-designs-decisions.md` §A24 as each
+  lands; add Story 4.5's Dev sub-bullets to the epic context -- a finding is not closed until it reaches
+  the document that governs it.
 
 **Acceptance Criteria:**
 
@@ -384,7 +411,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   Layout — FR-F3), every control drawn as the Kit draws it, the greyed row and the absent note as P0-0
   draws them, the authored list and the Ghost-sourced card as P0-3 draws them, the link popover as `P0-1
   Inline Text Toolbar.dc.html` draws it and the icon picker as `P0-2 Icon Slot and Picker.dc.html` draws
-  it — and no universal control in the Quick Controls card.
+  it, reshaped by R-104 — and no universal control in the Quick Controls card.
 - Given the sidebar, when a control, a content field or an item changes, then the canvas paints the
   change in the same frame as the input, and a content re-render completes inside 100 ms — measured in
   the browser at Review on the deployed page under 4× CPU throttle and recorded under Verification,
@@ -404,9 +431,14 @@ working sidebar and put it beside a sample section on one internal page, the way
   always last, Upgrade compiles to `account/plans`, Ghost search compiles to `data-ghost-search`, and
   new tab and rel are stored in the link record and compiled from it, offered only where they can act
   (FR-F6).
-- Given an icon placed in a section, when it renders, then it is Tabler's drawing inline where it is
-  used, once per use, with no sprite and no font, and Tabler's MIT licence text ships beside the set in
-  the library (FR-F1, R-26).
+- Given the icon picker, when it opens, then it offers every Tabler icon grouped under Tabler's own
+  categories, and Outline · Filled · Both decides which styles show (R-104); and given an icon placed in a
+  section, when it renders, then it is Tabler's drawing in the chosen style, inline where it is used, once
+  per use, with no sprite and no font, and Tabler's MIT licence text ships beside the set in the library
+  (FR-F1, R-26).
+- Given a design that paints no ground of its own, when its panel is drawn and it renders, then its
+  Background row is locked with no role marked and its sentence under it, and neither emitter writes
+  `data-bg` on its root (R-103, R-69).
 - Given a mode-scoped control with a stored dark override, when the panel is drawn, then it carries the
   moon badge and the words "Dark override", and a mode-scoped control without one carries neither
   (FR-F5, UX-DR8).
@@ -445,8 +477,11 @@ than obeyed literally.
   Count and an Order over read-only rows, which is what FR-F1 asks for, and its greyed Add tells the
   truth rather than lying. Only Count and Order are built; Source, hand-picked and the main feed are
   5.19's.
-- R-69's no-value-marked case is the Data group's Order at Hand-picked, 5.19's. A root control always
-  carries one of its values, so `inForce` is always one of them here.
+- R-69's no-value-marked case reaches a universal control too, and A1·4 draws it: its Background row is
+  "LOCKED" with no colour marked and "Transparent over the hero is this design" under it
+  (`A1-4 Overlay.dc.html:86`). R-103 makes that the shape for every design that paints no ground of its
+  own — A28's 10 Slim included, whose frame says "None" — so its root carries no `data-bg` and nothing
+  paints over what is behind. A dependency's `inForce` is still always one of its control's own values.
 - The absent note sits where the control would have been, in its group (`P0 Editor Primitives -
   Spec.md:67-68`), not pinned to the panel foot as B2 drew it before P0-0 existed.
 - Open in new tab is on by default for an external URL, as P0-1 draws it. New tab and rel are not
@@ -472,11 +507,18 @@ async handler; `sodo-search@~1.8` binds `[data-ghost-search]` to a handler that 
 `e.preventDefault()` and opens the popup (`MEASUREMENTS.md` §29c records the triggers). The hash never
 moves the page while the script runs, and with JavaScript off nothing happens — which P0-4 already says.
 
-**Icons are data, not a dependency.** Tabler publishes every outline icon as a list of path nodes
-(`tabler-nodes-outline.json`), so the vendored set is those nodes plus the category and tags search
-needs; the emitted `<svg>` wraps them in Tabler's own attributes (24 viewBox, stroke 2, round caps and
-joins, `currentColor`) with `aria-hidden="true"`. `ponytail:` the runtime imports the set eagerly, which
-puts it in the review page's bundle; the editor's loading budget is NFR-1's and Epic 5's to spend.
+**Icons are data, not a dependency — and the core never imports them.** Tabler publishes every icon as a
+list of path nodes (`tabler-nodes-outline.json`, and `tabler-nodes-filled.json` for the icons that also come
+filled), so the vendored set is those nodes plus the category and tags search needs. The emitted `<svg>`
+wraps them in Tabler's own attributes — for outline a 24 viewBox, `fill="none"`, `stroke="currentColor"`,
+stroke 2 with round caps and joins; for filled `fill="currentColor"` — with `aria-hidden="true"`. The whole
+set is about 2.5 MB of drawing data, so the runtime is handed the library's lookup rather than importing
+it: the review page and the picker load it when they first need it, Epic 7 will hand it to the compiler,
+and the runtime rebuilds every `<path>` from validated attributes, so no caller can pass markup through
+it (AD-36). Under R-104 the drawn picker's header, "A curated set from Tabler Icons…", is no longer true
+and reads "Every Tabler icon, in outline and filled." instead, and its Social / Brands chip of nine gives
+way to Tabler's own Brand category. The nine-platform rule stays with the social-link rows that read
+Ghost's nine fields, which their categories build (A1, A3, A21).
 
 **An image is an id, and the render resolves it** (AD-27(b)). Both emitters look the id up in
 `RenderInput.assets`; the review page hands them the Orbit Weekly pool, and Epic 7 will hand them the
@@ -542,6 +584,15 @@ on Background role, and none on Card tint.
 - `curl -sL https://cdn.jsdelivr.net/ghost/portal@~2.51/umd/portal.min.js`, the same for `portal@~2.69`,
   and `https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js` → the `preventDefault()`
   handlers quoted in Design Notes.
+- **For R-104**, the same tarball's `tabler-nodes-filled.json`: every filled icon also exists in outline
+  under the same name, no outline name ends in `-filled`, filled drawings use only `path` with `d` and
+  `fill`, and the filled SVGs wrap them in `fill="currentColor"`; every icon in `icons.json` carries a
+  category, some tags are numbers rather than strings, and the whole set — both styles, categories and
+  tags — is about 2.5 MB of compact JSON. The heart the owner's test uses exists in both styles; the rocket
+  exists in outline only.
+- **For R-103**, `A1-4 Overlay.dc.html:86` draws the no-value lock, and `prd.md:222` (FR-D5) with `:631`
+  (§7.4) make a template an ordered list of sections, each compiled as its own partial and none placed
+  inside another.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
@@ -564,7 +615,7 @@ the sample. Deploy records the deployment it runs on under "## Verification".
 | 6 | same | Panel, Content → Features | Open Content and find Features. Press "+ Add feature" until it stops working. | — | "2–6 · 3 used" beside Features, and three rows each with a handle, a name and a "…" button. Every press adds a card reading "A new feature" with a star; after the sixth, the button goes grey with "The row holds 6 features. Remove one to add another." |
 | 7 | same | Features | On any row press "…" then Remove, until two remain; then press Remove once more. | — | Cards disappear one at a time. At two, Remove still presses but nothing disappears: "A feature row needs at least 2 features." appears under the list instead, and goes away after your next change. |
 | 8 | same | Features | Drag the bottom row up to the top by its handle. Then press Tab until a row's handle is highlighted and press Option+Down (Alt+Down on Windows). | — | The cards on the left follow the new order when you drop; with the keys, the row moves down one place. |
-| 9 | same | Features | Press a row's name to open it, press its Icon, and type in the search. | `rocket` | A rocket in the grid; pressing it turns that card's icon into a rocket. The picker's foot says "Tabler Icons · MIT". |
+| 9 | same | Features | Press a row's name to open it and press its Icon. Scroll the grid a little, then type in the search. Switch Outline · Filled · Both to Filled, then to Both, and press the solid heart. | `heart` | At the top: Outline · Filled · Both, set to Outline, and "All categories". The icons sit under Tabler's category names — Animals, Arrows, Badges and on. Searching shows the outline heart under Shapes; Filled shows the solid heart instead; Both shows the two side by side. Pressing the solid heart puts it on that card. The picker's foot says "Tabler Icons · MIT". |
 | 10 | same | Content, "Read the latest issue" | Press its Link field and type in the search. Pick the post, then press Done. | `night` | A Posts group listing "The night shift at the Port of Algeciras", then the chips Sign up · Sign in · Account · Upgrade and a Ghost search chip. After picking: "Open in new tab" and three Rel switches, and the field then shows the post. |
 | 11 | same | The same Link field | Open it again, press Upgrade, press Done. Open it once more, press Ghost search, press Done. | — | First the field reads "Portal · Upgrade" with `account/plans` under it — never "upgrade" — and no new-tab or Rel options were offered. Then it reads "Ghost search". |
 | 12 | same | Content, Archive link | Paste the address into its Link field, press the "Link to …" row that appears, then Done. Open it again and press Remove link. | `https://orbit-weekly.example/archive/` | "Browse the archive" appears on the section only once the link is set, and disappears again when it is removed. |
@@ -606,7 +657,18 @@ behind a section is the page itself, and the page is painted in Base.
    product document, the control table and R-23 are rewritten to say so, and every section shows six
    swatches, two of which usually look alike.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-13).** Five choices and no "None" — recorded as **R-103**.
+
+He asked in return whether "None" looks the same as "Base". **It does, on every page Inflozo builds.** A
+template is an ordered list of sections, each compiled as its own partial and none placed inside another
+(`prd.md:222`, `:631`), so what sits behind any section is the page — and the page is painted in the style
+pack's background colour, which is the colour Base is (`packages/section-runtime/src/tokens.ts:21`; R-23
+named that swatch Base). That holds in light and in dark. Slim's own question imagined it "dropped inside a
+coloured panel", which Inflozo never does. And the one design drawn to show something other than the page
+behind it — A1·4, the header over the hero picture — needs no "None" either: its row is drawn LOCKED, with
+no colour marked and "Transparent over the hero is this design" under it (`A1-4 Overlay.dc.html:86`). **So
+Slim is built the same way — locked, no colour marked, its own sentence — rather than locked at Base as
+option 1 above said;** it looks the same either way, and nothing on its root asks for a colour.
 
 ### Q2 — Which icons does the icon picker offer?
 
@@ -632,4 +694,19 @@ the drawn filters.
    the nine networks.** About 1,400 icons and about a third of that download, also chosen by rule, but it
    leaves out everyday icons such as the envelope, the map pin, the heart and the house.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1, widened (owner, 2026-09-13):** *"Every tabler icon - grouped by how tabler does it in
+category. Include Outlines and Filled icons too. User should be able to choose from Filled/Outline/Both and
+then also see icson grouped by Categories."* Recorded as **R-104**.
+
+What that builds:
+
+- **Every icon Tabler publishes, its brand logos included** — each outline drawing, and the filled drawing
+  of every icon Tabler also draws filled — each under the category Tabler files it in. There is no curated
+  subset.
+- **Outline · Filled · Both** at the top of the picker decides which styles show; the picker opens at
+  Outline, the style the drawn picker shows. **All categories** and each of Tabler's own categories replace
+  the six drawn filters, which cannot hold them, and the grid is grouped under Tabler's category names.
+- **Two consequences, both handled.** The drawn "Social" group of exactly nine gives way to Tabler's Brand
+  category, and the nine-platform rule stays with the social-link rows that read Ghost's nine fields. And
+  the set is about 2.5 MB of drawing data, which the editor loads only when the picker or the canvas first
+  needs it; a customer's site still carries only the icons placed on it.
