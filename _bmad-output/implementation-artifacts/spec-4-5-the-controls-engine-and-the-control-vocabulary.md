@@ -706,6 +706,10 @@ on Background role, and none on Card tint.
   search field visible; the Category list 320 px tall with 42 rows, scrolling inside its own list, on screen
   (183–503), its last category, Zodiac, reachable and chosen; and the 29 workspace checks for findings 1–6 re-run
   with no FAIL.
+- **Findings 7 and 8, after, on production** — Vercel's production deployment for `786829c9` READY; against
+  `https://app.inflozo.com/controls` the same 11 checks PASS with the local figures (popovers 8–648 and 252–892 of
+  900, the search visible; the Category list 320 px, 42 rows, scrolling inside itself, Zodiac reached and
+  chosen), and the 29 workspace checks for findings 1–6 re-run with no FAIL; the fixture users deleted, 9 → 9.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
