@@ -1609,9 +1609,14 @@ is why both editors show marks
 **And** a prop bound to a Ghost Admin text setting is **plain-text-locked while bound**, which is a truncation
 of the mark list rather than a parse
 **And** the Link Picker searches the user's own posts and pages as I type
-**And** the toolbar matches `P0-1 Inline Text Toolbar.dc.html` and link entry matches B4b.
+**And** clicking an **icon slot** on the canvas, filled or empty, opens the **Icon Picker** anchored to it — the
+component Story 4.5 built, mounted rather than drawn again — and an empty slot shows as P0-2's dashed placeholder
+only while its section is selected (owner, 2026-09-13, DW-115)
+**And** the toolbar matches `P0-1 Inline Text Toolbar.dc.html`, link entry matches B4b, and the icon slot and
+picker match `P0-2 Icon Slot and Picker.dc.html` as R-104 reshapes it.
 
-**FRs:** FR-D4. · **Frame:** `P0-1 Inline Text Toolbar.dc.html` · `B Missing Surfaces.dc.html` B4b. · **Owner
+**FRs:** FR-D4, FR-F1 (the Icon Picker's canvas entry). · **Frame:** `P0-1 Inline Text Toolbar.dc.html` · `B Missing
+Surfaces.dc.html` B4b · `P0-2 Icon Slot and Picker.dc.html`. · **Owner
 test:** yes.
 
 ### Story 5.4: The Layers panel, reordering, and the two kinds of singleton

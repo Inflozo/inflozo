@@ -839,8 +839,8 @@ Tested a fourth time the same day. One more finding, and one question answered.
 
 *Asked:* whether the canvas's icon picker, its text controls and inline editing are later stories. Checked in
 `epics.md`: selection and click-to-edit are Story 5.2's, inline editing with the four-mark toolbar and link
-search Story 5.3's — but opening the icon picker from an icon on the canvas is in no story. Logged as DW-115,
-with Story 5.3 proposed and the placement put to the owner in the session.
+search Story 5.3's — but opening the icon picker from an icon on the canvas is in no story. Logged as DW-115;
+**ruled: Story 5.3 (owner, 2026-09-13)**, and the criterion is written into `epics.md` Story 5.3.
 
 *Asked alongside finding 4, and answered in the session:* whether this page is only a picture of how controls would
 look. The sample section is made up — it exists to exercise every kind of control — but the panel is not a
