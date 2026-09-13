@@ -6,32 +6,82 @@
 // `design.json` field list and FR-G3's entry list are therefore DIFFERENT SETS, and reading one
 // as the other is the mistake this module removes.
 
-import type { BindingContext } from './vocabulary.ts'
+import type { BindingContext, ControlGroup, ControlType, PropType, SidebarGroup } from './vocabulary.ts'
 
 /** One control. The order of `controlSchema` is load-bearing: `quickControls[]` is its first 3–5. */
 export type ControlDef = {
   /** kebab-case; writes `data-{name}` on the section root (AD-3) */
   name: string
-  /** Appendix C's closed vocabulary — 4.5 owns the engine, this story only needs the shape */
-  type: string
+  /** Appendix C's closed vocabulary (`CONTROL_TYPES`) — what the panel draws and what grammar the values obey */
+  type: ControlType
+  /** the row title the panel prints — words, never a unit or a CSS concept (FR-F2) */
+  label: string
+  /** which accordion it sits in when it is not a Quick Control (FR-F3) */
+  group: ControlGroup
   /** the closed value set; there is no free text, no unit and no hex at section level */
   values: string[]
+  /** the words the panel prints for each value, when a value is not already its own word ("start" → "Left") */
+  valueLabels?: Record<string, string>
   default: string
-  /** FR-F7 / R-33: another control disables this one, and the declaration carries the reason */
-  disabledBy?: { control: string; whenValue: string; reason: string }
+  /** FR-F7 / R-33: another control disables this one, and the declaration carries the reason and
+   *  the value that renders while it is greyed — one of this control's own values */
+  disabledBy?: { control: string; whenValue: string; reason: string; inForce: string }
   /** FR-D7 / FR-F5: this control accepts a second value in dark mode */
   darkOverride?: boolean
 }
 
+/** A design narrowing one universal control (R-23): the values it offers, the default when the
+ *  universal's own is not among them, and the sentence the panel prints. An EMPTY `values` is R-103's
+ *  no-value lock — a design whose look is what is behind it: the row is locked with nothing marked
+ *  and the root carries no attribute for it. */
+export type UniversalNarrowing = { values: string[]; default?: string; reason: string }
+
+/** A control this design could NEVER use, and the one note the panel prints where it would have been
+ *  (P0-0's never-offered case, `P0 Editor Primitives - Spec.md:67-68`). */
+export type AbsentNote = { group: SidebarGroup; note: string }
+
+/** One destination, shared by a `url` prop and an `a` mark (AD-4, FR-F6). Exactly one of `href`,
+ *  `portal` and `search` is the destination; `ref` is the internal resource it was picked from, kept
+ *  for Epic 7's compile-time re-validation. `newTab` and `rel` are part of the STORED record. A bare
+ *  string in a `url` prop is `{ href }`. `marks.ts`'s `linkAttributes` is the one function that turns
+ *  a record into attributes. */
+export type Link = {
+  href?: string
+  portal?: string
+  search?: boolean
+  ref?: { kind: string; id: string }
+  newTab?: boolean
+  rel?: readonly string[]
+}
+
+/** One path node of a vendored icon drawing — Tabler's own `[tag, attributes]` shape. */
+export type IconNode = readonly [string, Readonly<Record<string, string>>]
+
+/** The icon set, handed to whoever draws one. `@inflozo/library/icons` exports the real lookup; the
+ *  runtime is HANDED it and never imports the drawings (R-104's whole set is megabytes). A key ending
+ *  `-filled` asks for the filled drawing. */
+export type IconLookup = (name: string) => readonly IconNode[] | undefined
+
 /** One content prop, in the CATEGORY's union. R-102: the union is the widest a prop ever reaches. */
 export type PropDef = {
-  type: 'text' | 'richtext' | 'url' | 'image' | 'array'
-  /** the authored default — what the section says before the customer types anything */
+  /** which content editor edits it (`PROP_TYPES`) */
+  type: PropType
+  /** the field title the panel prints */
+  label: string
+  /** the authored default — what the section says before the customer types anything. On an
+   *  `array` it is the starting items; on an item prop (`items[].label`) it is what a NEW item says. */
   default?: unknown
   /** AD-4's per-prop mark allow-list. `richtext` only. */
   marks?: string[]
   /** R-27: exactly which inline binding tokens this prop accepts. Anything else stays literal. */
   tokens?: string[]
+  /** `array` only: the floor and the ceiling, each with the sentence the panel prints at it (R-12) */
+  min?: number
+  max?: number
+  atMin?: string
+  atMax?: string
+  /** `array` only: what one item is called — "Add feature", "Move: …" */
+  item?: string
 }
 
 /** One `content.json`, per CATEGORY, at `designs/{category}/content.json` — beside the design
@@ -51,7 +101,7 @@ export type DataBinding = {
   limit?: number
   order?: string
   /** R-20's hand-picked order: N single-id gets, in this order, no cap (the panel warns past 25 —
-   *  that is 4.5's sidebar, not this validator). Exclusive with `filter`, `limit` and `order`. */
+   *  that is Story 5.19's Source panel, not this validator). Exclusive with `filter`, `limit` and `order`. */
   ids?: string[]
 }
 
@@ -65,6 +115,10 @@ export type DesignJson = {
   bindingContext: BindingContext[]
   compileTarget: string[]
   controlSchema: ControlDef[]
+  /** R-23: the universal controls this design narrows, by name. Omitted, a universal offers every value. */
+  universals?: Record<string, UniversalNarrowing>
+  /** P0-0: the controls this design could never use, each with its note */
+  absent?: AbsentNote[]
   ghostCompat: { minVersion: string; helpers: string[]; deprecatedAt?: string }
   darkCapabilities: string[]
   previewSeed: string
@@ -98,6 +152,10 @@ export type SectionRegistryEntry = {
   contentSchema: Record<string, PropDef>
   /** per design (FR-F7) */
   controlSchema: ControlDef[]
+  /** per design — the universal narrowings, `{}` when there are none */
+  universals: Record<string, UniversalNarrowing>
+  /** per design — the never-offered notes, `[]` when there are none */
+  absent: AbsentNote[]
   /** per design, recovered — never authored */
   quickControls: string[]
   html: string
@@ -162,6 +220,8 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
     compileTarget: d.compileTarget,
     contentSchema: input.content.props,
     controlSchema: d.controlSchema,
+    universals: d.universals ?? {},
+    absent: d.absent ?? [],
     quickControls: recoverQuickControls(d.controlSchema),
     html: input.html,
     css: input.css,
@@ -174,4 +234,26 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
   if (d.dataBindings !== undefined) entry.dataBindings = d.dataBindings
   if (d.provisional !== undefined) entry.provisional = d.provisional
   return entry
+}
+
+/** FR-F7: one control schema per design and ONE union per category, generated from the designs'
+ *  own lists — never authored. R-53: one control name means one set of values library-wide, so a name
+ *  carrying two value sets is refused, naming both designs, rather than unioned into a third. The
+ *  first declaration of each name wins its place in the union's order. Value sets compare as ordered
+ *  lists: a stepper's order is its meaning. */
+export function categoryControlUnion(
+  designs: readonly { id: string; controlSchema: readonly ControlDef[] }[],
+): ControlDef[] | string {
+  const union = new Map<string, { def: ControlDef; id: string }>()
+  for (const d of designs) {
+    for (const c of d.controlSchema) {
+      const seen = union.get(c.name)
+      if (seen === undefined) {
+        union.set(c.name, { def: c, id: d.id })
+      } else if (seen.def.values.join('\u0000') !== c.values.join('\u0000')) {
+        return `control "${c.name}" carries two value sets — ${seen.id} offers ${seen.def.values.join(' · ')} and ${d.id} offers ${c.values.join(' · ')}. One name means one set of values (R-53); where two designs genuinely differ, they differ by name.`
+      }
+    }
+  }
+  return [...union.values()].map((u) => u.def)
 }

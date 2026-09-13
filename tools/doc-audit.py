@@ -273,6 +273,17 @@ DOCS = [
   'CSS and JS chunks verbatim from T1 over SSH. The control (the four documented root classes on both '
   'majors) and every per-block check void the run and write nothing. Also covers '
   'packages/library/src/orbit-weekly.test.ts, which the catalogue cannot index under packages/.'),
+ ('tools/vendor-icons.py', 'tool', 'Tabler icon vendoring',
+  "Story 4.5's vendoring of every Tabler icon as data (R-26, R-92, R-104): downloads @tabler/icons at a "
+  'pinned version from the npm registry and refuses to write unless the tarball\'s sha512 is the pinned '
+  'integrity and its LICENSE is MIT. Reads the category and tags from icons.json, the outline drawings '
+  'from tabler-nodes-outline.json and the filled ones from tabler-nodes-filled.json, and refuses a set '
+  'with an outline name already ending -filled, a filled drawing with no outline, an icon with no '
+  'category, or a drawing node that is not a path with allowed attributes and brace-free values. Writes '
+  'packages/library/icons/tabler.json (version, capture date, command, integrity, the licence text and '
+  'every icon) and LICENSE-tabler.txt verbatim; a rerun at the same version keeps the capture date, so '
+  'it changes nothing. @tabler/icons is never installed. Also covers packages/library/src/icons.ts and '
+  'icons.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/probe/configure-supabase-auth.py', 'tool', 'Supabase Auth configuration',
   "Writes the live project's Auth settings — Resend as custom SMTP, the 15-minute OTP expiry, the "
   'branded sign-in template and the branded email-change template, the site URL, Supabase\'s own '
@@ -816,12 +827,14 @@ DOCS = [
   'pitfalls. Edit the block, never the skills; the numbers in it cite reconcile-designs-decisions.md.'),
  ('docs/section-authoring.md', 'live', 'Authoring a section — the registry format and the directive vocabulary',
   'FR-G3\'s "documented deliverable", settled in Story 4.1 and binding on every design E9-E11 '
-  'authors. Four parts: the registry entry and the statement that it is ASSEMBLED from the design '
+  'authors. The registry entry and the statement that it is ASSEMBLED from the design '
   'directory, its design.json, its category content.json and the four files (so "registry entry" '
   'and "design.json" are different lists); the two authored files with a worked example of each, '
-  'carrying R-102 as a rule of the content model; every directive with its grammar, what each '
+  'carrying R-102 as a rule of the content model, the closed control vocabulary and the content '
+  'editors\' value shapes (Story 4.5); every directive with its grammar, what each '
   'emitter does with it and an example, walking PRD 7.3\'s gap table row by row including the '
-  'struck row 8 and the five exit constructs; and every refusal with its reason. The contract '
+  'struck row 8 and the five exit constructs; every refusal with its reason; and what a design '
+  'previews against. The contract '
   'itself is data in packages/library/src (AD-34), and the eight executed archetypes are its '
   'control - tools/stress/test-vocabulary.mjs.'),
  ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds the development-loop rulings',

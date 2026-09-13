@@ -1291,8 +1291,9 @@ So that I can change how a section looks without learning CSS.
 **Given** the shared vocabulary
 **When** a design declares its controls
 **Then** the types available are Segmented Control, Stepper, Toggle, Named Select, **Swatch Row** (Style Pack
-roles — never a colour picker), Image Picker, **Icon Picker** (curated Tabler set, **inline SVG once per use**,
-never a sprite or an icon font, licence text shipped in the theme), Link Picker, Text Field/Area, Date Picker
+roles — never a colour picker), Image Picker, **Icon Picker** (every Tabler icon, outline and filled, grouped by
+Tabler's own categories — R-104; **inline SVG once per use**, never a sprite or an icon font, licence text
+shipped in the theme), Link Picker, Text Field/Area, Date Picker
 and **Item List**
 **And** **Item List is offered only where the array is authored** by the user; a Ghost-bound repeat gets a
 **count** instead, because an Add button there would be a lie
@@ -2778,7 +2779,7 @@ Band values
 **And** **the public-preview cut is an HTML comment** (`<!--members-only-->`), not a component
 **And** **card corners come from the pack's radius token and are not offered per card** — recorded as declined so
 it is not proposed again
-**And** icons inside a treatment are **inline SVG from the curated Tabler set, once per use**
+**And** icons inside a treatment are **inline SVG from the vendored Tabler set (R-104), once per use**
 **And** **emission order is fixed: `cards.css` first, then the per-design stylesheets**, so per-design rules
 override `cards.css` on the `.kg-*` classes they legitimately style — **A33 owns the card interiors, A25 owns the
 column they sit in**

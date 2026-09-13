@@ -11,9 +11,17 @@ most of why annotated HTML won, and it is a property to preserve: if a directive
 rendering on its own, it is the wrong directive.
 
 - The contract as data and code: `packages/library/src/` — `vocabulary.ts` (the closed directive
-  set and the allow-lists), `registry.ts` (the types and the assembly), `validate.ts` (the refusals).
-- The runnable reference: `packages/library/fixtures/reference-design/` — every directive, once.
-- The controls: `node --test` in `packages/library`, and `node test-vocabulary.mjs` in `tools/stress`.
+  set, the control vocabulary and the allow-lists), `registry.ts` (the types and the assembly),
+  `validate.ts` (the refusals), `icons.ts` (the vendored Tabler set, its own `@inflozo/library/icons`
+  subpath).
+- The controls engine: `packages/section-runtime/src/controls.ts` — the sidebar, the edits and the one
+  resolution both emitters stamp *(Story 4.5)*.
+- The runnable reference: `packages/library/fixtures/reference-design/` — every directive, once. The
+  controls sample, `packages/library/fixtures/controls/`, is the section the internal controls review
+  page renders beside its panel.
+- The controls: `node --test` in `packages/library`, and `node test-vocabulary.mjs` in `tools/stress`;
+  the engine's proofs are `controls.test.ts`, `agreement.test.ts` and `ad36.test.ts` in
+  `packages/section-runtime`.
 
 > **⚠ Writing a literal Handlebars expression into an example.** The design export's kits carry this
 > warning and it applies to any file Claude Design renders: a bare `{{ … }}` is a value hole and
@@ -37,7 +45,7 @@ It is built — `assembleEntry()` in `registry.ts` — from four inputs:
 | Input | What it contributes |
 |---|---|
 | the design's directory path, `designs/{category}/{n}` | `id`, `category` |
-| the design's `design.json` | `name`, `tier`, `bindingContext`, `compileTarget`, `controlSchema`, `dataBindings`, `ghostCompat`, `darkCapabilities`, `previewSeed`, and AD-35's `provisional` |
+| the design's `design.json` | `name`, `tier`, `bindingContext`, `compileTarget`, `controlSchema`, `universals`, `absent`, `dataBindings`, `ghostCompat`, `darkCapabilities`, `previewSeed`, and AD-35's `provisional` |
 | the **category's** `content.json`, at `designs/{category}/content.json` | `contentSchema` |
 | the design's other three files — `index.html`, `style.css`, `behaviour.js` | `html`, `css`, `js` |
 | recovered, never written | `quickControls[]` |
@@ -53,8 +61,13 @@ authored id is a second source that can disagree with it. It carries no `quickCo
 **Identity is `{categoryId}/{n}` and is stable forever.** `a17/1` is that design for the life of the
 product; renaming it, re-tiering it or redrawing it does not move it.
 
-**`contentSchema` is the category's union. `controlSchema` and `quickControls[]` are per design.**
-A registry entry therefore describes **one design against its category's shared content model**.
+**`contentSchema` is the category's union. `controlSchema`, `universals`, `absent` and
+`quickControls[]` are per design** — the assembly carries `universals` as `{}` and `absent` as `[]`
+when a design declares none. A registry entry therefore describes **one design against its category's
+shared content model**. The category's **control** union is the other direction and is **generated,
+never authored**: `categoryControlUnion(designs)` in `registry.ts` builds it from the designs' own
+lists and refuses one control name carrying two value sets, naming both designs (FR-F7, R-53) — where
+two designs genuinely differ, they differ by name.
 
 **`quickControls[]` is recovered mechanically** as the first 3–5 entries of the **design's own**
 control list, in order — read from the design level, never from the category's union, which is the
@@ -92,14 +105,30 @@ category's union, the answer is to declare it again there — not to reach for a
   "bindingContext": ["posts", "tags"],
   "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
   "controlSchema": [
-    { "name": "cols",  "type": "stepper",      "values": ["2", "3", "4"],            "default": "3" },
-    { "name": "card",  "type": "segmented",    "values": ["flat", "outlined", "raised"], "default": "raised" },
-    { "name": "meta",  "type": "named-select", "values": ["none", "date", "author-date"], "default": "author-date" },
-    { "name": "align", "type": "segmented",    "values": ["start", "center"],        "default": "start" },
-    { "name": "badge", "type": "toggle",       "values": ["on", "off"],              "default": "on" },
-    { "name": "rule",  "type": "segmented",    "values": ["none", "line"],           "default": "none",
-      "disabledBy": { "control": "align", "whenValue": "center",
-                      "reason": "a centred head has no rule to sit under" } }
+    { "name": "cols",  "type": "stepper",      "label": "Columns",             "group": "arrangement",
+      "values": ["2", "3", "4"], "default": "3" },
+    { "name": "card",  "type": "segmented",    "label": "Card style",          "group": "style",
+      "values": ["flat", "outlined", "raised"], "default": "raised" },
+    { "name": "meta",  "type": "named-select", "label": "Post details",        "group": "style",
+      "values": ["none", "date", "author-date"], "default": "author-date",
+      "valueLabels": { "author-date": "Author and date" } },
+    { "name": "align", "type": "segmented",    "label": "Alignment",           "group": "arrangement",
+      "values": ["start", "center"], "default": "start",
+      "valueLabels": { "start": "Left", "center": "Centre" } },
+    { "name": "badge", "type": "toggle",       "label": "Editor's pick badge", "group": "style",
+      "values": ["on", "off"], "default": "on" },
+    { "name": "rule",  "type": "segmented",    "label": "Rule under heading",  "group": "style",
+      "values": ["none", "line"], "default": "none",
+      "disabledBy": { "control": "align", "whenValue": "center", "inForce": "none",
+                      "reason": "Not available while the heading is centred." } }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"],
+            "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "absent": [
+    { "group": "style",
+      "note": "There is no image focus here. This design places your photograph at its own shape, so nothing is cropped and there is nothing for focus to choose." }
   ],
   "dataBindings": {
     "latest": { "source": "posts", "filter": "featured:true", "limit": 9, "order": "published_at desc" }
@@ -145,10 +174,96 @@ no units, no hex outside the Style Pack, and no per-section width. A control tha
 dependency carries **the reason** in the schema (R-33), so the sidebar greys it and prints that one
 sentence, the validator refuses the value and the compiler never emits it — from one source.
 
-**The three universal controls — `bg`, `spacing`, `divider` — are declared once, never per design.**
-They sit on every section root, are exempt from the ≈15 cap and are never Quick Controls. A design
-may offer **fewer values** of one and must say why; renaming, inventing and an `Inherit` value are
-all refused (R-23).
+#### Controls — the closed half *(Story 4.5)*
+
+**Controls and content are two halves of one vocabulary.** The control **types** below are the only
+things that write the root, and each is held to a closed value grammar. Everything a customer
+types, links, picks or lists is a **content prop** in `content.json`, edited by one of the content
+editors in the next part and held to its own value shape. Nothing else is a control: a text, a link, a
+picture, an icon, a date or a list declared in `controlSchema` is refused as `control-type`.
+
+The vocabulary is data in `packages/library/src/vocabulary.ts` — `CONTROL_TYPES`, `CONTROL_GROUPS`,
+`UNIVERSALS`, `BACKGROUND_ROLES`, `CSS_WIDE_KEYWORDS`, `CONTROL_CAP` — and **one engine reads it for
+the sidebar, the validator and both emitters** (FR-F7): `packages/section-runtime/src/controls.ts`'s
+`resolveControls` is the only thing either emitter stamps on a root.
+
+| `type` | Panel control | Value grammar |
+|---|---|---|
+| `segmented` | Segmented Control | lowercase kebab words — `start`, `author-date` |
+| `named-select` | Named Select | lowercase kebab words |
+| `stepper` | Stepper | ascending **consecutive** integers, as strings — `"2" · "3" · "4"`; never a unit and never a gap |
+| `toggle` | Toggle | exactly `on` and `off` |
+| `swatch-row` | Swatch Row | the pack's roles only — `base · surface · accent · contrast · image` (`BACKGROUND_ROLES`); never a colour |
+
+Every control declares:
+
+- **`name`** — kebab-case, because it becomes `data-{name}`. A name whose attribute is already a
+  directive (`items`, `prop`) or Ghost's own `data-portal` is refused: the attribute must mean nothing
+  but the control.
+- **`label`** — the row title the panel prints, in words.
+- **`group`** — `arrangement` or `style`, the accordion it sits in when it is not a Quick Control.
+  **Content** and **Data** are not control groups: content props fill the first, and a declared
+  query's Count and Order fill the second.
+- **`values`** and a **`default`** among them. **No CSS-wide word anywhere in a declaration** —
+  `inherit`, `initial`, `unset`, `revert`, in a value, a default, a `valueLabels` key or a dependency
+  — and so no `Inherit` (FR-F2, R-23).
+- **`valueLabels`**, optional — the words the panel prints where a value is not already its own word
+  (`start` → "Left"). An unlabelled value prints as itself with its first letter raised and hyphens as
+  spaces, which is why `meta` above labels only `author-date`. A label for a value the control does not
+  have is refused as a typo.
+- **`darkOverride`**, optional — the control is mode-scoped and accepts a second value in dark mode
+  (FR-D7); the panel draws the moon badge with the words "Dark override" only once one is stored
+  (FR-F5).
+
+**A dependency greys, and names the value that renders while it does.** `disabledBy` is `{ control,
+whenValue, reason, inForce }`: while the named control's value in force is `whenValue`, this control is
+greyed with `reason` in its caption slot (P0-0, R-33), **`inForce` is the value both emitters stamp**,
+and the customer's own stored value is kept and returns when the other control changes back. Setting a
+greyed control answers with its reason and changes nothing. `inForce` is always one of the control's
+own values; a dependency on itself, on a control the design does not declare, on a value the other
+control does not have, or round a circle of two or more is refused.
+
+**The cap is one design's own controls.** More than `CONTROL_CAP` in one `controlSchema` is refused
+(FR-F3's ≈15); the universal trio and the Data group are not counted. The first 3–5 are the Quick
+Controls (§1).
+
+**The three universal controls — `bg`, `spacing`, `divider` — are declared once, never per design,
+and in full** (`UNIVERSALS`). They sit on every section root — R-103's no-value lock below is the one
+absence — are exempt from the cap, are never Quick Controls, and the panel draws them as one block at
+the foot of Style.
+
+| `name` | Label | Type | Values | Default |
+|---|---|---|---|---|
+| `bg` | Background role — mode-scoped | Swatch Row | Base · Surface · Accent · Contrast · Image — **five, and no sixth** (R-103) | Base |
+| `spacing` | Vertical spacing | Segmented | Compact · Comfortable · Spacious | Comfortable |
+| `divider` | Top divider | Segmented | None · Line · Fade | None |
+
+A `controlSchema` never lists one; one there is refused as a redeclaration. A design **narrows** a universal in `universals`, by name — `{
+values, default?, reason }`: `values` is a subset of the universal's own, `reason` is the sentence the
+panel prints, and a `default` is needed only when the narrowing drops the universal's own. Renaming,
+inventing and an `Inherit` value are all refused (R-23). In the panel the values a design does not
+offer are **greyed inside the live row** with its sentence; a narrowing to one value locks the whole
+row at that value.
+
+**The no-value lock (R-103).** A design whose look *is* what is behind it — a header drawn over the
+hero, a card that floats over scrolling content — narrows Background role to **`"values": []`** with
+its reason and no default:
+
+```json
+"universals": { "bg": { "values": [], "reason": "Transparent over the hero is this design." } }
+```
+
+The row is drawn locked with **no role marked** and the sentence under it (`A1-4 Overlay.dc.html`),
+`resolveControls` returns no entry for it, and **its root carries no `data-bg`** — the validator
+refuses one written on the root, and neither emitter handed the schema stamps one. A design that
+merely paints no ground of its own in the normal stack may lock at a value instead (`"values":
+["base"]`), which looks the same on the page. Never a "None" and never a sixth role: a word in the value slot reads as a value.
+
+**Absent, not greyed.** A control this design could **never** use is not drawn, and its group carries
+one note where it would have been (P0-0, R-68): `absent` is a list of `{ group, note }`, the group one
+of `content · arrangement · style · data`, the note a sentence. The panel prints it after the group's
+own controls and before the trio. It does not grey, because nothing switched it off and nothing brings
+it back.
 
 **A query is declared here and referenced by key from the markup** — never written into an
 attribute. That is what makes AD-36's "validated, never interpolated" hold by construction: there is
@@ -157,8 +272,8 @@ name (`posts`), which a `data-repeat` would read as a context path; every declar
 referenced by a `data-repeat`, so a misspelt key (`latst`) fails as an unreferenced declaration. The
 query's `limit` is the only limit: a `data-repeat-limit` on the same element is refused as a second
 copy of one number. **R-20's hand-picked order** is `"ids": ["…", "…"]` in place of `filter`,
-`limit` and `order` — one single-id get per entry, in that order, with no cap; the sidebar warns
-past 25 (4.5), the validator does not.
+`limit` and `order` — one single-id get per entry, in that order, with no cap; the panel warns
+past 25 (Story 5.19's Source panel), the validator does not.
 
 ### `content.json` — one per **category**
 
@@ -166,17 +281,26 @@ past 25 (4.5), the validator does not.
 {
   "category": "a17",
   "props": {
-    "title":      { "type": "richtext", "marks": ["strong", "em"], "default": "Latest posts" },
-    "subtitle":   { "type": "richtext", "marks": ["strong", "em", "u", "a"],
+    "title":      { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "default": "Latest posts" },
+    "subtitle":   { "label": "Subheading", "type": "richtext", "marks": ["strong", "em", "u", "a"],
                     "tokens": ["members"], "default": "Read by {members} people." },
-    "cta.label":  { "type": "text", "default": "View all" },
-    "cta.url":    { "type": "url",  "default": "/archive/" },
-    "logos":        { "type": "array", "default": [] },
-    "logos[].src":  { "type": "image" },
-    "logos[].name": { "type": "text", "default": "A partner" }
+    "nextIssue":  { "label": "Next issue", "type": "date", "default": "2026-10-01" },
+    "cta.label":  { "label": "Link text", "type": "text", "default": "View all" },
+    "cta.url":    { "label": "Link", "type": "url",  "default": "/archive/" },
+    "logos":        { "label": "Logos", "type": "array", "item": "logo", "min": 2, "max": 12,
+                      "atMin": "A logo wall needs at least 2 logos.",
+                      "atMax": "The wall holds 12 logos. Remove one to add another.",
+                      "default": [{ "name": "Harbour Press" }, { "name": "Northline" }] },
+    "logos[].src":  { "label": "Logo", "type": "image" },
+    "logos[].alt":  { "label": "Logo description", "type": "text", "default": "" },
+    "logos[].name": { "label": "Partner name", "type": "text", "default": "A partner" },
+    "logos[].icon": { "label": "Icon", "type": "icon", "default": "star" }
   }
 }
 ```
+
+Every prop carries a **`label`**, the field title the panel prints, and a **`type`** — one of the
+content editors below (`PROP_TYPES`).
 
 `props` is **flat and keyed by dotted path**. A prop inside an authored repeat is written **in full**
 — `logos[].name`, never a relative `name` — which is what lets the markup be read without a tree
@@ -195,6 +319,99 @@ must pass the scheme rule as written, since a default is the author's text and n
 prop, closed to three names. A `{…}` in a **design-authored** directive value — `data-text`,
 `data-bind-attr` — is a **binding path** under AD-36's path grammar, because the author is naming a
 Ghost value, not typing prose. They share a spelling and nothing else.
+
+#### The content editors — the other half *(Story 4.5)*
+
+A content prop's `type` selects the editor the panel draws for it and the **value shape** it stores.
+The controls' closed-value rule is not theirs — a heading is free text, a link is a record, a picture
+is an id — and each shape has its own rule instead, enforced where the value is rendered.
+
+| `type` | Editor | What it stores | How it renders, on both emitters |
+|---|---|---|---|
+| `text` | Text Field | a string | `data-prop` — text; into an attribute through `data-prop-attr` |
+| `richtext` | Text Area | a string, or `{ text, marks? }` over the prop's own mark allow-list (AD-4) | `data-prop` — through `marks.ts`'s serializer; a sidebar edit goes through `editText`, which moves the marks with the text rather than dropping them |
+| `url` | Link Picker | a **link record** — a bare string is `{ href }` | `data-prop-attr="href:…"` — through `linkAttributes`, below |
+| `image` | Image Picker | an **asset id** — `feature-03`, never a URL | `data-prop-attr="src:…"` — the id resolved **only** through `RenderInput.assets` (AD-27(b)); an id with no entry, or a URL stored in its place, is unset |
+| `icon` | Icon Picker | a **Tabler icon name** — `rocket`, or `heart-filled` for the filled drawing | `data-prop` on an empty element — drawn inline, below |
+| `date` | Date Picker | **`YYYY-MM-DD`**, the site's wall-clock day, stored unconverted (a real calendar day, checked by arithmetic — `isIsoDate`) | `data-prop` prints it as text and `data-prop-attr="datetime:…"` writes it, both unconverted; anything else is unset. A written-out, localised date is a later story's |
+| `array` | Item List | a list of item objects | `data-items` — one copy per item (§3, row 1) |
+
+`data-prop` takes `text`, `richtext`, `icon` and `date` props; `data-items` takes an `array`.
+
+**A link is one record, and a `url` prop and an `a` mark hold the same one** (AD-4, FR-F6):
+
+```json
+{ "href": "https://orbit-weekly.example/the-night-shift-at-the-port-of-algeciras/",
+  "ref": { "kind": "post", "id": "905700000000000000000001" }, "newTab": false, "rel": ["sponsored"] }
+{ "portal": "account/plans" }
+{ "search": true }
+```
+
+Exactly one of `href`, `portal` and `search` is the destination. `portal` is one of the Portal
+actions in `PORTAL_ACTIONS` — `signup · signin · account · account/plans`, offered as Sign up · Sign in
+· Account · **Upgrade**, which is `account/plans` and never `upgrade`. `search` is exactly
+`true`. `ref` is the internal resource the link was picked from, kept for Epic 7's compile-time
+re-validation; the render reads `href`. `newTab` and `rel` are part of the **stored** record, `rel`
+from `nofollow · noreferrer · sponsored` (`LINK_RELS`), and both act only on an `href` — they could
+never act on a Portal modal or the search popup (R-68).
+
+**A link becomes attributes in exactly one place** — `linkAttributes` in
+`packages/section-runtime/src/marks.ts`, which the `a` mark and `data-prop-attr="href:…"` both call:
+
+| Record | Emitted |
+|---|---|
+| `{ "portal": "account/plans" }` | `href="#" data-portal="account/plans"` |
+| `{ "search": true }` | `href="#" data-ghost-search` |
+| `{ "href": "https://x.example/", "newTab": true, "rel": ["sponsored"] }` | `href` through the scheme rule, `target="_blank"`, `rel="noreferrer sponsored"` — `noreferrer` is added for a new tab, and the list is sorted |
+| a Portal action outside `PORTAL_ACTIONS`, a `search` that is not `true`, an empty `href` | **nothing — an unset link** |
+
+`href="#"` is right for Portal and search because both scripts cancel the click themselves (read in
+source, `MEASUREMENTS.md` §29c); with JavaScript off nothing happens. `javascript:` and every other
+unsafe scheme is `#` (AD-36 1), and a rel outside the list is dropped. **An unset link is an unset
+prop**: give a link a customer may leave empty `data-empty="hide"`, and it is absent on the canvas and
+in the theme until a destination is set — FR-F8's "renders nothing until a destination is set".
+
+```html
+<a class="cx__link" data-prop="archive.label" data-prop-attr="href:archive.link" data-empty="hide">Browse the archive</a>
+```
+
+**An icon is Tabler's drawing, inline where it is used, once per use** (R-26, R-104) — no sprite and
+no icon font. The runtime is **handed** the lookup — `iconDrawing` from `@inflozo/library/icons`, as
+`RenderInput.icons` — and never imports the drawings; a design with an `icon` prop rendered without it
+**refuses by name**. The element's content becomes an `<svg>` in Tabler's own wrapper — for an outline
+a 24 viewBox, `fill="none"`, `stroke="currentColor"`, stroke 2 with round caps and joins; for a
+`-filled` key `fill="currentColor"` — with `aria-hidden="true"`, because a section's icon is decoration
+beside its words. **Every `<path>` is rebuilt from attributes that pass their grammar**, so a drawing
+carrying anything else is not emitted (AD-36); a name not in the set is an empty slot, removed with
+`data-empty="hide"`.
+
+```html
+<span class="cx__icon" data-prop="features[].icon"></span>
+```
+
+**The set is every Tabler icon, outline and filled** (R-104), each under the category Tabler files it
+in. It is vendored data, not a dependency: `packages/library/icons/tabler.json`, written by `python3
+tools/vendor-icons.py` from the pinned `@tabler/icons` tarball after checking its integrity and its MIT
+licence, with **Tabler's licence verbatim beside it in `packages/library/icons/LICENSE-tabler.txt`**
+(and exported as `TABLER_LICENSE`). `packages/library/src/icons.ts` is the code half — `iconDrawing`,
+`ICONS` (names, categories and tags, without the drawings), `ICON_CATEGORIES` (derived from the set)
+and `filledKey` — on its own `exports` subpath, so importing the vocabulary never pulls the drawings.
+An icon prop's authored `default` must be a name in the set.
+
+**An authored list declares its bounds, and says each in a sentence.** On an `array` prop: `item`,
+the noun the panel uses ("+ Add logo"); `min` and `max`, whole numbers with the floor at or under the
+ceiling and the starting items between them; `atMin`, the sentence Remove answers with at the floor,
+and `atMax`, the sentence Add greys with at the ceiling — **each in the category's own words, never
+written in code**. A floor above zero needs `atMin`, and a ceiling needs `atMax`; bounds on a prop
+that is not an array are refused. At the ceiling Add and Duplicate are refused with `atMax`. **Remove
+never greys** (R-12): at the floor it stays active, removes nothing and answers with `atMin`. A new item
+lands last carrying its item props' defaults — `logos[].name`'s "A partner" — never an empty shell.
+Reorder is drag or `⌥↑`/`⌥↓`, announced as "Moved to position n of N".
+
+**A Ghost-bound repeat is never an Item List** (FR-F1): a `data-repeat` over a declared query gets the
+Data group instead — a Count from 1 to 100 (FR-H2) and, for posts, an Order of Newest · Oldest — and
+a hand-picked `ids` query has neither. Both fold into the query through `withData`, so the canvas rows
+and the theme's `{{#get}}` read the same numbers.
 
 ### `style.css`
 
@@ -231,17 +448,17 @@ back wherever Handlebars' `{{#if}}` would — `''`, `0`, `false` and `[]` are al
 
 **Not every directive below is rendered yet, and the rest REFUSE rather than leak.** Story 4.2's
 runtime emits the proven eight plus `data-bind-style` and `data-module`; **Story 4.3 added
-`data-bind-srcset`, `data-helper` and `data-pagination`**, the three the Ghost helper shim owns.
-Everything else in the set throws with a sentence naming the directive, until the story that owns it
-lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
+`data-bind-srcset`, `data-helper` and `data-pagination`**, the three the Ghost helper shim owns; and
+**Story 4.5 added `data-items`**, the authored list (row 1 below). Everything else in the set throws
+with a sentence naming the directive, until the story that owns it lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
 here cannot be silently forgotten by the runtime.
 
 These were executed in the stress harness and keep their names and grammar unchanged; since Story 4.2 the implementation is `packages/section-runtime` and `tools/stress/compile.js` is a thin adapter over it.
 
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
-| `data-prop` | a content prop path | the customer's literal text into the DOM | a marker, spliced into the emitted string after serialization |
-| `data-prop-attr` | `attr:path` list, `;`-separated | the value onto the attribute | the same, through the marker path |
+| `data-prop` | a content prop path | the customer's literal text into the DOM; an `icon` prop's inline `<svg>` *(4.5)* | a marker, spliced into the emitted string after serialization; the same `<svg>` for an `icon` prop |
+| `data-prop-attr` | `attr:path` list, `;`-separated | the value onto the attribute; on `href` a link record through `linkAttributes`, on an `image` prop the asset id through `assets` *(4.5)* | the same, through the marker path |
 | `data-bind` | `path` or `path\|helper:arg` — a helper always takes its argument | the Ghost value, resolved | `{{path}}` / `{{helper path param="arg"}}` |
 | `data-bind-attr` | `attr:spec` list, `;`-separated | the resolved value onto the attribute | the mustache, carried through serialization as an opaque token |
 | `data-empty` | `hide` · `fallback` | `hide` removes the element; `fallback` keeps the authored text or attribute | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}` |
@@ -325,7 +542,7 @@ the page is empty. `guardField()` is the derivation, and it is one function both
 
 | § | Construct | Directive |
 |---|---|---|
-| 1 | repeat over an **authored array**, baked at compile as N blocks | `data-items="logos"` |
+| 1 | repeat over an **authored array**, baked at compile as N blocks | `data-items="logos"` — rendered since 4.5, on both emitters |
 | 2 | `{{#get}}` with filter / limit / order | `data-repeat="<key>"`, the key declared in `dataBindings` |
 | 3 | two-armed conditional | `data-if="path"` + `data-else` on the sibling |
 | 4 | member state over four closed values | `data-members="everyone\|anonymous\|free\|paid"` |
@@ -343,6 +560,15 @@ the page is empty. `guardField()` is the derivation, and it is one function both
 **Row 1 · `data-items`** — the largest single gap in the library, and named nowhere else. It is
 distinct from `data-repeat`, which names a **Ghost** source; an authored array is *user* data and is
 baked at compile as N static blocks. Per-item props are written in full.
+
+**Rendered since Story 4.5, identically on both emitters.** The element is copied once per item, in
+the array's order, and each copy's props are read from that item — `logos[].name` in copy *i* is item
+*i*'s `name`; the theme bakes the N copies as static markup, and each item's text is parked and
+serialized like any other user text, its mark allow-list looked up by the `[]` path. **Zero items
+renders nothing.** A Ghost binding inside an item keeps its own guard. **A list renders at one level:**
+a `data-items` inside another `data-items`, or inside or on a `data-repeat`, refuses by name — a
+per-item path resolves against exactly one enclosing array. The panel's side of the same array is the
+Item List (§2).
 
 ```html
 <ul class="logos">
@@ -500,6 +726,16 @@ attributes are **generated from `controlSchema`**, and the validator asserts the
 directions** — an attribute the schema does not declare is refused, and a control the root does not
 carry is refused. That is what stops a stylesheet selecting on an attribute the design does not own.
 
+**Since Story 4.5 the runtime generates them.** A render handed `controlSchema` (with the design's
+`universals` and the instance's stored `controls`) removes every control attribute the author wrote on
+the root and stamps `resolveControls`' output instead — each declared control and universal at its
+value in force, a greyed control at its `inForce`, a stored value outside the offered set at the
+default, an unknown stored name nowhere, and a no-value-locked universal not at all — with every name
+and value re-checked against the vocabulary's grammar, so neither emitter can write a value the engine
+did not resolve. A render with no schema keeps the authored root. The authored root is therefore what
+the file shows when it is opened on its own: write the defaults there, and the validator checks each
+value is one the design offers.
+
 ### Two the harness proved and this vocabulary keeps
 
 | Directive | Why it stays |
@@ -547,7 +783,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `data-repeat-limit` on a declared query, a query nothing references, a key that is a source name | one number in one place; a dead query is a misspelt repeat; `posts` as a key is ambiguous with the context path. |
 | a `data-empty` on a token-template binding | the guard is the first entry's field, and a template has none. |
 | a directive twice on one element · `data-repeat-limit` / `data-partial` with no `data-repeat` · `data-if` with `data-else` on one element · empty markup | a browser keeps the first duplicate silently; an orphan modifier is silently ignored; the two arms are siblings; a source with no root is nothing. |
-| a `data-items` on a non-array prop, a `data-prop` on an array or image prop | the compiler would bake an array as text or repeat over a string. |
+| a `data-items` on a non-array prop, a `data-prop` on an array, `url` or `image` prop | the compiler would bake an array as text or repeat over a string. `data-prop` takes `text`, `richtext`, `icon` and `date` *(Story 4.5)*. |
 | a control disabled by itself, or by a value the other control does not have | the greyed-with-reason state could never fire (R-33). |
 | a mark outside `strong · em · u · a`, tokens on a `url`/`image` prop, an `x[].y` with no `x` array, a `url` default that fails the scheme rule | AD-4's four marks; only text is substituted into; an item needs its array; an author's default is not user input. |
 | a duplicated `bindingContext`/`compileTarget` value, a `minVersion` that is not a version, `helpers` that is not a list | sets are sets; FR-C5's watch compares a version and a helper list. |
@@ -555,6 +791,19 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a universal control redeclared per design | R-23. Narrowing a universal's values is legal with a stated reason; renaming, inventing and `Inherit` are not. |
 | a control with no values, or a default outside them | every control is closed-valued — that is what makes the data-attribute selector viable at all. |
 | a control dependency with no reason | R-33. Greyed **with the reason shown**, never hidden and never a tooltip. |
+| a control `type` outside `segmented · stepper · toggle · named-select · swatch-row`, or a control with no `label` or no `group` (`arrangement` · `style`) | *(Story 4.5)* Appendix C's control vocabulary is closed, and a text, link, picture, icon, date or list is a content prop, not a control. The panel prints a row title in words and puts the row in an accordion. |
+| values that break their type's grammar — a toggle that is not exactly `on`/`off`, a stepper that is not ascending consecutive integers, a swatch row offering anything but the pack's roles, a named value that is not a kebab word — or a `valueLabels` key that is not a value | *(Story 4.5)* the grammar is what keeps the attribute selector, the panel's drawing and the stored value the same thing. A label for a value nobody can pick is a typo. |
+| `inherit`, `initial`, `unset` or `revert` anywhere in a control or a `universals` narrowing | *(Story 4.5)* FR-F2, R-23 — no `Inherit`, and no other CSS-wide word, at section level. |
+| more than `CONTROL_CAP` of one design's own controls | *(Story 4.5)* FR-F3. The universal trio and the Data group are not counted. |
+| a control name whose attribute is already a directive (`items`) or Ghost's `data-portal` | *(Story 4.5)* AD-3. A control's attribute must mean nothing but the control. |
+| controls that disable each other round a circle, or an `inForce` outside the control's own values | *(Story 4.5)* no value in force could be decided for any of them; what renders while a control is greyed is always one of its own values. |
+| a `universals` entry naming no universal, offering a value the universal does not have, with no reason, or dropping the universal's default without naming an offered one — or a no-value lock that names a default | *(Story 4.5)* R-23: a design offers **fewer** of a universal's values, never others, and says why at the control. R-103's lock has no value in force at all. |
+| a root carrying a no-value-locked universal, or a root control value outside the values this design offers | *(Story 4.5)* R-103: a design whose look is what is behind it paints no ground of its own, so the attribute is absent. The stylesheet must never select on a value the panel can never set. |
+| an `absent` note with no group or no sentence | *(Story 4.5)* P0-0. The note sits in its group, where the control would have been, and says why it could never act. |
+| a prop with no `label`, or a `type` outside the content editors | *(Story 4.5)* the panel titles every field in words, and the type selects its editor. |
+| list bounds on a prop that is not an array, bounds that disagree (a floor over the ceiling, starting items outside them), or a floor or ceiling with no sentence | *(Story 4.5)* R-12 and P0-3: Remove answers at the floor and Add greys at the ceiling, each with one sentence in the category's words — never a sentence written in code. |
+| an `icon` default that is not in the vendored Tabler set, a `date` default that is not `YYYY-MM-DD` | *(Story 4.5)* R-104's set is the only source of a drawing; a date is the site's wall-clock day, stored unconverted. |
+| a `data-items` inside another `data-items` or on or inside a `data-repeat` · an `icon` prop rendered with no icon lookup | *(Story 4.5)* **refused by the runtime, by name.** A per-item path resolves against exactly one enclosing array; an icon is never silently left out (R-26). |
 | an inline token outside `members · term · n` | R-27. An allow-list by construction, never a general substitution pass. |
 | a `data-prop` naming a prop the category does not declare | R-102. Add it to **this** category's union; a prop never crosses a boundary. |
 | a `content.json` from another category | R-102, at assembly. |

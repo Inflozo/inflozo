@@ -1,0 +1,27 @@
+{
+  "category": "controls",
+  "props": {
+    "eyebrow": { "label": "Eyebrow", "type": "text", "default": "This week at Orbit Weekly" },
+    "heading": { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "default": "Seven links, checked by hand" },
+    "nextIssue": { "label": "Next issue", "type": "date", "default": "2026-10-01" },
+    "picture": { "label": "Picture", "type": "image", "default": "feature-03" },
+    "pictureAlt": { "label": "Picture description", "type": "text", "default": "Cargo cranes over a harbour at night" },
+    "features": { "label": "Features", "type": "array", "item": "feature", "min": 2, "max": 6,
+                  "atMin": "A feature row needs at least 2 features.",
+                  "atMax": "The row holds 6 features. Remove one to add another.",
+                  "default": [
+                    { "title": "Seven links", "icon": "link" },
+                    { "title": "Checked by hand", "icon": "check" },
+                    { "title": "Every Thursday", "icon": "calendar" }
+                  ] },
+    "features[].title": { "label": "Title", "type": "text", "default": "A new feature" },
+    "features[].icon": { "label": "Icon", "type": "icon", "default": "star" },
+    "issue.label": { "label": "Link text", "type": "text", "default": "Read the latest issue" },
+    "issue.link": { "label": "Link", "type": "url",
+                    "default": { "href": "https://orbit-weekly.example/the-night-shift-at-the-port-of-algeciras/",
+                                 "ref": { "kind": "post", "id": "905700000000000000000001" } } },
+    "archive.label": { "label": "Archive link text", "type": "text", "default": "Browse the archive" },
+    "archive.link": { "label": "Archive link", "type": "url" },
+    "archiveHeading": { "label": "Archive heading", "type": "text", "default": "From the archive" }
+  }
+}

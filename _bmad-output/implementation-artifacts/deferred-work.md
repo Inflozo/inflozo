@@ -2865,3 +2865,167 @@ reason: `validate.ts` lets `,` through and accepts any non-empty `previewSeed`, 
   through the resolver, which catches the drift for designs in the repo; the two grammars themselves still differ, and
   which one moves — the resolver learning `,` (an `or`) or the validator refusing it — is a call for the story that
   first needs an `or`.
+
+## Deferred from: spec-4-5-the-controls-engine-and-the-control-vocabulary (2026-09-13)
+
+### DW-105: A28's 10 Slim is drawn locked at "None", and is built as A1·4's no-value lock
+
+plain: One Comments design, "Slim", is drawn with its background row locked at a choice called "None". The
+  owner ruled that there is no "None", so when the Comments designs are built Slim's row is locked with
+  nothing marked and a sentence under it, the way the header drawn over a hero picture already is.
+status: open
+severity: low
+origin: Story 4.5 Create (2026-09-13) — R-103, re-checked across every category the same day.
+owner: A28's category story that builds 10 Slim — Story 10.95 (A28 — designs #8–10, owner gate).
+location: A28-10 Slim.dc.html:132 (the row drawn "None 🔒 Locked") · A28 Comments - Spec.md:1253-1276
+  (Question 2, the "None: show whatever is behind" premise) · A1-4 Overlay.dc.html:86 (the shape to build)
+reason: R-103 keeps Background role at its five roles, so Slim's `design.json` narrows `bg` to `"values": []`
+  with its own sentence and its root carries no `data-bg` — `docs/section-authoring.md` § Controls, "The
+  no-value lock". The frame stays as drawn (R-74); the category story builds from the ruling, and must not
+  lock at Base either, which the first answer to Question 1 proposed and the re-check overturned.
+
+### DW-106: an authored date is printed as its stored YYYY-MM-DD, and no story formats it
+
+plain: A date a customer picks — "next issue on 1 October" — shows on the page as 2026-10-01, the way it
+  is stored. Writing it out as a person would read it, in the site's language, is not built yet.
+status: open
+severity: low
+origin: Story 4.5 Create (2026-09-13) — Design Notes, "A date is the site's wall-clock day, stored unconverted".
+owner: the first story that prints a written-out authored date — A2's Story 9.6 (6 Countdown, whose
+  `countdown` module reads the Date Picker's value, `prd.md:952`), unless an Epic 7 compiler story reaches
+  a formatted authored date first.
+location: packages/section-runtime/src/core.ts `applyProps` (a `date` prop prints unconverted) ·
+  packages/library/src/vocabulary.ts `isIsoDate`
+reason: a formatted, localised display needs the site's locale and Ghost's timezone handling; the core is
+  pure (AD-1: no clock, no `Intl`, no locale method), so neither can be read from a machine and both must
+  be handed in. Inventing a format here would be a second date rule beside Ghost's `{{date}}`, whose own
+  canvas/site timezone gap is DW-98.
+
+### DW-107: Image focus has no owning story and no emission rule under AD-3
+
+plain: For designs that crop a photograph, the panel is drawn with a "focus" setting that chooses which
+  part of the picture survives the crop. No planned story builds it, and the architecture does not say
+  how the choice reaches the page.
+status: open
+severity: medium
+origin: Story 4.5 Create (2026-09-13) — the controls sample's absent note uses P0-9's own sentence, which
+  made the gap visible.
+owner: unowned — needs one. No story in Epic 5 or Epic 8 (Asset Library) names focus; the architecture
+  must decide the emission first, then the first category story with a cropping design (A13, per R-51's
+  ⬜) cannot build its panel without it.
+location: prd.md Appendix C, Image Picker row (both axes, R-51) · reconcile-designs-decisions.md R-51
+  (`:1010`, ⬜ A13 and every cropping design) · P0 Editor Primitives - Spec.md:748-755 (P0·9's
+  never-offered case) · ARCHITECTURE-SPINE.md AD-3
+reason: R-51 gives focus two axes (Centre · Top · Bottom and Centre · Left · Right) and says "Ghost never
+  sees this — it is a hint the compiler resolves". But it is a per-IMAGE value, not a closed per-section
+  control: AD-3 writes one attribute per control on the section root, and AD-3's only inline-style
+  carve-out is bound Ghost data, so neither says how a focus chosen for one picture in a list becomes an
+  `object-position` on that picture. `epics.md` has no story naming it. Story 4.5 builds only the absent
+  note (`absent` in `design.json`).
+
+### DW-108: Tabler's licence file and the icon budget have no Epic 7 story
+
+plain: The icon set's licence has to travel with every theme that uses one of its icons, and the extra
+  size of drawing icons inline has to be counted against the theme's size limit. The licence text is in
+  the library today, but no compiler story copies it into the theme or counts the icons.
+status: open
+severity: medium
+origin: Story 4.5 Dev (2026-09-13) — vendoring the whole set under R-104.
+owner: Epic 7 — Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip, FR-J3's budget) is the
+  nearest home; its acceptance criteria name neither.
+location: packages/library/icons/LICENSE-tabler.txt · packages/library/src/icons.ts `TABLER_LICENSE` ·
+  prd.md Appendix C, Icon Picker row ("the licence text ships in the emitted theme"; "that cost is measured
+  against FR-J's budget") · reconcile-designs-decisions.md R-26 · epics.md Story 7.4
+reason: R-26 rules the licence text ships in the theme and the inline cost is measured against FR-J3's
+  budget, and MIT requires the notice in copies. Story 4.5 put the licence verbatim beside the set and
+  exported it, and the runtime draws each icon inline; the emitted theme is the compiler's, and no Epic 7
+  story carries either obligation, so a theme could ship Tabler drawings without the notice.
+
+### DW-109: the callout card's panel has a "Background role" of its own with different values
+
+plain: The settings for Ghost's callout box use the same name, "Background role", as every section's
+  background row, but offer different choices (including "Tint"). One name meaning two different lists
+  breaks a rule the owner already made.
+status: open
+severity: medium
+origin: Story 4.5 Create (2026-09-13) — writing the universal Background role once for the whole library.
+owner: the card-panels story — Story 7.13 (The Ghost card design module and `cards.css`, FR-Q7).
+location: P0 Editor Primitives - Spec.md:586 (Callout: "Background role (Base · Surface · Tint · Accent)") ·
+  packages/library/src/vocabulary.ts `UNIVERSALS` (`bg`: Base · Surface · Accent · Contrast · Image) ·
+  reconcile-designs-decisions.md R-53
+reason: R-53 — one control name means one set of values, library-wide. The section universal is five roles
+  (R-103); the callout panel's row is four values, one of them (Tint) not a section role. Either the card
+  row is renamed (it is a card treatment, not a section's ground) or its values are the section's — a call
+  for the story that builds the card panels, which must not ship both under one name.
+
+### DW-110: A1·4 needs to know whether the section below carries a picture, and adjacency asks only about above
+
+plain: The header design that sits transparently over a hero picture has to know, when the theme is built,
+  whether the section under it actually has a picture. The list of questions a design may ask about its
+  neighbours only covers the section above it.
+status: open
+severity: medium
+origin: Story 4.5 Create (2026-09-13) — the R-103 sweep through A1·4.
+owner: A1's category story that builds 4 Overlay — Story 9.1 (A1 — the content model, the stylesheet and
+  designs #1–4).
+location: A1 Headers - Spec.md:183 ("A1·4 must know whether the section below it has a loadable image") and
+  `:353` (decided at build from what is placed below) · packages/library/src/vocabulary.ts `ADJACENCY_NEEDS`
+  (`section-above`, `image-above`, …) · ARCHITECTURE-SPINE.md AD-37 · reconcile-designs-decisions.md R-8
+reason: AD-37 and R-8 make adjacency a compile-time input answered from the placement list, never a render-time
+  probe, and `data-needs` takes only `ADJACENCY_NEEDS`. A1·4's precondition is about the section BELOW; the
+  vocabulary has `image-above` and no below-facing question. Adding one is a vocabulary change (a new
+  `ADJACENCY_NEEDS` value, AD-37's compiler answering it), which is the category story's to make or refuse.
+
+### DW-111: category spec tables list the universal row open where the drawn panel locks it
+
+plain: In some category write-ups, the table of settings shows a design's background row as freely
+  choosable, while the drawing of that same design shows it locked. The drawing is right.
+status: open
+severity: medium
+origin: Story 4.5 Create (2026-09-13) — the R-103 sweep, by descriptor tuple and by text, across every
+  category's spec and drawn panel.
+owner: every category story from Epic 9 onward — each builds its `universals` narrowing from the drawn
+  panel, not the spec table.
+location: A22 Newsletter - Spec.md:1271 (A22·14's table: "Background role (universal) | Background ·
+  Surface · Contrast") against A22-14 Slide-in Card.dc.html:67 (drawn "None — the card is its own plane 🔒
+  Locked"); the same disagreement found in A19, A22, A24, A25 and A31
+reason: R-74 makes the export the design authority, and the drawn panel is its most specific statement of
+  a design's controls; a spec table written earlier in the same session can lag it. A category story that
+  copied the table would offer a row the design is drawn to lock — for a see-through design, a ground that
+  paints over what is behind (R-103). The export is never edited, so the rule lives with the stories.
+
+### DW-112: the Data group's Order is Newest · Oldest over posts only, and an undeclared limit shows Ghost's default
+
+plain: For a list of posts, the panel offers "how many" and "newest or oldest first". Any other kind of list,
+  or any other declared order, gets no order setting yet, and a list whose design never set a number shows
+  Ghost's own default number.
+status: open
+severity: low
+origin: Story 4.5 Dev (2026-09-13).
+owner: Story 5.19 (The Data group and the main-feed designation) — the full Source vocabulary.
+location: packages/section-runtime/src/controls.ts `orderWord` and `dataRows` (the `ponytail:` comment)
+reason: P0-3's Ghost-sourced card draws Count and Order; Story 4.5 built exactly those two, and only where
+  they can be expressed without inventing Source's vocabulary: Order maps to `published_at desc`/`asc` on a
+  `posts` query whose declared order is absent or one of those two, and a query over tags, authors or tiers,
+  or with any other order, offers no Order row. A query with no declared `limit` shows the Count at
+  `orbitWeekly.DEFAULT_LIMIT` for its source — Ghost's recorded default — which is right for the preview and
+  unstated for the panel. Source, hand-picked and the main feed are 5.19's by the spec's own Ask First.
+
+### DW-113: importing the vendored icon set makes TypeScript infer a type for all of it
+
+plain: Checking the code for mistakes got several times slower after the full icon set was added, because
+  the checker reads the whole icon file to work out its shape. Nothing is broken; it is slower and uses more
+  memory, and there is a known fix if it starts to matter.
+status: open
+severity: low
+origin: Story 4.5 Dev (2026-09-13) — measured: the library's typecheck rose from about 0.6 s to about
+  2.2 s and about 690 MB; a `tabler.d.json.ts` declaration with `allowArbitraryExtensions` measured at
+  about 0.09 s.
+owner: the first story where typecheck time or CI memory matters — Epic 7's compiler, which imports
+  `@inflozo/library/icons`, at the latest.
+location: packages/library/src/icons.ts (`import tabler from '../icons/tabler.json'`) ·
+  packages/library/tsconfig.json (`resolveJsonModule`, `icons` in `include`)
+reason: every package importing `@inflozo/library/icons` pays the inference. A declaration file beside the
+  JSON gives TypeScript the shape without reading the data; not done in Story 4.5 because the cost is
+  seconds on one package and `icons.test.ts` already walks every node against the shape the declaration
+  would assert.

@@ -12,11 +12,12 @@
 // binding matrix, and until then only the declared-query direction is checked (`binding-unreferenced`).
 
 import {
-  BINDING_CONTEXTS, COMPILE_TARGETS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
-  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, PAGINATED_TARGETS, RETIRED_DIRECTIVES, UNIVERSAL_CONTROLS,
-  isCompileTarget, safeUrl, splitFirst,
+  BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE,
+  CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
+  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
+  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, isCompileTarget, isIsoDate, safeUrl, splitFirst,
 } from './vocabulary.ts'
-import type { CategoryContent, ControlDef, DataBinding, DesignJson } from './registry.ts'
+import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
 export type Failure = { code: string; message: string }
 
@@ -52,6 +53,10 @@ export type MarkupOptions = {
   /** the control names this design declares, WITHOUT the `data-` prefix. When omitted, the root's
    *  unrecognised `data-*` attributes are assumed to be controls and neither direction is checked. */
   controls?: readonly string[]
+  /** Story 4.5 — the values each control OFFERS on this design, universals included and narrowed, so
+   *  a root value outside its set is refused. An empty list is R-103's no-value lock: the root must
+   *  not carry it at all. Omitted (the stress archetypes pass names only), values are not checked. */
+  controlValues?: Readonly<Record<string, readonly string[]>>
   /** the category's union, when it is available. Without it the prop GRAMMAR is still checked;
    *  only resolution against the union is skipped. */
   content?: CategoryContent
@@ -147,6 +152,14 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
         continue
       }
       seenControls.add(control)
+      const offered = opts.controlValues !== undefined && Object.prototype.hasOwnProperty.call(opts.controlValues, control)
+        ? opts.controlValues[control]
+        : undefined
+      if (offered !== undefined && offered.length === 0) {
+        push(out, 'universal-locked-on-root', `the root carries ${name}, and this design locks that control with no value (R-103) — a design whose look is what is behind it paints no ${control} of its own, so the attribute must be absent.`)
+      } else if (offered !== undefined && !offered.includes(value)) {
+        push(out, 'root-control-value', `the root carries ${name}="${value}", which is not among the values this design offers for "${control}": ${offered.join(' · ')}.`)
+      }
       if (declared !== null
         && !declared.has(control)
         && !(UNIVERSAL_CONTROLS as readonly string[]).includes(control)) {
@@ -178,7 +191,9 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
           }
           // The directive's kind must agree with the prop's type, or the compiler bakes an array
           // as text or repeats over a string.
-          const want = name === 'data-items' ? ['array'] : name === 'data-prop' ? ['text', 'richtext'] : null
+          // Story 4.5: an icon is drawn INTO the element and a date is printed as its text, so both
+          // are `data-prop` kinds too.
+          const want = name === 'data-items' ? ['array'] : name === 'data-prop' ? ['text', 'richtext', 'icon', 'date'] : null
           if (want !== null && !want.includes(prop.type)) {
             push(out, 'prop-type-mismatch', `<${tag.name} ${name}="${value}"> — "${p}" is a ${prop.type} prop, and ${name} takes ${want.join(' or ')}.`)
           }
@@ -217,6 +232,7 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       }
     }
     for (const u of UNIVERSAL_CONTROLS) {
+      if (opts.controlValues?.[u]?.length === 0) continue // R-103's no-value lock: absent is correct
       if (!seenControls.has(u)) {
         push(out, 'universal-control-missing', `the root carries no data-${u} — the three universal controls (${UNIVERSAL_CONTROLS.join(', ')}) sit on EVERY section (FR-F3) and are declared once, never per design.`)
       }
@@ -227,8 +243,6 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
 }
 
 // ─── design.json ─────────────────────────────────────────────────────────────
-
-const CONTROL_NAME_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
 
 /** The grammar of ONE `dataBindings` entry, in one place: `validateDesignJson` runs it over a
  *  design, and `@inflozo/ghost-shim`'s `getQuery` runs it again at EMISSION, because the runtime is
@@ -241,7 +255,7 @@ export function validateDataBinding(k: string, b: DataBinding): Failure[] {
   }
   if (b.ids !== undefined) {
     // R-20: hand-picked order is N single-id gets, in this order, and there is no cap — the
-    // panel warns past 25, which is 4.5's sidebar and not a refusal.
+    // panel warns past 25, which is Story 5.19's Source panel and not a refusal.
     if (!Array.isArray(b.ids) || b.ids.length === 0 || !b.ids.every((id) => typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id))) {
       push(out, 'bad-get-ids', `dataBindings.${k}.ids must be a non-empty list of ids (letters, digits, _ and -) — a hand-picked order is one single-id get per entry (R-20).`)
     }
@@ -262,6 +276,32 @@ export function validateDataBinding(k: string, b: DataBinding): Failure[] {
     push(out, 'bad-get-order', `dataBindings.${k}.order must be "<field> asc" or "<field> desc" — got ${JSON.stringify(b.order)}.`)
   }
   return out
+}
+
+/** The CSS-wide words anywhere in one control declaration — values, default, labels, the dependency. */
+function cssWideIn(c: ControlDef): string[] {
+  const all = [...(Array.isArray(c.values) ? c.values : []), c.default, c.disabledBy?.whenValue, c.disabledBy?.inForce, ...Object.keys(c.valueLabels ?? {})]
+  return [...new Set(all.filter((v): v is string => typeof v === 'string' && (CSS_WIDE_KEYWORDS as readonly string[]).includes(v.toLowerCase())))]
+}
+
+/** Each type's value grammar (Appendix C), or null when the values obey it. A toggle is on/off; a
+ *  stepper is a run of ascending consecutive integers ("small integer ranges" — ruling R-18 makes an
+ *  item count a number); a swatch row offers the pack's roles; the rest are kebab words. */
+function valueGrammar(type: string, values: readonly string[]): string | null {
+  switch (type) {
+    case 'toggle':
+      return values.length === 2 && values.includes('on') && values.includes('off') ? null : 'a toggle offers exactly on and off.'
+    case 'stepper':
+      return values.every((v, i) => /^(0|[1-9][0-9]*)$/.test(v) && (i === 0 || Number(v) === Number(values[i - 1]) + 1))
+        ? null
+        : 'a stepper offers ascending consecutive integers, "2 · 3 · 4" — never a unit, and never a gap.'
+    case 'swatch-row':
+      return values.every((v) => (BACKGROUND_ROLES as readonly string[]).includes(v))
+        ? null
+        : `a swatch row offers the pack's roles (${BACKGROUND_ROLES.join(' · ')}) and never a colour.`
+    default:
+      return values.every((v) => CONTROL_WORD_RE.test(v)) ? null : 'a named value is a lowercase kebab word — no unit, no hex, no spaces.'
+  }
 }
 
 export function validateDesignJson(design: DesignJson, markup?: string): Failure[] {
@@ -326,22 +366,55 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
 
   const schema: ControlDef[] = Array.isArray(d.controlSchema) ? d.controlSchema : []
   const seen = new Set<string>()
+  if (schema.length > CONTROL_CAP) {
+    push(out, 'control-cap', `controlSchema declares ${schema.length} controls, and one design offers at most ${CONTROL_CAP} of its own (FR-F3). The universal controls and the Data group are not counted; split the design, or drop the controls a reader would least miss.`)
+  }
   for (const c of schema) {
     if (!CONTROL_NAME_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" is not a kebab-case name — it writes data-${c.name} on the section root (AD-3).`)
+    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal') {
+      push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive or Ghost's own attribute — a control's attribute must mean nothing but the control (AD-3).`)
     }
-    if ((UNIVERSAL_CONTROLS as readonly string[]).includes(c.name)) {
+    if (UNIVERSAL_CONTROLS.includes(c.name)) {
       push(out, 'universal-control-redeclared', `control "${c.name}" is one of the three universal controls. They are declared once, never per design, and a design may narrow a universal's VALUES with a stated reason but may never rename, reinvent or redeclare one (R-23).`)
     }
     if (seen.has(c.name)) push(out, 'duplicate-control', `controlSchema declares "${c.name}" twice.`)
     seen.add(c.name)
+    const typed = (CONTROL_TYPES as readonly string[]).includes(c.type)
+    if (!typed) {
+      push(out, 'control-type', `control "${c.name}" has type ${JSON.stringify(c.type)}, which is not in the closed vocabulary: ${CONTROL_TYPES.join(' · ')} (Appendix C). A content editor — text, a link, a picture, an icon, a date, a list — is a contentSchema prop, not a control.`)
+    }
+    if (typeof c.label !== 'string' || c.label.trim() === '') {
+      push(out, 'control-label', `control "${c.name}" has no label — the panel prints a row title in words, and a control with none is a name only an author can read.`)
+    }
+    if (!(CONTROL_GROUPS as readonly string[]).includes(c.group)) {
+      push(out, 'control-group', `control "${c.name}" names group ${JSON.stringify(c.group)} — a design's own control sits in ${CONTROL_GROUPS.join(' or ')} (FR-F3).`)
+    }
+    const words = cssWideIn(c)
+    if (words.length > 0) {
+      push(out, 'css-wide-keyword', `control "${c.name}" carries ${words.map((w) => JSON.stringify(w)).join(', ')}. No Inherit and no other CSS-wide word anywhere at section level (FR-F2, R-23) — a control's values are the design's own named choices.`)
+    }
     if (!Array.isArray(c.values) || c.values.length === 0) {
       push(out, 'control-open-valued', `control "${c.name}" declares no values. Every control is CLOSED-valued — no free text, no units, no hex outside the Style Pack — which is what makes the data-attribute selector viable at all (§7.3).`)
-    } else if (!c.values.includes(c.default)) {
+      continue
+    }
+    if (!c.values.includes(c.default)) {
       push(out, 'control-default', `control "${c.name}" defaults to ${JSON.stringify(c.default)}, which is not among its values.`)
+    }
+    const grammar = typed ? valueGrammar(c.type, c.values) : null
+    if (grammar !== null) {
+      push(out, 'control-values', `control "${c.name}" (${c.type}) offers ${c.values.map((v) => JSON.stringify(v)).join(' · ')} — ${grammar}`)
+    }
+    for (const k of Object.keys(c.valueLabels ?? {})) {
+      if (!c.values.includes(k)) {
+        push(out, 'value-label-unknown', `control "${c.name}" labels ${JSON.stringify(k)}, which is not one of its values — a label for a value nobody can pick is a typo.`)
+      }
     }
     if (c.disabledBy !== undefined && (c.disabledBy.reason ?? '') === '') {
       push(out, 'dependency-without-reason', `control "${c.name}" is disabled by "${c.disabledBy.control}" with no reason. The reason is part of the schema (R-33) so the sidebar can print it in the helper-caption slot — greyed with the reason shown, never hidden.`)
+    }
+    if (c.disabledBy !== undefined && !c.values.includes(c.disabledBy.inForce)) {
+      push(out, 'dependency-in-force', `control "${c.name}" names ${JSON.stringify(c.disabledBy.inForce)} as the value in force while it is greyed, and that is not one of its values. What renders while a control is switched off is always one of its own values.`)
     }
   }
   for (const c of schema) {
@@ -355,6 +428,60 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
       push(out, 'dependency-unknown', `control "${c.name}" names "${c.disabledBy.control}" as the control that disables it, and this design declares no such control.`)
     } else if (Array.isArray(other.values) && !other.values.includes(c.disabledBy.whenValue)) {
       push(out, 'dependency-value', `control "${c.name}" is disabled when "${other.name}" is ${JSON.stringify(c.disabledBy.whenValue)}, which is not among ${other.name}'s values — the greyed-with-reason state could never fire.`)
+    }
+  }
+  // A cycle of two or more: each control's value in force would wait on the other's, forever. A
+  // self-dependency is refused above by its own name.
+  const reported = new Set<string>()
+  for (const c of schema) {
+    const path: string[] = []
+    for (let at: ControlDef | undefined = c; at?.disabledBy !== undefined && at.disabledBy.control !== at.name; at = schema.find((x) => x.name === at?.disabledBy?.control)) {
+      if (path.includes(at.name)) {
+        const loop = path.slice(path.indexOf(at.name))
+        const key = [...loop].sort().join(' ')
+        if (!reported.has(key)) {
+          reported.add(key)
+          push(out, 'dependency-cycle', `controls ${loop.join(' → ')} → ${at.name} disable each other in a circle — no value in force can be decided for any of them.`)
+        }
+        break
+      }
+      path.push(at.name)
+    }
+  }
+
+  // R-23: a design narrows a universal's VALUES, with a reason, and never renames or adds one.
+  for (const [name, n] of Object.entries(d.universals ?? {})) {
+    const u = UNIVERSALS.find((x) => x.name === name)
+    if (u === undefined) {
+      push(out, 'universal-unknown', `universals names "${name}", which is not a universal control (${UNIVERSAL_CONTROLS.join(', ')}). They are declared once, and a design narrows one — it never renames or adds one (R-23).`)
+      continue
+    }
+    const values = Array.isArray(n.values) ? n.values : []
+    const words = [...values, n.default].filter((v) => (CSS_WIDE_KEYWORDS as readonly (string | undefined)[]).includes(v))
+    if (words.length > 0) {
+      push(out, 'css-wide-keyword', `universals.${name} carries ${words.map((w) => JSON.stringify(w)).join(', ')} — there is no Inherit value anywhere (R-23).`)
+    }
+    const extra = values.filter((v) => !u.values.includes(v))
+    if (!Array.isArray(n.values) || extra.length > 0 || new Set(values).size !== values.length) {
+      push(out, 'universal-narrowing', `universals.${name} offers ${extra.length > 0 ? extra.map((v) => JSON.stringify(v)).join(', ') : 'a list that is not a set'}, and ${u.label} offers only ${u.values.join(' · ')}. A design offers FEWER of a universal's values, never others (R-23; for Background role, R-103).`)
+    }
+    if (typeof n.reason !== 'string' || n.reason.trim() === '') {
+      push(out, 'universal-reason', `universals.${name} narrows ${u.label} with no reason. The panel prints why at the control (R-23) — a narrowed row with no sentence reads as a bug.`)
+    }
+    if (values.length > 0) {
+      const dflt = n.default ?? u.default
+      if (!values.includes(dflt)) {
+        push(out, 'universal-default', n.default === undefined
+          ? `universals.${name} drops ${u.label}'s default "${u.default}" and names no other — say which offered value a new section starts on.`
+          : `universals.${name} defaults to ${JSON.stringify(n.default)}, which it does not offer.`)
+      }
+    } else if (n.default !== undefined) {
+      push(out, 'universal-default', `universals.${name} is R-103's no-value lock and names a default ${JSON.stringify(n.default)} — a lock with nothing marked has no value in force at all.`)
+    }
+  }
+  for (const a of Array.isArray(d.absent) ? d.absent : []) {
+    if (!(SIDEBAR_GROUPS as readonly string[]).includes(a?.group) || typeof a?.note !== 'string' || a.note.trim() === '') {
+      push(out, 'absent-note', `an absent note must name the group it sits in (${SIDEBAR_GROUPS.join(' · ')}) and say, in a sentence, why the control could never act here (P0-0) — got ${JSON.stringify(a)}.`)
     }
   }
 
@@ -384,7 +511,9 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
 
 // ─── content.json ────────────────────────────────────────────────────────────
 
-export function validateCategoryContent(content: CategoryContent): Failure[] {
+/** `icons` is the library's icon lookup (`@inflozo/library/icons`), handed in so this module never
+ *  imports the drawings. Without it an icon default is checked for shape only. */
+export function validateCategoryContent(content: CategoryContent, icons?: IconLookup): Failure[] {
   const out: Failure[] = []
   if (!/^[a-z][a-z0-9]*$/.test(content.category ?? '')) {
     push(out, 'bad-category', `"${content.category}" is not a category id.`)
@@ -413,7 +542,37 @@ export function validateCategoryContent(content: CategoryContent): Failure[] {
         push(out, 'orphan-item-prop', `prop "${path}" is an item of "${parent}", and "${parent}" is not declared as an array prop.`)
       }
     }
-    if (prop.type === 'url' && typeof prop.default === 'string' && safeUrl(prop.default) !== prop.default) {
+    if (typeof prop.label !== 'string' || prop.label.trim() === '') {
+      push(out, 'prop-label', `prop "${path}" has no label — the panel titles every content field in words.`)
+    }
+    if (!(PROP_TYPES as readonly string[]).includes(prop.type)) {
+      push(out, 'prop-type', `prop "${path}" has type ${JSON.stringify(prop.type)} — a content prop is one of ${PROP_TYPES.join(' · ')}.`)
+    }
+    const bounded = prop.min !== undefined || prop.max !== undefined || prop.atMin !== undefined || prop.atMax !== undefined || prop.item !== undefined
+    if (bounded && prop.type !== 'array') {
+      push(out, 'array-bounds', `prop "${path}" is ${prop.type} and declares list bounds. Only an array has items to count.`)
+    } else if (prop.type === 'array') {
+      const n = (v: unknown) => v === undefined || (Number.isInteger(v) && (v as number) >= 0)
+      if (!n(prop.min) || !n(prop.max) || (prop.min !== undefined && prop.max !== undefined && prop.min > prop.max)
+        || (prop.max !== undefined && prop.max < 1)
+        || (Array.isArray(prop.default) && ((prop.min !== undefined && prop.default.length < prop.min) || (prop.max !== undefined && prop.default.length > prop.max)))) {
+        push(out, 'array-bounds', `prop "${path}" declares min ${JSON.stringify(prop.min)} and max ${JSON.stringify(prop.max)} — whole numbers, the floor at or under the ceiling, and the starting items between them.`)
+      }
+      if ((prop.min !== undefined && prop.min > 0 && !(typeof prop.atMin === 'string' && prop.atMin.trim() !== ''))
+        || (prop.max !== undefined && !(typeof prop.atMax === 'string' && prop.atMax.trim() !== ''))) {
+        push(out, 'array-sentence', `prop "${path}" has a floor or a ceiling with no sentence. At the floor Remove answers with one (R-12); at the ceiling Add greys with one (P0-3) — each in the category's own words.`)
+      }
+    }
+    if (prop.type === 'icon' && prop.default !== undefined
+      && (typeof prop.default !== 'string' || (icons !== undefined ? icons(prop.default) === undefined : !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(prop.default)))) {
+      push(out, 'icon-default', `prop "${path}" defaults to the icon ${JSON.stringify(prop.default)}, which is not in the vendored Tabler set (R-104) — an icon is a name from the set, outline or name-filled.`)
+    }
+    if (prop.type === 'date' && prop.default !== undefined && !isIsoDate(prop.default)) {
+      push(out, 'date-default', `prop "${path}" defaults to ${JSON.stringify(prop.default)} — a date is the site's wall-clock day, YYYY-MM-DD, stored unconverted.`)
+    }
+    // a url default may be a link record (Story 4.5); its href is held to the same rule
+    const href = typeof prop.default === 'object' && prop.default !== null ? (prop.default as { href?: unknown }).href : prop.default
+    if (prop.type === 'url' && typeof href === 'string' && safeUrl(href) !== href) {
       push(out, 'unsafe-default-url', `prop "${path}" defaults to ${JSON.stringify(prop.default)}, which the scheme rule would reduce to # (AD-36 1). An authored default is not user input; write a real URL.`)
     }
   }
@@ -426,11 +585,20 @@ export function validateDesign(input: {
   html: string
   design: DesignJson
   content?: CategoryContent
+  /** the icon lookup, so an icon default is checked against the set (see `validateCategoryContent`) */
+  icons?: IconLookup
 }): Failure[] {
   const out = validateDesignJson(input.design, input.html)
-  if (input.content !== undefined) out.push(...validateCategoryContent(input.content))
+  if (input.content !== undefined) out.push(...validateCategoryContent(input.content, input.icons))
   const schema = Array.isArray(input.design.controlSchema) ? input.design.controlSchema : []
-  const markupOpts: MarkupOptions = { controls: schema.map((c) => c.name) }
+  // The markup check is handed the VALUES each control offers, universals narrowed — the one
+  // declaration the sidebar and the emitters read (FR-F7), rather than names alone.
+  const controlValues: Record<string, readonly string[]> = Object.fromEntries(schema.map((c) => [c.name, Array.isArray(c.values) ? c.values : []]))
+  for (const u of UNIVERSALS) {
+    const n = input.design.universals?.[u.name]
+    controlValues[u.name] = Array.isArray(n?.values) ? n.values : u.values
+  }
+  const markupOpts: MarkupOptions = { controls: schema.map((c) => c.name), controlValues }
   if (input.content !== undefined) markupOpts.content = input.content
   if (Array.isArray(input.design.compileTarget)) markupOpts.compileTarget = input.design.compileTarget
   if (input.design.dataBindings !== undefined) markupOpts.dataBindings = input.design.dataBindings

@@ -1,0 +1,33 @@
+<!-- Story 4.5's controls sample: a small feature row, and the section the /controls review page puts
+     beside its panel. A FIXTURE, not a library design — it lives outside `designs/`, and its category
+     id `controls` names no category. It uses only directives the runtime renders, and its root
+     carries every control and universal so it validates on its own; the runtime replaces them with
+     the engine's resolved values whenever it is handed the schema. -->
+<section class="cx" data-bg="base" data-spacing="comfortable" data-divider="none"
+         data-columns="3" data-card="outlined" data-align="start" data-icons="on" data-rule="line"
+         data-image="top" data-tint="none">
+  <header class="cx__head">
+    <p class="cx__eyebrow" data-prop="eyebrow">This week at Orbit Weekly</p>
+    <h2 class="cx__title" data-prop="heading">Seven links, checked by hand</h2>
+    <p class="cx__next">Next issue <time class="cx__date" data-prop="nextIssue" data-prop-attr="datetime:nextIssue">2026-10-01</time></p>
+  </header>
+  <div class="cx__body">
+    <img class="cx__picture" data-prop-attr="src:picture;alt:pictureAlt" data-empty="hide" alt="">
+    <ul class="cx__features">
+      <li class="cx__feature" data-items="features">
+        <span class="cx__icon" data-prop="features[].icon"></span>
+        <span class="cx__feature-title" data-prop="features[].title">A feature</span>
+      </li>
+    </ul>
+  </div>
+  <p class="cx__links">
+    <a class="cx__link" data-prop="issue.label" data-prop-attr="href:issue.link">Read the latest issue</a>
+    <a class="cx__link" data-prop="archive.label" data-prop-attr="href:archive.link" data-empty="hide">Browse the archive</a>
+  </p>
+  <div class="cx__archive">
+    <h3 class="cx__archive-head" data-prop="archiveHeading">From the archive</h3>
+    <ol class="cx__posts">
+      <li class="cx__post" data-repeat="latest"><a class="cx__post-link" data-bind-attr="href:url" data-bind="title">A post title</a></li>
+    </ol>
+  </div>
+</section>

@@ -1,4 +1,4 @@
-import type { ChangeEventHandler } from 'react'
+import type { ChangeEventHandler, KeyboardEventHandler } from 'react'
 import { fieldTone, greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
 import { Search } from './icons'
 
@@ -66,8 +66,10 @@ export function TextInput({
   hint?: string | null
   /** 36 is the Kit's own input; 44 is S2b·2's. */
   size?: 36 | 44
-  /** `email` gives a phone the @ keyboard and the browser its own address suggestions. */
-  type?: 'text' | 'email'
+  /** `email` gives a phone the @ keyboard and the browser its own address suggestions. `date` is the
+   *  Date Picker (Story 4.5): the browser's own calendar, which is what "calendar popover" asks for
+   *  without a date library. */
+  type?: 'text' | 'email' | 'date'
   autoComplete?: string
   /** Present when a field's own value decides something as it is typed (S2b·2's URL warning). */
   onChange?: ChangeEventHandler<HTMLInputElement>
@@ -118,7 +120,15 @@ export function TextInput({
   )
 }
 
-export function Multiline({ id, label, defaultValue, greyed }: Base & { defaultValue?: string }) {
+/** Story 4.5: `value` with `onChange` makes it controlled — the sidebar's Text Area. */
+export function Multiline({
+  id,
+  label,
+  defaultValue,
+  value,
+  onChange,
+  greyed,
+}: Base & { defaultValue?: string; value?: string; onChange?: ChangeEventHandler<HTMLTextAreaElement> }) {
   return (
     <div className="flex flex-col gap-[5px]">
       <label htmlFor={id} className={`text-control-label font-medium ${labelTone(greyed)}`}>
@@ -127,6 +137,8 @@ export function Multiline({ id, label, defaultValue, greyed }: Base & { defaultV
       <textarea
         id={id}
         defaultValue={defaultValue}
+        value={value}
+        onChange={onChange}
         readOnly={Boolean(greyed)}
         className={`h-16 resize-none rounded-sm border px-[11px] py-[9px] text-[12.5px] leading-[1.5] text-ink caret-coral placeholder:text-ink-soft-aa ${fieldTone(greyed)} ${ring} focus-visible:border-coral-text`}
         {...greyedProps(id, greyed)}
@@ -136,21 +148,31 @@ export function Multiline({ id, label, defaultValue, greyed }: Base & { defaultV
   )
 }
 
-/** The search variant carries a keyboard hint chip on its right. */
+/** The search variant carries a keyboard hint chip on its right. Story 4.5: controlled with `value`
+ *  and `onChange`, the hint optional, and the label kept for a screen reader only where the frame
+ *  draws none (P0-1's link search, P0-2's icon search). */
 export function SearchInput({
   id,
   label,
   placeholder,
   hint,
+  value,
+  onChange,
+  onKeyDown,
+  labelHidden = false,
 }: {
   id: string
   label: string
   placeholder: string
-  hint: string
+  hint?: string
+  value?: string
+  onChange?: ChangeEventHandler<HTMLInputElement>
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement>
+  labelHidden?: boolean
 }) {
   return (
     <div className="flex flex-col gap-[5px]">
-      <label htmlFor={id} className="text-control-label font-medium text-ink-soft">
+      <label htmlFor={id} className={labelHidden ? 'sr-only' : 'text-control-label font-medium text-ink-soft'}>
         {label}
       </label>
       <div className="flex h-9 items-center gap-2 rounded-sm border border-line bg-surface px-[10px] has-[:focus-visible]:border-coral-text has-[:focus-visible]:shadow-focus">
@@ -159,11 +181,17 @@ export function SearchInput({
           id={id}
           type="search"
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          autoComplete="off"
           className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink caret-coral outline-none placeholder:text-ink-soft-aa [&::-webkit-search-cancel-button]:hidden"
         />
-        <kbd className="rounded-[5px] border border-line px-[5px] py-px font-mono text-helper-caption text-ink-soft">
-          {hint}
-        </kbd>
+        {hint ? (
+          <kbd className="rounded-[5px] border border-line px-[5px] py-px font-mono text-helper-caption text-ink-soft">
+            {hint}
+          </kbd>
+        ) : null}
       </div>
     </div>
   )

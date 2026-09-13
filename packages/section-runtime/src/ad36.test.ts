@@ -11,7 +11,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, safeCssColor, safeUrl } from '@inflozo/library'
-import { assertBindableAttr, bindExpr, renderCanvas, renderTheme } from './index.ts'
+import { assertBindableAttr, bindExpr, linkAttributes, renderCanvas, renderTheme } from './index.ts'
+import { iconDrawing } from '@inflozo/library/icons'
+import type { IconLookup } from '@inflozo/library'
 import type { RenderInput } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -269,4 +271,114 @@ test('a list-form attribute binding guards on the FIRST field and emits every en
     /href="\{\{url\}\}"/.test(listed) && /title="\{\{custom_excerpt\}\}"/.test(listed),
     `list form dropped an entry: ${listed}`,
   )
+})
+
+// ═══ Story 4.5 — every new sink, closed by allow-list in the shared core ═══
+// Each vector is asserted inert on BOTH emitters beside the legitimate case that must still work.
+
+const linkSrc = '<a class="l" data-prop="label" data-prop-attr="href:link">x</a>'
+const linkOn = (link: unknown) => ({
+  canvas: renderCanvas(doc(), linkSrc, { content: { label: 'Go', link } }),
+  theme: renderTheme(doc(), linkSrc, { content: { label: 'Go', link } }).template,
+})
+
+test('AD-36 · a Portal action outside the four is an unset link; the four still compile, Upgrade as account/plans', () => {
+  for (const hostile of ['upgrade', 'signup/x" onclick="y', '__proto__', 'constructor']) {
+    for (const html of Object.values(linkOn({ portal: hostile }))) {
+      assert.doesNotMatch(html, /data-portal|onclick|href=/, `${hostile} reached the link: ${html}`)
+    }
+  }
+  for (const action of ['signup', 'signin', 'account', 'account/plans']) {
+    for (const html of Object.values(linkOn({ portal: action }))) assert.ok(html.includes(`href="#" data-portal="${action}"`), html)
+  }
+})
+
+test('AD-36 · a javascript: link record is #, and an https one is untouched', () => {
+  for (const html of Object.values(linkOn({ href: 'JaVaScRiPt:alert(1)' }))) assert.ok(html.includes('href="#"') && !/javascript/i.test(html), html)
+  for (const html of Object.values(linkOn({ href: 'https://ok.example/a?b=1' }))) assert.ok(html.includes('href="https://ok.example/a?b=1"'), html)
+})
+
+test('AD-36 · a search that is not exactly true is an unset link; true opens Ghost search', () => {
+  for (const bad of ['true', 1, 'data-x', null]) {
+    for (const html of Object.values(linkOn({ search: bad }))) assert.doesNotMatch(html, /data-ghost-search|href=/, html)
+  }
+  for (const html of Object.values(linkOn({ search: true }))) assert.ok(html.includes('href="#" data-ghost-search'), html)
+})
+
+test('AD-36 · a rel outside the list is dropped and the three it offers survive, sorted', () => {
+  assert.deepEqual(linkAttributes({ href: '/a', rel: ['nofollow', 'noopener" onclick="x', 'opener', 'sponsored'] }), { href: '/a', rel: 'nofollow sponsored' })
+  for (const html of Object.values(linkOn({ href: '/a', rel: ['x" onclick="y', 'noreferrer'] }))) {
+    assert.ok(html.includes('rel="noreferrer"') && !html.includes('onclick'), html)
+  }
+})
+
+const iconSrc = '<span class="i" data-prop="icon"></span>'
+const iconOn = (icon: unknown, icons: IconLookup = iconDrawing) => {
+  const input: RenderInput = { content: { icon }, schema: { icon: { type: 'icon', label: 'Icon' } }, icons }
+  return { canvas: renderCanvas(doc(), iconSrc, input), theme: renderTheme(doc(), iconSrc, input).template }
+}
+
+test('AD-36 · an icon name carrying markup is an empty slot; a name in the set draws', () => {
+  for (const hostile of ['"><script>alert(1)</script>', 'rocket" onload="x', '{{@site.title}}', '__proto__']) {
+    for (const html of Object.values(iconOn(hostile))) assert.equal(html, '<span class="i"></span>', `${hostile}: ${html}`)
+  }
+  for (const html of Object.values(iconOn('rocket'))) assert.match(html, /^<span class="i"><svg [^>]*><path d="[^"]+"><\/path>/)
+})
+
+test('AD-36 · a lookup handing back a hostile d or an extra attribute draws nothing; a sound drawing draws', () => {
+  const lookups: IconLookup[] = [
+    () => [['path', { d: 'M0 0"></path><script>alert(1)</script><path d="' }]],
+    () => [['path', { d: 'M0 0h24', onload: 'alert(1)' }]],
+    () => [['path', { d: 'M0 0h24', stroke: 'url(javascript:x)' }]],
+    () => [['script', { d: 'M0 0' }]],
+    () => [['path', { d: '{{@site.title}}' }]],
+    () => [['path', { d: 'M0 0', fill: 'currentColor', stroke: 'none' }]],
+  ]
+  // the last is legitimate in outline; asked for as a FILLED key a stroke is not an attribute it may carry
+  for (const [i, icons] of lookups.entries()) {
+    const name = i === lookups.length - 1 ? 'heart-filled' : 'rocket'
+    for (const html of Object.values(iconOn(name, icons))) assert.equal(html, '<span class="i"></span>', `lookup ${i}: ${html}`)
+  }
+  const sound: IconLookup = () => [['path', { d: 'M0 0h24', fill: 'currentColor', stroke: 'none', opacity: '.5' }]]
+  for (const html of Object.values(iconOn('rocket', sound))) assert.ok(html.includes('<path d="M0 0h24" fill="currentColor" opacity=".5" stroke="none"></path>'), html)
+})
+
+test('AD-36 · a no-value-locked universal writes no attribute, whatever is stored or authored; a narrowed one writes its value', () => {
+  const src = '<section class="s" data-bg="accent" data-spacing="comfortable" data-divider="none"><p>x</p></section>'
+  const locked: RenderInput = { controlSchema: [], universals: { bg: { values: [], reason: 'r' } }, controls: { bg: 'surface' } }
+  for (const html of [renderCanvas(doc(), src, locked), renderTheme(doc(), src, locked).template]) {
+    assert.doesNotMatch(html, /data-bg/, html)
+    assert.match(html, /data-spacing="comfortable"/)
+  }
+  const narrowed: RenderInput = { controlSchema: [], universals: { bg: { values: ['base', 'surface'], reason: 'r' } }, controls: { bg: 'surface' } }
+  assert.match(renderTheme(doc(), src, narrowed).template, /data-bg="surface"/)
+})
+
+test('AD-36 · an item title carrying {{title}} ships inert in the theme and literal on the canvas', () => {
+  const src = '<ul><li data-items="items"><span data-prop="items[].title">t</span></li></ul>'
+  const input: RenderInput = { content: { items: [{ title: 'Notes on {{title}}' }, { title: 'ok' }] }, schema: { items: { type: 'array', label: 'Items' }, 'items[].title': { type: 'text', label: 'Title' } } }
+  const theme = renderTheme(doc(), src, input).template
+  assert.ok(theme.includes('Notes on &#123;&#123;title&#125;&#125;') && !/\{\{title\}\}/.test(theme), theme)
+  assert.ok(renderCanvas(doc(), src, input).includes('Notes on {{title}}'))
+  assert.ok(theme.includes('>ok<'))
+})
+
+test('AD-36 · a stored control name carrying a quote is stamped nowhere; a schema name that is not a control name refuses', () => {
+  const src = '<section class="s" data-card="flat"><p>x</p></section>'
+  const input: RenderInput = {
+    controlSchema: [{ name: 'card', type: 'segmented', label: 'Card', group: 'style', values: ['flat', 'raised'], default: 'flat' }],
+    controls: { 'card" onload="alert(1)': 'raised', card: 'raised"><script>' },
+  }
+  for (const html of [renderCanvas(doc(), src, input), renderTheme(doc(), src, input).template]) {
+    assert.doesNotMatch(html, /onload|script/, html)
+    assert.match(html, /data-card="flat"/)
+  }
+  for (const name of ['card" onload="x', 'items', 'Card']) {
+    const bad: RenderInput = { controlSchema: [{ ...input.controlSchema![0]!, name }] }
+    assert.throws(() => renderCanvas(doc(), src, bad), /AD-36: control/)
+    assert.throws(() => renderTheme(doc(), src, bad), /AD-36: control/)
+  }
+  // and a schema VALUE that is not a closed value never becomes an attribute
+  const hostileValue: RenderInput = { controlSchema: [{ ...input.controlSchema![0]!, values: ['{{x}}'], default: '{{x}}' }] }
+  assert.doesNotMatch(renderTheme(doc(), src, hostileValue).template, /\{\{x\}\}|data-card/)
 })

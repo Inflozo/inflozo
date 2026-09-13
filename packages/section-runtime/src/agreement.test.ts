@@ -29,6 +29,8 @@ import {
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
 import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, renderCanvas, renderTheme } from './index.ts'
+import { iconDrawing } from '@inflozo/library/icons'
+import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -245,7 +247,7 @@ test("data-bind-attr list form — the guard is the first entry's field, and a l
 //    the same markup with the braces inert and ZERO live mustaches from user text. ──
 test('AD-4 — marks serialize once and land on both emitters', () => {
   const schema: Record<string, PropDef> = {
-    title: { type: 'richtext', marks: ['strong', 'em'] },
+    title: { type: 'richtext', label: 'Title', marks: ['strong', 'em'] },
   }
   const { canvas, theme } = agree(`<p class="t" data-prop="title">t</p>`, {
     schema,
@@ -258,7 +260,7 @@ test('AD-4 — marks serialize once and land on both emitters', () => {
 })
 
 test("a mark outside the prop's allow-list is dropped and the text survives", () => {
-  const schema: Record<string, PropDef> = { title: { type: 'richtext', marks: ['strong', 'em'] } }
+  const schema: Record<string, PropDef> = { title: { type: 'richtext', label: 'Title', marks: ['strong', 'em'] } }
   const { canvas, theme } = bothWays(`<p data-prop="title">t</p>`, {
     schema,
     content: { title: { text: 'Underline me', marks: [{ start: 0, end: 5, mark: 'u' }] } },
@@ -273,7 +275,7 @@ test("a mark outside the prop's allow-list is dropped and the text survives", ()
 })
 
 test('R-27 — a declared inline token substitutes and an undeclared one stays literal text', () => {
-  const schema: Record<string, PropDef> = { sub: { type: 'richtext', tokens: ['members'] } }
+  const schema: Record<string, PropDef> = { sub: { type: 'richtext', label: 'Subheading', tokens: ['members'] } }
   const { canvas, theme } = bothWays(`<p data-prop="sub">s</p>`, {
     schema,
     content: { sub: { text: '{members} readers, {n} left' } },
@@ -717,6 +719,7 @@ test('a directive this story does not emit is refused by name on both emitters, 
 //    `RENDERED_DIRECTIVES` so a directive added to the set later is covered by construction. ──
 const everyDirectiveSrc = `<section class="all" data-module="cards">
      <h1 class="h" data-prop="title" data-empty="hide">t</h1>
+     <ul class="l"><li class="i" data-items="logos"><span data-prop="logos[].name">n</span></li></ul>
      <a class="a" data-prop-attr="href:link">l</a>
      <span class="m" data-helper="total_members">1,000</span>
      <article class="c" data-repeat="posts" data-repeat-limit="2" data-partial="card">
@@ -733,7 +736,7 @@ test('no rendered directive survives — every member of RENDERED_DIRECTIVES is 
     assert.ok(everyDirectiveSrc.includes(`${d}=`), `the leak fixture does not exercise ${d}`)
   }
   const input: RenderInput = {
-    content: { title: 'T', link: '/x' },
+    content: { title: 'T', link: '/x', logos: [{ name: 'One' }, { name: 'Two' }] },
     ghost: {
       posts: [
         { title: 'a', feature_image: 'https://site.example/content/images/2026/01/a.jpg', accent_color: '#fff' },
@@ -841,4 +844,83 @@ test('the canvas honours the date format the way Ghost does, and refuses a bad d
   const rich = { link: { text: '/go', marks: [{ start: 0, end: 3, mark: 'strong' }] } }
   const { canvas, theme } = bothWays('<a data-prop-attr="href:link">x</a>', { content: rich })
   assert.ok(canvas.includes('href="/go"') && theme.includes('href="/go"'), `${canvas} | ${theme}`)
+})
+
+// ═══ Story 4.5 — the controls engine's door, and the four new sinks, on both emitters ═══
+//
+// §7.3's exit criterion reaches everything this story adds: the root's control attributes come from
+// `resolveControls` on both sides, an authored array bakes the same N copies, and a link record, an
+// icon and an image id become the same attributes and the same drawing. The skeleton comparison is
+// over names; each case also asserts the VALUES that must be equal, because a control value that
+// differs between the emitters is a stylesheet selecting on two different things.
+
+const CONTROLS: ControlDef[] = [
+  { name: 'align', type: 'segmented', label: 'Alignment', group: 'arrangement', values: ['start', 'center'], default: 'start' },
+  { name: 'rule', type: 'segmented', label: 'Rule', group: 'style', values: ['none', 'line'], default: 'line',
+    disabledBy: { control: 'align', whenValue: 'center', reason: 'Not while centred.', inForce: 'none' } },
+]
+const SCHEMA: Record<string, PropDef> = {
+  items: { type: 'array', label: 'Items' },
+  'items[].title': { type: 'text', label: 'Title' },
+  'items[].icon': { type: 'icon', label: 'Icon' },
+  'items[].picture': { type: 'image', label: 'Picture' },
+  'items[].link': { type: 'url', label: 'Link' },
+}
+const featureSrc = `<section class="f" data-align="start" data-rule="line" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <ul class="f__list"><li class="f__item" data-items="items">
+    <span class="f__icon" data-prop="items[].icon"></span>
+    <img class="f__img" data-prop-attr="src:items[].picture" data-empty="hide" alt="">
+    <a class="f__link" data-prop="items[].title" data-prop-attr="href:items[].link">t</a>
+  </li></ul>
+</section>`
+const featureInput = (over: Partial<RenderInput> = {}): RenderInput => ({
+  schema: SCHEMA,
+  controlSchema: CONTROLS,
+  controls: { align: 'center', rule: 'line' },
+  icons: iconDrawing,
+  assets: { one: '/pool/one.svg', two: '/pool/two.svg' },
+  content: {
+    items: [
+      { title: 'Portal', icon: 'rocket', picture: 'one', link: { portal: 'account/plans' } },
+      { title: 'Search', icon: 'heart-filled', picture: 'two', link: { search: true } },
+      { title: 'Away', icon: 'star', picture: 'one', link: { href: 'https://x.example/', newTab: true, rel: ['sponsored'] } },
+    ],
+  },
+  ...over,
+})
+
+test('Story 4.5 — control attributes, data-items trees, link attributes, icons and image sources agree', () => {
+  const { canvas, theme } = agree(featureSrc, featureInput())
+  const root = (html: string) => /<section[^>]*>/.exec(html)?.[0]
+  assert.equal(root(canvas), root(theme), 'the two roots differ')
+  assert.match(root(canvas) ?? '', /data-align="center" data-rule="none" data-bg="base" data-spacing="comfortable" data-divider="none"/)
+  // a greyed control's stored value is in neither output
+  for (const html of [canvas, theme]) assert.doesNotMatch(html, /data-rule="line"/)
+  // the item bodies, value for value: every attribute below is a closed value or a baked user value
+  const items = (html: string) => [...html.matchAll(/<li class="f__item">[^]*?<\/li>/g)].map((m) => m[0])
+  assert.equal(items(canvas).length, 3)
+  assert.deepEqual(items(canvas), items(theme), 'the data-items copies differ between emitters')
+  const [portal, search, away] = items(canvas)
+  assert.match(portal ?? '', /<a class="f__link" href="#" data-portal="account\/plans">Portal<\/a>/)
+  assert.match(search ?? '', /<a class="f__link" href="#" data-ghost-search="">Search<\/a>/)
+  assert.match(away ?? '', /href="https:\/\/x\.example\/" target="_blank" rel="noreferrer sponsored"/)
+  assert.match(portal ?? '', /<img class="f__img" alt="" src="\/pool\/one\.svg">/)
+  assert.match(portal ?? '', /<svg[^>]*stroke="currentColor"[^>]*aria-hidden="true"><path /)
+  assert.match(search ?? '', /<svg[^>]*fill="currentColor" aria-hidden="true"><path /)
+})
+
+test('Story 4.5 — without a schema the authored root stands, so every render before this story is unchanged', () => {
+  const { canvas, theme } = bothWays(featureSrc, { ...featureInput(), controlSchema: undefined })
+  for (const html of [canvas, theme]) assert.match(html, /data-align="start" data-rule="line"/)
+})
+
+test('Story 4.5 — a Ghost binding inside an authored item keeps its own data-empty guard on both emitters', () => {
+  // a TEXT binding defaults to fallback, so only an honoured `hide` removes it — the case a swept guard breaks
+  const src = '<ul class="u"><li class="i" data-items="items"><span class="t" data-prop="items[].title">t</span><em class="m" data-bind="@site.title" data-empty="hide">authored</em></li></ul>'
+  const input: RenderInput = { content: { items: [{ title: 'One' }] }, ghost: {}, schema: SCHEMA }
+  const canvas = renderCanvas(doc(), src, input)
+  assert.doesNotMatch(canvas, /<em/, `the hide guard was swept before the binding read it: ${canvas}`)
+  const theme = renderTheme(doc(), src, input).template
+  assert.match(theme, /\{\{#if @site\.title\}\}<em class="m">\{\{@site\.title\}\}<\/em>\{\{\/if\}\}/, theme)
+  for (const html of [canvas, theme]) assert.doesNotMatch(html, /data-empty|data-bind/)
 })

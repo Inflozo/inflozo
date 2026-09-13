@@ -137,6 +137,10 @@ const NO_SKELETON: Record<string, string> = {
     'Story 4.4\'s internal fixture review, the kit\'s sibling and exempt for the kit\'s reason: nothing ' +
     'links to it, so it is reached only by typing the path — a document load with the browser\'s own ' +
     'progress on it, never a soft navigation that would show a route skeleton',
+  [join(AUTHED, 'controls')]:
+    'Story 4.5\'s internal controls review, the style guide\'s sibling and exempt for the kit\'s reason: ' +
+    'nothing links to it, so it is reached only by typing the path — a document load with the ' +
+    'browser\'s own progress on it, never a soft navigation that would show a route skeleton',
   [join(AUTHED, 'style-guide', 'variations')]:
     'the same page\'s variation sheet, reached only from a plain <a href> on the page above it — a ' +
     'document load, never a soft navigation',

@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { ChevronDown } from './icons'
-import { ring } from './greyed'
+import { greyedProps, reason, ring, type Greyed } from './greyed'
 
 /* Editor Sidebar Kit.dc.html:132 — buttons. Three heights, 44 / 36 / 32. Primary is an ink
    fill; CORAL IS RESERVED FOR **THE** ACTION OF A SURFACE and appears once; secondary is
@@ -80,15 +80,42 @@ export function SplitButton({ children, menuLabel }: { children: ReactNode; menu
   )
 }
 
-/** The dashed affordance that adds a section. */
-export const AddButton = ({ children }: { children: ReactNode }) => (
-  <button
-    type="button"
-    className={`h-8 w-full rounded-sm border border-dashed border-line-strong text-ui-dense font-medium text-ink-soft transition-colors hover:border-coral hover:text-coral-deep ${ring}`}
-  >
-    {children}
-  </button>
-)
+/** The dashed affordance that adds a section. Story 4.5: it acts (`onClick`), and it GREYS with its
+ *  reason — P0-3's Add at the ceiling and on a Ghost-sourced list: the dashed border fades, the label
+ *  goes placeholder-grey, the sentence sits under it, and it stays focusable `aria-disabled`, never
+ *  `disabled`, so the sentence is read. `id` names the sentence for `aria-describedby`. No hooks. */
+export function AddButton({
+  children,
+  id,
+  greyed,
+  onClick,
+}: {
+  children: ReactNode
+  id?: string
+  greyed?: Greyed
+  onClick?: () => void
+}) {
+  const button = (
+    <button
+      type="button"
+      id={id}
+      onClick={onClick && !greyed ? onClick : undefined}
+      className={`h-8 w-full rounded-sm border border-dashed text-ui-dense font-medium transition-colors ${ring} ${
+        greyed ? 'cursor-not-allowed border-line text-ink-faint' : 'border-line-strong text-ink-soft hover:border-coral hover:text-coral-deep'
+      }`}
+      {...(id ? greyedProps(id, greyed) : {})}
+    >
+      {children}
+    </button>
+  )
+  if (!greyed || !id) return button
+  return (
+    <div className="flex flex-col gap-[5px]">
+      {button}
+      {reason(id, greyed)}
+    </div>
+  )
+}
 
 /** Icon buttons, 28px — enabled, and disabled at 35%. */
 export function IconButton({

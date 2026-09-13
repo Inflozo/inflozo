@@ -16,7 +16,10 @@
 // builtin, reads a clock or asks for entropy; `eslint.config.js` is the gate, not this comment.
 
 import {
+  ASSET_ID_RE,
   CONSUMED_DIRECTIVES,
+  CONTROL_NAME_RE,
+  CONTROL_VALUE_RE,
   DIRECTIVES,
   GET_FORBIDDEN_TARGETS,
   HELPERS,
@@ -25,11 +28,12 @@ import {
   URL_ATTRS,
   assertBindableAttr as parseBindableAttr,
   guardField,
+  isIsoDate,
   parseBindSpec,
   safeUrl,
   splitFirst,
 } from '@inflozo/library'
-import type { DataBinding, PropDef } from '@inflozo/library'
+import type { ControlDef, DataBinding, IconLookup, PropDef, UniversalNarrowing } from '@inflozo/library'
 // Story 4.3. The spine's package table says the three core packages may depend on `library` AND on
 // each other, so this import is inside the dependency rule. The DOM is injected because AD-1 forbids
 // reaching a global; the shim is PURE, so there is nothing to inject around it and threading it
@@ -47,8 +51,9 @@ import {
   paginationContext,
   srcset,
 } from '@inflozo/ghost-shim'
-import { escapeUserText, isRich, serializeMarks } from './marks.ts'
+import { escapeUserText, isRich, linkAttributes, serializeMarks } from './marks.ts'
 import type { PropValue } from './marks.ts'
+import { resolveControls, withData } from './controls.ts'
 
 export { formatDate }
 
@@ -65,6 +70,7 @@ export type RuntimeElement = {
   readonly outerHTML: string
   textContent: string | null
   readonly parentElement: RuntimeElement | null
+  readonly firstElementChild: RuntimeElement | null
   readonly attributes: Iterable<{ name: string; value: string }>
   getAttribute(name: string): string | null
   setAttribute(name: string, value: string): void
@@ -133,6 +139,23 @@ export type RenderInput = {
   /** the compile target this render is for. `data-pagination` requires a paginated one (R-7) — a
    *  `{{pagination}}` outside a paginated context is a FATAL render, not a warning. */
   target?: string
+
+  // ── Story 4.5 — the controls engine's one door into both emitters ──────────
+  /** the DESIGN's `controlSchema`. Given, the root's control attributes are `resolveControls`' and
+   *  nothing else — the authored ones are removed first; omitted, the authored root stands. */
+  controlSchema?: readonly ControlDef[]
+  /** the design's universal narrowings (R-23); an empty `values` is R-103's no-value lock */
+  universals?: Readonly<Record<string, UniversalNarrowing>>
+  /** the instance's STORED control values — data, not a type: junk is resolved away, never thrown */
+  controls?: Readonly<Record<string, unknown>>
+  /** the instance's stored Count and Order per `dataBindings` key, folded in by `withData` */
+  data?: Readonly<Record<string, unknown>>
+  /** AD-27(b): asset id → URL. An `image` prop stores an id and resolves ONLY through here — the
+   *  review page hands it the sample pool, Epic 7 the theme's asset paths. */
+  assets?: Readonly<Record<string, string>>
+  /** the library's icon lookup (`@inflozo/library/icons`), handed in so the core never imports the
+   *  drawings. A design with an `icon` prop rendered without it refuses by name. */
+  icons?: IconLookup
 }
 
 // R2-7: the compiler's own tokens are built from C0 control characters, which a section author's
@@ -238,6 +261,8 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   'data-bind-srcset',
   'data-helper',
   'data-pagination',
+  // Story 4.5 — an AUTHORED array, baked as N copies on both emitters (§7.3 gap row 1)
+  'data-items',
 ]
 
 /** Derived, not written down. `data-t`/`data-t-attr` are 4.9's, `data-needs` is AD-37's
@@ -293,6 +318,15 @@ const escStatic = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 const escAttr = (s: string): string => escStatic(s).replace(/"/g, '&quot;')
+
+/** A content prop's value. A per-item path — `features[].title` — reads item i of the array being
+ *  expanded, which `items` carries; outside an expansion it reads nothing. */
+function propGet(content: unknown, path: string, items?: Readonly<Record<string, unknown>>): unknown {
+  const cut = path.indexOf('[].')
+  if (cut === -1) return get(content, path)
+  const base = path.slice(0, cut)
+  return items !== undefined && Object.prototype.hasOwnProperty.call(items, base) ? get(items[base], path.slice(cut + 3)) : undefined
+}
 
 /** THE directive reader. Every rendered directive is read through here: the value is validated by
  *  the library's own grammar for that directive — the one copy 4.1's validator uses — and refused
@@ -711,6 +745,7 @@ function applyProps(
   scope: RuntimeElement,
   input: RenderInput,
   users: UserText | null,
+  items?: Readonly<Record<string, unknown>>,
 ): void {
   const content = input.content ?? {}
   const schema = input.schema ?? {}
@@ -718,8 +753,23 @@ function applyProps(
 
   for (const el of all(scope, '[data-prop]')) {
     const path = consume(el, 'data-prop') ?? ''
-    const v = get(content, path) as PropValue
+    const def = own(schema, path)
+    let v = propGet(content, path, items) as PropValue
     const mode = guardMode(el, false)
+    if (def?.type === 'icon' && input.icons !== undefined) {
+      // an icon is DRAWN into the element, identically on both emitters; a name not in the set, or a
+      // drawing that fails its grammar, is an empty slot
+      const svg = iconSvg(v, input.icons)
+      if (svg === null) {
+        if (mode === 'hide') el.remove()
+        else el.textContent = ''
+      } else {
+        el.innerHTML = svg
+      }
+      continue
+    }
+    // a date is the site's wall-clock day, printed unconverted; anything else is unset
+    if (def?.type === 'date' && !isIsoDate(v)) v = undefined
     if (propEmpty(v)) {
       // FR-H8's text default, on a prop rather than a binding: the authored text stays. `hide` is
       // the explicit override, and DW-93's class — the marker must never survive either way.
@@ -733,7 +783,7 @@ function applyProps(
     } else {
       // AD-4: on the canvas the serializer's output goes INTO a DOM, because the user must see
       // their own literal text and their own marks.
-      el.innerHTML = serializeMarks(v, schema[path], tokenValues)
+      el.innerHTML = serializeMarks(v, def, tokenValues)
     }
   }
 
@@ -745,7 +795,27 @@ function applyProps(
     for (const [i, entry] of entries.entries()) {
       const [rawAttr, rawPath] = splitFirst(entry.trim(), ':')
       const attr = assertBindableAttr(rawAttr) // AD-36 (3)
-      const raw = get(content, rawPath ?? '')
+      const path = rawPath ?? ''
+      const def = own(schema, path)
+      let raw = propGet(content, path, items)
+      if (attr === 'href') {
+        // Story 4.5 — a destination is a LINK RECORD (a bare string is `{ href }`), and it becomes
+        // attributes in exactly one place, `linkAttributes`, which the `a` mark calls too. A record
+        // with no valid destination sets nothing, so FR-F8's unset link hides like any unset prop.
+        const attrs = linkAttributes(isRich(raw) ? raw.text : raw)
+        if (attrs['href'] === undefined) {
+          if (i === 0) firstMissing = true
+          continue
+        }
+        for (const [k, val] of Object.entries(attrs)) {
+          // the href is user text and is parked on the theme like any other; the rest are closed values
+          el.setAttribute(k, k === 'href' && users !== null ? users.put(path, val) : val)
+        }
+        continue
+      }
+      // AD-27(b): an image stores an asset ID, resolved only through `assets`; a URL in its place is unset
+      if (def?.type === 'image') raw = typeof raw === 'string' && ASSET_ID_RE.test(raw) ? own(input.assets, raw) : undefined
+      if (def?.type === 'date' && !isIsoDate(raw)) raw = undefined
       if (propEmpty(raw)) {
         if (i === 0) firstMissing = true
         continue
@@ -755,7 +825,7 @@ function applyProps(
       // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Here rather
       // than in the escaper, because a scheme is only meaningful where the context is known.
       const safe = URL_ATTRS.has(attr) ? safeUrl(v) : String(v)
-      el.setAttribute(attr, users !== null ? users.put(rawPath ?? '', safe) : safe)
+      el.setAttribute(attr, users !== null ? users.put(path, safe) : safe)
     }
     // DW-93: the harness removed only its own attribute here and implemented no `hide`, so an
     // element whose only content is a user-picked image kept a dead `data-empty` and never hid.
@@ -771,21 +841,128 @@ function applyProps(
   for (const el of all(scope, '[data-module]')) consume(el, 'data-module')
 }
 
+// ─── Story 4.5 — controls, authored arrays, icons ────────────────────────────
+
+/** AD-3 through ONE door: the root's control attributes are `resolveControls`' output and nothing
+ *  else — on both emitters, and on a live canvas root when a control changes (the editor calls this
+ *  on the section element inside the input handler rather than re-rendering). Every authored control attribute is removed first — so a design switch leaves no stale
+ *  attribute and a no-value-locked universal has none (R-103) — and every stamped name and value is
+ *  re-checked against the vocabulary's grammar, so a schema that never met the validator still cannot
+ *  put a quote or a brace into either emitter (AD-36). */
+export function stampControls(
+  section: RuntimeElement,
+  input: Pick<RenderInput, 'controlSchema' | 'universals' | 'controls'>,
+): void {
+  const schema = input.controlSchema
+  if (schema === undefined) return
+  for (const { name } of [...section.attributes]) {
+    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal') section.removeAttribute(name)
+  }
+  for (const c of schema) {
+    if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal') {
+      throw new Error(`AD-36: control ${JSON.stringify(c.name)} is not a control name — a kebab-case word that is not a directive (AD-3).`)
+    }
+  }
+  for (const [name, value] of Object.entries(resolveControls({ controlSchema: schema, universals: input.universals }, input.controls))) {
+    if (!CONTROL_NAME_RE.test(name) || !CONTROL_VALUE_RE.test(value)) throw new Error(`AD-36: data-${name}=${JSON.stringify(value)} is not a closed control value`)
+    section.setAttribute(`data-${name}`, value)
+  }
+}
+
+/** §7.3 gap row 1: an AUTHORED array renders as one copy per item, on BOTH emitters — the theme
+ *  bakes N static copies (a user-authored list is known at compile), so the two trees are identical
+ *  and per-item user text is parked like any other, its mark allow-list looked up by the `[]` path.
+ *  Zero items renders nothing. A list inside another list, or inside a Ghost repeat, refuses by name:
+ *  a per-item path is written in full and resolves against exactly one enclosing array. */
+function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderInput, tokens: Tokens, users: UserText | null): void {
+  const lists = all(root, '[data-items]')
+  for (const el of lists) {
+    const path = el.getAttribute('data-items') ?? ''
+    const nested = el.getAttribute('data-repeat') !== null || ((): boolean => {
+      for (let p = el.parentElement; p !== null && p !== root; p = p.parentElement) {
+        if (p.getAttribute('data-items') !== null || p.getAttribute('data-repeat') !== null) return true
+      }
+      return false
+    })()
+    if (nested) {
+      throw new Error(`data-items="${path}" sits inside another data-items or a data-repeat. An authored list renders at one level, over its own array; a list of lists is not in the vocabulary.`)
+    }
+  }
+  for (const el of lists) {
+    const path = consume(el, 'data-items') ?? ''
+    const raw = get(input.content ?? {}, path)
+    for (const item of Array.isArray(raw) ? raw : []) {
+      const clone = el.cloneNode(true)
+      el.before(clone)
+      // bindings first, as every other walk does: `data-empty` is shared and applyProps sweeps it
+      emitBindings(doc, clone, input, tokens, users, input.ghost ?? {})
+      applyProps(clone, input, users, { [path]: item })
+    }
+    el.remove()
+  }
+}
+
+/** R-26 / R-104: an icon is Tabler's drawing, inline where it is used, once per use. The lookup is
+ *  data handed in, so nothing it returns is trusted: every `<path>` is REBUILT from attributes that
+ *  pass their grammar, and a drawing with one that does not is not emitted at all (AD-36). The wrapper
+ *  is Tabler's own — stroke for an outline, fill for a `-filled` key — and `aria-hidden`, because a
+ *  section's icon is decoration beside its words (P0-2). */
+const ICON_NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
+const ICON_ATTR_RE: Readonly<Record<string, RegExp>> = {
+  d: /^[MmLlHhVvCcSsQqTtAaZz0-9.,\s+-]+$/,
+  fill: /^(none|currentColor)$/,
+  stroke: /^(none|currentColor)$/,
+  opacity: /^(0|1|0?\.[0-9]+)$/,
+}
+const OUTLINE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+const FILLED_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+
+export function iconSvg(name: unknown, icons: IconLookup): string | null {
+  if (typeof name !== 'string' || !ICON_NAME_RE.test(name)) return null
+  const filled = name.endsWith('-filled')
+  const allowed = filled ? ['d', 'fill'] : ['d', 'fill', 'opacity', 'stroke']
+  const nodes = icons(name)
+  if (!Array.isArray(nodes) || nodes.length === 0) return null
+  let paths = ''
+  for (const node of nodes as readonly unknown[]) {
+    if (!Array.isArray(node) || node[0] !== 'path' || typeof node[1] !== 'object' || node[1] === null) return null
+    const attrs = node[1] as Record<string, unknown>
+    const keys = Object.keys(attrs)
+    if (!keys.includes('d') || keys.some((k) => !allowed.includes(k))) return null
+    if (!keys.every((k) => typeof attrs[k] === 'string' && (ICON_ATTR_RE[k]?.test(attrs[k] as string) ?? false))) return null
+    paths += `<path ${allowed.filter((k) => keys.includes(k)).map((k) => `${k}="${attrs[k] as string}"`).join(' ')}></path>`
+  }
+  return `${filled ? FILLED_SVG : OUTLINE_SVG}${paths}</svg>`
+}
+
 export type ThemeOutput = { template: string; partials: Record<string, string> }
 
 /** The shared walk. `users !== null` is the theme; `users === null` is the canvas. */
 function renderTree(
   doc: RuntimeDocument,
   src: string,
-  input: RenderInput,
+  given: RenderInput,
   tokens: Tokens,
   users: UserText | null,
 ): { root: RuntimeElement; partials: Record<string, string> } {
+  // Story 4.5: the stored Count and Order are folded into the declared queries ONCE, here, so the
+  // canvas rows and the theme's {{#get}} read the same numbers
+  const input: RenderInput = given.data === undefined ? given : { ...given, dataBindings: withData(given.dataBindings, given.data) }
   const root = doc.createElement('div')
   root.innerHTML = src
   refuseUnrendered(root)
   refuseUnpaginated(root, input.target)
   refuseGetOnForbiddenTarget(root, input)
+  if (input.icons === undefined) {
+    for (const el of all(root, '[data-prop]')) {
+      const path = el.getAttribute('data-prop') ?? ''
+      if (own(input.schema, path)?.type === 'icon') {
+        throw new Error(`"${path}" is an icon prop and this render was handed no icon lookup — pass @inflozo/library/icons' iconDrawing as RenderInput.icons. An icon is never silently left out (R-26).`)
+      }
+    }
+  }
+  if (root.firstElementChild !== null) stampControls(root.firstElementChild, input)
+  expandItems(doc, root, input, tokens, users)
 
   const partials: Record<string, string> = {}
   const ghost = input.ghost ?? {}

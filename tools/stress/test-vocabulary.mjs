@@ -90,6 +90,28 @@ check('the on-disk reference fixture validates clean, end to end', () => {
   if (f.length) throw new Error(say(f))
 })
 
+// Story 4.5 — the controls sample the /controls review page renders, validated from its bytes with the
+// real icon set, and Tabler's licence file checked against the copy the set carries (R-26): a core
+// package serves the licence from the JSON because it cannot read a .txt, so the two must not drift.
+const { iconDrawing, TABLER_LICENSE } = await import(join(REPO, 'packages/library/src/icons.ts'))
+
+check('the on-disk controls sample validates clean, icon defaults included', () => {
+  const dir = join(REPO, 'packages/library/fixtures/controls')
+  const f = validateDesign({
+    html: readFileSync(join(dir, '1/index.html'), 'utf8'),
+    design: JSON.parse(readFileSync(join(dir, '1/design.json'), 'utf8')),
+    content: JSON.parse(readFileSync(join(dir, 'content.json'), 'utf8')),
+    icons: iconDrawing,
+  })
+  if (f.length) throw new Error(say(f))
+})
+
+check("Tabler's licence ships verbatim beside the set, and the set carries the same text", () => {
+  const onDisk = readFileSync(join(REPO, 'packages/library/icons/LICENSE-tabler.txt'), 'utf8')
+  if (onDisk !== TABLER_LICENSE) throw new Error('LICENSE-tabler.txt and tabler.json\'s licence differ — re-run python3 tools/vendor-icons.py')
+  if (!/Permission is hereby granted, free of charge/.test(onDisk)) throw new Error('the licence file is not the MIT licence')
+})
+
 check('the fixture exercises every directive in the closed set', () => {
   const html = readFileSync(join(REPO, 'packages/library/fixtures/reference-design/index.html'), 'utf8')
   const missing = Object.keys(DIRECTIVES).filter((n) => !new RegExp(`${n}[=\\s>]`).test(html))

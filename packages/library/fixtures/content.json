@@ -1,19 +1,19 @@
 {
   "category": "reference",
   "props": {
-    "eyebrow": { "type": "text", "default": "Issue 42" },
-    "title": { "type": "richtext", "marks": ["strong", "em"], "default": "Latest posts" },
-    "subtitle": { "type": "richtext", "marks": ["strong", "em", "u", "a"], "tokens": ["members"],
+    "eyebrow": { "label": "Eyebrow", "type": "text", "default": "Issue 42" },
+    "title": { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "default": "Latest posts" },
+    "subtitle": { "label": "Subheading", "type": "richtext", "marks": ["strong", "em", "u", "a"], "tokens": ["members"],
                   "default": "Everything we have published." },
-    "cta.label": { "type": "text", "default": "View all" },
-    "cta.url": { "type": "url", "default": "/archive/" },
-    "cta.title": { "type": "text", "default": "Every post we have published" },
-    "logos": { "type": "array", "default": [] },
-    "logos[].src": { "type": "image" },
-    "logos[].alt": { "type": "text", "default": "" },
-    "logos[].name": { "type": "text", "default": "A partner" },
-    "submitLabel": { "type": "text", "default": "Subscribe" },
-    "paidNote": { "type": "text", "default": "Thank you for subscribing." },
-    "note": { "type": "text", "default": "Every directive, once." }
+    "cta.label": { "label": "Link text", "type": "text", "default": "View all" },
+    "cta.url": { "label": "Link", "type": "url", "default": "/archive/" },
+    "cta.title": { "label": "Link title", "type": "text", "default": "Every post we have published" },
+    "logos": { "label": "Logos", "type": "array", "default": [] },
+    "logos[].src": { "label": "Logo", "type": "image" },
+    "logos[].alt": { "label": "Logo description", "type": "text", "default": "" },
+    "logos[].name": { "label": "Partner name", "type": "text", "default": "A partner" },
+    "submitLabel": { "label": "Button text", "type": "text", "default": "Subscribe" },
+    "paidNote": { "label": "Note for paid members", "type": "text", "default": "Thank you for subscribing." },
+    "note": { "label": "Note", "type": "text", "default": "Every directive, once." }
   }
 }

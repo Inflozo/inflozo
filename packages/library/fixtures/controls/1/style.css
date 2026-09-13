@@ -1,0 +1,48 @@
+/* Story 4.5's controls sample. Flat, `var(--…)` over the reference tokens only, and every control
+   selects on its `data-` attribute on the section root (AD-3). */
+
+.cx { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.cx[data-bg="surface"] { background: var(--bg-surface); }
+.cx[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.cx[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.cx[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
+.cx[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
+.cx[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
+
+.cx__head { display: flex; flex-direction: column; gap: 0.5rem; padding-block-end: var(--space-gap); margin-block-end: var(--space-gap); }
+.cx[data-align="center"] .cx__head { text-align: center; align-items: center; }
+.cx[data-rule="line"] .cx__head { border-block-end: 1px solid var(--border-hairline); }
+.cx__eyebrow { margin: 0; font-size: 0.8125rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.cx[data-bg="contrast"] .cx__eyebrow { color: var(--text-on-contrast); }
+.cx__title { margin: 0; font-family: var(--font-heading); font-size: 2rem; line-height: 1.15; }
+.cx__next { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
+.cx[data-bg="contrast"] .cx__next { color: var(--text-on-contrast); }
+
+.cx__body { display: grid; gap: var(--space-gap); }
+.cx[data-image="side"] .cx__body { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; }
+.cx__picture { display: block; width: 100%; height: auto; border-radius: var(--radius-card); }
+
+.cx__features { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-gap); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cx[data-columns="2"] .cx__features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cx[data-columns="4"] .cx__features { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cx__feature { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem; border-radius: var(--radius-card); }
+.cx[data-card="outlined"] .cx__feature { border: 1px solid var(--border-hairline); }
+.cx[data-card="raised"] .cx__feature { background: var(--bg-elevated); box-shadow: var(--shadow-card); color: var(--text-body); }
+.cx[data-tint="soft"] .cx__feature { background: var(--bg-hover); color: var(--text-body); }
+.cx[data-tint="strong"] .cx__feature { background: var(--plate); color: var(--text-body); }
+.cx__icon { display: inline-flex; color: var(--accent); }
+.cx__icon svg { width: 1.5rem; height: 1.5rem; }
+.cx[data-icons="off"] .cx__icon { display: none; }
+.cx__feature-title { font-weight: 600; }
+
+.cx__links { display: flex; flex-wrap: wrap; gap: var(--space-gap); margin-block: var(--space-gap) 0; }
+.cx__link { color: var(--link-color); text-decoration: var(--link-decoration); }
+.cx[data-bg="contrast"] .cx__link { color: var(--accent-on-contrast); }
+
+.cx__archive { margin-block-start: var(--space-gap); }
+.cx__archive-head { margin: 0 0 0.5rem; font-family: var(--font-heading); font-size: 1.125rem; }
+.cx__posts { margin: 0; padding-inline-start: 1.25rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.cx__post-link { color: inherit; text-decoration: none; }
+
+@media (max-width: 834px) { .cx[data-columns="4"] .cx__features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 390px) { .cx__features, .cx[data-image="side"] .cx__body { grid-template-columns: minmax(0, 1fr); } }

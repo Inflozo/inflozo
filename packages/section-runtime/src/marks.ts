@@ -13,19 +13,17 @@
 // mark list narrows them further, the rel values are closed, the inline tokens are declared per prop
 // and anything else in braces stays literal text (R-27).
 
-import { INLINE_TOKENS, LINK_RELS, MARKS, safeUrl } from '@inflozo/library'
-import type { PropDef } from '@inflozo/library'
+import { INLINE_TOKENS, LINK_RELS, MARKS, PORTAL_ACTIONS, safeUrl } from '@inflozo/library'
+import type { Link, PropDef } from '@inflozo/library'
 
-/** One mark range over the prop's text. `newTab`/`rel` are part of the STORED record, not editor
- *  state (R-27) — a link that opens in a new tab must compile that way from the same value. */
+/** One mark range over the prop's text. An `a` mark carries the same link record a `url` prop holds
+ *  (`Link`, Story 4.5): `newTab`/`rel` are part of the STORED record, not editor state (R-27) — a link
+ *  that opens in a new tab must compile that way from the same value. */
 export type Mark = {
   start: number
   end: number
   mark: string
-  href?: string
-  newTab?: boolean
-  rel?: readonly string[]
-}
+} & Link
 
 /** FR-D4's storage shape: a plain string plus ordered ranges, never an HTML string.
  *  `plainText` is FR-Q3's lock — a prop bound to a Ghost Admin text setting. The lock is a
@@ -61,19 +59,47 @@ const MARK_SET: ReadonlySet<string> = new Set(MARKS)
 const REL_SET: ReadonlySet<string> = new Set(LINK_RELS)
 const TOKEN_SET: ReadonlySet<string> = new Set(INLINE_TOKENS)
 
-function openTag(m: Mark): string {
-  if (m.mark !== 'a') return `<${m.mark}>`
+/** THE one function that turns a link record into attributes (AD-4, FR-F6) — the `a` mark and a
+ *  `url` prop's `data-prop-attr="href:…"` both come here, so the two sinks cannot drift. Every
+ *  attribute is from a closed set (AD-36):
+ *
+ *    portal   one of the four PORTAL_ACTIONS  → `href="#" data-portal="…"`
+ *    search   exactly `true`                  → `href="#" data-ghost-search`
+ *    href     through `safeUrl`               → `href`, plus `target`/`rel` from the record
+ *
+ *  `href="#"` for Portal and search is right because both scripts `preventDefault()` on the click
+ *  (portal@~2.51 and ~2.69, sodo-search@~1.8, read in source 2026-09-13 — MEASUREMENTS.md §29c). A
+ *  record with no valid destination — an action outside the four, a `search` that is not `true`, an
+ *  empty href — returns NOTHING, and the caller treats that as an unset link (FR-F8). `newTab` and
+ *  `rel` act only on an href: they could never act on a Portal modal or the search popup (R-68).
+ *  Values are returned RAW; each emitter escapes on its own side. A bare string is `{ href }`. */
+export function linkAttributes(link: unknown): Record<string, string> {
+  const record: Link = typeof link === 'string' ? { href: link } : typeof link === 'object' && link !== null ? (link as Link) : {}
+  const own = (k: keyof Link) => Object.prototype.hasOwnProperty.call(record, k)
+  if (own('portal')) {
+    return typeof record.portal === 'string' && Object.prototype.hasOwnProperty.call(PORTAL_ACTIONS, record.portal)
+      ? { href: '#', 'data-portal': record.portal }
+      : {}
+  }
+  if (own('search')) return record.search === true ? { href: '#', 'data-ghost-search': '' } : {}
+  if (typeof record.href !== 'string' || record.href.trim() === '') return {}
   // AD-36 (1) reaches a user's own link too: on the canvas this href is a same-origin URL inside
   // the owner's authenticated session, so the scheme check is not a theme-only concern.
-  const attrs = [`href="${escapeUserText(safeUrl(m.href))}"`]
+  const attrs: Record<string, string> = { href: safeUrl(record.href) }
   // a stored record is data from a database, not a type: a non-array `rel` is no rel, not a throw
-  const rel = new Set((Array.isArray(m.rel) ? m.rel : []).filter((r) => REL_SET.has(r)))
-  if (m.newTab === true) {
-    attrs.push('target="_blank"')
+  const rel = new Set((Array.isArray(record.rel) ? record.rel : []).filter((r) => REL_SET.has(r)))
+  if (record.newTab === true) {
+    attrs['target'] = '_blank'
     rel.add('noreferrer') // a `_blank` link hands the opener to the destination otherwise
   }
-  if (rel.size > 0) attrs.push(`rel="${[...rel].sort().join(' ')}"`)
-  return `<a ${attrs.join(' ')}>`
+  if (rel.size > 0) attrs['rel'] = [...rel].sort().join(' ')
+  return attrs
+}
+
+function openTag(m: Mark): string {
+  if (m.mark !== 'a') return `<${m.mark}>`
+  const attrs = Object.entries(linkAttributes(m)).map(([k, v]) => (v === '' ? k : `${k}="${escapeUserText(v)}"`))
+  return attrs.length === 0 ? '<a>' : `<a ${attrs.join(' ')}>`
 }
 
 /** R-27: a prop declares the inline tokens it accepts, and **anything else in braces stays literal
@@ -162,4 +188,26 @@ export function serializeMarks(
   }
   for (let j = open.length - 1; j >= 0; j--) out += `</${(open[j] as Mark).mark}>`
   return out
+}
+
+/** A sidebar edit of text that carries marks (AD-4): the text becomes `next`, and the marks follow
+ *  it rather than being dropped — a customer's bold must survive a typo fixed beside it. The edit is
+ *  the one run between the longest common prefix and suffix; a mark after it shifts by the change in
+ *  length, a mark it cuts keeps what survives on either side (and grows with text typed inside it),
+ *  and a mark with nothing left is dropped. A plain string stays a plain string. */
+export function editText(value: PropValue, next: string): PropValue {
+  if (!isRich(value)) return next
+  const old = value.text
+  let p = 0
+  while (p < old.length && p < next.length && old[p] === next[p]) p++
+  let q = 0
+  while (q < old.length - p && q < next.length - p && old[old.length - 1 - q] === next[next.length - 1 - q]) q++
+  const oldEnd = old.length - q
+  const delta = next.length - old.length
+  const marks = (Array.isArray(value.marks) ? value.marks : []).flatMap((m) => {
+    const start = m.start < p ? m.start : Math.max(m.start, oldEnd) + delta
+    const end = m.end > oldEnd ? m.end + delta : Math.min(m.end, p)
+    return end > start ? [{ ...m, start, end }] : []
+  })
+  return { ...value, text: next, marks }
 }

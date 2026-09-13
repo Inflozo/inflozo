@@ -127,10 +127,120 @@ export const PAGINATED_TARGETS: ReadonlySet<string> = new Set([
 /** R-7, half two: an error page that queries the database compounds the outage it is reporting. */
 export const GET_FORBIDDEN_TARGETS: ReadonlySet<string> = new Set(['error.hbs', 'private.hbs'])
 
-/** The three universal controls (FR-F3). Declared once, exempt from the ≈15 cap, never Quick
- *  Controls, and present on every section root — so a design's own `controlSchema` never lists
- *  them and the root always carries them. */
-export const UNIVERSAL_CONTROLS = ['bg', 'spacing', 'divider'] as const
+// ─── the control vocabulary (Story 4.5) ──────────────────────────────────────
+// AD-34: the rules are data, one copy for the validator, the engine (`section-runtime/src/controls.ts`)
+// and the panel. Controls are CLOSED-VALUED and write `data-{name}` on the root (AD-3); content props
+// hold content and are a different half of the vocabulary (`PROP_TYPES` below).
+
+/** Appendix C's five control types — the ones that write the root. Nothing else is a control. */
+export const CONTROL_TYPES = ['segmented', 'stepper', 'toggle', 'named-select', 'swatch-row'] as const
+export type ControlType = (typeof CONTROL_TYPES)[number]
+
+/** Where a design's own control sits in the panel (FR-F3). Content and Data are not control groups:
+ *  content props and the query's Count and Order fill them. */
+export const CONTROL_GROUPS = ['arrangement', 'style'] as const
+export type ControlGroup = (typeof CONTROL_GROUPS)[number]
+
+/** The panel's four accordions, in order (FR-F3 — Arrangement, never "Layout"). An absent note names one. */
+export const SIDEBAR_GROUPS = ['content', 'arrangement', 'style', 'data'] as const
+export type SidebarGroup = (typeof SIDEBAR_GROUPS)[number]
+
+/** The seven content editors, by the `contentSchema` prop type each edits. */
+export const PROP_TYPES = ['text', 'richtext', 'url', 'image', 'icon', 'date', 'array'] as const
+export type PropType = (typeof PROP_TYPES)[number]
+
+/** A control name: kebab-case, because it becomes the attribute name `data-{name}` (AD-3). */
+export const CONTROL_NAME_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
+
+/** A named value (segmented, named select, toggle's on/off, a role). A stepper's values are integers. */
+export const CONTROL_WORD_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
+
+/** Every value a control may stamp on a root, whatever its type — a word or a small integer. The
+ *  runtime re-checks each value against this before it becomes an attribute, so a schema that never
+ *  met the validator still cannot put a brace or a quote into either emitter (AD-36). */
+export const CONTROL_VALUE_RE = /^(?:[a-z][a-z0-9]*(-[a-z0-9]+)*|[0-9]+)$/
+
+/** FR-F2 / R-23: no `Inherit`, and no other CSS-wide word, anywhere in a control declaration. */
+export const CSS_WIDE_KEYWORDS = ['inherit', 'initial', 'unset', 'revert'] as const
+
+/** FR-F3: the visible-control ceiling for ONE design's own controls. The universal trio and the Data
+ *  group are not counted. */
+export const CONTROL_CAP = 15
+
+/** The Swatch Row's roles (`prd.md:948`) — five, and no sixth: R-103 refused "None". */
+export const BACKGROUND_ROLES = ['base', 'surface', 'accent', 'contrast', 'image'] as const
+
+/** A universal control, declared once and in full. */
+export type UniversalDef = {
+  readonly name: string
+  readonly label: string
+  readonly type: ControlType
+  readonly values: readonly string[]
+  readonly valueLabels: Readonly<Record<string, string>>
+  readonly default: string
+  /** FR-D7: this control accepts a second value in dark mode */
+  readonly darkOverride?: boolean
+}
+
+/** The three universal controls (FR-F3, R-23), in the kits' order. Exempt from the cap, never Quick
+ *  Controls, narrowed per design only with a reason, never renamed or added to. The defaults are the
+ *  schema defaults `sections-inventory.md:800` names — Base, Comfortable, None. */
+export const UNIVERSALS: readonly UniversalDef[] = [
+  {
+    name: 'bg',
+    label: 'Background role',
+    type: 'swatch-row',
+    values: BACKGROUND_ROLES,
+    valueLabels: { base: 'Base', surface: 'Surface', accent: 'Accent', contrast: 'Contrast', image: 'Image' },
+    default: 'base',
+    darkOverride: true,
+  },
+  {
+    name: 'spacing',
+    label: 'Vertical spacing',
+    type: 'segmented',
+    values: ['compact', 'comfortable', 'spacious'],
+    valueLabels: { compact: 'Compact', comfortable: 'Comfortable', spacious: 'Spacious' },
+    default: 'comfortable',
+  },
+  {
+    name: 'divider',
+    label: 'Top divider',
+    type: 'segmented',
+    values: ['none', 'line', 'fade'],
+    valueLabels: { none: 'None', line: 'Line', fade: 'Fade' },
+    default: 'none',
+  },
+]
+
+/** The universal controls' names — derived, never restated. A design's own `controlSchema` never
+ *  lists them; `design.json`'s `universals` narrows them. */
+export const UNIVERSAL_CONTROLS: readonly string[] = UNIVERSALS.map((u) => u.name)
+
+/** The Portal actions the Link Picker offers (`prd.md:928`), value → label, in chip order. Upgrade
+ *  is `account/plans`: `upgrade` is not a value Portal parses. */
+export const PORTAL_ACTIONS: Readonly<Record<string, string>> = {
+  signup: 'Sign up',
+  signin: 'Sign in',
+  account: 'Account',
+  'account/plans': 'Upgrade',
+}
+
+/** An authored date is the site's wall-clock day, `YYYY-MM-DD`, stored unconverted (`prd.md:952`).
+ *  A real calendar day, checked by arithmetic — no `Date`, no clock, no locale (AD-1). */
+export function isIsoDate(v: unknown): v is string {
+  if (typeof v !== 'string') return false
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v)
+  if (m === null) return false
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1]
+  return days !== undefined && d >= 1 && d <= days
+}
+
+/** An asset id: what an `image` prop stores. The render resolves it through `RenderInput.assets`
+ *  (AD-27(b)) — a URL stored in its place is not an id. */
+export const ASSET_ID_RE = /^[a-z0-9][a-z0-9_-]*$/
 
 /** R-27 / AD-4: the closed set of inline binding tokens a CONTENT prop may declare. Anything else
  *  a user types between braces stays literal text. Free-form substitution is refused — an
@@ -151,8 +261,8 @@ export const ADJACENCY_NEEDS = [
 /** AD-4: the four marks a `richtext` prop may allow, and there are no others. */
 export const MARKS = ['strong', 'em', 'u', 'a'] as const
 
-/** R-27 / D9: an `a` mark carries `newTab?` and `rel?`, and the rel values are a closed set. Here
- *  rather than in the serializer because 4.5's Link Picker offers exactly this list — one copy. */
+/** R-27 / D9: a link record carries `newTab?` and `rel?`, and the rel values are a closed set. Here
+ *  rather than in the serializer because the Link Picker offers exactly this list — one copy. */
 export const LINK_RELS = ['nofollow', 'noreferrer', 'sponsored'] as const
 
 /** The four closed member states (§7.3 gap row 4). The paid-vs-free test is not a plain path. */

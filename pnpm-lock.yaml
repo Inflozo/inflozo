@@ -23,6 +23,9 @@ importers:
       '@inflozo/library':
         specifier: workspace:*
         version: link:../../packages/library
+      '@inflozo/section-runtime':
+        specifier: workspace:*
+        version: link:../../packages/section-runtime
       '@supabase/auth-js':
         specifier: 2.115.0
         version: 2.115.0

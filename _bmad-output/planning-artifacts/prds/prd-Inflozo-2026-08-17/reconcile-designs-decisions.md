@@ -1959,8 +1959,10 @@ A14·9 and A16·10 draw in their own words; 10 Slim is built that way — not at
 and such a root carries no `data-bg`. A design that merely paints no ground in the stack may still lock at a
 value (A20·14 at Background).
 - Targets: ✅ Story 4.5's spec (Always, Never, the I/O matrix, Design Notes and the ruling) · ✅
-  `epic-4-context.md` · ⬜ `docs/section-authoring.md` (the no-value lock) · ⬜ `deferred-work.md`, an entry
-  for A28's category story, whose frames draw "None" (both in Story 4.5's Dev run). **Deliberately not
+  `epic-4-context.md` · ✅ `docs/section-authoring.md` (the no-value lock — § 2's Controls part, the
+  `universals` narrowing and its refusal rows in § 4) · ✅ `deferred-work.md`, DW-105 for A28's category
+  story (Story 10.95), whose frames draw "None" — with DW-111 for the spec tables that list the row open
+  where the panel locks it (both in Story 4.5's Dev run, 2026-09-13). **Deliberately not
   touched:** the export (R-74) and `reconcile-designs.md` (a `record`); `prd.md` FR-F3 and Appendix C, which
   already say five.
 
@@ -1973,9 +1975,12 @@ where Tabler has one; the picker's Outline · Filled · Both decides which style
 categories replace the six drawn filters. It widens D1's and R-26's curated subset and supersedes P0-2's
 "curated" header and its Social group of exactly nine; the nine-platform rule stays with the social-link
 rows that read Ghost's nine fields.
-- Targets: ✅ Story 4.5's spec · ✅ `epic-4-context.md` · ✅ the R-26 row above · ⬜ `prd.md` FR-F1 (`:267`)
-  and Appendix C's Icon Picker row (`:950`) · ⬜ `DESIGN.md` § Icons (`:556-561`) · ⬜
-  `docs/section-authoring.md` (all three in Story 4.5's Dev run). **Deliberately not touched:** the export,
+- Targets: ✅ Story 4.5's spec · ✅ `epic-4-context.md` · ✅ the R-26 row above · ✅ `prd.md` FR-F1 (`:267`)
+  and Appendix C's Icon Picker row (`:950`), and FR-Q7's treatment icons (`:371`) with them · ✅ `DESIGN.md`
+  § Icons (`:556-561`) · ✅ `docs/section-authoring.md` § 2 (the set, the `-filled` key, inline emission and
+  where Tabler's licence lives) · ✅ `epics.md` Story 4.5's criteria and Story 7.13's treatment icons, found by
+  the standing-rule-7 grep (all in Story 4.5's Dev run, 2026-09-13). The licence file in the emitted theme
+  and the icon budget have no Epic 7 story yet — DW-108. **Deliberately not touched:** the export,
   whose P0-2 frame stays as drawn (R-74).
 
 ## B · Approved decisions superseded by this session

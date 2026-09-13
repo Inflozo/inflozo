@@ -10,11 +10,14 @@ export function Accordion({
   title,
   open = false,
   children,
+  onToggle,
 }: {
   id: string
   title: string
   open?: boolean
   children?: ReactNode
+  /** Story 4.5: the header opens and closes its body; the open state is the caller's. No hooks. */
+  onToggle?: () => void
 }) {
   const Chevron = open ? ChevronUp : ChevronDown
   return (
@@ -24,6 +27,7 @@ export function Accordion({
         id={id}
         aria-expanded={open}
         aria-controls={`${id}-body`}
+        onClick={onToggle}
         className={`flex items-center justify-between border-t border-line px-[2px] py-[9px] text-left text-control-label font-semibold uppercase tracking-[0.04em] text-ink-soft ${ring}`}
       >
         {title}

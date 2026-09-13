@@ -11,6 +11,14 @@ const STYLE_GUIDE_FILES = [
   '../../packages/section-runtime/reference-tokens.css',
 ]
 
+/** Story 4.5: the controls review reads its sample (`packages/library/fixtures/controls/`), the Orbit Weekly
+ *  picture pool and the reference token stylesheet off disk — the same reason, for its two routes. */
+const CONTROLS_FILES = [
+  '../../packages/library/fixtures/controls/**',
+  '../../packages/library/orbit-weekly/images/**',
+  '../../packages/section-runtime/reference-tokens.css',
+]
+
 const config: NextConfig = {
   // `next dev` otherwise writes AGENTS.md and CLAUDE.md into this folder on every start.
   agentRules: false,
@@ -25,6 +33,8 @@ const config: NextConfig = {
   outputFileTracingIncludes: {
     '/app/style-guide': STYLE_GUIDE_FILES,
     '/app/style-guide/frame': STYLE_GUIDE_FILES,
+    '/app/controls': CONTROLS_FILES,
+    '/app/controls/frame': CONTROLS_FILES,
   },
 }
 

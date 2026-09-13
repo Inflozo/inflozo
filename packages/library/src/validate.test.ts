@@ -13,11 +13,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, DIRECTIVES, guardField, parseBindSpec, parseTokenTemplate,
-  safeUrl, assertBindableAttr,
+  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, CONTROL_CAP, DIRECTIVES, guardField, isIsoDate, parseBindSpec,
+  parseTokenTemplate, safeUrl, assertBindableAttr,
 } from './vocabulary.ts'
-import { assembleEntry, recoverQuickControls, parseDesignDir } from './registry.ts'
-import type { CategoryContent, DesignJson } from './registry.ts'
+import { assembleEntry, categoryControlUnion, recoverQuickControls, parseDesignDir } from './registry.ts'
+import type { CategoryContent, ControlDef, DesignJson } from './registry.ts'
 import {
   validateCategoryContent, validateDesign, validateDesignJson, validateMarkup,
 } from './validate.ts'
@@ -225,9 +225,9 @@ test('the leak assertion is one regex, and it sees a valueless directive mid-tag
 })
 
 test('an inline token a prop does not declare cannot be declared at all outside the closed set', () => {
-  const bad: CategoryContent = { category: 'a22', props: { h: { type: 'text', tokens: ['unknownToken'] } } }
+  const bad: CategoryContent = { category: 'a22', props: { h: { type: 'text', label: 'Heading', tokens: ['unknownToken'] } } }
   assert.deepEqual(codes(validateCategoryContent(bad)), ['bad-inline-token'])
-  const good: CategoryContent = { category: 'a22', props: { h: { type: 'text', tokens: ['members'] } } }
+  const good: CategoryContent = { category: 'a22', props: { h: { type: 'text', label: 'Heading', tokens: ['members'] } } }
   clean(validateCategoryContent(good), 'a prop declaring {members}')
 })
 
@@ -238,7 +238,7 @@ test('an un-allow-listed token inside a prop VALUE stays literal text — it is 
   // non-refusal, because this story ships no renderer — 4.2's emitters execute the substitution.
   const withStray: CategoryContent = {
     category: 'a22',
-    props: { h: { type: 'text', tokens: ['members'], default: 'Hi {members}, see {unknownToken}' } },
+    props: { h: { type: 'text', label: 'Heading', tokens: ['members'], default: 'Hi {members}, see {unknownToken}' } },
   }
   clean(validateCategoryContent(withStray), "a prop value carrying {unknownToken}")
 })
@@ -258,7 +258,7 @@ test('the three universal controls sit on every section root', () => {
 test('a content prop the category does not declare is refused (R-102), in every directive that names one', () => {
   const content: CategoryContent = {
     category: 'a4',
-    props: { title: { type: 'text' }, 'cta.url': { type: 'url' }, logos: { type: 'array' }, 'logos[].alt': { type: 'text' } },
+    props: { title: { type: 'text', label: 'L' }, 'cta.url': { type: 'url', label: 'L' }, logos: { type: 'array', label: 'L' }, 'logos[].alt': { type: 'text', label: 'L' } },
   }
   const o = { controls: [], content }
   assert.deepEqual(codes(validateMarkup(root('<p data-prop="newsletter.heading">x</p>'), o)), ['unknown-prop'])
@@ -268,7 +268,7 @@ test('a content prop the category does not declare is refused (R-102), in every 
 })
 
 test('a directive and its prop must agree in kind', () => {
-  const content: CategoryContent = { category: 'a4', props: { title: { type: 'text' }, logos: { type: 'array' } } }
+  const content: CategoryContent = { category: 'a4', props: { title: { type: 'text', label: 'L' }, logos: { type: 'array', label: 'L' } } }
   const o = { controls: [], content }
   assert.deepEqual(codes(validateMarkup(root('<li data-items="title">x</li>'), o)), ['prop-type-mismatch'])
   assert.deepEqual(codes(validateMarkup(root('<p data-prop="logos">x</p>'), o)), ['prop-type-mismatch'])
@@ -283,12 +283,12 @@ const DESIGN: DesignJson = {
   bindingContext: ['posts'],
   compileTarget: ['index.hbs'],
   controlSchema: [
-    { name: 'cols', type: 'stepper', values: ['2', '3'], default: '3' },
-    { name: 'card', type: 'segmented', values: ['flat', 'raised'], default: 'raised' },
-    { name: 'gap', type: 'segmented', values: ['tight', 'normal', 'loose'], default: 'normal' },
-    { name: 'meta', type: 'named-select', values: ['none', 'date'], default: 'date' },
-    { name: 'image', type: 'segmented', values: ['top', 'side'], default: 'top' },
-    { name: 'rule', type: 'segmented', values: ['none', 'line'], default: 'none' },
+    { name: 'cols', type: 'stepper', label: 'Columns', group: 'arrangement', values: ['2', '3'], default: '3' },
+    { name: 'card', type: 'segmented', label: 'Card style', group: 'style', values: ['flat', 'raised'], default: 'raised' },
+    { name: 'gap', type: 'segmented', label: 'Gap', group: 'arrangement', values: ['tight', 'normal', 'loose'], default: 'normal' },
+    { name: 'meta', type: 'named-select', label: 'Meta', group: 'style', values: ['none', 'date'], default: 'date' },
+    { name: 'image', type: 'segmented', label: 'Image position', group: 'arrangement', values: ['top', 'side'], default: 'top' },
+    { name: 'rule', type: 'segmented', label: 'Rule', group: 'style', values: ['none', 'line'], default: 'none' },
   ],
   ghostCompat: { minVersion: '5.0.0', helpers: ['foreach'] },
   darkCapabilities: ['tokens'],
@@ -300,6 +300,14 @@ const DESIGN: DesignJson = {
 }
 
 const design = (over: Partial<DesignJson> = {}): DesignJson => ({ ...DESIGN, ...over })
+
+/** One sound control of each shape, so a refusal test changes exactly the field it is about. */
+const ctl = (over: Partial<ControlDef> = {}): ControlDef =>
+  ({ name: 'cols', type: 'stepper', label: 'Columns', group: 'arrangement', values: ['2', '3'], default: '2', ...over })
+const toggle = (over: Partial<ControlDef> = {}): ControlDef =>
+  ({ name: 'rule', type: 'toggle', label: 'Rule', group: 'style', values: ['on', 'off'], default: 'on', ...over })
+const align = (over: Partial<ControlDef> = {}): ControlDef =>
+  ({ name: 'align', type: 'segmented', label: 'Alignment', group: 'arrangement', values: ['start', 'center'], default: 'start', ...over })
 
 test('a sound design.json validates clean', () => {
   clean(validateDesignJson(design()), 'the reference design.json')
@@ -362,19 +370,14 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
   only({ dataBindings: { posts: { source: 'posts' } } }, 'bad-get-key')
   only({ dataBindings: { picks: { source: 'posts', ids: [] } } }, 'bad-get-ids')
   only({ dataBindings: { picks: { source: 'posts', ids: ['abc'], limit: 3 } } }, 'bad-get-ids')
-  only({ controlSchema: [{ name: 'Cols', type: 'stepper', values: ['2'], default: '2' }] }, 'bad-control-name')
+  only({ controlSchema: [ctl({ name: 'Cols' })] }, 'bad-control-name')
+  only({ controlSchema: [ctl({ name: 'items' })] }, 'bad-control-name')
+  only({ controlSchema: [ctl(), ctl()] }, 'duplicate-control')
+  only({ controlSchema: [toggle({ disabledBy: { control: 'align', whenValue: 'center', reason: 'r', inForce: 'off' } })] }, 'dependency-unknown')
+  only({ controlSchema: [toggle({ disabledBy: { control: 'rule', whenValue: 'off', reason: 'r', inForce: 'off' } })] }, 'dependency-self')
   only({ controlSchema: [
-    { name: 'cols', type: 'stepper', values: ['2'], default: '2' },
-    { name: 'cols', type: 'stepper', values: ['2'], default: '2' },
-  ] }, 'duplicate-control')
-  only({ controlSchema: [{ name: 'rule', type: 'toggle', values: ['on', 'off'], default: 'on',
-    disabledBy: { control: 'align', whenValue: 'center', reason: 'r' } }] }, 'dependency-unknown')
-  only({ controlSchema: [{ name: 'rule', type: 'toggle', values: ['on', 'off'], default: 'on',
-    disabledBy: { control: 'rule', whenValue: 'off', reason: 'r' } }] }, 'dependency-self')
-  only({ controlSchema: [
-    { name: 'align', type: 'segmented', values: ['start', 'center'], default: 'start' },
-    { name: 'rule', type: 'toggle', values: ['on', 'off'], default: 'on',
-      disabledBy: { control: 'align', whenValue: 'middle', reason: 'r' } },
+    align(),
+    toggle({ disabledBy: { control: 'align', whenValue: 'middle', reason: 'r', inForce: 'off' } }),
   ] }, 'dependency-value')
   only({ previewSeed: '' }, 'preview-seed-missing')
   only({ ghostCompat: undefined }, 'ghost-compat-missing')
@@ -391,52 +394,172 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
 test('content.json refusals: marks, tokens, orphan items, unsafe defaults, the category id', () => {
   const only = (props: CategoryContent['props'], code: string, category = 'a22') =>
     assert.ok(codes(validateCategoryContent({ category, props })).includes(code), `${code} should fire`)
-  only({ h: { type: 'richtext', marks: ['script'] } }, 'bad-mark')
-  only({ h: { type: 'text', marks: ['strong'] } }, 'marks-on-plain-prop')
-  only({ u: { type: 'url', tokens: ['members'] } }, 'tokens-on-non-text')
-  only({ 'logos[].alt': { type: 'text' } }, 'orphan-item-prop')
-  only({ logos: { type: 'text' }, 'logos[].alt': { type: 'text' } }, 'orphan-item-prop')
-  only({ u: { type: 'url', default: 'javascript:alert(1)' } }, 'unsafe-default-url')
+  only({ h: { type: 'richtext', label: 'L', marks: ['script'] } }, 'bad-mark')
+  only({ h: { type: 'text', label: 'L', marks: ['strong'] } }, 'marks-on-plain-prop')
+  only({ u: { type: 'url', label: 'L', tokens: ['members'] } }, 'tokens-on-non-text')
+  only({ 'logos[].alt': { type: 'text', label: 'L' } }, 'orphan-item-prop')
+  only({ logos: { type: 'text', label: 'L' }, 'logos[].alt': { type: 'text', label: 'L' } }, 'orphan-item-prop')
+  only({ u: { type: 'url', label: 'L', default: 'javascript:alert(1)' } }, 'unsafe-default-url')
+  only({ u: { type: 'url', label: 'L', default: { href: 'javascript:alert(1)' } } }, 'unsafe-default-url')
   only({}, 'bad-category', 'A-22')
   clean(validateCategoryContent({ category: 'a22', props: {
-    h: { type: 'richtext', marks: ['strong', 'em', 'u', 'a'], tokens: ['members'] },
-    u: { type: 'url', default: 'https://example.com/' },
-    logos: { type: 'array' }, 'logos[].alt': { type: 'text' },
+    h: { type: 'richtext', label: 'Heading', marks: ['strong', 'em', 'u', 'a'], tokens: ['members'] },
+    u: { type: 'url', label: 'Link', default: 'https://example.com/' },
+    logos: { type: 'array', label: 'Logos' }, 'logos[].alt': { type: 'text', label: 'Description' },
   } }), 'a sound content.json')
 })
 
 test('a universal control may not be redeclared per design (R-23)', () => {
   const f = validateDesignJson(design({
-    controlSchema: [{ name: 'spacing', type: 'segmented', values: ['a', 'b'], default: 'a' }],
+    controlSchema: [ctl({ name: 'spacing', type: 'segmented', values: ['compact', 'spacious'], default: 'compact' })],
   }))
-  assert.ok(codes(f).includes('universal-control-redeclared'))
+  assert.deepEqual(codes(f), ['universal-control-redeclared'])
 })
 
 test('a control must be closed-valued, and its default must be one of its values', () => {
-  assert.ok(codes(validateDesignJson(design({
-    controlSchema: [{ name: 'cols', type: 'text', values: [], default: '3' }],
-  }))).includes('control-open-valued'))
-  assert.ok(codes(validateDesignJson(design({
-    controlSchema: [{ name: 'cols', type: 'stepper', values: ['2', '3'], default: '4' }],
-  }))).includes('control-default'))
+  assert.deepEqual(codes(validateDesignJson(design({ controlSchema: [ctl({ values: [], default: '3' })] }))), ['control-open-valued'])
+  assert.deepEqual(codes(validateDesignJson(design({ controlSchema: [ctl({ default: '4' })] }))), ['control-default'])
 })
 
 test('a control dependency carries its reason (R-33)', () => {
-  assert.ok(codes(validateDesignJson(design({
-    controlSchema: [
-      { name: 'align', type: 'segmented', values: ['start', 'center'], default: 'start' },
-      {
-        name: 'rule', type: 'segmented', values: ['none', 'line'], default: 'none',
-        disabledBy: { control: 'align', whenValue: 'center', reason: '' },
-      },
-    ],
-  }))).includes('dependency-without-reason'))
+  assert.deepEqual(codes(validateDesignJson(design({
+    controlSchema: [align(), toggle({ disabledBy: { control: 'align', whenValue: 'center', reason: '', inForce: 'off' } })],
+  }))), ['dependency-without-reason'])
+})
+
+// ─── Story 4.5 — the control vocabulary, each refusal fired ALONE ────────────
+// `test-vocabulary.mjs` derives the refusal list from `validate.ts` and fails on a code with no test,
+// and each case below asserts the one code it is about and nothing else, so a fixture that trips a
+// second rule is a failing test rather than a quiet pass.
+
+const alone = (over: Partial<DesignJson>, code: string) =>
+  assert.deepEqual(codes(validateDesignJson(design(over))), [code], `only ${code} should fire`)
+
+test('a control outside the five types, or with no label or group, is refused', () => {
+  alone({ controlSchema: [ctl({ type: 'text' as ControlDef['type'] })] }, 'control-type')
+  alone({ controlSchema: [ctl({ label: '' })] }, 'control-label')
+  alone({ controlSchema: [ctl({ group: 'layout' as ControlDef['group'] })] }, 'control-group')
+  clean(validateDesignJson(design({ controlSchema: [ctl(), toggle(), align()] })), 'three sound controls')
+})
+
+test("values that break their type's grammar are refused, and each type's legal set is not", () => {
+  alone({ controlSchema: [toggle({ values: ['yes', 'no'], default: 'yes' })] }, 'control-values')
+  alone({ controlSchema: [ctl({ values: ['2', '4'] })] }, 'control-values')
+  alone({ controlSchema: [ctl({ values: ['3', '2'], default: '3' })] }, 'control-values')
+  alone({ controlSchema: [ctl({ values: ['12px', '24px'], default: '12px' })] }, 'control-values')
+  alone({ controlSchema: [align({ values: ['#ff0000', 'start'] })] }, 'control-values')
+  alone({ controlSchema: [ctl({ name: 'tint', type: 'swatch-row', group: 'style', values: ['base', 'none'], default: 'base' })] }, 'control-values')
+  alone({ controlSchema: [align({ valueLabels: { start: 'Left', middle: 'Middle' } })] }, 'value-label-unknown')
+  clean(validateDesignJson(design({ controlSchema: [
+    ctl({ values: ['2', '3', '4'] }), toggle(), align({ valueLabels: { start: 'Left', center: 'Centre' } }),
+    ctl({ name: 'tint', type: 'swatch-row', group: 'style', values: ['base', 'surface'], default: 'base' }),
+    ctl({ name: 'meta', type: 'named-select', group: 'style', values: ['none', 'author-date'], default: 'none' }),
+  ] })), 'every type at its own grammar')
+})
+
+test('Inherit, or any CSS-wide word, is refused anywhere in a declaration (FR-F2, R-23)', () => {
+  alone({ controlSchema: [align({ values: ['start', 'inherit'] })] }, 'css-wide-keyword')
+  alone({ controlSchema: [align(), toggle({ disabledBy: { control: 'align', whenValue: 'center', reason: 'r', inForce: 'off' } }),
+    ctl({ name: 'fit', type: 'segmented', group: 'style', values: ['cover', 'unset'], default: 'cover' })] }, 'css-wide-keyword')
+})
+
+test('more than the cap of own controls is refused; the universals and the cap itself are not', () => {
+  const many = (n: number) => Array.from({ length: n }, (_, i) => align({ name: `c${i}`, label: `Control ${i}` }))
+  alone({ controlSchema: many(CONTROL_CAP + 1) }, 'control-cap')
+  clean(validateDesignJson(design({ controlSchema: many(CONTROL_CAP), universals: { divider: { values: ['none', 'line'], reason: 'r' } } })), 'exactly the cap, with a universal narrowed')
+})
+
+test('a dependency cycle is refused, and a chain is not', () => {
+  const dep = (control: string) => ({ control, whenValue: 'center', reason: 'r', inForce: 'start' })
+  alone({ controlSchema: [align({ name: 'a', disabledBy: dep('b') }), align({ name: 'b', disabledBy: dep('a') })] }, 'dependency-cycle')
+  clean(validateDesignJson(design({ controlSchema: [align({ name: 'a' }), align({ name: 'b', disabledBy: dep('a') }), align({ name: 'c', disabledBy: dep('b') })] })), 'a chain')
+})
+
+test('a greyed control renders one of its own values', () => {
+  alone({ controlSchema: [align(), toggle({ disabledBy: { control: 'align', whenValue: 'center', reason: 'r', inForce: 'none' } })] }, 'dependency-in-force')
+})
+
+test('a universal narrowing is a subset with a reason and a default it offers; an empty list is the no-value lock (R-103)', () => {
+  alone({ universals: { bg: { values: ['base', 'none'], reason: 'r' } } }, 'universal-narrowing')
+  alone({ universals: { bg: { values: ['base', 'surface'], reason: '' } } }, 'universal-reason')
+  alone({ universals: { spacing: { values: ['compact', 'spacious'], reason: 'r' } } }, 'universal-default')
+  alone({ universals: { bg: { values: [], default: 'base', reason: 'r' } } }, 'universal-default')
+  alone({ universals: { tone: { values: ['a'], reason: 'r' } } }, 'universal-unknown')
+  // an Inherit in a narrowing is also outside the universal's values, so it cannot fire alone there
+  assert.deepEqual(codes(validateDesignJson(design({ universals: { divider: { values: ['none', 'line'], default: 'inherit', reason: 'r' } } }))), ['css-wide-keyword', 'universal-default'])
+  clean(validateDesignJson(design({ universals: {
+    bg: { values: ['base', 'surface', 'contrast'], reason: 'This design is drawn for plain grounds.' },
+    spacing: { values: ['compact', 'spacious'], default: 'compact', reason: 'r' },
+  } })), 'a narrowing with its reason')
+  clean(validateDesignJson(design({ universals: { bg: { values: [], reason: 'Transparent over the hero is this design' } } })), "R-103's no-value lock")
+})
+
+test('an absent note names its group and says why', () => {
+  alone({ absent: [{ group: 'style', note: '' }] }, 'absent-note')
+  alone({ absent: [{ group: 'layout' as 'style', note: 'n' }] }, 'absent-note')
+  clean(validateDesignJson(design({ absent: [{ group: 'style', note: 'There is no image focus here.' }] })), 'a sound absent note')
+})
+
+test('a root value outside its offered set, and a no-value-locked universal on the root, are refused', () => {
+  const html = (bg: string, cols = '3') => `<section ${bg} data-spacing="comfortable" data-divider="none" data-cols="${cols}"></section>`
+  const controlValues = { cols: ['2', '3'], bg: ['base', 'surface'], spacing: ['compact', 'comfortable', 'spacious'], divider: ['none', 'line', 'fade'] }
+  const opts = { controls: ['cols'], controlValues }
+  assert.deepEqual(codes(validateMarkup(html('data-bg="base"', '12px'), opts)), ['root-control-value'])
+  assert.deepEqual(codes(validateMarkup(html('data-bg="accent"'), opts)), ['root-control-value'])
+  clean(validateMarkup(html('data-bg="surface"'), opts), 'a root at offered values')
+  const locked = { ...opts, controlValues: { ...controlValues, bg: [] } }
+  assert.deepEqual(codes(validateMarkup(html('data-bg="base"'), locked)), ['universal-locked-on-root'])
+  clean(validateMarkup(html(''), locked), 'a no-value-locked root with no data-bg')
+  // and names alone — the stress archetypes' form — still check nothing about values
+  clean(validateMarkup(html('data-bg="whatever"', 'x'), { controls: ['cols'] }), 'names only')
+})
+
+test('content.json: a prop needs a label and a known type; an array its bounds and sentences; an icon and a date their shapes', () => {
+  const only = (props: CategoryContent['props'], code: string, icons?: (n: string) => readonly [] | undefined) =>
+    assert.deepEqual(codes(validateCategoryContent({ category: 'a5', props }, icons)), [code], `only ${code} should fire`)
+  const set = (n: string) => (n === 'star' || n === 'heart-filled' ? [] as const : undefined)
+  only({ h: { type: 'text', label: '' } }, 'prop-label')
+  only({ h: { type: 'color' as 'text', label: 'Colour' } }, 'prop-type')
+  only({ f: { type: 'array', label: 'Features', min: 4, max: 2, atMin: 'a', atMax: 'b' } }, 'array-bounds')
+  only({ f: { type: 'array', label: 'Features', min: 2, max: 6, atMin: 'a', atMax: 'b', default: [] } }, 'array-bounds')
+  only({ t: { type: 'text', label: 'Title', max: 6 } }, 'array-bounds')
+  only({ f: { type: 'array', label: 'Features', min: 2, max: 6, atMin: 'a' } }, 'array-sentence')
+  only({ f: { type: 'array', label: 'Features', min: 2, atMax: 'b' } }, 'array-sentence')
+  only({ i: { type: 'icon', label: 'Icon', default: 'rocketship' } }, 'icon-default', set)
+  only({ i: { type: 'icon', label: 'Icon', default: '"><script>' } }, 'icon-default')
+  only({ d: { type: 'date', label: 'Next issue', default: '1 October 2026' } }, 'date-default')
+  only({ d: { type: 'date', label: 'Next issue', default: '2026-02-30' } }, 'date-default')
+  clean(validateCategoryContent({ category: 'a5', props: {
+    f: { type: 'array', label: 'Features', min: 2, max: 6, atMin: 'a', atMax: 'b', item: 'feature', default: [{}, {}] },
+    'f[].icon': { type: 'icon', label: 'Icon', default: 'star' },
+    g: { type: 'icon', label: 'Badge', default: 'heart-filled' },
+    d: { type: 'date', label: 'Next issue', default: '2028-02-29' },
+  } }, set), 'a sound array, icon and date')
+})
+
+test('data-prop takes an icon and a date prop as well as text', () => {
+  const content: CategoryContent = { category: 'a5', props: { i: { type: 'icon', label: 'Icon' }, d: { type: 'date', label: 'Day' }, u: { type: 'url', label: 'Link' } } }
+  clean(validateMarkup(root('<span data-prop="i"></span><time data-prop="d">x</time>'), { controls: [], content }), 'icon and date via data-prop')
+  assert.deepEqual(codes(validateMarkup(root('<span data-prop="u">x</span>'), { controls: [], content })), ['prop-type-mismatch'])
+})
+
+test("a category's control union is generated from its designs, and one name with two value sets is refused (R-53)", () => {
+  const a = { id: 'a5/1', controlSchema: [ctl(), align()] }
+  const b = { id: 'a5/2', controlSchema: [align(), toggle()] }
+  const union = categoryControlUnion([a, b])
+  assert.ok(Array.isArray(union), String(union))
+  assert.deepEqual(union.map((c) => c.name), ['cols', 'align', 'rule'])
+  const c = { id: 'a5/3', controlSchema: [ctl({ values: ['2', '3', '4'] })] }
+  const refused = categoryControlUnion([a, b, c])
+  assert.equal(typeof refused, 'string')
+  assert.match(String(refused), /a5\/1/)
+  assert.match(String(refused), /a5\/3/)
 })
 
 // ─── assembly ────────────────────────────────────────────────────────────────
 
 test('an entry is assembled from the path, the design, the category content and the files', () => {
-  const content: CategoryContent = { category: 'a17', props: { title: { type: 'text' } } }
+  const content: CategoryContent = { category: 'a17', props: { title: { type: 'text', label: 'L' } } }
   const e = assembleEntry({
     dir: 'packages/library/designs/a17/1', design: design(), content,
     html: EVERY_DIRECTIVE, css: '.x{}',
@@ -465,16 +588,16 @@ test('validateDesign runs design.json, content.json and markup as one', () => {
   const content: CategoryContent = {
     category: 'a17',
     props: {
-      title: { type: 'text' }, 'cta.url': { type: 'url' }, 'cta.title': { type: 'text' },
-      logos: { type: 'array' }, 'logos[].name': { type: 'text' },
+      title: { type: 'text', label: 'Title' }, 'cta.url': { type: 'url', label: 'Link' }, 'cta.title': { type: 'text', label: 'Link title' },
+      logos: { type: 'array', label: 'Logos' }, 'logos[].name': { type: 'text', label: 'Name' },
     },
   }
   const f = validateDesign({
     html: EVERY_DIRECTIVE,
     design: design({
       controlSchema: [
-        { name: 'cols', type: 'stepper', values: ['2', '3'], default: '3' },
-        { name: 'card', type: 'segmented', values: ['flat', 'raised'], default: 'raised' },
+        { name: 'cols', type: 'stepper', label: 'Columns', group: 'arrangement', values: ['2', '3'], default: '3' },
+        { name: 'card', type: 'segmented', label: 'Card style', group: 'style', values: ['flat', 'raised'], default: 'raised' },
       ],
       compileTarget: ['index.hbs', 'tag.hbs'],
       dataBindings: { latest: { source: 'posts', limit: 9 } },
@@ -483,4 +606,9 @@ test('validateDesign runs design.json, content.json and markup as one', () => {
     content,
   })
   clean(f, 'the reference design end to end')
+})
+
+test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {
+  for (const good of ['2026-10-01', '2028-02-29', '2000-02-29']) assert.ok(isIsoDate(good), good)
+  for (const bad of ['2026-02-29', '1900-02-29', '2026-13-01', '2026-10-1', '2026-10-01T00:00:00Z', '', 20261001, null]) assert.ok(!isIsoDate(bad), String(bad))
 })

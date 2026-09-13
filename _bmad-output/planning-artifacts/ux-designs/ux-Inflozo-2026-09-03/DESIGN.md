@@ -555,8 +555,16 @@ mind, which is the moment the product is selling.
 
 ## Icons & Illustration
 
-**Tabler**, curated set, MIT-licensed, and the licence text ships inside the emitted theme (PRD
-Appendix C, decision D1). 1.5px stroke at 16 and 20px. **Icons are drawn inline, once per use**
+**Tabler** — **every Tabler icon, outline and filled**, grouped by Tabler's own categories, with
+Outline · Filled · Both deciding which styles the picker shows (ruling R-104, 2026-09-13, widening D1's
+curated set); MIT-licensed, and the licence text ships inside the emitted theme (PRD Appendix C,
+decision D1). The drawn P0-2 picker's "curated" header and its Social group of nine stand as drawn
+(R-74) and are superseded in the build: Tabler's categories replace the drawn chips, and the
+nine-platform rule stays with the social-link rows that read Ghost's nine fields. A section's icon is
+Tabler's drawing verbatim — stroke 2 on its 24 grid with round caps, or its fill for a filled icon
+(`P0 Editor Primitives - Spec.md:228`); the app's own glyphs are the frames' drawings at the frames'
+strokes (R-92). *This line said "1.5px stroke at 16 and 20px", the Lucide brief's figure, until Story
+4.5 found it disagreeing with the export.* **Icons are drawn inline, once per use**
 (ruling R-26) — no sprite file, no icon font: the markup is written where the icon appears, inherits
 `currentColor` with no extra rule, costs no request, and survives with everything switched off.
 

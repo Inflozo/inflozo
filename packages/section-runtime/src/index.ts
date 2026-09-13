@@ -24,6 +24,8 @@ export {
   formatDate,
   escapeUserText,
   serializeMarks,
+  iconSvg,
+  stampControls,
 } from './core.ts'
 export type {
   RenderInput,
@@ -33,3 +35,35 @@ export type {
   ThemeOutput,
 } from './core.ts'
 export type { Mark, PropValue, RichText } from './marks.ts'
+// the reference token values — the controls panel paints its Swatch Row's roles with them (Story 4.5)
+export { REFERENCE_TOKENS } from './tokens.ts'
+export { editText, linkAttributes } from './marks.ts'
+// Story 4.5 — the controls engine: the sidebar model and every edit, from the one declaration both
+// emitters read (FR-F7). Epic 5 mounts the panel over these.
+export {
+  addItem,
+  defaultContent,
+  duplicateItem,
+  getPath,
+  moveItem,
+  removeItem,
+  resetControl,
+  resetSection,
+  resolveControls,
+  setContent,
+  setControl,
+  setData,
+  sidebar,
+  withData,
+} from './controls.ts'
+export type {
+  ControlEntry,
+  ControlOption,
+  ControlRow,
+  ControlState,
+  DataRow,
+  PropRow,
+  SidebarGroupModel,
+  SidebarModel,
+  SidebarRow,
+} from './controls.ts'

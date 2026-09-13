@@ -391,3 +391,31 @@ export const Passkey = (p: IconProps) => (
     <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
   </Icon>
 )
+
+/* Story 4.5 — the controls panel's glyphs, each read verbatim off the frame that draws it (R-92: Claude
+   Design's own drawings, not Tabler's). P0-1's Link popover row glyphs (`P0-1 Inline Text
+   Toolbar.dc.html:78, :82, :88`), drawn there at stroke 1.8, and P0-3's "From Ghost" mark
+   (`P0-3 Item List Controls.dc.html:57`), drawn at stroke 2. */
+export const PageGlyph = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+  </Icon>
+)
+export const PostGlyph = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </Icon>
+)
+export const TagGlyph = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M20.6 13.4L11 3.8A2 2 0 0 0 9.6 3.2H4a1 1 0 0 0-1 1v5.6c0 .5.2 1 .6 1.4l9.6 9.6a2 2 0 0 0 2.8 0l4.6-4.6a2 2 0 0 0 0-2.8z" />
+    <circle cx="7.5" cy="7.5" r="1" />
+  </Icon>
+)
+export const FromGhost = ({ strokeWidth = 2, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+  </Icon>
+)

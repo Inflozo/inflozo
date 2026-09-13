@@ -4,13 +4,15 @@
   "bindingContext": ["posts", "tags", "tag"],
   "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
   "controlSchema": [
-    { "name": "cols", "type": "stepper", "values": ["2", "3", "4"], "default": "3" },
-    { "name": "card", "type": "segmented", "values": ["flat", "outlined", "raised"], "default": "raised" },
-    { "name": "meta", "type": "named-select", "values": ["none", "date", "author-date"], "default": "author-date" },
-    { "name": "align", "type": "segmented", "values": ["start", "center"], "default": "start" },
-    { "name": "badge", "type": "toggle", "values": ["on", "off"], "default": "on" },
-    { "name": "rule", "type": "segmented", "values": ["none", "line"], "default": "none",
-      "disabledBy": { "control": "align", "whenValue": "center", "reason": "a centred head has no rule to sit under" } }
+    { "name": "cols", "type": "stepper", "label": "Columns", "group": "arrangement", "values": ["2", "3", "4"], "default": "3" },
+    { "name": "card", "type": "segmented", "label": "Card style", "group": "style", "values": ["flat", "outlined", "raised"], "default": "raised" },
+    { "name": "meta", "type": "named-select", "label": "Post details", "group": "style", "values": ["none", "date", "author-date"], "default": "author-date",
+      "valueLabels": { "none": "None", "date": "Date", "author-date": "Author and date" } },
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "arrangement", "values": ["start", "center"], "default": "start",
+      "valueLabels": { "start": "Left", "center": "Centre" } },
+    { "name": "badge", "type": "toggle", "label": "Editor's pick badge", "group": "style", "values": ["on", "off"], "default": "on" },
+    { "name": "rule", "type": "segmented", "label": "Rule under heading", "group": "style", "values": ["none", "line"], "default": "none",
+      "disabledBy": { "control": "align", "whenValue": "center", "reason": "Not available while the heading is centred.", "inForce": "none" } }
   ],
   "dataBindings": {
     "latest": { "source": "posts", "filter": "featured:true", "limit": 9, "order": "published_at desc" }

@@ -2,7 +2,7 @@
 title: 'Story 4.5 — The controls engine and the control vocabulary'
 type: 'feature'
 created: '2026-09-13'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '4a67e48655e8d3b2870681c6048c6ad764994c29'
 owner_test: pending
 review_loop_iteration: 0
@@ -235,14 +235,14 @@ working sidebar and put it beside a sample section on one internal page, the way
 
 **Execution:**
 
-- [ ] `packages/library/src/vocabulary.ts` -- declare the control vocabulary as data: `CONTROL_TYPES`
+- [x] `packages/library/src/vocabulary.ts` -- declare the control vocabulary as data: `CONTROL_TYPES`
   (the five), `UNIVERSALS` (each a full control — label, type, values, default — with Background role
   marked mode-scoped, FR-D7), `UNIVERSAL_CONTROLS` derived from it, `PORTAL_ACTIONS` (Sign up · Sign in ·
   Account · Upgrade → `signup · signin · account · account/plans`, `prd.md:928`), `CONTROL_CAP` (15,
   FR-F3) and the refused CSS-wide words (`inherit · initial · unset · revert`) -- AD-34: the rules are
   data in the library, one copy for the validator, the engine and the panel; Background role's five roles
   are R-103's.
-- [ ] `packages/library/src/registry.ts` -- widen the entry: `ControlDef` gains `type` as the closed
+- [x] `packages/library/src/registry.ts` -- widen the entry: `ControlDef` gains `type` as the closed
   union, a required `label` and `group` (`arrangement` or `style`), optional `valueLabels`, and
   `disabledBy.inForce`; `DesignJson` and `SectionRegistryEntry` gain `universals` (an empty `values` is R-103's no-value lock; per universal:
   `values`, `default?`, `reason`) and `absent` (`{ group, note }`), carried by `assembleEntry`; `PropDef`
@@ -251,7 +251,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   · `ref?` · `newTab?` · `rel?`); and `categoryControlUnion(designs)`, which refuses one name carrying
   two value sets (R-53); correct the comment at `:53-54` -- FR-F7's one schema per design and one union
   per category from one source: the union is generated, never authored.
-- [ ] `tools/vendor-icons.py` · `packages/library/icons/tabler.json` ·
+- [x] `tools/vendor-icons.py` · `packages/library/icons/tabler.json` ·
   `packages/library/icons/LICENSE-tabler.txt` · `packages/library/src/icons.ts` ·
   `packages/library/src/icons.test.ts` · `packages/library/{package.json,tsconfig.json}` -- vendor the
   whole set (R-104): download `@tabler/icons` at a pinned version from the npm registry, refuse to write
@@ -268,7 +268,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   carries a brace; add `icons` to the `tsconfig.json` `include` with `resolveJsonModule` (Story 4.4's
   `orbit-weekly` wiring) and a catalogue row for the script in `tools/doc-audit.py` -- R-26, R-92 and
   R-104: Tabler is the sections' set, drawn inline and whole, and its licence travels with it.
-- [ ] `packages/library/src/validate.ts` · `packages/library/src/validate.test.ts` -- the refusals, each
+- [x] `packages/library/src/validate.ts` · `packages/library/src/validate.test.ts` -- the refusals, each
   fired alone by a test (`test-vocabulary.mjs:106-114` derives the list): an unknown control type; a
   missing label or group; values that break their type's grammar (`on`/`off` for a toggle, ascending
   consecutive integers for a stepper, kebab words for the rest, the roles for a swatch row) and a
@@ -283,22 +283,22 @@ working sidebar and put it beside a sample section on one internal page, the way
   props (`:179-184`); update the existing fixtures so each case still fires only its own code, and
   correct the comment at `:243-244` -- one refusal per rule the panel, the validator and the emitters
   share.
-- [ ] `packages/library/fixtures/reference-design/design.json` · `packages/library/fixtures/content.json`
+- [x] `packages/library/fixtures/reference-design/design.json` · `packages/library/fixtures/content.json`
   -- give every control a label and group and every prop a label -- the on-disk reference must keep
   validating clean end to end (`test-vocabulary.mjs:83-91`).
-- [ ] `packages/library/fixtures/controls/1/{design.json,index.html,style.css}` ·
+- [x] `packages/library/fixtures/controls/1/{design.json,index.html,style.css}` ·
   `packages/library/fixtures/controls/content.json` -- the sample the review page renders: a small
   feature-row section, flat CSS over the reference tokens only, using only directives the runtime
   renders, with the controls, content and words Design Notes lists; assembled through the real
   `assembleEntry` and kept outside `designs/` -- the panel can only be proved against a design, and no
   category exists yet.
-- [ ] `packages/section-runtime/src/marks.ts` -- add `linkAttributes(link)`, the one function that turns
+- [x] `packages/section-runtime/src/marks.ts` -- add `linkAttributes(link)`, the one function that turns
   a link record into its closed attribute set (`href` through `safeUrl`, `data-portal` from
   `PORTAL_ACTIONS`, a valueless `data-ghost-search`, `target` and `rel` from `LINK_RELS`, and nothing for
   a record with no valid destination), and have `openTag` (`:64-77`) call it; add `editText(value,
   next)`, which shifts marks after the edited run and clamps or drops the ones it cuts -- AD-4: marks
   become markup at one place, and a sidebar edit must not lose a customer's bold.
-- [ ] `packages/section-runtime/src/controls.ts` · `packages/section-runtime/src/controls.test.ts` -- the
+- [x] `packages/section-runtime/src/controls.ts` · `packages/section-runtime/src/controls.test.ts` -- the
   engine, pure: `resolveControls` (every declared control and universal → its value in force, and no
   entry for a no-value lock), `sidebar`
   (Quick Controls as `recoverQuickControls` returns them, then Content in markup order via the library's
@@ -309,7 +309,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   Ghost-sourced Count and Order; the test is the I/O matrix, every row, with the floor and ceiling
   sentences read from `content.json` and never written in code -- the capability map's home for FR-F
   (`ARCHITECTURE-SPINE.md:622`).
-- [ ] `packages/section-runtime/src/core.ts` -- one door: `RenderInput` gains `controlSchema`,
+- [x] `packages/section-runtime/src/core.ts` -- one door: `RenderInput` gains `controlSchema`,
   `universals`, `controls`, `data`, `assets` and `icons`; `renderTree` (`:777-846`) stamps `resolveControls` on
   the root when a schema is given (the authored root stands when it is not, so every existing render is
   unchanged), merges `withData` into `dataBindings`, renders `data-items` on both emitters (canvas: one
@@ -322,7 +322,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   through `assets`; add `data-items` to `RENDERED_DIRECTIVES` (`:225-241`)
   -- AD-3 and FR-F7 by construction: neither emitter can write a value the engine did not resolve, and an
   authored list gets its render path (`docs/section-authoring.md:343-354`).
-- [ ] `packages/section-runtime/src/agreement.test.ts` · `packages/section-runtime/src/ad36.test.ts` ·
+- [x] `packages/section-runtime/src/agreement.test.ts` · `packages/section-runtime/src/ad36.test.ts` ·
   `packages/section-runtime/src/index.ts` -- prove it and export it: both emitters stamp identical
   control attributes and produce identical `data-items` trees, link attributes, inline icons and image
   sources, and a greyed control's stored value is in neither output; each new vector is inert and its
@@ -331,21 +331,21 @@ working sidebar and put it beside a sample section on one internal page, the way
   hostile `d` or an extra attribute, a no-value-locked universal, an item title carrying `{{title}}`, a
   stored control name carrying a quote -- §7.3's exit criterion covers everything this story adds, in
   `pnpm check` and therefore in CI.
-- [ ] `docs/section-authoring.md` -- the authoring contract for controls: the five types and their
+- [x] `docs/section-authoring.md` -- the authoring contract for controls: the five types and their
   grammars, `label`, `group`, `valueLabels`, `disabledBy` with `inForce`, the universal trio and
   narrowing with a reason, absent notes, the cap, the content editors and their value shapes (a link
   record, an icon name, an asset id, a date), array bounds and their sentences, `data-items` rendered
   since 4.5 (the partition note `:232-237`), how a link and an icon are emitted, where Tabler's licence
   lives, and the new refusal rows; correct the warns-past-25 owner at `:159-161` to 5.19 -- a shipped
   deliverable that every design in Epics 9–11 is written against.
-- [ ] `apps/web/components/kit/{segmented,stepper,toggle,swatch-row,select,accordion,input,image-control,button}.tsx`
+- [x] `apps/web/components/kit/{segmented,stepper,toggle,swatch-row,select,accordion,input,image-control,button}.tsx`
   · `apps/web/app/(app)/app/(authed)/kit/page.tsx` -- give the Kit's controls their behaviour without
   changing what they draw: optional value and change props; a radio group as one tab stop moved with
   the arrows (`lib/menu.ts:141`'s `nextIndex`); one option greyed inside a live row; a controlled
   `Multiline`; a greyed `AddButton`; an actionable `AssetRow`; no hooks in these files, so `/kit` still
   renders them statically; update `/kit`'s call sites where a prop's shape moves -- R-74: the panel is
   built from the Kit, never beside it.
-- [ ] `apps/web/components/controls/{sidebar,item-list,link-picker,icon-picker,image-picker}.tsx` -- the
+- [x] `apps/web/components/controls/{sidebar,item-list,link-picker,icon-picker,image-picker}.tsx` -- the
   client components Epic 5 will mount: the sidebar draws `sidebar()`'s model with the Kit's pieces —
   the Quick Controls card, the four accordions (a group's absent note after its own controls and before
   the universal trio), the moon badge with the words "Dark override" beside it (UX-DR8), a "Reset" beside
@@ -370,7 +370,7 @@ working sidebar and put it beside a sample section on one internal page, the way
   from a filled slot; the drawings loaded when the picker first opens); the image picker is the Kit's asset row over the sample pool; every
   popover is `popover="auto"` placed by `lib/menu.ts`, takes focus and returns it -- Epic 5 mounts these
   rather than drawing them again.
-- [ ] `apps/web/lib/controls-review.ts` · `apps/web/app/(app)/app/(authed)/controls/{page.tsx,review.tsx,frame/route.ts}`
+- [x] `apps/web/lib/controls-review.ts` · `apps/web/app/(app)/app/(authed)/controls/{page.tsx,review.tsx,frame/route.ts}`
   -- the owner's surface: the page (server, `metadata` with a title and `robots: noindex`, behind the
   session guard, dynamic, no `<main>`) reads the sample off disk, assembles and validates it, and hands the client the entry, the
   reference token values for the swatches, the Orbit Weekly rows for the query, the link picker's
@@ -380,14 +380,14 @@ working sidebar and put it beside a sample section on one internal page, the way
   document — reference tokens, the sample's stylesheet, an empty mount point and no script, so no nonce
   is needed -- Story 4.4's review-page shape, because the editor does not exist yet and R-80 needs a
   deployed screen.
-- [ ] `apps/web/package.json` · `apps/web/next.config.ts` · `apps/web/busy.test.ts` ·
+- [x] `apps/web/package.json` · `apps/web/next.config.ts` · `apps/web/busy.test.ts` ·
   `apps/web/controls.test.ts` -- add `@inflozo/section-runtime` as a `workspace:*` dependency (already in
   `transpilePackages`, `next.config.ts:19-24`); trace the files the review reads for both routes (copy
   `:8-12`, `:25-28`); exempt `controls` in `NO_SKELETON` with its reason (copy `:132-142` — reached only
   by typing the path); test that the frame route guards before building a body, that the canvas document
   carries no script, that every directory the review reads is traced, and that the assembled sample
   validates clean -- the fences `style-guide.test.ts:84-103` put around Story 4.4's page.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md`
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md`
   · `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` ·
   `_bmad-output/implementation-artifacts/deferred-work.md` ·
   `_bmad-output/implementation-artifacts/epic-4-context.md` -- propagate (standing rule 3), then grep
@@ -499,6 +499,17 @@ than obeyed literally.
   offered for Portal, search or email, because they could never act there (R-68).
 - The Date Picker has no frame: it is the Kit's input with the browser's own calendar, which is what
   "calendar popover" asks for without a date library.
+- *Found at Dev.* P0-1 draws the link popover's search state and filled state as two panels; the build
+  keeps search on top and the filled state beneath it in one panel, the same parts in P0-1's order,
+  because steps 11 and 12 press a chip or Remove link on a link that is already set
+  (`apps/web/components/controls/link-picker.tsx:20-25`).
+- *Found at Dev.* The icon picker's Outline · Filled · Both and its category select carry the visible
+  labels "Style" and "Category", which R-104's two new controls need to be named for axe; its recent eight
+  last for the page session, since saving is 5.8's. The image pool's popover has no frame and is the Kit's
+  menu surface holding the asset row's cells (`image-picker.tsx:7-12`).
+- *Found at Dev.* `DESIGN.md` § Icons said "1.5px stroke at 16 and 20px", the Lucide brief's figure; the
+  export ships Tabler verbatim at stroke 2 (`P0 Editor Primitives - Spec.md:228`), so the build draws stroke
+  2 and the DESIGN.md line was corrected to the export (R-74: on disagreement the export is right).
 
 **One link record, two homes.** A `url` prop and an `a` mark hold the same record; a bare string in a
 `url` prop is still a URL link, so every existing fixture and test stays valid. `ref` is kept for Epic 7's
@@ -615,6 +626,33 @@ on Background role, and none on Card tint.
   which render inside the article or the feed (`A32 Paywall - Spec.md:49`, `:401`; `A25 Post Content
   Layouts - Spec.md:212-213`). In every one the see-through look comes from a locked row, the design's own
   ground or a control of its own, and no drawn row offers a see-through choice.
+
+**What ran at Dev, 2026-09-13:**
+- **Real services (R-82).** Dev touched none of Supabase, Vercel, Resend, Dodo, T1 `ghost6.inflozo.com` or
+  T3 `ghost5.inflozo.com`: the story adds no table (no Schema
+  phase under R-99), calls no Ghost, and its deployed screen does not exist until this push reaches
+  production, so the walk on `https://app.inflozo.com/controls`, the throttled 100 ms measurement, the
+  signed-out 307/303 control and the Vercel READY check are the Review run's, listed above. The one external
+  service Dev reached is the **npm registry**: `python3 tools/vendor-icons.py` downloaded
+  `https://registry.npmjs.org/@tabler/icons/-/icons-3.46.0.tgz`, matched its `sha512` to the pinned
+  integrity, found an MIT `LICENSE`, and wrote the set with the licence beside it; a second run wrote
+  byte-identical files (`sha256sum packages/library/icons/*` unchanged, the `captured` date kept).
+- `PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH pnpm check` → exit 0: lint and typecheck clean,
+  every package's tests pass — `controls.test.ts` carries one test per I/O-matrix row, each asserting both
+  emitters; `agreement.test.ts` and `ad36.test.ts` carry the new vectors, each inert with its legitimate
+  case working; `tools/stress/test-vocabulary.mjs` passes, including "every refusal code the validator can
+  return has a test that it fires" and "the on-disk controls sample validates clean".
+- `cd tools/stress && node build.js && node gate.js theme` → Ghost 5.x via gscan 4.49.7 and Ghost 6.x via
+  gscan 6.4.2, both ERRORS 0 WARNINGS 0. (`npm install` there failed on a file permission; the installed
+  `node_modules` was current and the gate ran.)
+- `python3 tools/doc-audit.py --check`, twice → the first run regenerated the story board, the second PASS
+  with 0 warnings.
+- **In a local browser, not yet the deployed site:** owner's-test steps 2–16 walked with Playwright on the
+  dev server, keyboard-only included, against a temporary unguarded copy of the page (deleted afterwards —
+  a local session could not be signed in). axe-core at WCAG 2.1 AA: zero violations at 390 and 1280 px. A
+  content re-render took about 1 ms, and about 4.5 ms under 4× CPU throttle. The walk found the icon
+  picker's popover opening above the viewport, fixed in `apps/web/components/kit/select.tsx`. These are
+  local figures; the acceptance criteria's measurements are the deployed page's, at Review.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
