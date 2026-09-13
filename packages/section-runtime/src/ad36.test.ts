@@ -10,7 +10,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
-import { IMAGE_SIZES, safeCssColor, safeUrl } from '@inflozo/library'
+import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
 import { assertBindableAttr, bindExpr, linkAttributes, renderCanvas, renderTheme } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { IconLookup } from '@inflozo/library'
@@ -209,6 +209,15 @@ test('AD-36 (1) — an `a` mark is scheme-checked, its rel is an allow-list, and
     assert.ok(render(link({})).includes('<a href="#">read</a>'), `a javascript: href survived a mark: ${render(link({}))}`)
     const out = render(link({ href: 'https://ok.example/', newTab: true, rel: ['sponsored', 'evil'] }))
     assert.ok(out.includes('<a href="https://ok.example/" target="_blank" rel="noreferrer sponsored">read</a>'), out)
+    // the mark and the `url` prop share one record and one attribute function — pin the mark's half too
+    for (const action of Object.keys(PORTAL_ACTIONS)) {
+      const portal = render({ body: { text: 'read this', marks: [{ start: 0, end: 4, mark: 'a', portal: action }] } })
+      assert.ok(portal.includes(`<a href="#" data-portal="${action}">read</a>`), portal)
+    }
+    const outside = render({ body: { text: 'read this', marks: [{ start: 0, end: 4, mark: 'a', portal: 'upgrade' }] } })
+    assert.doesNotMatch(outside, /href=|data-portal/, `a Portal action outside the four reached a mark: ${outside}`)
+    const search = render({ body: { text: 'read this', marks: [{ start: 0, end: 4, mark: 'a', search: true }] } })
+    assert.match(search, /<a href="#" data-ghost-search(="")?>read<\/a>/, search) // the DOM serialises a valueless attribute as =""; the theme writes it bare
     const locked = render({ body: { ...link({}).body, plainText: true } })
     assert.ok(!/<a/.test(locked) && locked.includes('read this'), `FR-Q3's lock did not strip the mark: ${locked}`)
     const outOfRange = render({ body: { text: 'ab', marks: [{ start: 0, end: 9, mark: 'strong' }] } })

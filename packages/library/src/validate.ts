@@ -12,7 +12,7 @@
 // binding matrix, and until then only the declared-query direction is checked (`binding-unreferenced`).
 
 import {
-  BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE,
+  BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
   INLINE_STYLE_RE, INLINE_TOKENS, MARKS, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
   SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, isCompileTarget, isIsoDate, safeUrl, splitFirst,
@@ -574,6 +574,17 @@ export function validateCategoryContent(content: CategoryContent, icons?: IconLo
     const href = typeof prop.default === 'object' && prop.default !== null ? (prop.default as { href?: unknown }).href : prop.default
     if (prop.type === 'url' && typeof href === 'string' && safeUrl(href) !== href) {
       push(out, 'unsafe-default-url', `prop "${path}" defaults to ${JSON.stringify(prop.default)}, which the scheme rule would reduce to # (AD-36 1). An authored default is not user input; write a real URL.`)
+    }
+    // a record default must name a destination the emitters will write (the runtime's `linkAttributes` rule, held here too)
+    if (prop.type === 'url' && typeof prop.default === 'object' && prop.default !== null) {
+      const d = prop.default as { href?: unknown; portal?: unknown; search?: unknown }
+      const destination =
+        d.portal !== undefined && d.portal !== null ? typeof d.portal === 'string' && Object.hasOwn(PORTAL_ACTIONS, d.portal)
+        : d.search !== undefined && d.search !== null ? d.search === true
+        : typeof d.href === 'string' && d.href.trim() !== ''
+      if (!destination) {
+        push(out, 'unset-default-link', `prop "${path}" defaults to ${JSON.stringify(prop.default)}, which names no destination — a Portal action is one of ${Object.keys(PORTAL_ACTIONS).join(' · ')}, search is true, or href is a URL — so both emitters would render it as an unset link (FR-F8).`)
+      }
     }
   }
   return out

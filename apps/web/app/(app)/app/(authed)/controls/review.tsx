@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { orbitWeekly } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, renderCanvas, stampControls, withData } from '@inflozo/section-runtime'
 import type { ControlState, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
@@ -91,7 +92,9 @@ export function Review({
       Object.entries(withData(entry.dataBindings, s.data)).map(([key, binding]) => {
         const both = rows[key]
         const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
-        return [key, (list ?? []).slice(0, binding.limit)]
+        // review: a query with no declared limit and no stored Count shows Ghost's default, as the panel says — not every row
+        const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
+        return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
       }),
     )
 
@@ -139,11 +142,18 @@ export function Review({
     let alive = true
     const el = frame.current
     const ready = () => paint(current.current)
-    void loadIcons().then((m) => {
-      if (!alive) return
-      icons.current = m.iconDrawing
-      paint(current.current)
-    })
+    void loadIcons().then(
+      (m) => {
+        if (!alive) return
+        icons.current = m.iconDrawing
+        paint(current.current)
+      },
+      () => {
+        // review: a failed chunk used to leave the canvas blank with no sentence (unhandled rejection)
+        const c = canvas()
+        if (alive && c) c.mount.textContent = 'The icons could not be loaded, so the section cannot be drawn. Reload the page to try again.'
+      },
+    )
     if (el?.contentDocument?.readyState === 'complete') ready()
     el?.addEventListener('load', ready)
     return () => {

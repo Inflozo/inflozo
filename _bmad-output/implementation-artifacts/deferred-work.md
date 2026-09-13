@@ -3010,6 +3010,9 @@ reason: P0-3's Ghost-sourced card draws Count and Order; Story 4.5 built exactly
   or with any other order, offers no Order row. A query with no declared `limit` shows the Count at
   `orbitWeekly.DEFAULT_LIMIT` for its source — Ghost's recorded default — which is right for the preview and
   unstated for the panel. Source, hand-picked and the main feed are 5.19's by the spec's own Ask First.
+  Found at Review (2026-09-13): that default lives in the Orbit Weekly fixture module, so the engine — and
+  through it Epic 7's compiler — reads a Ghost fact from fixture code rather than from the vocabulary or the
+  shim; 5.19 moves it beside the Source vocabulary when it builds the full Data group.
 
 ### DW-113: importing the vendored icon set makes TypeScript infer a type for all of it
 
@@ -3098,3 +3101,75 @@ reason: the rule now lives in EXPERIENCE.md, which every UI story reads, but nei
   name the slot, and a list built without it is exactly the finding the owner just had to raise. Each adds one
   criterion — "while a row is dragged, a dashed empty slot the size of the row shows where it will land" — and
   lifts the item list's drag rather than inventing a second one.
+
+## Deferred from: code review of spec-4-5-the-controls-engine-and-the-control-vocabulary (2026-09-13)
+
+### DW-117: the controls frame route's sign-in guard is proved by reading its source, not by calling it
+
+plain: The test that says "the picture frame refuses a signed-out visitor" checks that the right words appear in
+  the file in the right order, not that a visitor is actually turned away. The deployed check does turn one
+  away, but only when someone runs it by hand.
+status: open
+severity: low
+origin: Story 4.5 code review (2026-09-13) — Verification Gap
+owner: the story that next touches a frame route (Story 5.1's editor surface is the nearest)
+location: apps/web/controls.test.ts (the source-text test) · apps/web/app/(app)/app/(authed)/controls/frame/route.ts · tools/probe/run-verify-controls.cjs (the executed 303)
+reason: Story 4.4's `style-guide.test.ts` set the shape and 4.5 copied it; a route handler imports the server
+  Supabase client, so calling it under `node --test` needs that module stubbed. The 303 is executed on
+  production by the committed harness at every Review, which is the control the text test lacks.
+
+### DW-118: one "curated Tabler set" survives in the design-patch prompt record
+
+plain: One old sentence about a hand-picked icon set is still in the file that holds the prompts sent to Claude
+  Design in August. It was left because that file records what was sent then, and rewriting it would change
+  the record.
+status: open
+severity: low
+origin: Story 4.5 code review (2026-09-13) — Acceptance Auditor
+owner: nobody yet — a note beside the line, or a "superseded by R-104" footer in the generated page, when the prompts page is next regenerated for another reason
+location: tools/design-patch-prompts.py:522 (generates DESIGN-PATCH-PROMPTS.html)
+reason: the file is catalogued as `tool`, so it is editable, but its content is the prompt executed at step 3
+  on 2026-08-25 and the drawn export was made from it. R-104 (2026-09-13) widened the set afterwards and is
+  recorded in the PRD, DESIGN.md and the ledger; the prompt text is history, not a live claim.
+
+### DW-119: the stress archetypes never exercise the validator's root-control-value check
+
+plain: The checker can refuse a section whose root carries a setting value the design does not offer, and that
+  refusal is tested on small made-up examples. The larger stress set of sections still passes only names, so
+  the check has never run over a real design folder.
+status: open
+severity: low
+origin: Story 4.5 code review (2026-09-13) — Blind Hunter
+owner: Story 4.10 (the five pilots) — the first real design directories the stress harness can walk with values
+location: tools/stress/test-vocabulary.mjs · packages/library/src/validate.ts (`controlValues`)
+reason: `validateMarkup`'s `controlValues` is optional precisely so the archetypes, which predate controls,
+  keep validating by name; `validateDesign` does pass values, so the controls sample and the reference fixture
+  are held to it through `apps/web/controls.test.ts` and `test-vocabulary.mjs` — the archetype set is the gap,
+  and no category design exists yet to pass values for.
+
+### DW-120: an `a` mark with no valid destination is emitted as a bare anchor, while the url prop sink hides its element
+
+plain: If a link inside a paragraph points nowhere valid, the text is still wrapped in a link tag with no address;
+  if a link field points nowhere valid, its whole row is hidden. Neither can do harm, but the two read the same
+  broken record differently.
+status: open
+severity: low
+origin: Story 4.5 code review (2026-09-13) — Verification Gap
+owner: Story 5.3 (the inline toolbar, which is the only producer of `a` marks)
+location: packages/section-runtime/src/marks.ts `openTag` · packages/section-runtime/src/core.ts `applyProps` (`data-prop-attr` href)
+reason: dropping the anchor from `openTag` means `closeTag` must agree, and FR-F8's hide rule is about an
+  element, not a run of text; the choice of what an unset inline link looks like belongs to the story that
+  lets a customer make one.
+
+### DW-121: no test renders the on-disk controls sample through both emitters
+
+plain: The sample section the review page shows is checked for validity by a test, but no test draws it the way
+  the page does; the engine's tests draw a hand-typed copy of it instead.
+status: open
+severity: low
+origin: Story 4.5 code review (2026-09-13) — Blind Hunter
+owner: Story 4.10 (the render matrix) — the harness that renders every fixture on both emitters is its deliverable
+location: packages/section-runtime/src/controls.test.ts (`HTML`) · apps/web/controls.test.ts · packages/library/fixtures/controls/1/index.html
+reason: rendering needs a DOM; `jsdom` is a dependency of `packages/section-runtime` and not of `apps/web`, and
+  the spec's Ask First reserves any new dependency. The deployed harness renders the on-disk sample on every
+  Review run.

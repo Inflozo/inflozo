@@ -28,7 +28,14 @@ let loaded: IconsModule | null = null
 let loading: Promise<IconsModule> | null = null
 /** The icon set, loaded once for the page — the picker and the canvas share it. */
 export function loadIcons(): Promise<IconsModule> {
-  loading ??= import('@inflozo/library/icons').then((m) => (loaded = m))
+  // review: a rejected import is not cached, so reopening the picker retries the download
+  loading ??= import('@inflozo/library/icons').then(
+    (m) => (loaded = m),
+    (e: unknown) => {
+      loading = null
+      throw e
+    },
+  )
   return loading
 }
 
@@ -268,6 +275,8 @@ export function IconPicker({
         <div ref={scroller} onKeyDown={gridKeys} className={`flex max-h-[300px] flex-col gap-3 overflow-y-auto pr-1 ${slimScrollbar}`}>
           {mod === null ? (
             <span className="text-[11.5px] text-ink-soft">Loading the icons…</span>
+          ) : groups.length === 0 && query.trim() === '' ? (
+            <p className="text-[11.5px] leading-[1.5] text-ink-soft">No {style === 'filled' ? 'filled' : 'outline'} icons in this category.</p>
           ) : groups.length === 0 ? (
             <p className="text-[11.5px] leading-[1.5] text-ink-soft">
               Nothing for '{query.trim()}'{' '}

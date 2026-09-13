@@ -196,8 +196,10 @@ function controlRow(r: Resolved, state: ControlState): ControlRow {
       return o
     }),
     value: r.value,
-    moon: d.darkOverride && own(state.darkOverrides, d.name),
-    changed: r.stored !== null && r.stored !== d.default,
+    // the moon lights for a stored override an emitter could use — one of the control's values — never for junk
+    moon: d.darkOverride && d.values.includes(read(state.darkOverrides, d.name) as string),
+    // a greyed row cannot be changed, so it carries no reset; its stored value returns with the row (P0-0)
+    changed: r.greyed === undefined && r.stored !== null && r.stored !== d.default,
     universal: d.universal,
   }
   if (r.greyed !== undefined) row.greyed = r.greyed
@@ -322,10 +324,9 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}): SidebarM
     { id: 'content', label: GROUP_LABELS.content, rows: content, absent: absent('content') },
     { id: 'arrangement', label: GROUP_LABELS.arrangement, rows: inGroup('arrangement', false), absent: absent('arrangement') },
     { id: 'style', label: GROUP_LABELS.style, rows: [...inGroup('style', false), ...inGroup('style', true)], absent: absent('style') },
+    // Data only when there is a query to control: a hand-picked list alone (R-20) draws no empty accordion
+    { id: 'data', label: GROUP_LABELS.data, rows: dataRows(entry, state), absent: absent('data') },
   ].filter((g) => g.rows.length > 0 || g.absent.length > 0) as SidebarGroupModel[]
-  if (Object.keys(entry.dataBindings ?? {}).length > 0) {
-    groups.push({ id: 'data', label: GROUP_LABELS.data, rows: dataRows(entry, state), absent: absent('data') })
-  }
   return { quick, groups }
 }
 

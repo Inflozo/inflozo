@@ -887,6 +887,11 @@ function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
     if (nested) {
       throw new Error(`data-items="${path}" sits inside another data-items or a data-repeat. An authored list renders at one level, over its own array; a list of lists is not in the vocabulary.`)
     }
+    // the reverse nesting: a Ghost repeat inside an item would bake one {{#get}} per item on the theme
+    // (a list inside a list is caught above, by the inner one)
+    if ([...el.querySelectorAll('[data-repeat]')].length > 0) {
+      throw new Error(`data-items="${path}" contains a data-repeat. An authored list renders at one level; a Ghost query inside an item would run once per item.`)
+    }
   }
   for (const el of lists) {
     const path = consume(el, 'data-items') ?? ''

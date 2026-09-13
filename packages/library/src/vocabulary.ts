@@ -153,7 +153,7 @@ export type PropType = (typeof PROP_TYPES)[number]
 export const CONTROL_NAME_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
 
 /** A named value (segmented, named select, toggle's on/off, a role). A stepper's values are integers. */
-export const CONTROL_WORD_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
+export const CONTROL_WORD_RE = CONTROL_NAME_RE // one grammar, one regex: a value word is spelt like a name
 
 /** Every value a control may stamp on a root, whatever its type — a word or a small integer. The
  *  runtime re-checks each value against this before it becomes an attribute, so a schema that never

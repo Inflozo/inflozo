@@ -79,7 +79,11 @@ def main():
     if got != INTEGRITY:
         refuse(f'{URL} has integrity {got}, pinned {INTEGRITY}')
     tar = tarfile.open(fileobj=io.BytesIO(raw))
-    read = lambda path: tar.extractfile(f'package/{path}').read()
+    def read(path):
+        member = tar.extractfile(f'package/{path}')
+        if member is None:
+            refuse(f'package/{path} is not in the tarball — Tabler moved or renamed it; re-read the release before bumping')
+        return member.read()
     license_text = read('LICENSE').decode('utf-8')
     if not license_text.startswith('MIT License') or MIT_PERMISSION not in license_text:
         refuse('package/LICENSE is not the MIT licence')
@@ -113,7 +117,7 @@ def main():
         with open(JSON_OUT, encoding='utf-8') as f:
             previous = json.load(f)
         if previous.get('version') == VERSION and previous.get('integrity') == INTEGRITY:
-            captured = previous['captured']
+            captured = previous.get('captured', captured)
 
     document = {'version': VERSION, 'captured': captured, 'command': COMMAND, 'integrity': INTEGRITY,
                 'license': license_text, 'icons': icons}

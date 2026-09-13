@@ -151,7 +151,7 @@ export function ItemList({
                   setFocusAt(to)
                 }}
                 onPointerDown={(event) => {
-                  if (event.button !== 0) return
+                  if (event.button !== 0 || drag !== null) return // a second pointer never takes over a live drag
                   event.currentTarget.setPointerCapture(event.pointerId)
                   start.current = event.clientY
                   const els = [...(rows.current?.querySelectorAll<HTMLElement>('[data-row]') ?? [])]
@@ -210,7 +210,9 @@ export function ItemList({
                       label: 'Duplicate',
                       icon: <Copy size={13} />,
                       onSelect: () => {
-                        commit(duplicateItem(entry, state, row.path, i))
+                        // review: at the ceiling the engine refuses Duplicate with the same sentence as Add — say it
+                        const refused = commit(duplicateItem(entry, state, row.path, i))
+                        if (refused !== null) onFloor(refused)
                       },
                     },
                     {

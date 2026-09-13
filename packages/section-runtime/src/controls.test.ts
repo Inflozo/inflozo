@@ -14,7 +14,7 @@ import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { CONTROL_CAP, assembleEntry, categoryControlUnion, orbitWeekly, validateDesignJson } from '@inflozo/library'
 import type { CategoryContent, DesignJson, IconLookup } from '@inflozo/library'
-import { iconDrawing } from '@inflozo/library/icons'
+import { ICONS, filledKey, iconDrawing } from '@inflozo/library/icons'
 import design from '../../library/fixtures/controls/1/design.json' with { type: 'json' }
 import content from '../../library/fixtures/controls/content.json' with { type: 'json' }
 import {
@@ -22,7 +22,7 @@ import {
   setContent, setControl, setData, sidebar, withData,
 } from './controls.ts'
 import type { ControlRow, ControlState, DataRow, PropRow } from './controls.ts'
-import { editText, renderCanvas, renderTheme } from './index.ts'
+import { editText, iconSvg, renderCanvas, renderTheme } from './index.ts'
 import type { RenderInput, RichText } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -229,6 +229,24 @@ test('row · an authored array renders N copies on both emitters, identical tree
   for (const src of ['<ul><li data-items="features"><ul><li data-items="features">x</li></ul></li></ul>', '<ol><li data-repeat="posts"><ul><li data-items="features">x</li></ul></li></ol>']) {
     for (const render of [renderCanvas, renderTheme]) assert.throws(() => render(doc(), src, { content: state.content, ghost: { posts: [{}] } }), /data-items="features" sits inside/)
   }
+  // and the reverse: a Ghost repeat inside an item would bake one {{#get}} per item
+  for (const src of ['<ul><li data-items="features"><ol><li data-repeat="posts">x</li></ol></li></ul>', '<ul><li data-items="features"><ul><li data-items="features">x</li></ul></li></ul>']) {
+    for (const render of [renderCanvas, renderTheme]) assert.throws(() => render(doc(), src, { content: state.content, ghost: { posts: [{}] } }), /data-items="features" (contains|sits inside)/)
+  }
+})
+
+// review: the runtime's attribute grammar is the last gate on a drawing, and it was proved on three icons —
+// a Tabler bump that ships a value shape the grammar refuses would draw empty slots with nothing red
+test('every vendored icon, outline and filled, passes the runtime\'s attribute grammar and draws', () => {
+  let drawn = 0
+  for (const icon of ICONS) {
+    for (const key of icon.filled ? [icon.name, filledKey(icon.name)] : [icon.name]) {
+      const svg = iconSvg(key, iconDrawing)
+      assert.ok(svg !== null && svg.includes('<path'), `${key} did not draw`)
+      drawn++
+    }
+  }
+  assert.ok(drawn > ICONS.length, 'the filled drawings were not walked')
 })
 
 test('row · a Portal link: href="#" data-portal on both emitters, never upgrade; an action outside the four is unset', () => {
@@ -335,7 +353,7 @@ test('row · the Ghost-sourced Count: the canvas shows that many rows and the th
   const oldest = ok(setData(entry, five, 'latest', 'order', 'oldest'))
   assert.match(renderTheme(doc(), HTML, input(oldest)).template, /order="published_at asc"/)
   const picked = { ...entry, dataBindings: { latest: { source: 'posts', ids: ['905700000000000000000001'] } } }
-  assert.deepEqual(sidebar(picked, start()).groups.find((g) => g.id === 'data')?.rows, [])
+  assert.equal(sidebar(picked, start()).groups.find((g) => g.id === 'data'), undefined, 'a hand-picked list alone draws no Data group')
   assert.equal(typeof setData(picked, start(), 'latest', 'count', 5), 'string')
 })
 

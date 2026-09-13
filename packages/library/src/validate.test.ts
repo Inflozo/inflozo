@@ -401,6 +401,9 @@ test('content.json refusals: marks, tokens, orphan items, unsafe defaults, the c
   only({ logos: { type: 'text', label: 'L' }, 'logos[].alt': { type: 'text', label: 'L' } }, 'orphan-item-prop')
   only({ u: { type: 'url', label: 'L', default: 'javascript:alert(1)' } }, 'unsafe-default-url')
   only({ u: { type: 'url', label: 'L', default: { href: 'javascript:alert(1)' } } }, 'unsafe-default-url')
+  only({ u: { type: 'url', label: 'L', default: { portal: 'upgrade' } } }, 'unset-default-link')
+  only({ u: { type: 'url', label: 'L', default: { search: 'yes' } } }, 'unset-default-link')
+  only({ u: { type: 'url', label: 'L', default: { href: '' } } }, 'unset-default-link')
   only({}, 'bad-category', 'A-22')
   clean(validateCategoryContent({ category: 'a22', props: {
     h: { type: 'richtext', label: 'Heading', marks: ['strong', 'em', 'u', 'a'], tokens: ['members'] },

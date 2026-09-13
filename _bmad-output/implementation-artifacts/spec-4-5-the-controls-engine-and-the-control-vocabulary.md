@@ -2,10 +2,10 @@
 title: 'Story 4.5 — The controls engine and the control vocabulary'
 type: 'feature'
 created: '2026-09-13'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '4a67e48655e8d3b2870681c6048c6ad764994c29'
 owner_test: issues
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -459,7 +459,54 @@ working sidebar and put it beside a sample section on one internal page, the way
   gate run, then all are green with 0 errors and 0 warnings on both majors, and no count a tool derives
   is written down.
 
+### Review Findings
+
+Five layers ran on 2026-09-13 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). The deployed walk found nothing; every patch below is applied; the five deferrals are DW-117 to DW-121.
+
+- [x] [Review][Patch] Duplicate at the ceiling was refused by the engine and swallowed by the panel — its sentence now reaches the list's status line like Remove's at the floor [apps/web/components/controls/item-list.tsx]
+- [x] [Review][Patch] A `data-repeat` inside a `data-items` was refused nowhere and would bake one `{{#get}}` per item on the theme — refused by name, with the reverse case's test [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] A design whose only binding is hand-picked drew an empty Data accordion — the Data group follows the other groups' rule and is drawn only with rows or a note [packages/section-runtime/src/controls.ts]
+- [x] [Review][Patch] A greyed row whose stored value differed from its default carried a reset icon, and the moon lit for a dark override outside the control's values — neither now [packages/section-runtime/src/controls.ts]
+- [x] [Review][Patch] `linkAttributes` dispatched on key presence, so a record round-tripped with `portal: null` beside a valid `href` was an unset link — a null or undefined key is absent [packages/section-runtime/src/marks.ts]
+- [x] [Review][Patch] A `url` prop default naming no destination validated clean and rendered as an unset link — refused as `unset-default-link`, three cases each firing alone [packages/library/src/validate.ts]
+- [x] [Review][Patch] `categoryControlUnion` compared values only, so one name as two types passed — refused, naming both designs [packages/library/src/registry.ts]
+- [x] [Review][Patch] A failed icon download left the canvas blank with an unhandled rejection, and the picker cached the rejection forever — the canvas says so and the picker retries [apps/web/app/(app)/app/(authed)/controls/review.tsx · apps/web/components/controls/icon-picker.tsx]
+- [x] [Review][Patch] Filled with a category that has no filled icons read "Nothing for ''" with a Clear search that did nothing — its own sentence [apps/web/components/controls/icon-picker.tsx]
+- [x] [Review][Patch] A second pointer on another handle overwrote a live drag [apps/web/components/controls/item-list.tsx]
+- [x] [Review][Patch] A popover closed before its first frame was still placed, observed and focused [apps/web/components/kit/select.tsx]
+- [x] [Review][Patch] A query with no declared limit and no stored Count showed every row while the panel said Ghost's default [apps/web/app/(app)/app/(authed)/controls/review.tsx]
+- [x] [Review][Patch] The link picker formatted post dates in `en-US`, a second date rule against DW-106 — the stored day is shown; a row with no `url` no longer yields the string "undefined" [apps/web/lib/controls-review.ts]
+- [x] [Review][Patch] `vendor-icons.py` crashed with a traceback on a missing tarball member or a `tabler.json` without `captured` — both are refusals or fallbacks now [tools/vendor-icons.py]
+- [x] [Review][Patch] `CONTROL_WORD_RE` restated `CONTROL_NAME_RE` — one is derived from the other [packages/library/src/vocabulary.ts]
+- [x] [Review][Patch] The runtime's icon-attribute grammar was proved on three icons — every vendored drawing, outline and filled, now passes through `iconSvg` under test [packages/section-runtime/src/controls.test.ts]
+- [x] [Review][Patch] An `a` mark's Portal and search destinations had no test on either emitter — the four actions, one outside, and search are asserted [packages/section-runtime/src/ad36.test.ts]
+- [x] [Review][Patch] `queryRows` and `linkResources` had no test — both orders and every resource's URL are asserted [apps/web/controls.test.ts]
+- [x] [Review][Patch] The deployed measurements AC 2 asks for were never recorded on production — the Review run's figures are under Verification, and its harness is committed [tools/probe/run-verify-controls.cjs]
+- [x] [Review][Patch] An empty Arrangement or Style group is omitted, which FR-F3's four groups did not say — recorded as an extrapolation in Design Notes
+- [x] [Review][Patch] The PRD's Icon Picker row still measured the icon budget "at E4" while DW-108 hands it to Epic 7 [prd.md Appendix C]
+- [x] [Review][Defer] The frame route's sign-in guard is asserted by reading the source text, not by calling the handler [apps/web/controls.test.ts] — deferred, pre-existing (Story 4.4's shape; DW-117)
+- [x] [Review][Defer] `tools/design-patch-prompts.py` still says "curated Tabler set" [tools/design-patch-prompts.py:522] — deferred, pre-existing (the record of a prompt run on 2026-08-25; DW-118)
+- [x] [Review][Defer] `validateMarkup`'s `controlValues` check runs on unit fixtures only; the stress archetypes pass names [tools/stress/test-vocabulary.mjs] — deferred, pre-existing (no category design exists yet; DW-119)
+- [x] [Review][Defer] An `a` mark with no valid destination emits `<a>` with no href while the `url` prop sink hides its element [packages/section-runtime/src/marks.ts] — deferred (both inert; DW-120)
+- [x] [Review][Defer] No test renders the on-disk `index.html` through both emitters; `controls.test.ts` retypes it [packages/section-runtime/src/controls.test.ts] — deferred (needs a DOM in `apps/web`, a dependency the spec reserves; DW-121)
+
 ## Spec Change Log
+
+- **2026-09-13, Review (iteration 1).** Five layers ran (Blind Hunter, Edge Case Hunter, Verification Gap,
+  Acceptance Auditor, Real-infra verifier); the deployed walk held 78 of 78 checks with no finding. Patched
+  from the other layers: a Duplicate refused at the ceiling is now said, like Remove at the floor; a Ghost
+  repeat inside an authored item is refused by name (the reverse of the nesting already refused); a hand-picked
+  list alone draws no empty Data group; a greyed row carries no reset icon and the moon lights only for an
+  override the control can use; a link record with `portal: null` is a link, not an unset one; a url prop
+  default that names no destination is refused (`unset-default-link`); the category union refuses one name
+  with two types as well as two value sets; a failed icon download says so on the canvas and the picker
+  retries it; a second pointer cannot take over a live drag; a popover closed before its first frame is not
+  observed; a query with no declared limit shows Ghost's default rows, as the panel says; the link picker's
+  post dates are the stored day (DW-106); `vendor-icons.py` refuses rather than crashes on a missing tarball
+  member. Proofs added: every vendored drawing passes the runtime's grammar; an `a` mark's Portal and search
+  destinations on both emitters; the review page's two query orders and every link resource. The deployed
+  harness is committed as `tools/probe/run-verify-controls.cjs`. No question is open for the owner.
 
 ## Design Notes
 
@@ -476,6 +523,10 @@ than obeyed literally.
 - The category kits draw the trio as a group of its own; FR-F3 names four groups. The trio sits as one
   block at the foot of Style, in the kits' order.
 - A Quick Control appears once. S4c repeats the design picker in its accordion, not a control.
+- A group with nothing in it is not drawn (Review, 2026-09-13). FR-F3 names four groups; no frame draws an
+  empty accordion, and a design with nothing to arrange would otherwise open to a heading over nothing. A group
+  whose controls could never act still appears, because its absent note is what it holds. Data follows the
+  same rule: a hand-picked list alone (R-20) has no Count or Order and draws no group.
 - No frame draws a per-control reset. It sits beside the label of a control whose value differs from its
   default, as the Kit's Undo glyph in a 20 px ink-soft icon button named "Reset <label>" — *on the owner's
   finding 1 (2026-09-13); it was the word "Reset" in D5's 12 px ink-soft until then.* "Reset this
@@ -721,6 +772,48 @@ on Background role, and none on Card tint.
 - **Finding 9, on production** — Vercel's production deployment for `bed27dc3` READY; the same check against
   `https://app.inflozo.com/controls` → 12 of 12 PASS with the local figures (slots at 341 and 427, rows slid to 384,
   the predicted orders on the canvas, `⌥↓` intact); the fixture user deleted, 9 → 9.
+
+**What ran at Review, 2026-09-13** (`tools/probe/run-verify-controls.cjs`, `SUPABASE_URL` and
+`SUPABASE_SECRET_KEY` read into the environment by name; HEAD `4ea84461`, before the review's patches):
+- **Vercel** `GET /v6/deployments?target=production` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) → the
+  newest production deployment `4ea84461` READY.
+- **Negative control, signed out:** `curl -sI https://app.inflozo.com/controls` → 307 to `/sign-in`;
+  `/controls/frame` → 303 to `/sign-in`.
+- **Supabase Auth Admin:** users before 9; `POST /auth/v1/admin/users` 200, `POST /auth/v1/admin/generate_link`
+  (magiclink) 200, signed in through `/auth/confirm`, `DELETE /auth/v1/admin/users/{id}` 200; users after 9.
+- **The owner's test, steps 1–18, on `https://app.inflozo.com/controls` at 1440×900 with real scrollbars → 78
+  of 78 checks PASS, no page error.** The panel flush at 0 px, 900 tall, 280 wide, square, a 1 px left border,
+  the window's scroll range 0 and the canvas scrolling inside its frame with an 8 px bar; the Quick Controls
+  card holds Columns · Card style · Alignment · Show icons · Rule under heading and the groups run Content ·
+  Arrangement · Style · Data; no `px`, `%` or hex anywhere in the panel with every group open; Columns 3 → 2 → 3
+  with the icon-only reset appearing and leaving; Centre greys Rule under heading with its sentence and forces
+  `data-rule="none"`, Left restores `line`; Style runs Card tint → "There is no image focus here." → Background
+  role → Vertical spacing → Top divider, Accent and Image greyed, "Dark override" on Background role only,
+  Contrast → `data-bg="contrast"`; "2–6 · 3 used", Add to 6 then greyed with its sentence, Remove to 2 then the
+  floor sentence in `role="status"` that clears on the next change; mid-drag a dashed `aria-hidden` slot with the
+  next row translated aside and the canvas order swapped on the drop; **keyboard-only:** Tab reaches a handle,
+  `⌥↓` moves it, the polite live region reads "Moved to position 2 of 2" and focus follows; the icon picker opens
+  at Outline · All categories, scrolls its grid without closing, finds "heart" under Shapes, Filled shows only
+  `heart-filled`, Both shows both, the solid heart lands on the card, "Tabler Icons · MIT" at the foot; the link
+  picker finds "The night shift at the Port of Algeciras" under Posts, the chips run Sign up · Sign in · Account
+  · Upgrade · Ghost search, new tab and the three rel toggles appear for a post and not for Upgrade, which reads
+  "Portal · Upgrade / account/plans"; the Archive URL row appears on the canvas and leaves on Remove link;
+  `2026-11-01` with "Site time zone: Etc/UTC"; Replace swaps the picture; Show 5 · Oldest lists five titles
+  oldest first, matching the canvas, "+ Add post" greyed with the Ghost sentence; Reset this design restores
+  columns, alignment, background and the three newest posts while the two features, the icon, the date and the
+  link stay; Collapse folds the panel with focus on "Show controls", Enter restores it with focus on "Collapse
+  controls", and a reload brings the sample back.
+- **axe-core 4.12.1 at WCAG 2.1 AA:** zero violations at 1440 and at 390; positive control — an `<img>` with no
+  `alt` injected into the page is reported as `image-alt`.
+- **4× CPU throttle** (CDP `Emulation.setCPUThrottlingRate`): Fewer Columns dispatched with a
+  `requestAnimationFrame` sentinel armed first — `data-columns` read `2` immediately after the synchronous
+  dispatch with the sentinel unfired, so the attribute is written in the input's own task; three eyebrow edits
+  re-rendered the content in 4.0, 3.3 and 3.2 ms (`data-render-ms`), the whole handler under 14 ms — inside the
+  100 ms NFR-1 asks for.
+- **Ghost:** no code under review reaches a Ghost API; T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com` were
+  not called. **No migration**, so no R-99 schema check was owed.
+- After the review's patches: `pnpm check` green (lint, typecheck, every package's tests, the new proofs
+  included), `node gate.js theme` ERRORS 0 WARNINGS 0 on both majors, `python3 tools/doc-audit.py --check` PASS.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:

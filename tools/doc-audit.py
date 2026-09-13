@@ -454,6 +454,13 @@ DOCS = [
     'belongs. No key, no address and no site title is ever printed. --check runs everything but '
     'the deployed cron and needs no deployment. Story 3.7.',
    )),
+ ('tools/probe/run-verify-controls.cjs', 'tool', 'Controls review page harness',
+  "Story 4.5's owner's manual test executed against the DEPLOYED /controls page and the live Supabase "
+  '(R-82): a throwaway account signed in through the Auth Admin API, every step of the walk at 1440x900 '
+  'with real scrollbars, keyboard-only reorder with its announcement, axe-core at WCAG 2.1 AA at 1440 and '
+  '390 with a positive control, and the control stamp and content re-render timed under 4x CPU throttle; '
+  'the account deleted with the user count read before and after. Committed at Review so the deployed '
+  "checks that re-verified the owner's nine findings can be re-run from a clone."),
  ('tools/probe/run-verify-dashboard.py', 'tool', 'Dashboard invariants and guards harness',
   # DW-73's shape from the start: a subject line and one bullet per concern.
   (
@@ -1024,7 +1031,7 @@ def short(path):
 
 
 BASES = ('_bmad-output/planning-artifacts', 'tools', 'docs', '_bmad/custom')
-EXT = ('.md', '.html', '.sql', '.js', '.mjs', '.py', '.sh', '.txt', '.toml')
+EXT = ('.md', '.html', '.sql', '.js', '.mjs', '.cjs', '.py', '.sh', '.txt', '.toml')
 
 
 def inventory():

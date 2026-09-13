@@ -65,6 +65,7 @@ export function openPopover(pop: HTMLElement, trigger: HTMLElement, placement: P
   pop.addEventListener('toggle', onToggle)
   if (!trigger.hasAttribute('popovertarget')) pop.showPopover()
   requestAnimationFrame(() => {
+    if (!pop.matches(':popover-open')) return // closed again before this frame: nothing to place, observe or focus
     // At open, and only at open, a side that cannot hold it flips to the other (review, 2026-09-05).
     const box = pop.getBoundingClientRect()
     if (placement.side === 'down' && box.bottom > window.innerHeight) anchorTo(pop, trigger, { ...placement, side: 'up' })

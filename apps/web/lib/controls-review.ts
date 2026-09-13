@@ -77,14 +77,15 @@ export type LinkResources = Record<'pages' | 'posts' | 'tags' | 'authors', LinkR
 /** What the link picker searches: Orbit Weekly's posts, tags and authors. The dataset publishes no pages,
  *  so that group is empty and the picker omits it (P0-1: a group with no match is never shown). */
 export function linkResources(): LinkResources {
-  const { timezone } = orbitWeekly.site()
-  const day = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: timezone })
+  // a date is shown as its stored day, unformatted — no story formats one yet (DW-106), and this is not the place to start
+  const day = (iso: string) => iso.slice(0, 10)
   const posts = (n: number) => `${n} ${n === 1 ? 'post' : 'posts'}`
+  const url = (row: Record<string, unknown>) => (typeof row['url'] === 'string' ? row['url'] : '')
   return {
     pages: [],
-    posts: orbitWeekly.posts().map((p) => ({ id: p.id, title: p.title, url: String(p['url']), meta: day(p.published_at) })),
-    tags: orbitWeekly.tags().map((t) => ({ id: t.id, title: t.name, url: String(t['url']), meta: posts(t.count.posts) })),
-    authors: orbitWeekly.authors().map((a) => ({ id: a.id, title: a.name, url: String(a['url']), meta: posts(a.count.posts) })),
+    posts: orbitWeekly.posts().map((p) => ({ id: p.id, title: p.title, url: url(p), meta: day(p.published_at) })),
+    tags: orbitWeekly.tags().map((t) => ({ id: t.id, title: t.name, url: url(t), meta: posts(t.count.posts) })),
+    authors: orbitWeekly.authors().map((a) => ({ id: a.id, title: a.name, url: url(a), meta: posts(a.count.posts) })),
   }
 }
 

@@ -250,6 +250,8 @@ export function categoryControlUnion(
       const seen = union.get(c.name)
       if (seen === undefined) {
         union.set(c.name, { def: c, id: d.id })
+      } else if (seen.def.type !== c.type) {
+        return `control "${c.name}" is a ${seen.def.type} in ${seen.id} and a ${c.type} in ${d.id}. One name means one control (R-53); where two designs genuinely differ, they differ by name.`
       } else if (seen.def.values.join('\u0000') !== c.values.join('\u0000')) {
         return `control "${c.name}" carries two value sets — ${seen.id} offers ${seen.def.values.join(' · ')} and ${d.id} offers ${c.values.join(' · ')}. One name means one set of values (R-53); where two designs genuinely differ, they differ by name.`
       }

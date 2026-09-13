@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
-import { CONTROLS_DIR, canvasDocument, imagePool, poolImage, referenceSwatches, sample } from './lib/controls-review.ts'
+import { CONTROLS_DIR, canvasDocument, imagePool, linkResources, poolImage, queryRows, referenceSwatches, sample } from './lib/controls-review.ts'
 
 // Story 4.5's review surface, held by the files it reads — the fences `style-guide.test.ts` put around
 // Story 4.4's page, for the controls review. A core package cannot open a file, so the half of the
@@ -69,4 +69,30 @@ test('the swatches are the reference tokens, and every colour role has one', () 
   const swatches = referenceSwatches()
   assert.deepEqual(Object.keys(swatches).sort(), ['accent', 'base', 'contrast', 'surface'])
   for (const [role, value] of Object.entries(swatches)) assert.ok(value.length > 0, `${role} has no colour`)
+})
+
+// review: the page's Data rows are the one thing the theme's {{#get}} order is not compared against
+test('each query is read in both orders, oldest ascending and newest descending by published_at', () => {
+  const rows = queryRows(sample())
+  assert.ok(Object.keys(rows).length > 0, 'the sample declares a query')
+  const days = (list: unknown[]) => list.map((r) => String((r as { published_at: string }).published_at))
+  for (const { newest, oldest } of Object.values(rows)) {
+    assert.ok(newest.length > 1 && oldest.length === newest.length)
+    assert.deepEqual(days(oldest), [...days(oldest)].sort())
+    assert.deepEqual(days(newest), [...days(newest)].sort().reverse())
+    assert.deepEqual(days(oldest), [...days(newest)].reverse())
+  }
+})
+
+test("every link resource carries a URL the picker can read a path from, and a stored-day meta for a post", () => {
+  const all = linkResources()
+  assert.deepEqual(all.pages, [])
+  for (const group of ['posts', 'tags', 'authors'] as const) {
+    assert.ok(all[group].length > 0, group)
+    for (const r of all[group]) {
+      assert.doesNotThrow(() => new URL(r.url), `${group} ${r.id} has no absolute url: ${JSON.stringify(r.url)}`)
+      assert.ok(r.title.length > 0 && r.meta.length > 0)
+    }
+  }
+  for (const p of all.posts) assert.match(p.meta, /^\d{4}-\d{2}-\d{2}$/, 'a date is shown as its stored day (DW-106)')
 })

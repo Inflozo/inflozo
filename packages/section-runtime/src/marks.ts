@@ -75,7 +75,8 @@ const TOKEN_SET: ReadonlySet<string> = new Set(INLINE_TOKENS)
  *  Values are returned RAW; each emitter escapes on its own side. A bare string is `{ href }`. */
 export function linkAttributes(link: unknown): Record<string, string> {
   const record: Link = typeof link === 'string' ? { href: link } : typeof link === 'object' && link !== null ? (link as Link) : {}
-  const own = (k: keyof Link) => Object.prototype.hasOwnProperty.call(record, k)
+  // a record round-tripped through JSON may carry `portal: null`: a key with nothing in it is no destination, not an unset link
+  const own = (k: keyof Link) => record[k] !== undefined && record[k] !== null
   if (own('portal')) {
     return typeof record.portal === 'string' && Object.prototype.hasOwnProperty.call(PORTAL_ACTIONS, record.portal)
       ? { href: '#', 'data-portal': record.portal }
