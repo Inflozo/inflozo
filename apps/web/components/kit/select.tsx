@@ -50,6 +50,14 @@ export function openPopover(pop: HTMLElement, trigger: HTMLElement, placement: P
       pop.style.maxHeight = 'calc(100dvh - 16px)'
       pop.style.overflowY = 'auto'
     }
+    // …and the same across: a picker wider than its trigger, opened from the sidebar at the right edge,
+    // ran past the viewport (the owner's finding 4 on Story 4.5 — the link popover's right edge at 1449 of
+    // 1440). Slid left until it fits, never past the left gutter.
+    const across = pop.getBoundingClientRect()
+    if (across.right > window.innerWidth - 8 || across.left < 8) {
+      pop.style.left = `${Math.max(8, Math.min(across.left, window.innerWidth - across.width - 8))}px`
+      pop.style.right = 'auto'
+    }
     ;(focus ?? pop.querySelector<HTMLElement>('input, a[href], button:not([tabindex="-1"])'))?.focus({ preventScroll: true })
     if (pop.matches(':popover-open')) window.addEventListener('scroll', onScroll, { capture: true, passive: true })
   })

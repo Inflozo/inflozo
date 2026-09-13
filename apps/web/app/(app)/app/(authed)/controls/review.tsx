@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, renderCanvas, stampControls, withData } from '@inflozo/section-runtime'
 import type { ControlState, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
+import { ring } from '@/components/kit/greyed'
+import { Panel } from '@/components/kit/icons'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 
@@ -18,7 +20,15 @@ import { Sidebar, type Edit } from '@/components/controls/sidebar'
    writes into it. A CONTROL change writes the engine's resolved values onto the section root inside the
    input's own handler — before React re-renders anything — because AD-3 makes a control one attribute;
    a CONTENT, item or data change re-renders the section with `renderCanvas`, timed, and the last duration
-   is on the iframe as `data-render-ms` for the review harness (NFR-1's 100 ms). */
+   is on the iframe as `data-render-ms` for the review harness (NFR-1's 100 ms).
+
+   THE PANEL IS DOCKED, as S4c draws the editor's Controls sidebar (`S4 Editor.dc.html:337`): 280 wide, flush
+   to the right edge, a hairline on its left, paper, no radius, the section's name over it — and the height
+   of the viewport, scrolling on its own while the canvas column scrolls with the page (the owner's finding 3,
+   2026-09-13; it was a rounded card 48px in from the edge). It COLLAPSES to a 44px rail with one "Show
+   controls" button, D8's Layers rail mirrored (`D8 Editor Below 1440.dc.html:194`) — no frame draws a
+   collapse at full width, so the editor's own is Story 5.1's to settle (DW-114). Below `tablet` the panel
+   stacks under the canvas and does not collapse. */
 
 type Rows = Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>
 
@@ -29,6 +39,7 @@ export function Review({
   links,
   pool,
   timezone,
+  children,
 }: {
   entry: SectionRegistryEntry
   swatches: Readonly<Record<string, string>>
@@ -36,6 +47,8 @@ export function Review({
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
   timezone: string
+  /** the page's heading, drawn above the canvas in the scrolling column */
+  children?: ReactNode
 }) {
   const [state, setState] = useState<ControlState>(() => ({
     content: defaultContent(entry.contentSchema),
@@ -46,6 +59,18 @@ export function Review({
   const current = useRef(state)
   const frame = useRef<HTMLIFrameElement>(null)
   const icons = useRef<IconLookup | null>(null)
+  const [collapsed, setCollapsed] = useState(false)
+  const toggled = useRef(false)
+  const hide = useRef<HTMLButtonElement>(null)
+  const show = useRef<HTMLButtonElement>(null)
+  // The pressed toggle leaves with the state it changed, so focus moves to the one that replaced it.
+  useEffect(() => {
+    if (toggled.current) (collapsed ? show : hide).current?.focus()
+  }, [collapsed])
+  const toggle = (next: boolean) => {
+    toggled.current = true
+    setCollapsed(next)
+  }
 
   // An asset id resolves only through this map (AD-27(b)). Relative, so each document resolves it
   // against its own address: the panel sits at /controls, the canvas at /controls/frame.
@@ -109,9 +134,13 @@ export function Review({
       const c = canvas()
       if (!c || !el) return
       paint(current.current)
-      // the iframe is as tall as the section, so the page scrolls once rather than twice
+      // THE IFRAME IS AS TALL AS THE SECTION, so the page scrolls once rather than twice. Its border counts:
+      // the app's box-sizing is border-box, and a height of the section alone left the canvas document 2px
+      // taller than its window — an inner scrollbar that caught the wheel and held the page still (the
+      // owner's finding 2, measured on production 2026-09-13). The section's height is rounded UP for the
+      // same reason: a fraction short is a scrollbar too.
       const fit = () => {
-        el.style.height = `${c.mount.offsetHeight}px`
+        el.style.height = `${Math.ceil(c.mount.getBoundingClientRect().height) + el.offsetHeight - el.clientHeight}px`
       }
       const View = c.doc.defaultView?.ResizeObserver
       if (View) new View(fit).observe(c.mount)
@@ -132,17 +161,36 @@ export function Review({
   }, [])
 
   return (
-    <div className="flex flex-col gap-6 tablet:flex-row tablet:items-start">
-      <iframe
-        ref={frame}
-        src="controls/frame"
-        title="The controls sample section"
-        className="block min-h-[480px] w-full min-w-0 flex-1 rounded border border-line bg-surface"
-      />
+    <div className="flex flex-1 flex-col tablet:flex-row">
+      <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-8 tablet:px-12 tablet:py-12">
+        {children}
+        <iframe
+          ref={frame}
+          src="controls/frame"
+          title="The controls sample section"
+          className="block min-h-[480px] w-full rounded border border-line bg-surface"
+        />
+      </div>
       <aside
+        id="section-controls"
         aria-label="Section controls"
-        className="w-full shrink-0 rounded border border-line bg-paper p-4 shadow-sm tablet:sticky tablet:top-4 tablet:max-h-[calc(100dvh-2rem)] tablet:w-[300px] tablet:overflow-y-auto"
+        className={`flex flex-col gap-3 border-t border-line bg-paper p-4 tablet:sticky tablet:top-0 tablet:h-dvh tablet:w-[280px] tablet:shrink-0 tablet:self-start tablet:overflow-y-auto tablet:border-l tablet:border-t-0 ${collapsed ? 'tablet:hidden' : ''}`}
       >
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">{entry.name}</span>
+          <button
+            ref={hide}
+            type="button"
+            aria-label="Collapse controls"
+            title="Collapse controls"
+            aria-expanded
+            aria-controls="section-controls"
+            onClick={() => toggle(true)}
+            className={`hidden size-7 items-center justify-center rounded-[8px] text-ink-soft hover:bg-paper-sunk tablet:inline-flex ${ring}`}
+          >
+            <Panel size={15} className="-scale-x-100" />
+          </button>
+        </div>
         <Sidebar
           entry={entry}
           state={state}
@@ -154,6 +202,22 @@ export function Review({
           sourceRows={shown(state)}
         />
       </aside>
+      {collapsed ? (
+        <div className="hidden w-11 shrink-0 flex-col items-center border-l border-line bg-paper py-[6px] tablet:sticky tablet:top-0 tablet:flex tablet:h-dvh tablet:self-start">
+          <button
+            ref={show}
+            type="button"
+            aria-label="Show controls"
+            title="Show controls"
+            aria-expanded={false}
+            aria-controls="section-controls"
+            onClick={() => toggle(false)}
+            className={`inline-flex size-8 items-center justify-center rounded-[8px] text-ink-soft hover:bg-paper-sunk ${ring}`}
+          >
+            <Panel size={15} className="-scale-x-100" />
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }

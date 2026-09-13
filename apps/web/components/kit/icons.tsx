@@ -419,3 +419,13 @@ export const FromGhost = ({ strokeWidth = 2, ...p }: IconProps) => (
     <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
   </Icon>
 )
+
+/* The panel glyph — D8's "Show layers" (`D8 Editor Below 1440.dc.html:194`), read verbatim: a frame with
+   its rail on the left. The controls review mirrors it with a transform for the rail on the RIGHT
+   (the owner's finding 3 on Story 4.5), so the path stays the frame's own. */
+export const Panel = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M9 4v16" />
+  </Icon>
+)

@@ -3029,3 +3029,26 @@ reason: every package importing `@inflozo/library/icons` pays the inference. A d
   JSON gives TypeScript the shape without reading the data; not done in Story 4.5 because the cost is
   seconds on one package and `icons.test.ts` already walks every node against the shape the declaration
   would assert.
+
+### DW-114: the owner wants the editor's Controls sidebar to collapse, and S4a draws no collapse at full width
+
+plain: On the controls review page the owner asked for the settings panel to sit against the right edge
+  like the left menu, and to fold away with a button. The review page now does both. The editor's own
+  panel is built in Story 5.1, and the drawing it is built from has no fold-away button at full width.
+status: open
+severity: low
+origin: Story 4.5 owner's test (2026-09-13) — finding 3, on `https://app.inflozo.com/controls`.
+owner: Story 5.1 (The editor shell, the canvas boundary and the URL scheme) — the right Controls sidebar;
+  Story 5.22 owns its overlay below 1440.
+location: `S4 Editor.dc.html:337` (S4c's Controls sidebar: 280 wide, flush right, border-left, no collapse)
+  · `D8 Editor Below 1440.dc.html:128`, `:240` ("Close controls" on the overlay) and `:194` (the Layers
+  rail's "Show layers") · `apps/web/app/(app)/app/(authed)/controls/review.tsx` (the review page's docked,
+  collapsible panel, built from D8's rail mirrored)
+reason: Story 5.1's acceptance criteria give a "collapsible left Layers panel" and a right Controls sidebar
+  that "matches frame S4a", and the frames draw a collapse only for Layers at every width and a close only
+  for the Controls overlay below 1440. The owner's finding asks for a Controls collapse at full width too.
+  Story 5.1 must either build it the review page's way (a 44 px rail with one "Show controls" button, focus
+  moving between the two toggles) or put the choice to the owner in R-83 shape — not silently drop it. The
+  same finding's canvas half carries over: the review page's canvas scrolled 2 px on its own and held the
+  page still, and 5.1's canvas, which "keeps its own scroll" (Story 5.22), must have exactly one scroller
+  under the wheel.

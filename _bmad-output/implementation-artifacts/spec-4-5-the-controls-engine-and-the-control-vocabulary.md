@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-13'
 status: 'in-progress'
 baseline_commit: '4a67e48655e8d3b2870681c6048c6ad764994c29'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
@@ -348,7 +348,7 @@ working sidebar and put it beside a sample section on one internal page, the way
 - [x] `apps/web/components/controls/{sidebar,item-list,link-picker,icon-picker,image-picker}.tsx` -- the
   client components Epic 5 will mount: the sidebar draws `sidebar()`'s model with the Kit's pieces —
   the Quick Controls card, the four accordions (a group's absent note after its own controls and before
-  the universal trio), the moon badge with the words "Dark override" beside it (UX-DR8), a "Reset" beside
+  the universal trio), the moon badge with the words "Dark override" beside it (UX-DR8), a reset icon beside
   a changed control's label, "Reset this design" at the panel foot, the Swatch Row's roles in the
   reference token colours (Base `--bg-page`, Surface `--bg-surface`, Accent `--accent`, Contrast
   `--bg-contrast`, Image the Kit's image glyph), Text Field and Text Area as the Kit's `TextInput` and
@@ -450,7 +450,7 @@ working sidebar and put it beside a sample section on one internal page, the way
 - Given a mode-scoped control with a stored dark override, when the panel is drawn, then it carries the
   moon badge and the words "Dark override", and a mode-scoped control without one carries neither
   (FR-F5, UX-DR8).
-- Given a changed control, when its "Reset" is pressed, then it returns to its default and the Reset
+- Given a changed control, when its reset icon is pressed, then it returns to its default and the reset
   leaves; and when "Reset this design" is pressed, then every control and data control returns to its
   default while the words, the items and the stored dark overrides stay (FR-F4).
 - Given a link to a page Ghost does not publish, when its destination is empty, then its row renders
@@ -476,8 +476,9 @@ than obeyed literally.
 - The category kits draw the trio as a group of its own; FR-F3 names four groups. The trio sits as one
   block at the foot of Style, in the kits' order.
 - A Quick Control appears once. S4c repeats the design picker in its accordion, not a control.
-- No frame draws a per-control reset. It takes the style of D5's "Reset this design" line (12 px,
-  ink-soft) and sits beside the label of a control whose value differs from its default. "Reset this
+- No frame draws a per-control reset. It sits beside the label of a control whose value differs from its
+  default, as the Kit's Undo glyph in a 20 px ink-soft icon button named "Reset <label>" — *on the owner's
+  finding 1 (2026-09-13); it was the word "Reset" in D5's 12 px ink-soft until then.* "Reset this
   design" is D5's and has no confirm — D5 draws none, and S14's confirm exists because a card reset
   reaches every post — and it resets controls only, S14's "Posts keep their content." rule.
 - P0-3 greys the Ghost-sourced list's Add, Remove and drag; FR-F1 says a Ghost-bound repeat never gets
@@ -654,6 +655,25 @@ on Background role, and none on Card tint.
   picker's popover opening above the viewport, fixed in `apps/web/components/kit/select.tsx`. These are
   local figures; the acceptance criteria's measurements are the deployed page's, at Review.
 
+**What ran for the owner's four findings, 2026-09-13** (a scratch Playwright harness, the passkeys harness's
+`load_env` and `Admin` imported, keys read into the process by name only):
+- **Supabase Auth Admin API** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), once per run: `POST /admin/users` →
+  200, `POST /admin/generate_link` (magiclink) → 200, the fixture signed in through `/auth/confirm`, then
+  `DELETE /admin/users/<id>` → 200, and the user count read before and after — 9 and 9, so nothing leaked.
+- **Before the fix, on production** — `https://app.inflozo.com/controls` at `af369c2b`, 1440×900: the canvas
+  iframe `border-box`, `clientHeight` 988 against a document of 990 (a 2 px inner scroll range); a 400 px wheel
+  over the canvas moved the canvas 2 px and the page 0; the panel 48 px from the right edge with a 12 px
+  radius and 530 px tall; the Link popover's right edge at 1449 of 1440. Each finding reproduced.
+- **After the fix, on the local dev server** (`next dev` with `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`,
+  the real Supabase project) — every check PASS: inner scroll range 0 px, and the same wheel moved the page
+  320 px and the canvas 0; the panel 0 px from the right edge, top 0, 900 px tall, radius 0, a 1 px left
+  border, 280 wide; the changed control's reset is an icon with no text and it leaves once pressed; Collapse
+  hides the panel and focuses Show controls, Enter restores it and focuses Collapse controls, and the canvas
+  refits with a 0 px range; the Link popover at 1092–1432 of 1440, with its control — anchored at the
+  trigger (left 1177) it would have ended at 1517; axe-core at WCAG 2.1 AA zero violations at 1440 and 390.
+- `pnpm check` → exit 0 after the fix.
+- **Owed at Review:** the same harness against production once CI has deployed the Fix commit.
+
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
   the groups in order, each control's anatomy, the greyed row, the absent note, the two lists, the link
@@ -668,8 +688,8 @@ the sample. Deploy records the deployment it runs on under "## Verification".
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|-----------|------------|---------------------|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in as you normally do. | — | Your dashboard. |
-| 2 | `https://app.inflozo.com/controls` | Controls review | Type the address into the browser. | — | On the left, a sample section: a small line "This week at Orbit Weekly", the heading "Seven links, checked by hand", a picture, three feature cards with small icons, a "Read the latest issue" link and a "From the archive" list of three post titles. On the right, a panel: a white card holding Columns, Card style, Alignment, Show icons and Rule under heading; below it the headings Content, Arrangement, Style and Data; "Reset this design" at the very bottom. Nowhere a pixel size, a percentage or a colour code. |
-| 3 | same | Panel, white card | Press − beside Columns, then press the "Reset" that appears beside it. | — | The cards re-flow into two columns the moment you press, and a small "Reset" appears beside Columns. Pressing it brings back three columns, and "Reset" goes away. |
+| 2 | `https://app.inflozo.com/controls` | Controls review | Type the address into the browser. | — | On the left, a sample section: a small line "This week at Orbit Weekly", the heading "Seven links, checked by hand", a picture, three feature cards with small icons, a "Read the latest issue" link and a "From the archive" list of three post titles. On the right, a panel flush against the window's right edge and as tall as the window, with square corners: the sample's name at its top beside a small panel button, then a white card holding Columns, Card style, Alignment, Show icons and Rule under heading; below it the headings Content, Arrangement, Style and Data; "Reset this design" at the very bottom. Nowhere a pixel size, a percentage or a colour code. With the mouse over the section, the mouse wheel scrolls the whole page, and the section has no scrollbar of its own. |
+| 3 | same | Panel, white card | Press − beside Columns, then press the small reset arrow that appears beside its name. | — | The cards re-flow into two columns the moment you press, and a small curved arrow appears beside Columns (hovering it says "Reset Columns"). Pressing it brings back three columns, and the arrow goes away. |
 | 4 | same | Panel, white card | Set Alignment to Centre. Press Line under "Rule under heading". Set Alignment back to Left. | — | The heading centres, and "Rule under heading" turns grey with "Not available while the heading is centred." under it; pressing Line does nothing. Back at Left, the rule returns as it was. |
 | 5 | same | Panel, Style | Open Style. Press Contrast under Background role, then press Accent. | — | Card tint; a grey note beginning "There is no image focus here."; then Background role, Vertical spacing and Top divider. Background role shows five swatches — Base, Surface, Accent, Contrast, Image — with Accent and Image grey and "This design is drawn for plain grounds, so accent and image are not offered." under them, and a small moon with the words "Dark override" beside its name; Card tint has no moon. Contrast turns the section dark at once; Accent does nothing. |
 | 6 | same | Panel, Content → Features | Open Content and find Features. Press "+ Add feature" until it stops working. | — | "2–6 · 3 used" beside Features, and three rows each with a handle, a name and a "…" button. Every press adds a card reading "A new feature" with a star; after the sixth, the button goes grey with "The row holds 6 features. Remove one to add another." |
@@ -683,10 +703,43 @@ the sample. Deploy records the deployment it runs on under "## Verification".
 | 14 | same | Content, Picture | Press Replace and choose another picture. | — | The section's picture changes. |
 | 15 | same | Panel, Data | Open Data. Set Show to 5 and Order to Oldest. | — | "From the archive" lists five titles, oldest first. In the panel the posts are grey, and a grey "+ Add post" reads "These come from Ghost, so there is nothing to add here." — you choose how many and in what order, never which. |
 | 16 | same | Panel foot | Press "Reset this design". | — | Every setting returns to how it started — three columns, Left, Base background, three posts newest first — while the words you changed and the features you added stay. |
-| 17 | same | Whole page | Reload the page. | — | Everything is back to the sample. Saving arrives with the editor. |
+| 17 | same | Panel, top | Press the small panel button beside the sample's name. Then press the same button on the thin strip left at the right edge. | — | The panel folds away to a thin strip and the section widens to fill the space; pressing the strip's button brings the panel back as it was. |
+| 18 | same | Whole page | Reload the page. | — | Everything is back to the sample. Saving arrives with the editor. |
 
 If a step shows something different, note its number and what you saw — those are fixed inside this
 story (R-80), not later.
+
+## Owner's test findings
+
+Tested on `https://app.inflozo.com/controls` on 2026-09-13, on the Dev deployment (`af369c2b`), before
+Review. Four findings, each reproduced on production before it was fixed and fixed inside this story (R-80).
+
+1. **The "Reset" words beside changed controls should be icons, to keep the panel minimal.** *Whose:* this
+   story's — no frame draws a per-control reset, so its look was this story's extrapolation. *Fixed:* the
+   Kit's Undo glyph in a 20 px icon button named "Reset <label>" (`apps/web/components/controls/sidebar.tsx`);
+   Epic 5 mounts the same component, so the editor inherits it.
+2. **The canvas had a scrollbar of its own, and the wheel over it would not scroll the page.** *Measured on
+   production:* the canvas document was 2 px taller than its window (990 against 988), and a 400 px wheel over
+   it moved the canvas 2 px and the page 0. *Cause:* the iframe was sized to the section's height, but the
+   app's `box-sizing: border-box` spent 2 px of that on its border. *Fixed:* the height adds the border and
+   rounds the section's height up (`controls/review.tsx`'s `fit`).
+3. **The panel should be a sidebar like the left menu: flush to the right edge, no rounded corners, with a
+   collapse button.** *Whose:* the look is S4c's — the editor's Controls sidebar is drawn 280 wide, flush
+   right, a hairline on its left, paper, square (`S4 Editor.dc.html:337`); the review page had drawn it as a
+   rounded card 48 px in from the edge. *Fixed:* docked at the viewport's height, scrolling on its own, the
+   sample's name at its top. The collapse has no frame at full width; it is D8's Layers rail and panel glyph
+   mirrored (`D8 Editor Below 1440.dc.html:194`), with focus moving to the button that replaces the pressed
+   one. **The editor's own Controls sidebar is Story 5.1's**, and whether it collapses at full width is
+   recorded for that story as DW-114.
+4. **The Link field's panel opened too far right and was cut off.** *Measured on production:* its right
+   edge at 1449 of a 1440 window. *Cause:* every picker popover is anchored at its trigger's left edge and
+   is wider than a sidebar field. *Fixed:* `openPopover` (`apps/web/components/kit/select.tsx`), which every
+   picker opens through, slides a popover left until it fits inside an 8 px gutter.
+
+*Asked alongside, and answered in the session:* whether this page is only a picture of how controls would
+look. The sample section is made up — it exists to exercise every kind of control — but the panel is not a
+mock-up: its components and the engine behind them are the ones Epic 5 mounts in the editor, and every real
+section draws its own settings through them.
 
 ## Questions for the owner
 

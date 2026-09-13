@@ -139,7 +139,7 @@ export type ControlRow = {
   greyed?: string
   /** FR-F5: mode-scoped, and a dark override is stored */
   moon: boolean
-  /** the stored value differs from the default, so a "Reset" is offered */
+  /** the stored value differs from the default, so a reset is offered */
   changed: boolean
   universal: boolean
 }

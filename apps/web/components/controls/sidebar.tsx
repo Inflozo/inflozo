@@ -7,7 +7,7 @@ import {
 import type { ControlEntry, ControlRow, ControlState, DataRow, PropRow, PropValue } from '@inflozo/section-runtime'
 import { Accordion } from '@/components/kit/accordion'
 import { ring, type Greyed } from '@/components/kit/greyed'
-import { Image, InfoCircle } from '@/components/kit/icons'
+import { Image, InfoCircle, Undo } from '@/components/kit/icons'
 import { Multiline, TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
 import { MoonBadge } from '@/components/kit/moon-badge'
@@ -35,8 +35,9 @@ import { LinkPicker, type LinkResources } from './link-picker'
    (the spec's Design Notes): S4c's second accordion is "Design" and FR-F3 names it Arrangement; the
    universal trio is never a Quick Control and sits as one block at the foot of Style, after that group's
    absent note (P0-0: the note sits where the control would have been); a changed control carries a
-   "Reset" in the style of D5's "Reset this design" (12 px, ink-soft), and "Reset this design" sits at the
-   panel foot with no confirm — D5 draws none. The moon badge carries its words, "Dark override" (UX-DR8). */
+   reset beside its label — the Kit's Undo glyph, named "Reset <label>", on the owner's finding 1 (it was the
+   word "Reset" in D5's 12 px ink-soft until then) — and "Reset this design" sits at the panel foot with no
+   confirm — D5 draws none. The moon badge carries its words, "Dark override" (UX-DR8). */
 
 export type Edit = 'control' | 'content'
 
@@ -83,8 +84,14 @@ function ControlField({
         </>
       ) : null}
       {row.changed ? (
-        <button type="button" aria-label={`Reset ${row.label}`} onClick={onReset} className={`text-[12px] font-normal text-ink-soft hover:text-ink ${ring}`}>
-          Reset
+        <button
+          type="button"
+          aria-label={`Reset ${row.label}`}
+          title={`Reset ${row.label}`}
+          onClick={onReset}
+          className={`-my-1 inline-flex size-5 items-center justify-center rounded-sm text-ink-soft hover:bg-paper-sunk hover:text-ink ${ring}`}
+        >
+          <Undo size={12} />
         </button>
       ) : null}
     </>

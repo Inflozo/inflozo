@@ -64,7 +64,7 @@ export function Segmented({
   active: string | null
   greyed?: Greyed
   moon?: boolean
-  /** beside the label: the moon's words, a "Reset" */
+  /** beside the label: the moon's words, the reset icon */
   aside?: ReactNode
   onChange?: (value: string) => void
 }) {

@@ -24,26 +24,24 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
 export default function ControlsReview() {
   const entry = sample()
 
-  // A `div`, not a `main`: the shell owns the page's one `<main>` (kit/page.tsx).
+  // No `main` here: the shell owns the page's one `<main>` (kit/page.tsx). The heading scrolls with the
+  // canvas; the panel docks to the right edge (review.tsx).
   return (
-    <div className="flex flex-col gap-5 bg-paper py-8 tablet:py-12">
-      <header className="flex max-w-[820px] flex-col gap-[6px] px-4 tablet:px-12">
+    <Review
+      entry={entry}
+      swatches={referenceSwatches()}
+      rows={queryRows(entry)}
+      links={linkResources()}
+      pool={imagePool()}
+      timezone={orbitWeekly.site().timezone}
+    >
+      <header className="flex max-w-[820px] flex-col gap-[6px]">
         <h1 className="font-display text-[30px] font-extrabold tracking-[-0.02em] text-ink">Controls review</h1>
         <p className="font-mono text-control-label text-ink-soft">
           {entry.name} · the panel Epic 5 mounts, beside the section it edits · nothing here is saved — a reload
           brings back the sample
         </p>
       </header>
-      <div className="px-4 tablet:px-12">
-        <Review
-          entry={entry}
-          swatches={referenceSwatches()}
-          rows={queryRows(entry)}
-          links={linkResources()}
-          pool={imagePool()}
-          timezone={orbitWeekly.site().timezone}
-        />
-      </div>
-    </div>
+    </Review>
   )
 }
