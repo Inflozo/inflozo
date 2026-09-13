@@ -718,6 +718,9 @@ on Background role, and none on Card tint.
   moved a row one place — 12 of 12 PASS. The first run of this check read no titles (a class name from the unit
   test's inline markup, not the sample's) and its order checks failed; it was corrected, and each order check
   now also requires five titles and an order that differs from the start.
+- **Finding 9, on production** — Vercel's production deployment for `bed27dc3` READY; the same check against
+  `https://app.inflozo.com/controls` → 12 of 12 PASS with the local figures (slots at 341 and 427, rows slid to 384,
+  the predicted orders on the canvas, `⌥↓` intact); the fixture user deleted, 9 → 9.
 
 **Manual checks (if no CLI):**
 - The review page beside the frames the first acceptance criterion names, both at the sidebar's width:
