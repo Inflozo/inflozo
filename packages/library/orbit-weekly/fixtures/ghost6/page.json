@@ -33,7 +33,7 @@
       "id": "list-bullet"
     },
     {
-      "html": "<figure class=\"kg-card kg-bookmark-card\"><a class=\"kg-bookmark-container\" href=\"https://perennial.orbit-weekly.example/the-web-is-not-a-feed/?ref=ghost6.inflozo.com\"><div class=\"kg-bookmark-content\"><div class=\"kg-bookmark-title\">The Web Is Not A Feed, And Never Was</div><div class=\"kg-bookmark-description\">An argument for the personal site, made by someone who has kept one since 2004 and has the logs to prove it.</div><div class=\"kg-bookmark-metadata\"><img class=\"kg-bookmark-icon\" src=\"https://orbit-weekly.example/images/icon.svg\" alt=\"\"><span class=\"kg-bookmark-author\">perennial.orbit-weekly.example</span><span class=\"kg-bookmark-publisher\">Perennial Notes</span></div></div><div class=\"kg-bookmark-thumbnail\"><img src=\"https://orbit-weekly.example/images/feature-05.svg\" alt=\"\" onerror=\"this.style.display = 'none'\"></div></a></figure>",
+      "html": "<figure class=\"kg-card kg-bookmark-card\"><a class=\"kg-bookmark-container\" href=\"https://perennial.orbit-weekly.example/the-web-is-not-a-feed/\"><div class=\"kg-bookmark-content\"><div class=\"kg-bookmark-title\">The Web Is Not A Feed, And Never Was</div><div class=\"kg-bookmark-description\">An argument for the personal site, made by someone who has kept one since 2004 and has the logs to prove it.</div><div class=\"kg-bookmark-metadata\"><img class=\"kg-bookmark-icon\" src=\"https://orbit-weekly.example/images/icon.svg\" alt=\"\"><span class=\"kg-bookmark-author\">perennial.orbit-weekly.example</span><span class=\"kg-bookmark-publisher\">Perennial Notes</span></div></div><div class=\"kg-bookmark-thumbnail\"><img src=\"https://orbit-weekly.example/images/feature-05.svg\" alt=\"\" onerror=\"this.style.display = 'none'\"></div></a></figure>",
       "id": "bookmark-thumbnail"
     },
     {
@@ -49,7 +49,7 @@
       "id": "table"
     },
     {
-      "html": "<p>The counting itself is unglamorous. I run one request a month against each address and record what comes back, which is <a href=\"https://orbit-weekly.example/the-list/?ref=ghost6.inflozo.com\">fourteen lines of shell</a> and a text file:</p>",
+      "html": "<p>The counting itself is unglamorous. I run one request a month against each address and record what comes back, which is <a href=\"https://orbit-weekly.example/the-list/\">fourteen lines of shell</a> and a text file:</p>",
       "id": null
     },
     {
@@ -105,7 +105,7 @@
       "id": null
     },
     {
-      "html": "<div class=\"kg-card kg-file-card\"><a class=\"kg-file-card-container\" href=\"https://orbit-weekly.example/files/orbit-weekly-aug-2026.csv?ref=ghost6.inflozo.com\" title=\"Download\" download=\"\"><div class=\"kg-file-card-contents\"><div class=\"kg-file-card-title\">The August list, as a spreadsheet</div><div class=\"kg-file-card-caption\">Every domain, its first capture, and who renews it</div><div class=\"kg-file-card-metadata\"><div class=\"kg-file-card-filename\">orbit-weekly-aug-2026.csv</div><div class=\"kg-file-card-filesize\">24 KB</div></div></div><div class=\"kg-file-card-icon\"><svg viewBox=\"0 0 24 24\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\"a\" points=\"8.25 14.25 12 18 15.75 14.25\"></polyline><line class=\"a\" x1=\"12\" y1=\"6.75\" x2=\"12\" y2=\"18\"></line><circle class=\"a\" cx=\"12\" cy=\"12\" r=\"11.25\"></circle></svg></div></a></div>",
+      "html": "<div class=\"kg-card kg-file-card\"><a class=\"kg-file-card-container\" href=\"https://orbit-weekly.example/files/orbit-weekly-aug-2026.csv\" title=\"Download\" download=\"\"><div class=\"kg-file-card-contents\"><div class=\"kg-file-card-title\">The August list, as a spreadsheet</div><div class=\"kg-file-card-caption\">Every domain, its first capture, and who renews it</div><div class=\"kg-file-card-metadata\"><div class=\"kg-file-card-filename\">orbit-weekly-aug-2026.csv</div><div class=\"kg-file-card-filesize\">24 KB</div></div></div><div class=\"kg-file-card-icon\"><svg viewBox=\"0 0 24 24\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\"a\" points=\"8.25 14.25 12 18 15.75 14.25\"></polyline><line class=\"a\" x1=\"12\" y1=\"6.75\" x2=\"12\" y2=\"18\"></line><circle class=\"a\" cx=\"12\" cy=\"12\" r=\"11.25\"></circle></svg></div></a></div>",
       "id": "file-title-caption"
     },
     {
@@ -113,7 +113,7 @@
       "id": "product-rating-image"
     },
     {
-      "html": "<div class=\"kg-card kg-button-card kg-align-center\"><a href=\"https://orbit-weekly.example/the-list/?ref=ghost6.inflozo.com\" class=\"kg-btn kg-btn-accent\">Read the full list</a></div>",
+      "html": "<div class=\"kg-card kg-button-card kg-align-center\"><a href=\"https://orbit-weekly.example/the-list/\" class=\"kg-btn kg-btn-accent\">Read the full list</a></div>",
       "id": "button-center"
     },
     {

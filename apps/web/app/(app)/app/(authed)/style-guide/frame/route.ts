@@ -16,7 +16,10 @@ import { articleDocument, variationsDocument } from '@/lib/style-guide'
  */
 export async function GET(request: NextRequest) {
   if (!(await currentUser())) return NextResponse.redirect(new URL('/sign-in', request.url), 303)
-  const nonce = request.headers.get('x-nonce') ?? ''
+  const nonce = request.headers.get('x-nonce')
+  // Loud, not empty: under `'strict-dynamic'` a `nonce=""` blocks every card script with no error
+  // anywhere — the toggle just stops toggling. `proxy.ts` stamps the header on every app request.
+  if (!nonce) return new NextResponse('no x-nonce on the request — proxy.ts did not run', { status: 500 })
   const view = request.nextUrl.searchParams.get('view')
   const html = view === 'variations' ? variationsDocument(nonce) : articleDocument(nonce)
   return new NextResponse(html, {

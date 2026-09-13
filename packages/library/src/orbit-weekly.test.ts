@@ -24,6 +24,8 @@ import {
   tags, tiers, variants,
 } from './orbit-weekly.ts'
 import type { Major } from './orbit-weekly.ts'
+import type { DataBinding } from './registry.ts'
+import referenceDesign from '../fixtures/reference-design/design.json' with { type: 'json' }
 
 const classes = (html: string): Set<string> =>
   new Set([...html.matchAll(/\sclass="([^"]*)"/g)].flatMap((m) => m[1].split(/\s+/).filter(Boolean)))
@@ -106,8 +108,9 @@ test('every Data-group Source returns rows — latest, featured, every tag, ever
 
 test('hand-picked ids come back in the PICKED order, and a missing id is skipped', () => {
   const all = posts()
-  const ids = [all[7].id, all[2].id, 'not-an-id', all[30].id]
-  assert.deepEqual(resolveSource({ source: 'posts', ids }).map((r) => r['id']), [all[7].id, all[2].id, all[30].id])
+  const late = all[Math.floor(all.length / 2)]!   // derived, not a figure: past the first page whatever the feed size
+  const ids = [all[7].id, all[2].id, 'not-an-id', late.id]
+  assert.deepEqual(resolveSource({ source: 'posts', ids }).map((r) => r['id']), [all[7].id, all[2].id, late.id])
 })
 
 test('a Source that matches nothing is [] — never a throw', () => {
@@ -162,6 +165,16 @@ test('previewSeed "orbit-weekly" resolves; any other seed refuses by name', () =
   assert.throws(() => resolvePreviewSeed('some-other-dataset'), /resolves to nothing/)
 })
 
+// The validator accepts more NQL than the resolver evaluates (`validate.ts` lets `,` through; the
+// resolver refuses it by name), so a design can validate green and preview empty. Until the editor
+// exists this is the one place that drift is caught: every shipped design's bindings must resolve.
+test('the reference design validates AND previews: its seed resolves and every binding returns rows', () => {
+  const { resolveSource: resolve } = resolvePreviewSeed(referenceDesign.previewSeed)
+  for (const [key, binding] of Object.entries(referenceDesign.dataBindings)) {
+    assert.ok(resolve(binding as DataBinding).length > 0, `reference design's binding "${key}" resolves to no rows`)
+  }
+})
+
 // ─── the recordings ───────────────────────────────────────────────────────────
 
 test('a missing recording FAILS naming the fixture and the capture command', () => {
@@ -209,17 +222,39 @@ test('the control: the four documented root classes came back on both majors', (
 
 /** Where the two majors print DIFFERENT class sets for the same block. Declared, never normalised — a
  *  target bump that changes one fails below naming the block. Empty as recorded: the majors differ in
- *  bytes (a video poster, the signup placeholder, the `?ref=` host) and not in any class. */
+ *  bytes and not in any class. */
 const MAJOR_CLASS_DIFFERENCES: Readonly<Record<string, { ghost5: string[]; ghost6: string[] }>> = {}
 
-test('the majors are kept apart: bytes are never merged, and every class-set difference is declared', () => {
-  assert.notEqual(styleGuideBody('5'), styleGuideBody('6'), 'the two majors returned one body — a recording was copied, not captured')
+/** Where the two majors print different BYTES for the same block — asserted POSITIVELY, by name, so a
+ *  bump that makes them agree (or disagree somewhere new) fails naming the block rather than passing
+ *  by coincidence. As recorded: the video poster (a spacer URL on 5, a data GIF on 6) and its
+ *  `aspect-ratio`, and the signup card's placeholder markup. Every other block is byte-identical. */
+const MAJOR_BYTE_DIFFERENCES: readonly string[] = [
+  'video-regular', 'video-wide', 'video-full', 'video-regular-loop', 'video-wide-caption',
+  'signup-regular', 'signup-wide', 'signup-full', 'signup-split', 'signup-full-dark',
+]
+
+test('the majors are kept apart: every byte difference and every class-set difference is declared by name', () => {
   const five = new Map(blocks('5', 'variations').map((b) => [b.id, b.html]))
+  const differing: string[] = []
   for (const b of blocks('6', 'variations')) {
+    if (five.get(b.id) !== b.html) differing.push(String(b.id))
     const c5 = classes(five.get(b.id) ?? '')
     const c6 = classes(b.html)
     const d = { ghost5: [...c5].filter((c) => !c6.has(c)).sort(), ghost6: [...c6].filter((c) => !c5.has(c)).sort() }
     assert.deepEqual(d, MAJOR_CLASS_DIFFERENCES[String(b.id)] ?? { ghost5: [], ghost6: [] }, `${b.id}: the majors' class sets differ from what is declared`)
+  }
+  assert.deepEqual(differing, [...MAJOR_BYTE_DIFFERENCES], 'the blocks whose bytes differ between the majors are not the declared ones')
+  // no recording carries the test servers' hostnames: outbound link tagging is off for the run
+  for (const major of MAJORS) assert.doesNotMatch(blocks(major, 'variations').map((b) => b.html).join(''), /[?&]ref=/, `Ghost ${major}: an outbound link carries ?ref=`)
+})
+
+test('the renderer directory list is recorded, and the NFT card has no Lexical renderer on either major (DW-101)', () => {
+  for (const major of MAJORS) {
+    const nodes = (recording(major, 'capture')['renderer'] as { nodes: string[] }).nodes
+    assert.ok(nodes.length > 10, `Ghost ${major}: no renderer directory list recorded`)
+    assert.ok(!nodes.includes('nft'), `Ghost ${major} now ships a Lexical NFT renderer — DW-101 and C4's CARDS row are back on the table`)
+    for (const c of ['toggle', 'image', 'gallery', 'bookmark']) assert.ok(nodes.includes(c), `Ghost ${major}: no ${c} renderer`)
   }
 })
 
@@ -280,12 +315,24 @@ test('the variation sheet carries every class-affecting variant FR-H3 enumerates
   }
 })
 
-test('C4 — the readable article: one of each, the header card absent, three H2s and one H3, no paywall', () => {
+// C4's "What the fixture covers" card (`C Post Body.dc.html:1913-1929`), CARDS and ABSENT rows, as drawn.
+// `image` there is the feature image, which the post head draws rather than a kg-image-card; `nft` has no
+// Lexical renderer on either major (DW-101, asserted above from the recording).
+const C4_CARDS = ['callout', 'bookmark', 'blockquote', 'toggle', 'table', 'code', 'image', 'gallery', 'audio', 'video', 'embed', 'file', 'product', 'button', 'nft', 'divider', 'signup']
+const C4_ABSENT = ['header', 'header_v2', 'gif', 'markdown', 'html', 'email', 'email-cta', 'paywall']
+
+test('C4 — the readable article: one of each, C4\'s CARDS and ABSENT rows, three H2s and one H3, no paywall', () => {
   const order = articleOrder().filter((x): x is string => x !== null)
   const cards = order.map((id) => variants().find((v) => v.id === id)?.card)
   assert.equal(new Set(cards).size, cards.length, `a card appears twice in the article: ${cards.join(', ')}`)
-  assert.ok(!cards.includes('header_v2'), "C4's ABSENT row: the header card belongs to the sheet")
+  const drawn = C4_CARDS.filter((c) => c !== 'image' && c !== 'nft').sort()
+  assert.deepEqual(cards.filter((c) => c !== 'list').sort(), drawn, "the article's cards are not C4's CARDS row (less the feature image and the NFT card)")
+  for (const c of C4_ABSENT) assert.ok(!cards.includes(c), `C4's ABSENT row: ${c} belongs to the sheet or nowhere`)
   const body = styleGuideBody('6')
+  // the one `<!--kg-card-begin: html-->` in the article is the TABLE: Ghost has no table node, so a table IS an
+  // HTML card, which is how C4 can list "table" under CARDS and "HTML" under ABSENT at once
+  assert.equal((body.match(/kg-card-begin: html/g) ?? []).length, 1, "C4's ABSENT row: the table is the only HTML card in the article")
+  assert.ok(!/kg-header-card|kg-card-begin: markdown/.test(body), "C4's ABSENT row: no header or markdown card in the article")
   // the article's own headings — a card's heading (the signup card's h2) is the card's, not the TOC's
   const prose = blocks('6', 'article').filter((b) => b.id === null).map((b) => b.html).join('')
   assert.equal((prose.match(/<h2[\s>]/g) ?? []).length, 3)

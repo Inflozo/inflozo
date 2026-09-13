@@ -10,4 +10,3 @@
         container.style.flex = ratio + ' 1 0%';
     })
 })();
-

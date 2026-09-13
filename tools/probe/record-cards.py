@@ -30,7 +30,10 @@ on every later run — a post for the article, a post for the variation sheet, a
 PUBLISHED for the moment the Content API is read and returned to DRAFT in a `finally`, so no feed,
 tag count or sitemap on either box carries them afterwards (the analogue of record-shim.py restoring
 the previous theme). No image is uploaded: every URL in the corpus sits on the reserved origin
-`https://orbit-weekly.example`, which Ghost does not rewrite. No setting is touched. The vendored
+`https://orbit-weekly.example`, which Ghost does not rewrite. ONE setting is touched for the length of
+the run and restored in a `finally`: `outbound_link_tagging` is switched off, because with it on Ghost
+prints `?ref=<this box's host>` on every outbound link and the recording would carry the test
+servers' hostnames into every customer's canvas (Story 4.4's review, 2026-09-13). The vendored
 chunks and the renderer version are READ over SSH, the method `run-verify-a33-cards.py` uses.
 
 THE CONTROL COMES FIRST AND VOIDS THE RUN (standing rule 2). The four root classes Ghost documents —
@@ -79,7 +82,7 @@ class Void(Exception):
 # ── what the renderer on each box is, read rather than assumed ───────────────
 REMOTE = r'''
 set -e
-V=$(ls -d {versions}/* | tail -1)
+V=$(ls -dv {versions}/* | tail -1)
 echo "VERSION=$(basename $V)"
 D=$(find $V/node_modules -type d -name nodes -path "*kg-default-nodes*" 2>/dev/null | grep -vE "/es/|/esm/" | head -1)
 P=$(dirname $(dirname $D))
@@ -254,6 +257,17 @@ def to_draft(g, resource, doc_id):
         g.api('PUT', f'{resource}/{doc_id}/', {resource: [{'status': 'draft', 'updated_at': cur['updated_at']}]})
 
 
+def setting(g, key):
+    """One Ghost setting's current value, read through the Admin API. The whole list, then the key:
+    `settings/?filter=key:…` is NOT honoured — executed 2026-09-13, it answered the full list and the
+    first row (the site title) was written back as the restore value, refused with 422."""
+    return next(s['value'] for s in g.api('GET', 'settings/')['settings'] if s['key'] == key)
+
+
+def set_setting(g, key, value):
+    g.api('PUT', 'settings/', {'settings': [{'key': key, 'value': value}]})
+
+
 def api_defaults(g):
     """The Content API's own default LIMIT and ORDER per Source resource — no order and no limit passed,
     so what comes back is Ghost's default. The resolver's defaults are asserted against this."""
@@ -277,6 +291,8 @@ def record(g, corpus):
 
     variants = {v['id']: v for v in corpus['variants']}
     bodies, docs = {}, []
+    tagging = setting(g, 'outbound_link_tagging')
+    set_setting(g, 'outbound_link_tagging', False)   # restored below, whatever happens in between
     try:
         for which, (resource, slug) in SLUGS.items():
             bs = blocks(corpus, 'variations' if which == 'variations' else 'article')
@@ -297,9 +313,17 @@ def record(g, corpus):
             bodies[which] = [{'id': b['id'], 'html': f} for b, f in zip(bs, frags)]
             print(f'    [{which}] {resource}/{slug} — {len(frags)} blocks, {len(html)} bytes')
     finally:
-        for resource, doc_id in docs:
-            to_draft(g, resource, doc_id)
-        print(f'    returned {len(docs)} documents to draft')
+        # every restore is attempted, whichever fails: one failed draft must not leave the others
+        # published, and a restore failure must not mask the Void that got us here
+        failed = []
+        for step, args in [(to_draft, (g, r, i)) for r, i in docs] + [(set_setting, (g, 'outbound_link_tagging', tagging))]:
+            try:
+                step(*args)
+            except Exception as e:   # noqa: BLE001 — collected, reported, re-raised below
+                failed.append(f'{step.__name__}{args[1:]}: {e}')
+        print(f'    returned {len(docs)} documents to draft; outbound_link_tagging restored to {tagging}')
+        if failed:
+            raise Void(f'Ghost {major}: restore failed — {"; ".join(failed)} — put the box right by hand before re-running')
     # read AFTER the drafts are back, or the three fixture documents would sit in the recorded feed
     defaults = api_defaults(g)
 
@@ -308,7 +332,10 @@ def record(g, corpus):
     return {
         'capture': {
             'ghost_major': major, 'ghost_version': shim.read_version(g), 'ghost_install': rend['ghost_install'], 'site': g.url,
-            'renderer': {'package': '@tryghost/kg-default-nodes', 'version': rend['renderer_version']},
+            # `nodes` is the renderer directory list itself, so "no Lexical NFT renderer on either
+            # major" (DW-101) is a recorded fact a test reads, not a paraphrase (AD-23)
+            'renderer': {'package': '@tryghost/kg-default-nodes', 'version': rend['renderer_version'],
+                         'nodes': sorted(rend['nodes'])},
             'captured': datetime.date.today().isoformat(), 'command': COMMAND,
             'content_api_defaults': defaults,
             'note': 'AD-23: the style-guide body enters here. Every block is Ghost\'s own bytes, split per top-level '
@@ -321,14 +348,14 @@ def record(g, corpus):
 # ── the pinned target's chunks, verbatim ──────────────────────────────────────
 def vendor():
     host, versions = HOSTS[PINNED]
-    script = (f'set -e; V=$(ls -d {versions}/* | tail -1); echo "VERSION=$(basename $V)"; cd $V/core/frontend/src/cards; '
+    script = (f'set -e; V=$(ls -dv {versions}/* | tail -1); echo "VERSION=$(basename $V)"; cd $V/core/frontend/src/cards; '
               'for f in css/*.css js/*.js; do echo "@@FILE $f"; cat "$f"; echo; done; echo "@@FILE LICENSE"; cat $V/LICENSE')
     raw = ssh(host, script)
     version = re.search(r'^VERSION=(.+)$', raw, re.M).group(1)
     files = {}
     for part in raw.split('@@FILE ')[1:]:
         name, _, body = part.partition('\n')
-        files[name.strip()] = body[:-1] if body.endswith('\n') else body
+        files[name.strip()] = body.removesuffix('\n')   # the `echo` after each `cat`, and nothing of the file's
     lic = files.pop('LICENSE')
     copyright_line = next(l for l in lic.splitlines() if l.startswith('Copyright'))
     if not any(n.startswith('js/') for n in files) or not any(n.startswith('css/') for n in files):
@@ -337,18 +364,25 @@ def vendor():
 
 
 def write_vendor(version, copyright_line, lic, files):
-    for sub in ('css', 'js'):
-        d = os.path.join(VENDOR, sub)
-        os.makedirs(d, exist_ok=True)
-        for f in os.listdir(d):
-            os.remove(os.path.join(d, f))   # a chunk Ghost removed must not survive as a stale file
     for name, body in sorted(files.items()):
         head = (f'/* Vendored verbatim from Ghost {version}, core/frontend/src/cards/{name}, by `{COMMAND}`.\n'
                 f'   {copyright_line}. MIT licence — the full text is vendor/LICENSE-ghost.txt. */\n')
+        os.makedirs(os.path.dirname(os.path.join(VENDOR, name)), exist_ok=True)
         with open(os.path.join(VENDOR, name), 'w') as f:
-            f.write(head + body + '\n')
+            f.write(head + body)   # verbatim: the file's own bytes end it, no newline of ours
+    for sub in ('css', 'js'):
+        prune(os.path.join(VENDOR, sub), {os.path.basename(n) for n in files if n.startswith(sub + '/')})
     with open(os.path.join(os.path.dirname(VENDOR), 'LICENSE-ghost.txt'), 'w') as f:
         f.write(lic if lic.endswith('\n') else lic + '\n')
+
+
+def prune(d, keep):
+    """A chunk or recording that no longer exists must not survive as a stale file — removed AFTER
+    the new files are written, so a write that fails part-way leaves the previous tree, never an
+    empty one (the library's static imports would break on an empty fixtures/ghost5/)."""
+    for f in os.listdir(d) if os.path.isdir(d) else []:
+        if f not in keep:
+            os.remove(os.path.join(d, f))
 
 
 # ── writing ───────────────────────────────────────────────────────────────────
@@ -413,7 +447,9 @@ if __name__ == '__main__':
             g = shim.Ghost(env[f'GHOST{M}_URL'], env[f'GHOST{M}_STAFF_ACCESS_TOKEN'], M, env[f'GHOST{M}_CONTENT_API_KEY'])
             recs[M] = record(g, corpus)
             blob = json.dumps(recs[M])
-            assert env[f'GHOST{M}_CONTENT_API_KEY'] not in blob, 'a Content API key reached a recording'
+            for k in ('CONTENT_API_KEY', 'STAFF_ACCESS_TOKEN'):   # a Void, not an assert: `python -O` strips asserts
+                if env[f'GHOST{M}_{k}'] in blob:
+                    raise Void(f'GHOST{M}_{k} reached a recording — refusing to write it')
         vendored = vendor()
     except (Void, shim.urllib.error.HTTPError, OSError, KeyError, subprocess.SubprocessError) as e:
         detail = e.read()[:400].decode('utf8', 'replace') if isinstance(e, shim.urllib.error.HTTPError) else ''
@@ -422,11 +458,10 @@ if __name__ == '__main__':
 
     for M, rec in recs.items():
         d = os.path.join(FIXTURES, f'ghost{M}')
-        for f in os.listdir(d) if os.path.isdir(d) else []:
-            os.remove(os.path.join(d, f))
         dump(os.path.join(d, 'capture.json'), rec['capture'])
         for which in SLUGS:
             dump(os.path.join(d, f'{which}.json'), {'command': COMMAND, 'ghost_major': M, 'blocks': rec[which]})
+        prune(d, {'capture.json', *(f'{w}.json' for w in SLUGS)})
     write_sheet(corpus, recs[PINNED])
     write_vendor(*vendored)
     found = write_fixture_index()

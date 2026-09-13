@@ -5,7 +5,8 @@
 // MEASUREMENTS §18, executed on Vercel Pro: setting a CSP header in `proxy.ts` does NOT
 // force dynamic rendering — READING the nonce does. So marketing carries a policy AND stays
 // prerendered (`x-vercel-cache: PRERENDER` while serving a CSP), and only the app host pays,
-// because only `app/(app)/app/layout.tsx` reads `x-nonce`.
+// because only the app reads `x-nonce` — `app/(app)/app/layout.tsx`, and since Story 4.4 the
+// style-guide's `frame/route.ts`, which stamps it on Ghost's card scripts.
 //
 // The shape is the probe's (`tools/probe/csp/proxy.ts:9-49`), with one addition it did not
 // carry: `form-action 'self'` on BOTH policies. The app posts a server action from the sign-in

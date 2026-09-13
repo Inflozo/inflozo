@@ -631,4 +631,6 @@ renders **closed** only — open is what `toggle.js` sets on a click; and the si
 **Looking at it.** `/style-guide` (behind sign-in, noindex, reached by typing the path) renders the
 three fixtures inside `<main><article class="gh-content">`, loading the theme stylesheet, then the
 simulated `cards.min.css` — the complement of the cards the user designed, today every chunk — then the
-four vendored card scripts from `orbit-weekly/vendor/`. `/style-guide/variations` is the sheet.
+four vendored card scripts from `orbit-weekly/vendor/` (the directory carries every CSS chunk too, because the
+simulated bundle is built from them). `/style-guide/variations` is the sheet. The recordings carry no
+`?ref=` link tag: the recorder switches `outbound_link_tagging` off for the run and restores it.

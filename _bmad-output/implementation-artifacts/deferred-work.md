@@ -2834,3 +2834,34 @@ owner: E5 (the editing canvas), if a playable preview is wanted — a short inte
   same-origin, and the recording re-run.
 location: packages/library/orbit-weekly/corpus.json (`audio`, `video-*`) · apps/web/lib/style-guide.ts `withImages`
 reason: no encoder is installed to produce a licence-clean video, and nothing in Story 4.4's acceptance plays media.
+
+### DW-103: the resolver's recorded Ghost defaults are read from whatever else is on the test boxes
+
+plain: The sample data's "newest first, fifteen at a time" rule is checked against a list the test servers happen to return, so another test that adds a post to those servers changes that list for a reason that has nothing to do with Ghost.
+status: open
+severity: low
+origin: Story 4.4 review (2026-09-13) — Blind Hunter.
+owner: the first story that re-runs `tools/probe/record-cards.py` for another reason (a Ghost target bump, NFR-6)
+location: tools/probe/record-cards.py `api_defaults` · packages/library/orbit-weekly/fixtures/ghost{5,6}/capture.json `content_api_defaults`
+reason: `api_defaults` records the live boxes' own posts, tags, authors and tiers with no order or limit passed, and
+  `orbit-weekly.test.ts` sorts them by the resolver's default order and asserts equality. That proves Ghost's default
+  order and limit, which is the point — but the rows themselves are the probes' leftovers, so a later probe that
+  creates a post rewrites `capture.json` on the next run with no Ghost change behind it, and the test's `rows.length > 1`
+  guard depends on the boxes carrying at least two rows per resource. Recording the defaults against rows the recorder
+  itself owns would make the file stable; not done here because the fixture documents are returned to draft before the
+  read (they must not sit in the recorded feed), so the recorder would need a second, permanent pair of documents.
+
+### DW-104: the validator accepts NQL the offline resolver refuses, so a design can validate green and preview empty
+
+plain: The checker that approves a design's data query allows a little more than the preview can actually run, so a design could pass every check and still show an empty list in the editor.
+status: open
+severity: low
+origin: Story 4.4 review (2026-09-13) — Verification Gap.
+owner: Story 4.10 (the pilots, the first designs authored against the resolver) or E5 (the editor, the resolver's consumer)
+location: packages/library/src/validate.ts `bad-get-filter` (`,` allowed) and `preview-seed-missing` (any non-empty string) · packages/library/src/orbit-weekly.ts `predicate` (`,` refused by name) and `resolvePreviewSeed`
+reason: `validate.ts` lets `,` through and accepts any non-empty `previewSeed`, while `resolveSource` refuses `,`,
+  parentheses and comparisons by name and `resolvePreviewSeed` refuses everything but `orbit-weekly`. The review added
+  `orbit-weekly.test.ts`'s "the reference design validates AND previews" so every shipped design's bindings are run
+  through the resolver, which catches the drift for designs in the repo; the two grammars themselves still differ, and
+  which one moves — the resolver learning `,` (an `or`) or the validator refusing it — is a call for the story that
+  first needs an `or`.

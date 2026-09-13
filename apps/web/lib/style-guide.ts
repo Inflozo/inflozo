@@ -37,7 +37,7 @@ export const DESIGNED_CARDS: readonly string[] = []
 
 /** The chunk names Ghost ships, read off the vendored directory — never written down. */
 export const chunkUniverse = (kind: 'css' | 'js'): string[] =>
-  readdirSync(join(VENDOR(), kind)).filter((f) => f.endsWith(`.${kind}`)).map((f) => f.slice(0, -kind.length - 1))
+  readdirSync(join(VENDOR(), kind)).filter((f) => f.endsWith(`.${kind}`)).map((f) => f.slice(0, -kind.length - 1)).sort()
 
 /** The simulated `cards.min.css`: exactly the complement of the derived exclude list. */
 export function simulatedCardsCss(designed: readonly string[] = DESIGNED_CARDS): { chunks: string[]; css: string } {
@@ -58,8 +58,15 @@ export const cardScripts = (): { chunks: string[]; js: string } => {
  *  bundled, so a player renders its chrome and plays nothing. */
 export function withImages(html: string): string {
   const origin = orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')
-  return html.replace(new RegExp(`${origin}/images/([a-z0-9-]+\\.svg)`, 'g'), (_, name: string) =>
-    `data:image/svg+xml;base64,${readFileSync(join(ORBIT_WEEKLY_DIR(), 'images', name)).toString('base64')}`)
+  const seen = new Map<string, string>()   // a handful of files named dozens of times: read each once
+  return html.replace(new RegExp(`${origin}/images/([a-z0-9-]+\\.svg)`, 'g'), (_, name: string) => {
+    let uri = seen.get(name)
+    if (uri === undefined) {
+      uri = `data:image/svg+xml;base64,${readFileSync(join(ORBIT_WEEKLY_DIR(), 'images', name)).toString('base64')}`
+      seen.set(name, uri)
+    }
+    return uri
+  })
 }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -149,6 +156,8 @@ function postHead(p: ReturnType<typeof orbitWeekly.subject>, withTitle = true): 
   if (!withTitle) return ''
   const a = p.primary_author
   const date = String(p.published_at).slice(0, 10)
+  // "Issue 118" is C4's own header line (`C Post Body.dc.html:1710`), drawn here because the frame
+  // draws it; no design binds to an issue number, so it is not a dataset field.
   return `<header class="gh-canvas gh-head">` +
     `<div class="gh-meta"><b>${esc(p.primary_tag?.name ?? '')}</b> · Issue 118 · <time datetime="${date}">${date}</time></div>` +
     `<h1>${esc(p.title)}</h1><p class="gh-excerpt">${esc(String(p['custom_excerpt'] ?? ''))}</p>` +

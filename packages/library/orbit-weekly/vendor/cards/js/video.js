@@ -242,4 +242,3 @@
         handleVideoPlayer(videoCardElements[i]);
     }
 })();
-

@@ -23,7 +23,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
 
 export default function StyleGuide() {
   const capture = orbitWeekly.recording(PREVIEW_MAJOR, 'capture') as { ghost_version: string; captured: string }
-  const css = simulatedCardsCss()
+  const css = simulatedCardsCss()   // the header prints the chunk list; the frame route reads the CSS itself
   const js = cardScripts()
 
   // A `div`, not a `main`: the shell owns the page's one `<main>` (kit/page.tsx). The fixture's own

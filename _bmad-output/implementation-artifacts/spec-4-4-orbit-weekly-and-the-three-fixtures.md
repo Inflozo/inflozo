@@ -2,10 +2,10 @@
 title: 'Story 4.4 — Orbit Weekly and the three fixtures'
 type: 'feature'
 created: '2026-09-13'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '4d903f1b80a445bbb74dbc314b5082386fb6889f'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -284,7 +284,9 @@ it on, beside the existing component gallery.
   it: it is what FR-Q7's card panels preview against and what 4.11 compares, which is why it may hold
   nine callouts where the article holds one. The header card lives **here** and stays out of the
   readable article, which is what C4's ABSENT row asks for.
-- [x] `packages/library/orbit-weekly/fixtures/comments.html` + `page.html` -- fixture 2 and fixture 3.
+- [x] `packages/library/orbit-weekly/fixtures/comments.html` + `page.html` -- **delivered as `commentsFixture()` and
+  `fixtures/ghost{5,6}/page.json`, not as these files** (Spec Change Log 1: AD-1 leaves a core package no way to
+  read an `.html`) -- fixture 2 and fixture 3.
   Comments: the count and thread shape FR-H3 states (`prd.md:321`), drawn as `a28-kit.js:91-139` draws
   it -- Ghost's own colours inside the dashed outline, with the signed-out state -- because
   `{{comments}}` emits one `<script>` and no DOM, so nothing a theme writes reaches inside it
@@ -301,10 +303,12 @@ it on, beside the existing component gallery.
   any row set or any count, and a missing recording failing by name with the capture command. In `src/`
   because `package.json`'s `test` globs `src/**/*.test.ts`.
 - [x] `packages/library/{package.json,tsconfig.json}` · `src/index.ts` · `eslint.config.js` -- wire the
-  data in: a second `exports` key for the dataset, `resolveJsonModule` and `orbit-weekly` in `include`
+  data in: a second `exports` key for the dataset (**removed at review** -- nothing imported it; the app reads the
+  directory off disk and the library imports its JSON relatively, Change Log 8), `resolveJsonModule` and `orbit-weekly` in `include`
   (copy `packages/ghost-shim/tsconfig.json:3-6`), the re-export, and `orbit-weekly/` added to
   `NOT_CORE` (`eslint.config.js:23`) so authored data is not linted as core code.
-- [x] `packages/library/orbit-weekly/vendor/` -- the four card behaviour scripts vendored from Ghost
+- [x] `packages/library/orbit-weekly/vendor/` -- **delivered as every CSS and JS chunk, not the four scripts alone**
+  (Spec Change Log 4: the simulated `cards.min.css` needs a source) -- the four card behaviour scripts vendored from Ghost
   (audio, gallery, toggle, video -- `research-ghost-koenig-cards.md:533-545`), each carrying its source
   path, Ghost version and MIT notice -- excluding a card drops its JS as well as its CSS
   (`prd.md:373`), so without these the players are inert, gallery proportions collapse and toggles never
@@ -373,7 +377,50 @@ it on, beside the existing component gallery.
 - Given the gate, when `python3 tools/doc-audit.py --check` and `pnpm check` run, then both are green and
   no count is written down that a tool derives.
 
+### Review Findings
+
+Five layers ran on 2026-09-13 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). Every patch below is applied; the two deferrals are DW-103 and DW-104.
+
+- [x] [Review][Patch] The recordings carried the test servers' hostnames: Ghost's outbound link tagging printed `?ref=ghost6.inflozo.com` on every outbound link, so the fixture would have shown every customer a test box's name — the recorder now switches `outbound_link_tagging` off for the run and restores it, and the fixtures were re-recorded [tools/probe/record-cards.py]
+- [x] [Review][Patch] The "no Lexical NFT renderer on either major" fact behind Change Log 5 was a paraphrase, never a recording (AD-23) — `capture.json` now carries the renderer directory list and a test reads it [tools/probe/record-cards.py · packages/library/src/orbit-weekly.test.ts]
+- [x] [Review][Patch] The majors' byte differences were asserted only as "not identical" — now declared by name (`MAJOR_BYTE_DIFFERENCES`: the video poster and the signup placeholder) and asserted positively [packages/library/src/orbit-weekly.test.ts]
+- [x] [Review][Patch] C4's CARDS and ABSENT rows were not asserted (only `header_v2`) — the article's card set is now compared to C4's roster less the feature image and the NFT card, and every ABSENT name is checked [packages/library/src/orbit-weekly.test.ts]
+- [x] [Review][Patch] A failed draft-restore in the recorder's `finally` left the remaining fixture documents published and masked the original refusal — every restore is attempted and the failures are reported together [tools/probe/record-cards.py]
+- [x] [Review][Patch] The recorder's write phase deleted every existing fixture and chunk before writing, so a mid-way failure left an empty tree — new files are written first and stale ones pruned after [tools/probe/record-cards.py]
+- [x] [Review][Patch] Vendored files gained one blank line over Ghost's (the `echo` after each `cat` plus a newline of ours) while claiming "verbatim" — now byte-for-byte [tools/probe/record-cards.py]
+- [x] [Review][Patch] The Staff Access Token was never checked against the recording, and the Content API key check was an `assert` that `python -O` strips — both are refusals now [tools/probe/record-cards.py]
+- [x] [Review][Patch] `ls -d … | tail -1` picks the lexically last install, wrong for `6.9` vs `6.10` — `ls -dv` [tools/probe/record-cards.py]
+- [x] [Review][Patch] The frame route's sign-in guard and `?view` switch ran under no test, and a missing `x-nonce` produced `nonce=""`, which `'strict-dynamic'` blocks silently — the route refuses with a 500 and a test reads the guard back [apps/web/app/(app)/app/(authed)/style-guide/frame/route.ts · apps/web/style-guide.test.ts]
+- [x] [Review][Patch] `outputFileTracingIncludes` was verified only by a human reading `.nft.json` — a test holds the traced globs against every directory `lib/style-guide.ts` reads, for both routes [apps/web/style-guide.test.ts]
+- [x] [Review][Patch] The recorder's `--self-check` was wired to nothing — it runs inside `pnpm test`, and therefore in CI [package.json]
+- [x] [Review][Patch] The reference design's own `dataBindings` and `previewSeed` were never run through the resolver, while `validate.ts` accepts NQL the resolver refuses — a test resolves every shipped design's bindings (the grammar drift itself is DW-104) [packages/library/src/orbit-weekly.test.ts]
+- [x] [Review][Patch] `package.json`'s `./orbit-weekly/*` export was dead — removed [packages/library/package.json]
+- [x] [Review][Patch] `chunkUniverse` returned directory order; `withImages` re-read and re-encoded the same five SVGs dozens of times — sorted, and read once each [apps/web/lib/style-guide.ts]
+- [x] [Review][Patch] The PRD and the epics still said the fixture is snapshotted from `render*Node`; FR-H3 still enumerated "toggle open **and** closed" (the renderer prints closed only), promised every post a feature image (thirteen deliberately have none), kept "twenty further hero images" from the 32-post era, and had the deep-pager clause spliced ahead of the two size rules [prd.md FR-H3 · epics.md]
+- [x] [Review][Patch] The owner's manual test used the internal `/app/…` prefix (the app host 308-redirects it), promised "Orbit Weekly Issue 118" where the header prints the tag and date, and promised "an embedded video" where the embed card carries a placeholder [this spec]
+- [x] [Review][Patch] Stale text: "three preview subjects" for two; `csp.ts` saying only the layout reads `x-nonce`; `section-authoring.md` naming four scripts where every chunk is vendored; a hardcoded `all[30]` in the test that says it carries no figure [packages/library/src/orbit-weekly.ts · apps/web/csp.ts · docs/section-authoring.md · packages/library/src/orbit-weekly.test.ts]
+- [x] [Review][Defer] The resolver's recorded Content API defaults are read from whatever else sits on T1/T3 — deferred, DW-103
+- [x] [Review][Defer] `validate.ts` accepts `,` and any `previewSeed` while the resolver refuses both — deferred, DW-104 (the shipped-design test above covers the repo)
+
+Dismissed as noise or as ours-by-construction: the dataset's own values (`posts_per_page`, colours, image names, comment depth) guarded against inputs nobody can give them; `limit: 0` and empty filters, which `validate.ts` already refuses; the `HOSTS` table beside the env URLs (SSH needs a host and a path, the API needs a URL); `variations.html`, which Q1's ruling names as a deliverable; the stand-in theme CSS, which its own comment marks disposable; the settings-API `filter=` hypothesis, falsified in the run and recorded in `setting()`'s docstring.
+
 ## Spec Change Log
+
+**Review, 2026-09-13 — four more departures, each from a finding above.**
+
+6. **The embed card's interior is authored input, by nature.** Ghost's embed renderer passes the provider's HTML
+   through verbatim, so what a real customer's card wraps is YouTube's iframe; the corpus hands it a same-origin
+   `srcdoc` placeholder (a grey box with a play mark) because an external player is blocked by the app's CSP and
+   nothing licence-clean exists to embed. The `kg-embed-card` wrapper is Ghost's; the box inside is ours and is
+   labelled so on the sheet. The owner's test step 3 says "placeholder".
+7. **One setting is touched on the test boxes, for the length of the run.** `outbound_link_tagging` is switched
+   off and restored in the `finally`, because with it on every recording carried `?ref=<test host>`. Executed
+   2026-09-13: the first attempt read the setting through `settings/?filter=key:…`, which Ghost ignores — it
+   handed back the full list and the restore wrote the site title as the value, refused 422; the recorder now
+   reads the whole list and selects the key. T3 was put back to `true` by hand after that void run.
+8. **The `./orbit-weekly/*` package export is gone.** Nothing imported it.
+9. **`capture.json` carries the renderer's node directory list**, so "no NFT renderer" is a fact a test reads.
 
 **Dev, 2026-09-13 — five departures from the task wording, each forced by a constraint the spec also states.**
 
@@ -508,6 +555,31 @@ to each server. Nothing here should try to fake a rendition.
 - `pnpm check` (Node 24) — **exit 0**; `packages/library`'s run lists every orbit-weekly test as passed,
   none skipped.
 
+**What ran, 2026-09-13 (Review) — the real-infrastructure half, R-82:**
+- **Real services hit, and by which keys:** T3 `ghost5.inflozo.com` and T1 `ghost6.inflozo.com` through the
+  `GHOST5_` / `GHOST6_` trios (`_URL`, `_STAFF_ACCESS_TOKEN`, `_CONTENT_API_KEY`, read by `load_env`, never
+  printed) and SSH as root to both; the deployed app at `app.inflozo.com` (`curl -sI`, unauthenticated), which
+  reaches Supabase through the sign-in guard. No migration in the diff (`git diff --stat 4d903f1b HEAD --
+  supabase/migrations` is empty), so R-99 has nothing to compare. Resend and Dodo are not touched by this story.
+- `python3 tools/probe/record-cards.py` (the reviewer's independent run, before any patch) — **exit 0**, both
+  controls passed, every file under `fixtures/` and `vendor/` **byte-identical** to the Dev commit (md5 over 32
+  files), `git status --porcelain packages/library/orbit-weekly` empty. Negative control after it: the three
+  fixture slugs answered **404** on both boxes through the Content API, `posts/?limit=1` **200** on both.
+- **The void path, executed for real:** a scratch copy of the recorder with a `.env` lacking
+  `GHOST5_STAFF_ACCESS_TOKEN` (the real file untouched) → `RUN VOID — nothing written. KeyError`, **exit 1**,
+  md5 unchanged, tree clean.
+- **After the patches, the recorder was run again against both boxes** — the first attempt was **void by its
+  own new restore check** (the `filter=key:` hypothesis, Change Log 7) and wrote nothing; T3's
+  `outbound_link_tagging` was read as `False`, set back to `true`, and T1 read `true` throughout. The second run:
+  **exit 0**; T3 5.130.6 / kg-default-nodes 2.0.1 / 24 node directories, T1 6.58.0 / 2.2.0 / 25; article 30
+  blocks, sheet 78, page 30 on each; control passed on both; `outbound_link_tagging restored to True` printed
+  for both and read back `True` afterwards; the three slugs **404** and `posts/?limit=1` **200** on both; zero
+  `?ref=` in any recording; every vendored file ends in exactly the newline Ghost's does.
+- `python3 tools/probe/record-cards.py --self-check` — exit 0 (now part of `pnpm test`).
+- `pnpm check` (Node 24) and `python3 tools/doc-audit.py --check` — recorded at the commit below.
+- **Not yet done, and the owner's:** the walk of `/style-guide` on the deployed site (R-80). The deployed Dev
+  build answered a **307** to `/sign-in` on `/style-guide` and a **303** on `/style-guide/frame` without a session.
+
 **Manual checks (if no CLI):**
 - The review page beside `C Post Body.dc.html` C4, both open: C4's five coverage rows, the drawn block
   order, the 720 measure, and the two stylesheets in the right order with the four scripts present.
@@ -517,16 +589,19 @@ to each server. Nothing here should try to fake a rendition.
 The app is at `app.inflozo.com`. This page is internal — it is not linked from anywhere and search
 engines are told to ignore it — so it is reached by typing the address. Deploy fills in the final URL.
 
-1. **Sign in.** Go to `https://app.inflozo.com/app` and sign in as you normally do. You should land on
+1. **Sign in.** Go to `https://app.inflozo.com` and sign in as you normally do. You should land on
    your dashboard.
-2. **Open the style-guide page.** Type `https://app.inflozo.com/app/style-guide` into the address bar.
-   You should see one long article, headed *"The four hundred domains that refuse to move"*, by
-   **Rosa Menendez**, Orbit Weekly Issue 118, 9 min read.
+2. **Open the style-guide page.** Type `https://app.inflozo.com/style-guide` into the address bar.
+   You should see one long article, headed *"The four hundred domains that refuse to move"*, with a small
+   line above the title reading **ARCHIVE · Issue 118 · 2026-08-14**, and under it the writer
+   **Rosa Menendez**, 9 min read.
 3. **Check the article reads like an article.** Scroll down slowly. You should see, in this order: a
    feature image with a caption, a large decorated first letter, a coloured callout box with an emoji, a
    pulled-out quote, a bulleted list, a link card with a thumbnail, a table, a block of code, a
    collapsed question you can click open, a wide row of photographs, an audio player, a video, an
-   embedded video, a horizontal rule, a file to download, a product with stars, a button, and a dark
+   embedded-video placeholder (a grey box with a play mark — no real video is embedded, and pressing play
+   on the audio or the video does nothing either, because no sound or film was made for the sample
+   publication), a horizontal rule, a file to download, a product with stars, a button, and a dark
    sign-up band at the very bottom. **Nothing should appear twice**, and nothing should look broken,
    unstyled, or like raw code.
 4. **Click the collapsed question.** The one headed *"Why not just use the Internet Archive?"* — it

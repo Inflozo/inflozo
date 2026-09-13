@@ -103,7 +103,8 @@ export function feedPage(n: number): PostRow[] {
  *  `pagination`, so the depth is carried here and no post is invented (reconcile-designs.md A34). */
 export const deepPagination = (): { page: number; pages: number; limit: number; total: number } => dataset.pagination.deep
 
-/** The three preview subjects (FR-D22): the style-guide post and page. Reachable only by name. */
+/** The two preview subjects (FR-D22): the style-guide post and page — the third fixture, the comments
+ *  block, is drawn (`commentsFixture`) and has no subject row. Reachable only by name. */
 export function subject(which: 'post' | 'page'): PostRow & Json {
   const raw = dataset.subjects[which]
   return hydrate(raw, dataset.posts)

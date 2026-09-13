@@ -78,6 +78,30 @@ test("the recordings' import module is the list on disk, not a stale one", () =>
   assert.deepEqual(imported, onDisk, 'fixtures/index.ts is stale — re-run python3 tools/probe/record-cards.py')
 })
 
+// The frame is a ROUTE HANDLER, so `app-routes.test.ts`'s walk of page.tsx files never sees it and the
+// `(authed)` layout never wraps it: this line is its only guard, read back as text the way
+// `routing.test.ts` reads the proxy matcher.
+test('the frame route guards itself with currentUser before any body, and serves both views', () => {
+  const src = readFileSync(join('app', '(app)', 'app', '(authed)', 'style-guide', 'frame', 'route.ts'), 'utf8')
+  const guard = src.indexOf('await currentUser()')
+  assert.ok(guard > 0, 'the frame route does not call currentUser()')
+  assert.ok(guard < src.indexOf('articleDocument('), 'a document is built before the guard runs')
+  assert.match(src, /variationsDocument\(/)
+  assert.match(src, /x-nonce/)
+})
+
+// Vercel ships a function with only the files the build traced; a path built from `process.cwd()` at
+// runtime is invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
+test('every directory the style-guide reads off disk is traced for both routes in next.config.ts', () => {
+  const config = readFileSync('next.config.ts', 'utf8')
+  const globs = [...config.matchAll(/'(\.\.\/\.\.\/packages\/[^']+)'/g)].map((m) => m[1])
+  const covers = (rel: string) => globs.some((g) => g.endsWith('/**') ? rel.startsWith(g.slice(0, -3)) : g === rel)
+  for (const rel of ['../../packages/library/orbit-weekly/images/x.svg', '../../packages/library/orbit-weekly/vendor/cards/css/x.css', '../../packages/library/orbit-weekly/vendor/cards/js/x.js', '../../packages/section-runtime/reference-tokens.css']) {
+    assert.ok(covers(rel), `${rel} is read by lib/style-guide.ts and not traced — the deployed function would throw ENOENT`)
+  }
+  for (const route of ['/app/style-guide', '/app/style-guide/frame']) assert.match(config, new RegExp(`'${route}': STYLE_GUIDE_FILES`))
+})
+
 test('the variation sheet shows the toggle closed as recorded, then open on the same bytes', () => {
   assert.match(sheet, /data-variant="toggle"[^]*?data-kg-toggle-state="close"[^]*?data-open-toggle/)
   assert.equal((sheet.match(/data-variant="/g) ?? []).length, orbitWeekly.variants().length + 1)

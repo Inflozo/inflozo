@@ -1263,8 +1263,8 @@ internally produced
 **And** **every Data-group Source returns a usable set**: featured, every tag (at least 3 posts), every author
 (at least 6, by co-authorship), and featured posts are spread across tags and authors so a combined filter also
 returns something
-**And** **(1) the style-guide post** is generated **from Ghost's own renderers, never hand-written** — each
-`render*Node` output snapshotted into a checked-in fixture — covering every class-affecting card variant, and it
+**And** **(1) the style-guide post** is generated **from Ghost's own renderers, never hand-written** — recorded from
+what a real Ghost prints on each major and split per block into a checked-in fixture (Story 4.4) — covering every class-affecting card variant, and it
 renders **inside the same wrapper the shipped theme uses**, loading **the theme stylesheet, then a simulated
 `cards.min.css` carrying only the chunks not in the exclude list, in that order**, plus the four vendored card
 scripts

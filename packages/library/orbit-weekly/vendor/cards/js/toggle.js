@@ -18,4 +18,3 @@
         toggleHeadingElements[i].addEventListener('click', toggleFn, false);
     }
 })();
-
