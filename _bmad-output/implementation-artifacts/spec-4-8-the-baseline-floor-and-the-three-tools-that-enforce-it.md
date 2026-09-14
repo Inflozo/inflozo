@@ -389,6 +389,10 @@ feature that is not Baseline needs its own ruling: option 3 was declined.
   eslint-plugin-compat 7.0.2 2026-04-29 · web-features 3.35.0 2026-08-17 · size-limit 13.0.3 and
   @size-limit/file 13.0.3 2026-07-30. All are older than pnpm 11's one-day gate, so the frozen install passed with
   no exclusion.
-- **GitHub Actions and Vercel** — they run on the Dev push. `check` executes this `pnpm check`, and `deploy` builds
-  on Vercel through `pnpm -w check`. The Review phase records their result.
+- **GitHub Actions** (`gh` with `GITHUB_TOKEN` as `GH_TOKEN`) — run 34847587154 on `7d4cb243`: `rls`, `check` and
+  `deploy` all `success`. The `check` log shows `stylelint 17.15.0` installed under `--frozen-lockfile`, `eslint . &&
+  stylelint "packages/**/*.css"`, `2356 rows: 0 wider, 0 narrower`, the floor line above and `check-baseline: PASS`;
+  `deploy`'s `vercel build --prod` ran the same lint.
+- **Vercel** (REST `v6/deployments` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — production deployment
+  `dpl_7EkQBJyxoBSfkThe9Ln4VJwZyHdH` for `7d4cb24381e984776a0612bec008a1d433c82650`: `READY`.
 - Supabase, Resend, Dodo, T1 and T3 were not touched: this story has no schema, email, payment or theme upload.
