@@ -113,6 +113,14 @@ test('a declaration naming no module this main.js carries is reported, and the r
   assert.match(errors[0].message, /lightbox/)
 })
 
+test('review — a malformed declaration on the live page is reported as such, not as an uncarried name', async () => {
+  const { win, errors, core, $ } = page('<div data-module="accordion:0"></div><div data-module="Probe"></div><div id="b" data-module="probe"></div>')
+  core(win, [['probe', () => {}, { editSafe: true, animates: false }]])
+  assert.ok(enabled($('#b')))
+  await tick()
+  assert.deepEqual(errors.map((e) => /is not a module declaration/.test(e.message)), [true, true])
+})
+
 test('while editing, only an edit-safe module mounts (R-21)', () => {
   const { win, core, $ } = page('<div id="a" data-module="unsafe"></div><div id="b" data-module="safe"></div>')
   const ran = []
@@ -212,6 +220,26 @@ test('one IntersectionObserver per root, rootMargin and threshold; an aborted mo
   assert.equal(shared.targets.size, 2)
   env.set({ width: 600 })
   assert.equal(env.observers.length, 2, 'a remount reuses the observer')
+})
+
+test('review — observe after the mount stopped observes nothing, and one throwing callback never starves the batch', async () => {
+  const env = {}
+  const { win, errors, core, $ } = page('<div id="a" data-module="probe:768"></div><div id="b" data-module="probe"></div>', env)
+  let late = null
+  const seen = []
+  core(win, [['probe', (el, ctx) => {
+    if (el.id === 'a') { late = () => ctx.observe(el, () => {}) ; return }
+    ctx.observe(el, () => { throw new Error('cb') })
+    ctx.observe(el, () => seen.push('second'))
+  }, { editSafe: true, animates: false }]])
+  env.set({ width: 600 })
+  env.set({ width: 1024 }) // #a's mount aborted
+  late()
+  assert.ok(env.observers.every((o) => !o.targets.has($('#a'))), 'a late observe on an aborted signal left nothing observed')
+  env.observers[0].callback([{ target: $('#b') }])
+  assert.deepEqual(seen, ['second'])
+  await tick()
+  assert.deepEqual(errors.map((e) => e.message), ['cb'], 'reported, not swallowed')
 })
 
 test("bundle's bytes, with probe rows, mount with JavaScript on and nothing with JavaScript off", () => {

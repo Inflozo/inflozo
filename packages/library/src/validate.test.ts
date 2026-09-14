@@ -104,6 +104,13 @@ test('Story 4.7 — data-module takes a registry name and an optional width, and
   assert.match(refusal('accordion:7.5'), /whole number of CSS pixels/)
 })
 
+test('Story 4.7 review — authored script is refused at the door: a <script>, an on* handler, a javascript: URL', () => {
+  refuses('authored-script', '<div><script>alert(1)</script></div>', '<div data-module="lightbox"></div>')
+  refuses('authored-script', '<a onclick="x()">x</a>', '<a data-bind-attr="href:url">x</a>')
+  refuses('authored-script', '<a href="java\nscript:alert(1)">x</a>', '<a href="https://x.example/">x</a>')
+  refuses('authored-script', '<img onerror="x()" alt="">', '<img data-bind-attr="alt:title" alt="">')
+})
+
 test("Story 4.7 — an authored js-enabled class is refused: core sets it on the mount, and a design never does", () => {
   refuses('js-enabled-authored', '<div class="card js-enabled">x</div>', '<div class="card js-enabled-note">x</div>')
 })

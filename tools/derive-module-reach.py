@@ -8,8 +8,9 @@
 --check (Story 4.7) keeps FR-G7's one table one table. The prose half — each module's no-JS line and its
 edit-safe sentence — is research §7; `packages/library/modules/registry.json` is the half code reads. It
 fails, naming the row, when registry.json's names are not §2.1's live rows in order, when a module's
-`editSafe` is not its §7 yes/no, when a §7 row is neither a registry module, `core`, struck nor
-`cards.js`, or when `cards.js` has no row. `pnpm test` runs it.
+`editSafe` is not its §7 yes/no, when a module's `animates` is not whether its §3.1 row names reduced
+motion, when a §7 row is neither a registry module, `core`, struck nor `cards.js`, or when `cards.js` has
+no row. `pnpm test` runs it.
 
 Those two columns tell the build which script ships with which design, and they are what a
 category author is handed. They still name designs by identities the export superseded — row 2
@@ -66,6 +67,22 @@ def section7_rows():
     return rows
 
 
+def section31_reduced_motion():
+    """The §3.1 rows whose text names reduced motion — the motion gate's members, `core` among them."""
+    text = open(RESEARCH, encoding='utf8').read()
+    m = re.search(r'^### 3\.1 .*\n([\s\S]*?)(?=^### )', text, re.M)
+    if not m:
+        sys.exit('research §3.1 did not parse: no "### 3.1" section before the next heading')
+    out = set()
+    for line in m.group(1).splitlines():  # the table is broken by blank lines; every `| \`name\`` row counts
+        ident = re.match(r'^\| `([a-z][a-z0-9.-]*)`', line)
+        if ident and re.search(r'reduced[- ]motion', line):
+            out.add(ident.group(1))
+    if 'core' not in out:
+        sys.exit('research §3.1 did not parse: core\'s row should name the reduced-motion gate')
+    return out
+
+
 def check():
     problems = []
     reg = json.load(open(REGISTRY, encoding='utf8'))
@@ -104,6 +121,14 @@ def check():
     for name in seven:
         if name not in names and name not in ('core', 'cards.js'):
             problems.append(f'research §7 has a live row for `{name}`, which is neither a registry module, core, cards.js nor struck')
+    # `animates` is §3.1's reduced-motion line: the rows that name it are exactly the modules the gate stops
+    # (plus `core`, which holds the gate). A row that names it without `animates`, or the reverse, is a row to
+    # rule on — the spec's Ask First for a module whose reduced-motion state is not its no-JS state.
+    three = section31_reduced_motion()
+    for row in reg['modules']:
+        if row['animates'] != (row['name'] in three):
+            problems.append(f'{row["name"]}: registry.json says animates {str(row["animates"]).lower()}, but research §3.1 '
+                            f'{"names" if row["name"] in three else "does not name"} reduced motion in its row')
     if 'cards.js' not in seven:
         problems.append('research §7 has no `cards.js` row — Ghost\'s card scripts need a no-JS line and an edit-safe value (DW-100)')
     if 'core' not in seven:
@@ -114,7 +139,7 @@ def check():
         for p in problems:
             print('  -', p)
         return 1
-    print(f'derive-module-reach --check: PASS — registry.json agrees with research §2.1 and §7, cards.js included')
+    print('derive-module-reach --check: PASS — registry.json agrees with research §2.1, §3.1 and §7, cards.js included')
     return 0
 
 

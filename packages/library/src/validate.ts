@@ -123,9 +123,19 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       }
     }
 
+    if (tag.name === 'script') {
+      push(out, 'authored-script', `<script> — a design ships no script of its own: every script a theme runs is FR-G7's registry, bundled into main.js by bundle(), and checkThemeJs proves assets/js/ holds nothing else. Declare a module with data-module instead.`)
+    }
     for (const [rawName, value] of tag.attrs) {
       const name = rawName.toLowerCase()
 
+      // Story 4.7 review: FR-G7(1) — the only script a theme runs is bundle()'s main.js, so authored markup
+      // carries no script at all: no <script> element, no on* handler, no javascript: URL. AD-36 (3) closed
+      // the BOUND form (`data-bind-attr="onload:…"`); this is the authored form, refused at the same door.
+      if (name.startsWith('on') || /^javascript:/i.test(value.replace(/[\s\u0000-\u001f]/g, ''))) {
+        push(out, 'authored-script', `<${tag.name} ${rawName}="${value}"> — a design ships no script of its own: every script a theme runs is FR-G7's registry, bundled into main.js, so authored markup carries no on* handler and no javascript: URL. Declare a module with data-module instead.`)
+        continue
+      }
       // Story 4.7: `core` sets `js-enabled` on the element whose module it mounts, and removes it when
       // the mount stops. Authored, the element would sit in its JavaScript branch with no script running.
       if (name === 'class' && value.split(/\s+/).includes('js-enabled')) {

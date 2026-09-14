@@ -75,6 +75,10 @@ const HEADER = '// Inflozo main.js, made by bundle() from packages/library/modul
  *  whose top level is not exactly one declaration of the expected name. */
 export function bundle(names: readonly string[], sources: ModuleSources, rows: readonly ModuleRow[] = MODULES): string {
   const wanted = new Set(names)
+  for (const r of rows) {
+    // a row's name reaches a RegExp and the emitted start call, so it is held to the registry grammar first
+    if (!NAME_RE.test(r.name) || r.name === 'core') throw new Error(`"${r.name}" is not a module name bundle() can carry — a registry name like "nav-drawer", never "core"`)
+  }
   for (const n of wanted) {
     if (!rows.some((r) => r.name === n)) throw new Error(`"${n}" is not a row of the registry bundle() was handed, so it has no edit-safe or motion value to start with`)
   }
@@ -95,10 +99,13 @@ export function bundle(names: readonly string[], sources: ModuleSources, rows: r
 
 /** FR-G7(1) as one check over a theme's files (theme-relative path → text): `assets/js/` holds `main.js`,
  *  byte-identical to `bundle` of the names its header lists over the repo's sources, and Ghost's
- *  `cards.js`, and nothing else. Returns sentences; a header it cannot read, or a name with no repo
- *  source, is a sentence rather than a throw. `cards.js`'s own bytes are not checked here (DW-135). */
+ *  `cards.js`, and nothing else — and `main.js` is present, since every theme carries `core`. Returns
+ *  sentences; a header it cannot read, or a name with no repo source, is a sentence rather than a throw. `cards.js`'s own bytes are not checked here (DW-135). */
 export function checkThemeJs(files: Readonly<Record<string, string>>, sources: ModuleSources): string[] {
   const out: string[] = []
+  if (own(files, 'assets/js/main.js') === undefined) {
+    out.push('assets/js/main.js is missing — every generated theme carries core, so a theme with no main.js ships no runtime at all (FR-G7(4))')
+  }
   for (const [path, text] of Object.entries(files)) {
     if (!path.startsWith('assets/js/')) continue
     const file = path.slice('assets/js/'.length)

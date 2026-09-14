@@ -273,8 +273,7 @@ for (const f of textFiles) {
 // FR-G7(1): assets/js/ holds bundle()'s bytes from repo sources, and Ghost's cards.js, and nothing else
 const jsFiles = Object.fromEntries(allFiles.filter((f) => path.relative(OUT, f).startsWith(`assets${path.sep}js${path.sep}`))
   .map((f) => [path.relative(OUT, f).split(path.sep).join('/'), fs.readFileSync(f, 'utf8')]));
-const jsFindings = checkThemeJs(jsFiles, moduleSources);
-if (!jsFiles['assets/js/main.js']) jsFindings.push('assets/js/main.js is missing, so checkThemeJs had nothing to check');
+const jsFindings = checkThemeJs(jsFiles, moduleSources); // a missing main.js is its own sentence
 const allTemplateText = hbsFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
 for (const f of hbsFiles.filter((f) => f.includes('partials'))) {
   const name = path.relative(path.join(OUT, 'partials'), f).replace(/\.hbs$/, '');

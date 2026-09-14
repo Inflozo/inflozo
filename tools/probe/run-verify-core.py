@@ -23,8 +23,10 @@ major prints this text and exits, so `--help` uploads nothing.
      reduced motion: the animating module waits, mounts when the preference clears, aborts when it returns
      JavaScript off: no element carries `js-enabled` and no module ran, on the same authored markup
    A page error other than the probe's own fails its row; a page that is not this run's probe page voids the run.
-3. It restores the previous theme in a `finally` and re-reads the active theme to prove it. It writes nothing
-   to disk, creates no content and touches no setting; no key is printed (keys are read by variable name).
+3. It restores the previous theme in a `finally` and re-reads the active theme to prove it. The uploaded probe
+   theme STAYS INSTALLED, inactive, on each server (the spec's Ask First allows one upload, one activation and
+   the restore, and nothing else); a later run overwrites it. It writes nothing to disk, creates no content and
+   touches no setting; no key is printed (keys are read by variable name).
 """
 import os, re, sys, json, glob, time, shutil, secrets, subprocess, importlib.util
 import urllib.error

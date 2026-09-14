@@ -295,7 +295,8 @@ DOCS = [
   "the repo's sources. Gates it through tools/stress/gate.js, uploads and activates it on T3 and T1, waits "
   "for this run's nonce on /, and drives the machine's Chromium through JavaScript on and off, reduced "
   'motion and 1024 -> 600 -> 1024 px, expecting no page error but the probe\'s own; restores the previous '
-  'theme in a finally and re-reads it. Writes nothing; a page without the nonce voids the run. Also '
+  'theme in a finally and re-reads it; the probe theme stays installed, inactive. Creates no content, touches no '
+  'setting and writes nothing to disk; a page without the nonce voids the run. Also '
   'covers packages/library/modules/core.js, registry.json and core.test.mjs, and '
   'packages/library/src/modules.ts and modules.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/vendor-icons.py', 'tool', 'Tabler icon vendoring',

@@ -16,6 +16,9 @@ test('the registry is one row per name, none of them retired, and core is not a 
   assert.ok(!names.includes('core'))
   for (const r of Object.keys(RETIRED_MODULES)) assert.ok(!names.includes(r), r)
   assert.ok(MODULES.every((m) => typeof m.editSafe === 'boolean' && typeof m.animates === 'boolean'))
+  // review: two names that camelCase to one function would be one declaration replacing the other in main.js
+  const fns = names.map(moduleFunctionName)
+  assert.equal(new Set(fns).size, fns.length, 'every module has its own function name')
 })
 
 test('a declaration is a registry name, optionally with the width below which it runs', () => {
@@ -67,6 +70,10 @@ test('bundle carries modules in registry order with their rows, and refuses what
   // comments and every literal that can hold a brace are not code
   const tricky = "/* a } */\nfunction lightbox(el, ctx) {\n  // a } in a comment\n  const a = '}', b = \"{\", c = `x${ { k: '}' }.k }y`, d = /[}]/g\n  return typeof /}/ === 'object' && a + b + c + d\n}\n// trailing\n"
   assert.ok(bundle(['lightbox'], { core, lightbox: tricky }).includes(tricky))
+  // review: a row's name reaches a RegExp and the start call, so a row outside the grammar is refused first
+  for (const name of ['core', 'Probe', 'a.b', 'x)(']) {
+    assert.throws(() => bundle([], { core }, [{ name, editSafe: true, animates: false }]), /is not a module name bundle\(\) can carry/, name)
+  }
   // probe rows replace the registry for a probe theme
   const probe = 'function probeThrows(el) { throw new Error(el.id) }'
   assert.match(bundle(['probe-throws'], { core, 'probe-throws': probe }, [{ name: 'probe-throws', editSafe: true, animates: true }]), /\["probe-throws", probeThrows, \{ editSafe: true, animates: true \}\]/)
@@ -77,6 +84,9 @@ test("assets/js/ holds bundle's bytes from repo sources and cards.js, and nothin
   const main = bundle([], sources)
   assert.deepEqual(checkThemeJs({ 'assets/js/main.js': main }, sources), [])
   assert.deepEqual(checkThemeJs({ 'assets/js/main.js': bundle(['lightbox'], sources), 'assets/js/cards.js': '/* Ghost */', 'assets/css/screen.css': 'x' }, sources), [])
+  // review: a theme with no main.js ships no runtime, and that is a sentence here rather than at each caller
+  assert.match(checkThemeJs({ 'assets/js/cards.js': '/* Ghost */' }, sources)[0] ?? '', /assets\/js\/main\.js is missing/)
+  assert.match(checkThemeJs({}, sources)[0] ?? '', /assets\/js\/main\.js is missing/)
   const vendor = checkThemeJs({ 'assets/js/main.js': main, 'assets/js/vendor.js': 'x' }, sources)
   assert.equal(vendor.length, 1)
   assert.match(vendor[0] ?? '', /assets\/js\/vendor\.js/)

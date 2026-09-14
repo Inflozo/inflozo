@@ -2,10 +2,10 @@
 title: 'Story 4.7 — `core` and the behaviour-module registry'
 type: 'feature'
 created: '2026-09-14'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '033e47c49edd50bf3bee9592842dbf697d3a55be'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -223,7 +223,7 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
   no export:
   - `registry.json`'s names equal §2.1's live rows;
   - each module's `editSafe` equals its §7 yes/no;
-  - every other §7 row is struck or is `cards.js`, and `cards.js` has one;
+  - every other §7 row is struck, `core` or `cards.js`, and `cards.js` has one *(review: `core` added to the wording; the tool always accepted §7's `core` row)*;
   - a refusal replaces the `assert`.
 
   Chain it after `test-vocabulary.mjs` and update the tool's row -- the table stays one table.
@@ -268,6 +268,29 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
 - Given the gates, when `pnpm check`, `python3 tools/doc-audit.py --check` and
   `node build.js && node gate.js theme` run, then all are green, gscan scores 0/0 on both majors, and no
   count a tool derives is written down.
+
+### Review Findings
+
+*(Review 1, 2026-09-14 — five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier. Every patch applied and re-tested; 13 findings dismissed as noise or as later stories' work.)*
+
+- [ ] [Review][Decision] The probe leaves `inflozo-probe-core` installed, inactive, on T1 and T3 — deleting it in the `finally` is a write the spec's Ask First does not cover. See `## Questions for the owner`.
+- [x] [Review][Patch] Authored markup could carry a `<script>`, an `on*` handler or a `javascript:` URL — the one road around `checkThemeJs` — refused at the validator as `authored-script` [packages/library/src/validate.ts:126]
+- [x] [Review][Patch] `checkThemeJs` passed a theme with no `main.js`; the sentence now lives in the function, and `build.js` drops its call-site patch [packages/library/src/modules.ts:104]
+- [x] [Review][Patch] `ctx.observe` after the mount's signal aborted left the target observed forever [packages/library/modules/core.js:57]
+- [x] [Review][Patch] one throwing observer callback starved the rest of the batch — each is now reported and the batch continues [packages/library/modules/core.js:72]
+- [x] [Review][Patch] `core` reported a malformed live declaration (`accordion:0`) as "names no module this main.js carries" — it now says it is not a declaration [packages/library/modules/core.js:34]
+- [x] [Review][Patch] `bundle` built a RegExp from a probe row's name unchecked — a row outside the registry grammar, or `core`, is refused first [packages/library/src/modules.ts:78]
+- [x] [Review][Patch] `registry.json`'s `animates` column was held to nothing — `--check` now derives it from §3.1's reduced-motion lines, control run (`carousel` flipped → red) [tools/derive-module-reach.py]
+- [x] [Review][Patch] FR-G7(2) still said "each design owns its own JS" [prd.md:293]
+- [x] [Review][Patch] the spine's tree said "data only, no executable module" beside `modules/`, and AD-2's "two fields not authored" is three with `js` [ARCHITECTURE-SPINE.md:104,486]
+- [x] [Review][Patch] "`design.json` is the fourth file" after the diff made it three [docs/section-authoring.md:56]; the lint claim overstated what `no-undef` proves; the refusal table gains `authored-script`
+- [x] [Review][Patch] the probe's docstring and catalogue row said "writes nothing" while the probe theme stays installed — narrowed to what is true [tools/probe/run-verify-core.py:26, tools/doc-audit.py]
+- [x] [Review][Patch] the `registry.ts` → `validate.ts` value import is a cycle only on paper (the reverse edge is type-only) — said so beside the import [packages/library/src/registry.ts:11]
+- [x] [Review][Patch] two registry names that camelCase to one function would silently replace each other in `main.js` — asserted unique in the registry test [packages/library/src/modules.test.ts]
+- [x] [Review][Patch] the canvas has no way to reach `core` with `{ editing: true }` or a report hook, and nothing ledgered it — DW-136, owner Story 5.15
+- [x] [Review][Patch] the task wording "struck or is `cards.js`" did not match the tool's `core` allowance — wording fixed above
+
+Dismissed (13): older-browser fallbacks for range syntax, `AbortController` and `MediaQueryList.addEventListener` (all Widely before the date pin, spec Always); `t(k, { x: null })` printing `null` (the module author's value); CRLF `main.js` (altered bytes are refused either way); a malformed `registry.json` row (typed on import); a probe page missing an element (the nonce check owns that); `checkThemeJs` path normalisation (theme-relative paths are the contract); per-module `data-i18n-*` key lists (Story 4.9); the hardcoded Playwright path (the Code Map's pattern); the stress fixture's `lightbox` declaration against a core-only `main.js` (not a compiled theme, and no `lightbox.js` exists yet); editing and `stop()` proven in jsdom only (Dev note; no theme can reach them); `build.js` printing rather than failing on `checkThemeJs` (parity with the leak assertions); duplicate rows in `modules` (`bundle` derives from a Set).
 
 ## Spec Change Log
 
@@ -316,6 +339,17 @@ because neither the canvas nor the modules exist yet.
 `controls`), the toggle stays closed, and gallery rows lose their proportions (`gallery.js` sets each
 ratio). Edit-safe: **yes**, because it acts only inside the post-body fixture, which nothing on the canvas
 edits (FR-H3(1)). Story 5.15 confirms both.
+
+## Questions for the owner
+
+**Q1. Should the test probe tidy up after itself on the two test Ghost sites?**
+
+The probe that proves `core` works uploads a tiny throwaway theme called `inflozo-probe-core` to each test site, switches to it for about a minute, then switches the site back to its previous theme. It does switch back every time — checked again in this review, both sites are on `casper` — but the throwaway theme is left sitting in each site's theme list, unused. Example: open Ghost admin on `ghost6.inflozo.com`, go to Design, and you will see `inflozo-probe-core` listed as an installed-but-inactive theme. Deleting it would be one extra call to Ghost at the end of the probe; the story's rules only allowed uploading, activating and restoring, so it is your call.
+
+1. **Delete the throwaway theme at the end of every probe run, in the same cleanup step that switches the site back (RECOMMENDED)** — the sites end each run exactly as they started, which is how the other probes here already behave.
+2. **Leave it installed** — harmless, one inactive theme per site, overwritten by the next run; the docs now say so.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -376,3 +410,18 @@ edits (FR-H3(1)). Story 5.15 confirms both.
 - Editing suppression and `stop()` are not reachable from a theme's `main.js`, so they are proven in jsdom only until
   Story 5.15's canvas calls `core` with `{ editing: true }`.
 - FR-D20's and Story 5.15's edit-safe text is unchanged (Ask First); the difference from §7 is ledgered for 5.15.
+
+**Results (Review 1, 2026-09-14) — the real services this review hit (R-82):**
+- **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — the Real-infra verifier re-ran
+  `python3 tools/probe/run-verify-core.py` once (keys by `GHOST6_*` / `GHOST5_*` variable name, never printed): the control
+  held first (`checkThemeJs` refused the probe theme, passed `bundle([])`), gscan 4.49.7 and 6.4.2 both 0/0, theme upload
+  HTTP 200 on both, **22 of 22 rows held on each major**, previous theme `casper` restored on both. Re-read independently
+  afterwards through `record-shim.py`'s client: `casper` active on both, versions 6.58.0 and 5.130.6. A second negative
+  control in the scratchpad: `checkThemeJs` returns `[]` for `bundle([], { core })` over the real `core.js` and one sentence
+  for the same text with one byte appended.
+- **Supabase, Vercel, Resend, Dodo** — untouched; the diff carries no migration (R-99 has nothing to compare) and no `apps/web` runtime file.
+- **After the patches:** `pnpm --filter @inflozo/library test` 123 pass; `derive-module-reach.py --check` PASS, with
+  `carousel`'s `animates` flipped → FAIL naming it, restored; `pnpm lint`, `pnpm typecheck`; `pnpm check`; `node build.js
+  && node gate.js theme` 0/0 on both majors with `checkThemeJs` clean; `doc-audit.py --check` twice. The probe was not re-run
+  after the `core.js` patches: the two changed paths (a late `observe`, a throwing observer callback) are covered in jsdom on
+  the shipped bytes, and the probe's rows are unchanged.

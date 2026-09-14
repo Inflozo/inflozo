@@ -3373,7 +3373,9 @@ severity: medium
 origin: Story 4.7 (2026-09-14) — spec task "propagate"; FR-G7(1)'s assertion is over `assets/js/` by definition
 owner: Story 7.5 (emitting `main.js` and `cards.js`), which assembles the theme `checkThemeJs` runs over
 location: packages/library/src/modules.ts `checkThemeJs` · Story 7.5's compile gate over emitted `.hbs`
-reason: `checkThemeJs` sees only files under `assets/js/`. FR-G7(1) promises no third-party JavaScript anywhere
+reason: `checkThemeJs` sees only files under `assets/js/`. (The DESIGN-markup form — a `<script>`, an `on*`
+  handler or a `javascript:` URL authored into `index.html` — is refused by the validator as `authored-script` since
+  4.7's review; this row is the TEMPLATE form, which no validator sees.) FR-G7(1) promises no third-party JavaScript anywhere
   in a generated theme, and `mode-toggle` already needs "a tiny inline head script to avoid the flash" (research
   §3.1) — a legitimate inline script with no check at all. The compile gate needs a second assertion over every
   emitted template: no `<script>` except the one `defer` tag for `main.js`, `cards.js` where designed, and any
@@ -3392,3 +3394,24 @@ reason: FR-J4 declares `cards.js` Ghost's MIT code, vendored by `tools/probe/rec
   version, but nothing assembles it yet, so there are no bytes to compare with. When 7.5 builds it from the
   vendored chunks, `checkThemeJs` should take those chunks as a source and refuse a `cards.js` that is not their
   concatenation — the same byte comparison `main.js` already gets.
+
+## Deferred from: code review of spec-4-7-core-and-the-behaviour-module-registry (2026-09-14)
+
+### DW-136: the canvas has no road to `core` — no `{ editing: true }` call and no error hook
+
+plain: The editing screen will need to start the same little script the live site runs, but tell it "we are
+  editing, so keep the non-edit-safe parts still", and it will need somewhere to send a module's error other than
+  the browser console. Neither door exists yet; the script works only as a live site loads it today.
+status: open
+severity: medium
+origin: Story 4.7's review (2026-09-14) — Blind Hunter: `bundle` seals `core` inside one wrapping function and calls
+  `core(window, [])` with no options, and a thrown module error is re-thrown from a `setTimeout`, which a Next window
+  would see as an uncaught exception in the editor
+owner: Story 5.15 (behaviours off while designing, the PAUSED chip and the Preview toggle), the first caller
+location: packages/library/src/modules.ts `bundle` · packages/library/modules/core.js `report` · Story 5.15's canvas
+reason: 4.7's Never bars canvas suppression, so the theme path was built alone; the canvas will not load `main.js` as a
+  theme does but evaluate `core` and the placed designs' modules itself, and it needs (a) a way to hand `{ editing: true }`
+  and read `stop()` — the sources are already pure strings, so a canvas-side wrapper over `bundle`'s pieces is the likely
+  shape — and (b) an `options.report` (or similar) so a module's throw reaches the editor's own error surface rather than
+  `window.onerror`. Both are one decision for 5.15, taken once; `core`'s signature is `(win, modules, options)` so an
+  option is additive.

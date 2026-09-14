@@ -53,7 +53,7 @@ It is built — `assembleEntry()` in `registry.ts` — from four inputs:
 | recovered from `index.html`'s `data-module` names, in registry order, omitted when there are none *(Story 4.7)* | `js` |
 | recovered from `controlSchema`, never written | `quickControls[]` |
 
-(`design.json` is the fourth file and has its own row. The entry also carries the structural
+(`design.json` is the third authored file and has its own row. The entry also carries the structural
 descriptor tuple, so FR-G5's "no two designs in a category share one" has something in the registry
 to read.)
 
@@ -474,8 +474,10 @@ function lightbox(el, ctx) {
 | `observe(target, callback, { root, rootMargin, threshold })` | one shared `IntersectionObserver` per root, `rootMargin` and `threshold`; the target is unobserved when the mount stops |
 | `reducedMotion` | true while `(prefers-reduced-motion: reduce)` matches — for motion that is incidental, such as a carousel's smooth scroll |
 
-Nothing reaches a global it was not handed: `el.ownerDocument`, never `document`. Lint enforces it
-(`no-undef` over `packages/library/modules/*.js`), and `bundle` refuses a file whose top level is anything
+Nothing reaches a global it was not handed: `el.ownerDocument`, never `document`. Lint enforces the
+letter of it — `no-undef` over `packages/library/modules/*.js` refuses a bare `window`, `document` or
+`setTimeout` — and review holds the rest, since `el.ownerDocument.defaultView` is the window by another
+road. `bundle` refuses a file whose top level is anything
 but its one declaration — an `export`, an `import`, a second function or a statement.
 
 **`js-enabled` is on the mount, never on the page.** `core` sets the class on the element whose module
@@ -985,6 +987,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | `data-empty="fallback"` on an element binding `href`, `src` or `poster`, or carrying `data-bind-srcset` (`media-fallback`) | *(Story 4.6)* FR-H8's media rule. The only fallback an attribute can carry is the design's placeholder, a relative URL that 404s on the customer's site. Refused by the validator **and** the runtime, with one sentence. |
 | a binding the context matrix does not allow at its scope on the render's target — a post field at the top of `index.hbs`, a misspelt path, a list or boolean as a value, `@custom.*`, `@member` | *(Story 4.6)* FR-H7. Ghost prints it as a silent blank. **Refused by the runtime** when a render names its target, in one error naming every refused binding; `checkBindings` returns the list. |
 | a `data-module` naming `core`, a retired module, a name outside the registry, or a width that is not a whole number above zero (`accordion:0`) | *(Story 4.7)* FR-G7: a theme runs registry code only. `core` is platform and never declared; a retired name must not come back, and the refusal carries its ruling; a behaviour outside the registry needs no module (§2.2). Refused by the validator as `bad-value` **and** by both emitters with the same sentence. |
+| a `<script>` element, an `on*` handler or a `javascript:` URL in authored markup (`authored-script`) | *(Story 4.7 review)* FR-G7(1): every script a theme runs is the registry, bundled into `main.js`, and `checkThemeJs` proves `assets/js/` holds nothing else — so the one road left, a script written straight into the markup, is refused at the door. AD-36 (3) closed the bound form; this is the authored form. |
 | a `js-enabled` class in authored markup (`js-enabled-authored`) | *(Story 4.7)* `core` sets it on the element whose module it mounts, and a design never does: authored, the section sits in its JavaScript branch with JavaScript off, while editing and under reduced motion. |
 | a module file whose top level is not one function declaration of its camelCase name, or an `assets/js/` file other than `bundle`'s `main.js` and `cards.js` | *(Story 4.7)* FR-G7(1). `bundle` throws, naming the file; `checkThemeJs` returns a sentence per file. An `export` concatenated into a classic script is a SyntaxError that turns every site to its no-JS state. |
 | `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |

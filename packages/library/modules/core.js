@@ -31,7 +31,11 @@ function core(win, modules, options) {
   for (const el of win.document.querySelectorAll('[data-module]')) {
     const declared = el.getAttribute('data-module')
     const m = /^([a-z][a-z0-9-]*)(?::([1-9][0-9]*))?$/.exec(declared)
-    const row = m === null ? undefined : rows.get(m[1])
+    if (m === null) {
+      report(new Error(`data-module="${declared}" is not a module declaration ("accordion" or "accordion:768"), so nothing mounts here`))
+      continue
+    }
+    const row = rows.get(m[1])
     if (row === undefined) {
       report(new Error(`data-module="${declared}" names no module this main.js carries`))
       continue
@@ -50,6 +54,7 @@ function core(win, modules, options) {
 
   function observe(signal) {
     return (target, callback, opts) => {
+      if (signal.aborted) return // a late async call on a stopped mount observes nothing, so nothing is left observed
       const o = opts || {}
       const root = o.root || null
       const key = `${o.rootMargin === undefined ? '' : o.rootMargin}|${o.threshold === undefined ? '' : String(o.threshold)}`
@@ -62,7 +67,11 @@ function core(win, modules, options) {
         if (o.rootMargin !== undefined) init.rootMargin = o.rootMargin
         if (o.threshold !== undefined) init.threshold = o.threshold
         const io = new win.IntersectionObserver((entries) => {
-          for (const entry of entries) for (const fn of [...(callbacks.get(entry.target) || [])]) fn(entry)
+          for (const entry of entries) {
+            for (const fn of [...(callbacks.get(entry.target) || [])]) {
+              try { fn(entry) } catch (error) { report(error) } // one callback's throw never starves the rest of the batch
+            }
+          }
         }, init)
         byKey.set(key, (shared = { io, callbacks }))
       }

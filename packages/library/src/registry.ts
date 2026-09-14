@@ -8,7 +8,7 @@
 
 import type { BindingContext, ControlGroup, ControlType, PropType, SidebarGroup } from './vocabulary.ts'
 import { MODULES, parseModuleDeclaration } from './modules.ts'
-import { scanTags } from './validate.ts'
+import { scanTags } from './validate.ts' // validate.ts imports only TYPES from here, so this edge is not a runtime cycle
 
 /** One control. The order of `controlSchema` is load-bearing: `quickControls[]` is its first 3–5. */
 export type ControlDef = {

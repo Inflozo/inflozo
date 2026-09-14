@@ -108,6 +108,10 @@ Build the machine every design in the library is authored against — **before a
     machine half of research §7 (`derive-module-reach.py --check` holds them together, `cards.js` row
     included), and `checkThemeJs` is the `assets/js/` assertion. Proven in jsdom per commit and in Chromium on
     T1 and T3 (`tools/probe/run-verify-core.py`, MEASUREMENTS §42).
+  - **Story 4.7's review (2026-09-14) — a design's markup carries no script, and the check says so at the
+    door.** The validator refuses a `<script>`, an `on*` handler or a `javascript:` URL in authored markup
+    (`authored-script`), so `checkThemeJs` over `assets/js/` and this refusal together are FR-G7(1) for a design; a
+    template's inline script is still DW-134. `--check` also holds `animates` to §3.1's reduced-motion lines.
   - **Story 4.7 — edit-safe values are §7's, transcribed.** FR-D20 and Story 5.15 list reveal, tabs,
     accordions and sticky headers as running while editing; §7 marks all four **no**. The registry carries §7
     and DW-133 hands the difference to 5.15, where the canvas is first seen.
