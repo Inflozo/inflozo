@@ -2,7 +2,7 @@
 title: 'Story 4.10 — The five pilot sections, editor-perfect, with the snapshot harness'
 type: 'feature'
 created: '2026-09-15'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -12,7 +12,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.m
 
 Until now every setting, binding and translated phrase built in this epic has been tried only on made-up test
 sections; this story builds the first five real sections from the design library — the Rail header, the Three Up
-post grid, the Inline Row newsletter sign-up, the Centred post header and one Heroes design — each picked because
+post grid, the Inline Row newsletter sign-up, the Centred post header and the Latest Post hero — each picked because
 it is the hardest of its kind for the machinery underneath. You will see all five on one internal page beside their
 settings panel, in light and dark, at desktop, tablet and phone widths, and as a signed-out visitor, a free member
 or a paid member, so each can be held up against its drawing. Behind that page, the Ghost theme code each section
@@ -26,13 +26,15 @@ something and another when it does not.
 
 **Problem:** the platform has been proven on fixtures only.
 - **No design exists.** `packages/library/designs/` is not on disk. The five pilots PRD §8 fixes, which E4, E5 and
-  E6 exit against (`prd.md:757-767`), are not authored.
+  E6 exit against, are not authored. R-108 made A4 #13 the fifth.
 - **Two constructs the pilots need refuse at render** (`core.ts:278-307`):
   - `data-members`, §7.3's exit construct 2. "E4 does not exit until" it is in (`prd.md:577`), and no story owns
     it.
   - `data-if`/`data-else`, gap row 3.
-- **Portal's form attributes are not in the vocabulary.** The validator refuses `data-members-email` as an
-  unknown directive (`validate.ts:199`), yet Portal submits nothing without it.
+- **Portal's form attributes are not in the vocabulary.** The validator refuses `data-members-email` as an unknown
+  directive (`validate.ts:199`), yet Portal submits nothing without it.
+- **The Data group offers Show and Order for every declared query** (`controls.ts:247-274`). A hero that always shows
+  exactly one post could therefore be set to show five.
 - **NFR-6(c1) is not met.** No design's compiled `.hbs` is committed, so nothing diffs per commit.
 - **No review page can show a section dark, at a width, or as a member.**
 
@@ -44,13 +46,15 @@ something and another when it does not.
 - **Render `data-members` and `data-if`/`data-else` on both emitters.** A render is handed the visitor's member
   state and the section's show-to value.
 - **Keep Portal's `data-members-email` and `data-members-error`** as emitted attributes.
+- **Add a query its design fixes (`fixed`).** It offers no Show and no Order, and a stored value cannot change it
+  (R-108).
 - **`tools/check-snapshots.mjs`, in `pnpm test`,** does four things for every design:
   - holds its theme output byte-equal to a committed snapshot;
   - runs `checkBindings` over every declared target;
   - renders the canvas at each target;
   - runs its own controls.
-- **`/pilots`** is `/controls`' workspace fed the five pilots, with a switcher for light/dark, width, member
-  state, feed page and show-to.
+- **`/pilots`** is `/controls`' workspace fed the five pilots, with a switcher for light/dark, width, member state,
+  feed page and show-to.
 - **The reference token set takes the Paper values** the export's kits declare.
 - **Recordings on T1 and T3 come first.**
 
@@ -58,8 +62,8 @@ something and another when it does not.
 
 **Always:**
 - **Cite or execute** (standing rule 1).
-  - Planning read the member shape, the loop's context and the form attributes in both exact Ghost releases and
-    in Portal.
+  - Planning read the member shape, the loop's context, self-signup and the form attributes in both exact Ghost
+    releases and in Portal.
   - Planning also executed a no-param partial under Handlebars 4.7.9 (Design Notes).
   - The Dev's first task records the new rows on T1 and T3 (AD-23).
 - **The export is the design authority (R-74).**
@@ -70,6 +74,7 @@ something and another when it does not.
   - Where a spec table and a drawn panel disagree, the drawn panel wins (DW-111).
 - **Provisional (AD-35).** Every `design.json` carries `"provisional": true`. A declared module keeps its
   `data-module` and gets no code, because a module is written by its first category story (Story 4.7).
+- **`ghostCompat.minVersion`** is at least every `since` the matrix gives a field the design reads.
 - **One copy of each thing.**
   - The design list is the directory.
   - A snapshot is derived from its design.
@@ -78,7 +83,10 @@ something and another when it does not.
   - Never `{{#unless}}` and never `{{#has}}` (FR-D16).
   - A member's field is never printed (R-28).
   - `comped` previews as paid.
-- **Every member ask is gated on the site's own flag (R-4):** a free ask sits inside `@site.allow_self_signup`.
+- **Member asks and the site's flags (R-4).**
+  - An ask the markup itself makes — A22 #1's form, A1 #1's actions, whose spec hides both with self-signup off —
+    sits inside `data-if="@site.allow_self_signup"`.
+  - An authored link whose destination the customer picks is not gated here.
 - **`/pilots` is a typed-address internal page, like `/controls`:**
   - behind the session guard, `noindex`, and saves nothing;
   - exempt from `busy.test.ts`'s skeleton rule by name (R-98).
@@ -97,9 +105,11 @@ something and another when it does not.
 - **Anything from Epic 5:**
   - selection, persistence and design switching;
   - Layers' show-to control (5.4), the member-state toggle (5.14) and behaviour suppression (5.15);
-  - the Data group's Source and the main-feed designation (5.19).
+  - the Data group's Source ("Which post") and the main-feed designation (5.19);
+  - gating a link by its Portal destination (5.20).
 - **Anything from Epic 7:** compiling a theme, partial placement (`partials/header.hbs`), assets and `locales/`.
 - **Anything from Story 4.11:** pixel baselines and the axe matrix.
+- A row of clickable page numbers (R-109).
 - A "compiles byte-identical" criterion — that is the joint gate's (7.35).
 
 ## I/O & Edge-Case Matrix
@@ -112,6 +122,7 @@ something and another when it does not.
 | One arm, a list, a number | `data-if="@site.allow_self_signup"`; `data-if="posts"` with a `data-else`; a field the matrix types `number` | `{{#if …}}…{{/if}}`; an empty list takes the else arm; a number adds `includeZero=true` | — |
 | Condition refusals | `data-if="@member"`; `data-if="post"`; `data-if` naming a bare helper; a value failing `PATH_RE` | refused with `bindable`'s sentence or AD-36's | — |
 | Portal's form | `<form data-members-form="subscribe"><input type="email" data-members-email>…<p data-members-error></p></form>` | both attributes are kept on both emitters, as `data-members-form` is | refused: a value on either |
+| A fixed query | `"latest": {"source": "posts", "limit": 1, "order": "published_at desc", "fixed": true}`, with stored `data.latest.count = 5` | the Data group has no Show and no Order row for it; `withData` ignores the stored count, so both emitters render one post | refused: `fixed` beside `ids`; `fixed` without both `limit` and `order`; `fixed` that is not `true` |
 | The wrapper axis *(control)* | A24 #1 rendered with `target: "index.hbs"` | FR-H7's refusal, naming `title`; at `post.hbs` it renders | — |
 | Pagination *(control)* | A17 #1 rendered with `target: "post.hbs"` | R-7's refusal | — |
 | The no-param partial | A17 #1's theme output | `{{#foreach posts}}` around `{{> "post-card"}}`, the card filed as `partials["post-card"]`; the canvas draws one card per row | — |
@@ -134,32 +145,37 @@ something and another when it does not.
   - `data-if`/`data-else` `:541-549`, `data-members` `:550-554`, `data-members-form` `:660-664`.
   - `CONSUMED_DIRECTIVES` `:677-683`.
 - **`packages/library/src/validate.ts`** — Ghost's own attributes skipped `:159-161`, `unknown-directive` `:199`,
-  `validateDesignJson` `:377-580`, `validateDesign` `:668-691`.
+  `validateDataBinding` `:321-349` (R-20's `ids` rule `:326-335` is `fixed`'s pattern), `validateDesignJson` `:377-580`,
+  `validateDesign` `:668-691`. `@inflozo/ghost-shim`'s `getQuery` re-runs `validateDataBinding` at emission.
 - **`packages/library/src/contexts.ts`** — `bindable`'s condition rule is booleans only (`:173`); the `@member`
   refusal is `:185-187`.
 - **`packages/library/src/registry.ts`**
-  - `PropDef` `:67-91`, `CategoryContent` (at `designs/{category}/content.json`) `:93-99`, `DataBinding` `:104`.
+  - `PropDef` `:67-91`, `CategoryContent` (at `designs/{category}/content.json`) `:93-99`, `DataBinding` `:104-112`.
   - `DesignJson` `:115`, with `provisional` `:143`.
   - `parseDesignDir` `:195`, `assembleEntry` `:216-255`.
+- **`packages/section-runtime/src/controls.ts`** — `dataRows` `:247-274` skips an `ids` query at `:251`; `withData`
+  `:455-474` ignores stored values for one at `:463`. `fixed` takes both paths.
 - **`packages/section-runtime/src/core.ts`**
   - `RenderInput` `:116-189`.
   - `RENDERED_DIRECTIVES` `:278-300` and `REFUSED_DIRECTIVES` `:305-307`; `refuseUnrendered` `:470-484`.
   - `isEmpty` (Handlebars' `{{#if}}`) `:328`; `wrapGuard`/`ifOpen`/`guarded` `:437-452`.
   - `ghostPaths` `:539-569` (hand-written: DW-131), `bindingRefusals` `:591-601`, `checkBindings` `:606-620`.
-  - `emitBindings` `:628-916`, `applyProps` `:969-1101`, `stampControls` `:1111-1129`.
+  - `emitBindings` `:628-916`, with the `data-pagination` loop `:813-838`.
+  - `applyProps` `:969-1101`, `stampControls` `:1111-1129`.
   - `renderTree` `:1324-1441` — its refusals `:1341-1370`, the stamping `:1379-1382`, the theme's repeats
     `:1387-1432`.
   - `expandRepeats` `:1448-1497`, `renderTheme` `:1502-1514`, `renderCanvas` `:1517-1520`.
 - **`packages/section-runtime/src/tokens.ts`** — `REFERENCE_TOKENS` `:69-149` and `referenceTokensCss` `:163-175`.
   `reference-tokens.css` is that function's bytes, held there by `tools/stress/test-vocabulary.mjs:179-184`.
 - **Runtime tests** — `agreement.test.ts`: `agree()` `:95`, the partition `:703-728`, the leak check from `:730`.
-  Also `ad36.test.ts` and `contexts.test.ts`.
+  Also `ad36.test.ts`, `contexts.test.ts` and `controls.test.ts`.
 - **`packages/ghost-shim/src/index.ts`** — `navigationItems` `:388`, `paginationContext` `:422`, `pageUrl` `:440`,
   `isMember` `:479-481`, `bareHelper` `:580`. `contract.test.ts:559-578` asserts the recorded `{{#if @member}}` arm.
 - **`packages/library/src/orbit-weekly.ts`**
   - `site()` `:82`, `feedPagination` `:87`, `feedPage` `:96`, `subject` `:108`, `resolveSource` `:248`.
   - `dataset.json`'s `site` carries `logo`, five navigation items, `members_enabled` and `accent_color`.
-  - 52 posts at 12 per page.
+  - 52 posts at 12 per page. The newest is "The night shift at the Port of Algeciras" (Archive, 7 August 2026, with a
+    picture), and three posts have no picture.
 - **`tools/probe/record-shim.py`**
   - `record()` `:249`. Its probe theme is `tools/probe/theme-shim/`, with the member rows at `index.hbs:44-46`.
   - **`--help` uploads a theme.** Read the docstring instead.
@@ -177,15 +193,17 @@ something and another when it does not.
   - Tests: `controls.test.ts:18-66` and `app-routes.test.ts:44-54,136-147,207-218`.
   - The deployed harness is `tools/probe/run-verify-controls.cjs`.
 - **`docs/section-authoring.md`**
-  - `designs/{category}` `:52-54`, the rendered status `:629-638`, the gap table `:843-860`, rows 3–4 `:895-910`.
+  - `designs/{category}` `:52-54`, the rendered status `:629-638`, the shim's three `:654-685`, the gap table
+    `:843-860`, rows 3–4 `:895-910`.
   - The exit table `:987-993`, the kept attributes `:1102-1116`, §4's refusals `:1122`.
 - **Propagation targets**
-  - `ARCHITECTURE-SPINE.md`: AD-35 `:372-376`; its tree `:490` says `categories/`, which neither code nor the guide
-    uses.
+  - `reconcile-designs-decisions.md` §A27: R-108 and R-109, whose open Targets this story ticks.
+  - `ARCHITECTURE-SPINE.md`: AD-35 `:372-376` (its `a4/2`); its tree `:490` says `categories/`, which neither code nor
+    the guide uses.
   - `prd.md`: the pilot table `:757-767`.
   - `epics.md`: `:469-481`, and Story 4.10 `:1455-1479`.
+  - `build-sequence.md:1268-1269`, which `STEP-6-PROMPT.txt` is generated from.
   - `MEASUREMENTS.md`: §44 `:3185` is the last section.
-  - `reconcile-designs-decisions.md`: R-4 `:307-326`.
   - `deferred-work.md`: DW-87 `:2471`, DW-94 `:2663`, DW-96 `:2707`, DW-97 `:2725`, DW-99 `:2774`, DW-104 `:2867`,
     DW-119 `:3148`, DW-121 `:3177`, DW-130 `:3304`, DW-131 `:3319`, DW-133 `:3353`. DW-148 `:3598` is the last entry.
 
@@ -199,26 +217,30 @@ something and another when it does not.
     - `{{#foreach @site.navigation}}{{label}}={{url}};{{/foreach}}`;
     - `{{#if @member.paid}}…{{else}}…{{/if}}`, signed out;
     - `{{#if @site.logo}}…{{else}}…{{/if}}`;
-    - `{{#if @site.allow_self_signup}}…{{/if}}`.
+    - `{{#if @site.allow_self_signup}}…{{/if}}`;
+    - `{{#get "posts" limit="1" order="published_at desc"}}{{#foreach posts}}{{title}}{{/foreach}}{{/get}}`.
   - The contract test asserts the shim's side of each row. The signed-in arms stay cited, not recorded (Ask First).
   - Why first: AD-23.
-- [ ] `packages/library/src/vocabulary.ts`, `validate.ts`, `validate.test.ts`:
+- [ ] `packages/library/src/vocabulary.ts`, `registry.ts`, `validate.ts`, `validate.test.ts`:
   - `data-members-email` and `data-members-error` become valueless `emitted` directives.
   - Every directive that carries a Ghost path gets a `ghostPath` flag (DW-131).
   - `data-else`'s summary names its pairing rule.
+  - `DataBinding.fixed?: true`, refused by `validateDataBinding` as the matrix row says.
   - One firing test per new refusal.
-- [ ] `packages/section-runtime/src/core.ts`, `index.ts`:
+- [ ] `packages/section-runtime/src/core.ts`, `controls.ts`, `index.ts`:
   - `RenderInput.member` (`anonymous` · `free` · `paid`, default `anonymous`) and `visibility` (the four
     `MEMBER_STATES`, default `everyone`).
   - `data-members` and `data-if`/`data-else` join `RENDERED_DIRECTIVES` and render as the matrix says.
   - A condition's path is legal where `bindable` allows it as a `condition` or as a `value`. So `@member`, an
     object and a helper stay refused, and `bindable` itself is unchanged.
   - `ghostPaths` reads every flagged directive.
-- [ ] `agreement.test.ts`, `ad36.test.ts`, `contexts.test.ts`:
+  - A `fixed` query takes `ids`' two paths in `dataRows` and `withData`.
+- [ ] `agreement.test.ts`, `ad36.test.ts`, `contexts.test.ts`, `controls.test.ts`:
   - `agree()` rows for each member state, show-to, both arms, a list, a number, and the form attributes;
   - the leak fixture and the partition;
   - a vector for each new value grammar;
-  - a test that every `ghostPath` directive is walked.
+  - a test that every `ghostPath` directive is walked;
+  - the fixed query's sidebar and fold.
 - [ ] `packages/section-runtime/src/tokens.ts`, `reference-tokens.css`:
   - every row the Paper objects name takes their light and dark values;
   - every other row keeps today's value;
@@ -230,7 +252,7 @@ something and another when it does not.
   - **For every design directory, at every `compileTarget`:**
     - validate and assemble;
     - `checkBindings` returns `[]` (DW-130);
-    - `renderCanvas` does not throw;
+    - `renderCanvas` does not throw, with `getRows` from Orbit Weekly for each declared query;
     - `renderTheme`, with content and control defaults, equals the committed `template.hbs` and `partials/*.hbs`.
   - **The controls sample** renders through both emitters at each of its targets (DW-121).
   - **The matrix's *control* rows** run on every run.
@@ -244,26 +266,35 @@ something and another when it does not.
     - Light · Dark, as `data-mode` on the canvas `<html>`;
     - Desktop 1440 · Tablet 834 · Phone 390 — the canvas at that width, scaled to fit;
     - View as Signed out · Free · Paid;
-    - Page (First · Middle · Last · Empty) on A17 #1, and Show to on A22 #1.
-  - Orbit Weekly feeds the canvas. Each module mount gets `js-enabled` and no script.
+    - Page (First · Middle · Last · Empty) on A17 #1, and Show to on A22 #1 and A4 #13, whose frames draw it.
+  - Orbit Weekly feeds the canvas; A4 #13's card comes from `resolveSource`. Each module mount gets `js-enabled` and
+    no script.
   - The tests copy `controls.test.ts`. The harness copies `run-verify-controls.cjs` and gets a doc-audit row.
 - [ ] `docs/section-authoring.md`:
   - rows 3 and 4 as rendered: the emitted forms, and the pairing and nesting refusals;
   - the condition kinds; `member` and `visibility`; the two Portal attributes;
+  - `fixed`; R-109 in the shim's three;
   - where designs and snapshots live, and what `provisional` means.
 - [ ] **Propagate** (standing rule 3):
-  - `epic-4-context.md`: sub-bullets.
-  - The spine: the tree (`designs/{category}/content.json`, `snapshots/`), and an AD-35 note that E7's formatting
+  - **R-108** — replace the fifth pilot with Design Notes' wording in:
+    - `prd.md` §8's row;
+    - `epics.md` `:480`, and Story 4.10's criteria `:1469-1470`;
+    - AD-35's `a4/2`;
+    - `build-sequence.md:1268-1269`, then regenerate.
+  - **R-109** — the `numbers` comment in `core.ts:813-817`.
+  - **`reconcile-designs-decisions.md`:** tick R-108's and R-109's Targets.
+  - **`epic-4-context.md`:** sub-bullets.
+  - **The spine:** the tree (`designs/{category}/content.json`, `snapshots/`), and an AD-35 note that E7's formatting
     re-baselines a snapshot once more (Story 7.1).
-  - `prd.md` and `epics.md`: the pilot rows, per Q1's ruling.
-  - `MEASUREMENTS.md`: §45.
-  - `deferred-work.md`:
-    - close DW-94 (`BASES` stays: a snapshot is generated output), DW-119, DW-121, DW-130 and DW-131;
-    - settle DW-97 per Q2;
+  - **`MEASUREMENTS.md`:** §45.
+  - **`deferred-work.md`:**
+    - close DW-94 (`BASES` stays: a snapshot is generated output), DW-97 (R-109), DW-119, DW-121, DW-130 and DW-131;
     - re-own DW-96, DW-99 and DW-104;
     - amend DW-87 and DW-133;
+    - add an entry for A34's category story (redraw A34 #1 Numbers to the indicator, R-109);
     - add one entry per pilot's "Left" cell.
-  - Then grep for `categories/{a1`, `a4/2`, "heaviest control set" and `Split Editorial`.
+  - Then grep live documents — never the export, never a `record` — for `categories/{a1`, `a4/2`, `A4 #2`,
+    "heaviest control set" and `Split Editorial`.
 
 **Acceptance Criteria:**
 - Given each pilot on `/pilots`, when it is shown at each drawn width in light and dark, then **it matches its
@@ -271,8 +302,12 @@ something and another when it does not.
   ladder and states, in the reference token set's colours (R-74).
 - Given A1 #1 and A22 #1, when View as moves through Signed out, Free and Paid, then:
   - the member-aware parts change as their frames draw them;
-  - a Show to that excludes the viewer removes A22 #1 entirely (FR-D16, R-4).
-- Given `pnpm check` on Node 24, then:
+  - a Show to that excludes the viewer removes A22 #1, or A4 #13, entirely (FR-D16, R-4).
+- Given A4 #13 on `/pilots`, when it is opened and its panel read, then:
+  - its card is Orbit Weekly's newest post, with a sized picture;
+  - the settings panel offers no number of posts;
+  - a post with no picture shows its title in the card's place (R-108).
+- Given the repository, when `pnpm check` runs on Node 24, then:
   - `check-snapshots: PASS` prints its totals;
   - every matrix row holds;
   - each control fails when its subject is broken (NFR-6(c1), FR-H7, FR-H8).
@@ -280,7 +315,7 @@ something and another when it does not.
   - both fixtures carry every new row;
   - the contract test passes;
   - the previous theme is active again and the probe theme is gone (standing rules 1 and 2).
-- Given `pnpm build`, the gscan harness and `python3 tools/doc-audit.py --check` (twice), then:
+- Given the Dev's tree, when `pnpm build`, the gscan harness and `python3 tools/doc-audit.py --check` (twice) run, then:
   - all are green;
   - `/controls` and `/style-guide` render unchanged apart from their colours.
 
@@ -289,8 +324,7 @@ something and another when it does not.
 ## Design Notes
 
 **The five pilots.**
-- Each directory holds `index.html`, `style.css` and `design.json` (`provisional: true`, `ghostCompat.minVersion`
-  `5.0.0`).
+- Each directory holds `index.html`, `style.css` and `design.json` (`provisional: true`).
 - The category's `content.json` holds only the props the pilot draws; its category story widens it to the union
   (R-102).
 - **Built here** is what the vocabulary expresses. **Left** names the owner, and becomes one ledger entry per pilot.
@@ -299,11 +333,18 @@ something and another when it does not.
 
 | Pilot · targets · frame | Case | Built here | Left, and its owner |
 |---|---|---|---|
-| **A1 #1 Rail** `designs/a1/1` · `default.hbs` · `A1-1 Rail.dc.html` desktop `:27-51`, shrink `:54-72`, dark `:103-125`, tablet `:127-150`, phone `:154-171`, panel `:193-227` · proof `A1-0 Category Proof.dc.html` · spec `A1 Headers - Spec.md` §0 `:13-192`, #1 `:193-231` | the site-wide singleton binding | **Brand:** `data-if="@site.logo"`, else the `@site.title` wordmark. **Nav:** a repeat over `@site.navigation`, folded in CSS (stepper 3–6), with a native `<details>` More (`nav.more`). **Actions,** inside `data-if="@site.members_enabled"`: Sign in for `anonymous`; Account for `free` and for `paid` (Portal `signin`, `account`); Subscribe for `anonymous`, inside `data-if="@site.allow_self_signup"` (`member.signup_cta`). **Phone:** the menu button (`a11y.open_menu`) at ≤767, with `nav-drawer` declared. **Controls,** in the drawn panel's order: On scroll · Nav position · Sign in · Subscribe · Nav items before More · Divider under. **Background:** base · surface, "An inverted header is a design of its own, Contrast Band, not a setting." (`:36`) | **A1's category story:** authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one); the dark-mode toggle (no key); `<h1>` on the home page only; an authored logo; the skip link (E7's layout owns `<main>`); the current-page underline (`@site.navigation` has no `current`); Shrink's motion |
-| **A17 #1 Three Up** `designs/a17/1` · `home.hbs` · `index.hbs` · `tag.hbs` · `author.hbs` · `A17-1 Three Up.dc.html` desktop `:28-48`, per row `:57`, states `:93`, panel `:132-146`, tablet `:161`, phone `:203-222`, dark `:227` · proof `A17-0 Category Proof.dc.html` `:283`, `:367-446` · spec `A17 Post Grids - Spec.md` §0 `:35-366`, #1 `:374-405` | the paginated context, and `post-card` with no params | **The feed:** `data-repeat="posts" data-partial="post-card"`. **The card:** link; feature image `\|img_url:m` with `data-bind-srcset` and `sizes`; a tag plate behind the image for a post without one; tag, title, `excerpt`; meta — photo `\|img_url:xs` with the stylesheet's one letter, name, date, `reading_time`. **Around it:** the pager (`pagination.*`, per Q2); the empty-state arm (`data-if="posts"` with `data-else`, `archive.empty_heading` and `archive.empty_body`); head and foot props. **Controls:** Per row · Image ratio · Excerpt (Three lines greyed at Four) · Meta · First cell · Tag. **Background:** base · surface · contrast | **Story 5.19:** Source, Count and the main-feed designation. **A34's category story:** the Pagination style select. **A17's category story:** "View all: Matches the query". **DW-107:** Image focus |
+| **A1 #1 Rail** `designs/a1/1` · `default.hbs` · `A1-1 Rail.dc.html` desktop `:27-51`, shrink `:54-72`, dark `:103-125`, tablet `:127-150`, phone `:154-171`, panel `:193-227` · proof `A1-0 Category Proof.dc.html` · spec `A1 Headers - Spec.md` §0 `:13-192`, #1 `:193-231` | the site-wide singleton binding | **Brand:** `data-if="@site.logo"`, else the `@site.title` wordmark. **Nav:** a repeat over `@site.navigation`, folded in CSS (stepper 3–6), with a native `<details>` More (`nav.more`). **Actions,** inside `data-if="@site.allow_self_signup"` (the spec's Part A·A9, `:79`): Sign in for `anonymous`; Account for `free` and for `paid` (Portal `signin`, `account`); Subscribe for `anonymous` (`member.signup_cta`). **Phone:** the menu button (`a11y.open_menu`) at ≤767, with `nav-drawer` declared. **Controls,** in the drawn panel's order: On scroll · Nav position · Sign in · Subscribe · Nav items before More · Divider under. **Background:** base · surface, "An inverted header is a design of its own, Contrast Band, not a setting." (`:36`) | **A1's category story:** authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one); the dark-mode toggle (no key); `<h1>` on the home page only; an authored logo; the skip link (E7's layout owns `<main>`); the current-page underline (`@site.navigation` has no `current`); Shrink's motion |
+| **A17 #1 Three Up** `designs/a17/1` · `home.hbs` · `index.hbs` · `tag.hbs` · `author.hbs` · `A17-1 Three Up.dc.html` desktop `:28-48`, per row `:57`, states `:93`, panel `:132-146`, tablet `:161`, phone `:203-222`, dark `:227` · proof `A17-0 Category Proof.dc.html` `:283`, `:367-446` · spec `A17 Post Grids - Spec.md` §0 `:35-366`, #1 `:374-405` | the paginated context, and `post-card` with no params | **The feed:** `data-repeat="posts" data-partial="post-card"`. **The card:** link; feature image `\|img_url:m` with `data-bind-srcset` and `sizes`; a tag plate behind the image for a post without one; tag, title, `excerpt`; meta — photo `\|img_url:xs` with the stylesheet's one letter, name, date, `reading_time`. **Around it:** the pager — Newer (`pagination.newer`), the `numbers` indicator and Older (`pagination.older`), per R-109; the empty-state arm (`data-if="posts"` with `data-else`, `archive.empty_heading` and `archive.empty_body`); head and foot props. **Controls:** Per row · Image ratio · Excerpt (Three lines greyed at Four) · Meta · First cell · Tag. **Background:** base · surface · contrast | **Story 5.19:** Source, Count and the main-feed designation. **A34's category story:** the Pagination style select. **A17's category story:** "View all: Matches the query". **DW-107:** Image focus |
 | **A22 #1 Inline Row** `designs/a22/1` · `home.hbs` · `page.hbs` · `post.hbs` (spec `:85-87`) · `A22-1 Inline Row.dc.html` desktop `:28-32`, states `:34-52`, panel `:54-73`, widths `:75-83`, dark `:85-91` · proof `A22-0 Category Proof.dc.html` `:119-122` · spec `A22 Newsletter - Spec.md` §0 `:81-483`, #1 `:493-557` | `@member` gating, show-to, Portal | **Head:** props. **For `anonymous`,** inside `data-if="@site.allow_self_signup"`, the form: `data-members-form="subscribe"`, `data-members-email`, the button (`member.signup_cta`), the note, `data-members-error`, with `member-form` declared. **For `free` and for `paid`:** "Signed in" (R-4) and a Portal `account` link. **The whole section** sits inside `data-if="@site.members_enabled"` — the drawn "Hide the section". **Controls,** in the drawn Quick Controls' order: Alignment · Heading size · Field width · Blurb · Below the field · Social proof (`{members}`). **Background:** base · surface · contrast | **A22's category story:** Submitting, Done and Invalid, and their words; the name field and the newsletter choice; the paid count (DW-99); the other members-off option; Display greyed at Wide (one value, which `disabledBy` cannot grey); the no-JavaScript notice (R-5's key) |
 | **A24 #1 Centred** `designs/a24/1` · `post.hbs` · `A24-1 Centred.dc.html` desktop `:30-46`, absences `:53-77`, states `:83-104`, panel `:116-145`, widths `:153-190`, dark `:211` · proof `A24-0 Category Proof.dc.html` `:94`, `:179-298` · spec `A24 Post Headers - Spec.md` Post block `:247-298`, fields `:351-389`, #1 `:390-436` | the wrapper context | **The header:** tag link; `<h1>` title; standfirst `excerpt`; a byline over `primary_author` (photo, name, date, `reading_time`); a figure with `feature_image`, srcset and `feature_image_caption` as text. **Controls:** Alignment · Title size · Standfirst lines · Image ratio · Rule, plus the post block's Tag line · Meta · Standfirst · Feature image · Avatar · Caption as Style rows. **Background:** base · surface · contrast | **A24's category story, with E7's page wrapper:** `page.hbs` and `@page.show_title_and_feature_image`; all tags, and several authors with "and"/"and others" (R-3's key); the updated-date Meta value; the caption's links; the "Post block" group name. **DW-107:** Image focus |
-| **A4 #2 Flush Left** — *Q1's ruling decides; this row is its option 1* · `designs/a4/2` · `home.hbs` · `page.hbs` (proof `:57`) · `A4-2 Flush Left.dc.html` desktop `:27-51`, below the sub `:55-79`, widths `:83-100`, states `:102-115`, dark `:120-144`, tablet `:149-169`, phone `:173-211`, panel `:239-256` · proof `A4-0 Category Proof.dc.html` fields `:300-365` · spec `A4 Heroes - Spec.md` §0 `:27-88`, #2 `:130-181` | authored text and an authored list, beside member-aware actions | **Text:** eyebrow; headline; sub (links only, as the field list at `A4-0:327` allows); note. **The list:** `proof[]` (`data-items`, 0–3, `atMax`). **Actions:** primary and secondary, with Portal links, each ask gated per R-4. **Controls:** Text block width · Headline size · Below the sub · Primary action · Secondary action (greyed while Primary is off). **Background:** base · surface · contrast | **A4's category story:** a pair's Member count source; the category rule that every authored text takes four marks (`A4 Heroes - Spec.md:61`, against `A4-0:327`). **Story 5.4:** Member visibility |
+| **A4 #13 Latest Post** (R-108) `designs/a4/13` · `home.hbs` (proof `:57`) · `A4-13 Latest Post.dc.html` desktop `:30-56`, the card at rest/hover/focus `:61-79`, data states `:83-103`, dark `:110-134`, tablet `:139-165`, phone `:169-189`, a11y `:216-234`, panel `:240-258` · proof `A4-0 Category Proof.dc.html` `:55`, `:57`, roster `:274-275`, fields `:300-365` · spec `A4 Heroes - Spec.md` §0 `:27-88`, #3's geometry `:182-224`, #13 `:623-671` | a hero's authored text beside a `{{#get}}` card — a guarded media binding with `srcset`, a query fixed at one post, and the most settings of any hero | **Text:** eyebrow; the `<h1>` headline; sub (links only, as the field list at `A4-0:327` allows). **Actions:** primary and secondary, each a label with a Link Picker url. **The card:** `data-repeat="latest"` over `{source: posts, limit: 1, order: published_at desc, fixed: true}`; one link wraps the picture (`feature_image\|img_url:l`, `data-bind-srcset`, `sizes`, `alt=""`, explicit dimensions), the `<h2>` title (two lines) and the meta row (`primary_tag.name` as text · a `<time>` over `published_at\|date:D MMMM YYYY`); a hover-surface panel carries the title for a post with no picture; the column closes up when nothing is published. **Controls,** in the drawn panel's order: Card side · Show tag · Show date · Headline size · Primary action · Secondary action (greyed while Primary is off, "A secondary action needs a primary beside it."). **Background:** base · surface · contrast | **Story 5.19:** Which post. **Story 5.4:** Member visibility. **Story 5.20:** gating an action whose destination is a Portal ask. **A4's category story:** Card style's Title and date and its "Latest" label (no key); the members-only marker (a match on `visibility`, which no directive expresses); the fall-back picture when nothing is published; the short date on phones; which marks rule holds (`A4 Heroes - Spec.md:61` against `A4-0:327`) |
+
+**R-108's wording, for the Dev to carry into `prd.md` §8 and `epics.md`:**
+- **§8's row.** "**A4 #13 Latest Post** (Heroes) | Authored text beside live data: a hero's headline and actions beside
+  a `{{#get}}` card whose feature image is a guarded media binding with `srcset` (FR-H8), a query that always shows
+  exactly one post, and the most settings of any Heroes design".
+- **Story 4.10's criterion.** "A4 #13 a hero's authored text beside a `{{#get}}` card whose feature image is a
+  guarded media binding with `srcset`, with a query fixed at one post and the most settings of any hero".
 
 **What Ghost does**, read in both exact releases — npm `ghost@5.130.6` and `ghost@6.58.0`.
 - Portal is read at `2.51.5` and `2.69.339`, which `core/shared/config/defaults.json` pins as `~2.51` and `~2.69`.
@@ -312,10 +353,11 @@ something and another when it does not.
 | Fact | Where | What follows |
 |---|---|---|
 | `@member` is `null` signed out, and `paid` is `status !== 'free'` | `core/frontend/services/theme-engine/middleware/update-local-template-options.js:25-37` (5) and `:27-39` (6); R-4 cites the same | `anonymous` is the `{{else}}` of `{{#if @member}}`; `free` and `paid` split on `@member.paid`; `comped` is paid |
+| `allow_self_signup` is `members_signup_access === 'all'`, and members are enabled when it is not `'none'` | `core/server/services/settings-helpers/SettingsHelpers.js:22-32` (5) and `settings-helpers.js:22-32` (6) | self-signup implies members, so one `data-if` gates an ask; an invite-only site shows no ask |
 | `{{#foreach}}` calls `fn(items[field], {data, blockParams})` | `core/frontend/helpers/foreach.js:88-91`, the same in both | a `{{> "post-card"}}` with no params renders against the row |
 | Executed under Handlebars 4.7.9 (2026-09-15): a no-param partial inside a loop printed each row's `title` and `@first`, and the root's `@site.title`; at the root it printed the root's `title` | a scratch script, with Ghost's `foreach` call shape | the case A17 #1 is in the set for holds |
 | Portal submits `input[data-members-email]`'s value; it also reads `data-members-name`, `-label` and `-newsletter`, and writes `data-members-error` | `@tryghost/portal` 2.69.339 and 2.51.5, `umd/portal.min.js`; Ghost 5's own signup card, `core/server/services/koenig/node-renderers/signup-renderer.js:19-31` | the email input must carry the attribute, or the form submits nothing |
-| `{{#match a ">" b}}` compares numbers, and `{{page_url n}}` takes a page number | `core/frontend/helpers/match.js:45-59` (5) and `:47-61` (6); `helpers/page_url.js:11-16` | Q2's option 2 needs no script; Handlebars has no arithmetic, so its trailing gap cannot always be exact |
+| `{{#match a ">" b}}` compares numbers, and `{{page_url n}}` takes a page number | `core/frontend/helpers/match.js:45-59` (5) and `:47-61` (6); `helpers/page_url.js:11-16` | a short row of numbers is buildable but inexact with no arithmetic; R-109 declined it and the indicator stays |
 | The matrix (executed 2026-09-15): `@site.navigation` repeats with `label` and `url`; `@site.logo` binds but is refused as a condition; `@site.members_enabled` and `allow_self_signup` are conditions; `title` is refused at the top of `index.hbs` | `bindable` | why a condition also accepts a value's use, and where the wrapper control comes from |
 
 **Why `data-if` accepts a value and not only a boolean.**
@@ -323,6 +365,11 @@ something and another when it does not.
 - The guide's own row 3 example tests `custom_excerpt`, a text, and A1 #1's logo is an `image`.
 - `bindable`'s boolean rule is Epic 5's *offer*, and it stays. The directive accepts a path that is legal as a
   condition or as a value.
+
+**Why `fixed` is a flag on the query and not a note in the panel.**
+- A stored count could otherwise arrive from another design's same-named key when Story 5.11 shuffles back.
+- So the fold must refuse it, exactly as it already refuses one for a hand-picked `ids` query.
+- The panel then has nothing to draw, and the Data group stays absent until Story 5.19 adds Which post.
 
 **Why the reference token set becomes Paper.**
 - Every frame, proof and kit is drawn in Paper. Today's values (`#8a3b12`, `4.5rem`) were written in Story 4.2 and
@@ -342,6 +389,9 @@ something and another when it does not.
   `@site.logo`. The PRD decides behaviour (R-74's scope), so the authored logo is left to A1's story.
 - **A24 #1's targets.** `sections-inventory.md:572` lists `post.hbs` and `page.hbs`. The pilot declares `post.hbs`
   alone: a narrower `compileTarget` is a refusal and never a lie (FR-G3), and the page half needs `data-target`.
+- **Gating an authored action.** A4's rule gates an action only "where the destination is a Portal action"
+  (`A4 Heroes - Spec.md:59`). That depends on what the customer picks, so it is Story 5.20's (FR-H6). A1's spec hides
+  its member actions whatever they point at (`:79`), so the pilot gates them in markup.
 - **"Edit-safe".** The export uses it to mean "does not run while editing" (`A1 Headers - Spec.md:185`); the
   registry means the opposite. The registry's values stand, and DW-133 is amended.
 - **Where `content.json` lives.** The spine's tree puts it in `categories/`, but the code and the guide use
@@ -353,7 +403,7 @@ something and another when it does not.
 
 **Commands:**
 - `pnpm install --frozen-lockfile && pnpm check` (Node 24) -- expected: exit 0. `check-snapshots: PASS` prints its
-  totals; the agreement, AD-36, contract and validate suites are green.
+  totals; the agreement, AD-36, contract, controls and validate suites are green.
 - `node tools/check-snapshots.mjs` -- expected: PASS, with each control reported failing when its subject is broken.
 - `python3 tools/probe/record-shim.py` (read its docstring first; `--help` uploads) -- expected: T1 and T3 recorded,
   the previous theme active, and the probe theme deleted.
@@ -375,7 +425,7 @@ something and another when it does not.
 
 ## Owner's manual test
 
-These steps are written for Q1's and Q2's recommended options, and are rewritten if another option is ruled.
+These steps follow the rulings R-108 and R-109.
 - **Where:** the app is at `app.inflozo.com`. This page is internal: nothing links to it, search engines are told
   to ignore it, and nothing on it is saved.
 - **Which deployment:** Deploy records it under "## Verification".
@@ -385,24 +435,26 @@ These steps are written for Q1's and Q2's recommended options, and are rewritten
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|-----------|------------|---------------------|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in as you normally do. | — | Your dashboard. |
-| 2 | `https://app.inflozo.com/pilots` *(placeholder until Deploy)* | Pilots review | Type the address. | — | **Above the canvas:** Rail · Three Up · Inline Row · Centred · Flush Left, then Light/Dark, Desktop/Tablet/Phone and View as. **The canvas:** Rail, at Desktop and Light — the Orbit Weekly logo at the left, four menu items and "More" beside it, "Sign in" and an orange "Subscribe" at the right, and a thin line under the bar. **To the right:** the settings panel. |
+| 2 | `https://app.inflozo.com/pilots` *(placeholder until Deploy)* | Pilots review | Type the address. | — | **Above the canvas:** Rail · Three Up · Inline Row · Centred · Latest Post, then Light/Dark, Desktop/Tablet/Phone and View as. **The canvas:** Rail, at Desktop and Light — the Orbit Weekly logo at the left, four menu items and "More" beside it, "Sign in" and an orange "Subscribe" at the right, and a thin line under the bar. **To the right:** the settings panel. |
 | 3 | same | Rail | Press View as → Free, then Paid, then Signed out. | — | At Free and Paid, "Sign in" becomes "Account" and "Subscribe" disappears. At Signed out both return. |
 | 4 | same | Rail, panel | Set Nav items before More to 3, then Divider under to Shadow. | — | "More" now holds one more menu item, and the line under the bar becomes a soft shadow. |
 | 5 | same | Rail | Press Phone, then Dark. | — | The menu folds into a menu button while "Subscribe" stays in the bar; then the bar turns dark with light text. |
 | 6 | same | Three Up | Press Three Up, Desktop, Light. | — | **Top:** a heading. **Cards:** six post cards in three columns, each with a picture, a tag, a title, a short excerpt, and the writer's photo, name, date and reading time. **Below:** "1 / 5" and "Older posts" — no "Newer posts" on the first page. |
-| 7 | same | Three Up | Press Page → Middle, then Last, then Empty. | — | **Middle:** both links. **Last:** no "Older posts". **Empty:** "Nothing here yet" and a sentence, where the cards were. |
+| 7 | same | Three Up | Press Page → Middle, then Last, then Empty. | — | **Middle:** "Newer posts", "3 / 5" and "Older posts". **Last:** no "Older posts". **Empty:** "Nothing here yet" and a sentence, where the cards were. |
 | 8 | same | Three Up, panel | Set Per row to Four, then open Excerpt. | — | Four columns, and "Three lines" is grey with a sentence saying why. |
 | 9 | same | Inline Row | Press Inline Row, then View as → Free. | — | **First:** a centred heading, a sentence, an email box beside a "Subscribe" button, and a short note. **At Free:** the box and the button give way to "Signed in" and a link to the account. |
 | 10 | same | Inline Row | Press View as → Signed out, then Show to → Paid members. | — | The whole section disappears: a signed-out visitor is not a paid member. |
 | 11 | same | Centred | Press Centred. | — | The top of the article "The four hundred domains that refuse to move": a tag, the title large and centred, a sentence under it, the writer with photo, date and reading time, then a wide picture with its caption. |
-| 12 | same | Flush Left | Press Flush Left. Set Below the sub to Proof row, then Primary action to Off. | — | **First:** a large headline on the left half, a sentence, two buttons and a short note, with the right half empty. **Proof row:** three figures with their labels under a thin line. **Primary off:** Secondary turns grey with "a secondary action needs a primary beside it". |
-| 13 | same | every pilot | On each, press Tablet, Phone and Dark. | — | Each rearranges at that width as its drawing does, and in Dark nothing is unreadable. |
-| 14 | `https://app.inflozo.com/controls`, then `https://app.inflozo.com/style-guide` | Controls review, Style guide | Open each. | — | The same pages as before, in the new colours: a warm off-white ground and an orange accent. |
+| 12 | same | Latest Post | Press Latest Post. | — | **Left:** "Issue 48" above a large headline, "The personal page never disappeared. It went quiet.", a sentence, and the "Subscribe" and "Browse the archive" buttons. **Right:** a card with a picture, the title "The night shift at the Port of Algeciras", and "Archive · 7 August 2026". Hovering the card underlines its title. |
+| 13 | same | Latest Post, panel | Set Card side to Left, Show date to Off, then Primary action to Off. Then look for a setting for how many posts. | — | The card moves to the left and loses its date; "Subscribe" disappears and Secondary action turns grey with "A secondary action needs a primary beside it." There is no setting for how many posts — this hero always shows one. |
+| 14 | same | every pilot | On each, press Tablet, Phone and Dark. | — | Each rearranges at that width as its drawing does, and in Dark nothing is unreadable. Latest Post's card keeps its picture in Dark: its drawing shows the dark version in a picture-less card style, which arrives with the Heroes category. |
+| 15 | `https://app.inflozo.com/controls`, then `https://app.inflozo.com/style-guide` | Controls review, Style guide | Open each. | — | The same pages as before, in the new colours: a warm off-white ground and an orange accent. |
 
 **Not in this story, so do not expect them:**
 - menus that open with a click, and the header's search and dark-mode buttons;
 - a newsletter form's "Sending…" and "Check your inbox" states;
-- choosing which posts a feed shows;
+- choosing which posts a feed or the Latest Post card shows;
+- a "Members only" marker on the Latest Post card;
 - the post header on pages, and several authors in one byline.
 
 Each is in the ledger, with the story that brings it.
@@ -446,7 +498,8 @@ It went quiet.", a Subscribe and a Browse-the-archive button, and nothing on the
    - Text on the left, and your own uploaded picture on the right.
    - An uploaded picture only gets several sizes in Epic 7, so until then it tests nothing the other samples do not.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-15).** Recorded as **R-108** in `reconcile-designs-decisions.md` §A27. The fifth
+pilot is A4 #13 Latest Post; the pilot table, Tasks and the manual test above are written for it.
 
 **Q2. Should a list of posts ever show a row of clickable page numbers?**
 
@@ -470,4 +523,5 @@ Example: on page 5 of 11 today, the foot of the list reads "Newer posts · 5 / 1
    - Every number is clickable while JavaScript runs; the plain "5 / 11" shows when it does not.
    - It needs a new behaviour module, written with the Pagination Styles category.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-109** in `reconcile-designs-decisions.md` §A27. DW-97 closes;
+A34's category story redraws A34 #1 Numbers to the indicator.

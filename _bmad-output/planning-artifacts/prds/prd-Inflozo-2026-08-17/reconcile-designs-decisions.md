@@ -2040,6 +2040,67 @@ S6 prop's "untouched" state is an empty value, so clearing the text shows the ca
 a design that wants an icon-only control uses an ordinary text prop, and no such control is ever left without a
 name. No code changed. Targets: ✅ Story 4.9's spec · ✅ `epic-4-context.md`.
 
+## A27 · Step 7 — Story 4.10's Create, two rulings on the pilot set and page numbers, 2026-09-15
+
+Taken as Story 4.10 (the five pilot sections, editor-perfect, with the snapshot harness) was planned. Checking each
+pilot against the export found one row of §8's pilot table describing a design that no longer sits at its number,
+and DW-97 had routed its question to this story. Both went to the owner in R-83's shape under
+`## Questions for the owner` in
+`_bmad-output/implementation-artifacts/spec-4-10-the-five-pilot-sections-editor-perfect-with-the-snapshot-harness.md`,
+and he ruled the same day.
+
+**R-108 — the fifth pilot is A4 #13 Latest Post, not A4 #2.** Question 1, option 2, ruled 2026-09-15: *"Switch to
+Latest Post (A4 #13)."*
+
+- **Why it was a question.**
+  - §8's row (`prd.md:767`) says A4 #2 carries "rich text with all four marks, a guarded media binding with `srcset`,
+    and the heaviest control set in the library". That reason was written for the pre-merge #2, "Split Editorial —
+    oversized headline left, feature image right" (`.v3.0-backup/sections-inventory.md:90`).
+  - The 2026-09-04 re-derivation renamed the row and kept the reason word for word.
+  - Today's A4 #2, Flush Left, has no picture (`A4 Heroes - Spec.md:136`) and five controls, and no hero is the
+    library's heaviest (A18 #15 Load More has fourteen rows).
+- **What the pilot now carries.**
+  - A hero's authored text and actions, beside a `{{#get}}` card whose feature image is a guarded media binding with
+    `srcset` (FR-H8).
+  - A query that always shows exactly one post.
+  - The most settings of any Heroes design (`A4-13 Latest Post.dc.html:240-258`).
+  - It is the only pilot that fetches by query, which §7.3's exit construct 1 had no pilot for.
+- **The piece it adds, named in the option he chose.** A query the design fixes offers no Show and no Order in the
+  Data group, and a stored count or order cannot change it. It is `DataBinding.fixed` in Story 4.10's spec.
+- **Not carried, and why.**
+  - "All four marks": the Heroes field list allows links only inside the sub (`A4-0 Category Proof.dc.html:327`),
+    against the category rule at `A4 Heroes - Spec.md:61`. A4's category story settles which one holds.
+  - "The heaviest control set in the library": no hero is.
+- Targets:
+  - ✅ Story 4.10's spec · ✅ `epic-4-context.md`.
+  - Open, for Story 4.10's Dev run:
+    - `prd.md` §8's pilot row;
+    - `epics.md`'s pilot table (`:480`) and Story 4.10's criteria (`:1469-1470`);
+    - `ARCHITECTURE-SPINE.md` AD-35's `a4/2`;
+    - `build-sequence.md:1268-1269`, and `STEP-6-PROMPT.txt` regenerated from it;
+    - `docs/section-authoring.md` (`fixed`).
+- **Deliberately not touched:** the export (R-74), and `reconcile-designs.md`, a `record`.
+
+**R-109 — a list of posts shows no row of clickable page numbers.** Question 2, option 1, ruled 2026-09-15: *"No —
+keep 'Newer posts · 5 / 11 · Older posts'."*
+
+- **What it closes.** `data-pagination="numbers"` stays the "5 / 11" indicator, the one form both emitters produce
+  identically from Ghost's own context. DW-97's product question is closed.
+- **What was checked, and recorded so nobody asks again.**
+  - Ghost 5.130.6 and 6.58.0 compare numbers in `{{#match}}` (`core/frontend/helpers/match.js`) and link any page with
+    `{{page_url n}}` (`helpers/page_url.js:11-16`).
+  - So a short row with no script is buildable, but with no arithmetic its trailing gap cannot always be exact.
+  - The full row needs a script. Both options were declined.
+- **What it binds.**
+  - A34's category story redraws A34 #1 Numbers to the indicator form.
+  - No module for page numbers is added to the registry.
+- Targets:
+  - ✅ Story 4.10's spec.
+  - Open, for Story 4.10's Dev run:
+    - `deferred-work.md` (DW-97 closed, and an entry for A34's category story);
+    - `docs/section-authoring.md` § 3 "The three the shim owns";
+    - the comment on `data-pagination`'s `numbers` branch in `packages/section-runtime/src/core.ts`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

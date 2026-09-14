@@ -245,7 +245,13 @@ Build the machine every design in the library is authored against — **before a
 - **A pilot authored here is provisional.** It is marked as such in its `design.json`, its committed snapshot is expected to change exactly once, and the mass-rebaseline rule applies when its category gate re-authors it. **No epic outside the owning one edits a design file** — a defect found in a pilot later is raised against the owning category, never patched in place. The five pilots each exist to exercise one hard case: a site-wide singleton binding, the paginated feed extracting a card partial invoked with no params, member gating with Portal actions, a wrapper context valid only inside the post block, and rich text with all four marks over a guarded media binding with `srcset`.
   - **Story 4.10's planning (2026-09-15) — the pilot set was checked against the export, and one row no longer fits.**
     A4 #2's reason was written for the pre-merge "Split Editorial": Flush Left has no picture and five controls, and no
-    hero is the heaviest (A18 #15 has fourteen). The owner rules in spec 4.10's Q1, and DW-97's page numbers in its Q2.
+    hero is the heaviest (A18 #15 has fourteen).
+  - **R-108 (owner, 2026-09-15) — the fifth pilot is A4 #13 Latest Post.** A hero's authored text beside a `{{#get}}`
+    card whose feature image is a guarded media binding with `srcset`, a query fixed at one post (`DataBinding.fixed`:
+    no Show, no Order, no stored value folded in), and the most settings of any hero. "All four marks" is not carried:
+    the Heroes field list allows links only in the sub, and A4's category story settles that against its own §0.
+  - **R-109 (owner, 2026-09-15) — no row of clickable page numbers.** `data-pagination="numbers"` stays the "5 / 11"
+    indicator, DW-97 closes, and A34's category story redraws A34 #1 Numbers to it.
   - **Story 4.10's planning — read in both releases and in Portal, and executed.** `@member` is `null` signed out and
     `paid` is `status !== 'free'`. `{{#foreach}}` hands each row to a no-param partial (run under Handlebars 4.7.9).
     Portal submits nothing without `input[data-members-email]`, which the vocabulary lacks. The pilots need
