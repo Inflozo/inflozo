@@ -7,9 +7,25 @@
 // github.com/typescript-eslint/typescript-eslint#10940 tracks support). The project's
 // compiler is still 7.0.2 — every package typechecks and builds with it; the root's
 // typescript 6.0.3 exists only so ESLint can read a `.ts` file.
+import { readFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
+import { join } from 'node:path'
 import tsParser from '@typescript-eslint/parser'
 import compat from 'eslint-plugin-compat'
+
+// Story 4.8 — `browserslist-config-baseline` reads FR-G8's pin from process.cwd()'s package.json, so ESLint started
+// anywhere but the repo root would lint the modules against TODAY's floor and say nothing (executed: from /tmp the
+// floor is Safari 17.4 and `new ImageCapture()` passes). Refuse to run instead.
+const cwdPin = (() => {
+  try {
+    return JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))['browserslist-config-baseline']?.widelyAvailableOnDate
+  } catch {
+    return undefined
+  }
+})()
+if (cwdPin === undefined) {
+  throw new Error(`eslint must run from the repo root: ${process.cwd()}/package.json carries no browserslist-config-baseline.widelyAvailableOnDate, so eslint-plugin-compat would lint against today's floor, not the pin`)
+}
 
 // Membership is derived from the directory, never listed — a hardcoded list has gone stale
 // twice in this repo, and the three-package version of this constant already missed a fourth
@@ -154,11 +170,14 @@ export default [
     //
     // Story 4.8 — `compat/compat` is the JS half of FR-G8's floor. Its browsers are the pin's, read through
     // `packages/library/package.json`'s `browserslist` key (never the root's, which `next build` would reach).
-    // Its reach is BARE GLOBALS ONLY (executed): it flags `requestIdleCallback` and `window.ImageCapture` at
-    // Safari 17.2, and misses `win.ImageCapture`, `Object.groupBy`, `Promise.withResolvers`, `AbortSignal.any` and
-    // every instance method — so `core`'s `win.*` is invisible to it, and a module's other APIs are read against
-    // web-features at the pin by hand (docs/section-authoring.md; MEASUREMENTS §42 did it for `core`).
-    // `tools/check-baseline.mjs` proves the pin reaches it: `new ImageCapture()` must be refused naming Safari 17.2.
+    // Its reach is BARE GLOBALS ONLY (executed, and `settings.lintAllEsApis: true` changes nothing — executed at the
+    // 4.8 review): it flags `requestIdleCallback` and `window.ImageCapture` at the floor's Safari, and misses
+    // `win.ImageCapture`, `Object.groupBy`, `Promise.withResolvers`, `AbortSignal.any` and every instance method — so
+    // `core`'s `win.*` is invisible to it, and a module's other APIs are read against web-features at the pin by hand
+    // (docs/section-authoring.md; MEASUREMENTS §42 did it for `core`). On a module, `no-undef` already refuses the
+    // same bare global; what compat adds is the browser's name, and its real job is the control in
+    // `tools/check-baseline.mjs`, which proves the pin reached the toolchain: `new ImageCapture()` must be refused
+    // naming the floor's Safari.
     files: ['packages/library/modules/*.js'],
     languageOptions: { sourceType: 'script' },
     plugins: { compat },

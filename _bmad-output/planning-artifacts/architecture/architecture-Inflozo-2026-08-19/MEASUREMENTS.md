@@ -3166,3 +3166,18 @@ to backdrop-filter** — "carries notBaseline, and R-105 keeps text-wrap-pretty 
 **(g) What this does NOT say.** No tool reads HTML, so `details-name` and `fetch-priority` are checked for their
 dates only (DW-137, Story 7.8). At-rules, selectors, functions and units are not diffed against the pin. Tier 2's
 conditions — no layout, contrast or interaction, a scrim behind `backdrop-filter` — are review rules no linter sees.
+
+**(h) The review's executions (2026-09-14).** Five review layers, the real-infrastructure one re-running (b), (f) and
+the Dev push's CI and Vercel evidence with a negative control each. Executed and settled: `settings.lintAllEsApis: true`
+on `eslint-plugin-compat` changes nothing over the modules (`Object.groupBy`, `Promise.withResolvers` still pass);
+`font-family: 'Inter', -apple-system, sans-serif` passes the prefix closure, and must — it is the export's stack, in
+every frame — so it is now a legal row; an upper-case `display: -WEBKIT-BOX` is refused by the value list already.
+Executed and NOT settled, now DW-139: through the real config, `@container style(--x: 1) { … }`,
+`.a { color: if(style(--x: 1): red; else: blue); }`, `sibling-index()` and `random()` all pass — the plugin knows an
+at-rule by its name only, and (c)'s diff covers `css.properties`; `web-features` 3.35.0 also carries `css.at-rules`,
+`css.selectors` and `css.types` rows, none diffed. The review added three controls to the check (an entry whose `css`
+names something other than its feature; `text-wrap-pretty` gaining a low date; `@supports (text-wrap: nowrap)` and
+`(text-wrap: balance2)` refused), two preconditions (a pin that is not `YYYY-MM-DD`; a `BROWSERSLIST` or
+`BROWSERSLIST_CONFIG` variable, which overrides every config file) and one guard in `eslint.config.js` — ESLint started
+anywhere but the repo root throws, because the pin is read from the working directory (from `/tmp`: "eslint must run
+from the repo root", exit 2). After the patches `pnpm check` is green and the check prints the same floor.

@@ -3432,6 +3432,8 @@ location: packages/library/baseline.json `tier2[].html` · tools/check-baseline.
 reason: 4.8's Never bars the HTML Baseline check. The data is ready for it: an `html` entry names its element and
   attribute, so the gate can refuse any element or attribute below Widely on the pin that `baseline.json` does not
   name, and hold a named one to Tier 2's conditions (a `<details name>` group still opens every panel without it).
+  Reach today, by grep of the export (the review, 2026-09-14): `fetchpriority="high"` 3 times, `<details name>` none —
+  measured by grep each time, never a stored count.
 
 ### DW-138: the render matrix does not refuse a pin it did not run against
 
@@ -3448,3 +3450,40 @@ location: the root package.json `browserslist-config-baseline.widelyAvailableOnD
 reason: 4.8's Never bars the trigger inside the matrix. The likely shape is one line: the matrix records the pin its
   baselines were taken under, and refuses to pass when the root pin differs, so a pin bump cannot land without the
   re-run FR-G8 names.
+
+## Deferred from: code review of spec-4-8-the-baseline-floor-and-the-three-tools-that-enforce-it (2026-09-14)
+
+### DW-139: a Tier-3 at-rule form or function passes `pnpm lint` — the plugin knows an at-rule by name only, and the diff covers properties
+
+plain: The stylesheet check refuses newer styling by its property name. Some newer styling has no property name of
+  its own — a newer form of an existing rule (a container query that tests a style) or a function used as a value —
+  and the lint passes those unnoticed. Review has to catch them by hand until a check does.
+status: open
+severity: medium
+origin: Story 4.8's review (2026-09-14) — Verification Gap: executed through the real config, `@container style(--x: 1)
+  { … }`, `.a { color: if(style(--x: 1): red; else: blue); }`, `sibling-index()` and `random()` all pass, while the
+  check prints `0 wider, 0 narrower`; its diff covers `css.properties` rows only, and `web-features` 3.35.0 also
+  carries `css.at-rules`, `css.selectors` and `css.types` rows. `docs/section-authoring.md` says so since the review.
+owner: Story 7.8 (the emitted-theme quality gate), unless the owner's Q2 in spec 4.8 rules to extend
+  `tools/check-baseline.mjs` in Story 4.8 now
+location: tools/check-baseline.mjs "the plugin against the pin" · stylelint.config.mjs · web-features `css.at-rules.*`,
+  `css.selectors.*`, `css.types.*`
+reason: 4.8's matrix scoped the diff to identifier-shaped `css.properties` rows because the other key families'
+  syntax is irregular (Design Notes). Closing it needs one probe form per family and a rule that refuses a function
+  or an at-rule prelude by name, which the plugin does not offer — a custom rule in the shape of
+  `inflozo/supports-tier-2`.
+
+### DW-140: NFR-2's "40 KB" names no base — `size-limit`'s `40 kB` is 40,960 bytes
+
+plain: The size budget is written as "40 KB" without saying whether a KB is 1000 or 1024 bytes. The tool that
+  measures it reads "40 kB" as 1024-based, so today the budget is slightly more generous than the round number
+  suggests. Nothing is near the limit, so nothing changes yet.
+status: open
+severity: low
+origin: Story 4.8's review (2026-09-14) — Blind Hunter: `tools/check-baseline.mjs` passes `--limit "40 kB"`, which
+  `size-limit` parses with the `bytes` package (`kB` = 1024), while `prd.md` NFR-2 says "40 KB gzipped" with no base
+  and the metric is already brotli (VERIFY row 27)
+owner: Story 7.5 (the compile-time size gate), which owns NFR-2's number and metric per 4.8's Ask First
+location: prd.md NFR-2 · tools/check-baseline.mjs `sizeLimit('40 kB')`
+reason: 4.8 may not change NFR-2's number or metric; the base is the same kind of unstated unit as gzip-versus-brotli,
+  and one sentence in NFR-2 settles both when 7.5 builds the gate.

@@ -438,16 +438,21 @@ browserslist walks up from a file, and a root key would reach the app's `next bu
 **Three tiers.**
 
 - **Tier 1 — Baseline Widely on the pin: unrestricted**, load-bearing, anywhere. `mask-image` is Tier 1
-  (`masks` became Widely on 2026-06-07), as are `:has()`, container queries, `color-mix()` and `subgrid`.
+  (`masks` became Widely on 2026-06-07), as are `:has()`, container queries, `color-mix()` and `subgrid` — each a
+  legal row `tools/check-baseline.mjs` executes.
 - **Tier 2 — the allowlist in `packages/library/baseline.json`.** Baseline **Newly** features, each with the
   date it becomes Widely, recomputed by the check from `web-features`: when the pin passes that date the
   check says "Tier 1, remove it". **One entry is not Baseline at all: `text-wrap: pretty`, kept by name by
   R-105** (no Firefox; ordinary line breaks are the unstyled state). It carries no date, and the day it
   becomes Baseline the check asks for its date. A second feature that is not Baseline needs its own ruling —
   the check refuses one.
-- **Tier 3 — everything else is refused by `pnpm lint`.** `scrollbar-gutter`, `text-wrap: nowrap`,
-  `animation-timeline`, `anchor-name`, `field-sizing`, `mask-mode` (the stylelint plugin's own data passes
-  it; Safari lacks it, so it is refused by name).
+- **Tier 3 — everything else.** `pnpm lint` refuses a Tier-3 **property or value** — `scrollbar-gutter`,
+  `text-wrap: nowrap`, `animation-timeline`, `anchor-name`, `field-sizing`, `mask-mode` (the stylelint plugin's own
+  data passes it; Safari lacks it, so it is refused by name) — and the check diffs the plugin against the pin over
+  those rows. **A Tier-3 at-rule form or function is not caught by lint today** (executed at the 4.8 review:
+  `@container style(--x: 1)`, `if()`, `sibling-index()` and `random()` all pass — the plugin knows an at-rule by
+  its name only, and the diff covers `css.properties`). Until DW-139 closes, review refuses those by reading
+  `web-features` at the pin, as it does for a module's APIs.
 
 **Tier 2's conditions are review rules, not lint** — the linter cannot see what a declaration *does*:
 
@@ -478,13 +483,15 @@ and hand-editable. `.a { & .b {} }`, `.a { .b {} }` and `.a { @media (…) {} }`
 
 | Need | Write exactly |
 |---|---|
-| excerpt truncation | `display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: N; overflow: hidden;` — all three prefixed declarations in one rule (`inflozo/prefix-pairs`) |
+| excerpt truncation | `display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: N; overflow: hidden;` — all three prefixed declarations in one rule (`inflozo/prefix-pairs`); `overflow: hidden` is what makes the clamp visible, and review holds it, not lint |
 | iOS text inflation | `-webkit-text-size-adjust: 100%` — no other value |
 | non-selectable chrome | `-webkit-user-select: none; user-select: none;` — both, with one value; either alone is refused |
 
 Any other prefix, in any position — a property (`-webkit-font-smoothing`, `-webkit-mask-image`), a value
 (`display: -moz-box`), a function (`-webkit-linear-gradient()`), a pseudo-element (`::-webkit-scrollbar`), a
-media feature or an at-rule (`@-webkit-keyframes`) — is refused by the rule that owns that position.
+media feature or an at-rule (`@-webkit-keyframes`) — is refused by the rule that owns that position. A font-stack
+keyword that starts with a dash is not a prefix: `font-family: 'Inter', -apple-system, sans-serif` — the export's
+stack — passes, and the check keeps it passing.
 
 **Run `pnpm lint`** — it runs ESLint and then `stylelint "packages/**/*.css"` with the root
 `stylelint.config.mjs`. Ghost's vendored card CSS under `packages/library/orbit-weekly/vendor/` is not
@@ -553,12 +560,16 @@ road. `bundle` refuses a file whose top level is anything
 but its one declaration — an `export`, an `import`, a second function or a statement.
 
 **The floor reaches a module only partly by lint** *(Story 4.8)*. `compat/compat` (eslint-plugin-compat)
-runs over the same files against the pin, and it sees **bare globals only**: it refuses `requestIdleCallback`
+runs over the same files against the pin — from the repo root only: started anywhere else, ESLint refuses to run,
+because the pin is read from the working directory — and it sees **bare globals only** (`lintAllEsApis: true`
+changes nothing; executed): it refuses `requestIdleCallback`
 and `window.ImageCapture` at Safari 17.2, and misses `win.ImageCapture`, `Object.groupBy`,
 `Promise.withResolvers`, `AbortSignal.any()` and every instance method — so it never sees what `core` hands a
 module as `win`. **Every other platform API a module uses is read against `web-features` at the pin before it
 is used**, and the reading is recorded with the module, as MEASUREMENTS §42 did for `core` — which is how
-`AbortSignal.any()` was found Newly, so Tier 3, and never used.
+`AbortSignal.any()` was found Newly, so Tier 3, and never used. On a module, `no-undef` already refuses the same
+bare global; what `compat/compat` adds is the browser's name, and its real job is the check's control that the pin
+reached the toolchain.
 
 **`js-enabled` is on the mount, never on the page.** `core` sets the class on the element whose module
 it mounts, **before** the module runs, and removes it when that mount stops or throws. JavaScript off,

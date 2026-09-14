@@ -75,7 +75,7 @@ downward correction; the owner took the upward decision the same day — **no ca
 |---|---|---|
 | **R-1** counting / arithmetic | ✅ §7.3 rows 2, 3, 5, 7 re-pointed and **row 8 struck** — a group heading is the `group-headings` module, not a compiler construct | ⬜ |
 | **R-2** initials | ⬜ | ⬜ |
-| **R-3** stylesheet doing a script's job | ✅ FR-G8 Tier-2 (`mask-image`), A32's fade re-pointed in `research-contested-variants.md` | ⬜ |
+| **R-3** stylesheet doing a script's job | ✅ FR-G8 Tier-2 (`mask-image` — Tier 1 by recompute since Story 4.8, §A25), A32's fade re-pointed in `research-contested-variants.md` | ⬜ |
 | **R-4** capability flags · `@member`'s real shape | ✅ FR-H6 | ⬜ |
 | **R-5** subscribe forms are JS-required | ✅ FR-G4 (the waiver list, and §29a's three findings) | ⬜ |
 | **R-6** `{{content}}` is Ghost's | ✅ FR-J17, NFR-5, FR-Q7 | ⬜ A33, A25 |
@@ -514,7 +514,7 @@ panel open; that is acceptable degradation, and nothing is built for it.**
 D19 stands. FR-G8's Baseline pin gains an explicit **Tier-2 entry** for `<details name>` so the
 collision cannot recur.
 
-*Propagates to:* FR-G8 (Tier-2 list: `<details name>`; also rule `mask-image` and `fetchpriority`,
+*Propagates to:* FR-G8 (Tier-2 list: `<details name>`; also rule `mask-image` — Tier 1 by recompute since Story 4.8, §A25 — and `fetchpriority`,
 and confirm `scrollbar-gutter` is Tier 3) · A9 spec · probe family 38 keeps the lookup, loses the
 blocking status.
 *Closes:* collision (v) of §37.4.

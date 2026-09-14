@@ -2,10 +2,10 @@
 title: 'Story 4.8 — The Baseline floor and the three tools that enforce it'
 type: 'feature'
 created: '2026-09-14'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'bfd8ca19321a3a6b88d0160b33ac1c5295228e1d'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -225,6 +225,58 @@ wired as written:
 
   Then grep for "`mask-image` is Tier-2", "1.4.5", "484 flat" and "gzip" beside size-limit (standing rule 7).
 
+### Review Findings
+
+Code review, 2026-09-14, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). Every patch below is applied and its control executed; the one decision is Q2 under Questions for the owner.
+
+- [ ] [Review][Decision] A Tier-3 at-rule form or function passes `pnpm lint` — the plugin knows an at-rule by name
+  only and the diff covers `css.properties` rows; executed: `@container style(--x: 1)`, `if()`, `sibling-index()`,
+  `random()` all pass. Q2 below; DW-139. Docs now say what lint does not catch.
+- [x] [Review][Patch] `inflozo/supports-tier-2` compared only the leading letters of a value (`balance2` read as
+  `balance`), and its value-narrowing had no control [stylelint.config.mjs:48; tools/check-baseline.mjs refusedRows]
+- [x] [Review][Patch] A `baseline.json` entry's `feature` was never linked to its `css`/`html`, and an entry naming
+  nothing passed; now each must name exactly one of the two and it must be a compat key of the feature, with a
+  control [tools/check-baseline.mjs tier2Findings]
+- [x] [Review][Patch] The "Baseline now: give it its date" branch had no control [tools/check-baseline.mjs controls]
+- [x] [Review][Patch] The §A3 floor used its own Widely test (`low > pin − 30 months`), which disagrees with
+  `widelyOnPin` on day-clamped dates; one definition now [tools/check-baseline.mjs floorFromWebFeatures]
+- [x] [Review][Patch] A pin that is not `YYYY-MM-DD` made every date compare silently wrong, and a `BROWSERSLIST` /
+  `BROWSERSLIST_CONFIG` variable overrides every config file unseen; both refused up front [tools/check-baseline.mjs]
+- [x] [Review][Patch] The ImageCapture control hard-coded `Safari 17.2` and `=== 1`; it now names the Safari
+  browserslist resolved, and says so when the floor has passed 17.4 (a pin bump needs a newer probe API)
+  [tools/check-baseline.mjs]
+- [x] [Review][Patch] `browserslist-config-baseline` reads the pin from the working directory, so ESLint started
+  anywhere but the root linted against today's floor and said nothing; it now throws [eslint.config.js]
+- [x] [Review][Patch] `size-limit` failing with no stdout printed `undefined`; a non-Error throw printed `undefined`
+  [tools/check-baseline.mjs sizeLimit, check]
+- [x] [Review][Patch] The docs' Tier-1 (`container-type`, `color-mix()`, `subgrid`) and Tier-3 (`anchor-name`,
+  `field-sizing`) examples were not executed; they are rows now, with `-apple-system` (the export's font stack, a
+  keyword not a prefix) as a legal row [tools/check-baseline.mjs; docs/section-authoring.md]
+- [x] [Review][Patch] Doc drift: "everything else is refused by `pnpm lint`" overstated; the trio row's `overflow:
+  hidden` is review's, not lint's; `lintAllEsApis: true` executed (no change) and compat's real job named; the
+  root-only ESLint rule [docs/section-authoring.md:441-560; eslint.config.js]
+- [x] [Review][Patch] Propagation: `mask-image` still "Tier-2" in two live rows of the register (R-3, R-15); no
+  `stylelint` row in the spine's stack table; DW-137 had no reading of where the two `html` entries are used; the
+  spec's Results cited `epics.md:240` (the CSS budget) for NFR-2's "gzipped"; the doc gate was not recorded; the
+  doc-audit row named Safari 17.2 [reconcile-designs-decisions.md:78,517; ARCHITECTURE-SPINE.md; deferred-work.md;
+  tools/doc-audit.py; this spec]
+- [x] [Review][Patch] Reproducibility notes from the real-infra run recorded under Verification [this spec]
+- [x] [Review][Defer] NFR-2's "40 KB" names no base: `size-limit`'s `40 kB` is 40,960 bytes [tools/check-baseline.mjs
+  sizeLimit] — deferred, pre-existing (Story 7.5 owns the number and metric; DW-140)
+
+Dismissed with evidence: the lockfile's absence from the reviewed diff (the seven pins verified in the lockfile and by
+a frozen install); the merge logic written in both the config and the check (deliberate — two computations, and the
+`text-wrap: balance` row catches a last-wins bug independently); upper-case `-WEBKIT-BOX` (refused by the value list;
+executed); generalising the prefix regex to `-apple-system` (the export uses it in every frame); a duplicated
+declaration inside one rule refused by `inflozo/prefix-pairs` (a flat sheet with a contradictory duplicate is refused
+rightly); a line-less stylelint warning in the diff (rows are regex-guaranteed identifiers); an empty stylelint glob
+(the check asserts Ghost's sheets are found); §43(c)'s "through the plugin alone" beside the check's "through the
+config" (two measurements, both labelled); `scrollbar-gutter` called Tier 3 while Baseline Newly (Tier 3 is "not
+Widely and not on the list"); DW-138 not repeated in `epics.md` (it reached the epic context and the ledger's owner);
+the research table's plugin release date after its "measured 2026-08-18" header (the header dates the sizes; release
+dates are the registry's).
+
 **Acceptance Criteria:**
 - Given the root pin, when `pnpm check` runs, then the check prints the computed floor and every I/O row holds.
   Each control fails when its subject is broken: the pin removed, a `widely` date altered, `mask-mode` dropped from
@@ -326,6 +378,31 @@ line. Nothing is hidden, cut off or harder to read.
 `text-wrap: pretty` stays on the Tier-2 list by name, carries no Widely date, and is re-read at every check. A second
 feature that is not Baseline needs its own ruling: option 3 was declined.
 
+**Q2. Should the stylesheet check also refuse newer styling that has no property name of its own — a newer form of
+an existing rule, or a function used inside a value — now, or should that wait for the theme quality gate?**
+
+Today the lint refuses newer styling by its property name, and the check proves that list against the browser floor.
+Two kinds of newer styling have no property name: a newer form of an existing rule (a container query that tests a
+style, `@container style(...)`) and a function used inside a value (`if()`, `sibling-index()`). Checked at the review:
+all of them pass the lint today. No design in the export uses any of them. Until a check exists, the reviewer reads
+for them by hand, the way a module's browser features are already read.
+
+Example: a section stylesheet writes `color: if(style(--dark): white; else: black)`. Chrome understands it; Firefox
+and Safari at the floor do not, and the text keeps whatever colour came before. The lint says nothing. A reviewer who
+reads the sheet catches it; one who trusts the lint does not.
+
+1. **Wait for the theme quality gate, Story 7.8 (RECOMMENDED).** That gate already walks every compiled theme for
+   valid HTML, and the HTML half of the browser floor is going there too (DW-137), so these forms join the same walk.
+   Until then the docs say what the lint does not catch, and review holds it. Recorded as DW-139.
+2. **Extend the check in this story now.** Story 4.8 stays in development for one more pass: one probe per rule,
+   selector and function row of the browser data, and a rule that refuses them by name. More coverage sooner; more
+   code in a story that is otherwise finished.
+3. **Refuse every `@container` condition and every function the data does not know, outright, now.** Safer than 1
+   and cheaper than 2, but it also refuses forms that are fine today, and each would need an exception when it turns
+   out to be safe.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands:**
@@ -371,6 +448,7 @@ feature that is not Baseline needs its own ruling: option 3 was declined.
     - `plugin.refused` emptied → exit 1, `FAIL (2)`, naming `css.properties.mask-mode` and its three values as
       wider, and `.a { mask-mode: alpha; }` as not refused.
 - `pnpm build` — exit 0. The check's own row confirms no browserslist config reaches the root or `apps/web/app`.
+- `python3 tools/doc-audit.py --check` — PASS, as the pre-commit hook on each Dev commit (`7d4cb243`, `663598ed`).
 - Beyond the Design Notes' prototype, two things the repository forced:
   - `property-disallowed-list` exempts `--custom-properties`; otherwise `reference-tokens.css` fails with 108
     errors;
@@ -379,7 +457,8 @@ feature that is not Baseline needs its own ruling: option 3 was declined.
 - `baseline-browser-mapping` resolved to 2.11.20 in the lockfile, not planning's 2.11.23. The floor is identical
   (MEASUREMENTS §43).
 - Two stale wordings are left deliberately:
-  - NFR-2 still says "40 KB gzipped" (`prd.md:476`, `epics.md:240`): its metric is Story 7.5's, per VERIFY row 27
+  - NFR-2 still says "40 KB gzipped" (`prd.md:474,476`, `research-section-js-libraries.md:33,389`; `epics.md:240`
+    is the CSS budget, not this one): its metric is Story 7.5's, per VERIFY row 27
     and this spec's Ask First;
   - MEASUREMENTS §9's "1.4.5" is a dated reading, superseded by §43.
 
@@ -396,3 +475,21 @@ feature that is not Baseline needs its own ruling: option 3 was declined.
 - **Vercel** (REST `v6/deployments` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — production deployment
   `dpl_7EkQBJyxoBSfkThe9Ln4VJwZyHdH` for `7d4cb24381e984776a0612bec008a1d433c82650`: `READY`.
 - Supabase, Resend, Dodo, T1 and T3 were not touched: this story has no schema, email, payment or theme upload.
+
+**Results — Review, 2026-09-14 (Node 24.18.1):**
+- Five review layers ran. The real infrastructure was re-executed with a negative control each: **npm registry** — every
+  pin's publish time as above; `stylelint@99.99.99` → 404. **GitHub Actions** (`GH_TOKEN` from `GITHUB_TOKEN`) — run
+  34847587154 for `7d4cb243` and run 34849220061 for `663598ed`, `rls` · `check` · `deploy` all `success`; the `check`
+  log carries `stylelint 17.15.0`, the floor line and `check-baseline: PASS`; `gh run view 1` → 404. **Vercel** (REST
+  with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — `dpl_7EkQBJyxoBSfkThe9Ln4VJwZyHdH` `READY` for `7d4cb243`,
+  aliased to `inflozo.com` and `app.inflozo.com`; an invented id → 404. The diff adds no migration, so R-99 has nothing
+  to compare. Supabase, Resend, Dodo, T1 and T3 untouched.
+- Locally, before the patches: `pnpm install --frozen-lockfile` "Already up to date", `node tools/check-baseline.mjs`
+  PASS with the Dev run's floor line, `pnpm lint` exit 0; the two by-hand controls replayed in a scratch copy of HEAD
+  (pin removed → `FAIL (5)`; `plugin.refused` emptied → `FAIL (2)`), each naming its subject as the Dev run recorded.
+- After the patches: `node tools/check-baseline.mjs` PASS with three more controls and five more stylesheet rows;
+  `pnpm lint` exit 0; `pnpm check` exit 0. Controls of the patches, each by name: ESLint started from `/tmp` → "eslint
+  must run from the repo root", exit 2; `BROWSERSLIST="last 1 version"` → the check stops before its first row, exit 1;
+  the pin written `2026/08/18` in a scratch copy → "is not YYYY-MM-DD", exit 1.
+- Reproducibility: `gh run list --commit` needs the full 40-character SHA (a short one returns an empty list, not an
+  error); a scratch-copy install needs `--prefer-offline` — `--offline` fails on a tarball the store lacks.

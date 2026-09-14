@@ -45,13 +45,13 @@ const supportsMessages = ruleMessages(SUPPORTS, {
 const supportsTier2 = createPlugin(SUPPORTS, (on) => (root, result) => {
   if (!on) return
   root.walkAtRules(/^supports$/i, (at) => {
-    const tests = [...at.params.matchAll(/\(\s*([-a-zA-Z]+)\s*:\s*([-a-zA-Z]*)/g)]
+    const tests = [...at.params.matchAll(/\(\s*([-a-zA-Z]+)\s*:\s*([^)]*)/g)] // the whole value: `balance2` is not `balance`
     const ok =
       tests.length > 0 &&
       !/\b(selector|font-tech|font-format)\s*\(/i.test(at.params) &&
       tests.every(([, prop, value]) => {
         const allowed = tier2Properties[prop.toLowerCase()]
-        return allowed !== undefined && (allowed.includes(ALL) || allowed.includes(value.toLowerCase()))
+        return allowed !== undefined && (allowed.includes(ALL) || allowed.includes(value.trim().toLowerCase()))
       })
     if (!ok) report({ ruleName: SUPPORTS, result, node: at, message: supportsMessages.refused(at.params) })
   })

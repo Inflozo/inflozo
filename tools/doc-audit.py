@@ -787,9 +787,11 @@ DOCS = [
   'Re-derives research §2.1\'s "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design\'s OWN declaration names it: the per-design Behaviour-module line, or the roster table\'s Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at. --check (Story 4.7) reads no export and keeps FR-G7\'s one table one table: packages/library/modules/registry.json\'s names must be §2.1\'s live rows in order, each editSafe must be its §7 yes/no, every other live §7 row must be core or cards.js, and cards.js must have one; pnpm test runs it, and a flipped editSafe turns it red naming the module.'),
  ('tools/check-baseline.mjs', 'tool', 'The Baseline floor, checked by execution',
   "Story 4.8's check of FR-G8, run by pnpm test and therefore by CI and the Vercel build. Controls first: "
-  'new ImageCapture() linted as a module must be refused by eslint-plugin-compat at Safari 17.2 (proof the pin '
-  'reaches the lint — an unpinned floor is Safari 17.4, which passes it), a second notBaseline entry must be refused '
-  "naming R-105, an altered Tier-2 date must be refused naming both dates, size-limit at 1 B must report "
+  "new ImageCapture() linted as a module must be refused by eslint-plugin-compat at the floor's Safari (proof the pin "
+  'reaches the lint — ImageCapture ships in Safari 17.4, which an unpinned floor passes), a second notBaseline entry must be refused '
+  'naming R-105, an entry whose css names something other than its feature must be refused, text-wrap-pretty gaining '
+  'a low date must be refused asking for its date, '
+  "an altered Tier-2 date must be refused naming both dates, size-limit at 1 B must report "
   'passed: false, and stylelint-plugin-use-baseline is diffed against web-features at the pin over every '
   'identifier-shaped css.properties row, through the real config, naming every row wider or narrower. Then it '
   'prints the floor computed two ways (browserslist for a module file, research §A3 over web-features) and fails '
