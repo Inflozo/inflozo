@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-11",
+  "captured": "2026-09-14",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "5",
   "ghost_version": "5.130",
@@ -20,6 +20,21 @@
       "slug": "priya-raman",
       "url": "https://ghost5.inflozo.com/author/priya-raman/",
       "website": null
+    },
+    "locales_en": {
+      "Plain key": "Plain value, read from locales/en.json",
+      "probe": {
+        "nested_miss": "Nested value, which a flat lookup never reaches"
+      },
+      "probe.by": "By {author}",
+      "probe.dotted_hit": "Dotted key, looked up as one key",
+      "probe.escape": "Tom & <b>Jerry</b> \"said\" it's",
+      "probe.page_of": "Page {page} of {pages}",
+      "probe.posts_many": "% posts <i>many</i>",
+      "probe.posts_none": "No posts",
+      "probe.posts_one": "% post <i>one</i>",
+      "probe.reading_time": "{minutes} min read",
+      "probe.updated_on": "Updated {date}"
     },
     "members": {
       "comped": 0,
@@ -85,8 +100,8 @@
   "uploaded_image": "https://ghost5.inflozo.com/content/images/2026/09/inflozo-shim-probe-5.png",
   "values": {
     "ASSET": {
-      "no_such": "/assets/css/nope.css?v=b76693f133",
-      "screen_css": "/assets/css/screen.css?v=b76693f133"
+      "no_such": "/assets/css/nope.css?v=82b8646613",
+      "screen_css": "/assets/css/screen.css?v=82b8646613"
     },
     "CORE": {
       "content_api_key_shape": {
@@ -172,10 +187,26 @@
       "encode": "a%20b%26c",
       "t_unknown": "Older posts"
     },
+    "TR": {
+      "dotted_hit": "Dotted key, looked up as one key",
+      "escape_text": "Tom & <b>Jerry</b> \"said\" it's",
+      "missing_key": "probe.no_such_key",
+      "nested_miss": "probe.nested_miss",
+      "param_omitted": "An error occurred",
+      "param_undefined": "Page 1 of ",
+      "params_path": "Page 1 of 3",
+      "plain_control": "Plain value, read from locales/en.json"
+    },
     "TRUTHY": {
       "has_slug_home": "NO",
       "is_index": "YES",
       "is_post": "NO"
     }
+  },
+  "verbatim": {
+    "t-escape-attr": "<i title=\"Tom &amp; &lt;b&gt;Jerry&lt;/b&gt; &quot;said&quot; it&#x27;s\"></i>",
+    "t-escape-text": "Tom &amp; &lt;b&gt;Jerry&lt;/b&gt; &quot;said&quot; it&#x27;s",
+    "t-param-html": "By &lt;b&gt;A&amp;B&lt;/b&gt;",
+    "t-plural": "33 posts <i>many</i>"
   }
 }

@@ -312,9 +312,13 @@ export function totalMembers(count: unknown, major: '5' | '6'): string {
 
 // ─── {{t}} ────────────────────────────────────────────────────────────────────
 // Recorded: `{{t "Older posts"}}` with no locale file prints the key itself, on both majors
-// (TEXT|t_unknown). The catalog is Story 4.9's; this resolves a key and its `{placeholder}` params
-// against whatever catalog it is HANDED, and prints the key when the catalog has no entry — which is
-// exactly what Ghost does.
+// (TEXT|t_unknown). This resolves a key and its `{placeholder}` params against whatever catalog it is
+// HANDED, and prints the key when the catalog has no entry — which is exactly what Ghost does.
+//
+// Story 4.9 recorded it over a real `locales/en.json` (group TR, MEASUREMENTS §44) and made it reachable:
+// the runtime's canvas renders `data-t` through it over the project's strings (DW-99's `{{t}}` part). What
+// the shim deliberately does NOT imitate, because a design can never reach it: an OMITTED param, which
+// Ghost renders as "An error occurred" — V4 refuses the call — and `{{plural}}`'s unescaped output.
 
 export function t(
   key: string,

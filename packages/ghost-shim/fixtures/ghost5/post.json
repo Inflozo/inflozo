@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-11",
+  "captured": "2026-09-14",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "5",
   "ghost_version": "5.130",
@@ -20,6 +20,21 @@
       "slug": "priya-raman",
       "url": "https://ghost5.inflozo.com/author/priya-raman/",
       "website": null
+    },
+    "locales_en": {
+      "Plain key": "Plain value, read from locales/en.json",
+      "probe": {
+        "nested_miss": "Nested value, which a flat lookup never reaches"
+      },
+      "probe.by": "By {author}",
+      "probe.dotted_hit": "Dotted key, looked up as one key",
+      "probe.escape": "Tom & <b>Jerry</b> \"said\" it's",
+      "probe.page_of": "Page {page} of {pages}",
+      "probe.posts_many": "% posts <i>many</i>",
+      "probe.posts_none": "No posts",
+      "probe.posts_one": "% post <i>one</i>",
+      "probe.reading_time": "{minutes} min read",
+      "probe.updated_on": "Updated {date}"
     },
     "members": {
       "comped": 0,
@@ -149,8 +164,13 @@
       "tags_plain": "Systems",
       "tags_sep": "Systems"
     },
+    "TR": {
+      "date_param": "Updated 20 Aug 2026",
+      "minutes_reading_time": "0 min read"
+    },
     "TRUTHY": {
       "is_post": "YES"
     }
-  }
+  },
+  "verbatim": {}
 }

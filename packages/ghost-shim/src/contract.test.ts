@@ -75,6 +75,8 @@ type Recording = {
   values: Record<string, Record<string, unknown>>
   raw: Record<string, unknown>
   input: Record<string, unknown>
+  /** Story 4.9 — `<pre id="verbatim-*">` blocks, read back WITHOUT unescaping: what Ghost escaped is the fact */
+  verbatim?: Record<string, string>
 }
 
 function recording(major: Major, template: string, helper: string): Recording {
@@ -699,6 +701,64 @@ test('{{t}} prints the key when the catalog has no entry, as Ghost does, and fil
   assert.equal(t('pager.older', { n: 3 }, { 'pager.older': '{n} older posts' }), '3 older posts')
   assert.equal(t('pager.older', {}, { 'pager.older': '{n} older posts' }), '{n} older posts', 'an unfilled placeholder stays VISIBLE')
   assert.equal(t('constructor'), 'constructor', 'a prototype name is a key like any other')
+})
+
+// Story 4.9 — the probe theme now ships `locales/en.json` (recorded as `input.locales_en`). Every TR row
+// the shim can render is asserted through `t()` over that file; the two rows only Ghost produces — an
+// omitted param and `{{plural}}` over `(t …)` — are asserted as recorded FACTS, because they are the
+// reason a param is guarded (FR-H8) and the reason DW-141 exists.
+
+/** Handlebars 4.7's `escapeExpression`, the escape `{{t}}` output passes through. */
+const hbsEscape = (s: string) =>
+  s.replace(/[&<>"'`=]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;', '=': '&#x3D;' })[c] as string)
+
+test('{{t}} over locales/en.json — the control, a flat dotted lookup, params, and what Ghost escapes', () => {
+  assertBoth('{{t}} with a locale file', (major) => {
+    const locale = input<Record<string, unknown>>(major, 'index', 'locales_en', '{{t}}')
+    // the shim is handed a FLAT map — exactly the keys Ghost's fulltext lookup can reach
+    const flat = Object.fromEntries(Object.entries(locale).filter((e): e is [string, string] => typeof e[1] === 'string'))
+    const tr = (key: string) => recorded(major, 'index', 'TR', key, `{{t}} ${key}`)
+    // THE CONTROL (standing rule 2): unless the plain key printed the file's value, no row below counts
+    assert.equal(tr('plain_control'), flat['Plain key'])
+    assert.notEqual(tr('plain_control'), 'Plain key', 'the control printed its key — {{t}} was not reading the file')
+    assert.equal(t('Plain key', {}, flat), tr('plain_control'))
+    // a dotted key is ONE key: the flat entry hits, and a nested object is never walked
+    assert.equal(t('probe.dotted_hit', {}, flat), tr('dotted_hit'))
+    assert.equal(t('probe.nested_miss', {}, flat), tr('nested_miss'))
+    assert.equal(tr('nested_miss'), 'probe.nested_miss')
+    assert.equal(t('probe.no_such_key', {}, flat), tr('missing_key'))
+    // params from a path, and an undefined one leaving a hole
+    const page = recorded(major, 'index', 'PAGE', 'pagination_page', '{{pagination.page}}')
+    const pages = recorded(major, 'index', 'PAGE', 'pagination_pages', '{{pagination.pages}}')
+    assert.equal(t('probe.page_of', { page, pages }, flat), tr('params_path'))
+    assert.equal(t('probe.page_of', { page, pages: undefined }, flat), tr('param_undefined'))
+    assert.match(tr('param_undefined'), / of $/, 'an undefined param leaves a hole')
+    // a fact only Ghost produces: an OMITTED param is a format error, rendered as Ghost's fallback sentence
+    assert.equal(tr('param_omitted'), 'An error occurred')
+    // escaping: {{t}}'s result is escaped like any mustache, in text and in an attribute
+    const plain = t('probe.escape', {}, flat)
+    assert.equal(plain, tr('escape_text'))
+    const verbatim = recording(major, 'index', '{{t}} verbatim').verbatim ?? {}
+    assert.equal(verbatim['t-escape-text'], hbsEscape(plain))
+    assert.equal(verbatim['t-escape-attr'], `<i title="${hbsEscape(plain)}"></i>`)
+    assert.equal(verbatim['t-param-html'], hbsEscape(t('probe.by', { author: '<b>A&B</b>' }, flat)))
+    // a fact only Ghost produces: {{plural}} replaces the first % and returns an UNESCAPED SafeString, so
+    // markup in a (t …) value reaches the page as markup (DW-141)
+    const total = recorded(major, 'index', 'PAGE', 'pagination_total', '{{pagination.total}}')
+    assert.equal(verbatim['t-plural'], String(flat['probe.posts_many']).replace('%', total))
+    assert.match(verbatim['t-plural'] ?? '', /<i>many<\/i>/)
+  })
+  assertBoth('{{t}} with post-scoped params', (major) => {
+    const locale = input<Record<string, string>>(major, 'post', 'locales_en', '{{t}}')
+    const post = input<{ reading_time: number; updated_at: string }>(major, 'post', 'post', '{{t}}')
+    // `minutes=reading_time` is the FIELD, never the helper: an API value of 0 prints "0", not "1 min read"
+    assert.equal(t('probe.reading_time', { minutes: post.reading_time }, locale), recorded(major, 'post', 'TR', 'minutes_reading_time', '{{t minutes=reading_time}}'))
+    // a (date …) sub-expression param is the date helper's own string
+    assert.equal(
+      t('probe.updated_on', { date: formatDate(post.updated_at, 'D MMM YYYY') }, locale),
+      recorded(major, 'post', 'TR', 'date_param', '{{t date=(date …)}}'),
+    )
+  })
 })
 
 // ─── the bare helpers ─────────────────────────────────────────────────────────

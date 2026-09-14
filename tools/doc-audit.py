@@ -128,8 +128,11 @@ DOCS = [
   'Which Ghost helpers and variables are available inside which template, recorded per context. The '
   'reference the binding vocabulary is built against.'),
  ('prds/.../appendix-h1-string-catalog.md', 'live', 'The string catalog',
-  'Every user-visible string, keyed and namespaced per category. Append-only and never reworded in '
-  'place, because a superseded key orphans every user override built on it.'),
+  'Every compiler-generated visitor-facing string, with its permanent dotted key (namespaced by '
+  'function, not by category) and its English default. Append-only and never reworded in place, '
+  'because a superseded key orphans every user override built on it. §3 is the normative table and '
+  'packages/library/strings/catalog.json its machine copy (Story 4.9), held equal by '
+  'tools/check-catalog.mjs, which also prints the totals no heading carries any more.'),
  ('prds/.../verify-mechanical-ghost-claims.md', 'live', 'Ghost claims, mechanically checked',
   'Highest precedence in the whole project on any Ghost fact — above the research companions and '
   'far above the PRD body. Exists because four confident assertions about Ghost entered the PRD as '
@@ -803,6 +806,16 @@ DOCS = [
   'differences) and the root stylelint.config.mjs (the plugin, max-nesting-depth, the prefix closure and the two '
   'custom rules inflozo/supports-tier-2 and inflozo/prefix-pairs), which the catalogue cannot index. It stores no '
   'floor: it prints one.'),
+ ('tools/check-catalog.mjs', 'tool', 'The string catalog, checked by execution',
+  "Story 4.9's check of FR-Q6, run last by pnpm test and therefore by CI. Controls first, each handed a broken "
+  'subject and required to fail naming it: a key removed from catalog.json, a default changed in one copy only, a '
+  'key moved out of order with a mark dropped and a retirement lifted, a key written twice in the bytes, an '
+  "apostrophe-quoted default, an ICU plural and an ICU-escaped brace (each showing both renders or the throw), and "
+  'an unlocked credit key. Then it holds appendix-h1 §3 and packages/library/strings/catalog.json equal in order '
+  "and in both directions, runs catalog.ts's format rules, renders every default through intl-messageformat 5.4.3 "
+  "(the version both Ghost majors bundle, refused if the installed one differs) against the shim's t(), and prints "
+  'the totals per namespace. Also covers packages/library/strings/catalog.json and src/catalog.ts, which the '
+  'catalogue cannot index (the package BASES gap). It stores no count: it prints them.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
  ('tools/reapply-export-edits.py', 'tool', 'Re-apply the repo-side export edits',

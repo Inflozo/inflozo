@@ -60,7 +60,7 @@ test('one error names every refused binding', () => {
 })
 
 test('post and page: root title, url and feature_image bind on both, and the two theme texts are byte-identical with neither block', () => {
-  const src = '<section class="s"><h1 data-bind="title">t</h1><a data-bind-attr="href:url">read</a><img data-bind-attr="src:feature_image|img_url:m" alt=""></section>'
+  const src = '<section class="s"><h1 data-bind="title">t</h1><a data-bind-attr="href:url" data-t="card.read_more">Read more</a><img data-bind-attr="src:feature_image|img_url:m" alt=""></section>'
   const post = renderTheme(doc(), src, { target: 'post.hbs' }).template
   const page = renderTheme(doc(), src, { target: 'page.hbs' }).template
   assert.equal(post, page, 'one design is one text on post.hbs and page.hbs (§7.4)')
@@ -196,25 +196,25 @@ test('every directive that carries a Ghost path is walked: a token template, src
     ['<img data-bind-srcset="feature_imag|img_url" alt="">', 'post.hbs', /"feature_imag"/],
     ['<li data-bind-style="--x:accent_colr">t</li>', 'tag.hbs', /"accent_colr"/],
     ['<div data-helper="content"></div>', 'index.hbs', /"content"/],
-    ['<ul><li data-repeat="posts"><a data-pagination="next" href="#">o</a></li></ul>', 'index.hbs', /"pagination\.next"/],
+    ['<ul><li data-repeat="posts"><a data-pagination="next" href="#" data-t="pagination.older">Older posts</a></li></ul>', 'index.hbs', /"pagination\.next"/],
   ]
   for (const [src, target, re] of cases) {
     throwsBoth(src, { target }, re)
     assert.ok(checkBindings(doc(), src, { target }).some((r) => re.test(r)), `${src} on ${target}`)
   }
   // and at the template's top, pagination still renders
-  assert.ok(renderTheme(doc(), '<a data-pagination="next" href="#">o</a>', { target: 'index.hbs' }).template.includes('{{page_url pagination.next}}'))
+  assert.ok(renderTheme(doc(), '<a data-pagination="next" href="#" data-t="pagination.older">Older posts</a>', { target: 'index.hbs' }).template.includes('{{page_url pagination.next}}'))
 })
 
 test('includeZero=true reaches an attribute guard, a style guard and every binding inside a repeat, on both emitters', () => {
-  const src = '<section class="s"><span data-bind-style="--n:pagination.total">t</span><article data-repeat="posts"><p data-bind="reading_time">5 min</p><span data-bind-attr="title:reading_time">x</span><i data-bind-attr="title:reading_time" data-empty="hide">y</i></article></section>'
+  const src = '<section class="s"><span data-bind-style="--n:pagination.total">·</span><article data-repeat="posts"><p data-bind="reading_time">5 min</p><span data-bind-attr="title:reading_time">–</span><i data-bind-attr="title:reading_time" data-empty="hide">·</i></article></section>'
   const { canvas, theme } = both(src, { target: 'index.hbs', ghost: { pagination: { total: 0 }, posts: [{ reading_time: 0 }] } })
   assert.ok(theme.includes('{{#if pagination.total includeZero=true}}'), theme)
   assert.ok(theme.includes('{{#if reading_time includeZero=true}}{{reading_time}}{{else}}5 min{{/if}}'), theme)
   assert.ok(theme.includes('title="{{#if reading_time includeZero=true}}{{reading_time}}{{else}}{{/if}}"'), theme)
-  assert.ok(/\{\{#if reading_time includeZero=true\}\}[^]*?<i title="\{\{reading_time\}\}">y<\/i>[^]*?\{\{\/if\}\}/.test(theme), theme)
+  assert.ok(/\{\{#if reading_time includeZero=true\}\}[^]*?<i title="\{\{reading_time\}\}">·<\/i>[^]*?\{\{\/if\}\}/.test(theme), theme)
   // `{{reading_time}}` is Ghost's HELPER wherever it is written, an attribute included — so the canvas prints its string there too
-  assert.ok(canvas.includes('>1 min read<') && canvas.includes('<span title="1 min read">x</span>') && canvas.includes('<i title="1 min read">y</i>'), canvas)
+  assert.ok(canvas.includes('>1 min read<') && canvas.includes('<span title="1 min read">–</span>') && canvas.includes('<i title="1 min read">·</i>'), canvas)
 })
 
 test("checkBindings carries R-7's target refusals, and a query repeat needs the design's dataBindings", () => {

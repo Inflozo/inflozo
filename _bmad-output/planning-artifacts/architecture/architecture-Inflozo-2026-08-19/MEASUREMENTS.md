@@ -3181,3 +3181,74 @@ names something other than its feature; `text-wrap-pretty` gaining a low date; `
 `BROWSERSLIST_CONFIG` variable, which overrides every config file) and one guard in `eslint.config.js` — ESLint started
 anywhere but the repo root throws, because the pin is read from the working directory (from `/tmp`: "eslint must run
 from the repo root", exit 2). After the patches `pnpm check` is green and the check prints the same floor.
+
+## 44. `{{t}}` over a locale file, recorded on both majors, and the catalog under Ghost's own formatter · 2026-09-14
+
+Story 4.9 turned FR-Q6's catalog into code. Its whole contract rests on one premise — Ghost resolves a dotted key
+from `locales/en.json` — which planning read in both releases' npm tarballs (`ghost@5.130.6`, `ghost@6.58.0`) and ran
+under the libraries they pin, and which the Dev run then **recorded** on T3 (5.130.6, `ghost5.inflozo.com`) and T1
+(6.58.0, `ghost6.inflozo.com`) before any code was written against it (AD-23). Command:
+`python3 tools/probe/record-shim.py`; fixtures `packages/ghost-shim/fixtures/ghost{5,6}/index.json` and `post.json`,
+group `TR` and the `verbatim` blocks; asserted per commit by `packages/ghost-shim/src/contract.test.ts`.
+
+**(a) What Ghost does, read in source.** Identical in shape on both majors:
+
+| Fact | 5.130.6 | 6.58.0 |
+|---|---|---|
+| A theme's i18n is fulltext mode; it reads `locales/<site locale>.json` and falls back to `en.json` only when that whole file is missing | `ThemeI18n.js:13-15,34-36`; `I18n.js:106-128` | `theme-i18n.js:13-15,34-36`; `i18n.js:99-121` |
+| A dotted key is looked up as ONE key | `I18n.js:143-150`, `jp.stringify(['$', key])` | `i18n.js:139-142`, `get(strings, [key])` |
+| A missing key, or an empty value, prints the key | `I18n.js:146,150` (`\|\| fallback`) | `i18n.js:132,142` |
+| `new MessageFormat` sits outside the try; a format error renders "An error occurred" | `I18n.js:219-234` | `i18n.js:208-223,269-271` |
+| Bundled `intl-messageformat` | 5.4.3 | 5.4.3 |
+| `{{plural}}` replaces the FIRST `%` and returns an unescaped `SafeString` | `helpers/plural.js:30-36` | identical file |
+| i18next is used only behind `themeTranslation`, a private labs flag | — | `helpers/t.js:33-55`; `shared/labs.js:42-51` |
+
+**(b) What Ghost printed.** The probe theme shipped `locales/en.json` with a plain key, a flat dotted key, a
+**nested** `probe` object, and the probe strings below; the site locale is `en` on both boxes. Every row is
+character-identical on the two majors:
+
+    TR|plain_control         {{t "Plain key"}}                                          Plain value, read from locales/en.json   ← the control
+    TR|dotted_hit            {{t "probe.dotted_hit"}}                                   Dotted key, looked up as one key
+    TR|nested_miss           {{t "probe.nested_miss"}}   (only probe: { nested_miss })  probe.nested_miss
+    TR|missing_key           {{t "probe.no_such_key"}}                                  probe.no_such_key
+    TR|params_path           {{t "probe.page_of" page=pagination.page pages=pagination.pages}}   Page 1 of 3
+    TR|param_undefined       … pages=no_such_field                                      Page 1 of          (a hole)
+    TR|param_omitted         {{t "probe.page_of" page=pagination.page}}                 An error occurred
+    TR|minutes_reading_time  {{t "probe.reading_time" minutes=reading_time}}  (post)    0 min read   — the FIELD, API value 0; {{reading_time}} prints "1 min read"
+    TR|date_param            {{t "probe.updated_on" date=(date updated_at format="D MMM YYYY")}}   Updated 20 Aug 2026
+    verbatim t-escape-text   {{t "probe.escape"}}                                       Tom &amp; &lt;b&gt;Jerry&lt;/b&gt; &quot;said&quot; it&#x27;s
+    verbatim t-escape-attr   <i title="{{t "probe.escape"}}">                           the same escape, inside the attribute
+    verbatim t-param-html    {{t "probe.by" author="<b>A&B</b>"}}                       By &lt;b&gt;A&amp;B&lt;/b&gt;
+    verbatim t-plural        {{plural pagination.total … plural=(t "probe.posts_many")}}   33 posts <i>many</i>   — markup survives
+
+The recorder refuses to write a `TR` row unless `TR|plain_control` printed the file's value, and it restores the
+previous theme (`casper` on both), reads it back as active, then deletes the probe theme and reads the theme list
+back without it. `contract.test.ts` feeds `t()` the recorded locale file and asserts every row the shim renders; the
+omitted param and `{{plural}}` are asserted as facts only Ghost produces.
+
+**(c) Executed under the libraries, not on a site.** In the workspace, `intl-messageformat` 5.4.3 (root devDependency,
+exact) with Node 24.18.1: `It's` and `'quoted'` survive; `It''s` renders `It's`; `{count, plural, one {#} other {#}}`
+formats when `count` is given; `'{'`, `{` and `{a b}` throw; an omitted variable throws ("was not provided"); a number
+prints as `String(n)`; `% post` is literal. `@formatjs/icu-messageformat-parser` **3.5.18** (the spine's "current",
+installed in a scratch directory) **parses `'{'` as a literal `{`** and `It''s` as `It's`, and throws on `{` and
+`{a b}` — so a validator built on it accepts an override 5.4.3 throws on (DW-142).
+
+**(d) The check, first run.** `node tools/check-catalog.mjs`: every control failed naming its subject (a removed key,
+a one-copy default, an order/mark/retirement change, a duplicate in the bytes, `It''s here` — "Ghost renders "It's
+here" and the shim renders "It''s here"", a plural and `'{'` — each the throw, an unlocked credit key); then §3 and
+`catalog.json` agreed in order and both directions, the format rules held, and every default rendered identically
+under 5.4.3 and the shim's `t()`. It printed 151 keys in 14 namespaces, 42 js, 3 locked, 1 canvas, 11 retired — the
+figures appendix-h1 §4 used to carry, which it no longer does. By hand in the working tree, then restored: deleting
+`pagination.older` from `catalog.json` failed "in appendix-h1… and missing from catalog.json"; `nav.more` → `More…`
+in the appendix only failed "the English default differs", naming both files.
+
+**(e) The gscan harness.** `tools/stress/build.js` now writes `locales/en.json` from the catalog, every key but the
+canvas one, and the archetypes carry `{{t}}` for every literal: `node gate.js theme` → gscan 4.49.7 and 6.4.2 both
+**0 errors, 0 warnings**.
+
+**(f) What this does NOT say.** No locale file was emitted by a compiler and no override was validated: `locales/`
+emission, V3, V7, V9 and V10 are Epic 7's (Stories 7.5, 7.6, 7.12). The site locale was `en` on both boxes, so the
+file-level fallback of (a) row 1 is read in source, not recorded — and it contradicts FR-Q6's sentence that Ghost
+"falls back to `en` for any key the active locale does not resolve": the fallback is to the **file**, only when
+`<locale>.json` is absent, never per key (VERIFY-AT-BUILD row 32, Story 7.12). The "whole-page 500" for a
+constructor throw is read in source, not observed; §15j saw a 400 for a template error at upload.

@@ -10,6 +10,8 @@
 // failure sentence or null, and nothing here concatenates a value into an expression.
 
 import { parseModuleDeclaration } from './modules.ts'
+import { CATALOG_KEY_RE, PLACEHOLDER_NAME_RE, tKeyRefusal, tParamsRefusal } from './catalog.ts'
+import type { CatalogRefusal } from './catalog.ts'
 
 /** Handlebars' real path vocabulary — an optional `@` prefix, `../` ascents, dotted identifiers.
  *  Widened once already: a grammar that rejects `@site.logo` is a broken parser, not a strict one.
@@ -393,7 +395,68 @@ const asSpec = (spec: string) => {
   return typeof r === 'string' ? r : ok
 }
 
-const isCatalogKey = (v: string) => /^[a-z][a-z0-9]*(\.[a-z0-9_-]+)+$/.test(v)
+/** Story 4.9 — the four attributes that hold visitor-facing TEXT: `data-t-attr` writes only these, and V1's
+ *  tree half reads only these. Every other bindable attribute holds a URL, an id, a number or a flag. */
+export const TEXT_ATTRS: readonly string[] = ['alt', 'title', 'placeholder', 'aria-label']
+
+/** One `{{t}}` call, parsed: the key, then each `name=spec` param in the order written. */
+export type TCall = { key: string; params: { name: string; spec: string }[] }
+
+/** `data-t`'s grammar: the key, then space-separated `name=spec` pairs. `spec` is `data-bind`'s grammar, and a
+ *  helper's argument runs to the END of the value — `date=updated_at|date:D MMM YYYY` — so a param written after
+ *  it becomes part of the argument and fails that helper's own rule. Returns the call or the sentence why not. */
+export function parseTCall(value: string): TCall | string {
+  const v = value.trim()
+  const cut = v.search(/\s/)
+  const key = cut === -1 ? v : v.slice(0, cut)
+  if (!CATALOG_KEY_RE.test(key)) {
+    return fail(`"${key}" is not a catalog key — dotted namespace.name in lowercase snake_case, never the English string (S1)`)
+  }
+  const params: TCall['params'] = []
+  let rest = cut === -1 ? '' : v.slice(cut).trim()
+  while (rest !== '') {
+    const m = /^([^=\s]*)=(\S*)/.exec(rest)
+    if (m === null) return fail(`"${rest}" is not a name=path param — a {{t}} param is written name=path, e.g. "post.by author=primary_author.name"`)
+    const name = m[1] ?? ''
+    if (!PLACEHOLDER_NAME_RE.test(name)) return fail(`param "${name}" is not a snake_case placeholder name (S3)`)
+    if (params.some((p) => p.name === name)) return fail(`param "${name}" is written twice`)
+    // a helper's argument runs to the end of the value: everything after `name=` is the spec
+    const spec = (m[2] ?? '').includes('|') ? rest.slice(name.length + 1) : (m[2] ?? '')
+    rest = (m[2] ?? '').includes('|') ? '' : rest.slice(m[0].length).trim()
+    const bad = asSpec(spec)
+    if (bad !== null) return fail(`param ${name}: ${bad}`)
+    params.push({ name, spec })
+  }
+  return { key, params }
+}
+
+/** `data-t-attr`'s grammar: entries split on `;`, each `attr:` then `data-t`'s grammar, and `attr` one of the
+ *  four text attributes. */
+export function parseTAttr(value: string): (TCall & { attr: string })[] | string {
+  const out: (TCall & { attr: string })[] = []
+  for (const entry of value.split(';')) {
+    const e = entry.trim()
+    if (e === '') continue
+    const [attr, rest] = splitFirst(e, ':')
+    const a = attr.trim().toLowerCase()
+    if (rest === undefined) return fail(`"${e}" is not \`attribute:key\` — "aria-label:pagination.label;placeholder:member.email_placeholder"`)
+    if (!TEXT_ATTRS.includes(a)) return fail(`attribute "${attr.trim()}" does not hold visitor-facing text — data-t-attr writes ${TEXT_ATTRS.join(', ')}`)
+    if (out.some((o) => o.attr === a)) return fail(`attribute "${a}" is written twice`)
+    const call = parseTCall(rest)
+    if (typeof call === 'string') return call
+    out.push({ attr: a, ...call })
+  }
+  return out.length === 0 ? fail('data-t-attr names no attribute') : out
+}
+
+/** V2 and V4 over one parsed call, read from the catalog — the validator reports each with its code, and the
+ *  runtime throws the same sentence. */
+export function tCallRefusals(call: TCall): CatalogRefusal[] {
+  const key = tKeyRefusal(call.key)
+  if (key !== null) return [key]
+  const params = tParamsRefusal(call.key, call.params.map((p) => p.name))
+  return params === null ? [] : [params]
+}
 
 export type Directive = {
   /** one line, for the refusal message and for `docs/section-authoring.md` */
@@ -555,14 +618,19 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   // ── the five "E4 does not exit until they are in" constructs ───────────────
   // exit 1 is row 2 (a {{#get}} via data-repeat + dataBindings); exit 2 is row 4 (data-members).
   'data-t': {
-    // exit 3 — 4.9 owns the catalog; this story owns only how markup reaches it.
-    summary: 'exit 3 · a chrome string by catalog key — emits {{t "key"}}. JS-written strings emit data-i18n-* instead',
-    parse: (v) => (isCatalogKey(v) ? ok : fail(`"${v}" is not a catalog key (dotted namespace.name, never the English string)`)),
+    // exit 3 — Story 4.9: the catalog's key, then each placeholder as a guarded name=path param
+    summary: 'exit 3 · a chrome string by catalog key, with each placeholder as a name=path param — "post.by author=primary_author.name" emits {{t "post.by" author=primary_author.name}}, guarded on each param. JS-written strings emit data-i18n-* instead',
+    parse: (v) => {
+      const r = parseTCall(v)
+      return typeof r === 'string' ? r : ok
+    },
   },
   'data-t-attr': {
-    summary: 'exit 3 · a chrome string into an attribute — "aria-label:a1.menu_open"',
-    parse: attrList((attr, key) => assertBindableAttr(attr)
-      ?? (isCatalogKey(key) ? ok : fail(`"${key}" is not a catalog key`))),
+    summary: 'exit 3 · a chrome string into alt, title, placeholder or aria-label — "aria-label:pagination.label;placeholder:member.email_placeholder"',
+    parse: (v) => {
+      const r = parseTAttr(v)
+      return typeof r === 'string' ? r : ok
+    },
   },
   'data-bind-srcset': {
     // exit 4 — the binding grammar produces one expression per attribute, and srcset needs a set.

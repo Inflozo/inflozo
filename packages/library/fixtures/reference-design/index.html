@@ -12,8 +12,8 @@
     <h2 class="ref__title" data-prop="title">Latest posts</h2>
     <p class="ref__sub" data-prop="subtitle" data-empty="fallback">Everything we have published.</p>
     <a class="ref__all" data-prop="cta.label" data-prop-attr="href:cta.url;title:cta.title">View all</a>
-    <button class="ref__search" type="button" data-ghost-search data-t="reference.search_open">Search</button>
-    <p class="ref__count" data-text="Read by {total_members} readers">Read by 12,000 readers</p>
+    <button class="ref__search" type="button" data-ghost-search data-t="search.trigger_label">Search</button>
+    <p class="ref__count" data-text="{total_members}">12,000</p>
     <div class="ref__body" data-helper="content"></div>
   </header>
 
@@ -32,7 +32,7 @@
              data-bind-srcset="feature_image|img_url" data-empty="hide" src="/placeholder.jpg" alt="">
       </a>
       <span class="ref__rank" data-index="number">1</span>
-      <span class="ref__flag" data-when="first" data-t="reference.editors_pick">Editors pick</span>
+      <span class="ref__flag" data-when="first" data-t="card.featured">Featured</span>
       <ul class="ref__tags">
         <li class="ref__tag" data-repeat="tags" data-repeat-limit="3"
             data-bind-style="--tag-accent:accent_color">
@@ -48,24 +48,24 @@
 
   <div class="ref__gate" data-members="anonymous">
     <form class="ref__form" data-members-form="subscribe">
-      <label class="ref__label" for="ref-email" data-t="reference.email_label">Email address</label>
+      <label class="ref__label" for="ref-email" data-t="member.email_placeholder">Your email address</label>
       <input class="ref__input" id="ref-email" type="email" name="email" required
-             data-t-attr="aria-label:reference.email_label;placeholder:reference.email_placeholder">
+             data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
       <button class="ref__submit" type="submit" data-prop="submitLabel">Subscribe</button>
     </form>
-    <noscript class="ref__noscript" data-t="reference.no_js">Subscribing needs JavaScript. With it off, nothing happens.</noscript>
+    <noscript class="ref__noscript" data-prop="noscriptNote">Subscribing needs JavaScript. With it off, nothing happens.</noscript>
   </div>
-  <a class="ref__upgrade" data-members="free" data-bind-attr="data-portal:signup/{tier}" data-t="reference.upgrade" href="#">Upgrade</a>
+  <a class="ref__upgrade" data-members="free" data-bind-attr="data-portal:signup/{tier}" data-t="member.upgrade" href="#">Upgrade</a>
   <p class="ref__thanks" data-members="paid" data-prop="paidNote">Thank you for subscribing.</p>
 
   <div class="ref__tagline" data-target="tag.hbs">
     <p class="ref__tag-desc" data-bind="tag.description" data-empty="hide">About this topic.</p>
   </div>
 
-  <nav class="ref__pager" aria-label="Pagination">
-    <a class="ref__prev" data-pagination="prev" href="#">Newer</a>
+  <nav class="ref__pager" data-t-attr="aria-label:pagination.label">
+    <a class="ref__prev" data-pagination="prev" data-t="pagination.newer" href="#">Newer posts</a>
     <span class="ref__numbers" data-pagination="numbers">1 / 1</span>
-    <a class="ref__next" data-pagination="next" href="#">Older</a>
+    <a class="ref__next" data-pagination="next" data-t="pagination.older" href="#">Older posts</a>
   </nav>
 
   <p class="ref__note" style="--ref-accent: var(--accent)" data-prop="note" data-empty="fallback">Every directive, once.</p>

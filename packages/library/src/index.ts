@@ -9,6 +9,9 @@ export * from './validate.ts'
 export * from './modules.ts'
 // Story 4.6 — FR-H7's Template Context Matrix, read through `bindable` and `offerBindings`.
 export * from './contexts.ts'
+// Story 4.9 — FR-Q6's string catalog: the keys, placeholders derived from each default, S5's attribute and
+// `resolveStrings`, the one door an override passes.
+export * from './catalog.ts'
 // Story 4.4 — the bundled sample publication, its three fixtures and the offline Source resolver. A
 // namespace rather than a flat re-export: `posts`, `tags` and `site` are too general to claim at the
 // package root.

@@ -18,8 +18,9 @@ What it writes to the servers, and nothing else (the story's "Ask First" boundar
     leftovers `-1` … `-7.png` on the two boxes are the record of that, accepted by the owner — see the
     spec's Q2). Every seeded feature image is an external static.ghost.org URL that no Ghost will
     ever resize, so nothing already on either box can exercise a rendition.
-  * the probe theme, uploaded and activated, with the PREVIOUS theme restored at the end — exactly
-    as run-verify-all.py already does.
+  * the probe theme, uploaded and activated, with the PREVIOUS theme restored at the end, read back as
+    active, and the probe theme DELETED in the same cleanup and read back as gone (the owner's ruling on
+    Story 4.7's Q1, which run-verify-core.py carries too).
 It creates no post, edits no post and touches no setting. The uploaded image URL reaches the theme
 through a placeholder substituted at zip time, which is why no content row has to carry it.
 
@@ -27,6 +28,12 @@ NFR-6(c2): the theme's package.json carries FR-J2's NORMATIVE image_sizes map, R
 packages/library/src/vocabulary.ts rather than restated here, because Ghost's resize behaviour
 follows the theme's own map — a recording made under any other map is a faithful recording of the
 wrong theme.
+
+Story 4.9 adds `theme-shim/locales/en.json` and the TR group — `{{t}}`'s lookup, params and escaping — plus
+`<pre id="verbatim-*">` blocks, read back WITHOUT unescaping because what Ghost escapes is the fact. The
+recording carries the locale file it was made under as `input.locales_en`, so `contract.test.ts` asserts
+`t()` against Ghost's question as well as its answer. TR|plain_control is the control: unless it printed
+the file's value, `{{t}}` was not reading the file and no TR row counts.
 """
 import os, re, sys, json, time, zlib, struct, hmac, hashlib, base64, zipfile, io, uuid, datetime
 import urllib.request, urllib.error
@@ -196,7 +203,7 @@ PRE = lambda html, ident: (re.search(rf'<pre id="{ident}">(.*?)</pre>', html, re
 
 def parse(html):
     """`GROUP|name=[value]` lines out of <pre id="probe">, plus every <pre id="raw-*"> verbatim."""
-    out, raw = {}, {}
+    out, raw, verbatim = {}, {}, {}
     body = PRE(html, 'probe')
     if body:
         # One regex over the WHOLE block, not line by line: `{{excerpt}}` is multi-line, so a
@@ -208,7 +215,9 @@ def parse(html):
             out.setdefault(m.group(1), {})[m.group(2)] = unescape(m.group(3))
     for m in re.finditer(r'<pre id="raw-([a-z0-9-]+)">(.*?)</pre>', html, re.S):
         raw[m.group(1)] = unescape(m.group(2))
-    return out, raw
+    for m in re.finditer(r'<pre id="verbatim-([a-z0-9-]+)">(.*?)</pre>', html, re.S):
+        verbatim[m.group(1)] = m.group(2)
+    return out, raw, verbatim
 
 
 def unescape(s):
@@ -288,6 +297,8 @@ def record(g, label):
             'post_authors': [{k: a.get(k) for k in ('name', 'slug', 'url', 'profile_image')}
                              for a in (post.get('authors') or [])],
             'members': member_counts(g),
+            # Story 4.9: the locale file {{t}} read, so the contract test feeds t() Ghost's own question
+            'locales_en': json.load(open(os.path.join(THEME, 'locales', 'en.json'))),
             'tag': {k: tag.get(k) for k in ('name', 'slug', 'url', 'description', 'accent_color',
                                             'feature_image', 'visibility')},
             'author': {k: author.get(k) for k in ('name', 'slug', 'url', 'bio', 'profile_image',
@@ -304,7 +315,7 @@ def record(g, label):
         ]
         for tname, path in targets:
             st, html = g.page(path)
-            values, raw = parse(html)
+            values, raw, verbatim = parse(html)
             # a non-200 on any template but `error` is error.hbs rendered in its place — its probe
             # block must not be filed under the template that failed
             if st != 200 and tname != 'error':
@@ -320,6 +331,13 @@ def record(g, label):
             # evidence and never its body, which is the customer's HTML and not a Ghost fact.
             if 'content' in raw:
                 raw['content'] = {'length': len(raw['content']), 'head': raw['content'][:200]}
+            if 'TR' in values and tname == 'index':
+                want = json.load(open(os.path.join(THEME, 'locales', 'en.json')))['Plain key']
+                if values['TR'].get('plain_control') != want:
+                    raise RuntimeError(f'TR|plain_control printed {values["TR"].get("plain_control")!r}, not the '
+                                       f'locale file\'s {want!r} — {{{{t}}}} is not reading locales/en.json, so no '
+                                       'TR row counts (standing rule 2)')
+                print(f'    [control] TR|plain_control rendered the locale file\'s value')
             values = redact(values)
             blob = json.dumps(values)
             for leaked in LEAKED:
@@ -330,13 +348,23 @@ def record(g, label):
                 'http': st,
                 'values': values,
                 'raw': raw,
+                'verbatim': verbatim,
                 'input': inputs,
             }
             print(f'    [{tname}] HTTP {st} {path} — {sum(len(v) for v in values.values())} values, '
                   f'{len(raw)} raw blocks')
     finally:
         g.api('PUT', f'themes/{previous}/activate/')
-        print(f'    theme RESTORED -> {previous!r}')
+        active = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
+        print(f'    theme RESTORED -> {active!r}')
+        if active != previous:
+            raise RuntimeError(f'the previous theme {previous!r} did not come back — {active!r} is active')
+        # owner's ruling, Story 4.7 Q1: the probe theme is deleted in the same cleanup, read back, never assumed
+        g.api('DELETE', f'themes/{name}/')
+        left = [t['name'] for t in g.api('GET', 'themes/')['themes']]
+        print(f'    probe theme DELETED -> installed now: {left}')
+        if name in left:
+            raise RuntimeError(f'the probe theme {name!r} is still installed after DELETE')
 
     return {
         'ghost_major': g.major,

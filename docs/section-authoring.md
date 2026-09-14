@@ -630,7 +630,8 @@ back wherever Handlebars' `{{#if}}` would — `''`, `0`, `false` and `[]` are al
 runtime emits the proven eight plus `data-bind-style` and `data-module`; **Story 4.3 added
 `data-bind-srcset`, `data-helper` and `data-pagination`**, the three the Ghost helper shim owns; and
 **Story 4.5 added `data-items`**, the authored list (row 1 below); **Story 4.6 added
-`data-initials`**, the typed avatar (see *The avatar's two forms*). Everything else in the set throws
+`data-initials`**, the typed avatar (see *The avatar's two forms*); **Story 4.9 added `data-t` and
+`data-t-attr`**, the catalog's strings (exit 3). Everything else in the set throws
 with a sentence naming the directive, until the story that owns it lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
 here cannot be silently forgotten by the runtime.
 
@@ -855,7 +856,7 @@ meet in one list (`P0-5 Populate From Panel.dc.html`, rule 4 of `P0 Editor Primi
 | 10 | compile-target-conditional wrapper | `data-target="page.hbs"` on the subtree |
 | 11 | mixed literal-and-bound attribute value | `data-bind-attr` gains R-27's `{token}` form |
 | 12 | bound value into an inline custom property | `data-bind-style="--tag-accent:accent_color"` |
-| 13 | static and bound text in one node | `data-text="Read in {reading_time} minutes"` |
+| 13 | static and bound text in one node | `data-text="{pagination.page} / {pagination.pages}"` — its literal words are refused (`chrome-literal`, Story 4.9): English is a `data-t` key with the value as a param |
 | 14 | adjacency as a compile-time **input** | `data-needs="section-above\|image-above\|last-before-footer\|share-emitted\|duplicate-post"` |
 
 **Row 1 · `data-items`** — the largest single gap in the library, and named nowhere else. It is
@@ -914,17 +915,17 @@ page**, and the specs say so.
 
 ```html
 <span class="card__rank" data-index="number">1</span>
-<span class="card__flag" data-when="first" data-t="a17.editors_pick">Editors pick</span>
+<span class="card__flag" data-when="first" data-t="card.featured">Featured</span>
 ```
 
 **Row 6 · pagination.** Ghost's own. It restricts the design's `compileTarget` (R-7), and that
 restriction is checked when the design is validated, not when it renders.
 
 ```html
-<nav class="pager" aria-label="Pagination">
-  <a class="pager__prev" data-pagination="prev" href="#">Newer</a>
+<nav class="pager" data-t-attr="aria-label:pagination.label">
+  <a class="pager__prev" data-pagination="prev" data-t="pagination.newer" href="#">Newer posts</a>
   <span class="pager__numbers" data-pagination="numbers">1 / 1</span>
-  <a class="pager__next" data-pagination="next" href="#">Older</a>
+  <a class="pager__next" data-pagination="next" data-t="pagination.older" href="#">Older posts</a>
 </nav>
 ```
 
@@ -950,11 +951,13 @@ raw. Executed, and the reason is written beside the code in `compile.js`.
 
 **Row 11 and row 13 · the token form.** Any value mixing static and bound text uses one mechanism:
 each `{…}` run is a binding path, everything else is literal, and a stray brace is refused rather
-than guessed at.
+than guessed at. *(Story 4.9)* In `data-text` the literal part may carry **no letter or digit**: a word
+there is English no customer can translate, refused as `chrome-literal` — write the sentence as a
+catalog key with the value as a param (`data-t="post.reading_time minutes=reading_time"`).
 
 ```html
-<a class="tier__cta" data-bind-attr="data-portal:signup/{id}">Choose this plan</a>  <!-- inside a tiers repeat: id is the tier's -->
-<p class="stat" data-text="Read in {reading_time} minutes">Read in 5 minutes</p>
+<a class="tier__cta" data-bind-attr="data-portal:signup/{id}" data-prop="tierCta">Choose this plan</a>  <!-- inside a tiers repeat: id is the tier's -->
+<p class="pager__of" data-text="{pagination.page} / {pagination.pages}">1 / 3</p>
 ```
 
 **Row 12 · the inline custom property.** AD-3's one carve-out, made machine-checkable **by
@@ -987,24 +990,79 @@ R-8, R-19).
 |---|---|---|
 | 1 | `{{#get}}` blocks | row 2 above — `data-repeat` + `dataBindings` |
 | 2 | member visibility | row 4 above — `data-members` |
-| 3 | chrome strings | `data-t="key"`, `data-t-attr="attr:key"` |
+| 3 | chrome strings | `data-t="key name=path"`, `data-t-attr="attr:key name=path"` — rendered since 4.9 |
 | 4 | `srcset` / `sizes` | `data-bind-srcset="path\|img_url"` |
 | 5 | control → `data-{control}` on the root | **not a directive** — generated from `controlSchema` |
 
-**Exit 3 · strings.** Visitor-facing literals live in one catalog under dotted `namespace.name` keys,
-never the English string itself. `.hbs` output consumes them **exclusively** through `{{t}}`.
-Strings written by bundled JS are **out of `{{t}}`'s reach** — Ghost never runs a theme's JS through
-Handlebars — so those resolve at compile and emit as `data-i18n-*` attributes on the module's mount
-element. 4.9 owns the catalog and its format; this document owns only how markup reaches it.
+**Exit 3 · strings** *(Story 4.9, FR-Q6)*. Every visitor-facing phrase a design prints — "Older posts", a
+skip link, a button's accessible name — is a **catalog string**: a permanent `namespace.name` key with an
+English default, in `packages/library/strings/catalog.json`, whose normative table is appendix-h1 §3. A
+design never carries an English literal where a visitor reads it; the key must exist **before** the design
+is authored (S9), and adding, rewording or retiring one is the owner's call. Keys are grouped by function,
+not by category — one `card.read_more` for every card — and `node tools/check-catalog.mjs` holds the two
+copies equal and prints the totals.
+
+**The grammar.** `data-t` is the key, then one `name=path` param per placeholder in its default, separated by
+spaces. A path is `data-bind`'s grammar, helper included; a helper's argument **runs to the end of the
+value**, so a param written after it becomes part of the argument and is refused.
 
 ```html
-<button class="hdr__menu" type="button" data-t="a1.menu_open"
-        data-t-attr="aria-label:a1.menu_open">Menu</button>
-<input class="form__email" type="email" data-t-attr="aria-label:a22.email;placeholder:a22.email_placeholder">
+<button class="hdr__search" type="button" data-ghost-search data-t="search.trigger_label">Search</button>
+<p class="post__by" data-t="post.by author=primary_author.name">By Ana Lee</p>
+<time class="post__updated" data-t="post.updated_on date=updated_at|date:D MMM YYYY">Updated 20 Aug 2026</time>
 ```
 
-A `placeholder` is a visitor-facing string like any other, so `data-t-attr` reaches it; a design
-carries **no** English literal in a `placeholder`, a `<noscript>` or anywhere else a visitor reads.
+| Canvas | Theme |
+|---|---|
+| the shim's `t()` over the project's strings (`RenderInput.strings`, the catalog's English when none are handed): "Search", "By Ana Lee" | `{{t "search.trigger_label"}}` · `{{#if primary_author.name}}<p class="post__by">{{t "post.by" author=primary_author.name}}</p>{{/if}}` · `{{t "post.updated_on" date=(date updated_at format="D MMM YYYY")}}`, guarded on `updated_at` |
+
+**The guard.** Each param is guarded on `guardField(path)` — with `includeZero=true` for a field the matrix
+types `number` — and the element **hides** when one is empty, on both emitters. Recorded on both majors
+(MEASUREMENTS §44): an empty param leaves a hole ("Page 1 of "), an omitted one renders "An error occurred",
+so a call supplies **exactly** its key's placeholder set; and the only static fallback a `data-t` element
+could have is its English sample, which V1 refuses. `data-empty` on a `data-t` element is therefore
+refused, and so is a second text directive beside it. A plain param is the **field**, never the helper of
+the same name: `minutes=reading_time` printed "0 min read" where `{{reading_time}}` prints "1 min read".
+
+**The four attributes.** `data-t-attr` writes `alt`, `title`, `placeholder` and `aria-label` — the
+attributes that hold visitor-facing text — in `data-t`'s grammar, entries split on `;`:
+
+```html
+<nav class="pager" data-t-attr="aria-label:pagination.label"> … </nav>
+<input class="form__email" type="email" data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
+```
+
+A key marked **js** (written by a module), **canvas** (the editor's own stand-in), retired or superseded is
+refused in `data-t` and `data-t-attr`, each with its reason.
+
+**A catalog string a customer may edit — S6.** A category's `text` prop may take its initial value from a
+catalog key appendix-h1 marks **prop**. It declares `catalog` and **no** `default`:
+
+```json
+"submitLabel": { "label": "Button text", "type": "text", "catalog": "member.signup_cta" }
+```
+
+While the value is **empty** the theme emits `{{t "member.signup_cta"}}` and the canvas the handed string
+("Subscribe"); the moment the customer types, the value is user text like any other. So the editor keeps a
+catalog-linked prop empty until someone types into it, and a reset empties it again. `catalog` on a prop
+that is not `text`, on a key not marked prop, or beside a `default` is refused (`catalog-prop`).
+
+**Strings a module writes — S5.** `{{t}}` cannot reach text JavaScript writes, so a module's row in
+`packages/library/modules/registry.json` lists the js keys it writes as `strings`, and **both emitters stamp
+one attribute per key on every mount of that module**, from the project's strings: strip the namespace,
+`.` and `_` become `-`, prefix `data-i18n-` — `countdown.days` → `data-i18n-days`. The module reads it with
+`ctx.t('days', { count })`. The canvas carries `data-i18n-days="{count} days"`; the theme carries the same
+value with its braces as numeric entities, because an override is user text and Handlebars parses attribute
+values (AD-5) — the browser decodes them, and `core` reads `{count}` intact. Every entry must be a live js
+key, two keys may not derive one attribute, and a design never writes `data-i18n-*` itself. Only `countdown`
+carries `strings` today, because appendix-h1 §3.3a names it; each other module's keys are declared by the
+story that writes the module.
+
+**Overrides.** `resolveStrings(overrides)` in `packages/library/src/catalog.ts` is the one door an override
+passes: it returns every key's string, carries an override forward along the catalog's `migrations`, and
+**throws** — never drops — on a `credit.*` override (S7) or an unknown key. A render re-runs what it is
+handed through it, so a tampered map fails at the canvas as it will at the compiler. Validating an
+override's own text (V9, V10) and writing `locales/` are Epic 7's.
 
 **Exit 4 · `srcset`.** The binding grammar produces exactly one expression per attribute, which is
 not enough for a responsive image set, so it gets its own directive. The sizes are the shim's, not
@@ -1081,6 +1139,11 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `<script>` element, an `on*` handler or a `javascript:` URL in authored markup (`authored-script`) | *(Story 4.7 review)* FR-G7(1): every script a theme runs is the registry, bundled into `main.js`, and `checkThemeJs` proves `assets/js/` holds nothing else — so the one road left, a script written straight into the markup, is refused at the door. AD-36 (3) closed the bound form; this is the authored form. |
 | a `js-enabled` class in authored markup (`js-enabled-authored`) | *(Story 4.7)* `core` sets it on the element whose module it mounts, and a design never does: authored, the section sits in its JavaScript branch with JavaScript off, while editing and under reduced motion. |
 | a module file whose top level is not one function declaration of its camelCase name, or an `assets/js/` file other than `bundle`'s `main.js` and `cards.js` | *(Story 4.7)* FR-G7(1). `bundle` throws, naming the file; `checkThemeJs` returns a sentence per file. An `export` concatenated into a classic script is a SyntaxError that turns every site to its no-JS state. |
+| a `data-t` or `data-t-attr` key that is not in the catalog, or is retired, superseded, js-marked or canvas-only (`catalog-key`) | *(Story 4.9)* V2. Ghost prints a missing key as the key itself, to every visitor; a js string is `data-i18n-*`'s, a canvas one never reaches a theme, and a retired one is no design's. Refused by the validator **and** both emitters, each with its reason. |
+| a `{{t}}` call whose params are not exactly its key's placeholder set (`catalog-params`) | *(Story 4.9)* V4. Recorded on both majors: an omitted param renders "An error occurred", and an extra one is a name no translator sees. The message names what is missing and what is extra. Validator **and** runtime. |
+| literal words in a `data-text` template (`chrome-literal`) · a `data-t-attr` attribute other than `alt`, `title`, `placeholder`, `aria-label` · `data-empty` or a second text directive on a `data-t` element · an authored `data-i18n-*` | *(Story 4.9)* V1's lexical half and S5: English outside the catalog cannot be translated; the four attributes are the ones that hold text; a `data-t` element hides when a param is empty; the emitters stamp `data-i18n-*` from the registry. |
+| `catalog` on a prop that is not `text`, on a key not marked prop, or beside a `default` (`catalog-prop`) | *(Story 4.9)* S6. The catalog string is the default, so a second one would be ignored; only a prop-marked string may become editable. |
+| a render naming its target whose markup prints a bare text node, or an `alt` / `title` / `placeholder` / `aria-label`, holding a letter or digit that no directive writes | *(Story 4.9)* V1's tree half. **Refused by the runtime**, beside FR-H7's scope check, in one error naming every literal; `checkChromeLiterals` returns the list. Exempt: text under `data-prop`, `data-bind`, `data-t`, `data-helper`, `data-initials`, `data-text` or `data-pagination="numbers"`; an attribute a directive writes; `alt=""`; text with no letter or digit. |
 | `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |
 | pagination + a non-paginated target | R-7. Outside a paginated context `{{pagination}}` is a fatal render. |
@@ -1133,6 +1196,12 @@ post field at the top of `index.hbs` — is a question about the tree and the ta
 Since Story 4.6 the runtime's scope walk asks the context matrix at every render that names its target,
 and `checkBindings` asks it without rendering (see *Where a binding is legal*). The validator still
 checks the declared-query direction lexically — every declared key must be referenced.
+
+**V1's tree half is the runtime's too** *(Story 4.9)*. Whether an element's text is a literal depends on
+its ancestors — a word under a `data-prop` is replaced, the same word beside it is English — so the
+validator refuses only what it sees in one attribute (a `data-text` template's words), and the runtime
+walks the tree for the rest whenever a render names its target, beside the binding check.
+`checkChromeLiterals` asks it without rendering.
 
 The ceiling is written down rather than left to be rediscovered; a `ponytail:` comment at the head of
 `validate.ts` names it and the upgrade path.

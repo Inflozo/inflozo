@@ -23,6 +23,9 @@ importers:
       eslint-plugin-compat:
         specifier: 7.0.2
         version: 7.0.2(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))
+      intl-messageformat:
+        specifier: 5.4.3
+        version: 5.4.3
       size-limit:
         specifier: 13.0.3
         version: 13.0.3
@@ -1851,6 +1854,16 @@ packages:
   ini@2.0.0:
     resolution: {integrity: sha512-7PnF4oN3CvZF23ADhA5wRaYEQpJ8qygSkbtTXWBeXWXmEVRXK+1ITciHWwHhsjv1TmW0MgacIv6hEi5pX5NQdA==}
     engines: {node: '>=10'}
+
+  intl-format-cache@4.3.1:
+    resolution: {integrity: sha512-OEUYNA7D06agqPOYhbTkl0T8HA3QKSuwWh1HiClEnpd9vw7N+3XsQt5iZ0GUEchp5CW1fQk/tary+NsbF3yQ1Q==}
+
+  intl-messageformat-parser@2.1.3:
+    resolution: {integrity: sha512-YOP2GuQ8Y+f3j2Vti1/abcozYlkv/WsIffsRP8cgtN4Oha5hjhNnucxzyfmeAoDgDHw4s/lNyLylB01369a5lg==}
+    deprecated: We've written a new parser that's 6x faster and is backwards compatible. Please use @formatjs/icu-messageformat-parser
+
+  intl-messageformat@5.4.3:
+    resolution: {integrity: sha512-wiGIeeokY6D/TFC6JYoBIUmZJ2AzkTHJuWp5QulDH4h77aghFTBm+8MvjTLIUiQ/z7xiY3SUQN2UBG7EtwYTAg==}
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -4556,6 +4569,15 @@ snapshots:
   ini@1.3.8: {}
 
   ini@2.0.0: {}
+
+  intl-format-cache@4.3.1: {}
+
+  intl-messageformat-parser@2.1.3: {}
+
+  intl-messageformat@5.4.3:
+    dependencies:
+      intl-format-cache: 4.3.1
+      intl-messageformat-parser: 2.1.3
 
   ipaddr.js@1.9.1: {}
 

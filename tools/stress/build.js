@@ -217,8 +217,11 @@ const moduleSources = Object.fromEntries(fs.readdirSync(MODULE_DIR)
   .map((f) => [f.slice(0, -3), fs.readFileSync(path.join(MODULE_DIR, f), 'utf8')]));
 write('assets/js/main.js', bundle([], moduleSources));
 
-write('locales/en.json', JSON.stringify(Object.fromEntries(
-  Array.from({ length: 120 }, (_, n) => [`section.string.${n}`, `String number ${n}`])), null, 2) + '\n');
+// Story 4.9 — S4: the catalog's English, every key but the canvas-only ones, from the one machine copy. It replaced
+// 120 invented `section.string.N` keys that no design referenced and no catalog held.
+const CATALOG = require('../../packages/library/strings/catalog.json');
+write('locales/en.json', JSON.stringify(Object.fromEntries(Object.entries(CATALOG.keys)
+  .filter(([, e]) => !e.marks.includes('canvas')).map(([k, e]) => [k, e.en])), null, 2) + '\n');
 
 write('routes.yaml', `routes:\n  /stress/:\n    template: custom-stress\ncollections:\n  /:\n    permalink: /{slug}/\n    template: index\ntaxonomies:\n  tag: /tag/{slug}/\n  author: /author/{slug}/\n`);
 

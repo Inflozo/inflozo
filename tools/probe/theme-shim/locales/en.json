@@ -1,0 +1,15 @@
+{
+  "Plain key": "Plain value, read from locales/en.json",
+  "probe.dotted_hit": "Dotted key, looked up as one key",
+  "probe": {
+    "nested_miss": "Nested value, which a flat lookup never reaches"
+  },
+  "probe.page_of": "Page {page} of {pages}",
+  "probe.reading_time": "{minutes} min read",
+  "probe.updated_on": "Updated {date}",
+  "probe.by": "By {author}",
+  "probe.escape": "Tom & <b>Jerry</b> \"said\" it's",
+  "probe.posts_none": "No posts",
+  "probe.posts_one": "% post <i>one</i>",
+  "probe.posts_many": "% posts <i>many</i>"
+}

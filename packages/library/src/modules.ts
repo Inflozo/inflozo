@@ -8,11 +8,36 @@
 // and `python3 tools/derive-module-reach.py --check` fails when the two disagree.
 
 import registry from '../modules/registry.json' with { type: 'json' }
+import { i18nAttr, jsKeyRefusal } from './catalog.ts'
 
-export type ModuleRow = { readonly name: string; readonly editSafe: boolean; readonly animates: boolean }
+export type ModuleRow = {
+  readonly name: string
+  readonly editSafe: boolean
+  readonly animates: boolean
+  /** Story 4.9 — the catalog's js keys this module writes; both emitters stamp each on its mount (S5) */
+  readonly strings?: readonly string[]
+}
 
 /** Every feature module, in research §2.1's order. `core` is not a row: it is the platform runtime. */
 export const MODULES: readonly ModuleRow[] = registry.modules
+
+/** S5's registry half: every key a row declares is a live js key, and no two keys on one row derive the same
+ *  `data-i18n-*` attribute — two would be one attribute on the mount, and the second string silently lost. */
+export function moduleStringsRefusals(rows: readonly ModuleRow[] = MODULES): string[] {
+  const out: string[] = []
+  for (const r of rows) {
+    const attrs = new Map<string, string>()
+    for (const key of r.strings ?? []) {
+      const bad = jsKeyRefusal(key)
+      if (bad !== null) out.push(`${r.name}: ${bad} — a module's strings are live js keys (S5)`)
+      const attr = i18nAttr(key)
+      const clash = attrs.get(attr)
+      if (clash !== undefined) out.push(`${r.name}: "${clash}" and "${key}" both derive ${attr}, so one would overwrite the other on the mount`)
+      attrs.set(attr, key)
+    }
+  }
+  return out
+}
 
 /** A name that must not come back, with the ruling that retired it — so the refusal says why. */
 export const RETIRED_MODULES: Readonly<Record<string, string>> = registry.retired

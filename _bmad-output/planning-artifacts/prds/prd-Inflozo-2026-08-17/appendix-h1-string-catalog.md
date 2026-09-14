@@ -3,7 +3,7 @@ title: Inflozo Appendix H.1 — Chrome String Catalog
 status: normative-companion
 role: normative companion to prd.md — the catalog FR-Q6 requires; the single source of every compiler-generated visitor-facing string, its stable key, and its English default. FR-Q6's compile validation validates against this file.
 created: 2026-08-18
-updated: 2026-08-19
+updated: 2026-09-14
 ---
 
 # Appendix H.1 — Chrome String Catalog (normative)
@@ -23,13 +23,17 @@ These govern the catalog itself. They are as normative as the keys.
 **S1 — Keys are permanent identifiers. Append-only, never reworded in place.**
 A key is never renamed, never reused for a different meaning, and never deleted — themes already deployed reference it, and a user's override is stored against it. This extends FR-J14's backward-compatibility contract to catalog data (the contract previously covered designs and section schemas only).
 
-  **Keys are dotted `namespace.name`, not the English string itself.** FR-Q6 says "readable-English keys", and Ghost's `{{t}}` convention is often to pass the English source string. That convention is incompatible with S1 and S2: if the key *is* the English default, then improving the copy renames the key and silently orphans every override — precisely the failure this catalog exists to prevent. Dotted keys work identically in Ghost (`{{t}}` is a lookup with fallback to the argument), and S4 guarantees the lookup always hits, so a raw key can never leak to a visitor. "Readable" is satisfied by the namespace, which tells a translator where the string appears.
+  **Keys are dotted `namespace.name`, not the English string itself** — `^[a-z][a-z0-9]*\.[a-z0-9]+(_[a-z0-9]+)*$`, grouped by function as §3 groups them. Ghost's documentation advises readable-English keys, because `{{t}}` falls back to printing its argument; that convention is incompatible with S1 and S2: if the key *is* the English default, then improving the copy renames the key and silently orphans every override — precisely the failure this catalog exists to prevent. **Dotted keys work in Ghost, and this is recorded rather than assumed** (Story 4.9, `MEASUREMENTS.md` §44, T1 6.58.0 and T3 5.130.6): a theme's `{{t}}` looks a dotted key up as **one** key in `locales/<locale>.json` — never as a path into nested objects — and prints the key itself when the file has no entry. S4 guarantees the lookup always hits, so a raw key never reaches a visitor. "Readable" is satisfied by the namespace, which tells a translator where the string appears.
+
+  **The catalog has two copies, held equal by a check.** This file's §3 is the normative table; `packages/library/strings/catalog.json` is the machine copy code reads. `node tools/check-catalog.mjs` (in `pnpm check`) holds them equal in order and in both directions, runs the format rules, renders every default through the `intl-messageformat` both majors bundle, and prints the totals — which is why no heading below carries a count.
 
 **S2 — The English default may be revised; the meaning may not.**
 A typo fix or a tone pass on a default is a normal library drop: users who never overrode the key get the better copy, users who did keep theirs. But **any change of meaning, of grammatical role, or of the placeholder set is a new key.** The old key is marked `superseded_by` in the catalog, stays in the catalog forever, and ships in the **migration map** (§6), which carries the user's override forward on the next drop and lists the change in FR-J14's confirm step.
 
 **S3 — Placeholders are part of the key's contract.**
-Syntax is `{name}` (FR-Q6), passed as `{{t}}` hash params: `{{t "pagination.page_of" page=pagination.page pages=pagination.pages}}`. A key's placeholder set is fixed at creation. Adding, removing or renaming one is an S2 meaning change and needs a new key. Placeholder names are `snake_case` and English regardless of the target language.
+Syntax is `{name}` (FR-Q6), passed as `{{t}}` hash params: `{{t "pagination.page_of" page=pagination.page pages=pagination.pages}}`. A key's placeholder set is fixed at creation, and it is **derived from the default** — never stored beside it. Adding, removing or renaming one is an S2 meaning change and needs a new key. Placeholder names are `snake_case` and English regardless of the target language.
+
+  **Placeholders are plain, and a call supplies exactly its set** (Story 4.9, recorded on both majors). A default carries `{snake_case}` placeholders and nothing else ICU offers: no plural, select or number argument, and no apostrophe quoting (`It''s` renders `It's` under `intl-messageformat` 5.4.3 while `core`, the shim and Ghost's private i18next backend print it as written) — because those three substitute names and nothing else. An **omitted** param renders Ghost's "An error occurred"; an `undefined` or empty one leaves a hole ("Page 1 of "). So compile validation's V4 is exact, and every param is **guarded** on its bound field: the element hides when one is empty (a markup `data-t` element's only other fallback would be its English sample, which V1 refuses). A default is never empty.
 
 **S4 — Every key ships in every emitted locale file.**
 The compiler writes the **whole** catalog into **every** locale file it emits (FR-Q6): always `en.json`, plus the project-language file when the project language is not English. A key absent from a file would resolve to the raw dotted key on the live site — visitor-visible garbage — and the `en.json` case is worse than it sounds, because Ghost falls back to the **`en` file**, so a missing `en.json` produces raw keys across a whole non-English site rather than one string. Compile validation asserts catalog-key-set equality **for each emitted file**, **less the `canvas`-marked keys**, which render only in the editor and are never written into a locale file (see V3 and §3.9).
@@ -38,11 +42,14 @@ The compiler writes the **whole** catalog into **every** locale file it emits (F
 Ghost never runs `assets/js/main.js` through Handlebars, so `{{t}}` cannot reach a string that JavaScript writes at runtime. Keys marked **JS** in the tables below are resolved at compile time (defaults + overrides) and emitted as `data-i18n-*` attributes on their module's **mount element**; the JS module reads them from its own root node and never carries a literal.
 
   - **Attribute-name derivation (mechanical, no judgement):** strip the leading namespace segment, replace every `.` and `_` with `-`, prefix `data-i18n-`. `pagination.load_more_loading` on the pagination mount → `data-i18n-load-more-loading`.
-  - Placeholders are emitted **intact** (`{current}`, `{total}`); the JS module substitutes at runtime. Never pre-substitute at compile time — the values are not known then.
+  - **Which keys a mount carries is the module registry's** (Story 4.9): a module's row in `packages/library/modules/registry.json` lists the JS keys it writes as `strings`, every entry a live JS key and no two deriving one attribute, and both renderers stamp one attribute per entry on every mount of that module. A section names the module (`data-module`), never the keys.
+  - Placeholders are emitted **intact** (`{current}`, `{total}`); the JS module substitutes at runtime. Never pre-substitute at compile time — the values are not known then. In a compiled theme the value is **user text** — an override may contain a brace, and Handlebars parses attribute values — so its braces are written as numeric entities (`&#123;count&#125;`); the browser decodes them and the module reads `{count}` intact.
   - Compile validation for JS keys asserts the attribute is present on the mount element, not that a `{{t}}` call exists.
 
 **S6 — A catalog string that becomes a user-edited text prop leaves the catalog path.**
 Several designs expose a chrome string as an editable text prop (an A31 error headline, for example). The catalog default is that prop's **initial value**. The moment the user edits it, the value is user content: the compiler emits it as a literal, and the `{{t}}`-only enforcement rule does not apply to it. Enforcement covers **compiler-generated** chrome, not user text — otherwise the rule is unsatisfiable for every text prop in the library.
+
+  **How a prop says so** (Story 4.9): a `text` prop in the category's `content.json` declares `"catalog": "<key>"` naming a key marked **prop**, and carries **no** `default` of its own — the catalog string is the default. "Untouched" is an **empty** value: while the prop is empty the theme emits `{{t "<key>"}}` and the canvas renders the project's string; a typed value is user text. The editor therefore keeps a catalog-linked prop empty until the user types into it, and a reset empties it again.
 
 **S7 — `credit.*` is a locked namespace.**
 Credit strings are in the catalog (so they compile through the same path and satisfy S4), but they are **not listed in the Translations surface and are not overridable on any plan** — not Free, not Pro. They are emitted verbatim in every locale file and are never translated. Whether the credit *appears* is the plan question (FR-J15: Pro may disable per project; Free always retains). What the credit *says* is not a question at all. An override for a `credit.*` key can only arise from a tampered payload, since the surface never offers one: compile validation **fails the build** rather than silently dropping it, so nothing is ever quietly discarded.
@@ -52,6 +59,8 @@ Strings rendered by Ghost or by a Ghost-injected script belong to Ghost's i18n n
 
 **S9 — Additions.**
 A new chrome string needs a key here **before** the design that uses it is authored. New keys are appended to their namespace; namespaces are appended at the end. No key is ever inserted into a numbered position — position carries no meaning.
+
+  **A category's keys land with that category** (Story 4.9): a key is added to this table **and** to `catalog.json` in the same change, with the owner's approval, by the category story that first renders it — and the render door enforces the order, since a design naming a key the catalog does not hold is refused (V2), and a render naming its target refuses any English left outside the catalog (V1). Namespaces are shared by function rather than by category, so one "Read more" is translated once; a collision cannot arise, because categories run one at a time (R-85), a key precedes its design, and the check refuses a duplicate. A key is never deleted: it is `retired` with its reason, or `supersededBy` a key that exactly one migration names (S1, S2).
 
 ---
 
@@ -69,7 +78,7 @@ A new chrome string needs a key here **before** the design that uses it is autho
 
 ## 3. The catalog
 
-### 3.1 `pagination.*` — 18 keys
+### 3.1 `pagination.*`
 
 Serves A34 (all 10 pagination styles) and FR-H2's main-feed designation. Numbered styles use Ghost's native `pagination` context; Load More and Infinite styles ship JS with a numbered-link fallback, which is why both `{{t}}` and **JS** keys appear here.
 
@@ -94,7 +103,7 @@ Serves A34 (all 10 pagination styles) and FR-H2's main-feed designation. Numbere
 | `pagination.end_of_feed` | You're all caught up | JS |
 | `pagination.loading_label` | Loading more posts | JS, a11y |
 
-### 3.2 `card.*` — 9 keys
+### 3.2 `card.*`
 
 Post-card chrome across A17–A22, A27, plus the two module labels that belong to a card surface: `video-facade`'s poster link (A15, A4 #17) and `shuffle`'s refresh control (A27 #11) — FR-G7.
 
@@ -110,7 +119,7 @@ Post-card chrome across A17–A22, A27, plus the two module labels that belong t
 | `card.play_video` | Play video | a11y |
 | `card.shuffle_again` | Show me different picks | JS |
 
-### 3.3 `post.*` — 12 keys
+### 3.3 `post.*`
 
 Post header/content/footer chrome: A24, A25 (TOC, share rail), A26, A27.
 
@@ -129,9 +138,9 @@ Post header/content/footer chrome: A24, A25 (TOC, share rail), A26, A27.
 | `post.next_post` | Next post | |
 | `post.related_heading` | More like this | prop |
 
-### 3.3a `countdown.*` — 6 keys
+### 3.3a `countdown.*`
 
-The `countdown` module (FR-G7), reached by A2 #6 *Countdown* and A6 #11 *Countdown CTA*. Every string here is written by JavaScript at runtime, so all six are **JS** keys carried as `data-i18n-*` on the mount element (S5). The unit labels are separate keys rather than one formatted string because languages pluralise and order them differently, and the module never concatenates.
+The `countdown` module (FR-G7), reached by A2 #6 *Countdown* and A6 #11 *Countdown CTA*. Every string here is written by JavaScript at runtime, so every one is a **JS** key carried as `data-i18n-*` on the mount element (S5), and `countdown`'s registry row declares each of them as its `strings`. The unit labels are separate keys rather than one formatted string because languages pluralise and order them differently, and the module never concatenates.
 
 | Key | English default | |
 |---|---|---|
@@ -142,7 +151,7 @@ The `countdown` module (FR-G7), reached by A2 #6 *Countdown* and A6 #11 *Countdo
 | `countdown.ended` | This has ended | JS |
 | `countdown.time_remaining` | Time remaining | JS, a11y |
 
-### 3.4 `member.*` — 24 keys
+### 3.4 `member.*`
 
 A30 members pages, A32 paywall CTAs, the header/footer member links, and every `data-members-form` on any template. `member.read_so_far` is A32 #12's approximate tease — bucketed to 5% by the module — and `member.read_so_far_static` is its **server-rendered no-JS baseline**, which is why one is marked JS and the other is not.
 
@@ -175,7 +184,7 @@ A30 members pages, A32 paywall CTAs, the header/footer member links, and every `
 | `member.manage_billing` | Manage billing | |
 | `member.upgrade` | Upgrade | prop |
 
-### 3.5 `error.*` — 12 keys
+### 3.5 `error.*`
 
 `error.hbs` serves every status code (FR-I1 emits no `error-404.hbs`), so a design branches on `{{statusCode}}` and needs **both** copy sets in one template — that is why 404 and 500 keys coexist here.
 
@@ -196,7 +205,7 @@ A30 members pages, A32 paywall CTAs, the header/footer member links, and every `
 | `error.all_posts_link` | Browse all posts | |
 | `error.page_label` | Error page | a11y |
 
-### 3.6 `private.*` — 6 keys
+### 3.6 `private.*`
 
 `private.hbs` (A31 #10 Private Site Gate). Ghost supplies `{{error.message}}` = "Incorrect access code." after a failed submit — English, Ghost's namespace. **Prefer `private.error`**, so the page is translatable; a design that renders `{{error.message}}` ships an untranslatable string on a page that has no other English on it.
 
@@ -209,10 +218,10 @@ A30 members pages, A32 paywall CTAs, the header/footer member links, and every `
 | `private.submit` | Continue | |
 | `private.error` | That password didn't work. | |
 
-### 3.7 `search.*` — 15 keys, **nine of them retired 2026-08-27**
+### 3.7 `search.*` — the overlay and key-hint rows retired 2026-08-27
 
 **⚠ Ruling R-24 deleted A23 and made search Ghost's own.** Under **S1 a key is never deleted**, so the
-nine overlay keys below are **retired, not removed**: a theme already deployed references them and a
+overlay keys below are **retired, not removed**: a theme already deployed references them and a
 user's override is stored against them. **A retired key is still emitted in every locale file (S4) and
 is never reused for a different meaning.** What changes is that **no design renders it any more.**
 
@@ -245,7 +254,7 @@ module is deleted — so the two key-hint strings are retired with the overlay's
 | `search.overlay_error` | Search isn't available right now. | JS | **retired** |
 | `search.overlay_tags_heading` | Popular tags | JS | **retired** |
 
-### 3.8 `gallery.*` — 8 keys
+### 3.8 `gallery.*`
 
 A11 galleries and the lightbox (`lightbox toggle` control). The lightbox is entirely JS-rendered, so almost everything here is **JS**.
 
@@ -260,7 +269,7 @@ A11 galleries and the lightbox (`lightbox toggle` control). The lightbox is enti
 | `gallery.loading` | Loading image… | JS |
 | `gallery.caption_label` | Caption | a11y |
 
-### 3.9 `comments.*` — 10 keys
+### 3.9 `comments.*`
 
 > **With JavaScript off, a comment count renders NOTHING** — not a zero, not an empty box: the `<script>` is invisible and no element is ever inserted (§32). Every A28 design's no-JS line says so, and a design that needs the count announced puts its `aria-label` on the surrounding element, never on the count. `{{comments}}` itself *does* render server-side, so the widget and its count degrade differently.
 
@@ -285,11 +294,11 @@ Ghost's `{{comment_count}}` takes `empty` / `singular` / `plural` hash params, s
 | `comments.signin_prompt` | Sign in to join the conversation | |
 | `comments.placeholder` | Comments appear here on your live site. | canvas |
 
-### 3.10 `archive.*` — 17 keys
+### 3.10 `archive.*`
 
 A29 archive headers (`tag.hbs` / `author.hbs`), **the main feed's empty state** (FR-H4 — `archive.empty_heading` / `archive.empty_body` moved here from the retired A31 #8, which was that state trying to be a design), and A29 #13's progressive filter/sort strip — whose six control labels are **server-rendered on real links** (they work with JS off) while its three status strings are written by the `filter-strip` module and marked JS accordingly (FR-G7).
 
-`posts_one` / `posts_many` use `%` for the same Ghost-helper reason as §3.9.
+`posts_one` / `posts_many` use `%` because they are written for Ghost's **`{{plural}}`** helper, which replaces the **first** `%` with the number (`core/frontend/helpers/plural.js`, identical on 5.130.6 and 6.58.0) and is passed them as `(t "…")` sub-expressions. §3.9's reason was the other helper's and was disproved there: `{{comment_count}}` substitutes nothing. `{{plural}}` returns an **unescaped** `SafeString`, recorded on both majors (`MEASUREMENTS.md` §44), so a user override reaching it can carry markup onto the page — `deferred-work.md` DW-141, for the Translations surface.
 
 | Key | English default | |
 |---|---|---|
@@ -311,7 +320,7 @@ A29 archive headers (`tag.hbs` / `author.hbs`), **the main feed's empty state** 
 | `archive.filter_error` | Couldn't apply that filter. | JS |
 | `archive.filter_none` | Nothing matches that filter. | JS |
 
-### 3.11 `nav.*` — 4 keys
+### 3.11 `nav.*`
 
 Header, announcement bar and footer chrome (A1–A3). The nav *items* are `@site.navigation` data and the header CTA is a text prop — neither is chrome.
 
@@ -322,7 +331,7 @@ Header, announcement bar and footer chrome (A1–A3). The nav *items* are `@site
 | `nav.more` | More | |
 | `nav.announcement_dismiss` | Dismiss | JS, a11y |
 
-### 3.12 `a11y.*` — 7 keys
+### 3.12 `a11y.*`
 
 Screen-reader-only strings with no visible counterpart. Load-bearing for NFR-5 (axe-core, WCAG 2.1 AA on every design in the library) — an untranslated skip link fails the same rule in every language.
 
@@ -336,7 +345,7 @@ Screen-reader-only strings with no visible counterpart. Load-bearing for NFR-5 (
 | `a11y.close_menu` | Close menu | |
 | `a11y.reading_progress` | Reading progress | JS, a11y |
 
-### 3.13 `credit.*` — 3 keys · **LOCKED (S7)**
+### 3.13 `credit.*` · **LOCKED (S7)**
 
 Present in the catalog, absent from the Translations surface, not overridable on any plan, never translated. Emitted verbatim into every locale file.
 
@@ -352,25 +361,7 @@ Present in the catalog, absent from the Translations surface, not overridable on
 
 ## 4. Totals
 
-| Namespace | Keys | of which JS | of which locked |
-|---|--:|--:|--:|
-| `pagination.*` | 18 | 6 | — |
-| `card.*` | 9 | 1 | — |
-| `post.*` | 12 | 2 | — |
-| `countdown.*` | 6 | 6 | — |
-| `member.*` | 24 | 3 | — |
-| `error.*` | 12 | — | — |
-| `private.*` | 6 | — | — |
-| `search.*` | 15 | 11 | — |
-| `gallery.*` | 8 | 6 | — |
-| `comments.*` | 10 | 2 | — |
-| `archive.*` | 17 | 3 | — |
-| `nav.*` | 4 | 1 | — |
-| `a11y.*` | 7 | 1 | — |
-| `credit.*` | 3 | — | 3 |
-| **Total** | **151** | **42** | **3** |
-
-Listed in the Translations surface: **148** (total minus the 3 locked). `comments.placeholder` is listed but marked canvas-only.
+**The totals are printed, never written down.** Every count in this project has gone stale at least once — §3.7's heading once miscounted its own retired rows — so `node tools/check-catalog.mjs` prints them from `catalog.json` on every `pnpm check`: keys, JS, a11y, prop, locked, canvas and retired per namespace, the total, how many the Translations surface lists (every key but the locked ones) and how many every locale file carries (every key but the canvas ones). `comments.placeholder` is listed but marked canvas-only.
 
 **The JS-marked set is derived from FR-G7's behaviour-module registry, not from a fixed number.** It was previously written against the ten modules `prd.md` FR-J4 used to name, which left four modules with visitor-facing text and nowhere to put it — `countdown`'s unit labels, `toc`'s heading (built client-side from `{{content}}`, so it cannot come through `{{t}}`), `video-facade`'s poster label and `shuffle`'s refresh control. V6 asserts that no bundled module contains a visitor-facing literal, so those gaps were not cosmetic: each was a module that could not satisfy V6. **The rule, not the count, is normative:** every module that writes visitor-facing text at runtime has its strings here and marked JS, and re-deriving is part of adding a module.
 
@@ -396,6 +387,8 @@ Not overridable from the Translations surface. A design must not attempt to supp
 ---
 
 ## 6. Migration map
+
+**Illustrative** (Story 4.9): the machine form is the `migrations` array in `packages/library/strings/catalog.json`, whose entries are `{ from, to, reason, carryOverride }`, and `resolveStrings` in `packages/library/src/catalog.ts` is what applies it. The example below shows the shape and names no real key.
 
 Emitted whenever S2 forces a new key. Ships with the library drop, is applied by the compiler on the next compile of any project holding an override on a superseded key, and is what FR-J14's confirm step reads to tell the user what changed.
 

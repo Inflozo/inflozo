@@ -1,11 +1,12 @@
 {
-  "about": "FR-G7's module registry, the half code reads (Story 4.7). research-section-js-libraries.md §2.1 is the list and §7 keeps each module's no-JS line and edit-safe sentence; `python3 tools/derive-module-reach.py --check` fails when this file and that prose disagree. `core` is the platform runtime and is never a row: it runs on every page and no design declares it. `animates` sends a module through core's one reduced-motion gate, true only where §3.1's reduced-motion line is §7's no-JS state. `retired` names a module that must not come back, with the ruling that retired it.",
+  "about": "FR-G7's module registry, the half code reads (Story 4.7). research-section-js-libraries.md §2.1 is the list and §7 keeps each module's no-JS line and edit-safe sentence; `python3 tools/derive-module-reach.py --check` fails when this file and that prose disagree. `core` is the platform runtime and is never a row: it runs on every page and no design declares it. `animates` sends a module through core's one reduced-motion gate, true only where §3.1's reduced-motion line is §7's no-JS state. `retired` names a module that must not come back, with the ruling that retired it. `strings` (Story 4.9) lists the catalog's js keys a module writes; both emitters stamp each as data-i18n-* on the module's mount (S5), and only a row appendix-h1 §3 names the module for carries one.",
   "modules": [
     { "name": "nav-drawer", "editSafe": false, "animates": false },
     { "name": "header-scroll", "editSafe": false, "animates": false },
     { "name": "dismiss", "editSafe": false, "animates": false },
     { "name": "rotator", "editSafe": false, "animates": true },
-    { "name": "countdown", "editSafe": true, "animates": false },
+    { "name": "countdown", "editSafe": true, "animates": false,
+      "strings": ["countdown.days", "countdown.hours", "countdown.minutes", "countdown.seconds", "countdown.ended", "countdown.time_remaining"] },
     { "name": "marquee", "editSafe": false, "animates": true },
     { "name": "accordion", "editSafe": false, "animates": false },
     { "name": "tabs", "editSafe": false, "animates": false },

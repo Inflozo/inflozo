@@ -27,6 +27,9 @@ EXCERPT|custom_excerpt=[{{custom_excerpt}}]
 READ|reading_time=[{{reading_time}}]
 READ|reading_time_minute=[{{reading_time minute="1 min" minutes="% mins"}}]
 
+TR|minutes_reading_time=[{{t "probe.reading_time" minutes=reading_time}}]
+TR|date_param=[{{t "probe.updated_on" date=(date updated_at format="D MMM YYYY")}}]
+
 DATE|site_tz_iso=[{{date published_at format="YYYY-MM-DDTHH:mm:ssZ"}}]
 DATE|utc_iso=[{{date published_at format="YYYY-MM-DDTHH:mm:ssZ" timezone="UTC"}}]
 DATE|utc_d_mmm_yyyy=[{{date published_at format="D MMM YYYY" timezone="UTC"}}]

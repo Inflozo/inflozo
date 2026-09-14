@@ -22,14 +22,17 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import {
+  CATALOG,
   CONSUMED_DIRECTIVES,
   CONSUMED_DIRECTIVE_RE,
   DIRECTIVES,
   IMAGE_SIZES,
+  i18nAttr,
+  resolveStrings,
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
-import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
@@ -503,10 +506,10 @@ test('data-helper="content" refuses when Story 4.4 has not handed it a fixture',
 })
 
 test('data-pagination — prev and next agree, and the first page has no Newer link', () => {
-  const src = `<nav class="p">
-      <a class="prev" data-pagination="prev" href="#">Newer</a>
+  const src = `<nav class="p" data-t-attr="aria-label:pagination.label">
+      <a class="prev" data-pagination="prev" href="#" data-t="pagination.newer">Newer posts</a>
       <span class="n" data-pagination="numbers">1 / 1</span>
-      <a class="next" data-pagination="next" href="#">Older</a>
+      <a class="next" data-pagination="next" href="#" data-t="pagination.older">Older posts</a>
     </nav>`
   // the RECORDED middle page: 2 of 3, both links present, so the shapes line up
   const middle: RenderInput = { site: { ...SITE, pagination: { page: 2, pages: 3, limit: 12, total: 33 } }, target: 'index.hbs' }
@@ -528,7 +531,7 @@ test('data-pagination — prev and next agree, and the first page has no Newer l
 })
 
 test('R-7 — data-pagination off a paginated target is refused on both emitters', () => {
-  const src = `<a data-pagination="next" href="#">Older</a>`
+  const src = `<a data-pagination="next" href="#" data-t="pagination.older">Older posts</a>`
   for (const target of ['post.hbs', 'page.hbs', 'error.hbs', undefined]) {
     const input: RenderInput = { site: SITE, target }
     assert.throws(() => renderCanvas(doc(), src, input), /R-7/, `canvas allowed pagination on ${target}`)
@@ -731,14 +734,14 @@ test('a directive this story does not emit is refused by name on both emitters, 
 const everyDirectiveSrc = `<section class="all" data-module="lightbox">
      <h1 class="h" data-prop="title" data-empty="hide">t</h1>
      <ul class="l"><li class="i" data-items="logos"><span data-prop="logos[].name">n</span><b data-initials="logos[].name">AP</b></li></ul>
-     <a class="a" data-prop-attr="href:link">l</a>
+     <a class="a" data-prop-attr="href:link" data-t="card.read_more">Read more</a>
      <span class="m" data-helper="total_members">1,000</span>
      <article class="c" data-repeat="posts" data-repeat-limit="2" data-partial="card">
        <h2 data-bind="title">t</h2>
-       <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url">
-       <ul class="t"><li class="g" data-repeat="tags" data-bind-style="--tag-accent:accent_color">x</li></ul>
+       <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url" data-t-attr="alt:card.read_more_about title=title">
+       <ul class="t"><li class="g" data-repeat="tags" data-bind-style="--tag-accent:accent_color">·</li></ul>
      </article>
-     <a class="n" data-pagination="next" href="#">Older</a>
+     <a class="n" data-pagination="next" href="#" data-t="pagination.older">Older posts</a>
    </section>`
 
 
@@ -958,4 +961,149 @@ test('Story 4.5 — a Ghost binding inside an authored item keeps its own data-e
   const theme = renderTheme(doc(), src, input).template
   assert.match(theme, /\{\{#if @site\.title\}\}<em class="m">\{\{@site\.title\}\}<\/em>\{\{\/if\}\}/, theme)
   for (const html of [canvas, theme]) assert.doesNotMatch(html, /data-empty|data-bind/)
+})
+
+// ═══ Story 4.9 — the string catalog on both emitters ═══
+//
+// `data-t` is `{{t "key"}}` in the theme and the handed string on the canvas; each param is guarded on its bound
+// field, so an empty one removes the element on the canvas exactly where `{{#if}}` removes it on the site. The
+// structure agrees node for node, and the text differs only as THE DIFFERENCE (2) says it may.
+
+test('Story 4.9 — a catalog string agrees: {{t}} in the theme, the handed string on the canvas', () => {
+  const src = '<section class="s"><button class="b" type="button" data-ghost-search data-t="search.trigger_label">Search</button></section>'
+  const { canvas, theme } = agree(src, { target: 'index.hbs' })
+  assert.ok(theme.includes('<button class="b" type="button" data-ghost-search="">{{t "search.trigger_label"}}</button>'), theme)
+  assert.ok(canvas.includes('>Search</button>'), canvas)
+  // the handed map is what the canvas shows; the theme is unchanged, because Ghost reads the locale file
+  const de = bothWays(src, { strings: { 'search.trigger_label': 'Suche' } })
+  assert.ok(de.canvas.includes('>Suche</button>'), de.canvas)
+  assert.equal(de.theme, theme)
+})
+
+test('Story 4.9 — params are guarded on their bound field, a helper param is a sub-expression, and a number guards with includeZero', () => {
+  const by = '<section class="s"><p class="by" data-t="post.by author=primary_author.name">By Ana</p></section>'
+  const { canvas, theme } = agree(by, { target: 'post.hbs', ghost: { primary_author: { name: 'Ana Lee' } } })
+  assert.ok(theme.includes('{{#if primary_author.name}}<p class="by">{{t "post.by" author=primary_author.name}}</p>{{/if}}'), theme)
+  assert.ok(canvas.includes('<p class="by">By Ana Lee</p>'), canvas)
+  assert.equal(renderCanvas(doc(), by, { target: 'post.hbs', ghost: { primary_author: { name: '' } } }), '<section class="s"></section>', 'an empty param removes the element')
+
+  const updated = '<section class="s"><time class="u" data-t="post.updated_on date=updated_at|date:D MMM YYYY">Updated</time></section>'
+  const u = agree(updated, { target: 'post.hbs', ghost: { updated_at: '2026-08-20T08:09:20.000+00:00' } })
+  assert.ok(u.theme.includes('{{#if updated_at}}<time class="u">{{t "post.updated_on" date=(date updated_at format="D MMM YYYY")}}</time>{{/if}}'), u.theme)
+  assert.ok(u.canvas.includes('>Updated 20 Aug 2026<'), u.canvas)
+
+  // recorded on both majors: `minutes=reading_time` is the FIELD, so an API 0 prints "0 min read" — and 0 is present
+  const read = '<section class="s"><span class="r" data-t="post.reading_time minutes=reading_time">5 min read</span></section>'
+  const r = agree(read, { target: 'post.hbs', ghost: { reading_time: 0 } })
+  assert.ok(r.theme.includes('{{#if reading_time includeZero=true}}<span class="r">{{t "post.reading_time" minutes=reading_time}}</span>{{/if}}'), r.theme)
+  assert.ok(r.canvas.includes('>0 min read<'), r.canvas)
+
+  // two params on one element: one guard each, nested, and never doubled with a binding on the same field
+  const pageOf = '<section class="s"><p class="p" data-t="pagination.page_of page=pagination.page pages=pagination.pages" data-t-attr="title:pagination.page_number page=pagination.page">Page 1 of 3</p></section>'
+  const p = renderTheme(doc(), pageOf, { target: 'index.hbs' }).template
+  assert.equal((p.match(/\{\{#if pagination\.page includeZero=true\}\}/g) ?? []).length, 1, p)
+  assert.equal((p.match(/\{\{\/if\}\}/g) ?? []).length, 2, p)
+})
+
+test('Story 4.9 — data-t-attr writes the four text attributes on both emitters', () => {
+  const src = '<section class="s"><input class="i" type="email" data-t-attr="aria-label:pagination.label;placeholder:member.email_placeholder"></section>'
+  const { canvas, theme } = agree(src, { target: 'index.hbs' })
+  assert.ok(theme.includes('aria-label="{{t "pagination.label"}}" placeholder="{{t "member.email_placeholder"}}"'), theme)
+  assert.ok(canvas.includes('aria-label="Pagination" placeholder="Your email address"'), canvas)
+  for (const bad of ['value:member.email_placeholder', 'href:nav.menu']) {
+    for (const render of [renderCanvas, renderTheme]) {
+      assert.throws(() => render(doc(), `<input data-t-attr="${bad}">`, {}), /does not hold visitor-facing text/, bad)
+    }
+  }
+})
+
+test('Story 4.9 — V2 and V4 refuse at the render door on both emitters, a data-t inside an empty repeat included', () => {
+  const cases: [string, RegExp][] = [
+    ['<p data-t="a1.menu_open">x</p>', /not in the catalog/],
+    ['<p data-t="search.overlay_empty">x</p>', /retired/],
+    ['<p data-t="countdown.days">x</p>', /js key/],
+    ['<p data-t="comments.placeholder">x</p>', /canvas-only/],
+    ['<p data-t="pagination.page_of page=pagination.page">x</p>', /misses pages/],
+    ['<p data-t="nav.menu x=title">x</p>', /passes x/],
+    ['<ul><li data-repeat="posts"><p data-t="a22.email">x</p></li></ul>', /not in the catalog/],
+    ['<p data-t="nav.menu" data-empty="hide">x</p>', /data-empty/],
+    ['<p data-t="nav.menu" data-bind="title">x</p>', /one element carries one text/],
+    ['<div data-module="countdown" data-i18n-days="{count} Tage"></div>', /never writes one/],
+  ]
+  for (const [src, re] of cases) {
+    assert.throws(() => renderCanvas(doc(), src, { ghost: { posts: [] } }), re, `canvas: ${src}`)
+    assert.throws(() => renderTheme(doc(), src, {}), re, `theme: ${src}`)
+  }
+})
+
+test("Story 4.9 — S6: an untouched catalog-linked prop is the catalog string, and a typed value is user text", () => {
+  const schema: Record<string, PropDef> = { submitLabel: { type: 'text', label: 'Button text', catalog: 'member.signup_cta' } }
+  const src = '<section class="s"><button class="b" type="submit" data-prop="submitLabel">Subscribe</button></section>'
+  const { canvas, theme } = agree(src, { schema, content: {}, target: 'index.hbs' })
+  assert.ok(theme.includes('<button class="b" type="submit">{{t "member.signup_cta"}}</button>'), theme)
+  assert.ok(canvas.includes('>Subscribe</button>'), canvas)
+  assert.ok(bothWays(src, { schema, content: {}, strings: { 'member.signup_cta': 'Abonnieren' } }).canvas.includes('>Abonnieren<'))
+  const typed = bothWays(src, { schema, content: { submitLabel: 'Join {{us}}' } })
+  assert.ok(typed.canvas.includes('>Join {{us}}<'), typed.canvas)
+  assert.ok(typed.theme.includes('>Join &#123;&#123;us&#125;&#125;<') && !typed.theme.includes('{{t'), typed.theme)
+  // a declaration the validator would refuse is refused here too
+  assert.throws(() => renderCanvas(doc(), src, { schema: { submitLabel: { type: 'text', label: 'x', catalog: 'nav.menu' } } }), /S6/)
+})
+
+test('Story 4.9 — S5: both emitters stamp one data-i18n-* per countdown key on its mount, the theme with its braces as entities', () => {
+  const src = '<section class="s"><div class="cd" data-module="countdown"><span class="n">·</span></div></section>'
+  const { canvas, theme } = agree(src, { target: 'index.hbs' })
+  const keys = Object.keys(CATALOG.keys).filter((k) => k.startsWith('countdown.'))
+  assert.ok(keys.length > 0)
+  for (const key of keys) {
+    const en = CATALOG.keys[key]?.en ?? ''
+    const attr = i18nAttr(key)
+    assert.ok(canvas.includes(`${attr}="${en}"`), `${attr} on the canvas: ${canvas}`)
+    assert.ok(theme.includes(`${attr}="${en.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')}"`), `${attr} in the theme: ${theme}`)
+  }
+  assert.ok(canvas.includes('data-i18n-days="{count} days"'), canvas)
+  // on the root too: the stamp comes after stampControls, which strips every root data-* it does not own
+  const onRoot = bothWays('<section class="s" data-module="countdown" data-align="start">·</section>', { controlSchema: [], strings: { 'countdown.ended': 'Vorbei' } })
+  assert.ok(onRoot.canvas.includes('data-i18n-ended="Vorbei"') && onRoot.theme.includes('data-i18n-ended="Vorbei"'), `${onRoot.canvas}\n${onRoot.theme}`)
+  assert.ok(!onRoot.canvas.includes('data-align'), 'the controls were still stamped from the schema')
+})
+
+test('Story 4.9 — the handed strings pass resolveStrings: a credit.* override and an unknown key throw on both emitters', () => {
+  for (const render of [renderCanvas, renderTheme]) {
+    assert.throws(() => render(doc(), '<p data-t="nav.menu">Menu</p>', { strings: { 'credit.built_with': 'Made by me' } }), /S7/)
+    assert.throws(() => render(doc(), '<p data-t="nav.menu">Menu</p>', { strings: { 'nope.key': 'x' } }), /"nope\.key"/)
+    // a full map resolveStrings already returned passes unchanged, credit keys at their English included
+    assert.doesNotThrow(() => render(doc(), '<p data-t="nav.menu">Menu</p>', { strings: resolveStrings({ 'nav.menu': 'Menü' }) }))
+  }
+})
+
+test("Story 4.9 — V1's tree half: a render naming its target refuses every literal in one error, and the exempt set passes", () => {
+  const src = `<section class="s">
+    <nav aria-label="Main"><a href="#">Newer</a></nav>
+    <input type="email" placeholder="you@example.com">
+    <img src="/a.png" alt="A cat">
+  </section>`
+  for (const render of [renderCanvas, renderTheme]) {
+    assert.throws(() => render(doc(), src, { target: 'index.hbs' }), (e: unknown) => {
+      const m = (e as Error).message
+      for (const lit of ['<nav aria-label="Main">', '<a> "Newer"', '<input placeholder="you@example.com">', '<img alt="A cat">']) {
+        assert.ok(m.includes(lit), `${lit} not named in: ${m}`)
+      }
+      return /^V1:/.test(m)
+    })
+    // a render naming no target is not checked (the scope check's rule)
+    assert.doesNotThrow(() => render(doc(), src, {}))
+  }
+  assert.equal(checkChromeLiterals(doc(), src).length, 4)
+  const exempt = `<section class="s">
+    <h2 data-prop="title">A heading</h2><p data-bind="title">Post title</p><p data-t="nav.menu">Menu</p>
+    <div data-helper="content"></div><b data-initials="name">AP</b><p data-text="{total_members}">12,000 readers</p>
+    <span data-pagination="numbers">1 / 3</span>
+    <img alt="" src="/x.png"><img data-bind-attr="alt:title" alt="Authored"><img data-prop-attr="alt:pictureAlt" alt="Authored">
+    <input data-t-attr="placeholder:member.email_placeholder" placeholder="you@example.com">
+    <p>· — / «»</p>
+  </section>`
+  assert.deepEqual(checkChromeLiterals(doc(), exempt), [])
+  // "1 / 3" has digits and sits under data-pagination="numbers" — prev and next are not exempt
+  assert.deepEqual(checkChromeLiterals(doc(), '<a data-pagination="next" href="#">Older</a>'), ['<a> "Older"'])
 })

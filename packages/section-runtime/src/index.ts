@@ -8,7 +8,7 @@
 // AD-1, made structural: the DOM is the FIRST ARGUMENT. `window.document` in the browser, a jsdom
 // document in a test or a compile. There is no ambient document for this package to reach.
 
-export { renderCanvas, renderTheme, checkBindings } from './core.ts'
+export { renderCanvas, renderTheme, checkBindings, checkChromeLiterals } from './core.ts'
 export {
   RENDERED_DIRECTIVES,
   REFUSED_DIRECTIVES,

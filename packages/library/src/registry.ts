@@ -84,6 +84,10 @@ export type PropDef = {
   atMax?: string
   /** `array` only: what one item is called — "Add feature", "Move: …" */
   item?: string
+  /** Story 4.9 (S6) — `text` only, and never beside `default`: a prop-marked catalog key whose string is this
+   *  prop's initial value. While the value is empty the theme emits `{{t "key"}}` and the canvas the handed
+   *  string; the moment the customer types, the value is user text. */
+  catalog?: string
 }
 
 /** One `content.json`, per CATEGORY, at `designs/{category}/content.json` — beside the design

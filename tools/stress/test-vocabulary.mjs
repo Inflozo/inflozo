@@ -118,6 +118,36 @@ check('the fixture exercises every directive in the closed set', () => {
   if (missing.length) throw new Error(`no example of ${missing.join(', ')}`)
 })
 
+// ── Story 4.9 — the fixtures speak the catalog: no invented key, and no English outside it ─────────────────
+const { checkChromeLiterals, renderTheme } = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
+// jsdom from the runtime package that declares it — tools/stress/node_modules is never installed in CI
+const { JSDOM } = createRequire(join(REPO, 'packages/section-runtime/package.json'))('jsdom')
+const jsdoc = () => new JSDOM('<body></body>').window.document
+
+check('no archetype prints a chrome literal (V1\'s tree half) and no fixture carries an invented key', () => {
+  for (const kind of ORDER) {
+    const literals = checkChromeLiterals(jsdoc(), source({ kind, i: 1 }))
+    if (literals.length) throw new Error(`${kind}: ${literals.join(' · ')}`)
+  }
+  for (const file of ['packages/library/fixtures/reference-design/index.html', 'packages/library/fixtures/controls/1/index.html']) {
+    if (/data-t(-attr)?="[^"]*\b(reference|ref|a1|a17|a22)\./.test(readFileSync(join(REPO, file), 'utf8'))) throw new Error(`${file} carries a key outside the catalog`)
+  }
+  // the control: the check sees a literal when one is there
+  if (checkChromeLiterals(jsdoc(), '<nav aria-label="Main"><a href="#">Older</a></nav>').length !== 2) throw new Error('the chrome-literal check is vacuous')
+})
+
+check('the controls sample renders with a named target and raises no chrome literal', () => {
+  const dir = join(REPO, 'packages/library/fixtures/controls')
+  const design = JSON.parse(readFileSync(join(dir, '1/design.json'), 'utf8'))
+  const content = JSON.parse(readFileSync(join(dir, 'content.json'), 'utf8'))
+  const html = readFileSync(join(dir, '1/index.html'), 'utf8')
+  const defaults = Object.fromEntries(Object.entries(content.props).filter(([k, p]) => !k.includes('[]') && p.default !== undefined).map(([k, p]) => [k, p.default]))
+  for (const target of design.compileTarget) {
+    renderTheme(jsdoc(), html, { target, schema: content.props, content: defaults, controlSchema: design.controlSchema, universals: design.universals, dataBindings: design.dataBindings, icons: iconDrawing })
+  }
+  if (checkChromeLiterals(jsdoc(), html).length) throw new Error(checkChromeLiterals(jsdoc(), html).join(' · '))
+})
+
 check('no archetype still carries the retired data-prop-attr2', () => {
   for (const kind of ORDER) {
     if (source({ kind, i: 1 }).includes('data-prop-attr2')) throw new Error(`${kind} still uses it`)
@@ -129,7 +159,10 @@ check('every refusal code the validator can return has a test that it fires', ()
   // Derived from the source, never a hand list — a code added without a test fails this line.
   const src = readFileSync(join(REPO, 'packages/library/src/validate.ts'), 'utf8')
   const tests = readFileSync(join(REPO, 'packages/library/src/validate.test.ts'), 'utf8')
-  const codes = [...new Set([...src.matchAll(/push\(out, '([a-z-]+)'/g)].map((m) => m[1]))]
+  // Story 4.9: the catalog's refusals carry their code in catalog.ts and reach `push` by value, so both are read
+  const catalogSrc = readFileSync(join(REPO, 'packages/library/src/catalog.ts'), 'utf8')
+  const codes = [...new Set([...src.matchAll(/push\(out, '([a-z-]+)'/g), ...catalogSrc.matchAll(/code: '([a-z-]+)'/g)].map((m) => m[1]))]
+  if (!codes.includes('catalog-key')) throw new Error('the extraction missed the catalog codes')
   const untested = codes.filter((c) => !tests.includes(`'${c}'`))
   if (untested.length) throw new Error(`no test fires ${untested.join(', ')}`)
   if (codes.length < 10) throw new Error('the code extraction found too few codes to be real')

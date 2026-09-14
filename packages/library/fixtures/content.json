@@ -12,7 +12,8 @@
     "logos[].src": { "label": "Logo", "type": "image" },
     "logos[].alt": { "label": "Logo description", "type": "text", "default": "" },
     "logos[].name": { "label": "Partner name", "type": "text", "default": "A partner" },
-    "submitLabel": { "label": "Button text", "type": "text", "default": "Subscribe" },
+    "submitLabel": { "label": "Button text", "type": "text", "catalog": "member.signup_cta" },
+    "noscriptNote": { "label": "Without JavaScript", "type": "text", "default": "Subscribing needs JavaScript. With it off, nothing happens." },
     "paidNote": { "label": "Note for paid members", "type": "text", "default": "Thank you for subscribing." },
     "note": { "label": "Note", "type": "text", "default": "Every directive, once." }
   }

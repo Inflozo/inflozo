@@ -2,7 +2,8 @@
 title: 'Story 4.9 — The string catalog: keys, English defaults and the `{{t}}` contract'
 type: 'feature'
 created: '2026-09-14'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '6a9feefe8cac0036df9db6737789962916f2307a'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -179,7 +180,7 @@ been executed on either major.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] **FIRST — record on T1 and T3.** Files: `tools/probe/theme-shim/` (`locales/en.json`, `index.hbs`, `post.hbs`),
+- [x] **FIRST — record on T1 and T3.** Files: `tools/probe/theme-shim/` (`locales/en.json`, `index.hbs`, `post.hbs`),
   `tools/probe/record-shim.py`, `packages/ghost-shim/fixtures/ghost{5,6}/`, `packages/ghost-shim/src/contract.test.ts`.
   - Record these cases, which settle the Design Notes table on both majors:
     - the plain control;
@@ -192,10 +193,10 @@ been executed on either major.
   - The contract test asserts `t()` on every row the shim renders. The omitted param and `{{plural}}` are recorded as
     facts only Ghost produces.
   - Why first: AD-23 — the contract rests on a recording, not on a source read.
-- [ ] `package.json` and `pnpm-lock.yaml`:
+- [x] `package.json` and `pnpm-lock.yaml`:
   - add `intl-messageformat` 5.4.3;
   - `test` ends with `node tools/check-catalog.mjs`.
-- [ ] `packages/library/strings/catalog.json`, `src/catalog.ts`, `src/catalog.test.ts`, `src/index.ts`,
+- [x] `packages/library/strings/catalog.json`, `src/catalog.ts`, `src/catalog.test.ts`, `src/index.ts`,
   `tsconfig.json`:
   - Transcribe appendix-h1 §3, in its order, as
     `{ about, keys: { key: { en, marks[], retired?, supersededBy? } }, migrations: [] }`.
@@ -205,23 +206,23 @@ been executed on either major.
     - every format rule;
     - S5's own example;
     - `resolveStrings`' refusals, and its carry-forward against a synthetic map.
-- [ ] `src/vocabulary.ts`:
+- [x] `src/vocabulary.ts`:
   - **`data-t` grammar:** the key, then space-separated `name=spec` pairs. `spec` uses `data-bind`'s grammar, and a
     helper's argument runs to the end of the value.
   - **`data-t-attr`:** entries split on `;`. Each entry is `attr:` followed by `data-t`'s grammar, and `attr` is one
     of the four text attributes.
   - Key membership is read from the catalog.
-- [ ] `src/validate.ts`, `src/registry.ts`, `validate.test.ts`:
+- [x] `src/validate.ts`, `src/registry.ts`, `validate.test.ts`:
   - **`chrome-literal`** for the words in a `data-text` template. That is a lexical question; the tree half of V1 is
     the runtime's, as the note at `:5-14` requires.
   - **The other new codes:** `catalog-key`, `catalog-params`, `catalog-prop`.
   - **Types and fixtures:** add `PropDef.catalog`; move `EVERY_DIRECTIVE` onto real keys.
   - One firing test per code.
-- [ ] `modules/registry.json` and `src/modules.ts`:
+- [x] `modules/registry.json` and `src/modules.ts`:
   - A row may carry an optional `strings`. Each entry must be a live `js` key, and the derived attributes must be
     unique.
   - `countdown` declares every `countdown.*` key, because appendix-h1 §3.3a names the module.
-- [ ] `packages/section-runtime/src/core.ts` and `src/index.ts`:
+- [x] `packages/section-runtime/src/core.ts` and `src/index.ts`:
   - Both directives join `RENDERED_DIRECTIVES`.
   - **Each param** is scope-checked and guarded on `guardField(spec)`, with `includeZero` for a number. A param that
     carries a helper is emitted as a sub-expression.
@@ -230,11 +231,11 @@ been executed on either major.
   - **V1's tree half:** whenever a render names its `target`, beside 4.6's scope check, one error names every bare
     text node and every `alt`, `title`, `placeholder` or `aria-label` value that holds a letter or digit outside the
     matrix's exempt set.
-- [ ] `agreement.test.ts` and `ad36.test.ts`:
+- [x] `agreement.test.ts` and `ad36.test.ts`:
   - both directives in the leak fixture;
   - `agree()` for text, an attribute, params, S6 and the countdown mount;
   - the brace vector.
-- [ ] Fixtures — `packages/library/fixtures/reference-design/`, `fixtures/controls/1/`, `tools/stress/sections.js`,
+- [x] Fixtures — `packages/library/fixtures/reference-design/`, `fixtures/controls/1/`, `tools/stress/sections.js`,
   `tools/stress/build.js`:
   - **Reference design keys:** the `reference.*` keys become `search.trigger_label`, `card.featured`,
     `member.email_placeholder` (the label, `aria-label` and placeholder) and `member.upgrade`.
@@ -245,20 +246,20 @@ been executed on either major.
     - `submitLabel` takes `catalog`.
   - **Stress archetypes:** each literal takes the key in the Design Notes table, or a prop.
   - **`build.js`** writes `locales/en.json` from the catalog: every key except the `canvas` one (S4).
-- [ ] `tools/check-catalog.mjs` and `tools/doc-audit.py`:
+- [x] `tools/check-catalog.mjs` and `tools/doc-audit.py`:
   - The check:
     - holds appendix-h1 §3 equal to `catalog.json`;
     - runs Ghost's format under 5.4.3 against `t()` for every key;
     - prints the totals;
     - carries a control for each rule (the matrix rows marked *control*).
   - The doc gate blocks an uncatalogued tool, so it needs a row.
-- [ ] `docs/section-authoring.md` — rewrite exit 3 on real keys, covering:
+- [x] `docs/section-authoring.md` — rewrite exit 3 on real keys, covering:
   - the grammar and the guard;
   - the four attributes;
   - S6's `catalog` and the registry's `strings`;
   - S5 and the entities;
   - the new refusals in §4, with V1's tree half named beside binding legality in "not checked", as the runtime's.
-- [ ] **Propagate** (standing rule 3):
+- [x] **Propagate** (standing rule 3):
   - **appendix-h1:**
     - rules S1, S3, S5, S6 and S9;
     - §3.10's reason for `%`;
@@ -404,3 +405,51 @@ How the check compares the two copies:
 - **GitHub Actions:** the `check` log of the Dev push shows `check-catalog: PASS`.
 - **Vercel:** the production deployment is READY.
 - Resend and Dodo are not touched.
+
+**Results (Dev, 2026-09-14):**
+- `pnpm check` on Node 24.18.1 — exit 0. `check-catalog: PASS` printed its derived totals table; every control fails
+  when its subject is broken, in the check's own output: a removed key, a default changed in one copy, order/mark/
+  retirement drift, a duplicate key in the bytes, `''`, an ICU plural, `'{'`, and an unlocked `credit.*`. The
+  contract, agreement, AD-36, catalog, validate, modules and `controls.test.ts` (the `/controls` render) suites are
+  green, and so are `check-baseline` and `test-vocabulary.mjs`. The package test runs print their own counts.
+  `pnpm install --frozen-lockfile` was not re-run locally: pnpm refused to purge `node_modules` with no TTY. The
+  clean install is CI's.
+- **Hand controls**, run in a scratch copy and then restored: a key removed from `catalog.json`, and a default edited
+  in appendix-h1 only. Each failed, naming the key and both files.
+- `pnpm build` — exit 0.
+- `cd tools/stress && node build.js && node gate.js theme` — gscan 4.49.7: 0 errors / 0 warnings; gscan 6.4.2:
+  0 errors / 0 warnings. `npm install` there hit a permission error on `node_modules/.package-lock.json`, so the run
+  used the existing install.
+- `git status` under `packages/library/modules/` shows only `registry.json` changed.
+
+**Real infrastructure (R-82), what each returned:**
+- **T1 `ghost6.inflozo.com` (6.58) and T3 `ghost5.inflozo.com` (5.130)** — `python3 tools/probe/record-shim.py` with
+  `GHOST6_*` / `GHOST5_*`, staff token `GHOST{5,6}_STAFF_ACCESS_TOKEN`. The two majors returned identical values:
+  - the control `{{t "Plain key"}}` → "Plain value, read from locales/en.json";
+  - dotted hit → the value;
+  - nested miss → `probe.nested_miss`;
+  - missing key → `probe.no_such_key`;
+  - params from a path → "Page 1 of 3", and an undefined param → "Page 1 of ";
+  - an omitted param → "An error occurred";
+  - `minutes=reading_time` on `post.hbs` → "0 min read" (the raw field, not the helper);
+  - a `(date …)` param → "Updated 20 Aug 2026";
+  - escaping: text and `title=""` are both entity-escaped, and an HTML param is escaped;
+  - `(t …)` inside `{{plural}}` → "33 posts <i>many</i>", unescaped (DW-141).
+
+  Every row agrees with Design Notes, so there is no HALT. MEASUREMENTS §44 carries the rows. Afterwards, a separate
+  read-only `GET themes/` on both returned `casper` active and no `inflozo-probe-shim` installed. Older probe themes
+  from earlier stories (`inflozo-probe-13`, `-all`, `-contexts`) remain, untouched.
+- **Supabase production**, `SUPABASE_DB_POOLER_URL`, in a read-only transaction — `pg_constraint` returned one row:
+  `credit_namespace_locked` on `translation_overrides`, `CHECK ((catalog_key !~~ 'credit.%'::text))`. The control, an
+  invented name `no_such_constraint_4_9` in the same query, returned no row.
+- **GitHub Actions / Vercel** — read after the Dev push, recorded in the follow-up Dev commit.
+- Resend and Dodo are not touched.
+
+**Judgement calls the spec left open, for the review:**
+- `data-empty` on a `data-t` element, a second text directive beside `data-t`, and an authored `data-i18n-*` are
+  refused under the existing `bad-value` code.
+- `stampControls` keeps `data-i18n-*`, and a control named `i18n-…` is refused.
+- S6's `catalog` also applies to `data-prop-attr`.
+- The controls sample's "Next issue" became the prop `nextIssueLabel`, so `/controls` shows one more row.
+- FR-Q6 says Ghost falls back to `en` per key, but the source falls back only per file. `prd.md` was not edited: the
+  finding is in MEASUREMENTS §44(f) and VERIFY-AT-BUILD row 32, owned by 7.12.

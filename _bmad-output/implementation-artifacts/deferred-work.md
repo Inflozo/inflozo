@@ -2771,7 +2771,7 @@ location: packages/ghost-shim/src/index.ts `formatDate`; packages/section-runtim
 reason: not this story's — no caller passes real site data yet, and the recording condition is
   asserted rather than assumed, so the gap fails loudly the day a non-UTC recording is made
 
-### DW-99: `{{total_paid_members}}`, `{{content_api_url}}`, `{{t}}` and `{{tags}}`/`{{authors}}` have shim functions no directive can reach
+### DW-99: `{{total_paid_members}}`, `{{content_api_url}}`, `{{t}}` and `{{tags}}`/`{{authors}}` have shim functions no directive can reach — `{{t}}`'s part closed by Story 4.9
 
 plain: The imitation of Ghost knows how to print the paid-member count and the API address, but no
   section can ask for them yet, because the list of things a section may ask for by name was fixed in
@@ -2784,6 +2784,10 @@ origin: Story 4.3 review (2026-09-12) — Acceptance Auditor. `bareHelper` resol
   Appendix B's A29 filter design needs `content_api_url` beside `content_api_key`. The review's
   second pass adds `t()` (reachable only through 4.9's `data-t`) and `taxonomyItems` (no directive
   renders a tag or author list yet) to the same class: shimmed, recorded, asserted, unreachable.
+resolution: partial, and the entry stays open — Story 4.9 (2026-09-14) made `t()` reachable: `data-t` and
+  `data-t-attr` render on both emitters and the canvas calls the shim's `t()` over the project's strings, asserted
+  against the new `{{t}}` recordings on both majors (MEASUREMENTS §44). `{{total_paid_members}}`,
+  `{{content_api_url}}` and `taxonomyItems` are still unreachable.
 owner: the first story that authors a design needing either (Story 4.10's pilots are the first that
   can) — it adds the two names to `BARE_HELPERS`, and the partition test in `agreement.test.ts`
   already asserts every rendered directive value is exercised.
@@ -3486,3 +3490,77 @@ owner: Story 7.5 (the compile-time size gate), which owns NFR-2's number and met
 location: prd.md NFR-2 · tools/check-baseline.mjs `sizeLimit('40 kB')`
 reason: 4.8 may not change NFR-2's number or metric; the base is the same kind of unstated unit as gzip-versus-brotli,
   and one sentence in NFR-2 settles both when 7.5 builds the gate.
+
+## Deferred from: Story 4.9's Dev run (2026-09-14)
+
+### DW-141: `(t …)` inside `{{plural}}` is not escaped, so a translation override can put markup on the page
+
+plain: Almost every translated phrase is shown to visitors exactly as typed, tags and all as plain text. One route is
+  different: a count phrase like "33 posts" goes through Ghost's plural helper, which shows whatever it is given as
+  real page markup — so a customer who types HTML into that translation would change the page itself.
+status: open
+severity: medium
+origin: Story 4.9's recording (MEASUREMENTS §44) — `{{plural pagination.total … plural=(t "probe.posts_many")}}` with
+  `"% posts <i>many</i>"` printed `33 posts <i>many</i>` on 5.130.6 and 6.58.0; `helpers/plural.js:30-36` returns a
+  `SafeString`. VERIFY-AT-BUILD row 32's "an override cannot inject markup" holds for `{{t}}` and not for this.
+owner: Story 7.12 (override validation, V9/V10)
+location: appendix-h1 §3.9 and §3.10 (`comments.count_*`, `archive.posts_*`) · VERIFY-AT-BUILD row 32
+reason: 4.9 owns the catalog's format, not override validation; the fix is a refusal of `<` and `&` in an override
+  for a key a design passes to `{{plural}}`, or an escape the compiler applies before the locale file is written.
+
+### DW-142: override validation must refuse what `intl-messageformat` 5.4.3 refuses — the spine's parser accepts `'{'`
+
+plain: When a customer types a translation, the check that stops a broken one must judge it the way the customer's
+  Ghost site will. The checker the architecture names is newer and more forgiving than the one inside Ghost, so
+  it would let through a phrase that breaks the live page.
+status: open
+severity: medium
+origin: Story 4.9 (executed, MEASUREMENTS §44 (c)) — `@formatjs/icu-messageformat-parser` 3.5.18, the spine's
+  "current", parses `'{'` as a literal brace and `It''s` as `It's`; 5.4.3 throws on `'{'`, and plain `{snake_case}`
+  placeholders (appendix-h1 S3) forbid both. appendix-h1 V9 and FR-Q8 say a constructor throw is a "whole-page 500",
+  which is read in source (`i18n.js:208-223`), not observed: MEASUREMENTS §15j saw a 400 for a template error.
+owner: Story 7.12
+location: ARCHITECTURE-SPINE.md's dependency row for `@formatjs/icu-messageformat-parser` · appendix-h1 V9, V10 · prd.md FR-Q8
+reason: 4.9's Never excludes V9 and V10. The shape is to validate with the 5.4.3 both majors bundle (already a root
+  devDependency) plus S3's placeholder rule, and to observe the 500 on T1/T3 before a surface promises it.
+
+### DW-143: nothing checks that a catalog key survives from one library drop to the next
+
+plain: A phrase's name must never disappear, because live sites and customers' translations point at it. Today the
+  check compares the two copies of the list with each other, so deleting a phrase from both at once would pass.
+status: open
+severity: medium
+origin: Story 4.9 — `tools/check-catalog.mjs` holds appendix-h1 §3 and `catalog.json` equal and runs S1's removal
+  rule within one catalog (a key is `retired` or `supersededBy`, never absent); it cannot see a key both copies lost
+owner: Story 7.27 (the diff between library drops)
+location: tools/check-catalog.mjs · packages/library/strings/catalog.json
+reason: 4.9's Never excludes a diff between library drops; the drop is the unit that carries a previous catalog to
+  compare against.
+
+### DW-144: `countdown.days` and `countdown.hours` read "1 days" and "1 hours"
+
+plain: A countdown with one day left will say "1 days", because the English wording has no singular form and the
+  catalog forbids the plural machinery that would pick one.
+status: open
+severity: low
+origin: Story 4.9 — appendix-h1 §3.3a's defaults are `{count} days` and `{count} hours`, and S3 now forbids ICU plural
+  syntax because `core`, the shim and Ghost's i18next backend substitute names only (MEASUREMENTS §44)
+owner: the story that writes the `countdown` module (A2 #6 / A6 #11's category)
+location: appendix-h1 §3.3a · packages/library/strings/catalog.json `countdown.*`
+reason: adding a singular key or rewording is Ask First; the module's author decides, with the owner, between a
+  `countdown.day` / `countdown.hour` pair the module picks at runtime and a unit-free form like "Days: {count}".
+
+### DW-145: an untouched content default with no catalog key ships English on a non-English site
+
+plain: A section's own starting words — a heading like "Latest posts" that the customer never retyped — are not in
+  the list of translatable phrases, so on a German site they would stay in English unless the customer edits them.
+status: open
+severity: medium
+origin: Story 4.9 — S6 links a text prop to a `prop`-marked catalog key only where appendix-h1 has one; every other
+  `content.json` `default` is user text from the first render. `reconcile-designs.md:5929` raised it and it was
+  never ruled.
+owner: Story 7.12
+location: appendix-h1 S6 · each category's content.json `default`s
+reason: whether every visible default must have a catalog key, or a non-English project must be prompted to retype
+  them, is an owner decision the Translations surface forces; 4.9 builds the mechanism (`catalog` on a prop) and
+  adds no key.

@@ -400,3 +400,25 @@ test('AD-36 · a stored control name carrying a quote is stamped nowhere; a sche
   const hostileValue: RenderInput = { controlSchema: [{ ...input.controlSchema![0]!, values: ['{{x}}'], default: '{{x}}' }] }
   assert.doesNotMatch(renderTheme(doc(), src, hostileValue).template, /\{\{x\}\}|data-card/)
 })
+
+// ── Story 4.9 — a string override is USER TEXT on its way into an attribute Handlebars parses. S5 stamps a module's js
+//    keys on its mount from the handed strings, and an override may carry a brace, so the theme writes each one
+//    through `UserText`: `{` becomes `&#123;`, Handlebars sees no mustache, the browser decodes the entity, and
+//    `core` reads `{count}` intact. ──
+test('AD-36 / AD-5 — a string override carrying {{#each}} ships inert on the mount, and {count} still substitutes in core', () => {
+  const src = '<section class="s"><div class="cd" data-module="countdown">·</div></section>'
+  const theme = renderTheme(doc(), src, { strings: { 'countdown.ended': '{{#each}}x' } }).template
+  assert.ok(theme.includes('data-i18n-ended="&#123;&#123;#each&#125;&#125;x"'), theme)
+  assert.ok(!theme.includes('{{#each'), `a live block helper reached the .hbs: ${theme}`)
+  // the legitimate case beside it: the browser decodes the attribute, and core's translate (modules/core.js,
+  // proved on the shipped bytes by modules/core.test.mjs) substitutes {count} in what it reads
+  const mount = new JSDOM(`<body>${theme}</body>`).window.document.querySelector('.cd')
+  const days = mount?.getAttribute('data-i18n-days') ?? ''
+  assert.equal(days, '{count} days')
+  assert.equal(mount?.getAttribute('data-i18n-ended'), '{{#each}}x', 'the browser decodes what the theme wrote')
+  const coreTranslate = (text: string, params: Record<string, unknown>) =>
+    text.replace(/\{([A-Za-z0-9_]+)\}/g, (whole, name: string) => (Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : whole))
+  assert.equal(coreTranslate(days, { count: 3 }), '3 days')
+  // and the canvas, which puts its output into a DOM, shows the user their own braces as characters
+  assert.ok(renderCanvas(doc(), src, { strings: { 'countdown.ended': '{{#each}}x' } }).includes('data-i18n-ended="{{#each}}x"'))
+})

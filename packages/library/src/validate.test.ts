@@ -49,13 +49,13 @@ const EVERY_DIRECTIVE = `
   </div>
   <div data-members="anonymous">
     <form data-members-form="subscribe">
-      <input type="email" data-t-attr="aria-label:ref.email;placeholder:ref.email_placeholder">
-      <button data-t="ref.subscribe" data-t-attr="aria-label:ref.subscribe">Subscribe</button>
+      <input type="email" data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
+      <button data-t="member.signup_cta" data-t-attr="title:post.by author=primary_author.name">Subscribe</button>
     </form>
   </div>
   <a data-members="free" data-bind-attr="data-portal:signup/{tier}" href="#">Upgrade</a>
   <button data-ghost-search>Search</button>
-  <p data-text="Read by {total_members} readers">Read by 12,000 readers</p>
+  <p data-text="{total_members}">12,000</p>
   <div data-helper="content"></div>
   <div data-target="tag.hbs"><p data-bind="tag.description">About this topic.</p></div>
   <nav>
@@ -113,6 +113,58 @@ test('Story 4.7 review — authored script is refused at the door: a <script>, a
 
 test("Story 4.7 — an authored js-enabled class is refused: core sets it on the mount, and a design never does", () => {
   refuses('js-enabled-authored', '<div class="card js-enabled">x</div>', '<div class="card js-enabled-note">x</div>')
+})
+
+// ─── Story 4.9 — the catalog at the lexical door ─────────────────────────────
+
+test('data-t — the grammar: a key, then name=path params, and a helper argument runs to the end of the value', () => {
+  clean(validateMarkup(root('<button data-t="search.trigger_label">Search</button>'), { controls: [] }), 'a plain key')
+  clean(validateMarkup(root('<p data-t="post.by author=primary_author.name">By Ana</p>'), { controls: [] }), 'a param')
+  clean(validateMarkup(root('<p data-t="post.updated_on date=updated_at|date:D MMM YYYY">Updated</p>'), { controls: [] }), 'a helper param')
+  refuses('bad-value', '<p data-t="post.updated_on date=updated_at|date:D MMM YYYY x=title">U</p>', '<p data-t="post.updated_on date=updated_at|date:D MMM YYYY">U</p>')
+  refuses('bad-value', '<p data-t="Older posts">x</p>', '<p data-t="pagination.older">x</p>')
+  refuses('bad-value', '<p data-t="post.by Author=primary_author.name">x</p>', '<p data-t="post.by author=primary_author.name">x</p>')
+  refuses('bad-value', '<p data-t="post.by author=primary_author.name}}{{evil">x</p>', '<p data-t="post.by author=primary_author.name">x</p>')
+  refuses('bad-value', '<input data-t-attr="value:member.email_placeholder">', '<input data-t-attr="placeholder:member.email_placeholder">')
+  refuses('bad-value', '<p data-t="nav.menu" data-empty="hide">x</p>', '<p data-t="nav.menu">x</p>')
+  refuses('bad-value', '<p data-t="nav.menu" data-prop="label">x</p>', '<p data-t="nav.menu">x</p>')
+  refuses('bad-value', '<img data-t-attr="alt:card.play_video" data-bind-attr="alt:title" alt="">', '<img data-t-attr="alt:card.play_video" data-bind-attr="src:feature_image" alt="">')
+})
+
+test('V2 — catalog-key: an unknown, retired, js or canvas key, each with its own reason', () => {
+  const reason = (key: string) => {
+    const f = validateMarkup(root(`<p data-t="${key}">x</p>`), { controls: [] })
+    assert.deepEqual(codes(f), ['catalog-key'], key)
+    return f[0]!.message
+  }
+  assert.match(reason('a1.menu_open'), /not in the catalog/)
+  assert.match(reason('search.overlay_empty'), /retired/)
+  assert.match(reason('countdown.days'), /js key/)
+  assert.match(reason('comments.placeholder'), /canvas-only/)
+  refuses('catalog-key', '<input data-t-attr="placeholder:a22.email">', '<input data-t-attr="placeholder:member.email_placeholder">')
+})
+
+test('V4 — catalog-params: exactly the placeholder set, naming what is missing or extra', () => {
+  const f = validateMarkup(root('<p data-t="pagination.page_of page=pagination.page">x</p>'), { controls: [] })
+  assert.deepEqual(codes(f), ['catalog-params'])
+  assert.match(f[0]!.message, /misses pages/)
+  const g = validateMarkup(root('<p data-t="nav.menu x=title">x</p>'), { controls: [] })
+  assert.deepEqual(codes(g), ['catalog-params'])
+  assert.match(g[0]!.message, /passes x/)
+  refuses('catalog-params', '<p data-t="post.by">x</p>', '<p data-t="post.by author=primary_author.name">x</p>')
+})
+
+test("V1's lexical half — chrome-literal: a data-text template keeps its tokens and prints no English of its own", () => {
+  refuses('chrome-literal', '<p data-text="Read by {total_members} readers">x</p>', '<p data-text="{total_members}">x</p>')
+  clean(validateMarkup(root('<p data-text="{pagination.page} / {pagination.pages}">1 / 1</p>'), { controls: [] }), 'punctuation is not a word')
+})
+
+test('S6 — catalog-prop: a text prop names a live prop-marked key and carries no default', () => {
+  const content = (prop: object): CategoryContent => ({ category: 'reference', props: { submitLabel: { label: 'Button text', ...prop } as never } })
+  assert.deepEqual(codes(validateCategoryContent(content({ type: 'text', catalog: 'member.signup_cta' }))), [])
+  assert.deepEqual(codes(validateCategoryContent(content({ type: 'richtext', catalog: 'member.signup_cta' }))), ['catalog-prop'])
+  assert.deepEqual(codes(validateCategoryContent(content({ type: 'text', catalog: 'nav.menu' }))), ['catalog-prop'])
+  assert.deepEqual(codes(validateCategoryContent(content({ type: 'text', catalog: 'member.signup_cta', default: 'Join' }))), ['catalog-prop'])
 })
 
 test('an unknown directive is refused, and the one it was misspelt from is not', () => {

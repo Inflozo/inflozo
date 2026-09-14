@@ -155,6 +155,19 @@ Build the machine every design in the library is authored against — **before a
     The story's criteria name appendix-h1, categories run one at a time (R-85), and a key precedes its design (S9).
     A category's own keys (D10's sweep, R-3, R-5) land with that category, and V1 and V2 enforce the order — V1's
     tree half at the render door, beside 4.6's scope check.
+  - **Story 4.9 (2026-09-14) — the catalog is data with one check, and `{{t}}` was recorded before code.**
+    `packages/library/strings/catalog.json` is appendix-h1 §3's machine copy, read through `src/catalog.ts`
+    (`placeholders`, `i18nAttr`, `resolveStrings`); `node tools/check-catalog.mjs`, last in `pnpm test`, holds the
+    two copies equal in order, renders every default through `intl-messageformat` 5.4.3 against the shim's `t()`,
+    and prints the totals appendix-h1 no longer carries. `record-shim.py` recorded the lookup, params and escaping on
+    T1 and T3 (MEASUREMENTS §44): a plain param is the FIELD (`minutes=reading_time` printed "0 min read"), and
+    `(t …)` inside `{{plural}}` is unescaped (DW-141).
+  - **Story 4.9 — how a string reaches a page.** `data-t="key name=path"` is `{{t}}` in the theme and `t()` over
+    `RenderInput.strings` on the canvas, each param guarded and the element hidden when one is empty; `data-t-attr`
+    writes `alt`, `title`, `placeholder`, `aria-label`. A text prop takes its initial value from a prop-marked key with
+    `catalog` (S6). A registry row's `strings` is stamped as `data-i18n-*` on every mount by both emitters, as user
+    text in the theme (S5; only `countdown` today). The validator refuses `catalog-key`, `catalog-params`,
+    `catalog-prop` and `chrome-literal`; a render naming its target refuses every other literal (`checkChromeLiterals`).
 - **The render matrix covers every design × 3 reference Style Packs × light/dark × 3 viewports** — the count derived from the inventory and moving with it, never restated. A design fails above **1% differing pixels at a per-pixel tolerance of 0.1**. The runner is part of the baseline: one pinned Playwright/Chromium in one fixed container image, fonts installed in the image, animations and caret disabled. **Reduced motion is a matrix case with the query forced; 200% browser zoom is a viewport case.** A mass rebaseline requires the owner's approval on a sampled visual review (one design per category, both modes), lands as its own commit touching baselines only, and names the change that caused it. Cadence: full matrix nightly and before each release; per-commit runs cover only what a commit touched.
 - **The accessibility scan rides the same renders — there is no second matrix.** axe-core, WCAG 2.1 AA, **zero violations**, scoped to include the fixture renders and the synthesized templates, not only placed designs. Every image carries an alt, and an image that is the **sole content of a link** must carry a *non-empty* one. **The scan stops at the edge of the post body** — Ghost emits its own markup there and no theme can fix a customer's content.
 
@@ -260,6 +273,9 @@ Build the machine every design in the library is authored against — **before a
     refuses by name.
   - **Story 4.7 (2026-09-14) — `data-module` is no longer consumed.** It is marked `emitted`, so both
     emitters parse it and KEEP it on its element for `core` to mount on; the leak assertion no longer lists it.
+  - **Story 4.9 (2026-09-14) — `data-t` and `data-t-attr` left the refused list.** Both are rendered on both
+    emitters; the refused list is now `data-if`/`data-else`, `data-members`, `data-when`/`data-index`, `data-target`,
+    `data-text` and `data-needs`.
 - **Owner tests: 4.4, 4.5 and 4.10 only.** The rest are formats, harnesses and build tooling with no screen. 4.3's recordings and 4.6's matrix are verified against the two real Ghost servers, T1 (6.58.0) and T3 (5.130.6) — credentials in `tools/probe/.env`.
 - **Downstream, three epics lean on this platform.** Epic 5's play-loop gate and Epic 6's twelve-pack check both assert against the **provisional** pilots. Epic 7 owns the compiler, and **neither Epic 4 nor Epic 7 exits until the joint gate (Story 7.35) is green** — that is where the pilots compile from the same source they render from, the theme passes gscan 0/0, and it deploys and rolls back on real Ghost targets. Epics 9–11 own the pilot files finally. Epic 7 also owns the Translations surface and locale emission; only the catalog's *format* is settled here.
 - **This is the first epic to import across the package boundary**, so two loose ends from Epic 1 close here: `packages/library` still declares no entry point, and `apps/web` declares no dependency on the core packages, so the transpile config is inert. The first story that imports decides the entry shape — likely a data-file `exports` map rather than a module, since the library is data only — and adds the `workspace:*` dependencies.

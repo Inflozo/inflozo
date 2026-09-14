@@ -17,6 +17,7 @@
 
 import {
   ASSET_ID_RE,
+  CATALOG,
   CONSUMED_DIRECTIVES,
   CONTROL_NAME_RE,
   CONTROL_VALUE_RE,
@@ -26,18 +27,29 @@ import {
   IMAGE_SIZES,
   PAGINATED_TARGETS,
   MEDIA_FALLBACK_REFUSAL,
+  MODULES,
+  TEXT_ATTRS,
+  TEXT_DIRECTIVES,
   URL_ATTRS,
   assertBindableAttr as parseBindableAttr,
   bindable,
+  catalogPropRefusal,
   fieldKind,
   guardField,
+  i18nAttr,
   isIsoDate,
+  moduleStringsRefusals,
   parseBindSpec,
+  parseModuleDeclaration,
+  parseTAttr,
+  parseTCall,
   parseTokenTemplate,
+  resolveStrings,
   safeUrl,
   splitFirst,
+  tCallRefusals,
 } from '@inflozo/library'
-import type { BindingUse, ControlDef, DataBinding, IconLookup, PropDef, ScopeEntry, UniversalNarrowing } from '@inflozo/library'
+import type { BindingUse, ControlDef, DataBinding, IconLookup, PropDef, ScopeEntry, TCall, UniversalNarrowing } from '@inflozo/library'
 // Story 4.3. The spine's package table says the three core packages may depend on `library` AND on
 // each other, so this import is inside the dependency rule. The DOM is injected because AD-1 forbids
 // reaching a global; the shim is PURE, so there is nothing to inject around it and threading it
@@ -55,6 +67,7 @@ import {
   paginationContext,
   readingTime,
   srcset,
+  t,
 } from '@inflozo/ghost-shim'
 import { escapeUserText, isRich, linkAttributes, serializeMarks } from './marks.ts'
 import type { PropValue } from './marks.ts'
@@ -77,6 +90,8 @@ export type RuntimeElement = {
   readonly parentElement: RuntimeElement | null
   readonly firstElementChild: RuntimeElement | null
   readonly attributes: Iterable<{ name: string; value: string }>
+  /** Story 4.9 — V1's tree half reads each element's own text nodes (`nodeType` 3) */
+  readonly childNodes: Iterable<{ readonly nodeType: number; readonly textContent: string | null }>
   getAttribute(name: string): string | null
   setAttribute(name: string, value: string): void
   removeAttribute(name: string): void
@@ -163,6 +178,14 @@ export type RenderInput = {
   /** the library's icon lookup (`@inflozo/library/icons`), handed in so the core never imports the
    *  drawings. A design with an `icon` prop rendered without it refuses by name. */
   icons?: IconLookup
+
+  // ── Story 4.9 — the string catalog ──────────────────────────────────────────
+  /** the project's strings: every catalog key's English default or the customer's override, as
+   *  `resolveStrings` returns them. The canvas renders `data-t` over it and both emitters stamp a module's js
+   *  keys from it (S5); the theme's `data-t` is `{{t}}`, which Ghost resolves from the locale file. Omitted, the
+   *  catalog's English. Whatever is handed passes `resolveStrings` again here, so a `credit.*` override or an
+   *  unknown key throws at the render door too (S7). */
+  strings?: Readonly<Record<string, string>>
 }
 
 // R2-7: the compiler's own tokens are built from C0 control characters, which a section author's
@@ -271,9 +294,12 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   'data-items',
   // Story 4.6 — R-2's typed avatar initials, through the user-text path
   'data-initials',
+  // Story 4.9 — a chrome string by catalog key: `{{t}}` on the theme, the handed string on the canvas
+  'data-t',
+  'data-t-attr',
 ]
 
-/** Derived, not written down. `data-t`/`data-t-attr` are 4.9's, `data-needs` is AD-37's
+/** Derived, not written down. `data-needs` is AD-37's
  *  compile-time placement question, and the rest are later stories'. They REFUSE rather than
  *  leak. */
 export const REFUSED_DIRECTIVES: readonly string[] = CONSUMED_DIRECTIVES.filter(
@@ -411,7 +437,7 @@ function guardMode(el: RuntimeElement, media: boolean): Guard {
 function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, tokens: Tokens, zero = false): void {
   el.before(doc.createComment(tokens.put(ifOpen(field, zero))))
   el.after(doc.createComment(tokens.put('{{/if}}')))
-  guarded.set(el, field)
+  guarded.set(el, new Set([...(guarded.get(el) ?? []), field]))
 }
 /** FR-H8's one guard form — `{{#if}}` on the bound field, never `{{#has}}` or `{{#unless}}`. A field the
  *  matrix types `number` adds `includeZero=true`: Handlebars 4.7.9's `helpers/if.js` takes the else
@@ -420,10 +446,10 @@ function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, toke
  *  gscan 6.4.2's one-argument rule counts positional params only, and both majors took it at upload. */
 const ifOpen = (field: string, zero: boolean): string => `{{#if ${field}${zero ? ' includeZero=true' : ''}}}`
 
-/** which field each element is already guarded on, so two directives on one element — `data-bind`,
- *  `data-bind-attr`, `data-bind-srcset` or `data-pagination`, any pair — emit ONE guard when they
- *  guard on the same field, and one each when they do not */
-const guarded = new WeakMap<RuntimeElement, string>()
+/** which fields each element is already guarded on, so two directives on one element — `data-bind`,
+ *  `data-bind-attr`, `data-bind-srcset`, `data-pagination` or a `data-t` param, any pair — emit ONE guard
+ *  when they guard on the same field, and one each when they do not */
+const guarded = new WeakMap<RuntimeElement, Set<string>>()
 
 /** an OWN property or nothing — `dataBindings['constructor']` must not be Object's function */
 function own<T>(o: Readonly<Record<string, T>> | undefined, k: string): T | undefined {
@@ -537,6 +563,25 @@ function ghostPaths(el: RuntimeElement, input: RenderInput): { attr: string; pat
   // `data-pagination` reads `pagination.*`, which lives at the template's top: inside a repeat it is a blank
   const pg = el.getAttribute('data-pagination')
   if (pg !== null) out.push({ attr: 'data-pagination', path: `pagination.${pg === 'numbers' ? 'page' : pg}`, use: 'value', self: true })
+  // Story 4.9 — every `{{t}}` param is a Ghost path like any binding, and scope-checked the same way
+  for (const { directive, call } of tCalls(el)) for (const p of call.params) spec(directive, p.spec)
+  return out
+}
+
+/** Every `{{t}}` call `el` carries — its `data-t`, then each `data-t-attr` entry — skipping a value that fails
+ *  its grammar (left to `consume`, which refuses it by the AD-36 sentence). */
+function tCalls(el: RuntimeElement): { directive: 'data-t' | 'data-t-attr'; call: TCall }[] {
+  const out: { directive: 'data-t' | 'data-t-attr'; call: TCall }[] = []
+  const text = el.getAttribute('data-t')
+  if (text !== null) {
+    const c = parseTCall(text)
+    if (typeof c !== 'string') out.push({ directive: 'data-t', call: c })
+  }
+  const attrs = el.getAttribute('data-t-attr')
+  if (attrs !== null) {
+    const list = parseTAttr(attrs)
+    if (typeof list !== 'string') for (const call of list) out.push({ directive: 'data-t-attr', call })
+  }
   return out
 }
 
@@ -699,7 +744,7 @@ function emitBindings(
       el.setAttribute('srcset', tokens.put(srcsetExpr(path)))
       // ONE guard per element: `src:feature_image|img_url:l` on the same <img> — the authoring
       // guide's own example — has already wrapped it on the same field.
-      if (guarded.get(el) !== guardField(spec)) wrapGuard(doc, el, guardField(spec), tokens)
+      if (guarded.get(el)?.has(guardField(spec)) !== true) wrapGuard(doc, el, guardField(spec), tokens)
     } else {
       // ─────────── THE DIFFERENCE (2) — canvas ───────────
       const v = resolve(path)
@@ -792,6 +837,58 @@ function emitBindings(
     }
   }
 
+  // ── Story 4.9, exit construct 3: a chrome string by catalog key ─────────────
+  // The theme is `{{t "key" name=expr}}`, which Ghost looks up as ONE key in the locale file; the canvas is the
+  // shim's `t()` over the handed strings. Every param is guarded on its bound field (FR-H8): an empty param
+  // leaves a hole on both majors ("Page 2 of ") and the element's only fallback would be the authored English
+  // V1 refuses, so the element HIDES — the way a media binding already does. Recorded: MEASUREMENTS §44.
+  const tParam = (p: { spec: string }): { expr: string; value: unknown } => {
+    const parsed = parseBindSpec(p.spec)
+    if (typeof parsed === 'string') throw new Error(`AD-36: ${parsed}`)
+    const h = parsed.helper === undefined ? undefined : (HELPERS[parsed.helper] as { param: string })
+    // a helper param is a SUB-EXPRESSION, rebuilt from the validated parts like `bindExpr`
+    const expr = h === undefined ? parsed.path : `(${parsed.helper ?? ''} ${parsed.path} ${h.param}="${parsed.arg ?? ''}")`
+    if (users !== null) return { expr, value: undefined }
+    const source = parsed.path.startsWith('@') ? (input.ghost ?? {}) : ctx
+    const zero = numberField(parsed.path, input, where)
+    // a plain param is the FIELD — `minutes=reading_time` printed "0 min read" on both majors, never the helper
+    if (parsed.helper === undefined) {
+      const raw = get(source, parsed.path)
+      return { expr, value: isEmpty(raw, zero) ? null : raw }
+    }
+    return { expr, value: bindValue(p.spec, source, input.site, zero) }
+  }
+  const tCall = (el: RuntimeElement, call: TCall): string | null => {
+    const params = call.params.map((p) => ({ name: p.name, field: guardField(p.spec), ...tParam(p) }))
+    if (users !== null) {
+      // ─────────── THE DIFFERENCE (2) — theme ───────────
+      for (const p of params) {
+        if (guarded.get(el)?.has(p.field) !== true) wrapGuard(doc, el, p.field, tokens, zero(p.field))
+      }
+      return tokens.put(`{{t "${call.key}"${params.map((p) => ` ${p.name}=${p.expr}`).join('')}}}`)
+    }
+    // ─────────── THE DIFFERENCE (2) — canvas ───────────
+    if (params.some((p) => p.value === null)) return null
+    return t(call.key, Object.fromEntries(params.map((p) => [p.name, p.value])), input.strings)
+  }
+  for (const el of all(scope, '[data-t]')) {
+    const call = parseTCall(consume(el, 'data-t') ?? '') as TCall
+    const text = tCall(el, call)
+    if (text === null) el.remove()
+    else el.textContent = text
+  }
+  for (const el of all(scope, '[data-t-attr]')) {
+    const entries = parseTAttr(consume(el, 'data-t-attr') ?? '') as (TCall & { attr: string })[]
+    for (const entry of entries) {
+      const text = tCall(el, entry)
+      if (text === null) {
+        el.remove()
+        break
+      }
+      el.setAttribute(entry.attr, text)
+    }
+  }
+
   // AD-3's single carve-out (row 12): an inline `style` may set ONE bound CSS custom property.
   for (const el of all(scope, '[data-bind-style]')) {
     const [prop, rawSpec] = splitFirst(consume(el, 'data-bind-style') ?? '', ':')
@@ -860,10 +957,20 @@ export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']
   return String(raw)
 }
 
+/** S6: the catalog key a prop takes its initial value from, or null — refused with the validator's sentence
+ *  when the declaration is not legal, because the runtime is handed a schema it never saw validated. */
+function catalogProp(path: string, def: PropDef | undefined): string | null {
+  if (def?.catalog === undefined) return null
+  const bad = catalogPropRefusal(path, def)
+  if (bad !== null) throw new Error(bad.message)
+  return def.catalog
+}
+
 function applyProps(
   scope: RuntimeElement,
   input: RenderInput,
   users: UserText | null,
+  tokens: Tokens,
   items?: Readonly<Record<string, unknown>>,
 ): void {
   const content = input.content ?? {}
@@ -889,6 +996,13 @@ function applyProps(
     }
     // a date is the site's wall-clock day, printed unconverted; anything else is unset
     if (def?.type === 'date' && !isIsoDate(v)) v = undefined
+    // Story 4.9 — S6: an untouched catalog-linked prop is the catalog string. "Untouched" is an EMPTY value,
+    // the test FR-H8's text default already applies below, so the editor keeps it empty until the customer types.
+    const linked = catalogProp(path, def)
+    if (linked !== null && propEmpty(v)) {
+      el.textContent = users !== null ? tokens.put(`{{t "${linked}"}}`) : (input.strings?.[linked] ?? '')
+      continue
+    }
     if (propEmpty(v)) {
       // FR-H8's text default, on a prop rather than a binding: the authored text stays. `hide` is
       // the explicit override, and DW-93's class — the marker must never survive either way.
@@ -952,6 +1066,11 @@ function applyProps(
       // AD-27(b): an image stores an asset ID, resolved only through `assets`; a URL in its place is unset
       if (def?.type === 'image') raw = typeof raw === 'string' && ASSET_ID_RE.test(raw) ? own(input.assets, raw) : undefined
       if (def?.type === 'date' && !isIsoDate(raw)) raw = undefined
+      const linked = catalogProp(path, def)
+      if (linked !== null && propEmpty(raw)) {
+        el.setAttribute(attr, users !== null ? tokens.put(`{{t "${linked}"}}`) : (input.strings?.[linked] ?? ''))
+        continue
+      }
       if (propEmpty(raw)) {
         if (i === 0) firstMissing = true
         continue
@@ -991,10 +1110,10 @@ export function stampControls(
   const schema = input.controlSchema
   if (schema === undefined) return
   for (const { name } of [...section.attributes]) {
-    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal') section.removeAttribute(name)
+    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal' && !name.startsWith('data-i18n-')) section.removeAttribute(name)
   }
   for (const c of schema) {
-    if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal') {
+    if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal' || c.name.startsWith('i18n-')) {
       throw new Error(`AD-36: control ${JSON.stringify(c.name)} is not a control name — a kebab-case word that is not a directive (AD-3).`)
     }
   }
@@ -1047,7 +1166,7 @@ function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
       el.before(clone)
       // bindings first, as every other walk does: `data-empty` is shared and applyProps sweeps it
       emitBindings(doc, clone, input, tokens, users, input.ghost ?? {}, [])
-      applyProps(clone, input, users, { [path]: item })
+      applyProps(clone, input, users, tokens, { [path]: item })
     }
     el.remove()
   }
@@ -1086,6 +1205,114 @@ export function iconSvg(name: unknown, icons: IconLookup): string | null {
   return `${filled ? FILLED_SVG : OUTLINE_SVG}${paths}</svg>`
 }
 
+// ─── Story 4.9 — the string catalog at the render door ───────────────────────
+
+/** What a render is handed, through `resolveStrings`: only the entries that differ from English count as
+ *  overrides, so a full map `resolveStrings` already returned passes again unchanged, while a `credit.*`
+ *  override or an unknown key throws here as it would at the compiler (S7). */
+function handedStrings(handed: RenderInput['strings']): Record<string, string> {
+  const overrides = Object.fromEntries(Object.entries(handed ?? {}).filter(([k, v]) => CATALOG.keys[k]?.en !== v))
+  return resolveStrings(overrides)
+}
+
+/** V2 and V4 at render, over the SOURCE and before any expansion — so a `data-t` inside a repeat with no rows
+ *  is refused on the canvas exactly as the theme refuses it — plus the two things a `data-t` element may not
+ *  carry, and an authored `data-i18n-*`, which only the registry's `strings` may put on a mount (S5). */
+function refuseCatalogMisuse(root: RuntimeElement): void {
+  for (const el of root.querySelectorAll('*')) {
+    const tag = `<${el.tagName.toLowerCase()}>`
+    for (const { name } of el.attributes) {
+      if (name.startsWith('data-i18n-')) throw new Error(`${tag} carries ${name} — both emitters stamp data-i18n-* on a module's mount from the registry's strings (S5); a design never writes one.`)
+    }
+    for (const d of ['data-t', 'data-t-attr']) {
+      const v = el.getAttribute(d)
+      if (v === null) continue
+      const bad = DIRECTIVES[d]?.parse(v) ?? null
+      if (bad !== null) throw new Error(`AD-36: ${d}=${JSON.stringify(v)} — ${bad}`)
+    }
+    for (const { call } of tCalls(el)) {
+      const refused = tCallRefusals(call)
+      if (refused.length > 0) throw new Error(`${tag} — ${refused.map((r) => r.message).join(' ')}`)
+    }
+    if (el.getAttribute('data-t') !== null) {
+      if (el.getAttribute('data-empty') !== null) {
+        throw new Error(`${tag} data-t data-empty — a data-t element hides when a param is empty; its only static fallback is the authored English sample, which V1 refuses.`)
+      }
+      const other = TEXT_DIRECTIVES.find((d) => d !== 'data-t' && el.getAttribute(d) !== null) ?? (el.getAttribute('data-pagination') === 'numbers' ? 'data-pagination="numbers"' : undefined)
+      if (other !== undefined) throw new Error(`${tag} carries data-t and ${other} — one element carries one text, and the second would silently replace the first.`)
+    }
+    const tAttr = el.getAttribute('data-t-attr')
+    if (tAttr !== null) {
+      const written = writtenAttrs(el, ['data-bind-attr', 'data-prop-attr'])
+      const clash = (parseTAttr(tAttr) as { attr: string }[]).find((e) => written.has(e.attr))
+      if (clash !== undefined) throw new Error(`${tag} writes ${clash.attr} from data-t-attr and from a binding — one attribute holds one value.`)
+    }
+  }
+}
+
+/** the attribute names a list directive on `el` writes */
+function writtenAttrs(el: RuntimeElement, directives: readonly string[]): Set<string> {
+  return new Set(directives.flatMap((d) => (el.getAttribute(d) ?? '').split(';').map((e) => splitFirst(e.trim(), ':')[0].trim().toLowerCase()).filter((a) => a !== '')))
+}
+
+const WORD_RE = /[\p{L}\p{N}]/u
+
+/** V1's tree half (Story 4.9): every text node, and every alt, title, placeholder or aria-label value, that holds a
+ *  letter or digit and that nothing replaces — the literal English a translator could never reach. Exempt: text
+ *  under an element whose text a directive replaces (`data-prop`, `data-bind`, `data-t`, `data-helper`,
+ *  `data-initials`, `data-text`, or `data-pagination="numbers"`); a text attribute a directive writes; `alt=""`;
+ *  and anything with no letter or digit. The lexical half — the words of a `data-text` template — is the
+ *  validator's `chrome-literal`. Exported for the fixtures' checks; a render naming its target throws on it. */
+export function chromeLiterals(root: RuntimeElement): string[] {
+  const out: string[] = []
+  const replaced = (el: RuntimeElement): boolean => {
+    for (let p: RuntimeElement | null = el; p !== null; p = p.parentElement) {
+      if (TEXT_DIRECTIVES.some((d) => p?.getAttribute(d) !== null) || p.getAttribute('data-pagination') === 'numbers') return true
+      if (p === root) break
+    }
+    return false
+  }
+  for (const el of [root, ...root.querySelectorAll('*')]) {
+    const tag = el.tagName.toLowerCase()
+    const written = writtenAttrs(el, ['data-t-attr', 'data-bind-attr', 'data-prop-attr'])
+    for (const a of TEXT_ATTRS) {
+      const v = el.getAttribute(a)
+      if (v !== null && WORD_RE.test(v) && !written.has(a)) out.push(`<${tag} ${a}="${v}">`)
+    }
+    if (replaced(el)) continue
+    for (const node of el.childNodes) {
+      const text = (node.textContent ?? '').trim()
+      if (node.nodeType === 3 && WORD_RE.test(text)) out.push(`<${tag}> "${text}"`)
+    }
+  }
+  return out
+}
+
+/** V1's tree half over a design source, for a caller holding markup rather than a tree (the fixtures' checks). */
+export function checkChromeLiterals(doc: RuntimeDocument, src: string): string[] {
+  const root = doc.createElement('div')
+  root.innerHTML = src
+  return chromeLiterals(root)
+}
+
+/** S5 on both emitters: every js key a mounted module's registry row declares becomes `data-i18n-*` on the
+ *  mount, from the resolved strings. On the theme the value is USER TEXT — an override may carry a brace and
+ *  Handlebars parses attribute values — so it goes through `UserText`, which writes `{` as `&#123;`; the browser
+ *  decodes it, and `core` reads `{count}` intact (AD-5). */
+function stampStrings(root: RuntimeElement, input: RenderInput, users: UserText | null): void {
+  for (const el of all(root, '[data-module]')) {
+    const decl = parseModuleDeclaration(el.getAttribute('data-module') ?? '')
+    if (typeof decl === 'string') throw new Error(decl)
+    const row = MODULES.filter((m) => m.name === decl.name)
+    const bad = moduleStringsRefusals(row)
+    if (bad.length > 0) throw new Error(`S5: ${bad.join(' · ')}`)
+    for (const key of row[0]?.strings ?? []) {
+      const value = input.strings?.[key] ?? ''
+      el.setAttribute(i18nAttr(key), users !== null ? users.put('', value) : value)
+    }
+  }
+}
+
 export type ThemeOutput = { template: string; partials: Record<string, string> }
 
 /** The shared walk. `users !== null` is the theme; `users === null` is the canvas. */
@@ -1098,10 +1325,16 @@ function renderTree(
 ): { root: RuntimeElement; partials: Record<string, string> } {
   // Story 4.5: the stored Count and Order are folded into the declared queries ONCE, here, so the
   // canvas rows and the theme's {{#get}} read the same numbers
-  const input: RenderInput = given.data === undefined ? given : { ...given, dataBindings: withData(given.dataBindings, given.data) }
+  // Story 4.9: the handed strings pass `resolveStrings` once, here — the one door an override passes (S7)
+  const input: RenderInput = {
+    ...given,
+    ...(given.data === undefined ? {} : { dataBindings: withData(given.dataBindings, given.data) }),
+    strings: handedStrings(given.strings),
+  }
   const root = doc.createElement('div')
   root.innerHTML = src
   refuseUnrendered(root)
+  refuseCatalogMisuse(root)
   // Story 4.7 — `data-module` SURVIVES on both emitters, on the element that carries it, because `core`
   // mounts on it on the live page; it is parsed here, once and before any expansion, and a bad value throws
   // the vocabulary's sentence (FR-G7).
@@ -1124,6 +1357,11 @@ function renderTree(
     if (refused.length > 0) {
       throw new Error(`FR-H7: ${target} does not carry every binding this design makes, and Ghost would print each refused one as a silent blank:\n  ${refused.join('\n  ')}`)
     }
+    // Story 4.9 — V1's tree half, beside the scope check: literal English outside the catalog and every prop
+    const literals = chromeLiterals(root)
+    if (literals.length > 0) {
+      throw new Error(`V1: this design prints English that is neither a catalog string nor a content prop, so no customer can translate it (FR-Q6). Give each a data-t / data-t-attr key from appendix-h1, or make it a content prop:\n  ${literals.join('\n  ')}`)
+    }
   }
   if (input.icons === undefined) {
     for (const el of all(root, '[data-prop]')) {
@@ -1134,6 +1372,8 @@ function renderTree(
     }
   }
   if (root.firstElementChild !== null) stampControls(root.firstElementChild, input)
+  // Story 4.9 — S5, AFTER the controls: stampControls strips every root data-* it does not own
+  stampStrings(root, input, users)
   expandItems(doc, root, input, tokens, users)
 
   const partials: Record<string, string> = {}
@@ -1158,7 +1398,7 @@ function renderTree(
       el.replaceWith(holder)
       holder.append(el)
       emitBindings(doc, holder, input, tokens, users, ghost, where)
-      applyProps(holder, input, users)
+      applyProps(holder, input, users, tokens)
       const body = holder.innerHTML
       // §7.3 gap row 2 / exit construct 1, and the half that was missing until Story 4.3: a
       // `data-repeat` naming a `dataBindings` KEY is a `{{#get}}`, not a `{{#foreach}}`. It used to
@@ -1191,7 +1431,7 @@ function renderTree(
   }
 
   emitBindings(doc, root, input, tokens, users, ghost, [])
-  applyProps(root, input, users)
+  applyProps(root, input, users, tokens)
   return { root, partials }
 }
 
@@ -1245,7 +1485,7 @@ function expandRepeats(
       el.before(clone)
       expandRepeats(doc, clone, input, tokens, row, inner)
       emitBindings(doc, clone, input, tokens, null, row, inner)
-      applyProps(clone, input, null)
+      applyProps(clone, input, null, tokens)
     }
     el.remove()
   }

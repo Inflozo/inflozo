@@ -7,6 +7,7 @@
   __UPLOADED__ (the Ghost-hosted image the recorder uploads — every seeded feature image is an
   external static.ghost.org URL that no Ghost will ever resize, so nothing already on the box can
   exercise a rendition).
+  Story 4.9 adds `locales/en.json` and the TR group: `{{t}}`'s lookup, params and escaping on both majors.
 --}}
 <pre id="probe">
 SITE|title=[{{@site.title}}]
@@ -29,6 +30,15 @@ ASSET|screen_css=[{{asset "css/screen.css"}}]
 ASSET|no_such=[{{asset "css/nope.css"}}]
 
 TEXT|t_unknown=[{{t "Older posts"}}]
+
+TR|plain_control=[{{t "Plain key"}}]
+TR|dotted_hit=[{{t "probe.dotted_hit"}}]
+TR|nested_miss=[{{t "probe.nested_miss"}}]
+TR|missing_key=[{{t "probe.no_such_key"}}]
+TR|params_path=[{{t "probe.page_of" page=pagination.page pages=pagination.pages}}]
+TR|param_undefined=[{{t "probe.page_of" page=pagination.page pages=no_such_field}}]
+TR|param_omitted=[{{t "probe.page_of" page=pagination.page}}]
+TR|escape_text=[{{t "probe.escape"}}]
 TEXT|encode=[{{encode "a b&c"}}]
 
 MEMBER|if_member=[{{#if @member}}SIGNED_IN{{else}}ANONYMOUS{{/if}}]
@@ -69,3 +79,8 @@ GET|ids_one=[{{#get "posts" limit="1"}}{{#foreach posts}}{{id}}{{/foreach}}{{/ge
 <pre id="raw-nav-items-secondary">{{#foreach @site.secondary_navigation}}NAV|label=[{{this.label}}]|url=[{{this.url}}]|current=[{{this.current}}]
 {{/foreach}}</pre>
 <pre id="raw-pagination">{{pagination}}</pre>
+{{!-- Story 4.9: read back WITHOUT unescaping, because what Ghost escapes is the fact recorded --}}
+<pre id="verbatim-t-escape-text">{{t "probe.escape"}}</pre>
+<pre id="verbatim-t-escape-attr"><i title="{{t "probe.escape"}}"></i></pre>
+<pre id="verbatim-t-param-html">{{t "probe.by" author="<b>A&B</b>"}}</pre>
+<pre id="verbatim-t-plural">{{plural pagination.total empty=(t "probe.posts_none") singular=(t "probe.posts_one") plural=(t "probe.posts_many")}}</pre>

@@ -17,8 +17,10 @@ import {
   BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
   INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
-  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, safeUrl, splitFirst,
+  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
+  safeUrl, splitFirst, tCallRefusals,
 } from './vocabulary.ts'
+import { catalogPropRefusal } from './catalog.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
 export type Failure = { code: string; message: string }
@@ -71,6 +73,10 @@ export type MarkupOptions = {
 
 /** The directives that give an element a field a `data-empty` guard can be derived from. */
 const GUARDABLE = Object.keys(DIRECTIVES).filter((k) => DIRECTIVES[k]?.guardable === true)
+
+/** Story 4.9 — the directives that replace an element's TEXT. One element carries one text, so `data-t` beside
+ *  any of them would be one silently replacing the other; and V1's tree half exempts text under them. */
+export const TEXT_DIRECTIVES: readonly string[] = ['data-prop', 'data-bind', 'data-t', 'data-helper', 'data-initials', 'data-text']
 
 export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[] {
   const out: Failure[] = []
@@ -153,6 +159,11 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       // `data-portal` and `data-ghost-search` are Ghost's own attributes, not Inflozo directives;
       // the first is in the bindable allow-list and the second is a directive of its own.
       if (name === 'data-portal') continue
+      // Story 4.9 — S5: both emitters stamp data-i18n-* on a module's mount from the registry's strings
+      if (name.startsWith('data-i18n-')) {
+        push(out, 'bad-value', `<${tag.name} ${name}> — both emitters stamp data-i18n-* on a module's mount from FR-G7's registry strings (S5); a design never writes one.`)
+        continue
+      }
 
       const retired = RETIRED_DIRECTIVES[name]
       if (retired !== undefined) {
@@ -164,6 +175,21 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       if (directive !== undefined) {
         const why = directive.parse(value)
         if (why !== null) push(out, 'bad-value', `<${tag.name} ${name}="${value}"> — ${why}`)
+        // Story 4.9 — V2 and V4, read from the catalog once the grammar holds
+        else if (name === 'data-t' || name === 'data-t-attr') {
+          const calls = name === 'data-t' ? [parseTCall(value)] : parseTAttr(value)
+          for (const call of typeof calls === 'string' ? [] : calls) {
+            if (typeof call === 'string') continue
+            for (const r of tCallRefusals(call)) push(out, r.code, `<${tag.name} ${name}="${value}"> — ${r.message}`)
+          }
+        }
+        // V1's lexical half: a data-text template's literal words are English outside the catalog
+        else if (name === 'data-text') {
+          const words = value.replace(/\{[^{}]*\}/g, ' ').trim()
+          if (/[\p{L}\p{N}]/u.test(words)) {
+            push(out, 'chrome-literal', `<${tag.name} data-text="${value}"> prints "${words}" as literal English — visitor-facing text is a catalog string (data-t, with the value as a param) or a content prop, so it can be translated (FR-Q6, V1). data-text keeps its {path} tokens only.`)
+          }
+        }
         continue
       }
 
@@ -186,6 +212,26 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
         && !declared.has(control)
         && !(UNIVERSAL_CONTROLS as readonly string[]).includes(control)) {
         push(out, 'root-control-undeclared', `the root carries ${name} but no control named "${control}" is in controlSchema — the stylesheet must never select on an attribute the design does not own (AD-3).`)
+      }
+    }
+
+    // Story 4.9 — `data-t` guards on its params and hides: its only fallback is the authored English, which V1
+    // refuses. And one element carries one text.
+    if (names.includes('data-t')) {
+      if (names.includes('data-empty')) {
+        push(out, 'bad-value', `<${tag.name} data-t data-empty> — a data-t element hides when a param is empty; its only static fallback is the authored English sample, which V1 refuses, so data-empty does not apply.`)
+      }
+      const other = TEXT_DIRECTIVES.filter((d) => d !== 'data-t' && names.includes(d))
+      if (other.length > 0 || attr('data-pagination') === 'numbers') {
+        push(out, 'bad-value', `<${tag.name}> carries data-t and ${other[0] ?? 'data-pagination="numbers"'} — one element carries one text, and the second would silently replace the first.`)
+      }
+    }
+    const tAttr = attr('data-t-attr')
+    if (tAttr !== undefined) {
+      const taken = [attr('data-bind-attr'), attr('data-prop-attr')].flatMap((l) => (l ?? '').split(';').map((e) => splitFirst(e.trim(), ':')[0].trim().toLowerCase()))
+      for (const e of tAttr.split(';')) {
+        const a = splitFirst(e.trim(), ':')[0].trim().toLowerCase()
+        if (a !== '' && taken.includes(a)) push(out, 'bad-value', `<${tag.name}> writes ${a} from data-t-attr and from a binding — one attribute holds one value.`)
       }
     }
 
@@ -396,7 +442,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   for (const c of schema) {
     if (!CONTROL_NAME_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" is not a kebab-case name — it writes data-${c.name} on the section root (AD-3).`)
-    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal') {
+    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal' || c.name.startsWith('i18n-')) {
       push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive or Ghost's own attribute — a control's attribute must mean nothing but the control (AD-3).`)
     }
     if (UNIVERSAL_CONTROLS.includes(c.name)) {
@@ -591,6 +637,9 @@ export function validateCategoryContent(content: CategoryContent, icons?: IconLo
       && (typeof prop.default !== 'string' || (icons !== undefined ? icons(prop.default) === undefined : !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(prop.default)))) {
       push(out, 'icon-default', `prop "${path}" defaults to the icon ${JSON.stringify(prop.default)}, which is not in the vendored Tabler set (R-104) — an icon is a name from the set, outline or name-filled.`)
     }
+    // Story 4.9 — S6: a text prop may take its initial value from a prop-marked catalog key
+    const linked = catalogPropRefusal(path, prop)
+    if (linked !== null) push(out, linked.code, linked.message)
     if (prop.type === 'date' && prop.default !== undefined && !isIsoDate(prop.default)) {
       push(out, 'date-default', `prop "${path}" defaults to ${JSON.stringify(prop.default)} — a date is the site's wall-clock day, YYYY-MM-DD, stored unconverted.`)
     }

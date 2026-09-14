@@ -5,6 +5,8 @@
 // controls plus up to 15 design controls (FR-F3), 40-120 elements, several binds,
 // a nested repeat, inline SVG icons, and FR-H8 media guards.
 // ponytail: 8 archetypes, parameterised by index — not 484 hand-written designs.
+// Story 4.9: every chrome literal is a catalog key (data-t / data-t-attr) or a content prop, so the archetypes
+// pass V1's tree half (`checkChromeLiterals`, asserted by test-vocabulary.mjs) as every design must.
 
 const icon = (n) =>
   `<svg class="ico ico--${n}" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">` +
@@ -23,7 +25,7 @@ const A = {
 <section class="d-a1-${i} hdr" ${controls([`data-sticky="sticky-shrink"`, `data-nav-align="end"`, `data-cta="on"`, `data-search="on"`, `data-member-links="on"`, `data-density="regular"`, `data-border="hairline"`, `data-logo-size="md"`, `data-shadow="soft"`, `data-width="wide"`, `data-mobile="drawer"`, `data-caps="off"`])}>
   <div class="hdr__util">
     <ul class="hdr__social">
-      ${[1, 2, 3, 4].map((n) => `<li class="hdr__social-item"><a class="hdr__social-link" href="#s${n}" aria-label="Social ${n}">${icon(n)}</a></li>`).join('\n      ')}
+      ${[1, 2, 3, 4].map((n) => `<li class="hdr__social-item"><a class="hdr__social-link" href="#s${n}" aria-label="Social ${n}" data-prop-attr="aria-label:social${n}.label">${icon(n)}</a></li>`).join('\n      ')}
     </ul>
     <p class="hdr__tag" data-prop="utilityNote">Free weekly issue</p>
   </div>
@@ -32,7 +34,7 @@ const A = {
       <img class="hdr__logo-img" data-bind-attr="src:@site.logo|img_url:m" data-empty="hide" src="/logo.png" alt="">
       <span class="hdr__logo-text" data-prop="logoText">Orbit Weekly</span>
     </a>
-    <nav class="hdr__nav" aria-label="Main">
+    <nav class="hdr__nav" data-t-attr="aria-label:a11y.main_navigation">
       <ul class="hdr__list">
         <li class="hdr__item" data-repeat="navigation" data-partial="nav-item-${i}">
           <a class="hdr__link" data-bind-attr="href:url"><span class="hdr__link-text" data-bind="label">Home</span>${icon(2)}</a>
@@ -40,7 +42,7 @@ const A = {
       </ul>
     </nav>
     <div class="hdr__actions">
-      <button class="hdr__search" type="button" aria-label="Search">${icon(3)}</button>
+      <button class="hdr__search" type="button" data-t-attr="aria-label:search.trigger_label">${icon(3)}</button>
       <a class="hdr__signin" href="/signin/" data-prop="signinLabel">Sign in</a>
       <a class="hdr__cta button button--primary" data-prop="cta.label" data-prop-attr="href:cta.url">Subscribe</a>
     </div>
@@ -147,7 +149,7 @@ const A = {
     <p class="band__sub" data-prop="subtitle" data-empty="fallback">One email a week.</p>
     <form class="band__form" data-members-form="subscribe">
       <label class="band__label" for="e-${i}" data-prop="emailLabel">Email address</label>
-      <input class="band__input" id="e-${i}" type="email" name="email" required placeholder="you@example.com">
+      <input class="band__input" id="e-${i}" type="email" name="email" required data-t-attr="placeholder:member.email_placeholder">
       <button class="band__btn button button--primary" type="submit" data-prop="submitLabel">Subscribe</button>
     </form>
     <ul class="band__proof">
@@ -173,10 +175,10 @@ const A = {
     </div>
     <img class="article__feature" data-bind-attr="src:feature_image|img_url:l" data-empty="hide" src="/f.jpg" alt="">
   </header>
-  <div class="article__body kg-canvas">{{content}}</div>
+  <div class="article__body kg-canvas" data-helper="content"></div>
   <footer class="article__foot">
     <ul class="article__share">
-      ${[1, 2, 3].map((n) => `<li><a class="article__share-link" href="#sh${n}" aria-label="Share ${n}">${icon(n)}</a></li>`).join('\n      ')}
+      ${[1, 2, 3].map((n) => `<li><a class="article__share-link" href="#sh${n}" data-t-attr="aria-label:post.share">${icon(n)}</a></li>`).join('\n      ')}
     </ul>
     <div class="article__bio">
       <img class="article__bio-img" data-bind-attr="src:primary_author.profile_image|img_url:m" data-empty="hide" src="/a.jpg" alt="">
@@ -203,7 +205,7 @@ const A = {
       <img class="ftr__logo" data-bind-attr="src:@site.icon|img_url:s" data-empty="hide" src="/icon.png" alt="">
       <p class="ftr__blurb" data-prop="blurb" data-empty="fallback">A newsletter about building things.</p>
     </div>
-    <nav class="ftr__nav" aria-label="Footer">
+    <nav class="ftr__nav" data-t-attr="aria-label:a11y.footer_navigation">
       <ul class="ftr__list">
         <li class="ftr__item" data-repeat="navigation" data-partial="ftr-item-${i}">
           <a class="ftr__link" data-bind-attr="href:url"><span data-bind="label">Link</span></a>
@@ -220,7 +222,7 @@ const A = {
   <div class="ftr__legal">
     <p class="ftr__copy" data-prop="copyright">&copy; Orbit Weekly</p>
     <ul class="ftr__social">
-      ${[1, 2, 3].map((n) => `<li><a class="ftr__social-link" href="#f${n}" aria-label="Social ${n}">${icon(n)}</a></li>`).join('\n      ')}
+      ${[1, 2, 3].map((n) => `<li><a class="ftr__social-link" href="#f${n}" aria-label="Social ${n}" data-prop-attr="aria-label:social${n}.label">${icon(n)}</a></li>`).join('\n      ')}
     </ul>
   </div>
 </section>`,

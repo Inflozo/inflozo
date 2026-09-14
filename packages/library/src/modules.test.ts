@@ -4,7 +4,8 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { MODULES, RETIRED_MODULES, bundle, checkThemeJs, moduleFunctionName, moduleUnion, parseModuleDeclaration } from './modules.ts'
+import { MODULES, RETIRED_MODULES, bundle, checkThemeJs, moduleFunctionName, moduleStringsRefusals, moduleUnion, parseModuleDeclaration } from './modules.ts'
+import { CATALOG } from './catalog.ts'
 
 const core = "// the runtime\nfunction core(win, modules, options) {\n  const s = '}' + \"{\" + `${'}'}`\n  return /\\}{/.test(s) ? { stop() {} } : null\n}\n"
 const lightbox = 'function lightbox(el, ctx) {\n  el.addEventListener("click", () => {}, { signal: ctx.signal })\n}\n'
@@ -98,4 +99,20 @@ test("assets/js/ holds bundle's bytes from repo sources and cards.js, and nothin
   const probe = bundle(['probe'], { core, probe: 'function probe(el) {}' }, [{ name: 'probe', editSafe: true, animates: false }])
   assert.match(checkThemeJs({ 'assets/js/main.js': probe }, sources)[0] ?? '', /names probe, with no source/)
   assert.match(checkThemeJs({ 'assets/js/main.js': bundle(['lightbox'], sources) }, { core, lightbox: 'export ' + lightbox })[0] ?? '', /lightbox\.js — /)
+})
+
+// Story 4.9 — S5's registry half. appendix-h1 §3.3a names `countdown` as the module every countdown.* key belongs
+// to, so its row declares each one; the rule refuses a key that is not a live js key and two keys whose attribute
+// would collide on the mount.
+test('a module declares the live js keys it writes, and countdown declares every countdown.* key', () => {
+  assert.deepEqual(moduleStringsRefusals(), [])
+  const countdown = MODULES.find((m) => m.name === 'countdown')
+  assert.deepEqual(countdown?.strings, Object.keys(CATALOG.keys).filter((k) => k.startsWith('countdown.')))
+  assert.deepEqual(MODULES.filter((m) => m.strings !== undefined).map((m) => m.name), ['countdown'], 'strings on any other row is Ask First')
+  const row = (strings: string[]) => [{ name: 'countdown', editSafe: true, animates: false, strings }]
+  assert.match(moduleStringsRefusals(row(['nav.menu']))[0] ?? '', /not a js key/)
+  assert.match(moduleStringsRefusals(row(['search.overlay_empty']))[0] ?? '', /not live/)
+  assert.match(moduleStringsRefusals(row(['countdown.nope']))[0] ?? '', /not in the catalog/)
+  // two declarations deriving one attribute — here the same key twice — would be one data-i18n-* on the mount
+  assert.match(moduleStringsRefusals(row(['gallery.next', 'pagination.load_more_loading', 'gallery.next']))[0] ?? '', /both derive data-i18n-next/)
 })
