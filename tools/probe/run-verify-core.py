@@ -23,10 +23,10 @@ major prints this text and exits, so `--help` uploads nothing.
      reduced motion: the animating module waits, mounts when the preference clears, aborts when it returns
      JavaScript off: no element carries `js-enabled` and no module ran, on the same authored markup
    A page error other than the probe's own fails its row; a page that is not this run's probe page voids the run.
-3. It restores the previous theme in a `finally` and re-reads the active theme to prove it. The uploaded probe
-   theme STAYS INSTALLED, inactive, on each server (the spec's Ask First allows one upload, one activation and
-   the restore, and nothing else); a later run overwrites it. It writes nothing to disk, creates no content and
-   touches no setting; no key is printed (keys are read by variable name).
+3. It restores the previous theme in a `finally`, re-reads the active theme to prove it, then DELETES the probe
+   theme and re-reads the theme list (the owner's ruling, Story 4.7 Q1, 2026-09-14): each site ends the run as it
+   started. It writes nothing to disk, creates no content and touches no setting; no key is printed (keys are read
+   by variable name).
 """
 import os, re, sys, json, glob, time, shutil, secrets, subprocess, importlib.util
 import urllib.error
@@ -297,6 +297,13 @@ def verify(g, zipped, nonce):
         print(f'    theme RESTORED -> {active!r}')
         if active != previous:
             raise Void(f'the previous theme {previous!r} did not come back — {active!r} is active')
+        # owner's ruling, Story 4.7 Q1 (2026-09-14): the probe theme is deleted in the same cleanup, so the site ends
+        # the run exactly as it started; read back, never assumed
+        g.api('DELETE', f'themes/{name}/')
+        left = [t['name'] for t in g.api('GET', 'themes/')['themes']]
+        print(f'    probe theme DELETED -> installed now: {left}')
+        if name in left:
+            raise Void(f'the probe theme {name!r} is still installed after DELETE')
     rows = judge(results, nonce)
     for ok, what in rows:
         print(f'    {"PASS" if ok else "FAIL"}  {what}')

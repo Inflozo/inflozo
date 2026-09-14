@@ -68,6 +68,7 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
 **Ask First:**
 - Any write to T1 or T3 beyond uploading and activating one probe theme and restoring the previous theme in
   a `finally`.
+  *(Q1, ruled 2026-09-14: deleting the probe theme in that same `finally` is allowed.)*
 - Any npm dependency beyond `jsdom@30.0.1` as a `packages/library` devDependency. That version is already
   locked for `section-runtime`.
 - Changing any edit-safe value, or FR-D20's or Story 5.15's text about which modules run while editing.
@@ -273,7 +274,7 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
 
 *(Review 1, 2026-09-14 — five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier. Every patch applied and re-tested; 13 findings dismissed as noise or as later stories' work.)*
 
-- [ ] [Review][Decision] The probe leaves `inflozo-probe-core` installed, inactive, on T1 and T3 — deleting it in the `finally` is a write the spec's Ask First does not cover. See `## Questions for the owner`.
+- [x] [Review][Decision] The probe leaves `inflozo-probe-core` installed, inactive, on T1 and T3 — ruled option 1 (owner, 2026-09-14): deleted in the same cleanup, read back; both sites carry only their original themes again.
 - [x] [Review][Patch] Authored markup could carry a `<script>`, an `on*` handler or a `javascript:` URL — the one road around `checkThemeJs` — refused at the validator as `authored-script` [packages/library/src/validate.ts:126]
 - [x] [Review][Patch] `checkThemeJs` passed a theme with no `main.js`; the sentence now lives in the function, and `build.js` drops its call-site patch [packages/library/src/modules.ts:104]
 - [x] [Review][Patch] `ctx.observe` after the mount's signal aborted left the target observed forever [packages/library/modules/core.js:57]
@@ -349,7 +350,7 @@ The probe that proves `core` works uploads a tiny throwaway theme called `infloz
 1. **Delete the throwaway theme at the end of every probe run, in the same cleanup step that switches the site back (RECOMMENDED)** — the sites end each run exactly as they started, which is how the other probes here already behave.
 2. **Leave it installed** — harmless, one inactive theme per site, overwritten by the next run; the docs now say so.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-14).** The probe deletes `inflozo-probe-core` in the same `finally` that restores the previous theme, and re-reads the theme list to prove it is gone.
 
 ## Verification
 
@@ -425,3 +426,7 @@ The probe that proves `core` works uploads a tiny throwaway theme called `infloz
   && node gate.js theme` 0/0 on both majors with `checkThemeJs` clean; `doc-audit.py --check` twice. The probe was not re-run
   after the `core.js` patches: the two changed paths (a late `observe`, a throwing observer callback) are covered in jsdom on
   the shipped bytes, and the probe's rows are unchanged.
+- **Q1 ruled and executed (2026-09-14):** `run-verify-core.py` re-run once with the delete in place — T3 5.130.6 and T1
+  6.58.0 each: upload HTTP 200, `casper` restored, `inflozo-probe-core` deleted and absent from the re-read theme list,
+  22 of 22 rows hold. Older probe themes from earlier stories (`inflozo-probe-13`, `-all`, `-shim`, `-contexts`) are
+  still installed on both; they are not this story's and were left alone.
