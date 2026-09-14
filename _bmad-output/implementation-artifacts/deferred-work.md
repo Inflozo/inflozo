@@ -2670,7 +2670,8 @@ severity: low
 origin: Story 4.2 (2026-09-11) — deviation 3 of the Dev run, recorded in the spec; raised as a
   finding by the review because a decision taken by omission had no owning document
 owner: unassigned — the first story that adds a second document-shaped file under `packages/`
-  (a design's `behaviour.js` in Story 4.7, or the snapshot harness in 4.10) decides whether `BASES`
+  (the snapshot harness in 4.10; Story 4.7 withdrew a design's `behaviour.js` and added only code, named in
+  `tools/probe/run-verify-core.py`'s catalogue row) decides whether `BASES`
   in `tools/doc-audit.py` widens to `packages/` or whether the catalogue stays a planning index
 location: tools/doc-audit.py `BASES`; the `tools/stress/compile.js` catalogue row names both proofs
 reason: widening `BASES` pulls every future design's files into the gate, which is a decision about
@@ -2795,7 +2796,14 @@ reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a revi
 plain: The editing canvas will run Ghost's four little card scripts (the ones that open a question box or
   play audio), but nobody has written down what those cards do when scripts are off, or whether they are safe
   to run while someone is editing.
-status: open
+status: done 2026-09-14 (Story 4.7)
+resolution: Story 4.7 (2026-09-14) — research §7 carries a `cards.js` row, read in Ghost 6.58.0's vendored
+  scripts and the Orbit Weekly recordings rather than taken from the reconcile's proposal: with JavaScript off
+  the audio and video cards show no working player (Ghost emits neither with `controls`), the toggle stays
+  closed (`data-kg-toggle-state="close"`), and gallery rows lose their proportions (only `gallery.js` sets each
+  image's `flex` ratio). Edit-safe **yes** — it acts only inside the post-body fixture, which nothing on the
+  canvas edits (FR-H3(1)); Story 5.15 confirms both. `python3 tools/derive-module-reach.py --check` fails if the
+  row goes, and `checkThemeJs` names `cards.js` as `assets/js/`'s one exception.
 severity: low
 origin: Story 4.4 (2026-09-13) — spec task "propagate"; `reconcile-designs.md:4100`.
 owner: Story 4.7 (`core` and the behaviour-module registry)
@@ -3335,3 +3343,52 @@ reason: each generator stamps `git log -1 --format=%cs`, the date of HEAD. At pr
   change — compare the regenerated page with the stamp stripped, keep the on-disk date when the content is
   unchanged, and stamp the wall-clock date only when it changed. Until then: expect the first push of a day to
   skip deploy, and push once more (any commit) to publish it.
+
+## Deferred from: spec-4-7-core-and-the-behaviour-module-registry (2026-09-14)
+
+### DW-133: FR-D20 and Story 5.15 say reveal, tabs, accordions and sticky headers run while editing, and §7 says they do not
+
+plain: Two documents disagree about which moving parts keep moving while you design. The list the product reads
+  follows the architect's table, which pauses drop-downs, tabs, scroll reveals and shrinking headers on the
+  canvas; the editing requirement says those four keep running. Nothing is visible yet, because the canvas does
+  not exist — you will see whichever one is right when Story 5.15 is tested.
+status: open
+severity: medium
+origin: Story 4.7 (2026-09-14) — spec Design Notes, "Edit-safe values are transcribed, not decided"
+owner: Story 5.15 (canvas suppression, the PAUSED chip and the Preview toggle), whose owner test is where the
+  canvas behaviour is seen; the owner rules if the two stay apart
+location: prd.md FR-D20 · epics.md Story 5.15 · research-section-js-libraries.md §7 · packages/library/modules/registry.json
+reason: FR-D20 and 5.15 list "sticky/shrink headers, scroll reveal, tabs, accordions" as edit-safe modules that
+  run always, while §7 — the architect's pass under R-21, which says "the editor obeys the table" — marks
+  `header-scroll`, `reveal`, `tabs` and `accordion` **no**. Changing either text or any edit-safe value is an
+  Ask First in 4.7, so `registry.json` carries §7's values verbatim and `derive-module-reach.py --check` holds
+  them there; 5.15 either confirms §7 and corrects FR-D20's list, or brings the difference to the owner.
+
+### DW-134: an inline `<script>` in a template is code the `assets/js/` check cannot see
+
+plain: The check that proves a site carries only Inflozo's own scripts looks in the scripts folder. A script
+  written straight into a page template would never be looked at, so it could ship without anyone noticing.
+status: open
+severity: medium
+origin: Story 4.7 (2026-09-14) — spec task "propagate"; FR-G7(1)'s assertion is over `assets/js/` by definition
+owner: Story 7.5 (emitting `main.js` and `cards.js`), which assembles the theme `checkThemeJs` runs over
+location: packages/library/src/modules.ts `checkThemeJs` · Story 7.5's compile gate over emitted `.hbs`
+reason: `checkThemeJs` sees only files under `assets/js/`. FR-G7(1) promises no third-party JavaScript anywhere
+  in a generated theme, and `mode-toggle` already needs "a tiny inline head script to avoid the flash" (research
+  §3.1) — a legitimate inline script with no check at all. The compile gate needs a second assertion over every
+  emitted template: no `<script>` except the one `defer` tag for `main.js`, `cards.js` where designed, and any
+  inline script whose bytes are repo-authored, named and compared the way `main.js` is.
+
+### DW-135: `cards.js`'s bytes are exempt from the `assets/js/` check and compared to nothing
+
+plain: Ghost's own card scripts are allowed through the scripts check by name. If something else were saved
+  under that name, the check would still pass it.
+status: open
+severity: low
+origin: Story 4.7 (2026-09-14) — `checkThemeJs` skips `assets/js/cards.js` wholesale
+owner: Story 7.5, which emits `cards.js` from the vendored chunks
+location: packages/library/src/modules.ts `checkThemeJs` · packages/library/orbit-weekly/vendor/cards/js/
+reason: FR-J4 declares `cards.js` Ghost's MIT code, vendored by `tools/probe/record-cards.py` at the pinned
+  version, but nothing assembles it yet, so there are no bytes to compare with. When 7.5 builds it from the
+  vendored chunks, `checkThemeJs` should take those chunks as a source and refuse a `cards.js` that is not their
+  concatenation — the same byte comparison `main.js` already gets.

@@ -1,0 +1,41 @@
+{
+  "about": "FR-G7's module registry, the half code reads (Story 4.7). research-section-js-libraries.md §2.1 is the list and §7 keeps each module's no-JS line and edit-safe sentence; `python3 tools/derive-module-reach.py --check` fails when this file and that prose disagree. `core` is the platform runtime and is never a row: it runs on every page and no design declares it. `animates` sends a module through core's one reduced-motion gate, true only where §3.1's reduced-motion line is §7's no-JS state. `retired` names a module that must not come back, with the ruling that retired it.",
+  "modules": [
+    { "name": "nav-drawer", "editSafe": false, "animates": false },
+    { "name": "header-scroll", "editSafe": false, "animates": false },
+    { "name": "dismiss", "editSafe": false, "animates": false },
+    { "name": "rotator", "editSafe": false, "animates": true },
+    { "name": "countdown", "editSafe": true, "animates": false },
+    { "name": "marquee", "editSafe": false, "animates": true },
+    { "name": "accordion", "editSafe": false, "animates": false },
+    { "name": "tabs", "editSafe": false, "animates": false },
+    { "name": "carousel", "editSafe": false, "animates": false },
+    { "name": "lightbox", "editSafe": false, "animates": false },
+    { "name": "video-facade", "editSafe": false, "animates": false },
+    { "name": "price-toggle", "editSafe": true, "animates": false },
+    { "name": "member-form", "editSafe": false, "animates": false },
+    { "name": "count-up", "editSafe": true, "animates": true },
+    { "name": "reveal", "editSafe": false, "animates": true },
+    { "name": "scroll-spy", "editSafe": true, "animates": false },
+    { "name": "reading-progress", "editSafe": true, "animates": false },
+    { "name": "toc", "editSafe": false, "animates": false },
+    { "name": "share", "editSafe": true, "animates": false },
+    { "name": "load-more", "editSafe": false, "animates": false },
+    { "name": "infinite-scroll", "editSafe": false, "animates": false },
+    { "name": "shuffle", "editSafe": false, "animates": false },
+    { "name": "slide-in-card", "editSafe": false, "animates": true },
+    { "name": "filter-strip", "editSafe": false, "animates": false },
+    { "name": "typewriter", "editSafe": false, "animates": true },
+    { "name": "mode-toggle", "editSafe": true, "animates": false },
+    { "name": "nav-transform", "editSafe": true, "animates": false },
+    { "name": "contact-form", "editSafe": false, "animates": false },
+    { "name": "group-headings", "editSafe": true, "animates": false }
+  ],
+  "retired": {
+    "search-overlay": "retired by ruling R-24: search is Ghost's native sodo-search, which a plain element carrying data-ghost-search opens with no module",
+    "search-expand": "retired on 2026-08-27: no design claims it, and search is Ghost's native sodo-search (R-24)",
+    "command-palette": "retired by ruling R-24: its only consumer was A23, which is deleted, and no Inflozo design may bind ⌘K, which sodo-search already takes",
+    "confetti": "retired by the owner's ruling of 2026-08-31: no design in the library declares it",
+    "sort": "never built, by ruling R-52: a gallery shows the order its owner arranged, and filter-strip filters by linking to Ghost's own routes"
+  }
+}

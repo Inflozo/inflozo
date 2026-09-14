@@ -2,11 +2,13 @@
 //
 // The sentence this file exists to make true, and which is absent from every planning document:
 // **a registry entry is ASSEMBLED, never authored.** It comes from the design's directory path
-// (identity), its `design.json`, its category's `content.json` and the four files. AD-2's
+// (identity), its `design.json`, its category's `content.json` and its markup and stylesheet. AD-2's
 // `design.json` field list and FR-G3's entry list are therefore DIFFERENT SETS, and reading one
 // as the other is the mistake this module removes.
 
 import type { BindingContext, ControlGroup, ControlType, PropType, SidebarGroup } from './vocabulary.ts'
+import { MODULES, parseModuleDeclaration } from './modules.ts'
+import { scanTags } from './validate.ts'
 
 /** One control. The order of `controlSchema` is load-bearing: `quickControls[]` is its first 3–5. */
 export type ControlDef = {
@@ -160,7 +162,10 @@ export type SectionRegistryEntry = {
   quickControls: string[]
   html: string
   css: string
-  js?: string
+  /** FR-G3's `js?`: the registry modules the markup declares with `data-module`, in registry order —
+   *  recovered, never authored, and omitted when the markup declares none (Story 4.7). A design ships no
+   *  script of its own; FR-G7 lets it run registry code only. */
+  js?: string[]
   dataBindings?: Record<string, DataBinding>
   ghostCompat: { minVersion: string; helpers: string[]; deprecatedAt?: string }
   darkCapabilities: string[]
@@ -198,12 +203,12 @@ export type AssembleInput = {
   content: CategoryContent
   html: string
   css: string
-  js?: string
 }
 
 /** The whole of "a registry entry is assembled". Nothing here is authored twice: `contentSchema`
- *  is the category's `content.json`, `controlSchema` is the design's own list, and `quickControls`
- *  is recovered from that list — so the two documents cannot drift. */
+ *  is the category's `content.json`, `controlSchema` is the design's own list, `quickControls`
+ *  is recovered from that list, and `js` from the markup's `data-module` names — so no two documents
+ *  can drift. */
 export function assembleEntry(input: AssembleInput): SectionRegistryEntry | string {
   const ident = parseDesignDir(input.dir)
   if (ident === null) return `"${input.dir}" is not a design directory — identity is {categoryId}/{n}`
@@ -230,7 +235,16 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
     previewSeed: d.previewSeed,
     descriptor: d.descriptor,
   }
-  if (input.js !== undefined) entry.js = input.js
+  const declared = new Set<string>()
+  for (const tag of scanTags(input.html)) {
+    for (const [k, v] of tag.attrs) {
+      if (k.toLowerCase() !== 'data-module') continue
+      const d = parseModuleDeclaration(v)
+      if (typeof d === 'string') return `design ${entry.id}: ${d}`
+      declared.add(d.name)
+    }
+  }
+  if (declared.size > 0) entry.js = MODULES.filter((m) => declared.has(m.name)).map((m) => m.name)
   if (d.dataBindings !== undefined) entry.dataBindings = d.dataBindings
   if (d.provisional !== undefined) entry.provisional = d.provisional
   return entry

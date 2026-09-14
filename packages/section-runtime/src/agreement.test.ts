@@ -24,6 +24,7 @@ import { JSDOM } from 'jsdom'
 import {
   CONSUMED_DIRECTIVES,
   CONSUMED_DIRECTIVE_RE,
+  DIRECTIVES,
   IMAGE_SIZES,
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
@@ -727,7 +728,7 @@ test('a directive this story does not emit is refused by name on both emitters, 
 //    directive left in by both emitters compared equal and passed `agree()`; the mutation run
 //    proved five of the ten could leak with the suite green. The fixture is derived from
 //    `RENDERED_DIRECTIVES` so a directive added to the set later is covered by construction. ──
-const everyDirectiveSrc = `<section class="all" data-module="cards">
+const everyDirectiveSrc = `<section class="all" data-module="lightbox">
      <h1 class="h" data-prop="title" data-empty="hide">t</h1>
      <ul class="l"><li class="i" data-items="logos"><span data-prop="logos[].name">n</span><b data-initials="logos[].name">AP</b></li></ul>
      <a class="a" data-prop-attr="href:link">l</a>
@@ -770,11 +771,35 @@ test('no rendered directive survives — every member of RENDERED_DIRECTIVES is 
     }
   }
   assert.ok('card' in theme.partials, 'the partial was not extracted')
+  // Story 4.7 — the one survivor this fixture carries: core mounts on it on the live page
+  for (const html of [canvas, theme.template]) assert.ok(html.startsWith('<section class="all" data-module="lightbox">'), html)
   // the limit is honoured on the canvas: three rows, limit 2, two articles
   assert.equal((canvas.match(/<article/g) ?? []).length, 2, `the canvas ignored data-repeat-limit: ${canvas}`)
   // a repeat modifier with no repeat to modify is refused, never left in
   assert.throws(() => renderCanvas(doc(), '<div data-partial="x">y</div>', {}), /modifies a data-repeat/)
   assert.throws(() => renderTheme(doc(), '<div data-repeat-limit="3">y</div>', {}), /modifies a data-repeat/)
+})
+
+// ── Story 4.7 — `data-module` is core's mount point on the live page, so both emitters KEEP it on the element
+//    that carries it — inside a repeat and a partial too — and refuse a bad value with the vocabulary's sentence. ──
+test('data-module survives on the same element on both emitters, and a bad value is refused by both', () => {
+  const src = `<section class="g" data-module="accordion:768">
+     <ul class="l"><li class="i" data-repeat="posts"><a class="a" data-module="lightbox" data-bind-attr="href:url" data-bind="title">t</a></li></ul>
+   </section>`
+  const input: RenderInput = { ghost: { posts: [{ title: 'a', url: 'https://site.example/a/' }] } }
+  const { canvas, theme } = agree(src, input)
+  const partial = renderTheme(doc(), src.replace('data-repeat="posts"', 'data-repeat="posts" data-partial="row"'), input).partials['row'] ?? ''
+  assert.ok(canvas.startsWith('<section class="g" data-module="accordion:768">') && theme.startsWith('<section class="g" data-module="accordion:768">'), `${canvas}\n${theme}`)
+  assert.ok(/<a class="a" data-module="lightbox"/.test(canvas), canvas)
+  assert.ok(/<a class="a" data-module="lightbox"/.test(partial), partial)
+  for (const bad of ['search-overlay', 'core', 'accordion:0', 'back-to-top']) {
+    const sentence = DIRECTIVES['data-module']?.parse(bad) ?? ''
+    assert.ok(sentence !== '', bad)
+    const src2 = `<section class="g"><div data-module="${bad}"></div></section>`
+    const refused = (e: unknown) => e instanceof Error && e.message.includes(sentence)
+    assert.throws(() => renderCanvas(doc(), src2, {}), refused, `canvas: ${bad}`)
+    assert.throws(() => renderTheme(doc(), src2, {}), refused, `theme: ${bad}`)
+  }
 })
 
 // ── FR-H8's attribute-form fallback — the half of "unconditional" the suite never observed. ──

@@ -126,6 +126,12 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
     for (const [rawName, value] of tag.attrs) {
       const name = rawName.toLowerCase()
 
+      // Story 4.7: `core` sets `js-enabled` on the element whose module it mounts, and removes it when
+      // the mount stops. Authored, the element would sit in its JavaScript branch with no script running.
+      if (name === 'class' && value.split(/\s+/).includes('js-enabled')) {
+        push(out, 'js-enabled-authored', `<${tag.name} class="${value}"> — js-enabled is set by core on the element whose module it mounts, and a design never writes it: authored, the section sits in its JavaScript branch with JavaScript off, while editing and under reduced motion. Select on it in style.css instead.`)
+        continue
+      }
       // AD-3's one carve-out, machine-checked.
       if (name === 'style') {
         if (!INLINE_STYLE_RE.test(value)) {

@@ -9,6 +9,8 @@
 // PARSED and rebuilt from validated parts, never interpolated. Every `parse` below returns a
 // failure sentence or null, and nothing here concatenates a value into an expression.
 
+import { parseModuleDeclaration } from './modules.ts'
+
 /** Handlebars' real path vocabulary — an optional `@` prefix, `../` ascents, dotted identifiers.
  *  Widened once already: a grammar that rejects `@site.logo` is a broken parser, not a strict one.
  *  What it still refuses is every character the Round-4 breakout needed: braces, quotes,
@@ -401,7 +403,7 @@ export type Directive = {
   /** this directive gives the element a field a `data-empty` guard can be derived from */
   readonly guardable?: boolean
   /** the compiler does NOT consume this one: it survives into the emitted theme, because
-   *  something on the live site reads it (Portal, sodo-search). Every other directive must be
+   *  something on the live site reads it (Portal, sodo-search, `core`). Every other directive must be
    *  gone from every emitted file, which is what AD-34's leak assertion checks. */
   readonly emitted?: boolean
 }
@@ -579,8 +581,13 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
 
   // ── carried from the executed harness, for the same reason each other one is ──
   'data-module': {
-    summary: "which behaviour module owns this subtree — FR-G3's `js?` field, in markup. 4.7 owns the registry of names",
-    parse: (v) => (/^[a-z][a-z0-9-]*$/.test(v) ? ok : fail(`"${v}" is not a module name`)),
+    // Story 4.7 — it SURVIVES: `core` scans the live page for it and mounts the module on this element.
+    summary: "the behaviour module mounted on this element, from FR-G7's registry, optionally with the width in CSS pixels below which it runs — \"accordion\" or \"accordion:768\". FR-G3's `js` is read from it; core mounts on it",
+    emitted: true,
+    parse: (v) => {
+      const r = parseModuleDeclaration(v)
+      return typeof r === 'string' ? fail(r) : ok
+    },
   },
   'data-members-form': {
     summary: 'Portal reads this itself and applies the loading/success/error classes. With JavaScript off, nothing happens (R-5)',
@@ -597,7 +604,8 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
 /** AD-34's leak assertion, as data rather than as a list in prose: every directive the COMPILER
  *  consumes must be gone from every emitted file. Derived, never restated — the seven names that
  *  assertion used to carry were the spike's, and they were stale the moment §7.3's gap table was
- *  answered. The three that survive do so because something on the live site reads them. */
+ *  answered. The ones marked `emitted: true` survive because something on the live site reads them:
+ *  Portal, sodo-search, and since Story 4.7 `core`. */
 export const CONSUMED_DIRECTIVES: readonly string[] =
   Object.keys(DIRECTIVES).filter((k) => DIRECTIVES[k]?.emitted !== true)
 

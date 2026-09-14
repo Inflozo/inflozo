@@ -9,10 +9,11 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
-    "test": "node --test 'src/**/*.test.ts'"
+    "test": "node --test 'src/**/*.test.ts' 'modules/*.test.mjs'"
   },
   "devDependencies": {
     "@types/node": "24.13.4",
+    "jsdom": "30.0.1",
     "typescript": "7.0.2"
   }
 }

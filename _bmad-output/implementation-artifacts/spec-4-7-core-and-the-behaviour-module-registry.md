@@ -2,7 +2,8 @@
 title: 'Story 4.7 — `core` and the behaviour-module registry'
 type: 'feature'
 created: '2026-09-14'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '033e47c49edd50bf3bee9592842dbf697d3a55be'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -164,12 +165,12 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/library/modules/registry.json` -- write one row per live §2.1 module: `name`, `editSafe`
+- [x] `packages/library/modules/registry.json` -- write one row per live §2.1 module: `name`, `editSafe`
   (from §7's column) and `animates` (true for `rotator`, `marquee`, `count-up`, `reveal`, `typewriter` and
   `slide-in-card`, whose §3.1 lines stop the motion). Add `retired`, mapping `search-overlay`,
   `search-expand`, `command-palette`, `confetti` and `sort` to their rulings' reasons -- the machine half
   of FR-G7's one table.
-- [ ] `packages/library/src/modules.ts` · `src/modules.test.ts` · `src/index.ts` · `tsconfig.json` -- build
+- [x] `packages/library/src/modules.ts` · `src/modules.test.ts` · `src/index.ts` · `tsconfig.json` -- build
   the pure half, importing nothing from `src/`, so no import cycle forms:
   - `MODULES`, read from the JSON.
   - `parseModuleDeclaration(v)` → `{ name, below? }` or the refusal sentence.
@@ -183,7 +184,7 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
     no repo source, is a sentence, not a throw.
 
   Test the library rows of the matrix -- the rule 7.5 and 7.33 will call, written once.
-- [ ] `packages/library/src/vocabulary.ts` · `src/validate.ts` · `src/registry.ts` · `src/validate.test.ts`
+- [x] `packages/library/src/vocabulary.ts` · `src/validate.ts` · `src/registry.ts` · `src/validate.test.ts`
   -- the declaration and the entry:
   - `data-module` parses through `parseModuleDeclaration`, gains `emitted: true`, and its summary and the
     survivors comment lose their counts.
@@ -192,7 +193,7 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
     `AssembleInput` loses `js`; update its three callers.
 
   Each new refusal fires alone in a test -- FR-G3's `js?`, filled from what the markup declares.
-- [ ] `packages/library/modules/core.js` -- the runtime:
+- [x] `packages/library/modules/core.js` -- the runtime:
   - scan `[data-module]` under the document;
   - per mount: an `AbortController`, `js-enabled` set before `mount` and removed on abort or throw, and
     the error reported asynchronously;
@@ -206,19 +207,19 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
 
   Add a `ponytail:` comment for the one-time scan, naming a rescan as the upgrade the first module that
   appends markup (`load-more`) will ask for -- FR-G7(4).
-- [ ] `packages/library/modules/core.test.mjs` · `packages/library/package.json` · `eslint.config.js` --
+- [x] `packages/library/modules/core.test.mjs` · `packages/library/package.json` · `eslint.config.js` --
   cover every `core` row of the matrix on the file's real bytes, and on `bundle`'s bytes with probe rows,
   in jsdom with a fake `matchMedia` and `IntersectionObserver`. Add the devDependency and the
   `modules/*.test.mjs` glob. Add `packages/library/modules/**` to `NOT_CORE`, with the reason: theme
   browser code, never run by the product -- a test beside every future module.
-- [ ] `packages/section-runtime/src/core.ts` · `src/agreement.test.ts` -- replace the `consume` with a
+- [x] `packages/section-runtime/src/core.ts` · `src/agreement.test.ts` -- replace the `consume` with a
   parse-and-keep on both emitters (it throws the vocabulary's sentence), drop `data-module` from
   `RENDERED_DIRECTIVES`, put a registry name in the leak fixture, and test that both emitters keep it on
   the same element and refuse a bad value -- `core`'s mount point on the live page.
-- [ ] `tools/stress/build.js` -- write `bundle([], sources)` from `packages/library/modules/` in place of
+- [x] `tools/stress/build.js` -- write `bundle([], sources)` from `packages/library/modules/` in place of
   the placeholder, and report `checkThemeJs` over the theme beside the leak assertions --
   `node build.js && node gate.js theme` stays 0/0 on both majors, and the hardcoded 31 goes.
-- [ ] `tools/derive-module-reach.py` · root `package.json` · `tools/doc-audit.py` -- add `--check`, reading
+- [x] `tools/derive-module-reach.py` · root `package.json` · `tools/doc-audit.py` -- add `--check`, reading
   no export:
   - `registry.json`'s names equal §2.1's live rows;
   - each module's `editSafe` equals its §7 yes/no;
@@ -226,7 +227,7 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
   - a refusal replaces the `assert`.
 
   Chain it after `test-vocabulary.mjs` and update the tool's row -- the table stays one table.
-- [ ] `tools/probe/run-verify-core.py` · `tools/doc-audit.py` -- the probe, reusing `record-shim.py`'s client
+- [x] `tools/probe/run-verify-core.py` · `tools/doc-audit.py` -- the probe, reusing `record-shim.py`'s client
   and packaging:
   - build a minimal probe theme whose `main.js` is `bundle` of the real `core` plus probe rows (plain,
     `animates`, `:768`, throwing), and assert `checkThemeJs` refuses it as the control;
@@ -235,13 +236,13 @@ its shipped bytes: in jsdom under CI, and in real Chromium on T1 and T3.
     600 → 1024 px, expecting no page error but the probe's own;
   - restore and re-read the active theme in a `finally`, never printing a key;
   - add its row -- R-82: `core` proven where it will run.
-- [ ] `docs/section-authoring.md` -- replace `### behaviour.js` with the modules part: declaring, width,
+- [x] `docs/section-authoring.md` -- replace `### behaviour.js` with the modules part: declaring, width,
   union, `js`, `ctx`, `js-enabled` on the mount, editing, the motion gate, the file shape, `bundle` loaded
   `defer`, the `assets/js/` rule, `cards.js` and the licence filter (MIT, BSD-2/3-Clause, Apache-2.0, ISC,
   re-verified at the pinned version), §2.2's native mechanisms, and a width's no-JS line covering both
   sides. Fix `:50`, `:474` and `:863-881` without a count, and add the refusal rows -- the contract E9–E11
   write against.
-- [ ] `research-section-js-libraries.md` · `prd.md` · `ARCHITECTURE-SPINE.md` · `VERIFY-AT-BUILD.md` ·
+- [x] `research-section-js-libraries.md` · `prd.md` · `ARCHITECTURE-SPINE.md` · `VERIFY-AT-BUILD.md` ·
   `MEASUREMENTS.md` · `deferred-work.md` · `epic-4-context.md` -- propagate (standing rule 3), then grep for
   `behaviour.js`, "consumed — 4.7", "three are the only" and "31 behaviour" (standing rule 7):
   - research §7: a `cards.js` row (Design Notes), `js-enabled` on the mount, and the registry pointer;
@@ -337,3 +338,41 @@ edits (FR-H3(1)). Story 5.15 confirms both.
 - After the probe, `GET /ghost/api/admin/themes/` on both servers shows the theme that was active before the
   run as active (R-82). Supabase, Vercel, Resend and Dodo are not touched: this story has no schema change,
   no screen, no email and no payment path.
+
+**Results (Dev, 2026-09-14) — the real services this story hit (R-82):**
+- **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — `python3 tools/probe/run-verify-core.py`,
+  keys read by `record-shim.py`'s `load_env()` as `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`,
+  `GHOST5_URL`, `GHOST5_STAFF_ACCESS_TOKEN`, `GHOST5_CONTENT_API_KEY`, never printed. The control held first:
+  `checkThemeJs` REFUSED the probe theme ("names probe, probe-motion, probe-throws, with no source") and passed
+  `bundle([])` over `packages/library/modules/`; the probe theme scored gscan 4.49.7 and 6.4.2 0 errors / 0 warnings.
+  Both servers accepted the upload and activation, served this run's nonce on `/`, and in Chromium 1228 (Playwright
+  1.61.1) **22 of 22 rows held on each major**: JavaScript on at 1024 px, 1024 → 600 → 1024 px, reduced motion, the
+  throwing mount's error the only page error, and with JavaScript off (the control) no element carrying `js-enabled`
+  and no module run. The full record is MEASUREMENTS §42.
+- **Manual check, re-read independently after the probe** — `GET /ghost/api/admin/themes/` on both servers
+  (`GHOST6_*`, `GHOST5_*` by name): `casper` active on both, as before the run. The uploaded, inactive
+  `inflozo-probe-core` theme stays installed on each; nothing else was written.
+- **Supabase, Vercel, Resend, Dodo** — not touched: no schema change, no screen, no email, no payment path. CI
+  deploys the push to Vercel as usual; nothing in this story changes what the app serves.
+
+**Results — the commands:**
+- `pnpm check` (Node 24.18.1) — exit 0: lint, typechecks, every package test including `modules/core.test.mjs`,
+  `src/modules.test.ts` and `agreement.test.ts`'s `data-module` test; `test-vocabulary.mjs` 19 checks passed;
+  `derive-module-reach --check: PASS`. `pnpm build` (the web app, which now imports `registry.json` through the
+  library) — exit 0.
+- `derive-module-reach.py --check` control — `tabs` flipped in `registry.json`: exit 1, "tabs: registry.json says
+  editSafe true, research §7 says no"; restored byte-identical: exit 0, PASS.
+- `node build.js && node gate.js theme` — "AD-34 leak assertions: clean", "FR-G7(1) assets/js/ (checkThemeJs): clean —
+  assets/js/main.js"; Ghost 5.x via gscan 4.49.7 ERRORS 0 WARNINGS 0, Ghost 6.x via gscan 6.4.2 ERRORS 0 WARNINGS 0.
+  (`npm install` exited 243 offline in this session; the installed `node_modules` was current.)
+- Six `core.js` mutations (motion gate, class removal, edit-safe skip, unobserve, error report, listener teardown) and
+  the `bundle` shape check each turned a test red, then were restored.
+- Standing rule 7 grep for `behaviour.js`, "consumed — 4.7", "three are the only", "31 behaviour": the only hits left
+  are `record` stress-test documents, memlogs, and the new sentences saying there is no `behaviour.js`.
+
+**Dev notes for review:**
+- `core` is not a `registry.json` row: the matrix refuses `data-module="core"`, so `--check` accepts §7's `core` row
+  beside `cards.js` as the platform runtime, where Tasks say "every other §7 row is struck or is `cards.js`".
+- Editing suppression and `stop()` are not reachable from a theme's `main.js`, so they are proven in jsdom only until
+  Story 5.15's canvas calls `core` with `{ editing: true }`.
+- FR-D20's and Story 5.15's edit-safe text is unchanged (Ask First); the difference from §7 is ledgered for 5.15.

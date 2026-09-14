@@ -166,7 +166,7 @@ Legend — **V** = hand-written vanilla; **L** = library recommended; **L?** = l
 | `price-toggle` | **V** | One `data-billing` attribute write on the section root — §7.3's control→CSS mechanism, already built. **Both prices are already in the DOM**, server-rendered by `{{#get "tiers"}}` | — | — | ~0.3 KB | Two radio inputs in a `<fieldset>` with a `<legend>`, **not** a `role="switch"` div. Prices update in place; the inactive price is removed from the a11y tree, not merely hidden |
 | `member-form` | **V** | `<form>` + `fetch`; Ghost's `data-members-form` contract; class swap to `.success` / `.error` | — | — | ~0.6 KB | The state change must be announced: `aria-live="polite"` on the status region, and focus moves to the sent-state heading. Strings via `data-i18n-*` (FR-Q6) |
 | `count-up` | **V** | Shared `IntersectionObserver` + `Intl.NumberFormat` + `requestAnimationFrame` | `countup.js` 2.8.2 | **2.01 KB** | Rejected: 2.01 KB buys easing curves and options Inflozo's closed-value controls cannot even express (FR-F1). ~0.5 KB | Final value must be present in the HTML before JS runs (FR-G4), so AT reads the real number, not a partial count. Animation skipped entirely under `prefers-reduced-motion` |
-| `reveal` | **V** | Shared IO + a class toggle; CSS does the motion | `AOS` 2.3.4 | **4.70 KB** | Rejected twice over: 4.70 KB, and **last published 2018-10-03** — unmaintained by any reasonable standard. ~0.3 KB | Content must be visible with JS off — the CSS hides it only under `.js-enabled` set by `core`. No reveal at all under `prefers-reduced-motion` |
+| `reveal` | **V** | Shared IO + a class toggle; CSS does the motion | `AOS` 2.3.4 | **4.70 KB** | Rejected twice over: 4.70 KB, and **last published 2018-10-03** — unmaintained by any reasonable standard. ~0.3 KB | Content must be visible with JS off — the CSS hides it only under `.js-enabled`, which `core` sets on the mount element while the module runs. No reveal at all under `prefers-reduced-motion` |
 | `scroll-spy` | **V** | `IntersectionObserver` with `rootMargin` — the correct primitive; a `scroll` listener is not | — | — | ~0.5 KB, shared with `toc` | `aria-current="true"` on the active item |
 | `reading-progress` | **V** | `IntersectionObserver` on paragraph sentinels, or one `scroll` handler with `Element.animate()`. **CSS scroll-driven animations (`animation-timeline: scroll()`) would be the ideal mechanism — and are not Baseline** (§6), so IO it is | — | — | ~0.3 KB | Decorative in the common case: `aria-hidden="true"`. A32 #12's "you've read 30 %" is *informational* and needs `role="progressbar"` with `aria-valuenow` |
 | `toc` | **V** | `querySelectorAll('h2,h3')` over rendered `{{content}}`, `<template>` cloning, IO scroll-spy | `tocbot` 4.36.8 | **4.25 KB** | Rejected: 4.25 KB vs ~0.9 KB for the subset Inflozo needs (2 levels, auto-hide < 3 headings, scroll-spy). Tocbot is MIT and well maintained (2026-05-15) — it simply does more than the spec asks | `<nav aria-labelledby>` + `<ol>`; `aria-current="true"` on the active entry. Heading anchors must not duplicate ids Ghost already emits |
@@ -561,7 +561,7 @@ Two further notes for section authors:
 | What | Tool | Licence | Enforces |
 |---|---|---|---|
 | The flat design stylesheets | **`stylelint-plugin-use-baseline`** 1.4.5, `available: "widely"` + explicit Tier-2 allowlist | MIT | §6.5. Stylelint runs directly on flat CSS files — **no build step, no bundler, no preprocessor**, which is exactly why it fits §7.1 |
-| The 31 JS modules | **`eslint-plugin-compat`** 7.0.2 against the pinned browserslist | MIT | DOM/JS APIs below the floor |
+| Every FR-G7 module and `core` | **`eslint-plugin-compat`** 7.0.2 against the pinned browserslist | MIT | DOM/JS APIs below the floor |
 | Compiled `assets/js/main.js` | **`size-limit`** 13.0.3, `limit: "40 KB"`, gzip | MIT | NFR-2's JS budget — the maximal-design fixture theme is the input |
 | Third-party code | one grep asserting `assets/js/` contains only repo-authored files | — | §5's licence rule, by construction |
 
@@ -578,7 +578,18 @@ into sections under 768"*. Where it does, the no-JS line must describe the state
 width**, not just one, because a module that is inert above its breakpoint has a no-JS state and a
 JS-enabled state that are identical there and different below it. Three designs need it today —
 **A2-15**, **A13-15** and **A3's footer accordions** — and the shape recurs. FR-G7 carries the rule; the
-declaration lives with the module declaration, not in this table.
+declaration lives with the module declaration, not in this table — since Story 4.7 it is the markup's
+`data-module="accordion:768"`, and `core` mounts the script only while `(width < 768px)` matches.
+
+**The machine half of this table is `packages/library/modules/registry.json`** *(Story 4.7)*: each
+module's name in §2.1's order, its edit-safe value transcribed from the column below, whether `core`'s
+one reduced-motion gate stops it, and the retired names with their rulings. This table keeps the prose;
+`python3 tools/derive-module-reach.py --check` fails when the two disagree, so it stays one table.
+**`js-enabled` is set on the mount, not on the page:** `core` adds the class to the element carrying
+`data-module` before the module runs and removes it when that mount stops. A module suppressed while
+editing, stopped for reduced motion or outside its declared width therefore leaves its own element in the
+no-JS state its line below describes — a page-wide class would have put `reveal`'s section in its hidden
+JavaScript branch with no script running.
 
 **Amended 2026-08-27 by the Ghost Build Room** (`prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`):
 
@@ -603,7 +614,7 @@ declaration lives with the module declaration, not in this table.
 
 | Module | With JavaScript disabled | Edit-safe |
 |---|---|---|
-| `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. | **yes** — sets a class and nothing else |
+| `core` | Never runs; no element carries `.js-enabled`, so all JS-conditional CSS stays in its no-JS branch. *(Story 4.7)* With JavaScript on, `core` sets the class on each element whose module it mounts — never on `<html>` or `<body>` — and removes it when that mount stops. | **yes** — sets a class on each mount and nothing else |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. | **no** — the drawer overlays the canvas and the hamburger swallows clicks |
 | `header-scroll` | **Two consumers, two states.** A1's headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13's sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design's does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. | **no** — hides and reveals the header under the cursor as the canvas scrolls |
 | ~~`command-palette`~~ **DELETED (R-24)** | — | — |
@@ -634,6 +645,7 @@ declaration lives with the module declaration, not in this table.
 | `nav-transform` | *(new — D2)* The flat raw-prefix list renders: a visitor sees Ghost's own navigation with the literal `+Sections` / `−Essays` labels. **JavaScript-required, no accommodation built** — the owner's ruling, stated once here and nowhere else. | **yes** — rewrites labels once at load, and the transformed labels are what the editor should see |
 | `contact-form` | *(new — D28)* The honest `mailto:` link renders and works; the JS-composed draft (subject and body pre-filled) is what JavaScript adds. No tile provider, no third-party post endpoint. | **no** — suppressed so an editor cannot open a mail client from the canvas |
 | `group-headings` | *(new — ruling R-1)* **The module MAY step the headings it groups, and must** *(architect's ruling, 2026-09-03, ratifying what the A18 pass assumed)*: it inserts each group heading at the level the design declares and steps the titles it groups one level below. That is the only arrangement whose outline is correct in **both** states — with the script, a nested outline describing a grouped list; without it, a flat list of peers describing a flat list. Each state's outline then tells the truth about that state, which is what the no-JS rule asks for. The alternative — inserting a group heading as a peer of the titles it groups — would announce a nesting that is not there. The flat ruled list renders, ungrouped (P0·8 rule 4). Handlebars cannot detect a key change between items — no month, year, tag or initial heading is emitted server-side, on any Ghost version. | **yes** — the headings it inserts are derived and are not editable, so nothing is hidden from the editor |
+| `cards.js` | *(Story 4.7, DW-100 — Ghost's card behaviour, vendored and shipped beside `main.js`, not a module)* The audio and video cards show no working player, because Ghost emits neither `<audio>` nor `<video>` with `controls`; the toggle card stays closed, as Ghost renders it `data-kg-toggle-state="close"`; and gallery rows lose their proportions, because only `gallery.js` sets each image's `flex` ratio. Read in Ghost 6.58.0's vendored card scripts and the Orbit Weekly recordings (`packages/library/orbit-weekly/`). | **yes** — it acts only inside the post-body fixture, which nothing on the canvas edits (FR-H3(1)). Story 5.15 confirms both values on the real canvas |
 ---
 
 ## Appendix A — Method and reproducibility

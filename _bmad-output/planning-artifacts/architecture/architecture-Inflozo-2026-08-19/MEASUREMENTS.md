@@ -3036,3 +3036,55 @@ newsletter's description are empty on both seeded servers, so no render proves t
 validation error and `private.hbs` needs private mode — neither was executed. Every version below the
 two servers was read in source only, and only for `@site`: a resource field's version (P0·2 dates the
 author social handles to 5.118.0) is not recorded.
+
+---
+
+## 42. `core` at the Baseline pin, and `core` in real Chromium on both majors · 2026-09-14
+
+Story 4.7 wrote FR-G7(4)'s runtime, `packages/library/modules/core.js`, and every platform feature it
+reaches was read against the dataset FR-G8's floor is computed from before it was used (standing rule 1).
+
+**(a) The web-features facts.** Read from `web-features` **3.35.0**, the version research §A3 pins —
+`https://cdn.jsdelivr.net/npm/web-features@3.35.0/data.json`, sha256
+`266c466f6e3b3f4736e07662631e1eba668ca0ee3dcb86af1987c75cbfadebf0` — each against the pin
+`widelyAvailableOnDate: 2026-08-18`:
+
+| What `core` uses | Feature / compat key | Baseline | Widely on |
+|---|---|---|---|
+| `AbortController` | `aborting` / `api.AbortController` | high | 2021-09-25 |
+| a listener's `signal` option | `events` / `api.EventTarget.addEventListener.options_parameter.options_signal_parameter` | high | 2024-03-20 |
+| `MediaQueryList`'s `change` event | `matchmedia` / `api.MediaQueryList.change_event` | high | 2023-03-16 |
+| `IntersectionObserver` | `intersection-observer` | high | 2021-09-25 |
+| media-query range syntax, `(width < 768px)` | `media-query-range-syntax` | high | 2025-09-27 |
+| `setTimeout`, for reporting a module's error asynchronously | `settimeout` | high | 2018-01-29 |
+| ~~`AbortSignal.any()`~~ | `abortsignal-any` / `api.AbortSignal.any_static` | **low** (Newly, 2024-03-19) | — |
+
+Every row `core` uses is Widely before the pin. **`AbortSignal.any()` is Newly, so Tier 3, and is never
+used**: each mount has its own `AbortController`, and `stop()` aborts `core`'s own listeners through a
+second one.
+
+**(b) `core` in real Chromium, on T1 and T3.** `python3 tools/probe/run-verify-core.py` — keys read by
+variable name only:
+
+    probe theme: main.js = bundle(['probe', 'probe-motion', 'probe-throws'], core.js + probe files, probe rows)
+      control: checkThemeJs REFUSES it ("names probe, probe-motion, probe-throws, with no source")
+        and passes bundle([]) over packages/library/modules/
+      gscan 4.49.7 ERRORS 0 WARNINGS 0 · gscan 6.4.2 ERRORS 0 WARNINGS 0
+    per server: upload + activate · wait for this run's nonce on / · Chromium 1228 (Playwright 1.61.1)
+      · restore the previous theme in a finally and re-read it -> 'casper' active again on both
+    -> Ghost 5.130.6: 22 of 22 rows hold · Ghost 6.58.0: 22 of 22 rows hold
+
+The rows, each identical on both majors: with JavaScript on at 1024 px the plain and animating mounts ran
+once, `js-enabled` sat on those two elements and never on `<html>` or `<body>`, `ctx.t` printed
+"Loading 12 more", `ctx.observe` fired, and **one** `IntersectionObserver` served both; the `:768` mount did
+not run, ran at 600 px under a second observer for its own `rootMargin`, and at 1024 px again aborted and
+lost its class while the plain mount was untouched; the throwing mount ran and was unmarked, and **its
+error was the only page error**. Under reduced motion the animating mount waited, mounted when the
+preference cleared and aborted when it returned. **With JavaScript off — the control for all of it — no
+element carried `js-enabled`, no module ran, and all four declarations stood.** The same rows run in jsdom
+per commit (`packages/library/modules/core.test.mjs`), where each was also mutated and seen to fail.
+
+**(c) What this does NOT say.** Editing suppression and `stop()` are not reachable from a theme's
+`main.js` (the canvas calls `core` with `{ editing: true }`), so they are proven in jsdom only until Story
+5.15's canvas exists. No feature module exists yet, so no module's own no-JS or edit-safe value was seen
+behaving — that confirmation moved to each module's first category story (VERIFY-AT-BUILD 50).

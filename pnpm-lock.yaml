@@ -88,6 +88,9 @@ importers:
       '@types/node':
         specifier: 24.13.4
         version: 24.13.4
+      jsdom:
+        specifier: 30.0.1
+        version: 30.0.1
       typescript:
         specifier: 7.0.2
         version: 7.0.2

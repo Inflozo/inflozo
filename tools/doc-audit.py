@@ -288,6 +288,16 @@ DOCS = [
   'generated index.ts a core test imports them through (--index rebuilds it from disk alone). '
   'Also covers packages/library/src/contexts.ts and contexts.test.ts and '
   'packages/section-runtime/src/contexts.test.ts, which the catalogue cannot index under packages/.'),
+ ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
+  "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
+  'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
+  'throwing), and asserts as its control that checkThemeJs REFUSES that theme while passing bundle([]) over '
+  "the repo's sources. Gates it through tools/stress/gate.js, uploads and activates it on T3 and T1, waits "
+  "for this run's nonce on /, and drives the machine's Chromium through JavaScript on and off, reduced "
+  'motion and 1024 -> 600 -> 1024 px, expecting no page error but the probe\'s own; restores the previous '
+  'theme in a finally and re-reads it. Writes nothing; a page without the nonce voids the run. Also '
+  'covers packages/library/modules/core.js, registry.json and core.test.mjs, and '
+  'packages/library/src/modules.ts and modules.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/vendor-icons.py', 'tool', 'Tabler icon vendoring',
   "Story 4.5's vendoring of every Tabler icon as data (R-26, R-92, R-104): downloads @tabler/icons at a "
   'pinned version from the npm registry and refuses to write unless the tarball\'s sha512 is the pinned '
@@ -773,7 +783,7 @@ DOCS = [
  ('tools/derive-control-lines.py', 'tool', 'Derive the Controls: union',
   'Attempts each category\'s Controls: line and does NOT succeed: the specs declare controls in at least four shapes (a per-design `Control | Values` table, a prose line with names before colons, another with names before brackets, and typed enum rows), the granularity differs by an order of magnitude between them — 53 names for one category, 3 for another — and eight categories carry nothing readable at all. Kept because it MEASURES the gap and names the eight, and because the fix is cheap: if every spec carried the per-design Control|Values table A1-A3 already use, this becomes reliable. Do not land its output as-is.'),
  ('tools/derive-module-reach.py', 'tool', 'Which designs declare which script',
-  'Re-derives research §2.1\'s "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design\'s OWN declaration names it: the per-design Behaviour-module line, or the roster table\'s Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at.'),
+  'Re-derives research §2.1\'s "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design\'s OWN declaration names it: the per-design Behaviour-module line, or the roster table\'s Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at. --check (Story 4.7) reads no export and keeps FR-G7\'s one table one table: packages/library/modules/registry.json\'s names must be §2.1\'s live rows in order, each editSafe must be its §7 yes/no, every other live §7 row must be core or cards.js, and cards.js must have one; pnpm test runs it, and a flipped editSafe turns it red naming the module.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
  ('tools/reapply-export-edits.py', 'tool', 'Re-apply the repo-side export edits',
@@ -850,13 +860,13 @@ DOCS = [
  ('docs/section-authoring.md', 'live', 'Authoring a section — the registry format and the directive vocabulary',
   'FR-G3\'s "documented deliverable", settled in Story 4.1 and binding on every design E9-E11 '
   'authors. The registry entry and the statement that it is ASSEMBLED from the design '
-  'directory, its design.json, its category content.json and the four files (so "registry entry" '
+  'directory, its design.json, its category content.json, its markup and stylesheet, with js recovered from data-module (so "registry entry" '
   'and "design.json" are different lists); the two authored files with a worked example of each, '
   'carrying R-102 as a rule of the content model, the closed control vocabulary and the content '
   'editors\' value shapes (Story 4.5); every directive with its grammar, what each '
   'emitter does with it and an example, walking PRD 7.3\'s gap table row by row including the '
   'struck row 8 and the five exit constructs; every refusal with its reason; and what a design '
-  'previews against. The contract '
+  'previews against; and since Story 4.7 the behaviour-module contract — declaring, a width, the union, ctx, js-enabled on the mount, the motion gate, bundle, the assets/js/ rule and the licence filter. The contract '
   'itself is data in packages/library/src (AD-34), and the eight executed archetypes are its '
   'control - tools/stress/test-vocabulary.mjs.'),
  ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds the development-loop rulings',

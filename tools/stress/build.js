@@ -206,9 +206,16 @@ write('assets/css/cards.css', `.kg-width-wide { max-inline-size: 1000px; margin-
 .kg-width-full { max-inline-size: 100%; }
 ` + Array.from({ length: 40 }, (_, n) =>
   `.kg-card-${n} { margin-block: 1.5rem; }\n.kg-width-wide.kg-card-${n} { max-inline-size: 1000px; }\n`).join(''));
-write('assets/js/main.js', `// FR-G7 behaviour modules, bundled\n` +
-  Array.from({ length: 31 }, (_, n) => `function mod${n}(root){const t=root.querySelectorAll('[data-mod="${n}"]');for(const e of t){e.dataset.ready='1';}}\n`).join('') +
-  `document.addEventListener('DOMContentLoaded',()=>{${Array.from({ length: 31 }, (_, n) => `mod${n}(document)`).join(';')}});\n`);
+// FR-J4's main.js is bundle()'s bytes over packages/library/modules/ — core and nothing else, because no
+// feature module is written until the first category that declares it (FR-G7(2)). It replaced a
+// placeholder of made-up functions whose hardcoded number had long since stopped matching the registry.
+// The fixture is not a compiled theme, so it bundles no union (Story 7.5 does).
+const { bundle, checkThemeJs } = require('../../packages/library/src/modules.ts');
+const MODULE_DIR = path.join(__dirname, '../../packages/library/modules');
+const moduleSources = Object.fromEntries(fs.readdirSync(MODULE_DIR)
+  .filter((f) => /^[a-z][a-z0-9-]*\.js$/.test(f))
+  .map((f) => [f.slice(0, -3), fs.readFileSync(path.join(MODULE_DIR, f), 'utf8')]));
+write('assets/js/main.js', bundle([], moduleSources));
 
 write('locales/en.json', JSON.stringify(Object.fromEntries(
   Array.from({ length: 120 }, (_, n) => [`section.string.${n}`, `String number ${n}`])), null, 2) + '\n');
@@ -263,6 +270,11 @@ for (const f of textFiles) {
   if (s.includes(T0) || s.includes(T1)) leaks.push(`compiler expression token survived in ${path.relative(OUT, f)}`);
   if (s.includes(U0) || s.includes(U1)) leaks.push(`user-text marker survived in ${path.relative(OUT, f)}`);
 }
+// FR-G7(1): assets/js/ holds bundle()'s bytes from repo sources, and Ghost's cards.js, and nothing else
+const jsFiles = Object.fromEntries(allFiles.filter((f) => path.relative(OUT, f).startsWith(`assets${path.sep}js${path.sep}`))
+  .map((f) => [path.relative(OUT, f).split(path.sep).join('/'), fs.readFileSync(f, 'utf8')]));
+const jsFindings = checkThemeJs(jsFiles, moduleSources);
+if (!jsFiles['assets/js/main.js']) jsFindings.push('assets/js/main.js is missing, so checkThemeJs had nothing to check');
 const allTemplateText = hbsFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
 for (const f of hbsFiles.filter((f) => f.includes('partials'))) {
   const name = path.relative(path.join(OUT, 'partials'), f).replace(/\.hbs$/, '');
@@ -330,6 +342,8 @@ peak RSS ${peak} MB
 FR-J17 proxy: ${parsed}/${hbsFiles.length} .hbs parsed · ${walked} elements walked · ${links} links / ${images} images / ${headings} headings · ${decls} CSS declarations
 AD-34 leak assertions: ${leaks.length === 0 ? 'clean' : leaks.length + ' LEAK(S)'}`);
 for (const l of leaks.slice(0, 10)) console.log('   !', l);
+console.log(`FR-G7(1) assets/js/ (checkThemeJs): ${jsFindings.length === 0 ? `clean — ${Object.keys(jsFiles).join(', ')}` : jsFindings.length + ' FINDING(S)'}`);
+for (const j of jsFindings) console.log('   !', j);
 if (gateFindings.length) { console.log(`FR-J17 findings: ${gateFindings.length}`); for (const g of gateFindings.slice(0, 8)) console.log('   !', g); }
 console.log(`AD-5 rule 2 ("zero {{{ and zero }}} in the emitted theme"): {{{ x${tripleOpen.length} in ${[...new Set(tripleOpen)].join(', ') || '-'} · }}} x${tripleClose.length} in ${[...new Set(tripleClose)].join(', ') || '-'}`);
 

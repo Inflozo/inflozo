@@ -1,8 +1,8 @@
 # Authoring a section
 
 **The contract every one of the library's designs is written against.** A section is **annotated
-HTML** — plain, valid HTML carrying `data-*` directives — plus its own flat stylesheet, its optional
-behaviour module and two schemas. One source, two renderers: the canvas DOM and the `.hbs` text.
+HTML** — plain, valid HTML carrying `data-*` directives — plus its own flat stylesheet, the behaviour
+modules it declares from FR-G7's registry, and two schemas. One source, two renderers: the canvas DOM and the `.hbs` text.
 They agree **by construction**, not by comparison, which is the whole reason the source is HTML and
 not Handlebars (PRD §7.3).
 
@@ -13,7 +13,9 @@ rendering on its own, it is the wrong directive.
 - The contract as data and code: `packages/library/src/` — `vocabulary.ts` (the closed directive
   set, the control vocabulary and the allow-lists), `registry.ts` (the types and the assembly),
   `validate.ts` (the refusals), `icons.ts` (the vendored Tabler set, its own `@inflozo/library/icons`
-  subpath).
+  subpath), `modules.ts` (FR-G7's registry as code reads it, `bundle` and `checkThemeJs` — Story 4.7).
+- The behaviour modules: `packages/library/modules/` — `core.js`, `registry.json`, and one file per
+  feature module as its first category writes it *(Story 4.7)*.
 - The controls engine: `packages/section-runtime/src/controls.ts` — the sidebar, the edits and the one
   resolution both emitters stamp *(Story 4.5)*.
 - The runnable reference: `packages/library/fixtures/reference-design/` — every directive, once. The
@@ -47,8 +49,9 @@ It is built — `assembleEntry()` in `registry.ts` — from four inputs:
 | the design's directory path, `designs/{category}/{n}` | `id`, `category` |
 | the design's `design.json` | `name`, `tier`, `bindingContext`, `compileTarget`, `controlSchema`, `universals`, `absent`, `dataBindings`, `ghostCompat`, `darkCapabilities`, `previewSeed`, and AD-35's `provisional` |
 | the **category's** `content.json`, at `designs/{category}/content.json` | `contentSchema` |
-| the design's other three files — `index.html`, `style.css`, `behaviour.js` | `html`, `css`, `js` |
-| recovered, never written | `quickControls[]` |
+| the design's `index.html` and `style.css` | `html`, `css` |
+| recovered from `index.html`'s `data-module` names, in registry order, omitted when there are none *(Story 4.7)* | `js` |
+| recovered from `controlSchema`, never written | `quickControls[]` |
 
 (`design.json` is the fourth file and has its own row. The entry also carries the structural
 descriptor tuple, so FR-G5's "no two designs in a category share one" has something in the registry
@@ -420,12 +423,93 @@ generated class names, no CSS-in-JS, and **explicitly outside any Tailwind proce
 classes are structurally incompatible with token-only styling. Every control appears as an attribute
 selector on the root (`.feed[data-cols="3"] .feed__grid { … }`).
 
-### `behaviour.js`
+### Behaviour modules — `data-module` *(Story 4.7)*
 
-Optional, and from FR-G7's registry only. It declares its no-JS degradation and whether it is
-`edit-safe`. 4.7 owns the registry; the markup's half is `data-module`.
+**A design ships no script of its own.** FR-G7 lets a generated theme run registry code only, so a design
+**declares** the modules it needs and the compiler bundles them. There is no `behaviour.js`: a module is
+written once, in `packages/library/modules/`, by the first category story that declares it (FR-G7(2)),
+and every later design that declares it reuses that file.
 
----
+**Declaring.** `data-module` on the element the module works on — one name per element:
+
+```html
+<section class="gal" data-module="lightbox"> … </section>
+<div class="foot__cols" data-module="accordion:768"> … </div>
+```
+
+The name is a row of research §2.1, whose machine half is `packages/library/modules/registry.json`.
+`core` is refused — it is the platform runtime, runs on every page and is never declared — and so is a
+retired name (`search-overlay`, `command-palette`, `sort` …), with the ruling that retired it. A name
+outside the registry is refused and pointed at the behaviours that need **no** module (FR-G7(5), §2.2):
+`<details>`, an in-page anchor with `scroll-behavior`, CSS `columns`, `:has()`, `position: sticky`,
+server-side member gating, CSS transitions, `<audio controls>` and Ghost's own pagination.
+
+**A width** *(R-38)*. `name:N` runs the script only while `(width < Npx)` matches — `accordion:768` is
+"collapses into sections under 768". N is a whole number of CSS pixels above zero. The module's no-JS
+line must describe the state on **both** sides of that width, because above it the no-JS state and the
+JavaScript state are the same thing. The stylesheet uses the same query, `@media (width < 768px)`, so CSS
+and script flip at the same pixel.
+
+**The union and `js`.** The entry's `js` is the declared names, recovered from the markup in registry
+order and omitted when there are none. A theme's `main.js` carries the union of every placed design's
+`js` (`moduleUnion`), so removing a design removes its names — unless another placed design declares them
+too.
+
+**What a module is handed.** A module file's top level is exactly **one function declaration**, named
+for the module in camelCase (`nav-drawer` → `navDrawer`), called once per mount as `(el, ctx)`:
+
+```js
+// packages/library/modules/lightbox.js — a future module's shape
+function lightbox(el, ctx) {
+  const dialog = el.querySelector('dialog')
+  el.querySelector('.gal__close').setAttribute('aria-label', ctx.t('close'))
+  el.addEventListener('click', (e) => { if (e.target.closest('a.gal__img')) { e.preventDefault(); dialog.showModal() } }, { signal: ctx.signal })
+}
+```
+
+| `ctx` | What it is |
+|---|---|
+| `signal` | aborts when the mount stops — pass it to every listener, and nothing leaks |
+| `t(key, params)` | the mount element's `data-i18n-<key>`, with `{name}` filled from `params`; `''` when absent, and a placeholder with no param left as written (appendix H1 S5) |
+| `observe(target, callback, { root, rootMargin, threshold })` | one shared `IntersectionObserver` per root, `rootMargin` and `threshold`; the target is unobserved when the mount stops |
+| `reducedMotion` | true while `(prefers-reduced-motion: reduce)` matches — for motion that is incidental, such as a carousel's smooth scroll |
+
+Nothing reaches a global it was not handed: `el.ownerDocument`, never `document`. Lint enforces it
+(`no-undef` over `packages/library/modules/*.js`), and `bundle` refuses a file whose top level is anything
+but its one declaration — an `export`, an `import`, a second function or a statement.
+
+**`js-enabled` is on the mount, never on the page.** `core` sets the class on the element whose module
+it mounts, **before** the module runs, and removes it when that mount stops or throws. JavaScript off,
+suppression while editing, a reduced-motion stop and a width outside the declaration therefore all leave
+that element in its no-JS CSS branch. Select on it in `style.css` (`.gal.js-enabled .gal__close { … }`),
+and never write it into markup — the validator refuses it.
+
+**Editing** *(R-21)*. A module whose `editSafe` is **no** in research §7 is not mounted on the canvas, and
+its section renders at rest. The values are §7's, transcribed into the registry, never decided per design.
+
+**The motion gate** *(FR-G4)*. `core` holds one `(prefers-reduced-motion: reduce)` query. A module whose
+registry row `animates` is not started while it matches, mounts when the preference clears and stops when
+it returns — because for each of those modules its reduced-motion state **is** its no-JS state. A module
+whose reduced-motion state would differ from its no-JS state cannot use the gate; raise it before writing it.
+
+**`main.js`.** `bundle(names, sources)` writes it: a header naming `core` and the modules, then one
+wrapping function with `'use strict'` holding each file verbatim, `core` first, then
+`core(window, rows)`. It is a **classic** script loaded `defer` (FR-J4) — never an ES module, because a
+file carrying `export`, concatenated in, would be a SyntaxError that silently turns every site to its
+no-JS state — and nothing in it lands on `window`. A module that appends markup carrying `data-module`
+(`load-more` is the first) must add a rescan of what it inserted to `core`; today `core` scans once.
+
+**`assets/js/`.** `checkThemeJs(files, sources)` is FR-G7(1) as one check: a theme's `assets/js/` holds
+`main.js`, byte-identical to `bundle` of the names its header lists over the repo's own sources, and
+Ghost's `cards.js`, and **nothing else**. `cards.js` is the one declared exception — Ghost's MIT card
+behaviour shipped back to a Ghost site (FR-J4) — and it has its own row in research §7: with JavaScript
+off the audio and video cards show no working player, the toggle stays closed and gallery rows lose
+their proportions; it is edit-safe.
+
+**The licence filter**, for any future proposal to bundle code Inflozo did not write: **MIT,
+BSD-2-Clause, BSD-3-Clause, Apache-2.0 or ISC only**, re-verified **at the pinned version** rather than
+trusted from the package's reputation — `typed.js` relicensed MIT → GPL-3.0 at 3.0.0 (research §5). The
+answer today is zero: every module is vanilla, and the check above makes that literal.
 
 ## 3 · The directive vocabulary
 
@@ -471,7 +555,7 @@ These were executed in the stress harness and keep their names and grammar uncha
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
 | `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |
 | `data-bind-style` | `--custom-property:spec` | the value through `safeCssColor` — hex, `rgb()`/`hsl()` or the pack's accent token; a **named** colour is not parsed and falls back too | `style="{{#if field}}--prop: {{path}}{{/if}}"` — the value is Ghost's at render |
-| `data-module` | a module name | consumed | consumed — 4.7's registry reads the name |
+| `data-module` *(4.7)* | a registry module name, optionally `:N` — the width in CSS pixels below which it runs | **kept** on the element, parsed; a bad value refuses | **kept** on the same element — `core` mounts on it on the live page |
 
 **The three the shim owns** *(Story 4.3)*. Each is asserted against **recorded real-Ghost output**
 from both majors — `packages/ghost-shim/fixtures/`, captured by `python3 tools/probe/record-shim.py`
@@ -860,20 +944,20 @@ did not resolve. A render with no schema keeps the authored root. The authored r
 the file shows when it is opened on its own: write the defaults there, and the validator checks each
 value is one the design offers.
 
-### Two the harness proved and this vocabulary keeps
+### The directives that survive into the theme
 
 | Directive | Why it stays |
 |---|---|
-| `data-module="lightbox"` | declares which behaviour module owns a subtree — FR-G3's `js?` field, in markup. 4.7 owns the registry of names. |
+| `data-module="lightbox"` | *(Story 4.7)* `core` scans the live page for it and mounts the module on that element, so both emitters keep it where it was written. FR-G3's `js` is read from it. |
 | `data-members-form="subscribe"` | Portal reads `form[data-members-form]` **itself** and applies the `loading` / `success` / `error` classes; executed against both majors. The designed states are real; the no-JS promise is not, so the library ships a designed `<noscript>` notice beside it. |
 
-`data-ghost-search` is the third and is Ghost's, not Inflozo's: opening Ghost's native search is a
+`data-ghost-search` survives too, and is Ghost's, not Inflozo's: opening Ghost's native search is a
 single attribute on any button or link (R-24, FR-F6), which is what makes deleting A23 a
 simplification rather than a loss of capability.
 
-**These three are the only directives that SURVIVE into the emitted theme**, because something on
-the live site reads them — Portal reads `data-members-form`, sodo-search reads `data-ghost-search`,
-and Portal parses `data-portal`. Every other directive is **consumed** by the compiler and must be
+**Only the directives something on the live site reads SURVIVE into the emitted theme** — `core`
+reads `data-module`, Portal reads `data-members-form`, sodo-search reads `data-ghost-search`, and Portal
+parses `data-portal`. Every other directive is **consumed** by the compiler and must be
 gone from every emitted file; AD-34's leak assertion checks exactly that, over
 `vocabulary.ts`'s `CONSUMED_DIRECTIVES` rather than over a list restated in prose. A directive
 added to the set without a `emitted: true` marker joins the assertion automatically.
@@ -900,6 +984,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | `data-empty` on an element with nothing to guard | FR-H8. A guard with no field emits `{{#if}}` on nothing — present, and empty. |
 | `data-empty="fallback"` on an element binding `href`, `src` or `poster`, or carrying `data-bind-srcset` (`media-fallback`) | *(Story 4.6)* FR-H8's media rule. The only fallback an attribute can carry is the design's placeholder, a relative URL that 404s on the customer's site. Refused by the validator **and** the runtime, with one sentence. |
 | a binding the context matrix does not allow at its scope on the render's target — a post field at the top of `index.hbs`, a misspelt path, a list or boolean as a value, `@custom.*`, `@member` | *(Story 4.6)* FR-H7. Ghost prints it as a silent blank. **Refused by the runtime** when a render names its target, in one error naming every refused binding; `checkBindings` returns the list. |
+| a `data-module` naming `core`, a retired module, a name outside the registry, or a width that is not a whole number above zero (`accordion:0`) | *(Story 4.7)* FR-G7: a theme runs registry code only. `core` is platform and never declared; a retired name must not come back, and the refusal carries its ruling; a behaviour outside the registry needs no module (§2.2). Refused by the validator as `bad-value` **and** by both emitters with the same sentence. |
+| a `js-enabled` class in authored markup (`js-enabled-authored`) | *(Story 4.7)* `core` sets it on the element whose module it mounts, and a design never does: authored, the section sits in its JavaScript branch with JavaScript off, while editing and under reduced motion. |
+| a module file whose top level is not one function declaration of its camelCase name, or an `assets/js/` file other than `bundle`'s `main.js` and `cards.js` | *(Story 4.7)* FR-G7(1). `bundle` throws, naming the file; `checkThemeJs` returns a sentence per file. An `export` concatenated into a classic script is a SyntaxError that turns every site to its no-JS state. |
 | `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |
 | pagination + a non-paginated target | R-7. Outside a paginated context `{{pagination}}` is a fatal render. |

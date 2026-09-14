@@ -262,7 +262,6 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   'data-repeat',
   'data-repeat-limit',
   'data-partial',
-  'data-module',
   // Story 4.3 — the three the shim owns. They come off the refused list in the same pass that
   // builds the shim, because a shim nothing calls proves nothing.
   'data-bind-srcset',
@@ -343,8 +342,9 @@ function propGet(content: unknown, path: string, items?: Readonly<Record<string,
  *  mechanical: `data-repeat`, `data-repeat-limit` and `data-partial` used to be interpolated into
  *  `{{#foreach}}` unvalidated (Story 4.2 review — `data-repeat='posts}}<script>'` shipped a live
  *  script), and the fix that closes the class is that nothing reads a directive any other way.
- *  `data-empty` is the one exception to the consume: it is shared by every directive on its element
- *  and is swept at the end of the walk, so the first reader cannot rob the second. */
+ *  `data-empty` is one exception to the consume: it is shared by every directive on its element
+ *  and is swept at the end of the walk, so the first reader cannot rob the second. A directive the
+ *  vocabulary marks `emitted` is the other: it is parsed and KEPT, because the live site reads it. */
 function consume(el: RuntimeElement, name: string): string | null {
   const v = el.getAttribute(name)
   if (v === null) return null
@@ -352,7 +352,7 @@ function consume(el: RuntimeElement, name: string): string | null {
   if (d === undefined) throw new Error(`"${name}" is not in the vocabulary`)
   const bad = d.parse(v) // null when legal
   if (bad !== null) throw new Error(`AD-36: ${name}=${JSON.stringify(v)} — ${bad}`)
-  if (name !== 'data-empty') el.removeAttribute(name)
+  if (name !== 'data-empty' && d.emitted !== true) el.removeAttribute(name)
   return v
 }
 
@@ -974,7 +974,6 @@ function applyProps(
     consume(el, 'data-empty')
     el.removeAttribute('data-empty')
   }
-  for (const el of all(scope, '[data-module]')) consume(el, 'data-module')
 }
 
 // ─── Story 4.5 — controls, authored arrays, icons ────────────────────────────
@@ -1103,6 +1102,10 @@ function renderTree(
   const root = doc.createElement('div')
   root.innerHTML = src
   refuseUnrendered(root)
+  // Story 4.7 — `data-module` SURVIVES on both emitters, on the element that carries it, because `core`
+  // mounts on it on the live page; it is parsed here, once and before any expansion, and a bad value throws
+  // the vocabulary's sentence (FR-G7).
+  for (const el of all(root, '[data-module]')) consume(el, 'data-module')
   refuseUnpaginated(root, input.target)
   refuseGetOnForbiddenTarget(root, input)
   // R-2: two initials never come from Ghost — `{{split}}` is 6.5+ and a gscan error below it

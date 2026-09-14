@@ -88,6 +88,26 @@ const refuses = (code: string, hostile: string, neighbour: string) => {
   clean(validateMarkup(root(neighbour), { controls: [] }), neighbour)
 }
 
+test('Story 4.7 — data-module takes a registry name and an optional width, and refuses the rest with a reason', () => {
+  for (const good of ['lightbox', 'accordion:768']) {
+    clean(validateMarkup(root(`<div data-module="${good}"></div>`), { controls: [] }), good)
+  }
+  const refusal = (v: string) => {
+    const f = validateMarkup(root(`<div data-module="${v}"></div>`), { controls: [] })
+    assert.deepEqual(codes(f), ['bad-value'], v)
+    return f[0]!.message
+  }
+  assert.match(refusal('core'), /platform runtime/)
+  assert.match(refusal('search-overlay'), /R-24/)
+  assert.match(refusal('back-to-top'), /not in FR-G7's registry.*needs no module/)
+  assert.match(refusal('accordion:0'), /whole number of CSS pixels/)
+  assert.match(refusal('accordion:7.5'), /whole number of CSS pixels/)
+})
+
+test("Story 4.7 — an authored js-enabled class is refused: core sets it on the mount, and a design never does", () => {
+  refuses('js-enabled-authored', '<div class="card js-enabled">x</div>', '<div class="card js-enabled-note">x</div>')
+})
+
 test('an unknown directive is refused, and the one it was misspelt from is not', () => {
   refuses('unknown-directive', '<p data-bound="title">x</p>', '<p data-bind="title">x</p>')
 })
@@ -610,6 +630,18 @@ test('an entry is assembled from the path, the design, the category content and 
   assert.deepEqual(e.quickControls, ['cols', 'card', 'gap', 'meta', 'image'])
   assert.deepEqual(parseDesignDir('a3/12'), { category: 'a3', n: '12' })
   assert.equal(parseDesignDir('a3'), null)
+  assert.deepEqual(e.js, ['reveal'], "FR-G3's js is read from the markup's data-module")
+})
+
+test("Story 4.7 — js is the markup's declared modules in registry order, omitted when none, and a bad one refuses assembly", () => {
+  const content: CategoryContent = { category: 'a17', props: {} }
+  const at = (html: string) => assembleEntry({ dir: 'designs/a17/2', design: design(), content, html, css: '' })
+  const two = at('<section data-module="lightbox"><div data-module="carousel:768"></div><p data-module="lightbox"></p></section>')
+  assert.ok(typeof two !== 'string', String(two))
+  if (typeof two !== 'string') assert.deepEqual(two.js, ['carousel', 'lightbox'])
+  const none = at('<section></section>')
+  assert.ok(typeof none !== 'string' && !('js' in none), 'an entry declaring no module carries no js at all')
+  assert.match(String(at('<section data-module="search-overlay"></section>')), /R-24/)
 })
 
 test('a content.json from another category is refused (R-102)', () => {

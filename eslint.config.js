@@ -17,12 +17,15 @@ import tsParser from '@typescript-eslint/parser'
 // `library` used to be excluded WHOLE, because AD-2 makes it data only. Story 4.1 put source in it
 // (AD-34: "the rules are data in `packages/library`"), and a whole-package exclusion is a hole the
 // moment that happens: the contract both emitters read would have linted with no AD-1 ban at all.
-// The exclusion therefore names the DATA directories only — a design's `behaviour.js` legitimately
-// reaches `document`, and nothing else in the package may.
+// The exclusion therefore names the DATA and THEME-CODE directories only, and nothing else in the
+// package may reach `document`.
 // Story 4.4 added `orbit-weekly/`: authored and recorded data, plus Ghost's vendored card scripts,
 // which reach `document` because that is their whole job. Its CODE half is `src/orbit-weekly.ts`.
+// Story 4.7 added `modules/`: FR-G7's behaviour modules and `core` are theme browser code, bundled into a
+// generated theme's main.js and never run by the product, so AD-1's ban is not theirs — and every future
+// module keeps its test beside it there. Their own rule is the block at the end: no global.
 const CORE = ['packages/*/**/*.{ts,tsx,mts,cts,js,mjs,cjs}']
-const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**', 'packages/library/orbit-weekly/**']
+const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**', 'packages/library/orbit-weekly/**', 'packages/library/modules/**']
 
 // Derived from the runtime, never a hand list — a hardcoded membership list has gone stale twice.
 const builtins = builtinModules.flatMap((m) => {
@@ -142,5 +145,13 @@ export default [
         { patterns: bannedImports.filter((p) => !TEST_RUNNER.has(p)) },
       ],
     },
+  },
+  {
+    // Story 4.7 — a module file is a classic script whose top level is one function, and it reaches the
+    // platform only through what `core` hands it (`win`, `el`, `ctx`). With no browser globals declared,
+    // `no-undef` turns a bare `window`, `document` or `setTimeout` into an error.
+    files: ['packages/library/modules/*.js'],
+    languageOptions: { sourceType: 'script' },
+    rules: { 'no-undef': 'error' },
   },
 ]
