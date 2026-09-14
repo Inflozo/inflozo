@@ -2,7 +2,7 @@
 title: 'Story 4.7 — `core` and the behaviour-module registry'
 type: 'feature'
 created: '2026-09-14'
-status: 'in-review'
+status: 'done'
 baseline_commit: '033e47c49edd50bf3bee9592842dbf697d3a55be'
 owner_test: none
 review_loop_iteration: 1
@@ -430,3 +430,13 @@ The probe that proves `core` works uploads a tiny throwaway theme called `infloz
   6.58.0 each: upload HTTP 200, `casper` restored, `inflozo-probe-core` deleted and absent from the re-read theme list,
   22 of 22 rows hold. Older probe themes from earlier stories (`inflozo-probe-13`, `-all`, `-shim`, `-contexts`) are
   still installed on both; they are not this story's and were left alone.
+
+**Results (Deploy, 2026-09-14):** No migration in the diff (`git diff --stat 033e47c4^ bd3b552b -- supabase/` is
+empty), so no Schema phase applied. This story changes only `packages/library` and `packages/section-runtime`,
+which `apps/web` depends on (`workspace:*`), so it is app code and ships on the push to `main`. GitHub Actions run
+34838257345 for commit `bd3b552b` (the Review push): `check`, `rls` and `deploy` all completed `success`.
+`Deployment: dpl_Cx6rjmfAHMxJoz5KZxLmHzEEYh6n` (commit `bd3b552bfcb284e1bbfb430cfed869ea51d3d176`) — confirmed via
+the Vercel API (`GET /v6/deployments?target=production` then `GET /v13/deployments/{uid}`, `VERCEL_TOKEN`,
+`VERCEL_TEAM_ID`): `readyState: READY`, `target: production`, `aliasAssigned: true` for `inflozo.com`,
+`app.inflozo.com` and `www.inflozo.com`. `owner_test: none` — this story has no screen (no `apps/web` files in the
+diff), so there is no Owner's manual test to fill in; recorded done in `sprint-status.yaml` instead.
