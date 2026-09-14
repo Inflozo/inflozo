@@ -61,10 +61,27 @@ Build the machine every design in the library is authored against — **before a
     and `docs/section-authoring.md` §2 is the authoring contract for both halves, the no-value lock and the
     category control union (`categoryControlUnion`, R-53) included.
 - **Binding is prevention, not warning.** Only bindings valid in the current template's render context are ever presented; there is no path by which a user can construct an invalid one. The matrix is keyed on template, scope (top level vs inside a repeat) and connected Ghost version, so fields introduced after a target's version are not offered for that site. Moving or duplicating a section re-validates every binding before the move completes. Ghost compiles without strict mode — an out-of-context binding renders empty with no error at build, deploy or runtime, so the editor is the only place this defect can be caught.
+  - **Story 4.6 (2026-09-14) — the matrix is data, and it was recorded, not transcribed.**
+    `packages/library/contexts/matrix.json` is FR-H7's one copy, read through `bindable` and `offerBindings`
+    (`packages/library/src/contexts.ts`) and proved by `contexts.test.ts` against what T1 and T3 printed and
+    Ghost's own source (`python3 tools/probe/record-contexts.py`, MEASUREMENTS §41); a field no recording can
+    show is named `unverified`. The recording corrected the appendix: `meta_title`/`meta_description` inside a
+    resource are the page-meta helper, `page` is no field, `@site.admin_url` is 6.22.1, and several "ungated"
+    `@site` keys are gated above the 5.0.0 floor.
+  - **Story 4.6 — the check lives at the render door.** Whenever a render names its `target`, the runtime
+    gives every Ghost path its scope (the template's block, then each enclosing repeat) and throws one error
+    naming every refusal; `checkBindings` returns the same list for a move or duplicate, which no story offers
+    yet (DW-122). A section never opens `{{#post}}` — the template does, once, on post, page and custom
+    templates — so one design is one text on both. The version axis is the offer's, not the render's.
 - **Every bound prop compiles inside a guard, and the guard is derived from the bound field, never from a helper argument.** The spike emitted a guard on a date *format string*, so the block never rendered and the content was silently and permanently lost — a garbage guard is *present*, which is why "is there a guard?" passes while the page is empty. Guards use `{{#if}}` exclusively. Text falls back to the static value the prop held; media **hides the element, never the attribute**, and a media guard must enclose any `srcset`.
   - **Story 4.2 (2026-09-11) — FR-H8's guard is UNCONDITIONAL, and its default comes from the
     kind.** A text binding falls back to the authored static value, a binding into a URL attribute
     hides the element, `data-empty` overrides either, and the guard field is always `guardField(spec)`.
+  - **Story 4.6 (2026-09-14) — FR-H8's last holes.** A media binding always hides: `data-empty="fallback"`
+    into `href`/`src`/`poster` or on `data-bind-srcset` is refused by the validator (`media-fallback`) and the
+    runtime with one sentence, so only a text binding chooses. A field the matrix types `number` guards as
+    `{{#if f includeZero=true}}` and counts `0` as present on the canvas; a bare `reading_time` prints the
+    shim's "1 min read". The element is guarded on its URL entry's field, never the first entry's by position.
 - **The bundled dataset is sized to exercise, not to decorate:** 32 feed posts (so 12-per-page yields a first page, a **true middle page** with both links, and a partial last), 6 tags, 3 authors with portraits and bios, 2 tiers, nav and brand assets, all imagery internally produced. **Every Data-group Source must return a usable set** — 8 featured, ≥3 posts per tag, ≥6 per author, featured spread across both so a combined filter also returns something. Three fixtures (style-guide post; comments at 14 across 9 threads; style-guide page) are **checked in and diff per-commit** and excluded from every feed. The style-guide post is generated **from Ghost's own renderers, never hand-written**, so a target bump surfaces as a visible fixture diff rather than silent drift; the fixtures are Inflozo-authored and trusted by construction, which is why they can be rendered when real body HTML never is.
   - **Q2 ruled (owner, 2026-09-13) — the dataset is grown ABOVE every stated need, and the rules, not the
     figures, are asserted.** 52 feed posts · 15 featured · 16 authors · 6 tiers · 5 newsletters · twelve press
@@ -150,6 +167,10 @@ Build the machine every design in the library is authored against — **before a
 - **One reference token set ships with the runtime** — the full custom-property contract at a single set of values — because a design's CSS consumes pack custom properties *exclusively*, so without it nothing renders on the canvas at all. Epic 6 replaces it with the authored packs and **does not change the contract**. *(Step-6 stress test finding F2: the canvas and Section Picker render "in the project's current Style Pack" three epics before any pack exists.)*
 - **A pilot authored here is provisional.** It is marked as such in its `design.json`, its committed snapshot is expected to change exactly once, and the mass-rebaseline rule applies when its category gate re-authors it. **No epic outside the owning one edits a design file** — a defect found in a pilot later is raised against the owning category, never patched in place. The five pilots each exist to exercise one hard case: a site-wide singleton binding, the paginated feed extracting a card partial invoked with no params, member gating with Portal actions, a wrapper context valid only inside the post block, and rich text with all four marks over a guarded media binding with `srcset`.
 - **Both Ghost majors are targets**, and version-dependent behaviour is expressed rather than assumed. The avatar substitute has **two forms for this reason**: a user-authored list bakes two initials at compile, a Ghost-sourced author shows one letter in pure CSS, because the name-splitting helper arrived in Ghost 6.5 and is a gscan error below it — and **a design must not mix the two forms in one component**.
+  - **Story 4.6 (2026-09-14) — `data-initials` is the typed form.** It bakes the first letter of the first and
+    last word of a declared `text` prop through the user-text path on both emitters; the validator refuses an
+    undeclared or non-text prop and the runtime refuses it inside any `data-repeat`, so the two forms cannot
+    meet. A Ghost person keeps the bound name for the stylesheet's one letter while the photo's guard hides.
 - **The behaviours that need no module at all are implemented as such**: `<details>`, an in-page anchor with `scroll-behavior`, CSS `columns`, `:has()`, `position: sticky`, **server-side member gating for every member-visibility swap**, CSS transitions, `<audio controls>`, and Ghost's native pagination. Scroll-driven animations are not Baseline, so reveal and reading-progress use `IntersectionObserver`; `popover` is Newly only, so modals use native `<dialog>`.
 
 ## UX & Interaction Patterns

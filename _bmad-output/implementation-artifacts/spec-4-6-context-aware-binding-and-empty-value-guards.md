@@ -2,7 +2,7 @@
 title: 'Story 4.6 — Context-aware binding and empty-value guards'
 type: 'feature'
 created: '2026-09-13'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '4d28a05c0035c7141865f63ab0f6ac1e19083d4c'
 owner_test: none
 review_loop_iteration: 0
@@ -193,7 +193,7 @@ three holes and add `data-initials` for the typed-list avatar.
 
 **Execution:**
 
-- [ ] `packages/library/contexts/matrix.json` -- transcribe appendix B.1 into data: the floor `5.0.0` (FR-C2); the
+- [x] `packages/library/contexts/matrix.json` -- transcribe appendix B.1 into data: the floor `5.0.0` (FR-C2); the
   universal set — the `@site` keys of Ghost's `public.js` less §6's never-offer list, each gated key with its
   `since`, `@config.posts_per_page`, and `@page.show_title_and_feature_image` bindable on the post-block templates
   but offered only on `page.hbs` and `custom-{name}.hbs` (§3b); per compile target, what its root exposes and the
@@ -205,7 +205,7 @@ three holes and add `data-initials` for the typed-list avatar.
   error, the rest universal); `count.posts` left out, since no `dataBindings` field can ask for its `include`; a
   field no recording can show set carries `unverified` with the reason -- one copy of FR-H7's matrix, read by
   TypeScript and by the Python recorder.
-- [ ] `tools/probe/record-contexts.py` · `tools/doc-audit.py` -- the recorder, importing `record-shim.py`'s client:
+- [x] `tools/probe/record-contexts.py` · `tools/doc-audit.py` -- the recorder, importing `record-shim.py`'s client:
   generate a probe theme in a temporary directory FROM `matrix.json` — per template and scope, the row's `id`, and
   every bindable field: a value field printed as `SCOPE|path=[{{path}}]` with its guard's truthiness
   (`{{#if path}}`, and `{{#if path includeZero=true}}` for a `number`), a list or object as its truthiness and its
@@ -223,7 +223,7 @@ three holes and add `data-initials` for the typed-list avatar.
   not come back; write `packages/library/contexts/fixtures/ghost5.json` and `ghost6.json` (captured date, command,
   full version from `/admin/config/`) and `ghost-source.json`; add the script's catalogue row -- AD-23 and R-82:
   the matrix is proved on the real servers or it is a paraphrase.
-- [ ] `packages/library/src/contexts.ts` · `packages/library/src/contexts.test.ts` · `packages/library/src/index.ts`
+- [x] `packages/library/src/contexts.ts` · `packages/library/src/contexts.test.ts` · `packages/library/src/index.ts`
   · `packages/library/tsconfig.json` -- `bindable(path, { target, scope, version? })` returning `null` or the
   refusal sentence (a `../` path reads one scope up, an `@` path reads the root, as Handlebars does, and
   `@custom.*` and `@member` refuse with their own sentences, FR-Q3 and R-28); `offerBindings({ target, scope,
@@ -241,7 +241,7 @@ three holes and add `data-initials` for the typed-list avatar.
   `offerBindings` returns is refused by `bindable` at the same place; a missing recording fails naming
   `python3 tools/probe/record-contexts.py`. Export through the index; add `contexts` to `include` -- FR-H7's matrix,
   keyed on template, scope and version, with its proof beside it.
-- [ ] `packages/library/src/vocabulary.ts` · `packages/library/src/validate.ts` · `packages/library/src/validate.test.ts`
+- [x] `packages/library/src/vocabulary.ts` · `packages/library/src/validate.ts` · `packages/library/src/validate.test.ts`
   -- `data-initials` joins the directive table (a content prop path, guardable, so `data-empty="hide"` may sit
   beside it); the validator holds `data-initials` to `data-prop`'s prop checks — declared by the category, and
   `text` (the `:196` check) — so a Ghost field name the category never declared is refused; it refuses
@@ -249,7 +249,7 @@ three holes and add `data-initials` for the typed-list avatar.
   entry, or which carries `data-bind-srcset`; the two notes naming this story (`:10-12`, `:216-219`) say where the
   tree-aware check now lives; each new refusal fires alone in a test (`test-vocabulary.mjs:106-114` derives the
   list) -- FR-H8's media rule and R-2's typed form, refused wherever the lexical scan can see them.
-- [ ] `packages/section-runtime/src/core.ts` · `packages/section-runtime/src/index.ts` -- the scope walk: when a
+- [x] `packages/section-runtime/src/core.ts` · `packages/section-runtime/src/index.ts` -- the scope walk: when a
   render names its `target`, after R-7's two refusals, give every binding its scope from the target's root and its
   enclosing `data-repeat`s (a `dataBindings` key opens its source's rows; a context path opens the list it names;
   an authored `data-items` list opens no Ghost scope) and pass every Ghost path a rendered directive carries —
@@ -264,7 +264,7 @@ three holes and add `data-initials` for the typed-list avatar.
   as the first code point of the first and of the last whitespace-separated word of the typed text, through the
   user-text path `data-prop` uses (AD-5), keeping the authored text for an empty name, and is refused by name inside
   a `data-repeat` whatever the target -- FR-H7 at the one door every render passes, FR-H8's last holes, and R-2.
-- [ ] `packages/section-runtime/src/contexts.test.ts` · `packages/section-runtime/src/agreement.test.ts` ·
+- [x] `packages/section-runtime/src/contexts.test.ts` · `packages/section-runtime/src/agreement.test.ts` ·
   `packages/section-runtime/src/ad36.test.ts` -- the I/O matrix, every row, on both emitters wherever a row renders:
   allowed and refused bindings per target and scope, one error naming several refusals, `checkBindings` before and
   after a destination changes, post and page byte-identical with neither block in the section text, `offerBindings`
@@ -272,18 +272,18 @@ three holes and add `data-initials` for the typed-list avatar.
   identical on both emitters including a name carrying `{{`, initials refused inside a Ghost repeat, and the Ghost
   author row with no photograph; plus a scan of every theme output these suites produce for `{{#has` and
   `{{#unless` -- §7.3's exit criterion covers what this story adds, in `pnpm check` and so in CI.
-- [ ] `packages/library/fixtures/reference-design/index.html` -- one `data-initials="logos[].name"` inside the logos
+- [x] `packages/library/fixtures/reference-design/index.html` -- one `data-initials="logos[].name"` inside the logos
   list, beside the logo image -- the on-disk reference uses every directive once (`test-vocabulary.mjs:93-97`).
-- [ ] `tools/stress/build.js` -- `post.hbs` and `page.hbs` open the block `matrix.json` names for their target
+- [x] `tools/stress/build.js` -- `post.hbs` and `page.hbs` open the block `matrix.json` names for their target
   instead of writing `{{#post}}` literally -- the one copy Epic 7's compiler will read, with `node build.js` and
   `node gate.js theme` still 0 errors and 0 warnings on both majors.
-- [ ] `docs/section-authoring.md` -- a "Where a binding is legal" part: the scope a design's markup is evaluated in
+- [x] `docs/section-authoring.md` -- a "Where a binding is legal" part: the scope a design's markup is evaluated in
   per target, the post block the template opens, what `offerBindings` and `checkBindings` answer and when a render
   refuses; the `data-initials` row and the two avatar forms with their markup; the `number` guard; the
   media-fallback refusal, correcting `:437-447`'s "writing `data-empty` chooses the other one" to text bindings; the
   URL-entry rule in place of `:532-539`'s first-entry sentence; this story's line at `:823-825` replaced; the new
   refusal rows -- the contract every design in Epics 9–11 is written against.
-- [ ] `appendix-b1-template-contexts.md` · `prd.md` · `ARCHITECTURE-SPINE.md` · `MEASUREMENTS.md` ·
+- [x] `appendix-b1-template-contexts.md` · `prd.md` · `ARCHITECTURE-SPINE.md` · `MEASUREMENTS.md` ·
   `deferred-work.md` · `epic-4-context.md` -- propagate (standing rule 3), then grep the repository for every old
   sentence and shape (standing rule 7): §8's executed items and §6's social gate carry what the recording and the
   source showed; FR-H8 (`prd.md:338`) says a media binding always hides and only a text binding chooses; the
@@ -321,6 +321,20 @@ three holes and add `data-initials` for the typed-list avatar.
   are green with 0 errors and 0 warnings on both majors, and no count a tool derives is written down.
 
 ## Spec Change Log
+
+- **Dev, 2026-09-14 — what the recording changed, and three routine calls.** (1) The recording overruled the
+  appendix three times and the matrix follows it: `meta_title`/`meta_description` inside a post, tag or author
+  print Ghost's PAGE meta helper, so neither is a field; `page` prints empty inside the post block, so it is not
+  one; `reading_time` prints nothing on a gated post while its number guard is true (asserted as recorded,
+  DW-128). (2) Ghost's source overruled §6: `@site.admin_url` is 6.22.1, and keys the appendix called ungated
+  are absent at the 5.0.0 floor, so they carry gates found by bisecting npm releases and re-read by the recorder
+  (MEASUREMENTS §41e). (3) `bindable` takes a `use` (`value · repeat · condition · helper`) beside the spec's
+  `{ target, scope, version? }`, because a list or boolean refuses only as a value; `offerBindings` returns
+  `conditions` too, so `@page.show_title_and_feature_image` has somewhere to be offered on page.hbs only.
+  (4) A core test may not `import()` dynamically (AD-1's lint), so the recorder writes a generated
+  `fixtures/index.ts` from what is on disk, as record-shim.py does; `--index` regenerates it with no server
+  touched, which is the missing-recording control. (5) The validator's `guard-on-template` now reads the URL
+  entry, as the runtime guards, so the docs' URL-entry rule is true of both.
 
 ## Design Notes
 
@@ -406,3 +420,31 @@ Story 4.2 moved AD-36's colour parser into the library. The map row is corrected
 **Manual checks:**
 - After the recorder, `GET /ghost/api/admin/themes/` on both servers shows the theme that was active before the run
   as active (R-82).
+
+**Results (Dev, 2026-09-14) — the real services this story hit (R-82):**
+- **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — `python3 tools/probe/record-contexts.py`,
+  keys read by `load_env()` as `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`, `GHOST5_STAFF_ACCESS_TOKEN`,
+  `GHOST5_CONTENT_API_KEY`, never printed. The generated probe theme passed gscan 4.49.7 and 6.4.2 with 0 errors
+  (one `GS051-CUSTOM-FONTS` warning each, not a gate for a probe theme) and both majors accepted
+  `{{#if f includeZero=true}}` at upload; every fetched page answered 200 and the missing path 404; every control
+  held — root `{{title}}` empty on `index.hbs`, `post.hbs` and `page.hbs` beside a non-empty `{{#post}}{{title}}{{/post}}`,
+  `{{#post}}` and `{{#page}}` equal on a page, a misspelt field empty in every scope; the Content API rows, one tier
+  and one newsletter were read whole. The recorder ran more than once; the runs wrote identical files but for
+  `captured`. What the recording overruled is MEASUREMENTS §41 and this spec's Change Log.
+- **Ghost Admin API, after the runs** — `GET /ghost/api/admin/themes/` on both servers (staff token by variable name)
+  returned `casper` active on T1 and T3; `inflozo-probe-contexts` stays uploaded and inactive on both.
+- **npm registry and jsDelivr** — `registry.npmjs.org/ghost` for the release list, and `cdn.jsdelivr.net/npm/ghost@<v>/`
+  for `public.js`, `default-settings.json` and the two template-options middleware files at the floor, both servers'
+  versions, every gate and the release before each; URL and sha256 recorded in `fixtures/ghost-source.json`.
+- **Supabase, Vercel, Resend, Dodo — not touched.** This story has no database change, no screen, no email and no
+  payment path; its code reaches production only through the Dev push's CI deploy, which the Deploy phase verifies.
+- **Missing-recording control** — `ghost5.json` moved aside and `fixtures/index.ts` regenerated with `--index`:
+  `contexts.test.ts` failed with `NO RECORDING — … Capture it: python3 tools/probe/record-contexts.py`; restored, the
+  index regenerated byte-identical and the suite passed.
+- **`pnpm check` (Node 24)** — exit 0, including `section-runtime`'s `contexts.test.ts`, the `{{#has`/`{{#unless` scan
+  in all three runtime suites, and `test-vocabulary.mjs`.
+- **`node build.js && node gate.js theme`** — Ghost 5 via gscan 4.49.7 ERRORS 0 WARNINGS 0; Ghost 6 via gscan 6.4.2
+  ERRORS 0 WARNINGS 0; `post.hbs` and `page.hbs` each open `{{#post}}` once, read from the matrix.
+- **Stale-sentence grep** — no match.
+- **Leak scan** — no `tools/probe/.env` key, token or password value appears under `packages/library/contexts/`; the
+  recordings carry only the two servers' public site URLs, as `packages/ghost-shim/fixtures/` already do.

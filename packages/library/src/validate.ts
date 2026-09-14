@@ -7,15 +7,17 @@
 // questions it deliberately cannot answer — nesting depth, a `data-else` with no `data-if` sibling,
 // repeat containment, a raw `{{…}}` written into authored markup where `data-helper` belongs —
 // need a real parse, and Story 4.2 brings a real parser for the two emitters. When it lands, move
-// these checks behind it and add the four above; the grammar below does not change. One more is
-// 4.6's, not 4.2's: a `data-repeat` over a context path that does not exist (`post.tagz`) needs the
-// binding matrix, and until then only the declared-query direction is checked (`binding-unreferenced`).
+// these checks behind it and add the four above; the grammar below does not change. Where a binding
+// is LEGAL — a `data-repeat` over a context path that does not exist (`post.tagz`), a post field at the
+// top of index.hbs — is a question about the tree and the target, so since Story 4.6 it is asked by the
+// runtime's scope walk (`section-runtime/src/core.ts`, `checkBindings`) against the context matrix
+// (`contexts.ts`), whenever a render names its template. This scan still refuses what it can see alone.
 
 import {
   BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
-  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
-  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, isCompileTarget, isIsoDate, safeUrl, splitFirst,
+  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
+  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, safeUrl, splitFirst,
 } from './vocabulary.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
@@ -99,14 +101,18 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       push(out, 'if-and-else', `<${tag.name}> carries both data-if and data-else — the two arms are two SIBLING elements.`)
     }
     // FR-H8 again: a guard derived from a token template is `{{#if signup/{tier}}}` — present,
-    // garbage, never true. The guard is the FIRST binding's field; a first entry that is a template
-    // has no single field to derive from.
-    const firstBindAttr = attr('data-bind-attr')
-    if (names.includes('data-empty') && firstBindAttr !== undefined && !names.includes('data-bind')) {
-      const firstSpec = splitFirst(firstBindAttr.split(';')[0]?.trim() ?? '', ':')[1] ?? ''
-      if (firstSpec.includes('{')) {
-        push(out, 'guard-on-template', `<${tag.name} data-empty> would guard on "${firstSpec}", a token template. The guard is derived from the FIRST binding's field; put a plain path first, or move the guard.`)
+    // garbage, never true. The element is guarded on its URL entry's field when it has one, and on its
+    // first entry's otherwise (the runtime's rule); a guard entry that is a template has no single field.
+    const bindAttr = attr('data-bind-attr')
+    if (names.includes('data-empty') && bindAttr !== undefined && !names.includes('data-bind')) {
+      const entries = bindAttr.split(';').map((e) => e.trim()).filter((e) => e !== '').map((e) => splitFirst(e, ':'))
+      const guardSpec = (entries.find(([a]) => URL_ATTRS.has(a.trim().toLowerCase())) ?? entries[0])?.[1] ?? ''
+      if (guardSpec.includes('{')) {
+        push(out, 'guard-on-template', `<${tag.name} data-empty> would guard on "${guardSpec}", a token template. The element is guarded on its URL entry's field, or on its first entry's when it binds no URL; make that entry a plain path, or move the guard.`)
       }
+    }
+    if (attr('data-empty') === 'fallback' && (names.includes('data-bind-srcset') || (bindAttr !== undefined && bindsUrlAttr(bindAttr)))) {
+      push(out, 'media-fallback', `<${tag.name}> — ${MEDIA_FALLBACK_REFUSAL}`)
     }
     const repeat = attr('data-repeat')
     if (repeat !== undefined && opts.dataBindings !== undefined
@@ -177,7 +183,7 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
     if (opts.content !== undefined) {
       for (const [rawName, value] of tag.attrs) {
         const name = rawName.toLowerCase()
-        const paths = name === 'data-prop' || name === 'data-items'
+        const paths = name === 'data-prop' || name === 'data-items' || name === 'data-initials'
           ? [value]
           : name === 'data-prop-attr'
             ? value.split(';').map((e) => e.split(':').slice(1).join(':')).filter((s) => s !== '')
@@ -193,7 +199,8 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
           // as text or repeats over a string.
           // Story 4.5: an icon is drawn INTO the element and a date is printed as its text, so both
           // are `data-prop` kinds too.
-          const want = name === 'data-items' ? ['array'] : name === 'data-prop' ? ['text', 'richtext', 'icon', 'date'] : null
+          // Story 4.6: initials are baked from a name the user TYPED, so only a plain text prop (R-2).
+          const want = name === 'data-items' ? ['array'] : name === 'data-prop' ? ['text', 'richtext', 'icon', 'date'] : name === 'data-initials' ? ['text'] : null
           if (want !== null && !want.includes(prop.type)) {
             push(out, 'prop-type-mismatch', `<${tag.name} ${name}="${value}"> — "${p}" is a ${prop.type} prop, and ${name} takes ${want.join(' or ')}.`)
           }
@@ -214,9 +221,10 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
   })
 
   // The one direction a lexical scan CAN answer about a query key: every declared query is
-  // referenced. The other direction — a `data-repeat` over a context path that does not exist —
-  // needs the binding matrix, which is 4.6's. A typo in a key (`latst`) fails here anyway, because
-  // the key it was meant to be goes unreferenced.
+  // referenced. The other direction — a `data-repeat` over a context path that does not exist — is
+  // the context matrix's, asked by the runtime's scope walk when a render names its target (Story
+  // 4.6). A typo in a key (`latst`) fails here anyway, because the key it was meant to be goes
+  // unreferenced.
   for (const k of Object.keys(opts.dataBindings ?? {})) {
     if (!referencedKeys.has(k)) {
       push(out, 'binding-unreferenced', `dataBindings declares "${k}" and no data-repeat in the markup names it — a query nothing repeats over is dead, or the repeat that meant to name it is misspelt.`)

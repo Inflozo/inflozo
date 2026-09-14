@@ -5,6 +5,8 @@
 export * from './vocabulary.ts'
 export * from './registry.ts'
 export * from './validate.ts'
+// Story 4.6 — FR-H7's Template Context Matrix, read through `bindable` and `offerBindings`.
+export * from './contexts.ts'
 // Story 4.4 — the bundled sample publication, its three fixtures and the offline Source resolver. A
 // namespace rather than a flat re-export: `posts`, `tags` and `site` are too general to claim at the
 // package root.

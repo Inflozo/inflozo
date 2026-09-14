@@ -1,0 +1,631 @@
+{
+  "about": "FR-H7's Template Context Matrix — the ONE copy. Transcribed from appendix-b1-template-contexts.md and proved against tools/probe/record-contexts.py's recordings of T1 and T3 and against Ghost's own source (fixtures/). Read by packages/library/src/contexts.ts, by that recorder and by tools/stress/build.js; no field list is restated anywhere else. A field no recording can show carries `unverified` with its reason.",
+  "floor": "5.0.0",
+  "kinds": [
+    "text",
+    "url",
+    "image",
+    "color",
+    "date",
+    "number",
+    "boolean",
+    "list",
+    "object",
+    "helper"
+  ],
+  "universal": {
+    "@site.title": {
+      "kind": "text"
+    },
+    "@site.description": {
+      "kind": "text"
+    },
+    "@site.logo": {
+      "kind": "image"
+    },
+    "@site.icon": {
+      "kind": "image"
+    },
+    "@site.accent_color": {
+      "kind": "color"
+    },
+    "@site.cover_image": {
+      "kind": "image"
+    },
+    "@site.facebook": {
+      "kind": "text"
+    },
+    "@site.twitter": {
+      "kind": "text"
+    },
+    "@site.threads": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.bluesky": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.mastodon": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.tiktok": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.youtube": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.instagram": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.linkedin": {
+      "kind": "text",
+      "since": "6.36.0"
+    },
+    "@site.locale": {
+      "kind": "text"
+    },
+    "@site.timezone": {
+      "kind": "text"
+    },
+    "@site.codeinjection_head": {
+      "kind": "text"
+    },
+    "@site.codeinjection_foot": {
+      "kind": "text"
+    },
+    "@site.navigation": {
+      "kind": "list",
+      "of": "navigation"
+    },
+    "@site.secondary_navigation": {
+      "kind": "list",
+      "of": "navigation"
+    },
+    "@site.meta_title": {
+      "kind": "text"
+    },
+    "@site.meta_description": {
+      "kind": "text"
+    },
+    "@site.og_image": {
+      "kind": "image"
+    },
+    "@site.og_title": {
+      "kind": "text"
+    },
+    "@site.og_description": {
+      "kind": "text"
+    },
+    "@site.twitter_image": {
+      "kind": "image"
+    },
+    "@site.twitter_title": {
+      "kind": "text"
+    },
+    "@site.twitter_description": {
+      "kind": "text"
+    },
+    "@site.members_support_address": {
+      "kind": "text"
+    },
+    "@site.members_enabled": {
+      "kind": "boolean"
+    },
+    "@site.donations_enabled": {
+      "kind": "boolean",
+      "since": "5.120.2"
+    },
+    "@site.allow_self_signup": {
+      "kind": "boolean",
+      "since": "5.62.0"
+    },
+    "@site.members_invite_only": {
+      "kind": "boolean"
+    },
+    "@site.paid_members_enabled": {
+      "kind": "boolean"
+    },
+    "@site.portal_button_style": {
+      "kind": "text"
+    },
+    "@site.portal_button_signup_text": {
+      "kind": "text"
+    },
+    "@site.portal_button_icon": {
+      "kind": "text"
+    },
+    "@site.portal_signup_terms_html": {
+      "kind": "text",
+      "since": "5.42.0"
+    },
+    "@site.portal_signup_checkbox_required": {
+      "kind": "boolean",
+      "since": "5.42.0"
+    },
+    "@site.portal_plans": {
+      "kind": "list"
+    },
+    "@site.portal_name": {
+      "kind": "boolean"
+    },
+    "@site.portal_button": {
+      "kind": "boolean"
+    },
+    "@site.comments_enabled": {
+      "kind": "boolean",
+      "since": "5.3.0"
+    },
+    "@site.recommendations_enabled": {
+      "kind": "boolean",
+      "since": "5.61.0"
+    },
+    "@site.url": {
+      "kind": "url"
+    },
+    "@site.signup_url": {
+      "kind": "url"
+    },
+    "@site.comments_access": {
+      "kind": "text",
+      "since": "5.3.0"
+    },
+    "@site.admin_url": {
+      "kind": "url",
+      "since": "6.22.1"
+    },
+    "@config.posts_per_page": {
+      "kind": "number"
+    },
+    "@page.show_title_and_feature_image": {
+      "kind": "boolean",
+      "targets": [
+        "post.hbs",
+        "page.hbs",
+        "custom-{name}.hbs"
+      ],
+      "offered": [
+        "page.hbs",
+        "custom-{name}.hbs"
+      ]
+    },
+    "navigation": {
+      "kind": "helper"
+    },
+    "total_members": {
+      "kind": "helper"
+    },
+    "content_api_key": {
+      "kind": "helper"
+    }
+  },
+  "neverOffer": {
+    "@site.lang": "an undocumented alias of @site.locale (appendix B.1 §6) — bind @site.locale",
+    "@site.members_signup_access": "undocumented (appendix B.1 §6)",
+    "@site.portal_default_plan": "undocumented (appendix B.1 §6)",
+    "@site.outbound_link_tagging": "undocumented (appendix B.1 §6)",
+    "@site.firstpromoter_account": "undocumented (appendix B.1 §6)",
+    "@site.default_email_address": "undocumented (appendix B.1 §6)",
+    "@site.support_email_address": "undocumented (appendix B.1 §6)",
+    "@site.editor_default_email_recipients": "undocumented (appendix B.1 §6)",
+    "@site.labs": "undocumented (appendix B.1 §6)",
+    "@site.site_uuid": "undocumented (appendix B.1 §6)",
+    "@site.transistor_portal_enabled": "undocumented (appendix B.1 §6)",
+    "@site.transistor_portal_heading": "undocumented (appendix B.1 §6)",
+    "@site.transistor_portal_description": "undocumented (appendix B.1 §6)",
+    "@site.transistor_portal_button_text": "undocumented (appendix B.1 §6)",
+    "@site.transistor_portal_url_template": "undocumented (appendix B.1 §6)",
+    "@config.image_sizes": "real but undocumented (appendix B.1 §6, §8 item 3)",
+    "@labs": "set by middleware but documented nowhere (appendix B.1 §2)",
+    "@setting": "a gscan allow-list artifact that no middleware installs (appendix B.1 §2)"
+  },
+  "targets": {
+    "default.hbs": {
+      "top": "layout"
+    },
+    "home.hbs": {
+      "top": "list"
+    },
+    "index.hbs": {
+      "top": "list"
+    },
+    "post.hbs": {
+      "top": "entry",
+      "block": "post"
+    },
+    "page.hbs": {
+      "top": "page-entry",
+      "block": "post"
+    },
+    "custom-{name}.hbs": {
+      "top": "entry",
+      "block": "post"
+    },
+    "tag.hbs": {
+      "top": "tag-archive"
+    },
+    "author.hbs": {
+      "top": "author-archive"
+    },
+    "error.hbs": {
+      "top": "error"
+    },
+    "private.hbs": {
+      "top": "private"
+    }
+  },
+  "get": {
+    "posts": "post",
+    "tags": "tag",
+    "authors": "author",
+    "tiers": "tier",
+    "newsletters": "newsletter"
+  },
+  "scopes": {
+    "layout": {},
+    "list": {
+      "posts": {
+        "kind": "list",
+        "of": "post"
+      },
+      "pagination": {
+        "kind": "object",
+        "of": "pagination"
+      }
+    },
+    "entry": {
+      "post": {
+        "kind": "object",
+        "of": "post"
+      }
+    },
+    "page-entry": {
+      "post": {
+        "kind": "object",
+        "of": "post"
+      },
+      "page": {
+        "kind": "object",
+        "of": "post"
+      }
+    },
+    "tag-archive": {
+      "tag": {
+        "kind": "object",
+        "of": "tag"
+      },
+      "posts": {
+        "kind": "list",
+        "of": "post"
+      },
+      "pagination": {
+        "kind": "object",
+        "of": "pagination"
+      }
+    },
+    "author-archive": {
+      "author": {
+        "kind": "object",
+        "of": "author"
+      },
+      "posts": {
+        "kind": "list",
+        "of": "post"
+      },
+      "pagination": {
+        "kind": "object",
+        "of": "pagination"
+      }
+    },
+    "error": {
+      "statusCode": {
+        "kind": "helper"
+      },
+      "message": {
+        "kind": "helper"
+      },
+      "errorDetails": {
+        "kind": "list",
+        "of": "errorDetail",
+        "unverified": "Ghost fills errorDetails only for a theme-validation error, which no request to a working site can produce"
+      }
+    },
+    "private": {
+      "error": {
+        "kind": "object",
+        "of": "private-error",
+        "unverified": "private.hbs renders only in private mode, which this recorder may not switch on"
+      }
+    },
+    "post": {
+      "id": {
+        "kind": "text"
+      },
+      "comment_id": {
+        "kind": "text"
+      },
+      "title": {
+        "kind": "text"
+      },
+      "slug": {
+        "kind": "text"
+      },
+      "excerpt": {
+        "kind": "text"
+      },
+      "custom_excerpt": {
+        "kind": "text",
+        "unverified": "no public post on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "url": {
+        "kind": "url"
+      },
+      "feature_image": {
+        "kind": "image"
+      },
+      "feature_image_alt": {
+        "kind": "text"
+      },
+      "feature_image_caption": {
+        "kind": "text"
+      },
+      "featured": {
+        "kind": "boolean"
+      },
+      "published_at": {
+        "kind": "date"
+      },
+      "updated_at": {
+        "kind": "date"
+      },
+      "created_at": {
+        "kind": "date"
+      },
+      "primary_author": {
+        "kind": "object",
+        "of": "author"
+      },
+      "primary_tag": {
+        "kind": "object",
+        "of": "tag"
+      },
+      "tags": {
+        "kind": "list",
+        "of": "tag"
+      },
+      "authors": {
+        "kind": "list",
+        "of": "author"
+      },
+      "access": {
+        "kind": "boolean"
+      },
+      "visibility": {
+        "kind": "text"
+      },
+      "reading_time": {
+        "kind": "number",
+        "note": "a helper over the field: it prints Ghost's rounded \"1 min read\" (the API's 0 included, hence includeZero=true), and prints NOTHING for a post whose body the visitor may not read, because it counts the body (recorded on both majors)"
+      },
+      "post_class": {
+        "kind": "helper"
+      },
+      "content": {
+        "kind": "helper"
+      },
+      "comments": {
+        "kind": "helper"
+      }
+    },
+    "tag": {
+      "id": {
+        "kind": "text"
+      },
+      "name": {
+        "kind": "text"
+      },
+      "slug": {
+        "kind": "text"
+      },
+      "description": {
+        "kind": "text",
+        "unverified": "no public tag on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "feature_image": {
+        "kind": "image",
+        "unverified": "no public tag on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "url": {
+        "kind": "url"
+      },
+      "accent_color": {
+        "kind": "color",
+        "unverified": "no public tag on T1 or T3 carries one, and the recorder may not write content"
+      }
+    },
+    "author": {
+      "id": {
+        "kind": "text"
+      },
+      "name": {
+        "kind": "text"
+      },
+      "slug": {
+        "kind": "text"
+      },
+      "bio": {
+        "kind": "text"
+      },
+      "location": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "website": {
+        "kind": "url",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "url": {
+        "kind": "url"
+      },
+      "profile_image": {
+        "kind": "image",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "cover_image": {
+        "kind": "image",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "facebook": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "twitter": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "threads": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "bluesky": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "mastodon": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "tiktok": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "youtube": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "instagram": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "linkedin": {
+        "kind": "text",
+        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+      }
+    },
+    "tier": {
+      "id": {
+        "kind": "text"
+      },
+      "name": {
+        "kind": "text"
+      },
+      "slug": {
+        "kind": "text"
+      },
+      "description": {
+        "kind": "text",
+        "unverified": "no tier on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "type": {
+        "kind": "text"
+      },
+      "visibility": {
+        "kind": "text"
+      },
+      "monthly_price": {
+        "kind": "number"
+      },
+      "yearly_price": {
+        "kind": "number"
+      },
+      "currency": {
+        "kind": "text"
+      },
+      "benefits": {
+        "kind": "list",
+        "unverified": "no tier on T1 or T3 carries one, and the recorder may not write content"
+      },
+      "trial_days": {
+        "kind": "number"
+      },
+      "welcome_page_url": {
+        "kind": "url",
+        "unverified": "no tier on T1 or T3 carries one, and the recorder may not write content"
+      }
+    },
+    "newsletter": {
+      "id": {
+        "kind": "text"
+      },
+      "name": {
+        "kind": "text"
+      },
+      "slug": {
+        "kind": "text"
+      },
+      "description": {
+        "kind": "text",
+        "unverified": "no newsletter on T1 or T3 carries one, and the recorder may not write content"
+      }
+    },
+    "navigation": {
+      "label": {
+        "kind": "text"
+      },
+      "url": {
+        "kind": "url"
+      }
+    },
+    "pagination": {
+      "page": {
+        "kind": "number"
+      },
+      "pages": {
+        "kind": "number"
+      },
+      "total": {
+        "kind": "number"
+      },
+      "limit": {
+        "kind": "number"
+      },
+      "prev": {
+        "kind": "number"
+      },
+      "next": {
+        "kind": "number"
+      }
+    },
+    "errorDetail": {
+      "rule": {
+        "kind": "text",
+        "unverified": "see error.errorDetails"
+      },
+      "failures": {
+        "kind": "list",
+        "of": "failure",
+        "unverified": "see error.errorDetails"
+      }
+    },
+    "failure": {
+      "ref": {
+        "kind": "text",
+        "unverified": "see error.errorDetails"
+      },
+      "message": {
+        "kind": "text",
+        "unverified": "see error.errorDetails"
+      }
+    },
+    "private-error": {
+      "message": {
+        "kind": "text",
+        "unverified": "see private.error"
+      }
+    }
+  }
+}

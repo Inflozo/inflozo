@@ -2760,7 +2760,8 @@ origin: Story 4.3 review (2026-09-12) — Blind Hunter. The shim formats from UT
   asserts that condition by name. `RenderInput.site` carries no offset, so a connected site in any
   other zone is silently hours off on the canvas — a WYSIWYG gap on every date.
 owner: the story that first hands the canvas a connected site's settings snapshot (FR-C2 — Epic 5's
-  canvas, or 4.6's binding matrix if it reads the connection). The editor may use `Intl` (it is
+  canvas). *(Narrowed by Story 4.6, 2026-09-14: the binding matrix reads a version and never the
+  connection's settings, so it is not a candidate.)* The editor may use `Intl` (it is
   `apps/web`, not a core package): it computes the site's offset for the post's instant and passes a
   per-value offset (the site's IANA `timezone` name resolved at the post's own instant, because one
   offset is wrong across a DST boundary inside a single page of posts); the shim applies it before
@@ -3173,3 +3174,116 @@ location: packages/section-runtime/src/controls.test.ts (`HTML`) · apps/web/con
 reason: rendering needs a DOM; `jsdom` is a dependency of `packages/section-runtime` and not of `apps/web`, and
   the spec's Ask First reserves any new dependency. The deployed harness renders the on-disk sample on every
   Review run.
+
+## Deferred from: Story 4.6 — context-aware binding and empty-value guards (2026-09-14)
+
+### DW-122: no story offers moving or duplicating a section onto another template, or its re-point and revert step
+
+plain: The rule "moving a section to another kind of page must check its Ghost information first" now has
+  its check, but no planned screen lets anyone move or copy a section to another kind of page, so nothing
+  calls the check yet.
+status: open
+severity: medium
+origin: Story 4.6 Create (2026-09-13) — the story's own acceptance criterion is the only place epics.md names it
+owner: unowned — needs one. Epic 5 (the Layers panel, Story 5.4, or the template switcher, Story 5.5) is the nearest.
+location: packages/section-runtime/src/core.ts `checkBindings` · appendix-b1-template-contexts.md §1 *Re-validation* · prd.md FR-H7
+reason: FR-H7 says a move or duplicate re-validates every binding and the user re-points or reverts each
+  unavailable one before the move completes. `checkBindings(doc, src, { target })` returns exactly that list
+  with a reason per binding, and `offerBindings` answers what may replace each — but the action, the surface
+  that lists the refusals, and the re-point / revert-to-static step belong to no story.
+
+### DW-123: A1's and P0·2's "the site's social accounts arrived in 6.38.0" against Ghost's source at 6.36.0
+
+plain: The design notes say the site's extra social links arrived in Ghost 6.38, but Ghost's own code has
+  them from 6.36. A header built on the notes would hide those links on sites that could show them.
+status: open
+severity: low
+origin: Story 4.6 (2026-09-14) — Ghost's source read at 6.35.0, 6.36.0 and 6.38.0 (MEASUREMENTS §41e)
+owner: A1's category story (Headers & Navigation), which decides when its social rows show
+location: design export `A1 Headers - Spec.md:116`, `:1037`, `:1088` · `P0 Editor Primitives - Spec.md:262-272` (R-74: never edited) · packages/library/contexts/matrix.json
+reason: `public.js` and `default-settings.json` add the site's social `@site` keys at 6.36.0, unchanged through
+  6.38.0; the export's 6.38.0 comes from release notes and matches the `{{#social_accounts}}` block helper,
+  which IS 6.38.0 and is a gscan error below it. Both are true of different things: the matrix offers the
+  keys from 6.36.0, and A1 decides whether its rows read the keys or the helper, knowing both.
+
+### DW-124: `count.posts` needs a `{{#get}}` include that `DataBinding` cannot express
+
+plain: A design that shows "12 posts" beside a tag or a writer cannot be built yet, because the way a design
+  asks Ghost for posts has no switch for "and count them".
+status: open
+severity: medium
+origin: Story 4.6 (2026-09-14) — left out of the matrix on purpose
+owner: the first category story that shows a post count (A29 tag cards or A21 author showcases)
+location: packages/library/src/registry.ts `DataBinding` · packages/ghost-shim/src/index.ts `getExprs` · packages/library/contexts/matrix.json
+reason: appendix B.1 §4.3/§4.4: a tag's or author's post count exists only through
+  `{{#get "tags" include="count.posts"}}`. `DataBinding` declares source, filter, limit, order and ids — no
+  include — so a `count.posts` binding could only ever print empty, and the matrix does not offer it.
+
+### DW-125: the stress harness's `navigation` and `tiers` repeats print nothing on a real Ghost, and a target-naming render refuses both
+
+plain: The big test theme that proves Ghost accepts our output contains two lists that would be empty on a
+  real site. The new check catches them, but that test does not run the check yet.
+status: open
+severity: low
+origin: Story 4.6 Create (2026-09-13)
+owner: Story 7.35 (the E4/E7 joint compile gate) — the harness becomes the compiler's, which names its targets
+location: tools/stress/sections.js:37 (`data-repeat="navigation"`) and :115 (`data-repeat="tiers"`) · tools/stress/compile.js (renders with no target)
+reason: Ghost's key is `@site.navigation`, and tiers exist only through `{{#get}}` (appendix §5). The harness
+  renders every archetype with no `target`, so gscan still passes 0/0 — gscan never checks scope. Naming a
+  target in `compile.js` would refuse both archetypes today; fixing the archetypes changes the measured
+  AD-11 fixture, which is the joint gate's to re-baseline.
+
+### DW-126: the routes.yaml route form of `custom-{name}.hbs` has no row in the matrix
+
+plain: A custom page reached through a site's route settings gets its Ghost information differently from one
+  picked in Ghost Admin, and the new rules only know the second kind.
+status: open
+severity: medium
+origin: Story 4.6 (2026-09-14) — appendix B.1 §3's route row, out of this story's scope
+owner: Story 7.16 (the Routes Manager, FR-I2)
+location: packages/library/contexts/matrix.json `targets["custom-{name}.hbs"]` · appendix-b1-template-contexts.md §3
+reason: the matrix's one `custom-{name}.hbs` row is the ENTRY form (post block). The route form's root is flat
+  and carries exactly the `data:` keys the route declares, where `{{#page}}` is the only form — so its row
+  depends on the route Inflozo authored and cannot be a static row.
+
+### DW-127: `private.hbs`, every Ghost version below the two servers, and the seeded servers' empty fields are unexecuted
+
+plain: Some of the new rules are read from Ghost's code or its notes rather than seen on a live site: the
+  password page, very old Ghost versions, and details the test sites simply do not have filled in.
+status: open
+severity: low
+origin: Story 4.6 (2026-09-14) — MEASUREMENTS §41f
+owner: the story that next runs `python3 tools/probe/record-contexts.py` with seeded content (A21's and A29's category stories need the author and tag fields)
+location: packages/library/contexts/matrix.json (every `unverified`) · tools/probe/record-contexts.py
+reason: `private.hbs` needs private mode and `errorDetails` a theme validation error, neither of which the
+  recorder may cause. Versions below 5.130.6 were read in source for `@site` only; P0·2 dates the author social
+  handles to 5.118.0 and nothing recorded confirms it, so the matrix gates no resource field by version.
+  Fields empty on both seeded servers are `unverified` with that reason — seeding them is a content write the
+  story's Ask First reserved.
+
+### DW-128: the canvas shows "1 min read" on a post the visitor may not read, where Ghost prints nothing
+
+plain: For a paid post in a feed, the editor would show a reading time that a signed-out visitor never sees
+  on the real site.
+status: open
+severity: low
+origin: Story 4.6 (2026-09-14) — recorded on both majors (MEASUREMENTS §41d)
+owner: Story 5.14 (member-state preview), which is where the canvas first knows who is looking
+location: packages/section-runtime/src/core.ts `bindValue` (bare `reading_time`) · packages/ghost-shim/src/index.ts `readingTime`
+reason: Ghost's `{{reading_time}}` counts the post's body and prints nothing when the body is withheld; the
+  number guard (`includeZero=true`) is true because the field is 0, so the element keeps its place with no
+  text. The shim has no `access` input. The site's behaviour is right; the canvas needs the preview state.
+
+### DW-129: `@site.codeinjection_head` and `codeinjection_foot` are offered as text bindings
+
+plain: Two site settings that hold raw code are on the list of things a design could print as words. Nobody
+  would want that, but no ruling says to hide them.
+status: open
+severity: low
+origin: Story 4.6 (2026-09-14) — the universal set transcribed as `public.js` less appendix §6's never-offer list
+owner: Story 5.19 or whichever Epic 5 story first draws the binding picker (it consumes `offerBindings`)
+location: packages/library/contexts/matrix.json `universal` · appendix-b1-template-contexts.md §6
+reason: the appendix's never-offer list does not name them, so the matrix offers them rather than inventing a
+  refusal (flag, do not guess). A printed binding escapes the HTML, so nothing unsafe reaches a page; it is an
+  offer nobody should see. Adding both to `neverOffer` is one line once the owner rules.
+

@@ -1,0 +1,5932 @@
+{
+  "api": {
+    "author:1": {
+      "bio": null,
+      "bluesky": null,
+      "cover_image": null,
+      "facebook": null,
+      "id": "1",
+      "instagram": null,
+      "linkedin": null,
+      "location": null,
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Umang",
+      "profile_image": null,
+      "slug": "umang",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "https://ghost5.inflozo.com/author/umang/",
+      "website": null,
+      "youtube": null
+    },
+    "author:6a86b7916444934864da334b": {
+      "bio": "Writes about systems and the long tail of maintenance.",
+      "bluesky": null,
+      "cover_image": null,
+      "facebook": null,
+      "id": "6a86b7916444934864da334b",
+      "instagram": null,
+      "linkedin": null,
+      "location": null,
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Priya Raman",
+      "profile_image": null,
+      "slug": "priya-raman",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "https://ghost5.inflozo.com/author/priya-raman/",
+      "website": null,
+      "youtube": null
+    },
+    "newsletter:6a86a9b96444934864da2f9c": {
+      "created_at": "2026-08-20T07:16:09.000Z",
+      "description": null,
+      "id": "6a86a9b96444934864da2f9c",
+      "name": "Ghost5",
+      "sender_email": null,
+      "slug": "default-newsletter",
+      "sort_order": 0,
+      "subscribe_on_signup": true,
+      "updated_at": "2026-08-20T07:42:03.000Z",
+      "uuid": "36ae9764-551a-41d0-98d8-66de9c3274fa",
+      "visibility": "members"
+    },
+    "post:6a86b5fd6444934864da3298": {
+      "access": true,
+      "authors": [
+        {
+          "bio": "Writes about systems and the long tail of maintenance.",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "6a86b7916444934864da334b",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Priya Raman",
+          "profile_image": null,
+          "slug": "priya-raman",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/priya-raman/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b5fd6444934864da3298",
+      "comments": true,
+      "created_at": "2026-08-20T08:08:29.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "Notes from a slow rebuild. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for Notes from a slow rebuild",
+      "feature_image_caption": "Photo: Ghost",
+      "featured": true,
+      "frontmatter": null,
+      "html": "<p>Notes from a slow rebuild. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt truncation and reading time have something to work on.</p><blockquote>A pull quote, for the Koenig card treatments.</blockquote>",
+      "id": "6a86b5fd6444934864da3298",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": "Writes about systems and the long tail of maintenance.",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "6a86b7916444934864da334b",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Priya Raman",
+        "profile_image": null,
+        "slug": "priya-raman",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/priya-raman/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": null,
+        "feature_image": null,
+        "id": "6a86b5fd6444934864da3299",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Tooling",
+        "og_description": null,
+        "og_image": null,
+        "og_title": null,
+        "slug": "tooling",
+        "twitter_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "url": "https://ghost5.inflozo.com/tag/tooling/",
+        "visibility": "public"
+      },
+      "published_at": "2025-08-08T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "notes-from-a-slow-rebuild",
+      "tags": [
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b5fd6444934864da3299",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Tooling",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "tooling",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost5.inflozo.com/tag/tooling/",
+          "visibility": "public"
+        },
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b5fa6444934864da3279",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Craft",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "craft",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost5.inflozo.com/tag/craft/",
+          "visibility": "public"
+        }
+      ],
+      "title": "Notes from a slow rebuild",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:08:29.000+00:00",
+      "url": "https://ghost5.inflozo.com/notes-from-a-slow-rebuild/",
+      "uuid": "47de48e2-4735-4612-a959-c83de1c2f6f7",
+      "visibility": "public"
+    },
+    "post:6a86b5fe6444934864da32a1": {
+      "access": true,
+      "authors": [
+        {
+          "bio": "Writes about systems and the long tail of maintenance.",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "6a86b7916444934864da334b",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Priya Raman",
+          "profile_image": null,
+          "slug": "priya-raman",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/priya-raman/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b5fe6444934864da32a1",
+      "comments": true,
+      "created_at": "2026-08-20T08:08:30.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "Reading the margins. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png",
+      "feature_image_alt": "Cover for Reading the margins",
+      "feature_image_caption": "Photo: Ghost",
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>Reading the margins. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt truncation and reading time have something to work on.</p><blockquote>A pull quote, for the Koenig card treatments.</blockquote>",
+      "id": "6a86b5fe6444934864da32a1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": "Writes about systems and the long tail of maintenance.",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "6a86b7916444934864da334b",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Priya Raman",
+        "profile_image": null,
+        "slug": "priya-raman",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/priya-raman/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": null,
+        "feature_image": null,
+        "id": "6a86b5fe6444934864da32a2",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Archive",
+        "og_description": null,
+        "og_image": null,
+        "og_title": null,
+        "slug": "archive",
+        "twitter_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "url": "https://ghost5.inflozo.com/tag/archive/",
+        "visibility": "public"
+      },
+      "published_at": "2025-08-07T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "reading-the-margins",
+      "tags": [
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b5fe6444934864da32a2",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Archive",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "archive",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost5.inflozo.com/tag/archive/",
+          "visibility": "public"
+        }
+      ],
+      "title": "Reading the margins",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:08:30.000+00:00",
+      "url": "https://ghost5.inflozo.com/reading-the-margins/",
+      "uuid": "30cb3973-51df-4ade-bfc0-803b91213942",
+      "visibility": "public"
+    },
+    "post:6a86b6036444934864da32c1": {
+      "access": true,
+      "authors": [
+        {
+          "bio": "Writes about systems and the long tail of maintenance.",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "6a86b7916444934864da334b",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Priya Raman",
+          "profile_image": null,
+          "slug": "priya-raman",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/priya-raman/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b6036444934864da32c1",
+      "comments": true,
+      "created_at": "2026-08-20T08:08:35.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "A field guide to whitespace. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": null,
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>A field guide to whitespace. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt truncation and reading time have something to work on.</p><blockquote>A pull quote, for the Koenig card treatments.</blockquote>",
+      "id": "6a86b6036444934864da32c1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": "Writes about systems and the long tail of maintenance.",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "6a86b7916444934864da334b",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Priya Raman",
+        "profile_image": null,
+        "slug": "priya-raman",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/priya-raman/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": null,
+        "feature_image": null,
+        "id": "6a86b5fd6444934864da3299",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Tooling",
+        "og_description": null,
+        "og_image": null,
+        "og_title": null,
+        "slug": "tooling",
+        "twitter_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "url": "https://ghost5.inflozo.com/tag/tooling/",
+        "visibility": "public"
+      },
+      "published_at": "2025-08-02T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "a-field-guide-to-whitespace",
+      "tags": [
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b5fd6444934864da3299",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Tooling",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "tooling",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost5.inflozo.com/tag/tooling/",
+          "visibility": "public"
+        }
+      ],
+      "title": "A field guide to whitespace",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:08:35.000+00:00",
+      "url": "https://ghost5.inflozo.com/a-field-guide-to-whitespace/",
+      "uuid": "5fff22b1-842f-4ae9-b314-b15fab144ff4",
+      "visibility": "public"
+    },
+    "post:6a86b6046444934864da32c6": {
+      "access": true,
+      "authors": [
+        {
+          "bio": "Writes about systems and the long tail of maintenance.",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "6a86b7916444934864da334b",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Priya Raman",
+          "profile_image": null,
+          "slug": "priya-raman",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/priya-raman/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b6046444934864da32c6",
+      "comments": true,
+      "created_at": "2026-08-20T08:08:36.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "Ten years of one layout. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png",
+      "feature_image_alt": "Cover for Ten years of one layout",
+      "feature_image_caption": "Photo: Ghost",
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>Ten years of one layout. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt truncation and reading time have something to work on.</p><blockquote>A pull quote, for the Koenig card treatments.</blockquote>",
+      "id": "6a86b6046444934864da32c6",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": "Writes about systems and the long tail of maintenance.",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "6a86b7916444934864da334b",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Priya Raman",
+        "profile_image": null,
+        "slug": "priya-raman",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/priya-raman/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": null,
+        "feature_image": null,
+        "id": "6a86b5fe6444934864da32a2",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Archive",
+        "og_description": null,
+        "og_image": null,
+        "og_title": null,
+        "slug": "archive",
+        "twitter_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "url": "https://ghost5.inflozo.com/tag/archive/",
+        "visibility": "public"
+      },
+      "published_at": "2025-08-01T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "ten-years-of-one-layout",
+      "tags": [
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b5fe6444934864da32a2",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Archive",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "archive",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost5.inflozo.com/tag/archive/",
+          "visibility": "public"
+        }
+      ],
+      "title": "Ten years of one layout",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:08:36.000+00:00",
+      "url": "https://ghost5.inflozo.com/ten-years-of-one-layout/",
+      "uuid": "5ec95f97-5dc3-47e7-b4b7-45bfb5c923a2",
+      "visibility": "public"
+    },
+    "post:6a86b60f6444934864da331b": {
+      "access": true,
+      "authors": [
+        {
+          "bio": null,
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "1",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Umang",
+          "profile_image": null,
+          "slug": "umang",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/umang/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b60f6444934864da331b",
+      "comments": true,
+      "created_at": "2026-08-20T08:08:47.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for A brief history of the sidebar",
+      "feature_image_caption": "Photo: Ghost",
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt truncation and reading time have something to work on.</p><blockquote>A pull quote, for the Koenig card treatments.</blockquote>",
+      "id": "6a86b60f6444934864da331b",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": null,
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "1",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Umang",
+        "profile_image": null,
+        "slug": "umang",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/umang/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": null,
+        "feature_image": null,
+        "id": "6a86b5fb6444934864da3284",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Systems",
+        "og_description": null,
+        "og_image": null,
+        "og_title": null,
+        "slug": "systems",
+        "twitter_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "url": "https://ghost5.inflozo.com/tag/systems/",
+        "visibility": "public"
+      },
+      "published_at": "2025-07-18T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "a-brief-history-of-the-sidebar",
+      "tags": [
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b5fb6444934864da3284",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Systems",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "systems",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost5.inflozo.com/tag/systems/",
+          "visibility": "public"
+        }
+      ],
+      "title": "A brief history of the sidebar",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:08:47.000+00:00",
+      "url": "https://ghost5.inflozo.com/a-brief-history-of-the-sidebar/",
+      "uuid": "8b49d3c4-acca-4b1e-a3f2-b1899fae28ad",
+      "visibility": "public"
+    },
+    "post:6a86b6156444934864da3344": {
+      "access": true,
+      "authors": [
+        {
+          "bio": null,
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "1",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Umang",
+          "profile_image": null,
+          "slug": "umang",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/umang/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b6156444934864da3344",
+      "comments": true,
+      "created_at": "2026-08-20T08:08:53.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "excerpt": "A standing page, for page.hbs and its title/feature-image guard.",
+      "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>A standing page, for page.hbs and its title/feature-image guard.</p>",
+      "id": "6a86b6156444934864da3344",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": null,
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "1",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Umang",
+        "profile_image": null,
+        "slug": "umang",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/umang/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": null,
+      "published_at": "2026-08-20T08:08:53.000+00:00",
+      "reading_time": 0,
+      "show_title_and_feature_image": true,
+      "slug": "member-home-preview",
+      "tags": [],
+      "title": "Member Home Preview",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:08:53.000+00:00",
+      "url": "https://ghost5.inflozo.com/member-home-preview/",
+      "uuid": "dcba6b9b-eb20-4962-811e-684386bdfd57",
+      "visibility": "public"
+    },
+    "post:6a86ba276444934864da34dc": {
+      "access": false,
+      "authors": [
+        {
+          "bio": null,
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "1",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Umang",
+          "profile_image": null,
+          "slug": "umang",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost5.inflozo.com/author/umang/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86ba276444934864da34dc",
+      "comments": false,
+      "created_at": "2026-08-20T08:26:15.000+00:00",
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "",
+      "feature_image": null,
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "",
+      "id": "6a86ba276444934864da34dc",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": null,
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "1",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Umang",
+        "profile_image": null,
+        "slug": "umang",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost5.inflozo.com/author/umang/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": null,
+      "published_at": "2026-08-20T08:26:15.000+00:00",
+      "reading_time": 0,
+      "slug": "probe-gated-post",
+      "tags": [],
+      "title": "PROBE Gated Post",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:26:15.000+00:00",
+      "url": "https://ghost5.inflozo.com/probe-gated-post/",
+      "uuid": "758fbb8a-3727-4762-ae24-8289eb347ec1",
+      "visibility": "paid"
+    },
+    "tag:6a86b5fb6444934864da3284": {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": "6a86b5fb6444934864da3284",
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Systems",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "systems",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "https://ghost5.inflozo.com/tag/systems/",
+      "visibility": "public"
+    },
+    "tag:6a86b5fd6444934864da3299": {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": "6a86b5fd6444934864da3299",
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Tooling",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "tooling",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "https://ghost5.inflozo.com/tag/tooling/",
+      "visibility": "public"
+    },
+    "tag:6a86b5fe6444934864da32a2": {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": "6a86b5fe6444934864da32a2",
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Archive",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "archive",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "https://ghost5.inflozo.com/tag/archive/",
+      "visibility": "public"
+    },
+    "tier:6a86a9b96444934864da2f9b": {
+      "active": true,
+      "benefits": [],
+      "created_at": "2026-08-20T07:16:09.000Z",
+      "currency": "USD",
+      "description": null,
+      "id": "6a86a9b96444934864da2f9b",
+      "monthly_price": 500,
+      "name": "Ghost5",
+      "slug": "default-product",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": "2026-08-20T07:42:03.000Z",
+      "visibility": "public",
+      "welcome_page_url": null,
+      "yearly_price": 5000
+    }
+  },
+  "captured": "2026-09-14",
+  "command": "python3 tools/probe/record-contexts.py",
+  "ghost_major": "5",
+  "ghost_version": "5.130.6",
+  "gscan": [
+    {
+      "errors": 0,
+      "gscan": "4.49.7",
+      "major": "5.x",
+      "warnings": 1
+    },
+    {
+      "errors": 0,
+      "gscan": "6.4.2",
+      "major": "6.x",
+      "warnings": 1
+    }
+  ],
+  "note": "AD-23: what a real Ghost printed for every field of FR-H7's matrix, per template and scope. Frames are the probe theme's own blocks: `scope` names the matrix scope, `via` the path that opened it, and each field carries what it printed, its {{#if}} truthiness, the includeZero=true truthiness for a number, and a list or object's first row.",
+  "pages": [
+    {
+      "controls": {},
+      "frames": {
+        "F1": {
+          "fields": {
+            "benefits": {
+              "if": "0"
+            },
+            "currency": {
+              "if": "1",
+              "printed": "USD"
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86a9b96444934864da2f9b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "monthly_price": {
+              "if": "1",
+              "printed": "500",
+              "zero": "1"
+            },
+            "name": {
+              "if": "1",
+              "printed": "Ghost5"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "default-product"
+            },
+            "trial_days": {
+              "if": "0",
+              "printed": "0",
+              "zero": "1"
+            },
+            "type": {
+              "if": "1",
+              "printed": "paid"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            },
+            "welcome_page_url": {
+              "if": "0",
+              "printed": ""
+            },
+            "yearly_price": {
+              "if": "1",
+              "printed": "5000",
+              "zero": "1"
+            }
+          },
+          "scope": "tier",
+          "via": [
+            "#get tiers"
+          ]
+        },
+        "F10": {
+          "fields": {
+            "bio": {
+              "if": "0",
+              "printed": ""
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Umang"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "umang"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/umang/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "authors"
+          ]
+        },
+        "F11": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "limit": {
+              "if": "1",
+              "printed": "12",
+              "zero": "1"
+            },
+            "next": {
+              "if": "1",
+              "printed": "2",
+              "zero": "1"
+            },
+            "page": {
+              "if": "1",
+              "printed": "1",
+              "zero": "1"
+            },
+            "pages": {
+              "if": "1",
+              "printed": "3",
+              "zero": "1"
+            },
+            "prev": {
+              "if": "0",
+              "printed": "",
+              "zero": "0"
+            },
+            "total": {
+              "if": "1",
+              "printed": "33",
+              "zero": "1"
+            }
+          },
+          "scope": "pagination",
+          "via": [
+            "pagination"
+          ]
+        },
+        "F2": {
+          "fields": {
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86a9b96444934864da2f9c"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Ghost5"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "default-newsletter"
+            }
+          },
+          "scope": "newsletter",
+          "via": [
+            "#get newsletters"
+          ]
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        },
+        "F5": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "pagination": {
+              "first": "1",
+              "if": "1"
+            },
+            "posts": {
+              "first": "6a86ba276444934864da34dc",
+              "if": "1"
+            }
+          },
+          "scope": "list",
+          "via": []
+        },
+        "F6": {
+          "fields": {
+            "access": {
+              "if": "0",
+              "printed": "false"
+            },
+            "authors": {
+              "first": "1",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86ba276444934864da34dc"
+            },
+            "comments": {
+              "raw": {
+                "head": "",
+                "length": 0
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "\n<aside class=\"gh-post-upgrade-cta\">\n    <div class=\"gh-post-upgrade-cta-content\" style=\"background-color: #0da51e\">\n            <h2>This post is for paying sub",
+                "length": 431
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:26:15.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_alt": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_caption": {
+              "if": "0",
+              "printed": ""
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86ba276444934864da34dc"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post no-image",
+                "length": 13
+              }
+            },
+            "primary_author": {
+              "first": "1",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "",
+              "if": "0"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:26:15.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "probe-gated-post"
+            },
+            "tags": {
+              "first": "",
+              "if": "0"
+            },
+            "title": {
+              "if": "1",
+              "printed": "PROBE Gated Post"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:26:15.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/probe-gated-post/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "paid"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "posts"
+          ]
+        },
+        "F7": {
+          "fields": {
+            "bio": {
+              "if": "0",
+              "printed": ""
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Umang"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "umang"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/umang/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "primary_author"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/",
+      "template": "home.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home nav-current\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a h",
+            "length": 229
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {
+        "index.hbs_root_title": ""
+      },
+      "frames": {
+        "F12": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "pagination": {
+              "first": "2",
+              "if": "1"
+            },
+            "posts": {
+              "first": "6a86b6046444934864da32c6",
+              "if": "1"
+            }
+          },
+          "scope": "list",
+          "via": []
+        },
+        "F13": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b6046444934864da32c6"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost5.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>Ten years of one layout. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p",
+                "length": 321
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:36.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "Ten years of one layout. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments."
+            },
+            "feature_image": {
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png"
+            },
+            "feature_image_alt": {
+              "if": "1",
+              "printed": "Cover for Ten years of one layout"
+            },
+            "feature_image_caption": {
+              "if": "1",
+              "printed": "Photo: Ghost"
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b6046444934864da32c6"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post tag-archive",
+                "length": 16
+              }
+            },
+            "primary_author": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "6a86b5fe6444934864da32a2",
+              "if": "1"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2025-08-01T12:00:00.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "ten-years-of-one-layout"
+            },
+            "tags": {
+              "first": "6a86b5fe6444934864da32a2",
+              "if": "1"
+            },
+            "title": {
+              "if": "1",
+              "printed": "Ten years of one layout"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:36.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/ten-years-of-one-layout/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "posts"
+          ]
+        },
+        "F14": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "primary_author"
+          ]
+        },
+        "F15": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a2"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Archive"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "archive"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/archive/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "posts",
+            "primary_tag"
+          ]
+        },
+        "F16": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a2"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Archive"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "archive"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/archive/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "posts",
+            "tags"
+          ]
+        },
+        "F17": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "authors"
+          ]
+        },
+        "F18": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "limit": {
+              "if": "1",
+              "printed": "12",
+              "zero": "1"
+            },
+            "next": {
+              "if": "1",
+              "printed": "3",
+              "zero": "1"
+            },
+            "page": {
+              "if": "1",
+              "printed": "2",
+              "zero": "1"
+            },
+            "pages": {
+              "if": "1",
+              "printed": "3",
+              "zero": "1"
+            },
+            "prev": {
+              "if": "1",
+              "printed": "1",
+              "zero": "1"
+            },
+            "total": {
+              "if": "1",
+              "printed": "33",
+              "zero": "1"
+            }
+          },
+          "scope": "pagination",
+          "via": [
+            "pagination"
+          ]
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/page/2/",
+      "template": "index.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {
+        "post.hbs_block_title": "A brief history of the sidebar",
+        "post.hbs_root_title": ""
+      },
+      "frames": {
+        "F19": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "1",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b60f6444934864da331b"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost5.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading",
+                "length": 328
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:47.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments."
+            },
+            "feature_image": {
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
+            },
+            "feature_image_alt": {
+              "if": "1",
+              "printed": "Cover for A brief history of the sidebar"
+            },
+            "feature_image_caption": {
+              "if": "1",
+              "printed": "Photo: Ghost"
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b60f6444934864da331b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post tag-systems",
+                "length": 16
+              }
+            },
+            "primary_author": {
+              "first": "1",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "6a86b5fb6444934864da3284",
+              "if": "1"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2025-07-18T12:00:00.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "a-brief-history-of-the-sidebar"
+            },
+            "tags": {
+              "first": "6a86b5fb6444934864da3284",
+              "if": "1"
+            },
+            "title": {
+              "if": "1",
+              "printed": "A brief history of the sidebar"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:47.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/a-brief-history-of-the-sidebar/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "post"
+          ]
+        },
+        "F20": {
+          "fields": {
+            "bio": {
+              "if": "0",
+              "printed": ""
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Umang"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "umang"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/umang/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "primary_author"
+          ]
+        },
+        "F21": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fb6444934864da3284"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Systems"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "systems"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/systems/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "post",
+            "primary_tag"
+          ]
+        },
+        "F22": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fb6444934864da3284"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Systems"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "systems"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/systems/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "post",
+            "tags"
+          ]
+        },
+        "F23": {
+          "fields": {
+            "bio": {
+              "if": "0",
+              "printed": ""
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Umang"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "umang"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/umang/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "authors"
+          ]
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/a-brief-history-of-the-sidebar/",
+      "template": "post.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {
+        "post.hbs_block_title": "A field guide to whitespace",
+        "post.hbs_root_title": ""
+      },
+      "frames": {
+        "F19": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b6036444934864da32c1"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost5.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>A field guide to whitespace. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h",
+                "length": 325
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:35.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "A field guide to whitespace. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments."
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_alt": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_caption": {
+              "if": "0",
+              "printed": ""
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b6036444934864da32c1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post tag-tooling no-image",
+                "length": 25
+              }
+            },
+            "primary_author": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "6a86b5fd6444934864da3299",
+              "if": "1"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2025-08-02T12:00:00.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "a-field-guide-to-whitespace"
+            },
+            "tags": {
+              "first": "6a86b5fd6444934864da3299",
+              "if": "1"
+            },
+            "title": {
+              "if": "1",
+              "printed": "A field guide to whitespace"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:35.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/a-field-guide-to-whitespace/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "post"
+          ]
+        },
+        "F20": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "primary_author"
+          ]
+        },
+        "F21": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fd6444934864da3299"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Tooling"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "tooling"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/tooling/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "post",
+            "primary_tag"
+          ]
+        },
+        "F22": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fd6444934864da3299"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Tooling"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "tooling"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/tooling/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "post",
+            "tags"
+          ]
+        },
+        "F23": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "authors"
+          ]
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/a-field-guide-to-whitespace/",
+      "template": "post.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {
+        "page.hbs_block_title": "Member Home Preview",
+        "page.hbs_page_title": "Member Home Preview",
+        "page.hbs_post_title": "Member Home Preview",
+        "page.hbs_root_title": ""
+      },
+      "frames": {
+        "F24": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "1",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b6156444934864da3344"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost5.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>A standing page, for page.hbs and its title/feature-image guard.</p>",
+                "length": 71
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:53.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "A standing page, for page.hbs and its title/feature-image guard."
+            },
+            "feature_image": {
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+            },
+            "feature_image_alt": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_caption": {
+              "if": "0",
+              "printed": ""
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b6156444934864da3344"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post",
+                "length": 4
+              }
+            },
+            "primary_author": {
+              "first": "1",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "",
+              "if": "0"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:53.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "member-home-preview"
+            },
+            "tags": {
+              "first": "",
+              "if": "0"
+            },
+            "title": {
+              "if": "1",
+              "printed": "Member Home Preview"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:53.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/member-home-preview/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "post"
+          ]
+        },
+        "F25": {
+          "fields": {
+            "bio": {
+              "if": "0",
+              "printed": ""
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Umang"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "umang"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/umang/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "primary_author"
+          ]
+        },
+        "F28": {
+          "fields": {
+            "bio": {
+              "if": "0",
+              "printed": ""
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Umang"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "umang"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/umang/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "authors"
+          ]
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/member-home-preview/",
+      "template": "page.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {},
+      "frames": {
+        "F29": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "pagination": {
+              "first": "1",
+              "if": "1"
+            },
+            "posts": {
+              "first": "6a86b5fe6444934864da32a1",
+              "if": "1"
+            },
+            "tag": {
+              "first": "6a86b5fe6444934864da32a2",
+              "if": "1"
+            }
+          },
+          "scope": "tag-archive",
+          "via": []
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F30": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a2"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Archive"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "archive"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/archive/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "tag"
+          ]
+        },
+        "F31": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a1"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost5.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>Reading the margins. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A f",
+                "length": 317
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:30.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "Reading the margins. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments."
+            },
+            "feature_image": {
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png"
+            },
+            "feature_image_alt": {
+              "if": "1",
+              "printed": "Cover for Reading the margins"
+            },
+            "feature_image_caption": {
+              "if": "1",
+              "printed": "Photo: Ghost"
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post tag-archive",
+                "length": 16
+              }
+            },
+            "primary_author": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "6a86b5fe6444934864da32a2",
+              "if": "1"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2025-08-07T12:00:00.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "reading-the-margins"
+            },
+            "tags": {
+              "first": "6a86b5fe6444934864da32a2",
+              "if": "1"
+            },
+            "title": {
+              "if": "1",
+              "printed": "Reading the margins"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:30.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/reading-the-margins/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "posts"
+          ]
+        },
+        "F32": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "primary_author"
+          ]
+        },
+        "F33": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a2"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Archive"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "archive"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/archive/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "posts",
+            "primary_tag"
+          ]
+        },
+        "F34": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fe6444934864da32a2"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Archive"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "archive"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/archive/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "posts",
+            "tags"
+          ]
+        },
+        "F35": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "authors"
+          ]
+        },
+        "F36": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "limit": {
+              "if": "1",
+              "printed": "12",
+              "zero": "1"
+            },
+            "next": {
+              "if": "0",
+              "printed": "",
+              "zero": "0"
+            },
+            "page": {
+              "if": "1",
+              "printed": "1",
+              "zero": "1"
+            },
+            "pages": {
+              "if": "1",
+              "printed": "1",
+              "zero": "1"
+            },
+            "prev": {
+              "if": "0",
+              "printed": "",
+              "zero": "0"
+            },
+            "total": {
+              "if": "1",
+              "printed": "5",
+              "zero": "1"
+            }
+          },
+          "scope": "pagination",
+          "via": [
+            "pagination"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/tag/archive/",
+      "template": "tag.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {},
+      "frames": {
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F37": {
+          "fields": {
+            "author": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "pagination": {
+              "first": "1",
+              "if": "1"
+            },
+            "posts": {
+              "first": "6a86b5fd6444934864da3298",
+              "if": "1"
+            }
+          },
+          "scope": "author-archive",
+          "via": []
+        },
+        "F38": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "author"
+          ]
+        },
+        "F39": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b5fd6444934864da3298"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost5.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>Notes from a slow rebuild. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2>",
+                "length": 323
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:29.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "0",
+              "printed": ""
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "Notes from a slow rebuild. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments."
+            },
+            "feature_image": {
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
+            },
+            "feature_image_alt": {
+              "if": "1",
+              "printed": "Cover for Notes from a slow rebuild"
+            },
+            "feature_image_caption": {
+              "if": "1",
+              "printed": "Photo: Ghost"
+            },
+            "featured": {
+              "if": "1",
+              "printed": "true"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fd6444934864da3298"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post tag-tooling tag-craft featured",
+                "length": 35
+              }
+            },
+            "primary_author": {
+              "first": "6a86b7916444934864da334b",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "6a86b5fd6444934864da3299",
+              "if": "1"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2025-08-08T12:00:00.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "notes-from-a-slow-rebuild"
+            },
+            "tags": {
+              "first": "6a86b5fd6444934864da3299",
+              "if": "1"
+            },
+            "title": {
+              "if": "1",
+              "printed": "Notes from a slow rebuild"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:08:29.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/notes-from-a-slow-rebuild/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "posts"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        },
+        "F40": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "primary_author"
+          ]
+        },
+        "F41": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fd6444934864da3299"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Tooling"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "tooling"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/tooling/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "posts",
+            "primary_tag"
+          ]
+        },
+        "F42": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b5fd6444934864da3299"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Tooling"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "tooling"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/tooling/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "posts",
+            "tags"
+          ]
+        },
+        "F43": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7916444934864da334b"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "posts",
+            "authors"
+          ]
+        },
+        "F44": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "limit": {
+              "if": "1",
+              "printed": "12",
+              "zero": "1"
+            },
+            "next": {
+              "if": "0",
+              "printed": "",
+              "zero": "0"
+            },
+            "page": {
+              "if": "1",
+              "printed": "1",
+              "zero": "1"
+            },
+            "pages": {
+              "if": "1",
+              "printed": "1",
+              "zero": "1"
+            },
+            "prev": {
+              "if": "0",
+              "printed": "",
+              "zero": "0"
+            },
+            "total": {
+              "if": "1",
+              "printed": "11",
+              "zero": "1"
+            }
+          },
+          "scope": "pagination",
+          "via": [
+            "pagination"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/author/priya-raman/",
+      "template": "author.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    },
+    {
+      "controls": {},
+      "frames": {
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Ghost 5 Home"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Sign up"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/"
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        },
+        "F45": {
+          "fields": {
+            "errorDetails": {
+              "first": "",
+              "if": "0"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "message": {
+              "raw": {
+                "head": "Page not found",
+                "length": 14
+              }
+            },
+            "statusCode": {
+              "raw": {
+                "head": "404",
+                "length": 3
+              }
+            }
+          },
+          "scope": "error",
+          "via": []
+        }
+      },
+      "http": 404,
+      "path": "/inflozo-probe-no-such-page/",
+      "template": "error.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#0da51e"
+        },
+        "@site.admin_url": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_foot": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.codeinjection_head": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "1",
+          "printed": "Thoughts, stories and ideas."
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost5"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost5.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-ghost-5-home\"><a href=\"https://ghost5.inflozo.com/\">Ghost 5 Home</a></li>\n    <li class=\"nav-ghost-5-about\"><a href=\"https:/",
+            "length": 217
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        }
+      }
+    }
+  ],
+  "site": "https://ghost5.inflozo.com"
+}

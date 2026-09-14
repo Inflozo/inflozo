@@ -3,5 +3,5 @@
   "compilerOptions": {
     "resolveJsonModule": true
   },
-  "include": ["src", "orbit-weekly", "icons"]
+  "include": ["src", "orbit-weekly", "icons", "contexts"]
 }

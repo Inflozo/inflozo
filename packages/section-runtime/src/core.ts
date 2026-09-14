@@ -25,15 +25,19 @@ import {
   HELPERS,
   IMAGE_SIZES,
   PAGINATED_TARGETS,
+  MEDIA_FALLBACK_REFUSAL,
   URL_ATTRS,
   assertBindableAttr as parseBindableAttr,
+  bindable,
+  fieldKind,
   guardField,
   isIsoDate,
   parseBindSpec,
+  parseTokenTemplate,
   safeUrl,
   splitFirst,
 } from '@inflozo/library'
-import type { ControlDef, DataBinding, IconLookup, PropDef, UniversalNarrowing } from '@inflozo/library'
+import type { BindingUse, ControlDef, DataBinding, IconLookup, PropDef, ScopeEntry, UniversalNarrowing } from '@inflozo/library'
 // Story 4.3. The spine's package table says the three core packages may depend on `library` AND on
 // each other, so this import is inside the dependency rule. The DOM is injected because AD-1 forbids
 // reaching a global; the shim is PURE, so there is nothing to inject around it and threading it
@@ -49,6 +53,7 @@ import {
   navigationItems,
   pageUrl,
   paginationContext,
+  readingTime,
   srcset,
 } from '@inflozo/ghost-shim'
 import { escapeUserText, isRich, linkAttributes, serializeMarks } from './marks.ts'
@@ -137,7 +142,9 @@ export type RenderInput = {
    *  `[]` while the query is in flight — because an absent entry is refused, not rendered empty. */
   getRows?: Readonly<Record<string, readonly unknown[]>>
   /** the compile target this render is for. `data-pagination` requires a paginated one (R-7) — a
-   *  `{{pagination}}` outside a paginated context is a FATAL render, not a warning. */
+   *  `{{pagination}}` outside a paginated context is a FATAL render, not a warning. Named, every Ghost
+   *  binding is checked against the context matrix at its scope (FR-H7, Story 4.6) and a field the
+   *  matrix types `number` guards with `includeZero=true`; a render naming no template cannot be checked. */
   target?: string
 
   // ── Story 4.5 — the controls engine's one door into both emitters ──────────
@@ -263,6 +270,8 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   'data-pagination',
   // Story 4.5 — an AUTHORED array, baked as N copies on both emitters (§7.3 gap row 1)
   'data-items',
+  // Story 4.6 — R-2's typed avatar initials, through the user-text path
+  'data-initials',
 ]
 
 /** Derived, not written down. `data-t`/`data-t-attr` are 4.9's, `data-needs` is AD-37's
@@ -291,8 +300,8 @@ const get = (o: unknown, path: string): unknown =>
  *  and `[]` — `helpers/if.js:16` with `utils.js` `isEmpty`, read in handlebars 4.7.9, the version
  *  Ghost's `express-hbs` pins. The canvas mirrors that exactly, so a cleared field falls back HERE
  *  the way it falls back on the live site, rather than showing an empty string. */
-const isEmpty = (v: unknown): boolean =>
-  v == null || v === '' || v === false || v === 0 || (Array.isArray(v) && v.length === 0)
+const isEmpty = (v: unknown, includeZero = false): boolean =>
+  v == null || v === '' || v === false || (v === 0 && !includeZero) || (Array.isArray(v) && v.length === 0)
 
 /** A content prop is "unset" when it holds nothing a reader would see. */
 const propEmpty = (v: unknown): boolean => v == null || v === '' || (isRich(v) && v.text === '')
@@ -399,11 +408,18 @@ function guardMode(el: RuntimeElement, media: boolean): Guard {
  *  `published_at|date:YYYY` took the FORMAT STRING and emitted `{{#if format=YYYY}}`: a guard on an
  *  identifier that does not exist, so the block never rendered and the content was silently and
  *  permanently lost. A garbage guard is *present*, which is why "is there a guard?" passed. */
-function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, tokens: Tokens): void {
-  el.before(doc.createComment(tokens.put(`{{#if ${field}}}`)))
+function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, tokens: Tokens, zero = false): void {
+  el.before(doc.createComment(tokens.put(ifOpen(field, zero))))
   el.after(doc.createComment(tokens.put('{{/if}}')))
   guarded.set(el, field)
 }
+/** FR-H8's one guard form — `{{#if}}` on the bound field, never `{{#has}}` or `{{#unless}}`. A field the
+ *  matrix types `number` adds `includeZero=true`: Handlebars 4.7.9's `helpers/if.js` takes the else
+ *  branch for `0` without it, while `{{f}}` prints `0`, so a count of zero — or Ghost's "1 min read"
+ *  over an API `reading_time` of 0, recorded on both majors — would show the design's placeholder.
+ *  gscan 6.4.2's one-argument rule counts positional params only, and both majors took it at upload. */
+const ifOpen = (field: string, zero: boolean): string => `{{#if ${field}${zero ? ' includeZero=true' : ''}}}`
+
 /** which field each element is already guarded on, so two directives on one element — `data-bind`,
  *  `data-bind-attr`, `data-bind-srcset` or `data-pagination`, any pair — emit ONE guard when they
  *  guard on the same field, and one each when they do not */
@@ -472,6 +488,87 @@ function refuseGetOnForbiddenTarget(root: RuntimeElement, input: RenderInput): v
   }
 }
 
+// ─── FR-H7 — the scope walk (Story 4.6) ──────────────────────────────────────
+
+/** What a `data-repeat` opens: a `dataBindings` key is a `{{#get}}` over its source's rows; anything
+ *  else is a context path. An authored `data-items` list opens no Ghost scope. */
+function repeatEntry(source: string, input: RenderInput): ScopeEntry {
+  const q = own(input.dataBindings, source)
+  return q === undefined ? source : { get: q.source }
+}
+
+/** The enclosing repeats of `el`, outer first — itself included when `self` (its own bindings sit
+ *  inside its own rows; its repeat source does not). */
+function scopeOf(el: RuntimeElement, root: RuntimeElement, input: RenderInput, self: boolean): ScopeEntry[] {
+  const out: ScopeEntry[] = []
+  for (let p: RuntimeElement | null = self ? el : el.parentElement; p !== null && p !== root; p = p.parentElement) {
+    const r = p.getAttribute('data-repeat')
+    if (r !== null) out.unshift(repeatEntry(r, input))
+  }
+  return out
+}
+
+/** Every Ghost path a directive on `el` carries, with what it is used as. A value that fails its own
+ *  grammar is left to `consume`, which refuses it by the AD-36 sentence when the walk reaches it. */
+function ghostPaths(el: RuntimeElement, input: RenderInput): { attr: string; path: string; use: BindingUse; self: boolean }[] {
+  const out: { attr: string; path: string; use: BindingUse; self: boolean }[] = []
+  const spec = (attr: string, v: string, self = true) => {
+    const p = parseBindSpec(v)
+    if (typeof p !== 'string') out.push({ attr, path: p.path, use: 'value', self })
+  }
+  const bind = el.getAttribute('data-bind')
+  if (bind !== null) spec('data-bind', bind)
+  for (const e of (el.getAttribute('data-bind-attr') ?? '').split(';').map((x) => x.trim()).filter((x) => x !== '')) {
+    const v = splitFirst(e, ':')[1] ?? ''
+    if (!v.includes('{')) spec('data-bind-attr', v)
+    else {
+      const paths = parseTokenTemplate(v)
+      if (typeof paths !== 'string') for (const path of paths) out.push({ attr: 'data-bind-attr', path, use: 'value', self: true })
+    }
+  }
+  const srcset = el.getAttribute('data-bind-srcset')
+  if (srcset !== null) spec('data-bind-srcset', splitFirst(srcset, '|')[0])
+  const style = el.getAttribute('data-bind-style')
+  if (style !== null) spec('data-bind-style', splitFirst(style, ':')[1] ?? '')
+  const repeat = el.getAttribute('data-repeat')
+  if (repeat !== null && own(input.dataBindings, repeat) === undefined) out.push({ attr: 'data-repeat', path: repeat, use: 'repeat', self: false })
+  const helper = el.getAttribute('data-helper')
+  if (helper !== null) out.push({ attr: 'data-helper', path: helper, use: 'helper', self: true })
+  return out
+}
+
+/** FR-H7 at the one door every render passes: every binding the context matrix does not allow at its
+ *  scope on `input.target`, as `<tag attr="path"> — why` sentences. Empty only when every binding is
+ *  available — the gate a move or duplicate onto another template must pass. */
+function bindingRefusals(root: RuntimeElement, input: RenderInput & { target: string }): string[] {
+  const out: string[] = []
+  for (const el of root.querySelectorAll('*')) {
+    for (const { attr, path, use, self } of ghostPaths(el, input)) {
+      const why = bindable(path, { target: input.target, scope: scopeOf(el, root, input, self), use })
+      const line = `<${el.tagName.toLowerCase()} ${attr}> "${path}" — ${why ?? ''}`
+      if (why !== null && !out.includes(line)) out.push(line)
+    }
+  }
+  return out
+}
+
+/** Re-validation (FR-H7, appendix B.1 §1): every binding in `src` the destination `input.target` does
+ *  not allow, with its reason, and `[]` when all are available. What a move or duplicate onto another
+ *  template calls before it completes; no story offers that action yet (see the ledger). */
+export function checkBindings(doc: RuntimeDocument, src: string, input: RenderInput): string[] {
+  const target = input.target
+  if (target === undefined) {
+    throw new Error('checkBindings needs the destination template (input.target) — a binding is legal or not only on a named template (FR-H7).')
+  }
+  const root = doc.createElement('div')
+  root.innerHTML = src
+  return bindingRefusals(root, { ...input, target })
+}
+
+/** true when the matrix types `field` a number here — a render naming no target cannot know */
+const numberField = (field: string, input: RenderInput, where: readonly ScopeEntry[]): boolean =>
+  input.target !== undefined && fieldKind(field, { target: input.target, scope: where }) === 'number'
+
 /** `users` is the WHOLE of the difference between the emitters at the binding sites: a `UserText`
  *  on the theme path, `null` on the canvas path. */
 function emitBindings(
@@ -481,11 +578,13 @@ function emitBindings(
   tokens: Tokens,
   users: UserText | null,
   ctx: unknown,
+  where: readonly ScopeEntry[],
 ): void {
   // Handlebars resolves `@site`, `@custom` and every other `@data` variable from the ROOT, wherever
   // the expression sits; a row inside `{{#foreach}}` does not shadow it. The canvas does the same.
   const resolve = (spec: string): string | null =>
-    bindValue(spec, spec.startsWith('@') ? (input.ghost ?? {}) : ctx, input.site)
+    bindValue(spec, spec.startsWith('@') ? (input.ghost ?? {}) : ctx, input.site, numberField(guardField(spec), input, where))
+  const zero = (field: string): boolean => numberField(field, input, where)
 
   for (const el of all(scope, '[data-bind]')) {
     const spec = consume(el, 'data-bind') ?? ''
@@ -499,11 +598,11 @@ function emitBindings(
       const expr = bindExpr(spec)
       if (mode === 'hide') {
         el.textContent = tokens.put(expr)
-        wrapGuard(doc, el, field, tokens)
+        wrapGuard(doc, el, field, tokens, zero(field))
       } else {
         // FR-H8's verbatim form: {{#if x}}{{x}}{{else}}<static>{{/if}}
         el.textContent = tokens.put(
-          `{{#if ${field}}}${expr}{{else}}${escStatic(authored)}{{/if}}`,
+          `${ifOpen(field, zero(field))}${expr}{{else}}${escStatic(authored)}{{/if}}`,
         )
       }
     } else {
@@ -531,7 +630,11 @@ function emitBindings(
     // FR-H8: the media case is ANY entry into a URL-valued attribute, not only the first — a design
     // writing `alt:title;src:feature_image` guards the element on `feature_image`, never `alt`.
     const guardEntry = entries.find((e) => URL_ATTRS.has(e.attr)) ?? entries[0]
-    const mode = guardMode(el, guardEntry !== undefined && URL_ATTRS.has(guardEntry.attr))
+    const media = guardEntry !== undefined && URL_ATTRS.has(guardEntry.attr)
+    // FR-H8 (Story 4.6): a media binding HIDES its element. A fallback here used to guard the attribute
+    // and ship the design's placeholder as a live relative URL — refused, with the validator's sentence.
+    if (media && el.getAttribute('data-empty') === 'fallback') throw new Error(`<${el.tagName.toLowerCase()}> — ${MEDIA_FALLBACK_REFUSAL}`)
+    const mode = guardMode(el, media)
     let removed = false
     for (const { attr, spec } of entries) {
       if (users !== null) {
@@ -544,7 +647,7 @@ function emitBindings(
           tokens.put(
             mode === 'hide'
               ? expr
-              : `{{#if ${guardField(spec)}}}${expr}{{else}}${escAttr(el.getAttribute(attr) ?? '')}{{/if}}`,
+              : `${ifOpen(guardField(spec), zero(guardField(spec)))}${expr}{{else}}${escAttr(el.getAttribute(attr) ?? '')}{{/if}}`,
           ),
         )
       } else {
@@ -567,7 +670,7 @@ function emitBindings(
       }
     }
     if (!removed && users !== null && mode === 'hide' && guardEntry !== undefined) {
-      wrapGuard(doc, el, guardField(guardEntry.spec), tokens)
+      wrapGuard(doc, el, guardField(guardEntry.spec), tokens, zero(guardField(guardEntry.spec)))
     }
   }
 
@@ -579,9 +682,9 @@ function emitBindings(
   for (const el of all(scope, '[data-bind-srcset]')) {
     const spec = consume(el, 'data-bind-srcset') ?? ''
     const path = splitFirst(spec, '|')[0] as string
-    // A candidate list is the media case BY DEFINITION, so `data-empty="fallback"` is not honoured
-    // here: a fallback would be an unguarded `srcset`, the malformed attribute named above.
-    consume(el, 'data-empty')
+    // A candidate list is the media case BY DEFINITION. `data-empty="fallback"` used to be swallowed
+    // here; since Story 4.6 it is refused by the validator's sentence, on both emitters.
+    if (consume(el, 'data-empty') === 'fallback') throw new Error(`<${el.tagName.toLowerCase()}> — ${MEDIA_FALLBACK_REFUSAL}`)
     if (users !== null) {
       // ─────────── THE DIFFERENCE (2) — theme ───────────
       el.setAttribute('srcset', tokens.put(srcsetExpr(path)))
@@ -694,7 +797,7 @@ function emitBindings(
       // since Story 4.3 it reads the same `safeCssColor` through `ghostColor`.
       el.setAttribute(
         'style',
-        tokens.put(`{{#if ${guardField(spec)}}}${prop}: ${bindExpr(spec)}{{/if}}`),
+        tokens.put(`${ifOpen(guardField(spec), zero(guardField(spec)))}${prop}: ${bindExpr(spec)}{{/if}}`),
       )
     } else {
       // ─────────── THE DIFFERENCE (2) — canvas ───────────
@@ -714,9 +817,15 @@ function emitBindings(
 /** The canvas counterpart of `bindExpr`: same spec, same grammar, a value instead of a mustache.
  *  ONE parse — `parseBindSpec` — so an invalid spec fails IDENTICALLY on both emitters and the
  *  grammar is never re-derived here. A design the compiler refuses must not silently render. */
-export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']): string | null {
+export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site'], includeZero = false): string | null {
   const parsed = parseBindSpec(spec)
   if (typeof parsed === 'string') throw new Error(`AD-36: ${parsed}`)
+  // A BARE `reading_time` is Ghost's helper too: it prints the rounded "1 min read", recorded on both
+  // majors over an API value of 0 — which the number guard lets through (Story 4.6).
+  if (parsed.helper === undefined && parsed.path === 'reading_time') {
+    const raw = get(ctx, 'reading_time')
+    return isEmpty(raw, includeZero) ? null : readingTime(raw)
+  }
   // A BARE `excerpt` on the theme is Ghost's HELPER, not the field: it prefers `custom_excerpt`,
   // escapes, and truncates a computed excerpt to 50 words (read in source — see the shim). The
   // canvas resolves it over the current object BEFORE the emptiness test, because a post with only
@@ -728,7 +837,7 @@ export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']
     return text === '' ? null : text
   }
   const raw = get(ctx, parsed.path)
-  if (isEmpty(raw)) return null
+  if (isEmpty(raw, includeZero)) return null
   if (parsed.helper === 'date') return formatDate(raw, parsed.arg) // the format argument is HONOURED
   if (parsed.helper === 'img_url') {
     // Story 4.3: this used to be `String(raw)`, so the canvas showed the ORIGINAL image where the
@@ -785,6 +894,23 @@ function applyProps(
       // their own literal text and their own marks.
       el.innerHTML = serializeMarks(v, def, tokenValues)
     }
+  }
+
+  // Story 4.6 — R-2's typed avatar: two initials BAKED from a name the user typed, through the same
+  // user-text door as `data-prop` (AD-5), so a name carrying `{{` ships inert. An empty name keeps the
+  // authored text, or hides with `data-empty="hide"`. A person from Ghost gets one letter from the
+  // design's stylesheet over the bound name instead, which is why this is refused inside a repeat.
+  for (const el of all(scope, '[data-initials]')) {
+    const path = consume(el, 'data-initials') ?? ''
+    const mode = guardMode(el, false)
+    const raw = propGet(content, path, items)
+    const value = initials(isRich(raw) ? raw.text : typeof raw === 'string' ? raw : '')
+    if (value === '') {
+      if (mode === 'hide') el.remove()
+      continue
+    }
+    if (users !== null) el.textContent = users.put(path, value)
+    else el.innerHTML = serializeMarks(value, own(schema, path), tokenValues)
   }
 
   // ONE attribute, a semicolon-separated LIST (`data-prop-attr2` is retired — Story 4.1).
@@ -869,6 +995,17 @@ export function stampControls(
   }
 }
 
+/** The first code point of the first and of the last whitespace-separated word: "Jane Doe" → JD,
+ *  "Madonna" → M, "Mary Jane Watson" → MW. Case stays as typed; the stylesheet decides display.
+ *  ponytail: a code point is not a grapheme, so a name opening with a combining sequence loses its mark;
+ *  AD-1 bans `Intl.Segmenter`, and a segmenter handed in is the upgrade if a real name ever needs it. */
+export function initials(name: string): string {
+  const words = name.trim().split(/\s+/).filter((w) => w !== '')
+  if (words.length === 0) return ''
+  const first = [...(words[0] as string)][0] ?? ''
+  return words.length === 1 ? first : first + ([...(words[words.length - 1] as string)][0] ?? '')
+}
+
 /** §7.3 gap row 1: an AUTHORED array renders as one copy per item, on BOTH emitters — the theme
  *  bakes N static copies (a user-authored list is known at compile), so the two trees are identical
  *  and per-item user text is parked like any other, its mark allow-list looked up by the `[]` path.
@@ -900,7 +1037,7 @@ function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
       const clone = el.cloneNode(true)
       el.before(clone)
       // bindings first, as every other walk does: `data-empty` is shared and applyProps sweeps it
-      emitBindings(doc, clone, input, tokens, users, input.ghost ?? {})
+      emitBindings(doc, clone, input, tokens, users, input.ghost ?? {}, [])
       applyProps(clone, input, users, { [path]: item })
     }
     el.remove()
@@ -958,6 +1095,20 @@ function renderTree(
   refuseUnrendered(root)
   refuseUnpaginated(root, input.target)
   refuseGetOnForbiddenTarget(root, input)
+  // R-2: two initials never come from Ghost — `{{split}}` is 6.5+ and a gscan error below it
+  for (const el of all(root, '[data-initials]')) {
+    if (el.getAttribute('data-repeat') !== null || insideRepeat(el, root)) {
+      throw new Error(`data-initials="${el.getAttribute('data-initials') ?? ''}" sits inside a data-repeat. Two initials are baked only from a name the user typed (R-2); a person from Ghost shows one letter through the design's stylesheet over the bound name.`)
+    }
+  }
+  // FR-H7 (Story 4.6), after R-7's refusals so their messages stand
+  const target = input.target
+  if (target !== undefined) {
+    const refused = bindingRefusals(root, { ...input, target })
+    if (refused.length > 0) {
+      throw new Error(`FR-H7: ${target} does not carry every binding this design makes, and Ghost would print each refused one as a silent blank:\n  ${refused.join('\n  ')}`)
+    }
+  }
   if (input.icons === undefined) {
     for (const el of all(root, '[data-prop]')) {
       const path = el.getAttribute('data-prop') ?? ''
@@ -979,6 +1130,7 @@ function renderTree(
     const repeats = [...root.querySelectorAll('[data-repeat]')].sort((a, b) => depth(b) - depth(a))
     for (const el of repeats) {
       if (!root.contains(el)) continue
+      const where = scopeOf(el, root, input, true)
       const source = consume(el, 'data-repeat') ?? ''
       const limit = consume(el, 'data-repeat-limit')
       const partialName = consume(el, 'data-partial')
@@ -989,7 +1141,7 @@ function renderTree(
       const holder = doc.createElement('div')
       el.replaceWith(holder)
       holder.append(el)
-      emitBindings(doc, holder, input, tokens, users, ghost)
+      emitBindings(doc, holder, input, tokens, users, ghost, where)
       applyProps(holder, input, users)
       const body = holder.innerHTML
       // §7.3 gap row 2 / exit construct 1, and the half that was missing until Story 4.3: a
@@ -1022,7 +1174,7 @@ function renderTree(
     expandRepeats(doc, root, input, tokens, ghost)
   }
 
-  emitBindings(doc, root, input, tokens, users, ghost)
+  emitBindings(doc, root, input, tokens, users, ghost, [])
   applyProps(root, input, users)
   return { root, partials }
 }
@@ -1038,6 +1190,7 @@ function expandRepeats(
   input: RenderInput,
   tokens: Tokens,
   ctx: unknown,
+  where: readonly ScopeEntry[] = [],
 ): void {
   for (const el of all(scope, '[data-repeat]').filter((e) => !insideRepeat(e, scope))) {
     const source = consume(el, 'data-repeat') ?? ''
@@ -1068,13 +1221,14 @@ function expandRepeats(
       ? limit
       : query.ids !== undefined ? String(query.ids.length) : (query.limit === undefined ? null : String(query.limit))
     const rows = Array.isArray(raw) ? raw.slice(0, cap === null ? undefined : Number(cap)) : []
+    const inner = [...where, repeatEntry(source, input)]
     for (const row of rows) {
       // Inserted BEFORE it is walked, so a guard that removes the clone (a `hide` on the repeated
       // element itself) is final rather than undone by a later insert.
       const clone = el.cloneNode(true)
       el.before(clone)
-      expandRepeats(doc, clone, input, tokens, row)
-      emitBindings(doc, clone, input, tokens, null, row)
+      expandRepeats(doc, clone, input, tokens, row, inner)
+      emitBindings(doc, clone, input, tokens, null, row, inner)
       applyProps(clone, input, null)
     }
     el.remove()

@@ -132,9 +132,17 @@ write('default.hbs', `<!DOCTYPE html>
 `);
 
 write('index.hbs', `{{!< default}}\n\n${includes('index')}\n`);
-write('post.hbs', `{{!< default}}\n\n{{#post}}\n${includes('post')}\n{{/post}}\n`);
+// FR-H7 / §7.4: the TEMPLATE opens the block its sections are evaluated in, once, and a section's own
+// text never carries it — so the block is read from the one copy of the context matrix, never written
+// here (Story 4.6). Epic 7's compiler reads the same row.
+const { targets: CONTEXTS } = require('../../packages/library/contexts/matrix.json');
+const opened = (target, body) => {
+  const block = CONTEXTS[target] && CONTEXTS[target].block;
+  return block ? `{{#${block}}}\n${body}\n{{/${block}}}` : body;
+};
+write('post.hbs', `{{!< default}}\n\n${opened('post.hbs', includes('post'))}\n`);
 // C2 / GS110: page.hbs gates on @page.show_title_and_feature_image
-write('page.hbs', `{{!< default}}\n\n{{#post}}\n{{#if @page.show_title_and_feature_image}}\n<h1 class="page__title">{{title}}</h1>\n{{/if}}\n${includes('page')}\n{{/post}}\n`);
+write('page.hbs', `{{!< default}}\n\n${opened('page.hbs', `{{#if @page.show_title_and_feature_image}}\n<h1 class="page__title">{{title}}</h1>\n{{/if}}\n${includes('page')}`)}\n`);
 write('tag.hbs', `{{!< default}}\n\n${includes('tag')}\n`);
 write('author.hbs', `{{!< default}}\n\n${includes('author')}\n`);
 write('error.hbs', `{{!< default}}\n\n<h1 class="err__code">{{statusCode}}</h1>\n${includes('error')}\n`);

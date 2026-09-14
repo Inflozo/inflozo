@@ -622,7 +622,7 @@ graph TB
 | FR-E style packs | E6 | `packages/library/packs`, the token block in `default.hbs` | AD-3, AD-17, AD-18 |
 | FR-F control system | E4 | `packages/section-runtime/controls` | AD-1, AD-2, AD-3 |
 | FR-G section library | E4 (platform), E9, E10 | `packages/library` | AD-1, AD-2, AD-23 |
-| FR-H binding & content | E4 (platform), E5 (surfaces) | `packages/ghost-shim`, `packages/library/orbit-weekly` | AD-1, AD-10, AD-23 |
+| FR-H binding & content | E4 (platform), E5 (surfaces) | `packages/ghost-shim`, `packages/library/orbit-weekly`, `packages/library/contexts` (FR-H7's matrix and `src/contexts.ts`, in the library because the validator, both emitters and the editor read it and `ghost-shim` sits above the library — Story 4.6), `packages/section-runtime` (the scope walk every render naming its target passes) | AD-1, AD-10, AD-23 |
 | FR-I templates & routing | E7 | `packages/theme-compiler`, `routes_config`, `custom_templates` | AD-9, AD-14, AD-22 |
 | FR-Q theme settings | E4 (catalog format), E7 (surfaces) | `custom_settings`, `translation_overrides` | AD-9, AD-17, AD-18 |
 | FR-J compiler & deploy | E7 | `packages/theme-compiler`, `apps/web/app/api/{compile,deploy}` | AD-5, AD-11, AD-13, AD-14, AD-19, AD-20, AD-24 |

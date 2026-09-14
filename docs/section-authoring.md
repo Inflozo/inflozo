@@ -438,8 +438,11 @@ a `data-*` attribute that is not below and is not a declared control on the root
 unreachable, so **every** Ghost binding compiles inside a guard whether or not a design writes
 `data-empty`, and the behaviour **defaults by kind**: a text binding defaults to `fallback` (the
 static value the prop held), and a binding into a URL-valued attribute — `href`, `src`, `poster` —
-defaults to `hide`, guarding the **element** and never the attribute. Writing `data-empty` chooses
-the other one. The guard is always the **bound field**, never a helper argument. On a list-form
+defaults to `hide`, guarding the **element** and never the attribute. On a **text** binding, writing
+`data-empty` picks the other; a **media** binding always hides, and `data-empty="fallback"` on one
+is refused *(Story 4.6)* — see *The media rule* below. The guard is always the **bound field**, never a
+helper argument, and a field the context matrix types `number` guards as `{{#if f includeZero=true}}`
+when the render names its template *(Story 4.6)*. On a list-form
 `data-bind-attr` the media case is **any** entry into a URL attribute, and the element is guarded on
 that entry's field. A **content** prop into a URL attribute (`data-prop-attr="src:hero"`) is not a
 binding and keeps the authored placeholder when unset; `data-empty="hide"` hides it. The canvas falls
@@ -449,7 +452,8 @@ back wherever Handlebars' `{{#if}}` would — `''`, `0`, `false` and `[]` are al
 **Not every directive below is rendered yet, and the rest REFUSE rather than leak.** Story 4.2's
 runtime emits the proven eight plus `data-bind-style` and `data-module`; **Story 4.3 added
 `data-bind-srcset`, `data-helper` and `data-pagination`**, the three the Ghost helper shim owns; and
-**Story 4.5 added `data-items`**, the authored list (row 1 below). Everything else in the set throws
+**Story 4.5 added `data-items`**, the authored list (row 1 below); **Story 4.6 added
+`data-initials`**, the typed avatar (see *The avatar's two forms*). Everything else in the set throws
 with a sentence naming the directive, until the story that owns it lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
 here cannot be silently forgotten by the runtime.
 
@@ -458,10 +462,11 @@ These were executed in the stress harness and keep their names and grammar uncha
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
 | `data-prop` | a content prop path | the customer's literal text into the DOM; an `icon` prop's inline `<svg>` *(4.5)* | a marker, spliced into the emitted string after serialization; the same `<svg>` for an `icon` prop |
+| `data-initials` *(4.6)* | a content prop path to a **`text`** prop the user types | the first letter of the first and of the last word — "Jane Doe" → JD, "Madonna" → M — through `data-prop`'s user-text path; an empty name keeps the authored text, or hides with `data-empty="hide"` | the same initials, baked at compile as a marker; refused inside a `data-repeat` |
 | `data-prop-attr` | `attr:path` list, `;`-separated | the value onto the attribute; on `href` a link record through `linkAttributes`, on an `image` prop the asset id through `assets` *(4.5)* | the same, through the marker path |
 | `data-bind` | `path` or `path\|helper:arg` — a helper always takes its argument | the Ghost value, resolved | `{{path}}` / `{{helper path param="arg"}}` |
 | `data-bind-attr` | `attr:spec` list, `;`-separated | the resolved value onto the attribute | the mustache, carried through serialization as an opaque token |
-| `data-empty` | `hide` · `fallback` | `hide` removes the element; `fallback` keeps the authored text or attribute | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}` |
+| `data-empty` | `hide` · `fallback` — `fallback` on a text binding only | `hide` removes the element; `fallback` keeps the authored text or attribute | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}`; a `number` field adds `includeZero=true` |
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
 | `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |
@@ -486,8 +491,8 @@ cuts a computed one to 50 words; `data-bind="custom_excerpt"` is the plain field
 **dotted** form (`post.excerpt`, `../excerpt`), because Handlebars only calls a helper for a bare
 name. `words=`/`characters=` cannot be passed through `data-bind` — the helper takes no argument in
 the binding grammar. **`data-bind-srcset`
-does not honour `data-empty="fallback"`** — a candidate list is the media case, so the guard always
-encloses the element, and an `<img>` carrying both `src:…|img_url:l` and `data-bind-srcset` on the
+refuses `data-empty="fallback"`** *(refused since Story 4.6; it used to be swallowed)* — a candidate list
+is the media case, so the guard always encloses the element, and an `<img>` carrying both `src:…|img_url:l` and `data-bind-srcset` on the
 same field gets **one** guard. **A `dataBindings` entry with `ids`** compiles to one `{{#get}}` per
 id, in the picked order (R-20), each around its own `{{#foreach}}` — use `data-partial` so the body
 is emitted once and referenced from each.
@@ -531,12 +536,124 @@ directives now take a **semicolon-separated list**, which removes a numbered war
 
 **A guard is derived from the bound FIELD, never from a helper argument.** `data-empty="hide"` on
 `data-bind="published_at|date:YYYY"` guards on `published_at`. On a list-form `data-bind-attr` the
-guard is the **first** entry's field — put the one that decides visibility first — and a first
-entry that is a token template is refused, because a template has no single field to guard on. The spike parsed the field back out
+element is guarded on its **URL entry's** field — `alt:title;src:feature_image` guards on
+`feature_image` — and on the first binding's field only when no entry binds `href`, `src` or `poster`;
+a guard entry that is a token template is refused, because a template has no single field to guard on. The spike parsed the field back out
 of the built expression and took the last token, which is the **format string** — so it emitted a
 guard on an identifier that does not exist, the block never rendered, and the content was silently
 and permanently lost. A garbage guard is *present*, which is why "is there a guard?" passes while
 the page is empty. `guardField()` is the derivation, and it is one function both emitters call.
+
+### Where a binding is legal — the context matrix *(Story 4.6)*
+
+Ghost compiles themes without strict mode, so a binding used where its field does not exist prints an
+**empty string** — no error at build, deploy or runtime, and gscan passes it (appendix B.1 §0). FR-H7
+makes that a refusal. The rules are one data file, `packages/library/contexts/matrix.json`, proved
+against what T1 and T3 printed and against Ghost's own source by `packages/library/src/contexts.test.ts`
+(recorded by `python3 tools/probe/record-contexts.py`).
+
+**The scope a design's markup is evaluated in** is its template's, then each enclosing `data-repeat`'s:
+
+| Target | A section's top level is | So at the top level… |
+|---|---|---|
+| `post.hbs` · `page.hbs` · `custom-{name}.hbs` | **inside the post block the TEMPLATE opens** — `{{#post}}`, never `{{#page}}` | `title`, `url`, `feature_image`, `tags` (a repeat)… |
+| `index.hbs` · `home.hbs` | the list root | `posts` (a repeat) and `pagination.*` — **not** `title` |
+| `tag.hbs` · `author.hbs` | the archive root | `tag.*` / `author.*`, `posts`, `pagination.*` |
+| `error.hbs` | the error root | `data-helper="statusCode"` / `"message"` |
+| `default.hbs` | nothing of its own | the universal set only |
+
+The universal set — `@site.*`, `@config.posts_per_page`, and `navigation`, `total_members`,
+`content_api_key` as bare helpers — works everywhere, and an `@` path reads the root from any depth.
+`@page.show_title_and_feature_image` is legal on the post-block templates and offered only on `page.hbs`
+and `custom-{name}.hbs`. A `data-repeat` over a `dataBindings` key opens its source's row scope (a query
+over `posts` holds post fields on any template); a context-path repeat opens the list it names; a
+`data-items` list opens no Ghost scope. `../` reads one scope up. **`@custom.*` refuses** (theme settings
+are FR-Q3's, Epic 7) and **`@member` refuses** (R-28: a member's details are never printed), each with
+its own sentence.
+
+**A section never writes `{{#post}}`.** The template opens it once around every section, because FR-J5's
+`<article class="{{post_class}}">` needs post context; a section opening a second would look up `post`
+inside the post and print nothing. So one design is one byte-identical text on `post.hbs` and `page.hbs`:
+
+```hbs
+{{#post}}<article class="gh-article {{post_class}}">
+  {{> "sections/post/a24-1"}}  {{! evaluated in post scope: title, url, feature_image }}
+</article>{{/post}}
+```
+
+**Two functions answer, and the runtime asks one of them at every render that names its target:**
+
+- `bindable(path, { target, scope, version?, use? })` → `null`, or the refusal sentence. `scope` is the
+  enclosing repeats, outer first; `use` is `value` (the default), `repeat`, `condition` or `helper`. A list
+  as a value is refused (*a list is a repeat source*), and so is a boolean (*a boolean is a condition*).
+- `offerBindings({ target, scope, version? })` → `{ values, repeats, conditions }` — what Epic 5's binding
+  surface may present. A key newer than the site's `version` is left out (an absent or unparseable version
+  is the floor, 5.0.0), and nothing it returns is refused by `bindable` at the same place. **The version
+  axis is the offer's:** a design already binding a newer key is not refused at render — on an older
+  server the key is absent and the always-present guard hides it.
+
+When `RenderInput.target` is named, both emitters walk the tree, give every Ghost path its scope —
+`data-bind`, each `data-bind-attr` entry and each `{path}` of a token template, `data-bind-srcset`,
+`data-bind-style`, a context-path `data-repeat`, `data-helper` — and **throw one error naming every
+refused binding**. A render naming no target is not checked, as R-7's query refusal already accepts.
+`checkBindings(doc, src, { target })` returns the same list without rendering, and is the gate a move or
+duplicate onto another template must pass before it completes (appendix B.1 §1); it throws without a
+target. No story offers that action yet.
+
+**Two recorded facts the matrix encodes.** Inside a post, tag or author, `{{meta_title}}` and
+`{{meta_description}}` are Ghost's *page* meta helpers — the site title on a feed — whatever the resource
+carries, so neither is a bindable field. And `reading_time` is Ghost's helper over the field: it prints
+the rounded "1 min read" (an API value of 0 included, hence the number guard) and prints **nothing** on a
+post the visitor may not read, because it counts the body.
+
+### The media rule, and the zero *(Story 4.6)*
+
+**A binding into `href`, `src`, `poster` or `srcset` hides its element, and `data-empty="fallback"` on one
+is refused** — by the validator (`media-fallback`) and by the runtime, with the same sentence. The only
+fallback an attribute can carry is the design's authored placeholder, `/placeholder.jpg`, a relative URL
+that 404s on the customer's site. A picture that falls back to the customer's *other* picture is a second
+element — `data-if` / `data-else` once that directive renders. So FR-H8's "chosen per binding" is a text
+binding's choice.
+
+**Zero is a value.** Handlebars takes `{{#if}}`'s else branch for `0` unless `includeZero=true`, while
+`{{f}}` prints `0`, so a count of zero would show the design's placeholder. When the render names its
+target, a field the matrix types `number` guards as `{{#if f includeZero=true}}` on the theme and counts
+`0` as present on the canvas. Both majors took the hash at upload and gscan 0/0 (its one-argument rule
+counts positional parameters only).
+
+```html
+<span class="card__read" data-bind="reading_time">5 min</span>
+<!-- post.hbs: {{#if reading_time includeZero=true}}{{reading_time}}{{else}}5 min{{/if}} -->
+```
+
+### The avatar's two forms *(Story 4.6, R-2)*
+
+A person with no photograph shows initials, and the two sources of a person get two forms that never
+meet in one list (`P0-5 Populate From Panel.dc.html`, rule 4 of `P0 Editor Primitives - Spec.md`):
+
+- **A list the user typed** bakes **two** initials at compile through `data-initials` on a `text` prop:
+
+  ```html
+  <li class="people__item" data-items="people">
+    <img class="people__photo" data-prop-attr="src:people[].photo;alt:people[].name" data-empty="hide" alt="">
+    <span class="people__initials" data-initials="people[].name" aria-hidden="true">AB</span>
+    <span class="people__name" data-prop="people[].name">A name</span>
+  </li>
+  ```
+
+- **A person from Ghost** shows **one** letter through the design's own stylesheet over the bound name —
+  the photograph's media guard removes the image, and the name stays:
+
+  ```html
+  <li class="byline" data-repeat="authors">
+    <img class="byline__photo" data-bind-attr="src:profile_image|img_url:xs" alt="">
+    <span class="byline__name" data-bind="name">A writer</span>
+  </li>
+  ```
+
+  Two letters from Ghost would need `{{split}}`, which is Ghost 6.5+ and a gscan error below it. So
+  `data-initials` on anything but a declared `text` prop is refused by the validator, and inside a
+  `data-repeat` by the runtime, whatever the target — a list of Ghost people can never carry two letters.
 
 ### §7.3's gap table, row by row
 
@@ -774,6 +891,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | `srcset` in `data-bind-attr` or `data-prop-attr` | one expression per attribute cannot make a candidate list — that is `data-bind-srcset` — and a user-authored list would carry a later candidate's scheme past `safeUrl`. |
 | a URL whose scheme is not `http`, `https`, `mailto`, `tel` or relative | AD-36 (1). Reduced to an inert, **visible** `#` — never silently dropped. `java\nscript:` is **rejected, not repaired**. |
 | `data-empty` on an element with nothing to guard | FR-H8. A guard with no field emits `{{#if}}` on nothing — present, and empty. |
+| `data-empty="fallback"` on an element binding `href`, `src` or `poster`, or carrying `data-bind-srcset` (`media-fallback`) | *(Story 4.6)* FR-H8's media rule. The only fallback an attribute can carry is the design's placeholder, a relative URL that 404s on the customer's site. Refused by the validator **and** the runtime, with one sentence. |
+| a binding the context matrix does not allow at its scope on the render's target — a post field at the top of `index.hbs`, a misspelt path, a list or boolean as a value, `@custom.*`, `@member` | *(Story 4.6)* FR-H7. Ghost prints it as a silent blank. **Refused by the runtime** when a render names its target, in one error naming every refused binding; `checkBindings` returns the list. |
+| `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |
 | pagination + a non-paginated target | R-7. Outside a paginated context `{{pagination}}` is a fatal render. |
 | a `{{#get}}` + `error.hbs` or `private.hbs` | R-7. An error page that queries the database compounds the outage. |
@@ -781,7 +901,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | an `id` in `design.json` | identity is the directory path. A second source can disagree with it. |
 | an inline `style` beyond one custom property, or one whose value is not a pack token | AD-3's carve-out is exactly one declaration wide, and the boundary is machine-checkable. A static value is `var(--…)`: §7.3 allows no hex outside the Style Pack, and the bound form is `data-bind-style`. |
 | a `data-repeat-limit` on a declared query, a query nothing references, a key that is a source name | one number in one place; a dead query is a misspelt repeat; `posts` as a key is ambiguous with the context path. |
-| a `data-empty` on a token-template binding | the guard is the first entry's field, and a template has none. |
+| a `data-empty` on a token-template binding | the guard is the URL entry's field, or the first entry's when none binds a URL, and a template has none. |
 | a directive twice on one element · `data-repeat-limit` / `data-partial` with no `data-repeat` · `data-if` with `data-else` on one element · empty markup | a browser keeps the first duplicate silently; an orphan modifier is silently ignored; the two arms are siblings; a source with no root is nothing. |
 | a `data-items` on a non-array prop, a `data-prop` on an array, `url` or `image` prop | the compiler would bake an array as text or repeat over a string. `data-prop` takes `text`, `richtext`, `icon` and `date` *(Story 4.5)*. |
 | a control disabled by itself, or by a value the other control does not have | the greyed-with-reason state could never fire (R-33). |
@@ -820,9 +940,11 @@ parse and belong to Story 4.2, which brings one for the emitters:
 4. a bare `{{ … }}` written into authored markup where `data-helper` belongs — section source is
    annotated HTML, **not** Handlebars, and today only review catches an author who forgets it.
 
-One more belongs to Story 4.6, not 4.2: a `data-repeat` over a **context path that does not exist**
-(`post.tagz`) is lexically a path and needs the binding matrix to refuse. Until then only the
-declared-query direction is checked — every declared key must be referenced.
+Where a binding is **legal** — a `data-repeat` over a context path that does not exist (`post.tagz`), a
+post field at the top of `index.hbs` — is a question about the tree and the target, not the tokens.
+Since Story 4.6 the runtime's scope walk asks the context matrix at every render that names its target,
+and `checkBindings` asks it without rendering (see *Where a binding is legal*). The validator still
+checks the declared-query direction lexically — every declared key must be referenced.
 
 The ceiling is written down rather than left to be rediscovered; a `ponytail:` comment at the head of
 `validate.ts` names it and the upgrade path.
@@ -843,7 +965,8 @@ number — the feed renders a first page, a middle page carrying both links and 
 never equals `posts_per_page` — and the test asserts the rules. Every writer's archive fills because a
 post may carry more than one author, as in Ghost; a card still shows one byline (`primary_author`).
 
-**The fields a design may bind to** are the Content API's, by the dotted paths the shim reads — a
+**The fields a design may bind to, and where,** are the context matrix's (§3, *Where a binding is
+legal*); the dataset carries the Content API's, by the dotted paths the shim reads — a
 post's `id slug title url excerpt custom_excerpt feature_image feature_image_alt feature_image_caption
 published_at updated_at created_at reading_time visibility featured access`, its `tags[]`, `authors[]`,
 `primary_tag`, `primary_author`; a tag's `name slug url description accent_color visibility count.posts`;

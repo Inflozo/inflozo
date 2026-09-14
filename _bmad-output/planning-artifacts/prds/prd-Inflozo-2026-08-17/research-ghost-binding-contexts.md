@@ -1092,10 +1092,12 @@ The `core/frontend` diff at v6.0.0 is **8 deletions (all AMP) and 13 modificatio
 | Field(s) | Added in |
 |---|---|
 | `threads`, `bluesky`, `mastodon`, `tiktok`, `youtube`, `instagram`, `linkedin` | **v6.36.0** (absent v6.35.0) |
-| `admin_url` | **v6.23.0** (absent v6.22.0) |
+| `admin_url` | **v6.22.1** (absent v6.22.0) — *corrected by Story 4.6 (2026-09-14), which read the npm release between them; this row said v6.23.0, the next tag it was compared at* |
 | `transistor_portal_enabled` / `_heading` / `_description` / `_button_text` / `_url_template` | **v6.19.0** (absent v6.18.0) |
 
 Evidence: `ghost/core/core/shared/settings-cache/public.js` and `services/theme-engine/middleware/update-local-template-options.js` at the named tags.
+
+*Story 4.6 (2026-09-14): measured from the 5.0.0 floor rather than across 5.130.6 → 6.x, several keys this file treats as always present are 5.x additions — `comments_enabled`/`comments_access` 5.3.0, `portal_signup_*` 5.42.0, `recommendations_enabled` 5.61.0, `allow_self_signup` 5.62.0, `donations_enabled` 5.120.2. The gates live in `packages/library/contexts/matrix.json`; the source readings are `packages/library/contexts/fixtures/ghost-source.json` and MEASUREMENTS §41.*
 
 ### Additive during 6.x — helpers
 

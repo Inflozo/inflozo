@@ -28,12 +28,21 @@ import {
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
-import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, renderCanvas, renderTheme } from './index.ts'
+import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
+
+/** Story 4.6 — FR-H8's guard is `{{#if}}` and nothing else: every theme this suite emits is scanned */
+const renderTheme: typeof renderThemeRaw = (d, src, input) => {
+  const out = renderThemeRaw(d, src, input)
+  for (const text of [out.template, ...Object.values(out.partials)]) {
+    assert.ok(!/\{\{#has|\{\{#unless/.test(text), `a guard other than {{#if}} was emitted: ${text}`)
+  }
+  return out
+}
 
 // Normalise the theme so it can be parsed as HTML and compared for STRUCTURE:
 //   - strip Handlebars BLOCKS ({{#foreach}}, {{#if}}, {{else}}, {{/…}}): they wrap elements and have
@@ -217,9 +226,9 @@ test("FR-H8 — an empty media binding hides the element on both, by each emitte
   assert.ok(/\{\{#if feature_image\}\}/.test(theme), `theme guard is not on the bound field: ${theme}`)
 })
 
-// ── The list form of data-bind-attr: every entry lands on both emitters, and the guard is the FIRST
-//    entry's field. ──
-test("data-bind-attr list form — the guard is the first entry's field, and a later null sets nothing", () => {
+// ── The list form of data-bind-attr: every entry lands on both emitters, and the guard is the URL
+//    entry's field (here `href`, which is also first — a URL entry anywhere wins, see below). ──
+test("data-bind-attr list form — the guard is the URL entry's field, and a later null sets nothing", () => {
   const src = `<section class="c"><a class="l" data-bind-attr="href:url;title:custom_excerpt" data-empty="hide">x</a></section>`
   const { canvas, theme } = agree(src, {
     ghost: { url: 'https://s.example/1', custom_excerpt: 'An excerpt' },
@@ -230,7 +239,7 @@ test("data-bind-attr list form — the guard is the first entry's field, and a l
   )
   assert.ok(
     /\{\{#if url\}\}/.test(theme) && !/\{\{#if custom_excerpt\}\}/.test(theme),
-    `guard is not on the FIRST entry: ${theme}`,
+    `guard is not on the URL entry: ${theme}`,
   )
   const later = bothWays(src, { ghost: { url: 'https://s.example/1' } }).canvas
   assert.ok(
@@ -424,9 +433,10 @@ test('AD-36 (1) — a hostile srcset value never reaches the attribute, and ONE 
   for (const hostile of ['javascript:alert(1)', 'data:text/html,<script>', 'mailto:x@y']) {
     assert.equal(renderCanvas(doc(), src, { ghost: { feature_image: hostile }, site: SITE }), '', hostile)
   }
-  // data-empty="fallback" is NOT honoured on a candidate list — the theme would emit an unguarded srcset
-  const fb = renderTheme(doc(), `<img data-bind-srcset="feature_image|img_url" data-empty="fallback">`, { site: SITE }).template
-  assert.ok(/^\{\{#if feature_image\}\}<img/.test(fb.trim()), fb)
+  // data-empty="fallback" on a candidate list is REFUSED (Story 4.6) — it used to be swallowed silently
+  const fb = `<img data-bind-srcset="feature_image|img_url" data-empty="fallback">`
+  assert.throws(() => renderTheme(doc(), fb, { site: SITE }), /data-empty="fallback" on a binding into href, src, poster or srcset is refused/)
+  assert.throws(() => renderCanvas(doc(), fb, { site: SITE }), /data-empty="fallback" on a binding into href, src, poster or srcset is refused/)
   // the authoring guide's own hero: src AND srcset bound on the same element, on the same field
   const both = renderTheme(doc(), `<img data-bind-attr="src:feature_image|img_url:l" data-bind-srcset="feature_image|img_url">`, { site: SITE }).template
   assert.equal((both.match(/\{\{#if feature_image\}\}/g) ?? []).length, 1, `doubled guard: ${both}`)
@@ -719,13 +729,13 @@ test('a directive this story does not emit is refused by name on both emitters, 
 //    `RENDERED_DIRECTIVES` so a directive added to the set later is covered by construction. ──
 const everyDirectiveSrc = `<section class="all" data-module="cards">
      <h1 class="h" data-prop="title" data-empty="hide">t</h1>
-     <ul class="l"><li class="i" data-items="logos"><span data-prop="logos[].name">n</span></li></ul>
+     <ul class="l"><li class="i" data-items="logos"><span data-prop="logos[].name">n</span><b data-initials="logos[].name">AP</b></li></ul>
      <a class="a" data-prop-attr="href:link">l</a>
      <span class="m" data-helper="total_members">1,000</span>
      <article class="c" data-repeat="posts" data-repeat-limit="2" data-partial="card">
        <h2 data-bind="title">t</h2>
        <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url">
-       <li data-bind-style="--tag-accent:accent_color">x</li>
+       <ul class="t"><li class="g" data-repeat="tags" data-bind-style="--tag-accent:accent_color">x</li></ul>
      </article>
      <a class="n" data-pagination="next" href="#">Older</a>
    </section>`
@@ -739,7 +749,7 @@ test('no rendered directive survives — every member of RENDERED_DIRECTIVES is 
     content: { title: 'T', link: '/x', logos: [{ name: 'One' }, { name: 'Two' }] },
     ghost: {
       posts: [
-        { title: 'a', feature_image: 'https://site.example/content/images/2026/01/a.jpg', accent_color: '#fff' },
+        { title: 'a', feature_image: 'https://site.example/content/images/2026/01/a.jpg', tags: [{ accent_color: '#fff' }] },
         { title: 'b' },
         { title: 'c' },
       ],

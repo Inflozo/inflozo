@@ -273,6 +273,21 @@ DOCS = [
   'CSS and JS chunks verbatim from T1 over SSH. The control (the four documented root classes on both '
   'majors) and every per-block check void the run and write nothing. Also covers '
   'packages/library/src/orbit-weekly.test.ts, which the catalogue cannot index under packages/.'),
+ ('tools/probe/record-contexts.py', 'tool', 'Template context recorder',
+  "AD-23's recorder for Story 4.6's Template Context Matrix (FR-H7). Generates a probe theme FROM "
+  'packages/library/contexts/matrix.json — every field of every scope printed beside its {{#if}} '
+  'truthiness, a number beside its includeZero=true guard, a list or object as its truthiness and first '
+  'row, a helper into a raw block — gates it through tools/stress/gate.js, uploads and activates it on T1 '
+  'and T3, fetches the home page, page 2, two posts, a page, a tag archive, an author archive and a 404, '
+  'and restores the previous theme in a finally, re-reading it to prove it came back. Reads the whole '
+  "Content API row behind every frame, and Ghost's own public.js, default-settings.json and the two "
+  'template-options middleware files at the floor, both servers\' versions, every gate in the matrix and '
+  'the release before each. Controls (a root {{title}} on post.hbs empty beside the {{#post}} title; a '
+  'misspelt field empty everywhere), a non-200 page or a theme that did not come back void the run and '
+  'write nothing. Writes packages/library/contexts/fixtures/ghost5.json, ghost6.json, ghost-source.json and the '
+  'generated index.ts a core test imports them through (--index rebuilds it from disk alone). '
+  'Also covers packages/library/src/contexts.ts and contexts.test.ts and '
+  'packages/section-runtime/src/contexts.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/vendor-icons.py', 'tool', 'Tabler icon vendoring',
   "Story 4.5's vendoring of every Tabler icon as data (R-26, R-92, R-104): downloads @tabler/icons at a "
   'pinned version from the npm registry and refuses to write unless the tarball\'s sha512 is the pinned '

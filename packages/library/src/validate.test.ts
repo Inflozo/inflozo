@@ -39,7 +39,7 @@ const EVERY_DIRECTIVE = `
   <h3 data-bind="title">Post</h3>
   <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url"
        data-empty="hide" alt="">
-  <ul><li data-items="logos"><span data-prop="logos[].name">A partner</span></li></ul>
+  <ul><li data-items="logos"><span data-prop="logos[].name">A partner</span><span data-initials="logos[].name">AP</span></li></ul>
   <div data-repeat="latest" data-partial="ref-card">
     <span data-index="number">1</span>
     <span data-when="first">First</span>
@@ -273,6 +273,40 @@ test('a directive and its prop must agree in kind', () => {
   assert.deepEqual(codes(validateMarkup(root('<li data-items="title">x</li>'), o)), ['prop-type-mismatch'])
   assert.deepEqual(codes(validateMarkup(root('<p data-prop="logos">x</p>'), o)), ['prop-type-mismatch'])
   clean(validateMarkup(root('<li data-items="logos">x</li><p data-prop="title">x</p>'), o), 'matching kinds')
+})
+
+// ─── Story 4.6 — FR-H8's media rule and R-2's typed initials ─────────────────
+
+test('data-empty="fallback" on a media binding is refused; hide, and fallback on text, are not (FR-H8)', () => {
+  refuses('media-fallback',
+    '<img data-bind-attr="src:feature_image|img_url:m" data-empty="fallback" alt="">',
+    '<img data-bind-attr="src:feature_image|img_url:m" data-empty="hide" alt="">')
+  refuses('media-fallback',
+    '<img data-bind-srcset="feature_image|img_url" data-empty="fallback" alt="">',
+    '<img data-bind-srcset="feature_image|img_url" alt="">')
+  refuses('media-fallback',
+    '<a data-bind-attr="title:title;href:url" data-empty="fallback">x</a>',
+    '<img data-bind-attr="alt:title" data-empty="fallback" alt="x">')
+  // exactly this refusal, alone
+  assert.deepEqual(codes(validateMarkup(root('<video data-bind-attr="poster:feature_image" data-empty="fallback"></video>'), { controls: [] })), ['media-fallback'])
+})
+
+test('a guard sits on the URL entry when there is one, so a template entry before it is not refused', () => {
+  refuses('guard-on-template',
+    '<a data-bind-attr="title:signup/{tier}" data-empty="hide">x</a>',
+    '<a data-bind-attr="data-portal:signup/{tier};href:url" data-empty="hide">x</a>')
+})
+
+test('data-initials takes a declared TEXT prop — a Ghost field name the category never declared is refused (R-2)', () => {
+  const content: CategoryContent = {
+    category: 'a21',
+    props: { people: { type: 'array', label: 'L' }, 'people[].name': { type: 'text', label: 'L' }, 'people[].bio': { type: 'richtext', label: 'L' } },
+  }
+  const o = { controls: [], content }
+  assert.deepEqual(codes(validateMarkup(root('<span data-initials="name">JD</span>'), o)), ['unknown-prop'])
+  assert.deepEqual(codes(validateMarkup(root('<li data-items="people"><span data-initials="people[].bio">JD</span></li>'), o)), ['prop-type-mismatch'])
+  clean(validateMarkup(root('<li data-items="people"><span data-initials="people[].name" data-empty="hide">JD</span></li>'), o), 'initials over a typed name')
+  refuses('bad-value', '<span data-initials="people[].na me">x</span>', '<span data-initials="people[].name">x</span>')
 })
 
 // ─── design.json ─────────────────────────────────────────────────────────────

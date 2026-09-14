@@ -11,12 +11,21 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
-import { assertBindableAttr, bindExpr, linkAttributes, renderCanvas, renderTheme } from './index.ts'
+import { assertBindableAttr, bindExpr, linkAttributes, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { IconLookup } from '@inflozo/library'
 import type { RenderInput } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
+
+/** Story 4.6 — FR-H8's guard is `{{#if}}` and nothing else: every theme this suite emits is scanned */
+const renderTheme: typeof renderThemeRaw = (d, src, input) => {
+  const out = renderThemeRaw(d, src, input)
+  for (const text of [out.template, ...Object.values(out.partials)]) {
+    assert.ok(!/\{\{#has|\{\{#unless/.test(text), `a guard other than {{#if}} was emitted: ${text}`)
+  }
+  return out
+}
 
 /** render the way a real compile does: the theme emitter, with R2-5's substitution pass run over
  *  the output (which `renderTheme` does itself when no shared `UserText` is handed in). */
@@ -270,11 +279,11 @@ test('a plain field binding still guards correctly', () => {
   assert.ok(/\{\{#if title\}\}/.test(plain), `plain guard regressed: ${plain}`)
 })
 
-test('a list-form attribute binding guards on the FIRST field and emits every entry', () => {
+test('a list-form attribute binding guards on its URL entry and emits every entry', () => {
   const listed = compile('<a data-bind-attr="href:url;title:custom_excerpt" data-empty="hide">x</a>')
   assert.ok(
     /\{\{#if url\}\}/.test(listed) && !/\{\{#if custom_excerpt\}\}/.test(listed),
-    `list-form guard is not on the first field: ${listed}`,
+    `list-form guard is not on the URL entry: ${listed}`,
   )
   assert.ok(
     /href="\{\{url\}\}"/.test(listed) && /title="\{\{custom_excerpt\}\}"/.test(listed),

@@ -3,12 +3,14 @@ title: Inflozo Appendix B.1 — Template Context Matrix
 status: normative-companion
 role: normative companion to prd.md — the matrix FR-H7 points at. The editor offers a binding only where this file says it is available. Distilled from research-ghost-binding-contexts.md, which remains the citation-backed evidence base.
 created: 2026-08-18
-updated: 2026-08-19
+updated: 2026-09-14
 ---
 
 # Appendix B.1 — Template Context Matrix (normative)
 
 FR-H7 makes context-aware binding **prevention, not warning**: the editor offers only bindings valid in the current template context, and an invalid binding is made unavailable rather than flagged. This file is the source of truth for "valid".
+
+**Executed, Story 4.6 (2026-09-14).** This matrix is now DATA — `packages/library/contexts/matrix.json`, the one copy the runtime, the tests and the editor read — and every row of it is asserted against what T1 (6.58.0) and T3 (5.130.6) printed and against Ghost's own source at every version gate (`python3 tools/probe/record-contexts.py`, MEASUREMENTS §41). Where the recording and this prose disagreed, the recording won and the prose below is corrected in place, each correction marked *(recorded, Story 4.6)*. A field no recording could show is named in the data as `unverified` with its reason. **Where this file and `matrix.json` disagree, the data file is right.**
 
 **Source.** Every claim here is distilled from `research-ghost-binding-contexts.md` (178 citations, verified against Ghost v6.58.0-rc.0, Casper 5.12.1, Source 1.7.1, GScan 6.4.2, and the v5.130.6→v6.0.0 diff). That file is the evidence; **this file is the contract**. Where they disagree, the research is right and this file is a bug — report it, don't work around it. An implementer should not need to open the research to answer "is this binding offerable here?".
 
@@ -83,7 +85,7 @@ The editor resolves an offer from exactly three inputs.
 | `index` | `posts`, `pagination` — **flat at the root** | `{{#foreach posts}}` → full post scope (§4.1) | §5 |
 | `home` | Identical to `index` in every respect. Same data; only the file choice differs. Renders `/` only. | Same as `index` | §5 |
 | `post` | `post` (object). **`{{title}}`, `{{url}}`, `{{excerpt}}`, `{{feature_image}}` render EMPTY at top level** (§3a). No `posts`, no `pagination` — `{{pagination}}` **throws**. `@page` always set, always `true`. | `{{#post}}` → full post scope (§4.2); `{{#prev_post}}` / `{{#next_post}}` native | §5 — including *any* post list on this template |
-| `page` | Identical to `post`, with three differences: the root carries **both** `post` and `page` keys pointing at the same object; `page` (the attribute) is `true`; **`@page.show_title_and_feature_image` is genuinely toggleable and must be honoured**. | `{{#post}}` — **yes, `{{#post}}`, not `{{#page}}`.** Both official themes do this. A page is a post whose data object is called `post`. | §5 |
+| `page` | Identical to `post`, with two differences: the root carries **both** `post` and `page` keys pointing at the same object (recorded: `{{#post}}{{title}}{{/post}}` and `{{#page}}{{title}}{{/page}}` print the same title on both majors); **`@page.show_title_and_feature_image` is genuinely toggleable and must be honoured**. *(Recorded, Story 4.6: there is no `page` attribute to bind — `{{page}}` inside the post block prints empty on a page, on both majors.)* | `{{#post}}` — **yes, `{{#post}}`, not `{{#page}}`.** Both official themes do this. A page is a post whose data object is called `post`. | §5 |
 | `tag` | `tag` (object), `posts`, `pagination` — flat at the root. `{{title}}` empty (a tag has **`name`**, not `title`). | `{{#tag}}` → §4.3; `{{#foreach posts}}` → §4.1 | §5 + the tag's own post count (`include=count.posts`) |
 | `author` | `author` (object), `posts`, `pagination` — flat at the root. `{{title}}` empty (authors have **`name`**). | `{{#author}}` → §4.4; `{{#foreach posts}}` → §4.1 | §5 + the author's post count |
 | `error` | `{{statusCode}}`, `{{message}}`, `{{errorDetails}}`. Universal set available. **No `posts`, no `pagination`, no `@page`.** `{{pagination}}` throws. | `{{#foreach errorDetails}}` (each entry: `rule`, `failures[]` of `{ref, message}`) | §5 — but see the caution below |
@@ -172,7 +174,9 @@ The docs state one rule ("only public data by default"); the code special-cases 
 
 A section declaring `bindingContext: post` with `compileTarget: post.hbs, page.hbs` — A24 and A25 — is therefore making **one** declaration, not two: the *resource* is the same, and the enum needs no `page` value. What differs between the two templates is **not the binding but the product** (`prd.md` §5): a post is an article and carries comments, authors, related posts and a reading TOC; a page is a standing page — About, Our Story — and carries none of them. That distinction is enforced by `compileTarget`, not by `bindingContext`: A26 post footers, A27 related posts and A28 comments declare `post.hbs` only and can never be placed on a page. The one further `page.hbs`-specific obligation is the `@page.show_title_and_feature_image` guard of §3b — a guard, not a binding.
 
-`id`, `comment_id`, `title`, `slug`, `excerpt`, `custom_excerpt`, `content`, `url`, `feature_image`, `feature_image_alt`, `feature_image_caption`, `featured`, `page`, `meta_title`, `meta_description`, `published_at`, `updated_at`, `created_at`, `primary_author`, `primary_tag`, `tags`, plus members fields `access` (boolean) and `visibility` (`public` | `members` | `paid`).
+`id`, `comment_id`, `title`, `slug`, `excerpt`, `custom_excerpt`, `content`, `url`, `feature_image`, `feature_image_alt`, `feature_image_caption`, `featured`, `published_at`, `updated_at`, `created_at`, `primary_author`, `primary_tag`, `tags`, plus members fields `access` (boolean) and `visibility` (`public` | `members` | `paid`).
+
+*(Recorded, Story 4.6 — three corrections on both majors.)* **`page` is not a field** here: it prints empty inside `{{#post}}` on a page. **`meta_title` and `meta_description` are not the post's fields in a theme:** `{{meta_title}}` is Ghost's page-meta helper and prints the page's title — the site title on a feed, "Site (Page 2)" on page 2 — whatever the post row carries, while `{{#if meta_title}}` reads the null field; the same holds inside a tag and an author. Neither is bindable. **`reading_time` is Ghost's helper over a number:** it prints "1 min read" over an API value of `0` (so a guard needs `includeZero=true`), and prints **nothing** on a post the visitor may not read, because it counts the withheld body.
 
 Nested: `{{#primary_tag}}`, `{{#primary_author}}`, `{{#foreach tags}}`, `{{#foreach authors}}`.
 
@@ -182,13 +186,13 @@ Nested: `{{#primary_tag}}`, `{{#primary_author}}`, `{{#foreach tags}}`, `{{#fore
 
 ### 4.3 Inside `{{#tag}}`
 
-`id`, `name`, `slug`, `description`, `feature_image`, `meta_title`, `meta_description`, `url`, `accent_color`.
+`id`, `name`, `slug`, `description`, `feature_image`, `url`, `accent_color`. *(`meta_title` / `meta_description` removed — see §4.2, recorded.)*
 
 **No `title`** — use `{{name}}`. **No `count.posts`** unless fetched via `{{#get "tags" include="count.posts"}}`; A29's post-count designs therefore need a `{{#get}}`, not a plain binding.
 
 ### 4.4 Inside `{{#author}}`
 
-`id`, `name`, `slug`, `bio`, `location`, `website`, `url`, `profile_image`, `cover_image`, `meta_title`, `meta_description`, and social handles `facebook`, `twitter`, `threads`, `bluesky`, `mastodon`, `tiktok`, `youtube`, `instagram`, `linkedin`.
+`id`, `name`, `slug`, `bio`, `location`, `website`, `url`, `profile_image`, `cover_image`, and social handles `facebook`, `twitter`, `threads`, `bluesky`, `mastodon`, `tiktok`, `youtube`, `instagram`, `linkedin`.
 
 No `title`. No `count.posts` without `{{#get}}`.
 
@@ -231,14 +235,19 @@ FR-H7's third axis. A field or helper added after the connected site's version *
 
 | Gated item | Minimum version | Effect below it |
 |---|---|---|
-| `@site.threads`, `.bluesky`, `.mastodon`, `.tiktok`, `.youtube`, `.instagram`, `.linkedin` — **the seven social fields** | **≥ 6.36.0** | Field absent. Renders empty. Not offerable on 5.x or on 6.x below 6.36.0. |
-| `@site.admin_url` | ≥ 6.23.0 | Absent |
+| `@site.threads`, `.bluesky`, `.mastodon`, `.tiktok`, `.youtube`, `.instagram`, `.linkedin` — **the seven social fields** | **≥ 6.36.0** — *read in source, Story 4.6: absent from `public.js` and `default-settings.json` at 6.35.0, present at 6.36.0, unchanged through 6.38.0.* The design export's "the site's accounts arrived in 6.38.0" is the `{{#social_accounts}}` helper's release, not the keys' (ledger) | Field absent. Renders empty — and gscan passes it, because it allow-lists a global by its first segment only. Not offerable on 5.x or on 6.x below 6.36.0. |
+| `@site.admin_url` | **≥ 6.22.1** — *read in source, Story 4.6: `update-local-template-options.js` adds it at 6.22.1; this row said 6.23.0* | Absent |
+| `@site.comments_enabled`, `@site.comments_access` | ≥ 5.3.0 *(source, Story 4.6)* | Absent |
+| `@site.portal_signup_terms_html`, `@site.portal_signup_checkbox_required` | ≥ 5.42.0 *(source, Story 4.6)* | Absent |
+| `@site.recommendations_enabled` | ≥ 5.61.0 *(source, Story 4.6)* | Absent |
+| `@site.allow_self_signup` | ≥ 5.62.0 *(source, Story 4.6)* | Absent |
+| `@site.donations_enabled` | ≥ 5.120.2 *(source, Story 4.6)* | Absent |
 | `{{#social_accounts}}` | ≥ 6.38.0 | Unknown helper — **gscan error**, blocks the FR-J6 gate |
 | `{{json}}`, `{{color_to_rgba}}`, `{{contrast_text_color}}` | ≥ 6.23.0 | Unknown helper — gscan error |
 | `{{split}}` | ≥ 6.5.0 | Unknown helper — gscan error |
 | `{{#get}}` `limit > 100` / `limit="all"` | **works ≤ 5.x, capped ≥ 6.0.0** | Reverse gate: allowed on 5.x, capped on 6.x. Never emit either. |
 
-**Not gated, contrary to common belief** — these are Ghost **5** features and are offerable on every supported target: `@site.signup_url`, `@site.comments_enabled`, `@site.comments_access`, `@site.recommendations_enabled`, `{{social_url}}`, and the whole `@member` shape (`uuid`, `email`, `name`, `firstname`, `avatar_image`, `subscriptions`, `paid`, `status` — byte-identical 5.130.6 → HEAD).
+**Not gated across the 5→6 boundary** — these are Ghost **5** features: `@site.signup_url` (present at 5.0.0), `{{social_url}}`, and the whole `@member` shape. *(Corrected, Story 4.6: `@site.comments_enabled`, `@site.comments_access` and `@site.recommendations_enabled` were listed here, and they are Ghost 5 features but not 5.0.0 ones — the floor FR-C2 accepts is 5.0.0, so each is gated at the release Ghost's source added it, in the table above.)* The `@member` shape (`uuid`, `email`, `name`, `firstname`, `avatar_image`, `subscriptions`, `paid`, `status` — byte-identical 5.130.6 → HEAD).
 
 **Deprecated, still functional, but gscan-warned on 6.x:** `{{twitter_url}}`, `{{facebook_url}}`. Never emit them — use `{{social_url type="twitter"}}` / `{{social_url type="facebook"}}`. A warning costs the zero-warnings target.
 
@@ -266,7 +275,7 @@ Two members-adjacent partials **are** overridable and are real compile targets: 
 
 ## 8. Contested — verify at runtime before the library is authored
 
-**Nothing in the research was executed against a running Ghost.** Every claim derives from source, shipping theme code, gscan rule source, or docs text. Four docs-vs-code conflicts were found; in each the research follows the **code**, and so does this file. Standing 7.6 item: stand up a scratch Ghost install and confirm each empirically.
+**Nothing in the research was executed against a running Ghost.** Every claim derives from source, shipping theme code, gscan rule source, or docs text. *(Story 4.6 executed part of this section — see the note under the table.)* Four docs-vs-code conflicts were found; in each the research follows the **code**, and so does this file. Standing 7.6 item: stand up a scratch Ghost install and confirm each empirically.
 
 | # | Item | Docs say | Code says | This file follows | Blast radius if the code reading is wrong |
 |---|---|---|---|---|---|
@@ -276,6 +285,8 @@ Two members-adjacent partials **are** overridable and are real compile targets: 
 | 4 | Nested partial directories | Never mentioned; only a flat `partials/list-post.hbs` example | express-hbs walks `partialsDir` recursively and registers by relative path; Casper and Source rely on it in every template | **Code** — nested partials work (§9) | **Structural.** FR-Q3's `partials/sections/…` emission tree collapses to a flat directory, and the exported theme loses its organisation |
 
 Also unverified at runtime, and worth confirming in the same session: the `{{title}}`-renders-empty rule on `index.hbs` (§3a), and the `{{#foreach posts}}` `visibility='all'` default (§4.1) — both are read from code and both are load-bearing for the whole library.
+
+**Executed, Story 4.6 (2026-09-14, T1 6.58.0 and T3 5.130.6, MEASUREMENTS §41).** The `{{title}}`-renders-empty rule **holds**: a root `{{title}}` prints empty on `index.hbs`, `post.hbs` and `page.hbs` while `{{#post}}{{title}}{{/post}}` beside it prints the title. The `visibility='all'` default **holds** as far as it was touched: the first row of `/` on both servers is a paid post. Item 3's `@config.posts_per_page` prints the theme's value. Items 1 (`@even`/`@odd`), 2 and 4 were not in that recording and stay open; so do `private.hbs` (it needs private mode, which the recorder may not switch on), the route form of `custom-{name}` (FR-I2) and every Ghost version below the two servers', which were read in source only.
 
 ---
 

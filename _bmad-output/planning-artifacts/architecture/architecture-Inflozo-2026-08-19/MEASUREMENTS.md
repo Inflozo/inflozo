@@ -2977,3 +2977,62 @@ Story 3.7's cron stay the same function.
 2026-09-08, not a claim about what Ghost guarantees. `accent_color` was a 6-digit hex on both, and
 `brandOf` admits `#rgb` as well because Ghost's own field accepts it — that shorter form is
 **unobserved** here. The three-digit branch is a unit contract in `apps/web/probe-rule.test.ts`.
+
+---
+
+## 41. The Template Context Matrix, recorded on both majors and read in Ghost's source · 2026-09-14
+
+Story 4.6 made appendix B.1 data — `packages/library/contexts/matrix.json` — and FR-H7's refusals
+depend on every row of it, while §0 of that appendix says nothing downstream catches an error in it.
+So each row was executed rather than transcribed (standing rule 1). **T1** `ghost6.inflozo.com`
+6.58.0 and **T3** `ghost5.inflozo.com` 5.130.6, staff token and Content API key named by variable only:
+
+    python3 tools/probe/record-contexts.py
+      probe theme generated from matrix.json -> gscan 4.49.7 ERRORS 0 · gscan 6.4.2 ERRORS 0
+        (the theme carries {{#if f includeZero=true}} on every number; both majors took it at upload)
+      per server: upload + activate · GET / · /page/2/ · two posts · a page · a tag archive
+        · an author archive with no profile_image · a missing path (404) · restore the previous
+        theme in a finally and re-read it -> 'casper' active again on both
+      the whole Content API row behind every frame that printed an id, one tier, one newsletter
+      public.js · default-settings.json · update-{global,local}-template-options.js through
+        cdn.jsdelivr.net/npm/ghost@<v>/ at the floor, both servers' versions, every gate and the
+        published release before each (url + sha256 in fixtures/ghost-source.json)
+    -> packages/library/contexts/fixtures/ghost5.json · ghost6.json · ghost-source.json
+
+The controls, which void the run if they fail and did not: a root `{{title}}` prints **empty** on
+`index.hbs`, `post.hbs` and `page.hbs`, while `{{#post}}{{title}}{{/post}}` beside it prints the title;
+on a page `{{#post}}` and `{{#page}}` print the same title; a misspelt field prints empty in every scope.
+`packages/library/src/contexts.test.ts` asserts all of it per commit, offline.
+
+**(a) The wrapper rule holds on both majors** (appendix §3a, §8's "also unverified" line) — the
+single most expensive mistake available is real, and the matrix encodes it.
+
+**(b) `meta_title` and `meta_description` are not a post's, tag's or author's fields in a theme.**
+Inside every resource block `{{meta_title}}` printed the PAGE's meta — `Ghost6` on `/`, `Ghost6 (Page 2)`
+on page 2, `Ghost5 (Page 1)` on a tag archive — while `{{#if meta_title}}` read the null field and said
+0. A guard and its value would disagree, so neither is bindable; both left the matrix.
+
+**(c) `page` is not a field inside the post block.** `{{page}}` printed empty on a page, on both.
+
+**(d) `reading_time` is a helper over a number.** Every post on both servers carries an API
+`reading_time` of **0**; `{{reading_time}}` printed `1 min read`, `{{#if reading_time}}` said 0 and
+`{{#if reading_time includeZero=true}}` said 1 — the executed reason for the number guard. On the
+paid post that heads `/`, the helper printed **nothing** while the guard said 1, because it counts the
+body the visitor may not read.
+
+**(e) The `@site` gates, read in source.** The site's social keys are absent from `public.js` and
+`default-settings.json` at 6.35.0 and present at **6.36.0** (so the appendix was right, and the
+export's "the site's accounts arrived in 6.38.0" is the `{{#social_accounts}}` helper's release).
+Corrections: `@site.admin_url` arrives at **6.22.1**, not 6.23.0; and keys the appendix
+called "not gated" are absent at the 5.0.0 floor — `comments_enabled`/`comments_access` 5.3.0,
+`portal_signup_terms_html`/`portal_signup_checkbox_required` 5.42.0, `recommendations_enabled` 5.61.0,
+`allow_self_signup` 5.62.0, `donations_enabled` 5.120.2. Each gate was found by bisecting the npm
+releases, then the recorder read the gate and the release before it.
+
+**(f) What this does NOT say.** Author social handles and images, a tag's description, accent
+colour and image, a post's custom excerpt, a tier's description, benefits and welcome page and a
+newsletter's description are empty on both seeded servers, so no render proves them; each is named
+`unverified` in the matrix with that reason, rather than passed. `errorDetails` needs a theme
+validation error and `private.hbs` needs private mode — neither was executed. Every version below the
+two servers was read in source only, and only for `@site`: a resource field's version (P0·2 dates the
+author social handles to 5.118.0) is not recorded.

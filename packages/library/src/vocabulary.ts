@@ -318,6 +318,19 @@ export function guardField(spec: string): string {
   return splitFirst(spec, '|')[0]
 }
 
+/** FR-H8's media rule, one sentence for the validator and the runtime alike. A binding into `href`,
+ *  `src`, `poster` or `srcset` HIDES its element when the value is empty: the only fallback an attribute
+ *  could carry is the design's authored placeholder — `/placeholder.jpg`, a relative URL that 404s on the
+ *  customer's site. A picture that falls back to another picture is a second element (`data-if` /
+ *  `data-else`), so `fallback` is a TEXT binding's choice. */
+export const MEDIA_FALLBACK_REFUSAL =
+  'data-empty="fallback" on a binding into href, src, poster or srcset is refused (FR-H8): an empty URL hides its element, because the only fallback an attribute can carry is the design\'s placeholder, a relative URL that 404s on the customer\'s site. Remove data-empty, or write data-empty="hide"; a picture that falls back to another picture is a second element.'
+
+/** true when a `data-bind-attr` list binds any URL-valued attribute — the entry FR-H8 guards on */
+export function bindsUrlAttr(list: string): boolean {
+  return list.split(';').some((e) => URL_ATTRS.has(splitFirst(e.trim(), ':')[0].trim().toLowerCase()))
+}
+
 export function assertBindableAttr(attr: string): string | null {
   const a = attr.toLowerCase()
   if (!BINDABLE_ATTRS.has(a)) {
@@ -410,6 +423,14 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     guardable: true,
     parse: attrList((attr, path) => assertBindableAttr(attr)
       ?? (PROP_PATH_RE.test(path) ? ok : fail(`"${path}" is not a content prop path`))),
+  },
+  'data-initials': {
+    // R-2's typed form: two initials BAKED at compile from a text prop the user typed. A person from
+    // Ghost shows ONE letter through the design's stylesheet over the bound name — two letters from
+    // Ghost would need `{{split}}`, which is 6.5+ and a gscan error below it.
+    summary: "the initials of a typed name into this element's text — the first letter of the first and of the last word: \"people[].name\"",
+    guardable: true,
+    parse: (v) => (PROP_PATH_RE.test(v) ? ok : fail(`"${v}" is not a content prop path`)),
   },
   'data-bind': {
     summary: "a Ghost value into this element's text — \"published_at|date:D MMM YYYY\"",
