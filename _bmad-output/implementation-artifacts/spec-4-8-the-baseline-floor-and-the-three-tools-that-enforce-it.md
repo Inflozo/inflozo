@@ -230,9 +230,9 @@ wired as written:
 Code review, 2026-09-14, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier). Every patch below is applied and its control executed; the one decision is Q2 under Questions for the owner.
 
-- [ ] [Review][Decision] A Tier-3 at-rule form or function passes `pnpm lint` — the plugin knows an at-rule by name
+- [x] [Review][Decision] A Tier-3 at-rule form or function passes `pnpm lint` — the plugin knows an at-rule by name
   only and the diff covers `css.properties` rows; executed: `@container style(--x: 1)`, `if()`, `sibling-index()`,
-  `random()` all pass. Q2 below; DW-139. Docs now say what lint does not catch.
+  `random()` all pass. Q2 below — ruled option 1 (owner, 2026-09-14): Story 7.8, DW-139. Docs now say what lint does not catch.
 - [x] [Review][Patch] `inflozo/supports-tier-2` compared only the leading letters of a value (`balance2` read as
   `balance`), and its value-narrowing had no control [stylelint.config.mjs:48; tools/check-baseline.mjs refusedRows]
 - [x] [Review][Patch] A `baseline.json` entry's `feature` was never linked to its `css`/`html`, and an entry naming
@@ -401,7 +401,7 @@ reads the sheet catches it; one who trusts the lint does not.
    and cheaper than 2, but it also refuses forms that are fine today, and each would need an exception when it turns
    out to be safe.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-14).** The at-rule form and function gap closes in Story 7.8's theme quality gate, recorded as DW-139; until then `docs/section-authoring.md` names what lint does not catch and review holds it. Story 4.8 is not reopened.
 
 ## Verification
 

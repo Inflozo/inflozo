@@ -3464,8 +3464,7 @@ origin: Story 4.8's review (2026-09-14) — Verification Gap: executed through t
   { … }`, `.a { color: if(style(--x: 1): red; else: blue); }`, `sibling-index()` and `random()` all pass, while the
   check prints `0 wider, 0 narrower`; its diff covers `css.properties` rows only, and `web-features` 3.35.0 also
   carries `css.at-rules`, `css.selectors` and `css.types` rows. `docs/section-authoring.md` says so since the review.
-owner: Story 7.8 (the emitted-theme quality gate), unless the owner's Q2 in spec 4.8 rules to extend
-  `tools/check-baseline.mjs` in Story 4.8 now
+owner: Story 7.8 (the emitted-theme quality gate) — ruled by the owner on Q2 in spec 4.8 (option 1, 2026-09-14)
 location: tools/check-baseline.mjs "the plugin against the pin" · stylelint.config.mjs · web-features `css.at-rules.*`,
   `css.selectors.*`, `css.types.*`
 reason: 4.8's matrix scoped the diff to identifier-shaped `css.properties` rows because the other key families'
