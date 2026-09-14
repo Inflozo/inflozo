@@ -442,7 +442,12 @@ How the check compares the two copies:
 - **Supabase production**, `SUPABASE_DB_POOLER_URL`, in a read-only transaction — `pg_constraint` returned one row:
   `credit_namespace_locked` on `translation_overrides`, `CHECK ((catalog_key !~~ 'credit.%'::text))`. The control, an
   invented name `no_such_constraint_4_9` in the same query, returned no row.
-- **GitHub Actions / Vercel** — read after the Dev push, recorded in the follow-up Dev commit.
+- **GitHub Actions** (`gh` with `GITHUB_TOKEN` as `GH_TOKEN`) — run 34864220303 on `c3dc77b3`: `check`, `rls` and
+  `deploy` all `success`. The `check` log shows `check-baseline: PASS` and `check-catalog: PASS — 151 keys in 14
+  namespaces agree with appendix-h1 and render under intl-messageformat 5.4.3` after the clean
+  `--frozen-lockfile` install; `deploy`'s `vercel build --prod` printed the same line.
+- **Vercel** (REST `v6/deployments` with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — production deployment
+  `dpl_HipkFwyXaChydeb89iuqobRMGYvu` for `c3dc77b3abdafd2cf8dea1949f6f7e42dd65852d`: `READY`.
 - Resend and Dodo are not touched.
 
 **Judgement calls the spec left open, for the review:**
