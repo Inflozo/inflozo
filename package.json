@@ -6,16 +6,26 @@
   "engines": {
     "node": "24.x"
   },
+  "browserslist-config-baseline": {
+    "widelyAvailableOnDate": "2026-08-18"
+  },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint . && stylelint \"packages/**/*.css\"",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test && node tools/stress/test-vocabulary.mjs && python3 tools/derive-module-reach.py --check && python3 tools/probe/record-cards.py --self-check",
+    "test": "pnpm -r test && node tools/stress/test-vocabulary.mjs && python3 tools/derive-module-reach.py --check && python3 tools/probe/record-cards.py --self-check && node tools/check-baseline.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "build": "pnpm --filter @inflozo/web build"
   },
   "devDependencies": {
+    "@size-limit/file": "13.0.3",
     "@typescript-eslint/parser": "8.69.0",
+    "browserslist-config-baseline": "0.5.0",
     "eslint": "10.9.1",
-    "typescript": "6.0.3"
+    "eslint-plugin-compat": "7.0.2",
+    "size-limit": "13.0.3",
+    "stylelint": "17.15.0",
+    "stylelint-plugin-use-baseline": "1.4.6",
+    "typescript": "6.0.3",
+    "web-features": "3.35.0"
   }
 }

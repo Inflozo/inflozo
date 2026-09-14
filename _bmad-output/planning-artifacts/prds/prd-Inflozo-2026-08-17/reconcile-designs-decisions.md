@@ -2009,9 +2009,10 @@ ruled 2026-09-14: *"Keep it, as the one named exception on the list."*
 - **Settled by FR-G8's own recompute rule, not ruled, and recorded so nobody asks again.** `mask-image`, which R-15
   carried to the Tier-2 list, is already Widely on the pin (`masks`, 2026-06-07). It is Tier 1 and needs no entry.
 - Targets: ✅ Story 4.8's spec (the I/O matrix, Tasks, Design Notes and the ruling) · ✅ `epic-4-context.md` ·
-  ⬜ `packages/library/baseline.json` and `tools/check-baseline.mjs` (the exception named once, and refused for any
-  other feature) · ⬜ `prd.md` FR-G8 · ⬜ `research-section-js-libraries.md` §6.5 · ⬜ `docs/section-authoring.md`
-  (all in Story 4.8's Dev run). **Deliberately not touched:** the export (R-74), and `reconcile-designs.md`, a
+  ✅ `packages/library/baseline.json` and `tools/check-baseline.mjs` (the exception named once, and refused for any
+  other feature) · ✅ `prd.md` FR-G8 · ✅ `research-section-js-libraries.md` §6.5 · ✅ `docs/section-authoring.md`
+  (all in Story 4.8's Dev run, 2026-09-14; `mask-image` left FR-G8's Tier-2 sentence for Tier 1 in the same run,
+  MEASUREMENTS §43). **Deliberately not touched:** the export (R-74), and `reconcile-designs.md`, a
   `record`.
 
 ## B · Approved decisions superseded by this session

@@ -2,7 +2,8 @@
 title: 'Story 4.8 — The Baseline floor and the three tools that enforce it'
 type: 'feature'
 created: '2026-09-14'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'bfd8ca19321a3a6b88d0160b33ac1c5295228e1d'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -154,14 +155,14 @@ wired as written:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `package.json` · `packages/library/package.json` · `pnpm-lock.yaml`:
+- [x] `package.json` · `packages/library/package.json` · `pnpm-lock.yaml`:
   - add the seven devDependencies at exact versions;
   - add `"browserslist-config-baseline": { "widelyAvailableOnDate": "2026-08-18" }` at the root;
   - add `"browserslist": ["extends browserslist-config-baseline"]` in the library;
   - `lint` becomes `eslint . && stylelint "packages/**/*.css"`, and `test` ends with `node tools/check-baseline.mjs`.
 
   The pin is in the one place every tool reads.
-- [ ] `packages/library/baseline.json`:
+- [x] `packages/library/baseline.json`:
   - `tier2` entries of `{ feature, widely, css | html, why }` for backdrop-filter, text-wrap-balance, scrollbar-width,
     scrollbar-color, starting-style, details-name (html) and fetch-priority (html);
   - `text-wrap-pretty` (`text-wrap: pretty`) with no `widely` and a `notBaseline` reason citing R-105; `mask-image`
@@ -169,7 +170,7 @@ wired as written:
   - `plugin` differences: `refused: ["mask-mode"]`, and `admitted` for `cursor` values with a reason.
 
   FR-G8's version-controlled allowlist is data AD-34's gate can read later.
-- [ ] `stylelint.config.mjs`:
+- [x] `stylelint.config.mjs`:
   - `plugin/use-baseline` at `available: "widely"`, whose `ignoreProperties` and `ignoreAtRules` are built from
     `tier2`, plus `user-select` for the prefix pair. Values are merged per property, because `text-wrap` carries
     two entries: a last-wins map refuses `balance` (executed);
@@ -183,9 +184,9 @@ wired as written:
   - `ignoreFiles` covering Ghost's vendored CSS.
 
   Everything the plugin cannot see, in one file.
-- [ ] `eslint.config.js` — `compat/compat: 'error'` in the modules block, with a comment giving its reach (bare
+- [x] `eslint.config.js` — `compat/compat: 'error'` in the modules block, with a comment giving its reach (bare
   globals only). This is the JS half of the floor.
-- [ ] `tools/check-baseline.mjs` — every row of the I/O matrix, controls first:
+- [x] `tools/check-baseline.mjs` — every row of the I/O matrix, controls first:
   - the floor both ways;
   - the Tier-2 recompute. `notBaseline` is accepted on `text-wrap-pretty` alone, and only while it still has no low
     date on the pin (R-105);
@@ -195,9 +196,9 @@ wired as written:
   - `bundle` to a temp file, then `size-limit --json` run from the repo root, where it finds `@size-limit/file`.
 
   It prints the floor and ends `check-baseline: PASS`. VERIFY row 17's recompute and row 26's diff become automatic.
-- [ ] `tools/doc-audit.py` — a catalogue row naming what the check covers, including `baseline.json` and
+- [x] `tools/doc-audit.py` — a catalogue row naming what the check covers, including `baseline.json` and
   `stylelint.config.mjs`, which the catalogue cannot index. The gate blocks an uncatalogued tool.
-- [ ] `docs/section-authoring.md` — expand `### style.css` with:
+- [x] `docs/section-authoring.md` — expand `### style.css` with:
   - the pin and where it lives; the tiers; `baseline.json`, and R-105's one exception;
   - Tier 2's conditions: an unstyled fallback, no layout, contrast or interaction, and a scrim (review rules, not
     lint);
@@ -207,7 +208,7 @@ wired as written:
 
   In the module part, state compat's reach: a module's other APIs are read against web-features at the pin, as
   MEASUREMENTS §42 did for `core`. This is the contract E9–E11 write against.
-- [ ] `prd.md` · `research-section-js-libraries.md` · `ARCHITECTURE-SPINE.md` · `VERIFY-AT-BUILD.md` ·
+- [x] `prd.md` · `research-section-js-libraries.md` · `ARCHITECTURE-SPINE.md` · `VERIFY-AT-BUILD.md` ·
   `MEASUREMENTS.md` · `deferred-work.md` · `epic-4-context.md` · `reconcile-designs-decisions.md` — propagate
   (standing rule 3):
   - FR-G8: `mask-image` is Tier 1 by recompute; `@supports`; R-105, which makes Tier 2 "Newly features, and
@@ -347,3 +348,47 @@ feature that is not Baseline needs its own ruling: option 3 was declined.
   `tools/check-baseline.mjs`.
 - **Vercel** — the production build runs `pnpm -w check` before `next build`, and it must reach READY.
 - Supabase, Resend, Dodo and the Ghost servers are not touched: no schema, email, payment path or theme upload.
+
+**Results — Dev run, 2026-09-14 (Node 24.18.1):**
+- `pnpm install --frozen-lockfile` — exit 0, "Already up to date". `pnpm check` — exit 0, and
+  `tools/check-baseline.mjs` ends `check-baseline: PASS`:
+  - it printed the floor `chrome 121 · chrome_android 121 · edge 121 · firefox 122 · firefox_android 122 ·
+    safari 17.2 · safari_ios 17.2`, and browserslist agreed with §A3 over web-features 3.35.0;
+  - the plugin-versus-pin diff covered 2356 rows, with 0 wider and 0 narrower;
+  - the Tier-2 dates recomputed to the Design Notes table, and `text-wrap-pretty` printed "not Baseline on the pin,
+    kept by R-105";
+  - every stylesheet row of the matrix was refused by the rule it names;
+  - 3 repository sheets linted clean, and Ghost's 17 card sheets were ignored;
+  - `main.js` (core) is 2308 B brotli under the 40 kB limit.
+- Controls:
+  - **inside the check, on every run:**
+    - a second `notBaseline` → refused, naming R-105;
+    - `widely` set to 2099-01-01 → named with both dates;
+    - `--limit "1 B"` → `passed: false`.
+  - **by hand, then restored byte-for-byte:**
+    - the root pin removed → exit 1, `FAIL (5)`. `ImageCapture` was not refused (only `no-undef` fired), and
+      browserslist fell to today's `firefox 123 · safari 17.4`;
+    - `plugin.refused` emptied → exit 1, `FAIL (2)`, naming `css.properties.mask-mode` and its three values as
+      wider, and `.a { mask-mode: alpha; }` as not refused.
+- `pnpm build` — exit 0. The check's own row confirms no browserslist config reaches the root or `apps/web/app`.
+- Beyond the Design Notes' prototype, two things the repository forced:
+  - `property-disallowed-list` exempts `--custom-properties`; otherwise `reference-tokens.css` fails with 108
+    errors;
+  - an `@supports` test on a Tier-2 property that lists values admits only those values, so
+    `@supports (text-wrap: nowrap)` cannot let Tier 3 in.
+- `baseline-browser-mapping` resolved to 2.11.20 in the lockfile, not planning's 2.11.23. The floor is identical
+  (MEASUREMENTS §43).
+- Two stale wordings are left deliberately:
+  - NFR-2 still says "40 KB gzipped" (`prd.md:476`, `epics.md:240`): its metric is Story 7.5's, per VERIFY row 27
+    and this spec's Ask First;
+  - MEASUREMENTS §9's "1.4.5" is a dated reading, superseded by §43.
+
+**Real infrastructure hit (R-82):**
+- **npm registry** (`registry.npmjs.org`, no key), the publish time of each pin: stylelint 17.15.0 2026-09-04 ·
+  stylelint-plugin-use-baseline 1.4.6 2026-08-22 · browserslist-config-baseline 0.5.0 2025-08-04 ·
+  eslint-plugin-compat 7.0.2 2026-04-29 · web-features 3.35.0 2026-08-17 · size-limit 13.0.3 and
+  @size-limit/file 13.0.3 2026-07-30. All are older than pnpm 11's one-day gate, so the frozen install passed with
+  no exclusion.
+- **GitHub Actions and Vercel** — they run on the Dev push. `check` executes this `pnpm check`, and `deploy` builds
+  on Vercel through `pnpm -w check`. The Review phase records their result.
+- Supabase, Resend, Dodo, T1 and T3 were not touched: this story has no schema, email, payment or theme upload.

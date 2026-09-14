@@ -1,0 +1,84 @@
+{
+  "$comment": "FR-G8's Tier-2 allowlist and the stylelint plugin's named differences from the pin, as data. The pin itself is the root package.json's browserslist-config-baseline key; the floor it resolves to is printed by tools/check-baseline.mjs and stored nowhere. Every entry is a Baseline Newly feature on the pin whose widely date is its baseline_low_date + 30 months in web-features, recomputed by the check; text-wrap-pretty is the one entry that is not Baseline, kept by R-105. Tier 2 is usable only where the fallback is the design's own unstyled state and the design stays complete without it: no layout, contrast or interaction (docs/section-authoring.md, ### style.css).",
+  "tier2": [
+    {
+      "feature": "backdrop-filter",
+      "widely": "2027-03-16",
+      "css": {
+        "property": "backdrop-filter"
+      },
+      "why": "behind an opaque or gradient scrim, tested with @supports: where it is missing the ground goes fully opaque (A3-16)"
+    },
+    {
+      "feature": "text-wrap-balance",
+      "widely": "2026-11-13",
+      "css": {
+        "property": "text-wrap",
+        "values": [
+          "balance"
+        ]
+      },
+      "why": "unbalanced lines are the unstyled state"
+    },
+    {
+      "feature": "text-wrap-pretty",
+      "css": {
+        "property": "text-wrap",
+        "values": [
+          "pretty"
+        ]
+      },
+      "notBaseline": "no Firefox; ordinary line breaks are the unstyled state — kept by R-105 (owner, 2026-09-14)"
+    },
+    {
+      "feature": "scrollbar-width",
+      "widely": "2027-06-11",
+      "css": {
+        "property": "scrollbar-width"
+      },
+      "why": "the browser's own scrollbar width is the unstyled state"
+    },
+    {
+      "feature": "scrollbar-color",
+      "widely": "2028-06-12",
+      "css": {
+        "property": "scrollbar-color"
+      },
+      "why": "the browser's own scrollbar colours are the unstyled state"
+    },
+    {
+      "feature": "starting-style",
+      "widely": "2027-02-06",
+      "css": {
+        "atRule": "starting-style"
+      },
+      "why": "no entry transition: the element appears in its end state"
+    },
+    {
+      "feature": "details-name",
+      "widely": "2027-03-03",
+      "html": {
+        "element": "details",
+        "attribute": "name"
+      },
+      "why": "each <details> opens independently: the group stops being exclusive, nothing is hidden"
+    },
+    {
+      "feature": "fetch-priority",
+      "widely": "2027-04-29",
+      "html": {
+        "element": "img",
+        "attribute": "fetchpriority"
+      },
+      "why": "a priority hint the browser ignores; the image still loads"
+    }
+  ],
+  "plugin": {
+    "refused": [
+      "mask-mode"
+    ],
+    "admitted": {
+      "cursor": "touch browsers draw no cursor; nothing to degrade — css.properties.cursor itself is Widely, and web-features marks its values non-Baseline only because touch Safari has no pointer"
+    }
+  }
+}

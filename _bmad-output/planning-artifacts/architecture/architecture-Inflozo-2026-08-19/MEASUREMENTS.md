@@ -3088,3 +3088,81 @@ per commit (`packages/library/modules/core.test.mjs`), where each was also mutat
 `main.js` (the canvas calls `core` with `{ editing: true }`), so they are proven in jsdom only until Story
 5.15's canvas exists. No feature module exists yet, so no module's own no-JS or edit-safe value was seen
 behaving — that confirmation moved to each module's first category story (VERIFY-AT-BUILD 50).
+
+## 43. The Baseline floor's three tools, executed at the pin · 2026-09-14
+
+Story 4.8 wired FR-G8's enforcement. Planning executed every tool in a scratch install first and found that none
+of them enforces the policy as written; the Dev run re-executed each fact in the workspace, at the pinned
+versions, on Node 24.18.1 and pnpm 11.22.0 (standing rule 1). Pins, all older than pnpm 11's one-day release-age
+gate by the npm registry's `time` field: `stylelint` 17.15.0 (2026-09-04) · `stylelint-plugin-use-baseline` 1.4.6
+(2026-08-22) · `browserslist-config-baseline` 0.5.0 (2025-08-04) · `eslint-plugin-compat` 7.0.2 (2026-04-29) ·
+`web-features` 3.35.0 (2026-08-17) · `size-limit` and `@size-limit/file` 13.0.3 (2026-07-30). The lockfile resolves
+`baseline-browser-mapping` to **2.11.20** (planning ran 2.11.23) and `browserslist` to 4.28.9. `web-features`'
+`data.json` is sha256 `266c466f6e3b3f4736e07662631e1eba668ca0ee3dcb86af1987c75cbfadebf0`, the file §42 read.
+
+**(a) The pin is read from the working directory.** `browserslist-config-baseline` calls
+`readConfig(process.cwd(), "browserslist-config-baseline")`. With the root `package.json` pin and the library's
+`"browserslist": ["extends browserslist-config-baseline"]`, browserslist for `packages/library/modules/core.js`
+from the repo root gives Chrome/Edge 121, Firefox 122, Safari and iOS 17.2 (with `mobileToDesktop`, Chrome and
+Firefox for Android 121 and 122). **From `/tmp`, the same file resolves to Firefox 123 and Safari 17.4**, and so does
+the repo root with the pin removed. `baseline-browser-mapping` 2.11.20 and 2.11.23 both give the 2026-08-18 floor.
+Research §A3's method over `web-features` 3.35.0 **and 3.38.0** gives the same seven versions.
+`browserslist.loadConfig` finds no config at the root or in `apps/web`.
+
+**(b) The pin reaches `eslint-plugin-compat`, which sees bare globals only.** Linted as
+`packages/library/modules/probe.js` from the root:
+
+    new ImageCapture()        compat/compat: ImageCapture is not supported in Safari 17.2, iOS Safari 17.2
+    requestIdleCallback(f)    compat/compat: requestIdleCallback is not supported in Safari 17.2, iOS Safari 17.2
+    window.ImageCapture       compat/compat: ImageCapture is not supported in Safari 17.2, iOS Safari 17.2
+    win.ImageCapture · new win.ImageCapture() · Object.groupBy · Promise.withResolvers() · AbortSignal.any([])
+    · el.checkVisibility()    (no compat/compat message)
+
+From `/tmp` (no pin reached) `new ImageCapture()` draws only `no-undef` — the control: Safari 17.4 has it.
+
+**(c) The stylelint plugin is not the pin.** Every identifier-shaped `css.properties.<prop>[.<value>]` compat key
+of `web-features` 3.35.0 (2,356 rows) as a one-declaration rule, Widely meaning `baseline_low_date` + 30 months on
+or before 2026-08-18, through the plugin alone at `available: "widely"`:
+
+    plugin 1.4.5 · wider 37: mask-mode, mask-mode: alpha, mask-mode: luminance, mask-mode: match-source (+33 cursor values)
+                 · narrower 10: offset-path: ray, offset-path: url, offset-position, offset-position: auto|bottom|center|left|normal|right|top
+    plugin 1.4.6 · wider 37: the same 4 mask-mode rows (+33 cursor values) · narrower 0
+
+`web-features` 3.38.0 has 2,368 such rows, and 1.4.6 passes 12 more it does not know (`flex-wrap: balance`,
+`frame-sizing` and five values, `link-parameters` and `none`, `window-drag` and two values) — so bumping the dataset
+is a floor decision the check makes visible, which is why `web-features` stays at 3.35.0. The plugin also passes
+`@supports (animation-timeline: view()) { … }` and sees neither nesting nor vendor prefixes (planning, confirmed by
+the check's rows below).
+
+**(d) Tier 2, recomputed.** From 3.35.0, `baseline_low_date` + 30 months: backdrop-filter 2027-03-16 ·
+text-wrap-balance 2026-11-13 · scrollbar-width 2027-06-11 · scrollbar-color 2028-06-12 · starting-style 2027-02-06 ·
+details-name 2027-03-03 · fetch-priority 2027-04-29, all after the pin. **`masks` is high, low 2023-12-07, Widely
+2026-06-07 — before the pin, so `mask-image` is Tier 1.** **`text-wrap-pretty` is `baseline: false`** in 3.35.0 and
+3.38.0 (Chrome 117, Safari 26, no Firefox) — R-105 keeps it by name.
+
+**(e) `size-limit`.** Run from the repo root, where it finds `@size-limit/file` in `devDependencies`:
+`size-limit --json --limit "1 B" packages/library/modules/core.js` exits 1 and prints
+`{"passed": false, "size": 2250, "sizeLimit": 1}` — brotli, its default. `bundle([], { core })` measures 2,308 B.
+
+**(f) The check.** `node tools/check-baseline.mjs`, run by `pnpm test`:
+
+    controls: ImageCapture refused at Safari 17.2 · a second notBaseline refused naming R-105 · an altered date refused
+      naming both dates · size-limit at 1 B passed: false · the plugin against the pin, through stylelint.config.mjs:
+      2356 rows: 0 wider, 0 narrower (refused by name: mask-mode; admitted: cursor values)
+    the floor: chrome 121 · chrome_android 121 · edge 121 · firefox 122 · firefox_android 122 · safari 17.2 · safari_ios 17.2
+    Tier 2: seven dates as (d); text-wrap-pretty: not Baseline on the pin, kept by R-105
+    stylesheets: Tier 1, Tier 2, @supports (A3-16) and the three prefixes pass; 19 refusal rows each refused by the
+      rule the story's matrix names; 3 sheets linted clean, 17 of Ghost's ignored
+    size: main.js (core) is 2308 B brotli
+    check-baseline: PASS
+
+Each subject was then broken in place and restored, and each run exited 1 naming it: **the root pin removed** — the
+ImageCapture control fails ("the pin did not reach eslint-plugin-compat") and the floor row prints browserslist's
+unpinned Firefox 123 / Safari 17.4; **text-wrap-balance's `widely` set to 2026-11-14** — "baseline.json says widely
+2026-11-14, web-features 3.35.0 says 2026-11-13"; **`mask-mode` removed from `plugin.refused`** — "wider than the pin:
+css.properties.mask-mode, …alpha, …luminance, …match-source", and the `mask-mode: alpha` row; **`notBaseline` added
+to backdrop-filter** — "carries notBaseline, and R-105 keeps text-wrap-pretty alone".
+
+**(g) What this does NOT say.** No tool reads HTML, so `details-name` and `fetch-priority` are checked for their
+dates only (DW-137, Story 7.8). At-rules, selectors, functions and units are not diffed against the pin. Tier 2's
+conditions — no layout, contrast or interaction, a scrim behind `backdrop-filter` — are review rules no linter sees.

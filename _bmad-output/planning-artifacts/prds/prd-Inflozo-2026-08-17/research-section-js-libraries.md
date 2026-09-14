@@ -228,7 +228,7 @@ All sizes **measured 2026-08-18** from each package's own published `dist` at `c
 | `a11y-dialog` | 8.1.5 | **1.84 KB** | MIT | 2026-02-06 | — | yes | Reject — the cleanest library here, and still redundant beside `<dialog>` |
 | **Build-time tooling** (never shipped to visitors) | | | | | | | |
 | `browserslist-config-baseline` | 0.5.0 | — | Apache-2.0 | 2025-08-04 | — | — | **Adopt** (§6) |
-| `stylelint-plugin-use-baseline` | 1.4.5 | — | MIT | 2026-07-25 | — | — | **Adopt** (§6) |
+| `stylelint-plugin-use-baseline` | 1.4.6 (was 1.4.5, 2026-07-25 — Story 4.8, §6.7) | — | MIT | 2026-08-22 | — | — | **Adopt** (§6) |
 | `eslint-plugin-compat` | 7.0.2 | — | MIT | 2026-04-29 | — | — | **Adopt** (§6) |
 | `size-limit` | 13.0.3 | — | MIT | 2026-07-30 | — | — | **Adopt** (§4) |
 
@@ -534,7 +534,9 @@ A single hard line would ban `backdrop-filter` and `text-wrap: balance` — feat
 >
 > **Tier 2 — enhancement allowlist:** a **short, explicit, version-controlled list** of Baseline **Newly** features that may be used **only where the fallback is the design's own unstyled state and the design remains complete without it.** Nothing on this list may carry layout, contrast, or interaction.
 >
-> Initial Tier 2 allowlist: `backdrop-filter` (behind an opaque/gradient scrim), `text-wrap: balance`, `text-wrap: pretty`, `scrollbar-width`/`scrollbar-color`, `@starting-style`.
+> **The Tier 2 allowlist is `packages/library/baseline.json`** — one copy, read by the stylelint config and recomputed by `tools/check-baseline.mjs` (Story 4.8), never restated here. This paragraph's initial list was `backdrop-filter` (behind an opaque/gradient scrim), `text-wrap: balance`, `text-wrap: pretty`, `scrollbar-width`/`scrollbar-color`, `@starting-style`; R-15 added `<details name>`, FR-G8 `fetchpriority`, and the recompute moved `mask-image` to Tier 1 (`masks` is Widely from 2026-06-07).
+>
+> **One entry is not Baseline: `text-wrap: pretty`** (Chrome 117 and Safari 26, no Firefox, in `web-features` 3.35.0 and 3.38.0), kept by name by **R-105** because its absence is ordinary line breaking, the design's own unstyled state. It carries no Widely date and is re-read at every check. A second feature that is not Baseline needs its own ruling.
 >
 > **Tier 3 — everything else: forbidden**, and CI fails the build.
 
@@ -560,12 +562,14 @@ Two further notes for section authors:
 
 | What | Tool | Licence | Enforces |
 |---|---|---|---|
-| The flat design stylesheets | **`stylelint-plugin-use-baseline`** 1.4.5, `available: "widely"` + explicit Tier-2 allowlist | MIT | §6.5. Stylelint runs directly on flat CSS files — **no build step, no bundler, no preprocessor**, which is exactly why it fits §7.1 |
+| The flat design stylesheets | **`stylelint-plugin-use-baseline`** **1.4.6** (was 1.4.5 here — Story 4.8), `available: "widely"` + explicit Tier-2 allowlist | MIT | §6.5. Stylelint runs directly on flat CSS files — **no build step, no bundler, no preprocessor**, which is exactly why it fits §7.1 |
 | Every FR-G7 module and `core` | **`eslint-plugin-compat`** 7.0.2 against the pinned browserslist | MIT | DOM/JS APIs below the floor |
-| Compiled `assets/js/main.js` | **`size-limit`** 13.0.3, `limit: "40 KB"`, gzip | MIT | NFR-2's JS budget — the maximal-design fixture theme is the input |
+| Compiled `assets/js/main.js` | **`size-limit`** 13.0.3 with `@size-limit/file`, `limit: "40 kB"`, **brotli** — its default metric (VERIFY-AT-BUILD 27); this row said gzip | MIT | NFR-2's JS budget — the maximal-design fixture theme is the input; until Story 7.5 it is `bundle()` of every registry module with a source, as a warning |
 | Third-party code | one grep asserting `assets/js/` contains only repo-authored files | — | §5's licence rule, by construction |
 
 Add a fourth, human check: **bumping `widelyAvailableOnDate` requires a render-matrix re-run**, because widening the CSS vocabulary is exactly the kind of change NFR-6(a) exists to catch.
+
+**Executed in Story 4.8 (MEASUREMENTS §43) — the plugin alone is not the pin, so it is diffed against it.** It takes no date: its data map is frozen at its publish date. Against `web-features` 3.35.0 at the pin, over every identifier-shaped `css.properties` row, **1.4.6 passes the four `mask-mode` rows and 33 `cursor` values and refuses nothing Widely**; **1.4.5 also refuses 10 Widely `offset-path`/`offset-position` rows**, which is why 1.4.6 is pinned. `mask-mode` is refused by name (Safari lacks it); `cursor` values are admitted (touch browsers draw no cursor). It also exempts whatever an `@supports` tests and sees neither nesting nor vendor prefixes, so the root `stylelint.config.mjs` adds `inflozo/supports-tier-2`, `max-nesting-depth: 0` and the prefix closure with `inflozo/prefix-pairs`. `tools/check-baseline.mjs` runs that diff on every `pnpm check`, through the real config, and names every disagreement in both directions. `eslint-plugin-compat` sees bare globals only (`win.ImageCapture`, `Object.groupBy`, `Promise.withResolvers`, `AbortSignal.any` and instance methods pass it).
 
 ---
 

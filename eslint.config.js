@@ -9,6 +9,7 @@
 // typescript 6.0.3 exists only so ESLint can read a `.ts` file.
 import { builtinModules } from 'node:module'
 import tsParser from '@typescript-eslint/parser'
+import compat from 'eslint-plugin-compat'
 
 // Membership is derived from the directory, never listed — a hardcoded list has gone stale
 // twice in this repo, and the three-package version of this constant already missed a fourth
@@ -150,8 +151,17 @@ export default [
     // Story 4.7 — a module file is a classic script whose top level is one function, and it reaches the
     // platform only through what `core` hands it (`win`, `el`, `ctx`). With no browser globals declared,
     // `no-undef` turns a bare `window`, `document` or `setTimeout` into an error.
+    //
+    // Story 4.8 — `compat/compat` is the JS half of FR-G8's floor. Its browsers are the pin's, read through
+    // `packages/library/package.json`'s `browserslist` key (never the root's, which `next build` would reach).
+    // Its reach is BARE GLOBALS ONLY (executed): it flags `requestIdleCallback` and `window.ImageCapture` at
+    // Safari 17.2, and misses `win.ImageCapture`, `Object.groupBy`, `Promise.withResolvers`, `AbortSignal.any` and
+    // every instance method — so `core`'s `win.*` is invisible to it, and a module's other APIs are read against
+    // web-features at the pin by hand (docs/section-authoring.md; MEASUREMENTS §42 did it for `core`).
+    // `tools/check-baseline.mjs` proves the pin reaches it: `new ImageCapture()` must be refused naming Safari 17.2.
     files: ['packages/library/modules/*.js'],
     languageOptions: { sourceType: 'script' },
-    rules: { 'no-undef': 'error' },
+    plugins: { compat },
+    rules: { 'no-undef': 'error', 'compat/compat': 'error' },
   },
 ]

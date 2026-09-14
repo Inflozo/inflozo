@@ -785,6 +785,22 @@ DOCS = [
   'Attempts each category\'s Controls: line and does NOT succeed: the specs declare controls in at least four shapes (a per-design `Control | Values` table, a prose line with names before colons, another with names before brackets, and typed enum rows), the granularity differs by an order of magnitude between them — 53 names for one category, 3 for another — and eight categories carry nothing readable at all. Kept because it MEASURES the gap and names the eight, and because the fix is cheap: if every spec carried the per-design Control|Values table A1-A3 already use, this becomes reliable. Do not land its output as-is.'),
  ('tools/derive-module-reach.py', 'tool', 'Which designs declare which script',
   'Re-derives research §2.1\'s "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design\'s OWN declaration names it: the per-design Behaviour-module line, or the roster table\'s Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at. --check (Story 4.7) reads no export and keeps FR-G7\'s one table one table: packages/library/modules/registry.json\'s names must be §2.1\'s live rows in order, each editSafe must be its §7 yes/no, every other live §7 row must be core or cards.js, and cards.js must have one; pnpm test runs it, and a flipped editSafe turns it red naming the module.'),
+ ('tools/check-baseline.mjs', 'tool', 'The Baseline floor, checked by execution',
+  "Story 4.8's check of FR-G8, run by pnpm test and therefore by CI and the Vercel build. Controls first: "
+  'new ImageCapture() linted as a module must be refused by eslint-plugin-compat at Safari 17.2 (proof the pin '
+  'reaches the lint — an unpinned floor is Safari 17.4, which passes it), a second notBaseline entry must be refused '
+  "naming R-105, an altered Tier-2 date must be refused naming both dates, size-limit at 1 B must report "
+  'passed: false, and stylelint-plugin-use-baseline is diffed against web-features at the pin over every '
+  'identifier-shaped css.properties row, through the real config, naming every row wider or narrower. Then it '
+  'prints the floor computed two ways (browserslist for a module file, research §A3 over web-features) and fails '
+  'on any browser that disagrees; confirms no browserslist key reaches the root or apps/web; recomputes every '
+  'Tier-2 widely date as baseline_low_date + 30 months; runs the matrix\'s Tier 1/2/3, @supports, nesting and '
+  "prefix rows and the repository's own stylesheets through stylelint (Ghost's vendored card CSS ignored); and "
+  "measures bundle()'s maximal main.js with size-limit at NFR-2's 40 kB brotli, as a warning. Also covers "
+  'the pin in the root package.json, packages/library/baseline.json (the Tier-2 allowlist and the plugin\'s named '
+  'differences) and the root stylelint.config.mjs (the plugin, max-nesting-depth, the prefix closure and the two '
+  'custom rules inflozo/supports-tier-2 and inflozo/prefix-pairs), which the catalogue cannot index. It stores no '
+  'floor: it prints one.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
  ('tools/reapply-export-edits.py', 'tool', 'Re-apply the repo-side export edits',
@@ -867,7 +883,7 @@ DOCS = [
   'editors\' value shapes (Story 4.5); every directive with its grammar, what each '
   'emitter does with it and an example, walking PRD 7.3\'s gap table row by row including the '
   'struck row 8 and the five exit constructs; every refusal with its reason; and what a design '
-  'previews against; and since Story 4.7 the behaviour-module contract — declaring, a width, the union, ctx, js-enabled on the mount, the motion gate, bundle, the assets/js/ rule and the licence filter. The contract '
+  'previews against; since Story 4.7 the behaviour-module contract — declaring, a width, the union, ctx, js-enabled on the mount, the motion gate, bundle, the assets/js/ rule and the licence filter; and since Story 4.8 the browser floor a stylesheet is written against — the pin and where it lives, the three tiers and baseline.json with R-105\'s one exception, Tier 2\'s review conditions, @supports, no nesting, the three prefixes, pnpm lint, and eslint-plugin-compat\'s reach over a module. The contract '
   'itself is data in packages/library/src (AD-34), and the eight executed archetypes are its '
   'control - tools/stress/test-vocabulary.mjs.'),
  ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds the development-loop rulings',

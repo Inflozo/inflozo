@@ -3415,3 +3415,36 @@ reason: 4.7's Never bars canvas suppression, so the theme path was built alone; 
   shape — and (b) an `options.report` (or similar) so a module's throw reaches the editor's own error surface rather than
   `window.onerror`. Both are one decision for 5.15, taken once; `core`'s signature is `(win, modules, options)` so an
   option is additive.
+
+### DW-137: no tool checks HTML against the floor — a Tier-2 attribute is dated, and a Tier-3 one is never refused
+
+plain: The new browser checks read stylesheets and scripts. Nothing reads a design's HTML, so if a design used an
+  attribute that the oldest supported browsers do not understand, nothing would stop it. The two newer HTML touches
+  already on the allowed list — one-at-a-time accordions and a loading-priority hint — are tracked for their dates,
+  but nothing checks where they are used.
+status: open
+severity: medium
+origin: Story 4.8's Dev run (2026-09-14) — `packages/library/baseline.json` carries `details-name` and
+  `fetch-priority` as `html` entries, and `tools/check-baseline.mjs` recomputes their Widely dates; stylelint and
+  eslint-plugin-compat read no markup
+owner: Story 7.8 (the emitted-theme quality gate — FR-J17 already asserts valid HTML over every compiled theme)
+location: packages/library/baseline.json `tier2[].html` · tools/check-baseline.mjs · Story 7.8's gate
+reason: 4.8's Never bars the HTML Baseline check. The data is ready for it: an `html` entry names its element and
+  attribute, so the gate can refuse any element or attribute below Widely on the pin that `baseline.json` does not
+  name, and hold a named one to Tier 2's conditions (a `<details name>` group still opens every panel without it).
+
+### DW-138: the render matrix does not refuse a pin it did not run against
+
+plain: Moving the browser-floor date is meant to come with a fresh run of every visual test, because a later date
+  lets designs use newer styling. Today that is a rule people follow, not something the build checks: the date could
+  move and the visual tests could still be the ones taken under the old date.
+status: open
+severity: medium
+origin: Story 4.8's Dev run (2026-09-14) — FR-G8 says bumping `widelyAvailableOnDate` "requires a render-matrix
+  re-run" (NFR-6(a)); `tools/check-baseline.mjs` makes the bump reviewable but cannot see the matrix, and
+  `epics.md`'s Story 4.11 names no pin-bump trigger
+owner: Story 4.11 (the render matrix)
+location: the root package.json `browserslist-config-baseline.widelyAvailableOnDate` · Story 4.11's matrix baselines
+reason: 4.8's Never bars the trigger inside the matrix. The likely shape is one line: the matrix records the pin its
+  baselines were taken under, and refuses to pass when the root pin differs, so a pin bump cannot land without the
+  re-run FR-G8 names.

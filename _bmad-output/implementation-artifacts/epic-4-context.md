@@ -128,6 +128,19 @@ Build the machine every design in the library is authored against — **before a
     It is not Baseline (no Firefox), and its absence is ordinary line breaking, the design's own unstyled state. It
     carries no Widely date and is re-read at every check. A second feature that is not Baseline needs its own
     ruling.
+  - **Story 4.8 (2026-09-14) — the floor has one copy of each thing, and one check holds them together.**
+    - The pin is the root `package.json`'s `browserslist-config-baseline` key; the `browserslist` key is in
+      `packages/library/package.json` only, so `next build` sees none. The floor is printed, never stored.
+    - The tiers are data in `packages/library/baseline.json`; the stylesheet rules are the root `stylelint.config.mjs`
+      (plugin 1.4.6, `max-nesting-depth: 0`, the prefix closure, `inflozo/supports-tier-2`, `inflozo/prefix-pairs`),
+      run by `pnpm lint` over `packages/**/*.css` with Ghost's vendored card CSS ignored.
+    - `compat/compat` runs over `packages/library/modules/*.js`; it sees bare globals only, so a module's other APIs
+      are read against `web-features` at the pin (`docs/section-authoring.md`).
+    - `tools/check-baseline.mjs`, in `pnpm test`, computes the floor two ways, recomputes each Tier-2 date, diffs the
+      plugin against the pin row by row (`mask-mode` refused, `cursor` values admitted, both named in
+      `baseline.json`), runs the matrix's stylesheet rows, and measures `bundle()`'s main.js with `size-limit` as
+      NFR-2's warning — each with a control (MEASUREMENTS §43). HTML is unchecked (DW-137, Story 7.8), and the
+      render matrix does not yet refuse a pin it did not run against (DW-138, Story 4.11).
 - **Chrome strings live in one catalog with dotted `namespace.name` keys, never the English string itself**, each with an English default. `.hbs` output consumes them **exclusively via `{{t}}`** with `{placeholder}` hash params, enforced by compile validation. Strings written by bundled JS are **out of `{{t}}`'s reach** — Ghost never runs the theme's JS through Handlebars — so those resolve at compile and emit as `data-i18n-*` attributes on their module's mount element, which validation asserts instead. `credit.*` is a **locked namespace**: absent from the Translations surface, not overridable on any plan, and an override reaching the compiler for one **fails the build** rather than being dropped. Keys are append-only and never reworded in place; a superseded key ships a migration map carrying the user's override forward.
 - **The render matrix covers every design × 3 reference Style Packs × light/dark × 3 viewports** — the count derived from the inventory and moving with it, never restated. A design fails above **1% differing pixels at a per-pixel tolerance of 0.1**. The runner is part of the baseline: one pinned Playwright/Chromium in one fixed container image, fonts installed in the image, animations and caret disabled. **Reduced motion is a matrix case with the query forced; 200% browser zoom is a viewport case.** A mass rebaseline requires the owner's approval on a sampled visual review (one design per category, both modes), lands as its own commit touching baselines only, and names the change that caused it. Cadence: full matrix nightly and before each release; per-commit runs cover only what a commit touched.
 - **The accessibility scan rides the same renders — there is no second matrix.** axe-core, WCAG 2.1 AA, **zero violations**, scoped to include the fixture renders and the synthesized templates, not only placed designs. Every image carries an alt, and an image that is the **sole content of a link** must carry a *non-empty* one. **The scan stops at the edge of the post body** — Ghost emits its own markup there and no theme can fix a customer's content.

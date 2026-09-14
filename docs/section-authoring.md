@@ -16,6 +16,9 @@ rendering on its own, it is the wrong directive.
   subpath), `modules.ts` (FR-G7's registry as code reads it, `bundle` and `checkThemeJs` — Story 4.7).
 - The behaviour modules: `packages/library/modules/` — `core.js`, `registry.json`, and one file per
   feature module as its first category writes it *(Story 4.7)*.
+- The browser floor: the pin in the root `package.json`, the Tier-2 allowlist in
+  `packages/library/baseline.json`, the stylesheet rules in the root `stylelint.config.mjs`, and
+  `tools/check-baseline.mjs`, which proves them against each other *(Story 4.8)*.
 - The controls engine: `packages/section-runtime/src/controls.ts` — the sidebar, the edits and the one
   resolution both emitters stamp *(Story 4.5)*.
 - The runnable reference: `packages/library/fixtures/reference-design/` — every directive, once. The
@@ -423,6 +426,75 @@ generated class names, no CSS-in-JS, and **explicitly outside any Tailwind proce
 classes are structurally incompatible with token-only styling. Every control appears as an attribute
 selector on the root (`.feed[data-cols="3"] .feed__grid { … }`).
 
+#### The browser floor — what a stylesheet may use *(Story 4.8, FR-G8)*
+
+**The floor is a date, not a version list.** It is the root `package.json`'s
+`"browserslist-config-baseline": { "widelyAvailableOnDate": "2026-08-18" }` — the one place every tool reads
+it, because `browserslist-config-baseline` reads the pin from the working directory's `package.json`. The
+browsers it resolves to are printed by `node tools/check-baseline.mjs` and written down nowhere, so no
+version list here can go stale. The `browserslist` key itself lives in `packages/library/package.json` only:
+browserslist walks up from a file, and a root key would reach the app's `next build`.
+
+**Three tiers.**
+
+- **Tier 1 — Baseline Widely on the pin: unrestricted**, load-bearing, anywhere. `mask-image` is Tier 1
+  (`masks` became Widely on 2026-06-07), as are `:has()`, container queries, `color-mix()` and `subgrid`.
+- **Tier 2 — the allowlist in `packages/library/baseline.json`.** Baseline **Newly** features, each with the
+  date it becomes Widely, recomputed by the check from `web-features`: when the pin passes that date the
+  check says "Tier 1, remove it". **One entry is not Baseline at all: `text-wrap: pretty`, kept by name by
+  R-105** (no Firefox; ordinary line breaks are the unstyled state). It carries no date, and the day it
+  becomes Baseline the check asks for its date. A second feature that is not Baseline needs its own ruling —
+  the check refuses one.
+- **Tier 3 — everything else is refused by `pnpm lint`.** `scrollbar-gutter`, `text-wrap: nowrap`,
+  `animation-timeline`, `anchor-name`, `field-sizing`, `mask-mode` (the stylelint plugin's own data passes
+  it; Safari lacks it, so it is refused by name).
+
+**Tier 2's conditions are review rules, not lint** — the linter cannot see what a declaration *does*:
+
+- the fallback is the design's **own unstyled state**, and the section is complete and readable without it;
+- a Tier-2 declaration carries **no layout, no contrast and no interaction** — nothing is positioned, sized,
+  hidden, revealed or made legible by it;
+- `backdrop-filter` sits **behind a scrim** that is legible on its own: where the blur is missing, the ground
+  goes fully opaque (A3-16's Mini Bar).
+
+**`@supports` may test a Tier-2 property and nothing else** (`inflozo/supports-tier-2`). Tier 1 never needs
+a test, and a Tier-3 feature may not hide behind one — the plugin exempts whatever a condition tests. The
+one shape it exists for:
+
+```css
+.minibar { background: var(--bg-surface); }
+@supports (backdrop-filter: blur(1px)) {
+  .minibar { background: color-mix(in srgb, var(--bg-surface) 80%, transparent); backdrop-filter: blur(12px); }
+}
+```
+
+A selector test (`selector(:popover-open)`) or a Tier-3 property (`(animation-timeline: view())`) is refused.
+
+**No nesting** (`max-nesting-depth: 0`, §7.1). CSS Nesting is Widely and still forbidden: the output is flat
+and hand-editable. `.a { & .b {} }`, `.a { .b {} }` and `.a { @media (…) {} }` are all refused; write the
+`@media` at the root with the rule inside it.
+
+**Vendor prefixes: research §6.6's three, in their complete forms, and nothing else.**
+
+| Need | Write exactly |
+|---|---|
+| excerpt truncation | `display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: N; overflow: hidden;` — all three prefixed declarations in one rule (`inflozo/prefix-pairs`) |
+| iOS text inflation | `-webkit-text-size-adjust: 100%` — no other value |
+| non-selectable chrome | `-webkit-user-select: none; user-select: none;` — both, with one value; either alone is refused |
+
+Any other prefix, in any position — a property (`-webkit-font-smoothing`, `-webkit-mask-image`), a value
+(`display: -moz-box`), a function (`-webkit-linear-gradient()`), a pseudo-element (`::-webkit-scrollbar`), a
+media feature or an at-rule (`@-webkit-keyframes`) — is refused by the rule that owns that position.
+
+**Run `pnpm lint`** — it runs ESLint and then `stylelint "packages/**/*.css"` with the root
+`stylelint.config.mjs`. Ghost's vendored card CSS under `packages/library/orbit-weekly/vendor/` is not
+linted: it is Ghost's, as `cards.js` is. `pnpm check` also runs `tools/check-baseline.mjs`, which diffs the
+plugin against the pin row by row and proves each tool's control.
+
+**Moving the pin is an owner decision, and it needs a render-matrix re-run** (FR-G8, NFR-6(a)): a later date
+widens what every stylesheet may use. So is bumping `stylelint-plugin-use-baseline` or `web-features` —
+the check turns either into a named list of rows to review.
+
 ### Behaviour modules — `data-module` *(Story 4.7)*
 
 **A design ships no script of its own.** FR-G7 lets a generated theme run registry code only, so a design
@@ -479,6 +551,14 @@ letter of it — `no-undef` over `packages/library/modules/*.js` refuses a bare 
 `setTimeout` — and review holds the rest, since `el.ownerDocument.defaultView` is the window by another
 road. `bundle` refuses a file whose top level is anything
 but its one declaration — an `export`, an `import`, a second function or a statement.
+
+**The floor reaches a module only partly by lint** *(Story 4.8)*. `compat/compat` (eslint-plugin-compat)
+runs over the same files against the pin, and it sees **bare globals only**: it refuses `requestIdleCallback`
+and `window.ImageCapture` at Safari 17.2, and misses `win.ImageCapture`, `Object.groupBy`,
+`Promise.withResolvers`, `AbortSignal.any()` and every instance method — so it never sees what `core` hands a
+module as `win`. **Every other platform API a module uses is read against `web-features` at the pin before it
+is used**, and the reading is recorded with the module, as MEASUREMENTS §42 did for `core` — which is how
+`AbortSignal.any()` was found Newly, so Tier 3, and never used.
 
 **`js-enabled` is on the mount, never on the page.** `core` sets the class on the element whose module
 it mounts, **before** the module runs, and removes it when that mount stops or throws. JavaScript off,
