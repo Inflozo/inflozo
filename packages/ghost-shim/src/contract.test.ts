@@ -747,6 +747,15 @@ test('{{t}} over locales/en.json — the control, a flat dotted lookup, params, 
     const total = recorded(major, 'index', 'PAGE', 'pagination_total', '{{pagination.total}}')
     assert.equal(verbatim['t-plural'], String(flat['probe.posts_many']).replace('%', total))
     assert.match(verbatim['t-plural'] ?? '', /<i>many<\/i>/)
+    // review 4.9: the second page recorded the same rows with its own page number — every TR row the shim renders is asserted
+    const tr2 = (key: string) => recorded(major, 'index-page-2', 'TR', key, `{{t}} ${key}`)
+    const page2 = recorded(major, 'index-page-2', 'PAGE', 'pagination_page', '{{pagination.page}}')
+    assert.equal(tr2('plain_control'), flat['Plain key'])
+    assert.equal(t('probe.page_of', { page: page2, pages }, flat), tr2('params_path'))
+    assert.equal(t('probe.page_of', { page: page2, pages: undefined }, flat), tr2('param_undefined'))
+    assert.equal(tr2('param_omitted'), 'An error occurred')
+    assert.equal(t('probe.dotted_hit', {}, flat), tr2('dotted_hit'))
+    assert.equal(tr2('missing_key'), 'probe.no_such_key')
   })
   assertBoth('{{t}} with post-scoped params', (major) => {
     const locale = input<Record<string, string>>(major, 'post', 'locales_en', '{{t}}')

@@ -141,6 +141,7 @@ test('V2 — catalog-key: an unknown, retired, js or canvas key, each with its o
   assert.match(reason('search.overlay_empty'), /retired/)
   assert.match(reason('countdown.days'), /js key/)
   assert.match(reason('comments.placeholder'), /canvas-only/)
+  assert.match(reason('archive.posts_many'), /written for \{\{plural\}\}/)
   refuses('catalog-key', '<input data-t-attr="placeholder:a22.email">', '<input data-t-attr="placeholder:member.email_placeholder">')
 })
 

@@ -1003,6 +1003,10 @@ test('Story 4.9 — params are guarded on their bound field, a helper param is a
   const p = renderTheme(doc(), pageOf, { target: 'index.hbs' }).template
   assert.equal((p.match(/\{\{#if pagination\.page includeZero=true\}\}/g) ?? []).length, 1, p)
   assert.equal((p.match(/\{\{\/if\}\}/g) ?? []).length, 2, p)
+  // review 4.9: a data-t-attr param that is empty removes the element on the canvas, as the theme's guard hides it
+  const titled = '<section class="s"><p class="p" data-t-attr="title:pagination.page_number page=pagination.page"></p></section>'
+  assert.equal(renderCanvas(doc(), titled, { target: 'index.hbs', site: { pagination: { page: undefined } } }), '<section class="s"></section>')
+  assert.ok(renderTheme(doc(), titled, { target: 'index.hbs' }).template.includes('{{#if pagination.page includeZero=true}}<p class="p" title="{{t "pagination.page_number" page=pagination.page}}"></p>{{/if}}'))
 })
 
 test('Story 4.9 — data-t-attr writes the four text attributes on both emitters', () => {
@@ -1029,6 +1033,8 @@ test('Story 4.9 — V2 and V4 refuse at the render door on both emitters, a data
     ['<p data-t="nav.menu" data-empty="hide">x</p>', /data-empty/],
     ['<p data-t="nav.menu" data-bind="title">x</p>', /one element carries one text/],
     ['<div data-module="countdown" data-i18n-days="{count} Tage"></div>', /never writes one/],
+    ['<img data-t-attr="alt:card.play_video" data-bind-attr="alt:title" alt="">', /one attribute holds one value/],
+    ['<p data-t="archive.posts_many">x</p>', /written for \{\{plural\}\}/],
   ]
   for (const [src, re] of cases) {
     assert.throws(() => renderCanvas(doc(), src, { ghost: { posts: [] } }), re, `canvas: ${src}`)
@@ -1048,6 +1054,15 @@ test("Story 4.9 — S6: an untouched catalog-linked prop is the catalog string, 
   assert.ok(typed.theme.includes('>Join &#123;&#123;us&#125;&#125;<') && !typed.theme.includes('{{t'), typed.theme)
   // a declaration the validator would refuse is refused here too
   assert.throws(() => renderCanvas(doc(), src, { schema: { submitLabel: { type: 'text', label: 'x', catalog: 'nav.menu' } } }), /S6/)
+  // review 4.9: S6 through data-prop-attr, into a text attribute only
+  const attr = '<section class="s"><input class="b" type="submit" data-prop-attr="title:submitLabel"></section>'
+  const a = agree(attr, { schema, content: {}, target: 'index.hbs' })
+  assert.ok(a.theme.includes('title="{{t "member.signup_cta"}}"'), a.theme)
+  assert.ok(a.canvas.includes('title="Subscribe"'), a.canvas)
+  assert.ok(bothWays(attr, { schema, content: { submitLabel: 'Join' } }).canvas.includes('title="Join"'))
+  for (const render of [renderCanvas, renderTheme]) {
+    assert.throws(() => render(doc(), '<a data-prop-attr="href:submitLabel">x</a>', { schema, content: {} }), /never to a URL attribute/)
+  }
 })
 
 test('Story 4.9 — S5: both emitters stamp one data-i18n-* per countdown key on its mount, the theme with its braces as entities', () => {

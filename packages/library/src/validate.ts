@@ -76,7 +76,7 @@ const GUARDABLE = Object.keys(DIRECTIVES).filter((k) => DIRECTIVES[k]?.guardable
 
 /** Story 4.9 — the directives that replace an element's TEXT. One element carries one text, so `data-t` beside
  *  any of them would be one silently replacing the other; and V1's tree half exempts text under them. */
-export const TEXT_DIRECTIVES: readonly string[] = ['data-prop', 'data-bind', 'data-t', 'data-helper', 'data-initials', 'data-text']
+export const TEXT_DIRECTIVES: readonly string[] = ['data-prop', 'data-bind', 'data-t', 'data-helper', 'data-initials', 'data-index', 'data-text']
 
 export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[] {
   const out: Failure[] = []

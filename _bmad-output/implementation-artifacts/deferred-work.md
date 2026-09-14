@@ -3564,3 +3564,47 @@ location: appendix-h1 S6 · each category's content.json `default`s
 reason: whether every visible default must have a catalog key, or a non-English project must be prompted to retype
   them, is an owner decision the Translations surface forces; 4.9 builds the mechanism (`catalog` on a prop) and
   adds no key.
+
+## Deferred from: code review of spec-4-9-the-string-catalog-keys-english-defaults-and-the-t-contract (2026-09-14)
+
+### DW-146: nothing asserts S5's inverse — a module that writes visitor-facing text must declare its keys
+
+plain: The phrase list marks which phrases are written by a section's JavaScript, and the countdown section declares
+  its six. Nothing checks the other way round: a future section could write "Loading…" from its script and forget to
+  declare it, and the phrase would then be untranslatable with no warning.
+status: open
+severity: low
+origin: Story 4.9's review — `moduleStringsRefusals` checks that every declared key is a live `js` key; the inverse
+  cannot be derived today because the js keys of modules not yet written map to no row (namespaces are by function,
+  not by module).
+owner: each category story that writes a module (Story 4.7's rule), and 7.12's Translations surface as the backstop
+location: packages/library/src/modules.ts `moduleStringsRefusals` · modules/registry.json `strings`
+reason: the inverse needs a way to know which module a js key belongs to — a per-key `module` in appendix-h1, or a
+  scan of each module's `translate(...)` calls (Story 4.7's lexical scan is the shape) — and either is a spec change
+  the owner rules when the second module lands.
+
+### DW-147: the recorder skips the probe theme's DELETE when re-activating the previous theme fails
+
+plain: The test-server recorder restores the previous theme and then deletes its own. If the restore call itself
+  errors, the delete never runs, and the recorder's own theme is left installed until someone removes it by hand.
+status: open
+severity: low
+origin: Story 4.7's cleanup (owner's ruling on Q1), inherited unchanged by Story 4.9's recorder; noticed at 4.9's
+  review. The error does reach the operator — it is not silent — but the cleanup is not attempted.
+owner: the next story that touches `record-shim.py`
+location: tools/probe/record-shim.py `finally`
+reason: pre-existing; a `try`/`except` around the activate that still attempts the DELETE and re-raises is the fix.
+
+### DW-148: the copy check compares retired-or-not only, so the first `supersededBy` cannot be held equal
+
+plain: The two copies of the phrase list — the human table and the machine file — are held equal by a check. The
+  check compares whether a phrase is retired, but the human table has no column for "replaced by", so the first time a
+  phrase is replaced, the two copies could disagree without the check noticing.
+status: open
+severity: low
+origin: Story 4.9's review — `appendixRows` reads a status cell as retired or not; `catalog.json` carries
+  `supersededBy`, and `catalogFailures` checks it against `migrations`, but nothing ties it to the table.
+owner: the story that first supersedes a key (Ask First in 4.9), with DW-143 (Story 7.27)
+location: tools/check-catalog.mjs `appendixRows`, `copyFailures` · appendix-h1 §2 markers
+reason: appendix-h1 needs a status form for "superseded by `key`" before the check can parse one; adding it with no
+  instance would be a written-down convention nothing exercises.

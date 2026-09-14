@@ -2,10 +2,10 @@
 title: 'Story 4.9 — The string catalog: keys, English defaults and the `{{t}}` contract'
 type: 'feature'
 created: '2026-09-14'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '6a9feefe8cac0036df9db6737789962916f2307a'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -292,6 +292,53 @@ been executed on either major.
 - Given the gates, when `pnpm check`, `pnpm build` and `python3 tools/doc-audit.py --check` (twice) run, then all
   are green, and nothing under `packages/library/modules/` changes except `registry.json`.
 
+### Review Findings
+
+Five layers ran on 2026-09-14 — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the
+Real-infra verifier — and the real infrastructure held on every claim (see Verification). 2 decisions, 12 patches,
+3 deferred, 26 dismissed as noise or already handled.
+
+- [ ] [Review][Decision] Q1 — what a blank translation override means: `resolveStrings` passes `""` through today, so
+  the canvas prints nothing, the locale file carries `""`, and Ghost prints the raw key on the live site (recorded:
+  an empty value prints the key) [packages/library/src/catalog.ts `resolveStrings`]
+- [ ] [Review][Decision] Q2 — a catalog-linked prop can never be blanked: "untouched" is an empty value, so a customer
+  who clears the label gets the catalog string back [packages/section-runtime/src/core.ts `applyProps`]
+- [x] [Review][Patch] `data-index` replaces the element's text but was not in `TEXT_DIRECTIVES`, so the reference design
+  failed V1's tree half on its `1` sample — and nothing ran the check over it; the hand-list regex of old prefixes is
+  deleted (V2 already runs over both fixtures) [packages/library/src/validate.ts:79 · tools/stress/test-vocabulary.mjs]
+- [x] [Review][Patch] No test observed the canvas removing a `data-t-attr` element whose param is empty; the theme's
+  guard was the only side asserted [packages/section-runtime/src/agreement.test.ts]
+- [x] [Review][Patch] S6 through `data-prop-attr` had no test on either emitter, and a catalog-linked prop bound into
+  `href`/`src`/`poster` would have put a `{{t}}` value — or an override — past `safeUrl`; both emitters now refuse
+  it, and the branch is tested [packages/section-runtime/src/core.ts `applyProps` · agreement.test.ts]
+- [x] [Review][Patch] The runtime's "one attribute holds one value" refusal (`data-t-attr` beside `data-bind-attr`)
+  had no row in the refusal table [packages/section-runtime/src/agreement.test.ts]
+- [x] [Review][Patch] The contract test asserted the `index` recording's `{{t}}` rows only; `index-page-2` carries the
+  same rows with its own page number and is now asserted [packages/ghost-shim/src/contract.test.ts]
+- [x] [Review][Patch] `stampControls` kept root `data-i18n-*`, a branch nothing can reach: `refuseCatalogMisuse` throws
+  on any authored one first and `stampStrings` runs after [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] `archive.posts_one` / `posts_many` are written for `{{plural}}` and nothing stopped
+  `data-t="archive.posts_many"`, which would print "% posts" on the live site; a default with a bare `%` is now a
+  `catalog-key` refusal, derived from the default like the placeholder set, never a mark [packages/library/src/catalog.ts]
+- [x] [Review][Patch] A migration with `carryOverride` into a `credit.*` key would have written an override onto the
+  locked namespace through `resolveStrings`; `catalogFailures` refuses it [packages/library/src/catalog.ts]
+- [x] [Review][Patch] The recorder's leak assertion ran over `values` only; the `raw` and `verbatim` blocks it files
+  were unchecked. It now runs over everything written [tools/probe/record-shim.py]
+- [x] [Review][Patch] Appendix-h1 S1 said "Ghost's documentation advises readable-English keys" with no citation — a
+  claim about the platform (standing rule 1) and the spec's own grep target; replaced by Casper's `locales/en.json`,
+  read in source [appendix-h1-string-catalog.md:26]
+- [x] [Review][Patch] Docs: row 13 was titled "static and bound text in one node" while its own example has no static
+  text; §4's rows name the plural key, `data-index` and the URL-attribute refusal [docs/section-authoring.md]
+- [x] [Review][Patch] `prd.md` FR-Q6 still said Ghost "falls back to `en` for any key the active locale does not
+  resolve", which §44(f) disproved; the Dev left the PRD unedited as a judgement call, but a false claim about Ghost in
+  a live document is standing rule 1's, so the sentence is corrected with the citation [prd.md FR-Q6]
+- [x] [Review][Defer] Nothing asserts S5's inverse — that every live `js` key is declared by the module that writes
+  it once that module exists [packages/library/src/modules.ts] — deferred, DW-146
+- [x] [Review][Defer] The recorder's cleanup skips the probe theme's DELETE when re-activating the previous theme
+  raises [tools/probe/record-shim.py `finally`] — deferred, pre-existing since Story 4.7, DW-147
+- [x] [Review][Defer] The copy check compares retired-or-not only: appendix-h1 §3 has no superseded column, so the
+  first `supersededBy` cannot be held equal between the copies [tools/check-catalog.mjs] — deferred, DW-148
+
 ## Spec Change Log
 
 ## Design Notes
@@ -450,11 +497,73 @@ How the check compares the two copies:
   `dpl_HipkFwyXaChydeb89iuqobRMGYvu` for `c3dc77b3abdafd2cf8dea1949f6f7e42dd65852d`: `READY`.
 - Resend and Dodo are not touched.
 
+**Results (Review, 2026-09-14):**
+- Five layers ran; the Real-infra verifier re-executed every Verification claim with a negative control each:
+  - **T1 and T3** — read-only `GET /ghost/api/admin/themes/` with `GHOST6_STAFF_ACCESS_TOKEN` / `GHOST5_STAFF_ACCESS_TOKEN`
+    (the Admin API key is refused by Ghost itself for this read: T1 403, T3 501): both `HTTP 200`, `casper` active,
+    `inflozo-probe-shim` absent, the older probe themes untouched. Control: the same token id with a zeroed secret →
+    `401 Invalid token: invalid signature` on both. All twelve fixtures carry `captured 2026-09-14`, the recorder's
+    command, the Ghost version and every `{{t}}` row the spec lists, identical across majors; the contract test passes
+    on both. The recorder was not re-run — the read-only evidence settles that the recording is real and the servers
+    were restored.
+  - **Supabase production**, `SUPABASE_DB_POOLER_URL`, `BEGIN READ ONLY … ROLLBACK` through `postgres:17-alpine`'s
+    `psql` (the RLS gate's image; no local psql): `credit_namespace_locked` on `translation_overrides`,
+    `CHECK ((catalog_key !~~ 'credit.%'::text))`, one row; the control name returned none. The diff adds no migration
+    (R-99: nothing to apply).
+  - **GitHub Actions** (`GITHUB_TOKEN`): run 34864220303's `check` log shows the `--frozen-lockfile` install then
+    `check-catalog: PASS`. Control: `gh run view 1` → 404.
+  - **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): production `READY` for `df25b66b`, `c3dc77b3` and
+    `6a9feefe`. Control: a bogus bearer → 403.
+  - **Local**: `node tools/check-catalog.mjs` PASS with the totals; the hand control (a key deleted from the working
+    `catalog.json`) failed naming the key and both files, then restored byte-for-byte.
+- After the patches, on Node 24.18.1: the library, section-runtime and ghost-shim suites are green (each prints its
+  own count), `check-catalog: PASS`, `test-vocabulary.mjs` passes with the reference design now inside the tree-half
+  check, and the gscan harness result is recorded in the Review commit's line.
+
 **Judgement calls the spec left open, for the review:**
 - `data-empty` on a `data-t` element, a second text directive beside `data-t`, and an authored `data-i18n-*` are
   refused under the existing `bad-value` code.
-- `stampControls` keeps `data-i18n-*`, and a control named `i18n-…` is refused.
-- S6's `catalog` also applies to `data-prop-attr`.
+- `stampControls` kept `data-i18n-*` — removed at the review as unreachable (an authored one is refused earlier, and the stamp runs later); a control named `i18n-…` is still refused.
+- S6's `catalog` also applies to `data-prop-attr` — into the four text attributes only, since the review.
 - The controls sample's "Next issue" became the prop `nextIssueLabel`, so `/controls` shows one more row.
-- FR-Q6 says Ghost falls back to `en` per key, but the source falls back only per file. `prd.md` was not edited: the
-  finding is in MEASUREMENTS §44(f) and VERIFY-AT-BUILD row 32, owned by 7.12.
+- FR-Q6 said Ghost falls back to `en` per key, but the source falls back only per file. The Dev left `prd.md` alone;
+  the review corrected the sentence with the §44 citation (standing rule 1), beside MEASUREMENTS §44(f) and
+  VERIFY-AT-BUILD row 32, which 7.12 owns.
+
+## Questions for the owner
+
+**Q1. When a customer clears a translated phrase and leaves it blank, what should the site show?**
+
+Later, the Translations screen (Story 7.12) will list every fixed phrase — "Older posts", "Subscribe", "Search" — and
+let a customer reword each one. This story builds the door every such rewording passes on its way into a theme.
+Today that door lets a blank through: the editor would show nothing where the phrase goes, and the live site would
+print the phrase's internal name, because that is what Ghost does with an empty entry (recorded on both test servers).
+
+Example: a customer opens Translations, selects "Older posts", deletes the text and saves. On the canvas the "Older
+posts" button has no label. On the live site the button reads `pagination.older`.
+
+1. **A blank means "use the standard wording" (RECOMMENDED).** The door treats a blank as if nothing had been typed,
+   so the button reads "Older posts" again on both the canvas and the live site; the Translations screen never stores
+   a blank. Nothing is refused and nothing is lost.
+2. **A blank is refused.** The build stops with a message naming the phrase, and the customer has to type something
+   before the site can be published.
+3. **A blank ships blank.** The canvas shows no label and the live site prints the internal name, as today.
+
+**Ruled:** _(awaiting the owner)_
+
+**Q2. A button label that comes from the phrase list can never be made empty. Is that right?**
+
+Some editable texts — the "Subscribe" on a sign-up button — start from the phrase list rather than from words the
+designer typed. This story decided (Design Notes) that "untouched" means "empty": until the customer types, the button
+shows the phrase, and clearing it shows the phrase again. The consequence is that such a label cannot be blank, so a
+design that wants an icon-only button must use an ordinary text field for its label instead.
+
+Example: a customer clears the "Subscribe" text on a sign-up button to leave only the arrow icon. The button reads
+"Subscribe" again.
+
+1. **Yes, keep it (RECOMMENDED).** Clearing means "back to the standard wording", and a design that wants an
+   icon-only button is drawn with an ordinary text field. No button is ever left without a readable name.
+2. **No — let a customer blank it.** The button then has no visible or spoken name unless the design carries a
+   separate one for screen readers, which the accessibility scan (Story 4.11) would refuse.
+
+**Ruled:** _(awaiting the owner)_

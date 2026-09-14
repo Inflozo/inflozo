@@ -129,9 +129,10 @@ check('no archetype prints a chrome literal (V1\'s tree half) and no fixture car
     const literals = checkChromeLiterals(jsdoc(), source({ kind, i: 1 }))
     if (literals.length) throw new Error(`${kind}: ${literals.join(' · ')}`)
   }
-  for (const file of ['packages/library/fixtures/reference-design/index.html', 'packages/library/fixtures/controls/1/index.html']) {
-    if (/data-t(-attr)?="[^"]*\b(reference|ref|a1|a17|a22)\./.test(readFileSync(join(REPO, file), 'utf8'))) throw new Error(`${file} carries a key outside the catalog`)
-  }
+  // the reference design too (review 4.9): its `data-index` sample digit is replaced text, not a literal. An invented
+  // key is V2's, which validateMarkup already ran over both fixtures above — no hand-list of old prefixes here.
+  const ref = checkChromeLiterals(jsdoc(), readFileSync(join(REPO, 'packages/library/fixtures/reference-design/index.html'), 'utf8'))
+  if (ref.length) throw new Error(`reference-design: ${ref.join(' · ')}`)
   // the control: the check sees a literal when one is there
   if (checkChromeLiterals(jsdoc(), '<nav aria-label="Main"><a href="#">Older</a></nav>').length !== 2) throw new Error('the chrome-literal check is vacuous')
 })

@@ -168,6 +168,11 @@ Build the machine every design in the library is authored against — **before a
     `catalog` (S6). A registry row's `strings` is stamped as `data-i18n-*` on every mount by both emitters, as user
     text in the theme (S5; only `countdown` today). The validator refuses `catalog-key`, `catalog-params`,
     `catalog-prop` and `chrome-literal`; a render naming its target refuses every other literal (`checkChromeLiterals`).
+    The review (2026-09-14) added: `data-index` is replaced text (the reference design now passes the tree half); a
+    `{{plural}}` key — a bare `%` in the default, derived, never marked — is no `data-t` key; a catalog-linked prop
+    lands only in the four text attributes; a migration may not carry an override into `credit.*`; the PRD's FR-Q6
+    per-key fallback sentence is corrected from §44. Two questions for the owner: what a blank override means, and
+    that a catalog-linked label can never be blank.
 - **The render matrix covers every design × 3 reference Style Packs × light/dark × 3 viewports** — the count derived from the inventory and moving with it, never restated. A design fails above **1% differing pixels at a per-pixel tolerance of 0.1**. The runner is part of the baseline: one pinned Playwright/Chromium in one fixed container image, fonts installed in the image, animations and caret disabled. **Reduced motion is a matrix case with the query forced; 200% browser zoom is a viewport case.** A mass rebaseline requires the owner's approval on a sampled visual review (one design per category, both modes), lands as its own commit touching baselines only, and names the change that caused it. Cadence: full matrix nightly and before each release; per-commit runs cover only what a commit touched.
 - **The accessibility scan rides the same renders — there is no second matrix.** axe-core, WCAG 2.1 AA, **zero violations**, scoped to include the fixture renders and the synthesized templates, not only placed designs. Every image carries an alt, and an image that is the **sole content of a link** must carry a *non-empty* one. **The scan stops at the edge of the post body** — Ghost emits its own markup there and no theme can fix a customer's content.
 

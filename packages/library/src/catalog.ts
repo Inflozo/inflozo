@@ -81,6 +81,10 @@ export function englishStrings(catalog: Catalog = CATALOG): Record<string, strin
 
 const hasMark = (e: CatalogEntry, m: CatalogMark) => e.marks.includes(m)
 
+/** A default carrying a `%` outside its placeholders is written for Ghost's `{{plural}}`, which replaces the first
+ *  `%` with the count (appendix-h1 §3.10). Derived from the default, like the placeholder set — never a mark. */
+export const isPluralString = (en: string): boolean => en.replace(PLACEHOLDER_RE, '').includes('%')
+
 /** The catalog's format rules (S1, S3, S7, and the removal rule), as a list of sentences — empty when the
  *  catalog holds. `tools/check-catalog.mjs` runs it over the machine copy with a control per rule. */
 export function catalogFailures(catalog: Catalog): string[] {
@@ -131,6 +135,7 @@ export function catalogFailures(catalog: Catalog): string[] {
     if (own(catalog.keys, m.from)?.supersededBy !== m.to) out.push(`${at} — ${m.from} is not marked supersededBy ${m.to}`)
     if (typeof m.reason !== 'string' || m.reason.trim() === '') out.push(`${at} — carries no reason`)
     if (typeof m.carryOverride !== 'boolean') out.push(`${at} — carryOverride is true or false`)
+    if (m.carryOverride === true && m.to.startsWith('credit.')) out.push(`${at} — carryOverride would write an override onto a locked credit.* key (S7)`)
   }
   return out
 }
@@ -151,7 +156,9 @@ export function tKeyRefusal(key: string, catalog: Catalog = CATALOG): CatalogRef
           ? 'is a js key: JavaScript writes it, so it reaches a page only as data-i18n-* on its module\'s mount, never through {{t}} (S5)'
           : hasMark(e, 'canvas')
             ? 'is canvas-only: it renders in the editor and never reaches a theme (appendix-h1 §3.9)'
-            : null
+            : isPluralString(e.en)
+              ? 'is written for {{plural}}: its % is the count that helper substitutes (appendix-h1 §3.10), so it reaches a page only as a (t …) sub-expression inside {{plural}} — through {{t}} alone the % would print'
+              : null
   return why === null ? null : { code: 'catalog-key', message: `"${key}" ${why}.` }
 }
 

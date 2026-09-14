@@ -1048,6 +1048,12 @@ function applyProps(
       const path = rawPath ?? ''
       const def = own(schema, path)
       let raw = propGet(content, path, items)
+      const linked = catalogProp(path, def)
+      if (linked !== null && !TEXT_ATTRS.includes(attr)) {
+        // review 4.9: a `{{t}}` value is a translator's text and an override is a customer's — neither passes
+        // `safeUrl`, so it may land only where `data-t-attr` may (AD-36 1)
+        throw new Error(`data-prop-attr="${attr}:${path}" — "${path}" takes its text from the catalog (S6), and a catalog string is written only to ${TEXT_ATTRS.join(', ')}, never to a URL attribute.`)
+      }
       if (attr === 'href') {
         // Story 4.5 — a destination is a LINK RECORD (a bare string is `{ href }`), and it becomes
         // attributes in exactly one place, `linkAttributes`, which the `a` mark calls too. A record
@@ -1066,7 +1072,6 @@ function applyProps(
       // AD-27(b): an image stores an asset ID, resolved only through `assets`; a URL in its place is unset
       if (def?.type === 'image') raw = typeof raw === 'string' && ASSET_ID_RE.test(raw) ? own(input.assets, raw) : undefined
       if (def?.type === 'date' && !isIsoDate(raw)) raw = undefined
-      const linked = catalogProp(path, def)
       if (linked !== null && propEmpty(raw)) {
         el.setAttribute(attr, users !== null ? tokens.put(`{{t "${linked}"}}`) : (input.strings?.[linked] ?? ''))
         continue
@@ -1110,7 +1115,7 @@ export function stampControls(
   const schema = input.controlSchema
   if (schema === undefined) return
   for (const { name } of [...section.attributes]) {
-    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal' && !name.startsWith('data-i18n-')) section.removeAttribute(name)
+    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal') section.removeAttribute(name)
   }
   for (const c of schema) {
     if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal' || c.name.startsWith('i18n-')) {

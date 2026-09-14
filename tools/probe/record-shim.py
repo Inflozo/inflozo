@@ -339,7 +339,8 @@ def record(g, label):
                                        'TR row counts (standing rule 2)')
                 print(f'    [control] TR|plain_control rendered the locale file\'s value')
             values = redact(values)
-            blob = json.dumps(values)
+            # review 4.9: the assertion runs over everything that is filed — raw and verbatim blocks included
+            blob = json.dumps([values, raw, verbatim])
             for leaked in LEAKED:
                 assert leaked not in blob, 'redaction failed — a real Content API key reached a fixture'
             out[tname] = {

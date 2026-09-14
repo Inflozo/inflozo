@@ -40,6 +40,7 @@ test('every format rule fires, naming the key', () => {
   fails(cat({ 'nav.menu': { en: 'x', marks: [], supersededBy: 'nav.nope' } }), /not a live key/)
   fails(cat({ 'nav.menu': { en: 'x', marks: [], supersededBy: 'nav.open' }, 'nav.open': { en: 'y', marks: [] } }), /0 migrations entries/)
   fails(cat({ 'nav.menu': { en: 'x', marks: [] }, 'nav.open': { en: 'y', marks: [] } }, [{ from: 'nav.menu', to: 'nav.open', reason: 'r', carryOverride: true }]), /not marked supersededBy/)
+  fails(cat({ 'nav.menu': { en: 'x', marks: [], supersededBy: 'credit.built_with' }, 'credit.built_with': { en: 'y', marks: ['locked'] } }, [{ from: 'nav.menu', to: 'credit.built_with', reason: 'r', carryOverride: true }]), /onto a locked credit/)
   // plain text is fine, including an apostrophe that quotes nothing and a quoted word
   assert.deepEqual(catalogFailures(cat({ 'nav.menu': { en: "It's 'quoted' {count} — {author}'s", marks: [] } })), [])
 })
@@ -60,7 +61,9 @@ test('V2 and V4 — each refusal with its own reason', () => {
   assert.match(tKeyRefusal('comments.placeholder')?.message ?? '', /canvas-only/)
   const superseded = cat({ 'nav.menu': { en: 'x', marks: [], supersededBy: 'nav.open' }, 'nav.open': { en: 'y', marks: [] } })
   assert.match(tKeyRefusal('nav.menu', superseded)?.message ?? '', /superseded by "nav\.open"/)
-  for (const k of ['a1.menu_open', 'search.overlay_empty', 'countdown.days', 'comments.placeholder']) assert.equal(tKeyRefusal(k)?.code, 'catalog-key')
+  assert.match(tKeyRefusal('archive.posts_many')?.message ?? '', /written for \{\{plural\}\}/, 'a % default is derived as a plural string, never marked')
+  assert.equal(tKeyRefusal('member.read_so_far')?.message.includes('js key'), true, 'the js reason comes first for "About {percent}% read"')
+  for (const k of ['a1.menu_open', 'search.overlay_empty', 'countdown.days', 'comments.placeholder', 'archive.posts_many']) assert.equal(tKeyRefusal(k)?.code, 'catalog-key')
   assert.equal(tParamsRefusal('pagination.page_of', ['page', 'pages']), null)
   const r = tParamsRefusal('pagination.page_of', ['page'])
   assert.equal(r?.code, 'catalog-params')
