@@ -3316,3 +3316,22 @@ location: packages/section-runtime/src/core.ts `ghostPaths` · packages/library/
 reason: the vocabulary's directive table does not say which directives carry a Ghost path, so the walk cannot
   derive its list from it; adding a `ghostPath` flag to `Directive` and asserting `RENDERED_DIRECTIVES ∩ flagged
   ⊆ walked` is the fix, and it belongs with the first directive that would otherwise be missed.
+
+### DW-132: the first commit of a new day fails CI's documentation gate, so its push publishes nothing
+
+plain: The planning pages carry "generated on <date>". That date is taken from the last commit, so when the
+  day changes, the pages the computer checked before the commit and the pages CI rebuilds after it carry
+  different dates, CI calls them stale, and that push never reaches the live site. The next push of the day
+  passes. Story 4.6's Dev push was one of these: its code went live only with the Review push.
+status: open
+severity: high
+origin: Story 4.6 review (2026-09-14) — executed: run 34823025267 (the Dev push, 08:29 UTC) failed `check` with `STALE — regenerated INDEX.md and INDEX.html`, `STALE: BUILD-BOARD.html`, `STALE: CATEGORY-PROMPTS.html`; `deploy` skipped. The Review commit's own diff of those files is `updated: 2026-09-13 → 2026-09-14` and nothing else; run 34825820806 (the Review push) passed and deployed.
+owner: unowned — needs one. A tooling story, or the next story whose first push of a day fails.
+location: tools/doc-audit.py `generate()` (`git log -1 --format=%cs`) · tools/build-board.py:329 · tools/category-prompts.py:382 · tools/story-board.py:1624 · tools/hooks/pre-commit (the one retry)
+reason: each generator stamps `git log -1 --format=%cs`, the date of HEAD. At pre-commit HEAD is the previous
+  commit, so the hook regenerates and stages the artefacts with yesterday's date; once the commit lands HEAD
+  is today, CI regenerates with today's date, and the byte comparison fails. A stamp derived from the commit
+  being made cannot survive it. The fix is one rule in the four generators: "updated" means the last CONTENT
+  change — compare the regenerated page with the stamp stripped, keep the on-disk date when the content is
+  unchanged, and stamp the wall-clock date only when it changed. Until then: expect the first push of a day to
+  skip deploy, and push once more (any commit) to publish it.

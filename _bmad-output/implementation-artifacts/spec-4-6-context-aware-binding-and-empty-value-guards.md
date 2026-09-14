@@ -302,7 +302,7 @@ three holes and add `data-initials` for the typed-list avatar.
 
 Five layers ran on 2026-09-14 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier). The Real-infra verifier re-ran the recorder against T1 and T3 and found nothing (results under
-Verification); every patch below is applied; the two deferrals are DW-130 and DW-131.
+Verification); every patch below is applied; the deferrals are DW-130 to DW-132.
 
 - [x] [Review][Patch] `../@site.x` was declared legal and the theme would emit it — Handlebars 4.7.9 rejects the form and Ghost answers 500; refused with its own sentence [packages/library/src/contexts.ts]
 - [x] [Review][Patch] A `{{#get}}` opens a frame of its own around `{{#foreach}}`, so `../title` from a query row lands in the get's result, not the section — the chain now carries that frame [packages/library/src/contexts.ts]
@@ -325,6 +325,7 @@ Verification); every patch below is applied; the two deferrals are DW-130 and DW
 - [x] [Review][Patch] `@page` offered on `custom-{name}.hbs` with no word on the post-backed case, and `statusCode`/`message` typed `helper` with no word on why — both rows carry a `note` [packages/library/contexts/matrix.json]
 - [x] [Review][Defer] No gate runs `checkBindings` over a shipped design's own `compileTarget` list [packages/library/src/validate.ts] — deferred (the first real designs are Story 4.10's; DW-130)
 - [x] [Review][Defer] `ghostPaths` enumerates the walked directives by hand [packages/section-runtime/src/core.ts] — deferred (the vocabulary carries no Ghost-path flag to derive from; DW-131)
+- [x] [Review][Defer] The Dev push's CI failed its documentation gate and deployed nothing: every generator stamps HEAD's commit date, so the first commit of a new day is stale in CI [tools/doc-audit.py · tools/build-board.py · tools/category-prompts.py] — deferred, pre-existing (DW-132; the Review push deployed)
 
 Dismissed as noise: the reference design "fails FR-H7 on its targets" (a lexical fixture carrying directives no render accepts, so it renders on no target at all); the epic context's Story 4.5 sub-bullet (landed by 4.5's Fix commits, not this story); the value-kind set in three files (a partition of kinds, not a field list); `bindable` refusing on `version` (its docblock already says the runtime passes none); the probe theme left uploaded and inactive (Story 4.3's Q2 pattern — the recorder restores, it does not delete); the bisection's reproducibility (the recorder re-reads each gate and the release before it, which is the proof); the deployed `/controls` harness naming no target (this story has no screen; R-82 was met on T1 and T3); `people[].name` outside `data-items` shipping the placeholder (`data-prop` behaves the same, by design).
 
@@ -358,7 +359,8 @@ Dismissed as noise: the reference design "fails FR-H7 on its targets" (a lexical
   says `refused` instead of a partial answer; `data-pagination` joined the scope walk; `checkBindings` carries
   R-7's two target refusals; `data-initials` cannot share an element with another text directive; a pre-release
   version reads by its `x.y.z`; and the recorder gained the `page.hbs` root-title control, a first-release guard
-  and a `--help` that touches no server. Two deferrals, DW-130 and DW-131. No question for the owner.
+  and a `--help` that touches no server. Three deferrals, DW-130 to DW-132 — the last is CI's doc gate failing
+  the first commit of each day, found because the Dev push had not deployed. No question for the owner.
 
 - **Dev, 2026-09-14 — what the recording changed, and three routine calls.** (1) The recording overruled the
   appendix three times and the matrix follows it: `meta_title`/`meta_description` inside a post, tag or author
@@ -476,6 +478,9 @@ Story 4.2 moved AD-36's colour parser into the library. The map row is corrected
   both majors with `{{#post}}` opened once in each template.
 - **Supabase, Vercel, Resend, Dodo** — no migration in the diff (`git diff --stat 4d28a05c HEAD -- supabase/` is
   empty), so R-99 does not apply; none touched.
+- **GitHub Actions** — the Dev push's run (34823025267) FAILED `check` on stale generated date stamps and skipped
+  `deploy`, so the Dev tree never reached production, contrary to the Dev results below; the Review push's run
+  (34825820806) passed `check`, `rls` and `deploy`. The cause is DW-132, a tooling defect older than this story.
 
 **Results (Dev, 2026-09-14) — the real services this story hit (R-82):**
 - **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — `python3 tools/probe/record-contexts.py`,
