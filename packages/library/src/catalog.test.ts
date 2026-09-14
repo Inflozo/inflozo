@@ -91,6 +91,7 @@ test("resolveStrings is the one door: S7 and an unknown key throw, and a migrati
   assert.throws(() => resolveStrings({ 'credit.built_with': 'x' }), /S7/)
   assert.throws(() => resolveStrings({ 'nope.key': 'x' }), /"nope\.key"/)
   assert.throws(() => resolveStrings({ 'nav.menu': 3 }), /not a string/)
+  for (const blank of ['', '  ', '\n']) assert.throws(() => resolveStrings({ 'nav.menu': blank }), /blank override/, JSON.stringify(blank))
   const synthetic = cat(
     {
       'pagination.end_of_feed': { en: "You're all caught up", marks: ['js'], supersededBy: 'pagination.feed_complete' },

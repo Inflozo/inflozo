@@ -298,11 +298,13 @@ Five layers ran on 2026-09-14 — Blind Hunter, Edge Case Hunter, Verification G
 Real-infra verifier — and the real infrastructure held on every claim (see Verification). 2 decisions, 12 patches,
 3 deferred, 26 dismissed as noise or already handled.
 
-- [ ] [Review][Decision] Q1 — what a blank translation override means: `resolveStrings` passes `""` through today, so
-  the canvas prints nothing, the locale file carries `""`, and Ghost prints the raw key on the live site (recorded:
-  an empty value prints the key) [packages/library/src/catalog.ts `resolveStrings`]
-- [ ] [Review][Decision] Q2 — a catalog-linked prop can never be blanked: "untouched" is an empty value, so a customer
-  who clears the label gets the catalog string back [packages/section-runtime/src/core.ts `applyProps`]
+- [x] [Review][Decision] Q1 — what a blank translation override means: `resolveStrings` passed `""` through, so
+  the canvas printed nothing, the locale file carried `""`, and Ghost printed the raw key on the live site (recorded:
+  an empty value prints the key). **Ruled option 2 (owner, 2026-09-14, R-106): the door refuses a blank, naming the
+  phrase** — `resolveStrings` throws on a blank or whitespace override, tested [packages/library/src/catalog.ts]
+- [x] [Review][Decision] Q2 — a catalog-linked prop can never be blanked: "untouched" is an empty value, so a customer
+  who clears the label gets the catalog string back. **Ruled option 1 (owner, 2026-09-14, R-107): kept; no change**
+  [packages/section-runtime/src/core.ts `applyProps`]
 - [x] [Review][Patch] `data-index` replaces the element's text but was not in `TEXT_DIRECTIVES`, so the reference design
   failed V1's tree half on its `1` sample — and nothing ran the check over it; the hand-list regex of old prefixes is
   deleted (V2 already runs over both fixtures) [packages/library/src/validate.ts:79 · tools/stress/test-vocabulary.mjs]
@@ -549,7 +551,8 @@ posts" button has no label. On the live site the button reads `pagination.older`
    before the site can be published.
 3. **A blank ships blank.** The canvas shows no label and the live site prints the internal name, as today.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-14).** Recorded as **R-106** in `reconcile-designs-decisions.md` §A26; the
+Translations surface (Story 7.12) inherits it.
 
 **Q2. A button label that comes from the phrase list can never be made empty. Is that right?**
 
@@ -566,4 +569,4 @@ Example: a customer clears the "Subscribe" text on a sign-up button to leave onl
 2. **No — let a customer blank it.** The button then has no visible or spoken name unless the design carries a
    separate one for screen readers, which the accessibility scan (Story 4.11) would refuse.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-14).** Recorded as **R-107** in `reconcile-designs-decisions.md` §A26.

@@ -222,6 +222,8 @@ export function resolveStrings(overrides: Readonly<Record<string, unknown>>, cat
       throw new Error(`"${key}" carries an override, and credit.* is locked (S7): not overridable on any plan, so an override can only come from a tampered payload. The build fails rather than dropping it.`)
     }
     if (typeof value !== 'string') throw new Error(`"${key}"'s override is not a string`)
+    // R-106 (owner, 2026-09-14): a blank is refused, never shipped — Ghost prints the key for an empty value
+    if (value.trim() === '') throw new Error(`"${key}" carries a blank override (${JSON.stringify(value)}). Ghost prints the key itself for an empty value, so the build stops until the phrase is given text (R-106).`)
     given[key] = value
   }
   for (const m of catalog.migrations) {

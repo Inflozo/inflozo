@@ -1062,7 +1062,8 @@ carries `strings` today, because appendix-h1 §3.3a names it; each other module'
 story that writes the module.
 
 **Overrides.** `resolveStrings(overrides)` in `packages/library/src/catalog.ts` is the one door an override
-passes: it returns every key's string, carries an override forward along the catalog's `migrations`, and
+passes: it returns every key's string, carries an override forward along the catalog's `migrations`, refuses a
+blank one (R-106: Ghost prints the key for an empty value, so the build stops naming the phrase), and
 **throws** — never drops — on a `credit.*` override (S7) or an unknown key. A render re-runs what it is
 handed through it, so a tampered map fails at the canvas as it will at the compiler. Validating an
 override's own text (V9, V10) and writing `locales/` are Epic 7's.

@@ -2015,6 +2015,31 @@ ruled 2026-09-14: *"Keep it, as the one named exception on the list."*
   MEASUREMENTS §43). **Deliberately not touched:** the export (R-74), and `reconcile-designs.md`, a
   `record`.
 
+## A26 · Step 7 — Story 4.9's Review, two rulings on blank phrases, 2026-09-14
+
+Taken at Story 4.9's code review (the string catalog and the `{{t}}` contract). Both questions went to the owner in
+R-83's shape under `## Questions for the owner` in
+`_bmad-output/implementation-artifacts/spec-4-9-the-string-catalog-keys-english-defaults-and-the-t-contract.md`,
+and he ruled the same day.
+
+**R-106 — A blank translation override is refused, never shipped.** Question 1, option 2, ruled 2026-09-14: *"A blank
+is refused. The build stops with a message naming the phrase, and the customer has to type something before the site
+can be published."*
+
+- **Why it was a question.** `resolveStrings`, the one door an override passes (S7), let `""` through: the canvas
+  printed nothing, the locale file carried `""`, and Ghost prints the key itself for an empty value (MEASUREMENTS
+  §44, recorded on T1 and T3).
+- **What it binds.** `resolveStrings` throws on a blank or whitespace-only override, naming the key. The Translations
+  surface (Story 7.12) must therefore refuse a blank at save, or offer "reset to the standard wording" as its own
+  action, never store `""`. Options 1 (blank means default) and 3 (blank ships blank) were declined.
+- Targets: ✅ Story 4.9's spec · ✅ `packages/library/src/catalog.ts` and its test · ✅ `docs/section-authoring.md`
+  · `epic-4-context.md` ✅ · **Story 7.12's spec, when created** (open).
+
+**R-107 — A catalog-linked prop is never blank.** Question 2, option 1, ruled 2026-09-14: *"Yes, keep it."* An
+S6 prop's "untouched" state is an empty value, so clearing the text shows the catalog string again on both emitters;
+a design that wants an icon-only control uses an ordinary text prop, and no such control is ever left without a
+name. No code changed. Targets: ✅ Story 4.9's spec · ✅ `epic-4-context.md`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
