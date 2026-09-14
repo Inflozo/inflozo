@@ -187,3 +187,50 @@ test('a Ghost person with no photograph: the image hides and the name stays for 
   assert.ok(/\{\{#if profile_image\}\}<img[^>]*src="\{\{img_url profile_image size="xs"\}\}"[^>]*>\{\{\/if\}\}/.test(theme), theme)
   assert.ok(theme.includes('{{#if name}}{{name}}{{else}}Writer{{/if}}'), theme)
 })
+
+// ── Review (2026-09-14) ───────────────────────────────────────────────────────
+
+test('every directive that carries a Ghost path is walked: a token template, srcset, style, a helper and pagination each refuse by name', () => {
+  const cases: [string, string, RegExp][] = [
+    ['<a data-bind-attr="data-portal:signup/{titel}">u</a>', 'post.hbs', /"titel"/],
+    ['<img data-bind-srcset="feature_imag|img_url" alt="">', 'post.hbs', /"feature_imag"/],
+    ['<li data-bind-style="--x:accent_colr">t</li>', 'tag.hbs', /"accent_colr"/],
+    ['<div data-helper="content"></div>', 'index.hbs', /"content"/],
+    ['<ul><li data-repeat="posts"><a data-pagination="next" href="#">o</a></li></ul>', 'index.hbs', /"pagination\.next"/],
+  ]
+  for (const [src, target, re] of cases) {
+    throwsBoth(src, { target }, re)
+    assert.ok(checkBindings(doc(), src, { target }).some((r) => re.test(r)), `${src} on ${target}`)
+  }
+  // and at the template's top, pagination still renders
+  assert.ok(renderTheme(doc(), '<a data-pagination="next" href="#">o</a>', { target: 'index.hbs' }).template.includes('{{page_url pagination.next}}'))
+})
+
+test('includeZero=true reaches an attribute guard, a style guard and every binding inside a repeat, on both emitters', () => {
+  const src = '<section class="s"><span data-bind-style="--n:pagination.total">t</span><article data-repeat="posts"><p data-bind="reading_time">5 min</p><span data-bind-attr="title:reading_time">x</span><i data-bind-attr="title:reading_time" data-empty="hide">y</i></article></section>'
+  const { canvas, theme } = both(src, { target: 'index.hbs', ghost: { pagination: { total: 0 }, posts: [{ reading_time: 0 }] } })
+  assert.ok(theme.includes('{{#if pagination.total includeZero=true}}'), theme)
+  assert.ok(theme.includes('{{#if reading_time includeZero=true}}{{reading_time}}{{else}}5 min{{/if}}'), theme)
+  assert.ok(theme.includes('title="{{#if reading_time includeZero=true}}{{reading_time}}{{else}}{{/if}}"'), theme)
+  assert.ok(/\{\{#if reading_time includeZero=true\}\}[^]*?<i title="\{\{reading_time\}\}">y<\/i>[^]*?\{\{\/if\}\}/.test(theme), theme)
+  // `{{reading_time}}` is Ghost's HELPER wherever it is written, an attribute included — so the canvas prints its string there too
+  assert.ok(canvas.includes('>1 min read<') && canvas.includes('<span title="1 min read">x</span>') && canvas.includes('<i title="1 min read">y</i>'), canvas)
+})
+
+test("checkBindings carries R-7's target refusals, and a query repeat needs the design's dataBindings", () => {
+  const pager = '<a data-pagination="next" href="#">o</a>'
+  assert.ok(checkBindings(doc(), pager, { target: 'error.hbs' }).some((r) => /R-7/.test(r)))
+  assert.deepEqual(checkBindings(doc(), pager, { target: 'index.hbs' }), [])
+  const query = '<article data-repeat="latest"><h2 data-bind="title">t</h2></article>'
+  const dataBindings = { latest: { source: 'posts' as const, limit: 3 } }
+  assert.ok(checkBindings(doc(), query, { target: 'error.hbs', dataBindings }).some((r) => /\{\{#get\}\}/.test(r)))
+  assert.deepEqual(checkBindings(doc(), query, { target: 'index.hbs', dataBindings }), [])
+  assert.ok(checkBindings(doc(), query, { target: 'index.hbs' }).some((r) => /"latest"/.test(r)), 'without the declaration, latest is read as a context path')
+})
+
+test('data-initials shares no element with data-bind or data-prop, and a bare reading_time that is not a number is not the helper', () => {
+  const input: RenderInput = { content: { people: [{ name: 'Jane Doe' }] }, schema: PEOPLE }
+  throwsBoth('<ul><li data-items="people"><span data-initials="people[].name" data-prop="people[].name">x</span></li></ul>', input, /shares <span> with data-prop/)
+  throwsBoth('<span data-initials="name" data-bind="title">x</span>', input, /shares <span> with data-bind/)
+  assert.ok(renderCanvas(doc(), '<p data-bind="reading_time">5</p>', { ghost: { reading_time: 'abc' } }).includes('>abc<'))
+})

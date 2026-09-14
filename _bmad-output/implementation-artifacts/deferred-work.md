@@ -3287,3 +3287,32 @@ reason: the appendix's never-offer list does not name them, so the matrix offers
   refusal (flag, do not guess). A printed binding escapes the HTML, so nothing unsafe reaches a page; it is an
   offer nobody should see. Adding both to `neverOffer` is one line once the owner rules.
 
+## Deferred from: code review of spec-4-6-context-aware-binding-and-empty-value-guards (2026-09-14)
+
+### DW-130: no gate runs `checkBindings` over a shipped design's own `compileTarget` list
+
+plain: A design says which kinds of page it may be placed on. Nothing yet checks, before the design ships,
+  that every piece of Ghost information it shows exists on every one of those pages — the check only runs
+  when a page is actually being built.
+status: open
+severity: medium
+origin: Story 4.6 review (2026-09-14) — the Blind Hunter ran `checkBindings` over the reference design for its four declared targets and found refusals on each; that fixture is lexical (it carries directives no render accepts yet) so it is not the case, but a real design would be
+owner: Story 4.10 (the five pilots) — the first designs that render; then every category gate from Epic 9
+location: packages/section-runtime/src/core.ts `checkBindings` · packages/library/src/validate.ts `validateDesign` · packages/library/fixtures/reference-design/design.json `compileTarget`
+reason: `validateDesign` is lexical and lives below the runtime (the library cannot import `section-runtime`),
+  so the per-target proof is a test in `section-runtime` over the library's designs: for each design, for each
+  `compileTarget`, `checkBindings(doc, markup, { target, dataBindings })` is `[]`. One assertion, derived from the
+  design list, never a count.
+
+### DW-131: the scope walk's directive coverage is written by hand, not derived from the vocabulary
+
+plain: The list of markup attributes the new check reads is typed out in the code. When a new attribute that
+  carries Ghost information arrives, nothing forces the check to read it too.
+status: open
+severity: low
+origin: Story 4.6 review (2026-09-14) — `data-pagination` was missing from the walk and is now in it; the review test covers every attribute that carries a Ghost path today
+owner: the story that next adds a Ghost-path directive (`data-if`/`data-else`, `data-members`, `data-text` — FR-H's later stories), which must add it to `ghostPaths` and to the review test
+location: packages/section-runtime/src/core.ts `ghostPaths` · packages/library/src/vocabulary.ts `DIRECTIVES`
+reason: the vocabulary's directive table does not say which directives carry a Ghost path, so the walk cannot
+  derive its list from it; adding a `ghostPath` flag to `Directive` and asserting `RENDERED_DIRECTIVES ∩ flagged
+  ⊆ walked` is the fix, and it belongs with the first directive that would otherwise be missed.

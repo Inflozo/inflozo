@@ -65,9 +65,10 @@ const VALUE_KINDS: ReadonlySet<FieldKind> = new Set(['text', 'url', 'image', 'co
 const own = <T>(o: Readonly<Record<string, T>>, k: string): T | undefined =>
   Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined
 
-/** `x.y.z` as three numbers, or null. Never a string compare: `6.9.0` is below `6.36.0`. */
+/** `x.y.z` as three numbers, or null. Never a string compare: `6.9.0` is below `6.36.0`. A suffix
+ *  (`6.58.0-rc.0`, what a pre-release server reports) is read by its `x.y.z`; `6.58` or a word is null. */
 function parseVersion(v: string | undefined): [number, number, number] | null {
-  const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(v ?? '')
+  const m = /^(\d+)\.(\d+)\.(\d+)(?![\d.])/.exec(v ?? '')
   return m === null ? null : [Number(m[1]), Number(m[2]), Number(m[3])]
 }
 
@@ -147,16 +148,23 @@ function chainAt(place: BindingPlace): string[] | string {
     if (typeof entry !== 'string') {
       const row = own(CONTEXT_MATRIX.get, entry.get)
       if (row === undefined) return `{{#get "${entry.get}"}} is not a queryable source (${Object.keys(CONTEXT_MATRIX.get).join(', ')})`
-      chain.push(row)
+      // `{{#get}}` opens a frame of its own around `{{#foreach}}` (its result: the rows and their
+      // pagination), so `../` from a row lands there, not in the section — as Handlebars resolves it
+      chain.push(getFrame(entry.get), row)
       continue
     }
     const opened = resolve(entry, { target: place.target, scope: place.scope.slice(0, i) }, 'repeat')
     const bad = typeof opened === 'string' ? opened : kindRefusal(entry, opened.field, 'repeat')
-    if (bad !== null) return `the enclosing data-repeat="${entry}" is not legal here — ${bad}`
-    chain.push((opened as Resolved).field.of ?? '')
+    if (bad !== null) return `the enclosing data-repeat="${entry}" is not legal here — ${bad.replace(/\.$/, '')}`
+    const of = (opened as Resolved).field.of
+    if (of === undefined) return `the enclosing data-repeat="${entry}" iterates plain values, and nothing inside it is a field`
+    chain.push(of)
   }
   return chain
 }
+
+/** the name of the frame a `{{#get}}` opens — no matrix scope has it, so nothing resolves there */
+const getFrame = (source: string): string => `{{#get "${source}"}} result`
 
 function kindRefusal(path: string, field: MatrixField, use: BindingUse): string | null {
   if (use === 'helper') return field.kind === 'helper' ? null : `"${path}" is a ${field.kind}, not a helper — data-helper names a bare helper`
@@ -199,13 +207,15 @@ export function resolve(path: string, place: BindingPlace, use: BindingUse = 'va
   const ups = (/^(\.\.\/)*/.exec(path)?.[0].length ?? 0) / 3
   const rest = path.slice(ups * 3)
   const where = `${describeScope(place.scope)} of ${place.target}`
-  // `@` reads the root wherever it sits, exactly as Handlebars' data frame does — `../` changes nothing
+  // `@` reads the root wherever it sits, exactly as Handlebars' data frame does — and Handlebars 4.7.9
+  // rejects `../@site.title` outright as a parse error, which Ghost answers with a 500
   if (rest.startsWith('@')) {
+    if (ups > 0) return `"${path}" — a @ path reads the root wherever it sits; write "${rest}" without ../ (Handlebars refuses the form).`
     const u = resolveUniversal(rest, place)
     return typeof u === 'string' ? `${u}.` : u
   }
   const chain = chainAt(place)
-  if (typeof chain === 'string') return `"${path}" cannot be checked ${where}: ${chain}.`
+  if (typeof chain === 'string') return `"${path}" cannot be checked ${where}: ${chain.replace(/\.$/, '')}.`
   if (use === 'helper') {
     const universal = own(CONTEXT_MATRIX.universal, rest)
     if (universal?.kind === 'helper' && ups === 0) return { field: universal, name: 'universal' }
@@ -251,6 +261,9 @@ export type Offer = {
   readonly repeats: readonly string[]
   /** booleans, for a condition */
   readonly conditions: readonly string[]
+  /** set when the place itself cannot be built — an unknown target, an enclosing repeat that is not
+   *  legal — and then the three lists are empty rather than a partial answer */
+  readonly refused?: string
 }
 
 /** FR-H7: what may be OFFERED at a place. Fields of the current scope and, one object deep, their
@@ -262,21 +275,20 @@ export function offerBindings(place: BindingPlace): Offer {
   const conditions: string[] = []
   const sort = (f: MatrixField, path: string) => {
     if (VALUE_KINDS.has(f.kind)) values.push(path)
-    else if (f.kind === 'list') repeats.push(path)
+    else if (f.kind === 'list') { if (f.of !== undefined) repeats.push(path) } // a list of plain values opens no scope
     else if (f.kind === 'boolean') conditions.push(path)
   }
   const chain = chainAt(place)
-  if (typeof chain !== 'string') {
-    const walk = (scope: string, prefix: string, seen: readonly string[]) => {
-      for (const [name, f] of Object.entries(scopeFields(scope))) {
-        const path = `${prefix}${name}`
-        if (f.kind === 'object' && f.of !== undefined && !seen.includes(f.of)) walk(f.of, `${path}.`, [...seen, f.of])
-        else sort(f, path)
-      }
+  if (typeof chain === 'string') return { values, repeats, conditions, refused: chain.replace(/\.$/, '') }
+  const walk = (scope: string, prefix: string, seen: readonly string[]) => {
+    for (const [name, f] of Object.entries(scopeFields(scope))) {
+      const path = `${prefix}${name}`
+      if (f.kind === 'object' && f.of !== undefined && !seen.includes(f.of)) walk(f.of, `${path}.`, [...seen, f.of])
+      else sort(f, path)
     }
-    const here = chain[chain.length - 1] as string
-    walk(here, '', [here])
   }
+  const here = chain[chain.length - 1] as string
+  walk(here, '', [here])
   const key = CUSTOM_TARGET_RE.test(place.target) ? 'custom-{name}.hbs' : place.target
   for (const [path, f] of Object.entries(CONTEXT_MATRIX.universal)) {
     if (!path.startsWith('@')) continue

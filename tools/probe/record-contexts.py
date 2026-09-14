@@ -303,6 +303,8 @@ def controls_held(pages):
                 failures.append(f'{p["path"]}: {{{{#post}}}}{{{{title}}}}{{{{/post}}}} printed nothing')
         if t == 'page.hbs' and (not c.get('page.hbs_post_title') or c.get('page.hbs_post_title') != c.get('page.hbs_page_title')):
             failures.append(f'{p["path"]}: the page title through {{{{#post}}}} and {{{{#page}}}} is not the same non-empty text')
+        if t == 'page.hbs' and c.get('page.hbs_root_title', None) != '':
+            failures.append(f'{p["path"]}: the root {{{{title}}}} on page.hbs printed {c.get("page.hbs_root_title")!r}')
         if t == 'index.hbs' and c.get('index.hbs_root_title', None) != '':
             failures.append(f'{p["path"]}: the root {{{{title}}}} on index.hbs printed {c.get("index.hbs_root_title")!r}')
         for label, fr in p['frames'].items():
@@ -393,7 +395,10 @@ def read_source(m, server_versions):
     for since in gates:
         if since not in released:
             raise Void(f'the matrix gates a key at {since}, which npm never published')
-        before[since] = released[released.index(since) - 1]
+        at = released.index(since)
+        if at == 0:
+            raise Void(f'the matrix gates a key at {since}, the first release npm lists — there is no release before it to read')
+        before[since] = released[at - 1]
         versions.update({since, before[since]})
     out = {}
     for v in sorted(versions, key=parse_v):
@@ -448,6 +453,10 @@ def dump(path, body):
 
 
 if __name__ == '__main__':
+    if any(a in ('-h', '--help') for a in sys.argv[1:]) or any(a.startswith('-') and a != '--index' for a in sys.argv[1:]):
+        # a recorder that ran on `--help` would upload to T1 and T3; the docstring is the help
+        print(__doc__)
+        sys.exit(0)
     if '--index' in sys.argv:
         # regenerate the import module from what is on disk, touching no server — the control for a
         # missing recording is to move one aside and run this

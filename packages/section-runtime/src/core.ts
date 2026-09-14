@@ -534,6 +534,9 @@ function ghostPaths(el: RuntimeElement, input: RenderInput): { attr: string; pat
   if (repeat !== null && own(input.dataBindings, repeat) === undefined) out.push({ attr: 'data-repeat', path: repeat, use: 'repeat', self: false })
   const helper = el.getAttribute('data-helper')
   if (helper !== null) out.push({ attr: 'data-helper', path: helper, use: 'helper', self: true })
+  // `data-pagination` reads `pagination.*`, which lives at the template's top: inside a repeat it is a blank
+  const pg = el.getAttribute('data-pagination')
+  if (pg !== null) out.push({ attr: 'data-pagination', path: `pagination.${pg === 'numbers' ? 'page' : pg}`, use: 'value', self: true })
   return out
 }
 
@@ -562,7 +565,13 @@ export function checkBindings(doc: RuntimeDocument, src: string, input: RenderIn
   }
   const root = doc.createElement('div')
   root.innerHTML = src
-  return bindingRefusals(root, { ...input, target })
+  // R-7's two target refusals are part of "does the destination carry this design": a gate that
+  // answered [] and then threw at render would be no gate
+  const out: string[] = []
+  for (const check of [() => refuseUnpaginated(root, target), () => refuseGetOnForbiddenTarget(root, { ...input, target })]) {
+    try { check() } catch (e) { out.push((e as Error).message) }
+  }
+  return [...out, ...bindingRefusals(root, { ...input, target })]
 }
 
 /** true when the matrix types `field` a number here — a render naming no target cannot know */
@@ -824,7 +833,8 @@ export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']
   // majors over an API value of 0 — which the number guard lets through (Story 4.6).
   if (parsed.helper === undefined && parsed.path === 'reading_time') {
     const raw = get(ctx, 'reading_time')
-    return isEmpty(raw, includeZero) ? null : readingTime(raw)
+    // a number is the post's API value; anything else is some other scope's field of that name
+    if (typeof raw === 'number') return isEmpty(raw, includeZero) ? null : readingTime(raw)
   }
   // A BARE `excerpt` on the theme is Ghost's HELPER, not the field: it prefers `custom_excerpt`,
   // escapes, and truncates a computed excerpt to 50 words (read in source — see the shim). The
@@ -1097,6 +1107,9 @@ function renderTree(
   refuseGetOnForbiddenTarget(root, input)
   // R-2: two initials never come from Ghost — `{{split}}` is 6.5+ and a gscan error below it
   for (const el of all(root, '[data-initials]')) {
+    for (const other of ['data-bind', 'data-prop']) {
+      if (el.getAttribute(other) !== null) throw new Error(`data-initials="${el.getAttribute('data-initials') ?? ''}" shares <${el.tagName.toLowerCase()}> with ${other} — one element carries one text, and the second would silently replace the first.`)
+    }
     if (el.getAttribute('data-repeat') !== null || insideRepeat(el, root)) {
       throw new Error(`data-initials="${el.getAttribute('data-initials') ?? ''}" sits inside a data-repeat. Two initials are baked only from a name the user typed (R-2); a person from Ghost shows one letter through the design's stylesheet over the bound name.`)
     }

@@ -586,8 +586,10 @@ inside the post and print nothing. So one design is one byte-identical text on `
 - `bindable(path, { target, scope, version?, use? })` → `null`, or the refusal sentence. `scope` is the
   enclosing repeats, outer first; `use` is `value` (the default), `repeat`, `condition` or `helper`. A list
   as a value is refused (*a list is a repeat source*), and so is a boolean (*a boolean is a condition*).
-- `offerBindings({ target, scope, version? })` → `{ values, repeats, conditions }` — what Epic 5's binding
-  surface may present. A key newer than the site's `version` is left out (an absent or unparseable version
+- `offerBindings({ target, scope, version? })` → `{ values, repeats, conditions, refused? }` — what Epic 5's binding
+  surface may present; `refused` is set, and the three lists are empty, when the place itself cannot be built
+  (an unknown target, an enclosing repeat that is not legal there). A list of plain values (`@site.portal_plans`,
+  a tier's `benefits`) opens no scope and is offered as nothing. A key newer than the site's `version` is left out (an absent or unparseable version
   is the floor, 5.0.0), and nothing it returns is refused by `bindable` at the same place. **The version
   axis is the offer's:** a design already binding a newer key is not refused at render — on an older
   server the key is absent and the always-present guard hides it.
@@ -596,9 +598,14 @@ When `RenderInput.target` is named, both emitters walk the tree, give every Ghos
 `data-bind`, each `data-bind-attr` entry and each `{path}` of a token template, `data-bind-srcset`,
 `data-bind-style`, a context-path `data-repeat`, `data-helper` — and **throw one error naming every
 refused binding**. A render naming no target is not checked, as R-7's query refusal already accepts.
-`checkBindings(doc, src, { target })` returns the same list without rendering, and is the gate a move or
-duplicate onto another template must pass before it completes (appendix B.1 §1); it throws without a
-target. No story offers that action yet.
+`checkBindings(doc, src, { target, dataBindings })` returns the same list without rendering — R-7's two target
+refusals first (`data-pagination` off a paginated target, a `{{#get}}` on an error template), then every binding
+the matrix refuses — and is the gate a move or duplicate onto another template must pass before it completes
+(appendix B.1 §1); it throws without a target. **Pass the design's `dataBindings`:** a `data-repeat` not declared
+there is read as a context path, so a query repeat handed no declaration is refused as a field that does not
+exist. A `../` path climbs one scope per enclosing repeat, and a `{{#get}}` counts as a frame of its own around
+its rows; `../@site.x` is refused — a `@` path reads the root wherever it sits and needs no `../`. No story
+offers the move action yet.
 
 **Two recorded facts the matrix encodes.** Inside a post, tag or author, `{{meta_title}}` and
 `{{meta_description}}` are Ghost's *page* meta helpers — the site title on a feed — whatever the resource
@@ -769,7 +776,7 @@ each `{…}` run is a binding path, everything else is literal, and a stray brac
 than guessed at.
 
 ```html
-<a class="tier__cta" data-bind-attr="data-portal:signup/{tier}">Choose this plan</a>
+<a class="tier__cta" data-bind-attr="data-portal:signup/{id}">Choose this plan</a>  <!-- inside a tiers repeat: id is the tier's -->
 <p class="stat" data-text="Read in {reading_time} minutes">Read in 5 minutes</p>
 ```
 

@@ -380,6 +380,8 @@ Featured posts as a separate block, posts by another tag/author, tag or author l
 
 ### Inside `{{#post}}...{{/post}}`
 
+> **Recorded, Story 4.6 (2026-09-14):** `meta_title` and `meta_description` are listed below and in the tag and author sections because Ghost's docs list them, but inside a resource block `{{meta_title}}` prints Ghost's page-meta *helper* (the page title, never the resource's field) on both 5.130.6 and 6.58.0, so neither is a bindable field in `packages/library/contexts/matrix.json`; `page` printed empty inside the post block too. The recording outranks the lists (appendix B.1's order of authority).
+
 Documented attributes (`docs.ghost.org/themes/contexts/post`): `id`, `comment_id`, `title`, `slug`, `excerpt`, `custom_excerpt`, `content`, `url`, `feature_image`, `feature_image_alt`, `feature_image_caption`, `featured`, `page`, `meta_title`, `meta_description`, `published_at`, `updated_at`, `created_at`, `primary_author`, `primary_tag`, `tags`.
 
 Members-related, from `docs.ghost.org/themes/members`: `access` (boolean — does this viewer have access), `visibility` (`public` | `members` | `paid`).

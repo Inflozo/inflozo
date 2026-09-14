@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { BARE_HELPERS, COMPILE_TARGETS, GET_SOURCES } from './vocabulary.ts'
-import { CONTEXT_MATRIX as M, bindable, offerBindings, rootScope } from './contexts.ts'
+import { CONTEXT_MATRIX as M, bindable, offerBindings, rootScope, versionAtLeast } from './contexts.ts'
 import type { BindingPlace, MatrixField, ScopeEntry } from './contexts.ts'
 
 
@@ -193,7 +193,7 @@ test("the @site keys and their gates, read in Ghost's own source", async () => {
     const path = `@site.${key}`
     assert.ok(M.universal[path] !== undefined || M.neverOffer[path] !== undefined, `Ghost ${newest} gives @site.${key}, and the matrix neither offers nor refuses it`)
   }
-  // the seven social settings arrive in the defaults at the same release as their @site keys
+  // the social settings arrive in the defaults at the same release as their @site keys (every key gated at 6.36.0)
   for (const [path, f] of site.filter(([, x]) => x.since === '6.36.0')) {
     assert.ok(source.versions['6.36.0']?.defaults.keys.includes(path.slice('@site.'.length)), `${path}: no default setting at 6.36.0`)
   }
@@ -324,4 +324,52 @@ test('nothing offerBindings returns is refused by bindable at the same place —
     for (const source of Object.keys(M.get)) visit(target, [{ get: source }], 1)
   }
   assert.ok(places > Object.keys(M.targets).length, 'the walk visited nothing below the top level')
+})
+
+// ── Review (2026-09-14) ───────────────────────────────────────────────────────
+
+test('every universal row was probed on both majors: a value or list has a recorded entry, a helper printed, and a key gated above 5.x printed empty there (the control)', async () => {
+  for (const major of MAJORS) {
+    const rec = await load<Recording>(major)
+    const u = rec.pages[0]?.universal ?? {}
+    for (const [path, f] of Object.entries(M.universal)) {
+      if (f.unverified !== undefined || path === 'content_api_key') continue
+      if (f.targets !== undefined) continue // @page is asserted per template above
+      assert.ok(u[path] !== undefined, `${major}: ${path} was never probed`)
+      if (f.kind === 'helper') assert.ok((u[path]?.raw?.length ?? 0) > 0, `${major}: helper ${path} printed nothing`)
+      else if (f.kind !== 'list') assert.ok(typeof u[path]?.printed === 'string', `${major}: ${path} has no printed value`)
+      if (f.since !== undefined && !versionAtLeast(rec.ghost_version, f.since)) {
+        assert.equal(u[path]?.printed, '', `${major} runs ${rec.ghost_version}: ${path} (${f.since}) must print empty below its gate`)
+      }
+    }
+  }
+})
+
+test('a ../@ path is refused, a {{#get}} is a frame of its own, and a list of plain values opens no scope', () => {
+  assert.match(bindable('../@site.title', at('index.hbs', ['posts'])) ?? '', /without \.\.\//)
+  // {{#get}}{{#foreach}}: `../` from a row is the get's result, never the section
+  assert.equal(bindable('title', at('post.hbs', [{ get: 'posts' }])), null)
+  assert.match(bindable('../title', at('post.hbs', [{ get: 'posts' }])) ?? '', /\{\{#get "posts"\}\} result/)
+  assert.equal(bindable('../../title', at('post.hbs', [{ get: 'posts' }])), null, 'two up from a query row is the section, in post scope')
+  // a list with no `of`
+  assert.match(bindable('name', at('default.hbs', ['@site.portal_plans'])) ?? '', /plain values/)
+  assert.ok(!offerBindings(at('default.hbs')).repeats.includes('@site.portal_plans'))
+  assert.ok(!offerBindings(at('index.hbs', [{ get: 'tiers' }])).repeats.includes('benefits'))
+})
+
+test('offerBindings at a place that cannot be built says so and offers nothing', () => {
+  for (const place of [at('amp.hbs'), at('index.hbs', ['title']), at('index.hbs', [{ get: 'members' }])]) {
+    const o = offerBindings(place)
+    assert.ok(typeof o.refused === 'string' && o.refused !== '', JSON.stringify(place))
+    assert.deepEqual([o.values, o.repeats, o.conditions], [[], [], []], JSON.stringify(place))
+  }
+  assert.equal(offerBindings(at('index.hbs')).refused, undefined)
+})
+
+test('a pre-release version reads by its x.y.z; a refusal ends in one full stop', () => {
+  const threads = (v: string) => offerBindings(at('default.hbs', [], v)).values.includes('@site.threads')
+  assert.deepEqual([threads('6.36.0-rc.0'), threads('6.35.0-rc.0'), threads('6.58'), threads('v6.58.0')], [true, false, false, false])
+  for (const why of [bindable('name', at('index.hbs', ['tags'])), bindable('title', at('amp.hbs')), bindable('../@site.title', at('index.hbs'))]) {
+    assert.ok(why !== null && /[^.]\.$/.test(why), why ?? 'null')
+  }
 })

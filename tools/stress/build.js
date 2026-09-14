@@ -137,7 +137,8 @@ write('index.hbs', `{{!< default}}\n\n${includes('index')}\n`);
 // here (Story 4.6). Epic 7's compiler reads the same row.
 const { targets: CONTEXTS } = require('../../packages/library/contexts/matrix.json');
 const opened = (target, body) => {
-  const block = CONTEXTS[target] && CONTEXTS[target].block;
+  if (!CONTEXTS[target]) throw new Error(`matrix.json has no row for ${target} — the block it opens cannot be read`);
+  const block = CONTEXTS[target].block;
   return block ? `{{#${block}}}\n${body}\n{{/${block}}}` : body;
 };
 write('post.hbs', `{{!< default}}\n\n${opened('post.hbs', includes('post'))}\n`);

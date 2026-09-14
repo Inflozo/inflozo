@@ -2,10 +2,10 @@
 title: 'Story 4.6 — Context-aware binding and empty-value guards'
 type: 'feature'
 created: '2026-09-13'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '4d28a05c0035c7141865f63ab0f6ac1e19083d4c'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -298,6 +298,36 @@ three holes and add `data-initials` for the typed-list avatar.
   since the matrix reads a version and never the connection's settings; and the epic context's sub-bullets -- a
   finding is not closed until it reaches the document that governs it.
 
+### Review Findings
+
+Five layers ran on 2026-09-14 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). The Real-infra verifier re-ran the recorder against T1 and T3 and found nothing (results under
+Verification); every patch below is applied; the two deferrals are DW-130 and DW-131.
+
+- [x] [Review][Patch] `../@site.x` was declared legal and the theme would emit it — Handlebars 4.7.9 rejects the form and Ghost answers 500; refused with its own sentence [packages/library/src/contexts.ts]
+- [x] [Review][Patch] A `{{#get}}` opens a frame of its own around `{{#foreach}}`, so `../title` from a query row lands in the get's result, not the section — the chain now carries that frame [packages/library/src/contexts.ts]
+- [x] [Review][Patch] A list with no `of` (`@site.portal_plans`, a tier's `benefits`) opened a scope named `''` and was offered as a repeat nothing inside could bind — refused as plain values, and not offered [packages/library/src/contexts.ts]
+- [x] [Review][Patch] `offerBindings` at a place that cannot be built (an unknown target, an illegal enclosing repeat) silently offered the universal set alone — it now returns `refused` and three empty lists [packages/library/src/contexts.ts]
+- [x] [Review][Patch] `data-pagination` inside a `data-repeat` was never walked: the theme printed a blank while the canvas printed `/page/2/` — its `pagination.*` path is a Ghost path in the walk [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] `checkBindings` answered `[]` for a destination R-7 refuses at render (`data-pagination` on `error.hbs`, a `{{#get}}` on an error template) — the gate carries both refusals first [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] `data-initials` beside `data-bind` or `data-prop` on one element silently replaced the other's text — refused by name [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] A bare `reading_time` over a value that is not a number printed "1 min read" — the helper path takes a number only [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] The recorder did not void a run whose `page.hbs` root `{{title}}` printed (the test asserts it), wrapped to the newest release for a gate at npm's first entry, and ran a live upload on `--help` — all three closed [tools/probe/record-contexts.py]
+- [x] [Review][Patch] Nothing pinned the token-template, `srcset`, `style` and `data-helper` walks (each dropped in turn, the suite stayed green) — one refusal per attribute under a named target, on both emitters and in `checkBindings` [packages/section-runtime/src/contexts.test.ts]
+- [x] [Review][Patch] `includeZero=true` was pinned only on a top-level `data-bind` (five mutations stayed green) — asserted on an attribute fallback, an attribute hide, a style guard and inside a repeat, on both emitters [packages/section-runtime/src/contexts.test.ts]
+- [x] [Review][Patch] `build.js` wrapped nothing, silently, when the matrix had no row for a target — it throws [tools/stress/build.js]
+- [x] [Review][Patch] The docs' row-11 example `signup/{tier}` is refused by the walk inside a tiers repeat (`id` is the field), and `checkBindings` was documented without the `dataBindings` a query repeat needs — both corrected, with the `../` and `{{#get}}` frame rules [docs/section-authoring.md]
+- [x] [Review][Patch] The universal rows the recorder captured (`navigation`, `total_members`, every `@site` value) were never asserted — every universal row is probed on both majors, helpers printed, and a key gated above 5.x printed empty on T3 as the control [packages/library/src/contexts.test.ts]
+- [x] [Review][Patch] A literal "seven" in a test comment [packages/library/src/contexts.test.ts]
+- [x] [Review][Patch] A refusal inside an illegal repeat ended in two full stops [packages/library/src/contexts.ts]
+- [x] [Review][Patch] A pre-release version (`6.58.0-rc.0`, what a server can report) fell to the floor and hid every gated key — read by its `x.y.z` [packages/library/src/contexts.ts]
+- [x] [Review][Patch] The appendix asserted gscan's first-segment allow-listing without the citation the spec carries, kept two contradictory precedence sentences, and the research still listed `meta_title`/`meta_description` as resource fields — cited, ordered (matrix › research › appendix), and noted as recorded [appendix-b1-template-contexts.md · research-ghost-binding-contexts.md]
+- [x] [Review][Patch] `@page` offered on `custom-{name}.hbs` with no word on the post-backed case, and `statusCode`/`message` typed `helper` with no word on why — both rows carry a `note` [packages/library/contexts/matrix.json]
+- [x] [Review][Defer] No gate runs `checkBindings` over a shipped design's own `compileTarget` list [packages/library/src/validate.ts] — deferred (the first real designs are Story 4.10's; DW-130)
+- [x] [Review][Defer] `ghostPaths` enumerates the walked directives by hand [packages/section-runtime/src/core.ts] — deferred (the vocabulary carries no Ghost-path flag to derive from; DW-131)
+
+Dismissed as noise: the reference design "fails FR-H7 on its targets" (a lexical fixture carrying directives no render accepts, so it renders on no target at all); the epic context's Story 4.5 sub-bullet (landed by 4.5's Fix commits, not this story); the value-kind set in three files (a partition of kinds, not a field list); `bindable` refusing on `version` (its docblock already says the runtime passes none); the probe theme left uploaded and inactive (Story 4.3's Q2 pattern — the recorder restores, it does not delete); the bisection's reproducibility (the recorder re-reads each gate and the release before it, which is the proof); the deployed `/controls` harness naming no target (this story has no screen; R-82 was met on T1 and T3); `people[].name` outside `data-items` shipping the placeholder (`data-prop` behaves the same, by design).
+
 **Acceptance Criteria:**
 
 - Given the three recordings, when `contexts.test.ts` runs, then every matrix row is proved by a render or an API
@@ -321,6 +351,14 @@ three holes and add `data-initials` for the typed-list avatar.
   are green with 0 errors and 0 warnings on both majors, and no count a tool derives is written down.
 
 ## Spec Change Log
+
+- **Review, 2026-09-14 (iteration 1).** Five layers ran; the Real-infra verifier re-ran the recorder on T1 and T3
+  with no finding. What the other layers changed: a `{{#get}}` counts as a frame for `../` and `../@site.x` is
+  refused (Handlebars rejects it); a list of plain values opens no scope and is not offered; `offerBindings`
+  says `refused` instead of a partial answer; `data-pagination` joined the scope walk; `checkBindings` carries
+  R-7's two target refusals; `data-initials` cannot share an element with another text directive; a pre-release
+  version reads by its `x.y.z`; and the recorder gained the `page.hbs` root-title control, a first-release guard
+  and a `--help` that touches no server. Two deferrals, DW-130 and DW-131. No question for the owner.
 
 - **Dev, 2026-09-14 — what the recording changed, and three routine calls.** (1) The recording overruled the
   appendix three times and the matrix follows it: `meta_title`/`meta_description` inside a post, tag or author
@@ -420,6 +458,24 @@ Story 4.2 moved AD-36's colour parser into the library. The map row is corrected
 **Manual checks:**
 - After the recorder, `GET /ghost/api/admin/themes/` on both servers shows the theme that was active before the run
   as active (R-82).
+
+**Results (Review, 2026-09-14) — re-executed by the Real-infra verifier (R-82):**
+- **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — `python3 tools/probe/record-contexts.py`
+  again (keys by `load_env()` as `GHOST{5,6}_STAFF_ACCESS_TOKEN`, `GHOST{5,6}_CONTENT_API_KEY`, never printed):
+  probe theme gated 0 errors on gscan 4.49.7 and 6.4.2, uploaded HTTP 200 on both, eight pages fetched (seven
+  200, the missing path 404), `casper` restored on both; the three recordings came back **byte-identical** to
+  the committed ones, `captured` included. `GET /ghost/api/admin/themes/` afterwards: `casper` active on T1 and
+  T3, `inflozo-probe-contexts` uploaded and inactive.
+- **Controls read back from the recordings** — on both majors the root `{{title}}` on `index.hbs` and `post.hbs`
+  printed empty beside a non-empty `{{#post}}{{title}}{{/post}}`, and the misspelt field printed non-empty in no
+  frame at all.
+- **jsDelivr** — `ghost@6.35.0` `public.js` has no `threads`, `ghost@6.36.0` has it; both sha256 values match
+  `fixtures/ghost-source.json`.
+- **`pnpm check` (Node 24)** exit 0 before the patches; after them the library and runtime suites are green with
+  the review tests added (each suite prints its own count), and `node build.js && node gate.js theme` is 0/0 on
+  both majors with `{{#post}}` opened once in each template.
+- **Supabase, Vercel, Resend, Dodo** — no migration in the diff (`git diff --stat 4d28a05c HEAD -- supabase/` is
+  empty), so R-99 does not apply; none touched.
 
 **Results (Dev, 2026-09-14) — the real services this story hit (R-82):**
 - **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — `python3 tools/probe/record-contexts.py`,

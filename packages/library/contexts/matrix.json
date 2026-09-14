@@ -191,7 +191,8 @@
       "offered": [
         "page.hbs",
         "custom-{name}.hbs"
-      ]
+      ],
+      "note": "set by Ghost only when the entry is a page; a custom template is assigned to posts too, where it is undefined and prints nothing (§3b). It is offered on custom-{name}.hbs for the page-backed case and the always-present guard hides it on a post."
     },
     "navigation": {
       "kind": "helper"
@@ -323,10 +324,12 @@
     },
     "error": {
       "statusCode": {
-        "kind": "helper"
+        "kind": "helper",
+        "note": "Ghost hands error.hbs statusCode and message as data, not as helpers; the vocabulary reads both through data-helper (BARE_HELPERS), so they are typed helper here and a data-bind on either is refused toward data-helper."
       },
       "message": {
-        "kind": "helper"
+        "kind": "helper",
+        "note": "see statusCode"
       },
       "errorDetails": {
         "kind": "list",
