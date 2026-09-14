@@ -2,7 +2,7 @@
 title: 'Story 4.9 — The string catalog: keys, English defaults and the `{{t}}` contract'
 type: 'feature'
 created: '2026-09-14'
-status: 'in-review'
+status: 'done'
 baseline_commit: '6a9feefe8cac0036df9db6737789962916f2307a'
 owner_test: none
 review_loop_iteration: 1
@@ -521,6 +521,17 @@ How the check compares the two copies:
 - After the patches, on Node 24.18.1: the library, section-runtime and ghost-shim suites are green (each prints its
   own count), `check-catalog: PASS`, `test-vocabulary.mjs` passes with the reference design now inside the tree-half
   check, and the gscan harness result is recorded in the Review commit's line.
+
+**Results (Deploy, 2026-09-14):**
+- **GitHub Actions** (`GITHUB_TOKEN`): run 34876197744 on `a4796ddc` (the R-106/R-107 ruling commit) — `check`, `rls`
+  and `deploy` all `success`. The `check` log shows `check-catalog: PASS — 151 keys in 14 namespaces agree with
+  appendix-h1 and render under intl-messageformat 5.4.3` after the clean install.
+- **Vercel** (REST `v6/deployments`): production deployment `dpl_2RvVfr3peXUxvpND9Ss6aNVyUdHo` for `a4796ddc`:
+  `READY`.
+- **Deployment:** https://inflozo-7k2hrub52-umangkagathara.vercel.app (production, `a4796ddc`)
+- No migration: the diff since Dev's Supabase check adds none (R-99 — nothing to apply).
+- This story has no screen (`owner_test: none`); marked `done` in `sprint-status.yaml` on this push rather than
+  waiting on an owner test.
 
 **Judgement calls the spec left open, for the review:**
 - `data-empty` on a `data-t` element, a second text directive beside `data-t`, and an authored `data-i18n-*` are
