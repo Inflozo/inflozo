@@ -73,6 +73,9 @@ Build the machine every design in the library is authored against — **before a
     naming every refusal; `checkBindings` returns the same list for a move or duplicate, which no story offers
     yet (DW-122). A section never opens `{{#post}}` — the template does, once, on post, page and custom
     templates — so one design is one text on both. The version axis is the offer's, not the render's.
+  - **Story 4.6's review (2026-09-14) — the order of authority is `matrix.json` and its recordings, then
+    `research-ghost-binding-contexts.md`, then appendix B.1's prose**; where two disagree the higher one is
+    right and the lower is a bug to report, never to work around.
 - **Every bound prop compiles inside a guard, and the guard is derived from the bound field, never from a helper argument.** The spike emitted a guard on a date *format string*, so the block never rendered and the content was silently and permanently lost — a garbage guard is *present*, which is why "is there a guard?" passes while the page is empty. Guards use `{{#if}}` exclusively. Text falls back to the static value the prop held; media **hides the element, never the attribute**, and a media guard must enclose any `srcset`.
   - **Story 4.2 (2026-09-11) — FR-H8's guard is UNCONDITIONAL, and its default comes from the
     kind.** A text binding falls back to the authored static value, a binding into a URL attribute
