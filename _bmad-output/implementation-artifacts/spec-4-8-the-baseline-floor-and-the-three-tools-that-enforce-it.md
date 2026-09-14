@@ -2,7 +2,7 @@
 title: 'Story 4.8 — The Baseline floor and the three tools that enforce it'
 type: 'feature'
 created: '2026-09-14'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -33,7 +33,8 @@ wired as written:
 
 **Approach:** Keep one copy of each thing:
 - the pin in the root `package.json`;
-- the tiers as data in `packages/library/baseline.json`;
+- the tiers as data in `packages/library/baseline.json`, where `text-wrap: pretty` is the one entry that is not
+  Baseline (R-105);
 - the stylesheet rules in a root `stylelint.config.mjs`, which adds what the plugin cannot see.
 
 `eslint-plugin-compat` runs over the modules, and `size-limit` over `bundle()`'s maximal `main.js`. One check,
@@ -70,8 +71,8 @@ wired as written:
 - `pnpm check` runs everything. CI and the Vercel build (`vercel.json`'s `pnpm -w check`) therefore run it too.
 
 **Ask First:**
-- Moving the pin date, or changing an allowlist entry beyond Q1's ruling and what the recompute decides
-  (`mask-image` leaves as Tier 1).
+- Moving the pin date, or changing an allowlist entry beyond R-105 (`text-wrap: pretty` kept) and what the
+  recompute decides (`mask-image` leaves as Tier 1). R-105 admits no second entry that is not Baseline.
 - Naming a plugin difference beyond `mask-mode` (refused) and the `cursor` values (admitted).
 - Any dependency beyond the seven above. Any change to NFR-2's number or metric; that is Story 7.5's, per VERIFY
   row 27.
@@ -93,11 +94,11 @@ wired as written:
 |----------|--------------|---------------------------|----------------|
 | The floor | the root pin `2026-08-18`; browserslist for `packages/library/modules/core.js`; §A3's method over web-features 3.35.0 | both give Chrome, Chrome Android and Edge 121, Firefox and Firefox Android 122, Safari and iOS 17.2. The check prints this and stores it nowhere | any browser that disagrees fails, and is named |
 | The pin reaches the lint *(control)* | `new ImageCapture()` linted as `packages/library/modules/probe.js` | one `compat/compat` error naming Safari 17.2 | no such error fails: the pin did not reach eslint-plugin-compat |
-| A Tier-2 entry | each `baseline.json` entry | Newly on the pin, and its `widely` equals `baseline_low_date` + 30 months | fails with "Widely on the pin: Tier 1, remove it", "not Baseline on the pin", or both dates |
+| A Tier-2 entry | each `baseline.json` entry | Newly on the pin, and its `widely` equals `baseline_low_date` + 30 months. `text-wrap-pretty` alone carries no date and prints as "not Baseline on the pin, kept by R-105" | fails with "Widely on the pin: Tier 1, remove it", "not Baseline on the pin", "Baseline now: give it its date" (for `text-wrap-pretty`), or both dates |
 | Tier 1 | `mask-image: linear-gradient(#000, transparent)`; `.a:has(> img)`; root `@media (…) { .a {…} }` | pass (`masks` is Widely from 2026-06-07) | N/A |
-| Tier 2 | `text-wrap: balance`; `scrollbar-width: thin`; `@starting-style { .a { opacity: 0 } }` at root | pass | N/A |
+| Tier 2 | `text-wrap: balance`; `text-wrap: pretty`; `scrollbar-width: thin`; `@starting-style { .a { opacity: 0 } }` at root | pass | N/A |
 | Tier 3 | `scrollbar-gutter: stable`; `text-wrap: nowrap`; `animation-timeline: view()`; `mask-mode: alpha` | each refused | stylelint names the property or value |
-| `text-wrap: pretty` | a design's heading | **Q1's ruling decides** | per the ruling |
+| The one exception *(control)* | a second entry carrying `notBaseline` added to `baseline.json` | refused: R-105 keeps `text-wrap: pretty` alone | the check names R-105 and the entry |
 | `@supports` | `(backdrop-filter: blur(1px))`; `not (backdrop-filter: blur(1px))`; `(animation-timeline: view())`; `selector(:popover-open)` | the first two pass (A3-16's opaque fallback); the last two are refused | `inflozo/supports-tier-2` |
 | Nesting | `.a { & .b {} }`; `.a { .b {} }`; `.a { @media (…) {} }` | each refused | `max-nesting-depth` |
 | The three prefixes | the `-webkit-box` trio together; `-webkit-text-size-adjust: 100%`; `-webkit-user-select: none; user-select: none` | pass | N/A |
@@ -138,7 +139,8 @@ wired as written:
   `:450-454`, which say plugin 1.4.5 and "the 484 flat stylesheets".
 - `VERIFY-AT-BUILD.md` rows 17 `:45`, 26 `:144`, 27 `:145` and 55 `:277`. `MEASUREMENTS.md` §9 `:223-225` and
   §31c `:2484`; §42 `:3042` is the last section.
-- `reconcile-designs-decisions.md`: R-3 `:283-287` (A32's fade uses `mask-image`) and R-15 `:510-518`.
+- `reconcile-designs-decisions.md`: R-3 `:283-287` (A32's fade uses `mask-image`), R-15 `:510-518`, and R-105 in
+  §A25, this story's ruling, whose ⬜ targets the Dev run ticks.
 - **The design export, read only:**
   - `A3-16 Mini Bar.dc.html:110,191` — "where `backdrop-filter` is unavailable the ground goes fully opaque", the
     reason `@supports` survives.
@@ -162,13 +164,15 @@ wired as written:
 - [ ] `packages/library/baseline.json`:
   - `tier2` entries of `{ feature, widely, css | html, why }` for backdrop-filter, text-wrap-balance, scrollbar-width,
     scrollbar-color, starting-style, details-name (html) and fetch-priority (html);
-  - text-wrap-pretty per Q1; `mask-image` gets no entry;
+  - `text-wrap-pretty` (`text-wrap: pretty`) with no `widely` and a `notBaseline` reason citing R-105; `mask-image`
+    gets no entry;
   - `plugin` differences: `refused: ["mask-mode"]`, and `admitted` for `cursor` values with a reason.
 
   FR-G8's version-controlled allowlist is data AD-34's gate can read later.
 - [ ] `stylelint.config.mjs`:
   - `plugin/use-baseline` at `available: "widely"`, whose `ignoreProperties` and `ignoreAtRules` are built from
-    `tier2`, plus `user-select` for the prefix pair;
+    `tier2`, plus `user-select` for the prefix pair. Values are merged per property, because `text-wrap` carries
+    two entries: a last-wins map refuses `balance` (executed);
   - `max-nesting-depth: 0`;
   - the prefix closure — `property-disallowed-list` (with `mask-mode`), `declaration-property-value-allowed-list` and
     `-disallowed-list`, and `function-`, `selector-pseudo-element-`, `selector-pseudo-class-`,
@@ -183,7 +187,8 @@ wired as written:
   globals only). This is the JS half of the floor.
 - [ ] `tools/check-baseline.mjs` — every row of the I/O matrix, controls first:
   - the floor both ways;
-  - the Tier-2 recompute;
+  - the Tier-2 recompute. `notBaseline` is accepted on `text-wrap-pretty` alone, and only while it still has no low
+    date on the pin (R-105);
   - the plugin-versus-pin diff through the real config;
   - the stylelint fixture sheets, inline, via stylelint's Node API;
   - the `ImageCapture` lint via ESLint's `lintText`;
@@ -193,7 +198,7 @@ wired as written:
 - [ ] `tools/doc-audit.py` — a catalogue row naming what the check covers, including `baseline.json` and
   `stylelint.config.mjs`, which the catalogue cannot index. The gate blocks an uncatalogued tool.
 - [ ] `docs/section-authoring.md` — expand `### style.css` with:
-  - the pin and where it lives; the tiers; `baseline.json`;
+  - the pin and where it lives; the tiers; `baseline.json`, and R-105's one exception;
   - Tier 2's conditions: an unstyled fallback, no layout, contrast or interaction, and a scrim (review rules, not
     lint);
   - `@supports`; nesting; the three prefixes;
@@ -203,22 +208,26 @@ wired as written:
   In the module part, state compat's reach: a module's other APIs are read against web-features at the pin, as
   MEASUREMENTS §42 did for `core`. This is the contract E9–E11 write against.
 - [ ] `prd.md` · `research-section-js-libraries.md` · `ARCHITECTURE-SPINE.md` · `VERIFY-AT-BUILD.md` ·
-  `MEASUREMENTS.md` · `deferred-work.md` · `epic-4-context.md` — propagate (standing rule 3):
-  - FR-G8: `mask-image` is Tier 1 by recompute; `@supports`; Q1's ruling. FR-J17's "§7.3" becomes FR-G8.
-  - Research: §6.5's list becomes a pointer to `baseline.json`; §6.7 gets plugin 1.4.6, brotli and the diff.
+  `MEASUREMENTS.md` · `deferred-work.md` · `epic-4-context.md` · `reconcile-designs-decisions.md` — propagate
+  (standing rule 3):
+  - FR-G8: `mask-image` is Tier 1 by recompute; `@supports`; R-105, which makes Tier 2 "Newly features, and
+    `text-wrap: pretty` by name". FR-J17's "§7.3" becomes FR-G8.
+  - Research: §6.5's list becomes a pointer to `baseline.json`, with R-105; §6.7 gets plugin 1.4.6, brotli and the
+    diff.
   - Spine: the stack rows (1.4.6, no count) and AD-34's note.
   - VERIFY: rows 17, 26 and 55 move to the check.
   - MEASUREMENTS: §43, the planning facts plus the Dev's re-execution.
   - DW-137: no tool checks HTML Tier 2 or Tier 3 (owner Story 7.8).
   - DW-138: the render matrix does not refuse a pin it did not run against (owner Story 4.11).
   - The epic context: sub-bullets.
+  - The register: tick R-105's ⬜ targets as each lands.
 
   Then grep for "`mask-image` is Tier-2", "1.4.5", "484 flat" and "gzip" beside size-limit (standing rule 7).
 
 **Acceptance Criteria:**
 - Given the root pin, when `pnpm check` runs, then the check prints the computed floor and every I/O row holds.
   Each control fails when its subject is broken: the pin removed, a `widely` date altered, `mask-mode` dropped from
-  `refused`, a 1 B limit (FR-G8).
+  `refused`, a second `notBaseline` entry, a 1 B limit (FR-G8, R-105).
 - Given the repository's stylesheets, when `pnpm lint` runs, then they are clean, Ghost's card CSS is not linted, and
   the two custom rules fire only on their matrix rows (FR-G8, §7.1).
 - Given the gates, when `pnpm check`, `pnpm build` and `python3 tools/doc-audit.py --check` (twice) run, then all are
@@ -241,10 +250,10 @@ wired as written:
   `css.properties.cursor` itself is Widely.
 - At-rules, selectors, functions and units are not diffed, because their syntax is irregular; the fixtures cover
   the named cases.
-- A scratch prototype of this config and both custom rules held in planning:
-  - 2,356 rows: 0 wider and 0 narrower, with `text-wrap: pretty` still refused, pending Q1;
-  - the legal sheet: no warnings;
-  - all 19 refusal rows: refused by the rule the matrix names.
+- A scratch prototype of this config and both custom rules held in planning, re-run after R-105:
+  - 2,356 rows: 0 wider and 0 narrower, with `text-wrap: pretty` admitted as a Tier-2 row;
+  - the legal sheet, `text-wrap: pretty` included: no warnings;
+  - all 19 refusal rows, `text-wrap: nowrap` included: refused by the rule the matrix names.
 
 **`@supports`.** The plugin exempts whatever the condition tests, so `@supports (animation-timeline: view())` passes
 it (executed). A3-16 draws a translucent bar whose ground goes opaque where `backdrop-filter` is missing, and that
@@ -265,11 +274,16 @@ use one. No design in the export uses `@supports` today.
 
 The planning dates for the remaining features:
 - `masks` became Widely on 2026-06-07, so `mask-image` is Tier 1 by FR-G8's own "recompute rather than assume".
-- `text-wrap-pretty` has no low date: Chrome 117 and Safari 26 support it, Firefox does not.
+- `text-wrap-pretty` has no low date: Chrome 117 and Safari 26 support it, Firefox does not. R-105 keeps it by name
+  with no date. The day it gains a low date on the pin, the check asks for its `widely` date and for `notBaseline` to
+  be removed, and it becomes an ordinary Newly entry.
 
 ```json
-{ "tier2": [ { "feature": "text-wrap-balance", "widely": "2026-11-13",
-    "css": { "property": "text-wrap", "values": ["balance"] }, "why": "unbalanced lines are the unstyled state" } ],
+{ "tier2": [
+    { "feature": "text-wrap-balance", "widely": "2026-11-13",
+      "css": { "property": "text-wrap", "values": ["balance"] }, "why": "unbalanced lines are the unstyled state" },
+    { "feature": "text-wrap-pretty", "css": { "property": "text-wrap", "values": ["pretty"] },
+      "notBaseline": "no Firefox; ordinary line breaks are the unstyled state — kept by R-105 (owner, 2026-09-14)" } ],
   "plugin": { "refused": ["mask-mode"], "admitted": { "cursor": "touch browsers draw no cursor; nothing to degrade" } } }
 ```
 
@@ -307,7 +321,9 @@ line. Nothing is hidden, cut off or harder to read.
    whether or not every browser has it. This is wider than today's rule, and future additions would not come back to
    you.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-14).** Recorded as **R-105** in `reconcile-designs-decisions.md` §A25.
+`text-wrap: pretty` stays on the Tier-2 list by name, carries no Widely date, and is re-read at every check. A second
+feature that is not Baseline needs its own ruling: option 3 was declined.
 
 ## Verification
 
@@ -320,6 +336,7 @@ line. Nothing is hidden, cut off or harder to read.
   - the root pin removed: floor mismatch, and `ImageCapture` is not refused;
   - one `widely` date changed: names the entry and both dates;
   - `mask-mode` removed from `refused`: names `mask-mode`;
+  - `notBaseline` added to a second entry: names R-105 and the entry;
   - the size control at 1 B: `passed: false`.
 - `pnpm build` -- expected: exit 0, with no `browserslist` key at the root or in `apps/web`.
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
