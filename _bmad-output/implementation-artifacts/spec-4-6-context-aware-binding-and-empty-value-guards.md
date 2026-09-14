@@ -2,7 +2,7 @@
 title: 'Story 4.6 — Context-aware binding and empty-value guards'
 type: 'feature'
 created: '2026-09-13'
-status: 'in-review'
+status: 'done'
 baseline_commit: '4d28a05c0035c7141865f63ab0f6ac1e19083d4c'
 owner_test: none
 review_loop_iteration: 1
@@ -481,6 +481,14 @@ Story 4.2 moved AD-36's colour parser into the library. The map row is corrected
 - **GitHub Actions** — the Dev push's run (34823025267) FAILED `check` on stale generated date stamps and skipped
   `deploy`, so the Dev tree never reached production, contrary to the Dev results below; the Review push's run
   (34825820806) passed `check`, `rls` and `deploy`. The cause is DW-132, a tooling defect older than this story.
+
+**Results (Deploy, 2026-09-14):** No migration in the diff, so no schema step; this story changes only
+`packages/library` and `packages/section-runtime`, which `apps/web` depends on (`workspace:*`), so it is app
+code and ships on the push to `main`. `Deployment: dpl_CZdy9Xv3TkxMYscHb68WdjeXPmcx` (commit `d4a8273a`) —
+confirmed `readyState: READY` via the Vercel API and `aliasAssigned: true` for `inflozo.com`,
+`app.inflozo.com` and `www.inflozo.com`; CI run 34825820806 (`check`, `rls`, `deploy`) passed for the commit
+this deployment was built from. `owner_test: none` — this story has no screen (no `apps/web` files in the
+diff), so there is no Owner's manual test to fill in; recorded done in `sprint-status.yaml` instead.
 
 **Results (Dev, 2026-09-14) — the real services this story hit (R-82):**
 - **Ghost T1 `ghost6.inflozo.com` (6.58.0) and T3 `ghost5.inflozo.com` (5.130.6)** — `python3 tools/probe/record-contexts.py`,
