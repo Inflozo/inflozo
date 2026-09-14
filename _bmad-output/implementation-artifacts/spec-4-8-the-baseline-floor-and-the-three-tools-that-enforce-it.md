@@ -2,7 +2,7 @@
 title: 'Story 4.8 — The Baseline floor and the three tools that enforce it'
 type: 'feature'
 created: '2026-09-14'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'bfd8ca19321a3a6b88d0160b33ac1c5295228e1d'
 owner_test: none
 review_loop_iteration: 1
@@ -493,3 +493,10 @@ reads the sheet catches it; one who trusts the lint does not.
   the pin written `2026/08/18` in a scratch copy → "is not YYYY-MM-DD", exit 1.
 - Reproducibility: `gh run list --commit` needs the full 40-character SHA (a short one returns an empty list, not an
   error); a scratch-copy install needs `--prefer-offline` — `--offline` fails on a tarball the store lacks.
+
+**Deploy, 2026-09-14:** This story touches no `apps/web` code and no schema — every changed file is a root
+devDependency, `packages/library/baseline.json`, `stylelint.config.mjs`, `eslint.config.js`,
+`tools/check-baseline.mjs`, `tools/doc-audit.py` or a doc. Deploy is therefore a no-op by the story's own scope
+(no screen, `owner_test: none`). The Review phase already confirmed the real deployment this diff's own commit
+produces: `Deployment: dpl_7EkQBJyxoBSfkThe9Ln4VJwZyHdH` (`7d4cb243`) `READY`, aliased to `inflozo.com` and
+`app.inflozo.com`. Marked `done` in `sprint-status.yaml` on the Deploy commit, per R-80's no-screen path.
