@@ -613,4 +613,27 @@ pilots passed, in both modes, at all three widths, for every visitor.
 3. **Keep the drawings as they are, and record the exception.**
    - The pages match the drawings exactly, and every published site built on Paper ships a button that fails WCAG AA.
 
-**Status: open — asked 2026-09-15, not yet ruled.** DW-158 records it; the rest of the story does not wait on it.
+**Ruled:** _(awaiting the owner)_ — asked 2026-09-15 by the Dev run. DW-158 records it; the rest of the story does not wait on it.
+
+**Q4. The Rail header's menu: use Ghost's own menu, or have the section write its own?**
+
+*(Raised by the Dev run, 2026-09-15 — the spec said to ask before acting on a recording that disagrees with the plan.)*
+The plan built the menu by going through your Ghost site's menu items one by one and writing each link itself. When
+we tried that on both test Ghost servers, every link came out as the home page ("/"), because in that spot Ghost reads
+the word `url` as its own command, not as the item's address. Writing `this.url` instead gave the right addresses
+(`/essay/`, `/notes/`), but the section builder cannot write that form today. So the build used Ghost's own ready-made
+menu (`{{navigation}}`), which both Ghost versions draw correctly, and folds the extra items into "More" with styling.
+
+Example: a site whose menu is Essay · Notes · About. Built the planned way it would link all three to the home page;
+built with Ghost's own menu, Essay goes to `/essay/`, and the page you are on is marked as current.
+
+1. **Keep Ghost's own menu, as built (RECOMMENDED).**
+   - Correct links on both Ghost versions today, recorded on the test servers.
+   - Ghost marks the current page for free, which the plan had left for later.
+   - The menu's inner tags are Ghost's (`<ul class="nav">`), so the section styles them rather than choosing them.
+2. **Teach the section builder to write `this.url`, and build the menu item by item.**
+   - The section chooses every tag of the menu itself.
+   - A new form in the builder's vocabulary, a new recording on both servers, and no current-page mark until A1's own
+     story — more work in this story for a result the visitor cannot see.
+
+**Ruled:** _(awaiting the owner)_
