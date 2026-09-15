@@ -2121,6 +2121,31 @@ orange, as Dark mode already does."*
     ✅ `deferred-work.md` (DW-158 closed).
 - **Deliberately not touched:** the export (R-74).
 
+**R-111 — header dropdowns are built on Inflozo's own menu file, never on Ghost's default menu markup.** Question 4,
+option 1, ruled 2026-09-15: *"Keep this story as built, and require the Headers story to use Inflozo's own menu file."*
+The owner's reply that set it: "All menus have dropdown items. I do not want that to be affected. Users should be able
+to add dropdown navigation too."
+
+- **Why it was a question.** T1 and T3 printed `/` for every bare `{{url}}` inside `{{#foreach @site.navigation}}`
+  (MEASUREMENTS §45), so Story 4.10's Dev run built A1 #1's nav on `{{navigation}}` — an Ask First. Ghost's default
+  menu is one sealed `<ul>` (`core/frontend/helpers/tpl/navigation.hbs`), so a dropdown authored in Inflozo could not be
+  placed under a chosen item without a script, against the no-JS `<details>` rule (`A1 Headers - Spec.md:170`, `:187`).
+- **Read in source, both releases (5.130.6 and 6.58.0), not yet recorded.** Ghost's navigation settings carry only
+  `label` and `url` (`helpers/navigation.js:41-51`); the helper hands each item `label`, `url`, `slug` and `current`
+  and renders the partial named `navigation` (`:76-89`, `theme-engine/handlebars/template.js:14-28`); the theme's own
+  `partials/` directory is registered after Ghost's helper templates (`theme-engine/engine.js:14-22`), so a theme's
+  `partials/navigation.hbs` replaces the default.
+- **What it binds.**
+  - A1 #1 keeps `{{navigation}}` in Story 4.10; nothing in that story grows.
+  - Story 9.1 records a theme-supplied `partials/navigation.hbs` on T1 and T3 first (AD-23), then builds both
+    dropdown sources of `A1 Headers - Spec.md` §0·5 (`:87-91`) on it — children authored in Inflozo, and the `+`/`-`
+    prefix scheme — with every dropdown a native `<details>` that opens without JavaScript and the current page marked
+    from Ghost's `current`.
+  - No header design builds dropdowns on Ghost's default menu markup.
+- Targets:
+  - ✅ Story 4.10's spec · ✅ `epics.md` Story 9.1 · ✅ `deferred-work.md` (DW-150).
+- **Deliberately not touched:** the export (R-74).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

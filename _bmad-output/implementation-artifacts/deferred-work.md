@@ -3669,7 +3669,9 @@ origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev 
 owner: A1's category story (Story 9.1 onward)
 location: packages/library/designs/a1/ (provisional, AD-35)
 reason: each needs a vocabulary piece, a module or a field the pilot story does not own:
-  - authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one);
+  - authored nav children and dropdown panels — **R-111 (owner, 2026-09-15): built on Inflozo's own
+    `partials/navigation.hbs`, recorded on T1 and T3 first, carrying both §0·5 sources (Inflozo-authored children and
+    the `+`/`-` prefixes) as native `<details>`; never on Ghost's default `{{navigation}}` markup**; Fit to width; the Search control and trigger (no artboard draws one);
     the dark-mode toggle (no key); `<h1>` on the home page only; the skip link (E7's layout owns `<main>`);
   - the authored logo, and its `logoLight` for a dark ground — Orbit Weekly's `@site.logo` is drawn for a light ground,
     so the image is dark-on-dark in Dark mode (owner test step 14 carries the caveat);

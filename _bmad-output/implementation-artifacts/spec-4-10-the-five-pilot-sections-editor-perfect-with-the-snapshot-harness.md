@@ -348,6 +348,9 @@ something and another when it does not.
   `reference-tokens.css`; DW-158 closed. Q4 was rewritten after the owner's reply that menus must keep dropdowns: it now
   asks which menu form the Headers story builds dropdowns on, with Ghost's theme-level `partials/navigation.hbs` read
   in source for both releases.
+- **2026-09-15, Dev — R-111 (Q4, option 1):** A1 #1 keeps Ghost's `{{navigation}}` as built; Story 9.1 (the first
+  Headers story) builds both dropdown sources on Inflozo's own `partials/navigation.hbs`, recorded on T1 and T3 first,
+  and never on Ghost's default menu markup. Carried to `epics.md` Story 9.1 and DW-150.
 
 ## Design Notes
 
@@ -663,4 +666,6 @@ added Essays and Notes in Inflozo or named them `-Essays` and `-Notes` in Ghost.
    - Dropdowns added in Inflozo work without a script.
    - Ghost's current-page mark is lost, and the section builder needs a new way of writing links (`this.url`).
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-111** in `reconcile-designs-decisions.md` §A28. Rail keeps
+`{{navigation}}`; Story 9.1 builds header dropdowns on Inflozo's own `partials/navigation.hbs`, recorded on T1 and T3 first
+(DW-150).
