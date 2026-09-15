@@ -831,7 +831,10 @@ the five samples then move their controls to match, and every section built late
    - Con: no Epic 5 story owns this — Story 5.1 mounts the panel as it is — so it would need adding there anyway,
      and you would keep seeing the panel you rejected until then.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 — "Fix all four inside Story 4.10" (owner, 2026-09-15).** In his words, for the Fix and its
+reviews: "I want to make sure that you do multiple thorough sweeps across all controls engine and vocabulary, so
+that the controls are perfectly grouped. Spend as much time on this story as it is the base on how the controls will
+apear for later sections. I want it to be perfect. Do multiple sweeps of review/dev/patch."
 
 **Q7. When the pinned top block goes away, where does each design's own setting go — and what goes in "Section
 Settings"?**
@@ -861,5 +864,6 @@ Example — Three Up today: a pinned card with Per row · Image ratio · Excerpt
    - Pro: the simplest rule. Con: one long mixed list on the designs with the most settings, and Layout would
      almost always be empty.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 — "Every setting goes to its role; Section Settings holds only what fits no role" (owner,
+2026-09-15).**
 
