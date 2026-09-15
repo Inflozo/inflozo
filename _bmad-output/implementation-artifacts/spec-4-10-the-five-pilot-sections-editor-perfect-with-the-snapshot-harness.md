@@ -2,9 +2,9 @@
 title: 'Story 4.10 — The five pilot sections, editor-perfect, with the snapshot harness'
 type: 'feature'
 created: '2026-09-15'
-status: 'in-review'
+status: 'done'
 baseline_commit: '94cf2c5b0d5f0bbf7f2b0ec25ac31f8e59703f38'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
@@ -1173,6 +1173,9 @@ controls of all other various sections."
      design?" in the app's dialog vocabulary (S14c's card-reset confirm: the count and the changed settings named,
      "Your words and pictures stay.", focus on Cancel); with nothing changed it asks nothing and says so under the
      button.
+
+**Retest, 2026-09-15, on the Deploy deployment `dpl_8WSZFwCNjo99ymZa9ZZCfmuPesM7` (`2c63f7e0`): passed.** The
+owner walked the 23-step table above on `https://app.inflozo.com` and found nothing to report.
 
 ## Questions for the owner
 
