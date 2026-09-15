@@ -517,6 +517,7 @@ test('JSON null anywhere in design.json or content.json is refused by its path, 
   ] as const) {
     const f = validateDesign({ html: EVERY_DIRECTIVE, design: design(over as Partial<DesignJson>) })
     assert.deepEqual(codes(f), ['json-null'], at)
+    assert.deepEqual(codes(validateDesignJson(design(over as Partial<DesignJson>))), ['json-null'], `${at}, design.json on its own`)
     assert.match(f[0]!.message, new RegExp(`design\\.json carries null at ${at.replace(/[[\].]/g, '\\$&')}\\.`))
   }
   const content = { category: 'a17', props: { title: no } } as unknown as CategoryContent
@@ -752,7 +753,7 @@ test("a category's control union is generated from its designs, and one name wit
   // a named value set compares as a set — pill order is only where the pills sit — and a stepper's in order
   assert.ok(Array.isArray(categoryControlUnion([a, { id: 'a24/1', controlSchema: [align({ values: ['center', 'start'] })] }])), 'Left · Centre and Centre · Left are one set')
   assert.equal(typeof categoryControlUnion([a, { id: 'a24/1', controlSchema: [ctl({ values: ['3', '2'], default: '3' })] }]), 'string', 'a stepper in another order is another control')
-  // one name, one type: a toggle named like a segmented control is refused, whatever its values
+  // one name, one type: a named-select named like a segmented control is refused, whatever its values
   assert.match(String(categoryControlUnion([a, { id: 'a5/5', controlSchema: [align({ type: 'named-select' })] }])), /"align" is a segmented in a5\/1 and a named-select in a5\/5/)
   // R-113: one name, one group
   const moved = categoryControlUnion([a, { id: 'a5/4', controlSchema: [align({ group: 'style' })] }])
@@ -838,6 +839,19 @@ test('AD-3 from the stylesheet\'s side: every [data-…] a rule selects on is a 
   assert.deepEqual(said(".s[data-align='middle']{} .s[data-align='middle'] .x{}"), ['stylesheet-control-value'], 'one selector is named once')
   assert.deepEqual(said('[data-align="center"]{} [data-align="middle"]{}'), ['stylesheet-control-value'], 'every value of a control is read, not its first')
   assert.deepEqual(said('[data-align=middle]{} [data-align="flush left"]{} [data-align^="mid"]{}'), ['stylesheet-control-value', 'stylesheet-control-value', 'stylesheet-control-value'])
+  // every operator as CSS reads it: each first line matches an offered value, each second matches none
+  assert.deepEqual(said('[data-align|="center"]{} [data-align~="center"]{} [data-align$="ter"]{} [data-align*="nte"]{} [data-align="cente\\r"]{} [data-align="\\63 enter"]{}'), [])
+  assert.deepEqual(said('[data-align|="cen"]{} [data-align~="cent"]{} [data-align$="cen"]{} [data-align*="xyz"]{} [data-align^=""]{}').length, 5)
+  // HTML matches attribute names in any case; a translation's attributes are Ghost's; a comment left open runs to the end
+  assert.deepEqual(said('.x[DATA-meta="off"]{} .y[Data-Meta]{}'), ['stylesheet-control-undeclared', 'stylesheet-control-undeclared'])
+  assert.deepEqual(said('[data-i18n-key]{} .x{} /* left open [data-old="x"]'), [])
+  // a string ends at its line, so an unclosed one hides nothing on the next
+  assert.deepEqual(said('.x::after{content:"never closed\n.x[data-old="x"]{}'), ['stylesheet-control-undeclared'])
+  // (linear time on hostile input is timed by tools/check-snapshots.mjs — a core package reads no clock, AD-1)
+})
+
+test('a control is never named like an attribute the page or Ghost owns', () => {
+  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
 })
 
 test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {

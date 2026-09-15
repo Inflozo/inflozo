@@ -4,9 +4,9 @@
   "Made from the export's own category specs (the reconciled state of each design's Controls), classified by two independent passes against the rule in docs/section-authoring.md § 2, each disagreement settled into that rule's words, then swept once more for one group per kind across categories.",
   "A value is the group; an object carries the group most designs use and, under designs, the design numbers whose setting of that title does something else.",
   "Each title is the one a design's drawn panel prints (DW-111: a drawn panel wins over a spec table). A labelled group's rows (the export's 'Actions › Sign in') are filed under the title the panel prints ('Sign in'), never under the group or a note about the row ('(repeater)', 'in returned panel'). A title no frame draws — a row the export only specifies, such as a1's 'Nav children' — is the spec's word, kept until a frame draws the row.",
-  "One panel prints one title once, its accordions' titles included (R-13). Where the export's titles would repeat: a setting beside a field of the same title keeps its title and the field gives way, taking a title of its own, as the export does in A29–A31 ('Eyebrow text' beside an 'Eyebrow' setting) and A22 #1 does ('Blurb text'); two settings, or a setting and its accordion, take the export's own other title for one of them — A4 #9's button style, drawn 'Primary action' beside its Primary action toggle, is filed as 'Action style' (A6's word). Every such title is the owner's to see (R-83) in the story that builds it; DW-166 lists the repeats the export draws.",
-  "A few entries are fields, not settings — an icon slot, a list, a line of text. Each is Content wherever its panel draws it, because the settings panel draws every field there.",
-  "tools/check-snapshots.mjs holds every built design's setting to the entry its title names here, and fails a setting with no entry and one whose title its own frame does not draw (R-74): the story that gives a setting a title this register does not carry files it here, with its group."
+  "One panel prints one title once, its accordions' titles included (R-13). Where the export's titles would repeat, its usual practice decides which gives way: a setting beside a field of the same title keeps its title and the field takes one of its own, as the export does in A27–A32 ('Heading text', 'Description text', 'Eyebrow text') and A22 #1 does ('Blurb text'), unless a frame draws the pair apart another way (A4-10's 'Show how long it runs'); two settings, or a setting and its accordion, take the export's own other title for that setting, filed per design under renames — A4 #9's button style, drawn 'Primary action' beside its Primary action toggle, is 'Action style' (A6's word); with no other title in the export, the story that builds the design names it. Every such title is the owner's to see (R-83) in the story that builds it; DW-166 lists the repeats the export draws.",
+  "A few entries are fields, not settings — an icon slot, an authored list, a line of text. Each is Content wherever its panel draws it, because the settings panel draws every field there.",
+  "tools/check-snapshots.mjs holds every built design's setting to the entry its title names here, and fails a setting with no entry and one that is not a row its own frame draws — its title with one of its values, or the drawn title a per-design rename replaces (R-74): the story that gives a setting a title this register does not carry files it here, with its group."
  ],
  "a1": {
   "On scroll": "settings",
@@ -231,7 +231,12 @@
   "Alignment": "layout",
   "Card at 390": "layout",
   "Band edges": "layout",
-  "Action style": "style",
+  "Action style": {
+   "group": "style",
+   "renames": {
+    "9": "Primary action"
+   }
+  },
   "Play control": "layout",
   "Show how long it runs": "content",
   "Over the poster": "layout",

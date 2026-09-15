@@ -291,8 +291,9 @@ Build the machine every design in the library is authored against — **before a
     decision order and the table of kinds, proven against every setting the export declares, are
     `docs/section-authoring.md` § 2, and `packages/library/control-groups.json` files every one of those settings
     under its group — a category story reads its designs' groups from it, and `tools/check-snapshots.mjs` holds each
-    built design to it, failing a setting it does not file; one panel prints one title once, an accordion's included
-    (R-13).
+    built design to it, failing a setting it does not file or whose row its own frame does not draw (R-74); one panel
+    prints one title once, an accordion's included (R-13), and where the export's titles would repeat, its usual
+    practice decides which gives way (§ 2). The validator refuses JSON null anywhere, by its path.
   - **R-114 (owner, same test) — pills are for short choices.** A segmented control offers two to four values, each
     at most `PILL_CHARS` characters and fitting its pill in the panel's own type (`pillRefusal`, measured on the
     deployed panel); a longer choice is a named select, and the validator refuses the rest as `pill-words`.

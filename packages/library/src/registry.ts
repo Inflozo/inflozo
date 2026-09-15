@@ -246,8 +246,8 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
 const valueKey = (c: ControlDef): string => (c.type === 'stepper' ? c.values : [...c.values].sort()).join('\u0000')
 
 /** FR-F7: one control schema per design and ONE union per category, generated from the designs'
- *  own lists — never authored. R-53: one control name means one set of values library-wide, so a name
- *  carrying two value sets is refused, naming both designs, rather than unioned into a third — and, since
+ *  own lists — never authored. R-53: one control name means one type and one set of values library-wide, so a name
+ *  carrying two types or two value sets is refused, naming both designs, rather than unioned into a third — and, since
  *  R-113, one group: a name is a promise about what the control does, and what it does is its role. The
  *  first declaration of each name wins its place in the union's order. A stepper's values compare as an ordered list,
  *  because its order is its meaning; any other control's as a set, because their order is only where the pills sit.

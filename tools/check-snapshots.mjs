@@ -273,23 +273,50 @@ const registerFailures = (id, controlSchema) => {
   })
 }
 
-/** R-74 for a setting's words: the title a built design's setting prints is one its own frame draws. The register
- *  holds a title to a group; this holds a design to its drawn titles, so relabelling a setting to another registered
- *  title — "Card side" to "Picture side" — cannot move it between groups unseen. */
+/** R-74 for a setting's words: a built design's setting is a row its own frame draws — the title, and in the same row
+ *  one of its values' words (a toggle: the drawn switch). Reading rows, not every word in the file, is what keeps
+ *  relabelling a setting to another row's registered title — A4 #13's Card side to "Card style" — from moving it between
+ *  groups unseen. Where the register files an R-13 rename for this design ({ renames: { n: drawn } }), the drawn title
+ *  it replaces is the row read. ponytail: two rows with the same values (two toggles) swapped wholesale are not told
+ *  apart; neither leaves the kind of row it is, and R-13 refuses the half-done swap. */
 const EXPORT = join(REPO, '_bmad-output/planning-artifacts/design/claude-design-export/Inflozo')
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"', middot: '·' }
-const frameTitles = (category, n) => {
+const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d))).replace(/&([a-z]+);/g, (m, e) => ENTITIES[e] ?? m)
+/** A panel row's title as the export draws one (a row, or a sub-row of a labelled group), and a toggle's switch. */
+const ROW_TITLE = /<span style="(?:font-size:12px;font-weight:500;color:#(?:6E6A64|A8A29A|8A8378|B4ADA1|B9B2A6)(?:;margin-top:4px)?|font-size:10\.5px;color:#8A857C)">([^<]*)<\/span>/g
+const SWITCH = /^<span style="width:3[246]px;height:(?:18|20)px/
+const frameRows = (category, n) => {
   const frame = readdirSync(EXPORT).find((f) => f.startsWith(`${category.toUpperCase()}-${n} `) && f.endsWith('.dc.html'))
   if (frame === undefined) return null
-  const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d))).replace(/&([a-z]+);/g, (m, e) => ENTITIES[e] ?? m)
-  return { frame, titles: new Set([...readFileSync(join(EXPORT, frame), 'utf8').matchAll(/>([^<>]+)</g)].map((m) => titleKey(decode(m[1])))) }
+  const html = readFileSync(join(EXPORT, frame), 'utf8')
+  const heads = [...html.matchAll(ROW_TITLE)]
+  return {
+    frame,
+    rows: heads.map((m, i) => {
+      const body = html.slice(m.index + m[0].length, i + 1 < heads.length ? heads[i + 1].index : html.length)
+      return { title: titleKey(decode(m[1])), body, words: [...body.matchAll(/>([^<>]+)</g)].map((x) => titleKey(decode(x[1]))).filter(Boolean) }
+    }),
+  }
+}
+const drawnTitle = (category, n, label) => {
+  const table = REGISTER[category] ?? {}
+  const e = table[Object.keys(table).find((t) => titleKey(t) === titleKey(label))]
+  return typeof e === 'object' && e.renames?.[n] !== undefined ? e.renames[n] : label
 }
 const frameFailures = (id, controlSchema) => {
   const [category, n] = id.split('/')
-  const drawn = frameTitles(category, n)
+  const drawn = frameRows(category, n)
   if (drawn === null) return [`${id}: no ${category.toUpperCase()}-${n} frame in the design export to read its titles from (R-74)`]
-  return controlSchema.filter((c) => !drawn.titles.has(titleKey(c.label))).map((c) => `${id}: "${c.label}" is not a title ${drawn.frame} draws — a setting prints its frame's words (R-74); where one panel would print a title twice (R-13), the register's note says which words give way`)
+  return controlSchema.flatMap((c) => {
+    const title = titleKey(drawnTitle(category, n, c.label))
+    const row = drawn.rows.some((r) => r.title === title && (c.type === 'toggle'
+      ? SWITCH.test(r.body)
+      : r.words.some((w) => c.values.some((v) => w.includes(titleKey(lib.valueWords(c.valueLabels, v)))))))
+    return row ? [] : [`${id}: "${c.label}" is not a row ${drawn.frame} draws with one of its values — a setting prints its own row's words (R-74); where one panel would print a title twice (R-13), the register's note says which words give way, and a rename is filed per design`]
+  })
 }
+/** Everything the register and the frame hold a built design's settings to — the one list the subject and its controls read. */
+const settingFailures = (r) => [...registerFailures(r.id, r.entry.controlSchema), ...frameFailures(r.id, r.entry.controlSchema)]
 
 /** R-13: one panel never prints one title twice — every row a design's panel draws, words and settings alike, and the
  *  accordions' own titles, so no row is called Layout inside Layout. */
@@ -342,24 +369,46 @@ check('control — R-113\'s register: a pilot\'s setting filed under another gro
     typeof e === 'string' ? (e === 'data' ? [{ category, n: '9999', title }] : []) : Object.entries(e.designs ?? {}).filter(([, g]) => g === 'data').map(([n]) => ({ category, n, title })).concat(e.group === 'data' ? [{ category, n: '9999', title }] : [])))[0]
   if (data === undefined) throw new Error('the register files no title under Data, so the Data refusal is unproved')
   if (!registerFailures(`${data.category}/${data.n}`, [{ ...c, label: data.title }])[0]?.includes('is filed under Data')) throw new Error(`${data.category} "${data.title}" as a control is not told it is Data`)
-  const split = Object.entries(REGISTER).flatMap(([category, table]) => Object.entries(table).filter(([, e]) => typeof e === 'object' && !Array.isArray(e)).map(([title, e]) => ({ category, title, e })))[0]
+  const split = Object.entries(REGISTER).flatMap(([category, table]) => Object.entries(table).filter(([, e]) => typeof e === 'object' && e.designs !== undefined).map(([title, e]) => ({ category, title, e })))[0]
   if (split === undefined) throw new Error('the register carries no design of its own, so the per-design reading is unproved')
   const [n, own] = Object.entries(split.e.designs)[0]
   if (registered(split.category, n, split.title) !== own || registered(split.category, '9999', split.title) !== split.e.group) throw new Error(`${split.category} "${split.title}": design ${n} reads ${registered(split.category, n, split.title)}, another design ${registered(split.category, '9999', split.title)}`)
   return moved[0].split(' — ')[0]
 })
 
-check('control — a stylesheet reaches the validator: A24 #1 with one rule still on its old meta attribute does not assemble (AD-3)', () =>
-  mustThrow(() => assemble({ ...byId('a24/1'), css: `${byId('a24/1').css}\n.a24-1[data-meta="off"] .x { display: none; }\n` }), /stylesheet-control-undeclared/, 'A24 #1 with a stale [data-meta] rule'))
-check('control — R-74: a built setting relabelled to a title its frame does not draw is caught, naming the frame', () => {
-  const r = rendered.find((x) => x.id === 'a4/13') ?? rendered.find((x) => x.entry.controlSchema.length > 0)
-  const c = r.entry.controlSchema[0]
-  if (frameFailures(r.id, [c]).length !== 0) throw new Error(`"${c.label}" is not found in its own frame, so this control proves nothing`)
-  return mustFail(frameFailures(r.id, [{ ...c, label: 'Picture side' }]), /"Picture side" is not a title A4-13 /, `${r.id} relabelled`)
+check('control — a stylesheet reaches the validator: A24 #1 with one rule still on its old meta attribute does not assemble (AD-3)', () => {
+  const css = byId('a24/1').css
+  if (typeof css !== 'string' || !css.includes('[data-byline=')) throw new Error('A24 #1\'s style.css was not read from disk, so this control proves nothing')
+  return mustThrow(() => assemble({ ...byId('a24/1'), css: `${css}\n.a24-1[data-meta="off"] .x { display: none; }\n` }), /stylesheet-control-undeclared/, 'A24 #1 with a stale [data-meta] rule')
+})
+check('AD-3\'s stylesheet scan reads hostile input in linear time: a bracket left open before 64,000 spaces, and 32,000 escaped quotes', () => {
+  const d = byId('a24/1')
+  const took = (css) => {
+    const began = performance.now()
+    lib.validateDesign({ html: d.html, design: d.design, content: d.content, icons: iconDrawing, css })
+    return performance.now() - began
+  }
+  const ms = [took(`[data-align="center"${' '.repeat(64000)}`), took(`"${'\\"'.repeat(32000)}`)]
+  if (ms.some((x) => x > 1000)) throw new Error(`the scan took ${ms.map((x) => Math.round(x)).join(' ms and ')} ms — a regex is backtracking`)
+  return ms.map((x) => `${Math.round(x)} ms`).join(' · ')
+})
+check('control — R-74: a built setting relabelled to a title its frame does not draw, or to another row\'s title, is caught through the subject\'s own list; a rename the register files per design is read', () => {
+  const r = rendered.find((x) => x.id === 'a4/13')
+  if (r === undefined) throw new Error('A4 #13, whose frame this control reads, is not built')
+  const at = (label) => settingFailures({ id: r.id, entry: { ...r.entry, controlSchema: r.entry.controlSchema.map((c) => (c.name === 'card-side' ? { ...c, label } : c)) } })
+  if (at('Card side').length !== 0) throw new Error('A4 #13 is not clean to begin with, so this control proves nothing')
+  const absent = mustFail(at('Picture side'), /"Picture side" is not a row A4-13 /, 'Card side relabelled "Picture side"')
+  // "Card style" is a row A4-13 draws, for another setting — filed under Content, so a relabel would regroup Card side
+  mustFail(at('Card style'), /"Card style" is not a row A4-13 /, 'Card side relabelled "Card style", a row drawn for another setting')
+  // A4 #9's button style is drawn "Primary action" beside its Primary action toggle; the register files it "Action style"
+  const style = { name: 'action-style', type: 'segmented', label: 'Action style', group: 'style', values: ['surface-fill', 'outline'], default: 'surface-fill' }
+  if (frameFailures('a4/9', [style]).length !== 0 || frameFailures('a4/9', [{ ...style, label: 'Button look' }]).length !== 1) throw new Error('the register\'s rename for A4 #9 is not read')
+  if (titleKey(decode('Editor&rsquo;s  PICK')) !== "editor's pick") throw new Error('a drawn title is not read as the customer reads it')
+  return absent
 })
 
 check('R-113 — every built design\'s settings print their frame\'s titles (R-74), are filed in the register and sit where it files them; one control name holds one type, value set and group across the library (R-53); no panel, the controls sample\'s too, prints one title twice, its accordions\' included (R-13)', () => {
-  const filed = rendered.flatMap((r) => [...registerFailures(r.id, r.entry.controlSchema), ...frameFailures(r.id, r.entry.controlSchema)])
+  const filed = rendered.flatMap(settingFailures)
   if (filed.length > 0) throw new Error(filed.join('\n'))
   const library = lib.categoryControlUnion(rendered.map((r) => ({ id: r.id, controlSchema: r.entry.controlSchema })))
   if (typeof library === 'string') throw new Error(library)

@@ -3927,7 +3927,7 @@ reason: the fragments predate Story 4.10 and change no story's scope; fixing the
 plain: The Data group titles a feed's rows "Show" and "Order". A section that pulls two lists from Ghost — say a
   featured post and a list of the latest — would show two "Show" rows and two "Order" rows with nothing to tell them
   apart, and the reset box would read "Show and Show". And the settings the register files under Data for a
-  category — "Nav children", "Fill with", "If the tag is empty", "Prices", "When nothing matches" and the rest —
+  category — "Nav children", "Fill with", "If the tag is empty", "When nothing matches" and the rest —
   change what Ghost returns, so they are query settings, never controls, and the Data group has no row for them yet.
 status: open
 severity: low
@@ -3959,8 +3959,9 @@ location: packages/library/control-groups.json (the entries and its note) · the
 reason: nothing built repeats a title — `tools/check-snapshots.mjs` refuses a panel that does — and each new title is a
   wording the owner has not seen. The repeats, by design (a setting beside a field: the field gives way; two settings,
   or a setting and its accordion: one takes the export's other title for it):
-  - A2 #12 "Image" · A4 #7 "Issue line" · A6 #7, #10 "Note" · A20 #10 "Lead label" · A22 #8 "Eyebrow" — a setting
-    beside a field of its title.
+  - A2 #12 "Image" · A4 #7 "Issue line" · A6 #7, #10 "Note" · A20 #10 "Lead label" · A22 #8 "Eyebrow" · A22 #9
+    "Label" · A32 #1–#11 "Eyebrow" (the spec gives every A32 design but #12 an `eyebrow` field, and no A32 frame titles
+    it) — a setting beside a field of its title.
   - A16 "Blurb" (#1–#5, #12, #14, #15), "Email" (#1, #4, #5), "Phone" (#1, #4, #5, #9), "Label" (#9), "Reasons"
     (#14) · A17 "Title" (#2, #6, #9, #10) · A21 "Heading" (#3), "Blurb" (#5, #14), "Action label" (#6) · A30 "Note
     line" (#1–#7, #9–#11, #13), "Legal line" (#1, #2, #4, #6), "Blurb" (#9) · A31 "Recovery links" (#1–#7, #10),
@@ -3968,6 +3969,8 @@ reason: nothing built repeats a title — `tools/check-snapshots.mjs` refuses a 
   - A4 #9 "Primary action" (filed: the button style is "Action style") · A21 "Bio" (#1–#4, #12) and A29
     "Description" (#1–#7, #9–#14) beside a Data row of the same title · A30 #8, #13 "Order" beside the Data group's
     Order — two settings.
-  - A24 #15 "Layout" (A24's "Meta placement") · A34 #9 "Content" (A34's "Contents") · A34 #3 "Layout" (no other
-    title) — a setting titled like its accordion.
-  - A29–A32's "Eyebrow" settings are already resolved by their frames, which title the field "Eyebrow text".
+  - A26 #1–#6, #9–#11, #13–#15 "Share destinations" — the design's locked row and the site setting's, in one panel.
+  - A34 #9 "Content" (A34's "Contents") · A24 #15 "Layout" and A34 #3 "Layout" (no other title in the export) — a
+    setting titled like its accordion.
+  - A29–A31's "Eyebrow" settings are already resolved by their frames, which title the field "Eyebrow text"; so are
+    A27–A29's "Heading text", "Description text" and "Back link label", and A4-10's and A10-12's "Show …" toggles.

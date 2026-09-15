@@ -392,18 +392,24 @@ built design's control to the entry its title names, and **fails a control whose
 its own frame does not draw** (R-74): the story that gives a setting a title the register does not carry adds it, with
 its group, so a setting cannot leave its group by being renamed in the same edit. A title filed under Data is a
 query's setting, declared in `dataBindings`, never a control. Each title is the one the design's drawn panel prints
-(DW-111), and a labelled group's rows are filed under the titles the panel prints ("Actions › Sign in" is "Sign in"); a
-few entries are fields (an icon slot, a list), which are Content wherever they sit.
+(DW-111) — the check reads the frame's own row, the title with one of the setting's values beside it (a toggle's
+switch), so relabelling a setting to another row's title fails — and a labelled group's rows are filed under the titles
+the panel prints ("Actions › Sign in" is "Sign in"); a few entries are fields (an icon slot, an authored list), which
+are Content wherever they sit.
 
 **When the export's titles would repeat in one panel** (R-13: one panel prints one title once, its accordions'
-titles included), the export's own practice decides which gives way:
+titles included), the export's usual practice decides which gives way:
 - **A setting and a field** — the setting keeps its title and the field takes one of its own, as the export does in
-  A29–A31 ("Eyebrow text" beside an "Eyebrow" setting) and A22 #1 does ("Blurb text"). A17's "Title: Large · Display"
-  therefore stays "Title", and A17's Title field gives way when a design with that setting is built.
+  A27–A32 ("Heading text", "Description text", "Eyebrow text") and A22 #1 does ("Blurb text"). A17's "Title: Large ·
+  Display" therefore stays "Title", and A17's Title field gives way when a design with that setting is built. Where a
+  frame draws the pair apart another way, its words stand (A4-10's "Show how long it runs" beside its "How long it
+  runs" field; A10-12's "Show marker" beside "Marker").
 - **Two settings, or a setting and its accordion** — one takes the export's own other title for that setting: A4 #9's
-  button style, drawn "Primary action" beside its Primary action toggle, is filed as "Action style" (A6's word); A24
-  #15's "Layout" has A24's "Meta placement", and A34 #9's "Content" has A34's "Contents". With no other title in the
-  export (A34 #3's "Layout"), the story that builds the design names it.
+  button style, drawn "Primary action" beside its Primary action toggle, is filed as "Action style" (A6's word), and A34
+  #9's "Content" has A34's "Contents". With no other title in the export (A24 #15's and A34 #3's "Layout"), the story
+  that builds the design names it. The register files a rename per design —
+  `"Action style": { "group": "style", "renames": { "9": "Primary action" } }` — and the frame check reads the drawn row
+  it replaces.
 - Every such title is the owner's to see, under Questions for the owner (R-83), in the story that builds it. DW-166
   lists the repeats the export draws, category by category.
 
@@ -1386,7 +1392,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | values that break their type's grammar — a toggle that is not exactly `on`/`off`, a stepper that is not ascending consecutive integers, a swatch row offering anything but the pack's roles, a named value that is not a kebab word — or a `valueLabels` key that is not a value | *(Story 4.5)* the grammar is what keeps the attribute selector, the panel's drawing and the stored value the same thing. A label for a value nobody can pick is a typo. |
 | `inherit`, `initial`, `unset` or `revert` anywhere in a control or a `universals` narrowing | *(Story 4.5)* FR-F2, R-23 — no `Inherit`, and no other CSS-wide word, at section level. |
 | more than `CONTROL_CAP` of one design's own controls | *(Story 4.5)* FR-F3. The universal trio and the Data group are not counted. |
-| a control name whose attribute is already a directive (`items`) or Ghost's `data-portal` | *(Story 4.5)* AD-3. A control's attribute must mean nothing but the control. |
+| a control name whose attribute is already a directive (`items`), Ghost's `data-portal`, the visitor's `data-mode`, a Koenig card's `data-kg-*` or a translation's `data-i18n-*` | *(Story 4.5; the last three Story 4.10's Fix)* AD-3. A control's attribute must mean nothing but the control, and a stylesheet may select on those. |
+| JSON null anywhere in `design.json` or `content.json` (`json-null`, naming the path) | *(Story 4.10's Fix)* nothing there takes null — a field that does not apply is left out — and every later check reads through fields, so null is refused before any of them. |
+| a built design's setting that is not a row its own frame draws — its title with one of its values (a toggle's switch), or the drawn title the register's per-design rename replaces | *(Story 4.10's Fix)* R-74 for a setting's words, run by `tools/check-snapshots.mjs`: relabelling a setting to another row's registered title would move it between groups with every other check green. |
 | controls that disable each other round a circle, or an `inForce` outside the control's own values | *(Story 4.5)* no value in force could be decided for any of them; what renders while a control is greyed is always one of its own values. |
 | a control greyed by another in its own group and declared before it (`dependency-order`) | *(Story 4.10)* R-113: a group draws its controls in declaration order, so the setting that greys a row sits above it and the reason reads in order. Across groups the panel's group order decides, and a dependency there is legal. |
 | a `universals` entry naming no universal, offering a value the universal does not have, with no reason, or dropping the universal's default without naming an offered one — or a no-value lock that names a default | *(Story 4.5)* R-23: a design offers **fewer** of a universal's values, never others, and says why at the control. R-103's lock has no value in force at all. |

@@ -445,6 +445,19 @@ test('R-115 — Reset this design removes exactly what its confirm names, and ke
   const carried = start({ controls: { bg: 'contrast', columns: '2', card: '12px' } })
   assert.deepEqual(resetChanges(narrowed, carried), ['Columns'])
   assert.deepEqual(resetSection(narrowed, carried).controls, { bg: 'contrast' }, 'the carried value stays; junk under a declared name goes')
+  // R-103's locks carry a value the same way, at one value or none
+  for (const values of [['surface'], []]) {
+    const locked = { ...entry, universals: { bg: { values, reason: 'The ground is the design.' } } }
+    assert.deepEqual(resetSection(locked, start({ controls: { bg: 'contrast', columns: '2' } })).controls, { bg: 'contrast' }, `a lock at [${values.join()}] keeps a carried value`)
+  }
+  // a value at this design's own default is named nowhere, so it stays too — another design's default may differ
+  const atDefault = start({ controls: { columns: '3', align: 'center' }, data: { latest: { count: 3, order: 'newest' } } })
+  assert.deepEqual(resetChanges(entry, atDefault), ['Alignment'])
+  const cleared = resetSection(entry, atDefault)
+  assert.deepEqual(cleared.controls, { columns: '3' })
+  assert.deepEqual(cleared.data, { latest: { count: 3, order: 'newest' } })
+  // and junk in a drawn query field goes, as junk under a declared name does
+  assert.deepEqual(resetSection(entry, start({ data: { latest: { count: 'lots', order: 'newest' } } })).data, { latest: { order: 'newest' } })
   // a query field this design draws no row for is another design's: a fixed query's parked Count, a tags query's Order
   const fixed = { ...entry, dataBindings: { latest: { source: 'posts', limit: 1, fixed: true as const } } }
   assert.deepEqual(resetSection(fixed, start({ data: { latest: { count: 5 } } })).data, { latest: { count: 5 } })

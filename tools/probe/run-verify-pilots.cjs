@@ -57,7 +57,7 @@ async function main() {
   if (!process.env.VERCEL_TOKEN || !process.env.VERCEL_TEAM_ID) throw new Error('VERCEL_TOKEN and VERCEL_TEAM_ID are needed to match the deployment to this checkout')
   const answer = await fetch(`https://api.vercel.com/v13/deployments/${new URL(APP).host}?teamId=${process.env.VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` } })
   const served = await answer.json().catch(() => ({}))
-  if (!answer.ok) throw new Error(`Vercel answered ${answer.status} for ${new URL(APP).host}: ${served.error?.message ?? 'no message'} — check VERCEL_TOKEN and VERCEL_TEAM_ID`)
+  if (!answer.ok) throw new Error(`Vercel answered ${answer.status} for ${new URL(APP).host}: ${served.error?.message ?? 'no message'}${answer.status === 401 || answer.status === 403 ? ' — check VERCEL_TOKEN and VERCEL_TEAM_ID' : ''}`)
   if (served.meta?.githubCommitSha !== head) throw new Error(`${APP} serves ${served.id ?? 'an unreadable deployment'}, built from ${served.meta?.githubCommitSha ?? 'no recorded commit'}, and this checkout is ${head}: push, wait for CI's deploy, then run this`)
   note('deployment', `${served.id} ${served.readyState}, built from ${head.slice(0, 8)} — this checkout's HEAD`)
   const { UNIVERSALS, pillWidth } = await import(require('node:url').pathToFileURL(require('node:path').join(__dirname, '..', '..', 'packages', 'library', 'src', 'vocabulary.ts')).href)
@@ -212,25 +212,41 @@ async function main() {
       check(`R-113 · ${name} — nothing pinned above the groups, and every control in the group its role names`, placed.every((p) => p.group !== null) && misplaced.length === 0, misplaced.join(', ') || `${design.controlSchema.length} controls placed`)
       // the page draws the engine's order, and each field and setting its own id: every title in an accordion — a
       // field's <label for> or -label, a setting's -label — read in document order, its kind from the panel's id
-      // ("…-prop-…" or "…-control-…"; a picker's closed dialog aside)
-      const drawn = await aside.evaluate((a) => ({
-        ids: [...a.querySelectorAll('[id]')].map((e) => e.id),
-        rows: [...a.querySelectorAll('[role="region"] [id$="-label"], [role="region"] label[for]')].filter((e) => !e.closest('dialog')).flatMap((e) => {
+      // ("…-prop-…" or "…-control-…"); a picker's dialog or popover aside. The same reader runs first on a copy of the
+      // panel with a duplicate id and a field moved below the settings, so each check has seen its fault
+      const readPanel = (root) => ({
+        ids: [...root.querySelectorAll('[id]')].map((e) => e.id),
+        rows: [...root.querySelectorAll('[role="region"] [id$="-label"], [role="region"] label[for]')].filter((e) => !e.closest('dialog, [role="dialog"], [popover]')).flatMap((e) => {
           const kind = { prop: 'words', control: 'setting' }[/^[^-]+-(prop|control)-/.exec(e.id || e.getAttribute('for'))?.[1]]
-          return kind === undefined ? [] : [{ text: e.textContent.trim(), kind, group: document.getElementById(e.closest('[role="region"]').getAttribute('aria-labelledby'))?.textContent.trim() }]
+          return kind === undefined ? [] : [{ text: e.textContent.trim(), kind, group: root.querySelector(`#${CSS.escape(e.closest('[role="region"]').getAttribute('aria-labelledby'))}`)?.textContent.trim() }]
         }),
-      }))
-      const twice = [...new Set(drawn.ids.filter((x, i) => drawn.ids.indexOf(x) !== i))]
-      check(`R-113 · ${name} — every id in the panel is its own`, drawn.ids.length > 0 && twice.length === 0, twice.join(', ') || `${drawn.ids.length} ids`)
-      const outOfOrder = Object.entries(TITLE).flatMap(([g, title]) => {
-        const want = [...design.controlSchema.filter((c) => c.group === g).map((c) => c.label), ...(g === 'style' ? UNIVERSALS.map((u) => u.label) : [])]
-        const got = drawn.rows.filter((r) => r.group === title && r.kind === 'setting').map((r) => r.text)
-        return got.join(' · ') === want.join(' · ') ? [] : [`${title} draws ${got.join(' · ') || 'nothing'}, declared ${want.join(' · ')}`]
       })
-      const content = drawn.rows.filter((r) => r.group === 'Content')
-      const firstSetting = content.findIndex((r) => r.kind === 'setting')
-      const below = firstSetting === -1 ? [] : content.slice(firstSetting).filter((r) => r.kind === 'words').map((r) => `"${r.text}" below a setting`)
-      check(`R-113 · ${name} — the engine's order on the page: words above settings in Content, each group's settings as declared, the trio closing Style`, drawn.rows.some((r) => r.kind === 'setting') && outOfOrder.length === 0 && below.length === 0, [...outOfOrder, ...below].join('; ') || `${drawn.rows.length} rows in order`)
+      const faults = (panel) => {
+        const twice = [...new Set(panel.ids.filter((x, i) => panel.ids.indexOf(x) !== i))]
+        const outOfOrder = Object.entries(TITLE).flatMap(([g, title]) => {
+          const want = [...design.controlSchema.filter((c) => c.group === g).map((c) => c.label), ...UNIVERSALS.filter((u) => u.group === g).map((u) => u.label)]
+          const got = panel.rows.filter((r) => r.group === title && r.kind === 'setting').map((r) => r.text)
+          return got.join(' · ') === want.join(' · ') ? [] : [`${title} draws ${got.join(' · ') || 'nothing'}, declared ${want.join(' · ')}`]
+        })
+        const content = panel.rows.filter((r) => r.group === 'Content')
+        const first = content.findIndex((r) => r.kind === 'setting')
+        const below = first === -1 ? [] : content.slice(first).filter((r) => r.kind === 'words').map((r) => `"${r.text}" below a setting`)
+        return { twice, order: [...outOfOrder, ...below] }
+      }
+      const planted = faults(await aside.evaluate((a, src) => {
+        const copy = a.cloneNode(true)
+        const withId = [...copy.querySelectorAll('[id]')]
+        withId[1].id = withId[0].id
+        const content = [...copy.querySelectorAll('[role="region"]')].find((r) => copy.querySelector(`#${CSS.escape(r.getAttribute('aria-labelledby'))}`)?.textContent.trim() === 'Content')
+        const word = content?.querySelector('label[for], [id*="-prop-"][id$="-label"]')
+        if (word) content.lastElementChild.append(word.cloneNode(true))
+        return (0, eval)(`(${src})`)(copy)
+      }, readPanel.toString()))
+      const drawn = await aside.evaluate((a, src) => (0, eval)(`(${src})`)(a), readPanel.toString())
+      const { twice, order } = faults(drawn)
+      check(`R-113 · ${name} — every id in the panel is its own`, planted.twice.length > 0 && drawn.ids.length > 0 && twice.length === 0, twice.join(', ') || `${drawn.ids.length} ids; the planted duplicate was seen`)
+      const hasWords = drawn.rows.some((r) => r.group === 'Content' && r.kind === 'words') && drawn.rows.some((r) => r.group === 'Content' && r.kind === 'setting')
+      check(`R-113 · ${name} — the engine's order on the page: words above settings in Content, each group's settings as declared, the universal controls at their group's foot`, drawn.rows.some((r) => r.kind === 'setting') && (!hasWords || planted.order.length > 0) && order.length === 0, order.join('; ') || `${drawn.rows.length} rows in order${hasWords ? '; the planted field below a setting was seen' : ''}`)
       const rows = await aside.evaluate((a) => [...a.querySelectorAll('[role="radiogroup"].rounded-pill')].map((g) => ({
         label: document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim(),
         pills: [...g.querySelectorAll('[role="radio"]')].map((b) => {

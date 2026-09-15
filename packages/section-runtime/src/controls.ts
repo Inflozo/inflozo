@@ -358,23 +358,27 @@ export function resetControl(_entry: ControlEntry, state: ControlState, name: st
   return { ...state, controls }
 }
 
-/** FR-F4: every control and every data control this design draws back to its default. The words, the items and the
- *  stored dark overrides stay — S14's "Posts keep their content." rule. So does what this design does not use: a value
- *  it does not offer, carried under a name both designs declare (FR-D19: a universal this design narrows, or locks
- *  with no value), a name it does not declare, and a query field it draws no row for — each is another design's
- *  choice, and returns with it. Parked values live apart, in the doc's `parkedControls` (AD-27), beyond reset's reach.
- *  So reset removes exactly what `resetChanges` names, and the panel asks first (R-115). */
+/** FR-F4: every setting this design draws back to its default. The words, the items and the stored dark overrides
+ *  stay — S14's "Posts keep their content." rule. Reset removes exactly the changes `resetChanges` names (a greyed
+ *  row's included) and junk under a declared name; everything else stored is another design's to mean and stays: a
+ *  value this design does not offer or locks away, a value equal to this design's default, a name it does not declare,
+ *  and a query field it draws no row for — FR-D19 carries each under the name both designs share, and it returns with
+ *  the design that uses it. Parked values live apart, in the doc's `parkedControls` (AD-27), beyond reset's reach. */
 export function resetSection(entry: ControlEntry, state: ControlState): ControlState {
   const record = (o: unknown): Record<string, unknown> => (typeof o === 'object' && o !== null ? { ...(o as Record<string, unknown>) } : {})
   const controls = record(state.controls)
   for (const r of resolveAll(entry, state.controls).values()) {
-    // its own value, greyed or not, or junk under its name — never a value only another design offers
-    if (r.stored !== null || !r.def.values.includes(controls[r.def.name] as string)) delete controls[r.def.name]
+    const raw = controls[r.def.name]
+    if (r.stored !== null ? r.stored !== r.def.default : raw !== undefined && !r.def.values.includes(raw as string)) delete controls[r.def.name]
   }
   const data = record(state.data)
   for (const r of dataRows(entry, state)) {
-    const { [r.control]: _cleared, ...rest } = record(data[r.key])
-    if (Object.keys(rest).length > 0) data[r.key] = rest
+    const stored = record(data[r.key])
+    const v = stored[r.control]
+    const valid = r.control === 'count' ? validCount(v) !== undefined : v === 'newest' || v === 'oldest'
+    if (!r.changed && (v === undefined || valid)) continue
+    delete stored[r.control]
+    if (Object.keys(stored).length > 0) data[r.key] = stored
     else delete data[r.key]
   }
   return { ...state, controls, data }

@@ -27,6 +27,10 @@ export type Failure = { code: string; message: string }
 
 const push = (out: Failure[], code: string, message: string) => { out.push({ code, message }) }
 
+/** Attribute names that belong to the page or to Ghost, never to a control: Portal's link, the visitor's mode on
+ *  `:root`, a Koenig card's, a translation's. A stylesheet may select on them; a control may not be named like one. */
+const FOREIGN_ATTR = /^(portal|mode)$|^(kg|i18n)-/
+
 /** Every place a parsed JSON file carries null, as a path. Nothing in design.json or content.json takes null — a field
  *  that does not apply is left out — and the checks below read fields of fields, so null is refused before any of
  *  them runs: an author reads which field, never a stack trace. */
@@ -467,7 +471,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   for (const c of schema) {
     if (!CONTROL_NAME_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" is not a kebab-case name — it writes data-${c.name} on the section root (AD-3).`)
-    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal' || c.name.startsWith('i18n-')) {
+    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive or Ghost's own attribute — a control's attribute must mean nothing but the control (AD-3).`)
     }
     if (UNIVERSAL_CONTROLS.includes(c.name)) {
@@ -749,9 +753,11 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
   const out: Failure[] = []
   const said = new Set<string>()
   // one pass: a string or a comment is stepped over whole, so a "/*" inside content: "…" opens no comment and a
-  // "[data-x]" inside a string is no selector; an attribute selector is read with its operator, its value and its flag
-  const token = /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\/\*[\s\S]*?(?:\*\/|$)|\[\s*(?:[\w*-]*\|)?data(?:-|\\-)((?:\\.|[\w-])+)\s*(?:([~|^$*]?=)\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|([^\s\]]+))\s*([iIsS])?\s*)?\]/g
-  const unescape = (v: string) => v.replace(/\\(.)/g, '$1')
+  // "[data-x]" inside a string is no selector; an attribute selector is read with its operator, its value and its flag.
+  // Linear on any input: a string ends at its line as CSS's does, and no two adjacent runs can share a character
+  const token = /"(?:\\.|[^"\\\n])*(?:"|\n|$)|'(?:\\.|[^'\\\n])*(?:'|\n|$)|\/\*[\s\S]*?(?:\*\/|$)|\[\s*(?:[\w*-]*\|)?data(?:-|\\-)((?:\\.|[\w-])+)\s*(?:([~|^$*]?=)\s*(?:"((?:\\.|[^"\\\n])*)"|'((?:\\.|[^'\\\n])*)'|([^\s\]]+))\s*(?:([is])\s*)?)?\]/gi
+  // CSS escapes: a backslash and up to six hex digits is a code point, any other character is itself
+  const unescape = (v: string) => v.replace(/\\([0-9a-f]{1,6})\s?|\\(.)/gi, (_, hex: string | undefined, ch: string | undefined) => (hex === undefined ? ch! : String.fromCodePoint(parseInt(hex, 16))))
   for (const m of css.matchAll(token)) {
     const [selector, rawName, op, dq, sq, bare, flag] = m
     if (rawName === undefined || said.has(selector)) continue
@@ -759,7 +765,7 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
     const name = unescape(rawName).toLowerCase()
     const offered = Object.hasOwn(controlValues, name) ? controlValues[name] : undefined
     if (offered === undefined) {
-      if (DIRECTIVES[`data-${name}`] !== undefined || /^(portal|mode)$|^(kg|i18n)-/.test(name)) continue
+      if (DIRECTIVES[`data-${name}`] !== undefined || FOREIGN_ATTR.test(name)) continue
       push(out, 'stylesheet-control-undeclared', `style.css selects on ${selector}, and this design declares no control named "${name}" — the stylesheet never selects on an attribute the design does not own (AD-3).`)
       continue
     }

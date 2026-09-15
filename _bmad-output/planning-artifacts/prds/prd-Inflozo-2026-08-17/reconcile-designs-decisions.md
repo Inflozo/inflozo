@@ -2216,13 +2216,16 @@ role; Section Settings holds only what fits no role."*
     The five pilots, grouped before the sweep, matched it setting for setting.
   - Each title is the one the design's drawn panel prints (DW-111); a labelled group's rows are filed under the titles
     the panel prints ("Actions › Sign in" is "Sign in"). Where the export's titles would repeat in one panel (R-13), its
-    own practice decides which gives way: a setting beside a field of the same title keeps its title and the field
-    takes one of its own, as the export does in A29–A31 ("Eyebrow text" beside an "Eyebrow" setting) and A22 #1 does
-    ("Blurb text") — so A17's "Title: Large · Display" stays "Title" and its category's Title field gives way; two
-    settings, or a setting and its accordion, take the export's own other title for one of them — A4 #9's button style,
-    drawn "Primary action" beside its Primary action toggle, is filed as "Action style" (A6's word), so A4 #13 keeps the
-    toggles its frame draws. Where the export has no other title (A34 #3's "Layout"), the story that builds the design
-    names it. Every such title is the owner's to see (R-83) in that story; DW-166 lists the repeats the export draws.
+    usual practice decides which gives way: a setting beside a field of the same title keeps its title and the field
+    takes one of its own, as the export does in A27–A32 ("Heading text", "Description text", "Eyebrow text") and A22 #1
+    does ("Blurb text") — so A17's "Title: Large · Display" stays "Title" and its category's Title field gives way;
+    where a frame draws the pair apart another way, its words stand (A4-10's "Show how long it runs" beside its "How
+    long it runs" field). Two settings, or a setting and its accordion, take the export's own other title for that
+    setting — A4 #9's button style, drawn "Primary action" beside its Primary action toggle, is filed as "Action style"
+    (A6's word), so A4 #13 keeps the toggles its frame draws; A34 #9's "Content" has A34's "Contents". Where the export
+    has no other title (A24 #15's and A34 #3's "Layout"), the story that builds the design names it. A rename is filed
+    per design (`{ "group", "renames": { "<n>": "<drawn title>" } }`), which is how the frame check finds the row it
+    replaces. Every such title is the owner's to see (R-83) in that story; DW-166 lists the repeats the export draws.
 - Targets: ✅ Story 4.10's spec · ✅ `packages/library/src/vocabulary.ts` (`CONTROL_GROUPS`, `SIDEBAR_GROUPS`, each
   universal's `group`), `registry.ts` (`quickControls[]` withdrawn; `categoryControlUnion` refuses one name in two
   groups), `validate.ts` (`dependency-order`) · ✅ `packages/library/control-groups.json` · ✅
