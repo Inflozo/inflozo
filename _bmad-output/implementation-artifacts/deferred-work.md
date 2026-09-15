@@ -3801,7 +3801,11 @@ reason: which hero each starter now uses is a composition choice, not a rename �
 
 plain: The orange Subscribe buttons have white words that are too faint for the accessibility rule, in light mode only.
   The fix is a colour choice for the owner (Story 4.10's Q3).
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: R-110 (owner, 2026-09-15, Story 4.10's Q3, option 1): the words on the accent are the ink. Light
+  `--text-on-accent` is `#232019` in `packages/section-runtime/src/tokens.ts` and `reference-tokens.css` — 4.77:1 on
+  `#D96C3F` by WCAG's formula, against white's 3.41:1; Dark's `#171511` on `#E0805A` (6.43:1) is unchanged. Epic 6's
+  Paper pack takes the same value. The export still draws white (R-74: never edited).
 severity: medium
 origin: Story 4.10's Dev run — `tools/probe/run-verify-pilots.cjs` on the deployed /pilots, axe-core 4.12.1 at WCAG 2.1
   AA: `color-contrast` on A1 #1's `.a1-1__cta`, A22 #1's `.a22-1__button` and A4 #13's primary action, #FFFFFF on

@@ -2101,6 +2101,26 @@ keep 'Newer posts · 5 / 11 · Older posts'."*
     - ✅ `docs/section-authoring.md` § 3 "The three the shim owns";
     - ✅ the comment on `data-pagination`'s `numbers` branch in `packages/section-runtime/src/core.ts`.
 
+## A28 · Step 7 — Story 4.10's Dev, a ruling on the words on a main button, 2026-09-15
+
+Raised by Story 4.10's Dev run, when axe on the deployed `/pilots` failed `color-contrast` on the main button of Rail,
+Inline Row and Latest Post in Light, and nowhere else (DW-158). Asked in R-83's shape as Q3 under
+`## Questions for the owner` in
+`_bmad-output/implementation-artifacts/spec-4-10-the-five-pilot-sections-editor-perfect-with-the-snapshot-harness.md`.
+
+**R-110 — words on the accent are the ink, not white.** Question 3, option 1, ruled 2026-09-15: *"Dark words on the
+orange, as Dark mode already does."*
+
+- **Why it was a question.** The export's Paper objects draw white on `#D96C3F` (`_build/a22lib.js:4`), which is 3.41:1
+  by WCAG's formula; button-sized text needs 4.5:1. R-74 makes the export the authority, so departing from it is a
+  ruling.
+- **What it binds.** Light `--text-on-accent` is `#232019`, Paper's own body ink (4.77:1). The accent itself does not
+  move, and Dark (`#171511` on `#E0805A`, 6.43:1) already had this shape. Epic 6's Paper pack authors the same value.
+- Targets:
+  - ✅ Story 4.10's spec · ✅ `packages/section-runtime/src/tokens.ts` and `reference-tokens.css` ·
+    ✅ `deferred-work.md` (DW-158 closed).
+- **Deliberately not touched:** the export (R-74).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

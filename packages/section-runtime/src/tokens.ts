@@ -85,7 +85,8 @@ export const REFERENCE_TOKENS: Readonly<{
     '--border-hairline': '#EBE5DB',
     '--border-fade': 'rgba(28, 26, 23, 0.08)',
     '--accent': '#D96C3F',
-    '--text-on-accent': '#FFFFFF',
+    // R-110 (owner, 2026-09-15): Paper draws white here, 3.4:1 on #D96C3F (axe, Story 4.10); the ink passes at 4.8:1.
+    '--text-on-accent': '#232019',
     '--bg-contrast': '#232019',
     '--text-on-contrast': '#FBF9F5',
     '--accent-on-contrast': '#e8a87c',

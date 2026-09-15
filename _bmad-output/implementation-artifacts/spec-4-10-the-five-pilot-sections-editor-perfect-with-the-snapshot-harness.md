@@ -344,6 +344,10 @@ something and another when it does not.
   wrongly); the reference design fixture carries the two Portal attributes (its every-directive check). The reference
   token rows Paper's objects name include the button fill and link colour (both today's accent) and the button radius
   (the kit's `r`); `--site-width` and the gutter are not named, keep their values, and are DW-155.
+- **2026-09-15, Dev — R-110 (Q3, option 1):** light `--text-on-accent` is the ink `#232019` in `tokens.ts` and
+  `reference-tokens.css`; DW-158 closed. Q4 was rewritten after the owner's reply that menus must keep dropdowns: it now
+  asks which menu form the Headers story builds dropdowns on, with Ghost's theme-level `partials/navigation.hbs` read
+  in source for both releases.
 
 ## Design Notes
 
@@ -613,27 +617,50 @@ pilots passed, in both modes, at all three widths, for every visitor.
 3. **Keep the drawings as they are, and record the exception.**
    - The pages match the drawings exactly, and every published site built on Paper ships a button that fails WCAG AA.
 
-**Ruled:** _(awaiting the owner)_ — asked 2026-09-15 by the Dev run. DW-158 records it; the rest of the story does not wait on it.
+**Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-110** in `reconcile-designs-decisions.md` §A28. Light
+`--text-on-accent` is `#232019` (4.77:1 on `#D96C3F`); DW-158 closes.
 
-**Q4. The Rail header's menu: use Ghost's own menu, or have the section write its own?**
+**Q4. Header menus with dropdowns: which way should the menu be drawn so dropdowns keep working?**
 
-*(Raised by the Dev run, 2026-09-15 — the spec said to ask before acting on a recording that disagrees with the plan.)*
-The plan built the menu by going through your Ghost site's menu items one by one and writing each link itself. When
-we tried that on both test Ghost servers, every link came out as the home page ("/"), because in that spot Ghost reads
-the word `url` as its own command, not as the item's address. Writing `this.url` instead gave the right addresses
-(`/essay/`, `/notes/`), but the section builder cannot write that form today. So the build used Ghost's own ready-made
-menu (`{{navigation}}`), which both Ghost versions draw correctly, and folds the extra items into "More" with styling.
+*(Raised by the Dev run, 2026-09-15; rewritten the same day after the owner's reply: "All menus have dropdown items. I
+do not want that to be affected. Users should be able to add dropdown navigation too.")*
 
-Example: a site whose menu is Essay · Notes · About. Built the planned way it would link all three to the home page;
-built with Ghost's own menu, Essay goes to `/essay/`, and the page you are on is marked as current.
+**What we found.**
+- **Ghost's own menu settings have no dropdowns.** Each item is only a label and a link (`navigation.js:41-51`, both
+  Ghost versions).
+- **The header drawings give dropdowns two sources** (`A1 Headers - Spec.md:87-91`):
+  - **Added in Inflozo** (the default): the user picks a Ghost menu item and adds its dropdown links in Inflozo.
+  - **From Ghost's menu, by a naming trick**: an item named `+Topics` becomes a dropdown, and the `-Essays`, `-Notes`
+    items after it become its links. A small script folds them.
+- **Dropdowns must open without JavaScript.** The drawings make each one a plain HTML open/close box
+  (`A1 Headers - Spec.md:170`, `:187`).
 
-1. **Keep Ghost's own menu, as built (RECOMMENDED).**
-   - Correct links on both Ghost versions today, recorded on the test servers.
-   - Ghost marks the current page for free, which the plan had left for later.
-   - The menu's inner tags are Ghost's (`<ul class="nav">`), so the section styles them rather than choosing them.
-2. **Teach the section builder to write `this.url`, and build the menu item by item.**
-   - The section chooses every tag of the menu itself.
-   - A new form in the builder's vocabulary, a new recording on both servers, and no current-page mark until A1's own
-     story — more work in this story for a result the visitor cannot see.
+**What that means for the Rail menu as built today** (Ghost's ready-made menu, `{{navigation}}`):
+- Links are correct on both Ghost versions, and the naming-trick dropdowns would still work.
+- **Dropdowns added in Inflozo would not work without JavaScript.** Ghost writes its menu as one sealed block, so the
+  theme cannot slip a dropdown under a chosen item.
+- **Ghost lets a theme replace that block with its own small menu file** (`partials/navigation.hbs`). Ghost still hands
+  that file every item's label, link, and whether it is the current page (`helpers/navigation.js:76-89`;
+  `theme-engine/engine.js:14-22` reads the theme's own files after Ghost's). Inside it, each item can carry its
+  dropdown in plain HTML. This is read in Ghost's source; it gets recorded on both test servers before anything is
+  built on it.
+- **This story's Rail draws no dropdowns either way.** The drawings' dropdowns were already left to the Headers
+  category story. The choice is what that story builds on.
+
+Example: a menu of Home · Topics · About, where Topics opens to Essays and Notes. With Inflozo's own menu file, the
+dropdown under Topics is ordinary HTML, opens with no script, marks the page you are on, and works whether the user
+added Essays and Notes in Inflozo or named them `-Essays` and `-Notes` in Ghost.
+
+1. **Keep this story as built, and bind the Headers story to Inflozo's own menu file (RECOMMENDED).**
+   - Nothing about dropdowns is lost, and this story does not grow.
+   - The Headers story (DW-150) records the menu file on both test servers first, then builds both dropdown sources on
+     it. It never builds dropdowns on Ghost's sealed block.
+2. **Build Inflozo's own menu file now, in this story.**
+   - Same end result, proven sooner on the Rail sample.
+   - This story grows: a new recording on both servers, a new piece in the section builder, and a theme file the
+     theme-compiling epic (Epic 7) would otherwise place.
+3. **Build the menu item by item, without Ghost's menu at all.**
+   - Dropdowns added in Inflozo work without a script.
+   - Ghost's current-page mark is lost, and the section builder needs a new way of writing links (`this.url`).
 
 **Ruled:** _(awaiting the owner)_
