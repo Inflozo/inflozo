@@ -157,8 +157,8 @@ export type SidebarGroup = (typeof SIDEBAR_GROUPS)[number]
 /** The words the panel prints for a value: its declared label, else the value itself with its first letter raised
  *  and hyphens as spaces. The panel and R-114's pill rule read the same words. */
 export const valueWords = (valueLabels: Readonly<Record<string, string>> | undefined, value: string): string => {
-  // own properties only: `constructor` is a legal kebab value, and a plain object inherits one; JSON can carry null
-  const label = typeof valueLabels === 'object' && valueLabels !== null && Object.hasOwn(valueLabels, value) ? valueLabels[value] : undefined
+  // own properties only: `constructor` is a legal kebab value, and a plain object inherits one
+  const label = valueLabels !== undefined && Object.hasOwn(valueLabels, value) ? valueLabels[value] : undefined
   return typeof label === 'string' ? label : `${value.charAt(0).toUpperCase()}${value.slice(1).replace(/-/g, ' ')}`
 }
 

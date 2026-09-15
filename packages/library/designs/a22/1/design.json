@@ -9,8 +9,8 @@
     { "name": "heading-size", "type": "segmented", "label": "Heading size", "group": "style", "values": ["regular", "large", "display"], "default": "large" },
     { "name": "field-width", "type": "named-select", "label": "Field width", "group": "layout", "values": ["narrow", "medium", "wide"], "default": "medium",
       "valueLabels": { "narrow": "Narrow 320", "medium": "Medium 400", "wide": "Wide 480" } },
-    { "name": "blurb", "type": "segmented", "label": "Blurb", "group": "content", "values": ["show", "hide"], "default": "show" },
     { "name": "below-field", "type": "segmented", "label": "Below the field", "group": "content", "values": ["note", "nothing"], "default": "note" },
+    { "name": "blurb", "type": "segmented", "label": "Blurb", "group": "content", "values": ["show", "hide"], "default": "show" },
     { "name": "social-proof", "type": "segmented", "label": "Social proof", "group": "content", "values": ["off", "member-count"], "default": "off" }
   ],
   "universals": {

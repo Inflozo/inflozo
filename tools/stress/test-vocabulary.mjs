@@ -86,6 +86,8 @@ check('the on-disk reference fixture validates clean, end to end', () => {
     html: readFileSync(join(dir, 'reference-design/index.html'), 'utf8'),
     design: JSON.parse(readFileSync(join(dir, 'reference-design/design.json'), 'utf8')),
     content: JSON.parse(readFileSync(join(dir, 'content.json'), 'utf8')),
+    // and its stylesheet, so the guide's example is held to AD-3 from both sides
+    css: readFileSync(join(dir, 'reference-design/style.css'), 'utf8'),
   })
   if (f.length) throw new Error(say(f))
 })

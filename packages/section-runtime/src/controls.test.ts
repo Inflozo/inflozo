@@ -428,13 +428,35 @@ test('R-115 — what Reset this design would undo: nothing at the defaults, a da
   assert.deepEqual(resetChanges(entry, ok(setControl(entry, ok(setControl(entry, start(), 'columns', '2')), 'icons', 'off'))), ['Show icons', 'Columns'])
 })
 
-test('R-115 — Reset this design removes exactly what its confirm names: another design\'s parked values stay (FR-D17)', () => {
-  const parked = start({ controls: { columns: '2', 'nav-position': 'left' }, data: { latest: { count: 5 }, rail: { count: 7 } } })
-  assert.deepEqual(resetChanges(entry, parked), ['Columns', 'Show'], 'the confirm names this design\'s changes only')
-  const reset = resetSection(entry, parked)
-  assert.deepEqual(reset.controls, { 'nav-position': 'left' }, 'a control this design does not declare is parked, not reset')
-  assert.deepEqual(reset.data, { rail: { count: 7 } }, 'a query this design does not draw keeps its Count')
+test('R-115 — Reset this design removes exactly what its confirm names, and keeps what only another design uses', () => {
+  const kept = start({ controls: { columns: '2', 'nav-position': 'left' }, data: { latest: { count: 5 }, rail: { count: 7 } } })
+  assert.deepEqual(resetChanges(entry, kept), ['Columns', 'Show'], 'the confirm names this design\'s changes only')
+  const reset = resetSection(entry, kept)
+  assert.deepEqual(reset.controls, { 'nav-position': 'left' }, 'a control this design does not declare stays')
+  assert.deepEqual(reset.data, { rail: { count: 7 } }, 'a query this design does not bind keeps its Count')
   assert.deepEqual(resetChanges(entry, reset), [])
+  // the universal trio is this design's too: named, and removed
+  const bg = ok(setControl(entry, start(), 'bg', 'contrast'))
+  assert.deepEqual(resetChanges(entry, bg), ['Background role'])
+  assert.deepEqual(resetSection(entry, bg).controls, {})
+  // FR-D19 carries a universal's value under the name both designs declare: a design that narrows it away neither
+  // names it nor removes it, so the design that offers it gets it back
+  const narrowed = { ...entry, universals: { bg: { values: ['base', 'surface'], reason: 'Drawn for plain grounds.' } } }
+  const carried = start({ controls: { bg: 'contrast', columns: '2', card: '12px' } })
+  assert.deepEqual(resetChanges(narrowed, carried), ['Columns'])
+  assert.deepEqual(resetSection(narrowed, carried).controls, { bg: 'contrast' }, 'the carried value stays; junk under a declared name goes')
+  // a query field this design draws no row for is another design's: a fixed query's parked Count, a tags query's Order
+  const fixed = { ...entry, dataBindings: { latest: { source: 'posts', limit: 1, fixed: true as const } } }
+  assert.deepEqual(resetSection(fixed, start({ data: { latest: { count: 5 } } })).data, { latest: { count: 5 } })
+  const tags = { ...entry, dataBindings: { latest: { source: 'tags' } } }
+  const both = start({ data: { latest: { count: 9, order: 'oldest' } } })
+  assert.deepEqual(resetChanges(tags, both), ['Show'])
+  assert.deepEqual(resetSection(tags, both).data, { latest: { order: 'oldest' } })
+})
+
+test('a Count reaches an emitter only where the panel draws its Show row — never for a source Ghost returns whole', () => {
+  assert.equal(withData({ plans: { source: 'tiers' } }, { plans: { count: 2 } })['plans']!.limit, undefined)
+  assert.equal(withData({ tags: { source: 'tags' } }, { tags: { count: 2 } })['tags']!.limit, 2, 'the control: a tags query takes it')
 })
 
 test('row · R-108, a query the design fixes: no Show and no Order, a stored Count and Order are ignored, and both emitters render one post', () => {

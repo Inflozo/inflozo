@@ -3922,11 +3922,13 @@ location: _bmad-output/planning-artifacts/epics.md (A17 and A18 story blocks, an
 reason: the fragments predate Story 4.10 and change no story's scope; fixing them means correcting the generator's
   field parse, not hand-editing the cards.
 
-### DW-165: a design with two queries would print "Show" and "Order" twice in its Data group
+### DW-165: the Data group draws only Show and Order — two queries repeat them, and a category's own query settings have no row yet
 
 plain: The Data group titles a feed's rows "Show" and "Order". A section that pulls two lists from Ghost — say a
   featured post and a list of the latest — would show two "Show" rows and two "Order" rows with nothing to tell them
-  apart, and the reset box would read "Show and Show".
+  apart, and the reset box would read "Show and Show". And the settings the register files under Data for a
+  category — "Nav children", "Fill with", "If the tag is empty", "Prices", "When nothing matches" and the rest —
+  change what Ghost returns, so they are query settings, never controls, and the Data group has no row for them yet.
 status: open
 severity: low
 origin: Story 4.10's Fix review (sweep 2, edge-case hunter) — `dataRows()` in
@@ -3937,4 +3939,35 @@ owner: Story 5.19 (the Data group's Source, Count and Order), which owns the que
 location: packages/section-runtime/src/controls.ts (`dataRows`) · apps/web/components/controls/sidebar.tsx (the confirm's
   list)
 reason: no built design declares two queries (each pilot has at most one, and the controls sample one), and naming a
-  query in the panel is a wording the export has not drawn yet.
+  query in the panel is a wording the export has not drawn yet. For the category settings: `tools/check-snapshots.mjs`
+  refuses one declared as a control, naming it a query's, so the category story that builds such a design adds its
+  row to the Data group (P0·5's library-wide ones, such as When nothing matches, are Story 5.19's).
+
+### DW-166: titles the design export prints twice in one panel, for the category stories that build those designs
+
+plain: In some drawn panels the same title appears twice — a setting and a text field both called "Note line", or a
+  setting called "Layout" inside the Layout group. One panel may print a title only once (R-13), so the story that
+  builds each design changes one of the two, by the rule the export itself follows, and shows you the new words.
+status: open
+severity: low
+origin: Story 4.10's Fix review (sweep 3, acceptance audit and the register research, 2026-09-15) — every drawn panel
+  read against its category's fields and the accordion titles
+owner: each category story that builds a design named below, which applies the rule in
+  `docs/section-authoring.md` § 2 ("When the export's titles would repeat in one panel") and puts the new title to the
+  owner under Questions for the owner (R-83) before it ships
+location: packages/library/control-groups.json (the entries and its note) · the named designs' frames
+reason: nothing built repeats a title — `tools/check-snapshots.mjs` refuses a panel that does — and each new title is a
+  wording the owner has not seen. The repeats, by design (a setting beside a field: the field gives way; two settings,
+  or a setting and its accordion: one takes the export's other title for it):
+  - A2 #12 "Image" · A4 #7 "Issue line" · A6 #7, #10 "Note" · A20 #10 "Lead label" · A22 #8 "Eyebrow" — a setting
+    beside a field of its title.
+  - A16 "Blurb" (#1–#5, #12, #14, #15), "Email" (#1, #4, #5), "Phone" (#1, #4, #5, #9), "Label" (#9), "Reasons"
+    (#14) · A17 "Title" (#2, #6, #9, #10) · A21 "Heading" (#3), "Blurb" (#5, #14), "Action label" (#6) · A30 "Note
+    line" (#1–#7, #9–#11, #13), "Legal line" (#1, #2, #4, #6), "Blurb" (#9) · A31 "Recovery links" (#1–#7, #10),
+    "Code" (#1–#9) · A32 #12 "Meter label" — a setting beside a field or list of its title.
+  - A4 #9 "Primary action" (filed: the button style is "Action style") · A21 "Bio" (#1–#4, #12) and A29
+    "Description" (#1–#7, #9–#14) beside a Data row of the same title · A30 #8, #13 "Order" beside the Data group's
+    Order — two settings.
+  - A24 #15 "Layout" (A24's "Meta placement") · A34 #9 "Content" (A34's "Contents") · A34 #3 "Layout" (no other
+    title) — a setting titled like its accordion.
+  - A29–A32's "Eyebrow" settings are already resolved by their frames, which title the field "Eyebrow text".

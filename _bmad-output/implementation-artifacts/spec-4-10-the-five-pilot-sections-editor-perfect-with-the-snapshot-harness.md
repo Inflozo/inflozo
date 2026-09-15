@@ -353,8 +353,8 @@ something and another when it does not.
     filed under Data is told it is a query's; R-13 counts an accordion's title; the per-category title check and the
     check-snapshots rows that re-read `sidebar()` and could never fail are gone.
   - The register files titles as panels print them, not with notes ("(repeater)"); where the export's title would repeat
-    in one panel it takes the export's word from elsewhere (A4 #9's Action style, A17's Title size), so A4 #13 keeps
-    its drawn Primary action and Secondary action.
+    in one panel it takes the export's word from elsewhere (A4 #9's Action style; A17's Title size, which sweep 3
+    reversed), so A4 #13 keeps its drawn Primary action and Secondary action.
   - `validateDesign` holds `style.css` to the declared controls (AD-3), which A24's rename had nothing to check; a
     value that is not a string, and `valueLabels: null`, are refused instead of throwing; the pill track and room are
     pinned by a value set only they decide.
@@ -364,6 +364,27 @@ something and another when it does not.
   - The docs: R-114's numbers and reasoning at 233 px; FR-H2 and Story 5.19 put the meta toggles in Content, not Data;
     FR-F3's show-or-hide exceptions; the guide's example control is `post-details`, which no longer collides with
     A17's `meta` (the reference fixture follows); two queries' Show and Order are DW-165 for Story 5.19.
+- [x] **Review sweep 3** (the same four layers on sweep 2's patches, then a read of every category's drawn panels
+  against the register, 2026-09-15; the Review Findings below list each):
+  - Reset keeps what this design does not use — a universal's carried value it does not offer, a name it does not
+    declare, a query field it draws no row for — so it removes exactly what the confirm names; a Count reaches an
+    emitter only where the panel draws its Show row.
+  - The validator refuses JSON null anywhere, by its path, instead of throwing; the stylesheet check reads CSS as CSS —
+    strings and comments stepped over, attribute names case-folded, operators and the `i` flag honoured, every value
+    of a control read, and the attributes no control can be named (directives, Portal, Koenig's `data-kg-*`, the
+    visitor's `data-mode`) left alone; the reference fixture is validated with its stylesheet.
+  - `tools/check-snapshots.mjs` holds a built setting's title to its own frame (R-74), proves a stylesheet reaches the
+    validator, and proves the Data refusal from anywhere in the register; tests pin R-53's type rule, reset's trio and
+    fixed queries, and the pill track and room at their pixel boundaries.
+  - The panel keys rows by kind, and a change from anywhere clears the nothing-to-reset line for good; the pilots
+    harness checks every panel id is unique and that the page draws the engine's order, and names a Vercel credential
+    failure as one.
+  - A22 #1 declares Below the field before Blurb, as its frame draws them (its snapshot re-baselined).
+  - The register: 16 titles corrected to what the drawn panels print (A2 "Comes back after", A4 "Eyebrow above the
+    title", A17 "Lead", "Head", "Posts", A16's four contact toggles, A1's returned-panel rows and "Source", and
+    additions), the icon slots filed as Content under their drawn titles, and the rule for a repeated title taken from
+    the export's own practice: a setting keeps its title and a field beside it gives way (A29–A31's "Eyebrow text"),
+    so A17's setting is "Title" again; the repeats the export draws are DW-166.
 - [x] `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs`: the groups in order, every control in its
   group, pills on one line with room, the confirm's words, focus and axe.
 - [x] **Propagate:** `prd.md` FR-F3, FR-G3, Appendix C and I · `sections-inventory.md` · `ARCHITECTURE-SPINE.md` ·
@@ -414,8 +435,9 @@ something and another when it does not.
 - Given a design that breaks R-113 or R-114, when the validator or `tools/check-snapshots.mjs` reads it, then it is
   refused by name: `pill-words`, `control-group`, `dependency-order`, `quick-controls-withdrawn`; a control name with
   two types, value sets or groups anywhere in the library (R-53); a built design's setting the register does not file,
-  files under another group, or files under Data; a title printed twice in one panel, an accordion's title included
-  (R-13); and, from AD-3, a stylesheet rule on a control or value the design does not declare.
+  files under another group, or files under Data; a built setting whose title its own frame does not draw (R-74); a
+  title printed twice in one panel, an accordion's title included (R-13); JSON null anywhere (`json-null`); and, from
+  AD-3, a stylesheet rule on a control or value the design does not declare.
 
 ### Review Findings
 
@@ -489,6 +511,26 @@ raised are listed once.)*
 - [x] [FixReview][Defer] Two queries in one design would print Show and Order twice — refused by R-13 today, and the query rows' words are Story 5.19's — DW-165
 - [x] [FixReview][Dismiss] R-53 compares values, not their words: A22 #1 prints Centred and A24 #1 Centre because their frames do (R-74); the guide and `registry.ts` now say so
 
+*(Fix review, sweep 3, 2026-09-15, the same four layers on sweep 2's patches, then a read of every category's drawn
+panels against the register. Findings two layers raised are listed once.)*
+
+- [x] [FixReview][Patch] Reset removed a universal's value this design does not offer but a sibling carries (FR-D19), unnamed in the confirm; and a whole query record, fields no drawn row owns included [packages/section-runtime/src/controls.ts]
+- [x] [FixReview][Patch] A Count stored for a source Ghost returns whole (tiers) reached the theme as `limit`, with no row to show or reset it [packages/section-runtime/src/controls.ts]
+- [x] [FixReview][Patch] JSON null in a control, a dependency, a universal, a query or a content prop threw inside the validator; sweep 2's spec said `valueLabels: null` was refused while its test accepted it [packages/library/src/validate.ts]
+- [x] [FixReview][Patch] The stylesheet check: a "/*" inside a string swallowed a stale rule, a "[data-x]" inside a string was read as a selector, Portal's, Koenig's and the visitor's attributes were refused, case, namespaces, escapes, operators and the `i` flag were misread, and only one value per control was checked [packages/library/src/validate.ts]
+- [x] [FixReview][Patch] Nothing proved `style.css` reaches the validator in the gate, and the reference fixture was validated without it [tools/check-snapshots.mjs, tools/stress/test-vocabulary.mjs]
+- [x] [FixReview][Patch] The Data-title control ran only when the first design's category had a plain Data entry; the refusal told an author to rename rather than declare a query setting [tools/check-snapshots.mjs]
+- [x] [FixReview][Patch] Relabelling a built setting to another registered title ("Card side" → "Picture side") moved it between groups with every check green [tools/check-snapshots.mjs]
+- [x] [FixReview][Patch] Untested: R-53's type rule, reset of the universal trio and of a fixed query, the pill track between 231 and 239 and the room at 3 [packages/library/src/validate.test.ts, packages/section-runtime/src/controls.test.ts]
+- [x] [FixReview][Patch] Fields and settings drawn from one list could share a React key; "Nothing to reset" came back unasked after an undo [apps/web/components/controls/sidebar.tsx]
+- [x] [FixReview][Patch] No check saw a duplicate panel id or the page's row order; a Vercel credential failure read as "push and wait for CI" [tools/probe/run-verify-pilots.cjs]
+- [x] [FixReview][Patch] A22 #1 declared Blurb before Below the field; its frame draws them the other way round [packages/library/designs/a22/1]
+- [x] [FixReview][Patch] Register titles the drawn panels do not print (A2 "Dismiss memory", A4 "Eyebrow", A17 "Lead side", "Head side", "Posts per row", A16 "Contact rows", A1's "in returned panel" rows and "Featured post source", A33 "Divider glyph", A31 "Rows" and "Items"); icon slots filed as Style; no rule for which title gives way, with A17 and A22 #1 pointing opposite ways [packages/library/control-groups.json, docs/section-authoring.md, reconcile-designs-decisions.md]
+- [x] [FixReview][Patch] Docs: R-113 and the guide left "type" out of a name's promise; R-114's "84 px" beside the guide's "80 px"; `CONTROL-PROMPTS.html`'s Quick Controls lines unmarked; sweep 2's log named the wrong phase [the named files]
+- [x] [FixReview][Defer] The export itself prints titles twice in one panel across A2–A34 (a setting beside a field of its title, or beside a Data row, or titled like its accordion) — DW-166, for the category stories that build those designs, each new title put to the owner
+- [x] [FixReview][Defer] The Data group draws only Show and Order: two queries repeat them, and a category's own query settings (Nav children, Fill with, Prices …) have no row yet — DW-165 widened
+- [x] [FixReview][Dismiss] A list item's own field sharing a top-level title (22 cases) — it is read under its item, not beside the section's row
+
 ## Spec Change Log
 
 - **2026-09-15, Dev — the recording disagreed with one Design Notes fact (Ask First, flagged for the review).** The
@@ -549,9 +591,16 @@ raised are listed once.)*
   Member visibility's home is DW-163.
 - **2026-09-15, Fix — review sweep 2** (the same four layers on the patched diff). Reset keeps another design's parked
   values; the register is required for every built setting and the per-category title check is gone; a stylesheet is
-  held to its design's controls. **One reversal of sweep 1's own work:** A4 #13's action toggles are back to the titles
+  held to its design's controls. **One reversal of the Fix's own earlier work:** A4 #13's action toggles are back to the titles
   its frame draws — the clash they were renamed for is inside A4 #9's panel, and the register now files that design's
   button style as Action style. Owner test steps 13, 18, 20 and 23 are amended to match.
+- **2026-09-15, Fix — review sweep 3** (the four layers on sweep 2's patches, then every category's drawn panels read
+  against the register). Reset keeps what this design does not use and the theme takes a Count only where the panel
+  draws it; the validator refuses null and reads a stylesheet as CSS; a built setting's title is held to its frame
+  (R-74). **Two corrections of the Fix's own earlier work:** A17's "Title: Large · Display" is filed as "Title" again —
+  the export's own rule for a repeated title is that the field gives way (A29–A31's "Eyebrow text"), which A22 #1's
+  "Blurb text" already follows; and A22 #1 declares Below the field before Blurb, as its frame draws, so owner step 18
+  and the Design Notes read in that order.
 
 ## Design Notes
 
@@ -569,7 +618,7 @@ raised are listed once.)*
 |---|---|---|---|
 | **A1 #1 Rail** `designs/a1/1` · `default.hbs` · `A1-1 Rail.dc.html` desktop `:27-51`, shrink `:54-72`, dark `:103-125`, tablet `:127-150`, phone `:154-171`, panel `:193-227` · proof `A1-0 Category Proof.dc.html` · spec `A1 Headers - Spec.md` §0 `:13-192`, #1 `:193-231` | the site-wide singleton binding | **Brand:** `data-if="@site.logo"`, else the `@site.title` wordmark. **Nav:** a repeat over `@site.navigation`, folded in CSS (stepper 3–6), with a native `<details>` More (`nav.more`). **Actions,** inside `data-if="@site.allow_self_signup"` (the spec's Part A·A9, `:79`): Sign in for `anonymous`; Account for `free` and for `paid` (Portal `signin`, `account`); Subscribe for `anonymous` (`member.signup_cta`). **Phone:** the menu button (`a11y.open_menu`) at ≤767, with `nav-drawer` declared. **Controls,** in the drawn panel's order: On scroll · Nav position · Sign in · Subscribe · Divider under · Nav items before More. **Background:** base · surface, "An inverted header is a design of its own, Contrast Band, not a setting." (`:36`) | **A1's category story:** authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one); the dark-mode toggle (no key); `<h1>` on the home page only; an authored logo; the skip link (E7's layout owns `<main>`); the current-page underline (`@site.navigation` has no `current`); Shrink's motion |
 | **A17 #1 Three Up** `designs/a17/1` · `home.hbs` · `index.hbs` · `tag.hbs` · `author.hbs` · `A17-1 Three Up.dc.html` desktop `:28-48`, per row `:57`, states `:93`, panel `:132-146`, tablet `:161`, phone `:203-222`, dark `:227` · proof `A17-0 Category Proof.dc.html` `:283`, `:367-446` · spec `A17 Post Grids - Spec.md` §0 `:35-366`, #1 `:374-405` | the paginated context, and `post-card` with no params | **The feed:** `data-repeat="posts" data-partial="post-card"`. **The card:** link; feature image `\|img_url:m` with `data-bind-srcset` and `sizes`; a tag plate behind the image for a post without one; tag, title, `excerpt`; meta — photo `\|img_url:xs` with the stylesheet's one letter, name, date, `reading_time`. **Around it:** the pager — Newer (`pagination.newer`), the `numbers` indicator and Older (`pagination.older`), per R-109; the empty-state arm (`data-if="posts"` with `data-else`, `archive.empty_heading` and `archive.empty_body`); head and foot props. **Controls:** Per row · Image ratio · Excerpt (Three lines greyed at Four) · Meta · First cell · Tag. **Background:** base · surface · contrast | **Story 5.19:** Source, Count and the main-feed designation. **A34's category story:** the Pagination style select. **A17's category story:** "View all: Matches the query". **DW-107:** Image focus |
-| **A22 #1 Inline Row** `designs/a22/1` · `home.hbs` · `page.hbs` · `post.hbs` (spec `:85-87`) · `A22-1 Inline Row.dc.html` desktop `:28-32`, states `:34-52`, panel `:54-73`, widths `:75-83`, dark `:85-91` · proof `A22-0 Category Proof.dc.html` `:119-122` · spec `A22 Newsletter - Spec.md` §0 `:81-483`, #1 `:493-557` | `@member` gating, show-to, Portal | **Head:** props. **For `anonymous`,** inside `data-if="@site.allow_self_signup"`, the form: `data-members-form="subscribe"`, `data-members-email`, the button (`member.signup_cta`), the note, `data-members-error`, with `member-form` declared. **For `free` and for `paid`:** "Signed in" (R-4) and a Portal `account` link. **The whole section** sits inside `data-if="@site.members_enabled"` — the drawn "Hide the section". **Controls,** in the drawn panel's order: Alignment · Heading size · Field width · Blurb · Below the field · Social proof (`{members}`). **Background:** base · surface · contrast | **A22's category story:** Submitting, Done and Invalid, and their words; the name field and the newsletter choice; the paid count (DW-99); the other members-off option; Display greyed at Wide (one value, which `disabledBy` cannot grey); the no-JavaScript notice (R-5's key) |
+| **A22 #1 Inline Row** `designs/a22/1` · `home.hbs` · `page.hbs` · `post.hbs` (spec `:85-87`) · `A22-1 Inline Row.dc.html` desktop `:28-32`, states `:34-52`, panel `:54-73`, widths `:75-83`, dark `:85-91` · proof `A22-0 Category Proof.dc.html` `:119-122` · spec `A22 Newsletter - Spec.md` §0 `:81-483`, #1 `:493-557` | `@member` gating, show-to, Portal | **Head:** props. **For `anonymous`,** inside `data-if="@site.allow_self_signup"`, the form: `data-members-form="subscribe"`, `data-members-email`, the button (`member.signup_cta`), the note, `data-members-error`, with `member-form` declared. **For `free` and for `paid`:** "Signed in" (R-4) and a Portal `account` link. **The whole section** sits inside `data-if="@site.members_enabled"` — the drawn "Hide the section". **Controls,** in the drawn panel's order: Alignment · Heading size · Field width · Below the field · Blurb · Social proof (`{members}`). **Background:** base · surface · contrast | **A22's category story:** Submitting, Done and Invalid, and their words; the name field and the newsletter choice; the paid count (DW-99); the other members-off option; Display greyed at Wide (one value, which `disabledBy` cannot grey); the no-JavaScript notice (R-5's key) |
 | **A24 #1 Centred** `designs/a24/1` · `post.hbs` · `A24-1 Centred.dc.html` desktop `:30-46`, absences `:53-77`, states `:83-104`, panel `:116-145`, widths `:153-190`, dark `:211` · proof `A24-0 Category Proof.dc.html` `:94`, `:179-298` · spec `A24 Post Headers - Spec.md` Post block `:247-298`, fields `:351-389`, #1 `:390-436` | the wrapper context | **The header:** tag link; `<h1>` title; standfirst `excerpt`; a byline over `primary_author` (photo, name, date, `reading_time`); a figure with `feature_image`, srcset and `feature_image_caption` as text. **Controls:** Alignment · Title size · Standfirst lines · Image ratio · Rule, plus the post block's Tag line · Meta · Standfirst · Feature image · Avatar · Caption. **Background:** base · surface · contrast | **A24's category story, with E7's page wrapper:** `page.hbs` and `@page.show_title_and_feature_image`; all tags, and several authors with "and"/"and others" (R-3's key); the updated-date Meta value; the caption's links; the "Post block" group name. **DW-107:** Image focus |
 | **A4 #13 Latest Post** (R-108) `designs/a4/13` · `home.hbs` (proof `:57`) · `A4-13 Latest Post.dc.html` desktop `:30-56`, the card at rest/hover/focus `:61-79`, data states `:83-103`, dark `:110-134`, tablet `:139-165`, phone `:169-189`, a11y `:216-234`, panel `:240-258` · proof `A4-0 Category Proof.dc.html` `:55`, `:57`, roster `:274-275`, fields `:300-365` · spec `A4 Heroes - Spec.md` §0 `:27-88`, #3's geometry `:182-224`, #13 `:623-671` | a hero's authored text beside a `{{#get}}` card — a guarded media binding with `srcset`, a query fixed at one post, and the most settings of any hero | **Text:** eyebrow; the `<h1>` headline; sub (links only, as the field list at `A4-0:327` allows). **Actions:** primary and secondary, each a label with a Link Picker url. **The card:** `data-repeat="latest"` over `{source: posts, limit: 1, order: published_at desc, fixed: true}`; one link wraps the picture (`feature_image\|img_url:l`, `data-bind-srcset`, `sizes`, `alt=""`, explicit dimensions), the `<h2>` title (two lines) and the meta row (`primary_tag.name` as text · a `<time>` over `published_at\|date:D MMMM YYYY`); a hover-surface panel carries the title for a post with no picture; the column closes up when nothing is published. **Controls,** in the drawn panel's order: Card side · Show tag · Show date · Headline size · Primary action · Secondary action (greyed while Primary is off, "A secondary action needs a primary beside it."). **Background:** base · surface · contrast | **Story 5.19:** Which post. **Story 5.4:** Member visibility. **Story 5.20:** gating an action whose destination is a Portal ask. **A4's category story:** Card style's Title and date and its "Latest" label (no key); the members-only marker (a match on `visibility`, which no directive expresses); the fall-back picture when nothing is published; the short date on phones; which marks rule holds (`A4 Heroes - Spec.md:61` against `A4-0:327`) |
 
@@ -641,7 +690,7 @@ raised are listed once.)*
   |---|---|---|---|---|---|
   | A1 #1 Rail | On scroll | its link and label words · Sign in · Subscribe | Nav position · Nav items before More | Divider under · the universal trio | — |
   | A17 #1 Three Up | — | its words · Excerpt · Meta · Tag | Per row · First cell | Image ratio · the trio | — (Story 5.19 brings Source and Count) |
-  | A22 #1 Inline Row | — | its words (the field "Blurb text") · Blurb · Below the field · Social proof | Alignment · Field width | Heading size · the trio | — |
+  | A22 #1 Inline Row | — | its words (the field "Blurb text") · Below the field · Blurb · Social proof | Alignment · Field width | Heading size · the trio | — |
   | A24 #1 Centred | — | Tag line · Standfirst · Standfirst lines · Meta · Feature image · Caption | Alignment | Title size · Image ratio · Rule · Avatar · the trio | — |
   | A4 #13 Latest Post | — | its words · Show tag · Show date · Primary action · Secondary action | Card side | Headline size · the trio | — (fixed at one post) |
   | controls sample | — | its words · Show icons | Columns · Alignment · Image position | Card style · Rule under heading · Card tint · the image-focus note · the trio | Show · Order |
@@ -795,6 +844,52 @@ raised are listed once.)*
   broken subject); the validate, controls and agreement suites green; the one snapshot change is A24 #1's root: its
   control attributes in the new reading order, and `data-meta` renamed `data-byline` (R-53). `pnpm build` exit 0. The documentation gate
   passes.
+- **After review sweep 2, locally on Node 24.18.1:** `pnpm check` exit 0 — library 139, section-runtime 145, web 309,
+  ghost-shim 34 and theme-compiler 1 tests, `tools/stress/test-vocabulary.mjs` 21 checks (the reference fixture's
+  `post-details` included), `check-snapshots: PASS` with the register row "5 categories · 35 settings, every one filed
+  and held to the register" and each rewritten control failing on its broken subject. Each new test was run against the
+  code it guards broken first: `PILL_TRACK` 241 and `PILL_ROOM` 0 each fail the R-114 test. `pnpm build` exit 0; the
+  documentation gate PASS twice.
+
+**Results (Fix, deployed, 2026-09-15):**
+- **GitHub Actions** — run 34943221161 for `dadbab9f` (the Fix commit): `check`, `rls` and `deploy` all success; the
+  `check` log prints `documentation gate: PASS`, the R-113 register row `ok`, and `check-snapshots: PASS — 5 designs at
+  10 targets match 6 committed snapshot files`.
+- **Deployment:** `dpl_AbTm581rQ8C9D8U6qcrT6qRjtA3x`, production, READY, built from `dadbab9f` — read from Vercel's API
+  by the host `app.inflozo.com` with `VERCEL_TOKEN` and `VERCEL_TEAM_ID`, which is also the pilots harness's own
+  refusal to run against any other commit.
+- **The deployed `/pilots`** — `node tools/probe/run-verify-pilots.cjs` on Node 24 with `SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN` and `VERCEL_TEAM_ID`, on a clean checkout at `dadbab9f`, the browser drawing
+  real scrollbars: **142 PASS, 0 FAIL**. Every pilot's accordions in R-113's order with every control in its declared
+  group and nothing above them; every pill on one line with 2 px to spare and within 1 px of `pillWidth`; the
+  segmented controls the only pills; R-115 — the icon, "Nothing to reset" said twice (the line left and came back:
+  announced 2 times), the confirm "Removes your 1 change — Per row — from this design. Your words and pictures stay."
+  opening on Cancel, axe zero violations inside it, Escape and Cancel changing nothing, Reset design restoring three.
+  axe's positive control reported `image-alt`, and axe found zero violations in 90 of 90 canvases. Users 9 → 9.
+- **The deployed `/controls`** — `node tools/probe/run-verify-controls.cjs` with `SUPABASE_URL` and
+  `SUPABASE_SECRET_KEY`: **82 PASS, 0 FAIL**. Nothing pinned, with 5 of 5 sample settings read inside their accordions;
+  with nothing changed, "Nothing to reset: every setting is already this design's default. Dark overrides stay as they
+  are."; the Data-only confirm "Removes your 3 changes — Background role, Show and Order — from this design."; step
+  16's five changes in the panel's order, the dark override kept; axe zero at 1440 and 390 with its positive control;
+  the 4× throttle rows. Users 9 → 9.
+- The final `/pilots` screenshot was read by eye: Three Up's panel shows Content, Layout (Per row as pills, First cell
+  as a dropdown) and Style, nothing above them, and "Reset this design" with its curved arrow.
+
+**After review sweep 3, locally on Node 24.18.1 (2026-09-15):**
+- `pnpm check` exit 0 — library 140, section-runtime 146, web 309, ghost-shim 34 and theme-compiler 1 tests;
+  `tools/stress/test-vocabulary.mjs` 21 checks, the reference fixture now validated with its stylesheet;
+  `check-snapshots: PASS`, its R-113 row reading "5 categories · 35 settings, every one drawn in its frame, filed and
+  held to the register", with the new controls (a stale `[data-meta]` rule refuses A24 #1's assembly; "Picture side"
+  on A4 #13 is refused naming its frame; a Data title from the register is told it is a query's). A22 #1's snapshot
+  moved by its root's attribute order only. `pnpm build` exit 0.
+- Each new test was run against the code it guards broken first: reset removing every declared name, and the Count
+  fold without its Show-row test, each fail their test; `PILL_TRACK` 231, 234, 239, 241 and `PILL_ROOM` 0, 3, 5 each
+  fail the pill boundaries (232 and 233 decide every whole-pixel width alike).
+- The register against the drawn panels: of 1,424 titles, 24 are not a text node in their category's frames, each
+  accounted for — the P0 primitives' own titles (Filter, Count, Order, Tag / Author, the pickers, Image focus), rows
+  the export only specifies (A1 "Nav children", "Nav group", "Rail post source"; A6 "Per-section override"; A32 "The
+  button on this site"), A3 "Density" (A3-8's panel omits the row), A4 "Value source" (printed in a caption), A31
+  "Primary button icon" (drawn inline with the link) and A4 "Action style" (R-13's rename).
 
 ## Owner's manual test
 
@@ -824,7 +919,7 @@ These steps follow the rulings R-108 and R-109, and — since your test of the s
 | 15 | `https://app.inflozo.com/controls`, then `https://app.inflozo.com/style-guide` | Controls review, Style guide | Open each. | — | The same pages as before, in the new colours: a warm off-white ground and an orange accent — and on `/controls` the panel regrouped like the pilots' (step 23). |
 | 16 | `https://app.inflozo.com/pilots` | Rail, panel | Press **Rail**, then open every group in the panel. | — | **Section Settings:** On scroll. **Content:** its link and label fields, then Sign in and Subscribe. **Layout:** Nav position, Nav items before More. **Style:** Divider under, then Background role, Vertical spacing and Top divider. Nothing sits above the groups. Rail is the one pilot with a Section Settings group, because it is the one with a behaviour. |
 | 17 | same | Three Up, panel | Press **Three Up** and open every group. | — | **Content:** its words, then Excerpt, Meta and Tag. **Layout:** Per row, First cell. **Style:** Image ratio, then Background role, Vertical spacing and Top divider. There is no Data group yet: choosing which posts and how many arrives with Story 5.19. |
-| 18 | same | Inline Row, panel | Press **Inline Row** and open every group. | — | **Content:** its words (the sentence field is now called "Blurb text"), then Blurb, Below the field and Social proof. **Layout:** Alignment, Field width. **Style:** Heading size, then Background role, Vertical spacing and Top divider. ("Show to" above the canvas is this page's own switcher, not a panel setting.) |
+| 18 | same | Inline Row, panel | Press **Inline Row** and open every group. | — | **Content:** its words (the sentence field is now called "Blurb text"), then Below the field, Blurb and Social proof. **Layout:** Alignment, Field width. **Style:** Heading size, then Background role, Vertical spacing and Top divider. ("Show to" above the canvas is this page's own switcher, not a panel setting.) |
 | 19 | same | Centred, panel | Press **Centred** and open every group. | — | **Content:** Tag line, Standfirst, Standfirst lines, Meta, Feature image, Caption — Standfirst now sits above Standfirst lines, the setting that greys it. **Layout:** Alignment. **Style:** Title size, Image ratio, Rule, Avatar and the three. |
 | 20 | same | Latest Post, panel | Press **Latest Post** and open every group. | — | **Content:** its words, then Show tag, Show date, Primary action, Secondary action. **Layout:** Card side. **Style:** Headline size and the three. |
 | 21 | same | Three Up and Centred, panel | On Three Up open **Layout** and press First cell, then press Escape; on Centred open **Style** and press Rule, then Escape. Then look at every row of pills on every pilot. | — | First cell and Rule open as dropdowns ("Off · Spans two columns"; "None · Above the tag · Below the meta"). Every row of pills shows its words on one line, inside its pill, with a little room either side. |

@@ -2200,8 +2200,8 @@ role; Section Settings holds only what fits no role."*
   - The role is judged by what a setting DOES, never by its title: the export gives one title different settings in
     different categories ("Order: Newest · Oldest" chooses Ghost's rows; "Order: Value first · Label above" arranges a
     stat). So a row title holds one group WITHIN A CATEGORY, except on a design the register names, and not across the
-    library; a control's `name`, the author's own word, holds one value set and one group across the library, as R-53
-    rules — Centred's author line became `byline` beside Three Up's `meta`, which had carried two value sets.
+    library; a control's `name`, the author's own word, holds one type, one value set and one group across the library,
+    as R-53 rules — Centred's author line became `byline` beside Three Up's `meta`, which had carried two value sets.
   - Behaviour is none of the four roles even when it draws something, so the decision order asks Section Settings
     last, and a behaviour is set aside from each earlier question. Member visibility is filed there wherever a panel
     carries it; whether the settings panel or Layers does is Story 5.4's to settle (the PRD's FR-D5 and the export's
@@ -2211,15 +2211,18 @@ role; Section Settings holds only what fits no role."*
     across categories — the decision order, its tie-breakers and the table of kinds in `docs/section-authoring.md`
     § 2 are that result, and **`packages/library/control-groups.json` files every one of those settings under its
     group**, by category and panel title, so a category story reads its designs' groups rather than deciding them
-    again. `tools/check-snapshots.mjs` holds every built design to it and fails a setting it does not file, so a
-    setting cannot leave its group by being renamed in the same edit. The five pilots, grouped before the sweep,
-    matched it setting for setting.
-  - A labelled group's rows are filed under the title the panel prints ("Actions › Sign in" is "Sign in"). Where the
-    export's title for a setting would repeat another row of the same panel, or its accordion (R-13), the register files
-    the setting under the title the export gives that setting elsewhere: A4 #9's button style, drawn "Primary action"
-    beside its Primary action toggle, is "Action style" (A6's word), so A4 #13 keeps the toggles its frame draws; A17's
-    "Title: Large · Display" is "Title size", because every A17 panel prints a Title field. A24's and A34's settings
-    titled "Layout", and A34's "Content", have no other title in the export, so the story that builds one names it.
+    again. `tools/check-snapshots.mjs` holds every built design to it and fails a setting it does not file, or whose
+    title its own frame does not draw (R-74), so a setting cannot leave its group by being renamed in the same edit.
+    The five pilots, grouped before the sweep, matched it setting for setting.
+  - Each title is the one the design's drawn panel prints (DW-111); a labelled group's rows are filed under the titles
+    the panel prints ("Actions › Sign in" is "Sign in"). Where the export's titles would repeat in one panel (R-13), its
+    own practice decides which gives way: a setting beside a field of the same title keeps its title and the field
+    takes one of its own, as the export does in A29–A31 ("Eyebrow text" beside an "Eyebrow" setting) and A22 #1 does
+    ("Blurb text") — so A17's "Title: Large · Display" stays "Title" and its category's Title field gives way; two
+    settings, or a setting and its accordion, take the export's own other title for one of them — A4 #9's button style,
+    drawn "Primary action" beside its Primary action toggle, is filed as "Action style" (A6's word), so A4 #13 keeps the
+    toggles its frame draws. Where the export has no other title (A34 #3's "Layout"), the story that builds the design
+    names it. Every such title is the owner's to see (R-83) in that story; DW-166 lists the repeats the export draws.
 - Targets: ✅ Story 4.10's spec · ✅ `packages/library/src/vocabulary.ts` (`CONTROL_GROUPS`, `SIDEBAR_GROUPS`, each
   universal's `group`), `registry.ts` (`quickControls[]` withdrawn; `categoryControlUnion` refuses one name in two
   groups), `validate.ts` (`dependency-order`) · ✅ `packages/library/control-groups.json` · ✅
@@ -2229,8 +2232,9 @@ role; Section Settings holds only what fits no role."*
   ✅ `ARCHITECTURE-SPINE.md` · ✅ `DESIGN.md` · ✅ `epics.md` (FR-F3, FR-G3, Stories 4.1, 4.5 and 5.19, and every library
   category story's control line) · ✅ `epic-4-context.md` (all in Story 4.10's Fix run, 2026-09-15).
 - **Deliberately not touched:** the export (R-74); `reconcile-designs.md` and `encode-propagation-map.md`, which are
-  `record`s; the step-5b and step-5c prototypes, built from the export for the walk before this ruling; and `/kit`,
-  which catalogues the Kit as drawn.
+  `record`s; the step-5b and step-5c prototypes, built from the export for the walk before this ruling; `/kit`,
+  which catalogues the Kit as drawn; and `CONTROL-PROMPTS.html`'s prompts, which ran on 2026-08-25 and are kept as
+  sent, with a note in its lede.
 
 **R-114 — pills are for short choices; a longer choice is a dropdown.** His finding 3 in his words: "Any property
 where the values are larger (E.g. For First cell — the value 'Spans two columns' is larger in character size) we should
@@ -2242,7 +2246,7 @@ pill design."
   280-wide panel; anything else is a named select. The validator refuses the rest as `pill-words`, so every design
   after this story is held to it without anyone remembering.
 - **Why characters AND a measure.** A cap alone lets a word of wide letters overflow ("Wholesomely", eleven letters,
-  needs 84 px of a 77.7 px pill, one of three), and a measure alone would make his own example depend on the panel's
+  is 80 px, and with 2 px either side misses a 77.7 px pill, one of three), and a measure alone would make his own example depend on the panel's
   width: "Spans two columns" misses its pill by a pixel and a half (118 px of 116.5), so a track a few pixels wider
   keeps it a pill — and it is his example of what must not be one. The cap puts it in a dropdown whatever the width. Single words only was tried and declined: across the export it
   turned "Flush left · Centred" and "Full bleed · Inset" into dropdowns, which is not what "less characters" means.

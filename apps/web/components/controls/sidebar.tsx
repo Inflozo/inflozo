@@ -175,6 +175,9 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
   const confirm = useRef<HTMLDialogElement>(null)
   const model = sidebar(entry, state)
   const changes = resetChanges(entry, state)
+  // a change from anywhere — an edit, the canvas, an undo, one landing before the next frame — takes the line with it
+  // for good, so undoing back to nothing changed never announces it again unasked
+  if (nothingToReset && changes.length > 0) setNothingToReset(false)
   // a stored dark override is not reset (FR-F4), so both sentences say it stays rather than let "default" imply it goes
   const darkKept = model.groups.some((g) => g.rows.some((r) => r.kind === 'control' && r.moon))
 
@@ -190,7 +193,7 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
 
   const control = (row: ControlRow) => (
     <ControlField
-      key={row.name}
+      key={`control-${row.name}`}
       // a kind in every id: A22's Blurb setting and its Blurb text field share one name, and now one accordion
       id={`${base}-control-${row.name}`}
       row={row}
@@ -228,7 +231,7 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
     if (row.list !== undefined) {
       return (
         <ItemList
-          key={row.path}
+          key={`prop-${row.path}`}
           id={id}
           row={row}
           entry={entry}
@@ -304,8 +307,7 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
           Reset this design
         </button>
         <div role="status">
-          {/* a change that arrives another way — the canvas, an undo, before the next frame — takes the line with it */}
-          {nothingToReset && changes.length === 0 ? (
+          {nothingToReset ? (
             <HelperCaption>
               Nothing to reset: every setting is already this design&apos;s default.{darkKept ? ' Dark overrides stay as they are.' : ''}
             </HelperCaption>

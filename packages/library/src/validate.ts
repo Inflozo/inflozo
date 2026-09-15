@@ -27,6 +27,15 @@ export type Failure = { code: string; message: string }
 
 const push = (out: Failure[], code: string, message: string) => { out.push({ code, message }) }
 
+/** Every place a parsed JSON file carries null, as a path. Nothing in design.json or content.json takes null — a field
+ *  that does not apply is left out — and the checks below read fields of fields, so null is refused before any of
+ *  them runs: an author reads which field, never a stack trace. */
+function nullFailures(file: string, value: unknown, path = ''): Failure[] {
+  if (value === null) return [{ code: 'json-null', message: `${file} carries null at ${path || 'its top'}. Nothing here takes null — leave out a field that does not apply.` }]
+  if (typeof value !== 'object') return []
+  return Object.entries(value as object).flatMap(([k, v]) => nullFailures(file, v, Array.isArray(value) ? `${path}[${k}]` : path ? `${path}.${k}` : k))
+}
+
 // ─── the lexical scan ────────────────────────────────────────────────────────
 
 export type ScannedTag = { name: string; attrs: Array<[string, string]> }
@@ -370,7 +379,7 @@ function cssWideIn(c: ControlDef): string[] {
  *  stepper is a run of ascending consecutive integers ("small integer ranges" — ruling R-18 makes an
  *  item count a number); a swatch row offers the pack's roles; the rest are kebab words. */
 function valueGrammar(type: string, values: readonly string[]): string | null {
-  // JSON can carry 2 or null, and a pattern test reads either as its text: "2" passes a stepper, "null" a word
+  // JSON can carry 2 or true, and a pattern test reads either as its text: "2" passes a stepper, "true" a word
   if (values.some((v) => typeof v !== 'string')) return 'every value is a string — "2", never 2.'
   switch (type) {
     case 'toggle':
@@ -389,6 +398,8 @@ function valueGrammar(type: string, values: readonly string[]): string | null {
 }
 
 export function validateDesignJson(design: DesignJson, markup?: string): Failure[] {
+  const nulls = nullFailures('design.json', design)
+  if (nulls.length > 0) return nulls
   const out: Failure[] = []
   const d = design as DesignJson & { id?: unknown; quickControls?: unknown }
 
@@ -615,6 +626,8 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
 /** `icons` is the library's icon lookup (`@inflozo/library/icons`), handed in so this module never
  *  imports the drawings. Without it an icon default is checked for shape only. */
 export function validateCategoryContent(content: CategoryContent, icons?: IconLookup): Failure[] {
+  const nulls = nullFailures('content.json', content)
+  if (nulls.length > 0) return nulls
   const out: Failure[] = []
   if (!/^[a-z][a-z0-9]*$/.test(content.category ?? '')) {
     push(out, 'bad-category', `"${content.category}" is not a category id.`)
@@ -705,6 +718,8 @@ export function validateDesign(input: {
   /** the design's `style.css`, so a rule selecting on a control is held to the controls this design declares */
   css?: string
 }): Failure[] {
+  const nulls = [...nullFailures('design.json', input.design), ...(input.content === undefined ? [] : nullFailures('content.json', input.content))]
+  if (nulls.length > 0) return nulls
   const out = validateDesignJson(input.design, input.html)
   if (input.content !== undefined) out.push(...validateCategoryContent(input.content, input.icons))
   const schema = Array.isArray(input.design.controlSchema) ? input.design.controlSchema : []
@@ -725,20 +740,43 @@ export function validateDesign(input: {
 }
 
 /** AD-3 from the stylesheet's side: every `[data-…]` a rule selects on names a control this design declares, or a
- *  universal, and a value it offers — so renaming a control cannot leave a rule behind that selects nothing, and a
- *  setting that does nothing, with every other check green. */
+ *  universal, and matches a value it offers — so renaming a control cannot leave a rule behind that selects nothing, a
+ *  setting that does nothing, with every other check green. An attribute no control can be named is not held here: a
+ *  directive (Portal's form attributes stay on the page), Ghost's `data-portal`, a Koenig card's `data-kg-*`, and the
+ *  visitor's `data-mode` on `:root`. ponytail: a rule on a directive the compiler consumes selects nothing live and is
+ *  not refused; add that when a design writes one. */
 function validateStylesheet(css: string, controlValues: Readonly<Record<string, readonly string[]>>): Failure[] {
   const out: Failure[] = []
   const said = new Set<string>()
-  const bare = css.replace(/\/\*[\s\S]*?\*\//g, '')
-  for (const [selector, name, value] of bare.matchAll(/\[\s*data-([a-z0-9-]+)\s*(?:[~|^$*]?=\s*["']?([^"'\]\s]*)["']?\s*[is]?\s*)?\]/gi)) {
-    if (said.has(selector)) continue
+  // one pass: a string or a comment is stepped over whole, so a "/*" inside content: "…" opens no comment and a
+  // "[data-x]" inside a string is no selector; an attribute selector is read with its operator, its value and its flag
+  const token = /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\/\*[\s\S]*?(?:\*\/|$)|\[\s*(?:[\w*-]*\|)?data(?:-|\\-)((?:\\.|[\w-])+)\s*(?:([~|^$*]?=)\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|([^\s\]]+))\s*([iIsS])?\s*)?\]/g
+  const unescape = (v: string) => v.replace(/\\(.)/g, '$1')
+  for (const m of css.matchAll(token)) {
+    const [selector, rawName, op, dq, sq, bare, flag] = m
+    if (rawName === undefined || said.has(selector)) continue
     said.add(selector)
-    const offered = Object.hasOwn(controlValues, name!) ? controlValues[name!] : undefined
+    const name = unescape(rawName).toLowerCase()
+    const offered = Object.hasOwn(controlValues, name) ? controlValues[name] : undefined
     if (offered === undefined) {
+      if (DIRECTIVES[`data-${name}`] !== undefined || /^(portal|mode)$|^(kg|i18n)-/.test(name)) continue
       push(out, 'stylesheet-control-undeclared', `style.css selects on ${selector}, and this design declares no control named "${name}" — the stylesheet never selects on an attribute the design does not own (AD-3).`)
-    } else if (value !== undefined && !offered.includes(value)) {
-      push(out, 'stylesheet-control-value', `style.css selects on ${selector}, which is not among the values this design offers for "${name}": ${offered.join(' · ') || 'none'}.`)
+      continue
+    }
+    const raw = dq ?? sq ?? bare
+    if (op === undefined || raw === undefined) continue
+    const fold = (v: string) => (flag?.toLowerCase() === 'i' ? v.toLowerCase() : v)
+    const want = fold(unescape(raw))
+    const matches: Record<string, (v: string) => boolean> = {
+      '=': (v) => v === want,
+      '~=': (v) => v.split(/\s+/).includes(want),
+      '|=': (v) => v === want || v.startsWith(`${want}-`),
+      '^=': (v) => want !== '' && v.startsWith(want),
+      '$=': (v) => want !== '' && v.endsWith(want),
+      '*=': (v) => want !== '' && v.includes(want),
+    }
+    if (!offered.some((v) => matches[op]!(fold(v)))) {
+      push(out, 'stylesheet-control-value', `style.css selects on ${selector}, which matches none of the values this design offers for "${name}": ${offered.join(' · ') || 'none'}.`)
     }
   }
   return out

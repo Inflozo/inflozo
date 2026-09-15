@@ -248,8 +248,7 @@ function dataRows(entry: ControlEntry, state: ControlState): DataRow[] {
     // the design fixes (R-108) offers neither either: a hero that always shows one post has no "Show 5"
     if (b.ids !== undefined || b.fixed === true) continue
     const stored = read(state.data, key)
-    const fallback = read(orbitWeekly.DEFAULT_LIMIT, b.source)
-    const declaredCount = b.limit ?? (typeof fallback === 'number' ? fallback : undefined)
+    const declaredCount = countOf(b)
     if (declaredCount !== undefined) {
       const count = validCount(read(stored, 'count'))
       rows.push({
@@ -269,6 +268,13 @@ function dataRows(entry: ControlEntry, state: ControlState): DataRow[] {
     }
   }
   return rows
+}
+
+/** A query's Count as the panel draws it: its declared limit, else its source's numeric default — `undefined` for a
+ *  source Ghost returns whole (tiers), where the panel draws no Show row and so no stored Count reaches an emitter. */
+function countOf(b: DataBinding): number | undefined {
+  const fallback = read(orbitWeekly.DEFAULT_LIMIT, b.source)
+  return b.limit ?? (typeof fallback === 'number' ? fallback : undefined)
 }
 
 const validCount = (v: unknown): number | undefined =>
@@ -352,16 +358,26 @@ export function resetControl(_entry: ControlEntry, state: ControlState, name: st
   return { ...state, controls }
 }
 
-/** FR-F4: every control and every data control THIS DESIGN draws back to its default. The words, the items and the
- *  stored dark overrides stay — S14's "Posts keep their content." rule — and so does a stored value this design
- *  does not declare: FR-D17 parks another design's values in the same record, and "Reset this design" never loses
- *  them. The panel asks first (R-115), naming `resetChanges`, which reads the same scope. */
+/** FR-F4: every control and every data control this design draws back to its default. The words, the items and the
+ *  stored dark overrides stay — S14's "Posts keep their content." rule. So does what this design does not use: a value
+ *  it does not offer, carried under a name both designs declare (FR-D19: a universal this design narrows, or locks
+ *  with no value), a name it does not declare, and a query field it draws no row for — each is another design's
+ *  choice, and returns with it. Parked values live apart, in the doc's `parkedControls` (AD-27), beyond reset's reach.
+ *  So reset removes exactly what `resetChanges` names, and the panel asks first (R-115). */
 export function resetSection(entry: ControlEntry, state: ControlState): ControlState {
-  const names = new Set(declared(entry).map((d) => d.name))
-  const keys = new Set(dataRows(entry, state).map((r) => r.key))
-  const without = (o: unknown, drop: Set<string>) =>
-    Object.fromEntries(Object.entries(typeof o === 'object' && o !== null ? o : {}).filter(([k]) => !drop.has(k)))
-  return { ...state, controls: without(state.controls, names), data: without(state.data, keys) }
+  const record = (o: unknown): Record<string, unknown> => (typeof o === 'object' && o !== null ? { ...(o as Record<string, unknown>) } : {})
+  const controls = record(state.controls)
+  for (const r of resolveAll(entry, state.controls).values()) {
+    // its own value, greyed or not, or junk under its name — never a value only another design offers
+    if (r.stored !== null || !r.def.values.includes(controls[r.def.name] as string)) delete controls[r.def.name]
+  }
+  const data = record(state.data)
+  for (const r of dataRows(entry, state)) {
+    const { [r.control]: _cleared, ...rest } = record(data[r.key])
+    if (Object.keys(rest).length > 0) data[r.key] = rest
+    else delete data[r.key]
+  }
+  return { ...state, controls, data }
 }
 
 /** R-115: what `resetSection` would undo that the customer chose, as the panel titles it, in the panel's order —
@@ -484,7 +500,8 @@ export function withData(
     // key by another design (Story 5.11's shuffle back) cannot reach it
     if (b.ids === undefined && b.fixed !== true) {
       const count = validCount(read(stored, 'count'))
-      if (count !== undefined) next.limit = count
+      // only where the panel draws a Show row: a Count stored for a source Ghost returns whole has no row to reset it
+      if (count !== undefined && countOf(b) !== undefined) next.limit = count
       const order = read(stored, 'order')
       if (orderWord(b) !== undefined && (order === 'newest' || order === 'oldest')) {
         next.order = order === 'newest' ? 'published_at desc' : 'published_at asc'

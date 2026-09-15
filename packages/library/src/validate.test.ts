@@ -478,18 +478,22 @@ test('R-114 — pills are for short choices: two to four, each at most PILL_CHAR
   alone({ controlSchema: [three('Wholesomely')] }, 'pill-words')
   assert.match(validateDesignJson(design({ controlSchema: [three('Wholesomely')] }))[0]!.message, /"Wholesomely" is wider than one of 3 pills/)
   clean(validateDesignJson(design({ controlSchema: [three('Comfortable')] })), 'Comfortable fits one of three pills')
-  // the track and the room are pinned, not only the words: Magazine (56 px) fits one of four pills on a 241 px track or
-  // with no room to spare, and is refused on the measured 233 px with 2 px a side
-  alone({ controlSchema: [align({ values: ['list', 'grid', 'cards', 'magazine'], default: 'list' })] }, 'pill-words')
+  // the track (233) and the room (2 px a side) are pinned at their boundaries, not only by real words: 54 px fits one
+  // of four pills and 55 px does not, and 74 px misses one of three — together they hold the room at 4 and the track
+  // at 232–233, which decide every whole-pixel width alike
+  const four = (word: string) => align({ values: ['a', 'b', 'c', 'd'], default: 'a', valueLabels: { a: word, b: 'B', c: 'C', d: 'D' } })
+  assert.deepEqual([pillWidth('aaaaaarrr'), pillWidth('aaaaaaak'), pillWidth('aaaaaaaaaar')], [54, 55, 74])
+  clean(validateDesignJson(design({ controlSchema: [four('aaaaaarrr')] })), '54 px in one of four pills')
+  alone({ controlSchema: [four('aaaaaaak')] }, 'pill-words')
+  alone({ controlSchema: [three('aaaaaaaaaar')] }, 'pill-words')
   alone({ controlSchema: [align({ values: ['a', 'b', 'c', 'd', 'e'], default: 'a' })] }, 'pill-words')
   alone({ controlSchema: [align({ values: ['only'], default: 'only' })] }, 'pill-words')
   alone({ controlSchema: [align({ valueLabels: { start: ' ' } })] }, 'pill-words')
   // junk values are their grammar's refusal, not a crash and not a pill's
   alone({ controlSchema: [align({ values: [3 as unknown as string, 'start'], default: 'start' })] }, 'control-values')
-  // and JSON's other non-strings: a pattern test reads 2 as "2" and null as "null", so each passed its grammar before
+  // and JSON's other non-strings: a pattern test reads 2 as "2" and true as "true", so each passed its grammar before
   alone({ controlSchema: [ctl({ values: [2, 3] as unknown as string[], default: 2 as unknown as string })] }, 'control-values')
-  alone({ controlSchema: [align({ values: [null, 'start'] as unknown as string[], default: 'start' })] }, 'control-values')
-  clean(validateDesignJson(design({ controlSchema: [align({ valueLabels: null as unknown as Record<string, string> })] })), 'valueLabels: null prints each value as its words')
+  alone({ controlSchema: [align({ values: [true, 'start'] as unknown as string[], default: 'start' })] }, 'control-values')
   // a value's words are its own label, never one a plain object inherits — `constructor` is a legal kebab value
   assert.equal(valueWords({}, 'constructor'), 'Constructor')
   clean(validateDesignJson(design({ controlSchema: [align({ values: ['constructor', 'start'], default: 'start' })] })), 'an inherited name is not a label')
@@ -500,6 +504,24 @@ test('R-114 — pills are for short choices: two to four, each at most PILL_CHAR
     if (u.type === 'segmented') assert.equal(pillRefusal(u.values.map((v) => valueWords(u.valueLabels, v))), null, u.name)
   }
   clean(validateDesignJson(design({ controlSchema: [ctl({ values: ['2', '3', '4', '5', '6'] }), toggle(), align({ name: 'long', type: 'named-select', values: ['a', 'b', 'c', 'd', 'e'], default: 'a' })] })), 'no pill rule outside a segmented control')
+})
+
+test('JSON null anywhere in design.json or content.json is refused by its path, before any check reads through it', () => {
+  const no = null as never
+  for (const [over, at] of [
+    [{ controlSchema: [align({ valueLabels: no })] }, 'controlSchema[0].valueLabels'],
+    [{ controlSchema: [align({ disabledBy: no })] }, 'controlSchema[0].disabledBy'],
+    [{ controlSchema: [no] }, 'controlSchema[0]'],
+    [{ universals: { bg: no } }, 'universals.bg'],
+    [{ dataBindings: { latest: no } }, 'dataBindings.latest'],
+  ] as const) {
+    const f = validateDesign({ html: EVERY_DIRECTIVE, design: design(over as Partial<DesignJson>) })
+    assert.deepEqual(codes(f), ['json-null'], at)
+    assert.match(f[0]!.message, new RegExp(`design\\.json carries null at ${at.replace(/[[\].]/g, '\\$&')}\\.`))
+  }
+  const content = { category: 'a17', props: { title: no } } as unknown as CategoryContent
+  assert.deepEqual(codes(validateDesign({ html: EVERY_DIRECTIVE, design: design(), content })), ['json-null'])
+  assert.deepEqual(codes(validateCategoryContent(content)), ['json-null'])
 })
 
 test('R-113 — a design.json carrying quickControls[] is told there are none', () => {
@@ -730,6 +752,8 @@ test("a category's control union is generated from its designs, and one name wit
   // a named value set compares as a set — pill order is only where the pills sit — and a stepper's in order
   assert.ok(Array.isArray(categoryControlUnion([a, { id: 'a24/1', controlSchema: [align({ values: ['center', 'start'] })] }])), 'Left · Centre and Centre · Left are one set')
   assert.equal(typeof categoryControlUnion([a, { id: 'a24/1', controlSchema: [ctl({ values: ['3', '2'], default: '3' })] }]), 'string', 'a stepper in another order is another control')
+  // one name, one type: a toggle named like a segmented control is refused, whatever its values
+  assert.match(String(categoryControlUnion([a, { id: 'a5/5', controlSchema: [align({ type: 'named-select' })] }])), /"align" is a segmented in a5\/1 and a named-select in a5\/5/)
   // R-113: one name, one group
   const moved = categoryControlUnion([a, { id: 'a5/4', controlSchema: [align({ group: 'style' })] }])
   assert.match(String(moved), /"align" sits in layout in a5\/1 and in style in a5\/4/)
@@ -802,9 +826,18 @@ test('validateDesign runs design.json, content.json and markup as one', () => {
 test('AD-3 from the stylesheet\'s side: every [data-…] a rule selects on is a declared control or a universal, at a value it offers', () => {
   const said = (css: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: design({ controlSchema: [align()] }), css })).filter((c) => c.startsWith('stylesheet-'))
   assert.deepEqual(said('.s[data-align="center"] .x{} .s[data-bg="contrast"]{} .s[data-align]{} /* [data-meta="off"] is only words */'), [])
+  // what a stylesheet may select on that no control can be named: Portal's form, Ghost's link, a Koenig card, the
+  // visitor's mode; and a value matched as CSS matches it — unquoted, case-folded by i, by prefix
+  assert.deepEqual(said('form[data-members-form="signup"] [data-members-email]{} a[data-portal]{} :root[data-mode="dark"] .x{} .kg-toggle-card[data-kg-toggle-state="close"]{} [data-Align="CENTER" i]{} [data-align^="cen"]{} [data-align=start]{}'), [])
+  // a string is not a selector, and a "/*" inside one opens no comment
+  assert.deepEqual(said('.x::after{content:"[data-foo] /*"} .s[data-align="start"]{}'), [])
+  assert.deepEqual(said('.x::after{content:"/*"} .x[data-old-name="x"]{} /* note */'), ['stylesheet-control-undeclared'])
   // Story 4.10's rename, half done: the control is byline now, and one rule still selects on meta
   assert.deepEqual(said('.s[data-byline="off"] .m, .s[data-meta="off"] .m { display: none }'), ['stylesheet-control-undeclared', 'stylesheet-control-undeclared'])
+  assert.deepEqual(said('[*|data-old-name]{} [data\\-older]{}'), ['stylesheet-control-undeclared', 'stylesheet-control-undeclared'])
   assert.deepEqual(said(".s[data-align='middle']{} .s[data-align='middle'] .x{}"), ['stylesheet-control-value'], 'one selector is named once')
+  assert.deepEqual(said('[data-align="center"]{} [data-align="middle"]{}'), ['stylesheet-control-value'], 'every value of a control is read, not its first')
+  assert.deepEqual(said('[data-align=middle]{} [data-align="flush left"]{} [data-align^="mid"]{}'), ['stylesheet-control-value', 'stylesheet-control-value', 'stylesheet-control-value'])
 })
 
 test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {

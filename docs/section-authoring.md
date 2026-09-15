@@ -84,7 +84,7 @@ design** — the assembly carries `universals` as `{}` and `absent` as `[]`
 when a design declares none. A registry entry therefore describes **one design against its category's
 shared content model**. The category's **control** union is the other direction and is **generated,
 never authored**: `categoryControlUnion(designs)` in `registry.ts` builds it from the designs' own
-lists and refuses one control name carrying two value sets, or sitting in two groups, naming both designs
+lists and refuses one control name with two types, carrying two value sets, or sitting in two groups, naming both designs
 (FR-F7, R-53, R-113) — where two designs genuinely differ, they differ by name. The row title a customer reads sits
 where the register files it for that design (§2).
 
@@ -388,15 +388,24 @@ category and the title the panel prints, with its group; where one design's sett
 made on 2026-09-15 by two independent passes over the whole export against this rule, each disagreement settled into
 the rule's words above, and one more sweep for one group per kind across categories (Story 4.10's `## Verification`
 records the run). **A category story reads its designs' groups from it.** `tools/check-snapshots.mjs` holds every
-built design's control to the entry its title names, and **fails a control whose title has no entry**: the story that
-gives a setting a title the register does not carry adds it, with its group, so a setting cannot leave its group by
-being renamed in the same edit. A title filed under Data is a query's setting, declared in `dataBindings`, never a
-control. A labelled group's rows are filed under the title the panel prints ("Actions › Sign in" is "Sign in"). One
-panel prints one title once, its accordions' titles included (R-13), so where the export's title for a setting would
-repeat another row of the same panel, the register files the setting under the title the export gives it elsewhere:
-A4 #9's button style, drawn "Primary action" beside a Primary action toggle, is "Action style" (A6's word), and A17's
-"Title: Large · Display" is "Title size", because every A17 panel prints a Title field. A24's and A34's settings titled
-"Layout", and A34's "Content", have no other title in the export; the story that builds one names it and files it.
+built design's control to the entry its title names, and **fails a control whose title has no entry, or whose title
+its own frame does not draw** (R-74): the story that gives a setting a title the register does not carry adds it, with
+its group, so a setting cannot leave its group by being renamed in the same edit. A title filed under Data is a
+query's setting, declared in `dataBindings`, never a control. Each title is the one the design's drawn panel prints
+(DW-111), and a labelled group's rows are filed under the titles the panel prints ("Actions › Sign in" is "Sign in"); a
+few entries are fields (an icon slot, a list), which are Content wherever they sit.
+
+**When the export's titles would repeat in one panel** (R-13: one panel prints one title once, its accordions'
+titles included), the export's own practice decides which gives way:
+- **A setting and a field** — the setting keeps its title and the field takes one of its own, as the export does in
+  A29–A31 ("Eyebrow text" beside an "Eyebrow" setting) and A22 #1 does ("Blurb text"). A17's "Title: Large · Display"
+  therefore stays "Title", and A17's Title field gives way when a design with that setting is built.
+- **Two settings, or a setting and its accordion** — one takes the export's own other title for that setting: A4 #9's
+  button style, drawn "Primary action" beside its Primary action toggle, is filed as "Action style" (A6's word); A24
+  #15's "Layout" has A24's "Meta placement", and A34 #9's "Content" has A34's "Contents". With no other title in the
+  export (A34 #3's "Layout"), the story that builds the design names it.
+- Every such title is the owner's to see, under Questions for the owner (R-83), in the story that builds it. DW-166
+  lists the repeats the export draws, category by category.
 
 **Data appears when a design declares a query.** The ruled example also listed "Data — Show, Order" for Three Up; its
 feed declares none, so its Data rows arrive with Story 5.19's Source and Count, and today the controls sample is the

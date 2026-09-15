@@ -55,10 +55,12 @@ async function main() {
   if (dirty) throw new Error(`packages/ or apps/ has uncommitted changes, so this checkout is not what ${APP} serves:\n${dirty}`)
   const head = execSync('git rev-parse HEAD', { cwd: repo, encoding: 'utf8' }).trim()
   if (!process.env.VERCEL_TOKEN || !process.env.VERCEL_TEAM_ID) throw new Error('VERCEL_TOKEN and VERCEL_TEAM_ID are needed to match the deployment to this checkout')
-  const served = await (await fetch(`https://api.vercel.com/v13/deployments/${new URL(APP).host}?teamId=${process.env.VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` } })).json()
+  const answer = await fetch(`https://api.vercel.com/v13/deployments/${new URL(APP).host}?teamId=${process.env.VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` } })
+  const served = await answer.json().catch(() => ({}))
+  if (!answer.ok) throw new Error(`Vercel answered ${answer.status} for ${new URL(APP).host}: ${served.error?.message ?? 'no message'} — check VERCEL_TOKEN and VERCEL_TEAM_ID`)
   if (served.meta?.githubCommitSha !== head) throw new Error(`${APP} serves ${served.id ?? 'an unreadable deployment'}, built from ${served.meta?.githubCommitSha ?? 'no recorded commit'}, and this checkout is ${head}: push, wait for CI's deploy, then run this`)
   note('deployment', `${served.id} ${served.readyState}, built from ${head.slice(0, 8)} — this checkout's HEAD`)
-  const { pillWidth } = await import(require('node:url').pathToFileURL(require('node:path').join(__dirname, '..', '..', 'packages', 'library', 'src', 'vocabulary.ts')).href)
+  const { UNIVERSALS, pillWidth } = await import(require('node:url').pathToFileURL(require('node:path').join(__dirname, '..', '..', 'packages', 'library', 'src', 'vocabulary.ts')).href)
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   const stale = all.filter((u) => /^pilots-harness-\d+@inflozo\.com$/.test(u.email || ''))
@@ -208,6 +210,27 @@ async function main() {
       }))
       const misplaced = design.controlSchema.filter((c) => !placed.some((p) => p.label === c.label && p.group === TITLE[c.group])).map((c) => `${c.label} → ${TITLE[c.group]}`)
       check(`R-113 · ${name} — nothing pinned above the groups, and every control in the group its role names`, placed.every((p) => p.group !== null) && misplaced.length === 0, misplaced.join(', ') || `${design.controlSchema.length} controls placed`)
+      // the page draws the engine's order, and each field and setting its own id: every title in an accordion — a
+      // field's <label for> or -label, a setting's -label — read in document order, its kind from the panel's id
+      // ("…-prop-…" or "…-control-…"; a picker's closed dialog aside)
+      const drawn = await aside.evaluate((a) => ({
+        ids: [...a.querySelectorAll('[id]')].map((e) => e.id),
+        rows: [...a.querySelectorAll('[role="region"] [id$="-label"], [role="region"] label[for]')].filter((e) => !e.closest('dialog')).flatMap((e) => {
+          const kind = { prop: 'words', control: 'setting' }[/^[^-]+-(prop|control)-/.exec(e.id || e.getAttribute('for'))?.[1]]
+          return kind === undefined ? [] : [{ text: e.textContent.trim(), kind, group: document.getElementById(e.closest('[role="region"]').getAttribute('aria-labelledby'))?.textContent.trim() }]
+        }),
+      }))
+      const twice = [...new Set(drawn.ids.filter((x, i) => drawn.ids.indexOf(x) !== i))]
+      check(`R-113 · ${name} — every id in the panel is its own`, drawn.ids.length > 0 && twice.length === 0, twice.join(', ') || `${drawn.ids.length} ids`)
+      const outOfOrder = Object.entries(TITLE).flatMap(([g, title]) => {
+        const want = [...design.controlSchema.filter((c) => c.group === g).map((c) => c.label), ...(g === 'style' ? UNIVERSALS.map((u) => u.label) : [])]
+        const got = drawn.rows.filter((r) => r.group === title && r.kind === 'setting').map((r) => r.text)
+        return got.join(' · ') === want.join(' · ') ? [] : [`${title} draws ${got.join(' · ') || 'nothing'}, declared ${want.join(' · ')}`]
+      })
+      const content = drawn.rows.filter((r) => r.group === 'Content')
+      const firstSetting = content.findIndex((r) => r.kind === 'setting')
+      const below = firstSetting === -1 ? [] : content.slice(firstSetting).filter((r) => r.kind === 'words').map((r) => `"${r.text}" below a setting`)
+      check(`R-113 · ${name} — the engine's order on the page: words above settings in Content, each group's settings as declared, the trio closing Style`, drawn.rows.some((r) => r.kind === 'setting') && outOfOrder.length === 0 && below.length === 0, [...outOfOrder, ...below].join('; ') || `${drawn.rows.length} rows in order`)
       const rows = await aside.evaluate((a) => [...a.querySelectorAll('[role="radiogroup"].rounded-pill')].map((g) => ({
         label: document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim(),
         pills: [...g.querySelectorAll('[role="radio"]')].map((b) => {
