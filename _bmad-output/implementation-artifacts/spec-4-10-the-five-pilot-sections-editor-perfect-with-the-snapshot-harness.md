@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-15'
 status: 'in-review'
 baseline_commit: '94cf2c5b0d5f0bbf7f2b0ec25ac31f8e59703f38'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
@@ -597,6 +597,56 @@ Each is in the ledger, with the story that brings it.
 
 If a step shows something different, note its number and what you saw. Those are fixed inside this story (R-80).
 
+## Owner's test findings
+
+Tested on `https://app.inflozo.com/pilots` on 2026-09-15, on the Deploy deployment
+(`dpl_84Zh7oJSfJ2THvCCh5b4uMdg7sDS`, `02b31605`). Four findings, in the owner's words. **Nothing is fixed yet:
+where they are fixed is Q6, and what happens to the pinned top block is Q7.** The owner's standing instruction
+for these: "This needs to be done for all controls of all other various sections."
+
+1. **"The controls in the sidebar are not properly grouped. I understand that was due to a ruling that we need to
+   follow Claude Design. But the different controls are not grouped under correct accordions."** Every control is
+   grouped by its role under: **Content** (any content changes) · **Style** (any visual/design changes) ·
+   **Layout** (any layout changes — "Arrangement can be moved under Layout") · **Data** (controls to choose the
+   source of data).
+   - *Whose:* two layers. **Which accordion each pilot's control sits in** was chosen by this story, in the five
+     `design.json` files — and they disagree with each other (A22's "Heading size" is Style, A24's "Title size" is
+     Arrangement; "Blurb: Show · Hide" is Arrangement, "Tag: Show · Hide" is Style). **The accordions themselves**
+     — their names, and the rule that a control may sit only in Arrangement or Style, never Content — are Story
+     4.5's (done): `SIDEBAR_GROUPS` and `CONTROL_GROUPS` in `packages/library/src/vocabulary.ts:143-150`, and
+     PRD FR-F3 (`prd.md:269`), which names the group "Arrangement, not Layout" because "layout" was retired as a
+     second word for *design* (Appendix I). The design picker keeps the word Design, so "Layout" for the
+     arrangement group does not collide with it; the Fix carries the rename to FR-F3 as the owner's ruling.
+   - *Not in this story:* **choosing the source of data** ("Which posts", By tag, Featured…) is **Story 5.19**'s
+     (backlog). Today's Data group holds only Show and Order, and that stays.
+   - *"All other sections":* only the five pilots and the `/controls` sample exist. Every other design is built
+     by its library category story (Epics 9–11, backlog), which follows whatever rule the vocabulary, the
+     validator and `docs/section-authoring.md` hold when it runs — so writing the rule there now is how it reaches
+     them.
+2. **"The top that shows Columns, Card style, Per row, Image ratio, Excerpt, etc needs to be grouped under their
+   proper group. If they are for each section and depends on the section, then add them under a new accordion
+   group at top - Section Settings."**
+   - *Whose:* Story 4.5's (done). The top block is the Quick Controls card — "the first 3–5 entries of a design's
+     own control list", pinned above the accordions — required by PRD FR-F3 and FR-G3 (`prd.md:269`, `:282`), the
+     registry's `quickControls[]` (`packages/library/src/registry.ts:193`), the Kit's `quick-controls-card.tsx`, and
+     an acceptance line repeated across the library category stories in `epics.md`. A Quick Control is taken out of its group,
+     which is why those controls appear in no accordion.
+   - *Unclear, asked as Q7:* every design control is declared per design, so read literally every one "depends on
+     the section" and all of them would move into Section Settings.
+3. **"Any property where the values are larger (E.g. For First cell - the value 'Spans two columns' is larger in
+   character size) we should show a dropdown. With these large values, the pill design looks bad. We should only
+   show value with less characters in pill design."**
+   - *Whose:* the look is the design export's — A17 #1's drawn panel itself draws "First cell: Off · Spans two
+     columns" as pills (`A17-1 Three Up.dc.html:132-146`), and this story copied it. The owner's word overrides
+     the drawing here (R-74 binds what a surface is built from; the owner rules it). The pill-or-dropdown choice
+     is today made per control by whoever authors the design (`segmented` against `named-select`), so the Fix
+     makes it one rule in one place, which every future design inherits.
+4. **"At bottom Reset this design should have an icon too. On click it should prompt the user to confirm their
+   action."**
+   - *Whose:* Story 4.5's panel (done) — `apps/web/components/controls/sidebar.tsx:289-297`, which records "no
+     confirm — D5 draws none". A small change. The editor's own panel is Story 5.1's (backlog), which mounts this
+     same component and inherits it.
+
 ## Questions for the owner
 
 **Q1. Which Heroes design should be the fifth sample section?**
@@ -752,4 +802,64 @@ it reads at 15 to 1, which is how the drawings already treat a menu item you hov
 
 **Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-112** in `reconcile-designs-decisions.md` §A28. Light
 `--link-color` is the ink `#232019` and `--link-decoration` is `underline #D96C3F`; Dark is unchanged (6.43:1).
+
+**Q6. Your four sidebar findings mostly change the panel that Story 4.5 built, and 4.5 is done. Where should they
+be fixed?**
+
+*(Raised by the owner's test, 2026-09-15.)* Only one small part is this story's own work: which accordion each of
+the five sample sections puts its controls in. The accordions' names, the pinned top block, the pills and the
+Reset button belong to the settings panel, which Story 4.5 built and you passed. The panel is one component, and
+the only sections that exist today are the five samples and the `/controls` sample, so nothing else has to be
+redone.
+
+Example: moving Three Up's "Per row" out of the top block and into Layout means changing the panel's rules once;
+the five samples then move their controls to match, and every section built later follows the same rules.
+
+1. **Fix all four inside Story 4.10 (RECOMMENDED).**
+   - Findings are fixed inside the story that found them (R-80), and this is the cheapest moment: five sections
+     today, every design in the library once the library stories run.
+   - The work: the panel and its rules, the five samples, the `/controls` sample, the tests, and the wording in the
+     plan documents (the PRD's sidebar rule, the architecture, the design notes, the authoring guide, and the
+     "Quick Controls" line repeated in the library stories).
+   - Con: Story 4.10 stays open for one more Fix, review, deploy and your test.
+2. **Pass Story 4.10 as it is, and open a new Story 4.12, "the settings panel regrouped", for all four.**
+   - Story 4.10's record stays about the sample sections; the panel change gets its own plan, review and test.
+   - Con: a full extra story cycle (plan, build, review, deploy, test) for the same work, and Story 4.10 closes on
+     a panel you have already asked to change.
+3. **Leave the panel as it is until the editor is built (Epic 5).**
+   - Nothing changes now.
+   - Con: no Epic 5 story owns this — Story 5.1 mounts the panel as it is — so it would need adding there anyway,
+     and you would keep seeing the panel you rejected until then.
+
+**Ruled:** _(awaiting the owner)_
+
+**Q7. When the pinned top block goes away, where does each design's own setting go — and what goes in "Section
+Settings"?**
+
+*(Raised by the owner's test, 2026-09-15, finding 2.)* Every setting a section has, apart from Background,
+Vertical spacing and Top divider, belongs to that one design — Three Up has "Per row", Rail has "On scroll". So
+"if they are for each section and depends on the section, add them under Section Settings" could mean almost
+every setting goes there. Three readings, shown on Three Up's panel.
+
+Example — Three Up today: a pinned card with Per row · Image ratio · Excerpt · Meta · First cell, then Content
+(the heading and footer words), Style (Tag, Background, Vertical spacing, Top divider), Data (Show, Order).
+
+1. **Every setting goes to its role; Section Settings holds only what fits no role (RECOMMENDED).**
+   - Three Up: **Content** — words, Excerpt, Meta, Tag · **Layout** — Per row, First cell · **Style** — Image
+     ratio, Background, Vertical spacing, Top divider · **Data** — Show, Order. Nothing in Section Settings.
+   - Rail: **Section Settings** — On scroll (Static · Sticky · Shrink), which is how the header behaves, not its
+     content, look or layout.
+   - Pro: one rule for every design, and every setting is where its role says. Con: the few most important
+     settings are no longer pinned on top, so most changes take one click to open an accordion.
+2. **Section Settings is the old top block, as an accordion that starts open.**
+   - Three Up: **Section Settings** — Per row, Image ratio, Excerpt, Meta, First cell; the rest grouped by role.
+   - Pro: the quick settings stay one glance away. Con: the top stays a mix of layout, style and content — the
+     thing finding 2 asks to fix.
+3. **Section Settings holds every setting the design has of its own.**
+   - Three Up: **Section Settings** — Per row, Image ratio, Excerpt, Meta, First cell, Tag; Content keeps the
+     words, Style keeps Background, Vertical spacing and Top divider.
+   - Pro: the simplest rule. Con: one long mixed list on the designs with the most settings, and Layout would
+     almost always be empty.
+
+**Ruled:** _(awaiting the owner)_
 
