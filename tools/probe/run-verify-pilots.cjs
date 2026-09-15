@@ -15,7 +15,7 @@ const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/nod
 const APP = process.env.APP_URL || 'https://app.inflozo.com'
 const SB = process.env.SUPABASE_URL.replace(/\/$/, '')
 const SECRET = process.env.SUPABASE_SECRET_KEY
-const OUT = process.env.OUT_DIR
+const OUT = process.env.OUT_DIR || require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'pilots-'))
 
 const results = []
 let fails = 0
@@ -52,8 +52,9 @@ async function main() {
   const created = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })
   check('POST /auth/v1/admin/users', created.status === 200 && !!created.body.id, `HTTP ${created.status}`)
   const userId = created.body.id
-  const browser = await chromium.launch()
+  let browser = null
   try {
+    browser = await chromium.launch()
     const link = await admin('/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email }) })
     check('POST /auth/v1/admin/generate_link (magiclink)', link.status === 200 && !!link.body.hashed_token, `HTTP ${link.status}`)
     // bypassCSP: axe is injected into the canvas document, which the app's CSP would otherwise refuse
@@ -159,11 +160,15 @@ async function main() {
       const panel = await page.locator('aside#section-controls').innerText()
       // a row labelled exactly "Show" is the Data group's Count; "Show tag" and "Show date" are the design's own controls
       check('step 13 — Latest Post: the panel offers no number of posts (no Data group, no Show row)', !/(^|\n)\s*Show\s*(\n|$)/.test(panel) && !/(^|\n)\s*Data\s*(\n|$)/.test(panel), panel.replace(/\s+/g, ' ').slice(0, 300))
+      await radio('member', 'Signed out').click()
+      await radio('show-to', 'Paid members').click(); await page.waitForTimeout(250)
+      check('step 13 — Latest Post: Show to Paid, viewed signed out, removes the section', (await canvasHtml()).trim() === '')
+      await radio('show-to', 'Everyone').click()
     }
     await page.screenshot({ path: `${OUT}/pilots-review-1600.png` })
     await context.close()
   } finally {
-    await browser.close()
+    if (browser) await browser.close()
     const del = await admin(`/admin/users/${userId}`, { method: 'DELETE', body: '{}' })
     const after = (await users()).length
     check('DELETE /auth/v1/admin/users/{id} and the count is unchanged', del.status === 200 && after === before, `HTTP ${del.status}, users ${before} → ${after}`)

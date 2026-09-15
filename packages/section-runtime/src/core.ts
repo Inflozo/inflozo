@@ -602,7 +602,7 @@ function ghostPaths(el: RuntimeElement, input: RenderInput): { attr: string; pat
   return out
 }
 
-/** DW-131, derived: the directives `ghostPaths` reads. `contexts.test.ts` holds this to every rendered directive the
+/** DW-131, written here and held by a test: the directives `ghostPaths` reads. `contexts.test.ts` holds this to every rendered directive the
  *  vocabulary flags `ghostPath`, so a new one cannot be skipped by FR-H7's check without a test failing. */
 export const WALKED_GHOST_PATH_DIRECTIVES: readonly string[] = [
   'data-bind', 'data-bind-attr', 'data-bind-srcset', 'data-bind-style', 'data-repeat', 'data-helper',

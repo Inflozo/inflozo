@@ -74,7 +74,8 @@
 /* Contrast ground: every colour from the band's own text. */
 .a24-1[data-bg="contrast"] .a24-1__title, .a24-1[data-bg="contrast"] .a24-1__tag, .a24-1[data-bg="contrast"] .a24-1__standfirst,
 .a24-1[data-bg="contrast"] .a24-1__meta, .a24-1[data-bg="contrast"] .a24-1__caption { color: var(--text-on-contrast); }
-.a24-1[data-bg="contrast"] .a24-1__tag:hover, .a24-1[data-bg="contrast"] .a24-1__author:hover { text-decoration-color: var(--accent-on-contrast); }
+.a24-1[data-bg="contrast"] .a24-1__tag:hover, .a24-1[data-bg="contrast"] .a24-1__author:hover,
+.a24-1[data-bg="contrast"] .a24-1__tag:focus-visible, .a24-1[data-bg="contrast"] .a24-1__author:focus-visible { color: var(--text-on-contrast); text-decoration-color: var(--accent-on-contrast); outline-color: var(--accent-on-contrast); }
 .a24-1[data-bg="contrast"] .a24-1__avatar { background: var(--text-on-contrast); color: var(--bg-contrast); }
 
 /* 834: title and standfirst both take the measure, title 42, standfirst 18, padding 80. */

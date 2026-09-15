@@ -24,7 +24,7 @@ export function pilotIds(): string[] {
   if (!isDir(DESIGNS_DIR())) return []
   return readdirSync(DESIGNS_DIR()).sort().flatMap((category) =>
     isDir(join(DESIGNS_DIR(), category))
-      ? readdirSync(join(DESIGNS_DIR(), category)).filter((n) => isDir(join(DESIGNS_DIR(), category, n))).sort((a, b) => Number(a) - Number(b)).map((n) => `${category}/${n}`)
+      ? readdirSync(join(DESIGNS_DIR(), category)).filter((n) => /^\d+$/.test(n) && isDir(join(DESIGNS_DIR(), category, n))).sort((a, b) => Number(a) - Number(b)).map((n) => `${category}/${n}`)
       : [])
 }
 
@@ -51,7 +51,7 @@ export const pilots = (): SectionRegistryEntry[] => pilotIds().map(pilot)
 /** Each declared query's rows at the Count's ceiling, newest first, so the client slices to the query's limit and
  *  never runs a query. A4 #13's card comes from here: `resolveSource` over its fixed one-post query. */
 export function pilotRows(entry: SectionRegistryEntry): Record<string, unknown[]> {
-  return Object.fromEntries(Object.entries(entry.dataBindings ?? {}).map(([key, binding]) => [key, orbitWeekly.resolveSource(binding)]))
+  return Object.fromEntries(Object.entries(entry.dataBindings ?? {}).map(([key, binding]) => [key, orbitWeekly.resolveSource(binding.fixed === true || binding.ids !== undefined ? binding : { ...binding, limit: 100 })]))
 }
 
 /** One Orbit Weekly picture's bytes, or null for any name that is not a picture in the directory — so nothing but

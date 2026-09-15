@@ -1,6 +1,3 @@
-<!-- A1 #1 Rail — Story 4.10 pilot, provisional (AD-35). Frame: A1-1 Rail.dc.html; proof: A1-0 Category Proof.dc.html;
-     spec: A1 Headers - Spec.md §0 and §1. Brand, Ghost's own navigation folded to More in CSS, member-aware
-     actions behind self-signup, and the ≤767 menu button whose drawer is nav-drawer's (no code here). -->
 <header class="a1-1" data-bg="base" data-spacing="comfortable" data-divider="none"
         data-on-scroll="shrink" data-nav-position="beside" data-sign-in="on" data-subscribe="on"
         data-divider-under="hairline" data-nav-before-more="4">
@@ -16,11 +13,13 @@
         <div class="a1-1__panel" data-helper="navigation"></div>
       </details>
     </nav>
-    <div class="a1-1__actions" data-if="@site.allow_self_signup">
-      <a class="a1-1__signin" data-members="anonymous" data-t="member.signin_cta" data-prop-attr="href:signInUrl">Sign in</a>
+    <div class="a1-1__actions">
       <a class="a1-1__signin" data-members="free" data-t="member.account" data-prop-attr="href:accountUrl">Account</a>
       <a class="a1-1__signin" data-members="paid" data-t="member.account" data-prop-attr="href:accountUrl">Account</a>
-      <a class="a1-1__cta" data-members="anonymous" data-prop="ctaLabel" data-prop-attr="href:ctaUrl">Subscribe</a>
+      <span class="a1-1__ask" data-if="@site.allow_self_signup">
+        <a class="a1-1__signin" data-members="anonymous" data-t="member.signin_cta" data-prop-attr="href:signInUrl">Sign in</a>
+        <a class="a1-1__cta" data-members="anonymous" data-prop="ctaLabel" data-prop-attr="href:ctaUrl">Subscribe</a>
+      </span>
     </div>
     <button class="a1-1__menu" type="button" aria-expanded="false" data-t-attr="aria-label:a11y.open_menu"><span class="a1-1__menu-bar"></span><span class="a1-1__menu-bar"></span></button>
   </div>

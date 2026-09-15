@@ -161,7 +161,9 @@ export function Review({
     setStates(all)
     if (kind === 'control' && entry) {
       const root = canvas()?.mount.firstElementChild
-      if (root) stampControls(root as unknown as RuntimeElement, { controlSchema: entry.controlSchema, universals: entry.universals, controls: next.controls })
+      // no root: the section is gated away (Show to, or a root data-if), so there is nothing to stamp — re-render
+      if (!root) return paint()
+      stampControls(root as unknown as RuntimeElement, { controlSchema: entry.controlSchema, universals: entry.universals, controls: next.controls })
       measure()
     } else paint()
   }

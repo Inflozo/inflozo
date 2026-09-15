@@ -1,6 +1,3 @@
-<!-- A1 #1 Rail — Story 4.10 pilot, provisional (AD-35). Frame: A1-1 Rail.dc.html; proof: A1-0 Category Proof.dc.html;
-     spec: A1 Headers - Spec.md §0 and §1. Brand, Ghost's own navigation folded to More in CSS, member-aware
-     actions behind self-signup, and the ≤767 menu button whose drawer is nav-drawer's (no code here). -->
 <header class="a1-1" data-on-scroll="shrink" data-nav-position="beside" data-sign-in="on" data-subscribe="on" data-divider-under="hairline" data-nav-before-more="4" data-bg="base" data-spacing="comfortable" data-divider="none">
   <div class="a1-1__bar" data-module="nav-drawer">
     {{#if @site.url}}<a class="a1-1__brand" href="{{@site.url}}">
@@ -14,12 +11,14 @@
         <div class="a1-1__panel">{{navigation}}</div>
       </details>
     </nav>
-    {{#if @site.allow_self_signup}}<div class="a1-1__actions">
-      {{#if @member}}{{else}}<a class="a1-1__signin" href="#" data-portal="signin">{{t "member.signin_cta"}}</a>{{/if}}
+    <div class="a1-1__actions">
       {{#if @member}}{{#if @member.paid}}{{else}}<a class="a1-1__signin" href="#" data-portal="account">{{t "member.account"}}</a>{{/if}}{{/if}}
       {{#if @member.paid}}<a class="a1-1__signin" href="#" data-portal="account">{{t "member.account"}}</a>{{/if}}
-      {{#if @member}}{{else}}<a class="a1-1__cta" href="#" data-portal="signup">{{t "member.signup_cta"}}</a>{{/if}}
-    </div>{{/if}}
+      {{#if @site.allow_self_signup}}<span class="a1-1__ask">
+        {{#if @member}}{{else}}<a class="a1-1__signin" href="#" data-portal="signin">{{t "member.signin_cta"}}</a>{{/if}}
+        {{#if @member}}{{else}}<a class="a1-1__cta" href="#" data-portal="signup">{{t "member.signup_cta"}}</a>{{/if}}
+      </span>{{/if}}
+    </div>
     <button class="a1-1__menu" type="button" aria-expanded="false" aria-label="{{t "a11y.open_menu"}}"><span class="a1-1__menu-bar"></span><span class="a1-1__menu-bar"></span></button>
   </div>
 </header>

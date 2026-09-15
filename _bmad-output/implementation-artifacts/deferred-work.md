@@ -3679,7 +3679,13 @@ reason: each needs a vocabulary piece, a module or a field the pilot story does 
   - "Sign in", "Account" and "More" are fixed `data-t` strings: the spec draws them as editable fields, and their keys
     are not marked prop (re-marking a key is Ask First);
   - Compact 56 and Spacious 92 bar heights were chosen by the Dev run (the spec gives Comfortable 76 only);
-  - the current-page underline IS built (`{{navigation}}` adds `nav-current`), so it leaves the list.
+  - the current-page underline IS built (`{{navigation}}` adds `nav-current`), so it leaves the list;
+  - **Divider under: Shadow draws nothing in Dark** — Paper's dark object declares `shadow: none` (`_build/a22lib.js:8`),
+    so `--shadow-card` is `none` and the option is invisible there; a dark form of the divider is a category-story
+    choice against the dark artboard (`A1-1 Rail.dc.html:103-125`). Found at Story 4.10's review.
+  - (Fixed at the review, not left: Account sat inside the self-signup gate and vanished on an invite-only site;
+    `A1 Headers - Spec.md:79` hides Sign in and Subscribe only. The gate is now a `display: contents` wrapper around
+    the two asks.)
 
 ### DW-151: A17 #1 Three Up — what its pilot leaves, and the one-value grey the engine cannot draw
 
@@ -3767,7 +3773,10 @@ severity: medium
 origin: Story 4.10's Dev run — reported by all five pilot authors; the spec's rule was "every row the Paper objects
   name takes their values; every other row keeps today's value", and no Paper token object names a width or gutter
 owner: the owner, at Story 4.10's owner test (step 14 compares arrangement and spacing); otherwise Epic 6, whose packs
-  author these rows
+  author these rows. Story 4.10's review added to the same list the rows derived from the retired ink and accent that
+  no Paper object names — `--border-fade` and `--scrim` (rgba of `#1c1a17`), and both modes' `--accent-on-contrast`
+  (`#e8a87c` / `#8a3b12`, the pre-Paper accent on Paper's contrast ground); and Light `--link-color`, which took the
+  accent and is Story 4.10's Q5
 location: packages/section-runtime/src/tokens.ts (`--site-width` 72rem, `--space-gutter` 1.5rem) · every pilot's style.css
 reason: changing a row no Paper object names would be inventing the value; the frames draw it, so it is a one-row
   token change once ruled. A1, A22, A24 and A4 also carry their own section padding as literals where the frame's
@@ -3818,3 +3827,66 @@ location: packages/section-runtime/src/tokens.ts `--text-on-accent` / `--accent`
 reason: the values are the export's Paper objects (`_build/a22lib.js:4`, `a20-kit.js`), which R-74 makes the authority;
   changing one is a ruling, not a propagation.
 
+
+## Deferred from: code review of spec-4-10-the-five-pilot-sections-editor-perfect-with-the-snapshot-harness (2026-09-15)
+
+### DW-159: an HTML comment in a design's markup ships to every visitor — the emitter keeps comments
+
+plain: A note a designer writes inside a section's markup (the kind that begins `<!--`) was reaching the finished
+  theme, so anyone reading a customer's page source would have seen our internal story numbers and file names. The
+  five sample sections' notes were removed at the review; the rule that strips them still needs building.
+status: open
+severity: low
+origin: Story 4.10's review — every `snapshots/*/template.hbs` began with the pilot's authoring comment
+  (`<!-- A1 #1 Rail — Story 4.10 pilot, provisional (AD-35). Frame: … -->`); nothing in `core.ts` strips a comment
+  and `docs/section-authoring.md` does not say whether one is consumed or emitted
+owner: Story 7.1 (E7's formatting pass re-baselines every snapshot once; stripping comments belongs in the same pass)
+location: packages/section-runtime/src/core.ts (`renderTree`) · packages/library/designs/*/*/index.html · tools/check-snapshots.mjs
+reason: the runtime's own markers are comments (`<!--__HBS_n__-->`, R2-7), so a strip must run before the tokens
+  are put and never touch them — a small change with an agreement-test row, not a review patch. Until then a
+  design carries no comment; the five pilots carry none.
+
+### DW-160: A4 #13's secondary action defaults to a sample-publication address
+
+plain: The Latest Post hero's second button, "Browse the archive", points by default at Orbit Weekly's archive — a
+  made-up sample address. On a real customer's site that default would be a dead link until they change it.
+status: open
+severity: medium
+origin: Story 4.10's review — `packages/library/designs/a4/content.json` `secondaryAction.url` defaults to
+  `{ "href": "https://orbit-weekly.example/tag/archive/", "ref": { "kind": "tag", "id": "7a9…01" } }`, and
+  `snapshots/a4/13/template.hbs` carries the `.example` href verbatim; A17 #1's `linkUrl` has no default and hides
+  by `data-empty`
+owner: Epic 5's Link Picker and persistence stories (the `ref` is resolved against the connected Ghost there; a
+  cached `href` from the sample must never reach a compiled theme), with A4's category story for the drawn default
+location: packages/library/designs/a4/content.json · packages/library/snapshots/a4/13/template.hbs
+reason: the frame draws both buttons and owner test step 12 expects "Browse the archive", so removing the default
+  changes the drawn state (R-74); what a `ref` resolves to on a real site is Epic 5's contract, not the pilot's.
+
+### DW-161: `data-members-email` and `data-members-error` are not checked to sit inside a `data-members-form`
+
+plain: Portal only reads the email box and the error line when they are inside the sign-up form. A designer could
+  put either outside the form and every check would pass, yet the form would submit nothing.
+status: open
+severity: low
+origin: Story 4.10's review — `validateMarkup` walks the markup as a flat token stream (no ancestors), and the
+  directives' summaries state the rule without enforcing it
+owner: A22's category story (the first with several member forms), or Story 4.11 if the matrix adds a structural walk
+location: packages/library/src/validate.ts · packages/library/src/vocabulary.ts (`data-members-email`, `data-members-error`)
+reason: the validator carries no ancestor stack today; adding one for two attributes is more than a review patch,
+  and the five pilots place both correctly (the snapshot check would show a move).
+
+### DW-162: the pilots frame route's session guard is held by a source-text test only, as `controls/frame` and `style-guide/frame` are
+
+plain: The test that says "strangers are turned away from the sample-sections page" reads the code as text and looks
+  for the right words in the right order; it does not actually knock on the door. The same is true of the two older
+  internal pages.
+status: open
+severity: low
+origin: Story 4.10's review — `apps/web/pilots.test.ts` asserts `await currentUser()` precedes the body calls and
+  `/303/` appears; `run-verify-pilots.cjs` signs in first and never fetches the frame signed out. Pre-existing
+  pattern: `controls.test.ts:18`, `style-guide.test.ts:84` (DW-133's note names the executed 303 for `/controls`)
+owner: the story that next touches an internal frame route, or Story 4.11
+location: apps/web/pilots.test.ts · apps/web/app/(app)/app/(authed)/pilots/frame/route.ts
+reason: `apps/web` evaluates app `.ts` under Node 24 type-stripping already; the fix is one executed test with
+  `@/lib/supabase/server` stubbed to return null, asserting 303 and `location` ending in `/sign-in`, for all three
+  frame routes at once.

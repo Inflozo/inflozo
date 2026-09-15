@@ -2,10 +2,10 @@
 title: 'Story 4.10 — The five pilot sections, editor-perfect, with the snapshot harness'
 type: 'feature'
 created: '2026-09-15'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '94cf2c5b0d5f0bbf7f2b0ec25ac31f8e59703f38'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -320,6 +320,34 @@ something and another when it does not.
   - all are green;
   - `/controls` and `/style-guide` render unchanged apart from their colours.
 
+### Review Findings
+
+*(Code review, 2026-09-15, five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier. 47 raw findings; 26 dismissed as noise or already handled.)*
+
+- [ ] [Review][Decision] Light `--link-color` is the accent at 3.24:1 on the page ground — the same ratio R-110 rejected for button words. No pilot reads it yet. Asked as Q5.
+- [x] [Review][Patch] Rail's Account link sat inside the self-signup gate, so a signed-in member of an invite-only site lost it; `A1 Headers - Spec.md:79` hides Sign in and Subscribe only [packages/library/designs/a1/1/index.html:19]
+- [x] [Review][Patch] Every pilot's authoring comment shipped into `template.hbs` — internal story numbers and file names in a visitor's page source [packages/library/designs/*/*/index.html:1]
+- [x] [Review][Patch] A24 #1 on the contrast ground: tag and author hover/focus kept the base ink, ink on ink [packages/library/designs/a24/1/style.css:77]
+- [x] [Review][Patch] The canvas arms on `@site` were held by "does not throw" only — drop `allow_self_signup` from the dataset and every check stays green while Rail's asks and Inline Row's form vanish [tools/check-snapshots.mjs]
+- [x] [Review][Patch] `--update` with a failed design wiped its committed snapshot and rewrote only the passing ones [tools/check-snapshots.mjs]
+- [x] [Review][Patch] The AC names FR-H8 among the controls, and the A4 row asserted a srcset without its guard [tools/check-snapshots.mjs]
+- [x] [Review][Patch] A non-numeric directory under a category was `Number()`-sorted to NaN and `pilot()` threw a raw ENOENT [apps/web/lib/pilots.ts:27, tools/check-snapshots.mjs]
+- [x] [Review][Patch] `pilotRows` said "at the Count's ceiling" and resolved at the declared limit (15), unlike `controls-review.ts`'s 100 [apps/web/lib/pilots.ts:54]
+- [x] [Review][Patch] A control change while the section was gated away stamped nothing and drew nothing until the next chrome switch [apps/web/app/(app)/app/(authed)/pilots/review.tsx:163]
+- [x] [Review][Patch] The harness launched the browser before `try`, so a launch failure left the throwaway account; `OUT_DIR` unset wrote to `undefined/`; Latest Post's Show to was never read back [tools/probe/run-verify-pilots.cjs]
+- [x] [Review][Patch] The `contexts.test.ts` loosening for `navigation.url` counted any helper-kind field as proved by printing anything; now only one whose matrix entry carries the recorded note [packages/library/src/contexts.test.ts:93]
+- [x] [Review][Patch] `WALKED_GHOST_PATH_DIRECTIVES`' comment said "derived"; it is written and held by a test [packages/section-runtime/src/core.ts]
+- [x] [Review][Patch] Guide: the one-guard rule holds per element, not library-wide; `fixed` beside `filter`; the `<noscript>` row now says the pilot ships without one; the check's one-snapshot rule depends on `data-target` staying refused [docs/section-authoring.md, tools/check-snapshots.mjs]
+- [x] [Review][Patch] MEASUREMENTS §45(e): the LOGO arm and the self-signup-off arm were never printed by Ghost, and the contract test cannot tell [MEASUREMENTS.md §45]
+- [x] [Review][Patch] The Verification results predate R-110 (75/90 axe canvases); the review re-ran everything on HEAD's deployment — below. The Design Notes table carried A1's panel in the spec's order, not the frame's; owner test steps 13 and 14 amended
+- [x] [Review][Defer] Rail's "Divider under: Shadow" draws nothing in Dark — Paper's dark object declares no shadow [packages/library/designs/a1/1/style.css] — deferred, DW-150
+- [x] [Review][Defer] Token rows derived from the retired ink and accent that no Paper object names (`--border-fade`, `--scrim`, `--accent-on-contrast`) [packages/section-runtime/src/tokens.ts] — deferred, DW-155
+- [x] [Review][Defer] An HTML comment in a design's markup ships to every visitor; the emitter keeps comments [packages/section-runtime/src/core.ts] — deferred, DW-159 (Story 7.1)
+- [x] [Review][Defer] A4 #13's secondary action defaults to `https://orbit-weekly.example/tag/archive/` [packages/library/designs/a4/content.json] — deferred, DW-160 (Epic 5's Link Picker)
+- [x] [Review][Defer] `data-members-email` / `-error` are not checked to sit inside a `data-members-form` [packages/library/src/validate.ts] — deferred, DW-161
+- [x] [Review][Defer] The frame route's session guard is a source-text test, as `controls/frame` and `style-guide/frame` are [apps/web/pilots.test.ts:15] — deferred, pre-existing, DW-162
+
 ## Spec Change Log
 
 - **2026-09-15, Dev — the recording disagreed with one Design Notes fact (Ask First, flagged for the review).** The
@@ -351,6 +379,14 @@ something and another when it does not.
 - **2026-09-15, Dev — R-111 (Q4, option 1):** A1 #1 keeps Ghost's `{{navigation}}` as built; Story 9.1 (the first
   Headers story) builds both dropdown sources on Inflozo's own `partials/navigation.hbs`, recorded on T1 and T3 first,
   and never on Ghost's default menu markup. Carried to `epics.md` Story 9.1 and DW-150.
+- **2026-09-15, Review — the patches under Review Findings.** Two change what a pilot renders: Rail's Account link
+  now sits outside the self-signup gate (the spec's own table put it inside; `A1 Headers - Spec.md:79` names Sign in
+  and Subscribe only), and the five authoring comments are gone from the markup, so the snapshots were rewritten by
+  `--update` and re-held. One new check row holds the member arms on the canvas by their text, with self-signup off
+  as its control. The propagation grep's one live survivor, `ARCHITECTURE-SPINE.md`'s "`a4/2` is Heroes #2" (a
+  design-identity example, still true), is left as it is. The AC "unchanged apart from their colours" reads: apart
+  from Paper's values — the two fonts, the radii and the shadow changed with the palette, all named by Paper's objects.
+  Q5 (the link colour) is open.
 
 ## Design Notes
 
@@ -364,7 +400,7 @@ something and another when it does not.
 
 | Pilot · targets · frame | Case | Built here | Left, and its owner |
 |---|---|---|---|
-| **A1 #1 Rail** `designs/a1/1` · `default.hbs` · `A1-1 Rail.dc.html` desktop `:27-51`, shrink `:54-72`, dark `:103-125`, tablet `:127-150`, phone `:154-171`, panel `:193-227` · proof `A1-0 Category Proof.dc.html` · spec `A1 Headers - Spec.md` §0 `:13-192`, #1 `:193-231` | the site-wide singleton binding | **Brand:** `data-if="@site.logo"`, else the `@site.title` wordmark. **Nav:** a repeat over `@site.navigation`, folded in CSS (stepper 3–6), with a native `<details>` More (`nav.more`). **Actions,** inside `data-if="@site.allow_self_signup"` (the spec's Part A·A9, `:79`): Sign in for `anonymous`; Account for `free` and for `paid` (Portal `signin`, `account`); Subscribe for `anonymous` (`member.signup_cta`). **Phone:** the menu button (`a11y.open_menu`) at ≤767, with `nav-drawer` declared. **Controls,** in the drawn panel's order: On scroll · Nav position · Sign in · Subscribe · Nav items before More · Divider under. **Background:** base · surface, "An inverted header is a design of its own, Contrast Band, not a setting." (`:36`) | **A1's category story:** authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one); the dark-mode toggle (no key); `<h1>` on the home page only; an authored logo; the skip link (E7's layout owns `<main>`); the current-page underline (`@site.navigation` has no `current`); Shrink's motion |
+| **A1 #1 Rail** `designs/a1/1` · `default.hbs` · `A1-1 Rail.dc.html` desktop `:27-51`, shrink `:54-72`, dark `:103-125`, tablet `:127-150`, phone `:154-171`, panel `:193-227` · proof `A1-0 Category Proof.dc.html` · spec `A1 Headers - Spec.md` §0 `:13-192`, #1 `:193-231` | the site-wide singleton binding | **Brand:** `data-if="@site.logo"`, else the `@site.title` wordmark. **Nav:** a repeat over `@site.navigation`, folded in CSS (stepper 3–6), with a native `<details>` More (`nav.more`). **Actions,** inside `data-if="@site.allow_self_signup"` (the spec's Part A·A9, `:79`): Sign in for `anonymous`; Account for `free` and for `paid` (Portal `signin`, `account`); Subscribe for `anonymous` (`member.signup_cta`). **Phone:** the menu button (`a11y.open_menu`) at ≤767, with `nav-drawer` declared. **Controls,** in the drawn panel's order: On scroll · Nav position · Sign in · Subscribe · Divider under · Nav items before More. **Background:** base · surface, "An inverted header is a design of its own, Contrast Band, not a setting." (`:36`) | **A1's category story:** authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one); the dark-mode toggle (no key); `<h1>` on the home page only; an authored logo; the skip link (E7's layout owns `<main>`); the current-page underline (`@site.navigation` has no `current`); Shrink's motion |
 | **A17 #1 Three Up** `designs/a17/1` · `home.hbs` · `index.hbs` · `tag.hbs` · `author.hbs` · `A17-1 Three Up.dc.html` desktop `:28-48`, per row `:57`, states `:93`, panel `:132-146`, tablet `:161`, phone `:203-222`, dark `:227` · proof `A17-0 Category Proof.dc.html` `:283`, `:367-446` · spec `A17 Post Grids - Spec.md` §0 `:35-366`, #1 `:374-405` | the paginated context, and `post-card` with no params | **The feed:** `data-repeat="posts" data-partial="post-card"`. **The card:** link; feature image `\|img_url:m` with `data-bind-srcset` and `sizes`; a tag plate behind the image for a post without one; tag, title, `excerpt`; meta — photo `\|img_url:xs` with the stylesheet's one letter, name, date, `reading_time`. **Around it:** the pager — Newer (`pagination.newer`), the `numbers` indicator and Older (`pagination.older`), per R-109; the empty-state arm (`data-if="posts"` with `data-else`, `archive.empty_heading` and `archive.empty_body`); head and foot props. **Controls:** Per row · Image ratio · Excerpt (Three lines greyed at Four) · Meta · First cell · Tag. **Background:** base · surface · contrast | **Story 5.19:** Source, Count and the main-feed designation. **A34's category story:** the Pagination style select. **A17's category story:** "View all: Matches the query". **DW-107:** Image focus |
 | **A22 #1 Inline Row** `designs/a22/1` · `home.hbs` · `page.hbs` · `post.hbs` (spec `:85-87`) · `A22-1 Inline Row.dc.html` desktop `:28-32`, states `:34-52`, panel `:54-73`, widths `:75-83`, dark `:85-91` · proof `A22-0 Category Proof.dc.html` `:119-122` · spec `A22 Newsletter - Spec.md` §0 `:81-483`, #1 `:493-557` | `@member` gating, show-to, Portal | **Head:** props. **For `anonymous`,** inside `data-if="@site.allow_self_signup"`, the form: `data-members-form="subscribe"`, `data-members-email`, the button (`member.signup_cta`), the note, `data-members-error`, with `member-form` declared. **For `free` and for `paid`:** "Signed in" (R-4) and a Portal `account` link. **The whole section** sits inside `data-if="@site.members_enabled"` — the drawn "Hide the section". **Controls,** in the drawn Quick Controls' order: Alignment · Heading size · Field width · Blurb · Below the field · Social proof (`{members}`). **Background:** base · surface · contrast | **A22's category story:** Submitting, Done and Invalid, and their words; the name field and the newsletter choice; the paid count (DW-99); the other members-off option; Display greyed at Wide (one value, which `disabledBy` cannot grey); the no-JavaScript notice (R-5's key) |
 | **A24 #1 Centred** `designs/a24/1` · `post.hbs` · `A24-1 Centred.dc.html` desktop `:30-46`, absences `:53-77`, states `:83-104`, panel `:116-145`, widths `:153-190`, dark `:211` · proof `A24-0 Category Proof.dc.html` `:94`, `:179-298` · spec `A24 Post Headers - Spec.md` Post block `:247-298`, fields `:351-389`, #1 `:390-436` | the wrapper context | **The header:** tag link; `<h1>` title; standfirst `excerpt`; a byline over `primary_author` (photo, name, date, `reading_time`); a figure with `feature_image`, srcset and `feature_image_caption` as text. **Controls:** Alignment · Title size · Standfirst lines · Image ratio · Rule, plus the post block's Tag line · Meta · Standfirst · Feature image · Avatar · Caption as Style rows. **Background:** base · surface · contrast | **A24's category story, with E7's page wrapper:** `page.hbs` and `@page.show_title_and_feature_image`; all tags, and several authors with "and"/"and others" (R-3's key); the updated-date Meta value; the caption's links; the "Post block" group name. **DW-107:** Image focus |
@@ -497,6 +533,22 @@ something and another when it does not.
 - Supabase: no migration and nothing read yet; the harness's throwaway user is the only write. Resend and Dodo are not
   touched.
 
+**Results (Review, 2026-09-15, on HEAD `9ccccb84` before the review's patches):**
+- **T1 and T3** — a read-only `GET /ghost/api/admin/themes/` with a JWT from `GHOST6_STAFF_ACCESS_TOKEN` and
+  `GHOST5_STAFF_ACCESS_TOKEN`: 200 on both, `casper` active, no `inflozo-probe-shim`. Control: the same `kid` with a
+  wrong secret → 401 on both. `pnpm --filter @inflozo/ghost-shim test`: 34 pass, the six PILOT rows included.
+- **GitHub Actions** — run 34926262805 for `9ccccb84`: `check` and `rls` success, the `check` log prints
+  `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files`; `deploy` in progress at the
+  read. Every main run since `94cf2c5b` is success.
+- **Vercel** — production `dpl_C4hm3S9KAtydBs2xdocxtWyPWfe9` for `9ccccb84`: READY.
+- **The deployed `/pilots`** — `node tools/probe/run-verify-pilots.cjs` with `SUPABASE_URL` and `SUPABASE_SECRET_KEY`
+  (DNS confirmed through 1.1.1.1): **107 PASS, 0 FAIL**; the axe positive control reported `image-alt`, and **axe found
+  zero violations in 90 of 90 canvases** — R-110's ink on the orange removed the 15 `color-contrast` failures the Dev
+  results above record. Every owner-test row the harness reads back held. Users 9 → 9 after the delete.
+- **`pnpm check`** on Node 24.18.1 after the patches: exit 0, with the new member-arms row and the FR-H8 assertion.
+- Supabase: no migration (`git diff 94cf2c5b HEAD -- supabase/` is empty), so R-99 has nothing to apply. Resend and
+  Dodo are not touched.
+
 ## Owner's manual test
 
 These steps follow the rulings R-108 and R-109.
@@ -520,8 +572,8 @@ These steps follow the rulings R-108 and R-109.
 | 10 | same | Inline Row | Press View as → Signed out, then Show to → Paid members. | — | The whole section disappears: a signed-out visitor is not a paid member. |
 | 11 | same | Centred | Press Centred. | — | The top of the article "The four hundred domains that refuse to move": a tag, the title large and centred, a sentence under it, the writer with photo, date and reading time, then a wide picture with its caption. |
 | 12 | same | Latest Post | Press Latest Post. | — | **Left:** "Issue 48" above a large headline, "The personal page never disappeared. It went quiet.", a sentence, and the "Subscribe" and "Browse the archive" buttons. **Right:** a card with a picture, the title "The night shift at the Port of Algeciras", and "Archive · 7 August 2026". Hovering the card underlines its title. |
-| 13 | same | Latest Post, panel | Set Card side to Left, Show date to Off, then Primary action to Off. Then look for a setting for how many posts. | — | The card moves to the left and loses its date; "Subscribe" disappears and Secondary action turns grey with "A secondary action needs a primary beside it." There is no setting for how many posts — this hero always shows one. |
-| 14 | same | every pilot | On each, press Tablet, Phone and Dark. | — | Each rearranges at that width as its drawing does, and in Dark nothing is unreadable. Latest Post's card keeps its picture in Dark: its drawing shows the dark version in a picture-less card style, which arrives with the Heroes category. Rail's logo is Orbit Weekly's one logo picture, drawn for a light ground, so in Dark it is dark on dark: a second logo for dark grounds is a field the Headers category adds. |
+| 13 | same | Latest Post, panel | Set Card side to Left, Show date to Off, then Primary action to Off. Then look for a setting for how many posts. | — | The card moves to the left and loses its date; "Subscribe" disappears and Secondary action turns grey with "A secondary action needs a primary beside it." There is no setting for how many posts — this hero always shows one. Then press View as → Signed out and Show to → Paid members: the whole section disappears. |
+| 14 | same | every pilot | On each, press Tablet, Phone and Dark. | — | Each rearranges at that width as its drawing does, and in Dark nothing is unreadable. Latest Post's card keeps its picture in Dark: its drawing shows the dark version in a picture-less card style, which arrives with the Heroes category. Rail's logo is Orbit Weekly's one logo picture, drawn for a light ground, so in Dark it is dark on dark: a second logo for dark grounds is a field the Headers category adds. Rail's "Divider under: Shadow" shows no shadow in Dark (the drawings' dark set has none). The columns sit a little narrower than the drawings (1,152 pixels of content against 1,296): say whether that matters to you — it is DW-155's question. |
 | 15 | `https://app.inflozo.com/controls`, then `https://app.inflozo.com/style-guide` | Controls review, Style guide | Open each. | — | The same pages as before, in the new colours: a warm off-white ground and an orange accent. |
 
 **Not in this story, so do not expect them:**
@@ -669,3 +721,24 @@ added Essays and Notes in Inflozo or named them `-Essays` and `-Notes` in Ghost.
 **Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-111** in `reconcile-designs-decisions.md` §A28. Rail keeps
 `{{navigation}}`; Story 9.1 builds header dropdowns on Inflozo's own `partials/navigation.hbs`, recorded on T1 and T3 first
 (DW-150).
+
+**Q5. Links in light mode are drawn in the same orange the buttons were. Should link text keep it?**
+
+*(Raised by the review, 2026-09-15.)* The sample colours give links the Paper orange (`#D96C3F`) in light mode. On
+the page's off-white it measures 3.2 to 1; the rule for ordinary text is 4.5 to 1, the same rule Q3 was about. No
+sample section paints a link with that colour yet, so nothing on the pilots page fails today; the first design that
+does would.
+
+Example: a "Read more" link in a paragraph. In orange it reads at 3.2 to 1; in the dark ink with an orange underline
+it reads at 15 to 1, which is how the drawings already treat a menu item you hover over.
+
+1. **Ink words with an orange underline (RECOMMENDED).**
+   - The link is the text colour, underlined in orange; that is the drawings' own hover treatment for menu items.
+   - Passes everywhere, and the orange still marks it as a link.
+2. **A deeper orange for link text, in light mode only.**
+   - About `#B5532A`, which measures 4.7 to 1. Links would be a darker orange than the buttons beside them.
+3. **Keep the orange and accept the failure.**
+   - Matches the drawings' colour; every design that colours a link with it fails the accessibility check.
+
+**Ruled:** _(awaiting the owner)_
+

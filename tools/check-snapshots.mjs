@@ -50,7 +50,7 @@ function designDirs(root = DESIGNS) {
   if (!isDir(root)) return []
   return readdirSync(root).sort().flatMap((category) =>
     isDir(join(root, category))
-      ? readdirSync(join(root, category)).filter((n) => isDir(join(root, category, n))).sort((a, b) => Number(a) - Number(b)).map((n) => ({ category, n }))
+      ? readdirSync(join(root, category)).filter((n) => /^\d+$/.test(n) && isDir(join(root, category, n))).sort((a, b) => Number(a) - Number(b)).map((n) => ({ category, n }))
       : [])
 }
 
@@ -137,6 +137,8 @@ function renderDesign(d) {
     if (refused.length > 0) throw new Error(`${id} at ${target}: checkBindings refused\n  ${refused.join('\n  ')}`)
     rt.renderCanvas(doc(), entry.html, input(entry, target))
     const files = snapshotFiles(rt.renderTheme(doc(), entry.html, input(entry, target)))
+    // one file for every target holds only while `data-target` (row 10) stays refused at render: the story that
+    // renders it makes a section's text vary by target, and re-shapes this check to one snapshot per target
     if (theme === null) theme = files
     else if (JSON.stringify(files) !== JSON.stringify(theme)) {
       throw new Error(`${id}: the theme text at ${target} differs from ${entry.compileTarget[0]} — a section's text does not vary by target (it never opens {{#post}}), so one snapshot holds all of them`)
@@ -226,6 +228,8 @@ for (const dir of DIRS) {
 }
 check('every snapshot equals its design, and every snapshot has a design', () => {
   if (UPDATE) {
+    // a design that failed above is not in `rendered`; wiping the directory would silently lose its snapshot
+    if (failed > 0) throw new Error(`${failed} check(s) failed above — fix them before --update rewrites the snapshots`)
     rmSync(SNAPSHOTS, { recursive: true, force: true })
     for (const r of rendered) {
       for (const [f, bytes] of Object.entries(r.files)) {
@@ -279,7 +283,7 @@ check('A17 #1 — feed pages: no Newer on the first, no Older on the last, both 
   }
 })
 
-check("A4 #13 — R-108: the card is the newest post with a sized picture; a post with no picture shows its title in the card's place; nothing published closes the column", () => {
+check("A4 #13 — R-108 and FR-H8: the card is the newest post with a sized picture inside its guard; a post with no picture shows its title in the card's place; nothing published closes the column", () => {
   const entry = assemble(byId('a4/13'))
   const binding = entry.dataBindings.latest
   if (binding?.fixed !== true || binding.limit !== 1) throw new Error(`dataBindings.latest is not fixed at one post: ${JSON.stringify(binding)}`)
@@ -293,7 +297,31 @@ check("A4 #13 — R-108: the card is the newest post with a sized picture; a pos
   if (none.includes(newest.title)) throw new Error('an empty query still drew a card')
   const theme = rt.renderTheme(doc(), entry.html, input(entry, 'home.hbs')).template
   if (!theme.includes('{{#get "posts" limit="1" order="published_at desc"}}')) throw new Error(`the theme does not query one post:\n${theme}`)
+  // FR-H8: the srcset is inside `{{#if feature_image}}`, so the unguarded state is unreachable on the theme
+  if (!/\{\{#if feature_image\}\}[^]*?srcset="\{\{/.test(theme)) throw new Error(`the srcset is not inside {{#if feature_image}}:\n${theme}`)
   if (rt.sidebar(entry, {}).groups.some((g) => g.id === 'data')) throw new Error('the panel offers a number of posts')
+})
+
+check('A1 #1 and A22 #1 — the member arms on the canvas: Sign in and Subscribe signed out, Account signed in, the form signed out; and none of the asks when self-signup is off', () => {
+  const strings = lib.resolveStrings({})
+  const [signin, account, subscribe] = ['member.signin_cta', 'member.account', 'member.signup_cta'].map((k) => strings[k])
+  const rail = assemble(byId('a1/1'))
+  const row = assemble(byId('a22/1'))
+  const at = (entry, target, over) => rt.renderCanvas(doc(), entry.html, input(entry, target, over))
+  for (const member of ['anonymous', 'free', 'paid']) {
+    const html = at(rail, 'default.hbs', { member })
+    const want = member === 'anonymous' ? [true, false, true] : [false, true, false]
+    const got = [html.includes(`>${signin}<`), html.includes(`>${account}<`), html.includes(`>${subscribe}<`)]
+    if (JSON.stringify(got) !== JSON.stringify(want)) throw new Error(`Rail at ${member}: Sign in ${got[0]}, Account ${got[1]}, Subscribe ${got[2]} — wanted ${want.join(', ')}`)
+    const form = at(row, 'home.hbs', { member }).includes('data-members-form')
+    if (form !== (member === 'anonymous')) throw new Error(`Inline Row at ${member}: the form is ${form ? 'drawn' : 'gone'}`)
+  }
+  // the control: with self-signup off, the asks go and Account stays (A1 Headers - Spec.md:79)
+  const off = { ...lib.orbitWeekly.templateContext('default.hbs').ghost, '@site': { ...lib.orbitWeekly.site(), allow_self_signup: false } }
+  const closed = at(rail, 'default.hbs', { ghost: off, member: 'anonymous' })
+  if (closed.includes(`>${signin}<`) || closed.includes(`>${subscribe}<`)) throw new Error('self-signup off still asks')
+  if (!at(rail, 'default.hbs', { ghost: off, member: 'paid' }).includes(`>${account}<`)) throw new Error('self-signup off hid Account from a member')
+  if (at(row, 'home.hbs', { ghost: off, member: 'anonymous' }).includes('data-members-form')) throw new Error('self-signup off still draws the form')
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

@@ -296,7 +296,7 @@ past 25 (Story 5.19's Source panel), the validator does not.
 
 **R-108's fixed query** *(Story 4.10)* is `"fixed": true` beside a declared `limit` **and** `order` — a hero
 that always shows exactly one post: `{ "source": "posts", "limit": 1, "order": "published_at desc", "fixed":
-true }`. The design fixes its number and its order, so the panel offers no Show and no Order for it, and a
+true }`. A `filter` may sit beside it — `fixed` fixes the number and the order, nothing else. The design fixes its number and its order, so the panel offers no Show and no Order for it, and a
 Count or Order stored under the same key (another design's, carried back by Story 5.11's shuffle) is never
 folded in — `withData` treats it exactly as it treats `ids`. The theme's `{{#get}}` is the ordinary one; `fixed`
 is the editor's, never Ghost's. Refused (`bad-get-fixed`): `fixed` that is not `true`, `fixed` beside `ids`, and
@@ -940,8 +940,8 @@ two-armed form.
 arm>{{/if}}` — `{{#if}}` only, and a field the matrix types `number` adds `includeZero=true`; with no
 `data-else` it is `{{#if path}}…{{/if}}`. The canvas keeps **exactly one** arm, by Handlebars' own `{{#if}}` test
 (`''`, `0` without `includeZero`, `false`, `null` and `[]` take the else arm). Every guard a binding on either arm
-adds nests **inside** the arm, and a media guard on the same field as the condition **is** the condition — one
-`{{#if}}`, not two:
+adds nests **inside** the arm, and a media guard on the same field as the condition **is** the condition **on the
+same element** — one `{{#if}}`, not two (a child guarding the same field still adds its own; harmless, DW-153):
 
 ```html
 <img class="brand__logo" data-if="@site.logo" data-bind-attr="src:@site.logo" alt="">
@@ -1187,7 +1187,7 @@ value is one the design offers.
 | Directive | Why it stays |
 |---|---|
 | `data-module="lightbox"` | *(Story 4.7)* `core` scans the live page for it and mounts the module on that element, so both emitters keep it where it was written. FR-G3's `js` is read from it. |
-| `data-members-form="subscribe"` | Portal reads `form[data-members-form]` **itself** and applies the `loading` / `success` / `error` classes; executed against both majors. The designed states are real; the no-JS promise is not, so the library ships a designed `<noscript>` notice beside it. |
+| `data-members-form="subscribe"` | Portal reads `form[data-members-form]` **itself** and applies the `loading` / `success` / `error` classes; executed against both majors. The designed states are real; the no-JS promise is not, so the library ships a designed `<noscript>` notice beside it — the reference fixture carries one; A22 #1's pilot does not until A22's category story brings R-5's key (DW-152). |
 | `data-members-email` · `data-members-error` | *(Story 4.10)* Portal's own form attributes, read in `@tryghost/portal` 2.51.5 and 2.69.339 (the builds Ghost 5.130.6 and 6.58.0 pin): Portal submits `input[data-members-email]`'s value — a form without it **submits nothing** — and writes its message into `[data-members-error]`. Both take **no value** (a value on either is refused) and both emitters keep them where they were written. |
 
 `data-ghost-search` survives too, and is Ghost's, not Inflozo's: opening Ghost's native search is a

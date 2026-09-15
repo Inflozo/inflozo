@@ -92,7 +92,7 @@ test('every matrix field not marked unverified is proved by a render or an API r
             : f.kind === 'list' || f.kind === 'object' ? v.if === '1' && (!has || set(api))
             // Story 4.10: a helper standing in a scope's field name (navigation's `url`) is proved by having printed
             // at all — what it printed ("/" for every item) is the fact its note records, and the reason it is a helper
-            : (v.raw?.length ?? 0) > 0 || (f.kind === 'helper' && set(v.printed))
+            : (v.raw?.length ?? 0) > 0 || (f.kind === 'helper' && 'note' in f && set(v.printed))
           if (ok) proved.add(`${fr.scope}.${name}`)
         }
       }

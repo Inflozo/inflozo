@@ -51,6 +51,9 @@
 .a1-1__panel a:hover { background: var(--bg-hover); }
 
 .a1-1__actions { display: flex; align-items: center; gap: 0.875rem; flex-shrink: 0; margin-inline-start: auto; }
+/* The asks (Sign in, Subscribe) sit behind self-signup; Account does not (A1 Headers - Spec.md:79), so the gate is a
+   wrapper that lays out as nothing. */
+.a1-1__ask { display: contents; }
 .a1-1__signin { font-size: 0.875rem; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color 160ms ease-out; }
 .a1-1__signin:hover { color: var(--text-body); }
 .a1-1__cta { padding: 0.5625rem 1.0625rem; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--text-on-accent); font-size: 0.875rem; font-weight: 600; text-decoration: none; white-space: nowrap; }

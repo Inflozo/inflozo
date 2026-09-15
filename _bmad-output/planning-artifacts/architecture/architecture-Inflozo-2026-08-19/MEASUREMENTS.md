@@ -3301,5 +3301,8 @@ missing snapshot, a snapshot with no design, a `title` binding added to A1 #1 at
 `--update` wrote the snapshots and the next run passed. The check prints its totals and stores none.
 
 **(e) What this does NOT say.** No theme was compiled or deployed (Epic 7, the joint gate Story 7.35), no pixel was
-compared (Story 4.11), and no signed-in member was rendered by Ghost. A snapshot is the runtime's text with
+compared (Story 4.11), and no signed-in member was rendered by Ghost. Nor was the other arm of two rows: neither box
+has a logo and both allow self-signup, so `{{#if @site.logo}}`'s LOGO arm and `{{#if @site.allow_self_signup}}`'s
+empty arm were never printed by Ghost — the contract test derives their expectation from the box's own site row and
+cannot tell. A snapshot is the runtime's text with
 content and controls at their defaults — not a compiled `partials/sections/…` file.
