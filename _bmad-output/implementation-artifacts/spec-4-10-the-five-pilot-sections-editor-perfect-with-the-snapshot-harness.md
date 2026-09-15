@@ -552,6 +552,13 @@ Real-infra verifier. 47 raw findings; 26 dismissed as noise or already handled.)
 - Supabase: no migration (`git diff 94cf2c5b HEAD -- supabase/` is empty), so R-99 has nothing to apply. Resend and
   Dodo are not touched.
 
+**Results (Deploy, 2026-09-15):**
+- **GitHub Actions** — run 34927999071 for `02b31605` (HEAD, R-112's patch): `check`, `rls` and `deploy` all
+  success; the `check` log prints `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot
+  files`.
+- **Deployment:** `dpl_84Zh7oJSfJ2THvCCh5b4uMdg7sDS`, production, READY, for `02b31605`.
+- No schema change on this story (confirmed above), so nothing further to apply by hand.
+
 ## Owner's manual test
 
 These steps follow the rulings R-108 and R-109.
@@ -564,7 +571,7 @@ These steps follow the rulings R-108 and R-109.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|-----------|------------|---------------------|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in as you normally do. | — | Your dashboard. |
-| 2 | `https://app.inflozo.com/pilots` *(placeholder until Deploy)* | Pilots review | Type the address. | — | **Above the canvas:** Rail · Three Up · Inline Row · Centred · Latest Post, then Light/Dark, Desktop/Tablet/Phone and View as. **The canvas:** Rail, at Desktop and Light — the Orbit Weekly logo at the left, four menu items and "More" beside it, "Sign in" and an orange "Subscribe" at the right, and a thin line under the bar. **To the right:** the settings panel. |
+| 2 | `https://app.inflozo.com/pilots` | Pilots review | Type the address. | — | **Above the canvas:** Rail · Three Up · Inline Row · Centred · Latest Post, then Light/Dark, Desktop/Tablet/Phone and View as. **The canvas:** Rail, at Desktop and Light — the Orbit Weekly logo at the left, four menu items and "More" beside it, "Sign in" and an orange "Subscribe" at the right, and a thin line under the bar. **To the right:** the settings panel. |
 | 3 | same | Rail | Press View as → Free, then Paid, then Signed out. | — | At Free and Paid, "Sign in" becomes "Account" and "Subscribe" disappears. At Signed out both return. |
 | 4 | same | Rail, panel | Set Nav items before More to 3, then Divider under to Shadow. | — | "More" now holds one more menu item, and the line under the bar becomes a soft shadow. |
 | 5 | same | Rail | Press Phone, then Dark. | — | The menu folds into a menu button while "Subscribe" stays in the bar; then the bar turns dark with light text. |
