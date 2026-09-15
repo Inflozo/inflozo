@@ -458,6 +458,7 @@ test('R-115 — Reset this design removes exactly what its confirm names, and ke
   assert.deepEqual(cleared.data, { latest: { count: 3, order: 'newest' } })
   // and junk in a drawn query field goes, as junk under a declared name does
   assert.deepEqual(resetSection(entry, start({ data: { latest: { count: 'lots', order: 'newest' } } })).data, { latest: { order: 'newest' } })
+  assert.deepEqual(resetSection(entry, start({ data: { latest: 'x', rail: 'y' } })).data, { rail: 'y' }, 'a drawn query\'s junk record goes; another key stays')
   // a query field this design draws no row for is another design's: a fixed query's parked Count, a tags query's Order
   const fixed = { ...entry, dataBindings: { latest: { source: 'posts', limit: 1, fixed: true as const } } }
   assert.deepEqual(resetSection(fixed, start({ data: { latest: { count: 5 } } })).data, { latest: { count: 5 } })

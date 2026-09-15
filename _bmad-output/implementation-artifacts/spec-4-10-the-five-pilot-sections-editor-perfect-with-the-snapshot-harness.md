@@ -383,11 +383,11 @@ something and another when it does not.
   - The register: 16 titles corrected to what the drawn panels print (A2 "Comes back after", A4 "Eyebrow above the
     title", A17 "Lead", "Head", "Posts", A16's four contact toggles, A1's returned-panel rows and "Source", and
     additions), the icon slots filed as Content under their drawn titles, and the rule for a repeated title taken from
-    the export's usual practice: a setting keeps its title and a field beside it gives way (A27–A32's "… text"), so
+    the export's usual practice: a setting keeps its title and a field beside it gives way (A27–A31's "… text"), so
     A17's setting is "Title" again; the repeats the export draws are DW-166.
 - [x] **Review sweep 4** (the four layers on sweep 3's patches, 2026-09-15; the Review Findings below list each):
   - The frame check reads a design's own panel rows — a title with one of its values beside it, or a toggle's switch —
-    so a relabel to another row's title fails; a rename two settings force (R-13) is filed per design in the register
+    so a relabel to another row's title fails (sweep 5 made the words whole and the row's own); a rename two settings force (R-13) is filed per design in the register
     (`renames`), which the check reads, so the repeat rule and the frame rule no longer refuse each other.
   - Reset removes exactly the changes the confirm names, and junk — never a value at this design's own default, which
     another design may mean; R-103's locks are tested.
@@ -395,9 +395,21 @@ something and another when it does not.
     and has every operator tested; a control may not be named `mode`, `kg-*`, `portal` or `i18n-*`.
   - The pilots harness's id and order checks each see a planted fault first, place the universal controls by their
     own group, and step over a picker's popover; a Vercel refusal names credentials only when it is one.
-  - The docs: the repeat rule is the export's usual practice (A27–A32), with a frame's own resolution standing; DW-166
+  - The docs: the repeat rule is the export's usual practice (A27–A31), with a frame's own resolution standing; DW-166
     corrected (A32 #1–#11 and A22 #9 added, A26's "Share destinations"); the refusal table carries `json-null`, the
     frame rule and the foreign attribute names.
+- [x] **Review sweep 5** (two layers on sweep 4's patches — the diff alone, and edges, gaps and consistency run over the
+  whole export — 2026-09-15; the Review Findings below list each):
+  - The frame check reads a row's own words, whole — no caption, emphasis, code or mono label, and not the spec block
+    after the last row — and the drawn title styles and switches the export uses (a flex badge row, a list row, a
+    26 px switch after a badge); measured over every frame, every drawn pill and select row the register files is found,
+    and cross-group relabels between rows with no shared value words are refused.
+  - The stylesheet scan is a one-pass tokenizer instead of a regex: linear by construction, a string carries across an
+    escaped newline, escapes decode in names and values, and one past U+10FFFF is U+FFFD rather than a throw; the timed
+    check runs five hostile inputs and proves each was read to its end.
+  - A control may not be named `members-*` (Portal binds `data-members-signout` to signing the reader out); A34 #9's
+    "Contents" rename is filed; reset drops a drawn query's junk record whole; the harness plants each fault in its
+    own copy; the repeat rule's range is A27–A31.
 - [x] `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs`: the groups in order, every control in its
   group, pills on one line with room, the confirm's words, focus and axe.
 - [x] **Propagate:** `prd.md` FR-F3, FR-G3, Appendix C and I · `sections-inventory.md` · `ARCHITECTURE-SPINE.md` ·
@@ -554,6 +566,16 @@ panels against the register. Findings two layers raised are listed once.)*
 - [x] [FixReview][Patch] "The export's own practice" for a repeated title is its usual one (A4-10 and A10-12 draw it another way); A24 #15's "Meta placement" is another setting; DW-166 said A32 was resolved and missed A22 #9 and A26; DW-165 called A32's "Prices" a query setting; the refusal table and epic context lacked `json-null` and the frame rule; the sweep-3 record did not say A32's "Rows" was a duplicate dropped and two read-only Section Settings rows were added [docs, register, this spec]
 - [x] [FixReview][Dismiss] A17 "Head" lost its entry — "Head side" merged into the existing layout "Head", which stays
 
+*(Fix review, sweep 5, 2026-09-15, two layers on sweep 4's patches: Blind Hunter, and Edge Case with Verification Gap and
+consistency, run over every frame in the export.)*
+
+- [x] [FixReview][Patch] The frame check still let a setting move groups: a row's words ran into its caption, the next group's label and, after the last row, the spec block, and values matched as substrings ("On" inside "Everyone") — 2,594 of 18,139 cross-group relabels passed across the export [tools/check-snapshots.mjs]
+- [x] [FixReview][Patch] The frame check refused correct designs: A1's "Search" (a badge row), A25's "Anchor links", A16's contact toggles (a list row and a 26 px switch) [tools/check-snapshots.mjs]
+- [x] [FixReview][Patch] The stylesheet regex was still quadratic on some inputs (a trailing backslash, thousands of open selectors, an unquoted value run), missed a string's line continuation and a name's hex escape, and threw on an escape past U+10FFFF; the timed check never proved the scan ran [packages/library/src/validate.ts, tools/check-snapshots.mjs]
+- [x] [FixReview][Patch] `data-members-signout` and Portal's other members actions were accepted as control names [packages/library/src/validate.ts]
+- [x] [FixReview][Patch] A34 #9's rename was described, not filed; the repeat rule cited A27–A32 where A32 is unresolved; the frame check's message named the setting, not the drawn title it searched; its ceiling comment claimed R-13 refuses every half-done toggle swap [packages/library/control-groups.json, docs, tools/check-snapshots.mjs]
+- [x] [FixReview][Patch] Reset kept a drawn query's record that was not a record; the harness's two planted faults could fire each other's checks [packages/section-runtime/src/controls.ts, tools/probe/run-verify-pilots.cjs]
+
 ## Spec Change Log
 
 - **2026-09-15, Dev — the recording disagreed with one Design Notes fact (Ask First, flagged for the review).** The
@@ -621,12 +643,15 @@ panels against the register. Findings two layers raised are listed once.)*
   against the register). Reset keeps what this design does not use and the theme takes a Count only where the panel
   draws it; the validator refuses null and reads a stylesheet as CSS; a built setting's title is held to its frame
   (R-74). **Two corrections of the Fix's own earlier work:** A17's "Title: Large · Display" is filed as "Title" again —
-  the export's usual rule for a repeated title is that the field gives way (A27–A32's "… text"), which A22 #1's
+  the export's usual rule for a repeated title is that the field gives way (A27–A31's "… text"), which A22 #1's
   "Blurb text" already follows; and A22 #1 declares Below the field before Blurb, as its frame draws, so owner step 18
   and the Design Notes read in that order.
 - **2026-09-15, Fix — review sweep 4** (the four layers on sweep 3's patches). The frame check reads rows, not words,
   and the register files a forced rename per design so the two rules agree; reset keeps a carried value at this
   design's default; the stylesheet scan is case-insensitive and linear again. No wording the owner reads changed.
+- **2026-09-15, Fix — review sweep 5** (two layers on sweep 4's patches). The frame check reads a row's own whole words
+  and every drawn row style the export uses; the stylesheet scan is a one-pass tokenizer; `members-*` names are
+  Ghost's. No wording the owner reads changed.
 
 ## Design Notes
 
@@ -931,6 +956,21 @@ panels against the register. Findings two layers raised are listed once.)*
   reported `image-alt`; zero violations in 90 of 90 canvases and inside the confirm. Users 9 → 9.
 - **The deployed `/controls`** — `node tools/probe/run-verify-controls.cjs` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`):
   **82 PASS, 0 FAIL**, the dark-override sentence and the Data-only and five-change confirms as before. Users 9 → 9.
+
+**Results (Fix after review sweep 4, 2026-09-15):**
+- **Locally, Node 24.18.1:** `pnpm check` exit 0 — library 141, section-runtime 146, web 309 tests; `check-snapshots:
+  PASS`, with the frame check reading each pilot's rows (all 35 settings found in their own rows, "Card side" relabelled
+  "Card style" refused, A4 #9's "Action style" read through its register rename) and the stylesheet scan timed on
+  hostile input (2 ms and 0 ms; the old pattern, restored for the run, failed the check). `pnpm build` exit 0; the gate
+  PASS twice. Each new test was run against the code it guards broken first.
+- **GitHub Actions** — run 34955548770 for `0b23f0c7`: `check`, `rls` and `deploy` success; the log prints the gate's
+  PASS, the timing row (2 ms · 1 ms) and `check-snapshots: PASS`.
+- **Deployment:** `dpl_9GnXPMvxFHmpnTwVF2xF12iRGoEs`, production, READY, built from `0b23f0c7`.
+- **The deployed `/pilots`** (the same command and keys): **152 PASS, 0 FAIL** — on every pilot the id check saw a
+  planted duplicate before passing the real panel, and the order check saw a planted field below a setting (Centred has
+  no words in Content, so its order check has no field to plant); 13 to 18 rows now that a picker's popover is stepped
+  over. axe zero in 90 of 90 canvases, positive control first. Users 9 → 9.
+- **The deployed `/controls`:** **82 PASS, 0 FAIL**. Users 9 → 9.
 
 ## Owner's manual test
 

@@ -274,17 +274,26 @@ const registerFailures = (id, controlSchema) => {
 }
 
 /** R-74 for a setting's words: a built design's setting is a row its own frame draws — the title, and in the same row
- *  one of its values' words (a toggle: the drawn switch). Reading rows, not every word in the file, is what keeps
- *  relabelling a setting to another row's registered title — A4 #13's Card side to "Card style" — from moving it between
- *  groups unseen. Where the register files an R-13 rename for this design ({ renames: { n: drawn } }), the drawn title
- *  it replaces is the row read. ponytail: two rows with the same values (two toggles) swapped wholesale are not told
- *  apart; neither leaves the kind of row it is, and R-13 refuses the half-done swap. */
+ *  one of its values' words, whole (a toggle: the drawn switch). A row's words are its own: no caption, no emphasis or
+ *  code, no mono label, and the frame's spec block after the last row is not a row. Reading rows is what keeps
+ *  relabelling a setting to another row's registered title — A4 #13's Card side to "Card style", Show tag to "Member
+ *  visibility" — from moving it between groups unseen. Where the register files an R-13 rename for this design
+ *  ({ renames: { n: drawn } }), the drawn title it replaces is the row read. ponytail: two rows that share a value's
+ *  words, and any two switch rows, are not told apart — a relabel between them lands on a title the register files,
+ *  so its group change shows in design.json's diff; add a value identity when the export draws one. Measured on
+ *  2026-09-15 over every frame: every drawn pill and select row the register files is found. */
 const EXPORT = join(REPO, '_bmad-output/planning-artifacts/design/claude-design-export/Inflozo')
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"', middot: '·' }
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"', middot: '·', mdash: '—', ndash: '–', hellip: '…', minus: '−', rarr: '→', times: '×' }
 const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d))).replace(/&([a-z]+);/g, (m, e) => ENTITIES[e] ?? m)
-/** A panel row's title as the export draws one (a row, or a sub-row of a labelled group), and a toggle's switch. */
-const ROW_TITLE = /<span style="(?:font-size:12px;font-weight:500;color:#(?:6E6A64|A8A29A|8A8378|B4ADA1|B9B2A6)(?:;margin-top:4px)?|font-size:10\.5px;color:#8A857C)">([^<]*)<\/span>/g
-const SWITCH = /^<span style="width:3[246]px;height:(?:18|20)px/
+/** A panel row's title as the export draws one — a row, a sub-row of a labelled group, a list row, one carrying a badge
+ *  after its words — and a toggle's switch, after a badge if the row has one. */
+const ROW_TITLE = /<span style="(?:display:flex;align-items:center;gap:6px;)?(?:font-size:12px;font-weight:500;color:#(?:6E6A64|A8A29A|8A8378|B4ADA1|B9B2A6)(?:;margin-top:4px)?|font-size:10\.5px;color:#8A857C|font-size:12px;color:#1C1B1A;flex:1)">([^<]*)(?:<\/span>|(?=<span))/g
+const SWITCH = /^(?:<span[^>]*>[^<]*<\/span>)?(?:<\/span>)*<span style="width:(?:26|3[246])px;height:(?:16|18|20)px/
+/** A row's own words: text right after an opening tag that is not a caption, emphasis, code or a mono label, up to the
+ *  frame's spec block. */
+const ownWords = (body) => [...body.split('<sc-if')[0].matchAll(/(<[^<>]*>)([^<>]+)</g)]
+  .filter(([, tag]) => !/^<\/|^<(?:strong|em|code)\b|line-height|JetBrains Mono/.test(tag))
+  .map((m) => titleKey(decode(m[2]))).filter(Boolean)
 const frameRows = (category, n) => {
   const frame = readdirSync(EXPORT).find((f) => f.startsWith(`${category.toUpperCase()}-${n} `) && f.endsWith('.dc.html'))
   if (frame === undefined) return null
@@ -294,7 +303,7 @@ const frameRows = (category, n) => {
     frame,
     rows: heads.map((m, i) => {
       const body = html.slice(m.index + m[0].length, i + 1 < heads.length ? heads[i + 1].index : html.length)
-      return { title: titleKey(decode(m[1])), body, words: [...body.matchAll(/>([^<>]+)</g)].map((x) => titleKey(decode(x[1]))).filter(Boolean) }
+      return { title: titleKey(decode(m[1])), body, words: ownWords(body) }
     }),
   }
 }
@@ -308,11 +317,12 @@ const frameFailures = (id, controlSchema) => {
   const drawn = frameRows(category, n)
   if (drawn === null) return [`${id}: no ${category.toUpperCase()}-${n} frame in the design export to read its titles from (R-74)`]
   return controlSchema.flatMap((c) => {
-    const title = titleKey(drawnTitle(category, n, c.label))
-    const row = drawn.rows.some((r) => r.title === title && (c.type === 'toggle'
-      ? SWITCH.test(r.body)
-      : r.words.some((w) => c.values.some((v) => w.includes(titleKey(lib.valueWords(c.valueLabels, v)))))))
-    return row ? [] : [`${id}: "${c.label}" is not a row ${drawn.frame} draws with one of its values — a setting prints its own row's words (R-74); where one panel would print a title twice (R-13), the register's note says which words give way, and a rename is filed per design`]
+    const searched = drawnTitle(category, n, c.label)
+    const title = titleKey(searched)
+    const words = c.values.map((v) => titleKey(lib.valueWords(c.valueLabels, v)))
+    const row = drawn.rows.some((r) => r.title === title && (c.type === 'toggle' ? SWITCH.test(r.body) : r.words.some((w) => words.includes(w))))
+    const as = searched === c.label ? '' : ` (the register's rename reads it as "${searched}")`
+    return row ? [] : [`${id}: "${c.label}"${as} is not a row ${drawn.frame} draws with one of its values — a setting prints its own row's words (R-74); where one panel would print a title twice (R-13), the register's note says which words give way, and a rename is filed per design`]
   })
 }
 /** Everything the register and the frame hold a built design's settings to — the one list the subject and its controls read. */
@@ -381,16 +391,19 @@ check('control — a stylesheet reaches the validator: A24 #1 with one rule stil
   if (typeof css !== 'string' || !css.includes('[data-byline=')) throw new Error('A24 #1\'s style.css was not read from disk, so this control proves nothing')
   return mustThrow(() => assemble({ ...byId('a24/1'), css: `${css}\n.a24-1[data-meta="off"] .x { display: none; }\n` }), /stylesheet-control-undeclared/, 'A24 #1 with a stale [data-meta] rule')
 })
-check('AD-3\'s stylesheet scan reads hostile input in linear time: a bracket left open before 64,000 spaces, and 32,000 escaped quotes', () => {
+check('AD-3\'s stylesheet scan reads hostile input in linear time, to its end: open brackets before long runs of spaces, escaped quotes ending in a backslash, thousands of selectors left open', () => {
   const d = byId('a24/1')
-  const took = (css) => {
+  // each hostile run ends with a stale rule, which must still be refused: the scan read to the end, it did not give up
+  // (two newlines: a string left open on a trailing backslash carries across one, as CSS's does)
+  const stale = '\n\n.a24-1[data-meta="off"] .x { display: none; }\n'
+  const hostile = [`[data-align="center"${' '.repeat(64000)}`, `"${'\\"'.repeat(32000)}\\`, '[data-x='.repeat(8000), '[data-a="'.repeat(20000), '[data-a=x'.repeat(20000)]
+  const runs = hostile.map((h) => {
     const began = performance.now()
-    lib.validateDesign({ html: d.html, design: d.design, content: d.content, icons: iconDrawing, css })
-    return performance.now() - began
-  }
-  const ms = [took(`[data-align="center"${' '.repeat(64000)}`), took(`"${'\\"'.repeat(32000)}`)]
-  if (ms.some((x) => x > 1000)) throw new Error(`the scan took ${ms.map((x) => Math.round(x)).join(' ms and ')} ms — a regex is backtracking`)
-  return ms.map((x) => `${Math.round(x)} ms`).join(' · ')
+    const f = lib.validateDesign({ html: d.html, design: d.design, content: d.content, icons: iconDrawing, css: h + stale })
+    return { ms: performance.now() - began, read: f.some((x) => x.code === 'stylesheet-control-undeclared') }
+  })
+  if (runs.some((r) => r.ms > 1000 || !r.read)) throw new Error(`the scan: ${runs.map((r) => `${Math.round(r.ms)} ms${r.read ? '' : ', stale rule missed'}`).join(' · ')}`)
+  return runs.map((r) => `${Math.round(r.ms)} ms`).join(' · ')
 })
 check('control — R-74: a built setting relabelled to a title its frame does not draw, or to another row\'s title, is caught through the subject\'s own list; a rename the register files per design is read', () => {
   const r = rendered.find((x) => x.id === 'a4/13')
@@ -400,6 +413,9 @@ check('control — R-74: a built setting relabelled to a title its frame does no
   const absent = mustFail(at('Picture side'), /"Picture side" is not a row A4-13 /, 'Card side relabelled "Picture side"')
   // "Card style" is a row A4-13 draws, for another setting — filed under Content, so a relabel would regroup Card side
   mustFail(at('Card style'), /"Card style" is not a row A4-13 /, 'Card side relabelled "Card style", a row drawn for another setting')
+  // and a row whose caption or neighbour happens to hold a value's letters: Show tag's "On" inside "Everyone"
+  const showTag = settingFailures({ id: r.id, entry: { ...r.entry, controlSchema: r.entry.controlSchema.map((c) => (c.name === 'show-tag' ? { ...c, label: 'Member visibility', group: 'settings' } : c)) } })
+  mustFail(showTag, /"Member visibility" is not a row A4-13 /, 'Show tag relabelled "Member visibility"')
   // A4 #9's button style is drawn "Primary action" beside its Primary action toggle; the register files it "Action style"
   const style = { name: 'action-style', type: 'segmented', label: 'Action style', group: 'style', values: ['surface-fill', 'outline'], default: 'surface-fill' }
   if (frameFailures('a4/9', [style]).length !== 0 || frameFailures('a4/9', [{ ...style, label: 'Button look' }]).length !== 1) throw new Error('the register\'s rename for A4 #9 is not read')

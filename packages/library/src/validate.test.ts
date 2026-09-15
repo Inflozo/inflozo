@@ -847,11 +847,18 @@ test('AD-3 from the stylesheet\'s side: every [data-…] a rule selects on is a 
   assert.deepEqual(said('[data-i18n-key]{} .x{} /* left open [data-old="x"]'), [])
   // a string ends at its line, so an unclosed one hides nothing on the next
   assert.deepEqual(said('.x::after{content:"never closed\n.x[data-old="x"]{}'), ['stylesheet-control-undeclared'])
+  // a string carries across an escaped newline, as CSS's does, so the rule after it is read
+  assert.deepEqual(said('.a::after{content:"x\\\ny"} .b[data-meta="off"]{}'), ['stylesheet-control-undeclared'])
+  // an escape in the name is decoded too, and one past U+10FFFF is U+FFFD, never a throw
+  assert.deepEqual(said('[data-\\61 lign="middle"]{}'), ['stylesheet-control-value'])
+  assert.deepEqual(said('[data-align="\\110000"]{} [data-\\110000]{}'), ['stylesheet-control-value', 'stylesheet-control-undeclared'])
+  // Portal's members actions are Ghost's, never a control's
+  assert.deepEqual(said('[data-members-signout]{} [data-members-plan="x"]{}'), [])
   // (linear time on hostile input is timed by tools/check-snapshots.mjs — a core package reads no clock, AD-1)
 })
 
 test('a control is never named like an attribute the page or Ghost owns', () => {
-  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
+  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key', 'members-signout']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
 })
 
 test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {

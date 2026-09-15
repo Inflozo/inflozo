@@ -27,9 +27,10 @@ export type Failure = { code: string; message: string }
 
 const push = (out: Failure[], code: string, message: string) => { out.push({ code, message }) }
 
-/** Attribute names that belong to the page or to Ghost, never to a control: Portal's link, the visitor's mode on
- *  `:root`, a Koenig card's, a translation's. A stylesheet may select on them; a control may not be named like one. */
-const FOREIGN_ATTR = /^(portal|mode)$|^(kg|i18n)-/
+/** Attribute names that belong to the page or to Ghost, never to a control: Portal's link and its members actions
+ *  (`data-members-signout` signs the reader out on a click), the visitor's mode on `:root`, a Koenig card's, a
+ *  translation's. A stylesheet may select on them; a control may not be named like one. */
+const FOREIGN_ATTR = /^(portal|mode)$|^(kg|i18n|members)-/
 
 /** Every place a parsed JSON file carries null, as a path. Nothing in design.json or content.json takes null — a field
  *  that does not apply is left out — and the checks below read fields of fields, so null is refused before any of
@@ -472,7 +473,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
     if (!CONTROL_NAME_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" is not a kebab-case name — it writes data-${c.name} on the section root (AD-3).`)
     } else if (DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR.test(c.name)) {
-      push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive or Ghost's own attribute — a control's attribute must mean nothing but the control (AD-3).`)
+      push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive, or an attribute the page or Ghost owns (Portal binds data-members-signout to signing the reader out) — a control's attribute must mean nothing but the control (AD-3).`)
     }
     if (UNIVERSAL_CONTROLS.includes(c.name)) {
       push(out, 'universal-control-redeclared', `control "${c.name}" is one of the three universal controls. They are declared once, never per design, and a design may narrow a universal's VALUES with a stated reason but may never rename, reinvent or redeclare one (R-23).`)
@@ -743,36 +744,113 @@ export function validateDesign(input: {
   return out
 }
 
+/** The attribute selectors a stylesheet writes, read in ONE pass the way CSS tokenizes, so every character is read
+ *  once whatever the input: a comment runs to its close or the end; a string to its quote, an unescaped newline or the
+ *  end, a backslash taking the next character (a line continuation too); `[` reads a namespace, a name, an operator, a
+ *  value and a flag — and where that stops short, the scan resumes where it stopped, because nothing it read (spaces,
+ *  name characters, an operator, a string) can hold another `[`. A CSS escape is decoded: up to six hex digits and
+ *  one space is a code point (0, a surrogate or past U+10FFFF is U+FFFD), any other character is itself. */
+function attributeSelectors(css: string): { text: string; name: string; op?: string; value?: string; flag?: string }[] {
+  const out: { text: string; name: string; op?: string; value?: string; flag?: string }[] = []
+  const n = css.length
+  const at = (i: number) => css.charAt(i)
+  const isHex = (c: string) => /^[0-9a-fA-F]$/.test(c)
+  const isSpace = (c: string) => c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f'
+  const escape = (i: number): [string, number] => {
+    if (i + 1 >= n) return ['�', n]
+    if (!isHex(at(i + 1))) return [at(i + 1), i + 2]
+    let k = i + 1
+    while (k < n && k - (i + 1) < 6 && isHex(at(k))) k++
+    const cp = parseInt(css.slice(i + 1, k), 16)
+    if (k < n && isSpace(at(k))) k++
+    return [cp === 0 || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff) ? '�' : String.fromCodePoint(cp), k]
+  }
+  const ident = (i: number): [string, number] => {
+    let v = ''
+    while (i < n) {
+      const c = at(i)
+      if (c === '\\' && at(i + 1) !== '\n') { const [e, j] = escape(i); v += e; i = j }
+      else if (/^[\w-]$/.test(c) || c > '\x7f') { v += c; i++ }
+      else break
+    }
+    return [v, i]
+  }
+  const string = (i: number): [string, number, boolean] => {
+    const quote = at(i)
+    let v = ''
+    for (i++; i < n; ) {
+      const c = at(i)
+      if (c === quote) return [v, i + 1, true]
+      if (c === '\n') return [v, i, false]
+      if (c === '\\') {
+        if (at(i + 1) === '\n') { i += 2; continue }
+        const [e, j] = escape(i); v += e; i = j; continue
+      }
+      v += c; i++
+    }
+    return [v, n, false]
+  }
+  const spaces = (i: number) => { while (i < n && isSpace(at(i))) i++; return i }
+  let i = 0
+  while (i < n) {
+    const c = at(i)
+    if (c === '/' && at(i + 1) === '*') { const close = css.indexOf('*/', i + 2); i = close === -1 ? n : close + 2; continue }
+    if (c === '"' || c === "'") { i = string(i)[1]; continue }
+    if (c !== '[') { i++; continue }
+    const from = i
+    let j = spaces(i + 1)
+    // a namespace — `*|`, `|`, or a name then `|` that is not `|=` — or the attribute name itself
+    if (at(j) === '*' && at(j + 1) === '|') j += 2
+    else if (at(j) === '|' && at(j + 1) !== '=') j += 1
+    let [name, k] = ident(j)
+    if (name !== '' && at(k) === '|' && at(k + 1) !== '=') [name, k] = ident(k + 1)
+    j = k
+    if (!name.toLowerCase().startsWith('data-')) { i = Math.max(j, from + 1); continue }
+    j = spaces(j)
+    if (at(j) === ']') { out.push({ text: css.slice(from, j + 1), name: name.slice(5).toLowerCase() }); i = j + 1; continue }
+    const op = at(j) === '=' ? '=' : '~|^$*'.includes(at(j)) && at(j) !== '' && at(j + 1) === '=' ? `${at(j)}=` : ''
+    if (op === '') { i = Math.max(j, from + 1); continue }
+    j = spaces(j + op.length)
+    let value: string
+    if (at(j) === '"' || at(j) === "'") {
+      const [v, e, closed] = string(j)
+      if (!closed) { i = Math.max(e, from + 1); continue }
+      value = v; j = e
+    } else {
+      const [v, e] = ident(j)
+      if (v === '') { i = Math.max(j, from + 1); continue }
+      value = v; j = e
+    }
+    j = spaces(j)
+    let flag: string | undefined
+    if (/^[iIsS]$/.test(at(j)) && (isSpace(at(j + 1)) || at(j + 1) === ']')) { flag = at(j).toLowerCase(); j = spaces(j + 1) }
+    if (at(j) !== ']') { i = Math.max(j, from + 1); continue }
+    out.push({ text: css.slice(from, j + 1), name: name.slice(5).toLowerCase(), op, value, ...(flag === undefined ? {} : { flag }) })
+    i = j + 1
+  }
+  return out
+}
+
 /** AD-3 from the stylesheet's side: every `[data-…]` a rule selects on names a control this design declares, or a
  *  universal, and matches a value it offers — so renaming a control cannot leave a rule behind that selects nothing, a
  *  setting that does nothing, with every other check green. An attribute no control can be named is not held here: a
- *  directive (Portal's form attributes stay on the page), Ghost's `data-portal`, a Koenig card's `data-kg-*`, and the
- *  visitor's `data-mode` on `:root`. ponytail: a rule on a directive the compiler consumes selects nothing live and is
- *  not refused; add that when a design writes one. */
+ *  directive (Portal's form attributes stay on the page), and `FOREIGN_ATTR`'s. ponytail: a rule on a directive the
+ *  compiler consumes selects nothing live and is not refused; add that when a design writes one. */
 function validateStylesheet(css: string, controlValues: Readonly<Record<string, readonly string[]>>): Failure[] {
   const out: Failure[] = []
   const said = new Set<string>()
-  // one pass: a string or a comment is stepped over whole, so a "/*" inside content: "…" opens no comment and a
-  // "[data-x]" inside a string is no selector; an attribute selector is read with its operator, its value and its flag.
-  // Linear on any input: a string ends at its line as CSS's does, and no two adjacent runs can share a character
-  const token = /"(?:\\.|[^"\\\n])*(?:"|\n|$)|'(?:\\.|[^'\\\n])*(?:'|\n|$)|\/\*[\s\S]*?(?:\*\/|$)|\[\s*(?:[\w*-]*\|)?data(?:-|\\-)((?:\\.|[\w-])+)\s*(?:([~|^$*]?=)\s*(?:"((?:\\.|[^"\\\n])*)"|'((?:\\.|[^'\\\n])*)'|([^\s\]]+))\s*(?:([is])\s*)?)?\]/gi
-  // CSS escapes: a backslash and up to six hex digits is a code point, any other character is itself
-  const unescape = (v: string) => v.replace(/\\([0-9a-f]{1,6})\s?|\\(.)/gi, (_, hex: string | undefined, ch: string | undefined) => (hex === undefined ? ch! : String.fromCodePoint(parseInt(hex, 16))))
-  for (const m of css.matchAll(token)) {
-    const [selector, rawName, op, dq, sq, bare, flag] = m
-    if (rawName === undefined || said.has(selector)) continue
-    said.add(selector)
-    const name = unescape(rawName).toLowerCase()
+  for (const { text, name, op, value, flag } of attributeSelectors(css)) {
+    if (said.has(text)) continue
+    said.add(text)
     const offered = Object.hasOwn(controlValues, name) ? controlValues[name] : undefined
     if (offered === undefined) {
       if (DIRECTIVES[`data-${name}`] !== undefined || FOREIGN_ATTR.test(name)) continue
-      push(out, 'stylesheet-control-undeclared', `style.css selects on ${selector}, and this design declares no control named "${name}" — the stylesheet never selects on an attribute the design does not own (AD-3).`)
+      push(out, 'stylesheet-control-undeclared', `style.css selects on ${text}, and this design declares no control named "${name}" — the stylesheet never selects on an attribute the design does not own (AD-3).`)
       continue
     }
-    const raw = dq ?? sq ?? bare
-    if (op === undefined || raw === undefined) continue
-    const fold = (v: string) => (flag?.toLowerCase() === 'i' ? v.toLowerCase() : v)
-    const want = fold(unescape(raw))
+    if (op === undefined || value === undefined) continue
+    const fold = (v: string) => (flag === 'i' ? v.toLowerCase() : v)
+    const want = fold(value)
     const matches: Record<string, (v: string) => boolean> = {
       '=': (v) => v === want,
       '~=': (v) => v.split(/\s+/).includes(want),
@@ -782,7 +860,7 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
       '*=': (v) => want !== '' && v.includes(want),
     }
     if (!offered.some((v) => matches[op]!(fold(v)))) {
-      push(out, 'stylesheet-control-value', `style.css selects on ${selector}, which matches none of the values this design offers for "${name}": ${offered.join(' · ') || 'none'}.`)
+      push(out, 'stylesheet-control-value', `style.css selects on ${text}, which matches none of the values this design offers for "${name}": ${offered.join(' · ') || 'none'}.`)
     }
   }
   return out

@@ -373,9 +373,11 @@ export function resetSection(entry: ControlEntry, state: ControlState): ControlS
   }
   const data = record(state.data)
   for (const r of dataRows(entry, state)) {
+    // a drawn query's record that is not a record at all is junk, and goes whole
+    if (r.key in data && (typeof data[r.key] !== 'object' || data[r.key] === null)) { delete data[r.key]; continue }
     const stored = record(data[r.key])
     const v = stored[r.control]
-    const valid = r.control === 'count' ? validCount(v) !== undefined : v === 'newest' || v === 'oldest'
+    const valid = r.control === 'count' ? validCount(v) !== undefined : r.control === 'order' ? v === 'newest' || v === 'oldest' : false
     if (!r.changed && (v === undefined || valid)) continue
     delete stored[r.control]
     if (Object.keys(stored).length > 0) data[r.key] = stored

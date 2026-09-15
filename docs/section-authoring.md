@@ -393,14 +393,15 @@ its own frame does not draw** (R-74): the story that gives a setting a title the
 its group, so a setting cannot leave its group by being renamed in the same edit. A title filed under Data is a
 query's setting, declared in `dataBindings`, never a control. Each title is the one the design's drawn panel prints
 (DW-111) — the check reads the frame's own row, the title with one of the setting's values beside it (a toggle's
-switch), so relabelling a setting to another row's title fails — and a labelled group's rows are filed under the titles
+switch), so relabelling a setting to another row's title fails unless the two rows share a value's words or are both
+switches, when the group change shows in `design.json` — and a labelled group's rows are filed under the titles
 the panel prints ("Actions › Sign in" is "Sign in"); a few entries are fields (an icon slot, an authored list), which
 are Content wherever they sit.
 
 **When the export's titles would repeat in one panel** (R-13: one panel prints one title once, its accordions'
 titles included), the export's usual practice decides which gives way:
 - **A setting and a field** — the setting keeps its title and the field takes one of its own, as the export does in
-  A27–A32 ("Heading text", "Description text", "Eyebrow text") and A22 #1 does ("Blurb text"). A17's "Title: Large ·
+  A27–A31 ("Heading text", "Description text", "Eyebrow text") and A22 #1 does ("Blurb text"). A17's "Title: Large ·
   Display" therefore stays "Title", and A17's Title field gives way when a design with that setting is built. Where a
   frame draws the pair apart another way, its words stand (A4-10's "Show how long it runs" beside its "How long it
   runs" field; A10-12's "Show marker" beside "Marker").

@@ -233,20 +233,26 @@ async function main() {
         const below = first === -1 ? [] : content.slice(first).filter((r) => r.kind === 'words').map((r) => `"${r.text}" below a setting`)
         return { twice, order: [...outOfOrder, ...below] }
       }
-      const planted = faults(await aside.evaluate((a, src) => {
+      // each fault in its own copy, so one plant cannot make the other's check fire: a duplicate of the LAST id (no
+      // header or row title a group lookup reads), and a field's label appended after Content's settings
+      const plantedIds = faults(await aside.evaluate((a, src) => {
         const copy = a.cloneNode(true)
         const withId = [...copy.querySelectorAll('[id]')]
-        withId[1].id = withId[0].id
+        withId[withId.length - 1].id = withId[withId.length - 2].id
+        return (0, eval)(`(${src})`)(copy)
+      }, readPanel.toString()))
+      const plantedOrder = faults(await aside.evaluate((a, src) => {
+        const copy = a.cloneNode(true)
         const content = [...copy.querySelectorAll('[role="region"]')].find((r) => copy.querySelector(`#${CSS.escape(r.getAttribute('aria-labelledby'))}`)?.textContent.trim() === 'Content')
-        const word = content?.querySelector('label[for], [id*="-prop-"][id$="-label"]')
+        const word = content?.querySelector('label[for*="-prop-"], [id*="-prop-"][id$="-label"]')
         if (word) content.lastElementChild.append(word.cloneNode(true))
         return (0, eval)(`(${src})`)(copy)
       }, readPanel.toString()))
       const drawn = await aside.evaluate((a, src) => (0, eval)(`(${src})`)(a), readPanel.toString())
       const { twice, order } = faults(drawn)
-      check(`R-113 · ${name} — every id in the panel is its own`, planted.twice.length > 0 && drawn.ids.length > 0 && twice.length === 0, twice.join(', ') || `${drawn.ids.length} ids; the planted duplicate was seen`)
+      check(`R-113 · ${name} — every id in the panel is its own`, plantedIds.twice.length > 0 && drawn.ids.length > 0 && twice.length === 0, twice.join(', ') || `${drawn.ids.length} ids; the planted duplicate was seen`)
       const hasWords = drawn.rows.some((r) => r.group === 'Content' && r.kind === 'words') && drawn.rows.some((r) => r.group === 'Content' && r.kind === 'setting')
-      check(`R-113 · ${name} — the engine's order on the page: words above settings in Content, each group's settings as declared, the universal controls at their group's foot`, drawn.rows.some((r) => r.kind === 'setting') && (!hasWords || planted.order.length > 0) && order.length === 0, order.join('; ') || `${drawn.rows.length} rows in order${hasWords ? '; the planted field below a setting was seen' : ''}`)
+      check(`R-113 · ${name} — the engine's order on the page: words above settings in Content, each group's settings as declared, the universal controls at their group's foot`, drawn.rows.some((r) => r.kind === 'setting') && (!hasWords || plantedOrder.order.some((o) => o.endsWith('below a setting'))) && order.length === 0, order.join('; ') || `${drawn.rows.length} rows in order${hasWords ? '; the planted field below a setting was seen' : ''}`)
       const rows = await aside.evaluate((a) => [...a.querySelectorAll('[role="radiogroup"].rounded-pill')].map((g) => ({
         label: document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim(),
         pills: [...g.querySelectorAll('[role="radio"]')].map((b) => {

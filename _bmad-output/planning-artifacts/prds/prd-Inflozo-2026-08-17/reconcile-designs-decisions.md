@@ -2217,7 +2217,7 @@ role; Section Settings holds only what fits no role."*
   - Each title is the one the design's drawn panel prints (DW-111); a labelled group's rows are filed under the titles
     the panel prints ("Actions › Sign in" is "Sign in"). Where the export's titles would repeat in one panel (R-13), its
     usual practice decides which gives way: a setting beside a field of the same title keeps its title and the field
-    takes one of its own, as the export does in A27–A32 ("Heading text", "Description text", "Eyebrow text") and A22 #1
+    takes one of its own, as the export does in A27–A31 ("Heading text", "Description text", "Eyebrow text") and A22 #1
     does ("Blurb text") — so A17's "Title: Large · Display" stays "Title" and its category's Title field gives way;
     where a frame draws the pair apart another way, its words stand (A4-10's "Show how long it runs" beside its "How
     long it runs" field). Two settings, or a setting and its accordion, take the export's own other title for that
