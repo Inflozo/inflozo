@@ -472,7 +472,21 @@ something and another when it does not.
   disagreed with Design Notes:** `{{url}}` in the navigation loop printed `/` for every item (Spec Change Log). The
   recorder restored `casper` and deleted the probe theme on both, read back; a separate read-only `GET themes/` on each
   afterwards returned `casper` active and no `inflozo-probe-shim`. The one reused image was reused (no upload).
-- **The deployed `/pilots`, GitHub Actions and Vercel** — read after the Dev push, recorded in the follow-up Dev commit.
+- **GitHub Actions** — run 34922654013 for `bb248842`: `check`, `rls` and `deploy` all success; the `check` log prints
+  `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files`.
+- **Vercel** — production `dpl_9VY1wiqTamqa3858spkh1HoCAPtJ` for `bb248842`: READY.
+- **The deployed `/pilots`** — `node tools/probe/run-verify-pilots.cjs` with a throwaway account (users 9 → 9 after
+  the delete): the switcher listed Rail · Three Up · Inline Row · Centred · Latest Post off the directory; noindex;
+  the axe positive control reported `image-alt`; every pilot × Light and Dark × 1440/834/390 × each View as was
+  screenshotted, and axe found zero violations in 75 of the 90 canvases. **The 15 failures are one finding:**
+  `color-contrast`, white on Paper's `#D96C3F` at 3.4:1 on the main button of Rail (Signed out), Inline Row (Signed
+  out) and Latest Post (every visitor), in Light only — Q3 and DW-158. Read back: Rail signed out shows Sign in and
+  Subscribe, at Free and Paid Account and no Subscribe; Three Up's First/Middle/Last pages show Newer and Older as
+  step 7 says and Empty shows "Nothing here yet"; Inline Row with Show to Paid, signed out, renders nothing; Latest
+  Post's card is "The night shift at the Port of Algeciras" and its panel has no Data group and no Show row. The
+  screenshots showed the iframe kept its tallest height when a shorter pilot was chosen (it measured the document,
+  which never shrinks below the iframe); `review.tsx` now measures the section, in the follow-up Dev commit. The
+  harness's first run misread "Show tag" as a Show row; the check now matches the row label exactly.
 - Supabase: no migration and nothing read yet; the harness's throwaway user is the only write. Resend and Dodo are not
   touched.
 
@@ -578,3 +592,25 @@ Example: on page 5 of 11 today, the foot of the list reads "Newer posts · 5 / 1
 
 **Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-109** in `reconcile-designs-decisions.md` §A27. DW-97 closes;
 A34's category story redraws A34 #1 Numbers to the indicator.
+
+**Q3. The orange Subscribe button's white words are too faint to pass the accessibility check. What should change?**
+
+*(Raised by the Dev run, 2026-09-15.)* The drawings paint every main button in the Paper pack's orange (`#D96C3F`) with
+white words. The accessibility scan this story runs on the live pilots page measures white on that orange at 3.4 to 1;
+the rule for button-sized words is 4.5 to 1. So Rail, Inline Row and Latest Post each fail once, in Light only (Dark
+uses dark words on a lighter orange and passes). The drawings are the design authority (R-74), so changing them is
+yours to rule, not the build's.
+
+Example: the "Subscribe" button in the Rail header is 14-pixel white text on orange. Everything else on the five
+pilots passed, in both modes, at all three widths, for every visitor.
+
+1. **Dark words on the orange, as Dark mode already does (RECOMMENDED).**
+   - The button keeps its orange; its words turn the near-black ink (`#232019`), which measures 4.7 to 1 and passes.
+   - One value changes in the sample colours (the words on the accent colour), nothing else.
+2. **A deeper orange behind white words.**
+   - White stays; the orange darkens to about `#B5532A` wherever it sits behind words.
+   - Every orange on every page looks darker than the drawings.
+3. **Keep the drawings as they are, and record the exception.**
+   - The pages match the drawings exactly, and every published site built on Paper ships a button that fails WCAG AA.
+
+**Status: open — asked 2026-09-15, not yet ruled.** DW-158 records it; the rest of the story does not wait on it.

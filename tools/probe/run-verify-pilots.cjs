@@ -157,7 +157,8 @@ async function main() {
       const t = await canvasText()
       check('step 12 — Latest Post: the newest post in the card', /The night shift at the Port of Algeciras/.test(t), t.replace(/\s+/g, ' ').slice(0, 240))
       const panel = await page.locator('aside#section-controls').innerText()
-      check('step 13 — Latest Post: the panel offers no number of posts', !/\bShow\b/.test(panel) && !/\bData\b/.test(panel))
+      // a row labelled exactly "Show" is the Data group's Count; "Show tag" and "Show date" are the design's own controls
+      check('step 13 — Latest Post: the panel offers no number of posts (no Data group, no Show row)', !/(^|\n)\s*Show\s*(\n|$)/.test(panel) && !/(^|\n)\s*Data\s*(\n|$)/.test(panel), panel.replace(/\s+/g, ' ').slice(0, 300))
     }
     await page.screenshot({ path: `${OUT}/pilots-review-1600.png` })
     await context.close()

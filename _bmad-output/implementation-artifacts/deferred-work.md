@@ -3796,3 +3796,19 @@ owner: the starters' story (Epic 11, Story 11.2 the starter chooser, or the stor
 location: prd.md Appendix E (Signal and Ledger, `:1127`, `:1133`) · epics.md (`:7103`, `:7272`)
 reason: which hero each starter now uses is a composition choice, not a rename — "Split Editorial" merged into
   another design, and picking its successor is the owner's or the starters' story's call, not a propagation.
+
+### DW-158: Paper's white-on-accent fails WCAG AA contrast on every pilot's main button in Light
+
+plain: The orange Subscribe buttons have white words that are too faint for the accessibility rule, in light mode only.
+  The fix is a colour choice for the owner (Story 4.10's Q3).
+status: open
+severity: medium
+origin: Story 4.10's Dev run — `tools/probe/run-verify-pilots.cjs` on the deployed /pilots, axe-core 4.12.1 at WCAG 2.1
+  AA: `color-contrast` on A1 #1's `.a1-1__cta`, A22 #1's `.a22-1__button` and A4 #13's primary action, #FFFFFF on
+  #D96C3F at 3.4:1, at every width and visitor in Light; zero violations everywhere else (the positive control passed)
+owner: the owner (spec 4.10 Q3), then the reference token set (`packages/section-runtime/src/tokens.ts`) and Epic 6's
+  Paper pack; Story 4.11's matrix fails on it until then
+location: packages/section-runtime/src/tokens.ts `--text-on-accent` / `--accent` · the export's Paper `onAccent`
+reason: the values are the export's Paper objects (`_build/a22lib.js:4`, `a20-kit.js`), which R-74 makes the authority;
+  changing one is a ruling, not a propagation.
+

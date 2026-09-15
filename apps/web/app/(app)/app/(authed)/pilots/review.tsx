@@ -151,7 +151,8 @@ export function Review({
 
   const measure = () => {
     const c = canvas()
-    if (c) setHeight(Math.max(240, c.doc.documentElement.scrollHeight))
+    // the SECTION's height, not the document's: a document is never shorter than its iframe, so it could only grow
+    if (c) setHeight(Math.max(240, Math.ceil(c.mount.getBoundingClientRect().height)))
   }
 
   const onChange = (next: ControlState, kind: Edit) => {
