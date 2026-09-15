@@ -490,6 +490,13 @@ DOCS = [
   '390 with a positive control, and the control stamp and content re-render timed under 4x CPU throttle; '
   'the account deleted with the user count read before and after. Committed at Review so the deployed '
   "checks that re-verified the owner's nine findings can be re-run from a clone."),
+ ('tools/probe/run-verify-pilots.cjs', 'tool', 'Pilots review page harness',
+  "Story 4.10's deployed walk of /pilots and the live Supabase (R-82): a throwaway account signed in through the "
+  'Auth Admin API, then every pilot at Light and Dark, Desktop 1440, Tablet 834 and Phone 390, and each View as, '
+  'switched in the canvas chrome and screenshotted for comparison by eye against the frames, with axe-core at WCAG '
+  '2.1 AA inside each canvas (a positive control first), the member arms and Show to read back off the canvas, '
+  "Latest Post's panel checked for no number of posts, and Three Up's four feed pages; the account deleted with the "
+  'user count read before and after.'),
  ('tools/probe/run-verify-dashboard.py', 'tool', 'Dashboard invariants and guards harness',
   # DW-73's shape from the start: a subject line and one bullet per concern.
   (
@@ -816,6 +823,18 @@ DOCS = [
   "(the version both Ghost majors bundle, refused if the installed one differs) against the shim's t(), and prints "
   'the totals per namespace. Also covers packages/library/strings/catalog.json and src/catalog.ts, which the '
   'catalogue cannot index (the package BASES gap). It stores no count: it prints them.'),
+ ('tools/check-snapshots.mjs', 'tool', 'The pilot snapshots, checked by execution',
+  "Story 4.10's check of NFR-6(c1), run last by pnpm test and therefore by CI. Controls first, each handed a broken "
+  'subject in memory and required to fail naming it: a design with one class changed (naming the file and its first '
+  'differing line), a missing snapshot, a snapshot with no design, a title binding added to A1 #1 at default.hbs '
+  "(checkBindings refuses it), A24 #1 rendered at index.hbs (FR-H7's refusal naming title) and A17 #1 at post.hbs "
+  "(R-7's refusal). Then, for every design directory under packages/library/designs/ at every compileTarget, it "
+  'validates and assembles, runs checkBindings ([] — DW-130), renders the canvas against Orbit Weekly and the theme '
+  'with content and control defaults, and holds the one theme text equal to packages/library/snapshots/{category}/{n}/ '
+  "(template.hbs and partials/); renders the controls sample through both emitters at each of its targets (DW-121); "
+  "and holds A17 #1's no-param post-card partial and four feed pages and A4 #13's one fixed post. --update rewrites "
+  'the snapshots; CI never passes it. Also covers the designs and the snapshots, which the catalogue cannot index '
+  '(the package BASES gap: a snapshot is generated output, DW-94). It stores no count: it prints them.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
  ('tools/reapply-export-edits.py', 'tool', 'Re-apply the repo-side export edits',

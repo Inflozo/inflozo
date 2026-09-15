@@ -34,6 +34,12 @@ Story 4.9 adds `theme-shim/locales/en.json` and the TR group — `{{t}}`'s looku
 recording carries the locale file it was made under as `input.locales_en`, so `contract.test.ts` asserts
 `t()` against Ghost's question as well as its answer. TR|plain_control is the control: unless it printed
 the file's value, `{{t}}` was not reading the file and no TR row counts.
+
+Story 4.10 adds the PILOT group to index.hbs and `theme-shim/partials/probe-card.hbs`, a partial with no params
+invoked inside `{{#foreach posts}}` (it prints each row's `title` and `@first`), plus the navigation loop's
+`label`/`url`, the signed-out `{{#if @member.paid}}` arm, the `@site.logo` and `@site.allow_self_signup`
+conditions and a one-post `{{#get}}` — the rows the five pilots stand on. The signed-in member arms stay
+cited, not recorded: creating a member is outside the recorder's writes.
 """
 import os, re, sys, json, time, zlib, struct, hmac, hashlib, base64, zipfile, io, uuid, datetime
 import urllib.request, urllib.error

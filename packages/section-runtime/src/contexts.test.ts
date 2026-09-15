@@ -7,9 +7,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
-import { MEDIA_FALLBACK_REFUSAL, offerBindings, validateMarkup } from '@inflozo/library'
+import { DIRECTIVES, MEDIA_FALLBACK_REFUSAL, offerBindings, validateMarkup } from '@inflozo/library'
 import type { CategoryContent, PropDef } from '@inflozo/library'
-import { checkBindings, initials, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { RENDERED_DIRECTIVES, WALKED_GHOST_PATH_DIRECTIVES, checkBindings, initials, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import type { RenderInput } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -233,4 +233,44 @@ test('data-initials shares no element with data-bind or data-prop, and a bare re
   throwsBoth('<ul><li data-items="people"><span data-initials="people[].name" data-prop="people[].name">x</span></li></ul>', input, /shares <span> with data-prop/)
   throwsBoth('<span data-initials="name" data-bind="title">x</span>', input, /shares <span> with data-bind/)
   assert.ok(renderCanvas(doc(), '<p data-bind="reading_time">5</p>', { ghost: { reading_time: 'abc' } }).includes('>abc<'))
+})
+
+// ── Story 4.10 ────────────────────────────────────────────────────────────────
+
+test('DW-131: every rendered directive the vocabulary flags ghostPath is walked by the scope check, and each refuses a misspelt path by name', () => {
+  const flagged = Object.keys(DIRECTIVES).filter((d) => DIRECTIVES[d]?.ghostPath === true)
+  assert.ok(flagged.length > 0)
+  for (const d of flagged) assert.ok(WALKED_GHOST_PATH_DIRECTIVES.includes(d), `${d} carries a Ghost path and ghostPaths does not read it`)
+  // and every rendered one fires: one misspelt path each, on post.hbs, through checkBindings
+  const cases: Record<string, string> = {
+    'data-bind': '<p data-bind="titel">·</p>',
+    'data-bind-attr': '<a data-bind-attr="href:urll">·</a>',
+    'data-bind-srcset': '<img data-bind-srcset="feature_imag|img_url" alt="">',
+    'data-bind-style': '<i data-bind-style="--x:accent_colr">·</i>',
+    'data-repeat': '<ul><li data-repeat="tagz">·</li></ul>',
+    'data-helper': '<div data-helper="comments"></div>',
+    'data-pagination': '<a data-pagination="next" href="#">·</a>',
+    'data-t': '<p data-t="post.by author=primary_autor.name">·</p>',
+    'data-t-attr': '<img alt="" data-t-attr="alt:post.by author=primary_autor.name">',
+    'data-if': '<p data-if="custom_excerp">·</p>',
+    'data-text': '<p data-text="{reading_tim}">·</p>',
+  }
+  for (const d of flagged.filter((x) => RENDERED_DIRECTIVES.includes(x) || x === 'data-text')) {
+    const src = cases[d]
+    assert.ok(src !== undefined, `no firing case for ${d}`)
+    const target = d === 'data-pagination' || d === 'data-helper' ? 'error.hbs' : 'post.hbs'
+    assert.ok(checkBindings(doc(), src as string, { target }).length > 0, `${d} on ${target} refused nothing: ${src}`)
+  }
+})
+
+test('a condition is legal as a boolean, a value or a list; @member, a missing field and a helper are refused with bindable\'s sentence', () => {
+  for (const [path, target] of [['@site.allow_self_signup', 'default.hbs'], ['@site.logo', 'default.hbs'], ['custom_excerpt', 'post.hbs'], ['posts', 'index.hbs'], ['featured', 'post.hbs'], ['reading_time', 'post.hbs']] as const) {
+    assert.deepEqual(checkBindings(doc(), `<p data-if="${path}">·</p>`, { target }), [], `${path} on ${target}`)
+  }
+  for (const [path, re] of [['@member', /R-28/], ['post', /not available/], ['navigation', /not available|helper/], ['primary_author', /object/]] as const) {
+    const refused = checkBindings(doc(), `<p data-if="${path}">·</p>`, { target: 'post.hbs' })
+    assert.ok(refused.some((r) => re.test(r)), `${path}: ${refused.join(' | ')}`)
+  }
+  // AD-36's grammar, before any syntax
+  throwsBoth('<p data-if="x}}{{evil">·</p>', {}, /AD-36: data-if/)
 })

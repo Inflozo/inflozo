@@ -24,6 +24,19 @@ rendering on its own, it is the wrong directive.
 - The runnable reference: `packages/library/fixtures/reference-design/` — every directive, once. The
   controls sample, `packages/library/fixtures/controls/`, is the section the internal controls review
   page renders beside its panel.
+- **The designs** *(Story 4.10)*: `packages/library/designs/{category}/content.json` and
+  `packages/library/designs/{category}/{n}/` — `index.html`, `style.css`, `design.json`. **The directory is the
+  design list**; nothing else names the designs. The first five are the pilots (PRD §8), each `"provisional": true`
+  (AD-35): authored ahead of its category's gate, its snapshot expected to change once more when its category story
+  re-authors it, and never edited by another epic — a defect found in one is raised against its category. The
+  internal `/pilots` review page draws them beside the panel.
+- **The snapshots** *(Story 4.10, NFR-6(c1))*: `packages/library/snapshots/{category}/{n}/template.hbs` and
+  `partials/{name}.hbs` — each design's compiled theme text with its content and controls at their defaults,
+  **generated, never edited**: `node tools/check-snapshots.mjs --update` writes them, and the same check without
+  the flag (last in `pnpm test`, so in CI) fails on any drift, naming the file and its first differing line. They
+  sit beside the designs, not inside, because Epic 7's formatting (Story 7.1) re-baselines them without touching a
+  design. One snapshot per design: a section never opens `{{#post}}`, so its text does not vary by target, and the
+  check renders every `compileTarget` against the one file — and runs `checkBindings` at each (DW-130).
 - The controls: `node --test` in `packages/library`, and `node test-vocabulary.mjs` in `tools/stress`;
   the engine's proofs are `controls.test.ts`, `agreement.test.ts` and `ad36.test.ts` in
   `packages/section-runtime`.
@@ -281,6 +294,14 @@ copy of one number. **R-20's hand-picked order** is `"ids": ["…", "…"]` in p
 `limit` and `order` — one single-id get per entry, in that order, with no cap; the panel warns
 past 25 (Story 5.19's Source panel), the validator does not.
 
+**R-108's fixed query** *(Story 4.10)* is `"fixed": true` beside a declared `limit` **and** `order` — a hero
+that always shows exactly one post: `{ "source": "posts", "limit": 1, "order": "published_at desc", "fixed":
+true }`. The design fixes its number and its order, so the panel offers no Show and no Order for it, and a
+Count or Order stored under the same key (another design's, carried back by Story 5.11's shuffle) is never
+folded in — `withData` treats it exactly as it treats `ids`. The theme's `{{#get}}` is the ordinary one; `fixed`
+is the editor's, never Ghost's. Refused (`bad-get-fixed`): `fixed` that is not `true`, `fixed` beside `ids`, and
+`fixed` without both `limit` and `order`.
+
 ### `content.json` — one per **category**
 
 ```json
@@ -416,8 +437,8 @@ Reorder is drag or `⌥↑`/`⌥↓`, announced as "Moved to position n of N".
 
 **A Ghost-bound repeat is never an Item List** (FR-F1): a `data-repeat` over a declared query gets the
 Data group instead — a Count from 1 to 100 (FR-H2) and, for posts, an Order of Newest · Oldest — and
-a hand-picked `ids` query has neither. Both fold into the query through `withData`, so the canvas rows
-and the theme's `{{#get}}` read the same numbers.
+a hand-picked `ids` query has neither, nor has a `fixed` one *(Story 4.10, R-108)*. Both fold into the query
+through `withData`, so the canvas rows and the theme's `{{#get}}` read the same numbers.
 
 ### `style.css`
 
@@ -631,7 +652,8 @@ runtime emits the proven eight plus `data-bind-style` and `data-module`; **Story
 `data-bind-srcset`, `data-helper` and `data-pagination`**, the three the Ghost helper shim owns; and
 **Story 4.5 added `data-items`**, the authored list (row 1 below); **Story 4.6 added
 `data-initials`**, the typed avatar (see *The avatar's two forms*); **Story 4.9 added `data-t` and
-`data-t-attr`**, the catalog's strings (exit 3). Everything else in the set throws
+`data-t-attr`**, the catalog's strings (exit 3); **Story 4.10 added `data-if` / `data-else` and
+`data-members`**, rows 3 and 4 (exit 2). Everything else in the set throws
 with a sentence naming the directive, until the story that owns it lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
 here cannot be silently forgotten by the runtime.
 
@@ -680,8 +702,11 @@ is emitted once and referenced from each.
 that does not name a paginated target is refused rather than compiled. **`numbers` emits the page
 indicator, not a list of numbered page links**, and the reason is Ghost's: the pagination context
 carries `page` and `pages` and Handlebars has no way to loop a range, so numbered links would have
-to be an Inflozo partial counting something Ghost does not expose. Tracked as an open question
-rather than settled here.
+to be an Inflozo partial counting something Ghost does not expose. **R-109 (owner, 2026-09-15) settled
+it: there is no row of clickable page numbers.** `numbers` stays the "5 / 11" indicator — exactly what Ghost
+prints, the same on both majors and on the canvas — and A34's category story redraws A34 #1 Numbers to it
+(DW-97 closed). `{{#match}}` compares numbers and `{{page_url n}}` takes one, so a short row is buildable but
+inexact with no arithmetic; that is the option R-109 declined.
 
 **`img_url`'s size argument is one of FR-J2's five `image_sizes` keys — `xs` · `s` · `m` · `l` ·
 `xl`** — and anything else is refused **by name at bind time**. This is not strictness for its own
@@ -749,6 +774,13 @@ over `posts` holds post fields on any template); a context-path repeat opens the
 are FR-Q3's, Epic 7) and **`@member` refuses** (R-28: a member's details are never printed), each with
 its own sentence.
 
+**A bare `url` inside `data-repeat="@site.navigation"` is not the item's address** *(recorded on both majors,
+Story 4.10)*. `{{label}}` there is the item's field, but `{{url}}` is Ghost's url HELPER, which recognises a
+navigation item only when it carries `slug` and `current` — which only `{{navigation}}`'s own partial adds — and
+printed `/` for every item. The matrix types it `helper`, so a design binding it is refused by name; link a nav
+item through `data-helper="navigation"`, which renders Ghost's own `<ul class="nav">`, and fold or style it in the
+stylesheet.
+
 **A section never writes `{{#post}}`.** The template opens it once around every section, because FR-J5's
 `<article class="{{post_class}}">` needs post context; a section opening a second would look up `post`
 inside the post and print nothing. So one design is one byte-identical text on `post.hbs` and `page.hbs`:
@@ -784,6 +816,10 @@ there is read as a context path, so a query repeat handed no declaration is refu
 exist. A `../` path climbs one scope per enclosing repeat, and a `{{#get}}` counts as a frame of its own around
 its rows; `../@site.x` is refused — a `@` path reads the root wherever it sits and needs no `../`. No story
 offers the move action yet.
+
+**Which directives the walk reads is derived** *(Story 4.10, DW-131)*: every directive whose value names a Ghost
+path carries `ghostPath: true` in `vocabulary.ts`, and `contexts.test.ts` fails if a rendered one is not walked —
+so `data-if`'s condition, `data-text`'s tokens and every later path-carrying directive are checked like a binding.
 
 **Two recorded facts the matrix encodes.** Inside a post, tag or author, `{{meta_title}}` and
 `{{meta_description}}` are Ghost's *page* meta helpers — the site title on a feed — whatever the resource
@@ -900,6 +936,30 @@ two-armed form.
 <p class="card__excerpt" data-else data-bind="excerpt">The excerpt Ghost generated.</p>
 ```
 
+**Rendered since Story 4.10, on both emitters.** The theme is `{{#if path}}<the if arm>{{else}}<the else
+arm>{{/if}}` — `{{#if}}` only, and a field the matrix types `number` adds `includeZero=true`; with no
+`data-else` it is `{{#if path}}…{{/if}}`. The canvas keeps **exactly one** arm, by Handlebars' own `{{#if}}` test
+(`''`, `0` without `includeZero`, `false`, `null` and `[]` take the else arm). Every guard a binding on either arm
+adds nests **inside** the arm, and a media guard on the same field as the condition **is** the condition — one
+`{{#if}}`, not two:
+
+```html
+<img class="brand__logo" data-if="@site.logo" data-bind-attr="src:@site.logo" alt="">
+<span class="brand__name" data-else data-bind="@site.title">Orbit Weekly</span>
+```
+```hbs
+{{#if @site.logo}}<img class="brand__logo" alt="" src="{{@site.logo}}">{{else}}<span class="brand__name">…</span>{{/if}}
+```
+
+**What a condition may name.** `{{#if}}` tests truthiness, so a condition is legal wherever the context matrix
+allows the path as a **condition** (a boolean — `@site.allow_self_signup`), as a **value** (`@site.logo`,
+`custom_excerpt`, a count) or as a **repeat source** (`posts`: an empty list takes the else arm). `@member`, an
+object, a helper and a misspelt field stay refused with `bindable`'s sentence; a value failing the path grammar is
+AD-36's. Refused by name on both emitters: a `data-else` that is not the **next element sibling** of a `data-if`
+(text and comments between them are fine), `data-if` and `data-else` on one element, and either arm of a pair on a
+`data-repeat` or `data-items` element — the else arm would sit outside the copies the if arm makes, so put the
+repeat inside the arm.
+
 **Row 4 · member visibility.** Server-rendered on both emitters — client-side member gating would be
 both slower and a flash-of-wrong-content bug. Every Portal fragment inside a member ask carries
 register 45(c)'s sentence: **with JavaScript off, nothing happens** (R-5).
@@ -908,6 +968,29 @@ register 45(c)'s sentence: **with JavaScript off, nothing happens** (R-5).
 <div class="band__gate" data-members="anonymous">…the ask…</div>
 <p class="band__thanks" data-members="paid" data-prop="paidNote">Thank you for subscribing.</p>
 ```
+
+**Rendered since Story 4.10 — exit construct 2.** Ghost's own member test, read in both releases
+(`update-local-template-options.js`): `@member` is `null` signed out, and `@member.paid` is `status !== 'free'`,
+so a **comped** member is paid.
+
+| `data-members` | Theme | Canvas keeps it when `RenderInput.member` is |
+|---|---|---|
+| `everyone` | no wrapper | always |
+| `anonymous` | `{{#if @member}}{{else}}…{{/if}}` | `anonymous` (the default) |
+| `free` | `{{#if @member}}{{#if @member.paid}}{{else}}…{{/if}}{{/if}}` | `free` |
+| `paid` | `{{#if @member.paid}}…{{/if}}` | `paid` (comped previews as paid) |
+
+`{{#if}}` only — never `{{#unless}}`, never `{{#has}}` (FR-D16) — and no member field is ever printed (R-28). The
+gate is the **outermost** wrapper of its element. Refused by name: a `data-members` inside another, and one
+sharing its element with `data-repeat`, `data-items`, `data-if` or `data-else` — wrap it instead.
+
+**A section's show-to** is `RenderInput.visibility` (one of the four states, default `everyone`) — Layers' Member
+visibility, whose control is Story 5.4's. The section root is gated exactly as if it carried `data-members` with
+that value, on both emitters, and on the canvas a visitor outside it gets `""`. A root carrying `data-members`
+itself while `visibility` is not `everyone` is refused: one audience per section. **A member ask the markup itself
+makes** — a subscribe form, a Sign in action — sits inside `data-if="@site.allow_self_signup"` (R-4): self-signup
+implies members, so one condition hides every ask on an invite-only site. A link whose destination the customer
+picks is not gated in markup; gating it by its Portal destination is Story 5.20's.
 
 **Row 5 · position.** `@first` spans, and "featured" reaches a grid through `Source: Featured only`
 — cross-iteration state is not expressible and is not attempted (R-1). Numbering **restarts on every
@@ -988,8 +1071,8 @@ R-8, R-19).
 
 | Exit | Construct | Directive |
 |---|---|---|
-| 1 | `{{#get}}` blocks | row 2 above — `data-repeat` + `dataBindings` |
-| 2 | member visibility | row 4 above — `data-members` |
+| 1 | `{{#get}}` blocks | row 2 above — `data-repeat` + `dataBindings` (and R-108's `fixed`) |
+| 2 | member visibility | row 4 above — `data-members`, rendered since 4.10, with the section's show-to |
 | 3 | chrome strings | `data-t="key name=path"`, `data-t-attr="attr:key name=path"` — rendered since 4.9 |
 | 4 | `srcset` / `sizes` | `data-bind-srcset="path\|img_url"` |
 | 5 | control → `data-{control}` on the root | **not a directive** — generated from `controlSchema` |
@@ -1105,6 +1188,7 @@ value is one the design offers.
 |---|---|
 | `data-module="lightbox"` | *(Story 4.7)* `core` scans the live page for it and mounts the module on that element, so both emitters keep it where it was written. FR-G3's `js` is read from it. |
 | `data-members-form="subscribe"` | Portal reads `form[data-members-form]` **itself** and applies the `loading` / `success` / `error` classes; executed against both majors. The designed states are real; the no-JS promise is not, so the library ships a designed `<noscript>` notice beside it. |
+| `data-members-email` · `data-members-error` | *(Story 4.10)* Portal's own form attributes, read in `@tryghost/portal` 2.51.5 and 2.69.339 (the builds Ghost 5.130.6 and 6.58.0 pin): Portal submits `input[data-members-email]`'s value — a form without it **submits nothing** — and writes its message into `[data-members-error]`. Both take **no value** (a value on either is refused) and both emitters keep them where they were written. |
 
 `data-ghost-search` survives too, and is Ghost's, not Inflozo's: opening Ghost's native search is a
 single attribute on any button or link (R-24, FR-F6), which is what makes deleting A23 a
@@ -1113,7 +1197,7 @@ simplification rather than a loss of capability.
 **Only the directives something on the live site reads SURVIVE into the emitted theme** — `core`
 reads `data-module`, Portal reads `data-members-form`, sodo-search reads `data-ghost-search`, and Portal
 parses `data-portal`. Every other directive is **consumed** by the compiler and must be
-gone from every emitted file; AD-34's leak assertion checks exactly that, over
+gone from every emitted file (Portal also reads `data-members-email` and `data-members-error`); AD-34's leak assertion checks exactly that, over
 `vocabulary.ts`'s `CONSUMED_DIRECTIVES` rather than over a list restated in prose. A directive
 added to the set without a `emitted: true` marker joins the assertion automatically.
 
@@ -1182,6 +1266,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | an inline token outside `members · term · n` | R-27. An allow-list by construction, never a general substitution pass. |
 | a `data-prop` naming a prop the category does not declare | R-102. Add it to **this** category's union; a prop never crosses a boundary. |
 | a `content.json` from another category | R-102, at assembly. |
+| `fixed` that is not `true`, `fixed` beside `ids`, or `fixed` without both `limit` and `order` (`bad-get-fixed`) | *(Story 4.10)* R-108: the design fixes the number and the order, so it states both; a hand-picked list is already fixed. Also refused at emission by the shim's `getQuery`, which re-runs the declaration's grammar. |
+| a value on `data-members-email` or `data-members-error` | *(Story 4.10)* Portal reads the attribute, not a value; both are valueless, like `data-ghost-search`. |
+| a `data-else` that is not the next element sibling of a `data-if` · either arm of a pair on a `data-repeat` or `data-items` · a `data-members` inside another, or on a `data-repeat`, `data-items`, `data-if` or `data-else` · a root `data-members` beside a show-to · a `member` or `visibility` outside the closed states | *(Story 4.10)* **refused by the runtime, by name**, on both emitters: the else arm follows its if arm; an arm beside a repeat would split the `{{#if}}` across the rows; member states do not nest and one element has one audience; one audience per section. |
 
 ### What the validator deliberately does **not** check
 
@@ -1190,7 +1277,7 @@ unknown directive and a malformed value, and that is a token-level question. Fou
 parse and belong to Story 4.2, which brings one for the emitters:
 
 1. nesting depth and repeat containment,
-2. a `data-else` with no `data-if` sibling,
+2. a `data-else` with no `data-if` sibling — refused by the runtime since Story 4.10,
 3. a media guard that does not enclose its `srcset`,
 4. a bare `{{ … }}` written into authored markup where `data-helper` belongs — section source is
    annotated HTML, **not** Handlebars, and today only review catches an author who forgets it.

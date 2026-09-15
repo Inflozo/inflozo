@@ -1,0 +1,33 @@
+{
+  "name": "Three Up",
+  "tier": "free",
+  "bindingContext": ["posts"],
+  "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
+  "controlSchema": [
+    { "name": "per-row", "type": "segmented", "label": "Per row", "group": "arrangement", "values": ["two", "three", "four"], "default": "three" },
+    { "name": "ratio", "type": "named-select", "label": "Image ratio", "group": "style", "values": ["landscape", "wide", "square", "portrait"], "default": "landscape",
+      "valueLabels": { "landscape": "Landscape 3:2", "wide": "Wide 16:9", "square": "Square 1:1", "portrait": "Portrait 4:5" } },
+    { "name": "excerpt", "type": "segmented", "label": "Excerpt", "group": "style", "values": ["off", "one", "two", "three"], "default": "three",
+      "valueLabels": { "one": "One line" } },
+    { "name": "meta", "type": "named-select", "label": "Meta", "group": "style", "values": ["none", "date", "name-date", "name-date-time", "photo"], "default": "photo",
+      "valueLabels": { "date": "Date only", "name-date": "Name and date", "name-date-time": "Name, date and reading time", "photo": "With photograph" } },
+    { "name": "first-cell", "type": "segmented", "label": "First cell", "group": "arrangement", "values": ["off", "span"], "default": "off",
+      "valueLabels": { "span": "Spans two columns" } },
+    { "name": "tag", "type": "segmented", "label": "Tag", "group": "style", "values": ["show", "hide"], "default": "show" }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"], "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "ghostCompat": { "minVersion": "5.0.0", "helpers": ["foreach", "if", "img_url", "date", "excerpt", "t", "page_url"] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "grid-of-N",
+    "containment": "none",
+    "ground": "page",
+    "itemCount": "many",
+    "mediaPlacement": "top",
+    "emphasis": "the default three-up"
+  }
+}

@@ -1,0 +1,24 @@
+<li class="a17-1__cell">
+          {{#if url}}<a class="a17-1__card" href="{{url}}">
+            <div class="a17-1__media">
+              {{#if primary_tag.name}}<span class="a17-1__plate" aria-hidden="true">{{primary_tag.name}}</span>{{/if}}
+              {{#if feature_image}}<img class="a17-1__img" sizes="(max-width: 767px) calc(100vw - 3rem), (max-width: 834px) 45vw, (max-width: 1080px) 30vw, 416px" alt="{{feature_image_alt}}" loading="lazy" src="{{img_url feature_image size="m"}}" srcset="{{img_url feature_image size="xs"}} 150w, {{img_url feature_image size="s"}} 400w, {{img_url feature_image size="m"}} 750w, {{img_url feature_image size="l"}} 1200w, {{img_url feature_image size="xl"}} 2000w">{{/if}}
+            </div>
+            <div class="a17-1__text">
+              {{#if primary_tag.name}}<p class="a17-1__tag">{{primary_tag.name}}</p>{{/if}}
+              {{#if title}}<h3 class="a17-1__post-title">{{title}}</h3>{{/if}}
+              {{#if excerpt}}<p class="a17-1__excerpt">{{excerpt}}</p>{{/if}}
+              <p class="a17-1__meta">
+                <span class="a17-1__avatar" aria-hidden="true">
+                  {{#if primary_author.name}}<span class="a17-1__letter">{{primary_author.name}}</span>{{/if}}
+                  {{#if primary_author.profile_image}}<img class="a17-1__photo" alt="" src="{{img_url primary_author.profile_image size="xs"}}">{{/if}}
+                </span>
+                {{#if primary_author.name}}<span class="a17-1__name">{{primary_author.name}}</span>{{/if}}
+                <span class="a17-1__sep a17-1__sep--name" aria-hidden="true">·</span>
+                {{#if published_at}}<time class="a17-1__date" datetime="{{date published_at format="YYYY-MM-DD"}}">{{date published_at format="D MMMM YYYY"}}</time>{{/if}}
+                <span class="a17-1__sep a17-1__sep--time" aria-hidden="true">·</span>
+                {{#if reading_time includeZero=true}}<span class="a17-1__time">{{t "post.reading_time" minutes=reading_time}}</span>{{/if}}
+              </p>
+            </div>
+          </a>{{/if}}
+        </li>

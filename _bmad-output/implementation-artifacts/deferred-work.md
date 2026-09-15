@@ -2483,6 +2483,10 @@ resolution: Story 4.1 (2026-09-11) closed the BLOCKING half and nothing else. `g
   watch has a field to read — it had none, which is why DW-87 named it. The entry stays OPEN because
   the other half is unchanged: the library still holds no design, so there is nothing to check and
   nothing to broadcast about. Owner is still Story 9.1.
+amendment: Story 4.10 (2026-09-15) — the library now holds its first five designs, the provisional pilots, each with a
+  `ghostCompat` (`minVersion` at least every matrix `since` it reads: 5.62.0 for the two reading
+  `@site.allow_self_signup`). They ship to no customer and are provisional (AD-35), so the check still has nothing
+  shipped to broadcast about; owner unchanged.
 severity: medium
 origin: Story 3.7 Create (2026-09-10) — the owner's ruling at Question 1, option 1
 owner: **Story 9.1** — A1 Headers' content model, stylesheet and designs #1-4, the first story that ships
@@ -2665,7 +2669,12 @@ reason: not fixed in the review because the harness is the CONTROL this story's 
 plain: The index of project documents cannot list files that live in the code packages, so the two
   test files that prove "what you see is what ships" are no longer listed on their own — a reader
   finds them only through the compiler's row. Nothing is unproven; it is only harder to find.
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: Story 4.10 (2026-09-15) decided it as its owner: `BASES` stays as it is. The five pilots and their snapshots are
+  the first document-shaped files a story adds under `packages/`, and a snapshot is GENERATED output, not a document —
+  so the catalogue stays a planning index, and `tools/check-snapshots.mjs`'s catalogue row names both the designs
+  (`packages/library/designs/`) and the snapshots (`packages/library/snapshots/`) it covers, as the compiler's row
+  names the proofs.
 severity: low
 origin: Story 4.2 (2026-09-11) — deviation 3 of the Dev run, recorded in the spec; raised as a
   finding by the review because a decision taken by omission had no owning document
@@ -2713,8 +2722,8 @@ status: open
 severity: low
 origin: Story 4.2 review (2026-09-11) — Edge Case Hunter; pre-existing in the stress harness, which
   ran the same trim on both paths
-owner: Story 4.10 — the five pilots are the first designs whose stylesheets could set
-  `white-space: pre`; if any does, `renderCanvas` stops running `tidy` over the user's text
+owner: the first category story (Epics 9–11) whose design's stylesheet sets `white-space: pre` or `pre-wrap` on user
+  text — none of Story 4.10's five pilots does (re-owned 2026-09-15); the category gate checks it
 location: packages/section-runtime/src/core.ts `tidy` (`renderCanvas` runs it after user content is
   in the DOM; `renderTheme` runs it before `substitute`)
 reason: no design in the reference set or the 70-section fixture preserves whitespace, so the
@@ -2727,7 +2736,11 @@ reason: no design in the reference set or the 70-section fixture preserves white
 plain: A section can show "page 2 of 3" but not a row of clickable page numbers — 1 2 3 — because
   Ghost does not tell a theme how to draw one. Somebody has to decide whether Inflozo should ever
   offer the clickable row, since building it means counting something Ghost does not hand us.
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: R-109 (owner, 2026-09-15, Story 4.10's Q2, option 1): there is no row of clickable page numbers.
+  `data-pagination="numbers"` stays the "5 / 11" indicator on both emitters; the comment on the `numbers` branch in
+  `core.ts` and `docs/section-authoring.md` § 3 now say so, and A34's category story redraws A34 #1 Numbers to it
+  (DW-149).
 severity: low
 origin: Story 4.3 (2026-09-11) — the directive came off the refused list and had to emit something.
   `docs/section-authoring.md` § 3's example WAS `<ol class="pager__numbers" data-pagination="numbers"></ol>`,
@@ -2788,9 +2801,9 @@ resolution: partial, and the entry stays open — Story 4.9 (2026-09-14) made `t
   `data-t-attr` render on both emitters and the canvas calls the shim's `t()` over the project's strings, asserted
   against the new `{{t}}` recordings on both majors (MEASUREMENTS §44). `{{total_paid_members}}`,
   `{{content_api_url}}` and `taxonomyItems` are still unreachable.
-owner: the first story that authors a design needing either (Story 4.10's pilots are the first that
-  can) — it adds the two names to `BARE_HELPERS`, and the partition test in `agreement.test.ts`
-  already asserts every rendered directive value is exercised.
+owner: re-owned by Story 4.10 (2026-09-15), whose pilots needed none of the three: A22's category story for
+  `{{total_paid_members}}` (A22 #1's paid count, left there by the pilot), and the first category story that authors a
+  design reading `{{content_api_url}}` (A29's filter) or a tag/author list (`taxonomyItems`)
 location: packages/library/src/vocabulary.ts `BARE_HELPERS`; packages/ghost-shim/src/index.ts `bareHelper`
 reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a review of 4.3 does not do
   on its own; the functions exist so the change is one line when its story arrives
@@ -2870,7 +2883,9 @@ plain: The checker that approves a design's data query allows a little more than
 status: open
 severity: low
 origin: Story 4.4 review (2026-09-13) — Verification Gap.
-owner: Story 4.10 (the pilots, the first designs authored against the resolver) or E5 (the editor, the resolver's consumer)
+owner: Story 5.19 (the Data group's Source, the first place a customer composes a filter) — re-owned by Story
+  4.10 (2026-09-15): none of the five pilots declares a filter at all (A4 #13's query is `fixed` with no filter), so the
+  pilots could not decide which grammar moves
 location: packages/library/src/validate.ts `bad-get-filter` (`,` allowed) and `preview-seed-missing` (any non-empty string) · packages/library/src/orbit-weekly.ts `predicate` (`,` refused by name) and `resolvePreviewSeed`
 reason: `validate.ts` lets `,` through and accepts any non-empty `previewSeed`, while `resolveSource` refuses `,`,
   parentheses and comparisons by name and `resolvePreviewSeed` refuses everything but `orbit-weekly`. The review added
@@ -3150,7 +3165,11 @@ reason: the file is catalogued as `tool`, so it is editable, but its content is 
 plain: The checker can refuse a section whose root carries a setting value the design does not offer, and that
   refusal is tested on small made-up examples. The larger stress set of sections still passes only names, so
   the check has never run over a real design folder.
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: Story 4.10 (2026-09-15): the five pilots are the first real design directories, and `tools/check-snapshots.mjs`
+  validates each through `validateDesign` — which hands `validateMarkup` every control's offered values, universals
+  narrowed — before it renders anything, on every `pnpm test`. The stress archetypes still pass names only, on
+  purpose (they predate controls); real designs are where the value check now runs.
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Blind Hunter
 owner: Story 4.10 (the five pilots) — the first real design directories the stress harness can walk with values
@@ -3178,7 +3197,12 @@ reason: dropping the anchor from `openTag` means `closeTag` must agree, and FR-F
 
 plain: The sample section the review page shows is checked for validity by a test, but no test draws it the way
   the page does; the engine's tests draw a hand-typed copy of it instead.
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: Story 4.10 (2026-09-15): `tools/check-snapshots.mjs` renders the on-disk controls sample
+  (`packages/library/fixtures/controls/`) through both emitters at each of its `compileTarget`s, with its asset and its
+  query's rows, on every `pnpm test`. The entry named "Story 4.10 (the render matrix)"; the matrix is Story 4.11's,
+  and the substance — the on-disk sample drawn the way the page draws it — closes here. It lives in `tools/`, where
+  jsdom is reachable without adding a dependency to `apps/web`.
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Blind Hunter
 owner: Story 4.10 (the render matrix) — the harness that renders every fixture on both emitters is its deliverable
@@ -3306,7 +3330,11 @@ reason: the appendix's never-offer list does not name them, so the matrix offers
 plain: A design says which kinds of page it may be placed on. Nothing yet checks, before the design ships,
   that every piece of Ghost information it shows exists on every one of those pages — the check only runs
   when a page is actually being built.
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: Story 4.10 (2026-09-15): `tools/check-snapshots.mjs`, last in `pnpm test`, runs
+  `checkBindings(doc, markup, { target, dataBindings })` for every design directory at every `compileTarget` and fails
+  on anything but `[]`; its control adds a `title` binding to A1 #1 and requires the refusal at `default.hbs`. The
+  list is the directory, so every category design from Epic 9 onward is held by the same line.
 severity: medium
 origin: Story 4.6 review (2026-09-14) — the Blind Hunter ran `checkBindings` over the reference design for its four declared targets and found refusals on each; that fixture is lexical (it carries directives no render accepts yet) so it is not the case, but a real design would be
 owner: Story 4.10 (the five pilots) — the first designs that render; then every category gate from Epic 9
@@ -3320,7 +3348,11 @@ reason: `validateDesign` is lexical and lives below the runtime (the library can
 
 plain: The list of markup attributes the new check reads is typed out in the code. When a new attribute that
   carries Ghost information arrives, nothing forces the check to read it too.
-status: open
+status: done 2026-09-15 (Story 4.10)
+resolution: Story 4.10 (2026-09-15): `Directive.ghostPath` flags every directive whose value names a Ghost path
+  (`data-if` and `data-text` included), `core.ts` exports `WALKED_GHOST_PATH_DIRECTIVES`, and
+  `section-runtime/src/contexts.test.ts` fails if a flagged directive is not walked, then fires one misspelt path per
+  rendered flagged directive through `checkBindings`.
 severity: low
 origin: Story 4.6 review (2026-09-14) — `data-pagination` was missing from the walk and is now in it; the review test covers every attribute that carries a Ghost path today
 owner: the story that next adds a Ghost-path directive (`data-if`/`data-else`, `data-members`, `data-text` — FR-H's later stories), which must add it to `ghostPaths` and to the review test
@@ -3357,6 +3389,9 @@ plain: Two documents disagree about which moving parts keep moving while you des
   canvas; the editing requirement says those four keep running. Nothing is visible yet, because the canvas does
   not exist — you will see whichever one is right when Story 5.15 is tested.
 status: open
+amendment: Story 4.10's planning (2026-09-15) found the export uses "edit-safe" in the OPPOSITE sense: `A1 Headers -
+  Spec.md:185` means "does not run while editing", where `registry.json`'s `editSafe` means "runs while editing". The
+  registry's values stand (they are §7's); whoever settles this at 5.15 reads the export's word with that inversion.
 severity: medium
 origin: Story 4.7 (2026-09-14) — spec Design Notes, "Edit-safe values are transcribed, not decided"
 owner: Story 5.15 (canvas suppression, the PAUSED chip and the Preview toggle), whose owner test is where the
@@ -3608,3 +3643,156 @@ owner: the story that first supersedes a key (Ask First in 4.9), with DW-143 (St
 location: tools/check-catalog.mjs `appendixRows`, `copyFailures` · appendix-h1 §2 markers
 reason: appendix-h1 needs a status form for "superseded by `key`" before the check can parse one; adding it with no
   instance would be a written-down convention nothing exercises.
+
+## Deferred from: Story 4.10's Dev run (2026-09-15)
+
+### DW-149: A34 #1 Numbers is drawn as a row of clickable page numbers, which R-109 ruled out
+
+plain: One of the drawn pagination styles shows "← 1 2 3 … 11 →". The owner ruled that a list of posts never shows a
+  row of clickable numbers, so that drawing has to be redrawn to "Newer posts · 5 / 11 · Older posts" when the
+  Pagination Styles category is built.
+status: open
+severity: low
+origin: R-109 (owner, 2026-09-15), Story 4.10's Q2
+owner: A34's category story (Epic 10) — redraw A34 #1 Numbers to the indicator form in the Claude Design project
+location: design export `A34-1 Numbers.dc.html` (never edited here, R-74) · `docs/section-authoring.md` § 3
+reason: Ghost hands a theme only page, pages, prev and next; the indicator is what both emitters produce identically.
+
+### DW-150: A1 #1 Rail — what its pilot leaves to A1's category story
+
+plain: The Rail header on the pilots page is the resting header with its member-aware actions. Its menus that open,
+  search, the dark-mode switch, an uploaded logo (and a logo for dark backgrounds), the open drawer and the shrinking
+  motion arrive with the Headers category.
+status: open
+severity: medium
+origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
+owner: A1's category story (Story 9.1 onward)
+location: packages/library/designs/a1/ (provisional, AD-35)
+reason: each needs a vocabulary piece, a module or a field the pilot story does not own:
+  - authored nav children and dropdown panels; Fit to width; the Search control and trigger (no artboard draws one);
+    the dark-mode toggle (no key); `<h1>` on the home page only; the skip link (E7's layout owns `<main>`);
+  - the authored logo, and its `logoLight` for a dark ground — Orbit Weekly's `@site.logo` is drawn for a light ground,
+    so the image is dark-on-dark in Dark mode (owner test step 14 carries the caveat);
+  - Shrink's motion (`header-scroll`) and the open drawer's markup (`nav-drawer`);
+  - "Sign in", "Account" and "More" are fixed `data-t` strings: the spec draws them as editable fields, and their keys
+    are not marked prop (re-marking a key is Ask First);
+  - Compact 56 and Spacious 92 bar heights were chosen by the Dev run (the spec gives Comfortable 76 only);
+  - the current-page underline IS built (`{{navigation}}` adds `nav-current`), so it leaves the list.
+
+### DW-151: A17 #1 Three Up — what its pilot leaves, and the one-value grey the engine cannot draw
+
+plain: The Three Up grid on the pilots page shows real feed pages. Choosing which posts it shows, the main-feed
+  setting, "View all" and a few drawn details arrive later; and at four per row the "Three lines" excerpt option
+  cannot yet be shown greyed on its own, so the grid quietly uses two lines there instead.
+status: open
+severity: medium
+origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
+owner: Story 5.19 (Source, Count and the main-feed designation) · A34's category story (the Pagination style select) ·
+  DW-107 (Image focus) · A17's category story (Epic 10) for the rest
+location: packages/library/designs/a17/1/ · packages/section-runtime/src/controls.ts (`disabledBy` greys a whole control)
+reason:
+  - "Three lines greyed at Four" is one value switched off by another control's value; `disabledBy` greys the whole
+    row and a per-value dependency is a registry field this story does not name (Ask First). The stylesheet clamps
+    Three lines to two at Four, the value in force the spec gives; the panel shows no grey and no sentence (owner test
+    step 8 amended). A22's "Display greyed at Wide" is the same gap.
+  - "View all: Matches the query" (the link has no destination until then, so it renders nothing, FR-F8);
+    hiding the image row when no post in the set has a picture; the tablet's short date and surname byline; whether
+    the empty state shows only on the designated main feed.
+  - Meta defaults to "With photograph" (every artboard) where the panel's select reads "Name, date and reading time".
+  - The empty body is the catalog's "There are no posts in this collection yet."; the panel draws another sentence.
+  - No accessible name on the section (a per-instance id is not in the vocabulary); the hover underline has no fade.
+
+### DW-152: A22 #1 Inline Row — what its pilot leaves, and `{members}` has no theme form
+
+plain: The newsletter row on the pilots page shows the sign-up form, and "Signed in" for members. Its Sending, Done and
+  Invalid states, a name field, a newsletter choice, the paid count and the no-JavaScript notice arrive with the
+  Newsletter category; and the "Join 1,200+ readers" line prints its placeholder word on a published site today.
+status: open
+severity: medium
+origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
+owner: A22's category story (Epic 10); the `{members}` theme form to the story that first ships a design with Social
+  proof on (the runtime owns it: `packages/section-runtime/src/marks.ts` `substituteTokens`)
+location: packages/library/designs/a22/1/ · packages/section-runtime/src/marks.ts
+reason:
+  - Submitting, Done and Invalid and their words; the name field and the newsletter choice; the paid count (DW-99);
+    the other members-off option; Display greyed at Wide (DW-151's gap); the no-JavaScript notice (R-5's key).
+  - R-27's `{members}` token is substituted only from `RenderInput.tokens`; with none handed, BOTH emitters print the
+    literal `{members}` (the theme as `&#123;members&#125;`) — there is no `{{total_members}}` form on the theme. Social
+    proof defaults to off, so the pilot's default render never shows it.
+  - "Signed in" and "Manage your preferences" are content props (no catalog key; R-28 forbids printing the email);
+    the drawn authored placeholder ("you@example.com") and the hidden "Email address" label have no key; the account
+    link's fixed newsletters-preferences target is not a Portal action the link record offers; the note's
+    `aria-describedby` needs a per-instance id.
+
+### DW-153: A24 #1 Centred — what its pilot leaves to A24's category story with E7's page wrapper
+
+plain: The post header on the pilots page shows one post's tag, title, standfirst, byline and picture. Pages, several
+  authors in one byline, the updated date, links in the caption and the editor's "no feature image" box arrive later.
+status: open
+severity: low
+origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
+owner: A24's category story (Epic 10), with E7's page wrapper · DW-107 (Image focus)
+location: packages/library/designs/a24/1/ (target `post.hbs` only)
+reason: `page.hbs` and `@page.show_title_and_feature_image` need `data-target`; all tags, and several authors with
+  "and"/"and others" (R-3's key); the updated-date Meta value; the caption's links (bound as escaped text); the "Post
+  block" group name (its rows sit under Style); the editor-only greyed picture box (no key for its words). The figure's
+  `data-if="feature_image"` and the image's media guard emit two nested `{{#if feature_image}}` (they share a field but
+  not an element) — harmless, and one guard once a wrapper condition can share its child's.
+
+### DW-154: A4 #13 Latest Post — what its pilot leaves to Epic 5 and A4's category story
+
+plain: The Latest Post hero shows your newest post in its card. Choosing which post, hiding it from non-members, the
+  "Members only" marker, the picture-less card style and a fall-back picture when nothing is published arrive later.
+status: open
+severity: low
+origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
+owner: Story 5.19 (Which post) · Story 5.4 (Member visibility) · Story 5.20 (gating an action by its Portal
+  destination) · A4's category story (Epic 10) for the rest
+location: packages/library/designs/a4/13/
+reason: Card style's Title and date and its "Latest" label (no key); the members-only marker (a match on `visibility`,
+  which no directive expresses); the fall-back picture when nothing is published; the short date on phones; which
+  marks rule holds (`A4 Heroes - Spec.md:61` against `A4-0:327`); the phone's picture-less panel (undrawn); the tablet
+  headline follows the spec's ladder (Large 44) where the artboard draws 40.
+
+### DW-155: the reference token set's page width and gutter are not the frames' 1296 px content and 72 · 40 · 20 margins
+
+plain: The drawings put a page's content 72 pixels in from each side at desktop (40 on a tablet, 20 on a phone). The
+  sample colours now match the drawings, but the page width the sections use is still the older 1,152 pixels with a
+  24-pixel margin, so on the pilots page the columns are a little narrower than drawn and some headlines wrap one line
+  earlier.
+status: open
+severity: medium
+origin: Story 4.10's Dev run — reported by all five pilot authors; the spec's rule was "every row the Paper objects
+  name takes their values; every other row keeps today's value", and no Paper token object names a width or gutter
+owner: the owner, at Story 4.10's owner test (step 14 compares arrangement and spacing); otherwise Epic 6, whose packs
+  author these rows
+location: packages/section-runtime/src/tokens.ts (`--site-width` 72rem, `--space-gutter` 1.5rem) · every pilot's style.css
+reason: changing a row no Paper object names would be inventing the value; the frames draw it, so it is a one-row
+  token change once ruled. A1, A22, A24 and A4 also carry their own section padding as literals where the frame's
+  ladder differs from `--space-section`.
+
+### DW-156: `{{t "post.reading_time" minutes=reading_time}}` prints "0 min read" where Ghost's own helper prints "1 min read"
+
+plain: Two pilot cards print a post's reading time through the translatable phrase. For a very short post a live site
+  would say "0 min read", where Ghost's built-in wording says "1 min read".
+status: open
+severity: low
+origin: Story 4.10's Dev run (A17 #1, A24 #1), from the fact MEASUREMENTS §44 recorded (a plain param is the FIELD)
+owner: the story that settles reading-time phrasing library-wide — A17's category story (Epic 10) is the first
+location: packages/library/designs/a17/1/index.html · packages/library/designs/a24/1/index.html · catalog key `post.reading_time`
+reason: `data-bind="reading_time"` prints Ghost's rounded string but untranslatable English; the catalog form is
+  translatable but passes the raw field. No Orbit Weekly post has a reading time of 0, so the canvas never shows it.
+
+### DW-157: two starter compositions still name "Split Editorial hero (A4 #2)", a design the inventory merge renamed
+
+plain: Two of the ready-made starter sites are described as using a "Split Editorial" hero. That hero was renamed and
+  renumbered on 4 September; today's Heroes #2 is "Flush Left", which has no picture. The starters' lists need checking
+  against the current library before the starter chooser is built.
+status: open
+severity: low
+origin: Story 4.10's propagation grep for `A4 #2` and `Split Editorial` (standing rule 7) — outside R-108, which is the
+  pilot row only
+owner: the starters' story (Epic 11, Story 11.2 the starter chooser, or the story that authors `starters/`)
+location: prd.md Appendix E (Signal and Ledger, `:1127`, `:1133`) · epics.md (`:7103`, `:7272`)
+reason: which hero each starter now uses is a composition choice, not a rename — "Split Editorial" merged into
+  another design, and picking its successor is the owner's or the starters' story's call, not a propagation.

@@ -333,6 +333,18 @@ export function validateDataBinding(k: string, b: DataBinding): Failure[] {
       push(out, 'bad-get-ids', `dataBindings.${k} declares ids AND a filter, limit or order. A hand-picked order IS the filter, the limit and the order (R-20) — declare one or the other.`)
     }
   }
+  // R-108: a fixed query is the design's own number and order, so the declaration must carry both, and a
+  // hand-picked list already fixes both by construction (R-20)
+  const fixed = (b as { fixed?: unknown }).fixed
+  if (fixed !== undefined) {
+    if (fixed !== true) {
+      push(out, 'bad-get-fixed', `dataBindings.${k}.fixed is ${JSON.stringify(fixed)} — fixed is true or absent. A design fixes its query, or the customer's Show and Order apply (R-108).`)
+    } else if (b.ids !== undefined) {
+      push(out, 'bad-get-fixed', `dataBindings.${k} declares fixed AND ids. A hand-picked list is already fixed — its picks are its number and its order (R-20) — so fixed says nothing beside it.`)
+    } else if (b.limit === undefined || b.order === undefined) {
+      push(out, 'bad-get-fixed', `dataBindings.${k} is fixed and does not declare both a limit and an order. A fixed query offers the customer neither, so the design states both (R-108).`)
+    }
+  }
   if (!(GET_SOURCES as readonly string[]).includes(b.source)) {
     push(out, 'bad-get-source', `dataBindings.${k}.source "${b.source}" is not queryable. Sources: ${GET_SOURCES.join(', ')}.`)
   }

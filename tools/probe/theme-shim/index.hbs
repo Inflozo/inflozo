@@ -8,6 +8,8 @@
   external static.ghost.org URL that no Ghost will ever resize, so nothing already on the box can
   exercise a rendition).
   Story 4.9 adds `locales/en.json` and the TR group: `{{t}}`'s lookup, params and escaping on both majors.
+  Story 4.10 adds the PILOT group: a no-param partial in a loop (`partials/probe-card.hbs`), the navigation
+  loop's fields, the signed-out `@member.paid` arm, the logo and self-signup conditions, and a one-post `{{#get}}`.
 --}}
 <pre id="probe">
 SITE|title=[{{@site.title}}]
@@ -44,6 +46,13 @@ TEXT|encode=[{{encode "a b&c"}}]
 MEMBER|if_member=[{{#if @member}}SIGNED_IN{{else}}ANONYMOUS{{/if}}]
 MEMBER|paid_enabled=[{{@site.paid_members_enabled}}]
 MEMBER|allow_self_signup=[{{@site.allow_self_signup}}]
+
+PILOT|partial_noparam=[{{#foreach posts limit="2"}}{{> "probe-card"}}{{/foreach}}]
+PILOT|nav_items=[{{#foreach @site.navigation}}{{label}}={{url}};{{/foreach}}]
+PILOT|if_member_paid=[{{#if @member.paid}}PAID{{else}}NOT_PAID{{/if}}]
+PILOT|if_logo=[{{#if @site.logo}}LOGO{{else}}NO_LOGO{{/if}}]
+PILOT|if_self_signup=[{{#if @site.allow_self_signup}}ASK{{/if}}]
+PILOT|get_latest=[{{#get "posts" limit="1" order="published_at desc"}}{{#foreach posts}}{{title}}{{/foreach}}{{/get}}]
 
 MATCH|locale_true=[{{#match @site.locale @site.locale}}YES{{else}}NO{{/match}}]
 MATCH|locale_false=[{{#match @site.locale "zz-ZZ"}}YES{{else}}NO{{/match}}]

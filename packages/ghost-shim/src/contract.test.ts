@@ -797,3 +797,68 @@ test('data-helper="total_members" reads the recorded count through the bracket f
     )
   })
 })
+
+// ─── Story 4.10 — the rows the five pilots stand on (group PILOT) ─────────────
+
+test('a partial with no params inside {{#foreach}} renders against each ROW, @first included, on both pages of the feed', () => {
+  assertBoth('{{> "partial"}} in {{#foreach}}', (major) => {
+    for (const page of ['index', 'index-page-2']) {
+      const cards = recorded(major, page, 'PILOT', 'partial_noparam', '{{> "probe-card"}}')
+        .split(';').filter((c) => c !== '').map((c) => /^(.*)@first=(true|false)$/.exec(c))
+      assert.equal(cards.length, 2, `limit="2" printed ${cards.length} cards on ${page}`)
+      // the row's own title, not the root's: two DIFFERENT titles, and @first only on the first
+      assert.ok(cards.every((m) => m !== null && m[1] !== ''), `a card printed no row title on ${page}`)
+      assert.notEqual(cards[0]?.[1], cards[1]?.[1], 'both cards printed one title — the partial did not get the row')
+      assert.deepEqual(cards.map((m) => m?.[2]), ['true', 'false'], '@first reached the partial')
+    }
+    // and page 2's first card is not page 1's: the rows are the page's, which is what the canvas expands
+    assert.notEqual(
+      recorded(major, 'index', 'PILOT', 'partial_noparam', 'page 1'),
+      recorded(major, 'index-page-2', 'PILOT', 'partial_noparam', 'page 2'),
+    )
+  })
+})
+
+test('{{#foreach @site.navigation}}: {{label}} is the item field, and a BARE {{url}} is Ghost\'s url helper, which prints "/"', () => {
+  assertBoth('{{#foreach @site.navigation}}', (major) => {
+    const rec = recording(major, 'index', '@site.navigation')
+    const items = String(rec.raw['nav-items'] ?? '').split('\n')
+      .map((l) => /^NAV\|label=\[(.*?)\]\|url=\[(.*?)\]/.exec(l.trim())).filter((m): m is RegExpExecArray => m !== null)
+    const loop = recorded(major, 'index', 'PILOT', 'nav_items', '@site.navigation').split(';').filter((x) => x !== '')
+    assert.deepEqual(loop.map((x) => x.split('=')[0]), items.map((m) => m[1]), 'the loop printed the items\' labels')
+    // the recorded fact the matrix now carries: `url` is not the item's field here. `this.url` printed the item's own
+    // address (`raw-nav-items`); a bare `url` printed "/" for every item on both majors (isNav needs slug and current,
+    // which only {{navigation}}'s own partial adds), so a design links a nav item through data-helper="navigation"
+    assert.ok(items.some((m) => m[2] !== '/'), 'the control: at least one item has an address that is not "/"')
+    assert.deepEqual(loop.map((x) => x.split('=')[1]), items.map(() => '/'))
+  })
+})
+
+test('signed out: {{#if @member.paid}} takes the else arm, as isMember(null) says', () => {
+  assertBoth('{{#if @member.paid}}', (major) => {
+    assert.equal(recorded(major, 'index', 'PILOT', 'if_member_paid', '{{#if @member.paid}}'), 'NOT_PAID')
+    assert.equal(isMember(null), false)
+  })
+})
+
+test('{{#if @site.logo}} and {{#if @site.allow_self_signup}} take the arm their recorded values say', () => {
+  assertBoth('@site conditions', (major) => {
+    const site = recording(major, 'index', '@site').values
+    const logo = String((site['SITE'] as Record<string, string>)['logo'])
+    assert.equal(recorded(major, 'index', 'PILOT', 'if_logo', '{{#if @site.logo}}'), logo === '' ? 'NO_LOGO' : 'LOGO')
+    const signup = recorded(major, 'index', 'MEMBER', 'allow_self_signup', '@site.allow_self_signup')
+    assert.equal(recorded(major, 'index', 'PILOT', 'if_self_signup', '{{#if @site.allow_self_signup}}'), signup === 'true' ? 'ASK' : '')
+  })
+})
+
+test('a one-post {{#get}} ordered newest first returns the feed\'s newest post, and the shim builds that exact block', () => {
+  assertBoth('{{#get limit="1"}}', (major) => {
+    const latest = recorded(major, 'index', 'PILOT', 'get_latest', '{{#get "posts" limit="1"}}')
+    const firstCard = recorded(major, 'index', 'PILOT', 'partial_noparam', 'feed').split('@first=true;')[0]
+    assert.ok(latest !== '', 'the {{#get}} printed nothing — the row proves nothing')
+    assert.equal(latest, firstCard, 'the one post is the feed\'s first, both ordered published_at desc')
+  })
+  // R-108: a FIXED query emits the same hash as any other — fixed is the editor's, never Ghost's
+  assert.deepEqual(getExprs('latest', { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true } }),
+    ['{{#get "posts" limit="1" order="published_at desc"}}'])
+})

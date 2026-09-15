@@ -1,0 +1,33 @@
+<section class="a22-1" data-if="@site.members_enabled" data-bg="base" data-spacing="comfortable" data-divider="none"
+         data-align="center" data-heading-size="large" data-field-width="medium" data-blurb="show"
+         data-below-field="note" data-social-proof="off">
+  <!-- A22 #1 Inline Row (A22-1 Inline Row.dc.html). Provisional (AD-35): Story 4.10's pilot for member gating,
+       show-to and Portal. The root's data-if is the drawn "When members are disabled: Hide the section". -->
+  <div class="a22-1__inner">
+    <header class="a22-1__head">
+      <p class="a22-1__eyebrow" data-prop="eyebrow" data-empty="hide">The Friday edition</p>
+      <h2 class="a22-1__heading" data-prop="heading">One letter a week, on Friday morning</h2>
+      <p class="a22-1__blurb" data-prop="blurb" data-empty="hide">Reporting on the people still building the web by hand.</p>
+    </header>
+    <div class="a22-1__slot" data-members="anonymous">
+      <form class="a22-1__form" data-if="@site.allow_self_signup" data-members-form="subscribe" data-module="member-form">
+        <div class="a22-1__row">
+          <input class="a22-1__field" type="email" name="email" autocomplete="email" inputmode="email" required data-members-email
+                 data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
+          <button class="a22-1__button" type="submit" data-prop="buttonLabel">Subscribe</button>
+        </div>
+        <p class="a22-1__note" data-prop="note" data-empty="hide">Free weekly. One click to leave.</p>
+        <p class="a22-1__error" data-members-error aria-live="polite"></p>
+        <p class="a22-1__proof" data-prop="proofLine">Join {members} readers</p>
+      </form>
+    </div>
+    <div class="a22-1__slot a22-1__signed" data-members="free">
+      <p class="a22-1__signed-title" data-prop="subscribedText">Signed in</p>
+      <a class="a22-1__manage" data-prop="manageLabel" data-prop-attr="href:manageLink">Manage your preferences</a>
+    </div>
+    <div class="a22-1__slot a22-1__signed" data-members="paid">
+      <p class="a22-1__signed-title" data-prop="subscribedText">Signed in</p>
+      <a class="a22-1__manage" data-prop="manageLabel" data-prop-attr="href:manageLink">Manage your preferences</a>
+    </div>
+  </div>
+</section>

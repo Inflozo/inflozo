@@ -19,6 +19,14 @@ const CONTROLS_FILES = [
   '../../packages/section-runtime/reference-tokens.css',
 ]
 
+/** Story 4.10: the pilots review reads the design library itself (`packages/library/designs/`, the directory that
+ *  IS the design list), the Orbit Weekly pictures and the reference token stylesheet off disk — the same reason. */
+const PILOTS_FILES = [
+  '../../packages/library/designs/**',
+  '../../packages/library/orbit-weekly/images/**',
+  '../../packages/section-runtime/reference-tokens.css',
+]
+
 const config: NextConfig = {
   // `next dev` otherwise writes AGENTS.md and CLAUDE.md into this folder on every start.
   agentRules: false,
@@ -35,6 +43,8 @@ const config: NextConfig = {
     '/app/style-guide/frame': STYLE_GUIDE_FILES,
     '/app/controls': CONTROLS_FILES,
     '/app/controls/frame': CONTROLS_FILES,
+    '/app/pilots': PILOTS_FILES,
+    '/app/pilots/frame': PILOTS_FILES,
   },
 }
 

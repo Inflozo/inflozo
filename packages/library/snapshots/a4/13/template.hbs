@@ -1,0 +1,33 @@
+<!-- A4 #13 Latest Post (R-108) — 3 Split's arrangement with the newest published post as the right half.
+     Frame `A4-13 Latest Post.dc.html`; proof `A4-0 Category Proof.dc.html`; spec `A4 Heroes - Spec.md` #13.
+     The authored headline is the page's <h1>; the post is one link beneath it, named by its title. -->
+<section class="a4-13" data-card-side="right" data-show-tag="on" data-show-date="on" data-headline-size="large" data-primary-action="on" data-secondary-action="on" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <div class="a4-13__inner">
+    <div class="a4-13__text">
+      <p class="a4-13__eyebrow">Issue 48</p>
+      <h1 class="a4-13__headline">The personal page never disappeared. It went quiet.</h1>
+      <p class="a4-13__sub">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
+      <div class="a4-13__actions">
+        <a class="a4-13__action a4-13__action--primary" href="#" data-portal="signup">{{t "member.signup_cta"}}</a>
+        <a class="a4-13__action a4-13__action--secondary" href="https://orbit-weekly.example/tag/archive/">Browse the archive</a>
+      </div>
+    </div>
+    {{#get "posts" limit="1" order="published_at desc"}}
+{{#foreach posts}}
+<div class="a4-13__card">
+      {{#if url}}<a class="a4-13__link" href="{{url}}">
+        {{#if feature_image}}<img class="a4-13__picture" sizes="(max-width: 767px) 108px, (max-width: 1080px) 45vw, 434px" width="1200" height="800" alt="" loading="eager" fetchpriority="high" src="{{img_url feature_image size="l"}}" srcset="{{img_url feature_image size="xs"}} 150w, {{img_url feature_image size="s"}} 400w, {{img_url feature_image size="m"}} 750w, {{img_url feature_image size="l"}} 1200w, {{img_url feature_image size="xl"}} 2000w">{{else}}
+        <div class="a4-13__panel" aria-hidden="true">{{#if title}}<span class="a4-13__panel-title">{{title}}</span>{{/if}}</div>{{/if}}
+        <div class="a4-13__body">
+          {{#if title}}<h2 class="a4-13__title">{{title}}</h2>{{/if}}
+          <p class="a4-13__meta">
+            {{#if primary_tag.name}}<span class="a4-13__tag">{{primary_tag.name}}</span>{{/if}}
+            {{#if published_at}}<time class="a4-13__date" datetime="{{date published_at format="YYYY-MM-DD"}}">{{date published_at format="D MMMM YYYY"}}</time>{{/if}}
+          </p>
+        </div>
+      </a>{{/if}}
+    </div>
+{{/foreach}}
+{{/get}}
+  </div>
+</section>

@@ -1,0 +1,13 @@
+{
+  "category": "a17",
+  "props": {
+    "eyebrow": { "label": "Eyebrow", "type": "text", "default": "The archive" },
+    "title": { "label": "Title", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "Everything Orbit Weekly published this spring" },
+    "sub": { "label": "Sub", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "Reporting, field notes and the Thursday letter, in the order they went out." },
+    "note": { "label": "Note", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "Reading times are Ghost's estimate." },
+    "linkLabel": { "label": "Link text", "type": "text", "default": "Browse the archive" },
+    "linkUrl": { "label": "Link", "type": "url" },
+    "emptyHeading": { "label": "Empty heading", "type": "text", "catalog": "archive.empty_heading" },
+    "emptyBody": { "label": "Empty body", "type": "text", "catalog": "archive.empty_body" }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Inline Row",
+  "tier": "free",
+  "bindingContext": ["none"],
+  "compileTarget": ["home.hbs", "page.hbs", "post.hbs"],
+  "controlSchema": [
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "arrangement", "values": ["center", "start"], "default": "center",
+      "valueLabels": { "center": "Centred", "start": "Left" } },
+    { "name": "heading-size", "type": "segmented", "label": "Heading size", "group": "style", "values": ["regular", "large", "display"], "default": "large" },
+    { "name": "field-width", "type": "named-select", "label": "Field width", "group": "arrangement", "values": ["narrow", "medium", "wide"], "default": "medium",
+      "valueLabels": { "narrow": "Narrow 320", "medium": "Medium 400", "wide": "Wide 480" } },
+    { "name": "blurb", "type": "segmented", "label": "Blurb", "group": "arrangement", "values": ["show", "hide"], "default": "show" },
+    { "name": "below-field", "type": "segmented", "label": "Below the field", "group": "arrangement", "values": ["note", "nothing"], "default": "note" },
+    { "name": "social-proof", "type": "segmented", "label": "Social proof", "group": "style", "values": ["off", "member-count"], "default": "off" }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"], "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "ghostCompat": { "minVersion": "5.62.0", "helpers": ["if", "t"] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "form",
+    "containment": "none",
+    "ground": "page",
+    "itemCount": "none",
+    "mediaPlacement": "none",
+    "emphasis": "field and button in one centred row"
+  }
+}

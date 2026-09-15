@@ -247,8 +247,9 @@ const itemsOf = (entry: ControlEntry, state: ControlState, path: string): unknow
 function dataRows(entry: ControlEntry, state: ControlState): DataRow[] {
   const rows: DataRow[] = []
   for (const [key, b] of Object.entries(entry.dataBindings ?? {})) {
-    // a hand-picked list IS its count and its order (R-20); its greyed rows are Story 5.19's Source panel
-    if (b.ids !== undefined) continue
+    // a hand-picked list IS its count and its order (R-20); its greyed rows are Story 5.19's Source panel. A query
+    // the design fixes (R-108) offers neither either: a hero that always shows one post has no "Show 5"
+    if (b.ids !== undefined || b.fixed === true) continue
     const stored = read(state.data, key)
     const fallback = read(orbitWeekly.DEFAULT_LIMIT, b.source)
     const declaredCount = b.limit ?? (typeof fallback === 'number' ? fallback : undefined)
@@ -451,7 +452,7 @@ export function setData(entry: ControlEntry, state: ControlState, key: string, c
 
 /** The stored Count and Order folded into the declared queries — what both emitters and the query the
  *  editor runs read. A stored 0, 101 or 3.5 is ignored and the declaration stands; so is an order
- *  word on a query that offers none. */
+ *  word on a query that offers none, and anything stored for a hand-picked (R-20) or fixed (R-108) query. */
 export function withData(
   bindings: Readonly<Record<string, DataBinding>> | undefined,
   data: unknown,
@@ -460,7 +461,9 @@ export function withData(
   for (const [key, b] of Object.entries(bindings ?? {})) {
     const stored = read(data, key)
     const next: DataBinding = { ...b }
-    if (b.ids === undefined) {
+    // R-20 and R-108: a hand-picked or fixed query folds in no stored value — a Count or Order stored under the same
+    // key by another design (Story 5.11's shuffle back) cannot reach it
+    if (b.ids === undefined && b.fixed !== true) {
       const count = validCount(read(stored, 'count'))
       if (count !== undefined) next.limit = count
       const order = read(stored, 'order')

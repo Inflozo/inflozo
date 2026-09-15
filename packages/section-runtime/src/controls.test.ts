@@ -390,3 +390,25 @@ test('row · Reset this design: every control and data control back to its defau
   assert.equal(reset.content, state.content, 'the words and the items stay')
   assert.equal(reset.darkOverrides, state.darkOverrides, 'the stored dark overrides stay')
 })
+
+test('row · R-108, a query the design fixes: no Show and no Order, a stored Count and Order are ignored, and both emitters render one post', () => {
+  const fixed = { ...entry, dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true as const } } }
+  assert.deepEqual(validateDesignJson({ ...(design as unknown as DesignJson), dataBindings: fixed.dataBindings }), [], 'the declaration validates')
+  // the panel: nothing to draw, so the Data group is absent — Story 5.19 adds Which post
+  assert.equal(sidebar(fixed, start()).groups.find((g) => g.id === 'data'), undefined, 'a fixed query alone draws no Data group')
+  for (const control of ['count', 'order'] as const) {
+    assert.equal(typeof setData(fixed, start(), 'latest', control, control === 'count' ? 5 : 'oldest'), 'string', `${control} is refused`)
+  }
+  // the fold: a Count and an Order stored under the same key by another design never reach the query
+  const stored = { latest: { count: 5, order: 'oldest' } }
+  assert.deepEqual(withData(fixed.dataBindings, stored)['latest'], fixed.dataBindings.latest)
+  const state = start({ data: stored })
+  const canvas = renderCanvas(doc(), HTML, input(state, { dataBindings: fixed.dataBindings, getRows: { latest: rowsFor('latest', 5) } }))
+  assert.equal((canvas.match(/class="cx__post"/g) ?? []).length, 1, `the canvas showed more than one post: ${canvas}`)
+  const theme = renderTheme(doc(), HTML, input(state, { dataBindings: fixed.dataBindings })).template
+  assert.ok(theme.includes('{{#get "posts" limit="1" order="published_at desc"}}'), theme)
+  // the control: the same query unfixed takes the stored Count, so the flag is what held it
+  const loose = { latest: { source: 'posts', limit: 1, order: 'published_at desc' } }
+  assert.equal(withData(loose, stored)['latest']!.limit, 5)
+  assert.ok(sidebar({ ...entry, dataBindings: loose }, start()).groups.some((g) => g.id === 'data'))
+})

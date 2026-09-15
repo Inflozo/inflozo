@@ -11,6 +11,7 @@
     "locale": "en",
     "timezone": "Etc/UTC",
     "members_enabled": true,
+    "allow_self_signup": true,
     "paid_members_enabled": true,
     "comments_enabled": true,
     "navigation": [

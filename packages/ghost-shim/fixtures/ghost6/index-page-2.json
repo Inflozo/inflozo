@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-14",
+  "captured": "2026-09-15",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "6",
   "ghost_version": "6.58",
@@ -100,7 +100,7 @@
   "uploaded_image": "https://ghost6.inflozo.com/content/images/2026/09/inflozo-shim-probe-7.png",
   "values": {
     "ASSET": {
-      "no_such": "/assets/css/nope.css?v=c73ebf3461",
+      "no_such": "/assets/css/nope.css?v=596cf08257",
       "screen_css": "/assets/css/screen.css?v=dNDmiBmtbxkPRTog"
     },
     "CORE": {
@@ -170,6 +170,14 @@
       "pagination_prev": "1",
       "pagination_total": "33",
       "posts_on_page": "12"
+    },
+    "PILOT": {
+      "get_latest": "PROBE Gated Post",
+      "if_logo": "NO_LOGO",
+      "if_member_paid": "NOT_PAID",
+      "if_self_signup": "ASK",
+      "nav_items": "Essay=/;Notes=/;Inflozo=/;",
+      "partial_noparam": "Ten years of one layout@first=true;The paragraph is the unit@first=false;"
     },
     "SITE": {
       "accent_color": "#3832e5",

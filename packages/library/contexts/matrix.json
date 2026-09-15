@@ -580,7 +580,8 @@
         "kind": "text"
       },
       "url": {
-        "kind": "url"
+        "kind": "helper",
+        "note": "a bare {{url}} inside {{#foreach @site.navigation}} is Ghost's url helper, not the item's field, and printed \"/\" for every item on both majors (Story 4.10, PILOT|nav_items): the helper recognises a navigation item only when it carries slug and current, which only {{navigation}}'s own partial adds. A design links its nav items through data-helper=\"navigation\"."
       }
     },
     "pagination": {

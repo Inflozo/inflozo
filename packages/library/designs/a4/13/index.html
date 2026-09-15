@@ -1,0 +1,33 @@
+<!-- A4 #13 Latest Post (R-108) — 3 Split's arrangement with the newest published post as the right half.
+     Frame `A4-13 Latest Post.dc.html`; proof `A4-0 Category Proof.dc.html`; spec `A4 Heroes - Spec.md` #13.
+     The authored headline is the page's <h1>; the post is one link beneath it, named by its title. -->
+<section class="a4-13" data-bg="base" data-spacing="comfortable" data-divider="none"
+         data-card-side="right" data-show-tag="on" data-show-date="on" data-headline-size="large"
+         data-primary-action="on" data-secondary-action="on">
+  <div class="a4-13__inner">
+    <div class="a4-13__text">
+      <p class="a4-13__eyebrow" data-prop="eyebrow" data-empty="hide">Issue 48</p>
+      <h1 class="a4-13__headline" data-prop="headline">The personal page never disappeared. It went quiet.</h1>
+      <p class="a4-13__sub" data-prop="sub" data-empty="hide">Orbit Weekly is a letter about the small web.</p>
+      <div class="a4-13__actions">
+        <a class="a4-13__action a4-13__action--primary" data-prop="primaryAction.label" data-prop-attr="href:primaryAction.url" data-empty="hide">Subscribe</a>
+        <a class="a4-13__action a4-13__action--secondary" data-prop="secondaryAction.label" data-prop-attr="href:secondaryAction.url" data-empty="hide">Browse the archive</a>
+      </div>
+    </div>
+    <div class="a4-13__card" data-repeat="latest">
+      <a class="a4-13__link" data-bind-attr="href:url" href="#">
+        <img class="a4-13__picture" data-if="feature_image" data-bind-attr="src:feature_image|img_url:l"
+             data-bind-srcset="feature_image|img_url" sizes="(max-width: 767px) 108px, (max-width: 1080px) 45vw, 434px"
+             width="1200" height="800" alt="" loading="eager" fetchpriority="high">
+        <div class="a4-13__panel" data-else aria-hidden="true"><span class="a4-13__panel-title" data-bind="title" data-empty="hide">A post title</span></div>
+        <div class="a4-13__body">
+          <h2 class="a4-13__title" data-bind="title" data-empty="hide">A post title</h2>
+          <p class="a4-13__meta">
+            <span class="a4-13__tag" data-bind="primary_tag.name" data-empty="hide">Archive</span>
+            <time class="a4-13__date" data-bind="published_at|date:D MMMM YYYY" data-bind-attr="datetime:published_at|date:YYYY-MM-DD" data-empty="hide">7 August 2026</time>
+          </p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>

@@ -12,6 +12,7 @@ export { renderCanvas, renderTheme, checkBindings, checkChromeLiterals } from '.
 export {
   RENDERED_DIRECTIVES,
   REFUSED_DIRECTIVES,
+  WALKED_GHOST_PATH_DIRECTIVES,
   Tokens,
   UserText,
   T0,
@@ -29,6 +30,7 @@ export {
   stampControls,
 } from './core.ts'
 export type {
+  MemberState,
   RenderInput,
   RuntimeDocument,
   RuntimeElement,

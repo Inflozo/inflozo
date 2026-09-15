@@ -742,6 +742,8 @@ const everyDirectiveSrc = `<section class="all" data-module="lightbox">
        <ul class="t"><li class="g" data-repeat="tags" data-bind-style="--tag-accent:accent_color">·</li></ul>
      </article>
      <a class="n" data-pagination="next" href="#" data-t="pagination.older">Older posts</a>
+     <p class="f" data-if="pagination.total">·</p><p class="e" data-else="">–</p>
+     <div class="gate" data-members="anonymous"><form data-members-form="subscribe"><input type="email" data-members-email=""><p data-members-error=""></p></form></div>
    </section>`
 
 
@@ -1121,4 +1123,173 @@ test("Story 4.9 — V1's tree half: a render naming its target refuses every lit
   assert.deepEqual(checkChromeLiterals(doc(), exempt), [])
   // "1 / 3" has digits and sits under data-pagination="numbers" — prev and next are not exempt
   assert.deepEqual(checkChromeLiterals(doc(), '<a data-pagination="next" href="#">Older</a>'), ['<a> "Older"'])
+})
+
+// ── Story 4.10 — the two arms and member gating (§7.3 rows 3 and 4, exit construct 2) ────────────────────────
+//
+// The theme carries BOTH arms and every member arm, and Ghost picks per request; the canvas carries the one the
+// handed context picks. So agreement is taken AFTER the theme's `{{#if}}` blocks are decided by the same facts the
+// canvas was handed — `decide` evaluates only the fields it is told about and leaves every other block alone.
+
+/** The theme text with each `{{#if f}}…{{else}}…{{/if}}` on a field in `truth` replaced by the arm that field picks. */
+function decide(text: string, truth: Readonly<Record<string, boolean>>): string {
+  const re = /\{\{#if ([^}]*)\}\}|\{\{else\}\}|\{\{\/if\}\}/g
+  const stack: { cond: string; yes: string; no: string; inElse: boolean }[] = []
+  let out = ''
+  let last = 0
+  const emit = (t: string) => {
+    const f = stack[stack.length - 1]
+    if (f === undefined) out += t
+    else if (f.inElse) f.no += t
+    else f.yes += t
+  }
+  for (let m = re.exec(text); m !== null; m = re.exec(text)) {
+    emit(text.slice(last, m.index))
+    last = re.lastIndex
+    if (m[1] !== undefined) stack.push({ cond: m[1], yes: '', no: '', inElse: false })
+    else if (m[0] === '{{else}}') {
+      const f = stack[stack.length - 1]
+      if (f === undefined) emit(m[0])
+      else f.inElse = true
+    } else {
+      const f = stack.pop() as { cond: string; yes: string; no: string }
+      const field = f.cond.replace(/ includeZero=true$/, '')
+      emit(Object.hasOwn(truth, field) ? (truth[field] ? f.yes : f.no) : `{{#if ${f.cond}}}${f.yes}{{else}}${f.no}{{/if}}`)
+    }
+  }
+  return out + text.slice(last)
+}
+
+const VISITOR: Readonly<Record<'anonymous' | 'free' | 'paid', Record<string, boolean>>> = {
+  anonymous: { '@member': false, '@member.paid': false },
+  free: { '@member': true, '@member.paid': false },
+  paid: { '@member': true, '@member.paid': true },
+}
+
+/** `agree`, with the theme's blocks on `truth`'s fields decided first */
+function agreeDecided(src: string, input: RenderInput, truth: Readonly<Record<string, boolean>>) {
+  const canvas = renderCanvas(doc(), src, input)
+  const theme = renderTheme(doc(), src, input).template
+  const a = skeleton(htmlSafe(canvas))
+  const b = skeleton(htmlSafe(decide(theme, truth)))
+  assert.deepEqual(a, b, `RENDERERS DISAGREE\n  canvas:\n${a.join('\n')}\n  theme, decided:\n${b.join('\n')}`)
+  return { canvas, theme }
+}
+
+const MEMBERS_SRC = `<section class="band">
+    <p class="a" data-members="anonymous">·</p>
+    <p class="f" data-members="free">·</p>
+    <p class="p" data-members="paid">·</p>
+    <p class="e" data-members="everyone">·</p>
+  </section>`
+
+test("row · a member arm: the four states emit Ghost's own {{#if}} test, and each visitor sees its arm on the canvas", () => {
+  const theme = renderTheme(doc(), MEMBERS_SRC, { target: 'default.hbs' }).template
+  assert.ok(theme.includes('{{#if @member}}{{else}}<p class="a">·</p>{{/if}}'), theme)
+  assert.ok(theme.includes('{{#if @member.paid}}<p class="p">·</p>{{/if}}'), theme)
+  assert.ok(theme.includes('{{#if @member}}{{#if @member.paid}}{{else}}<p class="f">·</p>{{/if}}{{/if}}'), theme)
+  assert.ok(/[^}]<p class="e">·<\/p>/.test(theme), `everyone emits no wrapper: ${theme}`)
+  assert.ok(!/\{\{#unless|\{\{#has|\{\{@member/.test(theme), `FR-D16 / R-28: {{#if}} only, and no member field printed: ${theme}`)
+  for (const member of ['anonymous', 'free', 'paid'] as const) {
+    const { canvas } = agreeDecided(MEMBERS_SRC, { target: 'default.hbs', member }, VISITOR[member])
+    const shown = [...canvas.matchAll(/<p class="(\w)">/g)].map((m) => m[1])
+    assert.deepEqual(shown, [member.charAt(0), 'e'], `${member} sees its own arm and everyone's: ${canvas}`)
+  }
+  // the default visitor is signed out
+  assert.equal(renderCanvas(doc(), MEMBERS_SRC, {}), renderCanvas(doc(), MEMBERS_SRC, { member: 'anonymous' }))
+})
+
+test('row · a member arm is refused inside another, and on a repeat, a list or an arm', () => {
+  const input: RenderInput = { content: { logos: [{ n: 'x' }] }, ghost: { posts: [{ title: 't' }] } }
+  const cases: [string, RegExp][] = [
+    ['<div data-members="paid"><p data-members="free">·</p></div>', /sits inside data-members="paid"/],
+    ['<ul><li data-repeat="posts" data-members="paid">·</li></ul>', /shares its element with data-repeat/],
+    ['<ul><li data-items="logos" data-members="paid">·</li></ul>', /shares its element with data-items/],
+    ['<div><p data-if="title" data-members="paid">·</p></div>', /shares its element with data-if/],
+  ]
+  for (const [src, re] of cases) {
+    assert.throws(() => renderCanvas(doc(), src, input), re, `canvas: ${src}`)
+    assert.throws(() => renderTheme(doc(), src, input), re, `theme: ${src}`)
+  }
+  // the legitimate neighbours: a gate inside a repeat, and a repeat inside a gate
+  const { theme } = bothWays('<section><ul><li data-repeat="posts"><b data-members="paid" data-bind="title">t</b></li></ul><div data-members="free"><i data-repeat="posts" data-bind="title">t</i></div></section>', { ghost: { posts: [{ title: 'Row' }] }, member: 'free' })
+  assert.ok(theme.includes('{{#foreach posts}}') && theme.includes('{{#if @member.paid}}<b>'), theme)
+})
+
+test('row · show-to: the root is gated as if it carried data-members, on both emitters; a visitor outside it gets ""', () => {
+  const src = '<section class="band" data-bg="base"><p class="x">·</p></section>'
+  const theme = renderTheme(doc(), src, { visibility: 'paid' }).template
+  assert.match(theme, /^\{\{#if @member\.paid\}\}<section class="band"[^>]*>.*<\/section>\{\{\/if\}\}$/s)
+  assert.equal(renderCanvas(doc(), src, { visibility: 'paid', member: 'anonymous' }), '')
+  for (const member of ['anonymous', 'free', 'paid'] as const) {
+    agreeDecided(src, { visibility: 'free', member }, VISITOR[member])
+  }
+  assert.ok(renderCanvas(doc(), src, { visibility: 'paid', member: 'paid' }).startsWith('<section'))
+  assert.equal(renderTheme(doc(), src, { visibility: 'everyone' }).template, renderTheme(doc(), src, {}).template, 'everyone gates nothing')
+  // one audience per section
+  for (const render of [renderCanvas, renderTheme]) {
+    assert.throws(() => render(doc(), '<section data-members="free"><p>·</p></section>', { visibility: 'paid' }), /one audience per section/)
+    assert.doesNotThrow(() => render(doc(), '<section data-members="free"><p>·</p></section>', { visibility: 'everyone' }))
+  }
+})
+
+test('row · two arms: {{#if f}}<if>{{else}}<else>{{/if}}, ONE guard where the condition and the media binding share a field, and one arm on the canvas', () => {
+  const src = '<a class="brand" href="/"><img class="logo" data-if="@site.logo" data-bind-attr="src:@site.logo" alt=""><span class="word" data-else data-bind="@site.title">·</span></a>'
+  const theme = renderTheme(doc(), src, { target: 'default.hbs' }).template
+  assert.equal((theme.match(/\{\{#if @site\.logo\}\}/g) ?? []).length, 1, `one {{#if @site.logo}}: ${theme}`)
+  assert.ok(theme.includes('{{#if @site.logo}}<img class="logo" alt="" src="{{@site.logo}}">{{else}}<span class="word">'), theme)
+  assert.ok(theme.endsWith('</span>{{/if}}</a>'), theme)
+  for (const logo of ['https://site.example/content/images/logo.png', '']) {
+    const ghost = { '@site': { logo, title: 'Orbit Weekly' } }
+    const { canvas } = agreeDecided(src, { target: 'default.hbs', ghost }, { '@site.logo': logo !== '', '@site.title': true })
+    assert.equal((canvas.match(/class="(logo|word)"/g) ?? []).length, 1, `exactly one arm: ${canvas}`)
+    assert.ok(logo === '' ? canvas.includes('>Orbit Weekly<') : canvas.includes(`src="${logo}"`), canvas)
+  }
+})
+
+test('row · one arm, a list and a number: an empty list takes the else arm, and a number adds includeZero=true', () => {
+  const src = `<section class="feed">
+    <p class="ask" data-if="@site.allow_self_signup">·</p>
+    <div class="grid" data-if="posts"><article class="card" data-repeat="posts"><h2 data-bind="title">·</h2></article></div>
+    <p class="empty" data-else>–</p>
+    <span class="count" data-if="pagination.total">·</span>
+  </section>`
+  const theme = renderTheme(doc(), src, { target: 'index.hbs' }).template
+  assert.ok(theme.includes('{{#if @site.allow_self_signup}}<p class="ask">·</p>{{/if}}'), theme)
+  assert.ok(/\{\{#if posts\}\}<div class="grid">\{\{#foreach posts\}\}[^]*\{\{\/foreach\}\}<\/div>\{\{else\}\}\s*<p class="empty">–<\/p>\{\{\/if\}\}/.test(theme), theme)
+  assert.ok(theme.includes('{{#if pagination.total includeZero=true}}<span class="count">·</span>{{/if}}'), theme)
+  for (const [posts, total] of [[[{ title: 'a' }], 1], [[], 0]] as const) {
+    const ghost = { '@site': { allow_self_signup: true }, posts, pagination: { total } }
+    const { canvas } = agreeDecided(src, { target: 'index.hbs', ghost }, { '@site.allow_self_signup': true, posts: posts.length > 0, 'pagination.total': true, title: true })
+    assert.ok(posts.length > 0 ? canvas.includes('class="card"') && !canvas.includes('class="empty"') : canvas.includes('class="empty"') && !canvas.includes('class="grid"'), canvas)
+    assert.ok(canvas.includes('class="count"'), `a count of 0 is present: ${canvas}`)
+  }
+})
+
+test('row · a data-else that is not the next element sibling of a data-if is refused by name, on both emitters', () => {
+  for (const [src, re] of [
+    ['<div><p data-if="title">·</p><hr><p data-else>–</p></div>', /data-else is not the next element sibling of a data-if/],
+    ['<div><p data-else>–</p></div>', /data-else is not the next element sibling of a data-if/],
+    ['<div><p data-if="title" data-else>·</p></div>', /carries both data-if and data-else/],
+    ['<div><p data-if="posts" data-repeat="posts">·</p><p data-else>–</p></div>', /carries data-repeat and is one arm/],
+  ] as const) {
+    assert.throws(() => renderCanvas(doc(), src, { ghost: { title: 'x', posts: [] } }), re, src)
+    assert.throws(() => renderTheme(doc(), src, {}), re, src)
+  }
+  // a comment or text between the two arms is not an element, so the pair stands
+  assert.doesNotThrow(() => renderTheme(doc(), '<div><p data-if="title">·</p> <!-- note --> <p data-else>–</p></div>', {}))
+})
+
+test("row · Portal's form: data-members-email and data-members-error are kept on both emitters, and a value on either is refused", () => {
+  const src = '<section class="nl"><form class="form" data-members-form="subscribe"><input class="field" type="email" data-members-email><button class="btn" type="submit">·</button><p class="err" data-members-error></p></form></section>'
+  const { canvas, theme } = agree(src, { target: 'home.hbs' })
+  for (const html of [canvas, theme]) {
+    assert.ok(/<input class="field" type="email" data-members-email="">/.test(html) && /<p class="err" data-members-error="">/.test(html) && html.includes('data-members-form="subscribe"'), html)
+  }
+  for (const bad of ['data-members-email="x"', 'data-members-error="oops"']) {
+    const hostile = src.replace(/data-members-(email|error)(?=[>\s])/, bad)
+    assert.ok(hostile.includes(bad))
+    assert.throws(() => renderCanvas(doc(), hostile, {}), /takes no value/)
+    assert.throws(() => renderTheme(doc(), hostile, {}), /takes no value/)
+  }
 })

@@ -49,9 +49,10 @@
   <div class="ref__gate" data-members="anonymous">
     <form class="ref__form" data-members-form="subscribe">
       <label class="ref__label" for="ref-email" data-t="member.email_placeholder">Your email address</label>
-      <input class="ref__input" id="ref-email" type="email" name="email" required
+      <input class="ref__input" id="ref-email" type="email" name="email" required data-members-email
              data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
       <button class="ref__submit" type="submit" data-prop="submitLabel">Subscribe</button>
+      <p class="ref__error" data-members-error></p>
     </form>
     <noscript class="ref__noscript" data-prop="noscriptNote">Subscribing needs JavaScript. With it off, nothing happens.</noscript>
   </div>

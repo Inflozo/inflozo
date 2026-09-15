@@ -2,7 +2,8 @@
 title: 'Story 4.10 — The five pilot sections, editor-perfect, with the snapshot harness'
 type: 'feature'
 created: '2026-09-15'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '94cf2c5b0d5f0bbf7f2b0ec25ac31f8e59703f38'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -210,7 +211,7 @@ something and another when it does not.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] **FIRST — record on T1 and T3.** Files: `tools/probe/theme-shim/` (`index.hbs`, a new `partials/probe-card.hbs`),
+- [x] **FIRST — record on T1 and T3.** Files: `tools/probe/theme-shim/` (`index.hbs`, a new `partials/probe-card.hbs`),
   `tools/probe/record-shim.py`, `packages/ghost-shim/fixtures/ghost{5,6}/`, `packages/ghost-shim/src/contract.test.ts`.
   - Add these rows:
     - `{{#foreach posts limit="2"}}{{> "probe-card"}}{{/foreach}}`, the card printing `{{title}}` and `{{@first}}`;
@@ -221,13 +222,13 @@ something and another when it does not.
     - `{{#get "posts" limit="1" order="published_at desc"}}{{#foreach posts}}{{title}}{{/foreach}}{{/get}}`.
   - The contract test asserts the shim's side of each row. The signed-in arms stay cited, not recorded (Ask First).
   - Why first: AD-23.
-- [ ] `packages/library/src/vocabulary.ts`, `registry.ts`, `validate.ts`, `validate.test.ts`:
+- [x] `packages/library/src/vocabulary.ts`, `registry.ts`, `validate.ts`, `validate.test.ts`:
   - `data-members-email` and `data-members-error` become valueless `emitted` directives.
   - Every directive that carries a Ghost path gets a `ghostPath` flag (DW-131).
   - `data-else`'s summary names its pairing rule.
   - `DataBinding.fixed?: true`, refused by `validateDataBinding` as the matrix row says.
   - One firing test per new refusal.
-- [ ] `packages/section-runtime/src/core.ts`, `controls.ts`, `index.ts`:
+- [x] `packages/section-runtime/src/core.ts`, `controls.ts`, `index.ts`:
   - `RenderInput.member` (`anonymous` · `free` · `paid`, default `anonymous`) and `visibility` (the four
     `MEMBER_STATES`, default `everyone`).
   - `data-members` and `data-if`/`data-else` join `RENDERED_DIRECTIVES` and render as the matrix says.
@@ -235,20 +236,20 @@ something and another when it does not.
     object and a helper stay refused, and `bindable` itself is unchanged.
   - `ghostPaths` reads every flagged directive.
   - A `fixed` query takes `ids`' two paths in `dataRows` and `withData`.
-- [ ] `agreement.test.ts`, `ad36.test.ts`, `contexts.test.ts`, `controls.test.ts`:
+- [x] `agreement.test.ts`, `ad36.test.ts`, `contexts.test.ts`, `controls.test.ts`:
   - `agree()` rows for each member state, show-to, both arms, a list, a number, and the form attributes;
   - the leak fixture and the partition;
   - a vector for each new value grammar;
   - a test that every `ghostPath` directive is walked;
   - the fixed query's sidebar and fold.
-- [ ] `packages/section-runtime/src/tokens.ts`, `reference-tokens.css`:
+- [x] `packages/section-runtime/src/tokens.ts`, `reference-tokens.css`:
   - every row the Paper objects name takes their light and dark values;
   - every other row keeps today's value;
   - `tokens.test.ts` and the drift check stay green.
-- [ ] `packages/library/designs/{a1,a17,a22,a24,a4}/content.json` and `{n}/{index.html,style.css,design.json}`:
+- [x] `packages/library/designs/{a1,a17,a22,a24,a4}/content.json` and `{n}/{index.html,style.css,design.json}`:
   - the five pilots, built as Design Notes' table says;
   - each validates with its control values (DW-119), and each stylesheet passes `pnpm lint`.
-- [ ] `tools/check-snapshots.mjs`, `packages/library/snapshots/{category}/{n}/`, `package.json`, `tools/doc-audit.py`:
+- [x] `tools/check-snapshots.mjs`, `packages/library/snapshots/{category}/{n}/`, `package.json`, `tools/doc-audit.py`:
   - **For every design directory, at every `compileTarget`:**
     - validate and assemble;
     - `checkBindings` returns `[]` (DW-130);
@@ -258,7 +259,7 @@ something and another when it does not.
   - **The matrix's *control* rows** run on every run.
   - **Output:** the check prints its totals, and `--update` rewrites the snapshots.
   - Append it last to `test`, with a doc-audit row.
-- [ ] `apps/web/app/(app)/app/(authed)/pilots/{page.tsx,review.tsx,frame/route.ts}`, `apps/web/lib/pilots.ts`,
+- [x] `apps/web/app/(app)/app/(authed)/pilots/{page.tsx,review.tsx,frame/route.ts}`, `apps/web/lib/pilots.ts`,
   `apps/web/pilots.test.ts`, `next.config.ts`, `busy.test.ts`, `tools/probe/run-verify-pilots.cjs`:
   - `/controls`' workspace, fed the five pilots.
   - **The switcher, in the canvas chrome:**
@@ -270,12 +271,12 @@ something and another when it does not.
   - Orbit Weekly feeds the canvas; A4 #13's card comes from `resolveSource`. Each module mount gets `js-enabled` and
     no script.
   - The tests copy `controls.test.ts`. The harness copies `run-verify-controls.cjs` and gets a doc-audit row.
-- [ ] `docs/section-authoring.md`:
+- [x] `docs/section-authoring.md`:
   - rows 3 and 4 as rendered: the emitted forms, and the pairing and nesting refusals;
   - the condition kinds; `member` and `visibility`; the two Portal attributes;
   - `fixed`; R-109 in the shim's three;
   - where designs and snapshots live, and what `provisional` means.
-- [ ] **Propagate** (standing rule 3):
+- [x] **Propagate** (standing rule 3):
   - **R-108** — replace the fifth pilot with Design Notes' wording in:
     - `prd.md` §8's row;
     - `epics.md` `:480`, and Story 4.10's criteria `:1469-1470`;
@@ -320,6 +321,29 @@ something and another when it does not.
   - `/controls` and `/style-guide` render unchanged apart from their colours.
 
 ## Spec Change Log
+
+- **2026-09-15, Dev — the recording disagreed with one Design Notes fact (Ask First, flagged for the review).** The
+  matrix row "`@site.navigation` repeats with `label` and `url`" is what `bindable` said, but T1 and T3 printed `/` for
+  every item from `{{#foreach @site.navigation}}{{url}}{{/foreach}}`: a bare `url` there is Ghost's url helper
+  (`PILOT|nav_items`, MEASUREMENTS §45). Building A1 #1's nav as that repeat would ship every nav link to the site
+  root, so the Dev run took the one rendered form that is already recorded — `data-helper="navigation"`, Ghost's own
+  `<ul class="nav">`, folded to More in CSS — and typed `navigation.url` as `helper` in `matrix.json` with the
+  recording as its note (the order of authority puts recordings above the matrix's prose). The pilot row's "a repeat
+  over `@site.navigation`" is therefore `{{navigation}}` twice (inline and inside More); the case it is in the set for —
+  a site-wide singleton binding on `default.hbs` — is unchanged. The owner's review of this is outstanding.
+- **2026-09-15, Dev — "Three lines greyed at Four" (A17 #1) cannot be drawn by `disabledBy`**, which greys a whole
+  control; a per-value dependency is a registry field this spec does not name (Ask First). The stylesheet clamps Three
+  lines to two at Four; the panel shows no grey. Owner test step 8 is amended to what ships; DW-151 carries it with
+  A22's identical "Display greyed at Wide".
+- **2026-09-15, Dev — owner test step 6 said six cards**; Orbit Weekly pages at 12, so the first page shows twelve, and
+  step 6 now says so. **Step 14** carries Rail's dark-ground logo caveat (DW-150), as it already carried Latest Post's.
+- **2026-09-15, Dev — additions the Tasks implied and did not name**, each routine: `orbitWeekly.templateContext(target,
+  feed)` is the one Orbit Weekly context the snapshot check and `/pilots` both render against; `dataset.json`'s `site`
+  gains `allow_self_signup: true` (Ghost's key, which the pilots read); the runtime also refuses `data-members` on a
+  `data-if`/`data-else` element and either arm of a pair on `data-repeat`/`data-items` (both would nest the `{{#if}}`
+  wrongly); the reference design fixture carries the two Portal attributes (its every-directive check). The reference
+  token rows Paper's objects name include the button fill and link colour (both today's accent) and the button radius
+  (the kit's `r`); `--site-width` and the gutter are not named, keep their values, and are DW-155.
 
 ## Design Notes
 
@@ -423,6 +447,35 @@ something and another when it does not.
 - **Supabase:** only the harness's throwaway user is touched. There is no migration, so R-99 has nothing to apply.
 - Resend and Dodo are not touched.
 
+**Results (Dev, 2026-09-15):**
+- `pnpm check` on Node 24.18.1 — exit 0. `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot
+  files`, after its six controls each failed on its broken subject in the check's own output: one class changed (named
+  `template.hbs` and its first differing line), a missing snapshot, an orphan snapshot, a `title` binding added to A1 #1
+  at `default.hbs`, A24 #1 at `index.hbs` (FR-H7 naming `title`) and A17 #1 at `post.hbs` (R-7). The subject rows: each
+  pilot validated, `checkBindings` `[]` at every target, both emitters rendered, one theme text per design; the
+  controls sample on both emitters at its three targets; A17 #1's `{{#foreach posts}}{{> "post-card"}}` with 12 cards
+  for 12 rows and its four feed pages; A4 #13's newest post with a srcset, its picture-less title panel, its empty
+  column and a stored count of 5 ignored. `--update` rewrote the snapshots and the next run passed. The agreement,
+  AD-36, contexts, controls, contract, validate and tokens suites are green; `test-vocabulary.mjs`, `check-baseline`
+  and `check-catalog` pass.
+- `pnpm build` — exit 0, `/app/pilots` and `/app/pilots/frame` built.
+- `cd tools/stress && npm install && node build.js && node gate.js theme` — gscan 4.49.7 and 6.4.2: 0 errors / 0
+  warnings each (the harness's `{{{body}}}` note is the layout's own, unchanged).
+- Each pilot was also rendered by the Dev run at 1440, 834 and 390 in light and dark, per visitor and feed state, and
+  compared by eye with its frame's artboards; the known differences are DW-150–DW-156.
+
+**Real infrastructure (R-82), what each returned:**
+- **T1 `ghost6.inflozo.com` (6.58) and T3 `ghost5.inflozo.com` (5.130)** — `python3 tools/probe/record-shim.py`: the
+  `PILOT` rows of MEASUREMENTS §45 on both. The no-param partial printed each row's title with `@first` true then false,
+  on page 1 and page 2; `{{#if @member.paid}}` signed out → `NOT_PAID`; `{{#if @site.logo}}` → `NO_LOGO` (no logo on
+  either box); `{{#if @site.allow_self_signup}}` → `ASK`; the one-post `{{#get}}` → the feed's first title. **One row
+  disagreed with Design Notes:** `{{url}}` in the navigation loop printed `/` for every item (Spec Change Log). The
+  recorder restored `casper` and deleted the probe theme on both, read back; a separate read-only `GET themes/` on each
+  afterwards returned `casper` active and no `inflozo-probe-shim`. The one reused image was reused (no upload).
+- **The deployed `/pilots`, GitHub Actions and Vercel** — read after the Dev push, recorded in the follow-up Dev commit.
+- Supabase: no migration and nothing read yet; the harness's throwaway user is the only write. Resend and Dodo are not
+  touched.
+
 ## Owner's manual test
 
 These steps follow the rulings R-108 and R-109.
@@ -439,15 +492,15 @@ These steps follow the rulings R-108 and R-109.
 | 3 | same | Rail | Press View as → Free, then Paid, then Signed out. | — | At Free and Paid, "Sign in" becomes "Account" and "Subscribe" disappears. At Signed out both return. |
 | 4 | same | Rail, panel | Set Nav items before More to 3, then Divider under to Shadow. | — | "More" now holds one more menu item, and the line under the bar becomes a soft shadow. |
 | 5 | same | Rail | Press Phone, then Dark. | — | The menu folds into a menu button while "Subscribe" stays in the bar; then the bar turns dark with light text. |
-| 6 | same | Three Up | Press Three Up, Desktop, Light. | — | **Top:** a heading. **Cards:** six post cards in three columns, each with a picture, a tag, a title, a short excerpt, and the writer's photo, name, date and reading time. **Below:** "1 / 5" and "Older posts" — no "Newer posts" on the first page. |
+| 6 | same | Three Up | Press Three Up, Desktop, Light. | — | **Top:** a heading. **Cards:** twelve post cards (one page of Orbit Weekly's feed) in three columns, each with a picture, a tag, a title, a short excerpt, and the writer's photo, name, date and reading time. **Below:** "1 / 5" and "Older posts" — no "Newer posts" on the first page. |
 | 7 | same | Three Up | Press Page → Middle, then Last, then Empty. | — | **Middle:** "Newer posts", "3 / 5" and "Older posts". **Last:** no "Older posts". **Empty:** "Nothing here yet" and a sentence, where the cards were. |
-| 8 | same | Three Up, panel | Set Per row to Four, then open Excerpt. | — | Four columns, and "Three lines" is grey with a sentence saying why. |
+| 8 | same | Three Up, panel | Set Per row to Four, then look at the cards' excerpts. | — | Four columns, and an excerpt set to Three lines shows two lines at Four. ("Three lines" is not yet drawn grey in the panel — the settings engine can grey a whole setting but not one choice inside it; that arrives with the Post Grids category.) |
 | 9 | same | Inline Row | Press Inline Row, then View as → Free. | — | **First:** a centred heading, a sentence, an email box beside a "Subscribe" button, and a short note. **At Free:** the box and the button give way to "Signed in" and a link to the account. |
 | 10 | same | Inline Row | Press View as → Signed out, then Show to → Paid members. | — | The whole section disappears: a signed-out visitor is not a paid member. |
 | 11 | same | Centred | Press Centred. | — | The top of the article "The four hundred domains that refuse to move": a tag, the title large and centred, a sentence under it, the writer with photo, date and reading time, then a wide picture with its caption. |
 | 12 | same | Latest Post | Press Latest Post. | — | **Left:** "Issue 48" above a large headline, "The personal page never disappeared. It went quiet.", a sentence, and the "Subscribe" and "Browse the archive" buttons. **Right:** a card with a picture, the title "The night shift at the Port of Algeciras", and "Archive · 7 August 2026". Hovering the card underlines its title. |
 | 13 | same | Latest Post, panel | Set Card side to Left, Show date to Off, then Primary action to Off. Then look for a setting for how many posts. | — | The card moves to the left and loses its date; "Subscribe" disappears and Secondary action turns grey with "A secondary action needs a primary beside it." There is no setting for how many posts — this hero always shows one. |
-| 14 | same | every pilot | On each, press Tablet, Phone and Dark. | — | Each rearranges at that width as its drawing does, and in Dark nothing is unreadable. Latest Post's card keeps its picture in Dark: its drawing shows the dark version in a picture-less card style, which arrives with the Heroes category. |
+| 14 | same | every pilot | On each, press Tablet, Phone and Dark. | — | Each rearranges at that width as its drawing does, and in Dark nothing is unreadable. Latest Post's card keeps its picture in Dark: its drawing shows the dark version in a picture-less card style, which arrives with the Heroes category. Rail's logo is Orbit Weekly's one logo picture, drawn for a light ground, so in Dark it is dark on dark: a second logo for dark grounds is a field the Headers category adds. |
 | 15 | `https://app.inflozo.com/controls`, then `https://app.inflozo.com/style-guide` | Controls review, Style guide | Open each. | — | The same pages as before, in the new colours: a warm off-white ground and an orange accent. |
 
 **Not in this story, so do not expect them:**

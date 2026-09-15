@@ -49,7 +49,8 @@ const EVERY_DIRECTIVE = `
   </div>
   <div data-members="anonymous">
     <form data-members-form="subscribe">
-      <input type="email" data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
+      <input type="email" data-members-email data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
+      <p data-members-error></p>
       <button data-t="member.signup_cta" data-t-attr="title:post.by author=primary_author.name">Subscribe</button>
     </form>
   </div>
@@ -301,6 +302,7 @@ test('the leak assertion is one regex, and it sees a valueless directive mid-tag
   assert.ok(CONSUMED_DIRECTIVE_RE.test('<p data-bind="title">'))
   assert.ok(!CONSUMED_DIRECTIVE_RE.test('<p data-elsewhere="1" data-bindings="2">'), 'a longer name is not a directive')
   assert.ok(!CONSUMED_DIRECTIVE_RE.test('<form data-members-form="subscribe" data-ghost-search>'), 'the emitted three survive on purpose')
+  assert.ok(!CONSUMED_DIRECTIVE_RE.test('<input data-members-email><p data-members-error>'), "Portal's form attributes survive (Story 4.10)")
   for (const d of CONSUMED_DIRECTIVES) assert.ok(CONSUMED_DIRECTIVE_RE.test(`<p ${d}>`), d)
 })
 
@@ -484,6 +486,11 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
   only({ dataBindings: { posts: { source: 'posts' } } }, 'bad-get-key')
   only({ dataBindings: { picks: { source: 'posts', ids: [] } } }, 'bad-get-ids')
   only({ dataBindings: { picks: { source: 'posts', ids: ['abc'], limit: 3 } } }, 'bad-get-ids')
+  // R-108 (Story 4.10): a fixed query — true only, never beside ids, and only with both a limit and an order
+  only({ dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: 'yes' } } }, 'bad-get-fixed')
+  only({ dataBindings: { picks: { source: 'posts', ids: ['abc'], fixed: true } } }, 'bad-get-fixed')
+  only({ dataBindings: { latest: { source: 'posts', limit: 1, fixed: true } } }, 'bad-get-fixed')
+  only({ dataBindings: { latest: { source: 'posts', order: 'published_at desc', fixed: true } } }, 'bad-get-fixed')
   only({ controlSchema: [ctl({ name: 'Cols' })] }, 'bad-control-name')
   only({ controlSchema: [ctl({ name: 'items' })] }, 'bad-control-name')
   only({ controlSchema: [ctl(), ctl()] }, 'duplicate-control')
@@ -502,6 +509,8 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
   // and the neighbours: a hand-picked order, and the reference design.json
   clean(validateDesignJson(design({ dataBindings: { picks: { source: 'posts', ids: ['a1', 'b2', 'c3'] } } })),
     'a hand-picked order (R-20)')
+  clean(validateDesignJson(design({ dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true } } })),
+    'a query the design fixes at one post (R-108)')
   clean(validateDesignJson(design()), 'the reference design.json')
 })
 
@@ -740,4 +749,15 @@ test('validateDesign runs design.json, content.json and markup as one', () => {
 test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {
   for (const good of ['2026-10-01', '2028-02-29', '2000-02-29']) assert.ok(isIsoDate(good), good)
   for (const bad of ['2026-02-29', '1900-02-29', '2026-13-01', '2026-10-1', '2026-10-01T00:00:00Z', '', 20261001, null]) assert.ok(!isIsoDate(bad), String(bad))
+})
+
+test("Portal's form attributes are directives that take no value (Story 4.10)", () => {
+  const form = (attrs: string) => root(`<form data-members-form="subscribe"><input type="email" ${attrs}><p data-members-error></p></form>`)
+  clean(validateMarkup(form('data-members-email'), { controls: [] }), 'the email input Portal submits')
+  for (const bad of ['data-members-email="x"']) {
+    assert.deepEqual(codes(validateMarkup(form(bad), { controls: [] })), ['bad-value'], bad)
+  }
+  assert.deepEqual(codes(validateMarkup(root('<p data-members-error="oops"></p>'), { controls: [] })), ['bad-value'])
+  assert.equal(DIRECTIVES['data-members-email']?.emitted, true)
+  assert.equal(DIRECTIVES['data-members-error']?.emitted, true)
 })

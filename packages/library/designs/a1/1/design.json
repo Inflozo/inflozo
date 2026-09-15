@@ -1,0 +1,36 @@
+{
+  "name": "Rail",
+  "tier": "free",
+  "bindingContext": ["none"],
+  "compileTarget": ["default.hbs"],
+  "controlSchema": [
+    { "name": "on-scroll", "type": "segmented", "label": "On scroll", "group": "arrangement",
+      "values": ["static", "sticky", "shrink"], "default": "shrink" },
+    { "name": "nav-position", "type": "segmented", "label": "Nav position", "group": "arrangement",
+      "values": ["beside", "center", "right"], "default": "beside",
+      "valueLabels": { "beside": "Beside logo", "center": "Centre" } },
+    { "name": "sign-in", "type": "toggle", "label": "Sign in", "group": "arrangement",
+      "values": ["on", "off"], "default": "on" },
+    { "name": "subscribe", "type": "toggle", "label": "Subscribe", "group": "arrangement",
+      "values": ["on", "off"], "default": "on" },
+    { "name": "divider-under", "type": "segmented", "label": "Divider under", "group": "style",
+      "values": ["hairline", "shadow", "none"], "default": "hairline" },
+    { "name": "nav-before-more", "type": "stepper", "label": "Nav items before More", "group": "arrangement",
+      "values": ["3", "4", "5", "6"], "default": "4" }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface"], "reason": "An inverted header is a design of its own, Contrast Band, not a setting." }
+  },
+  "ghostCompat": { "minVersion": "5.62.0", "helpers": ["if", "navigation", "t"] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "bar",
+    "containment": "none",
+    "ground": "page",
+    "itemCount": "few",
+    "mediaPlacement": "none",
+    "emphasis": "hairline and accent underline"
+  }
+}

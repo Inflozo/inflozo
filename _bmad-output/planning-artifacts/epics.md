@@ -477,7 +477,7 @@ that tool is the source if they move again.
 | **A17 #1** (Post Grids) | Dynamic feed: `{{#foreach}}` over the native paginated context, extracts `post-card` invoked with **no params**, carries the main-feed designation and pagination |
 | **A22 #1** (Newsletter / Subscribe) | Members-aware: `@member` gating, the show-to control, Portal `data-portal` actions, member-state preview |
 | **A24 #1** (Post Headers) | Wrapper context: valid only inside `{{#post}}` on `post.hbs` — the axis of FR-H7 easiest to get backwards, and silent when it is |
-| **A4 #2** (Heroes) | Static and control-dense: rich text with all four marks, a guarded media binding with `srcset`, and the heaviest control set in the library |
+| **A4 #13** (Heroes) | Authored text beside live data: a hero's headline and actions beside a `{{#get}}` card whose feature image is a guarded media binding with `srcset`, a query that always shows exactly one post, and the most settings of any Heroes design (R-108) |
 
 ### Two forward dependencies that are §8's design and are recorded, not removed
 
@@ -1460,14 +1460,14 @@ So that no category is authored against a runtime nobody has stressed.
 
 **Acceptance Criteria:**
 
-**Given** the five pilots — **A1 #1**, **A17 #1**, **A22 #1**, **A24 #1**, **A4 #2**, identified by number
+**Given** the five pilots — **A1 #1**, **A17 #1**, **A22 #1**, **A24 #1**, **A4 #13**, identified by number
 **When** they are authored against this platform
 **Then** each renders **editor-perfect on canvas** in light and dark
 **And** each exercises the case it is in the set for: A1 #1 the site-wide singleton binding `@site.navigation`
 and `@site.logo`; A17 #1 the dynamic feed over the native paginated context extracting `post-card` **invoked
 with no params**; A22 #1 `@member` gating with Portal actions; A24 #1 the wrapper context valid only inside
-`{{#post}}` on `post.hbs`; A4 #2 rich text with all four marks plus a guarded media binding with `srcset` and
-the heaviest control set in the library
+`{{#post}}` on `post.hbs`; A4 #13 a hero's authored text beside a `{{#get}}` card whose feature image is a guarded
+media binding with `srcset`, with a query fixed at one post and the most settings of any hero
 **And** their compiled `.hbs` snapshots are **committed and diffing per-commit** (NFR-6(c1))
 **And** the fixtures ship with them and diff the same way
 **And** each pilot is marked **provisional until its category's gate** (AD-35), because a pre-gate pilot is not

@@ -1,0 +1,9 @@
+{
+  "category": "a1",
+  "props": {
+    "signInUrl": { "label": "Sign in link", "type": "url", "default": { "portal": "signin" } },
+    "accountUrl": { "label": "Account link", "type": "url", "default": { "portal": "account" } },
+    "ctaLabel": { "label": "Subscribe label", "type": "text", "catalog": "member.signup_cta" },
+    "ctaUrl": { "label": "Subscribe link", "type": "url", "default": { "portal": "signup" } }
+  }
+}

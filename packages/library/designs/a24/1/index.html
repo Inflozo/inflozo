@@ -1,0 +1,29 @@
+<!-- A24 #1 Centred — A24-1 Centred.dc.html. Every field is the post's own, bound at the section's top level:
+     post.hbs opens {{#post}} around the section, so `title` is legal here and refused at the top of index.hbs.
+     Every absent part takes its own gap with it (the gaps are margins on the part that follows). -->
+<section class="a24-1" data-bg="base" data-spacing="comfortable" data-divider="none"
+         data-align="center" data-title-size="medium" data-standfirst-lines="full" data-ratio="wide" data-rule="none"
+         data-tag-line="primary" data-meta="author-date-reading" data-standfirst="excerpt" data-feature-image="post"
+         data-avatar="small" data-caption="ghost">
+  <header class="a24-1__inner">
+    <div class="a24-1__text">
+      <a class="a24-1__tag" data-bind-attr="href:primary_tag.url" data-bind="primary_tag.name" data-empty="hide">Reporting</a>
+      <h1 class="a24-1__title" data-bind="title" data-empty="hide">The night shift at the Port of Algeciras</h1>
+      <p class="a24-1__standfirst" data-bind="excerpt" data-empty="hide">Between midnight and four the port belongs to eight hundred people and nine cranes.</p>
+      <p class="a24-1__meta">
+        <span class="a24-1__avatar" data-if="primary_author.name" aria-hidden="true">
+          <span class="a24-1__initial" data-bind="primary_author.name" data-empty="hide">M</span>
+          <img class="a24-1__photo" data-bind-attr="src:primary_author.profile_image|img_url:xs" alt="" width="44" height="44">
+        </span>
+        <a class="a24-1__author" data-bind-attr="href:primary_author.url" data-bind="primary_author.name" data-empty="hide">Marguerite Okonjo</a>
+        <time class="a24-1__date" data-bind-attr="datetime:published_at|date:YYYY-MM-DD" data-bind="published_at|date:D MMMM YYYY" data-empty="hide">12 March 2026</time>
+        <span class="a24-1__reading" data-t="post.reading_time minutes=reading_time">9 min read</span>
+      </p>
+    </div>
+    <figure class="a24-1__figure" data-if="feature_image">
+      <img class="a24-1__image" data-bind-attr="src:feature_image|img_url:l;alt:feature_image_alt"
+           data-bind-srcset="feature_image|img_url" sizes="(max-width: 72rem) 100vw, 72rem" alt="" width="1200" height="675">
+      <figcaption class="a24-1__caption" data-bind="feature_image_caption" data-empty="hide">Quay 4 at 02.40, waiting for the Maersk Sarnia.</figcaption>
+    </figure>
+  </header>
+</section>

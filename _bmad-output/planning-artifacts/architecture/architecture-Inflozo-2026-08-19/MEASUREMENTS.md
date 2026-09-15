@@ -3252,3 +3252,54 @@ file-level fallback of (a) row 1 is read in source, not recorded — and it cont
 "falls back to `en` for any key the active locale does not resolve": the fallback is to the **file**, only when
 `<locale>.json` is absent, never per key (VERIFY-AT-BUILD row 32, Story 7.12). The "whole-page 500" for a
 constructor throw is read in source, not observed; §15j saw a 400 for a template error at upload.
+
+## 45. The pilots' Ghost rows, recorded on both majors, and the snapshot check's first run · 2026-09-15
+
+Story 4.10 authors the five pilot sections (PRD §8, R-108) and renders `data-members` and `data-if` / `data-else` on
+both emitters. Planning read the facts in both releases' npm tarballs (`ghost@5.130.6`, `ghost@6.58.0`) and in Portal
+(`@tryghost/portal` 2.51.5 and 2.69.339, the `~2.51` / `~2.69` pins in `core/shared/config/defaults.json`), and executed
+a no-param partial under Handlebars 4.7.9; the Dev run then **recorded** the rows it could on T3 (5.130.6,
+`ghost5.inflozo.com`) and T1 (6.58.0, `ghost6.inflozo.com`) before any runtime code was written against them (AD-23).
+Command: `python3 tools/probe/record-shim.py`; fixtures `packages/ghost-shim/fixtures/ghost{5,6}/index.json` and
+`index-page-2.json`, group `PILOT`, with the new partial `tools/probe/theme-shim/partials/probe-card.hbs`
+(`{{title}}@first={{@first}};`); asserted per commit by `packages/ghost-shim/src/contract.test.ts`.
+
+**(a) What Ghost printed.** Both majors, signed out, the probe theme active (previous theme `casper` restored and read
+back as active; the probe theme deleted and read back as gone, on both):
+
+    PILOT|partial_noparam  {{#foreach posts limit="2"}}{{> "probe-card"}}{{/foreach}}   page 1: PROBE Gated Post@first=true;On typography and restraint@first=false;
+                                                                                          page 2: Ten years of one layout@first=true;The paragraph is the unit@first=false;
+    PILOT|nav_items        {{#foreach @site.navigation}}{{label}}={{url}};{{/foreach}}  6: Essay=/;Notes=/;Inflozo=/;   5: Ghost 5 Home=/;Ghost 5 About=/;
+    PILOT|if_member_paid   {{#if @member.paid}}PAID{{else}}NOT_PAID{{/if}}              NOT_PAID
+    PILOT|if_logo          {{#if @site.logo}}LOGO{{else}}NO_LOGO{{/if}}                 NO_LOGO   (neither box has a logo; SITE|logo is empty)
+    PILOT|if_self_signup   {{#if @site.allow_self_signup}}ASK{{/if}}                    ASK       (MEMBER|allow_self_signup is true)
+    PILOT|get_latest       {{#get "posts" limit="1" order="published_at desc"}}…{{/get}} PROBE Gated Post — the feed's first card
+
+**(b) The finding the recording made.** A no-param partial inside `{{#foreach}}` renders against the ROW, `@first`
+included, as `foreach.js:88-91` reads — the case A17 #1 is in the set for holds. But **`{{url}}` inside
+`{{#foreach @site.navigation}}` is not the item's field: it printed `/` for every item on both majors**, while the same
+loop's `{{this.url}}` (group `raw-nav-items`) printed `/essay/`, `/notes/` and `https://inflozo.com`. The bare name is
+Ghost's `url` helper, which recognises a navigation item only when it carries `slug` and `current` — which only
+`{{navigation}}`'s own partial adds — and otherwise prints the site root. Story 4.6's context recording had carried
+the same `/` since 2026-09-14 and read it as proof of the field. `matrix.json` now types `navigation.url` as `helper`
+with that note, so `bindable` refuses it, and A1 #1 links its nav through `data-helper="navigation"` (Ghost's own
+`<ul class="nav">`, recorded since Story 4.3). The signed-in member arms stay cited, not recorded: creating a member is
+outside the recorder's writes (spec Ask First), and `update-local-template-options.js:25-37` (5) / `:27-39` (6) is the
+source for `@member` and `@member.paid`.
+
+**(c) Read, not recorded.** `allow_self_signup` is `members_signup_access === 'all'` and members are enabled when it is
+not `'none'` (`SettingsHelpers.js:22-32` on 5, `settings-helpers.js:22-32` on 6), so self-signup implies members.
+Portal submits `input[data-members-email]`'s value and writes `data-members-error` (both Portal builds'
+`umd/portal.min.js`; Ghost 5's own signup card, `signup-renderer.js:19-31`). `{{#match a ">" b}}` compares numbers and
+`{{page_url n}}` takes a page number (`match.js`, `page_url.js:11-16`), which is what R-109 declined to build on.
+
+**(d) The snapshot check, first run.** `node tools/check-snapshots.mjs` (Node 24.18.1): its six controls each failed on
+the subject handed to it — one class changed in a pilot (naming `template.hbs` and the first differing line), a
+missing snapshot, a snapshot with no design, a `title` binding added to A1 #1 at `default.hbs`, A24 #1 at `index.hbs`
+(FR-H7, naming `title`) and A17 #1 at `post.hbs` (R-7). Then every design validated, returned `[]` from
+`checkBindings` at each of its targets, rendered on both emitters, and produced one theme text across its targets;
+`--update` wrote the snapshots and the next run passed. The check prints its totals and stores none.
+
+**(e) What this does NOT say.** No theme was compiled or deployed (Epic 7, the joint gate Story 7.35), no pixel was
+compared (Story 4.11), and no signed-in member was rendered by Ghost. A snapshot is the runtime's text with
+content and controls at their defaults — not a compiled `partials/sections/…` file.

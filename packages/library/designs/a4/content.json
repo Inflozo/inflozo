@@ -1,0 +1,15 @@
+{
+  "category": "a4",
+  "props": {
+    "eyebrow": { "label": "Eyebrow", "type": "text", "default": "Issue 48" },
+    "headline": { "label": "Headline", "type": "text", "default": "The personal page never disappeared. It went quiet." },
+    "sub": { "label": "Sub", "type": "richtext", "marks": ["a"],
+             "default": "Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday." },
+    "primaryAction.label": { "label": "Primary action text", "type": "text", "catalog": "member.signup_cta" },
+    "primaryAction.url": { "label": "Primary action link", "type": "url", "default": { "portal": "signup" } },
+    "secondaryAction.label": { "label": "Secondary action text", "type": "text", "default": "Browse the archive" },
+    "secondaryAction.url": { "label": "Secondary action link", "type": "url",
+                             "default": { "href": "https://orbit-weekly.example/tag/archive/",
+                                          "ref": { "kind": "tag", "id": "7a9000000000000000000001" } } }
+  }
+}

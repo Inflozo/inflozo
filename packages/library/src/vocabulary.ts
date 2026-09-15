@@ -469,6 +469,10 @@ export type Directive = {
    *  something on the live site reads it (Portal, sodo-search, `core`). Every other directive must be
    *  gone from every emitted file, which is what AD-34's leak assertion checks. */
   readonly emitted?: boolean
+  /** Story 4.10 (DW-131): this directive's value names a Ghost path, so the runtime's scope walk (`ghostPaths` in
+   *  `section-runtime/src/core.ts`) must read it. A test holds every rendered directive carrying the flag to the
+   *  walk, so a later one cannot be silently skipped by FR-H7's check. */
+  readonly ghostPath?: true
 }
 
 /** THE CLOSED SET. A `data-*` attribute that is not in here and is not a declared control on the
@@ -500,11 +504,13 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   'data-bind': {
     summary: "a Ghost value into this element's text — \"published_at|date:D MMM YYYY\"",
     guardable: true,
+    ghostPath: true,
     parse: asSpec,
   },
   'data-bind-attr': {
     summary: 'a Ghost value into one or more attributes; a value may mix literal text with {path} tokens (R-27)',
     guardable: true,
+    ghostPath: true,
     parse: attrList((attr, spec) => {
       const bad = assertBindableAttr(attr)
       if (bad !== null) return bad
@@ -519,6 +525,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   },
   'data-repeat': {
     summary: 'repeat over a GHOST source — a context path ({{#foreach}}) or a dataBindings key ({{#get}})',
+    ghostPath: true,
     parse: (v) => (PATH_RE.test(v) ? ok : fail(`"${v}" is not a repeat source — a Ghost context path, or a key declared in design.json's dataBindings`)),
   },
   'data-repeat-limit': {
@@ -539,17 +546,18 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
       : fail(`"${v}" is not an array prop path — name the array itself ("items") and write its per-item props in full ("items[].label")`)),
   },
   'data-if': {
-    // row 3
-    summary: 'row 3 · the first arm of a two-armed conditional; the sibling carries data-else',
+    // row 3 — rendered since Story 4.10
+    summary: 'row 3 · the first arm of a conditional, shown when the Ghost path holds something ({{#if}}); a data-else on its NEXT element sibling is the other arm',
+    ghostPath: true,
     parse: (v) => (PATH_RE.test(v) ? ok : fail(`"${v}" is not a valid path`)),
   },
   'data-else': {
-    summary: 'row 3 · the other arm. Takes no value. (`data-empty` stays the ONE-armed guard.)',
+    summary: 'row 3 · the other arm, and it must be the NEXT element sibling of a data-if. Takes no value. (`data-empty` stays the ONE-armed guard.)',
     parse: (v) => (v === '' ? ok : fail(`data-else takes no value — got ${JSON.stringify(v)}`)),
   },
   'data-members': {
     // row 4
-    summary: 'row 4 · show this subtree to one member state only; server-rendered, never client-gated',
+    summary: 'row 4 · show this subtree to one member state only; server-rendered, never client-gated — never inside another data-members, never on a data-repeat, data-items, data-if or data-else',
     parse: inList('data-members', MEMBER_STATES),
   },
   'data-when': {
@@ -564,6 +572,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   'data-pagination': {
     // row 6
     summary: "row 6 · Ghost's native pagination. Restricts the design to paginated targets (R-7)",
+    ghostPath: true,
     parse: inList('data-pagination', ['prev', 'next', 'numbers']),
   },
   // row 7 — nested repeats — needs NO directive: deepest-first ordering, already executed.
@@ -571,6 +580,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   'data-helper': {
     // row 9
     summary: 'row 9 · a bare helper with no bound path',
+    ghostPath: true,
     parse: inList('data-helper', BARE_HELPERS),
   },
   'data-target': {
@@ -589,6 +599,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     // row 12 — AD-3's carve-out made machine-checkable BY CONSTRUCTION: the directive can write
     // nothing but one custom property, so there is no inline declaration left to police.
     summary: 'row 12 · a bound Ghost value into ONE inline CSS custom property — "--tag-accent:accent_color"',
+    ghostPath: true,
     parse: (v) => {
       const [prop, spec] = splitFirst(v, ':')
       if (!CUSTOM_PROPERTY_RE.test(prop)) {
@@ -601,6 +612,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   'data-text': {
     // row 13
     summary: 'row 13 · static and bound text in one node — "Read in {reading_time} minutes"',
+    ghostPath: true,
     parse: (v) => {
       const r = parseTokenTemplate(v)
       if (typeof r === 'string') return r
@@ -620,6 +632,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   'data-t': {
     // exit 3 — Story 4.9: the catalog's key, then each placeholder as a guarded name=path param
     summary: 'exit 3 · a chrome string by catalog key, with each placeholder as a name=path param — "post.by author=primary_author.name" emits {{t "post.by" author=primary_author.name}}, guarded on each param. JS-written strings emit data-i18n-* instead',
+    ghostPath: true,
     parse: (v) => {
       const r = parseTCall(v)
       return typeof r === 'string' ? r : ok
@@ -627,6 +640,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   },
   'data-t-attr': {
     summary: 'exit 3 · a chrome string into alt, title, placeholder or aria-label — "aria-label:pagination.label;placeholder:member.email_placeholder"',
+    ghostPath: true,
     parse: (v) => {
       const r = parseTAttr(v)
       return typeof r === 'string' ? r : ok
@@ -636,6 +650,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     // exit 4 — the binding grammar produces one expression per attribute, and srcset needs a set.
     summary: 'exit 4 · a responsive image set — "feature_image|img_url"; the shim emits a Ghost-shaped srcset, one candidate per image_sizes key (sizes is the design\'s own attribute, never emitted)',
     guardable: true,
+    ghostPath: true,
     parse: (v) => {
       const [path, helper] = splitFirst(v, '|')
       if (!PATH_RE.test(path)) return fail(`"${path}" is not a valid binding path`)
@@ -661,6 +676,19 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     summary: 'Portal reads this itself and applies the loading/success/error classes. With JavaScript off, nothing happens (R-5)',
     emitted: true,
     parse: inList('data-members-form', MEMBER_FORMS),
+  },
+  // Story 4.10 — Portal's own form attributes, read in @tryghost/portal 2.51.5 and 2.69.339 (umd/portal.min.js):
+  // Portal submits `input[data-members-email]`'s value and writes its message into `[data-members-error]`, so a
+  // form without the first submits nothing. Valueless and KEPT, as `data-members-form` is.
+  'data-members-email': {
+    summary: "Portal reads the email to submit from the input carrying this, inside a data-members-form. Takes no value",
+    emitted: true,
+    parse: (v) => (v === '' ? ok : fail(`data-members-email takes no value — got ${JSON.stringify(v)}`)),
+  },
+  'data-members-error': {
+    summary: "Portal writes the form's error message into the element carrying this. Takes no value",
+    emitted: true,
+    parse: (v) => (v === '' ? ok : fail(`data-members-error takes no value — got ${JSON.stringify(v)}`)),
   },
   'data-ghost-search': {
     summary: "open Ghost's native search (R-24, FR-F6). Takes no value — sodo-search binds the attribute",

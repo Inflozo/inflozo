@@ -1,0 +1,25 @@
+<!-- A24 #1 Centred — A24-1 Centred.dc.html. Every field is the post's own, bound at the section's top level:
+     post.hbs opens {{#post}} around the section, so `title` is legal here and refused at the top of index.hbs.
+     Every absent part takes its own gap with it (the gaps are margins on the part that follows). -->
+<section class="a24-1" data-align="center" data-title-size="medium" data-standfirst="excerpt" data-standfirst-lines="full" data-ratio="wide" data-rule="none" data-tag-line="primary" data-meta="author-date-reading" data-feature-image="post" data-avatar="small" data-caption="ghost" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <header class="a24-1__inner">
+    <div class="a24-1__text">
+      {{#if primary_tag.name}}{{#if primary_tag.url}}<a class="a24-1__tag" href="{{primary_tag.url}}">{{primary_tag.name}}</a>{{/if}}{{/if}}
+      {{#if title}}<h1 class="a24-1__title">{{title}}</h1>{{/if}}
+      {{#if excerpt}}<p class="a24-1__standfirst">{{excerpt}}</p>{{/if}}
+      <p class="a24-1__meta">
+        {{#if primary_author.name}}<span class="a24-1__avatar" aria-hidden="true">
+          {{#if primary_author.name}}<span class="a24-1__initial">{{primary_author.name}}</span>{{/if}}
+          {{#if primary_author.profile_image}}<img class="a24-1__photo" alt="" width="44" height="44" src="{{img_url primary_author.profile_image size="xs"}}">{{/if}}
+        </span>{{/if}}
+        {{#if primary_author.name}}{{#if primary_author.url}}<a class="a24-1__author" href="{{primary_author.url}}">{{primary_author.name}}</a>{{/if}}{{/if}}
+        {{#if published_at}}<time class="a24-1__date" datetime="{{date published_at format="YYYY-MM-DD"}}">{{date published_at format="D MMMM YYYY"}}</time>{{/if}}
+        {{#if reading_time includeZero=true}}<span class="a24-1__reading">{{t "post.reading_time" minutes=reading_time}}</span>{{/if}}
+      </p>
+    </div>
+    {{#if feature_image}}<figure class="a24-1__figure">
+      {{#if feature_image}}<img class="a24-1__image" sizes="(max-width: 72rem) 100vw, 72rem" alt="{{feature_image_alt}}" width="1200" height="675" src="{{img_url feature_image size="l"}}" srcset="{{img_url feature_image size="xs"}} 150w, {{img_url feature_image size="s"}} 400w, {{img_url feature_image size="m"}} 750w, {{img_url feature_image size="l"}} 1200w, {{img_url feature_image size="xl"}} 2000w">{{/if}}
+      {{#if feature_image_caption}}<figcaption class="a24-1__caption">{{feature_image_caption}}</figcaption>{{/if}}
+    </figure>{{/if}}
+  </header>
+</section>

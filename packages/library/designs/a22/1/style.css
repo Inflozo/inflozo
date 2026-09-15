@@ -1,0 +1,91 @@
+/* A22 #1 Inline Row — A22-1 Inline Row.dc.html. Flat, tokens only; every control selects on its root attribute.
+   Geometry from the frame: head on a 720 measure, blurb clamped 560, field 46 high and 10 from the button, note 13
+   directly under; field width steps one named value down at 1080; at 767 and below field and button stack at 48. */
+
+.a22-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.a22-1[data-bg="surface"] { background: var(--bg-surface); }
+.a22-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.a22-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.a22-1[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
+.a22-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
+.a22-1[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
+
+.a22-1__inner { max-width: var(--site-width); margin-inline: auto; display: flex; flex-direction: column; align-items: center; }
+.a22-1[data-align="start"] .a22-1__inner { align-items: flex-start; }
+
+/* the head */
+.a22-1__head { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 720px; }
+.a22-1[data-align="start"] .a22-1__head { align-items: flex-start; text-align: start; }
+.a22-1__eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.a22-1__heading { margin: 0; font-family: var(--font-heading); font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; text-wrap: pretty; }
+.a22-1[data-heading-size="regular"] .a22-1__heading { font-size: 34px; }
+.a22-1[data-heading-size="display"] .a22-1__heading { font-size: 48px; }
+.a22-1__blurb { margin: 16px 0 0; max-width: 560px; font-size: 17px; line-height: 1.6; color: var(--text-muted); text-wrap: pretty; }
+.a22-1[data-blurb="hide"] .a22-1__blurb { display: none; }
+.a22-1[data-bg="contrast"] .a22-1__eyebrow,
+.a22-1[data-bg="contrast"] .a22-1__blurb { color: var(--text-on-contrast); }
+
+/* the slot the form and the signed-in line share: 34 under the blurb, 24 with the blurb hidden */
+.a22-1__slot { margin-block-start: 34px; }
+.a22-1[data-blurb="hide"] .a22-1__slot { margin-block-start: 24px; }
+
+/* the form: the row is centred as a unit */
+.a22-1__form { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0; }
+.a22-1[data-align="start"] .a22-1__form { align-items: flex-start; }
+.a22-1__row { display: flex; align-items: center; gap: 10px; }
+.a22-1__field { box-sizing: border-box; width: 400px; height: 46px; margin: 0; padding: 0 14px; border: 1px solid var(--border-hairline); border-radius: var(--radius-control); background: var(--bg-surface); color: var(--text-body); font-family: var(--font-body); font-size: 15px; }
+.a22-1[data-field-width="narrow"] .a22-1__field { width: 320px; }
+.a22-1[data-field-width="wide"] .a22-1__field { width: 480px; }
+.a22-1__field::placeholder { color: var(--text-muted); opacity: 1; }
+/* focus: the library ring is suppressed on the field, which takes a 1.5 px accent border; the button keeps its ring */
+.a22-1__field:focus { outline: none; border: 1.5px solid var(--accent); padding: 0 13.5px; }
+/* the field is always a step away from the plane it sits on */
+.a22-1[data-bg="surface"] .a22-1__field { background: var(--bg-page); }
+.a22-1__button { box-sizing: border-box; height: 46px; min-width: 126px; margin: 0; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--text-on-accent); font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
+.a22-1[data-bg="contrast"] .a22-1__button { background: var(--text-on-contrast); color: var(--bg-contrast); }
+
+.a22-1__note,
+.a22-1__proof { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-muted); text-align: center; }
+.a22-1[data-align="start"] .a22-1__note,
+.a22-1[data-align="start"] .a22-1__proof { text-align: start; }
+.a22-1[data-below-field="nothing"] .a22-1__note { display: none; }
+.a22-1__proof { margin-block-start: -6px; }
+.a22-1[data-social-proof="off"] .a22-1__proof { display: none; }
+.a22-1__error { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; }
+.a22-1__error:empty { display: none; }
+.a22-1[data-bg="contrast"] .a22-1__note,
+.a22-1[data-bg="contrast"] .a22-1__proof { color: var(--text-on-contrast); }
+
+/* signed in: the form's slot, at the form's height */
+.a22-1__signed { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; min-height: 96px; text-align: center; }
+.a22-1[data-align="start"] .a22-1__signed { align-items: flex-start; text-align: start; }
+.a22-1__signed-title { margin: 0; font-family: var(--font-heading); font-size: 22px; font-weight: 700; line-height: 1.2; }
+.a22-1__manage { margin-block-start: 2px; font-size: 14px; font-weight: 500; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.a22-1__manage::after { content: " →"; }
+
+@media (max-width: 1080px) {
+  .a22-1__field,
+  .a22-1[data-field-width="narrow"] .a22-1__field { width: 320px; }
+  .a22-1[data-field-width="wide"] .a22-1__field { width: 400px; }
+}
+
+@media (max-width: 834px) {
+  .a22-1__heading { font-size: 34px; }
+  .a22-1[data-heading-size="regular"] .a22-1__heading { font-size: 30px; }
+  .a22-1[data-heading-size="display"] .a22-1__heading { font-size: 40px; }
+}
+
+@media (max-width: 767px) {
+  .a22-1__heading,
+  .a22-1[data-heading-size="regular"] .a22-1__heading { font-size: 28px; }
+  .a22-1[data-heading-size="display"] .a22-1__heading { font-size: 32px; }
+  .a22-1__blurb { font-size: 16px; }
+  .a22-1__slot,
+  .a22-1[data-blurb="hide"] .a22-1__slot { margin-block-start: 28px; }
+  .a22-1__form { width: 100%; max-width: 310px; }
+  .a22-1__row { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; }
+  .a22-1__field,
+  .a22-1[data-field-width="narrow"] .a22-1__field,
+  .a22-1[data-field-width="wide"] .a22-1__field { width: 100%; height: 48px; font-size: 16px; }
+  .a22-1__button { width: 100%; height: 48px; font-size: 16px; }
+}

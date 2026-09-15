@@ -1,0 +1,41 @@
+{
+  "name": "Latest Post",
+  "tier": "pro",
+  "bindingContext": ["none"],
+  "compileTarget": ["home.hbs"],
+  "controlSchema": [
+    { "name": "card-side", "type": "segmented", "label": "Card side", "group": "arrangement",
+      "values": ["right", "left"], "default": "right" },
+    { "name": "show-tag", "type": "segmented", "label": "Show tag", "group": "style",
+      "values": ["on", "off"], "default": "on" },
+    { "name": "show-date", "type": "segmented", "label": "Show date", "group": "style",
+      "values": ["on", "off"], "default": "on" },
+    { "name": "headline-size", "type": "segmented", "label": "Headline size", "group": "style",
+      "values": ["medium", "large", "display"], "default": "large" },
+    { "name": "primary-action", "type": "toggle", "label": "Primary action", "group": "arrangement",
+      "values": ["on", "off"], "default": "on" },
+    { "name": "secondary-action", "type": "toggle", "label": "Secondary action", "group": "arrangement",
+      "values": ["on", "off"], "default": "on",
+      "disabledBy": { "control": "primary-action", "whenValue": "off", "inForce": "off",
+                      "reason": "A secondary action needs a primary beside it." } }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"],
+            "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "dataBindings": {
+    "latest": { "source": "posts", "limit": 1, "order": "published_at desc", "fixed": true }
+  },
+  "ghostCompat": { "minVersion": "5.0.0", "helpers": ["get", "foreach", "if", "img_url", "date", "t"] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "feed",
+    "containment": "none",
+    "ground": "page",
+    "itemCount": "one",
+    "mediaPlacement": "right",
+    "emphasis": "newest post as card"
+  }
+}

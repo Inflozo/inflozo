@@ -1,0 +1,30 @@
+{{#if @site.members_enabled}}<section class="a22-1" data-align="center" data-heading-size="large" data-field-width="medium" data-blurb="show" data-below-field="note" data-social-proof="off" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <!-- A22 #1 Inline Row (A22-1 Inline Row.dc.html). Provisional (AD-35): Story 4.10's pilot for member gating,
+       show-to and Portal. The root's data-if is the drawn "When members are disabled: Hide the section". -->
+  <div class="a22-1__inner">
+    <header class="a22-1__head">
+      <p class="a22-1__eyebrow">The Friday edition</p>
+      <h2 class="a22-1__heading">One letter a week, on Friday morning</h2>
+      <p class="a22-1__blurb">Reporting on the people still building the web by hand, the week’s corrections, and whatever the picture desk found on the way.</p>
+    </header>
+    {{#if @member}}{{else}}<div class="a22-1__slot">
+      {{#if @site.allow_self_signup}}<form class="a22-1__form" data-members-form="subscribe" data-module="member-form">
+        <div class="a22-1__row">
+          <input class="a22-1__field" type="email" name="email" autocomplete="email" inputmode="email" required="" data-members-email="" aria-label="{{t "member.email_placeholder"}}" placeholder="{{t "member.email_placeholder"}}">
+          <button class="a22-1__button" type="submit">{{t "member.signup_cta"}}</button>
+        </div>
+        <p class="a22-1__note">Free weekly. One click to leave.</p>
+        <p class="a22-1__error" data-members-error="" aria-live="polite"></p>
+        <p class="a22-1__proof">Join &#123;members&#125; readers</p>
+      </form>{{/if}}
+    </div>{{/if}}
+    {{#if @member}}{{#if @member.paid}}{{else}}<div class="a22-1__slot a22-1__signed">
+      <p class="a22-1__signed-title">Signed in</p>
+      <a class="a22-1__manage" href="#" data-portal="account">Manage your preferences</a>
+    </div>{{/if}}{{/if}}
+    {{#if @member.paid}}<div class="a22-1__slot a22-1__signed">
+      <p class="a22-1__signed-title">Signed in</p>
+      <a class="a22-1__manage" href="#" data-portal="account">Manage your preferences</a>
+    </div>{{/if}}
+  </div>
+</section>{{/if}}

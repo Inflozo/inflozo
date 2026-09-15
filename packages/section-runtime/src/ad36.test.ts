@@ -422,3 +422,43 @@ test('AD-36 / AD-5 — a string override carrying {{#each}} ships inert on the m
   // and the canvas, which puts its output into a DOM, shows the user their own braces as characters
   assert.ok(renderCanvas(doc(), src, { strings: { 'countdown.ended': '{{#each}}x' } }).includes('data-i18n-ended="{{#each}}x"'))
 })
+
+// ── Story 4.10 — the new value grammars: a condition path, a member state, the valueless arms and Portal's two
+//    attributes, the render's member and show-to, and a fixed query. Each hostile value refuses before it reaches
+//    any syntax, and its legitimate neighbour still renders. ──
+test('AD-36 (2) · a crafted condition, member state or valueless attribute refuses; the legitimate ones render', () => {
+  const hostile: [string, RegExp][] = [
+    ['<p data-if="title}}{{#each @site}}x">·</p>', /AD-36: data-if/],
+    ['<p data-if="title&quot; onload=&quot;x">·</p>', /AD-36: data-if/],
+    ['<p data-members="paid}}{{evil">·</p>', /AD-36: data-members/],
+    ['<p data-members="comped">·</p>', /AD-36: data-members/],
+    ['<div><p data-if="title">·</p><p data-else="{{title}}">·</p></div>', /AD-36: data-else/],
+    ['<form data-members-form="subscribe"><input data-members-email="{{@member.email}}"></form>', /AD-36: data-members-email/],
+    ['<p data-members-error="x">·</p>', /AD-36: data-members-error/],
+  ]
+  for (const [src, re] of hostile) {
+    assert.throws(() => renderCanvas(doc(), src, { ghost: { title: 't' } }), re, `canvas: ${src}`)
+    assert.throws(() => renderTheme(doc(), src, {}), re, `theme: ${src}`)
+  }
+  const ok = renderTheme(doc(), '<div><p data-if="title">·</p><p data-else>–</p><b data-members="free">·</b><form data-members-form="signup"><input data-members-email><p data-members-error></p></form></div>', {}).template
+  assert.ok(ok.includes('{{#if title}}<p>·</p>{{else}}<p>–</p>{{/if}}') && ok.includes('{{#if @member}}{{#if @member.paid}}{{else}}<b>·</b>{{/if}}{{/if}}') && ok.includes('data-members-email=""'), ok)
+})
+
+test('AD-36 · a member or show-to that is not a closed state refuses on both emitters; the closed ones render', () => {
+  const src = '<section class="s"><p>·</p></section>'
+  for (const bad of [{ member: 'everyone' }, { member: 'comped' }, { member: '{{@member}}' }, { visibility: 'members' }, { visibility: 'paid}}' }]) {
+    for (const render of [renderCanvas, renderTheme]) {
+      assert.throws(() => render(doc(), src, bad as RenderInput), /is not a (member state|visitor the canvas previews)/, JSON.stringify(bad))
+    }
+  }
+  for (const member of ['anonymous', 'free', 'paid'] as const) assert.doesNotThrow(() => renderCanvas(doc(), src, { member, visibility: 'everyone' }))
+})
+
+test('AD-36 · a fixed flag that is not exactly true is refused at emission, and a hand-picked list cannot be fixed', () => {
+  const src = '<ul><li data-repeat="latest"><span data-bind="title">·</span></li></ul>'
+  const at = (b: Record<string, unknown>) => () => renderTheme(doc(), src, { dataBindings: { latest: b as never } })
+  assert.throws(at({ source: 'posts', limit: 1, order: 'published_at desc', fixed: 'true' }), /bad-get-fixed/)
+  assert.throws(at({ source: 'posts', ids: ['a1'], fixed: true }), /bad-get-fixed/)
+  assert.throws(at({ source: 'posts', limit: 1, fixed: true }), /bad-get-fixed/)
+  assert.ok(at({ source: 'posts', limit: 1, order: 'published_at desc', fixed: true })().template.includes('{{#get "posts" limit="1" order="published_at desc"}}'))
+})

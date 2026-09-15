@@ -109,6 +109,10 @@ export type DataBinding = {
   /** R-20's hand-picked order: N single-id gets, in this order, no cap (the panel warns past 25 —
    *  that is Story 5.19's Source panel, not this validator). Exclusive with `filter`, `limit` and `order`. */
   ids?: string[]
+  /** R-108 (Story 4.10): the DESIGN fixes this query — a hero that always shows exactly one post. The panel offers
+   *  no Show and no Order for it, and a stored Count or Order is never folded in (`withData`), exactly as for a
+   *  hand-picked `ids` query. Only `true`, never beside `ids`, and only with both `limit` and `order` declared. */
+  fixed?: true
 }
 
 /** `design.json` — what an AUTHOR writes. Not the registry entry. */

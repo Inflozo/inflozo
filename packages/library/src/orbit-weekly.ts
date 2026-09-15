@@ -110,6 +110,35 @@ export function subject(which: 'post' | 'page'): PostRow & Json {
   return hydrate(raw, dataset.posts)
 }
 
+// ─── what a template hands a section (Story 4.10) ───────────────────────────────
+
+/** The four feed states a paginated pilot is reviewed at: the first page, a true middle page, the last, and a feed
+ *  with nothing in it. */
+export type FeedState = 'first' | 'middle' | 'last' | 'empty'
+
+/** Orbit Weekly as a template hands it to a section on `target`, in `RenderInput`'s shape: `ghost` is the render
+ *  context (`@site` everywhere; the feed page and its `pagination` on a paginated template; the style-guide post or
+ *  page inside the block post.hbs and page.hbs open), and `site` is what the shim needs to imitate the connected
+ *  site. One copy for the snapshot check and the pilots review page, so the two render against the same publication.
+ *  The member counts are FR-H5's sample, as on any unlinked project. */
+export function templateContext(target: string, feed: FeedState = 'first'): {
+  ghost: Record<string, unknown>
+  site: { url: string; navigation: Json[]; pagination?: Json; paginationBase?: string; currentUrl: string }
+} {
+  const at = dataset.site
+  const ghost: Record<string, unknown> = { '@site': at, '@config': { posts_per_page: postsPerPage() } }
+  const base = { url: at.url, navigation: at.navigation as Json[], currentUrl: '/' }
+  if (target === 'post.hbs' || target === 'page.hbs') return { ghost: { ...ghost, ...subject(target === 'post.hbs' ? 'post' : 'page') }, site: base }
+  if (!['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'].includes(target)) return { ghost, site: base }
+  const pages = feedPagination(1).pages
+  const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : 1
+  const pagination = feed === 'empty' ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 } : feedPagination(n)
+  return {
+    ghost: { ...ghost, posts: feed === 'empty' ? [] : feedPage(n), pagination },
+    site: { ...base, pagination, paginationBase: '/' },
+  }
+}
+
 // ─── resolveSource ────────────────────────────────────────────────────────────
 
 type Source = (typeof GET_SOURCES)[number]

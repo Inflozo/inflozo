@@ -2073,12 +2073,12 @@ Latest Post (A4 #13)."*
   - "The heaviest control set in the library": no hero is.
 - Targets:
   - ✅ Story 4.10's spec · ✅ `epic-4-context.md`.
-  - Open, for Story 4.10's Dev run:
-    - `prd.md` §8's pilot row;
-    - `epics.md`'s pilot table (`:480`) and Story 4.10's criteria (`:1469-1470`);
-    - `ARCHITECTURE-SPINE.md` AD-35's `a4/2`;
-    - `build-sequence.md:1268-1269`, and `STEP-6-PROMPT.txt` regenerated from it;
-    - `docs/section-authoring.md` (`fixed`).
+  - Landed by Story 4.10's Dev run (2026-09-15):
+    - ✅ `prd.md` §8's pilot row;
+    - ✅ `epics.md`'s pilot table (`:480`) and Story 4.10's criteria (`:1469-1470`);
+    - ✅ `ARCHITECTURE-SPINE.md` AD-35's `a4/2`;
+    - ✅ `build-sequence.md:1268-1269`, and `STEP-6-PROMPT.txt` regenerated from it;
+    - ✅ `docs/section-authoring.md` (`fixed`), and `DataBinding.fixed` in `packages/library` and the controls engine.
 - **Deliberately not touched:** the export (R-74), and `reconcile-designs.md`, a `record`.
 
 **R-109 — a list of posts shows no row of clickable page numbers.** Question 2, option 1, ruled 2026-09-15: *"No —
@@ -2096,10 +2096,10 @@ keep 'Newer posts · 5 / 11 · Older posts'."*
   - No module for page numbers is added to the registry.
 - Targets:
   - ✅ Story 4.10's spec.
-  - Open, for Story 4.10's Dev run:
-    - `deferred-work.md` (DW-97 closed, and an entry for A34's category story);
-    - `docs/section-authoring.md` § 3 "The three the shim owns";
-    - the comment on `data-pagination`'s `numbers` branch in `packages/section-runtime/src/core.ts`.
+  - Landed by Story 4.10's Dev run (2026-09-15):
+    - ✅ `deferred-work.md` (DW-97 closed, and an entry for A34's category story);
+    - ✅ `docs/section-authoring.md` § 3 "The three the shim owns";
+    - ✅ the comment on `data-pagination`'s `numbers` branch in `packages/section-runtime/src/core.ts`.
 
 ## B · Approved decisions superseded by this session
 

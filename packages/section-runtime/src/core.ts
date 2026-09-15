@@ -25,6 +25,7 @@ import {
   GET_FORBIDDEN_TARGETS,
   HELPERS,
   IMAGE_SIZES,
+  MEMBER_STATES,
   PAGINATED_TARGETS,
   MEDIA_FALLBACK_REFUSAL,
   MODULES,
@@ -89,6 +90,9 @@ export type RuntimeElement = {
   textContent: string | null
   readonly parentElement: RuntimeElement | null
   readonly firstElementChild: RuntimeElement | null
+  /** Story 4.10 — a data-else is paired with the data-if on its previous element sibling */
+  readonly previousElementSibling: RuntimeElement | null
+  readonly nextElementSibling: RuntimeElement | null
   readonly attributes: Iterable<{ name: string; value: string }>
   /** Story 4.9 — V1's tree half reads each element's own text nodes (`nodeType` 3) */
   readonly childNodes: Iterable<{ readonly nodeType: number; readonly textContent: string | null }>
@@ -186,7 +190,18 @@ export type RenderInput = {
    *  catalog's English. Whatever is handed passes `resolveStrings` again here, so a `credit.*` override or an
    *  unknown key throws at the render door too (S7). */
   strings?: Readonly<Record<string, string>>
+
+  // ── Story 4.10 — member gating, on both emitters (§7.3 gap row 4, FR-D16, R-4) ──
+  /** the visitor the CANVAS previews: `data-members` keeps an element whose value is `everyone` or this state, and
+   *  drops the rest. `comped` previews as `paid` (Ghost's `paid` is `status !== 'free'`). Default `anonymous`. The
+   *  theme ignores it: Ghost decides per request, server-side, from `{{#if @member}}` and `{{#if @member.paid}}`. */
+  member?: Exclude<MemberState, 'everyone'>
+  /** the section's show-to (Layers' Member visibility, Story 5.4's control): the root is gated as if it carried
+   *  `data-members` with this value, on both emitters. Default `everyone`, which gates nothing. */
+  visibility?: MemberState
 }
+
+export type MemberState = (typeof MEMBER_STATES)[number]
 
 // R2-7: the compiler's own tokens are built from C0 control characters, which a section author's
 // `index.html` cannot carry as text — so a design containing `<!--__HBS_0__-->` is inert instead of
@@ -297,6 +312,10 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   // Story 4.9 — a chrome string by catalog key: `{{t}}` on the theme, the handed string on the canvas
   'data-t',
   'data-t-attr',
+  // Story 4.10 — §7.3 gap row 3, the two arms, and row 4 (exit construct 2), member gating
+  'data-if',
+  'data-else',
+  'data-members',
 ]
 
 /** Derived, not written down. `data-needs` is AD-37's
@@ -305,6 +324,9 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
 export const REFUSED_DIRECTIVES: readonly string[] = CONSUMED_DIRECTIVES.filter(
   (d) => !RENDERED_DIRECTIVES.includes(d),
 )
+
+/** The directives both emitters parse and KEEP, because something on the live site reads them — derived. */
+const EMITTED_DIRECTIVES: readonly string[] = Object.keys(DIRECTIVES).filter((d) => DIRECTIVES[d]?.emitted === true)
 
 // ─── small shared helpers ────────────────────────────────────────────────────
 
@@ -435,6 +457,9 @@ function guardMode(el: RuntimeElement, media: boolean): Guard {
  *  identifier that does not exist, so the block never rendered and the content was silently and
  *  permanently lost. A garbage guard is *present*, which is why "is there a guard?" passed. */
 function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, tokens: Tokens, zero = false): void {
+  // ONE guard per field per element, whichever directive asked first — a `data-if` on `@site.logo` and the media
+  // guard of `src:@site.logo` on the same <img> share `{{#if @site.logo}}` (Story 4.10)
+  if (guarded.get(el)?.has(field) === true) return
   el.before(doc.createComment(tokens.put(ifOpen(field, zero))))
   el.after(doc.createComment(tokens.put('{{/if}}')))
   guarded.set(el, new Set([...(guarded.get(el) ?? []), field]))
@@ -565,8 +590,26 @@ function ghostPaths(el: RuntimeElement, input: RenderInput): { attr: string; pat
   if (pg !== null) out.push({ attr: 'data-pagination', path: `pagination.${pg === 'numbers' ? 'page' : pg}`, use: 'value', self: true })
   // Story 4.9 — every `{{t}}` param is a Ghost path like any binding, and scope-checked the same way
   for (const { directive, call } of tCalls(el)) for (const p of call.params) spec(directive, p.spec)
+  // Story 4.10 — a condition's path, legal where the matrix allows it as a condition, a value or a repeat source
+  const cond = el.getAttribute('data-if')
+  if (cond !== null && PATH_RE_OK(cond)) out.push({ attr: 'data-if', path: cond, use: 'condition', self: true })
+  // row 13's tokens are Ghost paths too; the directive itself is refused at render until its story lands
+  const text = el.getAttribute('data-text')
+  if (text !== null) {
+    const paths = parseTokenTemplate(text)
+    if (typeof paths !== 'string') for (const path of paths) out.push({ attr: 'data-text', path, use: 'value', self: true })
+  }
   return out
 }
+
+/** DW-131, derived: the directives `ghostPaths` reads. `contexts.test.ts` holds this to every rendered directive the
+ *  vocabulary flags `ghostPath`, so a new one cannot be skipped by FR-H7's check without a test failing. */
+export const WALKED_GHOST_PATH_DIRECTIVES: readonly string[] = [
+  'data-bind', 'data-bind-attr', 'data-bind-srcset', 'data-bind-style', 'data-repeat', 'data-helper',
+  'data-pagination', 'data-t', 'data-t-attr', 'data-if', 'data-text',
+]
+
+const PATH_RE_OK = (v: string): boolean => DIRECTIVES['data-if']?.parse(v) === null
 
 /** Every `{{t}}` call `el` carries — its `data-t`, then each `data-t-attr` entry — skipping a value that fails
  *  its grammar (left to `consume`, which refuses it by the AD-36 sentence). */
@@ -592,7 +635,12 @@ function bindingRefusals(root: RuntimeElement, input: RenderInput & { target: st
   const out: string[] = []
   for (const el of root.querySelectorAll('*')) {
     for (const { attr, path, use, self } of ghostPaths(el, input)) {
-      const why = bindable(path, { target: input.target, scope: scopeOf(el, root, input, self), use })
+      const place = { target: input.target, scope: scopeOf(el, root, input, self) }
+      // Story 4.10: `{{#if}}` tests truthiness, so a condition may name a boolean, a printable value (a logo, an
+      // excerpt, a count) or a list (an empty one takes the else arm). `@member`, an object and a helper stay refused.
+      const why = use === 'condition' && (bindable(path, { ...place, use: 'value' }) === null || bindable(path, { ...place, use: 'repeat' }) === null)
+        ? null
+        : bindable(path, { ...place, use })
       const line = `<${el.tagName.toLowerCase()} ${attr}> "${path}" — ${why ?? ''}`
       if (why !== null && !out.includes(line)) out.push(line)
     }
@@ -639,6 +687,31 @@ function emitBindings(
   const resolve = (spec: string): string | null =>
     bindValue(spec, spec.startsWith('@') ? (input.ghost ?? {}) : ctx, input.site, numberField(guardField(spec), input, where))
   const zero = (field: string): boolean => numberField(field, input, where)
+
+  // ── Story 4.10, §7.3 gap row 3: the two arms ────────────────────────────────
+  // FIRST, so every guard a binding on either arm adds nests INSIDE the arm: `wrapGuard` inserts beside the element,
+  // and a comment inserted later sits nearer to it. The else arm is the data-if's next element sibling, paired and
+  // refused otherwise at the door (`refuseConditionsAndMembers`). The canvas keeps exactly one arm, by Handlebars'
+  // own `{{#if}}` test; a field the matrix types `number` counts 0 as present on both sides.
+  for (const el of all(scope, '[data-if]')) {
+    const field = consume(el, 'data-if') ?? ''
+    const next = el.nextElementSibling
+    const other = next !== null && next.getAttribute('data-else') !== null ? next : null
+    if (other !== null) consume(other, 'data-else')
+    if (users !== null) {
+      // ─────────── THE DIFFERENCE (2) — theme: {{#if f}}<if>{{else}}<else>{{/if}} ───────────
+      el.before(doc.createComment(tokens.put(ifOpen(field, zero(field)))))
+      el.after(doc.createComment(tokens.put(other === null ? '{{/if}}' : '{{else}}')))
+      other?.after(doc.createComment(tokens.put('{{/if}}')))
+      // a media guard on the same field is this one: `data-if="@site.logo"` beside `src:@site.logo` is ONE {{#if}}
+      guarded.set(el, new Set([...(guarded.get(el) ?? []), field]))
+    } else {
+      // ─────────── THE DIFFERENCE (2) — canvas: one arm, by the same test ───────────
+      const raw = get(field.startsWith('@') ? (input.ghost ?? {}) : ctx, field)
+      if (isEmpty(raw, zero(field))) el.remove()
+      else other?.remove()
+    }
+  }
 
   for (const el of all(scope, '[data-bind]')) {
     const spec = consume(el, 'data-bind') ?? ''
@@ -814,7 +887,9 @@ function emitBindings(
   // `numbers` emits the page indicator and not a list of page links, and the reason is Ghost's:
   // the pagination context carries `page` and `pages` and Handlebars has no way to loop a range,
   // so a list of numbered links would have to be an Inflozo partial rendering something Ghost
-  // cannot count. Tracked as an open question rather than decided here (DW entry).
+  // cannot count. R-109 (owner, 2026-09-15) settled it: there is no row of clickable page numbers,
+  // `numbers` stays the "5 / 11" indicator on both emitters, and A34's category story redraws
+  // A34 #1 Numbers to it (DW-97 closed).
   for (const el of all(scope, '[data-pagination]')) {
     const which = consume(el, 'data-pagination') ?? ''
     if (which === 'numbers') {
@@ -1318,6 +1393,82 @@ function stampStrings(root: RuntimeElement, input: RenderInput, users: UserText 
   }
 }
 
+// ─── Story 4.10 — the two arms and member gating, at the door ─────────────────
+
+/** The pairing and nesting rules, over the SOURCE and before any expansion, so both emitters refuse the same tree:
+ *  a `data-else` is the next element sibling of a `data-if` and never shares its element; neither arm of a pair sits
+ *  on a `data-repeat` or `data-items` (the else arm would land outside the rows the if arm repeats in); a
+ *  `data-members` sits inside no other, on no repeat, list or arm; and a root gated by `visibility` carries no
+ *  `data-members` of its own — one audience per section. */
+function refuseConditionsAndMembers(root: RuntimeElement, input: RenderInput): void {
+  const tag = (el: RuntimeElement) => `<${el.tagName.toLowerCase()}>`
+  for (const el of all(root, '[data-else]')) {
+    const prev = el.previousElementSibling
+    if (el.getAttribute('data-if') !== null) throw new Error(`${tag(el)} carries both data-if and data-else — the two arms are two sibling elements.`)
+    if (prev === null || prev.getAttribute('data-if') === null) {
+      throw new Error(`${tag(el)} data-else is not the next element sibling of a data-if — the else arm follows its if arm directly, with no element between them (§7.3 row 3).`)
+    }
+    for (const arm of [prev, el]) {
+      for (const d of ['data-repeat', 'data-items']) {
+        if (arm.getAttribute(d) !== null) throw new Error(`${tag(arm)} carries ${d} and is one arm of a data-if / data-else pair — the other arm would sit outside the copies this one makes. Put the repeat inside the arm.`)
+      }
+    }
+  }
+  for (const el of all(root, '[data-members]')) {
+    for (const d of ['data-repeat', 'data-items', 'data-if', 'data-else']) {
+      if (el.getAttribute(d) !== null) throw new Error(`${tag(el)} data-members="${el.getAttribute('data-members') ?? ''}" shares its element with ${d} — gate a wrapper around it, or put the gate inside.`)
+    }
+    for (let p = el.parentElement; p !== null && p !== root; p = p.parentElement) {
+      if (p.getAttribute('data-members') !== null) {
+        throw new Error(`${tag(el)} data-members="${el.getAttribute('data-members') ?? ''}" sits inside data-members="${p.getAttribute('data-members') ?? ''}" — member states do not nest: one element, one audience (§7.3 row 4).`)
+      }
+    }
+  }
+  const visibility = input.visibility ?? 'everyone'
+  if (!(MEMBER_STATES as readonly string[]).includes(visibility)) {
+    throw new Error(`visibility ${JSON.stringify(visibility)} is not a member state — ${MEMBER_STATES.join(' · ')}`)
+  }
+  const member = input.member ?? 'anonymous'
+  if (!(['anonymous', 'free', 'paid'] as readonly string[]).includes(member)) {
+    throw new Error(`member ${JSON.stringify(member)} is not a visitor the canvas previews — anonymous · free · paid (comped previews as paid)`)
+  }
+  const section = root.firstElementChild
+  if (visibility !== 'everyone' && section?.getAttribute('data-members') !== null && section !== null) {
+    throw new Error(`the section root carries data-members="${section.getAttribute('data-members') ?? ''}" and this render shows the section to "${visibility}" — one audience per section: the show-to or the root's own gate, never both.`)
+  }
+}
+
+/** Ghost's own member test for each closed state, read in both releases (`update-local-template-options.js`):
+ *  `@member` is null signed out and `paid` is `status !== 'free'`, so `comped` is paid. `{{#if}}` only (FR-D16) —
+ *  never `{{#unless}}`, never `{{#has}}` — and no member field is ever printed (R-28). */
+const MEMBER_GATE: Readonly<Record<Exclude<MemberState, 'everyone'>, readonly [string, string]>> = {
+  anonymous: ['{{#if @member}}{{else}}', '{{/if}}'],
+  free: ['{{#if @member}}{{#if @member.paid}}{{else}}', '{{/if}}{{/if}}'],
+  paid: ['{{#if @member.paid}}', '{{/if}}'],
+}
+
+/** Row 4 on both emitters, BEFORE any expansion or binding, so the gate is the outermost thing around its element:
+ *  the canvas drops what the handed visitor would not see; the theme wraps it in Ghost's own test. The show-to gates
+ *  the root the same way. */
+function gateMembers(doc: RuntimeDocument, root: RuntimeElement, input: RenderInput, tokens: Tokens, users: UserText | null): void {
+  const member = input.member ?? 'anonymous'
+  const gate = (el: RuntimeElement, state: MemberState) => {
+    if (state === 'everyone') return
+    if (users === null) {
+      // ─────────── THE DIFFERENCE (2) — canvas: the visitor handed in sees it or does not ───────────
+      if (state !== member) el.remove()
+      return
+    }
+    // ─────────── THE DIFFERENCE (2) — theme: Ghost decides, per request ───────────
+    const [open, close] = MEMBER_GATE[state]
+    el.before(doc.createComment(tokens.put(open)))
+    el.after(doc.createComment(tokens.put(close)))
+  }
+  for (const el of all(root, '[data-members]')) gate(el, consume(el, 'data-members') as MemberState)
+  const section = root.firstElementChild
+  if (section !== null) gate(section, input.visibility ?? 'everyone')
+}
+
 export type ThemeOutput = { template: string; partials: Record<string, string> }
 
 /** The shared walk. `users !== null` is the theme; `users === null` is the canvas. */
@@ -1340,10 +1491,12 @@ function renderTree(
   root.innerHTML = src
   refuseUnrendered(root)
   refuseCatalogMisuse(root)
+  refuseConditionsAndMembers(root, input)
   // Story 4.7 — `data-module` SURVIVES on both emitters, on the element that carries it, because `core`
   // mounts on it on the live page; it is parsed here, once and before any expansion, and a bad value throws
-  // the vocabulary's sentence (FR-G7).
-  for (const el of all(root, '[data-module]')) consume(el, 'data-module')
+  // the vocabulary's sentence (FR-G7). Story 4.10: so does every other `emitted` directive — Portal's
+  // `data-members-form`, `-email` and `-error`, and `data-ghost-search` — each parsed and kept.
+  for (const d of EMITTED_DIRECTIVES) for (const el of all(root, `[${d}]`)) consume(el, d)
   refuseUnpaginated(root, input.target)
   refuseGetOnForbiddenTarget(root, input)
   // R-2: two initials never come from Ghost — `{{split}}` is 6.5+ and a gscan error below it
@@ -1376,6 +1529,9 @@ function renderTree(
       }
     }
   }
+  // Story 4.10 — after every refusal (a gated-away section still refuses what it would refuse shown) and before the
+  // controls, the lists and the repeats, so a member gate is the outermost wrapper of its element on the theme
+  gateMembers(doc, root, input, tokens, users)
   if (root.firstElementChild !== null) stampControls(root.firstElementChild, input)
   // Story 4.9 — S5, AFTER the controls: stampControls strips every root data-* it does not own
   stampStrings(root, input, users)

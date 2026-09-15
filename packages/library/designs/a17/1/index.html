@@ -1,0 +1,55 @@
+<!-- A17 #1 Three Up — Story 4.10's pilot for the paginated context and a `post-card` partial with no params.
+     Frame: `A17-1 Three Up.dc.html`; proof: `A17-0 Category Proof.dc.html`; spec: `A17 Post Grids - Spec.md` §0, #1.
+     Provisional (AD-35): A17's category story owns the rest of the category. -->
+<section class="a17-1" data-bg="base" data-spacing="comfortable" data-divider="none"
+         data-per-row="three" data-ratio="landscape" data-excerpt="three" data-meta="photo" data-first-cell="off" data-tag="show">
+  <div class="a17-1__inner">
+    <header class="a17-1__head">
+      <p class="a17-1__eyebrow" data-prop="eyebrow" data-empty="hide">The archive</p>
+      <h2 class="a17-1__title" data-prop="title" data-empty="hide">Everything Orbit Weekly published this spring</h2>
+      <p class="a17-1__sub" data-prop="sub" data-empty="hide">Reporting, field notes and the Thursday letter, in the order they went out.</p>
+    </header>
+    <div class="a17-1__feed" data-if="posts">
+      <ul class="a17-1__grid">
+        <li class="a17-1__cell" data-repeat="posts" data-partial="post-card">
+          <a class="a17-1__card" data-bind-attr="href:url">
+            <div class="a17-1__media">
+              <span class="a17-1__plate" aria-hidden="true" data-bind="primary_tag.name" data-empty="hide">Interview</span>
+              <img class="a17-1__img" data-bind-attr="src:feature_image|img_url:m;alt:feature_image_alt" data-bind-srcset="feature_image|img_url"
+                   sizes="(max-width: 767px) calc(100vw - 3rem), (max-width: 834px) 45vw, (max-width: 1080px) 30vw, 416px" alt="" loading="lazy">
+            </div>
+            <div class="a17-1__text">
+              <p class="a17-1__tag" data-bind="primary_tag.name" data-empty="hide">Reporting</p>
+              <h3 class="a17-1__post-title" data-bind="title" data-empty="hide">The night shift at the Port of Algeciras</h3>
+              <p class="a17-1__excerpt" data-bind="excerpt" data-empty="hide">Between midnight and four the port belongs to two hundred people and eleven cranes.</p>
+              <p class="a17-1__meta">
+                <span class="a17-1__avatar" aria-hidden="true">
+                  <span class="a17-1__letter" data-bind="primary_author.name" data-empty="hide">M</span>
+                  <img class="a17-1__photo" data-bind-attr="src:primary_author.profile_image|img_url:xs" alt="">
+                </span>
+                <span class="a17-1__name" data-bind="primary_author.name" data-empty="hide">Marguerite Okonjo</span>
+                <span class="a17-1__sep a17-1__sep--name" aria-hidden="true">·</span>
+                <time class="a17-1__date" data-bind="published_at|date:D MMMM YYYY" data-bind-attr="datetime:published_at|date:YYYY-MM-DD" data-empty="hide">12 March 2026</time>
+                <span class="a17-1__sep a17-1__sep--time" aria-hidden="true">·</span>
+                <span class="a17-1__time" data-t="post.reading_time minutes=reading_time">9 min read</span>
+              </p>
+            </div>
+          </a>
+        </li>
+      </ul>
+      <nav class="a17-1__pager" data-t-attr="aria-label:pagination.label">
+        <a class="a17-1__newer" data-pagination="prev" href="#"><span class="a17-1__arrow" aria-hidden="true">←</span><span data-t="pagination.newer">Newer posts</span></a>
+        <span class="a17-1__numbers" data-pagination="numbers">1 / 1</span>
+        <a class="a17-1__older" data-pagination="next" href="#"><span data-t="pagination.older">Older posts</span><span class="a17-1__arrow" aria-hidden="true">→</span></a>
+      </nav>
+    </div>
+    <div class="a17-1__empty" data-else>
+      <h3 class="a17-1__empty-heading" data-prop="emptyHeading">Nothing here yet</h3>
+      <p class="a17-1__empty-body" data-prop="emptyBody">There are no posts in this collection yet.</p>
+    </div>
+    <footer class="a17-1__foot">
+      <p class="a17-1__note" data-prop="note" data-empty="hide">Reading times are Ghost's estimate.</p>
+      <a class="a17-1__link" data-prop="linkLabel" data-prop-attr="href:linkUrl" data-empty="hide">Browse the archive</a>
+    </footer>
+  </div>
+</section>
