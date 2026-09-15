@@ -972,6 +972,24 @@ consistency, run over every frame in the export.)*
   over. axe zero in 90 of 90 canvases, positive control first. Users 9 → 9.
 - **The deployed `/controls`:** **82 PASS, 0 FAIL**. Users 9 → 9.
 
+**Results (Fix after review sweep 5 — the Fix's final state, 2026-09-15):**
+- **Locally, Node 24.18.1:** `pnpm check` exit 0 — library 141, section-runtime 146, web 309 tests; `check-snapshots:
+  PASS`, the stylesheet scan reading five hostile inputs to their end in single-digit to tens of milliseconds (the
+  earlier pattern, restored for a run, failed the check); `pnpm build` exit 0; the gate PASS twice. The reviewer's
+  run of the frame check over every frame in the export: every drawn pill and select row the register files is found,
+  the five pilots and A4 #9's rename pass, and cross-group relabels fall from 2,594 to the rows that genuinely share a
+  value's words.
+- **GitHub Actions** — run 34959408825 for `bbbc4e0e`: `check`, `rls` and `deploy` success; the log prints the gate's
+  PASS, the timing row (5 · 8 · 12 · 31 · 36 ms) and `check-snapshots: PASS — 5 designs at 10 targets match 6
+  committed snapshot files`.
+- **Deployment:** `dpl_C1bfCRtmGqSnGmTyQEhbX4cQmB1p`, production, READY, built from `bbbc4e0e`.
+- **The deployed `/pilots`** (Node 24; `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`; clean
+  checkout at `bbbc4e0e`; real scrollbars): **152 PASS, 0 FAIL** — each planted fault seen in its own copy before the
+  real panel passed; axe zero in 90 of 90 canvases and inside the confirm, positive control first. Users 9 → 9.
+- **The deployed `/controls`** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): **82 PASS, 0 FAIL**. Users 9 → 9.
+- Resend, Dodo and Ghost are not touched by this story's Fix; Supabase is used for the throwaway sign-in accounts only
+  (no migration).
+
 ## Owner's manual test
 
 These steps follow the rulings R-108 and R-109, and — since your test of the settings panel — R-113, R-114 and R-115.
