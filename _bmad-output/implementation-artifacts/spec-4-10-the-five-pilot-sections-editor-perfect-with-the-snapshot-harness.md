@@ -1042,6 +1042,15 @@ is the owner's to decide.)*
   (no snapshot moved). `pnpm build` exit 0 with `/app/pilots` and `/app/pilots/frame`. The documentation gate PASS on its
   second run (the first regenerated the story board).
 
+**Results (Review patches, deployed, 2026-09-15):**
+- **GitHub Actions** — run 34966797015 for `57853ad8`: `check`, `rls` and `deploy` success; the `check` log prints
+  `documentation gate: PASS` and `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files`.
+- **Deployment:** `dpl_GnVmKceQ944dP6rh8XwrA3hWvR8S`, production, READY, built from `57853ad8`.
+- **The deployed `/pilots`** (Node 24.18.1; `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`):
+  **152 PASS, 0 FAIL**, the page's own door now validating every stylesheet; axe's `image-alt` positive control first,
+  zero violations in 90 of 90 canvases. Users 9 → 9.
+- **The deployed `/controls`** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): **82 PASS, 0 FAIL**. Users 9 → 9.
+
 ## Owner's manual test
 
 These steps follow the rulings R-108 and R-109, and — since your test of the settings panel — R-113, R-114 and R-115.
