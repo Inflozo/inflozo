@@ -35,8 +35,8 @@
   --button-border: 1px solid transparent;
   --button-radius: 8px;
   --shadow-card: 0 4px 16px rgba(28, 27, 26, 0.08);
-  --link-color: #D96C3F;
-  --link-decoration: underline;
+  --link-color: #232019;
+  --link-decoration: underline #D96C3F;
   --tag-accent: var(--border-hairline);
 }
 

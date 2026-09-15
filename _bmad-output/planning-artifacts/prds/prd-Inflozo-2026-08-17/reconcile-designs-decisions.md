@@ -2146,6 +2146,21 @@ to add dropdown navigation too."
   - ✅ Story 4.10's spec · ✅ `epics.md` Story 9.1 · ✅ `deferred-work.md` (DW-150).
 - **Deliberately not touched:** the export (R-74).
 
+**R-112 — a link in Light is ink words with the accent underline.** Question 5, option 1, ruled 2026-09-15: *"Ink words
+with an orange underline."*
+
+- **Why it was a question.** Story 4.10's review measured the reference token set's Light `--link-color`, the Paper
+  accent `#D96C3F`, at 3.24:1 on the page ground `#FBF9F5` — under WCAG AA's 4.5:1 for text, the rule R-110 applied to
+  the button words. No pilot reads the token yet; the first design that colours a link with it would fail Story
+  4.11's matrix. No Paper object names a link colour, so the value was the Dev run's, and the export's own treatment
+  of a hovered nav item is ink with a 2 px accent underline (`A1 Headers - Spec.md`, A24 #1's tag and author).
+- **What it binds.** Light `--link-color` is the ink `#232019` and `--link-decoration` is `underline #D96C3F`, in
+  `packages/section-runtime/src/tokens.ts` and the emitted `reference-tokens.css`. Dark is unchanged: `#E0805A` on
+  `#171511` is 6.43:1. Epic 6's Paper pack takes the same values; the contract (its two link rows) did not change.
+- Targets:
+  - ✅ Story 4.10's spec · ✅ `deferred-work.md` (DW-155) · ✅ `tokens.ts` and `reference-tokens.css`.
+- **Deliberately not touched:** the export (R-74).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

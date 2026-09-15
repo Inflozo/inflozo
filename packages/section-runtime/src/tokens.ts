@@ -112,8 +112,11 @@ export const REFERENCE_TOKENS: Readonly<{
     '--button-border': '1px solid transparent',
     '--button-radius': '8px',
     '--shadow-card': '0 4px 16px rgba(28, 27, 26, 0.08)',
-    '--link-color': '#D96C3F',
-    '--link-decoration': 'underline',
+    // R-112 (owner, 2026-09-15, Story 4.10's Q5): a link in Light is ink words with the accent underline — the
+    // export's own hover treatment for a nav item — because the accent on the page ground is 3.24:1 (WCAG AA text is
+    // 4.5:1). Dark keeps the accent as words: #E0805A on #171511 is 6.43:1.
+    '--link-color': '#232019',
+    '--link-decoration': 'underline #D96C3F',
     '--tag-accent': 'var(--border-hairline)',
   },
   dark: {

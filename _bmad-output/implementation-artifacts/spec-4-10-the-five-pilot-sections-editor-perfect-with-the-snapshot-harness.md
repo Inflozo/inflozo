@@ -325,7 +325,7 @@ something and another when it does not.
 *(Code review, 2026-09-15, five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
 Real-infra verifier. 47 raw findings; 26 dismissed as noise or already handled.)*
 
-- [ ] [Review][Decision] Light `--link-color` is the accent at 3.24:1 on the page ground — the same ratio R-110 rejected for button words. No pilot reads it yet. Asked as Q5.
+- [x] [Review][Decision] Light `--link-color` is the accent at 3.24:1 on the page ground — the same ratio R-110 rejected for button words. No pilot reads it yet. Asked as Q5; ruled option 1 as R-112 and applied.
 - [x] [Review][Patch] Rail's Account link sat inside the self-signup gate, so a signed-in member of an invite-only site lost it; `A1 Headers - Spec.md:79` hides Sign in and Subscribe only [packages/library/designs/a1/1/index.html:19]
 - [x] [Review][Patch] Every pilot's authoring comment shipped into `template.hbs` — internal story numbers and file names in a visitor's page source [packages/library/designs/*/*/index.html:1]
 - [x] [Review][Patch] A24 #1 on the contrast ground: tag and author hover/focus kept the base ink, ink on ink [packages/library/designs/a24/1/style.css:77]
@@ -387,6 +387,9 @@ Real-infra verifier. 47 raw findings; 26 dismissed as noise or already handled.)
   design-identity example, still true), is left as it is. The AC "unchanged apart from their colours" reads: apart
   from Paper's values — the two fonts, the radii and the shadow changed with the palette, all named by Paper's objects.
   Q5 (the link colour) is open.
+- **2026-09-15, Review — R-112 (Q5, option 1):** Light links are ink words with the accent underline, in `tokens.ts`
+  and `reference-tokens.css`; Dark keeps the accent as words. `/style-guide`'s links and the controls sample's
+  `.cx__link` read the two tokens and change with them; no pilot does.
 
 ## Design Notes
 
@@ -740,5 +743,6 @@ it reads at 15 to 1, which is how the drawings already treat a menu item you hov
 3. **Keep the orange and accept the failure.**
    - Matches the drawings' colour; every design that colours a link with it fails the accessibility check.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-15).** Recorded as **R-112** in `reconcile-designs-decisions.md` §A28. Light
+`--link-color` is the ink `#232019` and `--link-decoration` is `underline #D96C3F`; Dark is unchanged (6.43:1).
 

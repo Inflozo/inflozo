@@ -3776,7 +3776,7 @@ owner: the owner, at Story 4.10's owner test (step 14 compares arrangement and s
   author these rows. Story 4.10's review added to the same list the rows derived from the retired ink and accent that
   no Paper object names — `--border-fade` and `--scrim` (rgba of `#1c1a17`), and both modes' `--accent-on-contrast`
   (`#e8a87c` / `#8a3b12`, the pre-Paper accent on Paper's contrast ground); and Light `--link-color`, which took the
-  accent and is Story 4.10's Q5
+  accent and was Story 4.10's Q5 — ruled R-112: ink words, accent underline (that row leaves this list)
 location: packages/section-runtime/src/tokens.ts (`--site-width` 72rem, `--space-gutter` 1.5rem) · every pilot's style.css
 reason: changing a row no Paper object names would be inventing the value; the frames draw it, so it is a one-row
   token change once ruled. A1, A22, A24 and A4 also carry their own section padding as literals where the frame's
