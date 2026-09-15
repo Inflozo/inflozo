@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-15'
 status: 'in-review'
 baseline_commit: '94cf2c5b0d5f0bbf7f2b0ec25ac31f8e59703f38'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
@@ -1050,6 +1050,14 @@ is the owner's to decide.)*
   **152 PASS, 0 FAIL**, the page's own door now validating every stylesheet; axe's `image-alt` positive control first,
   zero violations in 90 of 90 canvases. Users 9 → 9.
 - **The deployed `/controls`** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): **82 PASS, 0 FAIL**. Users 9 → 9.
+
+**Results (Deploy, 2026-09-15, confirming HEAD `2c63f7e0`):**
+- **GitHub Actions** — run 34967480988 for `2c63f7e0` (`GITHUB_TOKEN`): `check`, `rls` and `deploy` all success.
+- **Deployment:** `dpl_8WSZFwCNjo99ymZa9ZZCfmuPesM7`, production, READY, built from `2c63f7e0` — aliased to
+  `inflozo.com`, `app.inflozo.com` and `www.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`).
+- No app-code change since `57853ad8`'s deployed and verified state (the intervening commit is documentation-only,
+  `git show --stat 2c63f7e0`); `git diff 57853ad8 2c63f7e0 -- supabase/` is empty, so no migration and R-99 has
+  nothing to apply.
 
 ## Owner's manual test
 
