@@ -3974,3 +3974,35 @@ reason: nothing built repeats a title — `tools/check-snapshots.mjs` refuses a 
     setting titled like its accordion.
   - A29–A31's "Eyebrow" settings are already resolved by their frames, which title the field "Eyebrow text"; so are
     A27–A29's "Heading text", "Description text" and "Back link label", and A4-10's and A10-12's "Show …" toggles.
+
+### DW-167: the settings panel's click wiring, and `/pilots`' client wiring, are held by the deployed harness only
+
+plain: The engine that decides what "Reset this design" removes is tested on every commit. The button that opens the
+  confirm and the confirm's "Reset design" that applies it are only checked when someone runs the pilots and controls
+  scripts against the live site, so a slip in that wiring would pass CI and be caught at the next hand run.
+status: open
+severity: low
+origin: Story 4.10's whole-story code review (2026-09-15, verification-gap layer) — `apps/web/components/controls/sidebar.tsx`'s
+  branch on `resetChanges` and the confirm's commit, and `pilots/review.tsx`'s render inputs, have no test `pnpm check`
+  runs; `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs` read both on the deployed site (R-82)
+owner: Story 5.1, which mounts this panel in the editor and is the first story whose tests render it; or Story 4.11,
+  whose render matrix drives the canvas in a browser
+location: apps/web/components/controls/sidebar.tsx · apps/web/app/(app)/app/(authed)/pilots/review.tsx
+reason: `apps/web` runs `node --test` with no DOM, and a DOM for it is a dependency (Ask First); the pure functions
+  under both (`resetChanges`, `resetSection`, `renderCanvas`) are pinned in `packages/section-runtime`.
+
+### DW-168: no gate holds a design's `ghostCompat.minVersion` to the matrix's `since` for the fields it reads
+
+plain: Each section says the oldest Ghost it works on. Nothing checks that claim against the fields the section
+  actually uses, so a section could read a field Ghost added later and still say it works on older Ghost.
+status: open
+severity: medium
+origin: Story 4.10's whole-story code review (2026-09-15, acceptance audit) — the spec's boundary "`ghostCompat.minVersion`
+  is at least every `since` the matrix gives a field the design reads" holds for the five pilots (A1 #1 and A22 #1 at
+  5.62.0 for `@site.allow_self_signup`, the rest at 5.0.0) by hand; `validate.ts` never reads `matrix.json`'s `since`
+owner: Story 9.1, the first story that ships designs to customers (DW-87's owner, whose compatibility check reads
+  `ghostCompat`)
+location: packages/library/src/validate.ts · packages/library/contexts/matrix.json · tools/check-snapshots.mjs
+reason: `checkBindings` already walks every Ghost path a design reads at each target; the check is that walk's
+  fields mapped to their `since` and compared with `minVersion`, one row in `tools/check-snapshots.mjs`. No shipped
+  design depends on it yet (AD-35's provisional pilots ship to no one).

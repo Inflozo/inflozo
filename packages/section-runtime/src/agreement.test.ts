@@ -1230,6 +1230,8 @@ test('row · show-to: the root is gated as if it carried data-members, on both e
   for (const render of [renderCanvas, renderTheme]) {
     assert.throws(() => render(doc(), '<section data-members="free"><p>·</p></section>', { visibility: 'paid' }), /one audience per section/)
     assert.doesNotThrow(() => render(doc(), '<section data-members="free"><p>·</p></section>', { visibility: 'everyone' }))
+    // an else arm beside a root data-if sits outside the gated root: the canvas showed it to a hidden-from visitor
+    assert.throws(() => render(doc(), '<section data-if="@site.logo"><p>·</p></section><div data-else><p>·</p></div>', { visibility: 'paid' }), /one audience per section/)
   }
 })
 

@@ -22,6 +22,7 @@ import {
   CONTROL_NAME_RE,
   CONTROL_VALUE_RE,
   DIRECTIVES,
+  FOREIGN_ATTR_RE,
   GET_FORBIDDEN_TARGETS,
   HELPERS,
   IMAGE_SIZES,
@@ -1193,7 +1194,7 @@ export function stampControls(
     if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal') section.removeAttribute(name)
   }
   for (const c of schema) {
-    if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || c.name === 'portal' || c.name.startsWith('i18n-')) {
+    if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR_RE.test(c.name)) {
       throw new Error(`AD-36: control ${JSON.stringify(c.name)} is not a control name — a kebab-case word that is not a directive (AD-3).`)
     }
   }
@@ -1435,6 +1436,10 @@ function refuseConditionsAndMembers(root: RuntimeElement, input: RenderInput): v
   const section = root.firstElementChild
   if (visibility !== 'everyone' && section?.getAttribute('data-members') !== null && section !== null) {
     throw new Error(`the section root carries data-members="${section.getAttribute('data-members') ?? ''}" and this render shows the section to "${visibility}" — one audience per section: the show-to or the root's own gate, never both.`)
+  }
+  // the show-to gates the root alone, so an else arm beside it would reach the visitor the section is hidden from
+  if (visibility !== 'everyone' && section !== null && section.nextElementSibling?.getAttribute('data-else') != null) {
+    throw new Error(`the section root carries data-if and its data-else arm sits beside it, outside the root this render shows to "${visibility}" — one audience per section: put both arms inside the root.`)
   }
 }
 

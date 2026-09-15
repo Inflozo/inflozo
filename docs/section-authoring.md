@@ -293,7 +293,8 @@ past 25 (Story 5.19's Source panel), the validator does not.
 
 **R-108's fixed query** *(Story 4.10)* is `"fixed": true` beside a declared `limit` **and** `order` — a hero
 that always shows exactly one post: `{ "source": "posts", "limit": 1, "order": "published_at desc", "fixed":
-true }`. A `filter` may sit beside it — `fixed` fixes the number and the order, nothing else. The design fixes its number and its order, so the panel offers no Show and no Order for it, and a
+true }`. A `filter` may sit beside it — `fixed` fixes the number and the order, nothing else — so the panel offers no Show
+and no Order for it, and a
 Count or Order stored under the same key (another design's, carried back by Story 5.11's shuffle) is never
 folded in — `withData` treats it exactly as it treats `ids`. The theme's `{{#get}}` is the ordinary one; `fixed`
 is the editor's, never Ghost's. Refused (`bad-get-fixed`): `fixed` that is not `true`, `fixed` beside `ids`, and
@@ -368,8 +369,8 @@ its content, look or layout" — so each question below is about a setting that 
   group is declared after it (`dependency-order`), so the reason under a grey row points up at a row already read.
   Across groups the panel's group order decides and a dependency is legal — the export's Three Up greys "Three lines"
   at Per row Four, a Layout row below Content — so its reason names the setting that greys it, as every drawn reason
-  does. A
-  design's root carries its controls in the same order, so declaring them in a new order re-baselines its snapshot.
+  does.
+  A design's root carries its controls in the same order, so declaring them in a new order re-baselines its snapshot.
 
 **The kinds of setting the library has, and where each goes.** Swept from every category of the design export —
 the examples are its own titles:
@@ -1124,7 +1125,8 @@ sharing its element with `data-repeat`, `data-items`, `data-if` or `data-else` �
 **A section's show-to** is `RenderInput.visibility` (one of the four states, default `everyone`) — Layers' Member
 visibility, whose control is Story 5.4's. The section root is gated exactly as if it carried `data-members` with
 that value, on both emitters, and on the canvas a visitor outside it gets `""`. A root carrying `data-members`
-itself while `visibility` is not `everyone` is refused: one audience per section. **A member ask the markup itself
+itself while `visibility` is not `everyone` is refused: one audience per section — and so is a root `data-if` whose
+`data-else` sits beside it, outside the root the show-to gates; put both arms inside the root. **A member ask the markup itself
 makes** — a subscribe form, a Sign in action — sits inside `data-if="@site.allow_self_signup"` (R-4): self-signup
 implies members, so one condition hides every ask on an invite-only site. A link whose destination the customer
 picks is not gated in markup; gating it by its Portal destination is Story 5.20's.
@@ -1410,7 +1412,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `content.json` from another category | R-102, at assembly. |
 | `fixed` that is not `true`, `fixed` beside `ids`, or `fixed` without both `limit` and `order` (`bad-get-fixed`) | *(Story 4.10)* R-108: the design fixes the number and the order, so it states both; a hand-picked list is already fixed. Also refused at emission by the shim's `getQuery`, which re-runs the declaration's grammar. |
 | a value on `data-members-email` or `data-members-error` | *(Story 4.10)* Portal reads the attribute, not a value; both are valueless, like `data-ghost-search`. |
-| a `data-else` that is not the next element sibling of a `data-if` · either arm of a pair on a `data-repeat` or `data-items` · a `data-members` inside another, or on a `data-repeat`, `data-items`, `data-if` or `data-else` · a root `data-members` beside a show-to · a `member` or `visibility` outside the closed states | *(Story 4.10)* **refused by the runtime, by name**, on both emitters: the else arm follows its if arm; an arm beside a repeat would split the `{{#if}}` across the rows; member states do not nest and one element has one audience; one audience per section. |
+| a `data-else` that is not the next element sibling of a `data-if` · either arm of a pair on a `data-repeat` or `data-items` · a `data-members` inside another, or on a `data-repeat`, `data-items`, `data-if` or `data-else` · a root `data-members` beside a show-to · a root `data-if` whose `data-else` sits beside it, under a show-to · a `member` or `visibility` outside the closed states | *(Story 4.10)* **refused by the runtime, by name**, on both emitters: the else arm follows its if arm; an arm beside a repeat would split the `{{#if}}` across the rows; member states do not nest and one element has one audience; one audience per section (the show-to gates the root alone). |
 
 ### What the validator deliberately does **not** check
 

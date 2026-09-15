@@ -6,7 +6,7 @@ import { Review } from './review'
 
 /* ────────────────────────────────────────────────────────────────── the pilots review
 
-   Story 4.10's five pilot sections, CHECKED BY LOOKING: each on the canvas beside its panel, switched in the canvas
+   The library's designs — Story 4.10's pilots first — CHECKED BY LOOKING: each on the canvas beside its panel, switched in the canvas
    chrome between light and dark, desktop, tablet and phone, and the visitor it is viewed as — so each can be held
    up against its frame in the design export. It is `/controls`' workspace fed the library's own designs, which are
    read off `packages/library/designs/` (the directory is the list), assembled and validated here on every request,
@@ -36,7 +36,7 @@ export default function PilotsReview() {
       <header className="flex max-w-[820px] flex-col gap-[6px]">
         <h1 className="font-display text-[30px] font-extrabold tracking-[-0.02em] text-ink">Pilots review</h1>
         <p className="font-mono text-control-label text-ink-soft">
-          the five pilot sections with Orbit Weekly&apos;s content · compare each with its drawing · nothing here is saved
+          every design in the library with Orbit Weekly&apos;s content · compare each with its drawing · nothing here is saved
         </p>
       </header>
     </Review>

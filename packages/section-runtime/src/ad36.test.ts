@@ -391,7 +391,8 @@ test('AD-36 · a stored control name carrying a quote is stamped nowhere; a sche
     assert.doesNotMatch(html, /onload|script/, html)
     assert.match(html, /data-card="flat"/)
   }
-  for (const name of ['card" onload="x', 'items', 'Card']) {
+  // …and a name the page or Ghost owns (Portal's members actions, the visitor's mode, Koenig's, a translation's)
+  for (const name of ['card" onload="x', 'items', 'Card', 'portal', 'mode', 'members-signout', 'kg-width', 'i18n-days']) {
     const bad: RenderInput = { controlSchema: [{ ...input.controlSchema![0]!, name }] }
     assert.throws(() => renderCanvas(doc(), src, bad), /AD-36: control/)
     assert.throws(() => renderTheme(doc(), src, bad), /AD-36: control/)

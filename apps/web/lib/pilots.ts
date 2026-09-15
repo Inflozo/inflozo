@@ -1,4 +1,4 @@
-// The pilots review surface's reads — Story 4.10's five pilot sections, each beside the panel Epic 5 will mount.
+// The pilots review surface's reads — the library's designs, Story 4.10's pilots first, each beside the panel Epic 5 will mount.
 //
 // Not a core package: this module reads files, which AD-1 forbids there (the split `lib/controls-review.ts` makes
 // for Story 4.5). What it reads is the design library itself — `packages/library/designs/`, whose directory IS the
@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
+import { queryRows } from './controls-review.ts'
 
 /** Every reader runs with `apps/web` as the working directory (`controls-review.ts` relies on the same). */
 const PACKAGES = () => join(process.cwd(), '..', '..', 'packages')
@@ -39,19 +40,30 @@ export function pilot(id: string): SectionRegistryEntry {
   const content = JSON.parse(readFileSync(join(DESIGNS_DIR(), category, 'content.json'), 'utf8')) as CategoryContent
   const html = read('index.html')
   const css = read('style.css')
-  const failures = validateDesign({ html, design, content, icons: iconDrawing })
+  const failures = validateDesign({ html, design, content, icons: iconDrawing, css })
   if (failures.length > 0) throw new Error(`${id} does not validate — ${failures.map((f) => `${f.code}: ${f.message}`).join(' · ')}`)
   const entry = assembleEntry({ dir, design, content, html, css })
   if (typeof entry === 'string') throw new Error(`${id} does not assemble — ${entry}`)
   return entry
 }
 
+/** ponytail: every design is read, validated and assembled on each request (the page, then the frame route again), and
+ *  `pilot()` re-lists the directory to check its id — nothing at the pilots' size. Build the list once per module when
+ *  the category stories' designs make a request slow. */
 export const pilots = (): SectionRegistryEntry[] => pilotIds().map(pilot)
 
-/** Each declared query's rows at the Count's ceiling, newest first, so the client slices to the query's limit and
- *  never runs a query. A4 #13's card comes from here: `resolveSource` over its fixed one-post query. */
-export function pilotRows(entry: SectionRegistryEntry): Record<string, unknown[]> {
-  return Object.fromEntries(Object.entries(entry.dataBindings ?? {}).map(([key, binding]) => [key, orbitWeekly.resolveSource(binding.fixed === true || binding.ids !== undefined ? binding : { ...binding, limit: 100 })]))
+/** Each declared query's rows in both orders at the Count's ceiling, as `/controls`' `queryRows`, so the client picks
+ *  by the stored Order, slices to the limit and never runs a query. A fixed query and a hand-picked list are their own
+ *  number and order, so both lists are their one resolution — A4 #13's card comes from here. */
+export function pilotRows(entry: SectionRegistryEntry): Record<string, { newest: unknown[]; oldest: unknown[] }> {
+  const rows = queryRows(entry)
+  for (const [key, binding] of Object.entries(entry.dataBindings ?? {})) {
+    if (binding.fixed === true || binding.ids !== undefined) {
+      const own = orbitWeekly.resolveSource(binding)
+      rows[key] = { newest: own, oldest: own }
+    }
+  }
+  return rows
 }
 
 /** One Orbit Weekly picture's bytes, or null for any name that is not a picture in the directory — so nothing but

@@ -20,6 +20,9 @@
 const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
 const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
 const APP = process.env.APP_URL || 'https://app.inflozo.com'
+for (const key of ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'VERCEL_TOKEN', 'VERCEL_TEAM_ID']) {
+  if (!process.env[key]) { console.error(`${key} is not set — read it from tools/probe/.env into this command's environment`); process.exit(2) }
+}
 const SB = process.env.SUPABASE_URL.replace(/\/$/, '')
 const SECRET = process.env.SUPABASE_SECRET_KEY
 const OUT = process.env.OUT_DIR || require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'pilots-'))
@@ -310,7 +313,7 @@ async function main() {
     await context.close()
   } finally {
     if (browser) await browser.close()
-    const del = await admin(`/admin/users/${userId}`, { method: 'DELETE', body: '{}' })
+    const del = userId ? await admin(`/admin/users/${userId}`, { method: 'DELETE', body: '{}' }) : { status: 'not sent, no user was created' }
     const after = (await users()).length
     check('DELETE /auth/v1/admin/users/{id} and the count is unchanged', del.status === 200 && after === before, `HTTP ${del.status}, users ${before} → ${after}`)
     console.log(results.join('\n'))

@@ -209,6 +209,12 @@ export type PropType = (typeof PROP_TYPES)[number]
 /** A control name: kebab-case, because it becomes the attribute name `data-{name}` (AD-3). */
 export const CONTROL_NAME_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
 
+/** Attribute names that belong to the page or to Ghost, never to a control: Portal's link and its members actions
+ *  (`data-members-signout` signs the reader out on a click), the visitor's mode on `:root`, a Koenig card's, a
+ *  translation's. A stylesheet may select on them; a control may not be named like one — the validator and the
+ *  runtime's AD-36 door read this one copy. */
+export const FOREIGN_ATTR_RE = /^(portal|mode)$|^(kg|i18n|members)-/
+
 /** A named value (segmented, named select, toggle's on/off, a role). A stepper's values are integers. */
 export const CONTROL_WORD_RE = CONTROL_NAME_RE // one grammar, one regex: a value word is spelt like a name
 

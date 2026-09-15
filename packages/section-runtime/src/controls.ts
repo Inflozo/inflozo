@@ -365,7 +365,8 @@ export function resetControl(_entry: ControlEntry, state: ControlState, name: st
  *  and a query field it draws no row for — FR-D19 carries each under the name both designs share, and it returns with
  *  the design that uses it. Parked values live apart, in the doc's `parkedControls` (AD-27), beyond reset's reach. */
 export function resetSection(entry: ControlEntry, state: ControlState): ControlState {
-  const record = (o: unknown): Record<string, unknown> => (typeof o === 'object' && o !== null ? { ...(o as Record<string, unknown>) } : {})
+  const isRecord = (o: unknown): o is Record<string, unknown> => typeof o === 'object' && o !== null && !Array.isArray(o)
+  const record = (o: unknown): Record<string, unknown> => (isRecord(o) ? { ...o } : {})
   const controls = record(state.controls)
   for (const r of resolveAll(entry, state.controls).values()) {
     const raw = controls[r.def.name]
@@ -374,7 +375,7 @@ export function resetSection(entry: ControlEntry, state: ControlState): ControlS
   const data = record(state.data)
   for (const r of dataRows(entry, state)) {
     // a drawn query's record that is not a record at all is junk, and goes whole
-    if (r.key in data && (typeof data[r.key] !== 'object' || data[r.key] === null)) { delete data[r.key]; continue }
+    if (r.key in data && !isRecord(data[r.key])) { delete data[r.key]; continue }
     const stored = record(data[r.key])
     const v = stored[r.control]
     const valid = r.control === 'count' ? validCount(v) !== undefined : r.control === 'order' ? v === 'newest' || v === 'oldest' : false

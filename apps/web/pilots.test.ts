@@ -49,7 +49,10 @@ test('a query the design fixes is handed its fixed rows, newest first', () => {
   for (const e of pilots()) {
     for (const [key, rows] of Object.entries(pilotRows(e))) {
       const b = e.dataBindings?.[key]
-      if (b?.fixed === true) assert.equal(rows.length, b.limit, `${e.id} ${key} is fixed at ${b.limit}`)
+      if (b?.fixed === true) {
+        assert.equal(rows.newest.length, b.limit, `${e.id} ${key} is fixed at ${b.limit}`)
+        assert.deepEqual(rows.oldest, rows.newest, `${e.id} ${key}: a fixed query has one order, whatever is stored`)
+      }
     }
   }
 })
@@ -58,7 +61,9 @@ test('a query the design fixes is handed its fixed rows, newest first', () => {
 // invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
 test('every directory the pilots review reads off disk is traced for both routes in next.config.ts', () => {
   const config = readFileSync('next.config.ts', 'utf8')
-  const globs = [...config.matchAll(/'(\.\.\/\.\.\/packages\/[^']+)'/g)].map((m) => m[1] as string)
+  // the PILOTS_FILES list itself: a glob in another route's list traces nothing for these two
+  const list = /const PILOTS_FILES = \[([^\]]*)\]/.exec(config)?.[1] ?? ''
+  const globs = [...list.matchAll(/'(\.\.\/\.\.\/packages\/[^']+)'/g)].map((m) => m[1] as string)
   const covers = (rel: string) => globs.some((g) => (g.endsWith('/**') ? rel.startsWith(g.slice(0, -3)) : g === rel))
   for (const id of pilotIds()) {
     for (const f of ['design.json', 'index.html', 'style.css']) assert.ok(covers(`../../packages/library/designs/${id}/${f}`), `${id}/${f} is not traced`)

@@ -11,7 +11,7 @@ import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { slimScrollbar } from '@/components/kit/greyed'
 import { Segmented } from '@/components/kit/segmented'
 
-/* THE PILOTS WORKSPACE — `/controls`' review (Story 4.5), fed the five pilot sections (Story 4.10).
+/* THE PILOTS WORKSPACE — `/controls`' review (Story 4.5), fed the library's designs (Story 4.10's pilots first).
 
    The same page shape as `controls/review.tsx`, and read that file for the why of each part: a workspace the height
    of the window, the canvas a same-origin iframe with no script that this file writes into, a CONTROL change stamped
@@ -26,7 +26,7 @@ import { Segmented } from '@/components/kit/segmented'
    `templateContext`, the same context `tools/check-snapshots.mjs` renders against. Every module mount gets
    `js-enabled` and no script — the state `core` leaves it in on a live page (Story 4.7). Nothing is saved. */
 
-type Rows = Readonly<Record<string, Readonly<Record<string, readonly unknown[]>>>>
+type Rows = Readonly<Record<string, Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>>>
 type Mode = 'light' | 'dark'
 type Feed = orbitWeekly.FeedState
 type Visitor = Exclude<MemberState, 'everyone'>
@@ -106,9 +106,20 @@ export function Review({
     return doc && mount ? { doc, mount } : null
   }
 
-  /** Each query's rows as the canvas shows them: the fixed or stored limit slices Orbit Weekly's newest-first rows. */
+  // An asset id resolves only through this map (AD-27(b)), relative to the canvas document at /app/pilots/frame.
+  const canvasAssets = Object.fromEntries(pool.map((a) => [a.id, `frame?image=${a.id}`]))
+
+  /** Each query's rows as the canvas shows them, as `/controls` does: the stored Order picks the list, the fixed or
+   *  stored limit slices it, and a query with neither shows Ghost's default. */
   const shown = (e: SectionRegistryEntry, s: ControlState) =>
-    Object.fromEntries(Object.entries(withData(e.dataBindings, s.data)).map(([key, binding]) => [key, (rows[e.id]?.[key] ?? []).slice(0, binding.limit ?? 100)]))
+    Object.fromEntries(
+      Object.entries(withData(e.dataBindings, s.data)).map(([key, binding]) => {
+        const both = rows[e.id]?.[key]
+        const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
+        const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
+        return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
+      }),
+    )
 
   const paint = () => {
     const c = canvas()
@@ -136,6 +147,7 @@ export function Review({
         site: ctx.site,
         member: now.member,
         visibility: DRAWS_SHOW_TO.includes(e.id) ? now.visibility : 'everyone',
+        assets: canvasAssets,
         icons: lookup,
       }))
     } catch (error) {

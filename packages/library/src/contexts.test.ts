@@ -265,6 +265,12 @@ test('post and page: the template opens {{#post}}, so a section binds post field
   assert.equal(bindable('../title', at('post.hbs')) !== null, true, 'above the post block is the wrapper, which has no title')
 })
 
+test('inside @site.navigation a bare url is Ghost\'s url helper and refuses, and label binds (Story 4.10\'s recording, MEASUREMENTS §45)', () => {
+  const nav = at('default.hbs', ['@site.navigation'])
+  assert.match(bindable('url', nav) ?? '', /helper/)
+  assert.equal(bindable('label', nav), null)
+})
+
 test('a misspelt path, a list and a boolean as values, a query\'s rows, the universal set', () => {
   assert.match(bindable('post.tagz', { ...at('post.hbs'), use: 'repeat' }) ?? '', /post\.tagz/)
   assert.match(bindable('tags', at('post.hbs')) ?? '', /a list is a repeat source/)

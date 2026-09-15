@@ -576,6 +576,26 @@ consistency, run over every frame in the export.)*
 - [x] [FixReview][Patch] A34 #9's rename was described, not filed; the repeat rule cited A27–A32 where A32 is unresolved; the frame check's message named the setting, not the drawn title it searched; its ceiling comment claimed R-13 refuses every half-done toggle swap [packages/library/control-groups.json, docs, tools/check-snapshots.mjs]
 - [x] [FixReview][Patch] Reset kept a drawn query's record that was not a record; the harness's two planted faults could fire each other's checks [packages/section-runtime/src/controls.ts, tools/probe/run-verify-pilots.cjs]
 
+*(Code review of the whole story, 2026-09-15, five layers on `94cf2c5b..a1df4ee9`: Blind Hunter, Edge Case Hunter,
+Verification Gap, Acceptance Auditor, Real-infra verifier. 37 raw findings; 22 dismissed — already in the ledger
+(DW-150, DW-151, DW-152, DW-155, DW-160, DW-162, DW-163, DW-166), the spec's own design, or unreachable. No finding
+is the owner's to decide.)*
+
+- [x] [Review][Patch] A root `data-if` with a sibling `data-else` escapes Show to: the canvas shows the else arm, attribute and all, to a visitor the section is hidden from, and the theme prints it outside the condition — refuse it by name [packages/section-runtime/src/core.ts:1435]
+- [x] [Review][Patch] `/pilots` and `/controls` validate their designs without the stylesheet, so the page's door skips the AD-3 rule the gate holds [apps/web/lib/pilots.ts:42, apps/web/lib/controls-review.ts:31]
+- [x] [Review][Patch] The runtime refuses fewer control names than the validator (`mode`, `kg-*`, `members-*`): one shared predicate for both doors [packages/section-runtime/src/core.ts:1196, packages/library/src/validate.ts:33]
+- [x] [Review][Patch] Nothing asserts the matrix now refuses a bare `url` inside `@site.navigation`; reverting it leaves every test green [packages/library/src/contexts.test.ts]
+- [x] [Review][Patch] Reset keeps a junk array under a drawn query key, and turns a stored controls array into an object [packages/section-runtime/src/controls.ts:367]
+- [x] [Review][Patch] `/pilots`' canvas ignores a stored Order (always newest) and renders without the picture map its panel offers, unlike `/controls` [apps/web/app/(app)/app/(authed)/pilots/review.tsx:110, apps/web/lib/pilots.ts:53]
+- [x] [Review][Patch] The trace test accepts a glob from another route's list, so moving `designs/**` out of `PILOTS_FILES` passes [apps/web/pilots.test.ts:58]
+- [x] [Review][Patch] Three Up's empty head keeps its 3rem gap: `:empty` never matches once whitespace remains; the foot already uses `:not(:has(*))` [packages/library/designs/a17/1/style.css:16]
+- [x] [Review][Patch] The page says "the five pilot sections" while its list is the directory (counts are derived) [apps/web/app/(app)/app/(authed)/pilots/page.tsx:39]
+- [x] [Review][Patch] Guide: a repeated sentence on `fixed`, and a stranded "A" at a line end [docs/section-authoring.md:296, :371]
+- [x] [Review][Patch] The pilots harness throws a bare TypeError with its keys unset, and deletes `/admin/users/undefined` when the sign-up failed [tools/probe/run-verify-pilots.cjs:23, :313]
+- [x] [Review][Patch] `pilots()` re-lists the directory per design and validates every design on each request, with no ceiling note [apps/web/lib/pilots.ts:50]
+- [x] [Review][Defer] The panel's click wiring (Reset's confirm) and `/pilots`' client wiring are held by the deployed harness only, not by CI [apps/web/components/controls/sidebar.tsx] — deferred, DW-167
+- [x] [Review][Defer] No gate compares a design's `ghostCompat.minVersion` with the matrix's `since` for the fields it reads; the five pilots hold it by hand [packages/library/src/validate.ts] — deferred, DW-168
+
 ## Spec Change Log
 
 - **2026-09-15, Dev — the recording disagreed with one Design Notes fact (Ask First, flagged for the review).** The
@@ -652,6 +672,11 @@ consistency, run over every frame in the export.)*
 - **2026-09-15, Fix — review sweep 5** (two layers on sweep 4's patches). The frame check reads a row's own whole words
   and every drawn row style the export uses; the stylesheet scan is a one-pass tokenizer; `members-*` names are
   Ghost's. No wording the owner reads changed.
+- **2026-09-15, Review — the whole story** (five layers on `94cf2c5b..a1df4ee9`, the Real-infra verifier included). The
+  runtime refuses a root `data-if` whose else arm sits beside it under a show-to, and one predicate names the attributes a
+  control may not take on both doors; reset drops a junk array; `/pilots` validates each design with its stylesheet,
+  honours a stored Order and resolves pictures as `/controls` does, and its header names no count. No wording the owner
+  reads changed, and no question for him.
 
 ## Design Notes
 
@@ -989,6 +1014,33 @@ consistency, run over every frame in the export.)*
 - **The deployed `/controls`** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): **82 PASS, 0 FAIL**. Users 9 → 9.
 - Resend, Dodo and Ghost are not touched by this story's Fix; Supabase is used for the throwaway sign-in accounts only
   (no migration).
+
+**Results (Review of the whole story, 2026-09-15, on HEAD `a1df4ee9` before its patches):**
+- **R-99:** `git diff 94cf2c5b HEAD --stat -- supabase/` is empty — no migration, nothing to hold production's schema to.
+- **GitHub Actions** — run 34960019264 for `a1df4ee9` (`GITHUB_TOKEN`): `rls`, `check` and `deploy` success; the `check`
+  log prints `documentation gate: PASS`, library 141 · theme-compiler 1 · ghost-shim 34 · section-runtime 146 · web 309
+  tests, and `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files`.
+- **Vercel** — `app.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): `dpl_BESmUpSA2EeV7vqC1fFtM43agQmA`, production, READY,
+  built from `a1df4ee9`.
+- **The deployed `/pilots`** — `node tools/probe/run-verify-pilots.cjs` (Node 24.18.1; `SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`): **152 PASS, 0 FAIL**, the deployment gate matching HEAD, axe's
+  `image-alt` positive control first and zero violations in 90 of 90 canvases. Users 9 → 9.
+- **The deployed `/controls`** — `node tools/probe/run-verify-controls.cjs` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): **82
+  PASS, 0 FAIL**. Users 9 → 9.
+- **T1 and T3** — read-only `GET /ghost/api/admin/themes/` with a JWT from `GHOST6_STAFF_ACCESS_TOKEN` and
+  `GHOST5_STAFF_ACCESS_TOKEN`: 200 on both, `casper` active, no `inflozo-probe-shim`. Control: the same `kid` with a wrong
+  secret → 401 on both.
+- Resend and Dodo are not touched by this story.
+
+**Results (Review patches, locally on Node 24.18.1, 2026-09-15):**
+- Each new test was run against its subject broken first, and failed: the matrix's navigation `url` typed as a field; the
+  runtime without the root else-arm refusal; `resetSection` treating an array as a record; the runtime's control-name
+  check narrowed back to `portal` and `i18n-`; `designs/**` moved out of `PILOTS_FILES`; a stale `[data-stale]` rule in
+  A17 #1's stylesheet at the page's door (`pilots.test.ts`, three failures).
+- `pnpm check` exit 0 — library 142, theme-compiler 1, ghost-shim 34, section-runtime 146, web 309 tests;
+  `test-vocabulary.mjs` 21 checks; `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files`
+  (no snapshot moved). `pnpm build` exit 0 with `/app/pilots` and `/app/pilots/frame`. The documentation gate PASS on its
+  second run (the first regenerated the story board).
 
 ## Owner's manual test
 

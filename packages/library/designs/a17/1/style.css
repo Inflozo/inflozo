@@ -13,7 +13,7 @@
 
 /* The head: eyebrow 13 · title 34 on a 780 measure · sub 17 on 620 */
 .a17-1__head { display: flex; flex-direction: column; gap: 0.625rem; max-width: 48.75rem; }
-.a17-1__head:empty { display: none; }
+.a17-1__head:not(:has(*)) { display: none; }
 .a17-1__eyebrow, .a17-1__tag { margin: 0; font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 .a17-1__title { margin: 0; font-family: var(--font-heading); font-size: 2.125rem; font-weight: 700; line-height: 1.14; letter-spacing: -0.02em; }
 .a17-1__sub { margin: 0; max-width: 38.75rem; font-size: 1.0625rem; line-height: 1.6; color: var(--text-muted); }

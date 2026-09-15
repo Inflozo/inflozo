@@ -28,7 +28,7 @@ export function sample(): SectionRegistryEntry {
   const content = JSON.parse(readFileSync(join(CONTROLS_DIR(), 'content.json'), 'utf8')) as CategoryContent
   const html = read('index.html')
   const css = read('style.css')
-  const failures = validateDesign({ html, design, content, icons: iconDrawing })
+  const failures = validateDesign({ html, design, content, icons: iconDrawing, css })
   if (failures.length > 0) {
     throw new Error(`the controls sample does not validate — ${failures.map((f) => `${f.code}: ${f.message}`).join(' · ')}`)
   }

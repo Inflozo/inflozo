@@ -15,7 +15,7 @@
 
 import {
   BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
-  CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
+  CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, FOREIGN_ATTR_RE, GET_FORBIDDEN_TARGETS, GET_SOURCES,
   INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
   SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
   PILL_CHARS, pillRefusal, safeUrl, splitFirst, tCallRefusals, valueWords,
@@ -26,11 +26,6 @@ import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup }
 export type Failure = { code: string; message: string }
 
 const push = (out: Failure[], code: string, message: string) => { out.push({ code, message }) }
-
-/** Attribute names that belong to the page or to Ghost, never to a control: Portal's link and its members actions
- *  (`data-members-signout` signs the reader out on a click), the visitor's mode on `:root`, a Koenig card's, a
- *  translation's. A stylesheet may select on them; a control may not be named like one. */
-const FOREIGN_ATTR = /^(portal|mode)$|^(kg|i18n|members)-/
 
 /** Every place a parsed JSON file carries null, as a path. Nothing in design.json or content.json takes null — a field
  *  that does not apply is left out — and the checks below read fields of fields, so null is refused before any of
@@ -472,7 +467,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   for (const c of schema) {
     if (!CONTROL_NAME_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" is not a kebab-case name — it writes data-${c.name} on the section root (AD-3).`)
-    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR.test(c.name)) {
+    } else if (DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive, or an attribute the page or Ghost owns (Portal binds data-members-signout to signing the reader out) — a control's attribute must mean nothing but the control (AD-3).`)
     }
     if (UNIVERSAL_CONTROLS.includes(c.name)) {
@@ -834,7 +829,7 @@ function attributeSelectors(css: string): { text: string; name: string; op?: str
 /** AD-3 from the stylesheet's side: every `[data-…]` a rule selects on names a control this design declares, or a
  *  universal, and matches a value it offers — so renaming a control cannot leave a rule behind that selects nothing, a
  *  setting that does nothing, with every other check green. An attribute no control can be named is not held here: a
- *  directive (Portal's form attributes stay on the page), and `FOREIGN_ATTR`'s. ponytail: a rule on a directive the
+ *  directive (Portal's form attributes stay on the page), and `FOREIGN_ATTR_RE`'s. ponytail: a rule on a directive the
  *  compiler consumes selects nothing live and is not refused; add that when a design writes one. */
 function validateStylesheet(css: string, controlValues: Readonly<Record<string, readonly string[]>>): Failure[] {
   const out: Failure[] = []
@@ -844,7 +839,7 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
     said.add(text)
     const offered = Object.hasOwn(controlValues, name) ? controlValues[name] : undefined
     if (offered === undefined) {
-      if (DIRECTIVES[`data-${name}`] !== undefined || FOREIGN_ATTR.test(name)) continue
+      if (DIRECTIVES[`data-${name}`] !== undefined || FOREIGN_ATTR_RE.test(name)) continue
       push(out, 'stylesheet-control-undeclared', `style.css selects on ${text}, and this design declares no control named "${name}" — the stylesheet never selects on an attribute the design does not own (AD-3).`)
       continue
     }
