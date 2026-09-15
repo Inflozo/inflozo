@@ -4,14 +4,14 @@
   "bindingContext": ["none"],
   "compileTarget": ["home.hbs", "index.hbs", "page.hbs"],
   "controlSchema": [
-    { "name": "columns", "type": "stepper", "label": "Columns", "group": "arrangement", "values": ["2", "3", "4"], "default": "3" },
+    { "name": "columns", "type": "stepper", "label": "Columns", "group": "layout", "values": ["2", "3", "4"], "default": "3" },
     { "name": "card", "type": "named-select", "label": "Card style", "group": "style", "values": ["flat", "outlined", "raised"], "default": "outlined" },
-    { "name": "align", "type": "segmented", "label": "Alignment", "group": "arrangement", "values": ["start", "center"], "default": "start",
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "layout", "values": ["start", "center"], "default": "start",
       "valueLabels": { "start": "Left", "center": "Centre" } },
-    { "name": "icons", "type": "toggle", "label": "Show icons", "group": "style", "values": ["on", "off"], "default": "on" },
+    { "name": "icons", "type": "toggle", "label": "Show icons", "group": "content", "values": ["on", "off"], "default": "on" },
     { "name": "rule", "type": "segmented", "label": "Rule under heading", "group": "style", "values": ["none", "line"], "default": "line",
       "disabledBy": { "control": "align", "whenValue": "center", "inForce": "none", "reason": "Not available while the heading is centred." } },
-    { "name": "image", "type": "segmented", "label": "Image position", "group": "arrangement", "values": ["top", "side"], "default": "top" },
+    { "name": "image", "type": "segmented", "label": "Image position", "group": "layout", "values": ["top", "side"], "default": "top" },
     { "name": "tint", "type": "segmented", "label": "Card tint", "group": "style", "values": ["none", "soft", "strong"], "default": "none", "darkOverride": true }
   ],
   "universals": {

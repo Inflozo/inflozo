@@ -3890,3 +3890,51 @@ location: apps/web/pilots.test.ts · apps/web/app/(app)/app/(authed)/pilots/fram
 reason: `apps/web` evaluates app `.ts` under Node 24 type-stripping already; the fix is one executed test with
   `@/lib/supabase/server` stubbed to return null, asserting 303 and `location` ending in `/sign-in`, for all three
   frame routes at once.
+
+### DW-163: where Member visibility sits — the settings panel's Section Settings, or the Layers panel
+
+plain: Who a section is shown to (Everyone, Logged out, Free members, Paid members) has two homes on paper. The
+  plan puts it in the Layers panel; the header and hero drawings put it inside each section's settings panel. The
+  settings panel's rule already says that, if it lives there, it belongs under Section Settings.
+status: open
+severity: medium
+origin: Story 4.10's Fix review (sweep 1, acceptance audit) — `prd.md` FR-D5 and Appendix C's Member Visibility row
+  and `epics.md` Story 5.4 name the Layers panel; `A4-13 Latest Post.dc.html`'s panel draws the control; R-113 files
+  it under Section Settings in `packages/library/control-groups.json`
+owner: Story 5.4 (the Layers panel, reordering, and the two kinds of singleton), which builds the control — to ask
+  the owner in R-83's shape before planning it
+location: _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md (FR-D5, Appendix C) ·
+  packages/library/control-groups.json · docs/section-authoring.md § 2
+reason: no pilot panel carries the control today (`/pilots`' Show to is the page's own switcher), so nothing built in
+  Story 4.10 depends on the answer, and the answer is the owner's.
+
+### DW-164: `epics.md`'s library stories list behaviour modules as cut-off sentence fragments
+
+plain: In some library story cards, the line that names a design's behaviour scripts shows broken bits of sentences
+  instead of module names.
+status: open
+severity: low
+origin: Story 4.10's Fix review (sweep 1, blind hunter) — e.g. the A17 and A18 stories' "behaviour modules these
+  designs declare" lines carry `loads o`, `their excerpts and their meta are server-r`; pre-existing, from the
+  step-6 generator's reading of each spec's Behaviour field
+owner: the next run of the step-6 generator, or the first E9–E11 category story whose card shows it
+location: _bmad-output/planning-artifacts/epics.md (A17 and A18 story blocks, and any other with the same shape)
+reason: the fragments predate Story 4.10 and change no story's scope; fixing them means correcting the generator's
+  field parse, not hand-editing the cards.
+
+### DW-165: a design with two queries would print "Show" and "Order" twice in its Data group
+
+plain: The Data group titles a feed's rows "Show" and "Order". A section that pulls two lists from Ghost — say a
+  featured post and a list of the latest — would show two "Show" rows and two "Order" rows with nothing to tell them
+  apart, and the reset box would read "Show and Show".
+status: open
+severity: low
+origin: Story 4.10's Fix review (sweep 2, edge-case hunter) — `dataRows()` in
+  `packages/section-runtime/src/controls.ts` titles every query's rows alike; `tools/check-snapshots.mjs` refuses such a
+  panel under R-13, so it cannot ship unnoticed
+owner: Story 5.19 (the Data group's Source, Count and Order), which owns the query rows' vocabulary — the words that
+  name each query are its to draw, from P0·5
+location: packages/section-runtime/src/controls.ts (`dataRows`) · apps/web/components/controls/sidebar.tsx (the confirm's
+  list)
+reason: no built design declares two queries (each pilot has at most one, and the controls sample one), and naming a
+  query in the panel is a wording the export has not drawn yet.

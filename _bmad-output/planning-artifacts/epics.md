@@ -118,8 +118,8 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 - **FR-F1** Controls come from a shared vocabulary of simple, visual, named-value types, including **Item List** for authored repeating blocks — never for a Ghost-bound repeat. Remove never greys.
 - **FR-F2** No units, no hex, no CSS concepts at section level; width is not a per-section control.
-- **FR-F3** Sidebar structure: 3–5 Quick Controls, then Content / **Arrangement** / Style / Data groups. Controls are per design, ≈ 15 visible per design, plus the three universal controls. A control another control disables is greyed **with the reason shown**, never hidden.
-- **FR-F4** Per-control and whole-section reset; every control change paints optimistically within one frame and re-renders inside the 100 ms budget.
+- **FR-F3** Sidebar structure: every setting in the accordion its role names — **Section Settings · Content · Layout · Style · Data**, nothing pinned above them (R-113); pills only for short choices, a longer one a select (R-114). Controls are per design, ≈ 15 visible per design, plus the three universal controls. A control another control disables is greyed **with the reason shown**, never hidden.
+- **FR-F4** Per-control and whole-section reset — "Reset this design" carries its icon and asks first (R-115); every control change paints optimistically within one frame and re-renders inside the 100 ms budget.
 - **FR-F5** Mode-scoped controls carry a moon badge when a dark override exists.
 - **FR-F6** Link Picker is Ghost-aware: internal resources, Portal actions compiled to real `data-portal` values, external URL, email, and Ghost search via `data-ghost-search`. `newTab` and `rel` are part of the stored mark record.
 - **FR-F7** Controls are schema-driven from the section registry — one schema powers sidebar, validation, defaults, dark-capability flags and the compiler. A control may declare what disables it, and the declaration carries the reason. One schema per design, one union schema per category.
@@ -129,7 +129,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 - **FR-G1** The library ships every category and design inventoried in Appendix A, which **is** the count, generated from the design export. Appendix A is normative and a GA floor; the placeable/non-placeable split is declared there.
 - **FR-G2** Every category ships at least 2 Free-tier designs — exactly the first two of every category — distributed across contexts, with the floor guaranteed for every context reachable from the seven synthesizable templates and `private.hbs`.
-- **FR-G3** Section registry entry format, with `contentSchema` as the category's union and `controlSchema`/`quickControls[]` per design; `bindingContext` and `compileTarget` as the filter placement and shuffle obey; `ghostCompat` authored with the design; annotated HTML, not Handlebars, as the source; plain CSS consuming Style Pack properties only.
+- **FR-G3** Section registry entry format, with `contentSchema` as the category's union and `controlSchema` per design (`quickControls[]` withdrawn by R-113); `bindingContext` and `compileTarget` as the filter placement and shuffle obey; `ghostCompat` authored with the design; annotated HTML, not Handlebars, as the source; plain CSS consuming Style Pack properties only.
 - **FR-G4** Every design responsive 390 → 1440+ with no horizontal overflow, its collapse behaviour designed against the 15 structural archetypes; WCAG 2.1 AA; token-driven only; functional with JS disabled, with a written no-JS degradation statement per module and two named waivers.
 - **FR-G5** Uniqueness bar: designs within a category differ in layout/structure, asserted mechanically over a **structural descriptor tuple** whose first five slots are closed vocabularies checked by literal match.
 - **FR-G6** Section CI: every design renders in the matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in both CSS and JS.
@@ -1158,16 +1158,15 @@ So that 466 designs are written against one contract instead of 466 conventions.
 **Given** the registry contract
 **When** a design is authored
 **Then** its entry carries `{ id, category, name, tier, bindingContext, compileTarget, contentSchema,
-controlSchema, quickControls[], html, css, js?, dataBindings?, ghostCompat, darkCapabilities, previewSeed }`
-**And** `contentSchema` is the **category's union** while `controlSchema` and `quickControls[]` are **per design**
+controlSchema, html, css, js?, dataBindings?, ghostCompat, darkCapabilities, previewSeed }` *(`quickControls[]`
+withdrawn by R-113 at Story 4.10's owner test, 2026-09-15)*
+**And** `contentSchema` is the **category's union** while `controlSchema` is **per design**
 **And** `bindingContext` takes only `none · post · posts · tag · tags · author · authors · tiers · error ·
 private` — **there is deliberately no `page` value**, because a page and a post are the same resource, and what
 differs is expressed through `compileTarget`
 **And** `compileTarget` is **a refusal, not a hint**: `any` is withdrawn wherever it was a lie, a design
 emitting `{{pagination}}` is restricted to paginated targets, and a `{{#get}}`-performing design excludes
 `error.hbs` and `private.hbs`
-**And** `quickControls[]` is **recovered mechanically** as the first 3–5 entries of a design's own control list,
-read from the design level and never from the category's union
 **And** section source is **annotated HTML, not Handlebars**, and its authoring format and directive vocabulary
 are a **documented, shipped deliverable**
 **And** `css` is plain CSS consuming Style Pack custom properties only, authored outside the app's build
@@ -1290,7 +1289,7 @@ So that I can change how a section looks without learning CSS.
 
 **Given** the shared vocabulary
 **When** a design declares its controls
-**Then** the types available are Segmented Control, Stepper, Toggle, Named Select, **Swatch Row** (Style Pack
+**Then** the types available are Segmented Control (pills for short choices only, a longer one a Named Select — R-114, amended at Story 4.10's owner test), Stepper, Toggle, Named Select, **Swatch Row** (Style Pack
 roles — never a colour picker), Image Picker, **Icon Picker** (every Tabler icon, outline and filled, grouped by
 Tabler's own categories — R-104; **inline SVG once per use**, never a sprite or an icon font, licence text
 shipped in the theme), Link Picker, Text Field/Area, Date Picker
@@ -1301,11 +1300,12 @@ and **Item List**
 the reason as one sentence under the list (UX-DR4)
 **And** reorder is drag **with a keyboard equivalent** (UX-DR10)
 **And** **no units, no hex, no CSS concepts at section level**, and width is not a per-section control
-**And** the sidebar is 3–5 Quick Controls then **Content / Arrangement / Style / Data** groups — *Arrangement*,
-not "Layout", because the design itself is chosen in the design picker above
+**And** every setting sits in the accordion its role names — **Section Settings · Content · Layout · Style ·
+Data**, nothing pinned above them, and the design itself chosen in the design picker above *(amended by R-113 at
+Story 4.10's owner test, 2026-09-15; it read "3–5 Quick Controls then Content / Arrangement / Style / Data")*
 **And** the cap of ≈ 15 visible controls governs **a single design**, not the category's union, and the three
-universal controls — Background role, Vertical spacing, Top divider — are exempt, are declared once, and are
-never Quick Controls
+universal controls — Background role, Vertical spacing, Top divider — are exempt, are declared once, and sit at the
+foot of Style
 **And** a design **may offer fewer values of a universal control and must say why**; renaming and inventing are
 refused, an `Inherit` value is refused anywhere, and "Vertical spacing" keeps one meaning
 **And** **a control another control disables is greyed with the reason shown as a sentence, never a tooltip and
@@ -1580,7 +1580,7 @@ deselects
 controls appear here." (UX-DR6)
 **And** hover affordances also appear on **tap-and-hold** on a touch device, and no interaction is discoverable
 only by hover (UX-DR18)
-**And** the states match frames S4b hover and S4c selected.
+**And** the states match frames S4b hover and S4c selected — the selected section's settings panel as R-113 draws it (Section Settings · Content · Layout · Style · Data, nothing pinned above), never S4c's pinned Quick Controls card.
 
 **FRs:** FR-D2, FR-D3. · **Frame:** `S4 Editor.dc.html` S4b · S4c. · **Owner test:** yes.
 
@@ -2052,8 +2052,8 @@ So that my archive paginates correctly and every other feed stays fixed.
 
 **Given** a dynamic section
 **When** I open the Data group
-**Then** I get Source (Latest / Featured / By tag / By author / Hand-picked posts), Count, Order, and show/hide
-toggles for date, author, excerpt, reading time and tag chip
+**Then** I get Source (Latest / Featured / By tag / By author / Hand-picked posts), Count and Order — the show/hide
+toggles for date, author, excerpt, reading time and tag chip sit in Content, where R-113 files what a card shows
 **And** on every natively paginated template — index, custom collections, channels, and the **tag and author
 archives** — **exactly one section is the designated main feed**, bound to the native paginated `posts` context
 **never `{{#get}}`**, sized by the global `posts_per_page` **or by the route's own `limit:` where the template is
@@ -3592,7 +3592,7 @@ So that I can start using Headers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A1 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Rail · #2 Split Rail · #3 Stacked Masthead · #4 Overlay are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3700,7 +3700,7 @@ So that I can start using Announcement Bars on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A2 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Rule · #2 Split · #3 Badge · #4 Two-Line are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3806,7 +3806,7 @@ So that I can start using Footers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A3 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Minimal Line · #2 Columns · #3 Two-Tier · #4 Newsletter Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3934,7 +3934,7 @@ So that I can start using Heroes on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A4 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Full Bleed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4062,7 +4062,7 @@ So that I can start using Features on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A5 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4168,7 +4168,7 @@ So that I can start using CTA Banners on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A6 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Card are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4274,7 +4274,7 @@ So that I can start using Pricing and Tiers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A7 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Cards · #2 Table · #3 Stack · #4 Split Head are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4380,7 +4380,7 @@ So that I can start using Testimonials on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A8 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Single · #2 Three Up · #3 Two Up · #4 Grid are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4486,7 +4486,7 @@ So that I can start using FAQ on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A9 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Accordion · #2 Two Column · #3 Open List · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4592,7 +4592,7 @@ So that I can start using Stats and Numbers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A10 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Row · #2 Cards · #3 Grid · #4 Single are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4698,7 +4698,7 @@ So that I can start using Logo Walls on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A11 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Row · #2 Caption Row · #3 Grid · #4 Boxed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4804,7 +4804,7 @@ So that I can start using About and Team on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A12 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Grid · #2 Cards · #3 Rows · #4 Story and Team are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4910,7 +4910,7 @@ So that I can start using Process on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A13 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Three Up · #2 Track · #3 Rows · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5016,7 +5016,7 @@ So that I can start using Galleries on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A14 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Grid · #2 Masonry · #3 Mosaic · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5122,7 +5122,7 @@ So that I can start using Video and Embeds on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A15 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Player · #2 Split · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5228,7 +5228,7 @@ So that I can start using Contact on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A16 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Split · #2 Centred · #3 Card · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5334,7 +5334,7 @@ So that I can start using Post Grids on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A17 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing on this design moves`, `loads o`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; both 636 cells`, `their excerpts and their meta are server-r`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `including the stress frame's short last row.`, `None. Edit-safe: yes — the hover shadow is a CSS transition on the card and does not run while a card is being edited. J` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5462,7 +5462,7 @@ So that I can start using Post Lists on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A18 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Rows · #2 Thumb Rows · #3 Slim · #4 Dated are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical (loading="lazy" is HTML`, `not a script). lightbox refused —`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the truncation is CSS. filter-strip considered and not de`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the date column is server-rendered from each post's publis` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5568,7 +5568,7 @@ So that I can start using Featured and Spotlight on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A19 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Split · #2 Full Bleed · #3 Card · #4 Poster are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5674,7 +5674,7 @@ So that I can start using Tag Collections on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A20 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Chips · #2 Tiles · #3 Cards · #4 Rows are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5780,7 +5780,7 @@ So that I can start using Author Showcases on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A21 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Grid · #2 Cards · #3 Rows · #4 Split Head are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5886,7 +5886,7 @@ So that I can start using Newsletter on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A22 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Inline Row · #2 Card · #3 Split · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5992,7 +5992,7 @@ So that I can start using Post Headers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A24 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Image Top are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6098,7 +6098,7 @@ So that I can start using Post Content Layouts on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A25 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Measured · #2 Plain · #3 Sheet · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `toc`, `heading anchor` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6182,7 +6182,7 @@ So that I can start using Post Footers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A26 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Author Bio · #2 Rows · #3 Card · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `share`, `share member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6288,7 +6288,7 @@ So that I can start using Related Posts on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A27 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Three Up · #2 Rows · #3 Thumb Rows · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6372,7 +6372,7 @@ So that I can start using Comments on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A28 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Rule · #2 Split Head · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6456,7 +6456,7 @@ So that I can start using Archive Headers on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A29 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Centred · #2 Split Head · #3 Contrast Band · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6562,7 +6562,7 @@ So that I can start using Members Pages on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A30 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Centred · #2 Split Pitch · #3 Card · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6668,7 +6668,7 @@ So that I can start using Error and Utility on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A31 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Centred · #2 Split Reason · #3 Card · #4 Boxed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6752,7 +6752,7 @@ So that I can start using Paywall on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A32 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Fade · #2 Card · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core`, `member-form at one value` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6836,7 +6836,7 @@ So that I can start using Koenig Card Treatments on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A33 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Plain · #2 Card · #3 Panel · #4 Wide are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `accordion`, `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6898,7 +6898,7 @@ So that I can start using Pagination Styles on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A34 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Numbers · #2 Prev and Next · #3 Bar · #4 Pill are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
-**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
+**And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**

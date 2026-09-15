@@ -140,14 +140,67 @@ export const GET_FORBIDDEN_TARGETS: ReadonlySet<string> = new Set(['error.hbs', 
 export const CONTROL_TYPES = ['segmented', 'stepper', 'toggle', 'named-select', 'swatch-row'] as const
 export type ControlType = (typeof CONTROL_TYPES)[number]
 
-/** Where a design's own control sits in the panel (FR-F3). Content and Data are not control groups:
- *  content props and the query's Count and Order fill them. */
-export const CONTROL_GROUPS = ['arrangement', 'style'] as const
+/** Where a design's own control sits in the panel: the accordion its ROLE names (R-113, the owner's test of Story
+ *  4.10). `content` — what the section shows: a part shown or hidden, how much of a text, which details; `layout` —
+ *  where things sit: columns, alignment, sides, spans, widths; `style` — how it looks: sizes, ratios, rules, shadows,
+ *  grounds; `settings` — Section Settings, only for what fits none of those, which is how the section behaves (a
+ *  header that sticks while the page scrolls). A control that mixes Off with other values takes the role of what its
+ *  other values change. Data is not a control group: a declared query's rows fill it. */
+export const CONTROL_GROUPS = ['settings', 'content', 'layout', 'style'] as const
 export type ControlGroup = (typeof CONTROL_GROUPS)[number]
 
-/** The panel's four accordions, in order (FR-F3 — Arrangement, never "Layout"). An absent note names one. */
-export const SIDEBAR_GROUPS = ['content', 'arrangement', 'style', 'data'] as const
+/** The panel's accordions, in order (R-113): Section Settings, Content, Layout, Style, Data — and nothing pinned above
+ *  them. An absent note names one. */
+export const SIDEBAR_GROUPS = ['settings', 'content', 'layout', 'style', 'data'] as const
 export type SidebarGroup = (typeof SIDEBAR_GROUPS)[number]
+
+/** The words the panel prints for a value: its declared label, else the value itself with its first letter raised
+ *  and hyphens as spaces. The panel and R-114's pill rule read the same words. */
+export const valueWords = (valueLabels: Readonly<Record<string, string>> | undefined, value: string): string => {
+  // own properties only: `constructor` is a legal kebab value, and a plain object inherits one; JSON can carry null
+  const label = typeof valueLabels === 'object' && valueLabels !== null && Object.hasOwn(valueLabels, value) ? valueLabels[value] : undefined
+  return typeof label === 'string' ? label : `${value.charAt(0).toUpperCase()}${value.slice(1).replace(/-/g, ' ')}`
+}
+
+/** R-114 (the owner's test of Story 4.10): PILLS ARE FOR SHORT CHOICES. A segmented control draws its values as pills
+ *  of equal width in one row across the panel, so it offers two to four values (Appendix C), each at most
+ *  `PILL_CHARS` characters — the owner's own measure, "larger in character size", which puts "Spans two columns" in a
+ *  dropdown and keeps "Flush left · Centred" as pills — and each fitting its pill on one line with 2 px to spare on
+ *  either side. A choice that does not is a named-select, a dropdown. THE FIT IS MEASURED, NOT COUNTED: a word never
+ *  wraps, it widens its pill and squeezes the others, and eleven letters fit one of three pills as "Comfortable"
+ *  (73 px of 77.7) and do not as "Wholesomely" (80 px). Each character's width is in whole pixels in the pill's own
+ *  type — the Kit's segmented label, Inter at 11.5 px, the wider of its medium and semibold weights — measured on the
+ *  deployed panel on 2026-09-15 with the web font loaded, and the sums matched the widths the browser drew for real
+ *  words. A character not listed counts as the widest. THE TRACK IS THE NARROWEST ONE THE PANEL DRAWS: the segmented
+ *  control's inner width in the 280-wide panel while the panel's own scrollbar shows — 280, less its 1 px border, the
+ *  8 px bar, 32 px of padding and the track's 3 px either side, 233, measured with real scrollbars. Checked against
+ *  every value set the design export declares: of the sets it draws as pills, only the long phrases become dropdowns. */
+export const PILL_CHARS = 12
+const PILL_GLYPHS: Readonly<Record<number, string>> = {
+  3: ' !.:;Iijl’‘·', 4: "'(),/[\\]`rt", 5: '1_f{|}', 6: '"-?L^k“”–', 7: '235#*=>EFJabcdehnpqsuvxyzéèàüñç',
+  8: '046789$&+<ABDHKPRSUVYZgo~ö', 9: 'CGNOQTX', 10: 'Mw', 11: '%m…', 12: '@W—',
+}
+const PILL_WIDEST = 12
+const PILL_TRACK = 233
+const PILL_ROOM = 4
+const glyphWidth = (ch: string): number => {
+  for (const [w, chars] of Object.entries(PILL_GLYPHS)) if (chars.includes(ch)) return Number(w)
+  return PILL_WIDEST
+}
+
+/** A value's width in a pill, in pixels. */
+export const pillWidth = (words: string): number => [...words].reduce((sum, ch) => sum + glyphWidth(ch), 0)
+
+/** Why these values cannot be pills, or `null` when they can (R-114). */
+export function pillRefusal(values: readonly string[]): string | null {
+  if (values.length < 2 || values.length > 4) return `pills offer two to four values, and it offers ${values.length}`
+  if (values.some((v) => v.trim() === '')) return 'a pill with no words has nothing to read or to name'
+  const long = values.find((v) => [...v].length > PILL_CHARS)
+  if (long !== undefined) return `"${long}" is longer than ${PILL_CHARS} characters`
+  const pill = PILL_TRACK / values.length
+  const wide = values.find((v) => pillWidth(v) + PILL_ROOM > pill)
+  return wide === undefined ? null : `"${wide}" is wider than one of ${values.length} pills`
+}
 
 /** The seven content editors, by the `contentSchema` prop type each edits. */
 export const PROP_TYPES = ['text', 'richtext', 'url', 'image', 'icon', 'date', 'array'] as const
@@ -179,6 +232,8 @@ export type UniversalDef = {
   readonly name: string
   readonly label: string
   readonly type: ControlType
+  /** the accordion its role names (R-113); the panel draws it at that group's foot */
+  readonly group: ControlGroup
   readonly values: readonly string[]
   readonly valueLabels: Readonly<Record<string, string>>
   readonly default: string
@@ -186,14 +241,16 @@ export type UniversalDef = {
   readonly darkOverride?: boolean
 }
 
-/** The three universal controls (FR-F3, R-23), in the kits' order. Exempt from the cap, never Quick
- *  Controls, narrowed per design only with a reason, never renamed or added to. The defaults are the
- *  schema defaults `sections-inventory.md:800` names — Base, Comfortable, None. */
+/** The three universal controls (FR-F3, R-23), in the kits' order. Exempt from the cap, narrowed per design only
+ *  with a reason, never renamed or added to. All three are how a section looks, so all three sit at the foot of Style
+ *  (R-113, whose ruled example names Background, Vertical spacing and Top divider there). The defaults are the schema
+ *  defaults `sections-inventory.md:800` names — Base, Comfortable, None. */
 export const UNIVERSALS: readonly UniversalDef[] = [
   {
     name: 'bg',
     label: 'Background role',
     type: 'swatch-row',
+    group: 'style',
     values: BACKGROUND_ROLES,
     valueLabels: { base: 'Base', surface: 'Surface', accent: 'Accent', contrast: 'Contrast', image: 'Image' },
     default: 'base',
@@ -203,6 +260,7 @@ export const UNIVERSALS: readonly UniversalDef[] = [
     name: 'spacing',
     label: 'Vertical spacing',
     type: 'segmented',
+    group: 'style',
     values: ['compact', 'comfortable', 'spacious'],
     valueLabels: { compact: 'Compact', comfortable: 'Comfortable', spacious: 'Spacious' },
     default: 'comfortable',
@@ -211,6 +269,7 @@ export const UNIVERSALS: readonly UniversalDef[] = [
     name: 'divider',
     label: 'Top divider',
     type: 'segmented',
+    group: 'style',
     values: ['none', 'line', 'fade'],
     valueLabels: { none: 'None', line: 'Line', fade: 'Fade' },
     default: 'none',

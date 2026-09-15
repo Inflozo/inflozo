@@ -10,7 +10,7 @@ import type { BindingContext, ControlGroup, ControlType, PropType, SidebarGroup 
 import { MODULES, parseModuleDeclaration } from './modules.ts'
 import { scanTags } from './validate.ts' // validate.ts imports only TYPES from here, so this edge is not a runtime cycle
 
-/** One control. The order of `controlSchema` is load-bearing: `quickControls[]` is its first 3–5. */
+/** One control. The order of `controlSchema` is the order the panel draws a group's controls in. */
 export type ControlDef = {
   /** kebab-case; writes `data-{name}` on the section root (AD-3) */
   name: string
@@ -18,7 +18,7 @@ export type ControlDef = {
   type: ControlType
   /** the row title the panel prints — words, never a unit or a CSS concept (FR-F2) */
   label: string
-  /** which accordion it sits in when it is not a Quick Control (FR-F3) */
+  /** the accordion its role names (R-113, `CONTROL_GROUPS`) */
   group: ControlGroup
   /** the closed value set; there is no free text, no unit and no hex at section level */
   values: string[]
@@ -145,8 +145,6 @@ export type DesignJson = {
   dataBindings?: Record<string, DataBinding>
   /** AD-35: a pilot authored before its owning category's gate. Its snapshot changes exactly once. */
   provisional?: boolean
-  /** FR-G3 recovers this MECHANICALLY. Present in a `design.json` it is a validation failure. */
-  quickControls?: never
 }
 
 /** FR-G3's entry, assembled. */
@@ -166,8 +164,6 @@ export type SectionRegistryEntry = {
   universals: Record<string, UniversalNarrowing>
   /** per design — the never-offered notes, `[]` when there are none */
   absent: AbsentNote[]
-  /** per design, recovered — never authored */
-  quickControls: string[]
   html: string
   css: string
   /** FR-G3's `js?`: the registry modules the markup declares with `data-module`, in registry order —
@@ -182,16 +178,6 @@ export type SectionRegistryEntry = {
    *  something in the registry to read (review 1) */
   descriptor: DesignJson['descriptor']
   provisional?: boolean
-}
-
-/** FR-G3: "the first 3–5 entries of a DESIGN's own control list, in order, ARE its Quick Controls".
- *  Read from the design level, never from the category union — the union is the storage domain
- *  FR-D19 parks against, not a sidebar. The three universal controls never appear here, and they
- *  never appear in a `controlSchema` either, so no filtering is needed. A design that declares
- *  fewer than three controls has fewer Quick Controls — FR-F3 says designs legitimately expose
- *  different controls, and a floor would invent a rule (review 1, routine call). */
-export function recoverQuickControls(controlSchema: readonly ControlDef[]): string[] {
-  return controlSchema.slice(0, 5).map((c) => c.name)
 }
 
 /** `packages/library/designs/a4/2` → `{ category: 'a4', n: '2' }`. Identity comes from the path,
@@ -214,9 +200,8 @@ export type AssembleInput = {
 }
 
 /** The whole of "a registry entry is assembled". Nothing here is authored twice: `contentSchema`
- *  is the category's `content.json`, `controlSchema` is the design's own list, `quickControls`
- *  is recovered from that list, and `js` from the markup's `data-module` names — so no two documents
- *  can drift. */
+ *  is the category's `content.json`, `controlSchema` is the design's own list, and `js` is recovered
+ *  from the markup's `data-module` names — so no two documents can drift. */
 export function assembleEntry(input: AssembleInput): SectionRegistryEntry | string {
   const ident = parseDesignDir(input.dir)
   if (ident === null) return `"${input.dir}" is not a design directory — identity is {categoryId}/{n}`
@@ -235,7 +220,6 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
     controlSchema: d.controlSchema,
     universals: d.universals ?? {},
     absent: d.absent ?? [],
-    quickControls: recoverQuickControls(d.controlSchema),
     html: input.html,
     css: input.css,
     ghostCompat: d.ghostCompat,
@@ -258,11 +242,19 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
   return entry
 }
 
+/** A control's values as R-53 compares them: a stepper's in order, any other's as a set. */
+const valueKey = (c: ControlDef): string => (c.type === 'stepper' ? c.values : [...c.values].sort()).join('\u0000')
+
 /** FR-F7: one control schema per design and ONE union per category, generated from the designs'
  *  own lists — never authored. R-53: one control name means one set of values library-wide, so a name
- *  carrying two value sets is refused, naming both designs, rather than unioned into a third. The
- *  first declaration of each name wins its place in the union's order. Value sets compare as ordered
- *  lists: a stepper's order is its meaning. */
+ *  carrying two value sets is refused, naming both designs, rather than unioned into a third — and, since
+ *  R-113, one group: a name is a promise about what the control does, and what it does is its role. The
+ *  first declaration of each name wins its place in the union's order. A stepper's values compare as an ordered list,
+ *  because its order is its meaning; any other control's as a set, because their order is only where the pills sit.
+ *  Handed every design in the library it holds R-53 as ruled, library-wide — a name is an author's own word, so two
+ *  settings that differ take two names. Two things it does not compare: a value's WORDS, which are each design's own
+ *  from its frame (the export prints `center` as Centred on A22 #1 and as Centre on A24 #1), and a row TITLE, which is
+ *  the export's and sits where `packages/library/control-groups.json` files it for that design (R-113). */
 export function categoryControlUnion(
   designs: readonly { id: string; controlSchema: readonly ControlDef[] }[],
 ): ControlDef[] | string {
@@ -274,10 +266,13 @@ export function categoryControlUnion(
         union.set(c.name, { def: c, id: d.id })
       } else if (seen.def.type !== c.type) {
         return `control "${c.name}" is a ${seen.def.type} in ${seen.id} and a ${c.type} in ${d.id}. One name means one control (R-53); where two designs genuinely differ, they differ by name.`
-      } else if (seen.def.values.join('\u0000') !== c.values.join('\u0000')) {
+      } else if (valueKey(seen.def) !== valueKey(c)) {
         return `control "${c.name}" carries two value sets — ${seen.id} offers ${seen.def.values.join(' · ')} and ${d.id} offers ${c.values.join(' · ')}. One name means one set of values (R-53); where two designs genuinely differ, they differ by name.`
+      } else if (seen.def.group !== c.group) {
+        return `control "${c.name}" sits in ${seen.def.group} in ${seen.id} and in ${c.group} in ${d.id}. One name means one control (R-53), and a control sits in the group its role names (R-113); where two designs genuinely differ, they differ by name.`
       }
     }
   }
   return [...union.values()].map((u) => u.def)
 }
+

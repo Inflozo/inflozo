@@ -18,7 +18,7 @@ import {
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, GET_FORBIDDEN_TARGETS, GET_SOURCES,
   INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
   SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
-  safeUrl, splitFirst, tCallRefusals,
+  PILL_CHARS, pillRefusal, safeUrl, splitFirst, tCallRefusals, valueWords,
 } from './vocabulary.ts'
 import { catalogPropRefusal } from './catalog.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
@@ -370,6 +370,8 @@ function cssWideIn(c: ControlDef): string[] {
  *  stepper is a run of ascending consecutive integers ("small integer ranges" — ruling R-18 makes an
  *  item count a number); a swatch row offers the pack's roles; the rest are kebab words. */
 function valueGrammar(type: string, values: readonly string[]): string | null {
+  // JSON can carry 2 or null, and a pattern test reads either as its text: "2" passes a stepper, "null" a word
+  if (values.some((v) => typeof v !== 'string')) return 'every value is a string — "2", never 2.'
   switch (type) {
     case 'toggle':
       return values.length === 2 && values.includes('on') && values.includes('off') ? null : 'a toggle offers exactly on and off.'
@@ -388,10 +390,10 @@ function valueGrammar(type: string, values: readonly string[]): string | null {
 
 export function validateDesignJson(design: DesignJson, markup?: string): Failure[] {
   const out: Failure[] = []
-  const d = design as DesignJson & { quickControls?: unknown; id?: unknown }
+  const d = design as DesignJson & { id?: unknown; quickControls?: unknown }
 
   if (d.quickControls !== undefined) {
-    push(out, 'quick-controls-authored', 'design.json carries quickControls[]. It is not authored: it is recovered mechanically as the first 3–5 entries of this design\'s own control list, in order (FR-G3), so the two can never drift. Remove it.')
+    push(out, 'quick-controls-withdrawn', 'design.json carries quickControls[], and there are no Quick Controls: nothing is pinned above the settings groups, and each control sits in the group it declares (R-113). Remove it, and give every control the group its role names.')
   }
   if (d.id !== undefined) {
     push(out, 'id-authored', 'design.json carries an id. Identity is {categoryId}/{n}, taken from the directory path (AD-2) — an authored id is a second source that can disagree with it.')
@@ -470,7 +472,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
       push(out, 'control-label', `control "${c.name}" has no label — the panel prints a row title in words, and a control with none is a name only an author can read.`)
     }
     if (!(CONTROL_GROUPS as readonly string[]).includes(c.group)) {
-      push(out, 'control-group', `control "${c.name}" names group ${JSON.stringify(c.group)} — a design's own control sits in ${CONTROL_GROUPS.join(' or ')} (FR-F3).`)
+      push(out, 'control-group', `control "${c.name}" names group ${JSON.stringify(c.group)}${c.group === ('arrangement' as string) ? ', which is Layout now' : c.group === ('data' as string) ? ' — the Data group holds a declared query\'s rows, so a choice of which Ghost content fills the section is a dataBindings entry, never a control' : ''}. A design's own control sits in the group its role names (R-113): content — what the section shows; layout — where things sit; style — how it looks; settings — Section Settings, only for what fits none of those, such as how the section behaves.`)
     }
     const words = cssWideIn(c)
     if (words.length > 0) {
@@ -486,6 +488,11 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
     const grammar = typed ? valueGrammar(c.type, c.values) : null
     if (grammar !== null) {
       push(out, 'control-values', `control "${c.name}" (${c.type}) offers ${c.values.map((v) => JSON.stringify(v)).join(' · ')} — ${grammar}`)
+    }
+    // only over values that passed their grammar: junk (a number, a hex) is `control-values`' refusal, not a pill's
+    const pills = c.type === 'segmented' && grammar === null ? pillRefusal(c.values.map((v) => valueWords(c.valueLabels, v))) : null
+    if (pills !== null) {
+      push(out, 'pill-words', `control "${c.name}" is drawn as pills, and ${pills}. Pills are for short choices — two to four values, each at most ${PILL_CHARS} characters and fitting its pill in the panel; a longer choice is a named-select, a dropdown (R-114).`)
     }
     for (const k of Object.keys(c.valueLabels ?? {})) {
       if (!c.values.includes(k)) {
@@ -515,6 +522,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   // A cycle of two or more: each control's value in force would wait on the other's, forever. A
   // self-dependency is refused above by its own name.
   const reported = new Set<string>()
+  const circled = new Set<string>()
   for (const c of schema) {
     const path: string[] = []
     for (let at: ControlDef | undefined = c; at?.disabledBy !== undefined && at.disabledBy.control !== at.name; at = schema.find((x) => x.name === at?.disabledBy?.control)) {
@@ -523,11 +531,22 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
         const key = [...loop].sort().join(' ')
         if (!reported.has(key)) {
           reported.add(key)
+          for (const n of loop) circled.add(n)
           push(out, 'dependency-cycle', `controls ${loop.join(' → ')} → ${at.name} disable each other in a circle — no value in force can be decided for any of them.`)
         }
         break
       }
       path.push(at.name)
+    }
+  }
+  // R-113: inside one group the panel draws a design's controls in declaration order, so the setting that greys a
+  // row must come first, or its reason points at a row the reader has not reached. Across groups the panel's group
+  // order decides, and nothing here can reorder it.
+  for (const c of schema) {
+    const other = schema.find((x) => x.name === c.disabledBy?.control)
+    if (other === undefined || other === c || other.group !== c.group || circled.has(c.name)) continue
+    if (schema.indexOf(other) > schema.indexOf(c)) {
+      push(out, 'dependency-order', `control "${c.name}" is greyed by "${other.name}" and declared before it in the ${c.group} group. Declare "${other.name}" first: the panel draws a group's controls in the order they are declared, so the setting that greys a row sits above it and the reason reads in order (R-113).`)
     }
   }
 
@@ -683,6 +702,8 @@ export function validateDesign(input: {
   content?: CategoryContent
   /** the icon lookup, so an icon default is checked against the set (see `validateCategoryContent`) */
   icons?: IconLookup
+  /** the design's `style.css`, so a rule selecting on a control is held to the controls this design declares */
+  css?: string
 }): Failure[] {
   const out = validateDesignJson(input.design, input.html)
   if (input.content !== undefined) out.push(...validateCategoryContent(input.content, input.icons))
@@ -699,5 +720,26 @@ export function validateDesign(input: {
   if (Array.isArray(input.design.compileTarget)) markupOpts.compileTarget = input.design.compileTarget
   if (input.design.dataBindings !== undefined) markupOpts.dataBindings = input.design.dataBindings
   out.push(...validateMarkup(input.html, markupOpts))
+  if (input.css !== undefined) out.push(...validateStylesheet(input.css, controlValues))
+  return out
+}
+
+/** AD-3 from the stylesheet's side: every `[data-…]` a rule selects on names a control this design declares, or a
+ *  universal, and a value it offers — so renaming a control cannot leave a rule behind that selects nothing, and a
+ *  setting that does nothing, with every other check green. */
+function validateStylesheet(css: string, controlValues: Readonly<Record<string, readonly string[]>>): Failure[] {
+  const out: Failure[] = []
+  const said = new Set<string>()
+  const bare = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  for (const [selector, name, value] of bare.matchAll(/\[\s*data-([a-z0-9-]+)\s*(?:[~|^$*]?=\s*["']?([^"'\]\s]*)["']?\s*[is]?\s*)?\]/gi)) {
+    if (said.has(selector)) continue
+    said.add(selector)
+    const offered = Object.hasOwn(controlValues, name!) ? controlValues[name!] : undefined
+    if (offered === undefined) {
+      push(out, 'stylesheet-control-undeclared', `style.css selects on ${selector}, and this design declares no control named "${name}" — the stylesheet never selects on an attribute the design does not own (AD-3).`)
+    } else if (value !== undefined && !offered.includes(value)) {
+      push(out, 'stylesheet-control-value', `style.css selects on ${selector}, which is not among the values this design offers for "${name}": ${offered.join(' · ') || 'none'}.`)
+    }
+  }
   return out
 }

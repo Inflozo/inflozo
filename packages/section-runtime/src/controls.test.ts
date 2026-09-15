@@ -12,13 +12,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
-import { CONTROL_CAP, assembleEntry, categoryControlUnion, orbitWeekly, validateDesignJson } from '@inflozo/library'
+import { CONTROL_CAP, UNIVERSALS, assembleEntry, categoryControlUnion, orbitWeekly, validateDesignJson } from '@inflozo/library'
 import type { CategoryContent, DesignJson, IconLookup } from '@inflozo/library'
 import { ICONS, filledKey, iconDrawing } from '@inflozo/library/icons'
 import design from '../../library/fixtures/controls/1/design.json' with { type: 'json' }
 import content from '../../library/fixtures/controls/content.json' with { type: 'json' }
 import {
-  addItem, defaultContent, duplicateItem, moveItem, removeItem, resetControl, resetSection, resolveControls,
+  addItem, defaultContent, duplicateItem, moveItem, removeItem, resetChanges, resetControl, resetSection, resolveControls,
   setContent, setControl, setData, sidebar, withData,
 } from './controls.ts'
 import type { ControlRow, ControlState, DataRow, PropRow } from './controls.ts'
@@ -70,7 +70,7 @@ const both = (state: ControlState, over: Partial<RenderInput> = {}) => ({
 const rootOf = (html: string) => /<section[^>]*>/.exec(html)?.[0] ?? ''
 const control = (state: ControlState, name: string): ControlRow => {
   const m = sidebar(entry, state)
-  const row = [...m.quick, ...m.groups.flatMap((g) => g.rows)].find((r) => r.kind === 'control' && r.name === name)
+  const row = m.groups.flatMap((g) => g.rows).find((r) => r.kind === 'control' && r.name === name)
   assert.ok(row !== undefined, `no row for ${name}`)
   return row as ControlRow
 }
@@ -83,24 +83,46 @@ test('the sample validates clean, so every row below is against a design the val
   assert.deepEqual(validateDesignJson(design as unknown as DesignJson, HTML), [])
 })
 
-test('the panel: Quick Controls first, then Content, Arrangement, Style and Data, the trio at the foot of Style', () => {
+test('the panel (R-113): Section Settings, Content, Layout, Style and Data, each control in the group its role names, nothing pinned above', () => {
   const m = sidebar(entry, start())
-  assert.deepEqual(m.quick.map((r) => r.name), entry.quickControls, 'the Quick Controls are recoverQuickControls')
-  assert.ok(m.quick.every((r) => !r.universal), 'no universal control is ever a Quick Control')
-  assert.deepEqual(m.groups.map((g) => g.label), ['Content', 'Arrangement', 'Style', 'Data'])
-  const names = m.groups.flatMap((g) => g.rows).flatMap((r) => (r.kind === 'control' ? [r.name] : []))
-  for (const q of entry.quickControls) assert.ok(!names.includes(q), `${q} appears twice`)
+  assert.deepEqual(Object.keys(m), ['groups'], 'no pinned block of controls above the groups')
+  // the sample declares no Section Settings control, so that accordion is not drawn
+  assert.deepEqual(m.groups.map((g) => g.label), ['Content', 'Layout', 'Style', 'Data'])
+  // every control sits in exactly the group it declares, once — the universals in theirs
+  for (const c of [...entry.controlSchema, ...UNIVERSALS]) {
+    const holders = m.groups.filter((g) => g.rows.some((r) => r.kind === 'control' && r.name === c.name)).map((g) => g.id)
+    assert.deepEqual(holders, [c.group], `${c.name} sits in ${holders.join(', ')}`)
+  }
+  // within a group, the design's own controls in declaration order, then its universals at the foot
+  const names = (id: string) => m.groups.find((g) => g.id === id)!.rows.flatMap((r) => (r.kind === 'control' ? [r.name] : []))
+  assert.deepEqual(names('layout'), entry.controlSchema.filter((c) => c.group === 'layout').map((c) => c.name))
   const style = m.groups.find((g) => g.id === 'style')!
   const universals = style.rows.filter((r) => r.kind === 'control' && r.universal).map((r) => (r as ControlRow).name)
   assert.deepEqual(universals, ['bg', 'spacing', 'divider'])
   assert.ok(style.rows.slice(-universals.length).every((r) => r.kind === 'control' && r.universal), 'the trio sits at the foot')
   assert.deepEqual(style.absent, entry.absent.filter((a) => a.group === 'style').map((a) => a.note))
-  // Content in markup order; an item prop is inside its list, never a row of its own
-  const content_ = m.groups.find((g) => g.id === 'content')!.rows as PropRow[]
-  assert.deepEqual(content_.map((r) => r.path), ['eyebrow', 'heading', 'nextIssue', 'picture', 'pictureAlt', 'features', 'issue.label', 'issue.link', 'archive.label', 'archive.link', 'archiveHeading'])
-  assert.deepEqual(content_.find((r) => r.path === 'features')?.list?.props.map((p) => p.path), ['features[].icon', 'features[].title'])
-  // and a design with no query has no Data group
+  // Content: the words in markup order — an item prop inside its list, never a row of its own — then its controls
+  const contentRows = m.groups.find((g) => g.id === 'content')!.rows
+  const props = contentRows.filter((r): r is PropRow => r.kind === 'prop')
+  assert.deepEqual(props.map((r) => r.path), ['eyebrow', 'heading', 'nextIssue', 'picture', 'pictureAlt', 'features', 'issue.label', 'issue.link', 'archive.label', 'archive.link', 'archiveHeading'])
+  assert.deepEqual(props.find((r) => r.path === 'features')?.list?.props.map((p) => p.path), ['features[].icon', 'features[].title'])
+  assert.deepEqual(contentRows.slice(props.length).map((r) => (r as ControlRow).name), entry.controlSchema.filter((c) => c.group === 'content').map((c) => c.name))
+  // a design with no query has no Data group
   assert.ok(!sidebar({ ...entry, dataBindings: {} }, start()).groups.some((g) => g.id === 'data'))
+  // a control that fits no role opens the panel as Section Settings, with its absent note
+  const onScroll = { name: 'on-scroll', type: 'segmented' as const, label: 'On scroll', group: 'settings' as const, values: ['static', 'sticky'], default: 'static' }
+  const settled = sidebar({ ...entry, controlSchema: [...entry.controlSchema, onScroll], absent: [...entry.absent, { group: 'settings', note: 'n' }] }, start())
+  assert.deepEqual(settled.groups[0], { ...settled.groups[0], id: 'settings', label: 'Section Settings', absent: ['n'] })
+  assert.deepEqual(settled.groups[0]!.rows.map((r) => (r as ControlRow).name), ['on-scroll'])
+  // declaration order holds even when a control is greyed by one declared AFTER it, which the resolver reaches first
+  const later = { ...entry, controlSchema: [
+    { ...entry.controlSchema.find((c) => c.name === 'rule')!, disabledBy: { control: 'tint', whenValue: 'strong', inForce: 'none', reason: 'r' } },
+    ...entry.controlSchema.filter((c) => c.name !== 'rule'),
+  ] }
+  const styleOrder = sidebar(later, start()).groups.find((g) => g.id === 'style')!.rows.flatMap((r) => (r.kind === 'control' && !r.universal ? [r.name] : []))
+  assert.deepEqual(styleOrder, later.controlSchema.filter((c) => c.group === 'style').map((c) => c.name))
+  // and a group holding only an absent note is still drawn, so the note has somewhere to sit
+  assert.ok(sidebar({ ...entry, absent: [{ group: 'settings', note: 'n' }] }, start()).groups.some((g) => g.id === 'settings'))
 })
 
 test('FR-F5 — a mode-scoped control with a stored dark override carries the moon; one without does not', () => {
@@ -384,11 +406,35 @@ test('row · Reset this design: every control and data control back to its defau
   state = ok(addItem(entry, state, 'features'))
   const reset = resetSection(entry, state)
   const m = sidebar(entry, reset)
-  const rows = [...m.quick, ...m.groups.flatMap((g) => g.rows)]
+  const rows = m.groups.flatMap((g) => g.rows)
   assert.ok(rows.every((r) => r.kind === 'prop' || !(r as ControlRow | DataRow).changed), 'something is still changed')
   assert.deepEqual(resolveControls(entry, reset.controls), resolveControls(entry, {}))
   assert.equal(reset.content, state.content, 'the words and the items stay')
   assert.equal(reset.darkOverrides, state.darkOverrides, 'the stored dark overrides stay')
+})
+
+test('R-115 — what Reset this design would undo: nothing at the defaults, a data-only change, and a greyed row\'s stored value, in the panel\'s order', () => {
+  assert.deepEqual(resetChanges(entry, start()), [], 'nothing to reset at the defaults, so the panel asks nothing')
+  const data = ok(setData(entry, ok(setData(entry, start(), 'latest', 'count', 5)), 'latest', 'order', 'oldest'))
+  assert.deepEqual(resetChanges(entry, data), ['Show', 'Order'], 'a change to the Data group alone is a change')
+  // Rule under heading set away from its default, then greyed by Alignment: its row offers no reset, but reset clears it
+  const greyed = ok(setControl(entry, ok(setControl(entry, start(), 'rule', 'none')), 'align', 'center'))
+  assert.equal(control(greyed, 'rule').changed, false, 'the greyed row carries no reset of its own')
+  assert.deepEqual(resetChanges(entry, greyed), ['Alignment', 'Rule under heading'])
+  // a stored value equal to the default is not a change, and junk is not one either
+  assert.deepEqual(resetChanges(entry, start({ controls: { columns: '3', card: '12px' } })), [])
+  assert.deepEqual(resetChanges(entry, resetSection(entry, greyed)), [])
+  // the panel's order, not the declaration's: Columns is declared first, and Content is drawn above Layout
+  assert.deepEqual(resetChanges(entry, ok(setControl(entry, ok(setControl(entry, start(), 'columns', '2')), 'icons', 'off'))), ['Show icons', 'Columns'])
+})
+
+test('R-115 — Reset this design removes exactly what its confirm names: another design\'s parked values stay (FR-D17)', () => {
+  const parked = start({ controls: { columns: '2', 'nav-position': 'left' }, data: { latest: { count: 5 }, rail: { count: 7 } } })
+  assert.deepEqual(resetChanges(entry, parked), ['Columns', 'Show'], 'the confirm names this design\'s changes only')
+  const reset = resetSection(entry, parked)
+  assert.deepEqual(reset.controls, { 'nav-position': 'left' }, 'a control this design does not declare is parked, not reset')
+  assert.deepEqual(reset.data, { rail: { count: 7 } }, 'a query this design does not draw keeps its Count')
+  assert.deepEqual(resetChanges(entry, reset), [])
 })
 
 test('row · R-108, a query the design fixes: no Show and no Order, a stored Count and Order are ignored, and both emitters render one post', () => {

@@ -11,9 +11,9 @@
 // type, so junk in it is ignored rather than thrown. No clock, no `Intl`, no locale method — the
 // sentences a panel prints at a floor or a ceiling come from `content.json`, never from this file.
 
-import { CONTROL_VALUE_RE, UNIVERSALS, orbitWeekly, recoverQuickControls, scanTags } from '@inflozo/library'
+import { CONTROL_VALUE_RE, SIDEBAR_GROUPS, UNIVERSALS, orbitWeekly, scanTags, valueWords } from '@inflozo/library'
 import type {
-  AbsentNote, ControlDef, ControlType, DataBinding, PropDef, PropType, SidebarGroup,
+  AbsentNote, ControlDef, ControlGroup, ControlType, DataBinding, PropDef, PropType, SidebarGroup,
   UniversalNarrowing,
 } from '@inflozo/library'
 
@@ -46,7 +46,7 @@ type Declared = {
   name: string
   label: string
   type: ControlType
-  group: 'arrangement' | 'style'
+  group: ControlGroup
   values: readonly string[]
   valueLabels: Readonly<Record<string, string>>
   /** what THIS design offers — a universal's narrowing, or a control's own values */
@@ -72,7 +72,7 @@ function declared(entry: Pick<ControlEntry, 'controlSchema' | 'universals'>): De
     const dflt = n?.default !== undefined && offered.includes(n.default) ? n.default
       : offered.includes(u.default) ? u.default : (offered[0] ?? null)
     return {
-      name: u.name, label: u.label, type: u.type, group: 'style', values: u.values, valueLabels: u.valueLabels,
+      name: u.name, label: u.label, type: u.type, group: u.group, values: u.values, valueLabels: u.valueLabels,
       offered, narrowed: n === undefined ? undefined : n.reason, default: dflt, darkOverride: u.darkOverride === true, universal: true,
     }
   })
@@ -172,15 +172,12 @@ export type DataRow = {
 
 export type SidebarRow = ControlRow | PropRow | DataRow
 export type SidebarGroupModel = { id: SidebarGroup; label: string; rows: SidebarRow[]; absent: string[] }
-export type SidebarModel = { quick: ControlRow[]; groups: SidebarGroupModel[] }
+export type SidebarModel = { groups: SidebarGroupModel[] }
 
+/** The accordions' titles (R-113). The ids are `SIDEBAR_GROUPS`, in the panel's order. */
 const GROUP_LABELS: Readonly<Record<SidebarGroup, string>> = {
-  content: 'Content', arrangement: 'Arrangement', style: 'Style', data: 'Data',
+  settings: 'Section Settings', content: 'Content', layout: 'Layout', style: 'Style', data: 'Data',
 }
-
-/** A value's words: the declared label, else the value itself with its first letter raised. */
-const wordsFor = (d: Declared, v: string): string =>
-  d.valueLabels[v] ?? `${v.charAt(0).toUpperCase()}${v.slice(1).replace(/-/g, ' ')}`
 
 function controlRow(r: Resolved, state: ControlState): ControlRow {
   const d = r.def
@@ -190,7 +187,7 @@ function controlRow(r: Resolved, state: ControlState): ControlRow {
     label: d.label,
     type: d.type,
     options: d.values.map((v) => {
-      const o: ControlOption = { value: v, label: wordsFor(d, v) }
+      const o: ControlOption = { value: v, label: valueWords(d.valueLabels, v) }
       // one value switched off inside a live control greys the same way, with the design's sentence
       if (r.greyed === undefined && !d.offered.includes(v)) o.greyed = d.narrowed ?? ''
       return o
@@ -285,15 +282,15 @@ function orderWord(b: DataBinding): 'newest' | 'oldest' | undefined {
   return b.order === 'published_at asc' ? 'oldest' : undefined
 }
 
-/** The panel, as data: Quick Controls first (`recoverQuickControls`, never a universal), then
- *  Content in markup order, Arrangement, Style with the universal trio at its foot, and Data only
- *  when the design declares a query. A Quick Control appears once. Each group carries its absent
- *  notes, which the panel prints after the group's own controls and before the trio. */
+/** The panel, as data (R-113): Section Settings, Content, Layout, Style and Data, in that order, each holding what
+ *  its role names and nothing pinned above them. A group's rows are its content props in markup order (Content
+ *  only), then its own controls in declaration order, then the universal controls that sit in it, which the panel
+ *  draws at the group's foot after its absent notes — the trio at the foot of Style. Data holds a declared query's
+ *  rows. A group with nothing in it is not drawn. */
 export function sidebar(entry: ControlEntry, state: ControlState = {}): SidebarModel {
   const resolved = resolveAll(entry, state.controls)
-  const quickNames = recoverQuickControls(entry.controlSchema)
-  const rows = [...resolved.values()].map((r) => controlRow(r, state))
-  const quick = quickNames.flatMap((n) => rows.filter((r) => r.name === n))
+  // in DECLARATION order, never the resolver's: a control greyed by one declared after it resolves that one first
+  const rows = declared(entry).map((d) => controlRow(resolved.get(d.name)!, state))
   const absent = (g: SidebarGroup) => (entry.absent ?? []).filter((a) => a.group === g).map((a) => a.note)
 
   const content: PropRow[] = []
@@ -319,16 +316,18 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}): SidebarM
     content.push(row)
   }
 
-  const inGroup = (g: 'arrangement' | 'style', universal: boolean) =>
-    rows.filter((r) => !quickNames.includes(r.name) && r.universal === universal && resolved.get(r.name)?.def.group === g)
-  const groups: SidebarGroupModel[] = [
-    { id: 'content', label: GROUP_LABELS.content, rows: content, absent: absent('content') },
-    { id: 'arrangement', label: GROUP_LABELS.arrangement, rows: inGroup('arrangement', false), absent: absent('arrangement') },
-    { id: 'style', label: GROUP_LABELS.style, rows: [...inGroup('style', false), ...inGroup('style', true)], absent: absent('style') },
-    // Data only when there is a query to control: a hand-picked list alone (R-20) draws no empty accordion
-    { id: 'data', label: GROUP_LABELS.data, rows: dataRows(entry, state), absent: absent('data') },
-  ].filter((g) => g.rows.length > 0 || g.absent.length > 0) as SidebarGroupModel[]
-  return { quick, groups }
+  const controlsIn = (g: SidebarGroup) => {
+    const own = rows.filter((r) => resolved.get(r.name)?.def.group === g)
+    return [...own.filter((r) => !r.universal), ...own.filter((r) => r.universal)]
+  }
+  const groups = SIDEBAR_GROUPS.map((id): SidebarGroupModel => ({
+    id,
+    label: GROUP_LABELS[id],
+    // Data only when there is a query to control: a hand-picked or fixed list alone (R-20, R-108) draws no empty accordion
+    rows: id === 'data' ? dataRows(entry, state) : [...(id === 'content' ? content : []), ...controlsIn(id)],
+    absent: absent(id),
+  })).filter((g) => g.rows.length > 0 || g.absent.length > 0)
+  return { groups }
 }
 
 // ─── the edits ───────────────────────────────────────────────────────────────
@@ -353,10 +352,30 @@ export function resetControl(_entry: ControlEntry, state: ControlState, name: st
   return { ...state, controls }
 }
 
-/** FR-F4: every control and every data control back to its default. The words, the items and the
- *  stored dark overrides stay — S14's "Posts keep their content." rule, and D5 draws no confirm. */
-export function resetSection(_entry: ControlEntry, state: ControlState): ControlState {
-  return { ...state, controls: {}, data: {} }
+/** FR-F4: every control and every data control THIS DESIGN draws back to its default. The words, the items and the
+ *  stored dark overrides stay — S14's "Posts keep their content." rule — and so does a stored value this design
+ *  does not declare: FR-D17 parks another design's values in the same record, and "Reset this design" never loses
+ *  them. The panel asks first (R-115), naming `resetChanges`, which reads the same scope. */
+export function resetSection(entry: ControlEntry, state: ControlState): ControlState {
+  const names = new Set(declared(entry).map((d) => d.name))
+  const keys = new Set(dataRows(entry, state).map((r) => r.key))
+  const without = (o: unknown, drop: Set<string>) =>
+    Object.fromEntries(Object.entries(typeof o === 'object' && o !== null ? o : {}).filter(([k]) => !drop.has(k)))
+  return { ...state, controls: without(state.controls, names), data: without(state.data, keys) }
+}
+
+/** R-115: what `resetSection` would undo that the customer chose, as the panel titles it, in the panel's order —
+ *  every control whose stored value differs from its default, A GREYED ONE TOO (its row carries no reset, but its
+ *  stored value returns with the row, and reset takes that away), and every changed data control. The confirm names
+ *  these; with none, it asks nothing. */
+export function resetChanges(entry: ControlEntry, state: ControlState = {}): string[] {
+  const resolved = resolveAll(entry, state.controls)
+  return sidebar(entry, state).groups.flatMap((g) => g.rows.flatMap((r) => {
+    if (r.kind === 'data') return r.changed ? [r.label] : []
+    if (r.kind !== 'control') return []
+    const at = resolved.get(r.name)
+    return at !== undefined && at.stored !== null && at.stored !== at.def.default ? [r.label] : []
+  }))
 }
 
 /** Write one content prop. `index` addresses one item of an authored array: `features[].title` at 2. */

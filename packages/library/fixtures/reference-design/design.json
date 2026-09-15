@@ -4,13 +4,13 @@
   "bindingContext": ["posts", "tags", "tag"],
   "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
   "controlSchema": [
-    { "name": "cols", "type": "stepper", "label": "Columns", "group": "arrangement", "values": ["2", "3", "4"], "default": "3" },
+    { "name": "cols", "type": "stepper", "label": "Columns", "group": "layout", "values": ["2", "3", "4"], "default": "3" },
     { "name": "card", "type": "segmented", "label": "Card style", "group": "style", "values": ["flat", "outlined", "raised"], "default": "raised" },
-    { "name": "meta", "type": "named-select", "label": "Post details", "group": "style", "values": ["none", "date", "author-date"], "default": "author-date",
+    { "name": "post-details", "type": "named-select", "label": "Post details", "group": "content", "values": ["none", "date", "author-date"], "default": "author-date",
       "valueLabels": { "none": "None", "date": "Date", "author-date": "Author and date" } },
-    { "name": "align", "type": "segmented", "label": "Alignment", "group": "arrangement", "values": ["start", "center"], "default": "start",
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "layout", "values": ["start", "center"], "default": "start",
       "valueLabels": { "start": "Left", "center": "Centre" } },
-    { "name": "badge", "type": "toggle", "label": "Editor's pick badge", "group": "style", "values": ["on", "off"], "default": "on" },
+    { "name": "badge", "type": "toggle", "label": "Editor's pick badge", "group": "content", "values": ["on", "off"], "default": "on" },
     { "name": "rule", "type": "segmented", "label": "Rule under heading", "group": "style", "values": ["none", "line"], "default": "none",
       "disabledBy": { "control": "align", "whenValue": "center", "reason": "Not available while the heading is centred.", "inForce": "none" } }
   ],

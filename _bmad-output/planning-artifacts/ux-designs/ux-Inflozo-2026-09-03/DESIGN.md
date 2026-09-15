@@ -437,7 +437,9 @@ variant holds keys, URLs and YAML. A **search** variant carries a keyboard hint 
 
 **Segmented control** — 2 to 4 segments on a `{colors.paper}` track; the active segment is
 `{colors.surface}` plus `sm`. **Named values only, never numbers** (Appendix C). A segment carrying
-a dark-mode override shows a **moon badge**.
+a dark-mode override shows a **moon badge**. **Pills are for short choices** (the owner's ruling R-114, 2026-09-15):
+every value short enough to fit its pill on one line with room either side — the validator measures it in this
+type — and a longer choice ("Spans two columns") is a **select** instead.
 
 **Design picker** — a grid of **64×44 wireframe mini-diagrams**, ink lines with a coral highlight on
 paper, active gets a coral ring. The strip shows twelve and then a `+N` tile rather than scrolling,
@@ -477,7 +479,8 @@ already in, so focused-and-selected reads as both (D8e). The **site-wide group**
 a page count, so it reads as pinned rather than merely first.
 
 **Composite cards** — the **quick-controls card** holds three to five most-used controls on a
-surface card; the **pack cell** shows a glyph in the pack's own heading font, its palette as dots, a
+surface card, and **the settings panel no longer uses it** (R-113, 2026-09-15: every setting sits in the accordion
+its role names — Section Settings, Content, Layout, Style, Data — with nothing pinned above them); the **pack cell** shows a glyph in the pack's own heading font, its palette as dots, a
 pencil to edit, and a coral ring when active; the **variant thumb** pairs a name with one line.
 
 **Empty panel** — "Nothing selected. Click any section on the canvas — its controls appear here."

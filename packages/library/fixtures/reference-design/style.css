@@ -23,7 +23,7 @@
 .ref[data-card="outlined"] .ref__card { border: 1px solid var(--border-hairline); }
 .ref[data-card="flat"] .ref__card { background: none; }
 
-.ref[data-meta="none"] .ref__date { display: none; }
+.ref[data-post-details="none"] .ref__date { display: none; }
 .ref[data-align="center"] .ref__head { text-align: center; }
 .ref[data-badge="off"] .ref__flag { display: none; }
 .ref[data-rule="line"] .ref__head { border-block-end: 1px solid var(--border-hairline); }

@@ -1,17 +1,18 @@
 'use client'
 
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import {
-  editText, resetControl, resetSection, setContent, setControl, setData, sidebar,
+  editText, resetChanges, resetControl, resetSection, setContent, setControl, setData, sidebar,
 } from '@inflozo/section-runtime'
 import type { ControlEntry, ControlRow, ControlState, DataRow, PropRow, PropValue } from '@inflozo/section-runtime'
 import { Accordion } from '@/components/kit/accordion'
+import { Button } from '@/components/kit/button'
+import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring, type Greyed } from '@/components/kit/greyed'
 import { Image, InfoCircle, Undo } from '@/components/kit/icons'
 import { Multiline, TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
 import { MoonBadge } from '@/components/kit/moon-badge'
-import { QuickControlsCard } from '@/components/kit/quick-controls-card'
 import { Segmented } from '@/components/kit/segmented'
 import { Select } from '@/components/kit/select'
 import { Stepper } from '@/components/kit/stepper'
@@ -30,14 +31,16 @@ import { LinkPicker, type LinkResources } from './link-picker'
    `control` changes only the section root's attributes, `content` needs a re-render. A refused edit
    comes back as the engine's sentence and changes nothing.
 
-   Built from the Kit (R-74), in the frames' order: the Quick Controls card (`Editor Sidebar Kit.dc.html:195`,
-   S4c), then Content, Arrangement, Style and Data as accordions (`:44`). WHERE A RULING OVERRIDES A FRAME
-   (the spec's Design Notes): S4c's second accordion is "Design" and FR-F3 names it Arrangement; the
-   universal trio is never a Quick Control and sits as one block at the foot of Style, after that group's
-   absent note (P0-0: the note sits where the control would have been); a changed control carries a
-   reset beside its label — the Kit's Undo glyph, named "Reset <label>", on the owner's finding 1 (it was the
-   word "Reset" in D5's 12 px ink-soft until then) — and "Reset this design" sits at the panel foot with no
-   confirm — D5 draws none. The moon badge carries its words, "Dark override" (UX-DR8). */
+   Built from the Kit (R-74): the accordions (`Editor Sidebar Kit.dc.html:44`), and nothing else. WHERE A RULING
+   OVERRIDES A FRAME: every control sits in the accordion its role names — Section Settings, Content, Layout, Style,
+   Data, in that order — and S4c's pinned Quick Controls card is gone (R-113, the owner's test of Story 4.10); a
+   group's absent note sits after its own rows and before its universal controls (P0-0: where the control would
+   have been), so the trio closes Style; a changed control carries a reset beside its label — the Kit's Undo glyph,
+   named "Reset <label>" (Story 4.5's owner finding 1) — and "Reset this design" at the panel foot carries the same
+   glyph and asks first (R-115): S14c's confirm, in the app's one dialog vocabulary (`kit/dialog.ts`), naming the
+   count and the changed rows, with the fear answered in the second sentence and focus on Cancel. Nothing changed,
+   it says so under the button instead — R-12's rule for a control at its floor, which stays live and explains
+   itself. The moon badge carries its words, "Dark override" (UX-DR8). */
 
 export type Edit = 'control' | 'content'
 
@@ -160,17 +163,27 @@ const Absent = ({ note }: { note: string }) => (
   </div>
 )
 
+/** "Per row, Meta and Tag" — the changed rows, in the panel's order. */
+const inWords = (words: readonly string[]) =>
+  words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`
+
 export function Sidebar({ entry, state, onChange, swatches, timezone, links, assets, sourceRows }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
+  const [nothingToReset, setNothingToReset] = useState(false)
+  const confirm = useRef<HTMLDialogElement>(null)
   const model = sidebar(entry, state)
+  const changes = resetChanges(entry, state)
+  // a stored dark override is not reset (FR-F4), so both sentences say it stays rather than let "default" imply it goes
+  const darkKept = model.groups.some((g) => g.rows.some((r) => r.kind === 'control' && r.moon))
 
   /** Every edit ends here: a refusal is the engine's sentence and changes nothing; anything else is the
-   *  next state, and it clears the floor sentence (P0-3: "it clears on the next edit"). */
+   *  next state, and it clears the floor sentence and the nothing-to-reset line (P0-3: "it clears on the next edit"). */
   const commit = (next: ControlState | string, kind: Edit): string | null => {
     if (typeof next === 'string') return next
     setFloor(null)
+    setNothingToReset(false)
     onChange(next, kind)
     return null
   }
@@ -178,7 +191,8 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
   const control = (row: ControlRow) => (
     <ControlField
       key={row.name}
-      id={`${base}-${row.name}`}
+      // a kind in every id: A22's Blurb setting and its Blurb text field share one name, and now one accordion
+      id={`${base}-control-${row.name}`}
       row={row}
       swatches={swatches}
       onValue={(value) => commit(setControl(entry, state, row.name, value), 'control')}
@@ -210,7 +224,7 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
   }
 
   const content = (row: PropRow) => {
-    const id = `${base}-${slug(row.path)}`
+    const id = `${base}-prop-${slug(row.path)}`
     if (row.list !== undefined) {
       return (
         <ItemList
@@ -249,29 +263,12 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
 
   return (
     <div className="flex flex-col gap-3">
-      {model.quick.length > 0 ? <QuickControlsCard>{model.quick.map(control)}</QuickControlsCard> : null}
-
       <div className="flex flex-col">
         {model.groups.map((group) => {
-          const rows = group.rows
-          const body =
-            group.id === 'content' ? (
-              <>
-                {rows.map((r) => (r.kind === 'prop' ? content(r) : null))}
-                {group.absent.map((note) => <Absent key={note} note={note} />)}
-              </>
-            ) : group.id === 'data' ? (
-              <>
-                {data(rows.filter((r): r is DataRow => r.kind === 'data'))}
-                {group.absent.map((note) => <Absent key={note} note={note} />)}
-              </>
-            ) : (
-              <>
-                {rows.map((r) => (r.kind === 'control' && !r.universal ? control(r) : null))}
-                {group.absent.map((note) => <Absent key={note} note={note} />)}
-                {rows.map((r) => (r.kind === 'control' && r.universal ? control(r) : null))}
-              </>
-            )
+          // in the engine's order (R-113), which ends with the universal controls: the absent notes go just above them
+          const at = group.rows.findIndex((r) => r.kind === 'control' && r.universal)
+          const [rows, foot] = at === -1 ? [group.rows, []] : [group.rows.slice(0, at), group.rows.slice(at)]
+          const draw = (r: (typeof rows)[number]) => (r.kind === 'prop' ? content(r) : r.kind === 'control' ? control(r) : null)
           return (
             <Accordion
               key={group.id}
@@ -280,21 +277,75 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
               open={open[group.id] === true}
               onToggle={() => setOpen({ ...open, [group.id]: open[group.id] !== true })}
             >
-              <div className="flex flex-col gap-3 pb-3 pt-1">{body}</div>
+              <div className="flex flex-col gap-3 pb-3 pt-1">
+                {rows.map(draw)}
+                {/* a query's rows are only ever Data's, drawn as one list per query */}
+                {data(rows.filter((r): r is DataRow => r.kind === 'data'))}
+                {group.absent.map((note) => <Absent key={note} note={note} />)}
+                {foot.map(draw)}
+              </div>
             </Accordion>
           )
         })}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-line pt-3">
+      <div className="flex flex-col items-start gap-2 border-t border-line pt-3">
         <button
           type="button"
-          onClick={() => commit(resetSection(entry, state), 'content')}
-          className={`text-[12px] text-ink-soft hover:text-ink ${ring}`}
+          onClick={() => {
+            if (changes.length > 0) return openOnCancel(confirm.current)
+            // off, then on in the next frame, so a second press is announced again rather than changing nothing
+            setNothingToReset(false)
+            requestAnimationFrame(() => setNothingToReset(true))
+          }}
+          className={`inline-flex items-center gap-[6px] text-[12px] text-ink-soft hover:text-ink ${ring}`}
         >
+          <Undo size={13} />
           Reset this design
         </button>
+        <div role="status">
+          {/* a change that arrives another way — the canvas, an undo, before the next frame — takes the line with it */}
+          {nothingToReset && changes.length === 0 ? (
+            <HelperCaption>
+              Nothing to reset: every setting is already this design&apos;s default.{darkKept ? ' Dark overrides stay as they are.' : ''}
+            </HelperCaption>
+          ) : null}
+        </div>
       </div>
+
+      <dialog
+        ref={confirm}
+        onClick={closeOnBackdrop}
+        aria-labelledby={`${base}-reset-title`}
+        aria-describedby={`${base}-reset-body`}
+        className={`${sheet} gap-[18px]`}
+      >
+        <div className="flex flex-col gap-[6px]">
+          <h2 id={`${base}-reset-title`} className={title}>
+            Reset this design?
+          </h2>
+          <p id={`${base}-reset-body`} className="text-ui-dense leading-[1.55] text-ink-soft">
+            Removes your {changes.length} {changes.length === 1 ? 'change' : 'changes'} — {inWords(changes)} — from
+            this design. {darkKept ? 'Your words, pictures and dark overrides stay.' : 'Your words and pictures stay.'}
+          </p>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => confirm.current?.close()}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="coral"
+            size={36}
+            onClick={() => {
+              confirm.current?.close()
+              commit(resetSection(entry, state), 'content')
+            }}
+          >
+            Reset design
+          </Button>
+        </div>
+      </dialog>
     </div>
   )
 }

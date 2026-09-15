@@ -56,6 +56,7 @@ export {
   setContent,
   setControl,
   setData,
+  resetChanges,
   sidebar,
   withData,
 } from './controls.ts'

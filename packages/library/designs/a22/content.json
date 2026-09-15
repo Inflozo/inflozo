@@ -3,7 +3,7 @@
   "props": {
     "eyebrow": { "label": "Eyebrow", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "The Friday edition" },
     "heading": { "label": "Heading", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "One letter a week, on Friday morning" },
-    "blurb": { "label": "Blurb", "type": "richtext", "marks": ["strong", "em", "u", "a"],
+    "blurb": { "label": "Blurb text", "type": "richtext", "marks": ["strong", "em", "u", "a"],
                "default": "Reporting on the people still building the web by hand, the week’s corrections, and whatever the picture desk found on the way." },
     "buttonLabel": { "label": "Button text", "type": "text", "catalog": "member.signup_cta" },
     "note": { "label": "Note", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "Free weekly. One click to leave." },

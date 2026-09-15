@@ -9,6 +9,9 @@
 // and 390 with a positive control, measures the control stamp and the content re-render under 4× CPU
 // throttle, and deletes the account in `finally` with the user count read before and after. Written at
 // Story 4.5's Review (2026-09-13); until then the checks lived in a scratch harness nobody could re-run.
+// Story 4.10's Fix (2026-09-15) re-shaped the panel it walks: R-113 put every control in the accordion its role
+// names with nothing pinned above them, and R-115 made "Reset this design" ask first — so a step whose control now
+// sits in a closed accordion opens it, and step 16 answers the confirm.
 const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
 const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
 const APP = 'https://app.inflozo.com'
@@ -109,17 +112,33 @@ async function main() {
     check('step 2 — the page itself never scrolls', geo.pageRange === 0, `window scroll range ${geo.pageRange}px`)
     check('step 2 — the canvas scrolls inside its own frame', c.scrollRange > 0 && c.barWidth === 8, `canvas range ${c.scrollRange}px, bar ${c.barWidth}px`)
     check('step 2 — the panel scrolls on its own with a slim bar', geo.overflowY === 'auto' && (geo.asideRange === 0 || geo.asideBar === 8), `panel range ${geo.asideRange}px, bar ${geo.asideBar}px`)
-    const quick = await page.evaluate(() => [...document.querySelectorAll('aside#section-controls [id$="-label"]')].map((e) => e.textContent.trim()).slice(0, 5))
-    check('step 2 — white card: Columns, Card style, Alignment, Show icons, Rule under heading', JSON.stringify(quick) === JSON.stringify(['Columns', 'Card style', 'Alignment', 'Show icons', 'Rule under heading']), JSON.stringify(quick))
+    const labels = await page.evaluate(() => [...document.querySelectorAll('aside#section-controls [id$="-label"]')].map((e) => ({ text: e.textContent.trim(), inside: !!e.closest('[role="region"]') })))
+    const pinned = labels.filter((l) => !l.inside).map((l) => l.text)
+    // the positive control: the sample's own settings are read, inside their accordions — a panel that drew nothing, or
+    // whose closed bodies were not in the page, would pin nothing too
+    const read = ['Columns', 'Alignment', 'Image position', 'Show icons', 'Card style'].filter((t) => labels.some((l) => l.inside && l.text === t))
+    check('step 2 — nothing pinned above the groups: every control sits inside an accordion (R-113)', pinned.length === 0 && read.length === 5, `${JSON.stringify(pinned)} pinned; ${read.length} of 5 sample settings read inside their accordions`)
     const heads = await page.evaluate(() => [...document.querySelectorAll('aside#section-controls button[aria-expanded]')].filter((b) => b.getAttribute('aria-controls')?.endsWith('-body')).map((b) => b.textContent.trim()))
-    check('step 2 — headings Content, Arrangement, Style, Data', JSON.stringify(heads) === JSON.stringify(['Content', 'Arrangement', 'Style', 'Data']), JSON.stringify(heads))
+    check('step 2 — headings Content, Layout, Style, Data', JSON.stringify(heads) === JSON.stringify(['Content', 'Layout', 'Style', 'Data']), JSON.stringify(heads))
     check('step 2 — "Reset this design" at the foot', (await aside.locator('button', { hasText: 'Reset this design' }).count()) === 1)
+    // R-115 with nothing changed, on the one page that starts with a stored dark override: the line says it stays
+    await aside.getByRole('button', { name: 'Reset this design' }).click()
+    await page.waitForTimeout(150)
+    const quiet = (await aside.getByRole('button', { name: 'Reset this design' }).locator('xpath=following-sibling::*[@role="status"]').innerText()).trim()
+    check('step 2 — Reset this design with nothing changed asks nothing, and says the dark override stays (R-115)', !(await aside.locator('dialog').evaluate((d) => d.open)) && quiet === 'Nothing to reset: every setting is already this design\'s default. Dark overrides stay as they are.', JSON.stringify(quiet))
     const noUnits = async () => { const t = await aside.innerText(); const m = t.match(/\b\d+(\.\d+)?\s?(px|%)|#[0-9a-fA-F]{3,8}\b/); return m ? m[0] : null }
     check('step 2 — no pixel size, percentage or colour code in the panel', (await noUnits()) === null, String(await noUnits()))
     const name = await aside.locator('span.uppercase').first().textContent()
     check('step 2 — the sample\'s name at the panel top beside the panel button', name === 'Controls sample — a feature row' && (await page.getByRole('button', { name: 'Collapse controls' }).isVisible()), name)
 
+    /** Open an accordion by its title, and leave an open one open. */
+    const openGroup = async (name) => {
+      const head = page.getByRole('button', { name, exact: true })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+    }
+
     // ── step 3
+    await openGroup('Layout')
     await page.getByRole('button', { name: 'Fewer Columns' }).click()
     c = await canvas()
     check('step 3 — − beside Columns re-flows to two columns', c.attrs['data-columns'] === '2', `data-columns=${c.attrs['data-columns']}`)
@@ -130,6 +149,8 @@ async function main() {
     check('step 3 — pressing it restores three columns and the arrow goes away', c.attrs['data-columns'] === '3' && (await reset.count()) === 0)
 
     // ── step 4
+    await openGroup('Layout')
+    await openGroup('Style')
     const align = page.getByRole('radiogroup', { name: 'Alignment' })
     await align.getByRole('radio', { name: 'Centre' }).click()
     c = await canvas()
@@ -144,7 +165,7 @@ async function main() {
     check('step 4 — back at Left the rule returns as it was', c.attrs['data-align'] === 'start' && c.attrs['data-rule'] === 'line' && (await rule.getAttribute('aria-disabled')) === null)
 
     // ── step 5
-    await page.getByRole('button', { name: 'Style', exact: true }).click()
+    await openGroup('Style')
     const styleRegion = page.getByRole('region', { name: 'Style' })
     const styleLabels = await styleRegion.evaluate((r) => [...r.querySelectorAll('[id$="-label"]')].map((e) => e.textContent.trim()))
     const absentIdx = await styleRegion.evaluate((r) => { const t = r.innerText; return { tint: t.indexOf('Card tint'), note: t.indexOf('There is no image focus here.'), bg: t.indexOf('Background role'), sp: t.indexOf('Vertical spacing'), div: t.indexOf('Top divider') } })
@@ -162,7 +183,7 @@ async function main() {
     check('step 5 — Accent does nothing', (await canvas()).attrs['data-bg'] === 'contrast')
 
     // ── step 6
-    await page.getByRole('button', { name: 'Content', exact: true }).click()
+    await openGroup('Content')
     const content = page.getByRole('region', { name: 'Content' })
     const featuresList = page.getByRole('list', { name: 'Features' })
     check('step 6 — "2–6 · 3 used" beside Features', (await content.locator('span', { hasText: /^2–6 · 3 used$/ }).count()) === 1)
@@ -303,7 +324,7 @@ async function main() {
 
     // ── step 15
     const newest3 = (await canvas()).posts
-    await page.getByRole('button', { name: 'Data', exact: true }).click()
+    await openGroup('Data')
     const data = page.getByRole('region', { name: 'Data' })
     await page.getByRole('button', { name: 'More Show' }).click(); await page.getByRole('button', { name: 'More Show' }).click()
     const newest5 = (await canvas()).posts
@@ -315,12 +336,22 @@ async function main() {
     check('step 15 — five titles, oldest first (a different list from newest)', c.posts.length === 5 && newest5.length === 5 && JSON.stringify(c.posts) !== JSON.stringify(newest5) && JSON.stringify(newest5.slice(0, 3)) === JSON.stringify(newest3), JSON.stringify(c.posts))
     check('step 15 — the panel lists the same five, grey, and "+ Add post" says they come from Ghost', JSON.stringify(panelTitles) === JSON.stringify(c.posts.map((p) => p.trim())) && greyRows && (await addPost.getAttribute('aria-disabled')) === 'true' && (await data.locator('p', { hasText: 'These come from Ghost, so there is nothing to add here.' }).count()) === 1)
     process.env.EXPECT_OLDEST && note('oldest titles', JSON.stringify(c.posts))
+    // R-115 with no control changed since step 5's Contrast: the Data rows are changes, named in the panel's order
+    const askEl = aside.locator('dialog')
+    await page.getByRole('button', { name: 'Reset this design' }).click()
+    const dataAsk = await askEl.evaluate((d) => ({ open: d.open, says: d.textContent.replace(/\s+/g, ' ').trim() }))
+    check('step 15 — Reset this design counts the Data group: "Background role, Show and Order"', dataAsk.open && dataAsk.says.includes('Removes your 3 changes — Background role, Show and Order — from this design.'), JSON.stringify(dataAsk))
+    await askEl.getByRole('button', { name: 'Cancel' }).click()
+    check('step 15 — Cancel closes it and changes nothing', !(await askEl.evaluate((d) => d.open)) && JSON.stringify((await canvas()).posts) === JSON.stringify(c.posts))
 
     // ── step 16
     await page.getByRole('button', { name: 'Fewer Columns' }).click()
     await align.getByRole('radio', { name: 'Centre' }).click()
     const feat16 = (await canvas()).features
     await page.getByRole('button', { name: 'Reset this design' }).click()
+    const asked = await askEl.evaluate((d) => ({ open: d.open, focus: document.activeElement?.textContent.trim(), says: d.textContent.replace(/\s+/g, ' ').trim() }))
+    check('step 16 — Reset this design asks first, names every change in the panel\'s order, keeps the dark override, and opens on Cancel (R-115)', asked.open && asked.focus === 'Cancel' && asked.says.includes('Removes your 5 changes — Columns, Alignment, Background role, Show and Order — from this design. Your words, pictures and dark overrides stay.'), JSON.stringify(asked))
+    await askEl.getByRole('button', { name: 'Reset design' }).click()
     c = await canvas()
     check('step 16 — Reset this design: three columns, Left, Base, three posts newest first', c.attrs['data-columns'] === '3' && c.attrs['data-align'] === 'start' && c.attrs['data-bg'] === 'base' && JSON.stringify(c.posts) === JSON.stringify(newest3), JSON.stringify(c.attrs))
     check('step 16 — the words and features you changed stay', JSON.stringify(c.features) === JSON.stringify(feat16) && c.date === '2026-11-01' && (await linkTrigger.innerText()).includes('Ghost search'), `${c.features.length} features kept`)

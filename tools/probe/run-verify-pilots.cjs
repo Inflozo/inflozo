@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Story 4.10's deployed walk of the pilots review page, against the DEPLOYED app and the live Supabase (R-82).
 //
-//   env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) OUT_DIR=/tmp/x node tools/probe/run-verify-pilots.cjs
+//   env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=/tmp/x node tools/probe/run-verify-pilots.cjs
 //
 // Keys reach it through process.env only and it prints none. It signs a throwaway account in through the Auth Admin
 // API (magic link → /auth/confirm), opens https://app.inflozo.com/pilots, and for EVERY pilot on the page — read off
@@ -10,6 +10,13 @@
 // at WCAG 2.1 AA inside the canvas (a positive control first: an <img> with no alt must be reported). Then the
 // owner's manual test rows that can be read back: the member arms, Show to, the feed pages and Latest Post's panel.
 // The account is deleted in `finally`, with the user count read before and after. Copies run-verify-controls.cjs.
+// Story 4.10's Fix (2026-09-15) adds the owner's three panel rulings, read off every pilot's own design.json: R-113
+// (the accordions in order, nothing pinned above them, every control in the group its role names), R-114 (pills for
+// the segmented controls only, each word on one line with room to spare) and R-115 (Reset this design carries its
+// icon, says so when there is nothing to reset, and asks first — axe inside the open confirm). It reads each pilot's
+// design.json from this checkout and imports the pill rule's widths from packages/library, so run it with Node 24, on a
+// clean tree, after CI has deployed HEAD — it refuses to start otherwise, asking Vercel which commit serves the app; the
+// browser draws real scrollbars, because the panel's own bar narrows the pills.
 const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
 const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
 const APP = process.env.APP_URL || 'https://app.inflozo.com'
@@ -40,6 +47,18 @@ const users = async () => {
 }
 
 async function main() {
+  // the panel checks compare the deployed page with this checkout's designs and pill rule, so they must be one commit: a
+  // clean tree, and HEAD the very commit Vercel serves the app from — a clean commit not yet deployed proves nothing
+  const { execSync } = require('node:child_process')
+  const repo = require('node:path').join(__dirname, '..', '..')
+  const dirty = execSync('git status --porcelain -- packages apps', { cwd: repo, encoding: 'utf8' }).trim()
+  if (dirty) throw new Error(`packages/ or apps/ has uncommitted changes, so this checkout is not what ${APP} serves:\n${dirty}`)
+  const head = execSync('git rev-parse HEAD', { cwd: repo, encoding: 'utf8' }).trim()
+  if (!process.env.VERCEL_TOKEN || !process.env.VERCEL_TEAM_ID) throw new Error('VERCEL_TOKEN and VERCEL_TEAM_ID are needed to match the deployment to this checkout')
+  const served = await (await fetch(`https://api.vercel.com/v13/deployments/${new URL(APP).host}?teamId=${process.env.VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` } })).json()
+  if (served.meta?.githubCommitSha !== head) throw new Error(`${APP} serves ${served.id ?? 'an unreadable deployment'}, built from ${served.meta?.githubCommitSha ?? 'no recorded commit'}, and this checkout is ${head}: push, wait for CI's deploy, then run this`)
+  note('deployment', `${served.id} ${served.readyState}, built from ${head.slice(0, 8)} — this checkout's HEAD`)
+  const { pillWidth } = await import(require('node:url').pathToFileURL(require('node:path').join(__dirname, '..', '..', 'packages', 'library', 'src', 'vocabulary.ts')).href)
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   const stale = all.filter((u) => /^pilots-harness-\d+@inflozo\.com$/.test(u.email || ''))
@@ -54,7 +73,7 @@ async function main() {
   const userId = created.body.id
   let browser = null
   try {
-    browser = await chromium.launch()
+    browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
     const link = await admin('/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email }) })
     check('POST /auth/v1/admin/generate_link (magiclink)', link.status === 200 && !!link.body.hashed_token, `HTTP ${link.status}`)
     // bypassCSP: axe is injected into the canvas document, which the app's CSP would otherwise refuse
@@ -164,6 +183,83 @@ async function main() {
       await radio('show-to', 'Paid members').click(); await page.waitForTimeout(250)
       check('step 13 — Latest Post: Show to Paid, viewed signed out, removes the section', (await canvasHtml()).trim() === '')
       await radio('show-to', 'Everyone').click()
+    }
+    // ── R-113 · R-114 · R-115 — the panel, on every pilot, against its own declaration ──
+    const fs = require('node:fs')
+    const path = require('node:path')
+    const designOf = (id) => JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'packages', 'library', 'designs', id, 'design.json'), 'utf8'))
+    const ORDER = ['Section Settings', 'Content', 'Layout', 'Style', 'Data']
+    const TITLE = { settings: 'Section Settings', content: 'Content', layout: 'Layout', style: 'Style' }
+    const aside = page.locator('aside#section-controls')
+    const openGroup = async (title) => {
+      const head = aside.getByRole('button', { name: title, exact: true })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+    }
+    for (const name of pilotNames) {
+      await at(name)
+      const id = await iframe.getAttribute('data-pilot')
+      const design = designOf(id)
+      const heads = await aside.evaluate((a) => [...a.querySelectorAll('button[aria-expanded][aria-controls$="-body"]')].map((b) => b.textContent.trim()))
+      check(`R-113 · ${name} — the accordions in the panel's order`, heads.length > 0 && heads.join(' · ') === ORDER.filter((t) => heads.includes(t)).join(' · ') && heads.every((t) => ORDER.includes(t)), heads.join(' · '))
+      for (const t of heads) await openGroup(t)
+      const placed = await aside.evaluate((a) => [...a.querySelectorAll('[id$="-label"]')].map((e) => {
+        const region = e.closest('[role="region"]')
+        return { label: e.textContent.trim(), group: region ? document.getElementById(region.getAttribute('aria-labelledby'))?.textContent.trim() : null }
+      }))
+      const misplaced = design.controlSchema.filter((c) => !placed.some((p) => p.label === c.label && p.group === TITLE[c.group])).map((c) => `${c.label} → ${TITLE[c.group]}`)
+      check(`R-113 · ${name} — nothing pinned above the groups, and every control in the group its role names`, placed.every((p) => p.group !== null) && misplaced.length === 0, misplaced.join(', ') || `${design.controlSchema.length} controls placed`)
+      const rows = await aside.evaluate((a) => [...a.querySelectorAll('[role="radiogroup"].rounded-pill')].map((g) => ({
+        label: document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim(),
+        pills: [...g.querySelectorAll('[role="radio"]')].map((b) => {
+          const r = document.createRange()
+          r.selectNodeContents(b)
+          return { text: b.textContent.trim(), width: r.getBoundingClientRect().width, lines: new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size, room: Math.round(((b.getBoundingClientRect().width - r.getBoundingClientRect().width) / 2) * 10) / 10, clipped: b.scrollWidth > b.clientWidth }
+        }),
+      })))
+      const cramped = rows.flatMap((row) => row.pills.filter((p) => p.lines !== 1 || p.clipped || p.room < 2).map((p) => `${row.label}: "${p.text}" ${p.lines} line(s), ${p.room} px each side`))
+      check(`R-114 · ${name} — every pill holds its words on one line with 2 px to spare, the panel's own scrollbar showing`, rows.length > 0 && cramped.length === 0, cramped.join('; ') || rows.map((r) => r.label).join(', '))
+      // the rule's glyph table is a measurement of this panel's type: a font or size change shows here, not silently
+      const drifted = rows.flatMap((row) => row.pills.filter((p) => Math.abs(p.width - pillWidth(p.text)) > 1).map((p) => `"${p.text}" drawn ${p.width.toFixed(1)} px, the rule counts ${pillWidth(p.text)}`))
+      check(`R-114 · ${name} — the pill rule's widths match what the browser drew`, drifted.length === 0, drifted.join('; '))
+      const pills = rows.map((r) => r.label)
+      const wrongShape = design.controlSchema.filter((c) => (c.type === 'segmented') !== pills.includes(c.label)).map((c) => `${c.label} (${c.type})`)
+      check(`R-114 · ${name} — pills are the design's segmented controls and nothing else of its own`, wrongShape.length === 0, wrongShape.join(', '))
+    }
+    if (pilotNames.includes('Three Up')) {
+      await at('Three Up')
+      const reset = aside.getByRole('button', { name: 'Reset this design' })
+      // a CSS locator, not a role one: a closed <dialog> is hidden, and a role locator waits for it to show
+      const ask = aside.locator('dialog')
+      const perRow = async () => frame().evaluate(() => document.querySelector('#canvas > *').getAttribute('data-per-row'))
+      check('R-115 — "Reset this design" carries its icon', (await reset.locator('svg').count()) === 1)
+      // the status line under the button, watched: a second press must take the line away and put it back, or a screen
+      // reader hears nothing the second time — a count of what is on the page cannot see that
+      const status = reset.locator('xpath=following-sibling::*[@role="status"]')
+      await status.evaluate((s) => { window.__said = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.textContent.includes('Nothing to reset')) window.__said++ }).observe(s, { childList: true, subtree: true }) })
+      await reset.click()
+      await page.waitForTimeout(150) // the line is set on the next frame
+      check('R-115 — with nothing changed it says so and asks nothing', !(await ask.evaluate((d) => d.open)) && (await status.innerText()).trim() === 'Nothing to reset: every setting is already this design\'s default.', (await status.innerText()).trim())
+      await reset.click()
+      await page.waitForTimeout(150)
+      const said = await status.evaluate(() => window.__said)
+      check('R-115 — a second press says it again: the line leaves and comes back, and shows once', said === 2 && (await aside.getByText('Nothing to reset').count()) === 1, `announced ${said} time(s)`)
+      await openGroup('Layout')
+      await aside.getByRole('radiogroup', { name: 'Per row' }).getByRole('radio', { name: 'Four' }).click()
+      check('R-115 — a change clears that sentence', (await perRow()) === 'four' && (await aside.getByText('Nothing to reset').count()) === 0)
+      await reset.click()
+      const asked = await ask.evaluate((d) => ({ open: d.open, focus: document.activeElement?.textContent.trim(), says: d.textContent.replace(/\s+/g, ' ').trim() }))
+      check('R-115 — it asks first, names the one change, answers the fear, and opens on Cancel', asked.open && asked.focus === 'Cancel' && asked.says.includes('Removes your 1 change — Per row — from this design. Your words and pictures stay.'), JSON.stringify(asked))
+      await page.addScriptTag({ path: AXE })
+      const inDialog = await page.evaluate(async () => (await window.axe.run(document.querySelector('dialog[open]'), { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] })).violations.map((v) => `${v.id}(${v.nodes.length})`))
+      check('R-115 — axe finds zero violations inside the open confirm', inDialog.length === 0, inDialog.join(', '))
+      await page.keyboard.press('Escape')
+      check('R-115 — Escape closes it and changes nothing', !(await ask.evaluate((d) => d.open)) && (await perRow()) === 'four')
+      await reset.click()
+      await ask.getByRole('button', { name: 'Cancel' }).click()
+      check('R-115 — Cancel closes it and changes nothing', !(await ask.evaluate((d) => d.open)) && (await perRow()) === 'four')
+      await reset.click()
+      await ask.getByRole('button', { name: 'Reset design' }).click()
+      check('R-115 — "Reset design" puts Per row back and its own reset arrow goes', !(await ask.evaluate((d) => d.open)) && (await perRow()) === 'three' && (await aside.getByRole('button', { name: 'Reset Per row' }).count()) === 0)
     }
     await page.screenshot({ path: `${OUT}/pilots-review-1600.png` })
     await context.close()

@@ -895,7 +895,7 @@ test('the canvas honours the date format the way Ghost does, and refuses a bad d
 // differs between the emitters is a stylesheet selecting on two different things.
 
 const CONTROLS: ControlDef[] = [
-  { name: 'align', type: 'segmented', label: 'Alignment', group: 'arrangement', values: ['start', 'center'], default: 'start' },
+  { name: 'align', type: 'segmented', label: 'Alignment', group: 'layout', values: ['start', 'center'], default: 'start' },
   { name: 'rule', type: 'segmented', label: 'Rule', group: 'style', values: ['none', 'line'], default: 'line',
     disabledBy: { control: 'align', whenValue: 'center', reason: 'Not while centred.', inForce: 'none' } },
 ]

@@ -27,7 +27,7 @@ Build the machine every design in the library is authored against — **before a
 
 ## Requirements & Constraints
 
-- **The registry entry is the contract every design is written against** — identity, tier, binding context, compile target, content and control schemas, quick controls, markup, stylesheet, optional module, data bindings, Ghost compatibility, dark capabilities, preview seed. `contentSchema` is the **category's union**; `controlSchema` and `quickControls[]` are **per design**. Identity is `{categoryId}/{n}`, stable forever, and both schemas are generated from one authored source, never hand-maintained twice.
+- **The registry entry is the contract every design is written against** — identity, tier, binding context, compile target, content and control schemas, markup, stylesheet, optional module, data bindings, Ghost compatibility, dark capabilities, preview seed. `contentSchema` is the **category's union**; `controlSchema` is **per design** (`quickControls[]` was withdrawn by R-113 at Story 4.10's owner test, 2026-09-15). Identity is `{categoryId}/{n}`, stable forever, and both schemas are generated from one authored source, never hand-maintained twice.
   - **R-102 (owner, 2026-09-11) — a content prop never crosses a category boundary.** The category's
     union is the widest a prop ever reaches: two categories that both want a signup heading each carry
     their own, and a customer who wants the same words in both types them twice. There is no shared
@@ -277,10 +277,27 @@ Build the machine every design in the library is authored against — **before a
 ## UX & Interaction Patterns
 
 - **The design export is the design authority and is never edited (R-74).** Controls, panels, badges and states come from `Editor Sidebar Kit.dc.html`; the greyed-with-reason pattern from `P0-0 Greyed Control Pattern.dc.html`; the item list from `P0-3`; the extra sidebar surface from `B Missing Surfaces.dc.html` B2; the style-guide fixture from `C Post Body.dc.html` C4. Each pilot has its own frame plus its category's `-0 Category Proof`, which carries the tokenisation proof and roster the spec prose does not. A surface with no frame is extrapolated from the nearest one that has — never invent a second interface vocabulary.
-- **The sidebar is 3–5 Quick Controls, then Content / Arrangement / Style / Data.** *Arrangement*, not "Layout" — the design itself is chosen in the design picker above the groups. The Data group appears only on dynamic designs.
+- **The sidebar is Section Settings · Content · Layout · Style · Data, with nothing pinned above them** (R-113, below; until Story 4.10 it was 3–5 Quick Controls, then Content / Arrangement / Style / Data). The design itself is chosen in the design picker above the groups, and *layout* names the group, never a design. The Data group appears only on dynamic designs.
   - **Story 4.5 (2026-09-13) — the panel is shown on an internal review page, `/controls`**, beside the
     controls sample (`packages/library/fixtures/controls/`), the way `/kit` and `/style-guide` were shown
     before the editor; Epic 5 mounts its components rather than drawing them again.
+  - **R-113 (owner, Story 4.10's test, 2026-09-15) supersedes the Quick Controls and the Arrangement group: every setting sits in the accordion
+    its role names — Section Settings · Content · Layout · Style · Data — with nothing pinned above them.** Content
+    is what the section shows, Layout where things sit, Style how it looks (all spacing and the universal trio at its
+    foot), Data which Ghost content feeds it, Section Settings only how it behaves. A setting that mixes Off with
+    other values takes the role of what its other values change; the role follows what a setting does, never its
+    title, so a control's name holds one type, value set and group across the library (`categoryControlUnion`, R-53)
+    and a title sits where the register files it for that design. `quickControls[]` is withdrawn. The
+    decision order and the table of kinds, proven against every setting the export declares, are
+    `docs/section-authoring.md` § 2, and `packages/library/control-groups.json` files every one of those settings
+    under its group — a category story reads its designs' groups from it, and `tools/check-snapshots.mjs` holds each
+    built design to it, failing a setting it does not file; one panel prints one title once, an accordion's included
+    (R-13).
+  - **R-114 (owner, same test) — pills are for short choices.** A segmented control offers two to four values, each
+    at most `PILL_CHARS` characters and fitting its pill in the panel's own type (`pillRefusal`, measured on the
+    deployed panel); a longer choice is a named select, and the validator refuses the rest as `pill-words`.
+  - **R-115 (owner, same test) — "Reset this design" carries the Undo glyph and asks first**, in the app's dialog
+    vocabulary shaped on S14c's card reset; with nothing changed it says so instead of asking.
 - **Greyed versus absent is a designed distinction and a user must be able to tell them apart.** Could-never → **absent**, and the panel says why. Could-but-not-now → **greyed**, always with the reason as one sentence in the helper-caption slot, **never a tooltip and never hidden**. The dependency is declared in the schema so the sidebar, the validator and the compiler read one source. **Remove never greys** — at the floor it stays visible and active, and clicking it produces the floor and the reason as one sentence under the list.
 - **Reorder is drag with a keyboard equivalent.** Per-control and whole-section reset exist. Every change paints optimistically **within one frame** and the re-render completes inside the **100 ms** budget. Mode-scoped controls carry a moon badge when a dark override exists, captioned "Dark override" — colour never carries the only signal.
   - **Story 4.5's owner test (2026-09-13) — a dragged row shows a dashed slot the size of the row where it

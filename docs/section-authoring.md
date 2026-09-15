@@ -54,7 +54,7 @@ FR-G3's entry is
 
 ```
 { id, category, name, tier, bindingContext, compileTarget, contentSchema, controlSchema,
-  quickControls[], html, css, js?, dataBindings?, ghostCompat, darkCapabilities, previewSeed }
+  html, css, js?, dataBindings?, ghostCompat, darkCapabilities, previewSeed }
 ```
 
 **An entry is ASSEMBLED, never authored.** Nothing in the tree is a file shaped like the list above.
@@ -67,7 +67,6 @@ It is built — `assembleEntry()` in `registry.ts` — from four inputs:
 | the **category's** `content.json`, at `designs/{category}/content.json` | `contentSchema` |
 | the design's `index.html` and `style.css` | `html`, `css` |
 | recovered from `index.html`'s `data-module` names, in registry order, omitted when there are none *(Story 4.7)* | `js` |
-| recovered from `controlSchema`, never written | `quickControls[]` |
 
 (`design.json` is the third authored file and has its own row. The entry also carries the structural
 descriptor tuple, so FR-G5's "no two designs in a category share one" has something in the registry
@@ -75,25 +74,24 @@ to read.)
 
 So **"registry entry" and "`design.json`" are different lists**, and reading one as the other is the
 mistake this section exists to remove. `design.json` carries no `id` — identity is the path, and an
-authored id is a second source that can disagree with it. It carries no `quickControls` either.
+authored id is a second source that can disagree with it.
 
 **Identity is `{categoryId}/{n}` and is stable forever.** `a17/1` is that design for the life of the
 product; renaming it, re-tiering it or redrawing it does not move it.
 
-**`contentSchema` is the category's union. `controlSchema`, `universals`, `absent` and
-`quickControls[]` are per design** — the assembly carries `universals` as `{}` and `absent` as `[]`
+**`contentSchema` is the category's union. `controlSchema`, `universals` and `absent` are per
+design** — the assembly carries `universals` as `{}` and `absent` as `[]`
 when a design declares none. A registry entry therefore describes **one design against its category's
 shared content model**. The category's **control** union is the other direction and is **generated,
 never authored**: `categoryControlUnion(designs)` in `registry.ts` builds it from the designs' own
-lists and refuses one control name carrying two value sets, naming both designs (FR-F7, R-53) — where
-two designs genuinely differ, they differ by name.
+lists and refuses one control name carrying two value sets, or sitting in two groups, naming both designs
+(FR-F7, R-53, R-113) — where two designs genuinely differ, they differ by name. The row title a customer reads sits
+where the register files it for that design (§2).
 
-**`quickControls[]` is recovered mechanically** as the first 3–5 entries of the **design's own**
-control list, in order — read from the design level, never from the category's union, which is the
-storage domain FR-D19 parks against and not a sidebar. A `quickControls` array written into a
-`design.json` is a **validation failure**, not an override: the two documents cannot drift if only
-one of them is authored. A design that declares fewer than three controls has fewer Quick Controls;
-FR-F3 says designs legitimately expose different controls, and a floor would be an invented rule.
+**Nothing is pinned above the settings groups** *(the owner's ruling R-113, Story 4.10's test, 2026-09-15)*. FR-G3
+once carried `quickControls[]`, recovered from the first three to five entries of a design's control list and drawn
+as a card above the accordions. It is withdrawn: a control's place in the panel is its `group` (§2), and its place
+inside that group is its place in `controlSchema`.
 
 ### The rule of the content model — R-102
 
@@ -124,17 +122,17 @@ category's union, the answer is to declare it again there — not to reach for a
   "bindingContext": ["posts", "tags"],
   "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
   "controlSchema": [
-    { "name": "cols",  "type": "stepper",      "label": "Columns",             "group": "arrangement",
+    { "name": "cols",  "type": "stepper",      "label": "Columns",             "group": "layout",
       "values": ["2", "3", "4"], "default": "3" },
     { "name": "card",  "type": "segmented",    "label": "Card style",          "group": "style",
       "values": ["flat", "outlined", "raised"], "default": "raised" },
-    { "name": "meta",  "type": "named-select", "label": "Post details",        "group": "style",
+    { "name": "post-details", "type": "named-select", "label": "Post details", "group": "content",
       "values": ["none", "date", "author-date"], "default": "author-date",
       "valueLabels": { "author-date": "Author and date" } },
-    { "name": "align", "type": "segmented",    "label": "Alignment",           "group": "arrangement",
+    { "name": "align", "type": "segmented",    "label": "Alignment",           "group": "layout",
       "values": ["start", "center"], "default": "start",
       "valueLabels": { "start": "Left", "center": "Centre" } },
-    { "name": "badge", "type": "toggle",       "label": "Editor's pick badge", "group": "style",
+    { "name": "badge", "type": "toggle",       "label": "Editor's pick badge", "group": "content",
       "values": ["on", "off"], "default": "on" },
     { "name": "rule",  "type": "segmented",    "label": "Rule under heading",  "group": "style",
       "values": ["none", "line"], "default": "none",
@@ -208,8 +206,8 @@ the sidebar, the validator and both emitters** (FR-F7): `packages/section-runtim
 
 | `type` | Panel control | Value grammar |
 |---|---|---|
-| `segmented` | Segmented Control | lowercase kebab words — `start`, `author-date` |
-| `named-select` | Named Select | lowercase kebab words |
+| `segmented` | Segmented Control — pills | lowercase kebab words — `start`, `author-date` — and **two to four of them, each short enough for its pill** (R-114, below) |
+| `named-select` | Named Select — a dropdown | lowercase kebab words; every choice too long for pills is one, and a short one may be |
 | `stepper` | Stepper | ascending **consecutive** integers, as strings — `"2" · "3" · "4"`; never a unit and never a gap |
 | `toggle` | Toggle | exactly `on` and `off` |
 | `swatch-row` | Swatch Row | the pack's roles only — `base · surface · accent · contrast · image` (`BACKGROUND_ROLES`); never a colour |
@@ -220,15 +218,15 @@ Every control declares:
   directive (`items`, `prop`) or Ghost's own `data-portal` is refused: the attribute must mean nothing
   but the control.
 - **`label`** — the row title the panel prints, in words.
-- **`group`** — `arrangement` or `style`, the accordion it sits in when it is not a Quick Control.
-  **Content** and **Data** are not control groups: content props fill the first, and a declared
-  query's Count and Order fill the second.
+- **`group`** — the accordion its **role** names (R-113): `settings` · `content` · `layout` · `style`. The
+  panel draws Section Settings, Content, Layout, Style and Data in that order; *Which group a setting sits in*,
+  below, is the decision. **Data** is not a control group: a declared query's rows fill it.
 - **`values`** and a **`default`** among them. **No CSS-wide word anywhere in a declaration** —
   `inherit`, `initial`, `unset`, `revert`, in a value, a default, a `valueLabels` key or a dependency
   — and so no `Inherit` (FR-F2, R-23).
 - **`valueLabels`**, optional — the words the panel prints where a value is not already its own word
   (`start` → "Left"). An unlabelled value prints as itself with its first letter raised and hyphens as
-  spaces, which is why `meta` above labels only `author-date`. A label for a value the control does not
+  spaces, which is why `post-details` above labels only `author-date`. A label for a value the control does not
   have is refused as a typo.
 - **`darkOverride`**, optional — the control is mode-scoped and accepts a second value in dark mode
   (FR-D7); the panel draws the moon badge with the words "Dark override" only once one is stored
@@ -243,13 +241,12 @@ own values; a dependency on itself, on a control the design does not declare, on
 control does not have, or round a circle of two or more is refused.
 
 **The cap is one design's own controls.** More than `CONTROL_CAP` in one `controlSchema` is refused
-(FR-F3's ≈15); the universal trio and the Data group are not counted. The first 3–5 are the Quick
-Controls (§1).
+(FR-F3's ≈15); the universal trio and the Data group are not counted.
 
 **The three universal controls — `bg`, `spacing`, `divider` — are declared once, never per design,
 and in full** (`UNIVERSALS`). They sit on every section root — R-103's no-value lock below is the one
-absence — are exempt from the cap, are never Quick Controls, and the panel draws them as one block at
-the foot of Style.
+absence — are exempt from the cap, and each names its `group` like any control: all three are how a section
+looks, so the panel draws them as one block at the foot of Style (R-113, whose ruled example names them there).
 
 | `name` | Label | Type | Values | Default |
 |---|---|---|---|---|
@@ -280,7 +277,7 @@ merely paints no ground of its own in the normal stack may lock at a value inste
 
 **Absent, not greyed.** A control this design could **never** use is not drawn, and its group carries
 one note where it would have been (P0-0, R-68): `absent` is a list of `{ group, note }`, the group one
-of `content · arrangement · style · data`, the note a sentence. The panel prints it after the group's
+of `settings · content · layout · style · data`, the note a sentence. The panel prints it after the group's
 own controls and before the trio. It does not grey, because nothing switched it off and nothing brings
 it back.
 
@@ -301,6 +298,130 @@ Count or Order stored under the same key (another design's, carried back by Stor
 folded in — `withData` treats it exactly as it treats `ids`. The theme's `{{#get}}` is the ordinary one; `fixed`
 is the editor's, never Ghost's. Refused (`bad-get-fixed`): `fixed` that is not `true`, `fixed` beside `ids`, and
 `fixed` without both `limit` and `order`.
+
+#### Which group a setting sits in — R-113 *(Story 4.10, the owner's test)*
+
+**Every setting sits in the accordion its role names, and nothing is pinned above them.** The panel draws Section
+Settings, Content, Layout, Style and Data, in that order, each only when it holds something. The owner's words:
+Content is "any content changes", Style "any visual/design changes", Layout "any layout changes", Data "controls to
+choose source of data", and Section Settings holds only a setting that fits none of those. His ruled example is the
+reading every other decision follows: Three Up puts its words, **Excerpt**, **Meta** and **Tag** in Content, **Per
+row** and **First cell** in Layout, and **Image ratio** with the three universal controls in Style; Rail puts **On
+scroll** alone in Section Settings, "which is how the header behaves, not its content, look or layout".
+
+**Decide by asking, in this order — the first yes wins.** A behaviour is none of the first four, even when it draws
+something (a close button, a lightbox), because the owner's own example sets it apart as "how the header behaves, not
+its content, look or layout" — so each question below is about a setting that is not a behaviour.
+
+1. **Data** — does it choose *which* Ghost content fills a list or a slot, how many or in what order? Where a list of
+   items comes from (posts, tags, authors, staff, tiers, the site's navigation), a filter, the tag or author a list
+   draws from, hand-picked posts, a count or order of Ghost items, what a query does when it finds nothing. A
+   declared query's rows are the Data group; a design's own control never is (`control-group` says so).
+2. **Content** — does it change *what* the visitor reads, sees or can press? A part shown or hidden, how much of a
+   text shows (lines), which details or words appear, where one value comes from (typed, or the site's own
+   description or member count; "From the excerpt · Off"), how many of the items already there show, and every
+   authored text, link, picture and list.
+3. **Layout** — does it change *where* things sit, or how far the section reaches, with the same content and the same
+   look? Columns and items per row, alignment, which side a picture or a column sits on, the order and position of
+   parts, splits, a cell spanning columns, the width or height of the section or of a region in it — a band, a bar, a
+   cover, a tile, a card, a column — whatever its values are called, bleed against contained, how much one part
+   overlaps another, how many items stay in view before the rest fold into another place in the section.
+4. **Style** — does it change *how it looks*? The size of a thing inside the section (type, icons, avatars,
+   thumbnails), image ratio and crop and focus, the treatment of cards and planes, rules, dividers, markers,
+   shadows, scrims and tints — and where such a decoration sits (Rule: None · Above the tag · Below the meta) — the
+   form a part takes (Button · Text link; Dots · Numbers; Outline · Solid), hover appearance, a picker of a design
+   for a part, and **all spacing** — padding, gaps, insets, density, and a row's height or a band's inner depth that
+   is its padding — because the ruled example puts Vertical spacing here.
+5. **Section Settings** — none of the four: how the section *behaves*. What happens over time, while scrolling or on
+   interaction, or who and where it is shown to: sticky or shrink on scroll, autoplay, loop, speed, count-up and
+   reveal motion, a lightbox on click, dismissible, open on load, where a form sends what it collects, what one member
+   state is shown, what the section does when the site has members or commenting switched off, member visibility
+   wherever a panel carries it (the Layers panel or this one is Story 5.4's to settle).
+
+**The tie-breakers.**
+
+- **A setting that mixes Off, None or Hide with other values takes the role of what its other values change.**
+  Avatar: Off · Small · Medium · Large is Style; Excerpt: Off · One line · Two · Three is Content; First cell: Off ·
+  Spans two columns is Layout. A plain On · Off or Show · Hide of a part is Content — unless the part is a
+  decoration (a rule, a scrim, a shadow), which is Style, or a behaviour, which is Section Settings.
+- **Judge by the values and what the setting does, never by its title.** The export gives one title different
+  settings in different categories — "Order: Newest · Oldest" chooses Ghost's rows (Data), "Order: Value first ·
+  Label above" arranges a stat (Layout) — so **a title holds one group within its category**, except on a design the
+  register names, and nothing holds a title across categories. **A control's `name` is the author's own word, and it
+  holds one type, value set and group across the whole library** (R-53 as ruled, `categoryControlUnion` handed every
+  design): two settings that differ take two names, as Centred's author line is `byline` beside Three Up's `meta`.
+  The words a value prints are each design's own, from its frame — the export prints `center` as Centred on A22 #1
+  and as Centre on A24 #1 — so R-53 compares values, never their words.
+- **A region's size is Layout; the space inside or between is Style.** A band's, bar's, tile's or cover's height is
+  Layout even on the Compact · Comfortable · Spacious ladder; a row's height that is its padding, a band's inner
+  depth, a card's padding and a gap are Style.
+- **A pressable part is Content; a decoration beside words is Style.** Dots and arrows that move a carousel are
+  Content; an arrow or glyph after a link's words is Style. A different thing to press (a button, or a form with a
+  field) is Content; the same thing drawn two ways (Button · Text link) is Style.
+- **A list's source is Data; one value's source is Content.** "Source: Authored · From posts" is Data; "Value source:
+  Typed · Member count" is Content. How many Ghost items a query fetches is Data; how many of what is already there
+  shows ("Tags shown", "Quotes shown") is Content.
+- **Who is reading, and what the site allows, is Section Settings; an empty query is Data.** "When members are
+  disabled" and "Free members: the prompt only" are Section Settings; "When nothing matches" is Data.
+- **Hover appearance is Style; what a click does is Section Settings.**
+- **Inside a group, a design's controls keep their declared order**, and a control greyed by another in the same
+  group is declared after it (`dependency-order`), so the reason under a grey row points up at a row already read.
+  Across groups the panel's group order decides and a dependency is legal — the export's Three Up greys "Three lines"
+  at Per row Four, a Layout row below Content — so its reason names the setting that greys it, as every drawn reason
+  does. A
+  design's root carries its controls in the same order, so declaring them in a new order re-baselines its snapshot.
+
+**The kinds of setting the library has, and where each goes.** Swept from every category of the design export —
+the examples are its own titles:
+
+| Group | What it holds | Titles from the export |
+|---|---|---|
+| **Section Settings** | how the section behaves: over time, on scroll, on interaction, for whom and where | On scroll · Dismissible · Shows on · Speed · Interval · Transition · Count up · Lightbox · Open on load · Sticky head · Collapses to Menu · Member visibility · When a member is signed in · When members are disabled · Where it goes |
+| **Content** | what the visitor reads, sees or can press, and where a single value comes from | Eyebrow · Description · Blurb · Excerpt · Meta · Tag · Label · Attribution · Numbering · Controls (Dots · Arrows) · Rail contents · Show date · Rows shown · Value source · Caption (From Ghost · Hide) · Group by · Back to top |
+| **Layout** | where things sit and how far the section reaches | Alignment · Columns · Per row · Split · Division · Image side · Rail side · Text position · Head column · Foot · Overlap · Card width · Band width · Band edges · Measure · Height · Band height · Bar height · Nav items before More |
+| **Style** | how it looks, and every kind of spacing | Title size · Name size · Image ratio · Crop · Image focus · Scrim · Rules · Divider · Separator · Marker · Cards · Plane · Button · Action (Button · Text link) · Link style · Pagination style · Card padding · Band padding · Inset · Gap · Density · Row height |
+| **Data** | which Ghost content fills a list or a slot, how many, in what order, and what the query does when it finds nothing | Source · Content source · Filter · Tag or author · Hand-picked posts · Which post · Count · How many · Batch size · Order · Tiers · Nav children · When nothing matches |
+
+**The register — `packages/library/control-groups.json`.** Every setting the export declares is filed there under its
+category and the title the panel prints, with its group; where one design's setting of a title does something else
+(A21's "Portrait" is Circle · Rounded square, and on 10 Directory Show · Hide), the entry names that design. It was
+made on 2026-09-15 by two independent passes over the whole export against this rule, each disagreement settled into
+the rule's words above, and one more sweep for one group per kind across categories (Story 4.10's `## Verification`
+records the run). **A category story reads its designs' groups from it.** `tools/check-snapshots.mjs` holds every
+built design's control to the entry its title names, and **fails a control whose title has no entry**: the story that
+gives a setting a title the register does not carry adds it, with its group, so a setting cannot leave its group by
+being renamed in the same edit. A title filed under Data is a query's setting, declared in `dataBindings`, never a
+control. A labelled group's rows are filed under the title the panel prints ("Actions › Sign in" is "Sign in"). One
+panel prints one title once, its accordions' titles included (R-13), so where the export's title for a setting would
+repeat another row of the same panel, the register files the setting under the title the export gives it elsewhere:
+A4 #9's button style, drawn "Primary action" beside a Primary action toggle, is "Action style" (A6's word), and A17's
+"Title: Large · Display" is "Title size", because every A17 panel prints a Title field. A24's and A34's settings titled
+"Layout", and A34's "Content", have no other title in the export; the story that builds one names it and files it.
+
+**Data appears when a design declares a query.** The ruled example also listed "Data — Show, Order" for Three Up; its
+feed declares none, so its Data rows arrive with Story 5.19's Source and Count, and today the controls sample is the
+panel that shows Show and Order in Data.
+
+#### Pills or a dropdown — R-114 *(Story 4.10, the owner's test)*
+
+**Pills are for short choices.** The owner's words: "Any property where the values are larger … we should show a
+dropdown. With these large values, the pill design looks bad." A `segmented` control draws its values as pills of
+equal width across the 280-wide panel, so it offers **two to four values, each at most `PILL_CHARS` characters, each
+fitting its pill on one line with 2 px to spare either side**; anything else is a `named-select`. The validator
+refuses the rest as `pill-words`, naming the value.
+
+- **Characters, as he measures it:** "Spans two columns" is too long for pills (his example); "Flush left · Centred"
+  and "Full bleed · Inset" are not — short phrases stay pills. The measure below also refuses his example, but by a
+  pixel and a half: the cap is what keeps it a dropdown whatever the panel's width.
+- **And a measure, because a word never wraps:** it widens its pill and squeezes the others. Eleven letters fit one
+  of three pills as "Comfortable" (73 px, and 2 px either side, in 77.7) and do not as "Wholesomely" (80 px). `pillWidth` sums each
+  character's width in the pill's own type, measured on the deployed panel, against the narrowest track the panel
+  draws — with its own scrollbar showing. The deployed harness (`tools/probe/run-verify-pilots.cjs`) compares those
+  widths with what the browser draws, so a font or size change is caught.
+- **Checked against the whole export on 2026-09-15:** of the value sets it draws as pills, only the long phrases
+  become dropdowns ("Spans two columns", "Above and below", "Comfortable 44"); the universal controls keep their pills.
+- A short choice may still be a dropdown where its drawn panel draws one (DW-111); only a long one must be.
+- A stepper, a toggle, a swatch row and a dropdown are never measured.
 
 ### `content.json` — one per **category**
 
@@ -1236,7 +1357,6 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |
 | pagination + a non-paginated target | R-7. Outside a paginated context `{{pagination}}` is a fatal render. |
 | a `{{#get}}` + `error.hbs` or `private.hbs` | R-7. An error page that queries the database compounds the outage. |
-| a hand-written `quickControls[]` | FR-G3. It is recovered from the design's own control list; two authored copies drift. |
 | an `id` in `design.json` | identity is the directory path. A second source can disagree with it. |
 | an inline `style` beyond one custom property, or one whose value is not a pack token | AD-3's carve-out is exactly one declaration wide, and the boundary is machine-checkable. A static value is `var(--…)`: §7.3 allows no hex outside the Style Pack, and the bound form is `data-bind-style`. |
 | a `data-repeat-limit` on a declared query, a query nothing references, a key that is a source name | one number in one place; a dead query is a misspelt repeat; `posts` as a key is ambiguous with the context path. |
@@ -1250,12 +1370,16 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a universal control redeclared per design | R-23. Narrowing a universal's values is legal with a stated reason; renaming, inventing and `Inherit` are not. |
 | a control with no values, or a default outside them | every control is closed-valued — that is what makes the data-attribute selector viable at all. |
 | a control dependency with no reason | R-33. Greyed **with the reason shown**, never hidden and never a tooltip. |
-| a control `type` outside `segmented · stepper · toggle · named-select · swatch-row`, or a control with no `label` or no `group` (`arrangement` · `style`) | *(Story 4.5)* Appendix C's control vocabulary is closed, and a text, link, picture, icon, date or list is a content prop, not a control. The panel prints a row title in words and puts the row in an accordion. |
+| a control `type` outside `segmented · stepper · toggle · named-select · swatch-row`, or a control with no `label` or with a `group` outside `settings · content · layout · style` (`arrangement` is told it is `layout` now) | *(Story 4.5; the groups R-113's, Story 4.10)* Appendix C's control vocabulary is closed, and a text, link, picture, icon, date or list is a content prop, not a control. The panel prints a row title in words and puts the row in the accordion its role names. |
+| a segmented control offering fewer than two or more than four values, a value longer than `PILL_CHARS` characters, or a value wider than its pill in the panel (`pill-words`) | *(Story 4.10)* R-114: pills are for short choices. The owner's example, "Spans two columns", is a dropdown; the fit is measured in the pill's own type (`pillWidth`), because a word never wraps — it widens its pill and squeezes the others. |
+| one control name with two types, two value sets or two groups anywhere in the library; a built design's setting that `packages/library/control-groups.json` does not file, files under another group, or files under Data; one title printed twice in one panel, an accordion's title included | *(Story 4.10)* R-113, R-53, R-13: a name is a promise about what a control does, and a title is what the customer reads. `categoryControlUnion` returns the refusal naming both designs; `tools/check-snapshots.mjs` holds every built design to the register and every panel to R-13 on every commit. |
+| a stylesheet rule selecting on a `data-*` attribute that is no declared control or universal (`stylesheet-control-undeclared`), or on a value the design does not offer for it (`stylesheet-control-value`) | *(Story 4.10's Fix)* AD-3 from the stylesheet's side: renaming a control and missing one rule leaves a setting that does nothing, with every other check green. `validateDesign` reads `style.css` when it is handed one, as `tools/check-snapshots.mjs` does. |
 | values that break their type's grammar — a toggle that is not exactly `on`/`off`, a stepper that is not ascending consecutive integers, a swatch row offering anything but the pack's roles, a named value that is not a kebab word — or a `valueLabels` key that is not a value | *(Story 4.5)* the grammar is what keeps the attribute selector, the panel's drawing and the stored value the same thing. A label for a value nobody can pick is a typo. |
 | `inherit`, `initial`, `unset` or `revert` anywhere in a control or a `universals` narrowing | *(Story 4.5)* FR-F2, R-23 — no `Inherit`, and no other CSS-wide word, at section level. |
 | more than `CONTROL_CAP` of one design's own controls | *(Story 4.5)* FR-F3. The universal trio and the Data group are not counted. |
 | a control name whose attribute is already a directive (`items`) or Ghost's `data-portal` | *(Story 4.5)* AD-3. A control's attribute must mean nothing but the control. |
 | controls that disable each other round a circle, or an `inForce` outside the control's own values | *(Story 4.5)* no value in force could be decided for any of them; what renders while a control is greyed is always one of its own values. |
+| a control greyed by another in its own group and declared before it (`dependency-order`) | *(Story 4.10)* R-113: a group draws its controls in declaration order, so the setting that greys a row sits above it and the reason reads in order. Across groups the panel's group order decides, and a dependency there is legal. |
 | a `universals` entry naming no universal, offering a value the universal does not have, with no reason, or dropping the universal's default without naming an offered one — or a no-value lock that names a default | *(Story 4.5)* R-23: a design offers **fewer** of a universal's values, never others, and says why at the control. R-103's lock has no value in force at all. |
 | a root carrying a no-value-locked universal, or a root control value outside the values this design offers | *(Story 4.5)* R-103: a design whose look is what is behind it paints no ground of its own, so the attribute is absent. The stylesheet must never select on a value the panel can never set. |
 | an `absent` note with no group or no sentence | *(Story 4.5)* P0-0. The note sits in its group, where the control would have been, and says why it could never act. |

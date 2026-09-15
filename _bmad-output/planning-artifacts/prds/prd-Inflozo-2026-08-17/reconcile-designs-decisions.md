@@ -2161,6 +2161,114 @@ with an orange underline."*
   - ✅ Story 4.10's spec · ✅ `deferred-work.md` (DW-155) · ✅ `tokens.ts` and `reference-tokens.css`.
 - **Deliberately not touched:** the export (R-74).
 
+## A29 · Step 7 — Story 4.10's owner test, three rulings on the settings panel, 2026-09-15
+
+Taken at the owner's test of Story 4.10 on the deployed `/pilots`. He found the panel's settings in the wrong
+accordions, a pinned block of settings above them, long choices crammed into pills, and a whole-design reset that
+neither showed an icon nor asked first. Two questions followed in R-83's shape under `## Questions for the owner` in
+`_bmad-output/implementation-artifacts/spec-4-10-the-five-pilot-sections-editor-perfect-with-the-snapshot-harness.md`:
+Q6, where to fix it — option 1, *"Fix all four inside Story 4.10"*, with his instruction for the fix: "do multiple
+thorough sweeps across all controls engine and vocabulary, so that the controls are perfectly grouped … it is the base
+on how the controls will appear for later sections" — and Q7, below. Story 4.5 built the panel and is done; its
+spec is not amended, because it records what he tested then.
+
+**R-113 — every setting sits in the accordion its role names: Section Settings · Content · Layout · Style · Data,
+and nothing is pinned above them.** His finding 1 in his words: "all controls should be grouped based on their role
+under — a. Content (any content changes) b. Style (any visual/design changes) c. Layout (any layout changes) —
+Arrangement can be moved under Layout. d. Data (controls to choose source of data)", and finding 2's top block into
+"a new accordion group at top — Section Settings". Question 7, option 1, ruled 2026-09-15: *"Every setting goes to its
+role; Section Settings holds only what fits no role."*
+
+- **What it supersedes.** FR-F3's "3–5 Quick Controls pinned on top, then Content / Arrangement / Style / Data", and
+  with it FR-G3's `quickControls[]`, recovered from the first entries of a design's control list; the Kit's
+  quick-controls card (`Editor Sidebar Kit.dc.html:195`) and S4c's pinned card are no longer drawn in the panel. The
+  group FR-F3 named Arrangement is Layout. The export's P0·5 puts a feed's meta toggles (date · author · excerpt ·
+  reading time · tag chip) in the Data group; what a card shows is Content, as the ruled example's Excerpt, Meta and
+  Tag are, and Data keeps Source, Count, Order and what shows when nothing matches. The design picker is unaffected:
+  it is chosen above the groups (FR-D19), and *layout* names this group, never a design (Appendix I).
+- **The example he ruled on, and which therefore binds the reading.** Three Up: Content — its words, Excerpt, Meta,
+  Tag · Layout — Per row, First cell · Style — Image ratio, Background role, Vertical spacing, Top divider · Data —
+  Show, Order. Rail: Section Settings — On scroll (Static · Sticky · Shrink), "which is how the header behaves, not
+  its content, look or layout". *(The question's "Data — Show, Order" for Three Up was the question's own slip: Three
+  Up's feed declares no query, so its Data rows arrive with Story 5.19; Data appears on a design that declares one,
+  as the controls sample's Show and Order do.)*
+- **What it binds.**
+  - Content is what the section shows; Layout where things sit; Style how it looks, with every kind of spacing and the
+    three universal controls at its foot (the ruled example puts Vertical spacing there); Data which Ghost content
+    feeds it; Section Settings only how it behaves — over time, on scroll, on interaction, or for whom. A setting that
+    mixes Off with other values takes the role of what its other values change.
+  - The role is judged by what a setting DOES, never by its title: the export gives one title different settings in
+    different categories ("Order: Newest · Oldest" chooses Ghost's rows; "Order: Value first · Label above" arranges a
+    stat). So a row title holds one group WITHIN A CATEGORY, except on a design the register names, and not across the
+    library; a control's `name`, the author's own word, holds one value set and one group across the library, as R-53
+    rules — Centred's author line became `byline` beside Three Up's `meta`, which had carried two value sets.
+  - Behaviour is none of the four roles even when it draws something, so the decision order asks Section Settings
+    last, and a behaviour is set aside from each earlier question. Member visibility is filed there wherever a panel
+    carries it; whether the settings panel or Layers does is Story 5.4's to settle (the PRD's FR-D5 and the export's
+    A4-13 panel disagree) — DW-163.
+  - Checked, not asserted: the rule was applied to every setting every category of the export declares, by two
+    independent passes, each disagreement settled into the rule's wording, and one more sweep for one group per kind
+    across categories — the decision order, its tie-breakers and the table of kinds in `docs/section-authoring.md`
+    § 2 are that result, and **`packages/library/control-groups.json` files every one of those settings under its
+    group**, by category and panel title, so a category story reads its designs' groups rather than deciding them
+    again. `tools/check-snapshots.mjs` holds every built design to it and fails a setting it does not file, so a
+    setting cannot leave its group by being renamed in the same edit. The five pilots, grouped before the sweep,
+    matched it setting for setting.
+  - A labelled group's rows are filed under the title the panel prints ("Actions › Sign in" is "Sign in"). Where the
+    export's title for a setting would repeat another row of the same panel, or its accordion (R-13), the register files
+    the setting under the title the export gives that setting elsewhere: A4 #9's button style, drawn "Primary action"
+    beside its Primary action toggle, is "Action style" (A6's word), so A4 #13 keeps the toggles its frame draws; A17's
+    "Title: Large · Display" is "Title size", because every A17 panel prints a Title field. A24's and A34's settings
+    titled "Layout", and A34's "Content", have no other title in the export, so the story that builds one names it.
+- Targets: ✅ Story 4.10's spec · ✅ `packages/library/src/vocabulary.ts` (`CONTROL_GROUPS`, `SIDEBAR_GROUPS`, each
+  universal's `group`), `registry.ts` (`quickControls[]` withdrawn; `categoryControlUnion` refuses one name in two
+  groups), `validate.ts` (`dependency-order`) · ✅ `packages/library/control-groups.json` · ✅
+  `packages/section-runtime/src/controls.ts` (`sidebar()`, drawing in declaration order) · ✅
+  `apps/web/components/controls/sidebar.tsx` · ✅ the five pilots and the controls sample · ✅ `tools/check-snapshots.mjs`
+  · ✅ `docs/section-authoring.md` · ✅ `prd.md` FR-F3, FR-G3, FR-H2, Appendix C and Appendix I · ✅ `sections-inventory.md` ·
+  ✅ `ARCHITECTURE-SPINE.md` · ✅ `DESIGN.md` · ✅ `epics.md` (FR-F3, FR-G3, Stories 4.1, 4.5 and 5.19, and every library
+  category story's control line) · ✅ `epic-4-context.md` (all in Story 4.10's Fix run, 2026-09-15).
+- **Deliberately not touched:** the export (R-74); `reconcile-designs.md` and `encode-propagation-map.md`, which are
+  `record`s; the step-5b and step-5c prototypes, built from the export for the walk before this ruling; and `/kit`,
+  which catalogues the Kit as drawn.
+
+**R-114 — pills are for short choices; a longer choice is a dropdown.** His finding 3 in his words: "Any property
+where the values are larger (E.g. For First cell — the value 'Spans two columns' is larger in character size) we should
+show a dropdown. With these large values, the pill design looks bad. We should only show value with less characters in
+pill design."
+
+- **What it binds.** A segmented control offers two to four values (Appendix C), each at most `PILL_CHARS` characters
+  and each fitting its pill on one line with 2 px to spare either side, measured in the pill's own type in the
+  280-wide panel; anything else is a named select. The validator refuses the rest as `pill-words`, so every design
+  after this story is held to it without anyone remembering.
+- **Why characters AND a measure.** A cap alone lets a word of wide letters overflow ("Wholesomely", eleven letters,
+  needs 84 px of a 77.7 px pill, one of three), and a measure alone would make his own example depend on the panel's
+  width: "Spans two columns" misses its pill by a pixel and a half (118 px of 116.5), so a track a few pixels wider
+  keeps it a pill — and it is his example of what must not be one. The cap puts it in a dropdown whatever the width. Single words only was tried and declined: across the export it
+  turned "Flush left · Centred" and "Full bleed · Inset" into dropdowns, which is not what "less characters" means.
+- **Checked against the whole export.** Of the value sets it draws as pills, only the long phrases become dropdowns
+  ("Spans two columns", "Above and below", "Comfortable 44" …); the universal controls keep their pills.
+- **Measured where it is tightest.** The fit is taken against the narrowest track the panel draws, while its own
+  scrollbar shows (233 px inside the 280-wide panel), with 2 px to spare either side; the deployed harness compares
+  the rule's widths with the widths the browser draws, so a font or size change is caught rather than misjudged.
+- Targets: ✅ Story 4.10's spec · ✅ `vocabulary.ts` (`PILL_CHARS`, `pillWidth`, `pillRefusal`) and `validate.ts` · ✅
+  A17 #1 First cell and A24 #1 Rule, now named selects · ✅ `docs/section-authoring.md` · ✅ `prd.md` Appendix C · ✅
+  `DESIGN.md` § Segmented control · ✅ `epics.md`. **Deliberately not touched:** the export (R-74).
+
+**R-115 — "Reset this design" carries its icon and asks first.** His finding 4 in his words: "At bottom Reset this
+design should have an icon too. On click it should prompt the user to confirm their action."
+
+- **What it binds.** The panel's foot carries the Kit's Undo glyph beside "Reset this design", the same glyph every
+  changed control's own reset carries. Pressed, it opens a confirm in the app's one dialog vocabulary, shaped on S14c's
+  card reset — "Reset this design?", a sentence naming the count and every setting reset would put back
+  (`resetChanges`: a greyed row's stored value included, and the Data group's rows), the fear answered second ("Your
+  words and pictures stay.", and the dark overrides when there are any), Cancel and "Reset design", focus on Cancel
+  (EXPERIENCE.md § Destructive confirms). With nothing changed it asks nothing and says so under the button — R-12's
+  rule for a control at its floor, which stays live and explains itself.
+- Targets: ✅ Story 4.10's spec · ✅ `packages/section-runtime/src/controls.ts` (`resetChanges`) · ✅
+  `apps/web/components/controls/sidebar.tsx` · ✅ `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs` · ✅
+  `prd.md` FR-F4 and `epics.md`'s FR-F4 line. **Deliberately not touched:** the export (R-74), whose D5 draws the line with no confirm.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
