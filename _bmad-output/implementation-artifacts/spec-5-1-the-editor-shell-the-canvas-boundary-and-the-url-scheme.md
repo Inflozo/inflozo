@@ -614,4 +614,5 @@ needs to be increased." That is a guess at what yours says, not a reading of it;
    Epic 5's stories stop at Deploy.
 3. **The sentence says something else.** Paste it here and I will write the options for that.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** The owner fixed the cause in GitHub ("Q2 - Fixed"). The retry is the push
+that records this ruling, since `GITHUB_TOKEN` cannot re-run a workflow; its result is under Verification.
