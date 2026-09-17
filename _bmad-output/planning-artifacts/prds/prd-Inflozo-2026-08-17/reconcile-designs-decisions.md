@@ -2293,6 +2293,10 @@ design should have an icon too. On click it should prompt the user to confirm th
 - Targets: ✅ Story 4.11's spec (Q1, and the `matrix.yml` task line) · ✅ `.github/workflows/matrix.yml` (its own
   job, absent from `deploy`'s `needs`) and ✅ `docs/render-matrix.md` (the cadence and the rebaseline rule), both
   landed by the Dev run. **Deliberately not touched:** `ci.yml`'s `deploy` job.
+- **Proved by control, 2026-09-17 (the owner's click, Story 4.11's Q3):** `Render matrix` run 35187418366, dispatched on
+  `9f1b526e` with a design selection that names nothing, went **red** (`MATRIX_DESIGNS names no design`, exit 1) while the
+  same commit's `CI` run 35185834388 published — `check`, `rls`, `deploy` all success. The machine's `GITHUB_TOKEN` is
+  read-only (a dispatch answers 403), so this control is the owner's each time it is needed.
 
 **R-117 — the render matrix keeps NFR-6(a)'s 1%, and says what 1% does not catch.** Story 4.11's Q2, ruled option 1
 (owner, 2026-09-17): "Keep the 1% limit, and I correct the promise."

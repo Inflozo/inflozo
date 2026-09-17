@@ -316,7 +316,9 @@ as deployed; keys read by variable name only:
   with `designs: zz/1` answered **403** — the machine's `GITHUB_TOKEN` is read-only, so the red run is the owner's click
   (Q3 below). **The Review push's own runs (`7af6b9bd`):** `CI` 35185508999 — `check`, `rls`, `deploy` all success;
   `Render matrix` 35185509212 — success, scope `every design (a shared input changed)`, the same derived totals, `0
-  violations — passed`. Green beside green, twice now; the red-beside-green case is Q3.
+  violations — passed`. **The red-beside-green case, executed by the owner (Q3, option 1):** `Render matrix` 35187418366,
+  dispatched on `9f1b526e` with `designs: zz/1` — **failure** ("names no design", 0 cases, exit 1) — while the same
+  commit's `CI` 35185834388 has `deploy` **success**. AC 7 holds by control.
 
 ## Questions for the owner
 
@@ -405,7 +407,11 @@ is the control: red picture check, app published anyway.
 3. **Accept the proof as read in the files and seen green.**
    - No click. The claim stays "read in source" — the standing rule says that is a hypothesis, not a result.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** He ran it: `Render matrix` run 35187418366 (`workflow_dispatch`, `designs: zz/1`,
+on `9f1b526e`) — **failure**, "MATRIX_DESIGNS names no design under packages/library/designs/: zz/1", `0 cases · 0 designs ·
+0 packs · 0 violations — failed`, "No tests found", exit 1. The same commit's `CI` run 35185834388: `check`, `rls`, **`deploy`
+success**. Red picture check, app published anyway — R-116 is now proved by control, not read in source; recorded in
+`reconcile-designs-decisions.md` §A under R-116.
 
 ## Spec Change Log
 
