@@ -5,6 +5,7 @@ created: '2026-09-17'
 status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: '568b61a41ffe1ac25e77212d85cacb475f8ffa54'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
 
@@ -255,5 +256,33 @@ sign-in screen — is waiting to go live in the same push.
 is its own CI job — nightly in full, per push over the designs that push touched — and `ci.yml`'s `deploy` keeps
 `needs: [check, rls]` and gains no third name. Every category owner gate from Epic 9 onward still requires the
 matrix green, so the gate moved off the app's deploy, not off the library.
+
+**Q2. A button nudged a few pixels sideways does not turn the picture check red. Is that acceptable?**
+
+The picture check compares each new photo of a section with the saved one, and goes red when **more than 1% of
+the photo** has changed — the limit the PRD sets (NFR-6(a)). This story promised something stronger: "if a shared
+change nudges a button three pixels, we find out the same day". I tested that promise on 2026-09-17, and it is only
+half true.
+
+Example: in "Inline Row" (A22 #1, the newsletter sign-up), I moved the Subscribe button 3 pixels to the right and
+changed nothing else. The photos changed by **0.36%** on a desktop screen, **0.60%** on a phone and **0.71%** on a
+tablet — all under 1%, so the check **stayed green**. When a change also makes a section taller or shorter, as most
+spacing changes do, the check **goes red**: moving Latest Post's (A4 #13) buttons 3 pixels down failed it on desktop.
+
+1. **Keep the 1% limit, and I correct the promise (RECOMMENDED).**
+   - The check catches any change that resizes or reshuffles a section, and anything that changes more than 1% of a
+     photo. A small sideways nudge of one thing that moves nothing else can pass.
+   - The PRD is unchanged. This story's wording, and the "button moved 3px" example in its test list, change to a
+     move the check really catches. You still look at every section yourself when you approve each category.
+2. **Tighten the limit for these photos to 0.1%.**
+   - The nudge above would go red.
+   - The photos come out identical run after run on this machine, but GitHub's servers have not yet been compared
+     with them. If their rendering differs by more than 0.1%, the check would go red with nothing wrong, and you
+     would be asked to approve photos that did not really change. It also changes the PRD's number.
+3. **Any changed pixel goes red.**
+   - Catches everything, including changes nobody could see. Every intended change, however small, waits for your
+     approval of new photos.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Spec Change Log
