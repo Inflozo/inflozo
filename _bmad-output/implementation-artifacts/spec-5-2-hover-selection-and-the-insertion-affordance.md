@@ -475,6 +475,10 @@ with Three Up hovered, and with it selected.
 **At Deploy (DW-175's owner).** Repeat the interleaved probe and the fresh-connection `curl` loop once. If the rate
 holds, the timestamps and the IP go to Vercel support; if it has gone, close DW-175 with the two runs as the record.
 
+**Deployment:** `dpl_Fqhg7JgKqMwFZBxZwn4ZU4NMvkBM` — READY for `c2207e1e` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`), aliased to
+`app.inflozo.com` / `inflozo.com`. HEAD (`b6dc3457`) changed only the spec, sprint-status and the story board, so no new
+push was needed. No migration in this story (R-99 needs nothing); nothing under tooling.
+
 **Results — Dev run, 2026-09-17, on `ffa257e1`:**
 - `pnpm check` (Node 24): exit 0 — library 142, section-runtime 151, ghost-shim 34, theme-compiler 1, apps/web 327 pass,
   0 fail (re-run by the orchestrating session after the R-120 change).
