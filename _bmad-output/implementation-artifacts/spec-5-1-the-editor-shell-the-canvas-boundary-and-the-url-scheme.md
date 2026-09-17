@@ -2,9 +2,9 @@
 title: 'Story 5.1 — The editor shell, the canvas boundary and the URL scheme'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'e14f58f3cdbd48b82584e2ce5b94fc20ec6b10ea'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -574,6 +574,15 @@ hundred did that during Deploy, on old pages as well as new ones (DW-175).
 | 9 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag`: click the **Pilot sections** card again, then add `/tag` to the end of the address and press Enter | Editor, Tag archive | Look at the canvas. | — | Only the Rail header. The Tag archive has no sections yet; its starting sections arrive with Story 5.5. |
 | 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/nonsense`: change the end of the address to `/nonsense` | — | Press Enter. | — | "Page not found", with a button back to Projects. |
 | 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Top bar and panels | Look for what S4a draws that is not here. | — | Absent until its story: the template switcher (5.5), View as (5.14), "Saved" and Undo/Redo (5.8), the sun (5.6), the device switch (5.7), Ship it (7.18), Layers' grip, eye and "+ Add section" (5.4, 5.10), the Style Pack card (6.3) and Dark mode (5.6). Say whether any of these absences matters to you. |
+
+## Owner's test findings
+
+**2026-09-17, on the deployment live since `ff975112` (`dpl_34KED9j56pZYjRvuLG6dZqHxWyrz`): passed.** The owner walked
+the table above on `https://app.inflozo.com` and found nothing to report. Along the way he asked whether it was
+expected that nothing in Layers or on the canvas can be selected or moved, and that the PAGE panel is empty. It is:
+selection and the section's settings are Story 5.2's, reordering is 5.4's, and the PAGE panel's content is 6.3's
+and 5.6's. He confirmed the canvas shows the four Home sections, that Layers lists its four rows, and that `/tag`
+shows only the Rail header.
 
 ## Questions for the owner
 
