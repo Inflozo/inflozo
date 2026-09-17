@@ -454,6 +454,13 @@ throwaway accounts, both deleted in `finally`, with the user count read before a
 8. axe-core, WCAG 2.1 AA, on the editor at 1440: zero violations, after the positive control.
 9. Skeleton: the raw streamed HTML of `/projects/<id>` carries the skeleton's `sr-only` sentence ahead of the editor.
 
+**Result, Dev (2026-09-17):** `pnpm check` green (Node 24); `bash tools/matrix/run-matrix-gate.sh` green, no baseline
+written; `python3 tools/doc-audit.py --check` PASS twice. Pushed `d427e190`: CI run 35201397709 (`rls`, `check`,
+`deploy` success) and Render matrix run 35201397526 success; Vercel `dpl_Dshfdk2pfh4gmvyZCoxkq6tVB5QX` READY for
+`d427e190`. `run-verify-editor.cjs` against `https://app.inflozo.com` and production Supabase (two throwaway accounts,
+user count 9 → 9): every step PASS, 0 FAIL. Its one note is DW-174 — Projects (`/`) reports zod's eval probe while
+`/pilots` is read; the editor's session recorded none. The no-`'unsafe-eval'` proof is in the spine's CSP row.
+
 **After the harness passes:** record the no-`'unsafe-eval'` proof in the spine's CSP row, with the date and the
 harness's name. §18c said "it stays unproven until E5 has a canvas to test", and this closes it.
 
