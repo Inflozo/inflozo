@@ -313,17 +313,27 @@ async function main() {
     }
     const hoverOn = async (n) => { await reveal(n); await page.waitForTimeout(150); const p = await pointAt(n); await page.mouse.move(p.x, p.y, { steps: 4 }); await page.waitForTimeout(250) }
     const clickOn = async (n) => { await reveal(n); await page.waitForTimeout(150); const p = await pointAt(n); await page.mouse.click(p.x, p.y); await page.waitForTimeout(250) }
-    const tagNow = () => page.evaluate(() => {
-      const t = document.querySelector('section[aria-label="Canvas"] [data-chrome="tag"]')
-      if (!t) return null
-      const c = getComputedStyle(t)
-      return { text: t.textContent, x: t.getBoundingClientRect().left, y: t.getBoundingClientRect().top, size: c.fontSize, weight: c.fontWeight, family: c.fontFamily, color: c.color, bg: c.backgroundColor, padding: c.padding, radius: c.borderRadius, events: c.pointerEvents, visibility: c.visibility }
-    })
+    // Chrome lives in the canvas document since the owner's finding: the editor's elements portalled into the shadow
+    // roots of `[data-inflozo-chrome]` hosts on its body. Each is found there and its rect mapped to the screen.
+    const chromeNow = (selector) => page.evaluate((sel) => {
+      const f = document.querySelector('section[aria-label="Canvas"] iframe')
+      const doc = f?.contentDocument
+      if (!doc) return null
+      let el = null
+      for (const host of doc.querySelectorAll('[data-inflozo-chrome]')) el ??= host.shadowRoot?.querySelector(sel) ?? null
+      if (!el) return null
+      const fr = f.getBoundingClientRect()
+      const s = fr.width / f.offsetWidth
+      const r = el.getBoundingClientRect()
+      const c = doc.defaultView.getComputedStyle(el)
+      return { left: fr.left + r.left * s, top: fr.top + r.top * s, right: fr.left + r.right * s, bottom: fr.top + r.bottom * s, card: f.parentElement.getBoundingClientRect().toJSON(), host: el.getRootNode().host.getAttribute('data-inflozo-chrome'), text: el.textContent, tag: el.tagName, pressable: !!el.closest('button, a, [role="button"]'), size: c.fontSize, weight: c.fontWeight, family: c.fontFamily, color: c.color, bg: c.backgroundColor, padding: c.padding, radius: c.borderRadius, events: c.pointerEvents, visibility: c.visibility, shadow: c.boxShadow, hidden: el.getAttribute('aria-hidden') }
+    }, selector)
+    const tagNow = async () => {
+      const t = await chromeNow('[data-chrome="tag"]')
+      return t && { ...t, x: t.left, y: t.top }
+    }
+    const badgeNow = () => chromeNow('[data-chrome="pro"] span')
     const rowsNow = () => page.evaluate(() => [...document.querySelectorAll('aside[aria-label="Layers"] div.overflow-y-auto > div')].map((r) => getComputedStyle(r).backgroundColor))
-    const badgeNow = () => page.evaluate(() => {
-      const b = [...document.querySelectorAll('section[aria-label="Canvas"] span')].find((s) => s.textContent.trim() === '✦ Pro')
-      return b ? { ...b.getBoundingClientRect().toJSON(), tag: b.tagName, pressable: !!b.closest('button, a, [role="button"]'), visibility: getComputedStyle(b).visibility } : null
-    })
     const marked = () => canvasFrame().evaluate(() => [...document.querySelectorAll('*')].filter((el) => [...el.attributes].some((a) => a.name.startsWith('data-inflozo-'))).length)
     const controlsAside = () => page.locator('#editor-controls')
     // R-120's outline boxes. The width is read as PAINTED PIXELS, never from computed style — computed style said 1.5px
@@ -332,12 +342,7 @@ async function main() {
     // channel against the section's own ground 7px inside, summed, and divided by the device pixel ratio. Decoded in a
     // page of its own, outside the CSP session, so the decoder cannot add a violation to it.
     const decoder = await browser.newPage()
-    const boxNow = (which) => page.evaluate((w) => {
-      const b = document.querySelector(`section[aria-label="Canvas"] [data-chrome="${w}"]`)
-      if (!b) return null
-      const r = b.getBoundingClientRect()
-      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, card: b.parentElement.getBoundingClientRect().toJSON(), shadow: getComputedStyle(b).boxShadow, events: getComputedStyle(b).pointerEvents, visibility: getComputedStyle(b).visibility, hidden: b.getAttribute('aria-hidden') }
-    }, which)
+    const boxNow = (which) => chromeNow(`[data-chrome="${which}"]`)
     const paintedWidth = async (which) => {
       const b = await boxNow(which)
       if (!b) return null
@@ -379,7 +384,7 @@ async function main() {
       check(`step 10 — hover ${name}: the hover box covers the root's on-screen rect, all four edges within 1px, aria-hidden and never pressed`, r.hover && fits(box, r) && box.events === 'none' && box.hidden === 'true' && box.visibility === 'visible' && (await boxNow('selected')) === null, `${JSON.stringify(box)} · root ${JSON.stringify({ x: r.x, y: r.y, right: r.right, bottom: r.bottom })}`)
       check(`step 10 — hover ${name}: its line paints 1.00 ± 0.1px of coral (painted pixels — the control for step 11's 1.5)`, oneLine, JSON.stringify(line))
       check(`step 10 — hover ${name}: the tag reads the layer name in S4b's styles`, tag && tag.text === name && tag.size === '11px' && tag.weight === '600' && /Inter/i.test(tag.family) && tag.color === 'rgb(255, 255, 255)' && tag.bg === 'rgb(194, 56, 31)' && tag.padding === '3px 9px' && tag.radius === '0px 0px 6px' && tag.events === 'none' && tag.visibility === 'visible', JSON.stringify(tag))
-      check(`step 10 — hover ${name}: the tag's top-left within 1px of the root's on screen (Floating UI through the scaled frame)`, tag && Math.abs(tag.x - r.x) <= 1 && Math.abs(tag.y - r.y) <= 1, `tag ${tag?.x},${tag?.y} · root ${r.x},${r.y}`)
+      check(`step 10 — hover ${name}: the tag's top-left within 1px of the root's on screen`, tag && Math.abs(tag.x - r.x) <= 1 && Math.abs(tag.y - r.y) <= 1, `tag ${tag?.x},${tag?.y} · root ${r.x},${r.y}`)
       check(`step 10 — hover ${name}: its Layers row alone is washed`, rows[n] === WASH && rows.filter((b) => b === WASH).length === 1, rows.join(' | '))
       // for the owner's comparison with S4b
       if (id === 'a4/13') await page.screenshot({ path: `${OUT}/editor-hover-latest-post-1440x900.png` })
@@ -438,7 +443,7 @@ async function main() {
     await page.waitForTimeout(200)
     // for the owner's comparison with S4c and B10
     await page.screenshot({ path: `${OUT}/editor-selected-latest-post-free-1440x900.png` })
-    check('step 11 — R-119: on Free, selected Latest Post shows the Kit\'s "✦ Pro" span 8px inside its top-right on screen, not pressable', hero.selected && badge && badge.tag === 'SPAN' && !badge.pressable && badge.visibility === 'visible' && Math.abs(hero.right - badge.right - 8) <= 1 && Math.abs(badge.top - hero.y - 8) <= 1, `${JSON.stringify(badge)} · root right ${hero.right} top ${hero.y}`)
+    check('step 11 — R-119: on Free, selected Latest Post shows the Kit\'s "✦ Pro" span on one line, 8px inside its top-right on screen, not pressable', hero.selected && badge && badge.tag === 'SPAN' && !badge.pressable && badge.visibility === 'visible' && badge.bottom - badge.top < 24 && Math.abs(hero.right - badge.right - 8) <= 1 && Math.abs(badge.top - hero.y - 8) <= 1, `${JSON.stringify(badge)} · root right ${hero.right} top ${hero.y}`)
     await clickOn(GRID)
     check('step 11 — R-119: Three Up (free) shows no badge', (await badgeNow()) === null)
     await clickOn(HERO)
@@ -510,8 +515,134 @@ async function main() {
     await painted('home')
     check('step 12 — a reload shows the stored values', (await attr(GRID, 'data-per-row')) === 'three' && (await attr(HEADER, 'data-on-scroll')) === 'shrink' && !(await canvasFrame().evaluate((n) => document.querySelectorAll('#canvas > *')[n].textContent, HERO)).includes(typed))
 
+    // ── step 15 — the outlines stay on their section while the canvas scrolls (the owner's finding, 2026-09-17) ──
+    // What he saw: scrolling, "the outline jumps out of sync and seems to move over nearby sections a bit". The canvas
+    // scrolls on the compositor; chrome positioned from the main thread arrives a frame after the content it follows.
+    // The instrument is pixels from the compositor's own frames (CDP screencast) during a synthetic scroll gesture:
+    // blue markers placed IN the canvas document at the root's top and bottom edges scroll with the content, so they are
+    // where the root is drawn in each frame, and the coral line nearest a marker edge is where its box was drawn. At rest
+    // the two agree (the control); in sync means within 3px in every frame. The markers are the probe's, removed after.
+    const screencast = await context.newCDPSession(page)
+    const film = async (gesture) => {
+      const shots = []
+      const onFrame = (e) => { shots.push(e.data); screencast.send('Page.screencastFrameAck', { sessionId: e.sessionId }).catch(() => {}) }
+      screencast.on('Page.screencastFrame', onFrame)
+      await screencast.send('Page.startScreencast', { format: 'png', everyNthFrame: 1 })
+      await page.waitForTimeout(250)
+      await gesture()
+      await page.waitForTimeout(400)
+      await screencast.send('Page.stopScreencast')
+      screencast.off('Page.screencastFrame', onFrame)
+      return shots
+    }
+    const MARK_X = 500 // frame px from the root's left: clear of the name tag (top-left) and the Pro badge (top-right)
+    const markEdges = (n) => canvasFrame().evaluate(([n, x]) => {
+      document.querySelectorAll('[data-probe-marker]').forEach((e) => e.remove())
+      const r = document.querySelectorAll('#canvas > *')[n].getBoundingClientRect()
+      for (const top of [r.top + scrollY, r.bottom + scrollY - 6]) {
+        const m = document.createElement('div')
+        m.setAttribute('data-probe-marker', '')
+        m.style.cssText = `position:absolute;left:${r.left + x}px;top:${top}px;width:60px;height:6px;background:#0000ff;z-index:2147483646;pointer-events:none`
+        document.body.append(m)
+      }
+    }, [n, MARK_X])
+    const unmark = () => canvasFrame().evaluate(() => document.querySelectorAll('[data-probe-marker]').forEach((e) => e.remove()))
+    // per frame, the smallest distance from a marker's outer edge to the nearest coral row in a column clear of it
+    const drift = (shots, box) => decoder.evaluate(async ({ shots, box }) => {
+      const out = []
+      for (const b64 of shots) {
+        const img = new Image()
+        img.src = `data:image/png;base64,${b64}`
+        await img.decode()
+        const k = img.width / box.viewport
+        const c = document.createElement('canvas')
+        c.width = img.width
+        c.height = img.height
+        const g = c.getContext('2d')
+        g.drawImage(img, 0, 0)
+        const column = (x) => g.getImageData(Math.round(x * k), 0, 1, img.height).data
+        const [A, B] = [column(box.markerX), column(box.lineX)]
+        const blue = (y) => A[y * 4] < 40 && A[y * 4 + 1] < 40 && A[y * 4 + 2] > 200
+        const coral = (y) => Math.abs(B[y * 4] - 255) < 14 && Math.abs(B[y * 4 + 1] - 89) < 20 && Math.abs(B[y * 4 + 2] - 65) < 20
+        const from = Math.ceil(box.top * k) + 1
+        const to = Math.floor(box.bottom * k) - 1
+        // each marker is a run of blue rows; the top marker's upper edge is the root's top, the bottom marker's lower edge
+        // its bottom, so a run is scored by whichever of its two edges has a coral row nearer
+        const edges = []
+        for (let y = from; y < to; y++) if (blue(y) && !blue(y - 1)) edges.push(y)
+        for (let y = from; y < to; y++) if (!blue(y) && blue(y - 1)) edges.push(y)
+        const corals = []
+        for (let y = from; y < to; y++) if (coral(y)) corals.push(y)
+        if (edges.length === 0) continue
+        out.push(Math.min(...edges.map((e) => (corals.length ? Math.min(...corals.map((y) => Math.abs(y - e))) : 999) / k)))
+      }
+      return out
+    }, { shots, box })
+    const scrollCase = async (label, n, pointerY) => {
+      const r0 = await onScreen(n)
+      const lineX = r0.card.left + 600
+      const markerX = r0.card.left + (MARK_X + 30) * r0.s
+      // the root's top edge starts low in the card, so it stays in view while the gesture scrolls the content up
+      await canvasFrame().evaluate(([n, s, cardH]) => {
+        const r = document.querySelectorAll('#canvas > *')[n].getBoundingClientRect()
+        document.scrollingElement.scrollTo(0, r.top + scrollY - (cardH - 150) / s)
+      }, [n, r0.s, r0.card.height])
+      await page.waitForTimeout(300)
+      await markEdges(n)
+      await page.mouse.move(700, pointerY)
+      await page.waitForTimeout(300)
+      const box = { viewport: 1440, markerX, lineX, top: r0.card.top, bottom: r0.card.bottom }
+      const still = await drift(await film(async () => {}), box)
+      const moving = await drift(await film(() => screencast.send('Input.synthesizeScrollGesture', { x: 700, y: pointerY, yDistance: -500, speed: 1200, gestureSourceType: 'mouse' })), box)
+      await unmark()
+      const control = still.length > 0 && Math.max(...still) <= 3
+      check(`step 15 — ${label}: control at rest, the line lies on the marker (≤ 3px)`, control, still.map((v) => v.toFixed(1)).join(' '))
+      check(`step 15 — ${label}: while the canvas scrolls, the line stays on its section in every captured frame (≤ 3px)`, control && moving.length >= 5 && Math.max(...moving) <= 3, `${moving.length} frames · worst ${Math.max(0, ...moving).toFixed(1)}px · ${moving.map((v) => v.toFixed(0)).join(' ')}`)
+    }
+    await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
+    await page.waitForTimeout(200)
+    // (b) static: Three Up selected, the pointer resting on it
+    await clickOn(GRID)
+    await scrollCase('Three Up selected', GRID, 860)
+    // (a) hover: nothing selected, the pointer held still on Three Up while the content moves under it
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    await scrollCase('Three Up hovered, the pointer still', GRID, 860)
+    // (b) sticky: Header — Rail selected; stuck at the top, its box's top line must stay on the card's top edge
+    await page.mouse.move(120, 400)
+    await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
+    await page.waitForTimeout(200)
+    await clickOn(HEADER)
+    await page.mouse.move(700, 600)
+    await page.waitForTimeout(200)
+    const head = await onScreen(HEADER)
+    const stuckShots = await film(() => screencast.send('Input.synthesizeScrollGesture', { x: 700, y: 600, yDistance: -500, speed: 1200, gestureSourceType: 'mouse' }))
+    const stuckRows = await decoder.evaluate(async ({ shots, x, top }) => {
+      const out = []
+      for (const b64 of shots) {
+        const img = new Image()
+        img.src = `data:image/png;base64,${b64}`
+        await img.decode()
+        const k = img.width / 1440
+        const c = document.createElement('canvas')
+        c.width = img.width
+        c.height = img.height
+        const g = c.getContext('2d')
+        g.drawImage(img, 0, 0)
+        const d = g.getImageData(Math.round(x * k), Math.round(top * k), 1, Math.round(6 * k)).data
+        out.push([...Array(d.length / 4).keys()].some((i) => Math.abs(d[i * 4] - 255) < 14 && Math.abs(d[i * 4 + 1] - 89) < 20))
+      }
+      return out
+    }, { shots: stuckShots, x: head.card.left + 600, top: head.card.top })
+    const scrolled = await canvasFrame().evaluate(() => scrollY)
+    check('step 15 — Header — Rail selected (sticky): its box\'s top line is on the card\'s top edge in every captured frame of the scroll', scrolled > 100 && stuckRows.length >= 5 && stuckRows.every(Boolean), `scrolled ${scrolled} · ${stuckRows.length} frames · ${stuckRows.map((v) => (v ? 'y' : 'n')).join('')}`)
+    await page.keyboard.press('Escape')
+    await page.mouse.move(120, 400)
+    await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
+    await page.waitForTimeout(200)
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back and steps 10–13\'s hover, select, edits, reset and Esc — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back and steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -638,7 +769,7 @@ async function main() {
     await axePage.mouse.move(g.x, g.y, { steps: 3 })
     await axePage.waitForTimeout(300)
     const hoveredAxe = await axeRun()
-    check('step 8 — axe: zero violations with Three Up hovered (the name tag showing)', hoveredAxe.length === 0 && (await axePage.locator('section[aria-label="Canvas"] [data-chrome="tag"]').count()) === 1, hoveredAxe.join('; '))
+    check('step 8 — axe: zero violations with Three Up hovered (the name tag showing)', hoveredAxe.length === 0 && (await axePage.frameLocator('section[aria-label="Canvas"] iframe').locator('[data-chrome="tag"]').count()) === 1, hoveredAxe.join('; '))
     g = await gridAt()
     await axePage.mouse.click(g.x, g.y)
     await axePage.mouse.move(120, 400)
@@ -665,8 +796,9 @@ async function main() {
     const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points })
     const touchState = () => touchPage.evaluate((n) => {
       const root = document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.querySelectorAll('#canvas > *')[n]
-      const tag = document.querySelector('section[aria-label="Canvas"] [data-chrome="tag"]')
-      return { hover: root.hasAttribute('data-inflozo-hover'), outline: !!document.querySelector('section[aria-label="Canvas"] [data-chrome="hover"]'), selected: root.hasAttribute('data-inflozo-selected'), tag: tag?.textContent ?? null, panel: document.querySelector('#editor-controls').getAttribute('aria-label') }
+      const inChrome = (sel) => [...root.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector(sel)).find(Boolean) ?? null
+      const tag = inChrome('[data-chrome="tag"]')
+      return { hover: root.hasAttribute('data-inflozo-hover'), outline: !!inChrome('[data-chrome="hover"]'), selected: root.hasAttribute('data-inflozo-selected'), tag: tag?.textContent ?? null, panel: document.querySelector('#editor-controls').getAttribute('aria-label') }
     }, heroN)
     await touch('touchStart', [heroPoint])
     await touchPage.waitForTimeout(600)

@@ -3,7 +3,7 @@ title: 'Story 5.2 — Hover, selection and the insertion affordance'
 type: 'feature'
 created: '2026-09-17'
 status: 'in-progress'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 baseline_commit: 3ebe4fa77dd171512f8ecec880740f7cc1866357
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -28,9 +28,9 @@ chosen, and the settings panel beside it is empty (FR-D2, FR-D3, UX-DR6). Story 
 the `/pilots` and `/controls` review pages.
 
 **Approach:** The editor marks the section root under the pointer or the click with `data-inflozo-hover` or
-`data-inflozo-selected`, from the parent document; both outlines are drawn outside the frame at their drawn on-screen
-widths, as boxes anchored to the root the way the name tag is (R-120), and the name tag is drawn outside the frame,
-anchored to the root with Floating UI. Selecting a section mounts
+`data-inflozo-selected`, from the parent document; both outlines are drawn at their drawn on-screen widths, as boxes
+over the root (R-120), and they, the name tag and the Pro badge are the editor's own elements placed in a layer inside
+the canvas document, outside every section root, so they scroll with their section (the owner's finding, 2026-09-17). Selecting a section mounts
 Story 4.5's `Sidebar` for that instance over an in-memory copy of the project's docs: a control change stamps the live
 root, a content change repaints. Each quick-action button, the "+" and click-to-type arrive with the story that makes
 them work (R-118); a selected Pro design on a Free account carries the Kit's Pro badge (R-119).
@@ -40,8 +40,8 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 **Always:**
 - Chrome exists only while something is hovered or selected. Every chrome rule inside the frame is keyed on a
   `data-inflozo-*` attribute (`pilots.test.ts`), a root carries one only while hovered or selected, and the chrome
-  outside the frame (the outline boxes, the name tag, the Pro badge) is rendered only while its root is hovered or
-  selected. After every paint and every
+  layer (the outline boxes, the name tag, the Pro badge, in `[data-inflozo-chrome]` hosts on the canvas `<body>`) exists
+  only while something is hovered or selected. After every paint and every
   `stampControls` the editor re-applies its attributes, because `stampControls` strips every root `data-*` it does not
   own — `data-inflozo-selected` included (`core.ts:1187-1205`).
 - A press inside the canvas selects and does nothing else: no link navigates, no form submits, no `<details>` toggles,
@@ -164,10 +164,12 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
     arrows.
   - Drawn nowhere, so extrapolated (R-74): tap-and-hold (D8a draws no canvas chrome on touch, and no frame draws a hold),
     Esc deselecting, and what a first click on text does.
-- `@floating-ui/dom@1.8.0`, `dist/floating-ui.dom.mjs` (read in the npm tarball, 2026-09-17):
-  - `getBoundingClientRect` (:77-128) walks each `frameElement`, multiplying by the iframe's own transform scale
-    (`getScale(currentIFrame)`) and adding its rect. AD-21 rests on this; the harness executes it rather than assuming it.
-  - `autoUpdate` (:621) with `animationFrame: true` is the loop, and it runs only while the tag shows.
+- `@floating-ui/dom@1.8.0`, `dist/floating-ui.dom.mjs` (read in the npm tarball, 2026-09-17) — used by the Dev build
+  and REMOVED by the owner's finding (Spec Change Log): its `autoUpdate` loop positions from the main thread, a frame
+  behind the canvas's compositor scroll.
+- `apps/web/lib/canvas-layer.ts` (since the owner's finding) — the chrome layer: two shadow-root hosts on the canvas
+  `<body>`, `page` (absolute, scrolls with the content) and `view` (fixed, for a sticky or fixed root), each scaled by
+  1 / fit, adopting the editor's stylesheet, with the editor's fonts added under `inflozo-chrome …` family names.
 - `tools/probe/run-verify-editor.cjs` — steps 1–9 from Story 5.1. Steps 3 and 4 read the canvas at rest, before
   anything is hovered (since R-120 step 3's control is the stylesheet's text and a planted attribute, not a painted
   outline); step 5 is the CSP session; step 8 is axe.
@@ -195,7 +197,9 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
   reads an empty file as a result, after controls on planted keyed and unkeyed rules.
 - [x] `apps/web/app/globals.css` -- `@utility canvas-outline-hover` (inset 0 0 0 1px coral) and
   `canvas-outline-selected` (1.5px): an inset box-shadow spread, which paints its exact width (R-120's measurement).
-- [x] `apps/web/package.json` + `pnpm-lock.yaml` -- `@floating-ui/dom` 1.8.0, exact.
+- [x] `apps/web/package.json` + `pnpm-lock.yaml` -- `@floating-ui/dom` 1.8.0, exact; removed again by the owner's
+  finding, when nothing used it.
+- [x] `apps/web/lib/canvas-layer.ts` -- the chrome layer inside the canvas document (the owner's finding).
 - [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` + `layout.tsx` -- `EditorData` gains `swatches`,
   `links`, `timezone` and each pool picture's `bytes`, which the `Sidebar` needs, and the account's `plan` from
   `resolveEntitlement` (R-119).
@@ -211,16 +215,15 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
     - Touch runs `hold`.
     - `keydown` Esc, on both documents, deselects when `escDeselects` allows.
   - **The outlines (R-120).** One hover box and one selected box, each an `aria-hidden`, `pointer-events-none` element
-    inside the page card beside the name tag, so the card clips it:
-    - Floating UI, the root as reference, sets its top-left and its size to the root's on-screen rect through the scaled
-      frame; `autoUpdate(…, { animationFrame: true })` runs only while the box shows, so the selected box's loop runs
-      while something is selected and stays on a sticky root as the page scrolls.
+    portalled into the chrome layer (`lib/canvas-layer.ts`) — the `page` host for a root that scrolls, the `view` host
+    for a sticky or fixed one — so it scrolls with its section on the compositor:
+    - `place()` sets its top-left and size from the root's rect, in the host's units (one unit is one screen pixel),
+      on layout and on every animation frame while chrome shows; a scroll needs no update.
     - The line is the `canvas-outline-hover` or `canvas-outline-selected` utility. On a hovered selection only the
       selected box is drawn, so its 1.5px wins.
-  - **The name tag.** One `aria-hidden`, `pointer-events-none` element inside the page card, so the card clips it:
+  - **The name tag.** One `aria-hidden`, `pointer-events-none` element in the same layer, clipped by the canvas viewport:
     - Its look is S4b's: 11/600 Inter, white on `coral-text`, padding 3px 9px, radius 0 0 6px 0.
-    - `computePosition`, with the hovered root as reference, puts its top-left on the root's.
-    - `autoUpdate(…, { animationFrame: true })` runs only while the tag shows.
+    - `place()` puts its top-left on the root's.
   - **Selected.**
     - Layers: the selected row draws `selected`, the hovered row the wash.
     - The aside is labelled "Section settings", headed with the instance's `layerName` in `PanelLabel`, and holds
@@ -231,7 +234,7 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
   - **Nothing selected.** PAGE, then `<EmptyPanel title="Nothing selected" instruction="Click any section on the canvas
     — its controls appear here." />`. The aside is labelled "Page settings".
   - **The Pro tag (R-119).** On a Free plan, while a design whose `tier` is `pro` is selected, `ProBadge`
-    sits at the selected root's top-right, 8px in, anchored the way the name tag is. It stays the Kit's `<span>`: its
+    sits at the selected root's top-right, 8px in, placed the way the name tag is, on one line. It stays the Kit's `<span>`: its
     word is its label, and it is never pressable.
   - **A change of canvas** (`key`) clears the selection.
   - **Comments.** Rewrite the header comment: what is built now, and what stays absent until which story.
@@ -300,6 +303,17 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
   spread in `globals.css`; `canvas-chrome.css` keeps no rule and `--inflozo-fit` is gone. The Approach, the first
   Always line, Code Map, Tasks, Design Notes and Verification steps 3, 10, 11 and 14 changed with it; the owner
   renegotiated the frozen Approach for this change only.
+- **2026-09-17 — the owner's finding: the outline drifted while the canvas scrolled (R-80).** Measured on the local
+  production build of ffa257e1 with a new harness step 15: compositor frames (CDP screencast) during a synthetic scroll
+  gesture put the box's coral line 8–15px off blue markers placed in the canvas document at the section's edges, against
+  1–2px at rest, selected and hovered alike. Cause: the canvas scrolls on the compositor and the boxes were positioned
+  from the editor document's main thread, a frame behind. The hover itself was not late — in every sampled frame the
+  hovered root was the one under the pointer — and Floating UI's rounding was not it (the rects agree within 1px at
+  rest). Fix: the boxes, the tag and the Pro badge are portalled into a chrome layer inside the canvas document
+  (`lib/canvas-layer.ts`), where they scroll with the content; `@floating-ui/dom` is removed. Step 15 then measured 1–2px
+  in every frame. Changed with it: the Approach's sentence on where the chrome is drawn and the first Always line (both
+  inside `<frozen-after-approval>`, forced by the fix: they said the boxes and the tag are outside the frame), Code Map,
+  Tasks, Design Notes, Verification, the Owner's manual test (steps 1 and 2) and Owner's test findings.
 
 ## Design Notes
 
@@ -315,8 +329,10 @@ the source:
 - **It has no Inter of its own.** The canvas document declares no `@font-face`: `reference-tokens.css` names
   `'Inter', sans-serif` and the machine decides, while the editor document self-hosts Inter through `next/font`.
 
-Outside, beside the pressable chrome AD-21 already places there, none of the three applies, and Floating UI resolves
-the scaled frame itself (Code Map).
+Outside the site's own markup none of the three applies. Story 5.2's Dev build drew the tag in the editor document;
+the owner's finding moved it into a layer inside the canvas document that answers the same three: an element of its
+own rather than a pseudo-element on the root, scaled back up by 1 / fit, in the editor's Inter added under a family
+name the site never uses (below).
 
 ### Why the outlines leave the frame too (R-120)
 
@@ -326,8 +342,21 @@ painting 1.00px as the control: `border: 1.5px` and `outline: 1.5px` paint 1.00p
 0.6 fit gives `1px` and `2px`, which the frame's scale then paints at 0.6px and 1.2px. An inset box-shadow spread is not
 floored — 1px paints 1.00px and 1.5px paints 1.50px, at 1× and 2× — but inside the frame it would sit under any child
 that paints to the root's edge and replace a design's own shadow (Header — Rail's Shadow divider). Outside, a box the
-root's size carries the shadow line over everything, changes nothing in the section, and Floating UI's loop keeps it on
-a sticky root as the page scrolls. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots as state marks.
+root's size carries the shadow line over everything and changes nothing in the section. `data-inflozo-hover` and
+`data-inflozo-selected` stay on the roots as state marks.
+
+### Why the chrome is a layer inside the canvas document (the owner's finding)
+
+Positioned from the editor document, the boxes drifted 8–15px while the canvas scrolled: the canvas scrolls on the
+compositor, and anything the main thread positions from a rect it read lands a frame later. Chrome that belongs to the
+canvas document's own scrolling content moves in the same frame as the section. So it is not in the site's markup but
+beside it: two hosts on `<body>`, outside `#canvas`, each with a shadow root, so the editor's stylesheet styles the Kit's
+elements inside without touching the site and the site's styles cannot reach them. `page` is absolute at the document's
+origin and scrolls; `view` is fixed and does not, for a sticky or fixed root that does not scroll either. Each is
+scaled by 1 / fit, so the tag is S4b's 11px and R-120's lines paint 1.00px and 1.50px exactly as before. The hosts carry
+`data-inflozo-chrome` and are removed when nothing is hovered or selected, so rest is still zero. The Dev build's
+reason for going outside — pressable chrome cannot be a pseudo-element — does not apply: none of this is pressable.
+Pressable chrome (5.4's pill) will meet the same scroll lag outside and should be measured with step 15.
 
 ### Choices made here, one line each
 
@@ -344,6 +373,8 @@ a sticky root as the page scrolls. `data-inflozo-hover` and `data-inflozo-select
   until Story 5.4 builds the pill, and that story moves one of the two.
 - **A section taller than the view shows its tag only while its top is in view.** ponytail: a tag pinned to the
   card's top edge is the upgrade, if a test asks for it.
+- **A sticky root's chrome is in the fixed layer, chosen per render.** ponytail: a sticky root that has not yet stuck
+  moves with the content and its chrome trails it by a frame until it sticks; every pilot header is stuck from the top.
 
 ## Verification
 
@@ -363,8 +394,7 @@ a sticky root as the page scrolls. `data-inflozo-hover` and `data-inflozo-select
       strip across the box's left edge — never from computed style, which reported widths Chromium did not paint.
       This is the control for step 11's 1.5.
     - The tag's text is the layer name and its styles are S4b's.
-    - The tag's top-left on screen is within 1px of the root's rect mapped through the iframe's rect and scale. This
-      executes the Floating UI claim.
+    - The tag's top-left on screen is within 1px of the root's rect mapped through the iframe's rect and scale.
     - The hovered Layers row is washed, and leaving the canvas clears all of it.
 11. **Select.**
     - A click on the Rail header's Archive link (Orbit Weekly's `site.navigation`) selects Header — Rail, and the canvas
@@ -393,7 +423,15 @@ a sticky root as the page scrolls. `data-inflozo-hover` and `data-inflozo-select
 14. **Touch.** A CDP touch held 600ms on Latest Post shows its hover box and tag, with nothing selected; a 50ms tap
     selects it.
 
-Step 5's CSP session adds the gestures of steps 10–13, and reads its zero after them. Step 8's axe runs twice more:
+15. **Scroll (the owner's finding).** Blue markers placed in the canvas document at a section's top and bottom edges
+    scroll with the content; compositor frames (CDP `Page.startScreencast`) are captured while
+    `Input.synthesizeScrollGesture` scrolls the canvas, and the coral line nearest a marker edge is read in each frame.
+    - Control: at rest the line lies within 3px of the marker.
+    - Three Up selected, and Three Up hovered with the pointer held still: within 3px in every captured frame. Red on
+      ffa257e1 (8–15px), green after the fix (1–2px).
+    - Header — Rail selected (sticky): its top line stays on the card's top edge in every frame.
+
+Step 5's CSP session adds the gestures of steps 10–13 and 15, and reads its zero after them. Step 8's axe runs twice more:
 with Three Up hovered, and with it selected.
 
 **At Deploy (DW-175's owner).** Repeat the interleaved probe and the fresh-connection `curl` loop once. If the rate
@@ -440,8 +478,8 @@ Sign in as you normally do. If a page stays blank, refresh once and tell us (DW-
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Move the mouse slowly down the page, over each section in turn, with `S4 Editor.dc.html` S4b open beside it. | — | Each section in turn gets a thin coral outline and a small coral tag at its top-left corner with its name ("Header — Rail", "Hero — Latest Post", and so on), and its row in Layers lights up. There are no buttons and no "+" line: those come with Stories 5.4, 5.10 and 5.11, as you ruled. Moving off the page clears it. |
-| 2 | same | Canvas | Click "Hero — Latest Post", then move the mouse away. | — | A slightly thicker outline stays on it; its Layers row turns light coral; the right panel is headed HERO — LATEST POST, with Content, Layout and Style, and "Reset this design" at the bottom. Compare it with S4c, minus S4c's pinned top card, which your R-113 ruling removed. If your account is on Free, a small gold "✦ Pro" tag also sits in the section's top-right corner, as you ruled; on Pro it does not. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Move the mouse slowly down the page, over each section in turn, with `S4 Editor.dc.html` S4b open beside it. Then leave the mouse still over the page and scroll with the wheel or trackpad, slowly and then fast. | — | Each section in turn gets a thin coral outline and a small coral tag at its top-left corner with its name ("Header — Rail", "Hero — Latest Post", and so on), and its row in Layers lights up. There are no buttons and no "+" line: those come with Stories 5.4, 5.10 and 5.11, as you ruled. Moving off the page clears it. While you scroll, the outline and its tag stay glued to their section and never slide over the next one (your finding). |
+| 2 | same | Canvas | Click "Hero — Latest Post", then move the mouse away. | — | A slightly thicker outline stays on it; its Layers row turns light coral; the right panel is headed HERO — LATEST POST, with Content, Layout and Style, and "Reset this design" at the bottom. Compare it with S4c, minus S4c's pinned top card, which your R-113 ruling removed. If your account is on Free, a small gold "✦ Pro" tag also sits in the section's top-right corner, as you ruled; on Pro it does not. Scroll the page: the thicker outline and the gold tag move with the section; click the header and scroll, and its outline stays on the header. |
 | 3 | same | Right panel | Open Content and replace the Headline. | `Hello from the owner test` | The headline on the page changes as you type. |
 | 4 | same | Canvas, then the right panel | Click "Post Grid — Three Up", open Layout and press **Two** under Per row. | — | The selection moves to Three Up, and its cards change to two per row at once. |
 | 5 | same | Right panel | Press **Reset this design**, then **Reset design**. | — | It asks first; after you confirm, the cards go back to three per row. |
@@ -449,6 +487,27 @@ Sign in as you normally do. If a page stays blank, refresh once and tell us (DW-
 | 7 | same | Keyboard | Press Esc. | — | The outline goes, the Layers row returns to normal, and the right panel shows PAGE, a small drawing, "Nothing selected" and "Click any section on the canvas — its controls appear here." |
 | 8 | same | Browser | Reload the page. | — | The headline you typed and the other changes are gone. Saving arrives with Story 5.8. |
 | 9 | same, on an iPad or a touchscreen, if you have one | Canvas | Hold a finger on a section for about half a second and lift it; then tap the section once. | — | Holding shows the outline and the name tag without choosing the section; the tap chooses it. |
+
+## Owner's test findings
+
+### Finding 1 — the outline slides out of sync while scrolling (owner, 2026-09-17, on ffa257e1)
+
+**In his words:** "When I scroll the outline over various sections jumps out of sync and seems to move over near by
+sections a bit. This is not so huge but is visible and has a bad UX. Can we fix it without compromising on other
+aspects?"
+
+**Measured cause.** The canvas scrolls on the browser's compositor, and the outline boxes, tag and badge were positioned
+by the editor page's own script from where the section was a moment earlier — one frame behind. Reproduced on a local
+production build of ffa257e1 (harness step 15): during a scroll gesture the outline's line sat 8–15px off the section's
+edge in the captured frames, against 1–2px at rest, for a selected and a hovered section alike. Ruled out by the same
+run: the hover choosing the wrong section (the hovered section was the one under the pointer in every frame sampled),
+and Floating UI's rounding (the boxes lie within 1px of the section at rest).
+
+**Fix.** The outlines, the name tag and the Pro badge now live in a layer inside the canvas page itself, beside the
+site's sections rather than in them, so the browser scrolls them together in the same frame
+(`apps/web/lib/canvas-layer.ts`). They look the same — the same 1px and 1.5px lines, the same tag and badge — nothing in
+the sections changes, and nothing is left behind when nothing is hovered or selected. Step 15 now measures 1–2px in
+every frame. Recorded under R-120 (`reconcile-designs-decisions.md`) and in AD-21.
 
 ## Questions for the owner
 

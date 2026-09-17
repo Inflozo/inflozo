@@ -1,9 +1,9 @@
 'use client'
 
-import { autoUpdate, computePosition, offset } from '@floating-ui/dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { stampControls } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, ProjectDoc, RuntimeElement } from '@inflozo/section-runtime'
@@ -17,6 +17,7 @@ import { ChevronLeft, Panel } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { LayersRow } from '@/components/kit/layers-row'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
+import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { CANVASES, canvasOfPath, canvasStack, SITE, type CanvasKey } from '@/lib/editor'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, sectionRoots, withState, type HoldEvent } from '@/lib/selection'
 import { isApp, stripApp } from '@/routing'
@@ -38,10 +39,11 @@ import type { EditorData } from './read'
    HOVER AND SELECTION (Story 5.2 — S4b and S4c). The editor listens on the canvas document from this one, and marks
    the section root under the pointer `data-inflozo-hover` and the chosen one `data-inflozo-selected` — state marks, which
    nothing inside the frame paints today. A press inside the canvas selects and does nothing else: `click`, `submit`,
-   `dragstart`, `mousedown` and `auxclick` have their defaults prevented. Everything drawn for them is OUTSIDE the frame,
-   inside the page card so the card clips it, anchored to the root with Floating UI (AD-21 as Story 5.2 amended it): the
-   two outline boxes (R-120 — inside, Chromium floors an outline's width to whole pixels before the fit shrinks it), the
-   name tag and R-119's Pro badge. Touch has no hover: a 500 ms hold shows it and
+   `dragstart`, `mousedown` and `auxclick` have their defaults prevented. Everything drawn for them — the two outline
+   boxes (R-120: an inset box-shadow line, because a border or an outline is floored to whole pixels), the name tag and
+   R-119's Pro badge — is this component's own elements PORTALLED into a chrome layer on the canvas document's `<body>`,
+   beside the site's sections and never in them (`lib/canvas-layer.ts`), so the compositor scrolls them with their
+   section in the same frame: drawn from this document they trailed it by a frame, the owner's finding. Touch has no hover: a 500 ms hold shows it and
    a tap selects (`lib/selection.ts`). Selecting mounts Story 4.5's `Sidebar` over an in-memory copy of the docs, fed
    what `/pilots` feeds it: a control change stamps the live root, anything else repaints — and after every paint and
    every stamp the attributes are re-applied, because `stampControls` strips every root `data-*` it does not own. Esc
@@ -110,42 +112,6 @@ const stackOf = (docs: Readonly<Record<string, ProjectDoc>>, key: CanvasKey): Pl
     (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string })),
     (docs[key]?.instances ?? []).map((i) => ({ ...i, target: CANVASES[key].file as string, doc: key as string })),
   )
-
-/** Floating UI's loop for one piece of chrome outside the frame, anchored to a root inside it, running only while it
- *  shows: a chip at the root's top-left or top-right, or a box the root's own size (the outlines, R-120). Floating UI
- *  maps the root's rect through the scaled iframe (`getBoundingClientRect`'s `frameElement` walk), so the box is the
- *  root's rect on screen, and the loop keeps it there as the canvas scrolls — a sticky root included. */
-function useAnchor(root: HTMLElement | null, chip: RefObject<HTMLDivElement | null>, place: 'top-left' | 'top-right' | 'fill', paints: number) {
-  useEffect(() => {
-    const el = chip.current
-    if (!root || !el) return
-    return autoUpdate(
-      root,
-      el,
-      () =>
-        void computePosition(root, el, {
-          // the chrome's top edge on the root's top edge: below the root, lifted by the root's own height
-          placement: place === 'top-right' ? 'bottom-end' : 'bottom-start',
-          middleware: [
-            // B10: 8px inside the top-right corner
-            offset(({ rects }) => (place === 'top-right' ? { mainAxis: 8 - rects.reference.height, alignmentAxis: 8 } : -rects.reference.height)),
-            { name: 'reference', fn: ({ rects }) => ({ data: rects.reference }) },
-          ],
-        }).then(({ x, y, middlewareData }) => {
-          el.style.left = `${x}px`
-          el.style.top = `${y}px`
-          if (place === 'fill') {
-            const r = middlewareData['reference'] as { width: number; height: number }
-            el.style.width = `${r.width}px`
-            el.style.height = `${r.height}px`
-          }
-          el.style.visibility = 'visible'
-        }),
-      { animationFrame: true },
-    )
-    // a paint replaces every root, so the anchor follows it
-  }, [root, chip, place, paints])
-}
 
 export function Editor({
   project,
@@ -365,10 +331,47 @@ export function Editor({
   const pro = plan === 'free' && entry?.tier === 'pro'
   // on a hovered selection the selected box's 1.5px is the only outline (S4c)
   const hoverOutline = pointed && !same(hovered, selected)
-  useAnchor(hoverOutline ? rootOf(hovered) : null, hoverBox, 'fill', paints)
-  useAnchor(chosen ? rootOf(selected) : null, selectedBox, 'fill', paints)
-  useAnchor(pointed ? rootOf(hovered) : null, tag, 'top-left', paints)
-  useAnchor(pro ? rootOf(selected) : null, badge, 'top-right', paints)
+  const hoveredRoot = pointed ? rootOf(hovered) : null
+  const selectedRoot = chosen ? rootOf(selected) : null
+
+  // THE CHROME LAYER (the owner's finding, 2026-09-17): the boxes, the tag and the badge are portalled into the canvas
+  // document, so the compositor scrolls them with their section in the same frame (`lib/canvas-layer.ts`)
+  const [chrome, setChrome] = useState<ChromeLayers | null>(null)
+  const showing = !!(hoveredRoot || selectedRoot)
+  useLayoutEffect(() => {
+    const doc = frame.current?.contentDocument
+    if (!showing || !doc) {
+      if (chrome) {
+        dropChromeLayers(chrome.doc)
+        setChrome(null)
+      }
+      return
+    }
+    // a reloaded frame is a new document: its chrome are made again
+    if (chrome?.doc !== doc) setChrome(chromeLayers(doc))
+    // `chrome` is read, not a dependency: it is what this effect sets
+  }, [showing, paints])
+  const layerFor = (root: HTMLElement | null) => (!root || !chrome ? null : pinned(root) ? chrome.view : chrome.page)
+
+  // positions follow layout, not scroll: a section that grows, a header that shrinks, a fold that re-fits the canvas
+  useLayoutEffect(() => {
+    if (!chrome) return
+    const all: [HTMLElement | null, HTMLElement | null, 'fill' | 'top-left' | 'top-right'][] = [
+      [hoverBox.current, hoveredRoot, 'fill'],
+      [selectedBox.current, selectedRoot, 'fill'],
+      [tag.current, hoveredRoot, 'top-left'],
+      [badge.current, selectedRoot, 'top-right'],
+    ]
+    const tick = () => {
+      for (const [el, root, how] of all) if (el && root) place(el, root, scale, how)
+    }
+    tick()
+    let id = requestAnimationFrame(function loop() {
+      tick()
+      id = requestAnimationFrame(loop)
+    })
+    return () => cancelAnimationFrame(id)
+  })
 
   if (failure) throw failure
 
@@ -438,34 +441,40 @@ export function Editor({
               className="block origin-top-left border-0"
               style={{ width: DESKTOP, height: size.height / scale, transform: `scale(${scale})` }}
             />
-            {/* The outlines (R-120): boxes over the root, outside the frame, because inside it Chromium floors an outline's
-                width to whole pixels before the fit shrinks it (0.6px and 1.2px at 1440). The line is an inset box-shadow
-                spread, which paints its exact width: S4b's 1px (:181) and S4c's 1.5px (:293), `globals.css`. */}
-            {hoverOutline ? (
-              <div ref={hoverBox} aria-hidden data-chrome="hover" className="pointer-events-none absolute canvas-outline-hover" style={{ visibility: 'hidden' }} />
-            ) : null}
-            {chosen ? (
-              <div ref={selectedBox} aria-hidden data-chrome="selected" className="pointer-events-none absolute canvas-outline-selected" style={{ visibility: 'hidden' }} />
-            ) : null}
-            {/* S4b's name tag (S4 Editor.dc.html:181), outside the frame so it is drawn at its own 11px in the app's Inter,
-                and inside the card so the card clips it. Never pressed: the pointer passes through to the section. */}
-            {pointed ? (
-              <div
-                ref={tag}
-                aria-hidden
-                data-chrome="tag"
-                className="pointer-events-none absolute whitespace-nowrap rounded-[0_0_6px_0] bg-coral-text px-[9px] py-[3px] text-helper-caption font-semibold text-surface"
-                style={{ visibility: 'hidden' }}
-              >
-                {pointed.layerName}
-              </div>
-            ) : null}
+            {/* The outlines (R-120): boxes over the root, whose line is an inset box-shadow spread, which paints its exact
+                width where a border or an outline is floored to whole pixels: S4b's 1px (:181) and S4c's 1.5px (:293),
+                `globals.css`. Inside the canvas document since the owner's finding, so they scroll with their section. */}
+            {hoverOutline && layerFor(hoveredRoot)
+              ? createPortal(<div ref={hoverBox} aria-hidden data-chrome="hover" className="pointer-events-none absolute canvas-outline-hover" style={{ visibility: 'hidden' }} />, layerFor(hoveredRoot) as ShadowRoot)
+              : null}
+            {chosen && layerFor(selectedRoot)
+              ? createPortal(<div ref={selectedBox} aria-hidden data-chrome="selected" className="pointer-events-none absolute canvas-outline-selected" style={{ visibility: 'hidden' }} />, layerFor(selectedRoot) as ShadowRoot)
+              : null}
+            {/* S4b's name tag (S4 Editor.dc.html:181), drawn at its own 11px in the app's Inter. Never pressed: the pointer
+                passes through to the section. */}
+            {pointed && layerFor(hoveredRoot)
+              ? createPortal(
+                  <div
+                    ref={tag}
+                    aria-hidden
+                    data-chrome="tag"
+                    className="pointer-events-none absolute whitespace-nowrap rounded-[0_0_6px_0] bg-coral-text px-[9px] py-[3px] text-helper-caption font-semibold text-surface"
+                    style={{ visibility: 'hidden' }}
+                  >
+                    {pointed.layerName}
+                  </div>,
+                  layerFor(hoveredRoot) as ShadowRoot,
+                )
+              : null}
             {/* R-119, B10 (B Missing Surfaces.dc.html:1424-1451): a price tag, not a lock — the Kit's span, never a button */}
-            {pro ? (
-              <div ref={badge} data-chrome="pro" className="pointer-events-none absolute flex" style={{ visibility: 'hidden' }}>
-                <ProBadge />
-              </div>
-            ) : null}
+            {pro && layerFor(selectedRoot)
+              ? createPortal(
+                  <div ref={badge} data-chrome="pro" className="pointer-events-none absolute flex w-max" style={{ visibility: 'hidden' }}>
+                    <ProBadge />
+                  </div>,
+                  layerFor(selectedRoot) as ShadowRoot,
+                )
+              : null}
           </div>
         </section>
 

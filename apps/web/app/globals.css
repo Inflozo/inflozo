@@ -161,8 +161,8 @@
   animation: health-pulse 1200ms var(--ease-out) infinite;
 }
 
-/* THE CANVAS OUTLINES (Story 5.2, R-120): the line on the box the editor anchors over a hovered or selected section,
-   outside the frame. An inset box-shadow spread and not a border or an outline, because Chromium floors those two to
+/* THE CANVAS OUTLINES (Story 5.2, R-120): the line on the box drawn over a hovered or selected section, in the chrome
+   layer inside the canvas document (lib/canvas-layer.ts, whose shadow roots adopt this stylesheet). An inset box-shadow spread and not a border or an outline, because Chromium floors those two to
    whole CSS pixels (a 1.5px border paints 1px, measured 2026-09-17) and the spread paints its exact width at 1× and 2×.
    S4b's hover is 1px (S4 Editor.dc.html:181), S4c's selected 1.5px (:293), both coral. */
 @utility canvas-outline-hover {

@@ -11,7 +11,6 @@
     "test": "node --test '*.test.ts'"
   },
   "dependencies": {
-    "@floating-ui/dom": "1.8.0",
     "@inflozo/library": "workspace:*",
     "@inflozo/section-runtime": "workspace:*",
     "@supabase/auth-js": "2.115.0",

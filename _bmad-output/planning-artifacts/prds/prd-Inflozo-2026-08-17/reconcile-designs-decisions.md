@@ -2392,6 +2392,16 @@ that makes it work."*
     (2026-09-17).
 - **Deliberately not touched:** the export (R-74), whose S4b and S4c draw the outline as a border on an overlay —
   what R-120 builds; `prd.md` FR-D2, which says an outline is shown, not where it is drawn.
+- **Amended — owner's finding 2026-09-17 (Story 5.2, R-80).** Testing ffa257e1 he saw the outline "jump out of sync and
+  move over nearby sections a bit" while scrolling. Measured: 8–15px of drift in the compositor's frames during a scroll
+  gesture against 1–2px at rest (`run-verify-editor.cjs` step 15), because boxes positioned from the editor document land
+  a frame after the canvas's compositor scroll. The boxes, the name tag and the Pro badge now live in a chrome layer
+  inside the canvas document — shadow-root hosts on its `<body>`, outside every section root, scaled by 1 / fit —
+  so they scroll with their section; step 15 measures 1–2px in every frame. Everything R-120 binds holds: the 1px and
+  1.5px inset box-shadow lines, the state marks, zero at rest, painted-pixel verification. `@floating-ui/dom` is removed.
+  - ✅ Story 5.2's spec (Owner's test findings, Spec Change Log, Approach, Code Map, Tasks, Design Notes, Verification,
+    Owner's manual test) · ✅ `ARCHITECTURE-SPINE.md` AD-21 · ✅ `EXPERIENCE.md` § Editor shell ·
+    ✅ `epic-5-context.md` — Story 5.2's fix (2026-09-17).
 
 ## B · Approved decisions superseded by this session
 

@@ -2,8 +2,9 @@
    attribute, and nothing carries one while nothing is hovered or selected — so the canvas at rest is the site with
    zero chrome, by construction. pilots.test.ts holds the keying.
 
-   EMPTY SINCE R-120 (Story 5.2, 2026-09-17). The hover and selected outlines are drawn OUTSIDE the frame, as boxes the
-   editor anchors to the section root (editor.tsx), because inside it Chromium floors an outline's or a border's width
-   to whole pixels before the fit shrinks the frame. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots
+   EMPTY SINCE R-120 (Story 5.2, 2026-09-17). The hover and selected outlines are not CSS on the root: Chromium floors an
+   outline's or a border's width to whole pixels before the fit shrinks the frame. They are boxes with an inset
+   box-shadow line in the chrome layer (lib/canvas-layer.ts), shadow-root hosts on this document's <body> that exist
+   only while something is hovered or selected. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots
    as state marks. Painted chrome that belongs inside — the insertion hairline, PAUSED, the empty icon slot — keys its
    rule on a data-inflozo-* attribute here. */

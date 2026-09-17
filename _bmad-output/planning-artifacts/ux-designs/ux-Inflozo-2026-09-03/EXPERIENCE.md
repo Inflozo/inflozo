@@ -239,7 +239,12 @@ page card so the card clips it. The tag because inside the frame it would shrink
 the site's fonts and need the design's root to be positioned; the outlines because the browser floors
 an outline's or a border's width to whole pixels before the fit shrinks the frame (0.6px and 1.2px at
 1440, measured), so each is a box the section's size whose line is an inset shadow at S4b's 1px and
-S4c's 1.5px (AD-21; the spec's Design Notes).
+S4c's 1.5px (AD-21; the spec's Design Notes). **The owner's test moved that layer into the canvas
+(2026-09-17):** drawn by the editor page, the outline slid a few pixels onto neighbouring sections while
+the canvas scrolled, because the page repositioned it a frame after the browser scrolled the canvas. The
+outlines, the tag and the Pro badge are now a layer inside the canvas document, beside the site's
+sections and never in them, so they scroll with their section; they look exactly as before and leave
+nothing behind at rest (AD-21; R-120).
 
 ---
 
