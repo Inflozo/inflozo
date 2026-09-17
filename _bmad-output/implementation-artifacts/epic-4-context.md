@@ -188,6 +188,15 @@ Build the machine every design in the library is authored against — **before a
     restating three. Widening is a mass rebaseline under NFR-6(a)'s own rule, so it belongs to the story that
     causes it (DW-169). The fixture pins are derived the same way — from each design (it paginates, its markup
     reads `@member`, its context is `post`) — because A25/A32/A33/A34 and the six synthesized stacks do not exist.
+  - **Story 4.11's Dev run (2026-09-17) — the matrix exists, and its runner was executed, not assumed.**
+    `bash tools/matrix/run-matrix-gate.sh` photographs every case through `pilotsCanvasDocument()` inside
+    `tools/matrix/Dockerfile` into `packages/library/baselines/{category}/{n}/`; `docs/render-matrix.md` is the
+    rebaseline rule. Chromium draws the token fonts with Gelasio and Inter, read over CDP into `manifest.json` with the
+    image, Playwright, Chromium and the pin, and any drift fails (DW-138 closed). A Show-to arm is photographed as a
+    visitor it hides from; its shown arm is the visitor arm's pixels. Two facts: Turbopack fails the build on
+    `new URL('…', import.meta.url)`, so `pilots.ts` resolves through `fileURLToPath`; the legacy docker builder
+    ignores `ADD --checksum`, so the fonts are checked with `sha256sum -c`. **R-117:** NFR-6(a)'s 1% stands — a 3px
+    sideways nudge of one button measured 0.36–0.71% and passes; a change that resizes a section always fails.
 - **The accessibility scan rides the same renders — there is no second matrix.** axe-core, WCAG 2.1 AA, **zero violations**, scoped to include the fixture renders and the synthesized templates, not only placed designs. Every image carries an alt, and an image that is the **sole content of a link** must carry a *non-empty* one. **The scan stops at the edge of the post body** — Ghost emits its own markup there and no theme can fix a customer's content.
 
 ## Technical Decisions

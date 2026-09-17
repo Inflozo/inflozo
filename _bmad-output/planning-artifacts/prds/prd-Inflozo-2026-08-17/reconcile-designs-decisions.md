@@ -2290,9 +2290,27 @@ design should have an icon too. On click it should prompt the user to confirm th
 - **Its pair.** DW-7 (2026-09-05) put publishing behind `check` and `rls` precisely so a broken row-level-security
   policy could not reach production. This ruling does not loosen that: both gates stand, and the matrix is added
   beside them rather than inside them.
-- Targets: ✅ Story 4.11's spec (Q1, and the `matrix.yml` task line). **The Dev run carries it into:**
-  `.github/workflows/matrix.yml` (its own job, absent from `deploy`'s `needs`) and `docs/render-matrix.md`
-  (the cadence and the rebaseline rule). **Deliberately not touched:** `ci.yml`'s `deploy` job.
+- Targets: ✅ Story 4.11's spec (Q1, and the `matrix.yml` task line) · ✅ `.github/workflows/matrix.yml` (its own
+  job, absent from `deploy`'s `needs`) and ✅ `docs/render-matrix.md` (the cadence and the rebaseline rule), both
+  landed by the Dev run. **Deliberately not touched:** `ci.yml`'s `deploy` job.
+
+**R-117 — the render matrix keeps NFR-6(a)'s 1%, and says what 1% does not catch.** Story 4.11's Q2, ruled option 1
+(owner, 2026-09-17): "Keep the 1% limit, and I correct the promise."
+
+- **What it found.** The story promised that "a shared change that nudges a button three pixels" is caught. Executed
+  on 2026-09-17 inside the pinned image: A22 #1's Subscribe button moved 3px sideways, nothing else, changed **0.36%**
+  of the photograph at 1440, 0.60% at 390 and 0.71% at 834 — under 1%, so the gate stayed green. A4 #13's actions
+  moved 3px down made the section 3px taller, and the gate went red, because a photograph that changes size fails
+  whatever its ratio.
+- **What it binds.** NFR-6(a)'s numbers stand exactly as the PRD writes them — above 1% differing pixels at a
+  per-pixel tolerance of 0.1 — and live only in `tools/matrix/playwright.config.mjs`. Nothing that describes the
+  matrix promises more: it catches a change that resizes or reflows a section, or that changes more than 1% of a
+  photograph; a small sideways nudge of one element that moves nothing else can pass. The owner's own look at every
+  section in each category gate (E9 onward) is where such a nudge is seen.
+- Targets: ✅ Story 4.11's spec (Q2, `## In plain English`, the Pixel-drift row and its acceptance criterion, renegotiated
+  by this ruling) · ✅ `docs/render-matrix.md` (the opening promise and § What fails) · ✅ `epic-4-context.md`
+  (the Dev sub-bullet). **Deliberately not touched:**
+  `prd.md` NFR-6(a), which never made the stronger promise.
 
 ## B · Approved decisions superseded by this session
 

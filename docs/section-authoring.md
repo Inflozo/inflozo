@@ -658,7 +658,8 @@ linted: it is Ghost's, as `cards.js` is. `pnpm check` also runs `tools/check-bas
 plugin against the pin row by row and proves each tool's control.
 
 **Moving the pin is an owner decision, and it needs a render-matrix re-run** (FR-G8, NFR-6(a)): a later date
-widens what every stylesheet may use. So is bumping `stylelint-plugin-use-baseline` or `web-features` —
+widens what every stylesheet may use. Since Story 4.11 the matrix enforces it: `tools/matrix/manifest.json` records the
+pin the baselines were taken under, and the gate fails until they are re-taken (`docs/render-matrix.md`). So is bumping `stylelint-plugin-use-baseline` or `web-features` —
 the check turns either into a named list of rows to review.
 
 ### Behaviour modules — `data-module` *(Story 4.7)*

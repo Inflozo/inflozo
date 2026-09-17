@@ -3479,7 +3479,11 @@ reason: 4.8's Never bars the HTML Baseline check. The data is ready for it: an `
 plain: Moving the browser-floor date is meant to come with a fresh run of every visual test, because a later date
   lets designs use newer styling. Today that is a rule people follow, not something the build checks: the date could
   move and the visual tests could still be the ones taken under the old date.
-status: open
+status: done 2026-09-17 (Story 4.11)
+resolution: Story 4.11 (2026-09-17): `tools/matrix/manifest.json` records the root `widelyAvailableOnDate` the
+  baselines were taken under (with the image, Playwright, Chromium and the fonts), and the matrix's first test fails
+  when the root pin differs, naming both dates and the re-run. Executed as a control: the pin moved to 2026-09-01 and
+  `bash tools/matrix/run-matrix-gate.sh` exited 1 on that line; restored, it passed. `--update` re-records it.
 severity: medium
 origin: Story 4.8's Dev run (2026-09-14) — FR-G8 says bumping `widelyAvailableOnDate` "requires a render-matrix
   re-run" (NFR-6(a)); `tools/check-baseline.mjs` makes the bump reviewable but cannot see the matrix, and

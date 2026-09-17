@@ -6,14 +6,19 @@
 // plain data, so the page passes it to a client component and the frame route serves it whole.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { queryRows } from './controls-review.ts'
 
-/** Every reader runs with `apps/web` as the working directory (`controls-review.ts` relies on the same). */
-const PACKAGES = () => join(process.cwd(), '..', '..', 'packages')
+/** Resolved from this module's own address, not the working directory, so the render matrix (Story 4.11) reads the
+ *  same canvas document from the repo root that the app reads from `apps/web`. Never `new URL('…', import.meta.url)`:
+ *  Turbopack reads that form as an asset import and fails the build (executed 2026-09-17). This form it computes at
+ *  run time from the chunk's own location (`resolveFileUrl` in its node runtime), so a deployed function finds
+ *  `packages/` beside `apps/` exactly as `process.cwd()` did. */
+const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
 export const DESIGNS_DIR = () => join(PACKAGES(), 'library', 'designs')
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')

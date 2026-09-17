@@ -13,6 +13,8 @@ node_modules/
 tools/stress/theme/
 tools/stress/theme.zip
 tools/probe/out/
+# the render matrix's run output: diff images and error context (Story 4.11)
+tools/matrix/test-results/
 __pycache__/
 *.pyc
 _bmad-output/planning-artifacts/design/claude-design-export/unpacked/

@@ -12,9 +12,10 @@
   "scripts": {
     "lint": "eslint . && stylelint \"packages/**/*.css\"",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test && node tools/stress/test-vocabulary.mjs && python3 tools/derive-module-reach.py --check && python3 tools/probe/record-cards.py --self-check && node tools/check-baseline.mjs && node tools/check-catalog.mjs && node tools/check-snapshots.mjs",
+    "test": "pnpm -r test && node tools/stress/test-vocabulary.mjs && python3 tools/derive-module-reach.py --check && python3 tools/probe/record-cards.py --self-check && node tools/check-baseline.mjs && node tools/check-catalog.mjs && node tools/check-snapshots.mjs && node tools/matrix/cases.test.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
-    "build": "pnpm --filter @inflozo/web build"
+    "build": "pnpm --filter @inflozo/web build",
+    "matrix": "bash tools/matrix/run-matrix-gate.sh"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",

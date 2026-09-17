@@ -17,8 +17,9 @@
 // design.json from this checkout and imports the pill rule's widths from packages/library, so run it with Node 24, on a
 // clean tree, after CI has deployed HEAD — it refuses to start otherwise, asking Vercel which commit serves the app; the
 // browser draws real scrollbars, because the panel's own bar narrows the pills.
-const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
-const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
+// the repo's own pinned copies (Story 4.11 made them devDependencies), resolved from the root — no machine path
+const { chromium } = require('@playwright/test')
+const AXE = require.resolve('axe-core/axe.min.js')
 const APP = process.env.APP_URL || 'https://app.inflozo.com'
 for (const key of ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'VERCEL_TOKEN', 'VERCEL_TEAM_ID']) {
   if (!process.env[key]) { console.error(`${key} is not set — read it from tools/probe/.env into this command's environment`); process.exit(2) }

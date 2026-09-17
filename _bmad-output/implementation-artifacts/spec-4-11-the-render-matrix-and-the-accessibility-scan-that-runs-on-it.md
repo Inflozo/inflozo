@@ -13,8 +13,9 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.m
 
 Nothing you can click changes. This story builds the camera: a machine that opens every section we have
 built, photographs it in light and dark at three widths (plus a fourth at 200% zoom and one with motion
-turned off), and compares each photo with the one saved last time — so if a shared change nudges a
-button three pixels, we find out the same day instead of a customer finding out. The same photographs
+turned off), and compares each photo with the one saved last time — so a shared change that resizes or
+reshuffles a section, or changes more than 1% of its photo, is found the same day instead of by a customer
+(a small sideways nudge of one button can pass: you ruled to keep that limit, R-117). The same photographs
 are handed to an accessibility checker, so a section that is hard to read or hard to use with a keyboard
 fails too; from Epic 9 on, no category of designs can be approved by you until its photographs are green.
 
@@ -77,7 +78,7 @@ under, so a browser-floor bump that was not re-run fails (DW-138).
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
 | Clean run | Every baseline present and matching | Exit 0; prints cases, designs, packs, violations (all derived) | N/A |
-| Pixel drift | A shared primitive moves a button 3px | Exit non-zero naming design, pack, mode, viewport; diff PNG written to the run's output dir | N/A |
+| Pixel drift | A change moves a button 3px down, so its section grows (renegotiated by R-117: a 3px sideways nudge of one button stays under 1% and passes) | Exit non-zero naming design, pack, mode, viewport; diff PNG written to the run's output dir | N/A |
 | Just below threshold | 0.9% of pixels differ at tolerance 0.1 | Passes — the gate is *above* 1% | N/A |
 | Missing baseline | A new design with no PNG | Exit non-zero naming the case and `--update` | Never auto-written |
 | axe violation | A link whose sole content is an image with `alt=""` | Exit non-zero naming rule id, case and selector | N/A |
@@ -119,25 +120,25 @@ under, so a browser-floor bump that was not re-run fails (DW-138).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/pilots.ts` -- resolve `PACKAGES()` from `import.meta.url` instead of `process.cwd()` -- so the matrix can import the canvas document from the repo root; the app's behaviour is unchanged.
-- [ ] `tools/matrix/cases.mjs` -- derive the case list: every design × every token set × light/dark × {1440, 834, 390, 1440-at-200%, 1440-reduced-motion}, expanded by each design's own fixture rows (feed pages if it paginates, visitor and Show-to arms if its markup carries `data-members`, the style-guide fixture if its `bindingContext` is `post`) -- pure, no browser, so the derivation has a test; carries the FR-H3 pin table as commented rows naming A25/A32/A33/A34 and the six synthesized stacks, each derived rather than listed.
-- [ ] `tools/matrix/cases.test.mjs` -- assert the derivation against the five pilots: `a17/1` yields the four feed rows, `a22/1` the visitor arms, `a24/1` the post fixture, `a1/1` neither; assert no literal total is stored -- the one runnable check, in `pnpm test`.
-- [ ] `tools/matrix/serve.mjs` -- a `node:http` server over the rendered case documents and Orbit Weekly's pictures at their real origin -- stdlib; so `url()`, `srcset` and the picture origin resolve exactly as they do in the editor, with no URL rewriting.
-- [ ] `tools/matrix/matrix.spec.mjs` -- per case: render through `renderCanvas` into the `pilotsCanvasDocument()` shell, set `data-mode`, add `js-enabled` to every `[data-module]`, screenshot `#canvas`, then run axe-core at WCAG 2.1 AA in the same page behind a positive control -- one page load, one matrix.
-- [ ] `tools/matrix/playwright.config.mjs` -- pin `toHaveScreenshot` to `threshold: 0.1`, `maxDiffPixelRatio: 0.01`, `animations: 'disabled'`, `caret: 'hide'`, and `snapshotPathTemplate` → `packages/library/baselines/{category}/{n}/` -- the AC's two numbers live in exactly one place.
-- [ ] `tools/matrix/Dockerfile` -- `FROM mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48`, plus the fonts the token set names -- **the stock image has no Latin fonts and this is load-bearing, not polish** (executed 2026-09-17, see Design Notes): `apt-get install fonts-inter` (4.0+ds-1, in apt) and a Georgia substitute, which is **not** in apt — fetch Gelasio from Google Fonts pinned by checksum, or alias to `fonts-liberation2` / `fonts-crosextra-caladea`; then a fontconfig alias for Georgia, and `fc-match Georgia` / `fc-match Inter` asserted in the image build so a missing font fails there, not in a baseline.
-- [ ] `tools/matrix/run-matrix-gate.sh` -- build/run the image, mount the repo, run the spec inside; refuse to run on the host unless `--host`, and never write a baseline outside the image -- modelled on `supabase/tests/run-rls-gate.sh`.
-- [ ] `tools/matrix/manifest.json` -- record the image digest, the Playwright version, the resolved font faces and the root `widelyAvailableOnDate` the baselines were taken under; the gate refuses when the root pin differs (DW-138) -- one line of policy, checked rather than remembered.
-- [ ] `packages/library/baselines/**` -- the PNGs, written by `--update` from inside the image only.
-- [ ] `package.json` -- add `@playwright/test` 1.61.1 and `axe-core` 4.12.1 as devDependencies and a `matrix` script; add `cases.test.mjs` to `pnpm test` -- the browser-free half runs per commit, the matrix does not.
-- [ ] `.github/workflows/matrix.yml` -- a `schedule` nightly full run and a `push` run over only the designs the commit touched, where a change to `packages/section-runtime/`, the reference tokens, `packages/library/src/` or `tools/matrix/` counts as touching every design -- NFR-6(a)'s cadence, as **its own job**: `ci.yml`'s `deploy` keeps `needs: [check, rls]` and gains no third name (**R-116**), so a red matrix never holds the app's deploy. Do not edit `ci.yml`.
-- [ ] `docs/render-matrix.md` -- the rebaseline rule, the cadence, what the manifest pins and how the owner's sampled review is done -- **plus its row in `tools/doc-audit.py`'s catalogue, and one row per new `tools/matrix/` file**, then `--generate`, or the pre-commit hook blocks the commit.
-- [ ] `_bmad-output/implementation-artifacts/epic-4-context.md` -- append one sub-bullet under the render-matrix requirement; never lengthen the lead (DW-73).
+- [x] `apps/web/lib/pilots.ts` -- resolve `PACKAGES()` from `import.meta.url` instead of `process.cwd()` -- so the matrix can import the canvas document from the repo root; the app's behaviour is unchanged.
+- [x] `tools/matrix/cases.mjs` -- derive the case list: every design × every token set × light/dark × {1440, 834, 390, 1440-at-200%, 1440-reduced-motion}, expanded by each design's own fixture rows (feed pages if it paginates, visitor and Show-to arms if its markup carries `data-members`, the style-guide fixture if its `bindingContext` is `post`) -- pure, no browser, so the derivation has a test; carries the FR-H3 pin table as commented rows naming A25/A32/A33/A34 and the six synthesized stacks, each derived rather than listed.
+- [x] `tools/matrix/cases.test.mjs` -- assert the derivation against the five pilots: `a17/1` yields the four feed rows, `a22/1` the visitor arms, `a24/1` the post fixture, `a1/1` neither; assert no literal total is stored -- the one runnable check, in `pnpm test`.
+- [x] `tools/matrix/serve.mjs` -- a `node:http` server over the rendered case documents and Orbit Weekly's pictures at their real origin -- stdlib; so `url()`, `srcset` and the picture origin resolve exactly as they do in the editor, with no URL rewriting.
+- [x] `tools/matrix/matrix.spec.mjs` -- per case: render through `renderCanvas` into the `pilotsCanvasDocument()` shell, set `data-mode`, add `js-enabled` to every `[data-module]`, screenshot `#canvas`, then run axe-core at WCAG 2.1 AA in the same page behind a positive control -- one page load, one matrix.
+- [x] `tools/matrix/playwright.config.mjs` -- pin `toHaveScreenshot` to `threshold: 0.1`, `maxDiffPixelRatio: 0.01`, `animations: 'disabled'`, `caret: 'hide'`, and `snapshotPathTemplate` → `packages/library/baselines/{category}/{n}/` -- the AC's two numbers live in exactly one place.
+- [x] `tools/matrix/Dockerfile` -- `FROM mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48`, plus the fonts the token set names -- **the stock image has no Latin fonts and this is load-bearing, not polish** (executed 2026-09-17, see Design Notes): `apt-get install fonts-inter` (4.0+ds-1, in apt) and a Georgia substitute, which is **not** in apt — fetch Gelasio from Google Fonts pinned by checksum, or alias to `fonts-liberation2` / `fonts-crosextra-caladea`; then a fontconfig alias for Georgia, and `fc-match Georgia` / `fc-match Inter` asserted in the image build so a missing font fails there, not in a baseline.
+- [x] `tools/matrix/run-matrix-gate.sh` -- build/run the image, mount the repo, run the spec inside; refuse to run on the host unless `--host`, and never write a baseline outside the image -- modelled on `supabase/tests/run-rls-gate.sh`.
+- [x] `tools/matrix/manifest.json` -- record the image digest, the Playwright version, the resolved font faces and the root `widelyAvailableOnDate` the baselines were taken under; the gate refuses when the root pin differs (DW-138) -- one line of policy, checked rather than remembered.
+- [x] `packages/library/baselines/**` -- the PNGs, written by `--update` from inside the image only.
+- [x] `package.json` -- add `@playwright/test` 1.61.1 and `axe-core` 4.12.1 as devDependencies and a `matrix` script; add `cases.test.mjs` to `pnpm test` -- the browser-free half runs per commit, the matrix does not.
+- [x] `.github/workflows/matrix.yml` -- a `schedule` nightly full run and a `push` run over only the designs the commit touched, where a change to `packages/section-runtime/`, the reference tokens, `packages/library/src/` or `tools/matrix/` counts as touching every design -- NFR-6(a)'s cadence, as **its own job**: `ci.yml`'s `deploy` keeps `needs: [check, rls]` and gains no third name (**R-116**), so a red matrix never holds the app's deploy. Do not edit `ci.yml`.
+- [x] `docs/render-matrix.md` -- the rebaseline rule, the cadence, what the manifest pins and how the owner's sampled review is done -- **plus its row in `tools/doc-audit.py`'s catalogue, and one row per new `tools/matrix/` file**, then `--generate`, or the pre-commit hook blocks the commit.
+- [x] `_bmad-output/implementation-artifacts/epic-4-context.md` -- append one sub-bullet under the render-matrix requirement; never lengthen the lead (DW-73).
 
 **Acceptance Criteria:**
 - Given the five pilots and the one token set that exists, when `bash tools/matrix/run-matrix-gate.sh` runs, then every case renders, every baseline matches, axe reports zero violations at WCAG 2.1 AA, and the printed totals are derived — no literal count appears in any file this story adds.
 - Given a baseline PNG, when it is held beside its pilot's frame in `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/` — `A1-1 Rail.dc.html`, `A17-1 Three Up.dc.html`, `A22-1 Inline Row.dc.html`, `A24-1 Centred.dc.html`, `A4-13 Latest Post.dc.html`, each beside its `A<n>-0 Category Proof.dc.html` — then the render **matches the frame** — the export is the design authority and is never edited (R-74).
-- Given a one-pixel-per-thousand change to a shared primitive, when the gate runs, then it passes (below 1%); given a button moved 3px on one design, then it fails naming design, pack, mode and viewport, and writes a diff image.
+- Given a one-pixel-per-thousand change to a shared primitive, when the gate runs, then it passes (below 1%); given a button moved 3px down on one design so its section grows, then it fails naming design, pack, mode and viewport, and writes a diff image — and given one button nudged 3px sideways with nothing else moved, then it passes, because NFR-6(a)'s 1% stands (**R-117**).
 - Given a design with no baseline, when the gate runs, then it fails naming the case — never writes one.
 - Given the root `widelyAvailableOnDate` is moved, when the gate runs, then it fails until the baselines are re-taken and the manifest re-recorded (DW-138 closes).
 - Given the axe scan, when the positive control's alt-less image is not reported, then the run aborts rather than reporting zero violations (standing rule 2).
@@ -205,21 +206,71 @@ finishes it.
 
 ## Verification
 
-**Commands:**
-- `bash tools/matrix/run-matrix-gate.sh` -- expected: exit 0; prints the derived case, design and pack
-  totals and `0 violations`; a second run is byte-identical (determinism).
-- `bash tools/matrix/run-matrix-gate.sh` after `sed`-ing 1px of padding into one pilot's `style.css`
-  (reverted after) -- expected: non-zero, naming that design and writing a diff PNG. **The control.**
-- `bash tools/matrix/run-matrix-gate.sh` after moving `widelyAvailableOnDate` (reverted after) --
-  expected: non-zero on the pin, DW-138's assertion executed rather than asserted.
-- `node tools/matrix/cases.test.mjs` -- expected: the five pilots' rows as the task states.
-- `pnpm check` -- expected: green, including the new `cases.test.mjs`; `pnpm check` must not grow a
-  browser dependency.
-- `python3 tools/doc-audit.py --check` (twice) -- expected: green, with every new `tools/matrix/` file
-  and `docs/render-matrix.md` catalogued.
-- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) node tools/probe/run-verify-pilots.cjs`
-  -- expected: PASS on the deployed `/pilots`, and its axe results agree with the matrix's for the same
-  five designs (R-82: the real stack, not mocks).
+**Real services this story hit (R-82)** — every key read from `tools/probe/.env` into the command's environment by
+its variable name, never printed:
+- **The deployed app, `https://app.inflozo.com/pilots`** — `run-verify-pilots.cjs` on HEAD `2beb8cac` as deployed:
+  **0 FAIL, 152 PASS**; axe's positive control reported `image-alt`; axe found **zero violations inside the canvas for
+  every pilot** (Rail, Three Up, Inline Row, Centred, Latest Post) at Light and Dark × Desktop, Tablet, Phone × Signed
+  out, Free, Paid. The matrix found zero on every case behind the same control — **they agree**.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) — `GET /v13/deployments/app.inflozo.com` answered
+  `dpl_68DW3ZMyKqNzyEsnUQDhCBCh1u1H`, `READY`, built from `2beb8cac`, the checkout's HEAD.
+- **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) — the probe's throwaway owner: `POST /auth/v1/admin/users` 200,
+  `POST /auth/v1/admin/generate_link` (magiclink) 200, `DELETE /auth/v1/admin/users/{id}` 200, the user count unchanged.
+- **GitHub Actions** (`GITHUB_TOKEN`, read only) — `CI` for `2beb8cac`: `check` success, `rls` success, `deploy` success.
+- **Not hit, by design:** Resend, Dodo, and the Ghost servers T1 and T3. The matrix renders locally with no Ghost and
+  no network in its render path (§4; this spec's Never), and nothing in this story sends mail or bills.
+
+**Commands, as executed 2026-09-17** in the image built from `tools/matrix/Dockerfile`. Every control was restored,
+and a sha256 list of every design file, every baseline, `reference-tokens.css`, `package.json` and `tools/matrix/`
+was identical before and after the controls.
+- `bash tools/matrix/run-matrix-gate.sh` — exit 0; printed its derived totals, `0 violations — passed`.
+- **Determinism:** `bash tools/matrix/run-matrix-gate.sh --update --update-snapshots=all` with nothing changed — every
+  photograph and `manifest.json` re-taken **byte-identical**. `all` writes any difference, even one under 1% (the
+  token control below proves it), so identical bytes mean identical renders.
+- **Pixel drift, the control (R-117's shape):** A4 #13 `.a4-13__actions` `margin-block-start` 32px → 35px,
+  `MATRIX_DESIGNS=a4/13` — **exit 1**. Its 1440 and 1440-reduced-motion cases failed in both modes, each named like
+  `a4/13 · reference-light-1440 — pack reference, mode light, viewport 1440`: "Expected an image 1440px by 604px,
+  received 1440px by 607px" (dark adds "9628 pixels (ratio 0.02 of all image pixels) are different"), with a
+  `-diff.png` per failing case under `tools/matrix/test-results/`.
+- **Below threshold, one design:** A22 #1 `.a22-1__button` `margin: 0` → `0 0 0 3px`, `MATRIX_DESIGNS=a22/1` — exit 0.
+  Re-taken into a copy and measured: 0.36% at 1440, 0.60% at 390, 0.71% at 834 (R-117).
+- **Below threshold, shared primitive:** `--button-radius` 8px → 9px in `reference-tokens.css`, full run — exit 0.
+  Re-taken into a copy: pixels changed in every design that draws a button, the largest share 0.327% — the change
+  landed and stayed under 1%.
+- **Missing baseline:** `a17/1/reference-light-390-feed-empty.png` moved out, `MATRIX_DESIGNS=a17/1` — exit 1: "a17/1 ·
+  reference-light-390-feed-empty — pack reference, mode light, viewport 390, feed-empty — it has no baseline; take one
+  with bash tools/matrix/run-matrix-gate.sh --update"; the file was still absent after the run.
+- **Pin drift (DW-138):** root `widelyAvailableOnDate` 2026-08-18 → 2026-09-01, `MATRIX_DESIGNS=a4/13` — exit 1:
+  "widelyAvailableOnDate: the root package.json pins 2026-09-01 and the baselines were taken under 2026-08-18 — the
+  baselines predate the floor; re-run … (DW-138)".
+- **axe violation:** a link whose sole content is an `<img alt="">` added to A4 #13 — exit 1, per case:
+  `link-name: a[href$="#archive"]`, under the case's design, pack, mode and viewport.
+- **Positive control:** the control `<img>` given an alt in `matrix.spec.mjs` — exit 1: "axe's positive control — an
+  <img> with no alt — was not reported, so this scan is not a result (standing rule 2)".
+- **Outside the image:** `node node_modules/@playwright/test/cli.js test -c tools/matrix/playwright.config.mjs` —
+  refused ("the render matrix runs inside its pinned image"); `--host --update` — `REFUSED`; `CI=true … --update` —
+  `REFUSED`; `--host --update-snapshots=all` — the case failed "a baseline is written only inside the pinned image".
+- **Reduced motion and empty feed:** each is its own baseline (`…-1440-reduced-motion-…`, `…-feed-empty.png`) and
+  passed in every clean run above.
+- `pnpm check` (Node 24) — exit 0, `cases.test.mjs` included and passing; no package gained a browser dependency.
+- `python3 tools/doc-audit.py --check` (twice) — `PASS (0 warning(s))`.
+- **Matches the frame (R-74), sampled by eye:** `A22-1 Inline Row.dc.html` and `A17-1 Three Up.dc.html` rendered
+  headless beside `a22/1/reference-light-1440-visitor-anonymous.png` and `a17/1/reference-dark-1440-feed-middle.png`
+  (the Dev subagent also held A4 #13 and A17 #1 beside their frames). Structure, order, spacing and content match.
+  The differences are later rulings, not drift: ink words on the accent button (R-110), and Orbit Weekly's pictures
+  where the frame draws placeholders. **Not decidable on this machine:** A22's headline breaks onto two lines in the
+  baseline (Gelasio) and fits one line in the frame. This host draws the frame's Georgia in a narrower substitute
+  face, so it is not a Georgia reference.
+
+**Only after the Dev push — for the review phase:**
+- **R-116's control.** Read in source today: `ci.yml`'s `deploy` declares `needs: [check, rls]` (line 68), `ci.yml` is
+  untouched, and the matrix is its own workflow file. The executed proof is a push whose `Render matrix` run is red
+  while `CI`'s `deploy` succeeds, read with `GITHUB_TOKEN`. If the Dev push's matrix run is green, a deliberately red
+  run is still owed.
+- **The `pilots.ts` path change, deployed.** The probe above ran on `2beb8cac`, with this story's `apps/` and
+  `packages/` changes set aside, as the probe requires. Re-run it on the Dev commit once CI has deployed it.
+- **GitHub's runner vs this machine.** Whether the matrix workflow's renders on `ubuntu-latest` match baselines taken
+  here is unmeasured until its first run.
 
 ## Questions for the owner
 
@@ -283,6 +334,46 @@ spacing changes do, the check **goes red**: moving Latest Post's (A4 #13) button
    - Catches everything, including changes nobody could see. Every intended change, however small, waits for your
      approval of new photos.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as **R-117** in `reconcile-designs-decisions.md` §A. NFR-6(a)'s
+1% at 0.1 stands; the promise in `## In plain English`, the Pixel-drift row and its acceptance criterion, and
+`docs/render-matrix.md` now say what the gate catches — a change that resizes or reflows a section, or changes more
+than 1% of a photograph — and that a small sideways nudge of one element can pass.
 
 ## Spec Change Log
+
+- **2026-09-17, Dev — `new URL('../../../packages', import.meta.url)` fails `next build`** (executed): Turbopack reads
+  that form as an asset import ("Module not found"), through a variable too. `pilots.ts` resolves
+  `join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')`, which Turbopack's node runtime computes
+  at run time from the chunk's own location (`resolveFileUrl`, read in the built runtime: the same root `process.cwd()`
+  reached). `pnpm build` and `apps/web/pilots.test.ts` pass; the deployed proof is the Deploy phase's
+  `run-verify-pilots.cjs` on the pushed commit. The reason sits beside the code.
+- **2026-09-17, Dev — `a1/1` carries `data-members` too** (Sign in / Subscribe / Account), so the Boundaries' derivation
+  gives Rail the visitor and Show-to rows; the test task's "`a1/1` neither" is held as *no feed rows and no post
+  fixture*, and the test asserts Rail's member rows equal Inline Row's. A Show-to row is the audience **viewed by a
+  visitor it hides from** (the first visitor that is not the audience): shown to its own audience it draws exactly the
+  visitor row's pixels, so the one Show-to state with pixels of its own is the section gone — asserted empty, then the
+  window photographed.
+- **2026-09-17, Dev — the image, as executed.** `ADD --checksum` is ignored by the legacy docker builder this machine
+  runs (an all-zero checksum built), so the Gelasio files are checked with `sha256sum -c` in a RUN step (its control
+  refused a wrong sum). `fonts-dejavu-core=2.37-8` joins Inter so `serif`/`sans-serif` are Latin; `fonts.conf` is the
+  Georgia → Gelasio alias. Over CDP, Chromium draws `--font-heading` with Gelasio, `--font-body` with Inter and the
+  pictures' Arial with Liberation Sans. 200% zoom is 720 CSS pixels at device scale 2.
+- **2026-09-17, Dev — additions the Tasks implied and did not name**, each routine: `tools/matrix/reporter.mjs` prints
+  the totals once across workers; `manifest.json` records the Chromium build as well; a baseline with no case fails
+  (`--update` deletes it); `tools/matrix/test-results/` is gitignored; the push scope counts the shim, the library's data
+  (`orbit-weekly/`, `icons/`, `strings/`, `modules/`, `contexts/`), the canvas document's two readers and the lockfile
+  as touching every design, beside the four paths named; `tools/probe/run-verify-pilots.cjs` now loads the repo's own
+  `@playwright/test` and `axe-core`; `docs/section-authoring.md`'s pin paragraph points at the enforcement; DW-138 is
+  marked done.
+- **2026-09-17, Dev — R-82's cross-check, before the push.** `run-verify-pilots.cjs` on the deployed `/pilots`
+  (b753d9f0, READY): 0 FAIL, 152 PASS, the axe positive control reported, zero violations for every pilot at Light and
+  Dark × three widths × three visitors. The matrix inside the image: zero violations on every case behind the same
+  control. They agree. (Its first run timed out waiting for the canvas on a cold start; the re-run passed.)
+- **2026-09-17, Dev — Q2 ruled option 1 (R-117); the Pixel-drift row and its criterion renegotiated by the owner.**
+  The first "3px" control (A4 #13's buttons moved down) had failed on the photograph's size, not its ratio; a 3px
+  sideways nudge on A22 #1 measured 0.36–0.71% and passed. Asked in `2beb8cac` (Blocked, the question alone, the Dev
+  work held back), ruled the same day: NFR-6(a)'s 1% stands. The frozen row and the criterion now name a move that
+  grows the section and say a sideways nudge passes; `## In plain English`, `docs/render-matrix.md` and the epic
+  context promise only that. Also removed two written-down counts from files this story adds ("five viewports",
+  "the five pilots"). `baseline_commit` is `568b61a4`, the last Create commit, so the review diff carries
+  `86668878`'s pins.

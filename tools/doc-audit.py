@@ -835,6 +835,46 @@ DOCS = [
   "and holds A17 #1's no-param post-card partial and four feed pages and A4 #13's one fixed post. --update rewrites "
   'the snapshots; CI never passes it. Also covers the designs and the snapshots, which the catalogue cannot index '
   '(the package BASES gap: a snapshot is generated output, DW-94). It stores no count: it prints them.'),
+ ('tools/matrix/run-matrix-gate.sh', 'tool', 'The render matrix gate — NFR-6(a) and NFR-5 in one run',
+  ("Story 4.11's gate, modelled on supabase/tests/run-rls-gate.sh: builds tools/matrix/Dockerfile (the Playwright image "
+   'pinned by tag and digest, plus Inter from apt and Gelasio from google/fonts checked by sha256sum -c, with fc-match '
+   'asserted in the build) and runs the spec inside it over the mounted checkout. Exit 0 means every case matched its '
+   'baseline, axe found zero WCAG 2.1 AA violations behind its positive control, and the runner matched '
+   'tools/matrix/manifest.json.',
+   'Refuses before running when the installed @playwright/test is not the image\'s version, --update under CI, and '
+   '--host with --update; --host runs on this machine and never writes a baseline. MATRIX_DESIGNS narrows it to ids or '
+   'categories. Also covers the Dockerfile, fonts.conf and manifest.json, which the catalogue cannot index, and the '
+   'baselines under packages/library/baselines/ (the package BASES gap). Run nightly and per push by '
+   '.github/workflows/matrix.yml, its own workflow — ci.yml\'s deploy never waits on it (R-116). The rules for a '
+   're-baseline are docs/render-matrix.md.')),
+ ('tools/matrix/cases.mjs', 'tool', 'The render matrix case list, derived',
+  "Story 4.11: every design (the directory, through apps/web/lib/pilots.ts's own door) × every token set that exists × "
+  'light/dark × 1440, 834, 390, 1440 at 200% and 1440 with reduced motion × the design\'s own fixture rows — feed pages '
+  'if it paginates, visitor and Show-to arms if its markup gates by member, the style-guide post and page if its context '
+  'is post. Carries the FR-H3 pin table as comments, each pin derived. Also builds the render input, mirroring /pilots\' '
+  'paint(). Pure: no browser. Stores no count.'),
+ ('tools/matrix/cases.test.mjs', 'tool', 'The render matrix case list, checked by execution',
+  "Story 4.11's browser-free half, run last by pnpm test: A17 #1 yields the four feed rows, A22 #1 the visitor and Show-to "
+  'arms, A24 #1 the style-guide post, A1 #1 no feed and no post fixture; the case total equals the product of the axes and '
+  'no file under tools/matrix/ or docs/render-matrix.md writes it down; MATRIX_DESIGNS narrows by id and category; and '
+  'the canvas document carries every pack the matrix photographs.'),
+ ('tools/matrix/matrix.spec.mjs', 'tool', 'The render matrix and its accessibility scan, per case',
+  "Story 4.11's Playwright spec. First the manifest (image, Playwright, Chromium, the faces Chromium drew each token font "
+  'with, the root widelyAvailableOnDate — DW-138) and every baseline held to a case. Then per case, one page load: '
+  'renderCanvas into pilotsCanvasDocument()\'s #canvas as paint() does, data-mode, js-enabled on every mount, the window '
+  'sized to the section, toHaveScreenshot against packages/library/baselines/{category}/{n}/, then axe-core 4.12.1 at '
+  'WCAG 2.1 AA behind an alt-less <img> control that must be reported or the case aborts. Only --update inside the '
+  'image writes.'),
+ ('tools/matrix/playwright.config.mjs', 'tool', 'The render matrix runner configuration',
+  'Story 4.11: the one place NFR-6(a)\'s numbers live — threshold 0.1, maxDiffPixelRatio 0.01, animations disabled, '
+  'caret hidden — with updateSnapshots none (a missing baseline fails) and the baseline path template. Refuses to load '
+  'outside the pinned image unless the gate\'s --host set MATRIX_HOST.'),
+ ('tools/matrix/serve.mjs', 'tool', 'The render matrix page server',
+  'Story 4.11: a node:http server over the canvas document /pilots/frame serves and Orbit Weekly\'s pictures, so url(), '
+  'srcset and the pictures\' real origin resolve as in the editor with no URL rewritten. Stdlib only.'),
+ ('tools/matrix/reporter.mjs', 'tool', 'The render matrix totals',
+  'Story 4.11: a Playwright reporter that prints the cases run, the designs and packs they cover and axe\'s violations, '
+  'once, after every worker has finished. Stores nothing.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
  ('tools/reapply-export-edits.py', 'tool', 'Re-apply the repo-side export edits',
@@ -920,6 +960,13 @@ DOCS = [
   'previews against; since Story 4.7 the behaviour-module contract — declaring, a width, the union, ctx, js-enabled on the mount, the motion gate, bundle, the assets/js/ rule and the licence filter; and since Story 4.8 the browser floor a stylesheet is written against — the pin and where it lives, the three tiers and baseline.json with R-105\'s one exception, Tier 2\'s review conditions, @supports, no nesting, the three prefixes, pnpm lint, and eslint-plugin-compat\'s reach over a module. The contract '
   'itself is data in packages/library/src (AD-34), and the eight executed archetypes are its '
   'control - tools/stress/test-vocabulary.mjs.'),
+ ('docs/render-matrix.md', 'live', 'The render matrix — running it, what fails, and the rebaseline rule',
+  "Story 4.11's operating document for NFR-6(a) and NFR-5: the commands, what a case is and where each axis comes from, "
+  'what fails (1% at 0.1, a missing or orphan baseline, any axe violation, a runner that is not the manifest\'s), the '
+  'pinned image and why its fonts are a gate, what manifest.json records and that moving the browser floor fails the '
+  'gate until re-run (DW-138), the cadence (nightly, on demand, per push over touched designs — never blocking the app\'s '
+  'deploy, R-116), the mass-rebaseline rule and how the owner\'s sampled review is run, and the R-82 cross-check against '
+  'the deployed /pilots.'),
  ('_bmad/custom/bmad-build.toml', 'tool', 'bmad-build override — binds the development-loop rulings',
   'The override BMAD merges into bmad-build at run time: states the four rules before the first plan '
   "step, requires the spec's three owner-facing sections and `owner_test: pending` for any story with a "
