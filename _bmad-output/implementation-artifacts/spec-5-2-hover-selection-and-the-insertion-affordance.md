@@ -424,3 +424,33 @@ beside the coral outline; press Esc and it goes. On a Pro account nothing extra 
 
 **Ruled: option 1 (owner, 2026-09-17).** Recorded as R-119. On a Free plan, while a Pro design is selected, the Kit's
 "✦ Pro" badge sits 8px inside its top-right corner; it goes with the selection and is never pressable.
+
+### Question 3 — the outlines come out thinner than drawn: how should they be drawn?
+
+**Plain English:** The coral outline around a section is meant to be 1 pixel when you point at it and 1.5 pixels when
+you click it (S4b, S4c). The page inside the editor is shown shrunk to fit the window, so the plan drew the line
+thicker inside the page to come out right after shrinking. The browser does not allow that: it rounds an outline's
+thickness down to a whole pixel before shrinking it. Measured on the built editor at a 1440-wide window (Dev run,
+2026-09-17, harness steps 10 and 11): the pointing outline shows at 0.6 pixels, faint and pinkish, and the clicked one
+at 1.2. Everything else in this story works. Development is finished apart from this, and the check that measures it
+fails until you rule.
+
+**Example:** you point at "Hero — Latest Post" in a 1440-wide window. Today the outline is a pale hairline you have to
+look for. With option 1 or 2 it is the crisp 1-pixel coral line S4b draws.
+
+1. **Draw both outlines outside the page, like the name tag:** a coral box placed over the section and kept on it as
+   it scrolls. Exact at every window size, on top of pictures, and it changes nothing in the section. It moves the
+   outlines to the same side of the canvas boundary as the tag, which the architecture notes record. **(RECOMMENDED)**
+2. **Draw them inside as a shadow line on the section's inner edge.** Exact thickness, but a picture or coloured block
+   that reaches the section's edge covers the line, and while pointed at it replaces a section's own shadow (Header —
+   Rail's "Shadow" divider would vanish on hover).
+3. **Keep the browser's rounding** and accept the thinner line: 0.6 and 1.2 pixels at 1440 wide, and never exact —
+   even at full size the clicked outline rounds down to 1 pixel. The check is loosened to match.
+
+Re-measured with a control in the Dev run's closing check (headless Chromium, 1× and 2× screens): an outline of 1px at
+full size draws 1px, so the measurement holds; at the editor's 0.6 fit `calc(1px / 0.6)` computes to 1px and
+`calc(1.5px / 0.6)` to 2px, and 1.5px at full size computes to 1px.
+
+This question changes the Approach you approved ("the chrome stylesheet draws both outlines"), so it is yours.
+
+**Ruled:** _(awaiting the owner)_
