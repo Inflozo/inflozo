@@ -399,6 +399,40 @@ with Three Up hovered, and with it selected.
 **At Deploy (DW-175's owner).** Repeat the interleaved probe and the fresh-connection `curl` loop once. If the rate
 holds, the timestamps and the IP go to Vercel support; if it has gone, close DW-175 with the two runs as the record.
 
+**Results — Dev run, 2026-09-17, on `ffa257e1`:**
+- `pnpm check` (Node 24): exit 0 — library 142, section-runtime 151, ghost-shim 34, theme-compiler 1, apps/web 327 pass,
+  0 fail (re-run by the orchestrating session after the R-120 change).
+- `python3 tools/doc-audit.py --check`, twice: the first run regenerated the story board, the second PASS, 0 warnings.
+- Render matrix: `bash tools/matrix/run-matrix-gate.sh` green before R-120 with no baseline written (one image-load
+  timeout on a17/1 at 390 on the first attempt, green on the re-run). R-120 only removed a rule keyed on
+  `data-inflozo-selected`, which nothing carries at rest. The push's own `Render matrix` workflow, run 35227937351:
+  success.
+- **GitHub Actions** (`GITHUB_TOKEN`): CI run 35227937394 for `ffa257e1` — success.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): production `dpl_78DPK2qW1ZPoJ15qvQAmshims2GX` READY for `ffa257e1`, and
+  the harness confirmed it as this checkout's HEAD before running.
+- **Supabase, production** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), through
+  `tools/probe/run-verify-editor.cjs` against `https://app.inflozo.com`: **107 PASS, 0 FAIL**. Two throwaway accounts
+  created and deleted (HTTP 200, 200), users 9 → 9. Account A's `entitlements.state` read `free` (the control), set
+  to `pro_active` for the R-119 control (HTTP 200) and restored in `finally`.
+  - Step 10: each of the four Home roots' hover line paints 1.00px of `rgb(255, 89, 65)` (painted pixels, DPR 1).
+  - Step 11: a click on Archive selects Header — Rail with the canvas still at `/canvas`. The selected box is on
+    the root's rect, all four edges within 1px. The selected line paints 1.50625px (counted only after the 1.00
+    control). Scrolled 700px, the sticky header's box is still on its root. The panel is "Section settings",
+    HEADER — RAIL, groups Section Settings · Content · Layout · Style, Reset this design, no "4 / 18". The Pro span
+    sits 8px in at top-right on Free, is absent for Three Up, goes on Esc, and is absent on `pro_active`.
+  - Step 12: `data-per-row="two"` on the same node, still selected. The headline follows typing. `data-on-scroll="static"`.
+    Reset restores `three`. A reload shows the stored values.
+  - Step 13: Esc inside the reset dialog keeps the selection. Esc from the canvas shows PAGE over the empty state.
+    0 `data-inflozo-*` after.
+  - Step 14: a 600ms hold shows outline and tag with "Page settings" still in the panel. A 50ms tap selects.
+  - Step 5: zero `securitypolicyviolation` events across the scripted session (steps 10–13 included), behind the
+    `EvalError` control that recorded both documents' refusals. Step 8: axe zero at rest, with Three Up hovered, and
+    with it selected. Steps 3, 4, 6 and 9 held as in 5.1.
+  - A `note` line, outside the acceptance session: two eval reports while the harness read `/` for `/pilots`. That is
+    DW-174, the dashboard's known zod probe, and not this story's.
+- **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no
+  billing (entitlement is Supabase's `entitlements` row) and calls no Ghost.
+
 ## Owner's manual test
 
 The project is the "Pilot sections" project that Story 5.1's Deploy added to your account; Deploy re-checks its address.
