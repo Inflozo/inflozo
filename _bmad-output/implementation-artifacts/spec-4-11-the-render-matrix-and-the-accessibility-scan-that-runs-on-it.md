@@ -2,7 +2,7 @@
 title: 'Story 4.11 — The render matrix and the accessibility scan that runs on it'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: '568b61a41ffe1ac25e77212d85cacb475f8ffa54'
@@ -319,6 +319,18 @@ as deployed; keys read by variable name only:
   violations — passed`. **The red-beside-green case, executed by the owner (Q3, option 1):** `Render matrix` 35187418366,
   dispatched on `9f1b526e` with `designs: zz/1` — **failure** ("names no design", 0 cases, exit 1) — while the same
   commit's `CI` 35185834388 has `deploy` **success**. AC 7 holds by control.
+
+**The Deploy phase, executed 2026-09-17** — HEAD `97b1d622` (the Review push carrying Q3's ruling) confirmed live
+on the real stack, keys read by variable name only:
+- **GitHub Actions** (`GITHUB_TOKEN`): `CI` run 35187811770 on `97b1d622` — `check`, `rls`, `deploy` all success.
+  `Render matrix` run 35187811748 on the same push — success.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): `GET /v13/deployments/app.inflozo.com` — `READY`,
+  `meta.githubCommitSha` `97b1d622`.
+- **Deployment: `dpl_AUSGqPUDgKMWLyFxbFeyJgQETCYD`** (`app.inflozo.com`, READY, built from `97b1d622`).
+- No migration in this story (no `## Schema` phase); the one app-code change, `apps/web/lib/pilots.ts`'s
+  `PACKAGES()` resolution, is proved live above and by Review's `run-verify-pilots.cjs` pass on `1ed2ed16`.
+- `owner_test: none` — this story has no screen (`## Owner's manual test` is absent by design); marked done
+  in `sprint-status.yaml` rather than walked by the owner.
 
 ## Questions for the owner
 
