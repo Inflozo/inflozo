@@ -178,6 +178,16 @@ Build the machine every design in the library is authored against — **before a
     `resolveStrings`, naming the phrase (7.12's surface never stores one); **R-107** a catalog-linked prop is never
     blank — clearing it shows the catalog string again.
 - **The render matrix covers every design × 3 reference Style Packs × light/dark × 3 viewports** — the count derived from the inventory and moving with it, never restated. A design fails above **1% differing pixels at a per-pixel tolerance of 0.1**. The runner is part of the baseline: one pinned Playwright/Chromium in one fixed container image, fonts installed in the image, animations and caret disabled. **Reduced motion is a matrix case with the query forced; 200% browser zoom is a viewport case.** A mass rebaseline requires the owner's approval on a sampled visual review (one design per category, both modes), lands as its own commit touching baselines only, and names the change that caused it. Cadence: full matrix nightly and before each release; per-commit runs cover only what a commit touched.
+  - **R-116 (owner, 2026-09-17, Story 4.11's Q1) — a red matrix does not block publishing the app.** It is its own
+    CI job; `ci.yml`'s `deploy` keeps `needs: [check, rls]` and gains no third name. The usual cause of a red matrix
+    is a deliberate change whose remedy is the owner's approval of a re-baseline, not a revert — and every category
+    owner gate from E9 onward still requires it green, so the gate moved off the app's deploy, not off the library.
+  - **Story 4.11's planning (2026-09-17) — the pack axis is DERIVED, and has one member until Epic 6.** NFR-6(a)
+    names three reference packs; Epic 4 ships exactly one token set on purpose (step-6 finding F2) and Epic 6
+    authors the twelve, so `tools/matrix/cases.mjs` reads the token sets that exist (standing rule 4) rather than
+    restating three. Widening is a mass rebaseline under NFR-6(a)'s own rule, so it belongs to the story that
+    causes it (DW-169). The fixture pins are derived the same way — from each design (it paginates, its markup
+    reads `@member`, its context is `post`) — because A25/A32/A33/A34 and the six synthesized stacks do not exist.
 - **The accessibility scan rides the same renders — there is no second matrix.** axe-core, WCAG 2.1 AA, **zero violations**, scoped to include the fixture renders and the synthesized templates, not only placed designs. Every image carries an alt, and an image that is the **sole content of a link** must carry a *non-empty* one. **The scan stops at the edge of the post body** — Ghost emits its own markup there and no theme can fix a customer's content.
 
 ## Technical Decisions

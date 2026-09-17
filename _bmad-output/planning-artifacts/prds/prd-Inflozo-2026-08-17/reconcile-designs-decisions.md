@@ -2276,6 +2276,24 @@ design should have an icon too. On click it should prompt the user to confirm th
   `apps/web/components/controls/sidebar.tsx` · ✅ `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs` · ✅
   `prd.md` FR-F4 and `epics.md`'s FR-F4 line. **Deliberately not touched:** the export (R-74), whose D5 draws the line with no confirm.
 
+**R-116 — a red render matrix does not block publishing the app.** Story 4.11's Q1, ruled option 1 (owner,
+2026-09-17): "It does not block publishing."
+
+- **What it binds.** NFR-6(a)'s render matrix and the NFR-5 scan riding on it run as their own CI job — nightly in
+  full, and on each push over the designs that push touched — and go red on their own. `ci.yml`'s `deploy` keeps
+  `needs: [check, rls]` and gains no third name, so a pixel difference never holds the app's front door: an
+  unrelated fix still reaches `app.inflozo.com` while the photographs wait to be looked at.
+- **Why it loses nothing.** The most common cause of a red matrix is a change the owner made on purpose, whose
+  remedy is his approval of a re-baseline, not a revert. What the matrix guards it still guards: **every category
+  owner gate from E9 onward requires it green**, so no design reaches a customer's site unphotographed. The gate
+  moved off the app's deploy, not off the library.
+- **Its pair.** DW-7 (2026-09-05) put publishing behind `check` and `rls` precisely so a broken row-level-security
+  policy could not reach production. This ruling does not loosen that: both gates stand, and the matrix is added
+  beside them rather than inside them.
+- Targets: ✅ Story 4.11's spec (Q1, and the `matrix.yml` task line). **The Dev run carries it into:**
+  `.github/workflows/matrix.yml` (its own job, absent from `deploy`'s `needs`) and `docs/render-matrix.md`
+  (the cadence and the rebaseline rule). **Deliberately not touched:** `ci.yml`'s `deploy` job.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

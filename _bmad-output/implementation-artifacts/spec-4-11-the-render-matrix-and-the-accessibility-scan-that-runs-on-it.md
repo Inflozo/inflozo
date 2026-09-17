@@ -129,7 +129,7 @@ under, so a browser-floor bump that was not re-run fails (DW-138).
 - [ ] `tools/matrix/manifest.json` -- record the image digest, the Playwright version, the resolved font faces and the root `widelyAvailableOnDate` the baselines were taken under; the gate refuses when the root pin differs (DW-138) -- one line of policy, checked rather than remembered.
 - [ ] `packages/library/baselines/**` -- the PNGs, written by `--update` from inside the image only.
 - [ ] `package.json` -- add `@playwright/test` 1.61.1 and `axe-core` 4.12.1 as devDependencies and a `matrix` script; add `cases.test.mjs` to `pnpm test` -- the browser-free half runs per commit, the matrix does not.
-- [ ] `.github/workflows/matrix.yml` -- a `schedule` nightly full run and a `push` run over only the designs the commit touched, where a change to `packages/section-runtime/`, the reference tokens, `packages/library/src/` or `tools/matrix/` counts as touching every design -- NFR-6(a)'s cadence; **not** in `deploy`'s `needs` (Q1).
+- [ ] `.github/workflows/matrix.yml` -- a `schedule` nightly full run and a `push` run over only the designs the commit touched, where a change to `packages/section-runtime/`, the reference tokens, `packages/library/src/` or `tools/matrix/` counts as touching every design -- NFR-6(a)'s cadence, as **its own job**: `ci.yml`'s `deploy` keeps `needs: [check, rls]` and gains no third name (**R-116**), so a red matrix never holds the app's deploy. Do not edit `ci.yml`.
 - [ ] `docs/render-matrix.md` -- the rebaseline rule, the cadence, what the manifest pins and how the owner's sampled review is done -- **plus its row in `tools/doc-audit.py`'s catalogue, and one row per new `tools/matrix/` file**, then `--generate`, or the pre-commit hook blocks the commit.
 - [ ] `_bmad-output/implementation-artifacts/epic-4-context.md` -- append one sub-bullet under the render-matrix requirement; never lengthen the lead (DW-73).
 
@@ -141,6 +141,7 @@ under, so a browser-floor bump that was not re-run fails (DW-138).
 - Given the root `widelyAvailableOnDate` is moved, when the gate runs, then it fails until the baselines are re-taken and the manifest re-recorded (DW-138 closes).
 - Given the axe scan, when the positive control's alt-less image is not reported, then the run aborts rather than reporting zero violations (standing rule 2).
 - Given the same five pilots on the deployed `/pilots`, when `run-verify-pilots.cjs` and the matrix are both run, then their axe results agree — the harness renders what the editor renders (R-82).
+- Given a push whose matrix job goes red, when CI runs, then `deploy` still runs and the app still publishes — `ci.yml`'s `deploy` declares `needs: [check, rls]` and nothing else (**R-116**); proved by control, not asserted.
 
 ## Design Notes
 
@@ -222,6 +223,9 @@ sign-in screen — is waiting to go live in the same push.
    - Middle ground, but the most common cause of a red picture check is a *shared* change — which this
      option lets through, so it blocks in the cases that matter least.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as **R-116** in `reconcile-designs-decisions.md` §A. The matrix
+is its own CI job — nightly in full, per push over the designs that push touched — and `ci.yml`'s `deploy` keeps
+`needs: [check, rls]` and gains no third name. Every category owner gate from Epic 9 onward still requires the
+matrix green, so the gate moved off the app's deploy, not off the library.
 
 ## Spec Change Log
