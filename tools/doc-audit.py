@@ -497,6 +497,21 @@ DOCS = [
   '2.1 AA inside each canvas (a positive control first), the member arms and Show to read back off the canvas, '
   "Latest Post's panel checked for no number of posts, and Three Up's four feed pages; the account deleted with the "
   'user count read before and after.'),
+ ('tools/probe/run-verify-editor.cjs', 'tool', 'Editor shell harness',
+  "Story 5.1's deployed walk of the editor at /projects/{id} and the live Supabase (R-82): two throwaway accounts through "
+  'the Auth Admin API, A seeded with seed-editor-project.mjs and B given one bare project; the card opens the editor and '
+  "S4a's regions are measured at 1440x900 with screenshots for the owner; zero data-inflozo-* at rest with the chrome "
+  "stylesheet's live control; every section root's outerHTML equal to /pilots' render; the CSP session with an init "
+  "script recording securitypolicyviolation in every frame and new Function('') run from a script carrying each "
+  "document's own nonce as the control; the URL scheme's statuses, identical 404s and Back; the canvas scrolling while "
+  'the window cannot; axe-core at WCAG 2.1 AA after a positive control; and the skeleton in the raw stream. Both accounts '
+  'deleted with the user count read before and after. Refuses a dirty tree or a deployment that is not HEAD.'),
+ ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
+  'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '
+  "way createProject makes them, and site, home and post project_templates rows holding the pilots at their default "
+  "content, every doc parsed through AD-27's doc-schema before insert. Writes nothing if the account already has a "
+  'project of that name. The harness fixture, and run ONCE for the owner at Story 5.1 Deploy (Question 1, option 1) so '
+  'Stories 5.2 to 5.9 test on it. The CLI refuses without --email and prints the URL, never a key.'),
  ('tools/probe/run-verify-dashboard.py', 'tool', 'Dashboard invariants and guards harness',
   # DW-73's shape from the start: a subject line and one bullet per concern.
   (
@@ -870,7 +885,7 @@ DOCS = [
   'caret hidden — with updateSnapshots none (a missing baseline fails) and the baseline path template. Refuses to load '
   'outside the pinned image unless the gate\'s --host set MATRIX_HOST.'),
  ('tools/matrix/serve.mjs', 'tool', 'The render matrix page server',
-  'Story 4.11: a node:http server over the canvas document /pilots/frame serves and Orbit Weekly\'s pictures, so url(), '
+  'Story 4.11: a node:http server over the canvas document /canvas serves and Orbit Weekly\'s pictures, so url(), '
   'srcset and the pictures\' real origin resolve as in the editor with no URL rewritten. Stdlib only.'),
  ('tools/matrix/reporter.mjs', 'tool', 'The render matrix totals',
   'Story 4.11: a Playwright reporter that prints the cases run, the designs and packs they cover and axe\'s violations, '

@@ -71,3 +71,6 @@ export type {
   SidebarModel,
   SidebarRow,
 } from './controls.ts'
+// Story 5.1 — AD-27's one doc schema: every reader and writer of `project_templates.doc` parses through it.
+export { docSchema, instanceSchema, parseDoc } from './doc-schema.ts'
+export type { DocInstance, ProjectDoc } from './doc-schema.ts'

@@ -1,0 +1,5 @@
+/* THE EDITOR'S CHROME INSIDE THE CANVAS (AD-21, amended by Story 5.1). Every rule is keyed on a data-inflozo-*
+   attribute, and nothing carries one while nothing is hovered or selected — so the canvas at rest is the site with
+   zero chrome, by construction. pilots.test.ts holds the keying. The selected outline is S4c's (S4 Editor.dc.html:293),
+   drawn as the root's own outline so a sticky or fixed root keeps its positioning. */
+[data-inflozo-selected]{outline:1.5px solid #FF5941;outline-offset:-1.5px}

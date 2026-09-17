@@ -80,6 +80,7 @@
   --color-grey-field: #F2EFEA;     /* P0-0: a greyed control's fill */
   --color-grey-border: #EAE5DD;    /* P0-0: a greyed control's border */
   --color-grey-track: #E2DCD3;     /* P0-0: a greyed toggle's track */
+  --color-canvas-ground: #EDEAE6;  /* the editor's canvas ground, under the page card — S4a :62 (Story 5.1) */
 
   /* shape — small things barely rounded, large things soft; 9999px occurs nowhere */
   --radius-sm: 8px;
@@ -97,6 +98,7 @@
   --shadow-modal: 0 12px 40px rgba(28,27,26,.25);  /* every modal and sheet in the export sits at .25,
                                                       not lg's .14 — D4a, D4b and S12c all draw it */
   --shadow-hairline-inset: inset 0 0 0 1px rgba(28,27,26,.12);
+  --shadow-canvas-page: 0 4px 16px rgba(28,27,26,.10);  /* the editor's page card — S4a :63 (Story 5.1) */
   --shadow-focus: 0 0 0 2px #C2381F;   /* the one ring, everywhere (Calibration Set, 2026-09-04) */
 
   /* type roles — the frames also set half steps (12.5, 11.5); read those off the frame

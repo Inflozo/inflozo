@@ -56,6 +56,12 @@ export const ChevronDown = (p: IconProps) => (
     <polyline points="6 9 12 15 18 9" />
   </Icon>
 )
+/* The editor's back link — `S4 Editor.dc.html:30` (S4a), read verbatim. Story 5.1. */
+export const ChevronLeft = (p: IconProps) => (
+  <Icon {...p}>
+    <polyline points="15 18 9 12 15 6" />
+  </Icon>
+)
 export const ChevronRight = (p: IconProps) => (
   <Icon {...p}>
     <polyline points="9 18 15 12 9 6" />

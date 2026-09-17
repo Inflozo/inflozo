@@ -22,6 +22,8 @@ const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..',
 export const DESIGNS_DIR = () => join(PACKAGES(), 'library', 'designs')
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')
+/** The editor's in-canvas chrome (AD-21), read the way the tokens are: from this module's own address. */
+const CHROME = () => join(dirname(fileURLToPath(import.meta.url)), 'canvas-chrome.css')
 
 const isDir = (p: string) => existsSync(p) && statSync(p).isDirectory()
 
@@ -81,9 +83,10 @@ export function pilotImage(name: string): Buffer | null {
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
- * THE CANVAS DOCUMENT: the reference tokens, every pilot's stylesheet (each scoped by its own class prefix) and an
- * empty mount point — and NO script, so it needs no nonce. The review page writes the section into `#canvas` from
- * the parent document (same origin) and sets `data-mode` on this `<html>` for Light and Dark. A whole document in an
+ * THE CANVAS DOCUMENT: the reference tokens, every pilot's stylesheet (each scoped by its own class prefix), the
+ * editor's chrome stylesheet (every rule keyed on `data-inflozo-*`, so inert at rest) and an empty mount point — and
+ * NO script, so it needs no nonce. The editor and the pilots review write sections into `#canvas` from the parent
+ * document (same origin) and set `data-mode` on this `<html>` for Light and Dark; `/canvas` serves it to both. A whole document in an
  * iframe, for AD-21's reason: the section inherits nothing of the app, and the iframe's width IS the viewport the
  * design's media queries read.
  */
@@ -95,6 +98,7 @@ export function pilotsCanvasDocument(): string {
     `<title>${esc('Pilot sections')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
     `<style data-order="2-document">html,body{margin:0;background:var(--bg-page)}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}</style>` +
-    `<style data-order="3-pilots">${css}</style></head>` +
+    `<style data-order="3-pilots">${css}</style>` +
+    `<style data-order="4-editor">${readFileSync(CHROME(), 'utf8')}</style></head>` +
     `<body><div id="canvas"></div></body></html>`
 }

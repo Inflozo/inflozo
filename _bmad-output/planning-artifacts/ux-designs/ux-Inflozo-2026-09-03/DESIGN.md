@@ -57,6 +57,7 @@ colors:
   grey-border: '#EAE5DD — a greyed control's border (P0-0 :76)'
   grey-track: '#E2DCD3 — a greyed toggle's track (P0-0, the toggle in the five shapes)'
   scrim: 'rgba(28,27,26,.4)'
+  canvas-ground: '#EDEAE6 — the ground the editor's page card sits on (S4 Editor.dc.html :62). Added 2026-09-17 by Story 5.1'
 
 typography:
   display:
@@ -188,6 +189,7 @@ elevation:
   lg: '0 12px 40px rgba(28,27,26,.14)'
   modal: '0 12px 40px rgba(28,27,26,.25) — lg's geometry at .25: every modal and sheet in the export is drawn at this alpha (D4a, D4b, S12c), and the token layer had no name for it. Added 2026-09-05 by Story 1.5'
   hairline-inset: 'inset 0 0 0 1px rgba(28,27,26,.12)'
+  canvas-page: '0 4px 16px rgba(28,27,26,.10) — the editor's page card on the canvas ground (S4 Editor.dc.html :63): md's geometry at .10. Added 2026-09-17 by Story 5.1'
   focus: '0 0 0 2px #C2381F — the one ring, everywhere: 7.9:1 on paper, past 3:1 on white; was 0 0 0 2px rgba(255,89,65,.4) until 2026-09-04 (A7 item 7)'
 ---
 

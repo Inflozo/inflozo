@@ -2,7 +2,8 @@
 title: 'Story 5.1 — The editor shell, the canvas boundary and the URL scheme'
 type: 'feature'
 created: '2026-09-17'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'e14f58f3cdbd48b82584e2ce5b94fc20ec6b10ea'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -157,7 +158,7 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/section-runtime/src/doc-schema.ts` (+ `doc-schema.test.ts`, export from `src/index.ts`, `zod` 4.4.3 in
+- [x] `packages/section-runtime/src/doc-schema.ts` (+ `doc-schema.test.ts`, export from `src/index.ts`, `zod` 4.4.3 in
   `package.json`) -- the one zod schema:
   - Shape: `{schemaVersion: 1, instances: [{instanceId, layerName, designId (/^a\d+\/\d+$/), content, controls, data,
     darkOverrides}]}`, strict at both levels.
@@ -165,7 +166,7 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   - Tests: a valid doc parses; an unknown field, a missing field and a malformed `designId` each fail naming the path.
   - Why: AD-27's single definition. The stories that write `hidden`, `parkedControls`, `isMainFeed` and the rest add their
     rows here.
-- [ ] `apps/web/lib/editor.ts` (+ `apps/web/editor.test.ts`) -- the scheme as data:
+- [x] `apps/web/lib/editor.ts` (+ `apps/web/editor.test.ts`) -- the scheme as data:
   - The canvases this story opens, each with its template file and D5b label: `home` (no segment, Home), `post` (Post),
     `page` (Page), `tag` (Tag archive), `author` (Author archive), `error` (404).
   - `canvasPath(projectId, key?)`.
@@ -176,16 +177,16 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
     footers, each group in doc order.
   - Tests: every key round-trips; every reserved segment is refused; the stack order holds.
   - Why: the route, the Shell and the harness all read the scheme from here.
-- [ ] `apps/web/lib/canvas.ts` + `apps/web/app/(app)/app/(authed)/pilots/review.tsx` -- move `paint`/`shown`'s
+- [x] `apps/web/lib/canvas.ts` + `apps/web/app/(app)/app/(authed)/pilots/review.tsx` -- move `paint`/`shown`'s
   per-section render and the mount step (`innerHTML`, then `js-enabled` on every `[data-module]`) into one client-safe
   module (no `node:` imports). `/pilots` calls it and behaves exactly as before -- the editor and `/pilots` render one
   way.
-- [ ] `apps/web/lib/canvas-chrome.css` + `apps/web/lib/pilots.ts` + `apps/web/pilots.test.ts` -- the editor chrome
+- [x] `apps/web/lib/canvas-chrome.css` + `apps/web/lib/pilots.ts` + `apps/web/pilots.test.ts` -- the editor chrome
   stylesheet with one rule: `[data-inflozo-selected]{outline:1.5px solid #FF5941;outline-offset:-1.5px}` (S4c :293).
   - `pilotsCanvasDocument()` appends it as `<style data-order="4-editor">`, read the way `reference-tokens.css` is read.
   - Tests: every selector in the file carries `[data-inflozo-`; the document still carries no `<script`.
   - Why: AD-21's mechanism, and the control that makes "zero chrome at rest" a result rather than a vacuous pass.
-- [ ] `apps/web/app/(app)/app/(authed)/canvas/route.ts` (moved from `pilots/frame/route.ts`, which is deleted) +
+- [x] `apps/web/app/(app)/app/(authed)/canvas/route.ts` (moved from `pilots/frame/route.ts`, which is deleted) +
   `pilots/review.tsx` + `apps/web/next.config.ts` -- the one canvas document route.
   - Both pages compute the iframe `src` as `<prefix>/canvas` (prefix `/app` when `isApp(usePathname())`) and map
     pictures to `canvas?image=`.
@@ -193,15 +194,15 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
     plus `./lib/canvas-chrome.css`, which `/app/pilots` and `/app/canvas` get too.
   - Grep the repo for `pilots/frame` (harness, matrix comments, tests) and update every hit.
   - Why: one URL, so both pages emit byte-identical markup.
-- [ ] `apps/web/components/kit/layers-row.tsx` + `icons.tsx` -- Kit reuse, absent not greyed:
+- [x] `apps/web/components/kit/layers-row.tsx` + `icons.tsx` -- Kit reuse, absent not greyed:
   - `LayersRow` takes `interactive` (default `true`, so `/kit` is unchanged). With `false` it draws only the thumb and
     the name as text: no grip, no button, no eye, no hover.
   - Add a `ChevronLeft` glyph from S4a :30's polyline.
-- [ ] `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter + `apps/web/app/globals.css` -- the two tokens,
+- [x] `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` front matter + `apps/web/app/globals.css` -- the two tokens,
   satisfying `tokens.test.ts` both ways:
   - `colors.canvas-ground: '#EDEAE6'` with `--color-canvas-ground`
   - `elevation.canvas-page: '0 4px 16px rgba(28,27,26,.10)'` with `--shadow-canvas-page`
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/layout.tsx` -- the guard, then the editor:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/layout.tsx` -- the guard, then the editor:
   - If `id` is not a uuid, or `projects` (`id, name`, through the session client) returns nothing, `notFound()` — before
     any Suspense.
   - Then `<Suspense fallback={<EditorSkeleton/>}>` around an async loader. The loader reads every `project_templates`
@@ -215,12 +216,12 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
     step 6 reads the statuses.
   - The project read is `cache`d, so the pages' metadata reuses it.
   - Why: real 404s and 308s above the only boundary, and the docs read once per open.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/page.tsx` + `[template]/layout.tsx` + `[template]/page.tsx` -- the
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/page.tsx` + `[template]/layout.tsx` + `[template]/page.tsx` -- the
   route shape.
   - Both pages render `null` and export `generateMetadata`: `{project} · {label} — Inflozo`, noindex.
   - `[template]/layout.tsx` sends `home` to the project URL with `permanentRedirect`, and `notFound()`s every segment
     `canvasFromSegment` refuses.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` + `editor-skeleton.tsx` -- the client shell, from S4a,
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` + `editor-skeleton.tsx` -- the client shell, from S4a,
   in a `flex h-dvh flex-col overflow-hidden` root:
   - **Top bar:** a 48px `<header>` with a bottom rule, the back link (`ChevronLeft`, `aria-label="Back to dashboard"`,
     href `/`) and the project name (13/600, plain text).
@@ -243,18 +244,18 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   - **Skeleton:** the same regions with `Skeleton` blocks in the card, `aria-hidden` and an `sr-only` sentence, no
     spinner.
   - Why: FR-D1's layout.
-- [ ] `apps/web/components/shell/shell.tsx` -- when `isEditorPath(stripApp(here))`, return
+- [x] `apps/web/components/shell/shell.tsx` -- when `isEditorPath(stripApp(here))`, return
   `<main className="flex min-h-dvh flex-col">{children}</main>` before any chrome.
   - Comment it: the editor owns the window.
   - The Shell's `<main>` is still the only one (the `app-routes.test.ts` rule stands), and an editor-path 404 lands
     inside it.
-- [ ] `apps/web/app/(app)/app/(authed)/(dashboard)/project-card.tsx` -- the card links to `canvasPath(project.id)`
+- [x] `apps/web/app/(app)/app/(authed)/(dashboard)/project-card.tsx` -- the card links to `canvasPath(project.id)`
   through a link stretched over the card, with `ProjectMenu` stacked above it and still pressable. Replace the
   "not a link" comment.
-- [ ] `apps/web/busy.test.ts` -- `NO_SKELETON` gets `projects/[id]` and `projects/[id]/[template]`, with the reason:
+- [x] `apps/web/busy.test.ts` -- `NO_SKELETON` gets `projects/[id]` and `projects/[id]/[template]`, with the reason:
   both pages render nothing, and the editor's skeleton is its layout's Suspense fallback, below the 404 guard. The
   contract then says what is true.
-- [ ] `tools/probe/seed-editor-project.mjs` -- `seed({ email, name = 'Pilot sections' })` builds the fixture for the
+- [x] `tools/probe/seed-editor-project.mjs` -- `seed({ email, name = 'Pilot sections' })` builds the fixture for the
   harness, and for the owner's own account at Deploy (Question 1, ruled option 1):
   - Creates one project, with the slug and style pack made the way `createProject` makes them
     (`projects/actions.ts:117,143-148`).
@@ -265,9 +266,9 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   - The CLI refuses to run without `--email` (never `--help`-triggered), prints the project URL and prints no key.
   - If the account already holds a project with that name, it prints that project's URL and writes nothing, so a
     repeated Deploy never adds a second one.
-- [ ] `tools/probe/run-verify-editor.cjs` -- the deployed walk under Verification, in `run-verify-pilots.cjs`' shape.
-- [ ] `tools/doc-audit.py` -- catalogue rows for the two new `tools/probe/` files, then `--generate`.
-- [ ] Propagation (standing rules 3 and 7) -- carry what this story settled to the documents that own it:
+- [x] `tools/probe/run-verify-editor.cjs` -- the deployed walk under Verification, in `run-verify-pilots.cjs`' shape.
+- [x] `tools/doc-audit.py` -- catalogue rows for the two new `tools/probe/` files, then `--generate`.
+- [x] Propagation (standing rules 3 and 7) -- carry what this story settled to the documents that own it:
   - `ARCHITECTURE-SPINE.md` AD-21: the canvas-boundary ruling, dated and citing this spec.
   - The spine's CSP row: `connect-src` is the static `'self' https:` that Story 3.2 set (`epic-3-context.md`), not
     "composed per session". The no-`'unsafe-eval'` half is recorded as verified only after the harness passes on the
@@ -310,6 +311,27 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   violations.
 
 ## Spec Change Log
+
+- **Dev, 2026-09-17 — zod's JIT probe runs at CONSTRUCTION, not on first parse (executed; supersedes the Design Note's
+  "should never reach the browser").** A local production build under the harness recorded a `script-src` eval violation
+  on every editor load from zod's core chunk: `$ZodObject` reads `allowsEval.value` when a schema is built
+  (`zod/v4/core/schemas.js:970-972`), and `doc-schema.ts` is in the client bundle through the runtime's index. The Design
+  Note's remedy was applied: `z.config({ jitless: true })` before the schemas in `doc-schema.ts`; the session then recorded
+  zero. Projects has the same violation from `lib/style-pack.ts` (reached through the New Project Sheet) — outside this
+  story, recorded as DW-174 and in the spine's CSP row.
+- **Dev, 2026-09-17 — the harness's CSP control, rebuilt as step 5 allowed.** `new Function('')` inside a Playwright
+  evaluate — even from a nonce-carrying script appended there — answered `allowed` under the policy that refused zod's
+  probe: V8 lets code generate from strings during a DevTools evaluation. The nonce script now runs the test on a timer,
+  and the control reads `EvalError` in both documents; the recorder sees both refusals, so its zero is a result.
+- **Dev, 2026-09-17 — three harness facts, executed.** Playwright's screenshot leaves `style=""` on a focusable input, so
+  the section roots are read before any screenshot (Inline Row differed by exactly that). Whether the skeleton streams is
+  a race between the docs read and the first flush — a local run saw it both ways — so step 9 opens up to five times and
+  needs the skeleton ahead of the editor in one and the dashboard's cards in none. On localhost the app's links and
+  redirects carry no `/app` prefix, so `APP_ORIGIN`/`APP_PREFIX` runs re-enter under it and are never a deployed result.
+- **Dev, 2026-09-17 — routine calls.** The Layers header puts D8e's mono "THIS PAGE · …" under "Layers" rather than beside
+  it: "THIS PAGE · AUTHOR ARCHIVE" and the fold button do not fit beside the title in 240. `outputFileTracingIncludes`
+  names the editor routes `/app/projects/**`, because the keys are picomatch globs (`collect-build-traces.js`) where
+  `[id]` is a character class. The Code Map's `(dashboard)/project-card.tsx` is `(authed)/project-card.tsx`.
 
 ## Design Notes
 

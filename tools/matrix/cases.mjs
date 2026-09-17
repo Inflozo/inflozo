@@ -98,7 +98,8 @@ export const totals = (list) => ({
 })
 
 /**
- * THE RENDER INPUT, mirroring `paint()` in `apps/web/app/(app)/app/(authed)/pilots/review.tsx` with nothing changed
+ * THE RENDER INPUT, mirroring `renderSection()` in `apps/web/lib/canvas.ts` — the one per-section render `/pilots`' and
+ * the editor's `paint()` both call since Story 5.1 — with nothing changed
  * in the panel: content and controls at their defaults, Orbit Weekly's rows as the page's `shown()` picks them (the
  * stored Order's list, sliced to the limit or Ghost's default), `templateContext` at the row's target and feed, the
  * row's visitor and Show-to, the picture pool's asset ids and the icon set. Pictures keep their real origin: the

@@ -15,6 +15,7 @@ export function LayersRow({
   shown = true,
   thumb,
   className = '',
+  interactive = true,
 }: {
   name: string
   selected?: boolean
@@ -22,7 +23,18 @@ export function LayersRow({
   thumb?: ReactNode
   /** The gallery pins a state the frame draws (hover) with it; nothing else needs it. */
   className?: string
+  /** Story 5.1: `false` draws the thumb and the name as text and nothing else — no grip, no button, no eye, no hover.
+   *  The editor's rows before 5.2 and 5.4 give them something to do: absent, not greyed (UX-DR3). */
+  interactive?: boolean
 }) {
+  if (!interactive) {
+    return (
+      <div className={`flex items-center gap-2 rounded-sm px-2 py-[7px] ${className}`}>
+        {thumb ?? <LayerThumb />}
+        <span className="flex-1 text-ui-dense font-medium text-ink">{name}</span>
+      </div>
+    )
+  }
   return (
     <div
       className={`flex items-center gap-2 rounded-sm px-2 py-[7px] ${selected ? 'bg-coral-tint' : 'hover:bg-coral-wash'} ${className}`}

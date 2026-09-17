@@ -1,5 +1,5 @@
 // Story 4.11 — the render matrix's page server: `node:http`, nothing else. It serves the editor's canvas document
-// (`pilotsCanvasDocument()`, the exact bytes `/pilots/frame` serves) and Orbit Weekly's pictures (`pilotImage()`), so
+// (`pilotsCanvasDocument()`, the exact bytes `/canvas` serves to the editor and `/pilots`) and Orbit Weekly's pictures (`pilotImage()`), so
 // `url()`, `srcset` and every picture resolve as they do in the editor. The spec routes the pictures' real origin
 // (`https://orbit-weekly.example`) to `/images/` here; no URL in the markup is ever rewritten.
 

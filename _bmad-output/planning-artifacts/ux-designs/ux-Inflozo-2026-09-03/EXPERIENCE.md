@@ -221,12 +221,19 @@ and **Error Pages**; it hangs under **Post template** and is reached through the
 panel stays Layers on every canvas. Where `C1a`/`C3a` draw that group as its own ink-chrome list and
 `S4a` draws Layers alone, the two are the same shell on two canvases, not two shells.
 
-**Open for the architect at step 6, deliberately not invented here:** the **URL scheme** for a project,
-a template and a template surface (and what browser Back does across them), and the **iframe canvas
-boundary** — AD-21 puts editing chrome inside the iframe as pseudo-elements; which parts of the shell
-above sit inside it and which outside is the architect's call. Neither spine nor prototype fixes
-either, and the prototype's inline canvas is a rendering shortcut, not a statement about the
-boundary.
+**Settled by Story 5.1 (2026-09-17), and left open here until then:** the **URL scheme** and the
+**iframe canvas boundary** (the record is `spec-5-1-the-editor-shell-the-canvas-boundary-and-the-url-scheme.md`
+§ Design Notes; AD-21 carries the boundary). *The scheme:* `/projects/<uuid>` is the editor on Home and
+`/projects/<uuid>/post` · `page` · `tag` · `author` · `error` the other canvases; `/home` 308s to the
+project's address; `index`, `private`, `custom-<slug>`, `paywall` and `cards` are reserved and 404 until
+their stories open them. The address names the project and the canvas and nothing else — selection,
+device, mode, View as, Preview and folds are modes, never in the URL — and changing canvas is a push, so
+Back walks the canvases visited and then leaves. The uuid, never the slug, and another user's project
+answers the same 404 as a missing one. *The boundary:* inside the canvas is the site and what is painted
+on it (outlines, the name tag, the insertion hairline, PAUSED, the empty icon slot — CSS keyed on
+`data-inflozo-*`); outside is everything you press, the hover quick actions and "+" included, as one
+floating bar anchored to the hovered section. The prototype's inline canvas was a rendering shortcut,
+not a statement about either.
 
 ---
 

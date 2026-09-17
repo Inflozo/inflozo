@@ -1,15 +1,18 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { orbitWeekly } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
-import { defaultContent, renderCanvas, stampControls, withData } from '@inflozo/section-runtime'
-import type { ControlState, MemberState, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
+import { defaultContent, stampControls } from '@inflozo/section-runtime'
+import type { ControlState, MemberState, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { slimScrollbar } from '@/components/kit/greyed'
 import { Segmented } from '@/components/kit/segmented'
+import { canvasAssets as assetsFor, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
+import { isApp } from '@/routing'
 
 /* THE PILOTS WORKSPACE — `/controls`' review (Story 4.5), fed the library's designs (Story 4.10's pilots first).
 
@@ -24,7 +27,10 @@ import { Segmented } from '@/components/kit/segmented'
    scaled down to fit the pane; View as Signed out · Free · Paid, the `member` a render is handed; Page, on a design
    that paginates; and Show to on the two whose frames draw it. Orbit Weekly feeds every render through
    `templateContext`, the same context `tools/check-snapshots.mjs` renders against. Every module mount gets
-   `js-enabled` and no script — the state `core` leaves it in on a live page (Story 4.7). Nothing is saved. */
+   `js-enabled` and no script — the state `core` leaves it in on a live page (Story 4.7). Nothing is saved.
+
+   THE RENDER ITSELF IS `lib/canvas.ts` since Story 5.1, shared with the editor, and the canvas document is the one
+   `/canvas` route both pages frame — so the editor and this page emit the same markup for the same design. */
 
 type Rows = Readonly<Record<string, Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>>>
 type Mode = 'light' | 'dark'
@@ -55,11 +61,6 @@ const SHOW_TO = [
 ]
 /** The pilots whose frames draw a Show to state (A22-1's states, A4-13's panel). Layers' control itself is Story 5.4's. */
 const DRAWS_SHOW_TO: readonly string[] = ['a22/1', 'a4/13']
-
-/** Orbit Weekly's pictures, pointed at the frame route beside the page — relative, so the canvas document resolves
- *  it against its own address (/app/pilots/frame). The one place the reserved origin is mapped on this page. */
-const withImages = (html: string) =>
-  html.replace(new RegExp(`${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/images/([a-z0-9-]+)\\.svg`, 'g'), 'frame?image=$1')
 
 export function Review({
   entries,
@@ -106,20 +107,9 @@ export function Review({
     return doc && mount ? { doc, mount } : null
   }
 
-  // An asset id resolves only through this map (AD-27(b)), relative to the canvas document at /app/pilots/frame.
-  const canvasAssets = Object.fromEntries(pool.map((a) => [a.id, `frame?image=${a.id}`]))
-
-  /** Each query's rows as the canvas shows them, as `/controls` does: the stored Order picks the list, the fixed or
-   *  stored limit slices it, and a query with neither shows Ghost's default. */
-  const shown = (e: SectionRegistryEntry, s: ControlState) =>
-    Object.fromEntries(
-      Object.entries(withData(e.dataBindings, s.data)).map(([key, binding]) => {
-        const both = rows[e.id]?.[key]
-        const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
-        const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
-        return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
-      }),
-    )
+  const canvasAssets = assetsFor(pool)
+  const shown = (e: SectionRegistryEntry, s: ControlState) => shownRows(e, s, rows[e.id])
+  const src = canvasSrc(isApp(usePathname()))
 
   const paint = () => {
     const c = canvas()
@@ -128,23 +118,13 @@ export function Review({
     const e = entries.find((x) => x.id === now.id)
     if (!c || !lookup || !frame.current || !e) return
     const s = now.states[e.id] ?? {}
-    const target = e.compileTarget[0] as string
-    const ctx = orbitWeekly.templateContext(target, now.feed)
     c.doc.documentElement.setAttribute('data-mode', now.mode)
     const started = performance.now()
     try {
-      c.mount.innerHTML = withImages(renderCanvas(c.doc as unknown as RuntimeDocument, e.html, {
-        target,
-        content: s.content,
-        schema: e.contentSchema,
-        controlSchema: e.controlSchema,
-        universals: e.universals,
-        controls: s.controls,
-        data: s.data,
-        dataBindings: e.dataBindings,
-        getRows: shown(e, s),
-        ghost: ctx.ghost,
-        site: ctx.site,
+      mountSections(c.mount, renderSection(c.doc, e, s, {
+        target: e.compileTarget[0] as string,
+        rows: rows[e.id],
+        feed: now.feed,
         member: now.member,
         visibility: DRAWS_SHOW_TO.includes(e.id) ? now.visibility : 'everyone',
         assets: canvasAssets,
@@ -154,8 +134,6 @@ export function Review({
       // loudly: a pilot that will not render is a broken story, and the sentence is the finding
       c.mount.textContent = `${e.id} could not be drawn: ${(error as Error).message}`
     }
-    // the state core leaves a mount in on the live page (Story 4.7) — the class, and no script
-    for (const el of c.mount.querySelectorAll('[data-module]')) el.classList.add('js-enabled')
     frame.current.dataset.renderMs = (performance.now() - started).toFixed(1)
     frame.current.dataset.pilot = e.id
     measure()
@@ -253,7 +231,7 @@ export function Review({
         <div ref={box} className="w-full" style={{ height: height * scale }}>
           <iframe
             ref={frame}
-            src="pilots/frame"
+            src={src}
             title={`${entry?.name ?? 'The pilot'} at ${width} pixels wide`}
             data-width={width}
             data-mode={mode}

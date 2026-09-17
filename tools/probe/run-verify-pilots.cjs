@@ -92,9 +92,9 @@ async function main() {
     await page.goto(`${APP}/pilots`, { waitUntil: 'networkidle' })
     const robots = await page.locator('meta[name="robots"]').getAttribute('content')
     check('the page is noindex', /noindex/.test(robots || ''), robots)
-    const iframe = page.locator('iframe[data-pilot], iframe[src="pilots/frame"]').first()
+    const iframe = page.locator('iframe[data-pilot], iframe[src$="/canvas"]').first()
     await page.waitForFunction(() => !!document.querySelector('iframe[data-pilot]')?.contentDocument?.querySelector('#canvas > *'), null, { timeout: 30000 })
-    const frame = () => page.frames().find((f) => f.url().includes('/pilots/frame'))
+    const frame = () => page.frames().find((f) => /\/canvas$/.test(new URL(f.url()).pathname))
     const radio = (group, name) => page.locator(`#${group} [role="radio"]`, { hasText: new RegExp(`^${name}$`) })
     const settle = async (want) => {
       await page.waitForFunction((id) => document.querySelector('iframe[data-pilot]')?.dataset.pilot === id, want, { timeout: 15000 })

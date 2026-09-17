@@ -12,6 +12,7 @@ import { Lockup } from '@/components/kit/logo'
 import { CONNECT_SITE_DIALOG } from '@/lib/connect-rule'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
+import { isEditorPath } from '@/lib/editor'
 import { stripApp } from '@/routing'
 import { AccountMenu } from './account-menu'
 import type { ShellUser } from '@/lib/shell-user'
@@ -289,6 +290,11 @@ export function Shell({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [hasBar])
+
+  // THE EDITOR OWNS THE WINDOW (Story 5.1, S4a): on `/projects/<id>` and below the shell draws its `<main>` and nothing
+  // else — no sidebar, no phone bar, no drawer. It is still the one `<main>` (`app-routes.test.ts`), so an editor-path
+  // 404 lands inside it. After every hook, so the hook order is the same on every path.
+  if (isEditorPath(path)) return <main className="flex min-h-dvh flex-col">{children}</main>
 
   /**
    * `showModal()` hands focus to the first focusable thing inside the panel, which is the

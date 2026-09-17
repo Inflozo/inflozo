@@ -3066,7 +3066,12 @@ reason: every package importing `@inflozo/library/icons` pays the inference. A d
 plain: On the controls review page the owner asked for the settings panel to sit against the right edge
   like the left menu, and to fold away with a button. The review page now does both. The editor's own
   panel is built in Story 5.1, and the drawing it is built from has no fold-away button at full width.
-status: open
+status: done 2026-09-17 (Story 5.1)
+resolution: Story 5.1 (2026-09-17) — the editor at `/projects/{id}` folds both panels the `/controls` way: Layers to D8's
+  44px "Show layers" rail, and Controls to the same rail mirrored ("Show controls"), focus moving to the counterpart toggle
+  (`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, `useFold`). Recorded in the spec's Design Notes as an
+  extrapolation from D8 and `/controls` (R-74); executed by `tools/probe/run-verify-editor.cjs` step 5. The overlay below
+  1440 stays Story 5.22's.
 severity: low
 origin: Story 4.5 owner's test (2026-09-13) — finding 3, on `https://app.inflozo.com/controls`.
 owner: Story 5.1 (The editor shell, the canvas boundary and the URL scheme) — the right Controls sidebar;
@@ -3141,6 +3146,10 @@ status: open
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Verification Gap
 owner: the story that next touches a frame route (Story 5.1's editor surface is the nearest)
+note: Story 5.1 (2026-09-17) moved the pilots frame route to the one canvas route, `(authed)/canvas/route.ts`, with the same
+  guard shape, and did NOT close this: `next/server` still cannot load under `node --test`, so `pilots.test.ts` still reads
+  the guard as text. `tools/probe/run-verify-editor.cjs` step 6 executes the signed-out 303 on `/canvas` against the
+  deployed app, which is the executed half this entry asks for, run by hand at each Review.
 location: apps/web/controls.test.ts (the source-text test) · apps/web/app/(app)/app/(authed)/controls/frame/route.ts · tools/probe/run-verify-controls.cjs (the executed 303)
 reason: Story 4.4's `style-guide.test.ts` set the shape and 4.5 copied it; a route handler imports the server
   Supabase client, so calling it under `node --test` needs that module stubbed. The 303 is executed on
@@ -3989,8 +3998,10 @@ severity: low
 origin: Story 4.10's whole-story code review (2026-09-15, verification-gap layer) — `apps/web/components/controls/sidebar.tsx`'s
   branch on `resetChanges` and the confirm's commit, and `pilots/review.tsx`'s render inputs, have no test `pnpm check`
   runs; `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs` read both on the deployed site (R-82)
-owner: Story 5.1, which mounts this panel in the editor and is the first story whose tests render it; or Story 4.11,
-  whose render matrix drives the canvas in a browser
+owner: Story 5.2, which mounts the section panel in the editor — Story 5.1 mounts none (its Page panel is empty until
+  6.3), so Story 5.1 moved it here (2026-09-17). Since 5.1, `pilots/review.tsx`'s render inputs are
+  `apps/web/lib/canvas.ts`, shared with the editor and compared node by node on the deployed site by
+  `run-verify-editor.cjs` step 4
 location: apps/web/components/controls/sidebar.tsx · apps/web/app/(app)/app/(authed)/pilots/review.tsx
 reason: `apps/web` runs `node --test` with no DOM, and a DOM for it is a dependency (Ask First); the pure functions
   under both (`resetChanges`, `resetSection`, `renderCanvas`) are pinned in `packages/section-runtime`.
@@ -4095,3 +4106,25 @@ location: tools/matrix/matrix.spec.mjs — the height loop's `waitForFunction` o
   the two throws a case can reach; .github/workflows/matrix.yml uploads `test-results/` on failure, so a CI recurrence
   keeps its context
 reason: not reproducible in five further runs, so not patchable blind. On the next failure read the artifact first.
+
+## Deferred from: Story 5.1's Dev run (2026-09-17)
+
+### DW-174: the dashboard reports a CSP eval violation on every load — zod's JIT probe, at schema construction
+
+plain: Every time Projects opens, the browser quietly notes that a piece of our code tried something the security rules
+  forbid. Nothing breaks and nothing is at risk, but a real warning would be lost in that noise, and the security check we
+  run on the editor would fail if it looked at Projects.
+status: open
+severity: low
+origin: Story 5.1's Dev run (2026-09-17) — `tools/probe/run-verify-editor.cjs` against a local production build: a
+  `script-src` `eval` violation from zod's core chunk on `/` (Projects) at every load, and the same on the editor until
+  `doc-schema.ts` set `jitless`. zod runs `new Function("")` when a `z.object` is CONSTRUCTED
+  (`zod/v4/core/schemas.js:970-972`), so any object schema in a client bundle trips the app's nonce policy.
+owner: the next story that touches `apps/web/lib/style-pack.ts` or the New Project Sheet (Epic 6's style packs)
+location: apps/web/lib/style-pack.ts (`stylePackSchema`, reached in the browser through `new-project-sheet.tsx`'s
+  `PRESETS` import) · apps/web/lib/health-rule.ts (`siteHealthData`, if a client module reaches it) ·
+  packages/section-runtime/src/doc-schema.ts (the editor's fix, the pattern)
+reason: out of this story's surface. The fix is `z.config({ jitless: true })` before the first schema a client bundle
+  builds — global to zod, so where it sits decides which pages it covers; the editor's harness step 5 is the control to
+  copy (an init script reporting violations, and a nonce-carrying script's `new Function` on a timer as the positive
+  control).

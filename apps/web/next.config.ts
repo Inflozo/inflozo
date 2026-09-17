@@ -20,11 +20,15 @@ const CONTROLS_FILES = [
 ]
 
 /** Story 4.10: the pilots review reads the design library itself (`packages/library/designs/`, the directory that
- *  IS the design list), the Orbit Weekly pictures and the reference token stylesheet off disk — the same reason. */
+ *  IS the design list), the Orbit Weekly pictures and the reference token stylesheet off disk — the same reason.
+ *  Story 5.1: the canvas document gained the editor's chrome stylesheet, and the editor reads the designs too, so
+ *  the one canvas route and both editor routes take this list. `/app/projects/**`, not `[id]`: the keys are picomatch
+ *  globs (`collect-build-traces.js`), where `[id]` is a character class and would match no route. */
 const PILOTS_FILES = [
   '../../packages/library/designs/**',
   '../../packages/library/orbit-weekly/images/**',
   '../../packages/section-runtime/reference-tokens.css',
+  './lib/canvas-chrome.css',
 ]
 
 const config: NextConfig = {
@@ -44,7 +48,8 @@ const config: NextConfig = {
     '/app/controls': CONTROLS_FILES,
     '/app/controls/frame': CONTROLS_FILES,
     '/app/pilots': PILOTS_FILES,
-    '/app/pilots/frame': PILOTS_FILES,
+    '/app/canvas': PILOTS_FILES,
+    '/app/projects/**': PILOTS_FILES,
   },
 }
 

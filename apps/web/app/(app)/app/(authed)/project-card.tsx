@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { canvasPath } from '@/lib/editor'
 import { updatedLabel } from '@/lib/projects'
 import { Placeholder } from './placeholder'
 import { ProjectMenu } from './project-menu'
@@ -10,8 +12,9 @@ import { ProjectMenu } from './project-menu'
  * one. What stays is FR-B5's visible half: every project here is unlinked, so every card wears
  * "Sample content", and the updated-at line takes the slot the deploy chip has on the frame.
  *
- * THE CARD IS NOT A LINK. Opening a project is Story 5.1's — the editor and its URL scheme —
- * and a card that navigated nowhere would be the lie UX-DR3 forbids.
+ * THE WHOLE CARD OPENS THE PROJECT (Story 5.1): the name is the link, stretched over the card by its `::after`, so the
+ * card reads as one link named for the project and the ⋯ menu, stacked above it, stays pressable on its own. The
+ * address is the editor's, from `lib/editor.ts`.
  */
 /** The columns the page selects — one type, so the `select(...)` and the card cannot drift. */
 export type Project = { id: string; name: string; style_pack: unknown; updated_at: string }
@@ -26,12 +29,21 @@ export function ProjectCard({
   atCap: boolean
 }) {
   return (
-    <article className="overflow-hidden rounded border border-line bg-surface shadow-sm transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-md">
+    <article className="relative overflow-hidden rounded border border-line bg-surface shadow-sm transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-md">
       <Placeholder stylePack={project.style_pack} />
       <div className="flex flex-col gap-2 p-[14px_16px]">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="min-w-0 truncate text-[15px] font-semibold text-ink tablet:text-ui">{project.name}</h2>
-          <ProjectMenu id={project.id} name={project.name} atCap={atCap} />
+          <h2 className="min-w-0 truncate text-[15px] font-semibold text-ink tablet:text-ui">
+            <Link
+              href={canvasPath(project.id)}
+              className="outline-none after:absolute after:inset-0 after:rounded after:content-[''] focus-visible:after:shadow-focus"
+            >
+              {project.name}
+            </Link>
+          </h2>
+          <div className="relative z-10 shrink-0">
+            <ProjectMenu id={project.id} name={project.name} atCap={atCap} />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-pill border border-line px-[9px] py-[2px] text-helper-caption text-ink-soft">
