@@ -15,7 +15,8 @@ From Epic 9 on, **no category of designs can be approved by the owner until its 
 bash tools/matrix/run-matrix-gate.sh             # the gate (also: pnpm matrix)
 bash tools/matrix/run-matrix-gate.sh --update    # re-take the baselines and the manifest
 MATRIX_DESIGNS="a1/1 a17" bash tools/matrix/run-matrix-gate.sh   # only these designs (ids or whole categories)
-bash tools/matrix/run-matrix-gate.sh --host      # a look on this machine; never writes, fonts differ
+bash tools/matrix/run-matrix-gate.sh --host      # a look on this machine; never writes — the manifest test and the
+                                                 # font-dependent cases are EXPECTED to fail here, it is for renders and errors
 node tools/matrix/cases.test.mjs                 # the case derivation, no browser (part of pnpm test)
 ```
 
@@ -32,7 +33,7 @@ is a number written down: `tools/matrix/cases.mjs` derives each axis.
 | Axis | Where it comes from |
 |---|---|
 | Designs | the directory `packages/library/designs/{category}/{n}/`, read through `apps/web/lib/pilots.ts` — the editor's own door |
-| Packs | every `*-tokens.css` beside the runtime. **One today, on purpose:** Epic 6 authors the packs (DW-169) |
+| Packs | every `*-tokens.css` beside the runtime. Only the reference set exists until Epic 6 authors the packs (DW-169) |
 | Viewports | 1440 · 834 · 390 · 1440 at 200% zoom (720 CSS pixels at twice the density, photographed at CSS scale) · 1440 with reduced motion forced |
 | Fixture rows | what the design is: it paginates → first, middle, last and empty feed pages; its markup gates by member → one row per visitor, and one per Show-to audience seen by a visitor it hides from; its binding context is `post` → the style-guide post (and page) |
 
@@ -74,17 +75,31 @@ never on a laptop's own browser and never in CI.
 | `fonts` | the face Chromium actually used for `--font-heading` and `--font-body` |
 | `widelyAvailableOnDate` | the root `package.json`'s browser floor (FR-G8) |
 
-The gate compares every field with the running system and fails on any difference. **Moving the browser floor fails
+The gate compares each field with what it can observe — Playwright and Chromium from the running process, the faces
+over Chromium's own devtools protocol, the pin from the root `package.json`; `image` is the Dockerfile's `FROM` line, so
+a Dockerfile change is what moves it — and fails on any difference. `--update` re-takes **every** photograph
+(`--update-snapshots=all`), so drift under 1% is re-recorded too and cannot accumulate across approvals. **Moving the browser floor fails
 the gate until the matrix is re-run and the manifest re-recorded** (DW-138): a later date lets designs use newer
 styling, so the photographs taken under the old date no longer vouch for it. The gate also refuses to start when the
 installed `@playwright/test` is not the version the image was built for.
+
+## Moving the runner
+
+Bumping Playwright moves five things together, and the gate refuses until they agree: the Dockerfile's `FROM` tag **and**
+digest, `@playwright/test` in the root `package.json`, the lockfile, `manifest.json` and the baselines. The order: change
+the Dockerfile and `package.json`, `pnpm install`, run `--update` inside the new image, then hold the re-baseline to the
+rule below — and end by grepping the repository for the old version, because the list of places to update is exactly
+the thing that misses one. Two failures that look like drift and are not: apt in the image superseding a pinned font
+package (`fonts-inter=…`, `fonts-dejavu-core=…` — the build fails on the install line; move the pin and re-baseline), and
+a `--host` run, whose Chromium and fonts are this machine's and therefore never the manifest's.
 
 ## Cadence
 
 `.github/workflows/matrix.yml`, its own workflow:
 
 - **nightly**, every design;
-- **on demand** (`workflow_dispatch`), every design — run it before each release;
+- **on demand** (`workflow_dispatch`), every design, or only the designs typed into its `designs` input — run it before
+  each release;
 - **on every push**, only the designs that push touched: a design's directory or baselines, a whole category when its
   `content.json` changed, and **every design** when a shared input changed — `packages/section-runtime/` (the reference
   tokens included), `packages/ghost-shim/`, the library's code and data, the canvas document's readers, `tools/matrix/`,

@@ -214,5 +214,9 @@ cd tools/stress && npm install && node build.js && node gate.js theme   # expect
 The database proof is `architecture-.../RLS-TEST.sql` — run it against a PostgreSQL 17 container with
 `PRELUDE.sql` then `SCHEMA.sql` first. It is a **gate**: it aborts on failure rather than printing one.
 Since story 1.2 there is one command for it, and CI runs the same one: `bash supabase/tests/run-rls-gate.sh`.
+
+The render matrix (NFR-6(a)) and the axe scan riding on it are the same shape since Story 4.11 — their own container,
+their own workflow (`matrix.yml`, never in `deploy`'s `needs`, R-116): `bash tools/matrix/run-matrix-gate.sh`; the
+rules are `docs/render-matrix.md`.
 It brings its own container, refuses to run if the `supabase/` copies have drifted from the architecture
 originals, and applies **every** file in `supabase/migrations/` before the proof.

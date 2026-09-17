@@ -4031,3 +4031,67 @@ reason: widening the axis re-renders every case, which is a MASS REBASELINE unde
   owner's approval on a sampled visual review, its own commit touching baselines only, naming the change that
   caused it. So the widening is not a patch to this harness; it is that ruled event, and it belongs to the story
   that causes it.
+
+## Deferred from: code review of spec-4-11-the-render-matrix-and-the-accessibility-scan-that-runs-on-it (2026-09-17)
+
+### DW-170: the accessibility scan does not yet stop at the post body's edge — no design draws one
+
+plain: When a section one day shows a post's own text, the checker must not blame the theme for what the customer
+  wrote. Nothing draws a post body yet, so the rule has nowhere to bite; the day a design does, it must.
+status: open
+severity: medium
+origin: Story 4.11's review (2026-09-17) — Acceptance Auditor and Blind Hunter: epic-4-context.md says "the scan stops
+  at the edge of the post body"; `tools/matrix/matrix.spec.mjs` scans all of `#canvas` with a `ponytail:` comment
+  deferring the exclusion
+owner: the first story whose design binds `{{content}}` (A32/A33's category)
+location: tools/matrix/matrix.spec.mjs — the `axe.run(document.getElementById('canvas'), …)` calls
+reason: 4.11's Never excludes the categories that do not exist yet. The shape is one `exclude` selector on the post body's
+  mount, derived from the design's binding, not a written list; a case whose markup carries the binding and no exclusion
+  should fail rather than scan Ghost's markup.
+
+### DW-171: the matrix derives the Show-to arm from `data-members` while `/pilots` draws it from a written list
+
+plain: The photo machine decides "does this section have a Show-to setting" by reading the section's own markup; the
+  pilots screen decides it from a short list typed by hand. The two disagree on two sections today, so one section's
+  hidden state is photographed although the screen never shows it, and another's is shown but never photographed.
+status: open
+severity: low
+origin: Story 4.11's review (2026-09-17) — Acceptance Auditor, Verification Gap and Edge Case Hunter: `review.tsx`'s
+  `DRAWS_SHOW_TO = ['a22/1', 'a4/13']` vs `cases.mjs`'s `/\bdata-members=/`; `a1/1` gets six `show-to-*` baselines the
+  editor never draws, `a4/13`'s Show-to arm has none. Pixel risk is nil: a hidden Show-to arm draws nothing
+owner: Epic 5's canvas (Story 5.x that mounts Show-to in the real panel — the list becomes the panel's own rule, and
+  the matrix and the editor read one source)
+location: apps/web/app/(app)/app/(authed)/pilots/review.tsx `DRAWS_SHOW_TO` · tools/matrix/cases.mjs `fixtureRows`
+reason: the spec's frozen Boundaries fix the matrix's derivation ("its markup carries `data-members` → the visitor and
+  Show-to arms"), so the matrix is not the side to change here; `/pilots` is a provisional surface. When the real panel
+  decides Show-to per design, export that rule and import it in `cases.mjs`, then re-derive the baselines.
+
+### DW-172: the commit-msg hook's Dev-phase guard has no executed control of its own
+
+plain: The check that refuses a "development finished" commit while tasks are still open is not itself tested. If it
+  broke, every such commit would pass again and nothing would say so.
+status: open
+severity: low
+origin: Story 4.11's review (2026-09-17) — Verification Gap: `tools/hooks/commit-msg`'s Dev block (spec glob, staged
+  read, parse_spec import, three exit-1 arms) runs in no test; only the board's side is asserted in `story-board.py`'s demo
+owner: the next Hotfix that touches `tools/hooks/` (the pattern is `record-cards.py --self-check`)
+location: tools/hooks/commit-msg — the Dev block · tools/story-board.py `demo()`
+reason: a hook self-check needs a temporary index and two throwaway specs; small, but its own tool with its own catalogue
+  row, and this review's scope was the matrix.
+
+### DW-173: one full matrix run in six failed on one case and did not reproduce
+
+plain: The photo machine was run six times in a row on the same files. Five runs passed; one failed on a single
+  photograph and then passed again. A check that sometimes fails for no reason would make the owner approve photos
+  that did not change, so the cause must be found before the matrix grows.
+status: open
+severity: medium
+origin: Story 4.11's review (2026-09-17) — the gate inside the pinned image on this machine: run 1 of 6 exited 1 on
+  `a17/1 · reference-light-1440-reduced-motion-feed-first` with a thrown error (an `error-context.md` was written, so not a
+  pixel mismatch, which is `expect.soft`); runs 2–6 and the CI run passed with identical totals. The next run cleared
+  `tools/matrix/test-results/` before the context was read.
+owner: the first story that adds a design to the matrix (E9's first category), or a Hotfix if the nightly reproduces it
+location: tools/matrix/matrix.spec.mjs — the height loop's `waitForFunction` on images and the `drawn` assertion are
+  the two throws a case can reach; .github/workflows/matrix.yml uploads `test-results/` on failure, so a CI recurrence
+  keeps its context
+reason: not reproducible in five further runs, so not patchable blind. On the next failure read the artifact first.

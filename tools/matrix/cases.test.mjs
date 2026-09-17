@@ -43,13 +43,16 @@ test('every case is design × pack × mode × viewport × the design\'s own rows
   // no file this story adds writes the total down
   const files = [...readdirSync(join(REPO, 'tools/matrix')).map((f) => join(REPO, 'tools/matrix', f)), join(REPO, 'docs/render-matrix.md')]
   for (const f of files.filter((x) => /\.(mjs|sh|md|json)$/.test(x) || x.endsWith('Dockerfile'))) {
-    assert.doesNotMatch(readFileSync(f, 'utf8'), new RegExp(`\\b${want}\\b`), `${f} writes the case total down`)
+    // a version (1.61.1), a date, a hash or a percentage is not a written-down total
+    const text = readFileSync(f, 'utf8').replace(/[0-9a-f]{40,}|\d+(\.\d+)+|\d{4}-\d\d-\d\d|\d+%/g, ' ')
+    assert.doesNotMatch(text, new RegExp(`\\b${want}\\b`), `${f} writes the case total down`)
   }
 })
 
 test('MATRIX_DESIGNS narrows by id or by whole category', () => {
   assert.deepEqual([...new Set(cases(['a17/1']).map((c) => c.id))], ['a17/1'])
   assert.deepEqual([...new Set(cases(['a1']).map((c) => c.id))], ['a1/1'], 'a1 must not select a17/1')
+  assert.throws(() => cases(['zz/1']), /names no design/, 'a selection that matches nothing must fail, not run zero cases')
 })
 
 test('the pack axis is the token sets that exist, and the canvas document carries every one (DW-169)', () => {

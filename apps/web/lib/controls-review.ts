@@ -7,14 +7,17 @@
 // the frame route can serve it whole.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { REFERENCE_TOKENS } from '@inflozo/section-runtime'
 
-/** Every reader runs with `apps/web` as the working directory (`tokens.ts` relies on the same). */
-const PACKAGES = () => join(process.cwd(), '..', '..', 'packages')
+/** Resolved from this module's own address, as `pilots.ts` does (Story 4.11's review), so the render matrix can import
+ *  `imagePool()` from the repo root and the two readers of `packages/` cannot disagree. Never `new URL('…',
+ *  import.meta.url)`: Turbopack fails the build on that form; this one it computes at run time (`pilots.ts`). */
+const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
 export const CONTROLS_DIR = () => join(PACKAGES(), 'library', 'fixtures', 'controls')
 const SAMPLE = () => join(CONTROLS_DIR(), '1')
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')

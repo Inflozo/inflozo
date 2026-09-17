@@ -17,5 +17,5 @@ export async function serve() {
     return res.writeHead(200, { 'content-type': 'image/svg+xml' }).end(svg)
   })
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
-  return { url: `http://127.0.0.1:${server.address().port}`, close: () => new Promise((resolve) => server.close(resolve)) }
+  return { url: `http://127.0.0.1:${server.address().port}`, close: () => new Promise((resolve) => { server.closeAllConnections(); server.close(resolve) }) }
 }

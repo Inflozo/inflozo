@@ -41,7 +41,7 @@ fi
 installed="$REPO/node_modules/@playwright/test/package.json"
 [ -f "$installed" ] || { echo "MISSING: node_modules/@playwright/test — run pnpm install first." >&2; exit 1; }
 want="$(sed -nE 's#^FROM mcr\.microsoft\.com/playwright:v([0-9.]+)-.*#\1#p' "$REPO/tools/matrix/Dockerfile")"
-have="$(sed -nE 's/^  "version": "([^"]+)".*/\1/p' "$installed")"
+have="$(node -p "require('$installed').version")"
 if [ "$want" != "$have" ]; then
   echo "DRIFT: the image is Playwright $want (tools/matrix/Dockerfile) and the repository installed @playwright/test $have (package.json)." >&2
   echo "       Move both together — and re-take the baselines, because the browser moved with them." >&2
@@ -49,7 +49,9 @@ if [ "$want" != "$have" ]; then
 fi
 
 playwright=(test -c tools/matrix/playwright.config.mjs)
-[ "$update" -eq 1 ] && playwright+=(--update-snapshots=changed)
+# `all`, not `changed`: a re-baseline after an approved change must also re-take the photographs that moved by less
+# than 1%, or that drift accumulates across approvals until an unrelated commit tips a case over and is blamed
+[ "$update" -eq 1 ] && playwright+=(--update-snapshots=all)
 playwright+=("${pass[@]}")
 
 if [ "$host" -eq 1 ]; then
@@ -58,7 +60,11 @@ if [ "$host" -eq 1 ]; then
   exit
 fi
 
-docker build -q -t "$IMAGE" "$REPO/tools/matrix" >/dev/null
+# the build log is kept and shown only when the build fails: the Dockerfile's fc-match lines are the reason a font
+# gate failed, and `-q` would swallow them
+log="$(mktemp)"
+docker build -t "$IMAGE" "$REPO/tools/matrix" >"$log" 2>&1 || { cat "$log" >&2; rm -f "$log"; echo "the image did not build — see the log above (tools/matrix/Dockerfile)" >&2; exit 1; }
+rm -f "$log"
 # as the calling user, so a baseline or a diff image on the mounted checkout is not owned by root
 docker run --rm --init --ipc=host \
   --user "$(id -u):$(id -g)" -e HOME=/tmp \

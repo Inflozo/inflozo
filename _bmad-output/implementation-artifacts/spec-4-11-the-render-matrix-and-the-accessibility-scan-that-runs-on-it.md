@@ -2,9 +2,9 @@
 title: 'Story 4.11 — The render matrix and the accessibility scan that runs on it'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '568b61a41ffe1ac25e77212d85cacb475f8ffa54'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
 ---
@@ -134,6 +134,29 @@ under, so a browser-floor bump that was not re-run fails (DW-138).
 - [x] `.github/workflows/matrix.yml` -- a `schedule` nightly full run and a `push` run over only the designs the commit touched, where a change to `packages/section-runtime/`, the reference tokens, `packages/library/src/` or `tools/matrix/` counts as touching every design -- NFR-6(a)'s cadence, as **its own job**: `ci.yml`'s `deploy` keeps `needs: [check, rls]` and gains no third name (**R-116**), so a red matrix never holds the app's deploy. Do not edit `ci.yml`.
 - [x] `docs/render-matrix.md` -- the rebaseline rule, the cadence, what the manifest pins and how the owner's sampled review is done -- **plus its row in `tools/doc-audit.py`'s catalogue, and one row per new `tools/matrix/` file**, then `--generate`, or the pre-commit hook blocks the commit.
 - [x] `_bmad-output/implementation-artifacts/epic-4-context.md` -- append one sub-bullet under the render-matrix requirement; never lengthen the lead (DW-73).
+
+### Review Findings
+
+Review of 2026-09-17 over `568b61a4..1ed2ed16`, five layers (Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor, Real-infra verifier), none failed. No decision is the owner's: both questions above were ruled
+before the review. Patches applied in this phase, each verified by `pnpm check` and by the gate inside the image:
+
+- [x] [Review][Patch] `controls-review.ts` still resolved `packages/` from the working directory while `pilots.ts` no longer did, and the matrix carried a second copy of `imagePool()`'s glob — both readers now resolve from their own address and `cases.mjs` imports `imagePool()` [apps/web/lib/controls-review.ts:17 · tools/matrix/cases.mjs]
+- [x] [Review][Patch] `--update` passed `--update-snapshots=changed`, so drift under 1% was kept across approvals and could accumulate until an unrelated commit was blamed — now `all` [tools/matrix/run-matrix-gate.sh]
+- [x] [Review][Patch] `docker build -q … >/dev/null` swallowed the Dockerfile's `fc-match` lines, the reason a font gate fails — the log is kept and printed on failure only [tools/matrix/run-matrix-gate.sh]
+- [x] [Review][Patch] a `MATRIX_DESIGNS` that names no design (a typo, a removed design) ran zero cases and passed green — it now throws, asserted in `cases.test.mjs`; the on-demand workflow gained a `designs` input so a category can be re-run alone [tools/matrix/cases.mjs · .github/workflows/matrix.yml]
+- [x] [Review][Patch] `matrix.yml` installed the whole workspace before deciding whether anything runs, had no `concurrency` group (two runs racing on one image and one artifact name), and counted neither `/pilots`' own `paint()` nor `.nvmrc` as a shared input — scope first, install gated on it, one run at a time, both paths added [.github/workflows/matrix.yml]
+- [x] [Review][Patch] the "no file writes the total down" scan matched a version, a date or a percentage that happened to carry the digits — those runs are blanked before the match [tools/matrix/cases.test.mjs]
+- [x] [Review][Patch] the installed Playwright version was read with a `sed` over `package.json`'s indentation — `node -p` reads it [tools/matrix/run-matrix-gate.sh]
+- [x] [Review][Patch] `serve()`'s `close` waited on idle keep-alive sockets — `closeAllConnections()` first [tools/matrix/serve.mjs]
+- [x] [Review][Patch] the Dev-phase hook blamed python when the spec was merely not `git add`ed — it now says so [tools/hooks/commit-msg]
+- [x] [Review][Patch] docs: `--host` is expected to fail the manifest and the font-dependent cases; a "Moving the runner" section (the five things that move together, the apt-pin failure mode, the standing-rule-7 grep); `--update` re-takes every photograph; the `image` field is the Dockerfile's, not observed; "One today" reworded so no pack count is written down; `CLAUDE.md`'s verify block names the gate [docs/render-matrix.md · CLAUDE.md · tools/matrix/cases.mjs]
+- [x] [Review][Defer] the axe scan does not stop at the post body's edge — no design draws `{{content}}` yet [tools/matrix/matrix.spec.mjs] — deferred, DW-170
+- [x] [Review][Defer] the Show-to axis is derived from `data-members` while `/pilots` draws it from `DRAWS_SHOW_TO` (a1/1 photographed hidden, a4/13's hidden arm not) — the frozen Boundaries fix the matrix's side [tools/matrix/cases.mjs · pilots/review.tsx:57] — deferred, DW-171
+- [x] [Review][Defer] the commit-msg hook's Dev block has no executed control of its own [tools/hooks/commit-msg] — deferred, DW-172
+- [x] [Review][Defer] one full run in six failed on one case (`a17/1 · reference-light-1440-reduced-motion-feed-first`, thrown, not a pixel mismatch) and did not reproduce; its error context was cleared by the next run before it was read [tools/matrix/matrix.spec.mjs] — deferred, DW-173
+
+Dismissed as noise or out of scope: bash-3.2 array expansion, a docker-missing preamble, the 60-minute nightly ceiling, a `.dockerignore`, apt's own re-pin, a removed design's push scope (the nightly orphan check covers it), and the Edge Case Hunter's guards on shapes `validateDesign` already refuses.
 
 **Acceptance Criteria:**
 - Given the five pilots and the one token set that exists, when `bash tools/matrix/run-matrix-gate.sh` runs, then every case renders, every baseline matches, axe reports zero violations at WCAG 2.1 AA, and the printed totals are derived — no literal count appears in any file this story adds.
@@ -271,6 +294,26 @@ was identical before and after the controls.
   `packages/` changes set aside, as the probe requires. Re-run it on the Dev commit once CI has deployed it.
 - **GitHub's runner vs this machine.** Whether the matrix workflow's renders on `ubuntu-latest` match baselines taken
   here is unmeasured until its first run.
+
+**The review phase, executed 2026-09-17 (R-82)** — the Real-infra verifier re-ran every claim above on the Dev commit `1ed2ed16`
+as deployed; keys read by variable name only:
+- **GitHub Actions** (`GITHUB_TOKEN`): `CI` run 35183498316 — `check`, `rls`, `deploy` all success. **`Render matrix`** run
+  35183498327 on the same push — success; its scope step printed `every design (a shared input changed)`; the reporter printed
+  the same derived totals as this machine, `0 violations — passed`, so **GitHub's runner inside the pinned image matches the
+  baselines taken here** (the open question above is closed). The nightly cron has not fired yet (first due 21:30 UTC).
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): `app.inflozo.com` → `dpl_3BneEjv17c5Exz66ibPP2CGrj94W`, `READY`, built from
+  `1ed2ed16`.
+- **The deployed `/pilots` on `1ed2ed16`** — `run-verify-pilots.cjs`: **0 FAIL, 152 PASS**; Supabase admin create / magiclink /
+  delete 200, users unchanged; axe's positive control reported `image-alt`, zero violations for every pilot in every state. The
+  `pilots.ts` path change is live and correct. (First attempt died on this machine's `ERR_NETWORK_CHANGED`; the retry passed.)
+- **The gate here, before the patches:** exit 0, same totals. **Negative control:** a17/1's `…-390-feed-empty.png` moved out →
+  exit 1 naming the case and `--update`; nothing written; sha256 of every a17/1 baseline and the manifest identical after.
+- **After the patches:** `pnpm check` exit 0 (Node 24). The gate inside the image, full run × 6: five exit 0 with the same
+  totals; **one exit 1** on `a17/1 · reference-light-1440-reduced-motion-feed-first` (a thrown error, not a pixel mismatch —
+  its error context was cleared by the next run before it was read; DW-173). `MATRIX_DESIGNS=zz/1` → exit 1, "names no
+  design". `bash -n` on the script and the hook.
+- **R-116's executed control** is run right after this commit is pushed and recorded below: the on-demand `Render matrix`
+  dispatched with `designs: zz/1` goes red on HEAD while the same HEAD's `CI` `deploy` succeeds.
 
 ## Questions for the owner
 

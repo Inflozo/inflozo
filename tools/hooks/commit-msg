@@ -96,6 +96,10 @@ _bmad-output/implementation-artifacts/spec-$epic-$num-*.md, so its tasks cannot 
 MSG
     exit 1
   fi
+  if ! git ls-files --error-unmatch "$spec" >/dev/null 2>&1; then
+    echo "COMMIT BLOCKED — $spec is not tracked, so its tasks cannot be checked: git add it first."
+    exit 1
+  fi
   open=$(git show ":$spec" 2>/dev/null | python3 -c '
 import importlib.util, sys
 s = importlib.util.spec_from_file_location("board", "tools/story-board.py")

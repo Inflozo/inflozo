@@ -4,7 +4,7 @@
 // Every axis is read from what exists, and this file restates none of them as a number (standing rule 4):
 // - DESIGNS are the directory `packages/library/designs/{category}/{n}/`, through `pilotIds()` and `pilot()` in
 //   `apps/web/lib/pilots.ts` — the same door, validation included, the editor's pilots page reads;
-// - PACKS are the token sets that exist: every `*-tokens.css` beside the runtime. One today (DW-169, Epic 6);
+// - PACKS are the token sets that exist: every `*-tokens.css` beside the runtime. Epic 6 widens it (DW-169);
 // - MODES and VIEWPORTS are NFR-6(a)'s own: light/dark × 1440, 834, 390, 1440 at 200% zoom, 1440 with motion reduced;
 // - FIXTURE ROWS come from what the design IS, the way `/pilots` decides its own switcher (`paginates`, member arms).
 //
@@ -29,6 +29,7 @@ export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const RUNTIME = join(REPO, 'packages/section-runtime')
 
 const pilots = await import(join(REPO, 'apps/web/lib/pilots.ts'))
+const { imagePool } = await import(join(REPO, 'apps/web/lib/controls-review.ts'))
 const lib = await import(join(REPO, 'packages/library/src/index.ts'))
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 
@@ -76,7 +77,10 @@ export const only = () => (process.env.MATRIX_DESIGNS ?? '').split(/[\s,]+/).fil
 
 /** Every case: design × pack × mode × viewport × the design's own rows. */
 export function cases(filter = only()) {
-  return pilotIds().filter((id) => selected(id, filter)).flatMap((id) => {
+  const ids = pilotIds().filter((id) => selected(id, filter))
+  // a filter that names no design (a typo, a removed design) must not pass as a matrix of zero cases
+  if (filter.length > 0 && ids.length === 0) throw new Error(`MATRIX_DESIGNS names no design under packages/library/designs/: ${filter.join(' ')}`)
+  return ids.flatMap((id) => {
     const entry = pilot(id)
     const [category, n] = id.split('/')
     return packs().flatMap((pack) => MODES.flatMap((mode) => VIEWPORTS.flatMap((viewport) => fixtureRows(entry).map((row) => {
@@ -110,9 +114,8 @@ export function renderInput(entry, row, icons) {
     const fallback = lib.orbitWeekly.DEFAULT_LIMIT[binding.source]
     return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
   }))
-  // the pool `imagePool()` in apps/web/lib/controls-review.ts hands the page — read here, because that reader resolves
-  // from apps/web's working directory and this runs from the repo root
-  const pool = readdirSync(join(REPO, 'packages/library/orbit-weekly/images')).filter((f) => /^feature-[a-z0-9-]+\.svg$/.test(f))
+  // the same pool the page hands `paint()` — one reader, so the matrix cannot photograph a pool the editor lacks
+  const pool = imagePool().map((a) => a.id)
   return {
     target,
     content: rt.defaultContent(entry.contentSchema),
@@ -127,7 +130,7 @@ export function renderInput(entry, row, icons) {
     site: ctx.site,
     member: row.member ?? 'anonymous',
     visibility: row.visibility ?? 'everyone',
-    assets: Object.fromEntries(pool.map((f) => [f.slice(0, -'.svg'.length), `${ORIGIN}/images/${f}`])),
+    assets: Object.fromEntries(pool.map((id) => [id, `${ORIGIN}/images/${id}.svg`])),
     icons,
   }
 }

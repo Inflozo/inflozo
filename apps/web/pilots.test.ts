@@ -57,8 +57,8 @@ test('a query the design fixes is handed its fixed rows, newest first', () => {
   }
 })
 
-// Vercel ships a function with only the files the build traced; a path built from `process.cwd()` at runtime is
-// invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
+// Vercel ships a function with only the files the build traced; a path joined at runtime (from the module's own
+// address, since Story 4.11) is invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
 test('every directory the pilots review reads off disk is traced for both routes in next.config.ts', () => {
   const config = readFileSync('next.config.ts', 'utf8')
   // the PILOTS_FILES list itself: a glob in another route's list traces nothing for these two
