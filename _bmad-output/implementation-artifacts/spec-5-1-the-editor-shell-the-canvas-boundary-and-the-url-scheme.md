@@ -489,6 +489,15 @@ written; `python3 tools/doc-audit.py --check` PASS twice. Pushed `d427e190`: CI 
 user count 9 → 9): every step PASS, 0 FAIL. Its one note is DW-174 — Projects (`/`) reports zod's eval probe while
 `/pilots` is read; the editor's session recorded none. The no-`'unsafe-eval'` proof is in the spine's CSP row.
 
+**Result, Review (2026-09-17):** the five review layers on `c60776c4` (Real-infra: `dpl_6TrZZpMamDMPzbGJAQan8Vf9i5Ze`,
+59 PASS, 0 FAIL, users 9 → 9). Patches pushed as `52be51cf`: `pnpm check` green (Node 24, the jitless guard and the
+duplicate-instanceId test included); `bash tools/matrix/run-matrix-gate.sh` green with the matrix now calling
+`shownRows()`, no baseline written; doc gate PASS twice; CI and Render matrix runs for `52be51cf` success. The patched
+`run-verify-editor.cjs` against `https://app.inflozo.com` (`dpl_8eidg8GaVgm2HiQpKsXMNC4sewXQ`, built from `52be51cf`)
+and production Supabase: 62 PASS, 0 FAIL — step 6b's bad `tag` row showed the error boundary with no canvas and Home
+painted again once it was removed; users 9 → 9. The one note is still DW-174 on `/`. The story stays in review: Deploy
+and the owner's test follow (R-80).
+
 **After the harness passes:** record the no-`'unsafe-eval'` proof in the spine's CSP row, with the date and the
 harness's name. §18c said "it stays unproven until E5 has a canvas to test", and this closes it.
 
