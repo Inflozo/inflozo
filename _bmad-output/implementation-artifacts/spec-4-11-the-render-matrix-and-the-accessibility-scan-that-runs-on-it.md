@@ -2,7 +2,7 @@
 title: 'Story 4.11 — The render matrix and the accessibility scan that runs on it'
 type: 'feature'
 created: '2026-09-17'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md']
@@ -124,7 +124,7 @@ under, so a browser-floor bump that was not re-run fails (DW-138).
 - [ ] `tools/matrix/serve.mjs` -- a `node:http` server over the rendered case documents and Orbit Weekly's pictures at their real origin -- stdlib; so `url()`, `srcset` and the picture origin resolve exactly as they do in the editor, with no URL rewriting.
 - [ ] `tools/matrix/matrix.spec.mjs` -- per case: render through `renderCanvas` into the `pilotsCanvasDocument()` shell, set `data-mode`, add `js-enabled` to every `[data-module]`, screenshot `#canvas`, then run axe-core at WCAG 2.1 AA in the same page behind a positive control -- one page load, one matrix.
 - [ ] `tools/matrix/playwright.config.mjs` -- pin `toHaveScreenshot` to `threshold: 0.1`, `maxDiffPixelRatio: 0.01`, `animations: 'disabled'`, `caret: 'hide'`, and `snapshotPathTemplate` → `packages/library/baselines/{category}/{n}/` -- the AC's two numbers live in exactly one place.
-- [ ] `tools/matrix/Dockerfile` -- `FROM mcr.microsoft.com/playwright:v1.61.1-noble` pinned by digest, plus the fonts the token set names (Inter, and a metric-compatible serif aliased to Georgia via fontconfig, both OFL) -- the runner is part of the baseline.
+- [ ] `tools/matrix/Dockerfile` -- `FROM mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48`, plus the fonts the token set names -- **the stock image has no Latin fonts and this is load-bearing, not polish** (executed 2026-09-17, see Design Notes): `apt-get install fonts-inter` (4.0+ds-1, in apt) and a Georgia substitute, which is **not** in apt — fetch Gelasio from Google Fonts pinned by checksum, or alias to `fonts-liberation2` / `fonts-crosextra-caladea`; then a fontconfig alias for Georgia, and `fc-match Georgia` / `fc-match Inter` asserted in the image build so a missing font fails there, not in a baseline.
 - [ ] `tools/matrix/run-matrix-gate.sh` -- build/run the image, mount the repo, run the spec inside; refuse to run on the host unless `--host`, and never write a baseline outside the image -- modelled on `supabase/tests/run-rls-gate.sh`.
 - [ ] `tools/matrix/manifest.json` -- record the image digest, the Playwright version, the resolved font faces and the root `widelyAvailableOnDate` the baselines were taken under; the gate refuses when the root pin differs (DW-138) -- one line of policy, checked rather than remembered.
 - [ ] `packages/library/baselines/**` -- the PNGs, written by `--update` from inside the image only.
@@ -168,11 +168,27 @@ byte-identically to the editor's, with no URL rewriting — 15 lines of `node:ht
 AC's two knobs (`threshold`, `maxDiffPixelRatio`) plus `animations: 'disabled'` and `caret: 'hide'`.
 Writing a pixel comparator would be re-implementing it worse.
 
-**Fonts (routine call, stated).** The token set names `Georgia, serif` and `'Inter', sans-serif`. Inter is
-OFL and installs cleanly. Georgia is not redistributable, so the image installs a metric-compatible OFL
-serif and aliases Georgia to it via fontconfig; the manifest records the resolved faces, so a font change
-shows up as a manifest diff rather than as mysterious pixel drift. The matrix is a regression gate, not a
-fidelity claim about a visitor's machine.
+**Fonts — executed 2026-09-17, not assumed (standing rule 1).** The token set names `Georgia, serif` and
+`'Inter', sans-serif`. Inside the pinned image, **`fc-match` resolves Georgia, Inter, `serif` *and*
+`sans-serif` all to WenQuanYi Zen Hei** — a CJK face — because the stock image ships 20 font families and
+no Latin serif or sans. Baselines taken as-is would be deterministic and *wrong*: every pilot photographed
+in a Chinese fallback, and "matches the frame" could never hold. So the font install is a gate, not a
+nicety. What apt in the image actually offers, checked the same day: `fonts-inter` **4.0+ds-1** ✅,
+`fonts-liberation2` 1:2.1.5-3 ✅, `fonts-crosextra-caladea` 20200211-2 ✅, `fonts-dejavu-core` 2.37-8 ✅,
+`fontconfig` 2.15.0-1.1ubuntu2 ✅ — and **`fonts-gelasio` is NOT in apt**, so the closest Georgia
+metric-compatible face has to be fetched from Google Fonts at image-build time and pinned by checksum, or
+Georgia aliased to Liberation Serif / Caladea instead. Recommended: Gelasio by checksum (closest metrics,
+fetched once when the image is built). The manifest records the resolved faces, so a font change shows up
+as a manifest diff rather than as mysterious pixel drift. The matrix is a regression gate, not a fidelity
+claim about a visitor's machine.
+
+**The runner, as executed on this machine 2026-09-17.** Docker 29.1.3, daemon healthy, no sudo needed;
+`mcr.microsoft.com/playwright:v1.61.1-noble` pulled (3.45 GB), digest
+`sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48`, carrying Node v24.17.0 and
+`chromium-1228` + `chromium_headless_shell-1228`. `@playwright/test@1.61.1` and `axe-core@4.12.1` are now
+repo devDependencies at exact pins — until this story they were borrowed from a path *outside* the repo
+(`/home/ghost/Dev/BMAD/inflozo/node_modules/…`, which `tools/probe/run-verify-pilots.cjs` still hardcodes;
+moving that probe onto the repo's own copy is a tidy-up for the Dev run, not a new decision).
 
 ## Verification
 
