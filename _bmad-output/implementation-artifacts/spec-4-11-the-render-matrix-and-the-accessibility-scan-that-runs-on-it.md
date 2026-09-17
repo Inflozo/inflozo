@@ -312,8 +312,11 @@ as deployed; keys read by variable name only:
   totals; **one exit 1** on `a17/1 · reference-light-1440-reduced-motion-feed-first` (a thrown error, not a pixel mismatch —
   its error context was cleared by the next run before it was read; DW-173). `MATRIX_DESIGNS=zz/1` → exit 1, "names no
   design". `bash -n` on the script and the hook.
-- **R-116's executed control** is run right after this commit is pushed and recorded below: the on-demand `Render matrix`
-  dispatched with `designs: zz/1` goes red on HEAD while the same HEAD's `CI` `deploy` succeeds.
+- **R-116's executed control** was attempted after the Review push (`7af6b9bd`): `POST …/actions/workflows/matrix.yml/dispatches`
+  with `designs: zz/1` answered **403** — the machine's `GITHUB_TOKEN` is read-only, so the red run is the owner's click
+  (Q3 below). **The Review push's own runs (`7af6b9bd`):** `CI` 35185508999 — `check`, `rls`, `deploy` all success;
+  `Render matrix` 35185509212 — success, scope `every design (a shared input changed)`, the same derived totals, `0
+  violations — passed`. Green beside green, twice now; the red-beside-green case is Q3.
 
 ## Questions for the owner
 
@@ -381,6 +384,28 @@ spacing changes do, the check **goes red**: moving Latest Post's (A4 #13) button
 1% at 0.1 stands; the promise in `## In plain English`, the Pixel-drift row and its acceptance criterion, and
 `docs/render-matrix.md` now say what the gate catches — a change that resizes or reflows a section, or changes more
 than 1% of a photograph — and that a small sideways nudge of one element can pass.
+
+**Q3. One check is still owed and only you can click it: a deliberately red picture check beside a green publish.**
+
+You ruled (R-116) that a red picture check must not stop the app from publishing. In the files it is so: the picture
+check is its own workflow, and the publish step waits only on the code and database checks. It has also been *seen*
+once, the other way round — a green picture check beside a green publish. What the spec promised is the red case seen
+for real, not read in a file. I could not run it: the key this machine holds for GitHub can only read, and asking
+GitHub to start a workflow needs one that can write.
+
+Example: on GitHub, open the repository → **Actions** → **Render matrix** → **Run workflow** → in the box *designs*
+type `zz/1` (a section that does not exist) → **Run workflow**. Within two minutes that run shows a red ✗ saying
+"MATRIX_DESIGNS names no design". On the same page, the **CI** run for the same commit shows a green ✓ on `deploy`. That
+is the control: red picture check, app published anyway.
+
+1. **You click it, as in the example, and tell me "done" (RECOMMENDED).**
+   - Two minutes of your time, no new permission given to anyone. I record the two run numbers under Verification.
+2. **Give the machine's GitHub key permission to start workflows.**
+   - I run it myself, now and on every later story. The key becomes able to start any workflow in the repository.
+3. **Accept the proof as read in the files and seen green.**
+   - No click. The claim stays "read in source" — the standing rule says that is a hypothesis, not a result.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Spec Change Log
 
