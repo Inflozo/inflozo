@@ -4128,3 +4128,30 @@ reason: out of this story's surface. The fix is `z.config({ jitless: true })` be
   builds — global to zod, so where it sits decides which pages it covers; the editor's harness step 5 is the control to
   copy (an init script reporting violations, and a nonce-carrying script's `new Function` on a timer as the positive
   control).
+
+## Deferred from: Story 5.1's Deploy run (2026-09-17)
+
+### DW-175: about one request in a hundred to app.inflozo.com gets no answer at all
+
+plain: Now and then a page on the app never starts loading: the browser connects, asks, and waits forever. It happened
+  on the sign-in page and on the editor alike, about once in a hundred tries from the machine that runs our checks. A
+  refresh fixes it, but a customer who meets it thinks the product is broken, and our automated checks stop half-way.
+status: open
+severity: medium
+origin: Story 5.1's Deploy run (2026-09-17), against `dpl_2r2ERRnFejqV3F5H4dxejKH7gc4y` (production, built from
+  `e8745189`). `tools/probe/run-verify-editor.cjs` stopped twice on a 30s timeout, both signed in (`GET
+  /projects/<id>/post`, then `page.goto('/')`). Scratch probes from this machine, then:
+  - 80 signed-in GETs over `/`, the editor, `/post` and `/tag`: one gave no status in 60s, and the rest had a max of 1.5s.
+  - 120 more: one gave no headers in 45s and carried no `x-vercel-id`.
+  - 150 interleaved rounds: signed-out `/sign-in` hung **3**, signed-in `/projects/<id>/tag` hung 0, and a direct
+    `GET SUPABASE_URL/auth/v1/user` hung 0. So it is neither signed-in work nor the proxy's `auth.getUser()`.
+  - 150 fresh `curl`s of `/sign-in`: one `000` with dns 0.002s, tcp 0.013s, tls 0.035s and **no first byte in 20s**, to
+    216.150.16.65. The connection and TLS are up, then nothing comes back.
+owner: the next story's Deploy (5.2): repeat the interleaved probe and the fresh-connection `curl` loop once. If the rate
+  holds, take the timestamps and the IP to Vercel support. If it is gone, close this with the two runs as the record.
+location: none in the repo. Between this machine and Vercel's edge (`bom1` → function `fra1`), on routes that predate
+  this story (`/sign-in` is Story 1.3's).
+reason: not a code change, and one vantage point cannot tell Vercel's edge from the network path to it. GitHub
+  Actions would be a second vantage point, but `GITHUB_TOKEN` cannot dispatch a workflow (403). The probes are
+  scratch files, not committed. Their shape: a throwaway account through the Auth Admin API, deleted in `finally`, and
+  `fetch` with an `AbortController` per request.

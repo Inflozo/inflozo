@@ -509,25 +509,58 @@ run the seed exactly once for the owner's own account:
 - Expected: one "Pilot sections" project with three `project_templates` rows (`site`, `home`, `post`). The printed URL
   replaces `<id>` in the owner's manual test.
 
+**Result, Deploy (2026-09-17, HEAD `e8745189`):**
+- **What shipped:** app code and tooling only. `git diff e14f58f3 e8745189 -- supabase/` is empty, so there is no
+  migration, R-99 has nothing to apply, and RLS-TEST.sql is not owed. `git diff 52be51cf e8745189 -- apps packages tools
+  supabase` is empty too: HEAD is the reviewed code plus the Review commit's spec and board.
+- **GitHub Actions** (`GITHUB_TOKEN`): CI run 35204674435 for `e8745189` — `rls`, `check` and `deploy` all success.
+  Render matrix run 35204674253: success.
+- **Deployment:** `dpl_2r2ERRnFejqV3F5H4dxejKH7gc4y`, production, READY, built from `e8745189`, aliased to
+  `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`).
+- **The deployed harness:** `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs)
+  node tools/probe/run-verify-editor.cjs`, against `https://app.inflozo.com` and production Supabase. Five runs, **0 FAIL
+  in every one**, and none finished: each stopped on a 30-second timeout where production sent no answer at all
+  (DW-175). Run 3 reached **61 PASS, covering steps 1 to 8** (step 6b included), and stopped signing in for step 9.
+  Step 9 then ran on its own as a scratch copy of the harness's code, with a retry around the stall only:
+  **PASS**. Of two opens, the first rendered the editor straight into the shell and the second streamed the skeleton's
+  sentence at 2957, ahead of the canvas at 109354. Neither carried the dashboard's cards. The only note, as before,
+  is DW-174 on `/`. Every run deleted its throwaway accounts; afterwards: 9 users, 0 leftover `editor-harness-*`
+  accounts.
+- **DW-175, found here:** about one request in a hundred from this machine to `app.inflozo.com` connects, completes
+  TLS and never gets a first byte. The probes that measured it are in the ledger entry: signed-out and signed-in pages
+  alike, Supabase direct never, and 600 later interleaved requests across the previous and current deployments with
+  none. The route that stalls most in the probes (`/sign-in`) predates this story. It is not a Story 5.1 regression,
+  and it does not block Deploy.
+- **The seed, once** (Question 1): `env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) node
+  tools/probe/seed-editor-project.mjs --email <the owner's sign-in address>`. The address is not recorded here;
+  beforehand it matched exactly one production account, which held 2 projects and no "Pilot sections". Printed
+  `seeded: https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`. Read back through the service key:
+  one project named "Pilot sections" (slug `pilot-sections`), the account now at 3 projects, and `project_templates`
+  rows `site` [a1/1], `home` [a4/13, a17/1, a22/1] and `post` [a24/1]. Signed out, that address answers 307 to
+  `/sign-in`.
+
 ## Owner's manual test
 
-You ruled Question 1 option 1, so the Deploy run adds "Pilot sections" to your own account. Deploy fills in `<id>`
-below and records which deployment it checked. Sign in as you normally do. The project is an ordinary one: rename or
+You ruled Question 1 option 1, so the Deploy run added "Pilot sections" to your own account on 2026-09-17. The
+addresses below are that project's, checked on the deployment built from `e8745189`. Sign in as you normally do. The project is an ordinary one: rename or
 delete it whenever you like, but Stories 5.2 to 5.9 reuse it for their tests.
+
+If a page stays blank and never finishes loading, refresh once and tell us it happened. About one request in a
+hundred did that during Deploy, on old pages as well as new ones (DW-175).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/` | Projects | Click the **Pilot sections** card anywhere except its ⋯ menu. | — | The editor opens, and the address becomes `https://app.inflozo.com/projects/<id>`. |
-| 2 | `https://app.inflozo.com/projects/<id>` | Editor, Home | Look at the whole screen, with `S4 Editor.dc.html` S4a open beside it. | — | **Top:** a slim bar with ‹ and "Pilot sections". **Left:** "Layers · THIS PAGE · HOME" above four rows — Header — Rail, Hero — Latest Post, Post Grid — Three Up, Newsletter — Inline Row. **Middle:** a page card on a warm grey ground, showing the Rail header, Latest Post ("The personal page never disappeared. It went quiet."), Three Up's cards and Inline Row's signup, as a visitor on a computer sees them. **Right:** a panel headed PAGE. The Projects sidebar is gone. |
-| 3 | same | Canvas | Move the mouse over the page, then scroll inside it with the wheel. | — | Nothing appears on the page: no outline, label or button (those arrive with Story 5.2). The page scrolls inside its card, and the bar and both panels stay still. |
-| 4 | `https://app.inflozo.com/pilots` in a second tab | Pilots review | Set each pilot to Desktop · Light · Signed out and compare it with the same section in the editor. | — | The same section. The editor shows it smaller, because it fits a whole desktop page into the card. |
-| 5 | the editor tab | Layers | Press the fold button at the top of Layers, then **Show layers**. | — | Layers folds to a thin strip with one button and the page card grows; then it comes back. |
-| 6 | same | Page panel | Press the fold button beside PAGE, then **Show controls**. | — | The same thing, on the right. |
-| 7 | add `/post` to the end of the address and press Enter | Editor, Post | Look at the canvas. | — | "THIS PAGE · POST", the Rail header, then the top of the article "The four hundred domains that refuse to move". |
-| 8 | same | Browser | Press the browser's Back button, then Back again. | — | First Home's canvas again, then Projects. |
-| 9 | click the **Pilot sections** card again, then add `/tag` to the end of the address and press Enter | Editor, Tag archive | Look at the canvas. | — | Only the Rail header. The Tag archive has no sections yet; its starting sections arrive with Story 5.5. |
-| 10 | change the end of the address to `/nonsense` | — | Press Enter. | — | "Page not found", with a button back to Projects. |
-| 11 | the editor | Top bar and panels | Look for what S4a draws that is not here. | — | Absent until its story: the template switcher (5.5), View as (5.14), "Saved" and Undo/Redo (5.8), the sun (5.6), the device switch (5.7), Ship it (7.18), Layers' grip, eye and "+ Add section" (5.4, 5.10), the Style Pack card (6.3) and Dark mode (5.6). Say whether any of these absences matters to you. |
+| 1 | `https://app.inflozo.com/` | Projects | Click the **Pilot sections** card anywhere except its ⋯ menu. | — | The editor opens, and the address becomes `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`. |
+| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the whole screen, with `S4 Editor.dc.html` S4a open beside it. | — | **Top:** a slim bar with ‹ and "Pilot sections". **Left:** "Layers · THIS PAGE · HOME" above four rows — Header — Rail, Hero — Latest Post, Post Grid — Three Up, Newsletter — Inline Row. **Middle:** a page card on a warm grey ground, showing the Rail header, Latest Post ("The personal page never disappeared. It went quiet."), Three Up's cards and Inline Row's signup, as a visitor on a computer sees them. **Right:** a panel headed PAGE. The Projects sidebar is gone. |
+| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Canvas | Move the mouse over the page, then scroll inside it with the wheel. | — | Nothing appears on the page: no outline, label or button (those arrive with Story 5.2). The page scrolls inside its card, and the bar and both panels stay still. |
+| 4 | `https://app.inflozo.com/pilots`, in a second tab | Pilots review | Set each pilot to Desktop · Light · Signed out and compare it with the same section in the editor. | — | The same section. The editor shows it smaller, because it fits a whole desktop page into the card. |
+| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`, the editor tab | Layers | Press the fold button at the top of Layers, then **Show layers**. | — | Layers folds to a thin strip with one button and the page card grows; then it comes back. |
+| 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Page panel | Press the fold button beside PAGE, then **Show controls**. | — | The same thing, on the right. |
+| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post`: add `/post` to the end of the address and press Enter | Editor, Post | Look at the canvas. | — | "THIS PAGE · POST", the Rail header, then the top of the article "The four hundred domains that refuse to move". |
+| 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Browser | Press the browser's Back button, then Back again. | — | First Home's canvas again, then Projects. |
+| 9 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag`: click the **Pilot sections** card again, then add `/tag` to the end of the address and press Enter | Editor, Tag archive | Look at the canvas. | — | Only the Rail header. The Tag archive has no sections yet; its starting sections arrive with Story 5.5. |
+| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/nonsense`: change the end of the address to `/nonsense` | — | Press Enter. | — | "Page not found", with a button back to Projects. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Top bar and panels | Look for what S4a draws that is not here. | — | Absent until its story: the template switcher (5.5), View as (5.14), "Saved" and Undo/Redo (5.8), the sun (5.6), the device switch (5.7), Ship it (7.18), Layers' grip, eye and "+ Add section" (5.4, 5.10), the Style Pack card (6.3) and Dark mode (5.6). Say whether any of these absences matters to you. |
 
 ## Questions for the owner
 
