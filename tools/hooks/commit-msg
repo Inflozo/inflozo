@@ -75,4 +75,49 @@ MSG
     fi
   fi
 fi
+
+# THE DEV PHASE WORD IS A CLAIM TOO: development is finished. build-sequence.md step 7 makes Dev done when
+# "every task [is] ticked", and story-board.py's derive() reads a Dev commit as "ready for Review" — but
+# every finished Dev run leaves the status at in-progress, the same status a half-built story is at, so a
+# Dev commit pushed part-way through put the story in Review with nothing built. Story 4.11, 2026-09-17:
+# a toolchain pin with 0 of 14 tasks ticked (Stories 1.4 and 1.5 had done the same). The ticks are counted
+# by the board's own parse_spec, imported rather than copied, so this hook and the board cannot disagree.
+key=$(printf '%s\n' "$subject" | sed -En 's/^Story ([0-9]+\.[0-9]+[a-z]?) - Dev - .*/\1/p')
+if [ -n "$key" ]; then
+  epic=${key%%.*}
+  num=${key#*.}
+  spec=$(ls _bmad-output/implementation-artifacts/spec-"$epic"-"$num"-*.md 2>/dev/null | head -1)
+  # no spec is not a pass, for the Test block's reason: the claim cannot be checked
+  if [ -z "$spec" ]; then
+    cat <<MSG
+COMMIT BLOCKED — "Story $key - Dev - …" claims development is finished, but no spec matches
+_bmad-output/implementation-artifacts/spec-$epic-$num-*.md, so its tasks cannot be checked.
+  - Story key a typo? Fix the subject.
+MSG
+    exit 1
+  fi
+  open=$(git show ":$spec" 2>/dev/null | python3 -c '
+import importlib.util, sys
+s = importlib.util.spec_from_file_location("board", "tools/story-board.py")
+board = importlib.util.module_from_spec(s); s.loader.exec_module(board)
+print(sum(1 for done, _ in board.parse_spec("staged", sys.stdin.read())["tasks"] if not done))')
+  # an unreadable count is not a pass either: a crash in the parser must not wave the claim through
+  case "$open" in ''|*[!0-9]*)
+    echo "COMMIT BLOCKED — could not count the unticked tasks in $spec (python3 and tools/story-board.py are needed)."
+    exit 1;;
+  esac
+  if [ "$open" -gt 0 ]; then
+    cat <<MSG
+COMMIT BLOCKED — "Story $key - Dev - …" claims development is finished (one Dev commit, AFTER the phase —
+R-81), but $spec would still have $open unticked task(s) under "## Tasks & Acceptance" once this
+commit lands. The story board would show the story as ready for Review while it is still being built.
+  - Development really is finished? Tick every task in this same commit.
+  - A task can only run after deploy (a check against the live site)? It belongs under "## Verification",
+    not in the task list.
+  - Part-way through? Do not commit under a phase word yet: keep the work in the working tree, and it lands
+    in the Dev commit that finishes the phase.
+MSG
+    exit 1
+  fi
+fi
 exit 0

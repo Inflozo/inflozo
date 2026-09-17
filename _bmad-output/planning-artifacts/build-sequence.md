@@ -1376,12 +1376,21 @@ is reminded by the skill itself.
 | **Fix** | `/bmad-build` with the findings | Every finding fixed inside this story; then Review → Deploy → Test again | `Story E.S - Fix - …` |
 | **Done** | the session, on his word | `owner_test: passed` (or `none`), sprint status `done` — written by the Record prompt and by nothing else | `Story E.S - Done - …` |
 
-**Two more commit shapes, and the phase word list is closed.** Phase is one of *Create · Dev · Review ·
-Deploy · Test · Fix · Done · Blocked* (Blocked: a run halted on a question for the owner, or a red gate).
+**Two more commit shapes, and the phase word list is closed.** Phase is one of *Create · Schema · Dev ·
+Review · Deploy · Test · Fix · Done · Blocked* (Schema: a story's migration, pushed first and on its own —
+R-99; Blocked: a run halted on a question for the owner, or a red gate).
 Work that belongs to no story — the gate, the boards, a hook — commits as `Hotfix - <one line>`; a
 retrospective, if one is run, as `Epic <N> - Retro - <one line>` (recommended at E1's close, the E4/E7
 gate and E9's close only). A `commit-msg` hook in `tools/hooks/` rejects any other shape that starts with
 Story, Step, Hotfix or Epic.
+
+**A phase word is a claim that the phase is finished, and two of them are checked.** The commit is made
+*after* the phase, so the story board reads each one as the next phase beginning. `commit-msg` refuses a
+`Test` commit whose spec does not read `owner_test: issues` (Story 3.4), and a `Dev` commit while any
+task in the spec is still unticked — the Dev row's own "every task ticked" (Story 4.11, 2026-09-17, when a
+toolchain pin pushed as `Dev` with no task done put the story in Review). Work pushed part-way through a
+phase has no phase word: it stays in the working tree and lands in the commit that finishes the phase. A
+check that can only run after deploy belongs under `## Verification`, not in the task list.
 
 **The category gate is modelled by the loop, not by a status.** In E9 and E10 a category is a run of
 consecutive stories, each one session (R-85); a story cannot open until the previous story in the epic is

@@ -983,7 +983,9 @@ GROUPS = [
   'compared in memory and never printed); `commit-msg` rejects a subject that starts Story, Step, '
   'Hotfix or Epic but does not fit the R-81 shape and vocabulary, and — since Story 3.4, 2026-09-09 — '
   'also rejects a "Story E.S - Test - …" subject whose spec would not read `owner_test: issues`, '
-  "because that phase word is story-board.py's only signal that the owner's report actually landed; "
+  "because that phase word is story-board.py's only signal that the owner's report actually landed, and "
+  '— since Story 4.11, 2026-09-17 — a "Story E.S - Dev - …" subject while the spec still has an unticked '
+  "task, counted by story-board.py's own parse_spec, because a Dev commit is read as development finished; "
   '`post-commit` regenerates '
   'STORY-BOARD.html in the working tree so the page the owner opens carries the commit just made. '
   'There is no bypass: --no-verify is denied in .claude/settings.json.'),

@@ -665,7 +665,16 @@ def derive(story, status, specs, commits):
     trail = [p for p in phases if p != 'Blocked']
     deployed = 'Deploy' in trail
     fixing = 'Fix' in trail and ('Test' not in trail or trail.index('Fix') < trail.index('Test'))
-    by_trail = NEXT_AFTER[trail[0] if trail else None]
+    # A DEV COMMIT IS A CLAIM THAT DEVELOPMENT IS FINISHED, and the spec's own checkboxes say whether it
+    # holds. build-sequence.md step 7 makes Dev done when "every task [is] ticked", and every finished Dev
+    # run leaves tracker and spec at `in-progress` — the same status a story part-way through is at — so
+    # the status cannot tell the two apart and the ticks can. Story 4.11, 2026-09-17: a toolchain pin
+    # pushed as `Story 4.11 - Dev - …` with 0 of 14 tasks done read as "ready for Review" (Stories 1.4
+    # and 1.5 had pushed the same shape). `tools/hooks/commit-msg` now refuses that commit; this reads
+    # the one that already landed, and any from a clone without the hook, truthfully.
+    head = trail[0] if trail else None
+    unfinished = head == 'Dev' and bool(spec) and any(not done for done, _ in spec['tasks'])
+    by_trail = 'Dev' if unfinished else NEXT_AFTER[head]
     if ot == 'passed' or (ot == 'none' and deployed):
         by_status = 'Done'
     elif ot == 'issues' and not fixing:
@@ -2133,6 +2142,19 @@ def demo():
     assert flat['3.1']['lane'] == 'progress' and flat['3.2']['lane'] == 'ready' and flat['3.3']['lane'] == 'backlog'
     # 4.1: blocked from the tracker and the trail; the question carries an Answer line
     assert flat['3.4']['blocked'] and flat['3.4']['spec']['questions'][0]['answered']
+    # Story 4.11 (2026-09-17): a Dev commit is believed only when the spec's tasks are all ticked — asserted
+    # from BOTH sides, because the fix that shows a part-built story as Build must not also hold back every
+    # finished Dev run, which leaves the status at in-progress exactly as a part-built one does.
+    def after_dev(tasks):
+        story, key = {'e': 9, 's': '9'}, (9, '9')
+        spec = {'status': 'in-progress', 'owner_test': 'none', 'tasks': tasks, 'test': None, 'real_service': False}
+        log = [{'kind': 'story', 'e': 9, 's': '9', 'phase': p} for p in ('Dev', 'Create')]   # newest first
+        derive(story, {key: 'in-progress'}, {key: spec}, log)
+        return story['phase'], story['lane']
+    assert after_dev([(True, 'pin the runner'), (False, 'build the harness')]) == ('Dev', 'progress'), \
+        'a Dev commit with an unticked task reads as Review — the board claims development is finished'
+    assert after_dev([(True, 'pin the runner'), (True, 'build the harness')]) == ('Review', 'review'), \
+        'a finished Dev run (every task ticked, status still in-progress) no longer reads as Review'
     # ── THE RULING CONTRACT. A ruling is the owner's SIGNED, DATED decision; anything else is open,
     #    and a block that claims a ruling and carries neither the signature nor the open token stops
     #    the build rather than being guessed at. Every shape below is one the repository has really

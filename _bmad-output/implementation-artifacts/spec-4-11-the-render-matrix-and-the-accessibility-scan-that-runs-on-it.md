@@ -190,6 +190,18 @@ repo devDependencies at exact pins — until this story they were borrowed from 
 (`/home/ghost/Dev/BMAD/inflozo/node_modules/…`, which `tools/probe/run-verify-pilots.cjs` still hardcodes;
 moving that probe onto the repo's own copy is a tidy-up for the Dev run, not a new decision).
 
+**`86668878` said `Dev` and was not the end of Dev — and the board believed it.** That push pinned the
+toolchain with **0 of 14 tasks ticked**, but a Dev commit is the claim that development is finished
+(R-81 commits *after* the phase; build-sequence.md makes Dev done when every task is ticked), so the story
+board read it as "ready for Review" and showed 4.11 there while nothing was built. The owner caught it on
+2026-09-17. It is not rewritten (a pushed commit is never amended). Fixed by `Hotfix` the same day:
+`tools/hooks/commit-msg` now refuses a Dev commit while any task is unticked, and `tools/story-board.py`
+will not read a Dev commit with an open task as Review — which is what puts this story back at Build
+without a second, dishonest phase word. Stories 1.4 and 1.5 had pushed the same shape; neither is still
+open. **For the rest of this story:** the toolchain task above stays unticked (its `matrix` script and
+`cases.test.mjs` half are not done), and the next commit under this story's name is the Dev commit that
+finishes it.
+
 ## Verification
 
 **Commands:**
