@@ -4006,3 +4006,24 @@ location: packages/library/src/validate.ts · packages/library/contexts/matrix.j
 reason: `checkBindings` already walks every Ghost path a design reads at each target; the check is that walk's
   fields mapped to their `since` and compared with `minVersion`, one row in `tools/check-snapshots.mjs`. No shipped
   design depends on it yet (AD-35's provisional pilots ship to no one).
+
+## Deferred from: planning of spec-4-11-the-render-matrix-and-the-accessibility-scan-that-runs-on-it (2026-09-17)
+
+### DW-169: the render matrix's pack axis has one member until Epic 6 authors the three reference packs
+
+plain: The picture check photographs every section in every colour-and-type scheme. The plan says three schemes;
+  today only one exists, so it photographs one. When the twelve schemes are built, three of them become the
+  references and every photograph has to be taken again.
+status: open
+severity: medium
+origin: Story 4.11's planning (2026-09-17) — NFR-6(a) names "3 reference Style Packs"; Epic 4 ships exactly ONE
+  reference token set on purpose (step-6 stress finding F2: a design's CSS reads pack custom properties
+  exclusively, so the canvas needs a token block three epics before any pack exists), and Epic 6 authors the
+  twelve. `tools/matrix/cases.mjs` therefore DERIVES the axis from the token sets that exist (standing rule 4)
+  rather than restating three; inventing two throwaway packs now would invent a decision the owner never made.
+owner: Epic 6 (the story that authors the packs picks the three references and re-takes the baselines)
+location: packages/section-runtime/src/tokens.ts · tools/matrix/cases.mjs · packages/library/baselines/
+reason: widening the axis re-renders every case, which is a MASS REBASELINE under NFR-6(a)'s own rule — the
+  owner's approval on a sampled visual review, its own commit touching baselines only, naming the change that
+  caused it. So the widening is not a patch to this harness; it is that ruled event, and it belongs to the story
+  that causes it.
