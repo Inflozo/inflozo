@@ -1611,16 +1611,19 @@ is why both editors show marks
 **And** pasted content is **stripped to these four marks**
 **And** a prop bound to a Ghost Admin text setting is **plain-text-locked while bound**, which is a truncation
 of the mark list rather than a parse
-**And** the Link Picker searches the user's own posts and pages as I type
-**And** clicking an **icon slot** on the canvas, filled or empty, opens the **Icon Picker** anchored to it — the
-component Story 4.5 built, mounted rather than drawn again — and an empty slot shows as P0-2's dashed placeholder
-only while its section is selected (owner, 2026-09-13, DW-115)
-**And** the toolbar matches `P0-1 Inline Text Toolbar.dc.html`, link entry matches B4b, and the icon slot and
-picker match `P0-2 Icon Slot and Picker.dc.html` as R-104 reshapes it.
+**And** the Link Picker searches the posts and pages the canvas previews as I type — the linked site's from Story
+5.18, the sample content until then
+**And** clicking Ghost's own words inside a selected section — a post's title, its tag or date, the site's title —
+shows **P0-1's lock pill naming them**, "Post title — set in Ghost", and nothing becomes editable *(owner's ruling
+**R-122**, 2026-09-17)*
+**And** clicking an icon on the canvas, and an icon before or after a button's words, arrive with Story 9.1, where
+the first designs that carry them are built — absent here, never greyed *(owner's ruling **R-121**, 2026-09-17;
+DW-115)*
+**And** the toolbar, its link popover, the lock pill and the token row match `P0-1 Inline Text Toolbar.dc.html`, and
+link entry matches B4b + P0-1.
 
-**FRs:** FR-D4, FR-D3 (a click on text in a selected section), FR-F1 (the Icon Picker's canvas entry). · **Frame:** `P0-1 Inline Text Toolbar.dc.html` · `B Missing
-Surfaces.dc.html` B4b · `P0-2 Icon Slot and Picker.dc.html`. · **Owner
-test:** yes.
+**FRs:** FR-D4, FR-D3 (a click on text in a selected section). · **Frame:** `P0-1 Inline Text Toolbar.dc.html` · `B
+Missing Surfaces.dc.html` B4b. · **Owner test:** yes.
 
 ### Story 5.4: The Layers panel, reordering, and the two kinds of singleton
 
@@ -2037,6 +2040,8 @@ So that I am designing against my content rather than someone else's.
 fallback to Orbit Weekly on network failure with a subtle indicator
 **And** reads are **batched and de-duplicated per resource** across the canvas, Section Picker previews and Link
 Picker search, under a per-session request ceiling
+**And** the Link Picker's search reads **the linked site's own posts and pages** through those reads — Story 5.3's
+picker searches the sample content until this story lands
 **And** on HTTP 429 or repeated failure the editor falls back to Orbit Weekly **and names the cause** — because
 Ghost rate-limits Content API keys and Ghost(Pro) sits behind an edge Inflozo does not model (UX-DR6)
 **And** the canvas reads **list and metadata fields only and never post or page body HTML**: `{{content}}`
@@ -2668,6 +2673,8 @@ Image Picker → image · text prop → text · accent → color** (colour promo
 editable in Ghost Admin — bold, italic, underline, and links will be removed and disabled" — and on confirm any
 existing marks are stripped and formatting is disabled for as long as the binding exists, re-enabling when it is
 removed
+**And** while bound, selecting that text on the canvas shows **P0-1's lock pill in the toolbar's place**, naming the
+setting — "{Setting} — plain text, set in Ghost" — the pill Story 5.3 built for Ghost's own words *(R-122)*
 **And** the compiled theme reads `{{@custom.*}}` at render time instead of the baked value
 **And** **shuffling away is not deleting**: moving to a design that does not declare a bound control **parks the
 binding along with its value**, the setting is not emitted while that design is inactive, and returning restores
@@ -3612,10 +3619,12 @@ So that I can start using Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** every button in these designs can carry an **icon before or after its words**, chosen from the Icon Picker while the button is selected — always Small and in the label's colour, as P0-2 draws button icons *(owner's ruling **R-121**, 2026-09-17: no earlier story has a design with a button to try it on)*
+**And** clicking an **icon slot** on the canvas — a button's icon included — filled or empty, opens the **Icon Picker** anchored to it, the component Story 4.5 built, mounted rather than drawn again, and an empty slot shows as P0-2's dashed placeholder only while its section is selected *(R-121; moved from Story 5.3, DW-115)*
 **And** every header menu renders through **Inflozo's own `partials/navigation.hbs`**, recorded on T1 and T3 before it is built on, carrying both dropdown sources of `A1 Headers - Spec.md` §0·5 — children authored in Inflozo and Ghost's `+`/`-` prefixes — each dropdown a native `<details>` that opens without JavaScript, with the current page marked from Ghost's `current`; no header builds dropdowns on Ghost's default `{{navigation}}` markup *(owner's ruling **R-111**, 2026-09-15; **DW-150**)*
 **And** **FR-C5's compatibility watch is built here** *(moved from Story 3.7 by the owner's ruling, 2026-09-10; **DW-87**)*, because this is the first story in which any design declares `ghostCompat` and therefore the first story in which the broadcast has anything to verify: on each Ghost release, **one broadcast to every account on every plan** — normally a confirmation that the library was verified against it using each design's `ghostCompat`, and where the release does affect shipped designs, a notice naming the affected categories and recommending a redeploy through FR-J14. It is the **one carve-out FR-P2 allows to reach email** and it **rides the "Reconnect needed" channel Story 3.7 already built** — the `notifications` rows, the email shell and the send path all exist, so this story adds a trigger and a template and no mechanism. The rows are the `ghost_compat` kind, which **AD-25 now names E9's** rather than E3's. **If this story overruns its session, this is the piece that moves to Story 9.4** — A1's owner gate — never a design: the epic's own sizing note says to resize the later stories of a run, and this is not a design
 
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P2's compatibility carve-out (the one email that watch may send), FR-B7 (the `ghost_compat` rows). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P2's compatibility carve-out (the one email that watch may send), FR-B7 (the `ghost_compat` rows); FR-F1 (button icons and the Icon Picker's canvas entry, R-121). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html` · `P0-2 Icon Slot and Picker.dc.html` (the icon slot and button icons, as R-104 reshapes the picker). The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
 
 #### Story 9.2: A1 — designs #5–8
 

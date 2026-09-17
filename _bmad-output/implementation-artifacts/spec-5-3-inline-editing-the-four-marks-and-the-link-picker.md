@@ -2,7 +2,7 @@
 title: 'Story 5.3 — Inline editing, the four marks and the link picker'
 type: 'feature'
 created: '2026-09-17'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -15,9 +15,9 @@ paragraphs, even a button's label — and a paragraph starts a new line where yo
 raises a small white bar with Bold, Italic, Underline and Link (only the ones that field allows); Link opens the same
 link chooser as the right-hand panel, which searches the sample posts your page shows until Story 5.18 brings your own
 site's, pasted text keeps only those four kinds of formatting, and the panel's paragraph boxes show and apply the same
-formatting. Two things wait on you — which story builds clicking an icon on the page, since none of your pilot sections
-has one (Question 1), and what a click on Ghost's own words, such as a post's title, should show (Question 2) — and
-nothing you change survives a reload until Story 5.8 adds saving.
+formatting. As you ruled, a click on Ghost's own words, such as a post's title, shows a small pill naming them — "Post
+title — set in Ghost" — while clicking an icon on the page and icons on buttons arrive with Story 9.1, where the first
+designs that carry them can be tried; nothing you change survives a reload until Story 5.8 adds saving.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -38,8 +38,9 @@ stays the only source of marks and link records:
 - the element is rewritten from the serializer whenever the two differ.
 
 A text selection raises P0-1's toolbar outside the frame, with only the marks that field permits; Link opens Story 4.5's
-link panel in the toolbar's place; and the panel's Text Area becomes a rich field run by the same controller. This draft
-is written for the recommended option of Questions 1 and 2.
+link panel in the toolbar's place; and the panel's Text Area becomes a rich field run by the same controller. Questions 1
+and 2 were ruled option 1: the icon slot and button icons are Story 9.1's (R-121), and a click on Ghost's own words shows
+P0-1's lock pill naming them (R-122).
 
 ## Boundaries & Constraints
 
@@ -91,8 +92,8 @@ is written for the recommended option of Questions 1 and 2.
 **Never:**
 - An HTML string in storage; an editor library (ProseMirror, Lexical, Tiptap — §7.3 refuses them); `execCommand`.
 - Absent here, each with the story or question that owns it:
-  - clicking an icon slot on the canvas, and its dashed empty placeholder (Story 9.1, Question 1);
-  - an icon before or after a button's label (Story 9.1, Question 1);
+  - clicking an icon slot on the canvas, and its dashed empty placeholder (Story 9.1, R-121);
+  - an icon before or after a button's label (Story 9.1, R-121);
   - P0-1's docked bar at 390 (R-87);
   - the lock pill on a text prop promoted to Ghost Admin (Story 7.10);
   - live link search over a linked site (Story 5.18);
@@ -276,7 +277,7 @@ is written for the recommended option of Questions 1 and 2.
   - The controls fixture declares `maxChars` on `eyebrow` (30) and `heading` (40). No pilot declares one:
     `packages/library/designs/` is not this story's to edit.
 - [ ] `packages/library/contexts/labels.json`, `packages/library/src/contexts.ts` (+ `contexts.test.ts`) -- the words for
-  Ghost's own fields (Question 2):
+  Ghost's own fields (R-122):
   - One plain name for every `text`, `date` and `number` field in the matrix's scopes and universal set, and for every
     `helper` entry, keyed by scope and field — "Post title", "Tag name", "Site title", "Publish date", "Navigation".
   - `ghostLabel(path, place)` resolves the field through `resolve` and returns its name.
@@ -322,7 +323,7 @@ is written for the recommended option of Questions 1 and 2.
   - **`applyProps`** stamps each surviving `text` or `richtext` element `data-inflozo-prop="<path>"`. Inside an authored
     item it also stamps `data-inflozo-item="<index>"`, which `expandItems` now passes.
   - **`emitBindings`** stamps each surviving `data-bind` text element, and each `data-helper` element, with
-    `data-inflozo-ghost="<name>"` (Question 2). The name comes from `ghostLabel` at the binding's place; the helper is
+    `data-inflozo-ghost="<name>"` (R-122). The name comes from `ghostLabel` at the binding's place; the helper is
     named by its own entry.
   - **`renderTheme` handed `editing` throws,** so a stamp can never reach a theme.
   - **The test** covers a fixture with a prop, a bound text, an authored list whose middle item a guard hides, and a
@@ -447,7 +448,7 @@ is written for the recommended option of Questions 1 and 2.
     - A `pointerdown` on the canvas closes the panel, committing nothing, because light dismiss does not see it.
     - Every close puts focus back in the text with the same selection, after `openPopover` hands focus to the hidden
       trigger.
-  - **Header comment.** Typing on the canvas is built; clicking an icon (Question 1) and the rest stay absent with their
+  - **Header comment.** Typing on the canvas is built; clicking an icon (Story 9.1, R-121) and the rest stay absent with their
     stories.
 - [ ] `tools/probe/run-verify-editor.cjs` -- the harness:
   - Steps 16–25 under Verification, their gestures inside step 5's session, and step 8's two new axe states.
@@ -464,23 +465,22 @@ is written for the recommended option of Questions 1 and 2.
       hide while the canvas scrolls; the pill is in the chrome layer.
   - **`EXPERIENCE.md`.**
     - Inline toolbar row (:311): a field that permits no mark shows no toolbar, and a Text Field is one line.
-    - Section on canvas row: a click on Ghost's own words shows the pill naming them (Question 2).
+    - Section on canvas row: a click on Ghost's own words shows the pill naming them (R-122).
   - **`DESIGN.md`.**
     - The text toolbar and the lock pill are surface cards with the `md` shadow, as P0-1 draws them — not ink pills
       (:314-316).
     - B, I and U are the one place a serif styles app chrome (:342-343).
   - **`docs/section-authoring.md`.** In § 2, `maxChars`, `\n` as `<br>` in a Text Area, a Text Field is one line, and
     DW-120. In § 4, the `maxChars` refusal rows.
-  - **`epics.md`.**
-    - Story 5.3's icon-slot criterion and its P0-2 frame move to Story 9.1, which also gains the button-icon criterion
-      (Question 1).
-    - Story 5.3 gains the pill (Question 2), and its link criterion reads "searches the posts and pages the canvas
-      previews".
-    - Story 5.18 gains "the Link Picker searches the linked site's posts and pages".
-    - Story 7.10 gains P0-1's lock pill on a text prop promoted to Ghost Admin, naming its setting.
-  - **`reconcile-designs-decisions.md`.** The two rulings, with their propagation ledgers.
+  - **Done at Create, with the rulings (2026-09-17):**
+    - `epics.md`: Story 5.3's icon-slot criterion and its P0-2 frame moved to Story 9.1, which gained the button-icon
+      criterion (R-121). Story 5.3 gained the pill (R-122), and its link criterion reads "searches the posts and pages the
+      canvas previews". Story 5.18 gained the linked site's link search, and Story 7.10 P0-1's lock pill on a promoted
+      text prop.
+    - `deferred-work.md` DW-115's owner is Story 9.1.
+    - `reconcile-designs-decisions.md`: R-121 and R-122, with their targets. Tick R-122's open targets as they land.
   - **`deferred-work.md`.**
-    - DW-115's owner becomes Story 9.1 (Question 1); DW-120 is resolved by this story.
+    - DW-120 is resolved by this story: `status: done` with its `resolution:` line.
     - A new entry for advisory character counters (`A10 Stats and Numbers - Spec.md:43`, "counters advise rather than
       truncate"), owned by Story 10.26, the first category story whose spec asks for one.
   - **`epic-5-context.md`.** Sub-bullets for the stamps, the value-first edit and the scroll rule.
@@ -511,7 +511,7 @@ is written for the recommended option of Questions 1 and 2.
 - Given editing, when Esc is pressed, then editing ends with the section selected, and a second Esc deselects. After
   both, no element in the canvas document carries a `data-inflozo-*` attribute or `contenteditable`.
 - Given Hero — Latest Post selected, when its post title is clicked, then the pill "Post title — set in Ghost" shows
-  above it in the canvas's chrome layer and nothing becomes editable (Question 2).
+  above it in the canvas's chrome layer and nothing becomes editable (R-122).
 - Given Newsletter — Inline Row's Subscribe label, when "! now" is typed into it, then the label reads "Subscribe!
   now", no form submits and nothing navigates.
 - Given P0-1's drawings, then the built states **match frame P0-1** (`P0-1 Inline Text Toolbar.dc.html`), each where it is
@@ -747,7 +747,7 @@ in as you normally do. If a page stays blank, refresh once and tell us (DW-175).
 | 9 | same | Keyboard | While typing in any heading, press Esc, then Esc again. | — | The first Esc removes the cursor and the section stays selected. The second lets the section go. |
 | 10 | same | Right panel | Select Three Up, open Content, double-click a word in the Title box, and press **I** on the white bar that appears over the box. | — | The same bar appears over the panel box. The word turns italic in the box and on the page. |
 | 11 | same | Right panel | Select Newsletter — Inline Row and open Content. In the "Social proof line" box, delete `{members}` and leave the cursor where it was, then press the **{members}** chip under the box. | — | Under that box is a small "TOKENS THIS FIELD ACCEPTS" row with {members}. Pressing it puts {members} back exactly where your cursor was. The page shows "{members}" as written until your own site's content arrives (Story 5.18). |
-| 12 | same | Canvas | Select Hero — Latest Post and click the post title on its card, then scroll a little. | — | A small white pill appears above the title with a lock and "Post title — set in Ghost", and it moves with the title as you scroll. Nothing becomes editable. Esc takes the pill away. *(Question 2, option 1.)* |
+| 12 | same | Canvas | Select Hero — Latest Post and click the post title on its card, then scroll a little. | — | A small white pill appears above the title with a lock and "Post title — set in Ghost", and it moves with the title as you scroll. Nothing becomes editable. Esc takes the pill away. *(Your ruling, R-122.)* |
 | 13 | same | Canvas | Click "Post Grid — Three Up" once, double-click a word in its heading so the white bar shows, then scroll the page with the wheel or trackpad, slowly and then fast. | — | The bar disappears while the page moves and comes back over the word when you stop. It never floats over other text. |
 | 14 | `https://app.inflozo.com/controls` | Controls review page | Click into Eyebrow and type past its end, then do the same in Heading. | `ABCDEFGHIJKLMNOP` | Each box stops accepting letters at its limit, and a line under it says so: "Eyebrow holds 30 characters.", "Heading holds 40 characters.". |
 | 15 | the editor again | Browser | Reload the page. | — | Your typing and formatting are gone. Saving arrives with Story 5.8. |
@@ -782,7 +782,10 @@ tries it on a real design.
 3. **Build both in this story,** checked only by automated tests until the designs that use them arrive. This story
    gets noticeably bigger.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as R-121. Story 9.1 builds an icon before or after a button's words
+and the canvas icon slot — a click on an icon, filled or empty, opens the Icon Picker beside it, with the dashed box for
+an empty one while its section is selected. This story builds neither, and until 9.1 an icon changes from the panel's
+Icon Picker field. `epics.md` Stories 5.3 and 9.1 and DW-115's owner moved with the ruling.
 
 ### Question 2 — clicking Ghost's own words on the page: what should it show?
 
@@ -810,4 +813,7 @@ Under options 1 and 2 nothing becomes editable, and Esc or your next click takes
    drawing shows.
 3. **Leave it out for now:** a click on Ghost's words does nothing, and the pill is recorded as a gap for a later story.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as R-122. A click on Ghost's own words in a selected section shows
+P0-1's lock pill naming them — "Post title — set in Ghost" — from one list of names beside the context matrix, and
+nothing becomes editable. Story 7.10 reuses the pill for a text prop promoted to Ghost Admin; `epics.md` Stories 5.3 and
+7.10 moved with the ruling.

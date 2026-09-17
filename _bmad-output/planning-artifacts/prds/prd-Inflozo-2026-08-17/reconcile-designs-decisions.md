@@ -2405,6 +2405,61 @@ that makes it work."*
     Owner's manual test) · ✅ `ARCHITECTURE-SPINE.md` AD-21 · ✅ `EXPERIENCE.md` § Editor shell ·
     ✅ `epic-5-context.md` — Story 5.2's fix (2026-09-17).
 
+**R-121 — clicking an icon on the canvas, and a button's icon, are built with Story 9.1.** Story 5.3's Q1, ruled option 1
+(owner, 2026-09-17): *"Build both with Story 9.1, where you can try them: an icon before or after a button's words, and
+clicking any icon on the page to change it, with the dashed box for an empty one."*
+
+- **Why it was a question.**
+  - The owner had ruled the canvas icon slot into Story 5.3 on 2026-09-13 (DW-115). Planning 5.3 found that none of the
+    five pilot sections declares an `icon` prop — the controls fixture's `features[].icon` is the library's only one — so
+    nothing on "Pilot sections" could be clicked, and only an automated check could try it.
+  - P0-2's button icons — an icon before or after a button's label, chosen while the button is selected — belonged to
+    no story at all.
+  - The sweep of every category spec found both first in Epic 9: A1's buttons take an icon in every design
+    (`A1 Headers - Spec.md:47`), and A1·11 Side Rail's row icons are icon slots (`:624`).
+- **What it binds.**
+  - Story 9.1 builds a button's icon before or after its words, as P0-2 draws button icons, and the canvas icon slot:
+    a click on an icon, filled or empty, opens Story 4.5's Icon Picker anchored to it, and an empty slot shows P0-2's
+    dashed placeholder only while its section is selected.
+  - Story 5.3 builds neither; until Story 9.1 lands, both are absent, never greyed. An icon still changes from the
+    panel's Icon Picker field (Story 4.5).
+- Targets:
+  - ✅ Story 5.3's spec · ✅ `epics.md` Stories 5.3 and 9.1 · ✅ `deferred-work.md` DW-115's owner line ·
+    ✅ `epic-5-context.md` — Story 5.3's Create run (2026-09-17).
+- **Deliberately not touched:** `prd.md` FR-F1, which says what the Icon Picker does, not which story opens it from the
+  canvas; the export (R-74), whose P0-2 frame stays as drawn.
+
+**R-122 — a click on Ghost's own words shows P0-1's lock pill, naming them.** Story 5.3's Q2, ruled option 1 (owner,
+2026-09-17): *"Build it as the drawing shows, naming what you clicked."*
+
+- **Why it was a question.**
+  - A selected section mixes the customer's words, which Story 5.3 makes editable on the canvas, with Ghost's own —
+    a post's title, tag and date, the site's title — which only Ghost Admin changes.
+  - Most category specs say a click on Ghost's words sends the customer to Ghost (`A4 Heroes - Spec.md:61`, `:657`),
+    and `P0-1 Inline Text Toolbar.dc.html` (:138-147) draws a lock pill naming the words, "Site title — plain text,
+    set in Ghost".
+  - No story built the pill, and naming every Ghost field a design can print needs a list of names that nothing in the
+    library held.
+- **What it binds.**
+  - In a selected section, a click on Ghost's own words — a `data-bind` text or a `data-helper` — shows a pill with a lock
+    and "{Name} — set in Ghost" above them. Nothing becomes editable, and the next click, Esc or a change of selection
+    removes it.
+  - The pill takes no press, so it is chrome inside the canvas document's layer (AD-21 as Story 5.2 amended it), and it
+    scrolls with its words.
+  - The names are one list beside the context matrix (`packages/library/contexts/labels.json`, read by `ghostLabel`),
+    and a matrix field with no name fails a test.
+  - The pill drops the drawing's "plain text": Ghost's own words are not editable here at all. The same pill on a text
+    prop promoted to Ghost Admin names its setting and keeps the words, because that text stays editable as plain text
+    (Story 7.10).
+- Targets:
+  - ✅ Story 5.3's spec · ✅ `epics.md` Stories 5.3 and 7.10 · ✅ `epic-5-context.md` — Story 5.3's Create run
+    (2026-09-17).
+  - Open, for Story 5.3's Dev run: `packages/library/contexts/labels.json` and `ghostLabel`; `EXPERIENCE.md`
+    § Component Patterns' Section on canvas row; `DESIGN.md` (the pill is a surface card, not one of the ink canvas
+    pills); `ARCHITECTURE-SPINE.md` AD-21 (the pill in the chrome layer).
+- **Deliberately not touched:** `prd.md` FR-D4, whose one exception names the plain-text lock and not the pill; the
+  export (R-74).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

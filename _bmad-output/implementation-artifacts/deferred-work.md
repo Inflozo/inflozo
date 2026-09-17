@@ -3103,8 +3103,11 @@ origin: Story 4.5 owner's question (2026-09-13) — "we are yet to build the ico
   canvas … I assume these are part of later stories?" Checked against `epics.md`: selection and click-to-edit
   text are Story 5.2's, inline editing, the four-mark toolbar and the link picker Story 5.3's; the icon slot
   appears in neither, nor anywhere else.
-owner: Story 5.3 (Inline editing, the four marks and the link picker) — ruled by the owner, 2026-09-13, over
-  Story 5.2; the criterion is now in `epics.md` Story 5.3, so this entry closes when that story is done.
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4) — moved there from Story 5.3 by the owner's
+  ruling R-121 (2026-09-17), because none of the pilot sections carries an icon to click and Story 9.1's designs are the
+  first whose buttons carry one (A1·11 Side Rail's row icons follow in 9.3). The owner first ruled it into Story 5.3 on
+  2026-09-13, over Story 5.2. The criterion is in `epics.md` Story 9.1, beside the button icons the same ruling put there,
+  so this entry closes when that story is done.
 location: `P0-2 Icon Slot and Picker.dc.html` · `P0 Editor Primitives - Spec.md:220-224` (a slot is filled or
   empty — a dashed 20 px placeholder visible only while the section is selected; the picker "opens from any
   slot click (either state)") · `apps/web/components/controls/icon-picker.tsx` (the picker, opened today only
