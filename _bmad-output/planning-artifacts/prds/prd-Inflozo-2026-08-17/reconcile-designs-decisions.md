@@ -2339,8 +2339,8 @@ that makes it work."*
   - Until its story lands, each of them is absent, never greyed.
 - Targets:
   - ✅ Story 5.2's spec · ✅ `epic-5-context.md`.
-  - Open, for Story 5.2's Dev run: `epics.md` Stories 5.2, 5.3, 5.4, 5.10 and 5.11; `deferred-work.md` DW-116's owner
-    line ("Story 5.2's section drag handle" becomes 5.4's).
+  - ✅ `epics.md` Stories 5.2, 5.3, 5.4, 5.10 and 5.11 · ✅ `deferred-work.md` DW-116's owner line — Story 5.2's Dev
+    run (2026-09-17).
 - **Deliberately not touched:** `prd.md` FR-D2 and FR-D3, which say what the editor does, not which story builds it;
   the export (R-74).
 
@@ -2358,10 +2358,40 @@ that makes it work."*
   - S4b gives the same corner to the quick-action pill. Story 5.4, which builds the pill (R-118), moves one of the two.
 - Targets:
   - ✅ Story 5.2's spec · ✅ `epic-5-context.md`.
-  - Open, for Story 5.2's Dev run: `epics.md` Story 5.2's criteria and frame line (B10), and Story 5.4's note on the
-    shared corner.
+  - ✅ `epics.md` Story 5.2's criteria and frame line (B10), and Story 5.4's note on the shared corner — Story 5.2's
+    Dev run (2026-09-17).
 - **Deliberately not touched:** the export (R-74), whose B10 draws its own border and label colours;
   `DESIGN.md` § Badges already names the Kit's badge as the one B10 draws.
+
+**R-120 — both canvas outlines are drawn outside the frame.** Story 5.2's Q3, ruled option 1 (owner, 2026-09-17):
+*"Draw both outlines outside the page, like the name tag."*
+
+- **Why it was a question.** Story 5.2's approved Approach said the chrome stylesheet inside the frame draws both
+  outlines at S4b's 1px and S4c's 1.5px on screen, as the root's own `outline` with its width divided by the fit. Built
+  that way, the deployed harness's width checks failed: Chromium floors a border's or an outline's width to whole CSS
+  pixels before the frame's scale applies, so at the 1440 window's 0.6 fit the lines painted 0.6px and 1.2px. Measured
+  2026-09-17 as painted pixels from a device-scale screenshot, at 1× and 2×, with a 1px border painting 1.00px as the
+  control: `border: 1.5px` and `outline: 1.5px` paint 1.00px even unscaled, and `box-shadow: inset 0 0 0 1.5px` paints
+  1.50px. A shadow inside the frame would sit under any child painted to the root's edge and replace a design's own
+  shadow, so no drawing inside the frame was both exact and safe. Changing where they are drawn changed an approved
+  Approach, so it was the owner's.
+- **What it binds.**
+  - The hover and selected outlines are boxes in the editor document, inside the page card, anchored to the section
+    root with Floating UI the way the name tag is, and sized to its on-screen rect; each box's loop runs only while it
+    shows, which keeps the selected box on a sticky root as the page scrolls.
+  - The line is an inset box-shadow spread — 1px hover, 1.5px selected, coral — as `@utility` rules in `globals.css`;
+    on a hovered selection only the 1.5px box is drawn.
+  - `data-inflozo-hover` and `data-inflozo-selected` stay on the roots as state marks, zero at rest; `canvas-chrome.css`
+    keeps no rule, and painted chrome that belongs inside (the insertion hairline, PAUSED, the empty icon slot) still
+    keys on `data-inflozo-*` there with `::after`.
+  - An outline's width is verified as painted pixels, never from computed style (`run-verify-editor.cjs` steps 10–11,
+    a 1px control before the 1.5px check).
+- Targets:
+  - ✅ Story 5.2's spec (Approach, Boundaries, Code Map, Tasks, Design Notes, Spec Change Log, Verification) ·
+    ✅ `ARCHITECTURE-SPINE.md` AD-21 · ✅ `EXPERIENCE.md` § Editor shell · ✅ `epic-5-context.md` — Story 5.2's Dev run
+    (2026-09-17).
+- **Deliberately not touched:** the export (R-74), whose S4b and S4c draw the outline as a border on an overlay —
+  what R-120 builds; `prd.md` FR-D2, which says an outline is shown, not where it is drawn.
 
 ## B · Approved decisions superseded by this session
 

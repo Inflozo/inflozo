@@ -1570,19 +1570,21 @@ So that the canvas stays the site and the controls stay out of the way.
 
 **Given** a rendered canvas
 **When** I hover a section
-**Then** I get a 1px outline, a floating name tag, and quick actions — **Previous / Next design ◀ ▶**,
-Duplicate, Delete and a drag handle
-**And** between sections a hairline **"+"** insertion affordance appears on hover
-**And** clicking selects the section, giving a persistent outline and its sidebar controls, and **Esc**
-deselects
-**And** clicking a text element inside a selected section enters inline editing
-**And** with nothing selected the Control Sidebar says "Nothing selected. Click any section on the canvas — its
-controls appear here." (UX-DR6)
-**And** hover affordances also appear on **tap-and-hold** on a touch device, and no interaction is discoverable
-only by hover (UX-DR18)
-**And** the states match frames S4b hover and S4c selected — the selected section's settings panel as R-113 draws it (Section Settings · Content · Layout · Style · Data, nothing pinned above), never S4c's pinned Quick Controls card.
+**Then** I get a 1px outline and a floating name tag with its layer name, and its Layers row is washed
+**And** clicking selects the section — a link or a button in it included, which does nothing else — giving a
+persistent outline, its Layers row in coral tint and its sidebar controls, and **Esc** deselects unless a field, a
+picker or the reset dialog owns the key
+**And** with nothing selected the Control Sidebar shows the Kit's empty state, "Nothing selected" · "Click any section
+on the canvas — its controls appear here." (UX-DR6)
+**And** hover affordances also appear on **tap-and-hold** on a touch device, a tap selects, and no interaction is
+discoverable only by hover (UX-DR18)
+**And** on a Free plan a selected Pro design carries the Kit's "✦ Pro" badge 8px inside its top-right corner, on
+selection only and never pressable (R-119)
+**And** each button on a hovered section arrives with the story that makes it work, absent until then (R-118):
+Duplicate, Delete and the drag handle with 5.4, ◀ ▶ with 5.11, the hairline "+" with 5.10, and a click on text with 5.3
+**And** the states match frames S4b hover and S4c selected — the selected section's settings panel as R-113 draws it (Section Settings · Content · Layout · Style · Data, nothing pinned above), never S4c's pinned Quick Controls card — and the Pro badge matches B10.
 
-**FRs:** FR-D2, FR-D3. · **Frame:** `S4 Editor.dc.html` S4b · S4c. · **Owner test:** yes.
+**FRs:** FR-D2, FR-D3. · **Frame:** `S4 Editor.dc.html` S4b · S4c · `B Missing Surfaces.dc.html` B10. · **Owner test:** yes.
 
 ### Story 5.3: Inline editing, the four marks and the link picker
 
@@ -1605,6 +1607,7 @@ those four marks — never as an HTML string** — with `newTab` and `rel` carri
 library's DOM enters the iframe** and the rendered markup stays byte-comparable to shipped markup
 **And** every text prop is **also** editable in the sidebar's Content group, editing the same structure, which
 is why both editors show marks
+**And** clicking a text element inside a selected section enters inline editing (FR-D3, R-118)
 **And** pasted content is **stripped to these four marks**
 **And** a prop bound to a Ghost Admin text setting is **plain-text-locked while bound**, which is a truncation
 of the mark list rather than a parse
@@ -1615,7 +1618,7 @@ only while its section is selected (owner, 2026-09-13, DW-115)
 **And** the toolbar matches `P0-1 Inline Text Toolbar.dc.html`, link entry matches B4b, and the icon slot and
 picker match `P0-2 Icon Slot and Picker.dc.html` as R-104 reshapes it.
 
-**FRs:** FR-D4, FR-F1 (the Icon Picker's canvas entry). · **Frame:** `P0-1 Inline Text Toolbar.dc.html` · `B Missing
+**FRs:** FR-D4, FR-D3 (a click on text in a selected section), FR-F1 (the Icon Picker's canvas entry). · **Frame:** `P0-1 Inline Text Toolbar.dc.html` · `B Missing
 Surfaces.dc.html` B4b · `P0-2 Icon Slot and Picker.dc.html`. · **Owner
 test:** yes.
 
@@ -1645,9 +1648,12 @@ only removing every section returns a template to untouched
 **And** keyboard: **↑↓ move focus, `⌥↑`/`⌥↓` move the section itself with the canvas following and the move
 announced, `Enter` selects, `Space` toggles visibility** (UX-DR10, UX-DR12)
 **And** a template with no sections shows only the Site-wide card (UX-DR6)
+**And** a hovered section on the canvas carries S4b's quick-action pill with **Duplicate, Delete and a drag handle**,
+under the same site-wide rules (R-118); S4b puts the pill in the top-right corner Story 5.2's Pro badge already
+holds (R-119), so this story moves one of the two
 **And** the panel matches B7 and its keyboard focus state matches D8e.
 
-**FRs:** FR-D5. · **Frame:** `B Missing Surfaces.dc.html` B7 · `D8 Editor Below 1440.dc.html` D8e. · **UX-DRs:**
+**FRs:** FR-D5, FR-D2 (Duplicate, Delete, drag). · **Frame:** `B Missing Surfaces.dc.html` B7 · `D8 Editor Below 1440.dc.html` D8e · `S4 Editor.dc.html` S4b (the pill). · **UX-DRs:**
 UX-DR10, UX-DR12, UX-DR19. · **Owner test:** yes.
 
 ### Story 5.5: The template switcher and the synthesised templates
@@ -1813,7 +1819,8 @@ So that I choose what will look right rather than what looks right in someone el
 project's current Style Pack with the project's content source**
 **And** Free/Pro badges are shown, and **a Free user can add any Pro section** — the canvas is open and
 enforcement happens at the exits
-**And** insertion lands **at the invoked position**
+**And** insertion lands **at the invoked position** — including from the hairline **"+"** that appears between
+sections on hover (S4b, R-118), which this story builds
 **And** the Picker **filters on context**: it offers only designs whose `bindingContext` and `compileTarget`
 match the template being edited, so a design binding a resource the template lacks is **never presented**
 **And** the **non-placeable treatments are absent from the rail entirely**
@@ -1821,7 +1828,7 @@ match the template being edited, so a design binding a resource the template lac
 **And** previews are lazily rendered with skeletons, holding NFR-1
 **And** the overlay matches S5a and S5c dark.
 
-**FRs:** FR-D12. · **Frame:** `S5 Section Picker.dc.html` S5a · S5c. · **Owner test:** yes.
+**FRs:** FR-D12, FR-D2 (the "+"). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Owner test:** yes.
 
 ### Story 5.11: The design ring — navigation, shuffle, and carry / park / default
 
@@ -1832,7 +1839,8 @@ So that browsing the ring is safe rather than a gamble with my own work.
 **Acceptance Criteria:**
 
 **Given** a placed section
-**When** I press `[` or `]`, use the hover arrows, or click a thumbnail in the sidebar's **Design** picker
+**When** I press `[` or `]`, use the hover arrows — FR-D2's **Previous / Next design ◀ ▶**, which this story builds
+(R-118) — or click a thumbnail in the sidebar's **Design** picker
 **Then** the section changes design in place, and the picker **shows position — "Design 7 of 18"** — so the ring
 is legible rather than endless, with `]` past the last returning to the first (UX-DR5)
 **And** **"Design" is the only term** — not layout, not variation, not variant
@@ -1851,7 +1859,7 @@ and the sidebar states the count — "8 items · 3 shown in this design"
 **And** the change is announced politely — *"Design 8 of 18 — Image Backdrop"* (UX-DR12)
 **And** the picker matches B1a, the on-section nav matches B1b, and shuffle matches `S6 Variant Shuffle.dc.html`.
 
-**FRs:** FR-D13, FR-D19. · **Frame:** `B Missing Surfaces.dc.html` B1a · B1b · `S6 Variant Shuffle.dc.html`. ·
+**FRs:** FR-D13, FR-D19, FR-D2 (◀ ▶). · **Frame:** `B Missing Surfaces.dc.html` B1a · B1b · `S6 Variant Shuffle.dc.html`. ·
 **UX-DRs:** UX-DR5, UX-DR12. · **Owner test:** yes.
 
 ### Story 5.12: Site Remix

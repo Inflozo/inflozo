@@ -230,10 +230,16 @@ their stories open them. The address names the project and the canvas and nothin
 device, mode, View as, Preview and folds are modes, never in the URL — and changing canvas is a push, so
 Back walks the canvases visited and then leaves. The uuid, never the slug, and another user's project
 answers the same 404 as a missing one. *The boundary:* inside the canvas is the site and what is painted
-on it (outlines, the name tag, the insertion hairline, PAUSED, the empty icon slot — CSS keyed on
-`data-inflozo-*`); outside is everything you press, the hover quick actions and "+" included, as one
-floating bar anchored to the hovered section. The prototype's inline canvas was a rendering shortcut,
-not a statement about either.
+on it (the insertion hairline, PAUSED, the empty icon slot — CSS keyed on `data-inflozo-*`); outside
+is everything you press, the hover quick actions and "+" included, as one floating bar anchored to the
+hovered section. The prototype's inline canvas was a rendering shortcut, not a statement about either.
+**Story 5.2 moved the name tag and both outlines outside (2026-09-17, R-120)**, with a selected Pro
+design's Pro badge (R-119): each is anchored to its section the way the pressable chrome is, inside the
+page card so the card clips it. The tag because inside the frame it would shrink with the fit, borrow
+the site's fonts and need the design's root to be positioned; the outlines because the browser floors
+an outline's or a border's width to whole pixels before the fit shrinks the frame (0.6px and 1.2px at
+1440, measured), so each is a box the section's size whose line is an inset shadow at S4b's 1px and
+S4c's 1.5px (AD-21; the spec's Design Notes).
 
 ---
 

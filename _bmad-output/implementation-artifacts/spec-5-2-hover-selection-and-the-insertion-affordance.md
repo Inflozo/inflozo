@@ -2,9 +2,10 @@
 title: 'Story 5.2 — Hover, selection and the insertion affordance'
 type: 'feature'
 created: '2026-09-17'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: 3ebe4fa77dd171512f8ecec880740f7cc1866357
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -27,8 +28,9 @@ chosen, and the settings panel beside it is empty (FR-D2, FR-D3, UX-DR6). Story 
 the `/pilots` and `/controls` review pages.
 
 **Approach:** The editor marks the section root under the pointer or the click with `data-inflozo-hover` or
-`data-inflozo-selected`, from the parent document; the chrome stylesheet draws both outlines at their drawn on-screen
-widths, and the name tag is drawn outside the frame, anchored to the root with Floating UI. Selecting a section mounts
+`data-inflozo-selected`, from the parent document; both outlines are drawn outside the frame at their drawn on-screen
+widths, as boxes anchored to the root the way the name tag is (R-120), and the name tag is drawn outside the frame,
+anchored to the root with Floating UI. Selecting a section mounts
 Story 4.5's `Sidebar` for that instance over an in-memory copy of the project's docs: a control change stamps the live
 root, a content change repaints. Each quick-action button, the "+" and click-to-type arrive with the story that makes
 them work (R-118); a selected Pro design on a Free account carries the Kit's Pro badge (R-119).
@@ -36,8 +38,10 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 ## Boundaries & Constraints
 
 **Always:**
-- Chrome exists only while something is hovered or selected. Every chrome rule is keyed on a `data-inflozo-*`
-  attribute (`pilots.test.ts`), and a root carries one only while hovered or selected. After every paint and every
+- Chrome exists only while something is hovered or selected. Every chrome rule inside the frame is keyed on a
+  `data-inflozo-*` attribute (`pilots.test.ts`), a root carries one only while hovered or selected, and the chrome
+  outside the frame (the outline boxes, the name tag, the Pro badge) is rendered only while its root is hovered or
+  selected. After every paint and every
   `stampControls` the editor re-applies its attributes, because `stampControls` strips every root `data-*` it does not
   own — `data-inflozo-selected` included (`core.ts:1187-1205`).
 - A press inside the canvas selects and does nothing else: no link navigates, no form submits, no `<details>` toggles,
@@ -103,7 +107,10 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
     thumbnails (5.2, 5.4)".
 - `apps/web/lib/canvas.ts` — `renderSection` (:39-71) returns one root element's markup or the empty string (a root
   `data-if`); `mountSections` (:75-78).
-- `apps/web/lib/canvas-chrome.css` — one rule: the selected outline at 1.5px, not divided by the fit.
+- `apps/web/lib/canvas-chrome.css` — one rule before this story: the selected outline at 1.5px. R-120 empties it: the
+  outlines are drawn outside the frame, and the file keeps its comment for the painted chrome that belongs inside.
+- `apps/web/app/globals.css` — `@utility` rules sit beside `animate-health-pulse`; the outline boxes' inset box-shadow
+  lines go there, in `var(--color-coral)`, never as a literal in a `.tsx` (`tokens.test.ts`).
 - `apps/web/pilots.test.ts:37-43` — every chrome selector keyed on `[data-inflozo-`; the canvas document carries the
   file verbatim.
 - `packages/section-runtime/src/core.ts:1187-1205` — `stampControls` removes every root `data-*` that is not a
@@ -162,7 +169,8 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
     (`getScale(currentIFrame)`) and adding its rect. AD-21 rests on this; the harness executes it rather than assuming it.
   - `autoUpdate` (:621) with `animationFrame: true` is the loop, and it runs only while the tag shows.
 - `tools/probe/run-verify-editor.cjs` — steps 1–9 from Story 5.1. Steps 3 and 4 read the canvas at rest, before
-  anything is hovered; step 5 is the CSP session; step 8 is axe.
+  anything is hovered (since R-120 step 3's control is the stylesheet's text and a planted attribute, not a painted
+  outline); step 5 is the CSP session; step 8 is axe.
 - Design facts the harness and the owner's test use, from `packages/library/designs/*/*/design.json` and
   `a4/content.json`: Three Up's Per row `two · three · four` (Layout); Latest Post's `headline` text prop (Content);
   Rail's `on-scroll` `static · sticky · shrink` (Section Settings). Each panel's groups, computed through `sidebar()`
@@ -172,7 +180,7 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/selection.ts` (+ `apps/web/selection.test.ts`) -- the pure half, so `node --test` reaches it:
+- [x] `apps/web/lib/selection.ts` (+ `apps/web/selection.test.ts`) -- the pure half, so `node --test` reaches it:
   - `sectionRoots(parts, mount)`: pairs each non-empty render with the next root element, in order. A gated section has
     no root.
   - `rootFrom(target, roots)`: the root an event target sits in, walking `parentElement`.
@@ -182,24 +190,33 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
   - `hold`: tap, hold or cancel, from pointer down, move, up and cancel with their times and positions (500 ms,
     10 px). A completed hold swallows the click that may follow its lift, so a hold never selects.
   - Tests with plain objects cover each branch, including a gated section and Esc inside a dialog.
-- [ ] `apps/web/lib/canvas-chrome.css` -- two rules: `[data-inflozo-hover]` a 1px coral outline and
-  `[data-inflozo-selected]` 1.5px, each width `calc(Npx / var(--inflozo-fit, 1))` with a matching negative offset; the
-  selected rule wins when both are set. `pilots.test.ts` passes unchanged.
-- [ ] `apps/web/package.json` + `pnpm-lock.yaml` -- `@floating-ui/dom` 1.8.0, exact.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` + `layout.tsx` -- `EditorData` gains `swatches`,
+- [x] `apps/web/lib/canvas-chrome.css` -- no rule since R-120: 5.1's selected outline goes, and the comment says the
+  outlines are drawn outside and that painted chrome inside keys on `data-inflozo-*` here. `pilots.test.ts`'s keying test
+  reads an empty file as a result, after controls on planted keyed and unkeyed rules.
+- [x] `apps/web/app/globals.css` -- `@utility canvas-outline-hover` (inset 0 0 0 1px coral) and
+  `canvas-outline-selected` (1.5px): an inset box-shadow spread, which paints its exact width (R-120's measurement).
+- [x] `apps/web/package.json` + `pnpm-lock.yaml` -- `@floating-ui/dom` 1.8.0, exact.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` + `layout.tsx` -- `EditorData` gains `swatches`,
   `links`, `timezone` and each pool picture's `bytes`, which the `Sidebar` needs, and the account's `plan` from
   `resolveEntitlement` (R-119).
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hover, selection and the panel:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hover, selection and the panel:
   - **State.** The docs become state, initialised from the props, and `stack` and every paint read that state.
-  - **After each paint.** `sectionRoots` pairs roots with stack entries. `--inflozo-fit` is set on the canvas
-    document's root style whenever `scale` changes. `data-inflozo-selected` is re-applied, and the hover clears.
+  - **After each paint.** `sectionRoots` pairs roots with stack entries. `data-inflozo-selected` is re-applied, and the
+    hover clears.
   - **Canvas listeners**, added once the canvas document loads:
     - `pointerover` and `pointerout` (a `null` `relatedTarget` is leaving the canvas), for mouse and pen only, set
       and clear `data-inflozo-hover`.
     - `click` selects.
-    - `click`, `submit`, `dragstart` and `mousedown` have their defaults prevented.
+    - `click`, `submit`, `dragstart`, `mousedown` and `auxclick` have their defaults prevented.
     - Touch runs `hold`.
     - `keydown` Esc, on both documents, deselects when `escDeselects` allows.
+  - **The outlines (R-120).** One hover box and one selected box, each an `aria-hidden`, `pointer-events-none` element
+    inside the page card beside the name tag, so the card clips it:
+    - Floating UI, the root as reference, sets its top-left and its size to the root's on-screen rect through the scaled
+      frame; `autoUpdate(…, { animationFrame: true })` runs only while the box shows, so the selected box's loop runs
+      while something is selected and stays on a sticky root as the page scrolls.
+    - The line is the `canvas-outline-hover` or `canvas-outline-selected` utility. On a hovered selection only the
+      selected box is drawn, so its 1.5px wins.
   - **The name tag.** One `aria-hidden`, `pointer-events-none` element inside the page card, so the card clips it:
     - Its look is S4b's: 11/600 Inter, white on `coral-text`, padding 3px 9px, radius 0 0 6px 0.
     - `computePosition`, with the hovered root as reference, puts its top-left on the root's.
@@ -218,17 +235,17 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
     word is its label, and it is never pressable.
   - **A change of canvas** (`key`) clears the selection.
   - **Comments.** Rewrite the header comment: what is built now, and what stays absent until which story.
-- [ ] `apps/web/components/kit/layers-row.tsx` -- `interactive={false}` draws `selected` (coral tint) and a new
+- [x] `apps/web/components/kit/layers-row.tsx` -- `interactive={false}` draws `selected` (coral tint) and a new
   `hovered` (coral wash), as display only: still no button, grip or eye. Update its comment; `/kit` is unchanged.
-- [ ] `tools/probe/run-verify-editor.cjs` -- steps 10–14 under Verification, and step 5's session and step 8's axe
+- [x] `tools/probe/run-verify-editor.cjs` -- steps 10–14 under Verification, and step 5's session and step 8's axe
   extended as listed there.
-- [ ] Propagation (standing rules 3 and 7):
-  - `ARCHITECTURE-SPINE.md`, AD-21's Story 5.1 amendment. The name tag moves outside the frame, beside the pressable
-    chrome and anchored the same way, and outlines divide by the fit. Give the reason (Design Notes), dated and citing
-    this spec.
+- [x] Propagation (standing rules 3 and 7):
+  - `ARCHITECTURE-SPINE.md`, AD-21's Rule and its Story 5.1 amendment. The name tag and both outlines move outside the
+    frame, beside the pressable chrome and anchored the same way (R-120); `::after` stays for painted chrome. Give the
+    reasons (Design Notes), dated and citing this spec.
   - `EXPERIENCE.md` § Editor shell's settled paragraph: the same move.
   - `epic-5-context.md` sub-bullets:
-    - the tag outside, and the fit variable;
+    - the tag and the outlines outside (R-120);
     - `stampControls` stripping the chrome attributes;
     - the spine's rule that the CSP proof re-runs at each Epic 5 story's Review.
   - `epics.md`, R-118's and R-119's open targets, ticked in `reconcile-designs-decisions.md` as they land:
@@ -273,6 +290,17 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 
 ## Spec Change Log
 
+- **2026-09-17 — R-120, the outlines leave the frame (owner, Question 3, option 1).** Dev built the outlines as the
+  root's own `outline`, width `calc(Npx / var(--inflozo-fit))`, as the Approach said, and harness steps 10 and 11 failed
+  on it: Chromium floors a computed `outline-width` to whole CSS pixels before the fit scales the frame, so at the 1440
+  window's 0.6 fit the lines measured 0.6px and 1.2px on screen. Re-measured as painted pixels from a device-scale
+  screenshot, with a 1px border painting 1.00px as the control, at 1× and 2×: `border: 1.5px` and `outline: 1.5px` both
+  paint 1.00px even unscaled in the editor document, while `box-shadow: inset 0 0 0 1.5px` paints 1.50px and 1px paints
+  1.00px. So both outlines are boxes outside the frame, anchored like the name tag, their line an inset box-shadow
+  spread in `globals.css`; `canvas-chrome.css` keeps no rule and `--inflozo-fit` is gone. The Approach, the first
+  Always line, Code Map, Tasks, Design Notes and Verification steps 3, 10, 11 and 14 changed with it; the owner
+  renegotiated the frozen Approach for this change only.
+
 ## Design Notes
 
 ### Why the name tag leaves the frame (amending AD-21 as Story 5.1 worded it)
@@ -288,8 +316,18 @@ the source:
   `'Inter', sans-serif` and the machine decides, while the editor document self-hosts Inter through `next/font`.
 
 Outside, beside the pressable chrome AD-21 already places there, none of the three applies, and Floating UI resolves
-the scaled frame itself (Code Map). The outlines stay inside, as the root's own `outline`: they need no positioning,
-and they follow a sticky root for free. Their width divides by `--inflozo-fit`, so S4b's 1px is 1px on screen.
+the scaled frame itself (Code Map).
+
+### Why the outlines leave the frame too (R-120)
+
+Inside the frame an outline cannot be drawn at S4b's 1px or S4c's 1.5px on screen. Chromium floors a border's or an
+outline's width to whole CSS pixels before anything scales it — measured 2026-09-17 as painted pixels, with a 1px border
+painting 1.00px as the control: `border: 1.5px` and `outline: 1.5px` paint 1.00px even unscaled, and dividing by the
+0.6 fit gives `1px` and `2px`, which the frame's scale then paints at 0.6px and 1.2px. An inset box-shadow spread is not
+floored — 1px paints 1.00px and 1.5px paints 1.50px, at 1× and 2× — but inside the frame it would sit under any child
+that paints to the root's edge and replace a design's own shadow (Header — Rail's Shadow divider). Outside, a box the
+root's size carries the shadow line over everything, changes nothing in the section, and Floating UI's loop keeps it on
+a sticky root as the page scrolls. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots as state marks.
 
 ### Choices made here, one line each
 
@@ -320,7 +358,10 @@ and they follow a sticky root for free. Their width divides by `--inflozo-fit`, 
 
 **What the new steps check**, on the seeded Home canvas at 1440×900:
 10. **Hover.** The mouse rests on each root in turn.
-    - The computed outline width × fit is 1 ± 0.05px, in `rgb(255, 89, 65)`.
+    - The hover box covers the root's rect mapped through the iframe's rect and scale, all four edges within 1px.
+    - Its line paints 1.00 ± 0.1px of `rgb(255, 89, 65)`, read as painted pixels from a `scale: 'device'` screenshot
+      strip across the box's left edge — never from computed style, which reported widths Chromium did not paint.
+      This is the control for step 11's 1.5.
     - The tag's text is the layer name and its styles are S4b's.
     - The tag's top-left on screen is within 1px of the root's rect mapped through the iframe's rect and scale. This
       executes the Floating UI claim.
@@ -328,7 +369,10 @@ and they follow a sticky root for free. Their width divides by `--inflozo-fit`, 
 11. **Select.**
     - A click on the Rail header's Archive link (Orbit Weekly's `site.navigation`) selects Header — Rail, and the canvas
       document's `location.href` does not change.
-    - The outline is 1.5 ± 0.05px on screen and the Layers row is `rgb(255, 237, 232)`.
+    - The selected box covers the root's on-screen rect on all four edges within 1px, and the Layers row is
+      `rgb(255, 237, 232)`.
+    - Its line paints 1.50 ± 0.1px, counted only once a hover line measured 1.00. Hovering the selection draws no hover
+      box beside it.
     - The aside is labelled "Section settings" and headed HEADER — RAIL, its accordions in R-113's order for that
       design, and no element reads "4 / 18".
     - Clicking Three Up moves the selection.
@@ -346,7 +390,7 @@ and they follow a sticky root for free. Their width divides by `--inflozo-fit`, 
     - Esc from the canvas deselects, and the sidebar shows the empty state.
     - With the reset dialog open, Esc closes the dialog and keeps the selection.
     - Then the rest check: zero `data-inflozo-*` attributes in the canvas document.
-14. **Touch.** A CDP touch held 600ms on Latest Post shows its outline and tag, with nothing selected; a 50ms tap
+14. **Touch.** A CDP touch held 600ms on Latest Post shows its hover box and tag, with nothing selected; a 50ms tap
     selects it.
 
 Step 5's CSP session adds the gestures of steps 10–13, and reads its zero after them. Step 8's axe runs twice more:
@@ -453,4 +497,5 @@ full size draws 1px, so the measurement holds; at the editor's 0.6 fit `calc(1px
 
 This question changes the Approach you approved ("the chrome stylesheet draws both outlines"), so it is yours.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as R-120. Both outlines are drawn outside the frame, as a box over
+the section anchored the way the name tag is; the Dev run amends the Approach, AD-21 and EXPERIENCE.md to match.

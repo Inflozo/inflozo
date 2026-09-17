@@ -1,5 +1,9 @@
-/* THE EDITOR'S CHROME INSIDE THE CANVAS (AD-21, amended by Story 5.1). Every rule is keyed on a data-inflozo-*
+/* THE EDITOR'S CHROME INSIDE THE CANVAS (AD-21, amended by Stories 5.1 and 5.2). Every rule is keyed on a data-inflozo-*
    attribute, and nothing carries one while nothing is hovered or selected — so the canvas at rest is the site with
-   zero chrome, by construction. pilots.test.ts holds the keying. The selected outline is S4c's (S4 Editor.dc.html:293),
-   drawn as the root's own outline so a sticky or fixed root keeps its positioning. */
-[data-inflozo-selected]{outline:1.5px solid #FF5941;outline-offset:-1.5px}
+   zero chrome, by construction. pilots.test.ts holds the keying.
+
+   EMPTY SINCE R-120 (Story 5.2, 2026-09-17). The hover and selected outlines are drawn OUTSIDE the frame, as boxes the
+   editor anchors to the section root (editor.tsx), because inside it Chromium floors an outline's or a border's width
+   to whole pixels before the fit shrinks the frame. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots
+   as state marks. Painted chrome that belongs inside — the insertion hairline, PAUSED, the empty icon slot — keys its
+   rule on a data-inflozo-* attribute here. */

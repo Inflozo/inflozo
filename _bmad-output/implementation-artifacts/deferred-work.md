@@ -3124,9 +3124,9 @@ status: open
 severity: low
 origin: Story 4.5 owner's test (2026-09-13) — finding 9: "it should show a dotted empty space when being moved
   … Same behaviour will other editable lists too."
-owner: Story 5.4 (The Layers panel, reordering, and the two kinds of singleton) and Story 5.19 (The Data group
-  and the main-feed designation — the hand-picked post list); Story 5.2's section drag handle wherever it
-  reorders sections.
+owner: Story 5.4 (The Layers panel, reordering, and the two kinds of singleton — its Layers rows and, since R-118,
+  the canvas pill's section drag handle wherever it reorders sections) and Story 5.19 (The Data group and the
+  main-feed designation — the hand-picked post list).
 location: EXPERIENCE.md § State Patterns, "Reordering by drag" · `apps/web/components/controls/item-list.tsx`
   (the pattern: rows translated rather than moved in the DOM, so the handle keeps its pointer capture and focus;
   the slot read against the rows' positions as the drag began) · `epics.md` Stories 5.4 and 5.19
@@ -3998,11 +3998,14 @@ severity: low
 origin: Story 4.10's whole-story code review (2026-09-15, verification-gap layer) — `apps/web/components/controls/sidebar.tsx`'s
   branch on `resetChanges` and the confirm's commit, and `pilots/review.tsx`'s render inputs, have no test `pnpm check`
   runs; `tools/probe/run-verify-pilots.cjs` and `run-verify-controls.cjs` read both on the deployed site (R-82)
-owner: Story 5.2, which mounts the section panel in the editor — Story 5.1 mounts none (its Page panel is empty until
-  6.3), so Story 5.1 moved it here (2026-09-17). Since 5.1, `pilots/review.tsx`'s render inputs are
-  `apps/web/lib/canvas.ts`, shared with the editor and compared node by node on the deployed site by
+owner: Story 5.9 (The keyboard map, and keyboard completeness), whose keyboard journey is the editor's first browser
+  test. Story 5.2 mounted the section panel in the editor (2026-09-17) and `run-verify-editor.cjs` step 12 now also
+  walks the reset wiring there — Reset this design, the confirm, Reset design, `data-per-row` back — but still on the
+  deployed site only, not in `pnpm check`, so the entry stays open and moves on. Since 5.1, `pilots/review.tsx`'s render
+  inputs are `apps/web/lib/canvas.ts`, shared with the editor and compared node by node on the deployed site by
   `run-verify-editor.cjs` step 4
-location: apps/web/components/controls/sidebar.tsx · apps/web/app/(app)/app/(authed)/pilots/review.tsx
+location: apps/web/components/controls/sidebar.tsx · apps/web/app/(app)/app/(authed)/pilots/review.tsx ·
+  apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx (`onChange`)
 reason: `apps/web` runs `node --test` with no DOM, and a DOM for it is a dependency (Ask First); the pure functions
   under both (`resetChanges`, `resetSection`, `renderCanvas`) are pinned in `packages/section-runtime`.
 

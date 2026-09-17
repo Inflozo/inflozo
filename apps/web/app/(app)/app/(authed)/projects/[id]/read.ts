@@ -1,11 +1,14 @@
 import { cache } from 'react'
-import type { SectionRegistryEntry } from '@inflozo/library'
+import { orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
 import { parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import type { DesignRows } from '@/lib/canvas'
-import { imagePool } from '@/lib/controls-review'
+import type { LinkResources } from '@/components/controls/link-picker'
+import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { isUuid, SITE } from '@/lib/editor'
+import { resolveEntitlement } from '@/lib/entitlement'
+import type { PlanId } from '@/lib/plan'
 import { pilot, pilotRows } from '@/lib/pilots'
-import { supabaseServer } from '@/lib/supabase/server'
+import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -17,6 +20,10 @@ import { supabaseServer } from '@/lib/supabase/server'
  * `editorData` runs inside the layout's Suspense boundary: every `project_templates` row, each parsed through AD-27's
  * one schema and checked against the design library, LOUDLY — a doc that fails any of it throws a sentence naming
  * the template key and the offending instance, and the app's error boundary shows instead of a partly drawn canvas.
+ *
+ * Since Story 5.2 it also hands over what the section panel needs — the inputs `/pilots` feeds `Sidebar` (swatches, link
+ * resources, the site's time zone, each pool picture's size) — and the account's plan, for R-119's Pro badge. The plan
+ * comes from AD-28's one resolver, so a failed read shows the badge (Free) rather than hiding it.
  */
 
 export const projectOf = cache(async (id: string): Promise<{ id: string; name: string } | null> => {
@@ -36,14 +43,19 @@ export type EditorData = {
   docs: Readonly<Record<string, ProjectDoc>>
   entries: Readonly<Record<string, SectionRegistryEntry>>
   rows: Readonly<Record<string, DesignRows>>
-  pool: readonly { id: string }[]
+  pool: readonly { id: string; bytes: number }[]
+  swatches: Readonly<Record<string, string>>
+  links: LinkResources
+  /** the site's time zone name, printed under a date control */
+  timezone: string
+  plan: PlanId
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
-  const { data, error } = await (await supabaseServer())
-    .from('project_templates')
-    .select('template_key, doc')
-    .eq('project_id', projectId)
+  const [{ data, error }, { plan }] = await Promise.all([
+    (await supabaseServer()).from('project_templates').select('template_key, doc').eq('project_id', projectId),
+    signedIn().then((user) => resolveEntitlement(user.id)),
+  ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
   const docs: Record<string, ProjectDoc> = {}
@@ -71,6 +83,11 @@ export async function editorData(projectId: string): Promise<EditorData> {
     docs,
     entries,
     rows: Object.fromEntries(Object.values(entries).map((e) => [e.id, pilotRows(e)])),
-    pool: imagePool().map((a) => ({ id: a.id })),
+    pool: imagePool(),
+    swatches: referenceSwatches(),
+    links: linkResources(),
+    // the dataset's own zone, as `/controls` and `/pilots` read it, until 5.18 reads the connected site's
+    timezone: orbitWeekly.site().timezone,
+    plan,
   }
 }
