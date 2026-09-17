@@ -536,6 +536,31 @@ holds, the timestamps and the IP go to Vercel support; if it has gone, close DW-
       hovered and selected. Step 14: hold and tap.
     - Steps 3, 4, 6 (Back again lands on Projects) and 9 all passed.
 
+**Results — Review run, 2026-09-17, on `c2207e1e` (patches on `befde466`, the touch-context count on `c2207e1e`):**
+- `pnpm check` (Node 24): exit 0 — library 142, section-runtime 151, ghost-shim 34, theme-compiler 1, apps/web 328 pass
+  (the new slop test), 0 fail. `python3 tools/doc-audit.py --check`, twice: PASS.
+- **Before any patch**, the real-infra layer ran the harness against `https://app.inflozo.com` on `9174f49c`
+  (`dpl_Dfy9puiUTtQP94XTEAgf2UfYwBHx`): two DW-175 stops with 0 FAIL, then **112 PASS, 0 FAIL**.
+- **Local production build** of the patched tree (`APP_ORIGIN`, production Supabase): the new checks passed; step 10's
+  font check first counted `next/font`'s `… Fallback` faces, whose `local()` source errors on a machine without that
+  font, and now counts the shipped faces only. Step 6's "Back again" and step 9's stream shape differ under a local
+  `next start` and are decided on production, where both passed.
+- **GitHub Actions** (`GITHUB_TOKEN`): CI 35239986834 and Render matrix 35239986824 for `befde466` — success; CI
+  deployed `c2207e1e` as `dpl_Fqhg7JgKqMwFZBxZwn4ZU4NMvkBM`, READY (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`).
+- **Supabase, production** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), `tools/probe/run-verify-editor.cjs` against
+  `https://app.inflozo.com`, every run's accounts deleted in `finally`, users 9 → 9 every time:
+  - on `befde466`: two DW-175 stops with 0 FAIL (the canvas reload in step 5's control; step 7's editor load), then
+    **115 PASS, 1 FAIL** — the FAIL was the touch context's CSP count catching the dashboard's DW-174 report, which
+    lands after the sign-in landing's `load`; the count now covers the editor and the canvas documents;
+  - on `c2207e1e`: **116 PASS, 0 FAIL** in one run. Step 10: the tag's `inflozo-chrome Inter` faces all loaded. Step 11:
+    focus on the canvas body, no text selection, a middle click on Archive opens no page; the sticky header's box in the
+    fixed layer. Step 12: On scroll → Static moves the box to the scrolling layer. Step 14: a finger moving 30px shows no
+    hover and selects nothing; zero violations in the editor and canvas of the touch context. Steps 5, 8 and 15 as in
+    the Fix run (30 frames, worst 2.0px; axe zero at rest, hovered, selected).
+- **Not touched, and why:** Resend, Dodo, T1 and T3 — unchanged from the Dev run: no email, no billing read, no Ghost.
+- DW-175 stopped four of the review's six production runs, at four different places, none a FAIL. Its owner line (this
+  story's Deploy) stands.
+
 ## Owner's manual test
 
 The project is the "Pilot sections" project that Story 5.1's Deploy added to your account; Deploy re-checks its address.
