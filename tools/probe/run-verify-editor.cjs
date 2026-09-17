@@ -22,6 +22,11 @@
 // painted pixels from a device-scale screenshot (R-120), with a 1px hover line as the control for the 1.5px one; the expectations (layer names,
 // each design's accordions) come from the seed's fixture and `sidebar()`, never restated here. A's entitlement row is
 // read before the control and restored in `finally`.
+//
+// Story 5.2's review (2026-09-17) adds: the tag's Inter read as LOADED faces in the canvas document, not the requested
+// stack (step 10); a press that does nothing else — focus, text selection and a middle click — and the sticky header's
+// box in the fixed layer (step 11); On scroll → Static moving that box to the scrolling layer (step 12); a finger that
+// moves being a scroll, and the touch context's own CSP zero (step 14).
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -123,12 +128,15 @@ async function main() {
     browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
     // THE CSP CONTEXT: never bypassCSP. Every frame reports a violation to Node through a binding, so one survives the
     // navigations it spans.
+    const recorder = async (ctx, into) => {
+      await ctx.exposeBinding('__cspReport', ({ frame }, v) => into.push({ url: frame.url(), ...v }))
+      await ctx.addInitScript(() => {
+        document.addEventListener('securitypolicyviolation', (e) => window.__cspReport({ directive: e.violatedDirective, blocked: e.blockedURI, sample: e.sample, source: `${e.sourceFile}:${e.lineNumber}:${e.columnNumber}` }))
+      })
+    }
     const violations = []
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
-    await context.exposeBinding('__cspReport', ({ frame }, v) => violations.push({ url: frame.url(), ...v }))
-    await context.addInitScript(() => {
-      document.addEventListener('securitypolicyviolation', (e) => window.__cspReport({ directive: e.violatedDirective, blocked: e.blockedURI, sample: e.sample, source: `${e.sourceFile}:${e.lineNumber}:${e.columnNumber}` }))
-    })
+    await recorder(context, violations)
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
@@ -326,7 +334,7 @@ async function main() {
       const s = fr.width / f.offsetWidth
       const r = el.getBoundingClientRect()
       const c = doc.defaultView.getComputedStyle(el)
-      return { left: fr.left + r.left * s, top: fr.top + r.top * s, right: fr.left + r.right * s, bottom: fr.top + r.bottom * s, card: f.parentElement.getBoundingClientRect().toJSON(), host: el.getRootNode().host.getAttribute('data-inflozo-chrome'), text: el.textContent, tag: el.tagName, pressable: !!el.closest('button, a, [role="button"]'), size: c.fontSize, weight: c.fontWeight, family: c.fontFamily, color: c.color, bg: c.backgroundColor, padding: c.padding, radius: c.borderRadius, events: c.pointerEvents, visibility: c.visibility, shadow: c.boxShadow, hidden: el.getAttribute('aria-hidden') }
+      return { left: fr.left + r.left * s, top: fr.top + r.top * s, right: fr.left + r.right * s, bottom: fr.top + r.bottom * s, card: f.parentElement.getBoundingClientRect().toJSON(), host: el.getRootNode().host.getAttribute('data-inflozo-chrome'), text: el.textContent, tag: el.tagName, pressable: !!el.closest('button, a, [role="button"]'), size: c.fontSize, weight: c.fontWeight, family: c.fontFamily, color: c.color, bg: c.backgroundColor, padding: c.padding, radius: c.borderRadius, events: c.pointerEvents, visibility: c.visibility, shadow: c.boxShadow, hidden: el.getAttribute('aria-hidden'), faces: [...doc.fonts].filter((f) => f.family.replace(/^"|"$/g, '').startsWith('inflozo-chrome ')).map((f) => `${f.family.replace(/^"|"$/g, '')}: ${f.status}`) }
     }, selector)
     const tagNow = async () => {
       const t = await chromeNow('[data-chrome="tag"]')
@@ -389,6 +397,11 @@ async function main() {
       // for the owner's comparison with S4b
       if (id === 'a4/13') await page.screenshot({ path: `${OUT}/editor-hover-latest-post-1440x900.png` })
     }
+    // computed `font-family` is the REQUESTED stack, true whether or not a face loaded: the faces are read instead. A
+    // `… Fallback` family is `next/font`'s `local()` metric stand-in, which errors on a machine without that font.
+    const inter = await tagNow()
+    const shipped = (inter?.faces ?? []).filter((f) => !/ Fallback: /.test(f))
+    check('step 10 — the tag\'s Inter is the editor\'s, added to the canvas document as `inflozo-chrome …` faces that have all loaded', !!inter && /^"inflozo-chrome Inter"/.test(inter.family) && shipped.length > 0 && shipped.every((f) => / loaded$/.test(f)), JSON.stringify({ family: inter?.family, faces: inter?.faces }))
     await page.mouse.move(120, 400) // over Layers, off the canvas
     await page.waitForTimeout(250)
     check('step 10 — leaving the canvas clears the mark, the hover box, the tag and the wash', (await marked()) === 0 && (await boxNow('hover')) === null && (await tagNow()) === null && !(await rowsNow()).includes(WASH))
@@ -396,10 +409,21 @@ async function main() {
 
     // ── step 11 — select ──
     const hrefBefore = await canvasFrame().evaluate(() => location.href)
-    await canvasFrame().locator('#canvas > *').nth(HEADER).getByRole('link', { name: 'Archive', exact: true }).first().click()
+    const archive = canvasFrame().locator('#canvas > *').nth(HEADER).getByRole('link', { name: 'Archive', exact: true }).first()
+    await archive.click()
     await page.waitForTimeout(300)
     const header = await onScreen(HEADER)
     check('step 11 — a click on the header\'s Archive link selects Header — Rail, and the canvas does not navigate', header.selected && (await canvasFrame().evaluate(() => location.href)) === hrefBefore, `selected ${header.selected} · ${await canvasFrame().evaluate(() => location.href)}`)
+    // and does nothing else (the spec's Always line): `mousedown` prevented keeps focus on the canvas body and starts no
+    // text selection; `auxclick` prevented keeps a middle click from opening the link in a page of its own
+    const pressed = await canvasFrame().evaluate(() => ({ active: document.activeElement === null || document.activeElement === document.body, collapsed: document.getSelection().isCollapsed }))
+    const opened = []
+    const onPage = (p) => opened.push(p.url())
+    context.on('page', onPage)
+    await archive.click({ button: 'middle' })
+    await page.waitForTimeout(500)
+    context.off('page', onPage)
+    check('step 11 — a press does nothing else: focus stays on the canvas body, no text is selected, and a middle click on Archive opens no page, navigates nowhere and keeps the selection', pressed.active && pressed.collapsed && opened.length === 0 && (await canvasFrame().evaluate(() => location.href)) === hrefBefore && (await onScreen(HEADER)).selected, JSON.stringify({ pressed, opened, href: await canvasFrame().evaluate(() => location.href) }))
     await page.mouse.move(120, 400)
     await page.waitForTimeout(200)
     const sel = await onScreen(HEADER)
@@ -416,7 +440,7 @@ async function main() {
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 700))
     await page.waitForTimeout(300)
     const stuck = [await onScreen(HEADER), await boxNow('selected'), await canvasFrame().evaluate((n) => getComputedStyle(document.querySelectorAll('#canvas > *')[n]).position, HEADER)]
-    check('step 11 — scrolled 700px, the sticky header\'s selected box is still on its root\'s on-screen rect', stuck[2] === 'sticky' && Math.abs(stuck[0].y - stuck[0].card.top) < 1 && fits(stuck[1], stuck[0]), `${stuck[2]} · root ${JSON.stringify({ x: stuck[0].x, y: stuck[0].y, right: stuck[0].right, bottom: stuck[0].bottom })} · box ${JSON.stringify(stuck[1])}`)
+    check('step 11 — scrolled 700px, the sticky header\'s selected box is still on its root\'s on-screen rect, drawn from the fixed layer', stuck[2] === 'sticky' && Math.abs(stuck[0].y - stuck[0].card.top) < 1 && fits(stuck[1], stuck[0]) && stuck[1]?.host === 'view', `${stuck[2]} · host ${stuck[1]?.host} · root ${JSON.stringify({ x: stuck[0].x, y: stuck[0].y, right: stuck[0].right, bottom: stuck[0].bottom })} · box ${JSON.stringify(stuck[1])}`)
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
     const panelOf = () => controlsAside().evaluate((a) => ({
@@ -486,7 +510,9 @@ async function main() {
     await openGroup('Section Settings')
     await controlsAside().getByRole('radiogroup', { name: 'On scroll' }).getByRole('radio', { name: 'Static' }).click()
     await page.waitForTimeout(200)
-    check('step 12 — site-wide: Header — Rail · On scroll → Static stamps data-on-scroll="static"', (await attr(HEADER, 'data-on-scroll')) === 'static' && (await onScreen(HEADER)).selected)
+    // the layer is chosen per render from the root's computed position (`pinned`), so the stamp moves the box
+    const staticBox = await boxNow('selected')
+    check('step 12 — site-wide: Header — Rail · On scroll → Static stamps data-on-scroll="static", and its selected box moves from the fixed layer to the scrolling one', (await attr(HEADER, 'data-on-scroll')) === 'static' && (await onScreen(HEADER)).selected && staticBox?.host === 'page' && fits(staticBox, await onScreen(HEADER)), `host ${staticBox?.host}`)
     await clickOn(GRID)
     const ask = controlsAside().locator('dialog')
     await controlsAside().getByRole('button', { name: 'Reset this design' }).click()
@@ -780,8 +806,13 @@ async function main() {
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──
     const touchContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: true })
+    // the spine: every gesture an Epic 5 story adds runs under the recorder. Touch needs a context of its own, so it
+    // carries the same recorder; the EvalError control is step 5's, in the same run
+    const touchViolations = []
+    await recorder(touchContext, touchViolations)
     const touchPage = await touchContext.newPage()
     await touchPage.goto(await magic(emailA), { waitUntil: 'load' })
+    touchViolations.splice(0) // the landing is the dashboard, DW-174's
     await touchPage.goto(editorUrl(), { waitUntil: 'load' })
     await touchPage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
     const heroN = stackOf('home').findIndex(([d]) => d === 'a4/13')
@@ -813,6 +844,19 @@ async function main() {
     await touchPage.waitForTimeout(400)
     const tapped = await touchState()
     check('step 14 — a 50ms tap selects it', tapped.selected && tapped.panel === 'Section settings', JSON.stringify(tapped))
+    // a finger that moves past the slop is a scroll, not a press: no hover, no tap, whatever the browser fires on its lift
+    await touchPage.keyboard.press('Escape')
+    await touchPage.waitForTimeout(200)
+    const cleared = await touchState()
+    await touch('touchStart', [heroPoint])
+    await touchPage.waitForTimeout(100)
+    await touch('touchMove', [{ x: heroPoint.x, y: heroPoint.y + 30 }])
+    await touchPage.waitForTimeout(600)
+    await touch('touchEnd', [])
+    await touchPage.waitForTimeout(300)
+    const slid = await touchState()
+    check('step 14 — after Esc, a finger that moves 30px before lifting shows no hover and selects nothing', !cleared.selected && !slid.hover && !slid.outline && !slid.selected && slid.panel === 'Page settings', JSON.stringify({ cleared, slid }))
+    check('step 14 — the touch context records zero securitypolicyviolation events across the hold, the tap and the moving finger', touchViolations.length === 0, JSON.stringify(touchViolations))
     await touchContext.close()
 
     // ── step 9 — the skeleton streams first ──

@@ -2,9 +2,9 @@
 title: 'Story 5.2 — Hover, selection and the insertion affordance'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-progress'
+status: 'in-review'
 owner_test: issues
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 3ebe4fa77dd171512f8ecec880740f7cc1866357
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -200,9 +200,9 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 - [x] `apps/web/package.json` + `pnpm-lock.yaml` -- `@floating-ui/dom` 1.8.0, exact; removed again by the owner's
   finding, when nothing used it.
 - [x] `apps/web/lib/canvas-layer.ts` -- the chrome layer inside the canvas document (the owner's finding).
-- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` + `layout.tsx` -- `EditorData` gains `swatches`,
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- `EditorData` gains `swatches`,
   `links`, `timezone` and each pool picture's `bytes`, which the `Sidebar` needs, and the account's `plan` from
-  `resolveEntitlement` (R-119).
+  `resolveEntitlement` (R-119). `layout.tsx` spreads `{...data}` into `<Editor>`, so it needed no change.
 - [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hover, selection and the panel:
   - **State.** The docs become state, initialised from the props, and `stack` and every paint read that state.
   - **After each paint.** `sectionRoots` pairs roots with stack entries. `data-inflozo-selected` is re-applied, and the
@@ -211,7 +211,8 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
     - `pointerover` and `pointerout` (a `null` `relatedTarget` is leaving the canvas), for mouse and pen only, set
       and clear `data-inflozo-hover`.
     - `click` selects.
-    - `click`, `submit`, `dragstart`, `mousedown` and `auxclick` have their defaults prevented.
+    - `click`, `submit`, `dragstart`, `mousedown` and `auxclick` have their defaults prevented — and, since the review,
+      `dragover` and `drop`: a file dropped on the canvas would navigate its document to the file (AD-21's trap).
     - Touch runs `hold`.
     - `keydown` Esc, on both documents, deselects when `escDeselects` allows.
   - **The outlines (R-120).** One hover box and one selected box, each an `aria-hidden`, `pointer-events-none` element
@@ -291,6 +292,43 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 - Given the editor with a section hovered, and again with one selected, when axe-core runs at WCAG 2.1 AA after its
   positive control, then it reports zero violations.
 
+### Review Findings
+
+Review, 2026-09-17, on `9174f49c` (code as of `28ae1a3e`): five layers (Blind Hunter, Edge Case Hunter, Verification
+Gap, Acceptance Auditor, Real-infra verifier) and none failed. The real-infra layer ran `run-verify-editor.cjs` against
+`https://app.inflozo.com` and production Supabase before any patch: 112 PASS, 0 FAIL on its third run (the first two
+stopped on DW-175's 30s timeouts with no FAIL), users 9 → 9, CI and the Render matrix green for both commits, the
+production deployment READY for HEAD, no migration in the diff (R-99 needs nothing). Every acceptance criterion holds;
+no question is the owner's. The only frozen text the review would touch is left as written and read as history: the
+Never line's "the site's markup" is `#canvas` and its roots, which step 4's `outerHTML` compare holds, and the Ask-First
+line's `@floating-ui/dom` names a dependency the owner's finding removed. Patches, all applied:
+
+- [x] [Review][Patch] `dragover` and `drop` are prevented in the canvas document: a file dropped on the canvas navigated it to the file, AD-21's dropped-files trap [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] A second finger cancels the first one's press, so a two-finger touch is never a tap that selects [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] A press that moves past the 10px slop swallows the click the browser may still fire on its lift, so a cancelled press never selects (the matrix's "moving more than 10 px cancels"), with the test that encodes it [`apps/web/lib/selection.ts`, `apps/web/selection.test.ts`]
+- [x] [Review][Patch] `editorData` awaits the Supabase client before `Promise.all`, so the templates read and the entitlement read run together as written [`apps/web/app/(app)/app/(authed)/projects/[id]/read.ts`]
+- [x] [Review][Patch] The layer's header says who clears the roots' state marks (`mark()`), not `dropChromeLayers` [`apps/web/lib/canvas-layer.ts`]
+- [x] [Review][Patch] Harness step 10 reads the tag's Inter as loaded `inflozo-chrome …` faces in the canvas document, not the requested stack, which computed style reports whether or not a face loaded [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] Harness step 11 observes "does nothing else": focus stays on the canvas body, no text selection starts, a middle click on Archive opens no page; and the sticky header's box is asserted in the fixed layer [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] Harness step 12 asserts On scroll → Static moves the selected box from the fixed layer to the scrolling one, the per-render `pinned` read [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] Harness step 14 adds a finger that moves 30px (no hover, nothing selected) and gives the touch context the CSP recorder, reading its zero — the spine's "every gesture runs under the recorder" [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] Superseded wording marked as history where the first R-120 build is still described as present: `reconcile-designs-decisions.md` R-120's binding bullet, `ARCHITECTURE-SPINE.md` AD-21's Rule tail and its second amendment's rAF claim, `epic-5-context.md`'s R-120 sub-bullet; this spec's two Design Notes headings no longer say "leaves the frame" [`_bmad-output/…`]
+- [x] [Review][Patch] `epics.md`: Story 5.2's criterion states S4c's 1.5px; Story 5.9 carries DW-167's reset-wiring walk, which the ledger had moved to it without the story saying so; Story 5.5 carries the canvas-change criterion (DW-176) [`_bmad-output/planning-artifacts/epics.md`]
+- [x] [Review][Patch] This spec: the `layout.tsx` task line says it needed no change; the prevented-defaults task names `dragover` and `drop`; Finding 1 carries its status and what the owner re-tests [this file]
+- [x] [Review][Defer] A change of canvas clears the selection, but nothing reaches that code before Story 5.5's switcher, the first soft navigation — deferred to 5.5 as DW-176 [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, the `[key]` effect]
+
+Dismissed as noise or by design, in one line each: the touch hover staying after a hold's lift (UX-DR18: the affordances
+it reveals must be pressable, and the next press clears it); Esc on a pill (the pills are `role="radio"` buttons, so
+`escDeselects` allows it); a right-click "open in new tab" (the browser's own menu, not a press on the canvas); a
+`FontFace` that throws (the constructor rejects through its promise, and the faces are the app's own); the stylesheet
+cache going stale on a late CSS chunk (the route's CSS is all in the document); `doc.body` missing (`about:blank` has
+one); a root measured 0×0 (no pilot hides its root; the section-gating path has no root at all); server props after
+mount (edits are the session's by design, `editor.tsx:131`); a test for `unquote` and the `url()` rewrite (inputs are
+`next/font`'s own); the display-only Layers row's missing `aria-current` (a `div`, pressable in 5.4); `EXPERIENCE.md`'s
+hover table and `epics.md`'s FR-D2 line (end state, as reconcile's "deliberately not touched"); the editor's picker
+thumbnails through `/canvas?image=` (the Code Map's choice); and a first-hover cost note for `sheetFor` (not measured;
+the harness's hover checks passed at their 250ms waits).
+
 ## Spec Change Log
 
 - **2026-09-17 — R-120, the outlines leave the frame (owner, Question 3, option 1).** Dev built the outlines as the
@@ -317,7 +355,7 @@ them work (R-118); a selected Pro design on a Free account carries the Kit's Pro
 
 ## Design Notes
 
-### Why the name tag leaves the frame (amending AD-21 as Story 5.1 worded it)
+### Why the name tag is not drawn inside the section root (amending AD-21 as Story 5.1 worded it)
 
 Story 5.1 placed the name tag inside the frame, as CSS on the root. Built that way, it breaks three ways, each read in
 the source:
@@ -334,7 +372,7 @@ the owner's finding moved it into a layer inside the canvas document that answer
 own rather than a pseudo-element on the root, scaled back up by 1 / fit, in the editor's Inter added under a family
 name the site never uses (below).
 
-### Why the outlines leave the frame too (R-120)
+### Why the outlines are not drawn inside the section root either (R-120)
 
 Inside the frame an outline cannot be drawn at S4b's 1px or S4c's 1.5px on screen. Chromium floors a border's or an
 outline's width to whole CSS pixels before anything scales it — measured 2026-09-17 as painted pixels, with a 1px border
@@ -535,6 +573,10 @@ site's sections rather than in them, so the browser scrolls them together in the
 (`apps/web/lib/canvas-layer.ts`). They look the same — the same 1px and 1.5px lines, the same tag and badge — nothing in
 the sections changes, and nothing is left behind when nothing is hovered or selected. Step 15 now measures 1–2px in
 every frame. Recorded under R-120 (`reconcile-designs-decisions.md`) and in AD-21.
+
+**Status:** fixed on `28ae1a3e`, measured by harness step 15 (1–2px in every frame, against 8–15px before), and
+walked again by the review on the deployed site. Yours to re-test: manual steps 1 and 2 above, whose last sentences
+are this finding; `owner_test` stays `issues` until you say so.
 
 ## Questions for the owner
 

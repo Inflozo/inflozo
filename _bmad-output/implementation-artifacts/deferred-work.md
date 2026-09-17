@@ -4158,3 +4158,22 @@ reason: not a code change, and one vantage point cannot tell Vercel's edge from 
   Actions would be a second vantage point, but `GITHUB_TOKEN` cannot dispatch a workflow (403). The probes are
   scratch files, not committed. Their shape: a throwaway account through the Auth Admin API, deleted in `finally`, and
   `fetch` with an `AbortController` per request.
+
+## Deferred from: code review of spec-5-2-hover-selection-and-the-insertion-affordance (2026-09-17)
+
+### DW-176: a change of canvas clears the selection, and nothing can reach that code yet
+
+plain: When you move from the Home page to the Post page inside the editor without reloading, any section you had
+  selected should be let go. The code that does this exists, but nothing in the editor can trigger it yet: today
+  every way of changing page reloads the editor, which starts fresh anyway. The first control that changes page
+  without a reload is Story 5.5's template switcher, and that story's checks will walk it.
+status: open
+severity: low
+origin: Story 5.2's code review (2026-09-17, verification-gap layer): `editor.tsx`'s `[key]` effect sets
+  `selected` to null before repainting, and the spec's Tasks say "A change of canvas (`key`) clears the selection",
+  but `run-verify-editor.cjs` reaches `/post` only by `page.goto` and `goBack`, both document loads that remount the
+  editor. Removing the two lines passes every step.
+owner: Story 5.5 (the switcher is the first soft navigation between canvases; `epics.md` carries the criterion).
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, the `useEffect` on `[key]`.
+reason: a soft navigation can be faked from the harness only through Next's private `window.next.router`, which
+  is not a product path; the real one arrives with 5.5.

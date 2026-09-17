@@ -2376,9 +2376,11 @@ that makes it work."*
   shadow, so no drawing inside the frame was both exact and safe. Changing where they are drawn changed an approved
   Approach, so it was the owner's.
 - **What it binds.**
-  - The hover and selected outlines are boxes in the editor document, inside the page card, anchored to the section
-    root with Floating UI the way the name tag is, and sized to its on-screen rect; each box's loop runs only while it
-    shows, which keeps the selected box on a sticky root as the page scrolls.
+  - The hover and selected outlines are boxes the section root's on-screen size, drawn OUTSIDE the section's own
+    markup and anchored to the root the way the name tag is. *As first built (ffa257e1) they were in the editor
+    document, inside the page card, anchored with Floating UI; the amendment below moved them into the chrome layer
+    inside the canvas document, where they scroll with the root.* On a sticky root the box stays with it as the page
+    scrolls.
   - The line is an inset box-shadow spread — 1px hover, 1.5px selected, coral — as `@utility` rules in `globals.css`;
     on a hovered selection only the 1.5px box is drawn.
   - `data-inflozo-hover` and `data-inflozo-selected` stay on the roots as state marks, zero at rest; `canvas-chrome.css`

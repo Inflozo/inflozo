@@ -52,8 +52,10 @@ export type EditorData = {
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
+  // the client first, so the two reads below really run together (an await inside the array would serialise them)
+  const sb = await supabaseServer()
   const [{ data, error }, { plan }] = await Promise.all([
-    (await supabaseServer()).from('project_templates').select('template_key, doc').eq('project_id', projectId),
+    sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     signedIn().then((user) => resolveEntitlement(user.id)),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)

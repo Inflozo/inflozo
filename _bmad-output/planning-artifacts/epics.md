@@ -1572,7 +1572,7 @@ So that the canvas stays the site and the controls stay out of the way.
 **When** I hover a section
 **Then** I get a 1px outline and a floating name tag with its layer name, and its Layers row is washed
 **And** clicking selects the section — a link or a button in it included, which does nothing else — giving a
-persistent outline, its Layers row in coral tint and its sidebar controls, and **Esc** deselects unless a field, a
+persistent 1.5px outline, its Layers row in coral tint and its sidebar controls, and **Esc** deselects unless a field, a
 picker or the reset dialog owns the key
 **And** with nothing selected the Control Sidebar shows the Kit's empty state, "Nothing selected" · "Click any section
 on the canvas — its controls appear here." (UX-DR6)
@@ -1683,6 +1683,8 @@ until the first edit materialises the stack, and the marker carries **its words,
 which is what puts them inside NFR-5's scan and NFR-6(a)'s matrix
 **And** **the Post and Page canvases are peers** — the Post Content section is placeable, designable and
 design-pickable on both, with the same ring and the same per-design controls, holding independent placements
+**And** switching canvases with a section selected clears the selection and the panel — Story 5.2's `[key]` effect,
+which the switcher is the first soft navigation to reach, so its harness walks it (DW-176)
 **And** the switcher matches D5b complete and the marker matches D5a.
 
 **FRs:** FR-D6. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5b · D5a. · **Owner test:** yes.
@@ -1798,6 +1800,8 @@ subject, the auto-generated marker and the member-state toggle are set-and-forge
 across the grid with `Enter` to place and **`Esc` returning focus to the invoking position**; design picker ←→
 mirroring `[` `]`; every menu, popover and sheet moving focus in, trapping it, and returning it to the invoking
 control (UX-DR10)
+**And** the keyboard journey is the editor's first browser test in `pnpm check`, and it walks the settings panel's
+reset wiring — the button, the confirm and its Esc — which only the deployed harness holds today (DW-167)
 **And** the canvas is **one tab stop between Layers and the Controls sidebar**, reachable and escapable by
 keyboard, with focus landing on the canvas container rather than inside the rendered site (UX-DR9)
 **And** **a drag with no keyboard equivalent is a defect** — every drag surface has one.

@@ -68,7 +68,7 @@ export type HoldState = {
   /** the press being watched, or null when there is none or it moved too far */
   at: { x: number; y: number; t: number } | null
   held: boolean
-  /** a completed hold swallows the click its lift may fire, until the next press */
+  /** a completed hold, or a press that moved past the slop, swallows the click its lift may fire, until the next press */
   swallow: boolean
 }
 export type HoldEvent =
@@ -85,7 +85,9 @@ export function hold(state: HoldState, e: HoldEvent): [HoldState, HoldOutcome] {
     case 'down':
       return [{ at: { x: e.x, y: e.y, t: e.t }, held: false, swallow: false }, null]
     case 'move':
-      if (state.at && !state.held && Math.hypot(e.x - state.at.x, e.y - state.at.y) > SLOP_PX) return [{ ...state, at: null }, null]
+      // past the slop the press is a scroll: neither a hold nor a tap, and the click the browser may still fire on its
+      // lift (its own slop is not this one) selects nothing
+      if (state.at && !state.held && Math.hypot(e.x - state.at.x, e.y - state.at.y) > SLOP_PX) return [{ at: null, held: false, swallow: true }, null]
       return [state, null]
     case 'timer':
       if (state.at && !state.held && e.t - state.at.t >= HOLD_MS) return [{ ...state, held: true }, 'hover']

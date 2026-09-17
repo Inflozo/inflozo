@@ -39,7 +39,7 @@ import type { EditorData } from './read'
    HOVER AND SELECTION (Story 5.2 — S4b and S4c). The editor listens on the canvas document from this one, and marks
    the section root under the pointer `data-inflozo-hover` and the chosen one `data-inflozo-selected` — state marks, which
    nothing inside the frame paints today. A press inside the canvas selects and does nothing else: `click`, `submit`,
-   `dragstart`, `mousedown` and `auxclick` have their defaults prevented. Everything drawn for them — the two outline
+   `dragstart`, `mousedown`, `auxclick`, `dragover` and `drop` have their defaults prevented. Everything drawn for them — the two outline
    boxes (R-120: an inset box-shadow line, because a border or an outline is floored to whole pixels), the name tag and
    R-119's Pro badge — is this component's own elements PORTALLED into a chrome layer on the canvas document's `<body>`,
    beside the site's sections and never in them (`lib/canvas-layer.ts`), so the compositor scrolls them with their
@@ -228,8 +228,9 @@ export function Editor({
   const wire = (doc: Document) => {
     if (wired.current.has(doc)) return
     wired.current.add(doc)
-    // `auxclick` too: a middle click on a link would open it in a new tab
-    for (const type of ['submit', 'dragstart', 'mousedown', 'auxclick']) doc.addEventListener(type, (e) => e.preventDefault())
+    // `auxclick` too: a middle click on a link would open it in a new tab. `drop` (and `dragover`, which a drop needs):
+    // a file dropped on the canvas would navigate its document to the file — AD-21's dropped-files trap (review, 2026-09-17)
+    for (const type of ['submit', 'dragstart', 'mousedown', 'auxclick', 'dragover', 'drop']) doc.addEventListener(type, (e) => e.preventDefault())
     // hover is the mouse's and the pen's: touch has the hold, so a tap never flashes an outline before it selects
     doc.addEventListener('pointerover', (e) => {
       if (e.pointerType !== 'touch') point(pickAt(e.target))
@@ -252,6 +253,12 @@ export function Editor({
     }
     doc.addEventListener('pointerdown', (e) => {
       if (e.pointerType !== 'touch') return
+      // a second finger is not a press: the first one's hold or tap is off, and neither lift is a tap (review, 2026-09-17)
+      if (state.at) {
+        clearTimeout(timer)
+        step({ type: 'cancel' })
+        return
+      }
       pressed = e.target
       point(null)
       clearTimeout(timer)

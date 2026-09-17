@@ -93,9 +93,14 @@ test('hold: a hold with no click after it does not swallow the next tap\'s click
   assert.deepEqual(out, [null, 'hover', null, null, 'tap', null])
 })
 
-test('hold: moving more than 10 px cancels — no hover, no tap', () => {
+test('hold: moving more than 10 px cancels — no hover, no tap, and the click its lift may fire is swallowed', () => {
   const { out } = run([{ type: 'down', x: 0, y: 0, t: 0 }, { type: 'move', x: 8, y: 8, t: 50 }, { type: 'timer', t: HOLD_MS }, { type: 'up', t: 600 }, { type: 'click' }])
-  assert.deepEqual(out, [null, null, null, null, null])
+  assert.deepEqual(out, [null, null, null, null, 'swallow'])
+})
+
+test('hold: a press that moved past the slop does not swallow the next tap\'s click', () => {
+  const { out } = run([{ type: 'down', x: 0, y: 0, t: 0 }, { type: 'move', x: 20, y: 0, t: 50 }, { type: 'up', t: 100 }, { type: 'down', x: 0, y: 0, t: 500 }, { type: 'up', t: 550 }, { type: 'click' }])
+  assert.deepEqual(out, [null, null, null, null, 'tap', null])
 })
 
 test('hold: a cancelled pointer shows nothing', () => {

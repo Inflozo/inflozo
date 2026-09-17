@@ -14,7 +14,8 @@
 // root adopts the editor's own stylesheet (Tailwind and the tokens), so nothing is redrawn and nothing leaks into the
 // site; the editor's fonts are added to the canvas document under a family name of their own (`inflozo-chrome …`),
 // so the site's own `'Inter'` still resolves as it does at rest. Hosts exist only while something is hovered or
-// selected: `dropChromeLayers` removes them, and with them every `data-inflozo-*` attribute. No script is added.
+// selected: `dropChromeLayers` removes them; the roots' two state marks are the editor's own (`editor.tsx` `mark()`),
+// cleared with the hover and the selection, so rest is zero. No script is added.
 
 export type ChromeLayers = { doc: Document; page: ShadowRoot; view: ShadowRoot }
 
