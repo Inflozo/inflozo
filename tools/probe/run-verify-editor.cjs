@@ -812,8 +812,9 @@ async function main() {
     await recorder(touchContext, touchViolations)
     const touchPage = await touchContext.newPage()
     await touchPage.goto(await magic(emailA), { waitUntil: 'load' })
-    touchViolations.splice(0) // the landing is the dashboard, DW-174's
     await touchPage.goto(editorUrl(), { waitUntil: 'load' })
+    // the landing is the dashboard, whose DW-174 report can land after its `load`: only the editor's and the canvas's count
+    const touchSession = () => touchViolations.filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
     await touchPage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
     const heroN = stackOf('home').findIndex(([d]) => d === 'a4/13')
     const heroPoint = await touchPage.evaluate((n) => {
@@ -856,7 +857,7 @@ async function main() {
     await touchPage.waitForTimeout(300)
     const slid = await touchState()
     check('step 14 — after Esc, a finger that moves 30px before lifting shows no hover and selects nothing', !cleared.selected && !slid.hover && !slid.outline && !slid.selected && slid.panel === 'Page settings', JSON.stringify({ cleared, slid }))
-    check('step 14 — the touch context records zero securitypolicyviolation events across the hold, the tap and the moving finger', touchViolations.length === 0, JSON.stringify(touchViolations))
+    check('step 14 — the touch context records zero securitypolicyviolation events in the editor or the canvas across the hold, the tap and the moving finger', touchSession().length === 0, JSON.stringify(touchViolations))
     await touchContext.close()
 
     // ── step 9 — the skeleton streams first ──
