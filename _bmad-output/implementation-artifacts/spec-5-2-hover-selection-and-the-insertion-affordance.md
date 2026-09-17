@@ -2,8 +2,8 @@
 title: 'Story 5.2 — Hover, selection and the insertion affordance'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-review'
-owner_test: issues
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: 3ebe4fa77dd171512f8ecec880740f7cc1866357
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
