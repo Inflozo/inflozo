@@ -545,6 +545,12 @@ run the seed exactly once for the owner's own account:
   verified above, so the owner's test is unaffected. GitHub's reason cannot be read with `GITHUB_TOKEN`: annotations,
   the check-run output and GraphQL all answer 403 "Resource not accessible by personal access token", and
   githubstatus.com showed Actions operational. Question 2.
+- **The retry, after Q2 was ruled** (the owner fixed the cause in GitHub): the ruling's push `f056165e` ran CI run
+  35213396503, where `rls` (5 steps), `check` (13) and `deploy` (10) all succeeded, and Render matrix run 35213396531
+  succeeded. Deployment: `dpl_Go74CCt5wzWBPcL5BVgw3o7oEvVV`, production, READY, built from `f056165e`, aliased to
+  `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`. `git diff e8745189 f056165e -- apps packages tools supabase`
+  is empty, so this is the harness-verified code rebuilt. Smoke check, signed out: `/` 307, `/sign-in` 200,
+  `/projects/b6d4db35-…` and `…/post` 307, `/canvas` 303.
 
 ## Owner's manual test
 
