@@ -2,7 +2,7 @@
 title: 'Story 5.2 — Hover, selection and the insertion affordance'
 type: 'feature'
 created: '2026-09-17'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -14,8 +14,9 @@ In the editor you can now point at any section on the page and click it. Pointin
 the section's name in a small coral tag at its top-left corner; clicking keeps a slightly thicker outline on it, lights
 up its row in Layers and fills the right-hand panel with that section's own settings — the Content, Layout and Style
 panel you checked on the pilots page — where every change shows on the page at once, and Esc lets the section go.
-Nothing you change survives a reload until Story 5.8 adds saving, and two things wait on you: which buttons on a
-hovered section work in this story (Question 1), and whether a selected Pro design shows its gold Pro tag (Question 2).
+Nothing you change survives a reload until Story 5.8 adds saving, the buttons that ride on a hovered section arrive
+with the stories that make them work (your ruling on Question 1), and on a Free account a selected Pro design also
+shows a small gold "✦ Pro" tag in its top-right corner (Question 2).
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -29,8 +30,8 @@ the `/pilots` and `/controls` review pages.
 `data-inflozo-selected`, from the parent document; the chrome stylesheet draws both outlines at their drawn on-screen
 widths, and the name tag is drawn outside the frame, anchored to the root with Floating UI. Selecting a section mounts
 Story 4.5's `Sidebar` for that instance over an in-memory copy of the project's docs: a control change stamps the live
-root, a content change repaints. The quick-action buttons, the "+" and click-to-type are built as Question 1 rules;
-this draft is written for its recommended option.
+root, a content change repaints. Each quick-action button, the "+" and click-to-type arrive with the story that makes
+them work (R-118); a selected Pro design on a Free account carries the Kit's Pro badge (R-119).
 
 ## Boundaries & Constraints
 
@@ -62,10 +63,9 @@ this draft is written for its recommended option.
 - Any write to the owner's account. None is needed: Story 5.1's "Pilot sections" is the fixture.
 
 **Never:**
-- Absent here, built by the story named (Question 1, option 1): the quick-action pill — previous and next design
+- Absent here, built by the story named (R-118): the quick-action pill — previous and next design
   (5.11), Duplicate, Delete and the drag handle (5.4) — the "+" insertion line (5.10), typing into text on the canvas
   (5.3), pressing a Layers row (5.4), the design picker and its "4 / 18" position chip (5.11), saving and undo (5.8).
-  Question 2 decides B10's Pro tag; this draft builds it (its option 1).
 - No node, class, style or attribute added to the site's markup beyond the two chrome attributes. No script in the
   canvas document, no `'unsafe-eval'`.
 - No colour or shadow literal in a `.ts`/`.tsx` under `apps/web` (`tokens.test.ts`).
@@ -79,7 +79,7 @@ this draft is written for its recommended option.
 | Hover the selection | mouse over the selected root | the 1.5px outline stays and the name tag shows | N/A |
 | Select | click anywhere in a section, a link or a button in it included | 1.5px outline, Layers row in coral tint, and the panel, headed with the layer name, holds its settings; the frame's address does not change | the canvas document's `click`, `submit`, `dragstart` and `mousedown` defaults are prevented |
 | Select another | click a second section | the selection and the panel move to it | N/A |
-| Select a Pro design | a Free account selects Hero — Latest Post (`tier: "pro"`) | the Kit's "✦ Pro" badge at the root's top-right while it stays selected; nothing is disabled and a click on the badge does nothing (B10) | a Pro account, or a failed entitlement read that degrades to Free (AD-28), follows its plan: no badge on Pro |
+| Select a Pro design | a Free account selects Hero — Latest Post (`tier: "pro"`) | the Kit's "✦ Pro" badge at the root's top-right while it stays selected; nothing is disabled and a click on the badge does nothing (B10, R-119) | a Pro account, or a failed entitlement read that degrades to Free (AD-28), follows its plan: no badge on Pro |
 | Click nothing | click below the last section, the canvas ground or a Layers row | the selection stays | N/A |
 | Nothing selected | the editor opens, or after Esc | PAGE, then the Kit's `EmptyPanel`: "Nothing selected" · "Click any section on the canvas — its controls appear here." | N/A |
 | Control change | Three Up selected, Layout → Per row → Two | its root's `data-per-row` becomes `two` in place, and the selected outline is still drawn | a refused value is the engine's sentence, as on `/pilots` |
@@ -188,7 +188,7 @@ this draft is written for its recommended option.
 - [ ] `apps/web/package.json` + `pnpm-lock.yaml` -- `@floating-ui/dom` 1.8.0, exact.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` + `layout.tsx` -- `EditorData` gains `swatches`,
   `links`, `timezone` and each pool picture's `bytes`, which the `Sidebar` needs, and the account's `plan` from
-  `resolveEntitlement` (Question 2).
+  `resolveEntitlement` (R-119).
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hover, selection and the panel:
   - **State.** The docs become state, initialised from the props, and `stack` and every paint read that state.
   - **After each paint.** `sectionRoots` pairs roots with stack entries. `--inflozo-fit` is set on the canvas
@@ -213,7 +213,7 @@ this draft is written for its recommended option.
     - Image thumbnails use the canvas route's `?image=`.
   - **Nothing selected.** PAGE, then `<EmptyPanel title="Nothing selected" instruction="Click any section on the canvas
     — its controls appear here." />`. The aside is labelled "Page settings".
-  - **The Pro tag (Question 2, option 1).** On a Free plan, while a design whose `tier` is `pro` is selected, `ProBadge`
+  - **The Pro tag (R-119).** On a Free plan, while a design whose `tier` is `pro` is selected, `ProBadge`
     sits at the selected root's top-right, 8px in, anchored the way the name tag is. It stays the Kit's `<span>`: its
     word is its label, and it is never pressable.
   - **A change of canvas** (`key`) clears the selection.
@@ -231,8 +231,14 @@ this draft is written for its recommended option.
     - the tag outside, and the fit variable;
     - `stampControls` stripping the chrome attributes;
     - the spine's rule that the CSP proof re-runs at each Epic 5 story's Review.
-  - `epics.md`, as Question 1 rules: Story 5.2's criteria. The pill, the "+" and click-to-type go into the criteria of
-    Stories 5.4, 5.10, 5.11 and 5.3, whichever each belongs to.
+  - `epics.md`, R-118's and R-119's open targets, ticked in `reconcile-designs-decisions.md` as they land:
+    - Story 5.2's criteria and frame line: hover, selection, the panel, Esc, the empty state and the hold, plus B10's
+      Pro tag.
+    - Story 5.4 gains the canvas pill's Duplicate, Delete and drag handle (S4b), and moves the pill or the Pro tag
+      out of the top-right corner they share.
+    - Story 5.10 gains the hairline "+" between sections (S4b), inserting at the position it was invoked from.
+    - Story 5.11's hover arrows are named as FR-D2's ◀ ▶.
+    - Story 5.3 gains FR-D3's click on a text element inside a selected section.
   - `deferred-work.md`:
     - DW-116: "Story 5.2's section drag handle" becomes Story 5.4's.
     - DW-167: the reset wiring is now also walked in the editor (step 12), but still not by `pnpm check`. The owner
@@ -251,7 +257,7 @@ this draft is written for its recommended option.
     design" at its foot;
   - there is no pinned card and no design picker.
   This **matches frame S4c** as R-113 redraws its panel.
-- Given a Free account (Question 2, option 1), when Hero — Latest Post is selected, then the Kit's "✦ Pro" badge sits
+- Given a Free account (R-119), when Hero — Latest Post is selected, then the Kit's "✦ Pro" badge sits
   8px inside its top-right corner on screen, and it goes when the selection does (`B Missing Surfaces.dc.html` B10);
   on a Pro account it never shows.
 - Given nothing selected, when the Controls sidebar is read, then it shows the Kit's empty state, "Nothing selected" ·
@@ -296,8 +302,8 @@ and they follow a sticky root for free. Their width divides by `--inflozo-fit`, 
 - **Nothing is saved before Story 5.8.** A typed address or a reload loads the document again, from the stored docs.
 - **At rest the panel is PAGE over the Kit's empty state.** S4a draws the Page panel's own rows at rest, but those
   rows are Stories 6.3's and 5.6's; they decide where the sentence sits beside them.
-- **B10's Pro tag takes the top-right corner that S4b gives the quick-action pill.** Under Question 1's option 1 the
-  corner is free; whichever story builds the pill moves one of the two.
+- **B10's Pro tag takes the top-right corner that S4b gives the quick-action pill.** Under R-118 the corner is free
+  until Story 5.4 builds the pill, and that story moves one of the two.
 - **A section taller than the view shows its tag only while its top is in view.** ponytail: a tag pinned to the
   card's top edge is the upgrade, if a test asks for it.
 
@@ -326,7 +332,7 @@ and they follow a sticky root for free. Their width divides by `--inflozo-fit`, 
     - The aside is labelled "Section settings" and headed HEADER — RAIL, its accordions in R-113's order for that
       design, and no element reads "4 / 18".
     - Clicking Three Up moves the selection.
-    - The Pro tag (Question 2): on account A (Free), selecting Latest Post shows "✦ Pro" 8 ± 1px inside the root's
+    - The Pro tag (R-119): on account A (Free), selecting Latest Post shows "✦ Pro" 8 ± 1px inside the root's
       top-right on screen; Three Up (`free`) shows none; Esc removes it. Control: A's `entitlements.state` set to
       `pro_active` through the service key and the editor reloaded, Latest Post selected shows none; the row is
       restored in `finally`.
@@ -356,8 +362,8 @@ Sign in as you normally do. If a page stays blank, refresh once and tell us (DW-
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Move the mouse slowly down the page, over each section in turn, with `S4 Editor.dc.html` S4b open beside it. | — | Each section in turn gets a thin coral outline and a small coral tag at its top-left corner with its name ("Header — Rail", "Hero — Latest Post", and so on), and its row in Layers lights up. There are no buttons and no "+" line (Question 1). Moving off the page clears it. |
-| 2 | same | Canvas | Click "Hero — Latest Post", then move the mouse away. | — | A slightly thicker outline stays on it; its Layers row turns light coral; the right panel is headed HERO — LATEST POST, with Content, Layout and Style, and "Reset this design" at the bottom. Compare it with S4c, minus S4c's pinned top card, which your R-113 ruling removed. If your account is on Free, a small gold "✦ Pro" tag also sits in the section's top-right corner (Question 2); on Pro it does not. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Move the mouse slowly down the page, over each section in turn, with `S4 Editor.dc.html` S4b open beside it. | — | Each section in turn gets a thin coral outline and a small coral tag at its top-left corner with its name ("Header — Rail", "Hero — Latest Post", and so on), and its row in Layers lights up. There are no buttons and no "+" line: those come with Stories 5.4, 5.10 and 5.11, as you ruled. Moving off the page clears it. |
+| 2 | same | Canvas | Click "Hero — Latest Post", then move the mouse away. | — | A slightly thicker outline stays on it; its Layers row turns light coral; the right panel is headed HERO — LATEST POST, with Content, Layout and Style, and "Reset this design" at the bottom. Compare it with S4c, minus S4c's pinned top card, which your R-113 ruling removed. If your account is on Free, a small gold "✦ Pro" tag also sits in the section's top-right corner, as you ruled; on Pro it does not. |
 | 3 | same | Right panel | Open Content and replace the Headline. | `Hello from the owner test` | The headline on the page changes as you type. |
 | 4 | same | Canvas, then the right panel | Click "Post Grid — Three Up", open Layout and press **Two** under Per row. | — | The selection moves to Three Up, and its cards change to two per row at once. |
 | 5 | same | Right panel | Press **Reset this design**, then **Reset design**. | — | It asks first; after you confirm, the cards go back to three per row. |
@@ -394,7 +400,9 @@ Duplicate puts a second Latest Post under the first, and a reload brings the pag
    the story that turns it on. You see the finished look early, but you also see buttons that do nothing, which the
    project's rule for greyed controls exists to prevent.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as R-118. This story builds hover, selection, the settings panel, Esc,
+the empty state and the hold. Duplicate, Delete and the drag handle arrive with 5.4, the design arrows with 5.11, the
+"+" with 5.10 and typing on the page with 5.3, each absent until then; `epics.md` moves the criteria in the Dev run.
 
 ### Question 2 — should a selected Pro design show its gold "Pro" tag in this story?
 
@@ -414,4 +422,5 @@ beside the coral outline; press Esc and it goes. On a Pro account nothing extra 
 3. **Build it with the Pro-sections sheet at deploy (Story 12.3),** which decides everything else a Free account is
    told about Pro designs.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** Recorded as R-119. On a Free plan, while a Pro design is selected, the Kit's
+"✦ Pro" badge sits 8px inside its top-right corner; it goes with the selection and is never pressable.

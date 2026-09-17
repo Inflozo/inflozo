@@ -2316,6 +2316,53 @@ design should have an icon too. On click it should prompt the user to confirm th
   (the Dev sub-bullet). **Deliberately not touched:**
   `prd.md` NFR-6(a), which never made the stronger promise.
 
+**R-118 — a button on a hovered section arrives with the story that makes it work.** Story 5.2's Q1, ruled option 1
+(owner, 2026-09-17): *"The outline, the name tag, selection and the settings panel now, and each button with the story
+that makes it work."*
+
+- **Why it was a question.** `epics.md` Story 5.2 listed FR-D2's quick actions (◀ ▶ design, Duplicate, Delete, the
+  drag handle), the "+" insertion line and FR-D3's click-to-type among its own criteria, while each one's behaviour
+  belongs to a later story:
+  - the design ring to 5.11, whose own frame, B1b, draws the arrows in an ink pill of their own;
+  - the Section Picker, which the "+" opens, to 5.10;
+  - inline editing to 5.3;
+  - duplicate, delete and reorder, with their site-wide rules, to 5.4.
+  The Shell's and Story 5.1's practice — a control whose behaviour is a later story's is absent, not greyed —
+  contradicted that list.
+- **What it binds.**
+  - Story 5.2 builds hover (the outline and the name tag), selection (the outline, the Layers row and the section's
+    panel), Esc, the panel's empty state and tap-and-hold.
+  - Story 5.4 builds the canvas pill's Duplicate, Delete and drag handle, in S4b's pill, under FR-D5's site-wide rules.
+  - Story 5.10 builds the hairline "+" between sections, inserting at the position it was invoked from.
+  - Story 5.11's hover arrows are FR-D2's ◀ ▶.
+  - Story 5.3 builds FR-D3's click on a text element inside a selected section.
+  - Until its story lands, each of them is absent, never greyed.
+- Targets:
+  - ✅ Story 5.2's spec · ✅ `epic-5-context.md`.
+  - Open, for Story 5.2's Dev run: `epics.md` Stories 5.2, 5.3, 5.4, 5.10 and 5.11; `deferred-work.md` DW-116's owner
+    line ("Story 5.2's section drag handle" becomes 5.4's).
+- **Deliberately not touched:** `prd.md` FR-D2 and FR-D3, which say what the editor does, not which story builds it;
+  the export (R-74).
+
+**R-119 — a selected Pro design shows the Kit's Pro badge, and Story 5.2 builds it.** Story 5.2's Q2, ruled option 1
+(owner, 2026-09-17): *"Build it in this story, because it is part of what a selected section shows."*
+
+- **Why it was a question.** `B Missing Surfaces.dc.html` B10 (:1424-1451) draws a marigold pill in the top-right
+  corner of a Pro design selected on a Free account — "a price tag, not a lock", on selection only — and
+  `EXPERIENCE.md`'s information architecture lists it as the Pro Design Badge, but no story in `epics.md` built it.
+- **What it binds.**
+  - On a Free plan, while a design whose `tier` is `pro` is selected, the Kit's `ProBadge` ("✦ Pro") sits 8px inside
+    the section's top-right corner. It goes with the selection, is never pressable, and opens no sheet (UX-DR19).
+  - A Pro plan shows none, and `pro_past_due` resolves to Pro (`apps/web/lib/entitlement.ts`). A failed entitlement
+    read degrades to Free (AD-28), so the badge shows then.
+  - S4b gives the same corner to the quick-action pill. Story 5.4, which builds the pill (R-118), moves one of the two.
+- Targets:
+  - ✅ Story 5.2's spec · ✅ `epic-5-context.md`.
+  - Open, for Story 5.2's Dev run: `epics.md` Story 5.2's criteria and frame line (B10), and Story 5.4's note on the
+    shared corner.
+- **Deliberately not touched:** the export (R-74), whose B10 draws its own border and label colours;
+  `DESIGN.md` § Badges already names the Kit's badge as the one B10 draws.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
