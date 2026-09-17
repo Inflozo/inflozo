@@ -471,6 +471,33 @@ holds, the timestamps and the IP go to Vercel support; if it has gone, close DW-
 - **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no
   billing (entitlement is Supabase's `entitlements` row) and calls no Ghost.
 
+**Results — Fix run (the owner's scroll finding), 2026-09-17, on `28ae1a3e`:**
+- `pnpm check` (Node 24): exit 0, 0 fail in every package. `python3 tools/doc-audit.py --check`, twice: PASS.
+- **GitHub Actions** (`GITHUB_TOKEN`): CI run 35233058219 and Render matrix run 35233058163 for `28ae1a3e` — success.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): production `dpl_7WMqUsVLiLV1M3bdJFvWV5M3AiVA` READY for `28ae1a3e`.
+- **Step 15's control on the old code.** On a local production build of `ffa257e1` step 15 went red: 3 FAIL, 109 PASS,
+  worst 14px selected and 15px hovered. So the step can see the defect.
+- **Supabase, production** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), `tools/probe/run-verify-editor.cjs` against
+  `https://app.inflozo.com`. The harness ran five times; each run's accounts were deleted in `finally`, users 9 → 9
+  every time.
+  - **Runs 1–4 stopped part-way, with no FAIL.** Each stopped on a 30s timeout, each at a different place:
+    - a signed-in `GET /projects/<B's id>` (step 6's 404 check);
+    - the canvas never painted at step 5's start;
+    - a signed-in `GET /projects/<id>` before step 5;
+    - a `page.reload` (step 12).
+    The two request stops got no response headers at all, which is DW-175's signature, and one was a route that never
+    renders the editor. 100 fresh `curl`s of `/sign-in` between runs 3 and 4 all answered 200. These runs are DW-175's
+    record, not this story's; its owner line (this story's Deploy) still stands.
+  - **Run 5 (started 14:33:14Z): 112 PASS, 0 FAIL.**
+    - Step 15: Three Up selected stays on its section in all 29 captured frames of the scroll, worst 2.0px (at rest
+      2.0). Hovered with the pointer still: 28 frames, worst 1.0px (at rest 1.0). Header — Rail selected (sticky): its
+      top line is on the card's top edge in all 29 frames.
+    - Step 10: 1.00px hover lines. Step 11: a 1.50625px selected line, the sticky box still on its root after 700px,
+      and the Pro span on one line, 8px in.
+    - Step 5: zero `securitypolicyviolation` events, scrolling included. Step 8: axe positive control, then zero at rest,
+      hovered and selected. Step 14: hold and tap.
+    - Steps 3, 4, 6 (Back again lands on Projects) and 9 all passed.
+
 ## Owner's manual test
 
 The project is the "Pilot sections" project that Story 5.1's Deploy added to your account; Deploy re-checks its address.
