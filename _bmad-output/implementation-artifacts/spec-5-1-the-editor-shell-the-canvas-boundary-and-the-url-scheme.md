@@ -2,10 +2,10 @@
 title: 'Story 5.1 — The editor shell, the canvas boundary and the URL scheme'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'e14f58f3cdbd48b82584e2ce5b94fc20ec6b10ea'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -88,7 +88,7 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
 
 ## Code Map
 
-- `apps/web/app/(app)/app/(authed)/(dashboard)/project-card.tsx` — `THE CARD IS NOT A LINK` (:13-14). It becomes the
+- `apps/web/app/(app)/app/(authed)/project-card.tsx` — `THE CARD IS NOT A LINK` (:13-14). It becomes the
   way in, and `ProjectMenu` stays pressable.
 - `apps/web/app/(app)/app/(authed)/layout.tsx:26-59` — the sign-in guard, the `/restore` door and `<Shell>`. The editor
   sits under it, so the guard and the door still apply.
@@ -249,7 +249,7 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   - Comment it: the editor owns the window.
   - The Shell's `<main>` is still the only one (the `app-routes.test.ts` rule stands), and an editor-path 404 lands
     inside it.
-- [x] `apps/web/app/(app)/app/(authed)/(dashboard)/project-card.tsx` -- the card links to `canvasPath(project.id)`
+- [x] `apps/web/app/(app)/app/(authed)/project-card.tsx` -- the card links to `canvasPath(project.id)`
   through a link stretched over the card, with `ProjectMenu` stacked above it and still pressable. Replace the
   "not a link" comment.
 - [x] `apps/web/busy.test.ts` -- `NO_SKELETON` gets `projects/[id]` and `projects/[id]/[template]`, with the reason:
@@ -277,8 +277,36 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   - `epic-5-context.md`: sub-bullets under the canvas-boundary and URL bullets.
   - `deferred-work.md`: DW-114 done (both panels fold); DW-167's owner becomes Story 5.2 (5.1 mounts no section panel);
     DW-117 stays open, noting this harness executes the 303 on `/canvas`.
-  - End with `grep -rn --exclude=.env "pilots/frame\|NOT A LINK" apps packages tools docs`, which must find no live
-    reference. Specs and the deferred-work ledger keep their history.
+  - End with `git grep -n "pilots/frame\|NOT A LINK" -- apps packages tools docs`, which must find no live reference
+    (`git grep`, so a stale `.next/` source map is not read as drift). Specs and the deferred-work ledger keep their
+    history.
+
+### Review Findings
+
+Review, 2026-09-17, on `c60776c4`: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier) and none failed. The real-infra layer ran `run-verify-editor.cjs` against `https://app.inflozo.com`
+(`dpl_6TrZZpMamDMPzbGJAQan8Vf9i5Ze`, built from `c60776c4`) and production Supabase: every step PASS (59 PASS, 0 FAIL),
+the CSP control held in both documents, users 9 → 9, and `project_templates` read through `SUPABASE_DB_POOLER_URL`
+carries every column and the key check the seed writes. No acceptance criterion or boundary is violated; no question
+is the owner's. Patches, all applied:
+
+- [x] [Review][Patch] `docSchema` refuses a duplicate `instanceId` (the editor keys rows on it, 5.8's journal will too), with a test [`packages/section-runtime/src/doc-schema.ts`]
+- [x] [Review][Patch] `jitless` has a regression guard in `pnpm check`: `Function` trapped while the runtime is imported, with the jitless-off control [`apps/web/doc-schema-jitless.test.ts`]
+- [x] [Review][Patch] The render matrix calls `shownRows()` instead of copying it, so a limit or order change reaches the baselines by construction [`tools/matrix/cases.mjs`]
+- [x] [Review][Patch] The harness derives the stack, the design list and the row count from the seed's exported `TEMPLATES`; asserts B's project is a uuid before the identical-404 check; refuses a failed `generate_link`; names a missing canvas frame; and survives an unreadable user list in `finally` [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] Step 6b: a `tag` row placing a post-only design shows the error boundary and no canvas, then is removed — the matrix's "Bad doc" row, unexercised before [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] The seed derives the slug-attempt count, guards a non-list answer, reports a failed rollback honestly and takes `APP_ORIGIN` for a local run [`tools/probe/seed-editor-project.mjs`]
+- [x] [Review][Patch] `scale` guards a card measured at 0 (Infinity in the iframe height); `paint()`'s early return is commented as intended [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] `fileOf` notes that `paywall` and `cards` rows will throw for the whole editor until their story extends it [`apps/web/app/(app)/app/(authed)/projects/[id]/read.ts`]
+- [x] [Review][Patch] `LayersRow interactive={false}` documents that `selected` and `shown` are ignored [`apps/web/components/kit/layers-row.tsx`]
+- [x] [Review][Patch] AD-21's rule sentence no longer says every outline is `::after`; the tree's `proxy.ts` comment no longer claims a session-aware CSP [`ARCHITECTURE-SPINE.md`]
+- [x] [Review][Patch] Wording: `docs/render-matrix.md`'s render sentence, `pilots.test.ts`'s trace test title, `cases.mjs`'s "frame route", this spec's card path and the propagation grep (`git grep`, so a stale `.next/` map is not drift), DW-174's `health-rule.ts` guess (server-only, checked)
+
+Dismissed as noise or as the spec's own decision: an empty-state sentence for a project with no rows (the matrix's
+"Canvas with no doc" row says blank, and 5.5 synthesises); `layerName` `min(1)` (5.4 renames, a blank mid-rename must
+parse); the 308 dropping a query string (nothing of the editor's is ever in the URL); `/controls`' own `frame?image=`
+(its own frame by design); external `pilots/frame` links (an internal route with no external user); the Layers header
+stacking (recorded in the change log); the Deploy seed and screenshot location (Deploy's).
 
 **Acceptance Criteria:**
 - Given a signed-in owner of a project, when they click its card on Projects, then `/projects/<id>` answers 200 with a

@@ -4122,7 +4122,7 @@ origin: Story 5.1's Dev run (2026-09-17) — `tools/probe/run-verify-editor.cjs`
   (`zod/v4/core/schemas.js:970-972`), so any object schema in a client bundle trips the app's nonce policy.
 owner: the next story that touches `apps/web/lib/style-pack.ts` or the New Project Sheet (Epic 6's style packs)
 location: apps/web/lib/style-pack.ts (`stylePackSchema`, reached in the browser through `new-project-sheet.tsx`'s
-  `PRESETS` import) · apps/web/lib/health-rule.ts (`siteHealthData`, if a client module reaches it) ·
+  `PRESETS` import; `apps/web/lib/health-rule.ts`'s schema is reached only by server modules, checked 2026-09-17) ·
   packages/section-runtime/src/doc-schema.ts (the editor's fix, the pattern)
 reason: out of this story's surface. The fix is `z.config({ jitless: true })` before the first schema a client bundle
   builds — global to zod, so where it sits decides which pages it covers; the editor's harness step 5 is the control to

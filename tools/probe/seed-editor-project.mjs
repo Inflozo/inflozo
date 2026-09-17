@@ -22,10 +22,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const load = (rel) => import(pathToFileURL(join(REPO, rel)).href)
 
-export const APP = 'https://app.inflozo.com'
+/** The harness sets APP_ORIGIN for a local run; the printed address then names that origin, not production. */
+export const APP = process.env.APP_ORIGIN || 'https://app.inflozo.com'
 
 /** The fixture, in canvas order. Layer names are "{Category} — {design}", as S4a draws them. */
-const TEMPLATES = {
+export const TEMPLATES = {
   site: [['a1/1', 'Header — Rail']],
   home: [['a4/13', 'Hero — Latest Post'], ['a17/1', 'Post Grid — Three Up'], ['a22/1', 'Newsletter — Inline Row']],
   post: [['a24/1', 'Post Header — Centred']],
@@ -69,7 +70,7 @@ export async function seed({ email, name = 'Pilot sections' }) {
   ])
   const userId = await userIdOf(email)
   const owned = await call(`/rest/v1/projects?user_id=eq.${userId}&select=id,name,slug`)
-  if (owned.status !== 200) throw new Error(`the account's projects answered HTTP ${owned.status}`)
+  if (owned.status !== 200 || !Array.isArray(owned.body)) throw new Error(`the account's projects answered HTTP ${owned.status}${Array.isArray(owned.body) ? '' : ' with no list'}`)
   const existing = owned.body.find((p) => p.name === name)
   if (existing) return { id: existing.id, url: `${APP}/projects/${existing.id}`, created: false }
 
@@ -88,18 +89,20 @@ export async function seed({ email, name = 'Pilot sections' }) {
   }, key)])
 
   let project = null
-  for (const slug of slugAttempts(slugify(name), owned.body.map((p) => p.slug))) {
+  const attempts = slugAttempts(slugify(name), owned.body.map((p) => p.slug))
+  for (const slug of attempts) {
     const made = await call('/rest/v1/projects', { method: 'POST', body: JSON.stringify({ user_id: userId, name, slug, style_pack: defaultStylePack() }) })
     if (made.status === 201) { project = made.body[0]; break }
     if (made.body?.code !== '23505') throw new Error(`the project insert answered HTTP ${made.status} (${made.body?.code ?? 'no code'})`)
   }
-  if (!project) throw new Error('three slugs in a row were taken — nothing written')
+  if (!project) throw new Error(`${attempts.length} slugs in a row were taken — nothing written`)
 
   const rows = docs.map(([template_key, doc]) => ({ project_id: project.id, user_id: userId, template_key, doc }))
   const written = await call('/rest/v1/project_templates', { method: 'POST', body: JSON.stringify(rows) })
   if (written.status !== 201) {
-    await call(`/rest/v1/projects?id=eq.${project.id}`, { method: 'DELETE' })
-    throw new Error(`the template insert answered HTTP ${written.status} (${written.body?.code ?? 'no code'}) — the project was removed again`)
+    const gone = await call(`/rest/v1/projects?id=eq.${project.id}`, { method: 'DELETE' })
+    const removed = gone.status === 200 || gone.status === 204
+    throw new Error(`the template insert answered HTTP ${written.status} (${written.body?.code ?? 'no code'}) — ${removed ? 'the project was removed again' : `AND the project ${project.id} could not be removed (HTTP ${gone.status}); delete it by hand`}`)
   }
   return { id: project.id, url: `${APP}/projects/${project.id}`, created: true }
 }

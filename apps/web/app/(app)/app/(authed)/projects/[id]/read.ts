@@ -26,7 +26,9 @@ export const projectOf = cache(async (id: string): Promise<{ id: string; name: s
   return data
 })
 
-/** The template file a stored key compiles into. `custom:custom-x.hbs` names its own. */
+/** The template file a stored key compiles into. `custom:custom-x.hbs` names its own. Every row of the project is
+ *  checked, so a key with no `.hbs` of its own — `paywall` (5.20), `cards` (7.13) — throws for the whole editor the day
+ *  its writer lands; the story that writes it extends this map in the same change (review, 2026-09-17). */
 const fileOf = (key: string) =>
   key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
 

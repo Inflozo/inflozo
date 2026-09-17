@@ -23,8 +23,9 @@ export function LayersRow({
   thumb?: ReactNode
   /** The gallery pins a state the frame draws (hover) with it; nothing else needs it. */
   className?: string
-  /** Story 5.1: `false` draws the thumb and the name as text and nothing else — no grip, no button, no eye, no hover.
-   *  The editor's rows before 5.2 and 5.4 give them something to do: absent, not greyed (UX-DR3). */
+  /** Story 5.1: `false` draws the thumb and the name as text and nothing else — no grip, no button, no eye, no hover,
+   *  and `selected` and `shown` are IGNORED (a row that cannot be pressed has no state to draw). The editor's rows
+   *  before 5.2 and 5.4 give them something to do: absent, not greyed (UX-DR3). */
   interactive?: boolean
 }) {
   if (!interactive) {

@@ -31,6 +31,7 @@ const OUT = process.env.OUT_DIR || fs.mkdtempSync(path.join(require('node:os').t
 const REPO = path.join(__dirname, '..', '..')
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 // Under the internal prefix a bare `/` is `/app` (Next 308s the trailing slash away)
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const at = (p) => `${APP}${PREFIX}${PREFIX && p === '/' ? '' : p}`
 
 const results = []
@@ -69,7 +70,7 @@ async function main() {
     note('deployment', `${served.id} ${served.readyState}, built from ${head.slice(0, 8)} — this checkout's HEAD`)
   } else note('LOCAL RUN', `${APP}${PREFIX} — not a deployed result`)
 
-  const { seed } = await import(require('node:url').pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
+  const { seed, TEMPLATES } = await import(require('node:url').pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   const stale = all.filter((u) => /^editor-harness-[ab]-\d+@inflozo\.com$/.test(u.email || ''))
@@ -97,9 +98,18 @@ async function main() {
     const tpl = await call('/rest/v1', `/project_templates?project_id=eq.${seeded.id}&select=template_key`)
     check('step 1 — three project_templates rows: site, home, post', tpl.body.map?.((r) => r.template_key).sort().join(',') === 'home,post,site', JSON.stringify(tpl.body))
     const bare = await call('/rest/v1', '/projects', { method: 'POST', body: JSON.stringify({ user_id: ids[1], name: 'Bare', slug: 'bare', style_pack: { preset: 'paper' } }) })
-    check('step 1 — B has one bare project', bare.status === 201, `HTTP ${bare.status}`)
-    const P = seeded.id
     const B = bare.body[0]?.id
+    check('step 1 — B has one bare project', bare.status === 201 && UUID.test(B || ''), `HTTP ${bare.status}`)
+    // without B's project the identical-404 check would compare `/projects/undefined`, a 404 for the wrong reason
+    if (!UUID.test(B || '')) throw new Error('B has no project, so step 6 has no other-user control — stopping')
+    const P = seeded.id
+    // the expectations below are derived from the seed's fixture, never restated here
+    const stackOf = (key) => [...TEMPLATES.site, ...TEMPLATES[key]]
+    const magic = async (email) => {
+      const link = await admin('/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email }) })
+      if (link.status !== 200 || !link.body.hashed_token) throw new Error(`generate_link answered HTTP ${link.status} — the session cannot start`)
+      return at(`/auth/confirm?token_hash=${link.body.hashed_token}&type=magiclink`)
+    }
     const editorUrl = (key) => at(key ? `/projects/${P}/${key}` : `/projects/${P}`)
 
     browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
@@ -113,8 +123,7 @@ async function main() {
     })
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
-    const link = await admin('/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email: emailA }) })
-    await page.goto(at(`/auth/confirm?token_hash=${link.body.hashed_token}&type=magiclink`), { waitUntil: 'load' })
+    await page.goto(await magic(emailA), { waitUntil: 'load' })
     check('step 1 — A signs in', !page.url().includes('/sign-in'), page.url())
 
     const openCard = async () => {
@@ -123,7 +132,11 @@ async function main() {
       // on localhost the app's links carry no /app prefix (routing.ts), so a local run re-enters under it
       if (LOCAL && page.url() !== editorUrl()) await page.goto(editorUrl(), { waitUntil: 'load' })
     }
-    const canvasFrame = () => page.frames().find((f) => f !== page.mainFrame() && /\/canvas$/.test(new URL(f.url()).pathname))
+    const canvasFrame = () => {
+      const f = page.frames().find((f) => f !== page.mainFrame() && /\/canvas$/.test(new URL(f.url()).pathname))
+      if (!f) throw new Error(`no /canvas frame on ${page.url()} — frames: ${page.frames().map((f) => f.url()).join(', ')}`)
+      return f
+    }
     const painted = (key) => page.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 })
 
     // ── step 2 — Projects → the card → the editor ──
@@ -164,7 +177,7 @@ async function main() {
     check('step 2 — the bar: 48px with its 1px rule on paper, the back link to /', shape.header.h === 48 && shape.header.rule === '1px' && shape.header.bg === 'rgb(247, 245, 242)' && shape.back === '/', JSON.stringify(shape.header) + ` back=${shape.back}`)
     check('step 2 — the project name: 13px, 600, Inter', shape.name.text === 'Pilot sections' && shape.name.size === '13px' && shape.name.weight === '600' && /Inter/i.test(shape.name.family), JSON.stringify(shape.name))
     check('step 2 — Layers: 240px, right rule, paper, "THIS PAGE · HOME"', shape.layers.w === 240 && shape.layers.rule === '1px' && shape.layers.bg === 'rgb(247, 245, 242)' && /this page · home/i.test(shape.layers.title), JSON.stringify({ ...shape.layers, title: undefined }))
-    check('step 2 — Layers lists the stack in canvas order, not interactive but its one fold', shape.rows.join(' | ') === 'Header — Rail | Hero — Latest Post | Post Grid — Three Up | Newsletter — Inline Row' && shape.buttonsInLayers === 1, `${shape.rows.join(' | ')} · buttons ${shape.buttonsInLayers}`)
+    check('step 2 — Layers lists the stack in canvas order, not interactive but its one fold', shape.rows.join(' | ') === stackOf('home').map(([, name]) => name).join(' | ') && shape.buttonsInLayers === 1, `${shape.rows.join(' | ')} · buttons ${shape.buttonsInLayers}`)
     check('step 2 — the canvas ground #EDEAE6', shape.ground === 'rgb(237, 234, 230)', shape.ground)
     const c = shape.card
     check('step 2 — the page card: 24 from the top, 28 each side, flush at the bottom, 864 wide, 6px top radius, the page shadow', c && c.top === 24 && c.left === 28 && c.right === 28 && c.bottom === 0 && c.width === 864 && c.radius === '6px 6px 0px 0px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), JSON.stringify(c))
@@ -211,7 +224,7 @@ async function main() {
       const f = pilotsPage.frames().find((x) => x !== pilotsPage.mainFrame())
       return f.evaluate(() => document.querySelector('#canvas > *')?.outerHTML)
     }
-    for (const [key, designs] of Object.entries({ home: ['a1/1', 'a4/13', 'a17/1', 'a22/1'], post: ['a1/1', 'a24/1'] })) {
+    for (const [key, designs] of ['home', 'post'].map((k) => [k, stackOf(k).map(([id]) => id)])) {
       check(`step 4 — ${key}: one root per section, in stack order`, editorRoots[key].length === designs.length, `${editorRoots[key].length} roots`)
       for (const [n, id] of designs.entries()) {
         // /pilots draws each design at its first compileTarget; a1/1 → default.hbs, the others' first is this canvas
@@ -318,9 +331,25 @@ async function main() {
     await page.goBack({ waitUntil: 'load' })
     await painted('home')
     const backHome = { url: page.url(), rows: await page.locator('aside[aria-label="Layers"] div.overflow-y-auto > div > span:last-child').allInnerTexts() }
-    check('step 6 — Back from /post lands on /projects/<id> showing Home\'s sections', backHome.url === editorUrl() && backHome.rows.length === 4, JSON.stringify(backHome))
+    check('step 6 — Back from /post lands on /projects/<id> showing Home\'s sections', backHome.url === editorUrl() && backHome.rows.length === stackOf('home').length, JSON.stringify(backHome))
     await page.goBack({ waitUntil: 'load' })
     check('step 6 — Back again lands on Projects', page.url() === projectsUrl, page.url())
+
+    // ── step 6b — a bad doc is loud, never a partly drawn canvas (the matrix's "Bad doc" row; review, 2026-09-17) ──
+    // A `tag` row placing a24/1, which compiles to post.hbs alone: `editorData` throws for the whole project, so even
+    // Home shows the app's error boundary and no canvas. Production replaces the thrown sentence with a digest, so the
+    // boundary and the absence of a canvas are what a deployed run can read. The row is removed again afterwards.
+    const [postOnly] = TEMPLATES.post
+    const bad = await call('/rest/v1', '/project_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: 'tag', doc: { schemaVersion: 1, instances: [{ instanceId: 'bad-1', layerName: 'Wrong canvas', designId: postOnly[0], content: {}, controls: {}, data: {}, darkOverrides: {} }] } }) })
+    check('step 6b — a tag row placing a post-only design is written', bad.status === 201, `HTTP ${bad.status}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    const loud = await page.locator('h1').first().innerText().catch(() => '')
+    const canvases = await page.locator('section[aria-label="Canvas"]').count()
+    check('step 6b — the editor shows the error boundary and no canvas, never a partly drawn one', /couldn.t show that/i.test(loud) && canvases === 0, `h1 ${JSON.stringify(loud)} · canvases ${canvases}`)
+    const unbad = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.tag`, { method: 'DELETE' })
+    check('step 6b — the bad row is removed and Home paints again', unbad.status === 200 || unbad.status === 204, `HTTP ${unbad.status}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
 
     // ── step 7 — scroll ──
     await page.goto(editorUrl(), { waitUntil: 'load' })
@@ -336,8 +365,7 @@ async function main() {
     // ── step 8 — axe, in its own context (bypassCSP: axe is injected, which the policy would refuse) ──
     const axeContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, bypassCSP: true })
     const axePage = await axeContext.newPage()
-    const link2 = await admin('/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email: emailA }) })
-    await axePage.goto(at(`/auth/confirm?token_hash=${link2.body.hashed_token}&type=magiclink`), { waitUntil: 'load' })
+    await axePage.goto(await magic(emailA), { waitUntil: 'load' })
     await axePage.goto(editorUrl(), { waitUntil: 'load' })
     await axePage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
     for (const f of axePage.frames()) await f.addScriptTag({ path: AXE })
@@ -356,8 +384,7 @@ async function main() {
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = await browser.newContext()
-    const l3 = await admin('/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email: emailA }) })
-    await (await streamContext.newPage()).goto(at(`/auth/confirm?token_hash=${l3.body.hashed_token}&type=magiclink`), { waitUntil: 'load' })
+    await (await streamContext.newPage()).goto(await magic(emailA), { waitUntil: 'load' })
     // Whether the fallback streams at all is a race between the docs read and the first flush — a fast read renders the
     // editor straight into the shell, which is correct. So up to five opens: the skeleton must stream ahead of the editor
     // in at least one (its HTML, `>Opening…`, never the same words inside the flight data), and the dashboard's cards
@@ -376,8 +403,9 @@ async function main() {
     if (browser) await browser.close()
     const dels = []
     for (const id of ids) if (id) dels.push((await admin(`/admin/users/${id}`, { method: 'DELETE', body: '{}' })).status)
-    const after = (await users()).length
-    check('DELETE both accounts and the user count is unchanged', dels.length === 2 && dels.every((s) => s === 200) && after === before, `HTTP ${dels.join(', ')}, users ${before} → ${after}`)
+    const afterList = await users()
+    const after = afterList ? afterList.length : null
+    check('DELETE both accounts and the user count is unchanged', dels.length === 2 && dels.every((s) => s === 200) && after === before, `HTTP ${dels.join(', ')}, users ${before} → ${after ?? 'unreadable'}`)
     console.log(results.join('\n'))
     console.log(`\n${fails} FAIL, ${results.filter((r) => r.startsWith('PASS')).length} PASS · screenshots in ${OUT}`)
     process.exitCode = fails ? 1 : 0

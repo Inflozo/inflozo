@@ -32,6 +32,7 @@ const pilots = await import(join(REPO, 'apps/web/lib/pilots.ts'))
 const { imagePool } = await import(join(REPO, 'apps/web/lib/controls-review.ts'))
 const lib = await import(join(REPO, 'packages/library/src/index.ts'))
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
+const { shownRows } = await import(join(REPO, 'apps/web/lib/canvas.ts'))
 
 export const { pilot, pilotIds, pilotRows, pilotImage, pilotsCanvasDocument } = pilots
 export const ORIGIN = lib.orbitWeekly.ORBIT_WEEKLY_ORIGIN
@@ -98,23 +99,17 @@ export const totals = (list) => ({
 })
 
 /**
- * THE RENDER INPUT, mirroring `renderSection()` in `apps/web/lib/canvas.ts` — the one per-section render `/pilots`' and
- * the editor's `paint()` both call since Story 5.1 — with nothing changed
- * in the panel: content and controls at their defaults, Orbit Weekly's rows as the page's `shown()` picks them (the
- * stored Order's list, sliced to the limit or Ghost's default), `templateContext` at the row's target and feed, the
- * row's visitor and Show-to, the picture pool's asset ids and the icon set. Pictures keep their real origin: the
- * matrix serves it (serve.mjs) where the page rewrites it to its frame route, so nothing here rewrites a URL.
+ * THE RENDER INPUT, `renderSection()`'s in `apps/web/lib/canvas.ts` — the one per-section render `/pilots`' and the
+ * editor's `paint()` both call since Story 5.1 — with nothing changed in the panel: content and controls at their
+ * defaults, Orbit Weekly's rows through the same `shownRows()` the pages use (never a copy of it, so a change to the
+ * limit or order rule reaches the matrix by construction; review, 2026-09-17), `templateContext` at the row's target
+ * and feed, the row's visitor and Show-to, the picture pool's asset ids and the icon set. Pictures keep their real
+ * origin: the matrix serves it (serve.mjs) where the page rewrites it to the canvas route, so nothing here rewrites a URL.
  */
 export function renderInput(entry, row, icons) {
   const target = row.target ?? entry.compileTarget[0]
   const ctx = lib.orbitWeekly.templateContext(target, row.feed ?? 'first')
-  const rows = pilotRows(entry)
-  const getRows = Object.fromEntries(Object.entries(rt.withData(entry.dataBindings, {})).map(([key, binding]) => {
-    const both = rows[key]
-    const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
-    const fallback = lib.orbitWeekly.DEFAULT_LIMIT[binding.source]
-    return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
-  }))
+  const getRows = shownRows(entry, { data: {} }, pilotRows(entry))
   // the same pool the page hands `paint()` — one reader, so the matrix cannot photograph a pool the editor lacks
   const pool = imagePool().map((a) => a.id)
   return {

@@ -29,10 +29,16 @@ export const instanceSchema = z.strictObject({
   darkOverrides: values,
 })
 
-export const docSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  instances: z.array(instanceSchema),
-})
+export const docSchema = z
+  .strictObject({
+    schemaVersion: z.literal(1),
+    instances: z.array(instanceSchema),
+  })
+  // the editor keys Layers rows on the instanceId, and 5.8's journal will address edits by it (review, 2026-09-17)
+  .refine((d) => new Set(d.instances.map((i) => i.instanceId)).size === d.instances.length, {
+    message: 'every instanceId is unique within a doc',
+    path: ['instances'],
+  })
 
 export type DocInstance = z.infer<typeof instanceSchema>
 export type ProjectDoc = z.infer<typeof docSchema>

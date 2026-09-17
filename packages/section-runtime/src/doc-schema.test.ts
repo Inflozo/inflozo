@@ -33,6 +33,10 @@ test('a missing field fails, naming its path', () => {
   assert.throws(() => parseDoc({ instances: [] }, 'post'), /schemaVersion/)
 })
 
+test('a duplicate instanceId fails, naming instances', () => {
+  assert.throws(() => parseDoc({ schemaVersion: 1, instances: [instance(), instance()] }, 'home'), /instances: every instanceId is unique/)
+})
+
 test('a malformed designId fails, naming its path', () => {
   for (const designId of ['A1/1', 'a1', 'a1/1/2', '../a1/1', 'a1/x']) {
     assert.throws(() => parseDoc(doc({ designId }), 'home'), /instances\.0\.designId/, designId)

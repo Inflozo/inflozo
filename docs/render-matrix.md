@@ -37,7 +37,7 @@ is a number written down: `tools/matrix/cases.mjs` derives each axis.
 | Viewports | 1440 · 834 · 390 · 1440 at 200% zoom (720 CSS pixels at twice the density, photographed at CSS scale) · 1440 with reduced motion forced |
 | Fixture rows | what the design is: it paginates → first, middle, last and empty feed pages; its markup gates by member → one row per visitor, and one per Show-to audience seen by a visitor it hides from; its binding context is `post` → the style-guide post (and page) |
 
-Each case is rendered exactly as the editor draws it: `renderCanvas` with the input `apps/web/lib/canvas.ts`' `renderSection()` builds for `/pilots` and the editor, written
+Each case is rendered exactly as the editor draws it: `renderCanvas`, given the input that `renderSection()` in `apps/web/lib/canvas.ts` builds for `/pilots` and the editor (the rows through its `shownRows()`), written
 into the canvas document `/canvas` serves (`pilotsCanvasDocument()`), with `data-mode` set, `js-enabled` on every
 module mount, and the window as tall as the section, as the editor's iframe is. A local `node:http` server serves the
 document and Orbit Weekly's pictures at their real origin; nothing else is on the network. Baselines live in

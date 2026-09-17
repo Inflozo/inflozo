@@ -71,7 +71,7 @@ test('a query the design fixes is handed its fixed rows, newest first', () => {
 
 // Vercel ships a function with only the files the build traced; a path joined at runtime (from the module's own
 // address, since Story 4.11) is invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
-test('every file the canvas document and the pilots reads touch is traced for every route that reads them', () => {
+test('every file the canvas document and the pilots review read is traced for every route that reads them', () => {
   const config = readFileSync('next.config.ts', 'utf8')
   // the PILOTS_FILES list itself: a glob in another route's list traces nothing for these two
   const list = /const PILOTS_FILES = \[([^\]]*)\]/.exec(config)?.[1] ?? ''

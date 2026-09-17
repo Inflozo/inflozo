@@ -108,6 +108,8 @@ export function Editor({
     const doc = frame.current?.contentDocument
     const mount = doc?.getElementById('canvas')
     const lookup = icons.current
+    // before the icons resolve or the frame loads this returns early ON PURPOSE: the icons callback and the frame's
+    // `load` listener each paint `latest` when they land, so a key change dropped here is painted then
     if (!doc || !mount || !lookup || !frame.current) return
     const now = latest.current
     try {
@@ -157,7 +159,8 @@ export function Editor({
     watch.observe(card.current)
     return () => watch.disconnect()
   }, [])
-  const scale = Math.min(1, size.width / DESKTOP)
+  // a card measured at 0 (folded away, not yet laid out) would put Infinity in the iframe's height
+  const scale = size.width > 0 ? Math.min(1, size.width / DESKTOP) : 1
 
   if (failure) throw failure
 
