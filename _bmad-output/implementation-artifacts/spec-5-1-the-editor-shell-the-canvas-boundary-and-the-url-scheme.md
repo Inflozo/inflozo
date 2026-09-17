@@ -538,6 +538,13 @@ run the seed exactly once for the owner's own account:
   one project named "Pilot sections" (slug `pilot-sections`), the account now at 3 projects, and `project_templates`
   rows `site` [a1/1], `home` [a4/13, a17/1, a22/1] and `post` [a24/1]. Signed out, that address answers 307 to
   `/sign-in`.
+- **The Deploy commit's own CI (`b96452f5`, documentation only):** GitHub refused to start the runs, so they did not
+  fail on our code. CI run 35209869404 has `rls` and `check` failed with zero steps and no runner (finished 2 and
+  13 seconds after starting), so `deploy` was skipped. Render matrix run 35209869288 is the same. Every run up to
+  `e8745189` at 09:21 UTC succeeded. `app.inflozo.com` still serves `dpl_2r2ERRnFejqV3F5H4dxejKH7gc4y`, the deployment
+  verified above, so the owner's test is unaffected. GitHub's reason cannot be read with `GITHUB_TOKEN`: annotations,
+  the check-run output and GraphQL all answer 403 "Resource not accessible by personal access token", and
+  githubstatus.com showed Actions operational. Question 2.
 
 ## Owner's manual test
 
@@ -587,3 +594,24 @@ shows the Rail header, Latest Post, Three Up and Inline Row stacked like a real 
 **Ruled: option 1 (owner, 2026-09-17).** The Deploy run adds one "Pilot sections" project to the owner's own account
 with `tools/probe/seed-editor-project.mjs`, after the harness passes, and never a second (Verification, At Deploy).
 Stories 5.2 to 5.9 run their owner tests on it until Story 5.10 lets him add sections himself.
+
+### Question 2 — GitHub stopped running our checks. Can you look at why?
+
+**Plain English:** Every push makes GitHub run our checks and, when they pass, put the new version live. At 10:19 UTC
+today (3:49 pm your time), GitHub refused to start them for the Deploy commit. Each check was stopped within seconds,
+before GitHub gave it a machine, so none of our code ran. The live site is safe: it still shows the version tested
+above, and your test runs on it. But until this is fixed nothing new reaches the site, so Story 5.2 can be built and
+never deployed. GitHub shows its reason only to the account owner; our read-only key is told "not accessible".
+
+**Example:** open `https://github.com/Inflozo/inflozo/actions/runs/35209869404`. Beside a red check, GitHub writes one
+sentence, for example "The job was not started because recent account payments have failed or your spending limit
+needs to be increased." That is a guess at what yours says, not a reading of it; the key cannot see it.
+
+1. **Read the sentence and fix it where it points.** If it names billing or a spending limit, open the Inflozo
+   organisation's Settings → Billing, and raise the limit or settle the payment. Then press **Re-run all jobs** on that
+   page. **(RECOMMENDED)**
+2. **Wait for next month's allowance, if that is what it names.** It costs nothing, but nothing goes live until then:
+   Epic 5's stories stop at Deploy.
+3. **The sentence says something else.** Paste it here and I will write the options for that.
+
+**Ruled:** _(awaiting the owner)_
