@@ -2,7 +2,8 @@
 title: 'Story 5.3 — Inline editing, the four marks and the link picker'
 type: 'feature'
 created: '2026-09-17'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -270,19 +271,19 @@ P0-1's lock pill naming them (R-122).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/library/src/registry.ts`, `packages/library/src/validate.ts` (+ `validate.test.ts`),
+- [x] `packages/library/src/registry.ts`, `packages/library/src/validate.ts` (+ `validate.test.ts`),
   `packages/library/fixtures/controls/content.json` -- `PropDef.maxChars`, the hard limit FR-D4 reads from the schema:
   - `text` and `richtext` only, a positive whole number, and an authored `default` no longer than it. Each refusal has a
     code and a sentence in the file's own style, tested beside the existing prop checks.
   - The controls fixture declares `maxChars` on `eyebrow` (30) and `heading` (40). No pilot declares one:
     `packages/library/designs/` is not this story's to edit.
-- [ ] `packages/library/contexts/labels.json`, `packages/library/src/contexts.ts` (+ `contexts.test.ts`) -- the words for
+- [x] `packages/library/contexts/labels.json`, `packages/library/src/contexts.ts` (+ `contexts.test.ts`) -- the words for
   Ghost's own fields (R-122):
   - One plain name for every `text`, `date` and `number` field in the matrix's scopes and universal set, and for every
     `helper` entry, keyed by scope and field — "Post title", "Tag name", "Site title", "Publish date", "Navigation".
   - `ghostLabel(path, place)` resolves the field through `resolve` and returns its name.
   - The test derives the fields from `matrix.json` and fails for any that has no name; it holds no count.
-- [ ] `packages/section-runtime/src/marks.ts` (+ `marks.test.ts`; the paste pair in `ad36.test.ts`) -- the value's edits,
+- [x] `packages/section-runtime/src/marks.ts` (+ `marks.test.ts`; the paste pair in `ad36.test.ts`) -- the value's edits,
   beside the one serializer:
   - **The serializer.** `serializeMarks` writes each `\n` as `<br>`, and drops an `a` mark whose record names no
     destination instead of writing a bare `<a>`; its text stays (DW-120).
@@ -319,7 +320,7 @@ P0-1's lock pill naming them (R-122).
     - `<br>` and DW-120 on both emitters;
     - in `ad36.test.ts`, the paste pair: `img onerror`, `script`, `a href="javascript:…"` and `span style` come back as
       text, and `b`, `i`, `u` and `a href="https://…"` survive where allowed.
-- [ ] `packages/section-runtime/src/core.ts`, `index.ts` (+ `index.test.ts`) -- `RenderInput.editing`, the canvas's alone:
+- [x] `packages/section-runtime/src/core.ts`, `index.ts` (+ `index.test.ts`) -- `RenderInput.editing`, the canvas's alone:
   - **`applyProps`** stamps each surviving `text` or `richtext` element `data-inflozo-prop="<path>"`. Inside an authored
     item it also stamps `data-inflozo-item="<index>"`, which `expandItems` now passes.
   - **`emitBindings`** stamps each surviving `data-bind` text element, and each `data-helper` element, with
@@ -330,12 +331,12 @@ P0-1's lock pill naming them (R-122).
     gated arm. Every stamp sits on the right element with the right index and name, and removing every `data-inflozo-*`
     attribute gives exactly the render without `editing`.
   - **Exports:** the new marks functions and `isRich`.
-- [ ] `apps/web/lib/canvas.ts`, `apps/web/lib/selection.ts` (+ `selection.test.ts`) -- the editor asks for stamps;
+- [x] `apps/web/lib/canvas.ts`, `apps/web/lib/selection.ts` (+ `selection.test.ts`) -- the editor asks for stamps;
   `/pilots` does not:
   - `renderSection` takes `editing` and hands it to `renderCanvas`.
   - `takeStamps(elements)` reads each stamp into a map (element → `{ path, item? }` or `{ ghost: name }`) and removes the
     attribute. It is tested with plain objects, as the file's other tests are.
-- [ ] `apps/web/lib/inline.ts` -- the one editing controller, for the canvas element and the panel's field:
+- [x] `apps/web/lib/inline.ts` -- the one editing controller, for the canvas element and the panel's field:
   - **Start.**
     - Before editing begins, the element is rewritten from the stored value with no token values.
     - An empty value keeps the words it shows (catalog or authored), which become the starting text.
@@ -369,10 +370,10 @@ P0-1's lock pill naming them (R-122).
     - `contenteditable` goes, and the element is rewritten from the serializer.
   - ponytail: the browser's own undo inside the field until Story 5.8's journal; a mark with a collapsed caret does
     nothing.
-- [ ] `apps/web/components/kit/icons.tsx` -- `Lock`, the lock P0-1 draws (:142), in the file's glyph style.
-- [ ] `apps/web/lib/canvas-layer.ts` -- `place()` gains `above`: centred 8px above the element, or below it when the
+- [x] `apps/web/components/kit/icons.tsx` -- `Lock`, the lock P0-1 draws (:142), in the file's glyph style.
+- [x] `apps/web/lib/canvas-layer.ts` -- `place()` gains `above`: centred 8px above the element, or below it when the
   element's top is within 48px of the canvas viewport's top.
-- [ ] `apps/web/components/controls/mark-toolbar.tsx` -- P0-1's toolbar, and the pill:
+- [x] `apps/web/components/controls/mark-toolbar.tsx` -- P0-1's toolbar, and the pill:
   - **Roles and keys.**
     - `role="toolbar"`, `aria-label="Text formatting"`, one tab stop.
     - ← and → move between buttons, Enter and Space apply, and Esc returns to the text with the selection the toolbar
@@ -396,12 +397,12 @@ P0-1's lock pill naming them (R-122).
     - `bg-surface border border-line rounded-pill`, the `md` shadow, 11px words in `ink-soft` beside a glyph.
     - `role="status"`, never pressable.
     - It holds either the new `Lock` with "{Name} — set in Ghost", or `InfoCircle` with "{Label} holds {n} characters.".
-- [ ] `apps/web/components/controls/link-picker.tsx` -- `LinkPanel`, the popover `LinkPicker` draws, exported so the
+- [x] `apps/web/components/controls/link-picker.tsx` -- `LinkPanel`, the popover `LinkPicker` draws, exported so the
   toolbar opens the same one:
   - `LinkPicker` renders its button and a `LinkPanel`. The popover's markup, its ids and its behaviour stay as they are.
   - `LinkPanel` opens filled with a record or empty. It reports Done with the draft, or Remove link with `null`; Esc
     reports nothing.
-- [ ] `apps/web/components/controls/rich-field.tsx`, `apps/web/components/controls/sidebar.tsx` -- the panel edits the
+- [x] `apps/web/components/controls/rich-field.tsx`, `apps/web/components/controls/sidebar.tsx` -- the panel edits the
   same structure and shows the same marks:
   - **A `richtext` prop** gets a rich field.
     - It keeps the Kit's `Multiline` look: label, border, focus ring.
@@ -415,7 +416,7 @@ P0-1's lock pill naming them (R-122).
     - "TOKENS THIS FIELD ACCEPTS", then one mono chip per token, each inserting `{token}` at the cursor.
     - The sentence "Anything else in braces prints exactly as you typed it — {this} stays {this} on the page."
     - No row for a prop without tokens.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- editing on the canvas:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- editing on the canvas:
   - **Paint.** `paint()` renders with `editing`, then runs `takeStamps` over the mount's stamped elements; the map lives
     in a ref, rebuilt on every paint.
   - **A press.**
@@ -450,14 +451,14 @@ P0-1's lock pill naming them (R-122).
       trigger.
   - **Header comment.** Typing on the canvas is built; clicking an icon (Story 9.1, R-121) and the rest stay absent with their
     stories.
-- [ ] `tools/probe/run-verify-editor.cjs` -- the harness:
-  - Steps 16–25 under Verification, their gestures inside step 5's session, and step 8's two new axe states.
+- [x] `tools/probe/run-verify-editor.cjs` -- the harness:
+  - Steps 16–26 under Verification, their gestures inside step 5's session, and step 8's two new axe states.
   - Step 14 gains the tap into a title.
   - Step 13's first Esc check clicks Three Up's top padding, not its text, so it still asserts deselection.
-- [ ] `tools/probe/run-verify-controls.cjs` -- a step on `/controls`:
+- [x] `tools/probe/run-verify-controls.cjs` -- a step on `/controls`:
   - Typing past Eyebrow's 30 characters, and past Heading's 40, is refused, and each field shows its sentence.
   - A paste that would pass the limit arrives cut at it.
-- [ ] Propagation (standing rules 3 and 7):
+- [x] Propagation (standing rules 3 and 7):
   - **`ARCHITECTURE-SPINE.md`**, dated and citing this spec.
     - AD-4: `\n` becomes `<br>` at the one serializer; typing changes the stored value and never reads marks or links
       back from the page; `readMarks` reads a paste; a link mark with no destination writes no anchor (DW-120).
@@ -531,6 +532,28 @@ P0-1's lock pill naming them (R-122).
   then each still passes.
 
 ## Spec Change Log
+
+- **2026-09-18, Dev — seven matrix rows had no automated check, and now have one (step-03's matrix audit).** *Panel Text
+  Area*, *Tokens*, *Catalog words*, *Theme words*, *Reload*, *Edit a link* and *Same prop twice* were left to the owner's
+  test alone. The first five are now harness **step 26** -- the panel's rich field raising the same toolbar, P0-1's token
+  row and its chip, a catalog-linked label left without typing, a click on the theme's own `data-t` words, and a reload
+  showing the session's edits gone. *Edit a link* joined step 19: Link pressed on a selection touching the Portal link
+  opens the panel filled with that link's own record. *Same prop twice* cannot be reached on the pilots at all -- the
+  only prop any pilot draws twice is `a22/1`'s member-gated `subscribedText`, which the anonymous canvas never renders --
+  so its rule moved out of `editor.tsx` into `samePropElsewhere` in `apps/web/lib/selection.ts`, tested with plain
+  objects in `selection.test.ts` as that file's other tests are.
+
+- **2026-09-18, Dev — a pasted `<script>`'s and `<style>`'s contents are not text either.** The Approach says every
+  element other than the four marks "arrives as its text", and `readMarks` does that for every element a reader can see.
+  It does NOT do it for the elements whose contents no reader saw: `script`, `style`, `template`, `noscript`, `head`,
+  `title`, `meta` and `link`, whose text is dropped with the element. Why: a paste from a word processor or a CMS carries
+  a `<style>` block, and pasting a stylesheet's rules into a heading as words would be the wrong reading of "as its text".
+  Nothing about the refusal changes — no `img`, `script`, `style` or `javascript:` URL survives either way — and
+  `ad36.test.ts`'s paste pair and the harness's step 20 assert the vectors are inert and the legitimate case still works.
+- **2026-09-18, Dev — the rich field's limit caption shows AT the limit, not only on a refusal.** The task says "At its
+  limit, the field's caption reads …", and the Text Field's `hint` was already specified that way ("While the value is at
+  the limit its `hint` reads the same sentence"), so both panel fields now read the same rule; the canvas's pill still
+  shows on a refusal, until the next edit.
 
 ## Design Notes
 
@@ -689,6 +712,8 @@ ponytail: a timer, not `scrollend`; switch when every engine the editor supports
     - Select another word, press Link and the "Sign up" chip, then Done. That word is `<a href="#" data-portal="signup">`.
     - Type "x" at the start of the sub. Both anchors are unchanged.
     - Selecting inside the post link enables Remove link, which removes that `<a>` only.
+    - Link pressed on a selection touching the Portal link opens the panel filled with that link's own record (its
+      "Sign up" chip pressed).
     - Open Link again, then press on the canvas: the dialog closes and the sub's markup is unchanged.
 20. **Paste.** A `paste` event carries this `text/html`: `<b>Bold</b> <i>it</i> <u>un</u>
     <a href="https://x.example/">ok</a> <a href="javascript:window.__pwned=1">bad</a><img src="/x"
@@ -718,6 +743,17 @@ ponytail: a timer, not `scrollend`; switch when every engine the editor supports
     - With the toolbar showing over "spring", the wheel scrolls the canvas 200px: the toolbar is hidden.
     - 400ms after the wheel stops it is visible again, centred on the selection's new on-screen rect within 1px.
 
+26. **The panel's own field, and the words that are nobody's to type.**
+    - Three Up's Note in the panel: a word selected in the field raises the same `[role="toolbar"]` over it, and Italic
+      pressed there writes `<em>` around that word on the canvas. A field declaring no token shows no token row.
+    - Newsletter — Inline Row's Social proof line: P0-1's row reads TOKENS THIS FIELD ACCEPTS with one `{members}` chip,
+      and the chip inserts `{members}` at the cursor -- in the field and, literally, on the canvas.
+    - Hero — Latest Post's Primary action text: clicking into the catalog-linked label and leaving without typing keeps
+      the catalog's "Subscribe" on the canvas and an empty value in the panel.
+    - Header — Rail's "Sign in" (`data-t`): a click starts no editing and shows no pill -- the theme's own words are the
+      Translations surface's (Story 7.12).
+    - A reload of the editor: the session's typing, marks and links are gone and the stored docs are drawn again.
+
 Step 14 gains a touch tap into Three Up's title once it is selected: the canvas's active element is the title, with a
 collapsed selection inside it. Step 8's axe runs twice more, with the toolbar showing and with the link panel open. Steps
 1–15 keep their assertions, step 13 clicking Three Up's top padding before its Esc.
@@ -725,6 +761,35 @@ collapsed selection inside it. Step 8's axe runs twice more, with the toolbar sh
 **The controls step,** on `https://app.inflozo.com/controls`: in Eyebrow, typing to 35 characters stops at 30 and the
 field's hint reads "Eyebrow holds 30 characters."; in Heading, a paste of 60 characters arrives cut at 40 with "Heading
 holds 40 characters." under the field.
+
+**Run at Dev (2026-09-18), on this machine, on the tree this Dev commit carries:**
+- `pnpm check` (Node 24.18.1) -- **green**, 0 fail in every package: `packages/library`, `packages/theme-compiler`,
+  `packages/ghost-shim`, `packages/section-runtime` and `apps/web`, with the new `marks.test.ts` and the amended
+  `ad36.test.ts`, `index.test.ts`, `contexts.test.ts`, `validate.test.ts` and `selection.test.ts` among them, and
+  `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files` (no snapshot changed).
+- `bash tools/matrix/run-matrix-gate.sh` -- **green**: `render matrix: 180 cases · 5 designs · 1 packs · 0 violations`,
+  182 Playwright cases passed, and `git status tools/matrix` is clean, so no baseline was written.
+- `python3 tools/doc-audit.py --check`, twice -- **exit 0** both times, `PASS (0 warning(s))`.
+- **Real services this phase hit (R-82).** `env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) node
+  tools/probe/run-verify-controls.cjs` against **`https://app.inflozo.com/controls`** (Vercel production) and
+  **production Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): **82 PASS, 2 FAIL**, and the two failures are step
+  19's new limit assertions alone -- production still serves the previous deploy, where `maxChars` does not exist
+  (`41 characters · "This week at Orbit WeeklyABCDEFGHIJKLMNOP"`). Every other step passed against the live site,
+  including the link field after `LinkPanel` was split out, and the throwaway account was deleted in `finally`:
+  `DELETE /auth/v1/admin/users/{id} and the count is unchanged — HTTP 200, users 9 → 9`. This is the control for the
+  deployed run: the same harness goes green on step 19 once CI publishes this commit.
+- **Against a local production build** (`APP_ORIGIN=http://localhost:3111`, `APP_PREFIX=/app`, production Supabase),
+  `tools/probe/run-verify-editor.cjs`: **157 PASS, 1 FAIL**, every new step 16–26 passing -- typing and moving
+  between fields with no repaint, the toolbar's shape, placement and keys, the narrowed and mark-less fields, links,
+  the paste vectors with `window.__pwned` undefined in both documents, line breaks, the Subscribe label with no submit,
+  R-122's pill, the Esc ladder with zero `data-inflozo-*` and zero `contenteditable` at rest, the scrolling toolbar, the
+  panel's own rich field and token row, catalog and theme words, a reload starting from the stored docs, the touch tap, axe zero with the toolbar and with the
+  link panel open, and zero `securitypolicyviolation` events with the `EvalError` control holding. The one FAIL, `step 6 — Back again lands on Projects`, is the known `APP_PREFIX`
+  local-run artifact (`openCard` re-navigates under `/app`), not this story: it does not occur against production. One
+  earlier run of the same tree also failed step 9 (the skeleton's sr-only sentence ahead of the editor in the raw
+  stream) and passed it on the next run with nothing changed -- a local streaming race, watched for on the deployed run.
+- **Still owed, and by whom:** both harnesses against **`https://app.inflozo.com`** after CI deploys this commit
+  (the Review phase, R-82), and the owner's manual test (R-80).
 
 **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no billing,
 and reads no Ghost: link search uses Orbit Weekly's sample data until Story 5.18.

@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { BARE_HELPERS, COMPILE_TARGETS, GET_SOURCES } from './vocabulary.ts'
-import { CONTEXT_MATRIX as M, bindable, offerBindings, rootScope, versionAtLeast } from './contexts.ts'
+import { CONTEXT_MATRIX as M, GHOST_LABELS, bindable, ghostLabel, offerBindings, rootScope, versionAtLeast } from './contexts.ts'
 import type { BindingPlace, MatrixField, ScopeEntry } from './contexts.ts'
 
 
@@ -380,4 +380,26 @@ test('a pre-release version reads by its x.y.z; a refusal ends in one full stop'
   for (const why of [bindable('name', at('index.hbs', ['tags'])), bindable('title', at('amp.hbs')), bindable('../@site.title', at('index.hbs'))]) {
     assert.ok(why !== null && /[^.]\.$/.test(why), why ?? 'null')
   }
+})
+
+// R-122 (Story 5.3) — the lock pill names Ghost's own words from one list beside the matrix. The fields are DERIVED from
+// matrix.json, so a field added there fails here until it has a name; no count is held.
+test('every text, date and number field and every helper in the matrix has a plain name, and ghostLabel reads it at its place', () => {
+  const named = new Set(['text', 'date', 'number', 'helper'])
+  const blank = (v: unknown) => typeof v !== 'string' || v.trim() === ''
+  const unnamed = (list: typeof GHOST_LABELS) => [
+    ...Object.entries(M.universal).filter(([path, f]) => named.has(f.kind) && blank(list['universal']?.[path])).map(([path]) => `universal ${path}`),
+    ...Object.entries(M.scopes).flatMap(([scope, fields]) => Object.entries(fields).filter(([name, f]) => named.has(f.kind) && blank(list[scope]?.[name])).map(([name]) => `${scope} ${name}`)),
+  ]
+  // control: the same walk over the list with one name taken out finds exactly that one
+  const { title: _, ...post } = GHOST_LABELS['post'] ?? {}
+  assert.deepEqual(unnamed({ ...GHOST_LABELS, post }), ['post title'], 'control: a missing name is seen')
+  assert.deepEqual(unnamed(GHOST_LABELS), [], 'labels.json has no name for these matrix fields')
+  const home = { target: 'home.hbs', scope: [{ get: 'posts' }] }
+  assert.equal(ghostLabel('title', home), 'Post title')
+  assert.equal(ghostLabel('primary_tag.name', home), 'Tag name', 'a dotted path is named in the scope its last segment lives in')
+  assert.equal(ghostLabel('published_at', home), 'Publish date')
+  assert.equal(ghostLabel('@site.title', { target: 'default.hbs', scope: [] }), 'Site title')
+  assert.equal(ghostLabel('navigation', { target: 'default.hbs', scope: [] }, 'helper'), 'Navigation')
+  assert.equal(ghostLabel('title', { target: 'home.hbs', scope: [] }), null, 'a path that names no field here has no name')
 })

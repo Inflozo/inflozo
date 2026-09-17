@@ -11,7 +11,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
-import { assertBindableAttr, bindExpr, linkAttributes, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { allowedMarks, assertBindableAttr, bindExpr, linkAttributes, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { IconLookup } from '@inflozo/library'
 import type { RenderInput } from './index.ts'
@@ -234,6 +235,29 @@ test('AD-36 (1) — an `a` mark is scheme-checked, its rel is an allow-list, and
     const malformed = render({ body: { text: 'ab', marks: 'strong' as unknown as [] } })
     assert.ok(malformed.includes('ab'), `a malformed mark list threw instead of rendering the text: ${malformed}`)
   }
+})
+
+// ── (1) and the markup sink, on the one place marks are READ from markup: a paste (Story 5.3) ──
+test('AD-36 — a pasted img onerror, script, javascript: link and span style arrive as text; b, i, u and an https link survive where allowed', () => {
+  const window = new JSDOM('').window.document.defaultView
+  const html = '<b>Bold</b> <i>it</i> <u>un</u> <a href="https://x.example/">ok</a> <a href="javascript:window.__pwned=1">bad</a><img src="/x" onerror="window.__pwned=2"><script>window.__pwned=3</script><span style="color:red">red</span>'
+  // DOMParser's document is inert: nothing in it runs or loads
+  const body = new window.DOMParser().parseFromString(html, 'text/html').body as unknown as MarkNode
+  const schema = { body: { type: 'richtext', label: 'Body', marks: ['strong', 'em', 'u', 'a'] } } as unknown as RenderInput['schema']
+  const pasted = readMarks(body, allowedMarks(schema?.['body']), true)
+  assert.equal((window as unknown as { __pwned?: unknown }).__pwned, undefined, 'the parsed paste ran something')
+  assert.equal(pasted.text, 'Bold it un ok badred')
+  for (const out of [
+    renderCanvas(doc(), '<p data-prop="body">x</p>', { content: { body: pasted }, schema }),
+    renderTheme(doc(), '<p data-prop="body">x</p>', { content: { body: pasted }, schema }).template,
+  ]) {
+    assert.doesNotMatch(out, /<img|<script|<span|style=|onerror|javascript:/, `a paste vector reached markup: ${out}`)
+    // ...and the legitimate case still works
+    assert.ok(out.includes('<strong>Bold</strong> <em>it</em> <u>un</u> <a href="https://x.example/">ok</a> badred'), out)
+  }
+  // a field allowing only links keeps only the https link; a field allowing none keeps only the words
+  assert.deepEqual(readMarks(body, ['a'], true).marks, [{ start: 11, end: 13, mark: 'a', href: 'https://x.example/' }])
+  assert.deepEqual(readMarks(body, allowedMarks({ type: 'text', label: 'Headline' }), false), { text: 'Bold it un ok badred' })
 })
 
 test('AD-36 (4) — a separator-valid but CSS-invalid colour falls back rather than being dropped', () => {

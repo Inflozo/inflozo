@@ -313,7 +313,10 @@ dark mode in v1.
 
 **The three canvas pills are ink.** The design counter, the content-source pill and the Pro mark
 float over the user's site, so they are ink fills rather than surface cards — a white card over a
-white page disappears.
+white page disappears. **Two things over the canvas are not pills and are not ink:** P0-1's inline
+text toolbar and its lock pill are surface cards with the hairline border and the `md` shadow, as
+`P0-1 Inline Text Toolbar.dc.html` draws them (Story 5.3) — the toolbar is a control the user presses,
+and the lock pill is its plain-text counterpart in the same place.
 
 ---
 
@@ -341,6 +344,9 @@ Three sidebar roles are fixed and appear on every panel (Editor Sidebar Kit):
 
 Georgia and the other serifs that appear in the frames belong to the **user's site**, not to
 Inflozo — they are the fixture publication wearing a Style Pack, and they never style app chrome.
+**One exception, and the export is why** (R-74): the inline toolbar's **B, I and U are Georgia
+letterforms**, as P0-1 draws them, so they read as text marks rather than as app icons. It is the one
+place a serif styles Inflozo's own chrome, and it is named here so it stays one.
 
 ---
 

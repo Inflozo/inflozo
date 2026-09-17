@@ -55,7 +55,6 @@ export function escapeUserText(s: string): string {
     .replace(/\}/g, '&#125;')
 }
 
-const MARK_SET: ReadonlySet<string> = new Set(MARKS)
 const REL_SET: ReadonlySet<string> = new Set(LINK_RELS)
 const TOKEN_SET: ReadonlySet<string> = new Set(INLINE_TOKENS)
 
@@ -97,10 +96,20 @@ export function linkAttributes(link: unknown): Record<string, string> {
   return attrs
 }
 
+/** An `a` mark always has attributes here: one naming no destination was dropped before the sweep (DW-120). */
 function openTag(m: Mark): string {
   if (m.mark !== 'a') return `<${m.mark}>`
-  const attrs = Object.entries(linkAttributes(m)).map(([k, v]) => (v === '' ? k : `${k}="${escapeUserText(v)}"`))
-  return attrs.length === 0 ? '<a>' : `<a ${attrs.join(' ')}>`
+  return `<a ${Object.entries(linkAttributes(m)).map(([k, v]) => (v === '' ? k : `${k}="${escapeUserText(v)}"`)).join(' ')}>`
+}
+
+/** AD-4's per-prop allow-list, in `MARKS`' fixed order (P0-1's): a `richtext` prop's own marks, nothing for any other
+ *  type, and nothing for FR-Q3's `plainText` lock — which truncates the list rather than parsing anything. A field whose
+ *  list is empty shows no toolbar and takes no mark key (Story 5.3, UX-DR19: absent, not greyed). */
+export function allowedMarks(def: PropDef | undefined, value?: PropValue): string[] {
+  if (isRich(value) && value.plainText === true) return []
+  if (def?.type !== 'richtext') return []
+  const declared = def.marks ?? []
+  return MARKS.filter((m) => declared.includes(m))
 }
 
 /** R-27: a prop declares the inline tokens it accepts, and **anything else in braces stays literal
@@ -137,9 +146,7 @@ export function serializeMarks(
 
   // The per-prop mark allow-list (AD-4): a prop that does not declare a mark does not get it, and a
   // prop that is not `richtext` gets none at all. FR-Q3's lock truncates the list to empty.
-  const allowed =
-    rich && value.plainText === true ? [] : def?.type === 'richtext' ? (def.marks ?? []) : []
-  const allow: ReadonlySet<string> = new Set(allowed.filter((m) => MARK_SET.has(m)))
+  const allow: ReadonlySet<string> = new Set(allowedMarks(def, value))
 
   const marks = (rich && Array.isArray(value.marks) ? value.marks : [])
     .filter(
@@ -151,14 +158,19 @@ export function serializeMarks(
         Number.isInteger(m.end) &&
         m.start >= 0 &&
         m.end > m.start &&
-        m.end <= text.length,
+        m.end <= text.length &&
+        // DW-120 (Story 5.3): a link naming no destination is no link — its words stay, with no anchor round them, as a
+        // `url` prop's unset link hides its element rather than writing an empty one
+        (m.mark !== 'a' || Object.keys(linkAttributes(m)).length > 0),
     )
     // outermost first at a shared start, so the open/close sweep below nests consistently
     .slice()
     .sort((a, b) => a.start - b.start || b.end - a.end || (a.mark < b.mark ? -1 : a.mark > b.mark ? 1 : 0))
 
   const declared = (def?.tokens ?? []).filter((t) => TOKEN_SET.has(t))
-  const esc = (run: string) => escapeUserText(substituteTokens(run, declared, tokenValues))
+  // Story 5.3: a Text Area's line break is `\n` in the value and `<br>` in both emitters' markup — escaped first, so the
+  // only tag a run can carry is this one
+  const esc = (run: string) => escapeUserText(substituteTokens(run, declared, tokenValues)).replace(/\n/g, '<br>')
 
   if (marks.length === 0) return esc(text)
 
@@ -211,4 +223,307 @@ export function editText(value: PropValue, next: string): PropValue {
     return end > start ? [{ ...m, start, end }] : []
   })
   return { ...value, text: next, marks }
+}
+
+// ─── Story 5.3 — the value's edits, beside the one serializer ───────────────────────────────────────────────────
+//
+// Typing never reads marks or links back from the page: the page cannot hold a whole link record (`linkAttributes`
+// writes a Portal link as `href="#" data-portal`, never writes `ref`), so the element is read as WORDS, the one edit
+// between the words before and after is applied to the stored value, and the element is rewritten from the serializer
+// when the two differ. Only a paste, which brings no record, is read for its marks (`readMarks`). Everything below is
+// pure over handed nodes (AD-1): the browser's elements and a jsdom tree both satisfy `MarkNode`.
+
+/** The members of a DOM node the readers below walk. */
+export type MarkNode = {
+  readonly nodeType: number
+  readonly nodeName: string
+  readonly nodeValue: string | null
+  readonly childNodes: ArrayLike<MarkNode>
+  getAttribute?(name: string): string | null
+}
+
+const TEXT_NODE = 3
+const ELEMENT_NODE = 1
+const kids = (n: MarkNode): MarkNode[] => Array.from(n.childNodes)
+/** a space the browser typed as U+00A0 is a space */
+const words = (n: MarkNode): string => (n.nodeValue ?? '').replace(/ /g, ' ')
+
+const textOf = (v: PropValue): string => (isRich(v) ? v.text : v == null ? '' : String(v))
+const marksOf = (v: PropValue): readonly Mark[] => (isRich(v) && Array.isArray(v.marks) ? v.marks : [])
+/** the value with new text and marks, in its own shape: a plain string stays one until it carries a mark */
+const shaped = (value: PropValue, text: string, marks: Mark[]): PropValue =>
+  isRich(value) ? { ...value, text, marks } : marks.length === 0 ? text : { text, marks }
+
+/** Sorted, empty ranges dropped, and overlapping or touching ranges of one non-link mark merged. Links are records and
+ *  are never merged here. */
+function tidy(marks: readonly Mark[]): Mark[] {
+  const out: Mark[] = []
+  for (const m of [...marks].filter((m) => m.end > m.start).sort((a, b) => a.start - b.start || a.end - b.end)) {
+    const into = m.mark === 'a' ? undefined : out.find((o) => o.mark === m.mark && o.start <= m.start && m.start <= o.end)
+    if (into) into.end = Math.max(into.end, m.end)
+    else out.push({ ...m })
+  }
+  return out
+}
+
+/** true when the ranges cover every position in [start, end) */
+function covers(ranges: readonly Mark[], start: number, end: number): boolean {
+  let at = start
+  for (const r of [...ranges].sort((a, b) => a.start - b.start)) if (r.start <= at && r.end > at) at = r.end
+  return at >= end
+}
+
+/** A link the range touches: overlapping it, or — for a collapsed range — strictly around it. */
+const touches = (m: Mark, start: number, end: number): boolean =>
+  m.mark === 'a' && (start === end ? m.start < start && start < m.end : m.start < end && m.end > start)
+
+/** A link record without its range: the fields `Link` names, as stored. */
+function recordOf(link: Link): Link {
+  const out: Record<string, unknown> = {}
+  for (const k of ['href', 'portal', 'search', 'ref', 'newTab', 'rel'] as const) if (link[k] !== undefined) out[k] = link[k]
+  return out as Link
+}
+
+/** An element's words, as the value holds them: text, `<br>` as `\n`, U+00A0 as a space. A `<br>` with nothing but
+ *  `<br>`s after it ends the words without adding one: an editing element ending in `\n` carries one extra `<br>` so its
+ *  empty last line shows, and an element the browser emptied keeps a placeholder `<br>`. */
+export function readText(root: MarkNode): string {
+  let out = ''
+  let trailingBr = false
+  const walk = (n: MarkNode) => {
+    for (const c of kids(n)) {
+      if (c.nodeType === TEXT_NODE) {
+        const w = words(c)
+        out += w
+        if (w !== '') trailingBr = false
+      } else if (c.nodeType === ELEMENT_NODE) {
+        if (c.nodeName === 'BR') {
+          out += '\n'
+          trailingBr = true
+        } else walk(c)
+      }
+    }
+  }
+  walk(root)
+  return trailingBr ? out.slice(0, -1) : out
+}
+
+/** A DOM point inside `root` as an offset into `readText(root)`; a point outside it reads as the end. */
+export function textOffset(root: MarkNode, node: MarkNode, offset: number): number {
+  let count = 0
+  let found: number | null = null
+  const visit = (n: MarkNode): boolean => {
+    if (n.nodeType === TEXT_NODE) {
+      if (n === node) {
+        found = count + Math.min(offset, words(n).length)
+        return true
+      }
+      count += words(n).length
+      return false
+    }
+    if (n !== root && n.nodeName === 'BR') {
+      count += 1
+      return false
+    }
+    const list = kids(n)
+    for (const [i, c] of list.entries()) {
+      if (n === node && i === offset) {
+        found = count
+        return true
+      }
+      if (visit(c)) return true
+    }
+    if (n === node) {
+      found = count
+      return true
+    }
+    return false
+  }
+  visit(root)
+  const max = readText(root).length
+  return Math.min(found ?? max, max)
+}
+
+/** The DOM point for an offset into `readText(root)`: inside a text node where there is one, else before the `<br>` or
+ *  at the end of `root`. */
+export function domPoint(root: MarkNode, offset: number): { node: MarkNode; offset: number } {
+  let count = 0
+  let found: { node: MarkNode; offset: number } | null = null
+  const visit = (n: MarkNode): boolean => {
+    for (const [i, c] of kids(n).entries()) {
+      if (c.nodeType === TEXT_NODE) {
+        const length = words(c).length
+        if (offset <= count + length) {
+          found = { node: c, offset: offset - count }
+          return true
+        }
+        count += length
+      } else if (c.nodeName === 'BR') {
+        if (offset <= count) {
+          found = { node: n, offset: i }
+          return true
+        }
+        count += 1
+      } else if (c.nodeType === ELEMENT_NODE && visit(c)) return true
+    }
+    return false
+  }
+  visit(root)
+  return found ?? { node: root, offset: kids(root).length }
+}
+
+/** The one edit that turns `before` into `after`, anchored at the caret (its offset in `after`): the text after the
+ *  caret is the unchanged tail, so "aa" → "aaa" with the caret after the typed letter places it where it was typed, not
+ *  at whichever end a longest-common-prefix would pick. */
+export function diffText(before: string, after: string, caret: number): { start: number; end: number; insert: string } {
+  let common = 0
+  while (common < before.length && common < after.length && before[before.length - 1 - common] === after[after.length - 1 - common]) common++
+  const tail = Math.max(0, Math.min(after.length - caret, common))
+  let head = 0
+  while (head < before.length - tail && head < after.length - tail && before[head] === after[head]) head++
+  return { start: head, end: before.length - tail, insert: after.slice(head, after.length - tail) }
+}
+
+/** `value` with [start, end) replaced by `insert` — a string, or a paste's text and marks — and the marks around it
+ *  shifted. A mark ending at `start` does not grow and one starting at `end` does not either, except by the `typed` rule:
+ *  typed characters take the bold, italic and underline of the character before them, never its link. The insert is cut
+ *  to `max` characters in all, and `refused` says how many were cut. */
+export function replaceRange(
+  value: PropValue,
+  start: number,
+  end: number,
+  insert: string | RichText,
+  o: { max?: number; typed?: boolean } = {},
+): { value: PropValue; refused: number } {
+  const text = textOf(value)
+  const [a, b] = [Math.max(0, Math.min(start, text.length)), Math.max(0, Math.min(end, text.length))]
+  const [from, to] = a <= b ? [a, b] : [b, a]
+  const wanted = typeof insert === 'string' ? insert : insert.text
+  const room = o.max === undefined ? wanted.length : Math.max(0, o.max - (text.length - (to - from)))
+  const kept = wanted.slice(0, room)
+  const n = kept.length
+  const removed = to - from
+  const startOf = (x: number) => (x < from ? x : Math.max(x, to) - removed + n)
+  const endOf = (x: number) => (x <= from ? x : x >= to ? x - removed + n : from)
+  const marks: Mark[] = marksOf(value).map((m) => {
+    const moved = { ...m, start: startOf(m.start), end: endOf(m.end) }
+    if (o.typed === true && n > 0 && m.mark !== 'a' && m.start < from && m.end >= from) moved.end = Math.max(moved.end, from + n)
+    return moved
+  })
+  if (typeof insert !== 'string') {
+    for (const m of marksOf(insert)) {
+      const s = Math.min(m.start, n)
+      const e = Math.min(m.end, n)
+      if (e > s) marks.push({ ...m, start: from + s, end: from + e })
+    }
+  }
+  return { value: shaped(value, text.slice(0, from) + kept + text.slice(to), tidy(marks)), refused: wanted.length - n }
+}
+
+/** A mark over [start, end): removed from the range when every character in it carries the mark, added over it
+ *  otherwise — so a partly bold selection becomes wholly bold. A collapsed range changes nothing. */
+export function toggleMark(value: PropValue, start: number, end: number, mark: string): PropValue {
+  if (start >= end) return value
+  const marks = marksOf(value)
+  const next = covers(marks.filter((m) => m.mark === mark), start, end)
+    ? marks.flatMap((m) => (m.mark !== mark || m.end <= start || m.start >= end ? [m] : [{ ...m, end: start }, { ...m, start: end }]))
+    : [...marks, { start, end, mark }]
+  return shaped(value, textOf(value), tidy(next))
+}
+
+/** One `a` mark carrying `link`, over the union of [start, end) and every link that range touches. */
+export function setLink(value: PropValue, start: number, end: number, link: Link): PropValue {
+  const marks = marksOf(value)
+  const touched = marks.filter((m) => touches(m, start, end))
+  if (start === end && touched.length === 0) return value
+  const from = Math.min(start, ...touched.map((m) => m.start))
+  const to = Math.max(end, ...touched.map((m) => m.end))
+  return shaped(value, textOf(value), tidy([...marks.filter((m) => !touched.includes(m)), { ...recordOf(link), start: from, end: to, mark: 'a' }]))
+}
+
+/** Every link [start, end) touches, removed whole; the words stay. */
+export function unlink(value: PropValue, start: number, end: number): PropValue {
+  const marks = marksOf(value)
+  return shaped(value, textOf(value), tidy(marks.filter((m) => !touches(m, start, end))))
+}
+
+/** What the toolbar shows pressed: the non-link marks every character in [start, end) carries, whether any link is
+ *  touched, and the first touched link's record, which the link panel opens filled with. */
+export function activeMarks(value: PropValue, start: number, end: number): { marks: string[]; linked: boolean; link: Link | null } {
+  const marks = marksOf(value)
+  const touched = marks.filter((m) => touches(m, start, end))
+  return {
+    marks: start >= end ? [] : MARKS.filter((k) => k !== 'a' && covers(marks.filter((m) => m.mark === k), start, end)),
+    linked: touched.length > 0,
+    link: touched[0] === undefined ? null : recordOf(touched[0]),
+  }
+}
+
+const BLOCKS: ReadonlySet<string> = new Set([
+  'ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'DD', 'DIV', 'DL', 'DT', 'FIGCAPTION', 'FIGURE', 'FOOTER', 'H1', 'H2', 'H3',
+  'H4', 'H5', 'H6', 'HEADER', 'HR', 'LI', 'MAIN', 'NAV', 'OL', 'P', 'PRE', 'SECTION', 'TABLE', 'TR', 'UL',
+])
+/** what a page's clipboard carries that is not words a reader saw: its contents are not text either */
+const UNSEEN: ReadonlySet<string> = new Set(['HEAD', 'LINK', 'META', 'NOSCRIPT', 'SCRIPT', 'STYLE', 'TEMPLATE', 'TITLE'])
+const TAG_MARKS: Readonly<Record<string, string>> = { B: 'strong', STRONG: 'strong', EM: 'em', I: 'em', U: 'u' }
+const PASTE_SCHEMES = /^(https?|mailto|tel):/i
+
+/** A PARSED PASTE as text plus marks — the only place marks are read from markup. Whitespace runs collapse to one
+ *  space; `<br>` and a block's edges are `\n` when the field takes `lines`, else a space. `strong`/`b`, `em`/`i`, `u`
+ *  and an `a` whose href is http, https, mailto or tel become marks, and only the `allowed` ones are kept; every other
+ *  element is its text, and a script's or a style's contents are not text at all. The caller parses with `DOMParser`,
+ *  whose document runs and loads nothing. */
+export function readMarks(root: MarkNode, allowed: readonly string[], lines: boolean): RichText {
+  const allow = new Set(allowed)
+  let text = ''
+  const marks: Mark[] = []
+  let inLink = false
+  const edge = () => {
+    if (text === '' || /[\n ]$/.test(text)) {
+      if (lines && text.endsWith(' ') && !text.endsWith('\n')) text += '\n'
+      return
+    }
+    text += lines ? '\n' : ' '
+  }
+  const walk = (n: MarkNode) => {
+    for (const c of kids(n)) {
+      if (c.nodeType === TEXT_NODE) {
+        const run = (c.nodeValue ?? '').replace(/\s+/g, ' ')
+        text += text === '' || /[\n ]$/.test(text) ? run.replace(/^ /, '') : run
+        continue
+      }
+      if (c.nodeType !== ELEMENT_NODE || UNSEEN.has(c.nodeName)) continue
+      if (c.nodeName === 'BR') {
+        if (lines) text += '\n'
+        else if (text !== '' && !text.endsWith(' ')) text += ' '
+        continue
+      }
+      const block = BLOCKS.has(c.nodeName)
+      if (block) edge()
+      const at = text.length
+      const tag = TAG_MARKS[c.nodeName]
+      const href = c.nodeName === 'A' ? (c.getAttribute?.('href') ?? '').trim() : ''
+      const link = c.nodeName === 'A' && !inLink && allow.has('a') && PASTE_SCHEMES.test(href)
+      if (link) inLink = true
+      walk(c)
+      if (link) {
+        inLink = false
+        marks.push({ start: at, end: text.length, mark: 'a', href })
+      } else if (tag !== undefined && allow.has(tag)) marks.push({ start: at, end: text.length, mark: tag })
+      if (block) edge()
+    }
+  }
+  walk(root)
+  const trimmed = text.replace(/[\n ]+$/, '')
+  const clamped = marks.map((m) => ({ ...m, end: Math.min(m.end, trimmed.length) }))
+  // adjacent pieces of one link (a page split across two anchors with the same href) are one link
+  const links = clamped.filter((m) => m.mark === 'a' && m.end > m.start).sort((x, y) => x.start - y.start)
+  const joined: Mark[] = []
+  for (const l of links) {
+    const last = joined[joined.length - 1]
+    if (last !== undefined && last.href === l.href && last.end >= l.start) last.end = Math.max(last.end, l.end)
+    else joined.push({ ...l })
+  }
+  const all = tidy([...clamped.filter((m) => m.mark !== 'a'), ...joined])
+  return all.length === 0 ? { text: trimmed } : { text: trimmed, marks: all }
 }

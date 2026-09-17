@@ -27,6 +27,11 @@
 // stack (step 10); a press that does nothing else — focus, text selection and a middle click — and the sticky header's
 // box in the fixed layer (step 11); On scroll → Static moving that box to the scrolling layer (step 12); a finger that
 // moves being a scroll, and the touch context's own CSP zero (step 14).
+// Story 5.3 adds steps 16–26 — typing and moving between fields, P0-1's toolbar and its keys, a narrowed field, links,
+// AD-36's paste vectors, line breaks, a submit button's label, R-122's lock pill, the Esc ladder, the toolbar hiding
+// while the canvas scrolls, and the panel's own rich field, its token row, catalog words and the theme's own words — all inside step 5's CSP session; step 8's axe runs twice more, with the toolbar showing and
+// with the link panel open; step 14 gains a tap into a text prop; and step 13 presses the section's top padding, because a
+// press on its words is now the start of editing.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -528,7 +533,12 @@ async function main() {
     check('step 12 — Reset this design → Reset design restores data-per-row="three", still selected (DW-167\'s wiring, in the editor)', (await attr(GRID, 'data-per-row')) === 'three' && (await onScreen(GRID)).selected)
 
     // ── step 13 — Esc from the canvas, then rest ──
+    // Story 5.3: on the section's TOP PADDING, not its words — a press on a text prop of the selected section starts editing,
+    // and Esc would then end that rather than the selection
     await clickOn(GRID)
+    const gridPad = await onScreen(GRID)
+    await page.mouse.click(gridPad.x, gridPad.y + 6)
+    await page.waitForTimeout(200)
     await page.keyboard.press('Escape')
     await page.waitForTimeout(200)
     const rested = await panelOf()
@@ -667,8 +677,370 @@ async function main() {
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
 
+    // ── steps 16–25 — Story 5.3's inline editing, inside the CSP session ──
+    // Every gesture is a real press or key on the deployed editor: the caret the browser places under the pointer, the
+    // toolbar's own buttons, a paste event carrying AD-36's vectors, and the canvas scrolling under the wheel.
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const NEWS = nth('a22/1')
+    const TITLE = '.a17-1__title'
+    const GRID_SUB = '.a17-1__sub'
+    const HERO_SUB = '.a4-13__sub'
+    const HEADLINE = '.a4-13__headline'
+    // a word's on-screen rect inside one section, or the last character's when `word` is null — the canvas is scrolled to
+    // it first, and every edge is mapped through the frame's own rect and the fit
+    const textIn = (target, n, selector, word, reveal = true) => target.evaluate(([n, selector, word, reveal]) => {
+      const f = document.querySelector('section[aria-label="Canvas"] iframe')
+      const d = f.contentDocument
+      const el = d.querySelectorAll('#canvas > *')[n].querySelector(selector)
+      if (!el) return null
+      if (reveal) el.scrollIntoView({ block: 'center' })
+      const walk = d.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+      const nodes = []
+      while (walk.nextNode()) nodes.push(walk.currentNode)
+      const range = d.createRange()
+      if (word === null) {
+        const last = nodes[nodes.length - 1]
+        range.setStart(last, Math.max(0, last.data.length - 1))
+        range.setEnd(last, last.data.length)
+      } else if (word === 'first') {
+        range.setStart(nodes[0], 0)
+        range.setEnd(nodes[0], 1)
+      } else {
+        const holder = nodes.find((t) => t.data.includes(word))
+        if (!holder) return null
+        range.setStart(holder, holder.data.indexOf(word))
+        range.setEnd(holder, holder.data.indexOf(word) + word.length)
+      }
+      const b = range.getBoundingClientRect()
+      const fr = f.getBoundingClientRect()
+      const s = fr.width / f.offsetWidth
+      return {
+        left: fr.left + b.left * s, right: fr.left + b.right * s, top: fr.top + b.top * s, bottom: fr.top + b.bottom * s,
+        x: fr.left + (b.left + b.width / 2) * s, y: fr.top + (b.top + b.height / 2) * s,
+        endX: fr.left + (b.right - 1) * s, startX: fr.left + (b.left + 1) * s,
+      }
+    }, [n, selector, word, reveal])
+    const textAt = (n, selector, word, reveal) => textIn(page, n, selector, word, reveal)
+    const caretInto = async (n, selector, where = null) => {
+      const at = await textAt(n, selector, where)
+      await page.mouse.click(where === 'first' ? at.startX : at.endX, at.y)
+      await page.waitForTimeout(150)
+      return at
+    }
+    const pickWord = async (n, selector, word) => {
+      const at = await textAt(n, selector, word)
+      await page.mouse.dblclick(at.x, at.y)
+      await page.waitForTimeout(200)
+      return at
+    }
+    const markupOf = (n, selector) => canvasFrame().evaluate(([n, selector]) => document.querySelectorAll('#canvas > *')[n].querySelector(selector)?.innerHTML ?? null, [n, selector])
+    const wordsOf = (n, selector) => canvasFrame().evaluate(([n, selector]) => document.querySelectorAll('#canvas > *')[n].querySelector(selector)?.textContent ?? null, [n, selector])
+    const editingNow = () => canvasFrame().evaluate(() => {
+      const el = document.activeElement
+      return { tag: el?.tagName ?? null, className: el?.className ?? null, editable: el?.isContentEditable === true, selected: document.getSelection()?.toString() ?? '', editables: document.querySelectorAll('[contenteditable]').length }
+    })
+    const bar = page.locator('[role="toolbar"][aria-label="Text formatting"]')
+    const barNow = () => page.evaluate(() => {
+      const el = document.querySelector('[role="toolbar"][aria-label="Text formatting"]')
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      const c = getComputedStyle(el)
+      return {
+        left: r.left, right: r.right, top: r.top, bottom: r.bottom, visibility: c.visibility, radius: c.borderRadius, bg: c.backgroundColor, shadow: c.boxShadow, padding: c.padding,
+        buttons: [...el.querySelectorAll('button')].map((b) => ({ name: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), disabled: b.getAttribute('aria-disabled'), w: b.getBoundingClientRect().width, family: getComputedStyle(b.firstElementChild ?? b).fontFamily })),
+      }
+    })
+    const linkDialog = page.locator('#canvas-inline-link')
+
+    // ── step 16 — typing, and moving between fields ──
+    await clickOn(GRID)
+    await openGroup('Content')
+    await canvasFrame().evaluate((n) => {
+      const root = document.querySelectorAll('#canvas > *')[n]
+      window.__root = root
+      window.__title = root.querySelector('.a17-1__title')
+    }, GRID)
+    await caretInto(GRID, TITLE)
+    const caretIn = await editingNow()
+    check('step 16 — a click inside the selected Three Up\'s title puts the caret in it and makes it editable, with the section still selected', caretIn.editable && /a17-1__title/.test(caretIn.className ?? '') && (await onScreen(GRID)).selected, JSON.stringify(caretIn))
+    await page.keyboard.type(' and summer')
+    await page.waitForTimeout(250)
+    const typedTitle = await wordsOf(GRID, TITLE)
+    const panelTitle = await controlsAside().getByLabel('Title', { exact: true }).innerText()
+    check('step 16 — the canvas title takes what is typed, and the panel\'s Title field shows the same words', typedTitle.endsWith(' and summer') && panelTitle.endsWith(' and summer'), `${JSON.stringify(typedTitle)} · panel ${JSON.stringify(panelTitle)}`)
+    await caretInto(GRID, GRID_SUB)
+    await page.keyboard.type(' Two')
+    await page.waitForTimeout(250)
+    const movedFields = await canvasFrame().evaluate((n) => {
+      const root = document.querySelectorAll('#canvas > *')[n]
+      return { same: root === window.__root, sameTitle: root.querySelector('.a17-1__title') === window.__title, title: root.querySelector('.a17-1__title').textContent, sub: root.querySelector('.a17-1__sub').textContent, editing: document.activeElement?.className ?? '' }
+    }, GRID)
+    check('step 16 — a press into the sub moves the caret there and repaints nothing: the title keeps its words and both nodes are the ones the paint made', movedFields.same && movedFields.sameTitle && movedFields.title.endsWith(' and summer') && movedFields.sub.endsWith(' Two') && /a17-1__sub/.test(movedFields.editing), JSON.stringify(movedFields))
+    check('step 16 — the canvas carries no data-inflozo-prop: the stamps were lifted off at the paint', (await canvasFrame().evaluate(() => document.querySelectorAll('[data-inflozo-prop], [data-inflozo-item], [data-inflozo-ghost]').length)) === 0)
+
+    // ── step 17 — the toolbar ──
+    await pickWord(GRID, TITLE, 'spring')
+    const bar17 = await barNow()
+    const spring = await textAt(GRID, TITLE, 'spring')
+    check('step 17 — P0-1\'s bar: Bold, Italic, Underline, Link and Remove link in that order, Remove link disabled, on white with the 10px radius, the md shadow and 3px padding', bar17
+      && bar17.buttons.map((b) => b.name).join(' · ') === 'Bold · Italic · Underline · Link · Remove link'
+      && bar17.buttons[4].disabled === 'true' && bar17.buttons.every((b) => Math.round(b.w) === 30)
+      && bar17.bg === 'rgb(255, 255, 255)' && bar17.radius === '10px' && bar17.padding === '3px'
+      && /rgba\(28, 27, 26, 0\.08\) 0px 4px 16px/.test(bar17.shadow) && /Georgia/.test(bar17.buttons[0].family), JSON.stringify(bar17))
+    check('step 17 — it is centred on the selection\'s on-screen rect within 1px, its bottom 8 ± 1px above it', bar17 && Math.abs((bar17.left + bar17.right) / 2 - (spring.left + spring.right) / 2) <= 1 && Math.abs(spring.top - bar17.bottom - 8) <= 1, `bar ${JSON.stringify({ left: bar17?.left, right: bar17?.right, bottom: bar17?.bottom })} · word ${JSON.stringify({ left: spring.left, right: spring.right, top: spring.top })}`)
+    await bar.getByRole('button', { name: 'Bold', exact: true }).click()
+    await page.waitForTimeout(200)
+    const boldedTitle = await markupOf(GRID, TITLE)
+    check('step 17 — Bold wraps the selected word and shows pressed', boldedTitle.includes('<strong>spring</strong>') && (await barNow()).buttons[0].pressed === 'true', boldedTitle)
+    await bar.getByRole('button', { name: 'Bold', exact: true }).click()
+    await page.waitForTimeout(200)
+    check('step 17 — Bold again removes exactly that', !(await markupOf(GRID, TITLE)).includes('<strong>'), await markupOf(GRID, TITLE))
+    await page.keyboard.press('ControlOrMeta+i')
+    await page.waitForTimeout(200)
+    check('step 17 — ⌘I over the selection wraps it in <em>', (await markupOf(GRID, TITLE)).includes('<em>spring</em>'), await markupOf(GRID, TITLE))
+    await page.keyboard.press('Alt+F10')
+    await page.waitForTimeout(150)
+    const onBold = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('ArrowRight')
+    const onUnderline = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(200)
+    check('step 17 — ⌥F10 focuses Bold, the arrows move to Underline and Enter applies it', onBold === 'Bold' && onUnderline === 'Underline' && (await markupOf(GRID, TITLE)).includes('<u>'), `${onBold} → ${onUnderline} · ${await markupOf(GRID, TITLE)}`)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    const backInText = await editingNow()
+    check('step 17 — Escape in the toolbar returns to the text with the selection it acted on', backInText.editable && backInText.selected === 'spring', JSON.stringify(backInText))
+
+    // ── step 18 — narrowed fields ──
+    await clickOn(HERO)
+    await pickWord(HERO, HERO_SUB, 'letter')
+    const narrowed = await barNow()
+    check('step 18 — Latest Post\'s sub permits links alone: the bar shows Link and Remove link, in that order, and nothing else', narrowed && narrowed.buttons.map((b) => b.name).join(' · ') === 'Link · Remove link', JSON.stringify(narrowed?.buttons))
+    const headlineBefore = await markupOf(HERO, HEADLINE)
+    await pickWord(HERO, HEADLINE, 'personal')
+    await page.keyboard.press('ControlOrMeta+b')
+    await page.waitForTimeout(200)
+    check('step 18 — its headline permits no mark: no toolbar, and ⌘B changes nothing', (await barNow()) === null && (await markupOf(HERO, HEADLINE)) === headlineBefore, `${await markupOf(HERO, HEADLINE)}`)
+
+    // ── step 19 — links ──
+    await pickWord(HERO, HERO_SUB, 'letter')
+    await bar.getByRole('button', { name: 'Link', exact: true }).click()
+    await page.waitForTimeout(300)
+    const linkOpen = await linkDialog.evaluate((el) => el.matches(':popover-open'))
+    const searchFocused = await page.evaluate(() => document.activeElement?.id)
+    check('step 19 — Link opens P0-1\'s popover at the selection, with its search focused', linkOpen && searchFocused === 'canvas-inline-q', `${linkOpen} · focus ${searchFocused}`)
+    await page.keyboard.type('night')
+    await page.waitForTimeout(250)
+    await linkDialog.getByRole('button', { name: /night shift/ }).click()
+    await linkDialog.getByRole('button', { name: 'Done', exact: true }).click()
+    await page.waitForTimeout(300)
+    const linkedSub = await markupOf(HERO, HERO_SUB)
+    const hrefBeforeClick = await canvasFrame().evaluate(() => location.href)
+    const anchor = await textAt(HERO, HERO_SUB, 'letter')
+    await page.mouse.click(anchor.x, anchor.y)
+    await page.waitForTimeout(250)
+    check('step 19 — the words become one link carrying the chosen post, and a click on it navigates nowhere', /<a href="https:\/\/[^"]*the-night-shift-at-the-port-of-algeciras\/">letter<\/a>/.test(linkedSub) && (await canvasFrame().evaluate(() => location.href)) === hrefBeforeClick, linkedSub)
+    await pickWord(HERO, HERO_SUB, 'small')
+    await bar.getByRole('button', { name: 'Link', exact: true }).click()
+    await page.waitForTimeout(300)
+    await linkDialog.getByRole('button', { name: 'Sign up', exact: true }).click()
+    await linkDialog.getByRole('button', { name: 'Done', exact: true }).click()
+    await page.waitForTimeout(300)
+    check('step 19 — a Portal action becomes the inert anchor the shim reads', (await markupOf(HERO, HERO_SUB)).includes('<a href="#" data-portal="signup">small</a>'), await markupOf(HERO, HERO_SUB))
+    await caretInto(HERO, HERO_SUB, 'first')
+    await page.keyboard.type('x')
+    await page.waitForTimeout(250)
+    const afterTyping = await markupOf(HERO, HERO_SUB)
+    check('step 19 — typing at the start of the field leaves both link records whole', /the-night-shift-at-the-port-of-algeciras\/">letter<\/a>/.test(afterTyping) && afterTyping.includes('<a href="#" data-portal="signup">small</a>') && afterTyping.startsWith('x'), afterTyping)
+    await pickWord(HERO, HERO_SUB, 'letter')
+    const removeOn = (await barNow()).buttons.find((b) => b.name === 'Remove link')
+    await bar.getByRole('button', { name: 'Remove link', exact: true }).click()
+    await page.waitForTimeout(250)
+    const unlinked = await markupOf(HERO, HERO_SUB)
+    check('step 19 — a selection inside a link enables Remove link, which removes that anchor and keeps the words', removeOn.disabled !== 'true' && !unlinked.includes('the-night-shift') && unlinked.includes('letter') && unlinked.includes('data-portal="signup"'), unlinked)
+    await pickWord(HERO, HERO_SUB, 'small')
+    await bar.getByRole('button', { name: 'Link', exact: true }).click()
+    await page.waitForTimeout(300)
+    const filled = await linkDialog.evaluate((el) => [...el.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.textContent.trim()))
+    check('step 19 — Link on a selection touching a link opens the panel filled with that link\'s own record', filled.includes('Sign up'), JSON.stringify(filled))
+    const beforePress = await markupOf(HERO, HERO_SUB)
+    const pressPoint = await textAt(HERO, HERO_SUB, 'about')
+    await page.mouse.click(pressPoint.x, pressPoint.y)
+    await page.waitForTimeout(300)
+    check('step 19 — a press on the canvas closes the panel and commits nothing', !(await linkDialog.evaluate((el) => el.matches(':popover-open'))) && (await markupOf(HERO, HERO_SUB)) === beforePress, await markupOf(HERO, HERO_SUB))
+
+    // ── step 20 — paste ──
+    const PASTE = '<b>Bold</b> <i>it</i> <u>un</u> <a href="https://x.example/">ok</a> <a href="javascript:window.__pwned=1">bad</a><img src="/x" onerror="window.__pwned=2"><script>window.__pwned=3</scr' + 'ipt><span style="color:red">red</span>'
+    const pasteInto = (html) => canvasFrame().evaluate((html) => {
+      const el = document.activeElement
+      const data = new DataTransfer()
+      data.setData('text/html', html)
+      data.setData('text/plain', 'plain')
+      el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }))
+    }, html)
+    await clickOn(GRID)
+    await caretInto(GRID, GRID_SUB)
+    await page.keyboard.press('ControlOrMeta+a')
+    await pasteInto(PASTE)
+    await page.waitForTimeout(300)
+    const pastedGrid = await markupOf(GRID, GRID_SUB)
+    const pwned = [await page.evaluate(() => window.__pwned), await canvasFrame().evaluate(() => window.__pwned)]
+    check('step 20 — a paste into a four-mark field keeps bold, italic, underline and the https link, and everything else as its text', pastedGrid === '<strong>Bold</strong> <em>it</em> <u>un</u> <a href="https://x.example/">ok</a> badred', pastedGrid)
+    check('step 20 — no script ran and no image loaded, in either document', pwned.every((v) => v === undefined) && !/<img|<script|<span|style=|javascript:/.test(pastedGrid), JSON.stringify(pwned))
+    await clickOn(HERO)
+    await caretInto(HERO, HERO_SUB)
+    await page.keyboard.press('ControlOrMeta+a')
+    await pasteInto(PASTE)
+    await page.waitForTimeout(300)
+    check('step 20 — into a field that permits links alone, only the link survives', (await markupOf(HERO, HERO_SUB)) === 'Bold it un <a href="https://x.example/">ok</a> badred', await markupOf(HERO, HERO_SUB))
+
+    // ── step 21 — line breaks ──
+    await clickOn(GRID)
+    await openGroup('Content')
+    await caretInto(GRID, GRID_SUB)
+    await page.keyboard.press('Shift+Enter')
+    await page.keyboard.type('Second line')
+    await page.waitForTimeout(250)
+    const broken = await markupOf(GRID, GRID_SUB)
+    const panelSub = await controlsAside().getByLabel('Sub', { exact: true }).innerText()
+    check('step 21 — Shift+Enter in a Text Area stores a line break and both the canvas and the panel show two lines', /<br>Second line/.test(broken) && panelSub.includes('\n'), `${broken} · panel ${JSON.stringify(panelSub)}`)
+    await clickOn(HERO)
+    const headlineWas = await markupOf(HERO, HEADLINE)
+    await caretInto(HERO, HEADLINE)
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(200)
+    check('step 21 — Enter in a Text Field inserts nothing', (await markupOf(HERO, HEADLINE)) === headlineWas, await markupOf(HERO, HEADLINE))
+
+    // ── step 22 — a button's label ──
+    await clickOn(NEWS)
+    await canvasFrame().evaluate(() => {
+      window.__submitted = false
+      document.addEventListener('submit', () => { window.__submitted = true }, true)
+    })
+    const hrefWas = await canvasFrame().evaluate(() => location.href)
+    await caretInto(NEWS, '.a22-1__button')
+    await page.keyboard.type('! now')
+    await page.waitForTimeout(300)
+    const buttonWords = await wordsOf(NEWS, '.a22-1__button')
+    check('step 22 — a submit button\'s label takes the caret and the typing, spaces included, and nothing submits or navigates', buttonWords.trim() === 'Subscribe! now' && (await canvasFrame().evaluate(() => window.__submitted)) === false && (await canvasFrame().evaluate(() => location.href)) === hrefWas, JSON.stringify(buttonWords))
+
+    // ── step 23 — Ghost's own words (R-122) ──
+    await clickOn(HERO)
+    const ghostWords = await textAt(HERO, '.a4-13__title', null)
+    await page.mouse.click(ghostWords.x, ghostWords.y)
+    await page.waitForTimeout(300)
+    const pill = await chromeNow('[data-chrome="note"]')
+    const lockedTitle = await canvasFrame().evaluate((n) => {
+      const el = document.querySelectorAll('#canvas > *')[n].querySelector('.a4-13__title')
+      return { editable: el.isContentEditable, editables: document.querySelectorAll('[contenteditable]').length }
+    }, HERO)
+    check('step 23 — a click on the card\'s post title shows P0-1\'s pill naming the field, in a chrome host, and nothing becomes editable', pill && pill.text === 'Post title — set in Ghost' && !pill.pressable && pill.events === 'none' && !lockedTitle.editable && lockedTitle.editables === 0, `${JSON.stringify(pill)} · ${JSON.stringify(lockedTitle)}`)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
+    check('step 23 — Escape deselects and the pill goes with the selection', !(await onScreen(HERO)).selected && (await chromeNow('[data-chrome="note"]')) === null)
+
+    // ── step 24 — Esc and focus ──
+    await clickOn(GRID)
+    await caretInto(GRID, TITLE)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
+    const afterFirstEsc = await editingNow()
+    check('step 24 — Esc while editing ends the editing and keeps the section selected', afterFirstEsc.editables === 0 && (await onScreen(GRID)).selected, JSON.stringify(afterFirstEsc))
+    // at rest means at rest: the pointer off the canvas, so no root carries the hover mark and the chrome layer is gone
+    await page.mouse.move(120, 400)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
+    const rest53 = await canvasFrame().evaluate(() => ({
+      marked: [...document.querySelectorAll('*')].filter((el) => [...el.attributes].some((a) => a.name.startsWith('data-inflozo-'))).length,
+      editables: document.querySelectorAll('[contenteditable]').length,
+    }))
+    check('step 24 — the second Esc deselects, and the canvas document carries no data-inflozo-* attribute and no contenteditable', !(await onScreen(GRID)).selected && rest53.marked === 0 && rest53.editables === 0, JSON.stringify(rest53))
+    await clickOn(GRID)
+    await caretInto(GRID, TITLE)
+    await openGroup('Layout')
+    await page.waitForTimeout(250)
+    check('step 24 — focus moving to the panel ends the editing and keeps the selection', (await canvasFrame().evaluate(() => document.querySelectorAll('[contenteditable]').length)) === 0 && (await onScreen(GRID)).selected)
+    const gridPadding = await onScreen(GRID)
+    await page.mouse.click(gridPadding.x, gridPadding.y + 6)
+    await page.waitForTimeout(200)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
+    check('step 24 — a press on the section\'s padding takes focus back to the canvas, so Esc deselects', !(await onScreen(GRID)).selected)
+
+    // ── step 25 — the toolbar hides while the canvas scrolls ──
+    await clickOn(GRID)
+    await pickWord(GRID, TITLE, 'spring')
+    const barPlaced = await barNow()
+    await page.mouse.wheel(0, 200)
+    await page.waitForTimeout(80)
+    const whileScrolling = await barNow()
+    await page.waitForTimeout(400)
+    const afterScrolling = await barNow()
+    const wordNow = await textAt(GRID, TITLE, 'spring', false)
+    check('step 25 — the toolbar hides from the first scroll and returns centred on the selection\'s new rect within 1px', !!barPlaced && barPlaced.visibility === 'visible' && whileScrolling.visibility === 'hidden'
+      && afterScrolling.visibility === 'visible' && Math.abs((afterScrolling.left + afterScrolling.right) / 2 - (wordNow.left + wordNow.right) / 2) <= 1 && Math.abs(wordNow.top - afterScrolling.bottom - 8) <= 1,
+      `${JSON.stringify({ before: barPlaced?.visibility, during: whileScrolling?.visibility, after: afterScrolling?.visibility })} · bar ${afterScrolling?.left},${afterScrolling?.bottom} · word ${wordNow.left},${wordNow.top}`)
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('Escape')
+    await page.mouse.move(120, 400)
+    await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
+    await page.waitForTimeout(200)
+
+
+    // ── step 26 — the panel's rich field, the token row, and the words that are nobody's to type ──
+    await clickOn(GRID)
+    await openGroup('Content')
+    const noteWas = await markupOf(GRID, '.a17-1__note')
+    await controlsAside().getByLabel('Note', { exact: true }).dblclick({ position: { x: 40, y: 14 } })
+    await page.waitForTimeout(250)
+    const panelBar = await barNow()
+    await bar.getByRole('button', { name: 'Italic', exact: true }).click()
+    await page.waitForTimeout(300)
+    const noteNow = await markupOf(GRID, '.a17-1__note')
+    check('step 26 — the panel\'s Text Area raises the same toolbar over the field, and Italic pressed there shows on the canvas', !!panelBar && !/<em>/.test(noteWas) && /<em>/.test(noteNow), `${JSON.stringify(panelBar && panelBar.buttons.map((b) => b.name))} · ${noteNow}`)
+    check('step 26 — a field that declares no token has no token row', (await controlsAside().getByText('TOKENS THIS FIELD ACCEPTS').count()) === 0)
+    await page.keyboard.press('Escape')
+
+    // the token row: P0-1's chips under the one pilot field that declares a token
+    await clickOn(NEWS)
+    await openGroup('Content')
+    const proof = controlsAside().getByLabel('Social proof line', { exact: true })
+    await proof.fill('Join readers')
+    await proof.evaluate((el) => el.setSelectionRange(5, 5))
+    const chips = await controlsAside().locator('button', { hasText: '{members}' }).allInnerTexts()
+    await controlsAside().locator('button', { hasText: '{members}' }).first().click()
+    await page.waitForTimeout(300)
+    const proofNow = await proof.inputValue()
+    check('step 26 — P0-1\'s token row names the field\'s tokens, and a chip inserts its token at the cursor', (await controlsAside().getByText('TOKENS THIS FIELD ACCEPTS').count()) === 1 && chips.join(' · ') === '{members}' && proofNow === 'Join {members}readers' && (await wordsOf(NEWS, '.a22-1__proof')) === proofNow, `${JSON.stringify(proofNow)} · chips ${JSON.stringify(chips)}`)
+
+    // catalog words: an empty value keeps the catalog's words, and leaving without typing changes nothing
+    await clickOn(HERO)
+    await openGroup('Content')
+    const catalogWas = await wordsOf(HERO, '.a4-13__action--primary')
+    await caretInto(HERO, '.a4-13__action--primary')
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    check('step 26 — a catalog-linked label left without typing keeps the catalog\'s words and an empty value', catalogWas === 'Subscribe' && (await wordsOf(HERO, '.a4-13__action--primary')) === 'Subscribe' && (await controlsAside().getByLabel('Primary action text', { exact: true }).inputValue()) === '', `${JSON.stringify(catalogWas)} · panel ${JSON.stringify(await controlsAside().getByLabel('Primary action text', { exact: true }).inputValue())}`)
+
+    // the theme's own words (`data-t`) are the Translations surface's (Story 7.12): a click does nothing at all
+    await clickOn(HEADER)
+    const signIn = await textAt(HEADER, '.a1-1__signin', null)
+    await page.mouse.click(signIn.x, signIn.y)
+    await page.waitForTimeout(300)
+    check('step 26 — a click on the theme\'s own words starts no editing and shows no pill', (await canvasFrame().evaluate(() => document.querySelectorAll('[contenteditable]').length)) === 0 && (await chromeNow('[data-chrome="note"]')) === null && (await onScreen(HEADER)).selected)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+
+    // the edits live in memory for the session: a reload starts from the stored docs again (saving is Story 5.8's)
+    await page.reload({ waitUntil: 'load' })
+    await painted('home')
+    const reloadedWords = { title: await wordsOf(GRID, TITLE), heroSub: await markupOf(HERO, HERO_SUB), button: await wordsOf(NEWS, '.a22-1__button') }
+    check('step 26 — a reload starts from the stored docs: this session\'s typing, marks and links are gone', !reloadedWords.title.includes(' and summer') && !/<(strong|em|u|a|br)\b/.test(reloadedWords.heroSub) && reloadedWords.button.trim() === 'Subscribe', JSON.stringify(reloadedWords))
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back and steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and steps 16–26\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar and the panel\'s own field — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -802,6 +1174,16 @@ async function main() {
     await axePage.waitForTimeout(300)
     const selectedAxe = await axeRun()
     check('step 8 — axe: zero violations with Three Up selected (its panel mounted)', selectedAxe.length === 0 && (await axePage.locator('aside[aria-label="Section settings"]').count()) === 1, selectedAxe.join('; '))
+    // twice more (Story 5.3): with the mark toolbar showing over a word, and with its link panel open
+    const springAxe = await textIn(axePage, stackOf('home').findIndex(([d]) => d === 'a17/1'), '.a17-1__title', 'spring')
+    await axePage.mouse.dblclick(springAxe.x, springAxe.y)
+    await axePage.waitForTimeout(300)
+    const toolbarAxe = await axeRun()
+    check('step 8 — axe: zero violations with P0-1\'s toolbar showing over a selected word', toolbarAxe.length === 0 && (await axePage.locator('[role="toolbar"][aria-label="Text formatting"]').count()) === 1, toolbarAxe.join('; '))
+    await axePage.locator('[role="toolbar"] button[aria-label="Link"]').click()
+    await axePage.waitForTimeout(400)
+    const linkAxe = await axeRun()
+    check('step 8 — axe: zero violations with the link panel open at the selection', linkAxe.length === 0 && (await axePage.locator('#canvas-inline-link').evaluate((el) => el.matches(':popover-open'))), linkAxe.join('; '))
     await axeContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──
@@ -857,6 +1239,32 @@ async function main() {
     await touchPage.waitForTimeout(300)
     const slid = await touchState()
     check('step 14 — after Esc, a finger that moves 30px before lifting shows no hover and selects nothing', !cleared.selected && !slid.hover && !slid.outline && !slid.selected && slid.panel === 'Page settings', JSON.stringify({ cleared, slid }))
+    // Story 5.3: a tap selects, and a tap inside a text prop of the SELECTED section starts editing there
+    await touch('touchStart', [heroPoint])
+    await touchPage.waitForTimeout(50)
+    await touch('touchEnd', [])
+    await touchPage.waitForTimeout(400)
+    const headlineTap = await touchPage.evaluate((n) => {
+      const f = document.querySelector('section[aria-label="Canvas"] iframe')
+      const fr = f.getBoundingClientRect()
+      const s = fr.width / f.offsetWidth
+      const el = f.contentDocument.querySelectorAll('#canvas > *')[n].querySelector('.a4-13__headline')
+      el.scrollIntoView({ block: 'center' })
+      const b = el.getBoundingClientRect()
+      return { x: Math.round(fr.left + (b.left + 20) * s), y: Math.round(fr.top + (b.top + b.height / 2) * s) }
+    }, heroN)
+    await touch('touchStart', [headlineTap])
+    await touchPage.waitForTimeout(50)
+    await touch('touchEnd', [])
+    await touchPage.waitForTimeout(400)
+    const tappedInto = await touchPage.evaluate(() => {
+      const d = document.querySelector('section[aria-label="Canvas"] iframe').contentDocument
+      const at = d.activeElement
+      return { editable: at?.isContentEditable === true, className: at?.className ?? '', collapsed: d.getSelection()?.isCollapsed === true, inside: at ? at.contains(d.getSelection()?.anchorNode ?? null) : false }
+    })
+    check('step 14 — a tap inside the selected section\'s headline starts editing it, with a collapsed caret in it', tappedInto.editable && /a4-13__headline/.test(tappedInto.className) && tappedInto.collapsed && tappedInto.inside, JSON.stringify(tappedInto))
+    await touchPage.keyboard.press('Escape')
+    await touchPage.waitForTimeout(200)
     check('step 14 — the touch context records zero securitypolicyviolation events in the editor or the canvas across the hold, the tap and the moving finger', touchSession().length === 0, JSON.stringify(touchViolations))
     await touchContext.close()
 

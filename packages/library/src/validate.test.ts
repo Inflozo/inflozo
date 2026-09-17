@@ -721,6 +721,11 @@ test('content.json: a prop needs a label and a known type; an array its bounds a
   only({ t: { type: 'text', label: 'Title', max: 6 } }, 'array-bounds')
   only({ f: { type: 'array', label: 'Features', min: 2, max: 6, atMin: 'a' } }, 'array-sentence')
   only({ f: { type: 'array', label: 'Features', min: 2, atMax: 'b' } }, 'array-sentence')
+  only({ n: { type: 'url', label: 'Link', maxChars: 30 } }, 'max-chars-type')
+  only({ n: { type: 'text', label: 'Eyebrow', maxChars: 0 } }, 'max-chars-value')
+  only({ n: { type: 'richtext', label: 'Heading', maxChars: 2.5 } }, 'max-chars-value')
+  only({ n: { type: 'text', label: 'Eyebrow', maxChars: 4, default: 'Five!' } }, 'max-chars-default')
+  only({ n: { type: 'richtext', label: 'Heading', maxChars: 4, default: { text: 'Five!' } } }, 'max-chars-default')
   only({ i: { type: 'icon', label: 'Icon', default: 'rocketship' } }, 'icon-default', set)
   only({ i: { type: 'icon', label: 'Icon', default: '"><script>' } }, 'icon-default')
   only({ d: { type: 'date', label: 'Next issue', default: '1 October 2026' } }, 'date-default')
@@ -730,7 +735,9 @@ test('content.json: a prop needs a label and a known type; an array its bounds a
     'f[].icon': { type: 'icon', label: 'Icon', default: 'star' },
     g: { type: 'icon', label: 'Badge', default: 'heart-filled' },
     d: { type: 'date', label: 'Next issue', default: '2028-02-29' },
-  } }, set), 'a sound array, icon and date')
+    e: { type: 'text', label: 'Eyebrow', maxChars: 5, default: 'Five!' },
+    h: { type: 'richtext', label: 'Heading', maxChars: 40 },
+  } }, set), 'a sound array, icon, date and two limits')
 })
 
 test('data-prop takes an icon and a date prop as well as text', () => {

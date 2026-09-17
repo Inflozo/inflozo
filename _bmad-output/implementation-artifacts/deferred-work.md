@@ -3196,7 +3196,12 @@ reason: `validateMarkup`'s `controlValues` is optional precisely so the archetyp
 plain: If a link inside a paragraph points nowhere valid, the text is still wrapped in a link tag with no address;
   if a link field points nowhere valid, its whole row is hidden. Neither can do harm, but the two read the same
   broken record differently.
-status: open
+status: done 2026-09-18 (Story 5.3)
+resolution: Story 5.3 (2026-09-18) — `serializeMarks` now DROPS an `a` mark whose record names no destination and keeps
+  its words, on both emitters, so the two sinks read a broken record the same way: the `url` prop hides its element
+  (FR-F8) and the mark leaves no anchor. `openTag`'s bare-`<a>` branch is gone, and the filter that drops the mark runs
+  before the boundary sweep, so no closing tag can disagree. `marks.test.ts` asserts it on the canvas and the theme,
+  beside the legitimate case (a record that does name a destination still writes its anchor).
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Verification Gap
 owner: Story 5.3 (the inline toolbar, which is the only producer of `a` marks)
@@ -4256,3 +4261,23 @@ reason: not Story 5.3's to change: `packages/library/designs/` is the owning cat
   decides its panel editor and the harness's typing path. Two things for the category story to settle while it is
   there: a label that is itself a link (an `<a>`) cannot also hold a link mark, since anchors do not nest, so such a
   field narrows `a` away; and a button label's marks are the category's choice.
+
+### DW-180: a character limit truncates, where A10's design notes ask for a counter that advises
+
+plain: A field with a character limit now stops accepting letters at it, on the page and in the panel, and says so. A10
+  — the stats and numbers designs — asks for the opposite in its own notes: a counter beside the field that warns as you
+  approach the limit and lets you past it, because a number's label reads badly when it is cut off mid-word.
+status: open
+severity: low
+origin: Story 5.3 (2026-09-18), which built FR-D4's hard limit (`PropDef.maxChars`, refused at `beforeinput` and clamped
+  in `replaceRange`). Found in `A10 Stats and Numbers - Spec.md:43` and again at :1093 — "the editor's character counters
+  advise rather than truncate".
+owner: Story 10.26 (A10 — the content model, the stylesheet and designs #1–4), the first category story whose spec asks
+  for one
+location: `packages/library/src/registry.ts` (`PropDef.maxChars`) · `packages/library/src/validate.ts`
+  (`max-chars-*`) · `apps/web/lib/inline.ts` (`limitSentence`, the `max` clamp) ·
+  `apps/web/components/controls/rich-field.tsx` (`LimitCaption`) · `A10 Stats and Numbers - Spec.md:43,1093`
+reason: no design in the library declares `maxChars` today — the controls fixture is the only one that does, for the
+  review page — so nothing is truncated that a design asked to advise. A10 is where the two meet, and the choice is the
+  category story's: a second declaration (`softMax`, a counter that colours and never refuses) beside the hard one, or
+  the hard limit with A10's notes re-ruled. Building an advisory counter now would be a control no design uses.

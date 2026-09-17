@@ -2454,9 +2454,10 @@ clicking any icon on the page to change it, with the dashed box for an empty one
 - Targets:
   - ✅ Story 5.3's spec · ✅ `epics.md` Stories 5.3 and 7.10 · ✅ `epic-5-context.md` — Story 5.3's Create run
     (2026-09-17).
-  - Open, for Story 5.3's Dev run: `packages/library/contexts/labels.json` and `ghostLabel`; `EXPERIENCE.md`
-    § Component Patterns' Section on canvas row; `DESIGN.md` (the pill is a surface card, not one of the ink canvas
-    pills); `ARCHITECTURE-SPINE.md` AD-21 (the pill in the chrome layer).
+  - ✅ `packages/library/contexts/labels.json` and `contexts.ts`'s `ghostLabel`, with the test that derives the fields
+    from `matrix.json` · ✅ `EXPERIENCE.md` § Component Patterns' Section on canvas row · ✅ `DESIGN.md` (the toolbar and
+    the pill are surface cards, not the ink canvas pills) · ✅ `ARCHITECTURE-SPINE.md` AD-21 (the pill in the chrome
+    layer, the toolbar outside the frame) — Story 5.3's Dev run (2026-09-18).
 - **Deliberately not touched:** `prd.md` FR-D4, whose one exception names the plain-text lock and not the pill; the
   export (R-74).
 

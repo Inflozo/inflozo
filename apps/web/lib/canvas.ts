@@ -48,6 +48,8 @@ export function renderSection(
     visibility: MemberState
     assets: Readonly<Record<string, string>>
     icons: IconLookup
+    /** Story 5.3 — the editor asks for the editing stamps (`takeStamps` lifts them off as it mounts); `/pilots` does not */
+    editing?: boolean
   },
 ): string {
   const ctx = orbitWeekly.templateContext(o.target, o.feed)
@@ -67,6 +69,7 @@ export function renderSection(
     visibility: o.visibility,
     assets: o.assets,
     icons: o.icons,
+    editing: o.editing,
   }))
 }
 

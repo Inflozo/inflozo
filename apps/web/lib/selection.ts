@@ -59,6 +59,45 @@ export function withState(
   return { ...docs, [key]: { ...doc, instances } }
 }
 
+// ─── Story 5.3 — the editing stamps ───────────────────────────────────────────────────────────────────────────────
+
+/** What the canvas emitter stamped on an element: a text prop (and its authored item's index), or a Ghost word's name. */
+export type Stamp = { path: string; item?: number } | { ghost: string }
+
+type Stamped = { getAttribute(name: string): string | null; removeAttribute(name: string): void }
+
+/** Reads each element's editing stamp into a map and removes the attributes in the same task, so zero chrome at rest
+ *  holds: nothing on the page carries a `data-inflozo-prop`, `-item` or `-ghost` once the canvas is mounted. */
+export function takeStamps<E extends Stamped>(elements: Iterable<E>): Map<E, Stamp> {
+  const out = new Map<E, Stamp>()
+  for (const el of elements) {
+    const path = el.getAttribute('data-inflozo-prop')
+    const item = el.getAttribute('data-inflozo-item')
+    const ghost = el.getAttribute('data-inflozo-ghost')
+    for (const name of ['data-inflozo-prop', 'data-inflozo-item', 'data-inflozo-ghost']) el.removeAttribute(name)
+    if (path !== null) out.set(el, item !== null && /^\d+$/.test(item) ? { path, item: Number(item) } : { path })
+    else if (ghost !== null) out.set(el, { ghost })
+  }
+  return out
+}
+
+/** The OTHER elements this section draws the same prop with (a22/1 draws `subscribedText` twice), which a typed edit
+ *  rewrites beside the one being typed in — the field being edited is the browser's, the rest are the serializer's. */
+export function samePropElsewhere<E>(
+  stamps: ReadonlyMap<E, Stamp>,
+  target: E,
+  path: string,
+  item: number | undefined,
+  root: { contains(el: E): boolean } | null,
+): E[] {
+  if (root === null) return []
+  const out: E[] = []
+  for (const [el, stamp] of stamps) {
+    if (el !== target && 'path' in stamp && stamp.path === path && stamp.item === item && root.contains(el)) out.push(el)
+  }
+  return out
+}
+
 // ─── tap and hold (UX-DR18) ───────────────────────────────────────────────────
 
 export const HOLD_MS = 500

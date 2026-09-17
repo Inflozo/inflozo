@@ -494,7 +494,7 @@ is an id — and each shape has its own rule instead, enforced where the value i
 | `type` | Editor | What it stores | How it renders, on both emitters |
 |---|---|---|---|
 | `text` | Text Field | a string | `data-prop` — text; into an attribute through `data-prop-attr` |
-| `richtext` | Text Area | a string, or `{ text, marks? }` over the prop's own mark allow-list (AD-4) | `data-prop` — through `marks.ts`'s serializer; a sidebar edit goes through `editText`, which moves the marks with the text rather than dropping them |
+| `richtext` | Text Area | a string, or `{ text, marks? }` over the prop's own mark allow-list (AD-4) | `data-prop` — through `marks.ts`'s serializer; since Story 5.3 the panel's Text Area is a rich field run by the same controller as the canvas (`apps/web/lib/inline.ts`), so an edit moves the marks with the text rather than dropping them, and a `\n` in the value is a `<br>` on both emitters. A `text` prop's one-line field still edits through `editText` |
 | `url` | Link Picker | a **link record** — a bare string is `{ href }` | `data-prop-attr="href:…"` — through `linkAttributes`, below |
 | `image` | Image Picker | an **asset id** — `feature-03`, never a URL | `data-prop-attr="src:…"` — the id resolved **only** through `RenderInput.assets` (AD-27(b)); an id with no entry, or a URL stored in its place, is unset |
 | `icon` | Icon Picker | a **Tabler icon name** — `rocket`, or `heart-filled` for the filled drawing | `data-prop` on an empty element — drawn inline, below |
@@ -502,6 +502,17 @@ is an id — and each shape has its own rule instead, enforced where the value i
 | `array` | Item List | a list of item objects | `data-items` — one copy per item (§3, row 1) |
 
 `data-prop` takes `text`, `richtext`, `icon` and `date` props; `data-items` takes an `array`.
+
+**A Text Field is one line; a Text Area takes line breaks** *(Story 5.3)*. A `text` prop's editor is an
+`<input>`, which cannot hold a `\n`, so a line break typed on the canvas would be lost at its next panel
+edit; a `richtext` prop's is a rich Text Area, where Enter and Shift+Enter store a `\n` that both emitters
+write as `<br>`. A `text` or `richtext` prop may also declare **`maxChars`**, a whole number of at least 1
+that no authored `default` may exceed: typing and paste stop there, on the canvas and in the panel, and the
+field says which — "{Label} holds {n} characters." It counts UTF-16 code units, as `String.length` does, so
+an emoji counts two.
+
+**An `a` mark whose record names no destination writes no anchor** *(Story 5.3, DW-120)*: its words stay and
+the mark is dropped, which is the `url` prop sink's rule for an unset link (FR-F8) at the other sink.
 
 **A link is one record, and a `url` prop and an `a` mark hold the same one** (AD-4, FR-F6):
 
@@ -1371,6 +1382,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `{{t}}` call whose params are not exactly its key's placeholder set (`catalog-params`) | *(Story 4.9)* V4. Recorded on both majors: an omitted param renders "An error occurred", and an extra one is a name no translator sees. The message names what is missing and what is extra. Validator **and** runtime. |
 | literal words in a `data-text` template (`chrome-literal`) · a `data-t-attr` attribute other than `alt`, `title`, `placeholder`, `aria-label` · `data-empty` or a second text directive on a `data-t` element · an authored `data-i18n-*` | *(Story 4.9)* V1's lexical half and S5: English outside the catalog cannot be translated; the four attributes are the ones that hold text; a `data-t` element hides when a param is empty; the emitters stamp `data-i18n-*` from the registry. |
 | `catalog` on a prop that is not `text`, on a key not marked prop, or beside a `default` (`catalog-prop`) | *(Story 4.9)* S6. The catalog string is the default, so a second one would be ignored; only a prop-marked string may become editable. |
+| `maxChars` on a prop that is not `text` or `richtext` (`max-chars-type`), one that is not a whole number of at least 1 (`max-chars-value`), or an authored `default` longer than it (`max-chars-default`) | *(Story 5.3)* FR-D4's hard limit. Only a field that is typed into has a character limit, and the design's own words must fit the limit a customer is held to. |
 | a render naming its target whose markup prints a bare text node, or an `alt` / `title` / `placeholder` / `aria-label`, holding a letter or digit that no directive writes | *(Story 4.9)* V1's tree half. **Refused by the runtime**, beside FR-H7's scope check, in one error naming every literal; `checkChromeLiterals` returns the list. Exempt: text under `data-prop`, `data-bind`, `data-t`, `data-helper`, `data-initials`, `data-index`, `data-text` or `data-pagination="numbers"`; an attribute a directive writes; `alt=""`; text with no letter or digit. |
 | `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |

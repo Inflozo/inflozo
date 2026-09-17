@@ -1,8 +1,8 @@
 {
   "category": "controls",
   "props": {
-    "eyebrow": { "label": "Eyebrow", "type": "text", "default": "This week at Orbit Weekly" },
-    "heading": { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "default": "Seven links, checked by hand" },
+    "eyebrow": { "label": "Eyebrow", "type": "text", "maxChars": 30, "default": "This week at Orbit Weekly" },
+    "heading": { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "maxChars": 40, "default": "Seven links, checked by hand" },
     "nextIssueLabel": { "label": "Next issue label", "type": "text", "default": "Next issue" },
     "nextIssue": { "label": "Next issue", "type": "date", "default": "2026-10-01" },
     "picture": { "label": "Picture", "type": "image", "default": "feature-03" },

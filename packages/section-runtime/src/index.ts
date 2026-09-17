@@ -37,10 +37,25 @@ export type {
   RuntimeNode,
   ThemeOutput,
 } from './core.ts'
-export type { Mark, PropValue, RichText } from './marks.ts'
+export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 // the reference token values — the controls panel paints its Swatch Row's roles with them (Story 4.5)
 export { REFERENCE_TOKENS } from './tokens.ts'
 export { editText, linkAttributes } from './marks.ts'
+// Story 5.3 — the value's edits: typing, a paste, the toolbar's marks and links, and the DOM points between them
+export {
+  activeMarks,
+  allowedMarks,
+  diffText,
+  domPoint,
+  isRich,
+  readMarks,
+  readText,
+  replaceRange,
+  setLink,
+  textOffset,
+  toggleMark,
+  unlink,
+} from './marks.ts'
 // Story 4.5 — the controls engine: the sidebar model and every edit, from the one declaration both
 // emitters read (FR-F7). Epic 5 mounts the panel over these.
 export {

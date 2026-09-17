@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
-import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, sectionRoots, SLOP_PX, withState, type HoldEvent, type HoldState } from './lib/selection.ts'
+import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, SLOP_PX, takeStamps, withState, type HoldEvent, type HoldState, type Stamp } from './lib/selection.ts'
 
 // Story 5.2's pure half, with plain objects standing in for the canvas document's elements.
 
@@ -106,4 +106,36 @@ test('hold: a press that moved past the slop does not swallow the next tap\'s cl
 test('hold: a cancelled pointer shows nothing', () => {
   const { out } = run([{ type: 'down', x: 0, y: 0, t: 0 }, { type: 'cancel' }, { type: 'timer', t: HOLD_MS }, { type: 'up', t: 600 }])
   assert.deepEqual(out, [null, null, null, null])
+})
+
+test('takeStamps: each stamp read into the map and every stamp attribute removed, a prop with its item, a Ghost word by name', () => {
+  const stamped = (attrs: Record<string, string>) => {
+    const a = new Map(Object.entries(attrs))
+    return { attrs: a, getAttribute: (n: string) => a.get(n) ?? null, removeAttribute: (n: string) => void a.delete(n) }
+  }
+  const title = stamped({ 'data-inflozo-prop': 'title', class: 'x' })
+  const item = stamped({ 'data-inflozo-prop': 'features[].title', 'data-inflozo-item': '2' })
+  const ghost = stamped({ 'data-inflozo-ghost': 'Post title' })
+  const plain = stamped({ class: 'y' })
+  const map = takeStamps([title, item, ghost, plain])
+  assert.deepEqual([...map.values()], [{ path: 'title' }, { path: 'features[].title', item: 2 }, { ghost: 'Post title' }])
+  assert.equal(map.has(plain), false)
+  for (const e of [title, item, ghost, plain]) assert.ok(![...e.attrs.keys()].some((k) => k.startsWith('data-inflozo-')), 'a stamp stayed on the page')
+  assert.equal(title.attrs.get('class'), 'x', 'nothing else is touched')
+})
+
+test('samePropElsewhere: the same prop drawn twice in this section, and neither the field being typed in nor another section\'s', () => {
+  const a = { id: 'a' }, b = { id: 'b' }, other = { id: 'other' }, itemTwo = { id: 'item2' }, outside = { id: 'outside' }
+  const inside = new Set<object>([a, b, other, itemTwo])
+  const stamps = new Map<object, Stamp>([
+    [a, { path: 'subscribedText' }],
+    [b, { path: 'subscribedText' }],
+    [other, { path: 'manageLabel' }],
+    [itemTwo, { path: 'features[].title', item: 2 }],
+    [outside, { path: 'subscribedText' }],
+  ])
+  const root = { contains: (el: object) => inside.has(el) }
+  assert.deepEqual(samePropElsewhere(stamps, a, 'subscribedText', undefined, root), [b])
+  assert.deepEqual(samePropElsewhere(stamps, itemTwo, 'features[].title', 2, root), [], 'an item prop matches only its own index')
+  assert.deepEqual(samePropElsewhere(stamps, a, 'subscribedText', undefined, null), [], 'no root, nothing to rewrite')
 })

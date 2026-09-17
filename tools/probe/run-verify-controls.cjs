@@ -9,6 +9,8 @@
 // and 390 with a positive control, measures the control stamp and the content re-render under 4× CPU
 // throttle, and deletes the account in `finally` with the user count read before and after. Written at
 // Story 4.5's Review (2026-09-13); until then the checks lived in a scratch harness nobody could re-run.
+// Story 5.3 adds step 19: the sample's Eyebrow (30) and Heading (40) refuse what is typed or pasted past their limits,
+// each saying so under the field — and the Heading is now the rich Text Area the canvas shares.
 // Story 4.10's Fix (2026-09-15) re-shaped the panel it walks: R-113 put every control in the accordion its role
 // names with nothing pinned above them, and R-115 made "Reset this design" ask first — so a step whose control now
 // sits in a closed accordion opens it, and step 16 answers the confirm.
@@ -368,6 +370,30 @@ async function main() {
     await page.keyboard.press('Enter')
     const g17b = await page.evaluate(() => ({ asideVisible: !!document.querySelector('aside#section-controls')?.offsetParent, focus: document.activeElement?.getAttribute('aria-label'), pageRange: document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight, w: document.querySelector('iframe[title="The controls sample section"]').getBoundingClientRect().width }))
     check('step 17 — the strip\'s button brings the panel back as it was, focus on Collapse', g17b.asideVisible && g17b.focus === 'Collapse controls' && g17b.pageRange === 0 && g17b.w === wBefore, JSON.stringify(g17b))
+
+    // ── step 19 (Story 5.3) — a prop's character limit stops typing and a paste, and the field says which
+    // The sample's Eyebrow holds 30 and its Heading 40 (`packages/library/fixtures/controls/content.json`); nothing here
+    // restates the numbers — they are read off the schema through the sentence the field prints.
+    await openGroup('Content')
+    const eyebrowField = page.getByLabel('Eyebrow', { exact: true })
+    await eyebrowField.click()
+    await page.keyboard.press('End')
+    await page.keyboard.type('ABCDEFGHIJKLMNOP')
+    await page.waitForTimeout(300)
+    const eyebrowNow = await eyebrowField.inputValue()
+    check('step 19 — Eyebrow refuses the characters past its limit and says so under the field', eyebrowNow.length === 30 && (await content.locator('p', { hasText: 'Eyebrow holds 30 characters.' }).count()) === 1 && (await canvas()).eyebrow.length === 30, `${eyebrowNow.length} characters · ${JSON.stringify(eyebrowNow)}`)
+    // the Heading is a Text Area, and a paste past the limit arrives cut at it
+    const headingField = page.getByLabel('Heading', { exact: true })
+    await headingField.click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await headingField.evaluate((el, words) => {
+      const data = new DataTransfer()
+      data.setData('text/plain', words)
+      el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }))
+    }, 'The quick brown fox jumps over the lazy dog and keeps running')
+    await page.waitForTimeout(300)
+    const headingNow = await headingField.innerText()
+    check('step 19 — a 60-character paste into Heading arrives cut at its limit, with the same sentence under it', headingNow.length === 40 && (await content.locator('p', { hasText: 'Heading holds 40 characters.' }).count()) === 1 && (await canvas()).title === headingNow, `${headingNow.length} characters · ${JSON.stringify(headingNow)}`)
 
     // ── axe at 1440 and 390, WCAG 2.1 AA, with a positive control
     const axeRun = async () => {

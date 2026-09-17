@@ -193,6 +193,14 @@ export const InfoCircle = (p: IconProps) => (
     <circle cx="12" cy="8" r="0.5" fill="currentColor" />
   </Icon>
 )
+/* P0-1's plain-text lock (`P0-1 Inline Text Toolbar.dc.html:142`), copied as drawn; the stroke is the Kit's 1.5, not the
+   frame's 1.8. Story 5.3's pill names Ghost's own words beside it (R-122). */
+export const Lock = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="4" y="11" width="16" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </Icon>
+)
 export const AlertTriangle = (p: IconProps) => (
   <Icon {...p}>
     <path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />

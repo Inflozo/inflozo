@@ -12,6 +12,7 @@
 // and Epic 5's binding surface asks the second. Pure: no locale, no clock, versions compare as numbers.
 
 import matrix from '../contexts/matrix.json' with { type: 'json' }
+import labels from '../contexts/labels.json' with { type: 'json' }
 import { CUSTOM_TARGET_RE, PATH_RE, isCompileTarget } from './vocabulary.ts'
 
 export type FieldKind = 'text' | 'url' | 'image' | 'color' | 'date' | 'number' | 'boolean' | 'list' | 'object' | 'helper'
@@ -246,6 +247,20 @@ export function bindable(path: string, place: BindingPlace & { use?: BindingUse 
   if (typeof r === 'string') return r
   const bad = kindRefusal(path, r.field, use)
   return bad === null ? null : `${bad} (${describeScope(place.scope)} of ${place.target}).`
+}
+
+/** R-122 (Story 5.3) — the names beside the matrix, as `labels.json` keys them: `universal` by full path, a scope by field */
+export const GHOST_LABELS = labels as unknown as Readonly<Record<string, Readonly<Record<string, string>>>>
+
+/** R-122: the plain name of the Ghost field a path prints at this place — "Post title", "Site title" — or null when the
+ *  path names no field here (the runtime has already refused that render) or the field has no name. `use` is `helper`
+ *  for a `data-helper`'s bare name. */
+export function ghostLabel(path: string, place: BindingPlace, use: BindingUse = 'value'): string | null {
+  const r = resolve(path, place, use)
+  if (typeof r === 'string') return null
+  const rest = path.replace(/^(\.\.\/)*/, '')
+  const key = r.name === 'universal' ? rest : (rest.split('.').pop() as string)
+  return own(own(GHOST_LABELS, r.name) ?? {}, key) ?? null
 }
 
 /** The kind of the field a path names here, or null when it names none — the runtime's number guard. */

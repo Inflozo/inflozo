@@ -1,0 +1,120 @@
+{
+  "about": "R-122 (Story 5.3) — the plain name of every piece of Ghost's own information a design can print, beside the ONE matrix that lists them (matrix.json). The editor's lock pill reads '{name} — set in Ghost' from here through contexts.ts `ghostLabel`. Keyed as the matrix is: `universal` by its full path, each scope by field. Every text, date and number field and every helper entry has a name, and contexts.test.ts fails for one that has none.",
+  "universal": {
+    "@site.title": "Site title",
+    "@site.description": "Site description",
+    "@site.facebook": "Facebook",
+    "@site.twitter": "X (Twitter)",
+    "@site.threads": "Threads",
+    "@site.bluesky": "Bluesky",
+    "@site.mastodon": "Mastodon",
+    "@site.tiktok": "TikTok",
+    "@site.youtube": "YouTube",
+    "@site.instagram": "Instagram",
+    "@site.linkedin": "LinkedIn",
+    "@site.locale": "Site language",
+    "@site.timezone": "Site time zone",
+    "@site.codeinjection_head": "Site header code",
+    "@site.codeinjection_foot": "Site footer code",
+    "@site.meta_title": "Meta title",
+    "@site.meta_description": "Meta description",
+    "@site.og_title": "Facebook card title",
+    "@site.og_description": "Facebook card description",
+    "@site.twitter_title": "X card title",
+    "@site.twitter_description": "X card description",
+    "@site.members_support_address": "Support email address",
+    "@site.portal_button_style": "Portal button style",
+    "@site.portal_button_signup_text": "Portal button text",
+    "@site.portal_button_icon": "Portal button icon",
+    "@site.portal_signup_terms_html": "Signup terms",
+    "@site.comments_access": "Comments access",
+    "@config.posts_per_page": "Posts per page",
+    "navigation": "Navigation",
+    "total_members": "Member count",
+    "content_api_key": "Content API key"
+  },
+  "error": {
+    "statusCode": "Error code",
+    "message": "Error message"
+  },
+  "post": {
+    "id": "Post ID",
+    "comment_id": "Comment ID",
+    "title": "Post title",
+    "slug": "Post URL slug",
+    "excerpt": "Post excerpt",
+    "custom_excerpt": "Post excerpt",
+    "feature_image_alt": "Feature image alt text",
+    "feature_image_caption": "Feature image caption",
+    "published_at": "Publish date",
+    "updated_at": "Last updated date",
+    "created_at": "Created date",
+    "visibility": "Post access",
+    "reading_time": "Reading time",
+    "post_class": "Post classes",
+    "content": "Post content",
+    "comments": "Comments"
+  },
+  "tag": {
+    "id": "Tag ID",
+    "name": "Tag name",
+    "slug": "Tag URL slug",
+    "description": "Tag description"
+  },
+  "author": {
+    "id": "Author ID",
+    "name": "Author name",
+    "slug": "Author URL slug",
+    "bio": "Author bio",
+    "location": "Author location",
+    "facebook": "Author's Facebook",
+    "twitter": "Author's X (Twitter)",
+    "threads": "Author's Threads",
+    "bluesky": "Author's Bluesky",
+    "mastodon": "Author's Mastodon",
+    "tiktok": "Author's TikTok",
+    "youtube": "Author's YouTube",
+    "instagram": "Author's Instagram",
+    "linkedin": "Author's LinkedIn"
+  },
+  "tier": {
+    "id": "Tier ID",
+    "name": "Tier name",
+    "slug": "Tier URL slug",
+    "description": "Tier description",
+    "type": "Tier type",
+    "visibility": "Tier visibility",
+    "monthly_price": "Monthly price",
+    "yearly_price": "Yearly price",
+    "currency": "Currency",
+    "trial_days": "Free trial days"
+  },
+  "newsletter": {
+    "id": "Newsletter ID",
+    "name": "Newsletter name",
+    "slug": "Newsletter URL slug",
+    "description": "Newsletter description"
+  },
+  "navigation": {
+    "label": "Menu item",
+    "url": "Menu item link"
+  },
+  "pagination": {
+    "page": "Page number",
+    "pages": "Page count",
+    "total": "Post count",
+    "limit": "Posts per page",
+    "prev": "Previous page",
+    "next": "Next page"
+  },
+  "errorDetail": {
+    "rule": "Error rule"
+  },
+  "failure": {
+    "ref": "Error reference",
+    "message": "Error message"
+  },
+  "private-error": {
+    "message": "Error message"
+  }
+}

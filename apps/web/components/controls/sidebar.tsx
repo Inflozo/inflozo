@@ -10,7 +10,7 @@ import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring, type Greyed } from '@/components/kit/greyed'
 import { Image, InfoCircle, Undo } from '@/components/kit/icons'
-import { Multiline, TextInput } from '@/components/kit/input'
+import { TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
 import { MoonBadge } from '@/components/kit/moon-badge'
 import { Segmented } from '@/components/kit/segmented'
@@ -22,6 +22,8 @@ import { IconPicker } from './icon-picker'
 import { ImagePicker, type Asset } from './image-picker'
 import { GhostList, ItemList } from './item-list'
 import { LinkPicker, type LinkResources } from './link-picker'
+import { RichField, TokenRow } from './rich-field'
+import { limitSentence } from '@/lib/inline'
 
 /* THE CONTROLS PANEL — what Epic 5 mounts beside its canvas (Story 4.5).
 
@@ -207,7 +209,8 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
   const field = (prop: PropRow, value: unknown, onValue: (value: unknown) => void, id: string): ReactNode => {
     switch (prop.type) {
       case 'richtext':
-        return <Multiline key={id} id={id} label={prop.label} value={textOf(value)} onChange={(e) => onValue(editText(value as PropValue, e.target.value))} />
+        // Story 5.3: the same value the canvas edits, with the same marks and the same toolbar
+        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} />
       case 'date':
         return (
           <div key={id} className="flex flex-col gap-[5px]">
@@ -221,8 +224,36 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
         return <LinkPicker key={id} id={id} label={prop.label} value={value} resources={links} onChange={onValue} />
       case 'icon':
         return <IconPicker key={id} id={id} label={prop.label} value={value} onChange={onValue} />
-      default:
-        return <TextInput key={id} id={id} label={prop.label} value={textOf(value)} onChange={(e) => onValue(editText(value as PropValue, e.target.value))} />
+      default: {
+        // a Text Field is one line, and its limit is the input's own — at the limit its hint says why, so the refusal is
+        // never silent (Story 5.3)
+        const text = textOf(value)
+        const max = prop.def.maxChars
+        return (
+          <div key={id} className="flex flex-col gap-[5px]">
+            <TextInput
+              id={id}
+              label={prop.label}
+              value={text}
+              maxLength={max}
+              hint={max !== undefined && text.length >= max ? limitSentence(prop.label, max) : null}
+              onChange={(e) => onValue(editText(value as PropValue, e.target.value))}
+            />
+            <TokenRow
+              tokens={prop.def.tokens}
+              text={text}
+              onInsert={(token) => {
+                const input = document.getElementById(id) as HTMLInputElement | null
+                const [start, end] = [input?.selectionStart ?? text.length, input?.selectionEnd ?? text.length]
+                const next = text.slice(0, start) + token + text.slice(end)
+                if (max !== undefined && next.length > max) return
+                onValue(editText(value as PropValue, next))
+                requestAnimationFrame(() => input?.setSelectionRange(start + token.length, start + token.length))
+              }}
+            />
+          </div>
+        )
+      }
     }
   }
 

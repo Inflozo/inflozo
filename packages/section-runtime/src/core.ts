@@ -37,6 +37,7 @@ import {
   bindable,
   catalogPropRefusal,
   fieldKind,
+  ghostLabel,
   guardField,
   i18nAttr,
   isIsoDate,
@@ -200,6 +201,13 @@ export type RenderInput = {
   /** the section's show-to (Layers' Member visibility, Story 5.4's control): the root is gated as if it carried
    *  `data-members` with this value, on both emitters. Default `everyone`, which gates nothing. */
   visibility?: MemberState
+
+  // ── Story 5.3 — inline editing ──────────────────────────────────────────────
+  /** the CANVAS's alone: each surviving `text` or `richtext` prop's element is stamped `data-inflozo-prop="<path>"` (and
+   *  `data-inflozo-item="<index>"` inside an authored item), each surviving Ghost word `data-inflozo-ghost="<name>"` (R-122),
+   *  so the editor knows which element is which prop. The editor lifts every stamp off as it mounts the canvas; with them
+   *  removed the render is exactly the render without `editing` (`index.test.ts`). The theme refuses it. */
+  editing?: boolean
 }
 
 export type MemberState = (typeof MEMBER_STATES)[number]
@@ -672,6 +680,15 @@ export function checkBindings(doc: RuntimeDocument, src: string, input: RenderIn
 const numberField = (field: string, input: RenderInput, where: readonly ScopeEntry[]): boolean =>
   input.target !== undefined && fieldKind(field, { target: input.target, scope: where }) === 'number'
 
+/** Story 5.3, R-122: a surviving Ghost word on the canvas names its field for the editor's lock pill, from the one list
+ *  beside the matrix. Unnamed without a target — the editor always renders at one, and a render at one has already
+ *  refused a binding the matrix does not carry. */
+function stampGhost(el: RuntimeElement, path: string, input: RenderInput, where: readonly ScopeEntry[], use: BindingUse): void {
+  if (input.editing !== true || input.target === undefined) return
+  const name = ghostLabel(path, { target: input.target, scope: where }, use)
+  if (name !== null) el.setAttribute('data-inflozo-ghost', name)
+}
+
 /** `users` is the WHOLE of the difference between the emitters at the binding sites: a `UserText`
  *  on the theme path, `null` on the canvas path. */
 function emitBindings(
@@ -744,6 +761,7 @@ function emitBindings(
       } else {
         el.textContent = v
       }
+      stampGhost(el, field, input, where, 'value')
     }
   }
 
@@ -849,6 +867,7 @@ function emitBindings(
       continue
     }
     // ─────────── THE DIFFERENCE (2) — canvas ───────────
+    stampGhost(el, name, input, where, 'helper')
     if (name === 'navigation') {
       // The shim returns DATA and the nodes are built here, because NFR-3 puts every Ghost value in
       // a TEXT NODE and a shim with no DOM cannot break that rule by accident. The markup is Ghost's
@@ -1048,6 +1067,8 @@ function applyProps(
   users: UserText | null,
   tokens: Tokens,
   items?: Readonly<Record<string, unknown>>,
+  /** the item's index in its authored array, which `expandItems` passes — a guard that hides one item shifts no other */
+  index?: number,
 ): void {
   const content = input.content ?? {}
   const schema = input.schema ?? {}
@@ -1056,6 +1077,11 @@ function applyProps(
   for (const el of all(scope, '[data-prop]')) {
     const path = consume(el, 'data-prop') ?? ''
     const def = own(schema, path)
+    if (users === null && input.editing === true && (def?.type === 'text' || def?.type === 'richtext')) {
+      // Story 5.3: stamped here, where the path is known, and on an element a guard may still remove below
+      el.setAttribute('data-inflozo-prop', path)
+      if (index !== undefined && path.includes('[].')) el.setAttribute('data-inflozo-item', String(index))
+    }
     let v = propGet(content, path, items) as PropValue
     const mode = guardMode(el, false)
     if (def?.type === 'icon' && input.icons !== undefined) {
@@ -1242,12 +1268,12 @@ function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
   for (const el of lists) {
     const path = consume(el, 'data-items') ?? ''
     const raw = get(input.content ?? {}, path)
-    for (const item of Array.isArray(raw) ? raw : []) {
+    for (const [index, item] of (Array.isArray(raw) ? raw : []).entries()) {
       const clone = el.cloneNode(true)
       el.before(clone)
       // bindings first, as every other walk does: `data-empty` is shared and applyProps sweeps it
       emitBindings(doc, clone, input, tokens, users, input.ghost ?? {}, [])
-      applyProps(clone, input, users, tokens, { [path]: item })
+      applyProps(clone, input, users, tokens, { [path]: item }, index)
     }
     el.remove()
   }
@@ -1661,6 +1687,7 @@ const tidy = (html: string): string => html.replace(/^\s*[\r\n]/gm, '').trim()
 
 /** Emitter 1 — the `.hbs` text that ships to the customer's Ghost site. */
 export function renderTheme(doc: RuntimeDocument, src: string, input: RenderInput = {}): ThemeOutput {
+  if (input.editing === true) throw new Error('RenderInput.editing is the canvas emitter\'s alone: its data-inflozo-* stamps would ship in the theme (Story 5.3).')
   const shared = input.users
   const users = shared ?? new UserText(input.schema ?? {}, input.tokens ?? {})
   const tokens = new Tokens()

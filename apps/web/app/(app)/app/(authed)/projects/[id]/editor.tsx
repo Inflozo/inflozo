@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
-import { stampControls } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, ProjectDoc, RuntimeElement } from '@inflozo/section-runtime'
+import { getPath, serializeMarks, setContent, stampControls } from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
+import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { ProBadge } from '@/components/kit/badge'
 import { IconButton } from '@/components/kit/button'
@@ -19,7 +20,8 @@ import { LayersRow } from '@/components/kit/layers-row'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { CANVASES, canvasOfPath, canvasStack, SITE, type CanvasKey } from '@/lib/editor'
-import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, sectionRoots, withState, type HoldEvent } from '@/lib/selection'
+import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
+import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { isApp, stripApp } from '@/routing'
 import type { EditorData } from './read'
 
@@ -49,6 +51,22 @@ import type { EditorData } from './read'
    every stamp the attributes are re-applied, because `stampControls` strips every root `data-*` it does not own. Esc
    deselects unless a field, a picker or the reset dialog owns it; a change of canvas deselects too.
 
+   TYPING ON THE CANVAS (Story 5.3 — P0-1, B4b). Every paint asks the canvas emitter for its editing stamps and lifts them
+   into memory in the same task (`takeStamps`), so nothing is left on the page. A press on a stamped text prop inside the
+   selected section is not prevented: the element becomes `contenteditable` inside the handler and the browser puts the
+   caret under the pointer. A `<button>`'s label cannot take a caret that way (executed), so its press is prevented and the
+   label goes into a temporary editable span, focused with the caret at its end, that ending editing unwraps. Every other
+   press is prevented, so a first click still only selects, and moves focus to the canvas document so Esc reaches it.
+   `lib/inline.ts` runs the field: each input stores the value through `setContent` without repainting, writes the new
+   markup into any other element stamped with the same prop, and a refused character shows the limit's pill. A press into
+   a second field starts it before the first one's focusout arrives, so the first ends in place and nothing repaints; when
+   editing ends with no field being edited, the canvas repaints, after the press that ended it, so it is again exactly the
+   render of the stored docs. P0-1's toolbar sits outside the frame, placed from the selection's rect through the frame's
+   rect and the fit, hidden from the first canvas scroll and placed again 150ms after the last; its link panel is Story
+   4.5's, and a press on the canvas closes it committing nothing. A click on Ghost's own words in the selected section
+   shows P0-1's lock pill naming them (R-122), in the chrome layer beside them; the next click, Esc or a change of
+   selection takes it away.
+
    EXTRAPOLATED, NOT DRAWN AT 1440 (R-74): the Layers header is D8e's (`D8 Editor Below 1440.dc.html:372-373`) with
    the mono line under the title rather than beside it, because "THIS PAGE · AUTHOR ARCHIVE" does not fit beside it
    in 240; both folds are D8's "Show layers" rail (:193-194), the Controls one mirrored, as `/controls` does (DW-114).
@@ -58,8 +76,10 @@ import type { EditorData } from './read'
    the session and a reload starts from the stored docs), the Template pill (5.5), View as (5.14), the sun (5.6), the
    device switch (5.7), Ship it (7.18), the name's rename underline (no story yet), Layers' grip, eye, thumbnails and a
    pressable row (5.4), "+ Add section" and the hairline "+" between sections (5.10), the hover pill's Duplicate, Delete
-   and drag handle (5.4), the design arrows and S4c's "4 / 18" chip (5.11), typing on the canvas (5.3), the Style Pack
-   card (6.3) and Dark mode (5.6) (R-118). S4a's posts-per-page note and S4c's pinned Quick Controls card are never
+   and drag handle (5.4), the design arrows and S4c's "4 / 18" chip (5.11), the Style Pack card (6.3) and Dark mode (5.6)
+   (R-118); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's docked bar at 390
+   (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
+   P0-2's filled-slot popover. S4a's posts-per-page note and S4c's pinned Quick Controls card are never
    built (FR-Q1, R-113). */
 
 const DESKTOP = 1440
@@ -150,6 +170,18 @@ export function Editor({
   // A section that will not draw is a broken doc or design, not a canvas to show around it: thrown in render, so the
   // app's error boundary shows it (the spec's "never a partly drawn canvas").
   const [failure, setFailure] = useState<Error | null>(null)
+  // Story 5.3 — each paint's editing stamps, the field being edited, its toolbar, and the pill
+  const stamps = useRef(new Map<HTMLElement, Stamp>())
+  type Editing = { inline: Inline; target: HTMLElement; path: string; item?: number; n: number }
+  const editing = useRef<Editing | null>(null)
+  const [session, setSession] = useState<Inline | null>(null)
+  const [inlineAt, setInlineAt] = useState<ScreenSelection | null>(null)
+  const [scrolling, setScrolling] = useState(false)
+  const [note, setNote] = useState<{ el: HTMLElement; kind: 'lock' | 'limit'; words: string } | null>(null)
+  const noteBox = useRef<HTMLDivElement>(null)
+  const tools = useRef<InlineToolsHandle>(null)
+  /** a press on the canvas is under way: a repaint it causes waits for its click, which must still find its target */
+  const press = useRef({ on: false, repaint: false })
   // a card measured at 0 (folded away, not yet laid out) would put Infinity in the iframe's height
   const scale = size.width > 0 ? Math.min(1, size.width / DESKTOP) : 1
   // the canvas document's handlers and paint read the latest values through here
@@ -170,6 +202,9 @@ export function Editor({
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
     setSelected(pick)
+    setNote(null)
+    // a change of selection ends editing
+    editing.current?.inline.end()
     mark()
   }
   const point = (pick: Pick | null) => {
@@ -187,14 +222,21 @@ export function Editor({
     // `load` listener each paint `latest` when they land, so a key change dropped here is painted then
     if (!doc || !mount || !lookup || !frame.current) return
     const now = latest.current
+    // a field being edited is ended in place before its element is replaced, and asks for no second paint
+    const was = editing.current
+    editing.current = null
+    was?.inline.end()
+    setNote(null)
     try {
       const assets = canvasAssets(pool)
       const parts = now.stack.map((i) => {
         const entry: SectionRegistryEntry | undefined = entries[i.designId]
         if (!entry) throw new Error(`${i.designId} was not read for this project`)
-        return renderSection(doc, entry, i, { target: i.target, rows: rows[i.designId], feed: 'first', member: 'anonymous', visibility: 'everyone', assets, icons: lookup })
+        return renderSection(doc, entry, i, { target: i.target, rows: rows[i.designId], feed: 'first', member: 'anonymous', visibility: 'everyone', assets, icons: lookup, editing: true })
       })
       mountSections(mount, parts.join(''))
+      // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
+      stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>('[data-inflozo-prop], [data-inflozo-ghost]'))
       roots.current = sectionRoots(parts, mount) as (HTMLElement | null)[]
       wire(doc)
       // the hovered root was replaced, and the pointer has not said where it is since
@@ -215,6 +257,104 @@ export function Editor({
     return placed ? { doc: placed.doc, instanceId: placed.instanceId } : null
   }
 
+  // ─── Story 5.3 — typing on the canvas ───
+
+  /** The nearest stamped element a target sits in, inside the section that was selected when the press began. */
+  const stampAt = (target: EventTarget | null, pick: Pick | null) => {
+    const n = pick ? latest.current.stack.findIndex((i) => same(i, pick)) : -1
+    const root = roots.current[n]
+    if (!root) return null
+    for (let x = target as HTMLElement | null; x; x = x.parentElement) {
+      const stamp = stamps.current.get(x)
+      if (stamp) return { el: x, stamp, n }
+      if (x === root) break
+    }
+    return null
+  }
+  /** paints now, or after the press that asked for it has had its click */
+  const repaintAfterPress = () => {
+    if (press.current.on) press.current.repaint = true
+    else paint()
+  }
+  /** The selection's rect on screen: through the frame's own rect and the fit. */
+  const onScreen = (s: InlineSelection | null): ScreenSelection | null => {
+    const f = frame.current
+    if (!s || !f) return null
+    const fr = f.getBoundingClientRect()
+    const k = fr.width / f.offsetWidth
+    return { ...s, rect: { left: fr.left + s.rect.left * k, top: fr.top + s.rect.top * k, width: s.rect.width * k, height: s.rect.height * k }, edge: fr.top }
+  }
+
+  const startEditing = (target: HTMLElement, stamp: { path: string; item?: number }, n: number, caret: 'pointer' | 'end') => {
+    const placed = latest.current.stack[n]
+    const def = placed ? entries[placed.designId]?.contentSchema[stamp.path] : undefined
+    if (!placed || !def) return false
+    // moving between fields: the first ends in place, and its end asks for no paint because it is no longer current
+    const was = editing.current
+    editing.current = null
+    was?.inline.end()
+    setNote(null)
+    const doc = target.ownerDocument
+    let el = target
+    let unwrap = () => {}
+    if (target.tagName === 'BUTTON') {
+      const span = doc.createElement('span')
+      span.append(...target.childNodes)
+      target.append(span)
+      el = span
+      unwrap = () => {
+        if (span.parentNode === target) span.replaceWith(...span.childNodes)
+      }
+    }
+    const cut = stamp.path.indexOf('[].')
+    const value = (cut === -1
+      ? getPath(placed.content, stamp.path)
+      : getPath((getPath(placed.content, stamp.path.slice(0, cut)) as unknown[] | undefined)?.[stamp.item ?? -1], stamp.path.slice(cut + 3))) as PropValue
+    const me: Editing = { inline: null as unknown as Inline, target, path: stamp.path, item: stamp.item, n }
+    me.inline = startInline(el, {
+      def,
+      label: def.label,
+      value,
+      onValue: (next) => {
+        const now = latest.current
+        const at = now.stack[me.n]
+        const entry = at ? entries[at.designId] : undefined
+        if (!at || !entry) return
+        const state = setContent(entry, at, me.path, next, me.item)
+        if (typeof state === 'string') return
+        const docs = withState(now.docs, at.doc, at.instanceId, state)
+        latest.current = { ...now, docs, stack: stackOf(docs, now.key) }
+        setDocs(docs)
+        // the limit's pill stays until the next edit
+        setNote((shown) => (shown?.kind === 'limit' ? null : shown))
+        // the same prop drawn twice follows as it is typed
+        for (const other of samePropElsewhere<HTMLElement>(stamps.current, target, me.path, me.item, roots.current[me.n])) other.innerHTML = serializeMarks(next, def)
+      },
+      onRefused: (words) => setNote({ el: target, kind: 'limit', words }),
+      onSelection: (s) => setInlineAt(onScreen(s)),
+      onLinkKey: () => tools.current?.openLink(),
+      onToolbarKey: () => tools.current?.focusBar(),
+      onEnd: () => {
+        unwrap()
+        setInlineAt(null)
+        setSession((shown) => (shown === me.inline ? null : shown))
+        if (editing.current !== me) return
+        editing.current = null
+        setSession(null)
+        repaintAfterPress()
+      },
+    })
+    editing.current = me
+    setSession(me.inline)
+    if (caret === 'end') {
+      el.focus({ preventScroll: true })
+      const sel = doc.getSelection()
+      sel?.selectAllChildren(el)
+      sel?.collapseToEnd()
+    }
+    return true
+  }
+
   const onEscape = (e: KeyboardEvent) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return
     const target = e.target as HTMLElement | null
@@ -230,7 +370,54 @@ export function Editor({
     wired.current.add(doc)
     // `auxclick` too: a middle click on a link would open it in a new tab. `drop` (and `dragover`, which a drop needs):
     // a file dropped on the canvas would navigate its document to the file — AD-21's dropped-files trap (review, 2026-09-17)
-    for (const type of ['submit', 'dragstart', 'mousedown', 'auxclick', 'dragover', 'drop']) doc.addEventListener(type, (e) => e.preventDefault())
+    for (const type of ['submit', 'dragstart', 'auxclick', 'dragover', 'drop']) doc.addEventListener(type, (e) => e.preventDefault())
+    // Story 5.3: which section was selected when the press began — a touch's tap selects on its lift, before the mouse
+    // events it fires, and a first tap must still only select
+    let pressedIn: Pick | null = null
+    doc.addEventListener('pointerdown', () => {
+      pressedIn = latest.current.selected
+      // the link panel's light dismiss never sees a press inside the frame: it closes here, committing nothing
+      tools.current?.closeLink()
+    }, true)
+    doc.addEventListener('mousedown', (e) => {
+      press.current.on = true
+      const hit = stampAt(e.target, pressedIn)
+      if (hit && 'path' in hit.stamp && hit.el.tagName !== 'BUTTON') {
+        // not prevented: contenteditable is on before the default action, so the caret lands under the pointer
+        if (editing.current?.target === hit.el || startEditing(hit.el, hit.stamp, hit.n, 'pointer')) return
+      }
+      e.preventDefault()
+      if (hit && 'path' in hit.stamp) {
+        if (editing.current?.target !== hit.el) startEditing(hit.el, hit.stamp, hit.n, 'end')
+        return
+      }
+      // a press the canvas prevents moves focus to the canvas document, so Esc reaches the canvas (and a field being
+      // edited loses it, which ends editing)
+      const active = doc.activeElement as HTMLElement | null
+      if (active && active !== doc.body) active.blur()
+      doc.defaultView?.focus()
+    })
+    doc.addEventListener('mouseup', () => {
+      // after the click this press fires, which runs in the same task
+      setTimeout(() => {
+        press.current.on = false
+        if (press.current.repaint) {
+          press.current.repaint = false
+          paint()
+        }
+      }, 0)
+    })
+    let settle: ReturnType<typeof setTimeout> | undefined
+    doc.addEventListener('scroll', () => {
+      if (!editing.current) return
+      setScrolling(true)
+      clearTimeout(settle)
+      // ponytail: a timer, not `scrollend`; switch when every engine the editor supports fires it
+      settle = setTimeout(() => {
+        setScrolling(false)
+        editing.current?.inline.report()
+      }, 150)
+    }, { passive: true })
     // hover is the mouse's and the pen's: touch has the hold, so a tap never flashes an outline before it selects
     doc.addEventListener('pointerover', (e) => {
       if (e.pointerType !== 'touch') point(pickAt(e.target))
@@ -281,6 +468,9 @@ export function Editor({
     doc.addEventListener('click', (e) => {
       e.preventDefault()
       if (step({ type: 'click' }) === 'swallow') return
+      // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away
+      const ghost = stampAt(e.target, latest.current.selected)
+      setNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : null)
       // a click on nothing — the ground below the last section — keeps the selection
       const pick = pickAt(e.target)
       if (pick) choose(pick)
@@ -363,11 +553,12 @@ export function Editor({
   // positions follow layout, not scroll: a section that grows, a header that shrinks, a fold that re-fits the canvas
   useLayoutEffect(() => {
     if (!chrome) return
-    const all: [HTMLElement | null, HTMLElement | null, 'fill' | 'top-left' | 'top-right'][] = [
+    const all: [HTMLElement | null, HTMLElement | null, 'fill' | 'top-left' | 'top-right' | 'above'][] = [
       [hoverBox.current, hoveredRoot, 'fill'],
       [selectedBox.current, selectedRoot, 'fill'],
       [tag.current, hoveredRoot, 'top-left'],
       [badge.current, selectedRoot, 'top-right'],
+      [noteBox.current, note?.el ?? null, 'above'],
     ]
     const tick = () => {
       for (const [el, root, how] of all) if (el && root) place(el, root, scale, how)
@@ -482,7 +673,11 @@ export function Editor({
                   layerFor(selectedRoot) as ShadowRoot,
                 )
               : null}
+            {/* P0-1's pill (R-122, and the limit's sentence): chrome in the canvas's own layer, so it scrolls with its words */}
+            {note && chosen && layerFor(selectedRoot) ? createPortal(<CanvasNote ref={noteBox} kind={note.kind} words={note.words} />, layerFor(selectedRoot) as ShadowRoot) : null}
           </div>
+          {/* P0-1's toolbar and its link panel: pressed, so outside the frame (AD-21) */}
+          <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling} resources={links} handle={tools} />
         </section>
 
         {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" /> : null}

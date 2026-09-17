@@ -136,7 +136,7 @@ export const pinned = (root: HTMLElement) => {
 }
 
 /** Places one chrome element over its root, in its host's units (one unit is one screen pixel); writes only on change. */
-export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fill' | 'top-left' | 'top-right') {
+export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fill' | 'top-left' | 'top-right' | 'above') {
   const host = (el.getRootNode() as ShadowRoot).host as HTMLElement | undefined
   if (!host) return
   const transform = `scale(${1 / fit})`
@@ -145,8 +145,13 @@ export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fil
   const r = root.getBoundingClientRect()
   const left = (r.left - h.left) * fit
   const top = (r.top - h.top) * fit
+  // Story 5.3's pill (P0-1 :138-147): centred 8px above its words, or below them when their top is within 48px of the
+  // canvas viewport's top, where it would be cut off
+  const centre = (r.left + r.width / 2 - h.left) * fit - el.offsetWidth / 2
   const style =
-    how === 'fill'
+    how === 'above'
+      ? { left: `${centre}px`, top: `${r.top * fit < 48 ? (r.bottom - h.top) * fit + 8 : top - 8 - el.offsetHeight}px` }
+      : how === 'fill'
       ? { left: `${left}px`, top: `${top}px`, width: `${r.width * fit}px`, height: `${r.height * fit}px` }
       : how === 'top-left'
         ? { left: `${left}px`, top: `${top}px` }

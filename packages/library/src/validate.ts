@@ -645,6 +645,20 @@ export function validateCategoryContent(content: CategoryContent, icons?: IconLo
     if (prop.marks !== undefined && prop.type !== 'richtext') {
       push(out, 'marks-on-plain-prop', `prop "${path}" is ${prop.type} and declares marks. Only a richtext prop carries a mark allow-list (AD-4).`)
     }
+    // Story 5.3 — FR-D4's limit: on the two text editors only, a positive whole number, and never below the words the
+    // design itself starts with (an authored default longer than it could never be typed back)
+    if (prop.maxChars !== undefined) {
+      if (prop.type !== 'text' && prop.type !== 'richtext') {
+        push(out, 'max-chars-type', `prop "${path}" is ${prop.type} and declares maxChars. Only a text or richtext prop is typed into, so only one has a character limit (FR-D4).`)
+      } else if (!Number.isInteger(prop.maxChars) || prop.maxChars < 1) {
+        push(out, 'max-chars-value', `prop "${path}" declares maxChars ${JSON.stringify(prop.maxChars)} — a character limit is a whole number of at least 1.`)
+      } else {
+        const words = typeof prop.default === 'string' ? prop.default : typeof prop.default === 'object' && prop.default !== null && typeof (prop.default as { text?: unknown }).text === 'string' ? (prop.default as { text: string }).text : ''
+        if (words.length > prop.maxChars) {
+          push(out, 'max-chars-default', `prop "${path}" defaults to ${words.length} characters and holds ${prop.maxChars}. The design's own words must fit the limit a customer is held to.`)
+        }
+      }
+    }
     for (const m of prop.marks ?? []) {
       if (!(MARKS as readonly string[]).includes(m)) {
         push(out, 'bad-mark', `prop "${path}" allows the mark "${m}", which is not one of AD-4's four: ${MARKS.join(' · ')}.`)

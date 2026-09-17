@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { LINK_RELS, PORTAL_ACTIONS } from '@inflozo/library'
 import type { Link as LinkRecord } from '@inflozo/library'
 import { Button } from '@/components/kit/button'
@@ -22,7 +22,12 @@ import { openPopover } from '@/components/kit/select'
    another pass presses Remove link, straight away. So the popover keeps the search state on top and
    draws the filled state beneath it once a destination is chosen — the same parts, in P0-1's order, in
    one panel. The closed field is extrapolated from the Kit's closed select: the destination's words,
-   and under them the value it compiles to (`account/plans`, never `upgrade`). */
+   and under them the value it compiles to (`account/plans`, never `upgrade`).
+
+   STORY 5.3 SPLITS THE POPOVER OUT as `LinkPanel`, so the inline toolbar opens the same one at a selection (B4b's place,
+   P0-1's white popover): `LinkPicker` is its button and a `LinkPanel`, with the markup, the ids and the behaviour as they
+   were. The panel opens filled with the record it is handed, or empty, and reports Done with the draft or Remove link
+   with `null`; Escape and a click outside report nothing. */
 
 export type LinkResource = { id: string; title: string; url: string; meta: string }
 export type LinkResources = Readonly<Record<'pages' | 'posts' | 'tags' | 'authors', readonly LinkResource[]>>
@@ -105,11 +110,72 @@ export function LinkPicker({
   /** the committed record, or `null` for Remove link */
   onChange: (link: LinkRecord | null) => void
 }) {
-  const [query, setQuery] = useState('')
-  const [draft, setDraft] = useState<LinkRecord | null>(null)
   const stored = recordOf(value)
   const shown = describe(stored, resources)
   const pop = `${id}-link`
+
+  return (
+    <div className="flex flex-col gap-[5px]">
+      <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">
+        {label}
+      </span>
+      <button
+        type="button"
+        id={id}
+        aria-labelledby={`${id}-label ${id}`}
+        popoverTarget={pop}
+        onClick={(event) => {
+          const el = document.getElementById(pop)
+          if (el) openPopover(el, event.currentTarget, { side: 'down', align: 'left' }, document.getElementById(`${id}-q`))
+        }}
+        className={`flex min-h-[38px] items-center gap-[9px] rounded-sm border border-line bg-surface px-[11px] py-[6px] text-left hover:border-line-strong ${ring}`}
+      >
+        <Link size={13} className="shrink-0 text-ink-soft" />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className={`truncate text-[12.5px] font-medium ${stored === null ? 'text-ink-soft' : 'text-ink'}`}>{shown.title}</span>
+          {shown.meta ? <span className="truncate font-mono text-[10px] text-ink-soft">{shown.meta}</span> : null}
+        </span>
+        <ChevronDown size={12} className="shrink-0 text-ink-soft" />
+      </button>
+      <LinkPanel id={id} label={label} record={stored} resources={resources} onCommit={onChange} />
+    </div>
+  )
+}
+
+/** P0-1's link popover, `popover="auto"` with the id `${id}-link` and its search `${id}-q`. Opened by the caller through
+ *  `openPopover`; each opening starts from `record` with an empty search. */
+export function LinkPanel({
+  id,
+  label,
+  record,
+  resources,
+  onCommit,
+}: {
+  id: string
+  label: string
+  /** the link the panel opens filled with, or null for an empty one */
+  record: LinkRecord | null
+  resources: LinkResources
+  /** Done with the draft, or Remove link with `null` — never called for Escape or a click outside */
+  onCommit: (link: LinkRecord | null) => void
+}) {
+  const [query, setQuery] = useState('')
+  const [draft, setDraft] = useState<LinkRecord | null>(null)
+  const pop = `${id}-link`
+  const panel = useRef<HTMLDivElement>(null)
+  const opening = useRef(record)
+  opening.current = record
+  useEffect(() => {
+    const el = panel.current
+    if (!el) return
+    const reset = (event: Event) => {
+      if ((event as ToggleEvent).newState !== 'open') return
+      setDraft(opening.current)
+      setQuery('')
+    }
+    el.addEventListener('beforetoggle', reset)
+    return () => el.removeEventListener('beforetoggle', reset)
+  }, [])
 
   const q = query.trim()
   const address = outside(q)
@@ -129,193 +195,168 @@ export function LinkPicker({
   const rels = new Set(draft?.rel ?? [])
 
   return (
-    <div className="flex flex-col gap-[5px]">
-      <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">
-        {label}
-      </span>
-      <button
-        type="button"
-        id={id}
-        aria-labelledby={`${id}-label ${id}`}
-        popoverTarget={pop}
-        onClick={(event) => {
-          setDraft(stored)
-          setQuery('')
-          const el = document.getElementById(pop)
-          if (el) openPopover(el, event.currentTarget, { side: 'down', align: 'left' }, document.getElementById(`${id}-q`))
+    <div
+      ref={panel}
+      id={pop}
+      popover="auto"
+      role="dialog"
+      aria-label={`${label} — choose a destination`}
+      className="max-h-[min(640px,85vh)] w-[340px] max-w-[calc(100vw-16px)] flex-col gap-2 overflow-hidden rounded border border-line bg-surface p-[10px] shadow-lg open:flex"
+    >
+      {/* The search stays at the top and the chosen destination with Done at the foot; only the results
+          between them scroll (the owner's finding 7 on Story 4.5: a search for "e" lists dozens of rows). */}
+      <SearchInput
+        id={`${id}-q`}
+        label="Search pages, posts — or paste a URL"
+        labelHidden
+        placeholder="Search pages, posts — or paste a URL"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && address !== null) {
+            event.preventDefault()
+            choose({ href: address, ...(isWeb(address) ? { newTab: true } : {}) })
+          }
         }}
-        className={`flex min-h-[38px] items-center gap-[9px] rounded-sm border border-line bg-surface px-[11px] py-[6px] text-left hover:border-line-strong ${ring}`}
-      >
-        <Link size={13} className="shrink-0 text-ink-soft" />
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className={`truncate text-[12.5px] font-medium ${stored === null ? 'text-ink-soft' : 'text-ink'}`}>{shown.title}</span>
-          {shown.meta ? <span className="truncate font-mono text-[10px] text-ink-soft">{shown.meta}</span> : null}
-        </span>
-        <ChevronDown size={12} className="shrink-0 text-ink-soft" />
-      </button>
+      />
 
-      <div
-        id={pop}
-        popover="auto"
-        role="dialog"
-        aria-label={`${label} — choose a destination`}
-        className="max-h-[min(640px,85vh)] w-[340px] max-w-[calc(100vw-16px)] flex-col gap-2 overflow-hidden rounded border border-line bg-surface p-[10px] shadow-lg open:flex"
-      >
-        {/* The search stays at the top and the chosen destination with Done at the foot; only the results
-            between them scroll (the owner's finding 7 on Story 4.5: a search for "e" lists dozens of rows). */}
-        <SearchInput
-          id={`${id}-q`}
-          label="Search pages, posts — or paste a URL"
-          labelHidden
-          placeholder="Search pages, posts — or paste a URL"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && address !== null) {
-              event.preventDefault()
-              choose({ href: address, ...(isWeb(address) ? { newTab: true } : {}) })
-            }
-          }}
-        />
-
-        <div className={`-mx-[10px] flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-[10px] ${slimScrollbar}`}>
-          {groups.map((g) => (
-            <div key={g.key} role="group" aria-labelledby={`${id}-${g.key}`} className="flex flex-col gap-px">
-              <span id={`${id}-${g.key}`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
-                {g.label}
-              </span>
-              {g.rows.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => choose({ href: r.url, ref: { kind: g.kind, id: r.id } })}
-                  className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
-                >
-                  {g.icon}
-                  <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">{matched(r.title, q)}</span>
-                  <span className="shrink-0 text-[10.5px] text-ink-soft">{r.meta}</span>
-                </button>
-              ))}
-            </div>
-          ))}
-
-          {address !== null ? (
-            <button
-              type="button"
-              onClick={() => choose({ href: address, ...(isWeb(address) ? { newTab: true } : {}) })}
-              className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
-            >
-              <Globe size={14} className="shrink-0 text-ink-soft" />
-              <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">Link to {q}</span>
-            </button>
-          ) : null}
-
-          {groups.length > 0 || address !== null ? <div aria-hidden className="mx-1 my-[2px] h-px bg-line" /> : null}
-
-          <div role="group" aria-labelledby={`${id}-portal`} className="flex flex-col gap-px">
-            <span id={`${id}-portal`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
-              Portal actions
+      <div className={`-mx-[10px] flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-[10px] ${slimScrollbar}`}>
+        {groups.map((g) => (
+          <div key={g.key} role="group" aria-labelledby={`${id}-${g.key}`} className="flex flex-col gap-px">
+            <span id={`${id}-${g.key}`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
+              {g.label}
             </span>
-            <div className="flex flex-wrap gap-[6px] px-2 pb-[6px] pt-[2px]">
-              {Object.entries(PORTAL_ACTIONS).map(([action, words]) => (
-                <button key={action} type="button" aria-pressed={draft?.portal === action} onClick={() => choose({ portal: action })} className={chip(draft?.portal === action)}>
-                  {words}
-                </button>
-              ))}
-            </div>
-            <span id={`${id}-site`} className="px-2 pt-[2px] font-mono text-[10.5px] tracking-[0.06em] text-ink-soft">
-              SITE
-            </span>
-            <div role="group" aria-labelledby={`${id}-site`} className="flex flex-wrap gap-[6px] px-2 pb-[2px] pt-[4px]">
-              <button type="button" aria-pressed={draft?.search === true} onClick={() => choose({ search: true })} className={chip(draft?.search === true)}>
-                <Search size={12} className="text-ink-soft" />
-                Ghost search
+            {g.rows.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => choose({ href: r.url, ref: { kind: g.kind, id: r.id } })}
+                className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
+              >
+                {g.icon}
+                <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">{matched(r.title, q)}</span>
+                <span className="shrink-0 text-[10.5px] text-ink-soft">{r.meta}</span>
               </button>
-            </div>
+            ))}
           </div>
+        ))}
 
-          <p className="flex items-center gap-[7px] px-2 pb-[2px] pt-1 text-[11.5px] text-ink-soft">
-            <Globe size={13} className="shrink-0" />
-            Paste a URL or type an email address to link outside the site
-          </p>
+        {address !== null ? (
+          <button
+            type="button"
+            onClick={() => choose({ href: address, ...(isWeb(address) ? { newTab: true } : {}) })}
+            className={`flex items-center gap-[9px] rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}
+          >
+            <Globe size={14} className="shrink-0 text-ink-soft" />
+            <span className="min-w-0 flex-1 truncate text-ui-dense font-medium text-ink">Link to {q}</span>
+          </button>
+        ) : null}
+
+        {groups.length > 0 || address !== null ? <div aria-hidden className="mx-1 my-[2px] h-px bg-line" /> : null}
+
+        <div role="group" aria-labelledby={`${id}-portal`} className="flex flex-col gap-px">
+          <span id={`${id}-portal`} className="px-2 pb-[3px] pt-[6px] text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
+            Portal actions
+          </span>
+          <div className="flex flex-wrap gap-[6px] px-2 pb-[6px] pt-[2px]">
+            {Object.entries(PORTAL_ACTIONS).map(([action, words]) => (
+              <button key={action} type="button" aria-pressed={draft?.portal === action} onClick={() => choose({ portal: action })} className={chip(draft?.portal === action)}>
+                {words}
+              </button>
+            ))}
+          </div>
+          <span id={`${id}-site`} className="px-2 pt-[2px] font-mono text-[10.5px] tracking-[0.06em] text-ink-soft">
+            SITE
+          </span>
+          <div role="group" aria-labelledby={`${id}-site`} className="flex flex-wrap gap-[6px] px-2 pb-[2px] pt-[4px]">
+            <button type="button" aria-pressed={draft?.search === true} onClick={() => choose({ search: true })} className={chip(draft?.search === true)}>
+              <Search size={12} className="text-ink-soft" />
+              Ghost search
+            </button>
+          </div>
         </div>
 
-        {draft !== null ? (
-          <div className="flex shrink-0 flex-col gap-[10px] border-t border-line pt-[10px]">
-            <div className="flex items-center gap-[9px] rounded-sm border border-line bg-paper px-[10px] py-[9px]">
-              {d.kind === 'internal' ? <PostGlyph /> : <Link size={14} className="shrink-0 text-ink-soft" />}
-              <span className="flex min-w-0 flex-1 flex-col gap-px">
-                <span className="truncate text-ui-dense font-medium text-ink">{d.title}</span>
-                {d.meta ? <span className="truncate font-mono text-[10px] text-ink-soft">{d.meta}</span> : null}
-              </span>
-            </div>
-            {options ? (
-              <>
-                <label className="flex cursor-pointer items-center gap-[9px] px-[2px] text-ui-dense font-medium text-ink">
-                  <input
-                    type="checkbox"
-                    checked={draft.newTab === true}
-                    onChange={(event) => setDraft({ ...draft, newTab: event.target.checked })}
-                    className={`size-4 accent-coral-text ${ring}`}
-                  />
-                  Open in new tab
-                </label>
-                <div role="group" aria-labelledby={`${id}-rel`} className="flex flex-col gap-[6px] px-[2px]">
-                  <span id={`${id}-rel`} className="text-[11px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
-                    Rel
-                  </span>
-                  <div className="flex flex-wrap gap-[6px]">
-                    {LINK_RELS.map((rel) => {
-                      const on = rels.has(rel)
-                      return (
-                        <button
-                          key={rel}
-                          type="button"
-                          aria-pressed={on}
-                          onClick={() => {
-                            const next = new Set(rels)
-                            if (on) next.delete(rel)
-                            else next.add(rel)
-                            setDraft({ ...draft, rel: LINK_RELS.filter((r) => next.has(r)) })
-                          }}
-                          className={`inline-flex h-[26px] items-center rounded-pill px-[10px] font-mono text-[11px] ${ring} ${
-                            on ? 'bg-coral-tint font-medium text-coral-text' : 'border border-line text-ink-soft'
-                          }`}
-                        >
-                          {rel}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              </>
-            ) : null}
-            <div className="flex items-center justify-between border-t border-line px-[2px] pt-[10px]">
-              <button
-                type="button"
-                onClick={() => {
-                  close()
-                  onChange(null)
-                }}
-                className={`inline-flex items-center gap-[6px] text-[12.5px] font-medium text-coral-text ${ring}`}
-              >
-                <LinkOff size={13} />
-                Remove link
-              </button>
-              <Button
-                variant="coral"
-                size={32}
-                onClick={() => {
-                  close()
-                  onChange(draft)
-                }}
-              >
-                Done
-              </Button>
-            </div>
-          </div>
-        ) : null}
+        <p className="flex items-center gap-[7px] px-2 pb-[2px] pt-1 text-[11.5px] text-ink-soft">
+          <Globe size={13} className="shrink-0" />
+          Paste a URL or type an email address to link outside the site
+        </p>
       </div>
+
+      {draft !== null ? (
+        <div className="flex shrink-0 flex-col gap-[10px] border-t border-line pt-[10px]">
+          <div className="flex items-center gap-[9px] rounded-sm border border-line bg-paper px-[10px] py-[9px]">
+            {d.kind === 'internal' ? <PostGlyph /> : <Link size={14} className="shrink-0 text-ink-soft" />}
+            <span className="flex min-w-0 flex-1 flex-col gap-px">
+              <span className="truncate text-ui-dense font-medium text-ink">{d.title}</span>
+              {d.meta ? <span className="truncate font-mono text-[10px] text-ink-soft">{d.meta}</span> : null}
+            </span>
+          </div>
+          {options ? (
+            <>
+              <label className="flex cursor-pointer items-center gap-[9px] px-[2px] text-ui-dense font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={draft.newTab === true}
+                  onChange={(event) => setDraft({ ...draft, newTab: event.target.checked })}
+                  className={`size-4 accent-coral-text ${ring}`}
+                />
+                Open in new tab
+              </label>
+              <div role="group" aria-labelledby={`${id}-rel`} className="flex flex-col gap-[6px] px-[2px]">
+                <span id={`${id}-rel`} className="text-[11px] font-semibold uppercase tracking-[0.05em] text-ink-soft">
+                  Rel
+                </span>
+                <div className="flex flex-wrap gap-[6px]">
+                  {LINK_RELS.map((rel) => {
+                    const on = rels.has(rel)
+                    return (
+                      <button
+                        key={rel}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => {
+                          const next = new Set(rels)
+                          if (on) next.delete(rel)
+                          else next.add(rel)
+                          setDraft({ ...draft, rel: LINK_RELS.filter((r) => next.has(r)) })
+                        }}
+                        className={`inline-flex h-[26px] items-center rounded-pill px-[10px] font-mono text-[11px] ${ring} ${
+                          on ? 'bg-coral-tint font-medium text-coral-text' : 'border border-line text-ink-soft'
+                        }`}
+                      >
+                        {rel}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          ) : null}
+          <div className="flex items-center justify-between border-t border-line px-[2px] pt-[10px]">
+            <button
+              type="button"
+              onClick={() => {
+                close()
+                onCommit(null)
+              }}
+              className={`inline-flex items-center gap-[6px] text-[12.5px] font-medium text-coral-text ${ring}`}
+            >
+              <LinkOff size={13} />
+              Remove link
+            </button>
+            <Button
+              variant="coral"
+              size={32}
+              onClick={() => {
+                close()
+                onCommit(draft)
+              }}
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
