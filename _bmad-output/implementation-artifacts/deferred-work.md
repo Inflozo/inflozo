@@ -4177,3 +4177,79 @@ owner: Story 5.5 (the switcher is the first soft navigation between canvases; `e
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, the `useEffect` on `[key]`.
 reason: a soft navigation can be faked from the harness only through Next's private `window.next.router`, which
   is not a product path; the real one arrives with 5.5.
+
+## Deferred from: Story 5.3's Create run (2026-09-17)
+
+### DW-177: four designs in the library are named by no story, so nothing would build them
+
+plain: Four designs that are drawn and written up for your library — Reveal (Headers), Triple (Announcement Bars),
+  Overlap Card (Heroes) and Ledger (FAQ) — appear in no story of the plan, so as the plan stands nobody would ever build
+  them. In each of those four categories one design number was retired, and the stories' ranges stopped one design short.
+status: open
+severity: high
+origin: Story 5.3's Create run (2026-09-17). The icon sweep noticed three; the check was then derived for every category
+  rather than trusted: each design `tools/export-roster.py` lists as not deleted, compared with the `#n Name` pairs the
+  Epic 9 and Epic 10 stories name in `epics.md`. Four come back — A1·16 Reveal, A2·15 Triple, A4·18 Overlap Card and
+  A9·15 Ledger — and each has a frame (`A1-16 Reveal.dc.html` and the rest) and a spec entry. Each of those categories has
+  a retired number (A1·9, A2·13, A4·15, A9·12), and its owner-gate story names one design fewer than the roster holds:
+  Story 9.4 builds #13–15, 9.8 #12 and #14, 10.5 #16 and #17, 10.25 #13 and #14.
+owner: the owner's word on the plan first, then each category's owner-gate story names its missing design — Story 9.4
+  (A1, #16 Reveal), 9.8 (A2, #15 Triple), 10.5 (A4, #18 Overlap Card), 10.25 (A9, #15 Ledger); and the next story that
+  touches `tools/story-board.py` or `tools/doc-audit.py` adds the derived check, so a roster design no story names fails
+  the gate.
+location: `_bmad-output/planning-artifacts/epics.md` Stories 9.4 (:3664), 9.8 (:3770), 10.5 (:4026), 10.25 (:4556) ·
+  `tools/export-roster.py` (the roster)
+reason: E9 and E10 promise that every design ships, and a range written into a story went stale when a number was
+  retired — the standing rule that counts are derived, not written down. Not Story 5.3's to fix: the plan is the owner's,
+  and the durable fix is a check where the story list is read. The derivation to repeat: for each category in the roster
+  that is not deleted, every design whose `deleted` is empty must appear as `#<n> <Name>` in some `#### Story 9.x` or
+  `#### Story 10.x` of that category (a first story names its four in its acceptance criteria).
+
+### DW-178: the design notes disagree with themselves about icons, in four places
+
+plain: The design notes contradict each other about icons: whether the social icons in a header or a contact section are
+  ones you pick or simply follow the platform Ghost names, and whether a stats design's icon has anywhere to be stored.
+  The story that builds each of those categories has to ask you first, or it will guess.
+status: open
+severity: medium
+origin: Story 5.3's Create run (2026-09-17), the icon sweep over every category spec, each line read:
+  - `A1 Headers - Spec.md:116` — A1·8's strip and A1·14's cluster make each social glyph "a P0·2 icon slot (defaults
+    from the Icon Picker's Social/Brands group, swappable)".
+  - `A16 Contact - Spec.md:436` — `socials[]` with a source "From Ghost (version-gated) · Authored" and glyphs from the
+    Icon Picker.
+  - `A3 Footers - Spec.md:61` — "The split is withdrawn by the owner's ruling of 29 August 2026: there is one source, and
+    it is Ghost": the theme ships a glyph per platform, and the glyphs "are no longer picked per row".
+  - `A10 Stats and Numbers - Spec.md:43` offers "Icons: None (default) · Shown" with "the slot above the value", and the
+    shared field list at `:49` names no icon field.
+owner: Story 9.1 (A1's content model: whether A1's social glyphs are slots, asked in R-83's shape if the 29 August
+  ruling does not already settle it), Story 10.50 (A16's content model, the same question), Story 10.26 (A10's content
+  model: the icon field's name and type)
+location: the four spec lines above, in `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/`
+reason: the export is Claude Design's and is never edited (R-74); a disagreement inside it is settled by the owner at the
+  story that authors the content model, not by whichever reader meets it first. Found while planning where the canvas
+  icon slot is built (Story 5.3's Question 1), and not that story's to settle.
+
+### DW-179: the pilot sections declare words plain that their own design notes give bold, italic, underline and link
+
+plain: On your pilot page some words cannot be made bold, italic, underlined or linked — the Hero's big headline and
+  eyebrow, its button words, Newsletter's button, Post Grid's eyebrow — although each of those sections' design notes say
+  every word you write on a section takes all four. The pilots were written before inline editing existed, and each
+  category's own story rewrites its content model anyway, so that is where they are put right.
+status: open
+severity: medium
+origin: Story 5.3's Create run (2026-09-17), read in the pilots' `content.json` and in their category specs. The P0 rule
+  (`P0 Editor Primitives - Spec.md:131-149`): a text field defaults to the four marks, "Where a spec says nothing, the
+  default four apply. Silence is not a narrowing." Each pilot category's spec says every visible authored text takes the
+  P0·1 toolbar: `A1 Headers - Spec.md:43`, `A4 Heroes - Spec.md:61`, `A17 Post Grids - Spec.md:1168`,
+  `A22 Newsletter - Spec.md:323`. The registry format carries marks only on a `richtext` prop (`validate.ts`
+  `marks-on-plain-prop`), and the pilots declare these visible words `text`: A1 `ctaLabel`; A4 `eyebrow`, `headline`,
+  `primaryAction.label`, `secondaryAction.label`; A17 `eyebrow`, `linkLabel`; A22 `buttonLabel`, `proofLine`,
+  `subscribedText`, `manageLabel`. Story 5.3 follows the schema, so on the canvas those fields show no toolbar.
+owner: each category's content-model story — Story 9.1 (A1), Story 10.1 (A4), Story 10.54 (A17) and Story 10.75 (A22)
+  — which authors the category's shared content model once (AD-35: a pilot is provisional and a defect in it goes
+  to its owning category).
+location: `packages/library/designs/a1/content.json`, `a4/content.json`, `a17/content.json`, `a22/content.json`
+reason: not Story 5.3's to change: `packages/library/designs/` is the owning categories' (AD-35), and a prop's type
+  decides its panel editor and the harness's typing path. Two things for the category story to settle while it is
+  there: a label that is itself a link (an `<a>`) cannot also hold a link mark, since anchors do not nest, so such a
+  field narrows `a` away; and a button label's marks are the category's choice.
