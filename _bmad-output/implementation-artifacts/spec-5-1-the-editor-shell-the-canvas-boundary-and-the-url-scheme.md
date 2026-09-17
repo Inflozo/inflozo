@@ -58,7 +58,8 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
 - Any dependency beyond adding `zod` to `packages/section-runtime`, at apps/web's pinned 4.4.3, which AD-27 names.
 - Any edit under `packages/library/designs/`, and any render-matrix baseline change. The chrome stylesheet must leave
   every baseline as it is.
-- Writing a project into the owner's own account (Question 1).
+- Writing a project into the owner's own account (Question 1). **Ruled option 1 (owner, 2026-09-17):** one
+  "Pilot sections" project, added once by the Deploy run. Anything more is still asked first.
 
 **Never:**
 - No writer of `project_templates` in the app (5.8 and 5.10 write first). No hover, selection, inline editing,
@@ -254,7 +255,7 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   both pages render nothing, and the editor's skeleton is its layout's Suspense fallback, below the 404 guard. The
   contract then says what is true.
 - [ ] `tools/probe/seed-editor-project.mjs` -- `seed({ email, name = 'Pilot sections' })` builds the fixture for the
-  harness and for Question 1:
+  harness, and for the owner's own account at Deploy (Question 1, ruled option 1):
   - Creates one project, with the slug and style pack made the way `createProject` makes them
     (`projects/actions.ts:117,143-148`).
   - Inserts `project_templates` rows: `site` [a1/1 "Header — Rail"], `home` [a4/13 "Hero — Latest Post",
@@ -262,6 +263,8 @@ sections, the scheme's statuses and Back, and a CSP session with no violation.
   - Every instance has `defaultContent(contentSchema)` and empty `controls`/`data`/`darkOverrides`, and every doc is
     parsed through `doc-schema` before insert.
   - The CLI refuses to run without `--email` (never `--help`-triggered), prints the project URL and prints no key.
+  - If the account already holds a project with that name, it prints that project's URL and writes nothing, so a
+    repeated Deploy never adds a second one.
 - [ ] `tools/probe/run-verify-editor.cjs` -- the deployed walk under Verification, in `run-verify-pilots.cjs`' shape.
 - [ ] `tools/doc-audit.py` -- catalogue rows for the two new `tools/probe/` files, then `--generate`.
 - [ ] Propagation (standing rules 3 and 7) -- carry what this story settled to the documents that own it:
@@ -432,11 +435,19 @@ throwaway accounts, both deleted in `finally`, with the user count read before a
 **After the harness passes:** record the no-`'unsafe-eval'` proof in the spine's CSP row, with the date and the
 harness's name. §18c said "it stays unproven until E5 has a canvas to test", and this closes it.
 
+**At Deploy — Question 1, ruled option 1 (owner, 2026-09-17):** once the harness has passed on the deployed commit,
+run the seed exactly once for the owner's own account:
+- `env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) node tools/probe/seed-editor-project.mjs --email <the owner's sign-in address>`
+- The address comes from the owner in that session. It goes on the command line only, never into a committed file
+  or any output recorded here.
+- Expected: one "Pilot sections" project with three `project_templates` rows (`site`, `home`, `post`). The printed URL
+  replaces `<id>` in the owner's manual test.
+
 ## Owner's manual test
 
-Written for Question 1's recommended option. With option 2, sign in as the test account first. With option 3, run
-steps 2–9 on one of your own projects: its pages are empty. Deploy fills in `<id>` and records which deployment it
-checked.
+You ruled Question 1 option 1, so the Deploy run adds "Pilot sections" to your own account. Deploy fills in `<id>`
+below and records which deployment it checked. Sign in as you normally do. The project is an ordinary one: rename or
+delete it whenever you like, but Stories 5.2 to 5.9 reuse it for their tests.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -474,4 +485,6 @@ shows the Rail header, Latest Post, Three Up and Inline Row stacked like a real 
 3. **No sample project.** You test the editor on your own projects, which show empty pages until Story 5.5, and the
    check that the canvas matches `/pilots` is done by the automated harness alone.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-17).** The Deploy run adds one "Pilot sections" project to the owner's own account
+with `tools/probe/seed-editor-project.mjs`, after the harness passes, and never a second (Verification, At Deploy).
+Stories 5.2 to 5.9 run their owner tests on it until Story 5.10 lets him add sections himself.
