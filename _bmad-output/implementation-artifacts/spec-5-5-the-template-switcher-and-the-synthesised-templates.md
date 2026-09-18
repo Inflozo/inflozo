@@ -417,6 +417,21 @@ controls passing**, and `step 1 — three project_templates rows: site, home, po
 nothing. One row is **not assertable on a local run and says so** — step 6's second Back, because `openCard` re-enters
 under the `/app` prefix and leaves an unprefixed 404 in the history that Chromium will not Back out of.
 
+**Re-verified at HEAD `5fe5168e` (2026-09-18), because two commits landed after the harness run above.** CI `5fe5168e`
+**success** with `check`, `rls` and `deploy` all green, and **Render matrix** success (`GITHUB_TOKEN`; bogus token →
+401). The production Vercel deployment for `5fe5168e` is **READY** with `githubCommitSha` = HEAD (`VERCEL_TOKEN` /
+`VERCEL_TEAM_ID` / `VERCEL_PROJECT`; bogus token → 403). `pnpm check` exit 0 with `fail 0` in every suite, the new
+`synthesize.test.ts` (`packages/section-runtime`, 189 pass) and `canvas-switch.test.ts` (`apps/web`) among them;
+`bash supabase/tests/run-rls-gate.sh` exit 0, every PASS; `python3 tools/doc-audit.py --check` PASS twice. The library
+read **executed** against `packages/library/designs/` through `lib/pilots.ts`: `home`/`index`/`tag`/`author` place
+`a17/1`, `post` places `a24/1` and drops four, `page` drops both (`a24/1 compiles to post.hbs, never page.hbs` —
+DW-191) and `error` drops `a31/1` — the Design Notes table above, value for value. **Supabase** (`SUPABASE_URL` /
+`SUPABASE_SECRET_KEY`; bogus key → 401): `git diff 74308a3f..HEAD -- supabase/` **empty**, and the owner's "Pilot
+sections" project still holds exactly `home`, `post`, `site` — synthesis wrote nothing. **The deployed harness** against
+`app.inflozo.com` and the live Supabase at HEAD: **0 FAIL, 251 PASS**, step 5's CSP session `[]` with **both** eval
+controls recorded (`EvalError` in each document, and the recorder saw both refusals — standing rule 2), step 41's soft
+navigation and step 6's two-push/two-Back walk both with the editor and canvas stamps intact.
+
 **Then on the deployed app, at the Dev commit (2026-09-18).** CI `c7aeed80` **success** with `check`, `rls` and `deploy`
 green and **Render matrix** success (bogus token → 401); the production Vercel deployment **READY** with
 `githubCommitSha` = HEAD (bogus token → 403); `git diff <baseline>..HEAD -- supabase/` **empty**; and the owner's
@@ -543,3 +558,5 @@ say neither can be right for a membership page. So it is a small new choice, and
 3. **A filled dot, as the drawing shows for Signup.** Simplest to explain, but it tells you that you designed a page
    you have not touched.
 4. **A different word** — "Not built yet", "Blank", or one you prefer. Say the word and I will use it.
+
+**Ruled:** _(awaiting the owner)_
