@@ -49,7 +49,9 @@ import type { EditorData } from './read'
    a tap selects (`lib/selection.ts`). Selecting mounts Story 4.5's `Sidebar` over an in-memory copy of the docs, fed
    what `/pilots` feeds it: a control change stamps the live root, anything else repaints — and after every paint and
    every stamp the attributes are re-applied, because `stampControls` strips every root `data-*` it does not own. Esc
-   deselects unless a field, a picker or the reset dialog owns it; a change of canvas deselects too.
+   deselects unless a field, a picker or the reset dialog owns it; a change of canvas deselects too, and so does a press on
+   NOTHING — the canvas ground below the last section, or the editor's own ground around the page card — which ends any
+   editing in the same press (R-123, the owner's ruling of 2026-09-18, reversing Story 5.2's "the selection stays").
 
    TYPING ON THE CANVAS (Story 5.3 — P0-1, B4b). Every paint asks the canvas emitter for its editing stamps and lifts them
    into memory in the same task (`takeStamps`), so nothing is left on the page. A press on a stamped text prop inside the
@@ -479,9 +481,9 @@ export function Editor({
       // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away
       const ghost = stampAt(e.target, latest.current.selected)
       setNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : null)
-      // a click on nothing — the ground below the last section — keeps the selection
-      const pick = pickAt(e.target)
-      if (pick) choose(pick)
+      // R-123 (owner, 2026-09-18): a click on NOTHING — the ground below the last section — deselects, as Esc does.
+      // It used to keep the selection (Story 5.2's matrix); one press now ends any editing and lets the section go.
+      choose(pickAt(e.target))
     })
     doc.addEventListener('keydown', onEscape)
   }
@@ -637,7 +639,16 @@ export function Editor({
         </aside>
         {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" /> : null}
 
-        <section aria-label="Canvas" className="flex min-w-0 flex-1 flex-col bg-canvas-ground px-7 pt-6">
+        <section
+          aria-label="Canvas"
+          // R-123: the ground around the page card is nothing too — a press on it ends editing and deselects, exactly as
+          // Esc does. `currentTarget` alone: the card, the toolbar and its link panel are children and keep the selection,
+          // as the panel, Layers and the top bar do (EXPERIENCE § the focus model (2)).
+          onPointerDown={(e) => {
+            if (e.button === 0 && e.target === e.currentTarget) choose(null)
+          }}
+          className="flex min-w-0 flex-1 flex-col bg-canvas-ground px-7 pt-6"
+        >
           <div ref={card} className="relative mx-auto min-h-0 w-full max-w-[1440px] flex-1 overflow-hidden rounded-t-[6px] bg-paper-raised shadow-canvas-page">
             <iframe
               ref={frame}

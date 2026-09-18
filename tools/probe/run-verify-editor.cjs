@@ -31,7 +31,7 @@
 // AD-36's paste vectors, line breaks, a submit button's label, R-122's lock pill, the Esc ladder, the toolbar hiding
 // while the canvas scrolls, and the panel's own rich field, its token row, catalog words and the theme's own words — all inside step 5's CSP session; step 8's axe runs twice more, with the toolbar showing and
 // with the link panel open; step 14 gains a tap into a text prop; and step 13 presses the section's top padding, because a
-// press on its words is now the start of editing.
+// press on its words is now the start of editing. Its review adds step 27: R-123's press on nothing, in both documents.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -1080,8 +1080,47 @@ async function main() {
     const reloadedWords = { title: await wordsOf(GRID, TITLE), heroSub: await markupOf(HERO, HERO_SUB), button: await wordsOf(NEWS, '.a22-1__button') }
     check('step 26 — a reload starts from the stored docs: this session\'s typing, marks and links are gone', !reloadedWords.title.includes(' and summer') && !/<(strong|em|u|a|br)\b/.test(reloadedWords.heroSub) && reloadedWords.button.trim() === 'Subscribe', JSON.stringify(reloadedWords))
 
+    // ── step 27 — a press on NOTHING deselects, as Esc does (R-123, the owner's ruling of 2026-09-18) ──
+    // Two grounds in two documents: the editor's own around the page card, and the canvas's below the last section.
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    await clickOn(GRID)
+    const gutter = await page.evaluate(() => {
+      const stage = document.querySelector('section[aria-label="Canvas"]')
+      const s = stage.getBoundingClientRect()
+      const card = stage.firstElementChild.getBoundingClientRect()
+      return { x: (s.left + card.left) / 2, y: card.top + 80, room: card.left - s.left }
+    })
+    await page.mouse.click(gutter.x, gutter.y)
+    await page.waitForTimeout(300)
+    const afterGutter = await panelOf()
+    check('step 27 — a press on the editor\'s ground beside the page card deselects, and the panel goes back to Page settings', gutter.room > 0 && !(await onScreen(GRID)).selected && afterGutter.label === 'Page settings' && afterGutter.empty, `${JSON.stringify(gutter)} · ${JSON.stringify(afterGutter.label)}`)
+    // the panel, Layers and the top bar are not nothing: the selection survives them (EXPERIENCE § the focus model (2))
+    await clickOn(GRID)
+    await openGroup('Layout')
+    await page.waitForTimeout(250)
+    check('step 27 — a press in the panel is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
+    // the canvas's own ground: the tag canvas draws the site header and nothing else, so the room below it is real
+    await page.goto(editorUrl('tag'), { waitUntil: 'load' })
+    await painted('tag')
+    await clickOn(0)
+    const belowLast = await page.evaluate(() => {
+      const f = document.querySelector('section[aria-label="Canvas"] iframe')
+      const fr = f.getBoundingClientRect()
+      const s = fr.width / f.offsetWidth
+      const d = f.contentDocument
+      const roots = [...d.querySelectorAll('#canvas > *')]
+      const last = roots[roots.length - 1].getBoundingClientRect()
+      const at = { x: last.left + last.width / 2, y: last.bottom + 80 }
+      const under = d.elementFromPoint(at.x, at.y)
+      return { sections: roots.length, under: under?.tagName ?? null, inSection: roots.some((r) => r.contains(under)), insideFrame: at.y * s < fr.height, screen: { x: fr.left + at.x * s, y: fr.top + at.y * s } }
+    })
+    await page.mouse.click(belowLast.screen.x, belowLast.screen.y)
+    await page.waitForTimeout(300)
+    check('step 27 — on the canvas, a press on the ground below the last section deselects it too', belowLast.insideFrame && !belowLast.inSection && !(await onScreen(0)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(belowLast))
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and steps 16–26\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar and the panel\'s own field — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code

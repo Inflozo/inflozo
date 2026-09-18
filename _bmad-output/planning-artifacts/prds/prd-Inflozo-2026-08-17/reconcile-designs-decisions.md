@@ -2461,6 +2461,33 @@ clicking any icon on the page to change it, with the dashed box for an empty one
 - **Deliberately not touched:** `prd.md` FR-D4, whose one exception names the plain-text lock and not the pill; the
   export (R-74).
 
+**R-123 — a press on nothing deselects, exactly as Esc does.** The owner's instruction at Story 5.3's review
+(2026-09-18): *"Clicking outside the sections/canvas should unselect the section. Clicking outside the canvas should work
+like how we press Esc key and it unselects everything."*
+
+- **Why it is a ruling and not a patch.** It reverses text two approved documents already carried: Story 5.2's frozen
+  matrix row — *"Click nothing · click below the last section, the canvas ground or a Layers row · the selection
+  stays"* — and `EXPERIENCE.md` § the focus model (2), *"A selection is cleared only by `Esc`, by selecting something
+  else, or by deleting it."* Story 5.2's spec is the record of what 5.2 built and is left as written (standing rule:
+  never edit a record); this ruling supersedes it, and the living documents carry the new rule.
+- **What it binds.**
+  - A press on **nothing** deselects: the canvas ground below the last section, inside the frame, and the editor's own
+    ground around the page card, outside it. One press does the whole `Esc` ladder — any inline editing ends and the
+    section is let go together.
+  - **Chrome is not nothing.** The Controls sidebar, the Layers panel, the top bar and the mark toolbar and its link
+    panel all keep the selection, because the panel edits the selected section — `EXPERIENCE.md` § the focus model (2)
+    stands for everything but the two grounds. A Layers row, which 5.2's row named alongside the ground, keeps it too.
+  - It is the same one rule in both documents: the canvas document's `click` hands `choose` whatever section the target
+    sits in, which is `null` on the ground; the stage deselects on a primary `pointerdown` whose target is the stage
+    itself, so the card, the toolbar and the link panel are excluded by construction.
+- Targets:
+  - ✅ Story 5.3's spec (§ Owner's test findings F4, § Verification's step 27, § Owner's manual test) ·
+    ✅ `EXPERIENCE.md` § the focus model (2) and § Component Patterns' Section on canvas row · ✅ `epic-5-context.md` ·
+    ✅ `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` and `tools/probe/run-verify-editor.cjs` step 27 —
+    Story 5.3's Fix run (2026-09-18).
+  - **Deliberately not touched:** Story 5.2's spec, which is the record of what 5.2 built and says so; `prd.md`, which
+    names no gesture for deselection.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

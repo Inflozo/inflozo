@@ -2,7 +2,7 @@
 title: 'Story 5.3 — Inline editing, the four marks and the link picker'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-review'
+status: 'in-progress'
 baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
 owner_test: issues
 review_loop_iteration: 1
@@ -790,6 +790,13 @@ ponytail: a timer, not `scrollend`; switch when every engine the editor supports
       Translations surface's (Story 7.12).
     - A reload of the editor: the session's typing, marks and links are gone and the stored docs are drawn again.
 
+27. **A press on nothing (R-123).**
+    - Home, Three Up selected: a press on the editor's ground beside the page card deselects it and the panel goes back
+      to Page settings, empty.
+    - Selected again, a press in the panel (its Layout group) keeps the selection — chrome is not nothing.
+    - The tag canvas, which draws the site header and nothing else: the header selected, a press 80px below it —
+      measured to be over no section and inside the frame — deselects it.
+
 Step 14 gains a touch tap into Hero — Latest Post's headline once it is selected: the canvas's active element is the headline, with a
 collapsed selection inside it. Step 8's axe runs twice more, with the toolbar showing and with the link panel open. Steps
 1–15 keep their assertions, step 13 clicking Three Up's top padding before its Esc.
@@ -850,7 +857,16 @@ holds 40 characters." under the field.
   8.0px above the title, centred within 1px) and the cleared search on reopen. **Control for the new step:** the same
   build without the `editor.tsx` patch failed it with the defect itself (`editablesInHero: 1`, Hero's paragraph holding
   Three Up's words), 162 PASS otherwise. The deployed run of the patched editor is the Deploy phase's.
-- **Still owed:** the owner's re-check of steps 12 and 14 (Question 3), and his look at the new editing haze.
+- **Run at Fix (2026-09-18), R-123's press on nothing.** `pnpm check` **green** in every package, `pnpm build` green, and
+  the editor harness against a **local production build** (`APP_ORIGIN=http://localhost:3111`, `APP_PREFIX=/app`,
+  production Supabase): **167 PASS, 1 FAIL**, the one being step 6's known `APP_PREFIX` artifact. New **step 27** passes
+  all three ways -- the editor's ground beside the page card deselects and the panel returns to Page settings, empty
+  (`room: 28px`); a press in the panel keeps the selection; and on the tag canvas, which draws one section, a press 80px
+  below it -- measured over no section and inside the frame -- deselects. **Control:** the same build with `editor.tsx`
+  stashed failed exactly the two ground checks (`"Section settings"` still showing) and kept the panel check green,
+  **3 FAIL, 165 PASS**, so step 27 can fail. The deployed run is the Deploy phase's.
+- **Still owed:** the owner's re-check of steps 12 and 14 (Question 3), his ruling on Question 4, and his look at the new
+  editing haze.
 
 **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no billing,
 and reads no Ghost: link search uses Orbit Weekly's sample data until Story 5.18.
@@ -878,6 +894,7 @@ in as you normally do. If a page stays blank, refresh once and tell us (DW-175).
 | 14 | `https://app.inflozo.com/controls` | Controls review page | Click into Eyebrow and type past its end, then do the same in Heading. | `ABCDEFGHIJKLMNOP` | Each box stops accepting letters at its limit, and a line under it says so: "Eyebrow holds 30 characters.", "Heading holds 40 characters.". |
 | 15 | the editor again | Browser | Reload the page. | — | Your typing and formatting are gone. Saving arrives with Story 5.8. |
 | 16 | same, on an iPad or a touchscreen, if you have one | Canvas | Tap a section once, then tap inside its heading. | — | The first tap selects the section. The second opens the keyboard with the cursor in the heading. |
+| 17 | the editor again | Canvas | Select any section, then click the grey area to the left or right of the page, outside it. Then select a section again and click something in the right-hand panel. | — | The first click lets the section go, exactly as Esc does — the outline goes and the right panel says "Page settings" again. Clicking in the panel does **not** let it go: the panel is how you change the section you picked. *(Your instruction, R-123.)* |
 
 ## Owner's test findings
 
@@ -921,6 +938,25 @@ date stamps (DW-132), so **nothing was published from it**; the story only reach
 forty minutes later. A test run in that window sees the previous build, where neither the pill nor the limits exist. The
 question below asks him to re-check, because a browser of his that behaves differently is the other explanation and it
 cannot be read from here.
+
+### F4 — "Clicking outside the sections/canvas should unselect the section … like how we press Esc key" — BUILT (R-123)
+
+His instruction at the review, and a reversal rather than a defect: Story 5.2's frozen matrix row says a click on the
+canvas ground "keeps the selection", and `EXPERIENCE.md` § the focus model (2) said a selection is cleared "only by
+`Esc`, by selecting something else, or by deleting it". Recorded as **R-123** and built here, in both documents:
+
+- **Inside the frame**, the canvas document's `click` now hands `choose` whatever section the target sits in, which is
+  `null` on the ground below the last section — one line, the `if (pick)` gone.
+- **Outside the frame**, the stage `<section aria-label="Canvas">` deselects on a primary `pointerdown` whose target is
+  the stage itself, so the grey ground around the page card is a press on nothing while the page card, the mark toolbar
+  and its link panel — all children of that stage — are not.
+- **One press does the whole Esc ladder:** `choose(null)` ends any inline editing and lets the section go together,
+  which is what "unselects everything" asks for.
+- **Chrome is not nothing.** The Controls sidebar, the Layers panel, the top bar and the toolbar keep the selection —
+  the panel edits the selected section, so deselecting on a press there would leave nothing to edit. Harness step 27
+  holds that half too.
+
+Checked by **step 27**, in both documents, and the judgement call this leaves him is in Question 4 below.
 
 ## Questions for the owner
 
@@ -986,6 +1022,28 @@ Under options 1 and 2 nothing becomes editable, and Esc or your next click takes
 P0-1's lock pill naming them — "Post title — set in Ghost" — from one list of names beside the context matrix, and
 nothing becomes editable. Story 7.10 reuses the pill for a text prop promoted to Ghost Admin; `epics.md` Stories 5.3 and
 7.10 moved with the ruling.
+
+### Question 4 — "outside the canvas": how far out does it go?
+
+**Plain English:** You asked that clicking outside the sections or the canvas let the section go, like Esc. I built it
+for the two places that are plainly "nothing": the grey ground around the page, and the empty space below the last
+section. I did **not** build it for the right-hand panel, the Layers list or the top bar, because those are how you
+change the section you just picked — clicking a colour there would let the section go and leave nothing to change.
+That is the one judgement I made; it is yours to confirm or reverse.
+
+**Example:** You select the Hero, then click the grey strip beside the page. The outline goes and the panel says "Page
+settings" — that is built. Then you select it again and click the Style group in the right-hand panel. The section stays
+selected, so the Style controls are the Hero's — under option 1 that is right, and under option 3 the click would have
+let the Hero go the moment you reached for its controls.
+
+1. **Leave it as built:** the grey ground around the page and the space below the last section let the section go; the
+   right-hand panel, Layers and the top bar keep it. **(RECOMMENDED)**
+2. **Add the top bar's empty space** to the places that let it go, keeping the panel and Layers as they are. A little
+   more area to click away with, and nothing is lost, but the top bar is chrome and reads as part of the editor.
+3. **Anywhere outside the page lets it go,** the right-hand panel included. Simplest to describe, but reaching for a
+   control in the panel would deselect the section first, so the panel would stop working.
+
+**Ruled:** _(awaiting the owner)_
 
 ### Question 3 — steps 12 and 14: were you looking at the old page?
 
