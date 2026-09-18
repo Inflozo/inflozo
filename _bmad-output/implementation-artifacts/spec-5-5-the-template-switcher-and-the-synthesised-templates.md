@@ -483,6 +483,20 @@ green and **Render matrix** success (bogus token → 401); the production Vercel
 wrote nothing. The editor harness against `app.inflozo.com` and the live Supabase, refusing to start until Vercel
 served this checkout's HEAD: **0 FAIL, 251 PASS**, step 5's CSP session zero with **both** eval controls recorded.
 
+**After R-130, at HEAD `92b6ae6c` (2026-09-18).** `pnpm check` exit 0, `fail 0` in every suite. CI `92b6ae6c`
+**success** with `check`, `rls` and `deploy` green (`GITHUB_TOKEN`); the production Vercel deployment **READY** at that
+SHA (`VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT`). The deployed harness against `app.inflozo.com` and the live
+Supabase: **0 FAIL, 254 PASS**, step 5's CSP session zero with **both** eval controls recorded. The three checks the
+owner's findings added all pass — step 2 reads no marker chip in the bar on any canvas, step 40 reads R-130's three
+marks each with its own word and presses the Membership chevron shut and open again, and step 42 reads the marker in
+its one place.
+
+**One thing about running this harness, recorded because it cost six runs.** Against the deployed app it dies
+intermittently with a Playwright `page.goto` / `apiRequestContext.get` **timeout**, at a different step every time
+(step 5, step 6, step 27, step 43 were all seen within an hour) while `curl` to the same origin answers 307 in 0.26s
+five times running. It is **not a result and not a fault** — there is no `FAIL` in those logs, only a `HARNESS ERROR`
+— and the fix is to run it again. Only a run that prints its own `0 FAIL, <n> PASS` line counts.
+
 **Manual checks:**
 
 - The switcher and the marker measured against D5b and D5a from a device-scale screenshot, never computed style —
