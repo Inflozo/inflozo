@@ -539,6 +539,13 @@ five times running. It is **not a result and not a fault** — there is no `FAIL
 - A soft navigation confirmed as a soft navigation: no document load between two canvases, the editor's mount count
   unchanged, and the selection gone (DW-176's close).
 
+- **Review, 2026-09-18, on the deployed Review commit `ee4a2597`** (GitHub Actions read with `GITHUB_TOKEN`: CI and
+  Render matrix both `success`). `run-verify-editor.cjs` against `app.inflozo.com` on Node 24: three runs died on a
+  Playwright timeout with no FAIL (not results — DW-183's class), the fourth completed **0 FAIL, exit 0**, with step
+  2's tightened centring check (2px, was 120px) passing at a measured offset of 0. `pnpm check` exit 0; the control
+  for the de-copied round-trip test executed (the rule broken → the test red → restored → green). Production's
+  `template_key_shape` executed through `SUPABASE_DB_POOLER_URL` in rolled-back transactions: see DW-193.
+
 ## Owner's manual test
 
 The project is the "Pilot sections" project Story 5.1's Deploy added to your account; Deploy re-checks its address.
