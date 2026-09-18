@@ -2,7 +2,7 @@
 title: 'Story 5.4 — The Layers panel, reordering, and the two kinds of singleton'
 type: 'feature'
 created: '2026-09-18'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 baseline_commit: 0aa7cd10b8b4cad1b8df0ac8de774aacf64289f4
 review_loop_iteration: 1
@@ -462,7 +462,26 @@ failed for a reason that had nothing to do with retrying, and would have failed 
   `await recorder(context, violations)` and `35a17b53` (its withdrawal) never restored it, so the main session's
   `violations` had no writer. Both are patched below; **run 8, on the patched tree once deployed, is recorded under
   `## Review run` at the end of this section.**
-- `pnpm check` on the patched tree — recorded with run 8.
+- `pnpm check` on the patched tree — **exit 0**: `@inflozo/library` 149, `@inflozo/theme-compiler` 1, `@inflozo/ghost-shim` 34,
+  `@inflozo/section-runtime` 178, `apps/web` 344 (the `carriesMemberVisibility` cases new), the render-matrix suite 8 —
+  `fail 0` in every one. `python3 tools/doc-audit.py --check` PASS, twice.
+
+## Review run
+
+**Run 8 — the Review commit `7bc4f1d0`, read READY on Vercel with its SHA before the harness started: `0 FAIL,
+229 PASS`, the complete walk, no stall, both accounts deleted, `users 9 → 9`.** Step 5's scripted session recorded
+zero `securitypolicyviolation` events across every Story 5.4 gesture **and its control passed** — the recorder saw
+both planted eval refusals — so the zero is a result (standing rule 2) for the first time on the R-126 tree. Every
+step 28–39 check held on the deployed site as R-126 draws it: two groups of one shape with a hairline and no glyph,
+both headings the same height, `6 templates` and `3` derived and `0` after the removals, the ring on the ROW, the
+`⋯` as the row's only control, Hide/Show from the menu and by `Space`, the announce in `moveSection`'s words, the
+menu wholly on screen, the rename refusal, no Duplicate on a site-wide row or pill, the confirm on Cancel naming all
+templates from both entry points, R-125's pill 6px left of the Pro tag, 0.0px worst drift over 100 scrolled frames,
+R-124's select, and a reload restoring the stored doc. The four checks this review added held too: the pill's grip
+draws the slot in Layers with nothing reordered and moves the section on the drop; "Logged out" — the visitor the
+canvas previews — keeps the section drawn with no second hint; step 29 counts the row's own controls; and the ground
+is read from the last row. Zero axe violations with the pill showing and a row's menu open.
+
 
 **Manual checks:**
 
