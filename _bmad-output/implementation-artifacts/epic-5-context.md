@@ -119,6 +119,20 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `choose(pickAt(target))` unconditionally, and the stage `<section aria-label="Canvas">` and the Layers row list each
     deselect on a primary `pointerdown` whose target is that container itself. **Story 5.4 owns all three Layers rules
     together** — the row's press, the drag's start and this ground's press.
+  - **R-132 (owner, 2026-09-18, Story 5.6's Q2):** the canvas mode control is ONE button at S4a's position — the
+    export's sun while light, the Kit's moon while dark — with `aria-pressed`, an accessible name naming the
+    DESTINATION ("Preview dark mode" / "Back to light mode") and the mode now shown announced politely. S4a is
+    COMPLETED, not superseded: it draws only the light state, unlabelled, and no frame anywhere draws a moon for it.
+    UX-DR8 is satisfied through `DESIGN.md:534-536`'s carve-out — an accessible label where the layout genuinely
+    cannot hold a word, which a 48px bar with View as, the device switch, undo/redo and Ship it still to land in it is.
+  - **R-133 (owner, 2026-09-18, Story 5.6's Q3, answered off the menu — BOTH places):** per-section "Clear dark
+    overrides" sits under "Reset this design" at the Controls panel's foot AND in the Layers row's `⋯` menu, with
+    **ONE confirm, in `editor.tsx`**, exactly as Delete's and Hide's two paths already share one
+    (`layers.tsx:51-52`). Each place follows its own neighbours and that is deliberate: the panel row is always
+    present and says there is nothing to clear when there is nothing (R-12), the menu item is ABSENT when the section
+    carries no usable override (UX-DR3, as Duplicate is on a site-wide row). **R-126 is extended, not reversed** — the
+    `⋯` is still the row's only control and Hide/Show still leads its menu. No frame draws either surface
+    (`reconcile-design-prompt.md:60` records the gap); both are extrapolated from the neighbour each sits beside.
   - **R-126 (owner, 2026-09-18, on the deployed Story 5.4):** the Layers panel is drawn for its NAMES — the two groups
     the same shape with a hairline between (no card, no glyph, no footed note), `Site-wide` and its derived template
     count on one line, the name at `text-helper-caption`, and the `⋯` as the row's only control with Hide/Show leading
@@ -144,6 +158,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 ## Cross-Story Dependencies
 
 - **5.1 first,** settling in its spec the URL scheme (project, template, template surface, browser Back) and which parts of the shell sit inside the iframe.
+  - **R-131 (owner, 2026-09-18, Story 5.6's Q1) adds the scheme's FIRST non-canvas segment, and moves the tree to
+    hold it:** Theme settings ships now at `/projects/<id>/settings`, holding D6a's project-mode block and the
+    project-level "Clear dark overrides" row and **nothing else** that screen draws (R-118 a fourth time; its left rail
+    is Epic 7's too). `projects/[id]/layout.tsx` renders the **Editor** for every child segment, so a page nested there
+    would come up inside the editor's chrome — the editor therefore descends into a `(editor)` route group, which is
+    not a URL segment, and `[id]/layout.tsx` keeps only the `projectOf` 404 guard, above both children and above every
+    Suspense boundary where R-98's second effect requires it. **No URL changes**; `run-verify-editor.cjs` steps 2, 6
+    and 9 are the control. `settings` is named in `apps/web/lib/editor.ts` beside the canvases, and being a STATIC
+    sibling of `[template]` it never reaches `canvasFromSegment`, so 5.5's no-awaited-refusal finding stands.
   - **Story 5.1 settled both (2026-09-17, spec § Design Notes):** `/projects/<uuid>` is Home and `/projects/<uuid>/{post,page,tag,author,error}` the rest (`apps/web/lib/editor.ts` is the scheme as data — the route, the Shell and the harness read it there); `/home` 308s; `index`, `private`, `custom-<slug>`, `paywall`, `cards` 404 until their stories. Canvas change is a soft-navigation push inside the `[id]` layout, which holds the editor so it stays mounted (5.8's flush hooks its unmount); modes and folds never enter the URL. Pages render nothing — the active canvas is read from the pathname.
 - **5.8 underpins the loop:** its one-transaction-per-gesture journal makes a shuffle one edit (5.11, 5.12), gives 5.17 `unsynced_edits` and the superseding hydrate, and gives 5.23 a doc to assert over.
   - **Story 5.5's review (2026-09-18, executed on production):** 5.8 is the first writer of `project_templates`, and the stored `template_key_shape` refuses every `custom:` key (two backslashes in the pattern) — so 5.8 **has a Schema phase** that fixes the constraint before its code ships (DW-193, R-99).

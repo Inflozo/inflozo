@@ -2689,6 +2689,89 @@ the row that is neither designed nor auto-generated, Tabler's `circle-off` rathe
 - **Deliberately not touched:** the export (R-74) — D5a still draws the chip and this file is the record;
   `EXPERIENCE.md`'s quoted D5 design prompt ("TWO markers…"), which is the prompt as it was sent.
 
+**R-131 — Theme settings is built now, holding only the two rows that work.** Story 5.6's Q1, ruled option 1 (owner,
+2026-09-18): *"Build a small Theme settings screen now, holding only these two rows."*
+
+- **Why it was a question.** D6a draws the project-mode control and the project-level "Clear dark overrides" row on a
+  **Theme settings** screen that also holds `posts_per_page`, Site basics, Credits and the custom-settings builder —
+  all FR-Q1/Q2/Q3 and all Epic 7's (`prd.md:816`). Without the screen, FR-D7's Light-only half ships built,
+  unreachable and untestable. R-118 and R-128 answer the opposite shape — a control whose story has not arrived — and
+  said nothing about a control that works whose screen has not been built.
+- **What it binds.**
+  - **The screen exists at `/projects/<id>/settings` and holds D6a's mode block and nothing else.** Every other row and
+    group D6a draws — Posts per page, Site basics, Accent colour, Credits, the whole right-hand custom-settings column
+    and its "3 OF 17" meter — is **absent**, not greyed and not captioned: R-118's rule applied a fourth time. D6a's
+    own left rail (Site basics · Navigation · Social accounts · Translations · Code injection) is absent for the same
+    reason — every item in it is Epic 7's.
+  - **It is reached from the editor** (`EXPERIENCE.md:172`'s entry point), and it is **not** a shell-nav destination.
+  - **Story 5.1's route structure moves to make room, and the URLs do not change.** `projects/[id]/layout.tsx` renders
+    the Editor for every child segment, so a settings page nested under `[id]` would come up inside the editor's
+    chrome. The editor's layout descends into a `(editor)` route group — a group is not a URL segment — and `[id]`'s
+    own layout keeps only the `projectOf` 404 guard, above both children and above every Suspense boundary, which is
+    where R-98's second effect requires a guard to live. `/projects/<id>` and every canvas segment are byte-identical
+    afterwards; `run-verify-editor.cjs` steps 2, 6 and 9 are the control that says so.
+  - **`settings` joins the URL scheme as a named non-canvas segment** in `apps/web/lib/editor.ts`, the one place the
+    scheme is data (Story 5.1), so nothing has to learn it twice.
+- Targets:
+  - ✅ this entry · ✅ Story 5.6's spec — Story 5.6's Create run (2026-09-18).
+  - ⬜ `apps/web/lib/editor.ts` · ⬜ the route tree under `apps/web/app/(app)/app/(authed)/projects/[id]/` ·
+    ⬜ `apps/web/editor.test.ts` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.6's Dev.
+  - ⬜ `EXPERIENCE.md:172`'s Theme Settings row, which should say what of D6a exists when · ⬜ `epics.md` Story 5.6 —
+    at 5.6's Review.
+- **Deliberately not touched:** the export (R-74) — D6a still draws the whole screen and this file is the record;
+  FR-Q1/Q2/Q3, which are unchanged and still Epic 7's; the custom-settings cap, which is 17 in the database whatever
+  the project's mode (AD-17, FR-Q2).
+
+**R-132 — one button, and it swaps its glyph.** Story 5.6's Q2, ruled option 1 (owner, 2026-09-18): *"One button that
+swaps its glyph: a sun while you are in light, a moon while you are in dark, with a spoken label that names where it
+takes you ("Preview dark mode" / "Back to light mode") and a polite announcement of the mode now showing."*
+
+- **Why it was a question.** `S4 Editor.dc.html:35` draws a bare sun — 28×28, a 15px glyph, `circle r=4` and eight
+  rays — with **no visible label, no accessible name and no dark-state counterpart anywhere in the export**. UX-DR8 and
+  `DESIGN.md:181-184` require a small shape to carry its words, and `DESIGN.md:534-536` allows an accessible label
+  *"where the layout genuinely cannot hold one"* — which the 48px bar, with View as, the device switch, undo/redo and
+  Ship it still to land in it, is. The frame could not answer what the control becomes once pressed.
+- **What it binds.** One control at S4a's position — first of the right-hand cluster — carrying `aria-pressed`, an
+  accessible name that names the **destination** ("Preview dark mode" in light, "Back to light mode" in dark), and a
+  polite announcement of the mode now shown (UX-DR12). The sun's path is the export's, lifted verbatim (R-92); the
+  moon is the Kit's own (`kit/icons.tsx:297`). **S4a is completed, not superseded** — the drawn sun is the light state.
+- Targets:
+  - ✅ this entry · ✅ Story 5.6's spec — Story 5.6's Create run (2026-09-18).
+  - ⬜ `apps/web/components/kit/icons.tsx` (`Sun`) · ⬜ `apps/web/components/editor/mode-toggle.tsx` ·
+    ⬜ `tools/probe/run-verify-editor.cjs` — at 5.6's Dev.
+- **Deliberately not touched:** the moon **badge**, which is a different thing — 12px, on an overridden control, always
+  captioned "Dark override" (D6a`:113`, `Editor Sidebar Kit.dc.html:178-179`); S4's stale "Dark mode / Readers get a
+  moon toggle" sidebar row, which is the VISITOR's `mode-toggle` (`EXPERIENCE.md:652`) and is not built.
+
+**R-133 — "Clear dark overrides" is in both places, and each follows its own neighbours.** Story 5.6's Q3, ruled off
+the menu (owner, 2026-09-18): *"Both under 'Reset this design' and inside '...' three dots menu"* — options 1 and 2
+together rather than either alone.
+
+- **Why it was a question.** FR-D7 asks for a per-section clear and **no frame draws one**; the project's own notes
+  already record the gap (`reconcile-design-prompt.md:60`: *"the per-section "Clear dark overrides" action — missing
+  from S4/S7"*). Only D6a's project-level row exists.
+- **What it binds.**
+  - **Two entry points, one act, one confirm.** The confirm lives in `editor.tsx`, not in either surface — the same
+    rule `layers.tsx:51-52` already states for Delete and Hide, whose canvas-pill and menu paths must open the SAME
+    dialog. It asks first, names the count, and opens with focus on Cancel (R-115, UX-DR14).
+  - **Each place behaves like its neighbours, and that is deliberate rather than an inconsistency.** At the foot of the
+    Controls panel the row is **always present** and says there is nothing to clear when there is nothing — R-12's
+    rule, and the shape "Reset this design" beside it already uses. In the Layers `⋯` menu the item is **absent** when
+    that section carries no usable override — UX-DR3, and the shape Duplicate already uses on a site-wide row
+    (`layers.tsx:289`).
+  - **R-126 is extended, not reversed.** The Layers panel is still drawn for its names and the `⋯` is still the row's
+    only control; its menu gains a fifth item by the owner's word. Hide/Show still leads it.
+- Targets:
+  - ✅ this entry · ✅ Story 5.6's spec — Story 5.6's Create run (2026-09-18).
+  - ⬜ `apps/web/components/controls/sidebar.tsx` · ⬜ `apps/web/components/controls/layers.tsx` ·
+    ⬜ `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (the one confirm) ·
+    ⬜ `packages/section-runtime/src/doc-edit.ts` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.6's Dev.
+  - ⬜ `EXPERIENCE.md` § the frame/PRD divergence table, where the missing per-section clear is recorded — at 5.6's
+    Review.
+- **Deliberately not touched:** the export (R-74) — neither surface is drawn and this file is the record; the
+  project-level row, which is R-131's; `resetSection`, which keeps stored dark overrides on purpose (FR-F4,
+  `controls.test.ts:413`) and is why a deliberate clear had to exist at all.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

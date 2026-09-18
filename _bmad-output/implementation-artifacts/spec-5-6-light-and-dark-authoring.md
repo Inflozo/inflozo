@@ -69,8 +69,12 @@ so a caret survives it.
   from `REFERENCE_TOKENS.dark`, the same way the light ones already do.
 
 **Ask First:**
-- The three questions under `## Questions for the owner`. **Question 1 blocks the Dev phase** — it decides
-  whether a screen is built. Questions 2 and 3 decide two labels and one placement.
+- **All three questions are ruled** — R-131 (the screen, at `/projects/<id>/settings`), R-132 (one button
+  swapping sun↔moon) and R-133 ("Clear dark overrides" in both places, one confirm). Nothing under
+  `## Questions for the owner` is open; do not re-ask, and build what each ruling says.
+- **The `(editor)` route-group move.** It changes no URL and no behaviour, and
+  `run-verify-editor.cjs` steps 2, 6 and 9 are the control. If any of those three moves, stop — the
+  tree has changed something it was not meant to.
 - Any change to `packages/section-runtime/src/core.ts`. This story should need none: `stampControls`
   already takes the stored slice, so handing it a different slice is the whole mechanism. If Dev finds a
   reason to add a `mode` to `RenderInput`, stop and say why — it would put a mode inside the theme
@@ -84,8 +88,11 @@ so a caret survives it.
   module, and `color_scheme` has no project-level value to read before Epic 7's Theme Settings builds it —
   so the condition is unreadable and there is nothing to refuse. R-118 governs: it arrives with the story
   that makes it work (A1's category story, Epic 9). Filed, not guessed.
-- **Never build the rest of D6a** — posts per page, Site basics, Credits, the custom-settings builder and
-  its "3 OF 17" meter are FR-Q1/Q2/Q3 and Epic 7's (`prd.md:816`). R-118 again.
+- **Never build the rest of D6a** — posts per page, Site basics, Accent colour, Credits, the whole
+  right-hand custom-settings column and its "3 OF 17" meter are FR-Q1/Q2/Q3 and Epic 7's
+  (`prd.md:816`), and **D6a's own left rail goes with them** (Site basics · Navigation · Social
+  accounts · Translations · Code injection — every item in it is Epic 7's). Absent, not greyed and not
+  captioned: R-118 applied a fourth time, and **R-131** says so in as many words.
 - **Never migrate.** `projects.dark_enabled` exists (`20260904120000_complete_schema.sql:224`, comment
   *"FR-D7: Light+Dark is the default"*) and `instanceSchema.darkOverrides` exists
   (`doc-schema.ts:31`). **This story has no Schema phase** (R-99) — verified by reading both files, not
@@ -166,6 +173,27 @@ so a caret survives it.
   `projectOf` selects only `id, name` (`:46`), so `dark_enabled` is not read yet.
 - `apps/web/app/(app)/app/(authed)/projects/actions.ts:194` — the only reader of `dark_enabled` today
   (duplicate carry-forward), and the pattern for a server action that writes one project column.
+
+**The route tree — what R-131 moves, and why**
+- `apps/web/app/(app)/app/(authed)/projects/[id]/layout.tsx` — **renders `<Editor>` for every child
+  segment** (the `projectOf` guard, then `{children}` outside a Suspense boundary, then the editor
+  inside one). Its header comment states the two rules that must survive the move: a layout, not a
+  page, so a canvas change keeps the editor mounted; and the guard above every boundary, so the 404
+  and the 308 still set a status (R-98's second effect, DW-67). **Splits:** the guard stays here, the
+  editor descends into `(editor)/layout.tsx`.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/page.tsx` (Home's canvas, renders `null`, carries the
+  title) and `[template]/` (`layout.tsx:19` the 308, `:20` `notFound()`) — **move into `(editor)/`
+  unchanged**; a route group is not a URL segment, so `/projects/<id>` and every canvas segment are
+  byte-identical afterwards. `editor.tsx`, `editor-skeleton.tsx` and `read.ts` move with them.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/settings/` — **new**: `page.tsx`, `loading.tsx`
+  (drawing *these* rows, never a parent's — R-98) and the server action. A static sibling of
+  `[template]`, so Next resolves it first and `canvasFromSegment` never sees it.
+- `apps/web/lib/editor.ts:5` — the scheme as data, whose comment says the mode is never in the URL;
+  `settings` is named here as the scheme's one non-canvas segment so nothing learns it twice.
+  `apps/web/editor.test.ts:24-28` refuses every unknown segment and is the test that must agree.
+- `apps/web/app/(app)/app/(authed)/(dashboard)/layout.tsx` + `loading.tsx`, and `start/` — the app's
+  existing route-group-with-a-skeleton precedent; `sites/brand-panel.tsx` / `brand-screen.tsx` the
+  nearest project-level settings surface to draw from.
 
 **The database, read — nothing to change**
 - `supabase/migrations/20260904120000_complete_schema.sql:224` `dark_enabled boolean not null default
@@ -256,27 +284,56 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- select `dark_enabled` in `projectOf` and
       carry it on `EditorData`; hand both swatch sets (`{ light, dark }`) -- the project's mode is server
       truth, exactly as 5.5 made synthesis server truth
-- [ ] `apps/web/components/editor/mode-toggle.tsx` -- **new**, the top bar's control, in the shape
-      **Question 2** rules; `aria-pressed`, an accessible name naming the mode it moves to, a polite
-      announcement of the mode now shown (UX-DR8, UX-DR12) -- a 12px-or-smaller shape never carries the
-      only signal
+- [ ] `apps/web/components/editor/mode-toggle.tsx` -- **new, R-132**: ONE button at S4a's position, first
+      of the right-hand cluster, 28×28 — the `Sun` while light, the Kit's `Moon` while dark — carrying
+      `aria-pressed` and an accessible name that names the **destination** ("Preview dark mode" /
+      "Back to light mode"), with the mode now shown announced politely (UX-DR12) -- a small shape carries
+      its words, or an accessible label where the layout cannot hold one (`DESIGN.md:534-536`), which a
+      48px bar with four controls still to land in it is
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hold `mode` beside the other session
       state and in the `latest` ref; set `data-mode` on the canvas `documentElement` in `paint()` and on
       every flip; on a flip **re-stamp every root through `storedFor(…, mode)` and call `mark()` — never
       repaint**; pass the mode and the mode's swatches to `Sidebar`; make the control absent when
-      `dark_enabled` is false; take "the sun (5.6)" and "Dark mode (5.6)" out of the absent list at
-      `:117-122` and write this story's paragraph into the header log -- one attribute plus a re-stamp is
-      the whole preview, and it is what lets a caret and a selection survive the flip
+      `dark_enabled` is false; mount R-132's control at S4a's position and the way into R-131's screen;
+      take "the sun (5.6)" and "Dark mode (5.6)" out of the absent list at `:117-122` and write this
+      story's paragraph into the header log -- one attribute plus a re-stamp is the whole preview, and it
+      is what lets a caret and a selection survive the flip
 - [ ] `apps/web/components/controls/sidebar.tsx` -- thread `mode` into `sidebar`/`setControl`/
-      `resetControl`; add the per-section **"Clear dark overrides"** where **Question 3** rules, asking
-      first in the app's one dialog vocabulary (`kit/dialog.ts`) and naming the count, focus on Cancel
-      (R-115, UX-DR14), and saying so under itself when there is nothing to clear (R-12) -- the panel
-      edits the selection, so a per-section act belongs to the panel
-- [ ] `<surface Question 1 rules>` -- D6a's "This project" segmented control (`Light only` | `Light +
-      Dark`, its caption verbatim) writing `projects.dark_enabled` through a server action, and D6a's
-      project-level clear row with its derived count — greyed with D6b's reason sentence while the project
-      is Light only. A new route carries its own `loading.tsx` drawing **that** route's rows and puts any
-      guard in `layout.tsx`, above the boundary (R-98) -- Light only is untestable and unreachable without it
+      `resetControl`; add **R-133's first entry point**: "Clear dark overrides" directly under "Reset this
+      design" at the panel foot, in the same shape, **always present**, saying there is nothing to clear
+      when there is nothing rather than asking (R-12) -- the panel edits the selection, and the two acts
+      are neighbours in meaning
+- [ ] `apps/web/components/controls/layers.tsx` -- **R-133's second entry point**: "Clear dark overrides"
+      in the row's `⋯` menu (`items` at `:269`), **absent** when that section carries no usable override,
+      exactly as Duplicate is absent on a site-wide row (`:289`); Hide/Show still leads the menu -- R-126
+      is extended by the owner's word, not reversed
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- **the ONE confirm both entry
+      points open**, beside Delete's and Hide's and for the same reason (`layers.tsx:51-52`): it asks
+      first, names the count, and opens with focus on Cancel (R-115, UX-DR14) -- two entry points, one
+      act, one dialog
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/` -- **R-131's move, first and on its own**: the
+      editor's `layout.tsx`, `page.tsx`, `editor.tsx`, `editor-skeleton.tsx`, `read.ts` and `[template]/`
+      descend into a new `(editor)/` route group; `[id]/layout.tsx` keeps **only** the `projectOf` 404
+      guard, above both children and above every Suspense boundary (R-98). No URL changes, no behaviour
+      changes -- a settings page nested under today's `[id]` would come up inside the editor's chrome,
+      because that layout renders the Editor for every child segment
+- [ ] `apps/web/lib/editor.ts` -- name `settings` as the scheme's one non-canvas segment, beside the
+      canvases, and keep `canvasFromSegment`'s refusal list as it is -- the scheme is data in one place
+      (Story 5.1), and `editor.test.ts` reads it there
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/page.tsx` + `loading.tsx` -- **new, R-131's
+      screen**: D6a's mode block and nothing else — "This project" as the two-segment control
+      (`Light only` | `Light + Dark`) with its caption verbatim, then the project-level clear row with its
+      **derived** count and its `Clear`, greyed with **D6b's reason sentence** while the project is Light
+      only. Everything else D6a draws is absent, its left rail included. The skeleton draws **these** rows;
+      `metadata` per `app-routes.test.ts` -- Light only is unreachable and untestable without it
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- the server action writing
+      `projects.dark_enabled`, and the one clearing every instance's overrides across every canvas of the
+      project; the pressed control says what it is doing (`Submit`'s required `busy` label, R-98). Follow
+      `projects/actions.ts:194`'s shape and write no other column -- AD-31: `projects` carries fields only
+      the server may assert, so an action touches exactly what it came for
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the way into the screen from
+      the editor (`EXPERIENCE.md:172`'s entry point), and **not** a shell-nav destination -- the screen is
+      the project's, not the account's
 - [ ] `packages/section-runtime/src/controls.test.ts` -- the matrix's engine rows: resolution in each mode,
       which map a write lands in for a mode-scoped and a non-mode-scoped control, which map a reset
       empties, a stored override the design does not offer (resolved away, no moon, still stored), an
@@ -291,14 +348,19 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
       Background-role change moving the root's `data-bg` in dark only, with the moon and its words on the
       row; the light canvas unchanged; reset in each mode; the per-section clear's confirm and its result;
       the project set to Light only — the control absent, the canvas light, the overrides still stored —
-      and back again; the project-level count. Step 5's zero read after them, with its own control passing
+      and back again; the project-level count. **Plus R-131's and R-133's own steps:** `/projects/<id>`
+      and every canvas segment still exactly as steps 2/6/9 read them after the `(editor)` move;
+      `/projects/<id>/settings` 200 with D6a's two rows and **nothing else** from D6a on it;
+      the `⋯` menu's clear item present on an overridden section and **absent** on one without; both entry
+      points opening the SAME confirm. Step 5's zero read after them all, with its own control passing
 
 **Acceptance Criteria:**
 - Given a project that is Light + Dark, when the sun is pressed, then the canvas re-renders in the other
   mode and **the top bar matches `S4 Editor.dc.html` S4a** — the control at position 6, first of the
   right-hand cluster, 28×28, the export's glyph — while the project-mode row and the clear-overrides row
   **match `D6 Theme Settings Completed.dc.html` D6a**, and the Light-only state of that clear row matches
-  **D6b**, reason sentence included (R-74).
+  **D6b**, reason sentence included (R-74) — S4a **completed** by R-132 (the drawn sun is the light
+  state) and D6a built to R-131's scope, its every other row absent.
 - Given a section selected in dark mode, when a mode-scoped control is changed, then only the dark render
   changes, the row carries the moon badge with the words "Dark override", and returning to light shows the
   value the section had before.
@@ -312,10 +374,34 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
   compiler on every project, Light-only included (AD-17, `schema:304-305`).
 - Given a stored override a design will not take, when the section renders in dark, then nothing is
   stamped, no moon appears, and the value is still stored (FR-F7, FR-D19).
+- Given the `(editor)` route-group move, when the harness re-runs steps 2, 6 and 9, then every URL, every
+  status code and the skeleton's streaming are exactly what they were before it — the move changes the
+  file tree and nothing else (R-131).
+- Given a section with a dark override, when its `⋯` menu in Layers is opened, then "Clear dark overrides"
+  is there and opens the **same** confirm the panel-foot row opens; and given a section with none, then the
+  menu item is **absent** while the panel-foot row is still present and says there is nothing to clear
+  (R-133).
 - Given the deployed editor, when the harness runs, then **0 FAIL** with step 5's CSP zero read after the
   new gestures and its own control passing (standing rule 2).
 
 ## Spec Change Log
+
+- **2026-09-18, the owner ruled all three questions at the Create checkpoint — R-131, R-132, R-133.** The
+  frozen **Boundaries** were amended for the first (its `Ask First` no longer holds three open questions,
+  and its `Never` now carries R-131's scope for D6a), which is the renegotiation the
+  `frozen-after-approval` tag provides for; **Intent** and the **I/O matrix** needed no change, because
+  every ruling landed on *where* and *what it is called* rather than on what the story does.
+  - **R-131 pulled one finding out of the codebase that no reading of the frames could have shown:**
+    `projects/[id]/layout.tsx` renders the **Editor** for every child segment, so `settings` nested there
+    would come up inside the editor's chrome. The `(editor)` route-group move is the answer, it changes no
+    URL, and it is the first task in the list with steps 2/6/9 as its control — recorded under § Design
+    Notes, *The settings screen cannot be a child of `[id]` as the tree stands*.
+  - **R-133 was answered off the menu** — both places, not one — so the spec now carries two entry points
+    with **one** confirm in `editor.tsx`, and states plainly why each place behaves differently from the
+    other (a panel row explains itself, a menu item is absent). R-126 is extended, not reversed.
+  - The three rulings are recorded outside this story too, in
+    `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`, each with its targets and what it does
+    **not** touch — standing rule 3: a finding is not closed until it reaches an owning document.
 
 ## Design Notes
 
@@ -336,6 +422,23 @@ everything else, which is exactly why a design stylesheet is forbidden to mentio
 Hand it a different slice and the same single door produces the dark render. A `mode` on `RenderInput`
 would put a mode inside the **theme** emitter, which AD-30 exists to prevent and `agreement.test.ts`
 would catch. If Dev feels the pull to add one, that is the signal to stop and ask, not to push through.
+
+### The settings screen cannot be a child of `[id]` as the tree stands (R-131)
+
+`projects/[id]/layout.tsx` **renders `<Editor>`**, not just a shell — so every child segment of `[id]`
+comes up with the editor's bar, Layers, canvas and Controls around it. A `settings/page.tsx` nested there
+would appear inside that chrome. A route group is the Next mechanism for exactly this and the app already
+uses four of them (`(app)`, `(authed)`, `(dashboard)`, `(list)`): the editor descends into `(editor)/`,
+`settings/` sits beside it, and **because a group is not a URL segment, `/projects/<id>` and every canvas
+segment are unchanged**. Two rules must survive the move and both are in that layout's own header
+comment: the editor is in a *layout* so a canvas change keeps it mounted (5.8's flush hooks its unmount),
+and the `projectOf` guard runs **above every Suspense boundary** so the 404 and `[template]`'s 308 still
+set a status rather than streaming as a 200 (R-98's second effect). The guard therefore stays in
+`[id]/layout.tsx`, above both children, and is not copied. `run-verify-editor.cjs` steps 2, 6 and 9 —
+the editor at rest, the whole URL scheme, and the skeleton streaming first — are the control that the
+move changed nothing; **do the move as its own commit-sized step, with those three green, before adding
+the screen.** `settings` is a *static* sibling of `[template]`, so Next resolves it first and 5.5's
+synchronous-refusal finding (`canvasFromSegment` must refuse with no I/O) is untouched.
 
 ### The one open architectural gap, and it is not this story's to close
 
@@ -422,8 +525,10 @@ key is named by its variable and never printed.
 ## Owner's manual test
 
 Run on the deployed site, on the owner's own **"Pilot sections"** project — the one Story 5.1's Deploy
-seeded. Nothing you do here survives a reload yet: saving arrives with Story 5.8. The rows marked
-**(Q1)** depend on the owner's ruling on Question 1 and their URL is filled in at Deploy.
+seeded. **Nothing you do on the canvas survives a reload yet: saving arrives with Story 5.8**, so do steps
+2–11 in one sitting, and expect the dark overrides you made to be gone after step 13's reload — that is
+Story 5.8's missing half, not a fault. The project's own Light-only setting (steps 12–15) **is** stored,
+because it is a column on the project rather than part of the canvas.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -437,11 +542,14 @@ seeded. Nothing you do here survives a reload yet: saving arrives with Story 5.8
 | 8 | same | Canvas, Home | Go back to dark, select the section from step 5, and press the small undo arrow beside **Background role**. | — | The dark ground goes back to following the light one, and the moon and its words disappear. |
 | 9 | same | Canvas, Home | In dark, put a dark override on **two** sections, then click into a headline and start typing. With the caret still in the text, press the moon. | type `Hello` into a headline | The mode flips and **your cursor stays exactly where it was**, mid-word. Nothing jumps and the page does not scroll back to the top. |
 | 10 | same | Controls panel | With a section that carries a dark override selected, find **Clear dark overrides** and press it. | — | A small window asks first, telling you how many settings it will clear on that section. Press **Cancel** — nothing changes. Press it again and confirm — that section's dark version follows its light one again and the moons go. |
-| 11 | same | Controls panel | Select a section that has **no** dark override and look at the same row. | — | It tells you there is nothing to clear rather than asking you a question. It is not greyed out. |
-| 12 | *(Q1)* | Project mode | Find **This project** and switch it from **Light + Dark** to **Light only**. | — | The caption reads *"Every Style Pack ships a hand-paired dark palette, so dark is already paid for."* After the switch, the row beneath it greys with its reason — that the overrides are **kept, not discarded**. |
-| 13 | back to step 1's URL | Editor, Home | Look at the top bar. | — | The sun is **gone** — not greyed out, gone. The page is light and there is no way to show dark. |
-| 14 | *(Q1)* | Project mode | Switch back to **Light + Dark**, then return to the editor and press the sun. | — | Every dark override you made earlier is **exactly as you left it** — nothing was thrown away while dark was switched off. |
-| 15 | *(Q1)* | Project mode | Read the line under **Clear dark overrides**. | — | It counts the sections that carry an override — and the number matches what you actually did. Press **Clear** and every section's dark version follows its light one again. |
+| 11 | same | Controls panel | Select a section that has **no** dark override and look at the same row. | — | It tells you there is nothing to clear rather than asking you a question. It is **not** greyed out. |
+| 12 | same | Layers | Put a dark override on a section again. Then press the **⋯** on that section's row in the list on the left. | — | The menu has **Clear dark overrides** in it, below Hide. Press it and the **same** little window asks you as in step 10. |
+| 13 | same | Layers | Press **⋯** on a section that has **no** dark override. | — | **Clear dark overrides is not in the menu at all** — not greyed, absent. The menu is Hide, Rename, Duplicate, Delete as before. |
+| 14 | same | Editor, Home | Find the way through to **Theme settings** and open it. | — | A small screen with **This project** on it, and nothing else from the full Theme settings screen — no posts-per-page, no site title, no credits, no Ghost-settings builder. Those all arrive later, and nothing greyed-out is standing in for them. |
+| 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the caption under **This project**, then switch from **Light + Dark** to **Light only**. | — | The caption reads *"Every Style Pack ships a hand-paired dark palette, so dark is already paid for."* The button you press says what it is doing while it saves. After the switch, the row beneath it **greys with its reason** — that the overrides those sections still hold are **kept, not discarded**. |
+| 16 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Go back to the editor and look at the top bar. | — | The sun is **gone** — not greyed out, gone. The page is light and there is no way to show dark. |
+| 17 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Switch back to **Light + Dark**, go back to the editor, and press the sun. | — | The sun is back, the canvas goes dark, and any dark override still stored is **exactly as you left it** — nothing was thrown away while dark was switched off. |
+| 18 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the line under **Clear dark overrides**, then press **Clear**. | — | It counts the sections that carry an override, and the number matches what you actually did. After the clear, every section's dark version follows its light one again and the count is gone. |
 
 ## Owner's test findings
 
@@ -475,7 +583,10 @@ whose screen has not been built.
    fastest to build, but the same setting gets two homes over its life, and moving a setting someone has
    already used is the kind of change this project has learned to avoid.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"Build a small Theme settings screen now, holding only these two rows."*
+Recorded as **R-131**. It exists at `/projects/<id>/settings`, holds D6a's mode block and nothing else, and R-118's
+rule applies a fourth time to everything else D6a draws. Story 5.1's route tree moves to make room without changing a
+single URL — see § Design Notes, *The settings screen cannot be a child of `[id]` as the tree stands*.
 
 ### Question 2 — the drawing gives the mode control a sun and never says what it becomes
 
@@ -500,7 +611,10 @@ undo/redo and Ship it — which is why you declined to give it any more room at 
    drawing shows nothing like it in the bar.
 3. **The sun or moon with a small word beside it** — a middle path: visible words, about twice the width.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"One button that swaps its glyph: a sun while you are in light, a moon
+while you are in dark, with a spoken label that names where it takes you ("Preview dark mode" / "Back to light mode")
+and a polite announcement of the mode now showing."* Recorded as **R-132**. S4a is **completed, not superseded** — the
+drawn sun is the light state, and the label satisfies UX-DR8 through `DESIGN.md:534-536`'s carve-out.
 
 ### Question 3 — "Clear dark overrides" for one section is drawn nowhere
 
@@ -525,4 +639,10 @@ it will undo.
 3. **Only clear one control at a time**, using the small undo arrow beside each overridden control, and no
    per-section row at all — least to build, but clearing five overrides means five presses.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: options 1 and 2 together (owner, 2026-09-18).** *"Both under 'Reset this design' and inside '...' three dots
+menu"* — answered off the menu, both places rather than either. Recorded as **R-133**: two entry points, one act, and
+**one confirm, which lives in `editor.tsx`** exactly as Delete's and Hide's do (`layers.tsx:51-52`). Each place behaves
+like its own neighbours and that is deliberate: the panel row is **always present** and says there is nothing to clear
+when there is nothing (R-12, the shape "Reset this design" beside it uses), while the menu item is **absent** when the
+section carries no usable override (UX-DR3, the shape Duplicate uses at `layers.tsx:289`). **R-126 is extended, not
+reversed** — the `⋯` is still the row's only control and Hide/Show still leads its menu.
