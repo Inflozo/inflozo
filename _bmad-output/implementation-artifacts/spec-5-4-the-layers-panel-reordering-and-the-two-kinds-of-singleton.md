@@ -12,11 +12,10 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 ## In plain English
 
 The list on the left of the editor stops being a picture of your page and becomes the place you work on it: drag a
-section to move it, press a row to select it, press the eye to hide it, and use the little "…" beside a row to rename,
-copy or remove it. Hovering a section on the page itself now raises a small white pill in its corner with Copy, Remove
-and a grip you can drag. Your header, announcement bar and footer sit together in a pinned white card at the top,
-because they are one shared thing that appears on every page — so they cannot be copied, and removing or hiding one
-asks first and tells you it changes every page; nothing you do here survives a reload until Story 5.8 adds saving.
+section to move it, press a row to select it, and use the little "…" beside a row to hide, rename, copy or remove it. Hovering a section on the page itself now raises a small white pill in its corner with Copy, Remove
+and a grip you can drag. Your header, announcement bar and footer sit together in their own group at the top, above a
+thin line, because they are one shared thing that appears on every page — so they cannot be copied, and removing or
+hiding one asks first and tells you it changes every page; nothing you do here survives a reload until Story 5.8 adds saving.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -86,7 +85,7 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
 | Press a group heading or the footed note | a section selected | The selection stays: only the empty space below the rows is a ground (R-123 as amended) | N/A |
 | Drag a row | 3 page rows, grip pressed on row 1 | Row 1 lifts; a dashed slot the row's height shows where it lands; rows between slide; nothing moves until the drop, then the canvas repaints in the new order | A drop outside the row's own group returns without a change |
 | `⌥↓` on a focused row | row 1 of 3 focused | The section moves to position 2, focus follows it, and "Moved to position 2 of 3" is announced politely | At the last position the key does nothing |
-| `Space` on a focused row | row shown | Hidden: the section leaves the canvas, the row's words go ink-soft, the eye becomes eye-off and stays visible | N/A |
+| `Space` on a focused row | row shown | Hidden: the section leaves the canvas and the row's words go ink-soft. **Amended by R-126 (owner, 2026-09-18), which renegotiated this frozen row:** the eye is no longer on the row, so what reads as hidden is the ink-soft name plus the row's `⋯` menu offering Show. The key itself is unchanged | N/A |
 | Hide every section | all page rows hidden | The canvas draws an empty page; the template is still *designed* (`isDesigned` true), never untouched | N/A |
 | Delete the last section | one page row | The row goes, the page group shows its count as 0, and only the Site-wide card remains (EXPERIENCE § State Patterns, UX-DR6) | N/A |
 | Duplicate a page section | Newsletter selected | A copy with a new `instanceId`, the same layer name and the same stored values lands directly after it (the precedent `duplicateItem` sets) | N/A |
@@ -218,9 +217,10 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
       change in behaviour -- proved by `controls.test.ts` and the controls harness staying green.
 - [x] `apps/web/components/kit/layers-row.tsx` -- make the interactive row the story's row: D8e's focus ring on the
       ROW (over rest, wash or tint), the grip `aria-hidden` and pointer-only (its keyboard path is the row's
-      `⌥`-arrows), the eye revealed on hover, selection, focus-within or while hidden, the hidden row's words
-      `text-ink-soft`, a `…` overflow before the eye, and `SiteWideGroup`'s icon changed from `DragGrip` to `Globe` --
-      a grip on that card promises a drag B7 says it does not have.
+      `⌥`-arrows), the hidden row's words `text-ink-soft`, and the `…` overflow. **Delivered as R-126 amends it
+      (owner, 2026-09-18):** the eye is not on the row at all — Hide/Show leads the `…` menu — the name is drawn at
+      `text-helper-caption`, and `SiteWideGroup` is no longer a card with a glyph but the page group's own shape with
+      a hairline under it.
 - [x] `apps/web/components/controls/layers.tsx` (new) -- B7's panel body: the pinned Site-wide card with its glyph,
       `SITE-WIDE`, the derived template count and its rows; the `THIS PAGE · {label}` group with its own derived
       count; the dashed landing slot; the `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` key handling with roving tabindex; a polite
@@ -250,9 +250,10 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
 
 **Acceptance Criteria:**
 
-- Given the Home canvas, when the Layers panel is drawn, then it **matches B7**: a pinned white Site-wide card with a
-  glyph, `SITE-WIDE`, a derived template count and its rows, then a `THIS PAGE · HOME` group with its own derived
-  count and rows, then B7's footed note above a hairline.
+- Given the Home canvas, when the Layers panel is drawn, then it matches B7 **as R-126 amends it**: a `SITE-WIDE`
+  group and a `THIS PAGE · HOME` group drawn in the SAME shape — heading, right-aligned mono count, rows — divided by
+  one hairline, with no card, no glyph and no footed note. Each count is derived; `Site-wide` and its template count
+  sit on one line.
 - Given a Layers row, when it is at rest, hovered, selected, or holds keyboard focus, then it **matches D8e** — and a
   focused-and-selected row reads as both, because the ring is drawn over the state the row is already in.
 - Given a hovered section on the canvas, when the pill is drawn, then it **matches S4b**'s group at
@@ -264,12 +265,13 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
   dashed slot the row's height shows where it will land; on the drop the doc changes once and the canvas repaints.
 - Given a focused row, when `⌥↑` or `⌥↓` is pressed, then the section moves one place, focus follows it, and the move
   is announced politely in `moveItem`'s words.
-- Given a section hidden from Layers, when the canvas repaints, then that section is not drawn, its row's words are
-  ink-soft with the eye-off showing, and the instance is still in the doc.
+- Given a section hidden from its row's `⋯` menu (R-126), when the canvas repaints, then that section is not drawn,
+  its row's words are ink-soft and its menu now reads Show, and the instance is still in the doc. `Space` on the
+  focused row does the same thing, the eye having left the row and not the keyboard.
 - Given every section on a template hidden, when the doc is read, then the template is still designed; given every
   section removed, then it is not.
-- Given a site-wide section, when its row menu or its pill is opened, then Duplicate is absent; when Delete or the eye
-  is pressed, then a confirm opens with focus on Cancel, naming that it affects every template.
+- Given a site-wide section, when its row menu or its pill is opened, then Duplicate is absent; when Delete or Hide is
+  chosen, then a confirm opens with focus on Cancel, naming that it affects every template.
 - Given a doc already holding a Post Content section, when a second placement is asked for, then `placementRefusal`
   answers "this layout already prints the article" and nothing is placed.
 - Given a doc naming an A32, A33 or A34 design, when the editor reads it, then it throws a sentence naming the
@@ -282,6 +284,10 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
   overlapping the other (R-125).
 - Given the canvas is scrolled while a section is hovered, when the scroll starts, then the pill hides; 150 ms after
   the last scroll event it is placed again on its section, with no frame in which it sits away from it.
+- Given any `⋯` menu in the app, when it opens beside a trigger closer to a window edge than the menu is wide, then no
+  part of it is off screen — `openMenu` clamps both edges, not only the one it anchors (R-126, the owner's finding).
+- Given a Layers row, when its name is drawn, then it is at the caption size and the row carries the `⋯` and nothing
+  else, so the name has the width to say itself without truncating (R-126).
 - Given `pnpm check`, when it runs, then every new test passes and no existing one changed meaning.
 
 ## Design Notes
@@ -384,7 +390,7 @@ rather than waiting for Review, because a step written and never executed proves
 it read `on all 6 templates` from the canvases `lib/editor.ts` opens and `3` from the group's own rows, and after
 removing every page section the same span read `0`. A press on a row selects without deselecting, and a press on a
 group heading or on B7's footed note keeps the selection while the empty space below the rows lets it go (R-123 as
-amended, all four grounds). D8e's four states. The eye, and `Space` on the focused row. `⌥↓`/`⌥↑` with
+amended, all four grounds). D8e's four states. Hide and Show, and `Space` on the focused row. `⌥↓`/`⌥↑` with
 `Moved to position 3 of 3` announced politely and focus following. The drag showing a dashed slot the row's own height
 with nothing reordered until the drop. The `⋯` menu — `Rename · Duplicate · Delete` on a page row and
 `Rename · Delete` on the site-wide one — and the rename dialog opening on Cancel and refusing a blank name. The
@@ -426,15 +432,15 @@ Sign in as you normally do. Nothing you change here survives a reload — saving
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the list on the left. | — | A white card at the top holding "Header — Rail" under a small globe, the words SITE-WIDE and a count of the pages it appears on. Below it, "THIS PAGE · HOME" with its own count and three rows. Compare it with B7 in `B Missing Surfaces.dc.html`. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the list on the left. | — | At the top, SITE-WIDE with "6 templates" on the **same line** and "Header — Rail" under it; a thin line; then "THIS PAGE · HOME" with its own count and three rows — both groups drawn the same way, no box, no globe, and no sentence at the foot. *(Your changes of 2026-09-18, R-126.)* |
 | 2 | same | Layers | Press the row "Post Grid — Three Up". | — | The section is selected on the page, the row turns coral, and the right-hand panel is headed by its name — exactly as clicking the section does. |
 | 3 | same | Layers | Drag "Newsletter — Inline Row" by the six dots on its left, up above "Post Grid — Three Up", and let go. | — | While you drag, a dashed empty box shows where it will land and the other row slides out of the way; nothing on the page moves until you let go, and then the page redraws in the new order. |
 | 4 | same | Keyboard | Press Tab until a row has a coral outline all the way round it, then press the down arrow twice, then hold Option (or Alt) and press the up arrow. | — | The outline moves down one row at a time. Option-up moves the section itself one place up, and the page follows. |
-| 5 | same | Layers | Put the pointer on "Post Grid — Three Up" and press the eye on its right. Then press it again. | — | The section disappears from the page and the row's words go grey with a crossed-out eye. Pressing again brings both back. |
-| 6 | same | Layers | Press the "…" beside "Hero — Latest Post" and choose **Rename**. Type a new name and press Save. | `Top of the page` | A small box asks for the name. After Save, the row and the right-hand panel's heading both read your name. |
+| 5 | same | Layers | Press the "…" beside "Post Grid — Three Up" and choose **Hide**. Then open "…" again and choose **Show**. | — | The section disappears from the page and the row's words go grey; the menu now offers Show instead of Hide. Show brings it back. *(R-126: the eye moved into this menu so the name has the room.)* |
+| 6 | same | Layers | Press the "…" beside "Hero — Latest Post". Check no part of the menu is cut off, then choose **Rename**, type a new name and press Save. | `Top of the page` | The menu opens fully on screen — nothing clipped on the left. A small box asks for the name; after Save the row and the right-hand panel's heading both read your name. *(R-126.)* |
 | 7 | same | Layers | Press "…" beside "Newsletter — Inline Row" and choose **Duplicate**. Then press "…" on the new row and choose **Delete**. | — | A second copy of the section appears directly below, on the list and on the page, with the same words. Delete takes it away again. |
 | 8 | same | Layers | Press "…" beside "Header — Rail" in the white card at the top. | — | The menu has Rename and Delete but **no Duplicate** — your header is one shared thing, not a copy per page. |
-| 9 | same | Layers | In the white card, press the eye beside "Header — Rail". | — | A box asks first and says it affects every page. Cancel leaves everything as it was. |
+| 9 | same | Layers | Press "…" beside "Header — Rail" and choose **Hide**. | — | A box asks first and says it affects every page. Cancel leaves everything as it was. |
 | 10 | same | Canvas | Put the pointer over "Post Grid — Three Up" on the page itself, without clicking. | — | A small white pill appears in its top-right corner with a copy icon, a bin and six dots. Compare it with S4b in `S4 Editor.dc.html`. Move the pointer onto the pill — it stays. |
 | 11 | same | Canvas | Press the copy icon on that pill, then press the bin on the new copy. | — | The section is copied directly below and then removed, the same as from the list. |
 | 12 | same | Canvas | Drag the six dots on the pill up or down the page and let go. | — | The dashed box in the list on the left shows where it will land; on release the page redraws in the new order. |
@@ -442,8 +448,28 @@ Sign in as you normally do. Nothing you change here survives a reload — saving
 | 14 | same | Right panel | Select "Newsletter — Inline Row" and open **Section settings**. | — | "Member visibility" is the first row there, reading "Everyone", with a short line under it saying what it decides. Nothing about it appears in the Layers list. *(Your ruling, R-124.)* |
 | 15 | same | Right panel | Change it to **Paid members**. | — | The section disappears from the page, its row stays in the list, and a second line under the control says the page is being previewed as a visitor who is not signed in. Set it back to Everyone and the section returns. |
 | 16 | same | Canvas | Select "Hero — Latest Post" (the one with the Pro mark) and keep the pointer on it. | — | The "✦ Pro" tag is exactly where it has always been, in the top-right corner, and the pill sits directly to its left. Neither covers the other. *(Your ruling, R-125.)* |
-| 17 | same | Layers | Hide every row under "THIS PAGE · HOME", then press "…" on each and Delete them all. | — | With all of them hidden the page is blank but the rows stay. After deleting them all, only the white Site-wide card is left. |
+| 17 | same | Layers | Hide every row under "THIS PAGE · HOME" from its "…" menu, then Delete them all the same way. | — | With all of them hidden the page is blank but the rows stay. After deleting them all, only the Site-wide group is left, its count reading 0. |
 | 18 | same | Browser | Reload. | — | Everything is back as it started. Saving arrives with Story 5.8. |
+
+## Owner's test findings
+
+Five, from his own look at the deployed story on 2026-09-18, before the formal test. All five are one finding —
+**the 240px Layers panel was spending its width on everything except the name** — and all five are fixed inside this
+story (R-80). They change what B7 draws, so they are recorded as a ruling, **R-126**, in
+`reconcile-designs-decisions.md`: R-74 makes the export the design authority, and a departure from it that is not
+written down is one the next reader will "correct" back.
+
+| # | What he said | What was done |
+|---|---|---|
+| 1 | "Site-Wide at top of Layers is 2 line. Can we reduce the text, so it all spans in single line only" | The count's words are now `N templates` rather than `on all N templates`, and the heading is one line. Still derived (standing rule 4). The harness MEASURES the heading's height against the page group's rather than trusting it. |
+| 2 | "The ... three dots menu opens but it cuts off from the left." | Root cause, and not in Layers: `anchorTo` can only clamp the edge it anchors, because it runs while the popover is still `display:none` and has no width. A 210px menu right-aligned to a ⋯ near x=202 starts at −8. `openMenu` now clamps BOTH edges once the box has a width — so every menu in the app is fixed, not the one that found it (standing rule 3). |
+| 3 | "reduce the font size on the cards in Layers, and jst show ... three dots menu on top right. Add the Hide option in that menu" | The name is `text-helper-caption`; the eye is gone from the row; Hide/Show leads the `⋯` menu. `Space` on the focused row still toggles visibility — a key is not a control and costs no width, so UX-DR10 is untouched. A hidden row reads as hidden by its ink-soft name and by its menu saying Show. |
+| 4 | "'Editing a site-wide section changes it on all 6 templates.' seems duplicated information" | B7's footed note removed. It also **closes DW-184**, which existed only to decide when that note should stop being shown. The warning is not lost: a site-wide Delete or Hide still opens a confirm naming every template, which is the moment it matters. |
+| 5 | "Keep Site-wie and This page section design same ... Add a thin divider line between them. Remove the icon." | `SiteWideGroup` is no longer a white card: it draws the heading, the right-aligned mono count and the rows exactly as the page group does, with one hairline between the two and no glyph. |
+
+**What was deliberately NOT changed by these five,** because nothing he said reaches them: D8e's four row states and
+the ring on the ROW, the drag and its dashed slot, every keyboard path, the two singletons, R-123's grounds, and
+R-124 and R-125, which are about the settings panel and the canvas.
 
 ## Questions for the owner
 

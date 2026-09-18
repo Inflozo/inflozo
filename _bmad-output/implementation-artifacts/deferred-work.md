@@ -4370,17 +4370,21 @@ reason: the pattern is now named and two shapes of fix are excluded, but the rem
 plain: The Layers panel carries a line saying that editing your header, announcement bar or footer changes it on every
   page. The drawing says we show that line the first time and then stop. Nothing about you is remembered between
   visits until saving arrives, so for now the line is simply always there.
-status: open
+status: closed
 severity: low
 origin: Story 5.4's planning (2026-09-18) — `B Missing Surfaces.dc.html` B7's footed note, "Editing a site-wide section
   changes it on all N templates. We say so the first time, then stop."; nothing writes `project_templates`,
   `project_template_prefs` or `profiles` before Story 5.8
-owner: Story 5.8 (undo, redo and local-first persistence), the first story with somewhere to keep it
-location: `apps/web/components/controls/layers.tsx` (B7's footed note) ·
-  `supabase/migrations/20260904120000_complete_schema.sql` (`project_template_prefs`, `profiles`)
-reason: a session-only "first time" would make the line come and go between reloads, which reads as a bug rather than as
-  a note; showing it always is honest, costs one line, and is removed by one condition the day there is a place to
-  remember in.
+closed: Story 5.4's Dev (2026-09-18) — **the note itself is gone, so there is no "first time" left to remember.** The
+  owner's finding on the deployed story was that the line repeats what the Site-wide heading already says, and
+  **R-126** removed it. An entry that exists only to decide WHEN a sentence should stop being shown is answered by
+  deleting the sentence; nothing is deferred to Story 5.8 by it any more. The warning it carried is not lost — a
+  site-wide Delete or Hide still opens a confirm naming every template (`editor.tsx`), which is the moment it matters.
+owner: closed by Story 5.4
+location: `apps/web/components/controls/layers.tsx` (the note, removed) ·
+  `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` (R-126)
+reason: a session-only "first time" would have made the line come and go between reloads; the owner's answer was that
+  the line should not be there at all, which retires the question rather than answering it.
 
 ### DW-185: the control register gives a Member visibility row to more categories than the PRD's four CTA-bearing ones
 

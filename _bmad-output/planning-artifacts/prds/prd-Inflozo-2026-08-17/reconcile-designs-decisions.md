@@ -2544,6 +2544,41 @@ Q2, ruled option 1 (owner, 2026-09-18): *"The Pro tag keeps the corner; the pill
 - **Deliberately not touched:** R-119, which is unchanged; the export (R-74), whose S4b frame draws a pill this story
   builds three controls of (R-118) and therefore narrower than drawn.
 
+**R-126 — the Layers panel is drawn for its names: two groups of one shape, and the row's only control is the `⋯`.**
+The owner's findings on the deployed Story 5.4 (2026-09-18), taken as a ruling because **R-74** makes the design
+export the authority and these five change what B7 draws.
+
+- **Why it is a ruling and not a patch.** `B Missing Surfaces.dc.html` B7 draws the site-wide group as a pinned white
+  card with a globe badge, an eye on every row, and a footed note above a hairline. All four are removed or moved
+  here. Under R-74 a surface is built from its frame, so a departure is the owner's to make and has to be written
+  down — otherwise the next reader "corrects" the code back to the frame.
+- **The finding behind all five is WIDTH.** The Layers panel is 240 px. A grip, a thumbnail, a name, a `⋯` and an eye
+  do not fit, so the one thing a layer list exists to show — the name — was the thing being truncated.
+- **What it binds.**
+  1. **`Site-wide` and its template count sit on ONE line.** The count's words shrink to `N templates`; it had wrapped
+     to two lines as `on all N templates`. Still derived, never written down (standing rule 4).
+  2. **No menu is ever clipped.** A `⋯` menu opening off the left edge of the window is a defect wherever it happens;
+     the fix belongs in `lib/menu.ts`'s one `openMenu`, which every menu in the app routes through, and clamps both
+     edges rather than only the one it anchors (standing rule 3).
+  3. **The row's name is `text-helper-caption`, and the row's only control is the `⋯` at its right.** Hide/Show is a
+     row IN that menu, leading it. `Space` on the focused row still toggles visibility — a key is not a control and
+     costs no width, so UX-DR10's keyboard path is untouched.
+  4. **B7's footed note is gone.** The Site-wide heading already carries the same derived count, and the note repeated
+     it on every template. This also closes **DW-184**, which existed only to decide when that note should stop being
+     shown: there is no note to stop showing.
+  5. **The two groups are drawn the SAME** — heading, right-aligned mono count, rows — with one hairline between them
+     and no glyph. The pinned white card and the globe go.
+- **What a hidden row reads as, now the eye is gone:** its name is `text-ink-soft` and its menu says Show rather than
+  Hide. Both are drawn today and both are checked.
+- Targets:
+  - ✅ `apps/web/components/kit/layers-row.tsx` · ✅ `apps/web/components/controls/layers.tsx` ·
+    ✅ `apps/web/lib/menu.ts` · ✅ `tools/probe/run-verify-editor.cjs` · ✅ Story 5.4's spec ·
+    ✅ `deferred-work.md` (DW-184 closed) — Story 5.4's Dev (2026-09-18).
+  - ⬜ `EXPERIENCE.md` · `DESIGN.md` · `epic-5-context.md` — at 5.4's Review, with the rest of the story's propagation.
+- **Deliberately not touched:** D8e's four row states and the ring on the ROW; the drag, its dashed slot and every
+  keyboard path; the two singletons; R-123's grounds; R-124 and R-125, which are about other surfaces. The export
+  itself is NOT edited (R-74 forbids it) — this file is the record of the divergence.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

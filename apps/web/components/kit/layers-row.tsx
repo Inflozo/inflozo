@@ -1,7 +1,5 @@
 import type { HTMLAttributes, ReactNode, Ref } from 'react'
 import { DragGrip } from './grip'
-import { Globe } from './icons'
-import { Visibility } from './visibility'
 import { ring } from './greyed'
 
 /* Editor Sidebar Kit.dc.html:220 — layers rows: grip, mini-thumbnail, name, eye.
@@ -17,16 +15,15 @@ import { ring } from './greyed'
    the keyboard path for the drag is the row's own ⌥↑/⌥↓ (UX-DR10). So the grip is `aria-hidden` and POINTER-ONLY: a
    button there would be a second tab stop promising a keyboard drag it does not perform.
 
-   THE EYE IS REVEALED, not always drawn: B7 draws it on the selected row and on the hidden one, and D8e draws it on
-   the hovered one — so it appears on hover (the row's OWN pointer hover and the canvas's hover mirrored onto it
-   alike), on selection, while the row holds focus anywhere inside it, and whenever
-   the section is hidden, which is the one state that must read from across the panel. A hidden row's words go
-   `text-ink-soft` with the eye crossed out (B7's "About, short").
+   R-126 (owner, 2026-09-18) TOOK THE EYE OFF THE ROW AND SHRANK THE NAME. The row's only control is now the `⋯`,
+   and Hide/Show is a row IN that menu — the panel is 240px wide and an eye, a grip, a thumbnail and a name were
+   truncating the one thing a layer list exists to show. The name is `text-helper-caption`. A hidden row still reads
+   as hidden: its words are `text-ink-soft`, and its menu says Show rather than Hide. `Space` on the focused row is
+   untouched — it is a key, not a control, so UX-DR10's keyboard path costs no width.
 
-   `SiteWideGroup`'s icon is the Kit's `Globe` and not a `DragGrip`: a grip on that card promises a drag it does not
-   have — B7's own note is that the three site-wide sections cannot be reordered against page sections, and the card
-   boundary is what says so. FR-D5 calls the mark "a globe badge"; B7 draws an arrow-on-a-stem the Kit has no glyph
-   for, and `Globe` is the PRD's word and already in the app's vocabulary. */
+   `SiteWideGroup` IS NO LONGER A CARD, by the same ruling: it draws the heading and the rows exactly as the page
+   group does, with a hairline between the two groups and no glyph. B7 draws a pinned white card with a globe; the
+   owner's is the later word (R-74 makes the export the authority, and this is his ruling against it, recorded). */
 
 type RowProps = {
   name: string
@@ -46,11 +43,9 @@ type RowProps = {
   rowRef?: Ref<HTMLDivElement>
   /** Story 5.4 — pressing the name selects the section (R-123: a press on a row never deselects) */
   onSelect?: () => void
-  /** Story 5.4 — the eye, and `Space` on the focused row */
-  onToggleShown?: () => void
   /** Story 5.4 — the grip's pointer handlers and its `data-*`; `aria-hidden` and pointer-only either way */
   gripProps?: HTMLAttributes<HTMLSpanElement>
-  /** Story 5.4 — the `…` overflow and its menu, drawn before the eye. Absent on a row with no menu. */
+  /** Story 5.4 — the `…` overflow and its menu: since R-126 the row's ONLY control. Absent on a row with no menu. */
   overflow?: ReactNode
 }
 
@@ -64,7 +59,6 @@ export function LayersRow({
   interactive = true,
   rowRef,
   onSelect,
-  onToggleShown,
   gripProps,
   overflow,
   ...rest
@@ -80,8 +74,7 @@ export function LayersRow({
   return (
     <div
       ref={rowRef}
-      // `group`: the eye reads the row's hover and its focus-within off it. The ring is the row's, over whichever
-      // state it is already in (D8e), which is why it is not on the name button.
+      // The ring is the row's, over whichever state it is already in (D8e), which is why it is not on the name button.
       className={`group flex items-center gap-2 rounded-sm px-2 py-[7px] ${ring} ${
         selected ? 'bg-coral-tint' : hovered ? 'bg-coral-wash' : 'hover:bg-coral-wash'
       } ${className}`}
@@ -96,23 +89,13 @@ export function LayersRow({
         tabIndex={-1}
         aria-current={selected ? 'true' : undefined}
         onClick={onSelect}
-        className={`min-w-0 flex-1 truncate text-left text-ui-dense ${selected ? 'font-semibold' : 'font-medium'} ${
+        className={`min-w-0 flex-1 truncate text-left text-helper-caption ${selected ? 'font-semibold' : 'font-medium'} ${
           shown ? 'text-ink' : 'text-ink-soft'
         } ${ring}`}
       >
         {name}
       </button>
       {overflow}
-      {/* `hovered` is the CANVAS's hover mirrored onto the row (Story 5.2), and the pointer is over the iframe — no
-          CSS `:hover` reaches here — so it must reveal the eye itself, or D8e's HOVER · THE WASH would draw the wash
-          without the eye it is drawn with. */}
-      <span
-        className={`flex shrink-0 ${
-          shown && !selected && !hovered ? 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100' : ''
-        }`}
-      >
-        <Visibility shown={shown} name={name} onToggle={onToggleShown} tabIndex={-1} />
-      </span>
     </div>
   )
 }
@@ -127,18 +110,18 @@ export const LayerThumb = () => (
   </span>
 )
 
-/** The site-wide group: a separate white card with its own globe badge and a template count, so it reads
-    as pinned rather than merely first (FR-D5, B7). */
+/** The site-wide group (R-126): the SAME shape as the page group — a heading, a right-aligned mono count and the
+    rows — with a hairline under it dividing the two. `pages` is the derived template count (standing rule 4), and it
+    is the whole of what the retired footed note used to repeat: `Site-wide` · `6 templates`, on one line. */
 export function SiteWideGroup({ children, pages }: { children: ReactNode; pages: number }) {
   return (
-    <div className="flex flex-col gap-1 rounded border border-line bg-surface p-2 shadow-sm">
-      <div className="flex items-center gap-2 px-1">
-        <Globe size={11} className="shrink-0 text-ink-soft" />
+    <div className="flex flex-col gap-[2px] border-b border-line pb-[10px]">
+      <div className="flex items-center gap-[6px] px-[5px] pb-[5px]">
         <span className="flex-1 text-helper-caption font-semibold tracking-[0.04em] text-ink-soft uppercase">
           Site-wide
         </span>
         <span className="font-mono text-helper-caption text-ink-soft">
-          {pages === 1 ? 'on 1 template' : `on all ${pages} templates`}
+          {pages === 1 ? '1 template' : `${pages} templates`}
         </span>
       </div>
       {children}

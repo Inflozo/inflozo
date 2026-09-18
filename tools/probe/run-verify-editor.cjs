@@ -212,7 +212,7 @@ async function main() {
     check('step 2 — the project name: 13px, 600, Inter', shape.name.text === 'Pilot sections' && shape.name.size === '13px' && shape.name.weight === '600' && /Inter/i.test(shape.name.family), JSON.stringify(shape.name))
     check('step 2 — Layers: 240px, right rule, paper, "THIS PAGE · HOME"', shape.layers.w === 240 && shape.layers.rule === '1px' && shape.layers.bg === 'rgb(247, 245, 242)' && /this page · home/i.test(shape.layers.title), JSON.stringify({ ...shape.layers, title: undefined }))
     check('step 2 — Layers lists the stack in canvas order', shape.rows.join(' | ') === stackOf('home').map(([, name]) => name).join(' | '), shape.rows.join(' | '))
-    check('step 2 — Story 5.4: every row carries a name button, a ⋯ and an eye, and a pointer-only grip that is no tab stop', shape.rowControls.length === stackOf('home').length && shape.rowControls.every((n) => n === 3) && shape.rowGrips === shape.rowControls.length, `${JSON.stringify(shape.rowControls)} · grips ${shape.rowGrips} · buttons ${shape.buttonsInLayers}`)
+    check('step 2 — R-126: every row carries a name button and a ⋯ and NOTHING else, plus a pointer-only grip that is no tab stop', shape.rowControls.length === stackOf('home').length && shape.rowControls.every((n) => n === 2) && shape.rowGrips === shape.rowControls.length, `${JSON.stringify(shape.rowControls)} · grips ${shape.rowGrips} · buttons ${shape.buttonsInLayers}`)
     check('step 2 — the canvas ground #EDEAE6', shape.ground === 'rgb(237, 234, 230)', shape.ground)
     const c = shape.card
     check('step 2 — the page card: 24 from the top, 28 each side, flush at the bottom, 864 wide, 6px top radius, the page shadow', c && c.top === 24 && c.left === 28 && c.right === 28 && c.bottom === 0 && c.width === 864 && c.radius === '6px 6px 0px 0px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), JSON.stringify(c))
@@ -1169,10 +1169,9 @@ async function main() {
       const rows = [...list.querySelectorAll('[data-layer-row]')]
       const last = rows[rows.length - 1].getBoundingClientRect()
       const at = { x: r.left + r.width / 2, y: last.bottom + 40 }
-      // what the re-anchoring is for: the list's own last children are B7's note and the rename dialog, so neither
-      // `lastElementChild` nor its rect is the last ROW any more
-      const drawn = [...list.children].filter((c) => c.tagName !== 'DIALOG')
-      const lastChildIsNotTheRows = drawn[drawn.length - 1].hasAttribute('data-layers-note') && !list.lastElementChild.contains(rows[rows.length - 1])
+      // what the re-anchoring is for: the list's last element child is the rename dialog, so neither it nor its rect
+      // is the last ROW (R-126 retired B7's footed note; the dialog is what remains after it)
+      const lastChildIsNotTheRows = !list.lastElementChild.contains(rows[rows.length - 1])
       return { rows: rows.length, lastChildIsNotTheRows, room: r.bottom - last.bottom, isGround: document.elementFromPoint(at.x, at.y) === list, at }
     })
     await page.mouse.click(layersGround.at.x, layersGround.at.y)
@@ -1222,32 +1221,35 @@ async function main() {
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
 
-    // ── step 28 — B7: the pinned Site-wide card, the page group, both derived counts and the footed note ──
+    // ── step 28 — B7 as R-126 amends it: two groups of one shape, a hairline between, both counts derived ──
     const layersShape = () => page.evaluate(() => {
       const aside = document.getElementById('editor-layers')
       const list = aside.lastElementChild
       const rows = [...list.querySelectorAll('[data-layer-row]')]
-      const card = rows[0].closest('div.bg-surface, div[class*="bg-surface"]')
       const css = (el) => el && getComputedStyle(el)
       const headings = [...list.querySelectorAll('span')].map((x) => x.textContent.trim())
-      // by its marker, never `lastElementChild`: the panel's last element child is the rename dialog
-      const note = list.querySelector('[data-layers-note]')
-      const drawn = [...list.children].filter((c) => c.tagName !== 'DIALOG')
+      // R-126: the site group is the page group's own shape, divided from it by a hairline and carrying no glyph
+      const siteGroup = rows[0].parentElement.parentElement
+      const groups = [...list.children].filter((c) => c.querySelector('[data-layer-row]'))
+      // the owner's complaint was a WRAPPED heading, so its height is measured and not assumed: both groups draw the
+      // same heading row now, so one line means the two are the same height
+      const headRow = (g) => g.firstElementChild.getBoundingClientRect().height
       return {
         rows: rows.map((r) => ({ name: r.querySelector('button')?.textContent, key: r.getAttribute('data-layer-row'), tab: r.getAttribute('tabindex') })),
-        inCard: rows.filter((r) => card && card.contains(r)).length,
-        card: card && { bg: css(card).backgroundColor, border: css(card).borderTopWidth, radius: css(card).borderRadius, pad: css(card).padding },
+        inSite: rows.filter((r) => siteGroup.contains(r)).length,
+        site: { divider: css(siteGroup).borderBottomWidth, bg: css(siteGroup).backgroundColor, shadow: css(siteGroup).boxShadow, glyphs: siteGroup.querySelectorAll('svg').length - siteGroup.querySelectorAll('[data-layer-row] svg').length },
         headings,
-        noteText: note?.textContent.trim(),
-        noteRule: css(note)?.borderTopWidth,
-        noteLast: note === drawn[drawn.length - 1] && !note.querySelector('[data-layer-row]'),
+        groups: groups.length,
+        headHeights: groups.map(headRow),
+        noteGone: list.textContent.includes('changes it on all') === false,
         mono: [...list.querySelectorAll('span')].filter((x) => /mono/i.test(css(x).fontFamily)).map((x) => x.textContent.trim()),
       }
     })
     const B7 = await layersShape()
-    check('step 28 — B7: the Site-wide card is a white box on the hairline, and the site doc\'s rows are the ones inside it', B7.inCard === TEMPLATES.site.length && B7.card?.bg === 'rgb(255, 255, 255)' && B7.card?.border === '1px', JSON.stringify({ inCard: B7.inCard, card: B7.card }))
-    check('step 28 — B7: SITE-WIDE over a derived template count, then THIS PAGE · HOME over its own row count', B7.headings.includes('Site-wide') && B7.headings.some((h) => /^This page · Home$/i.test(h)) && B7.mono.includes(`on all ${TEMPLATE_COUNT} templates`) && B7.mono.includes(String(TEMPLATES.home.length)), JSON.stringify({ headings: B7.headings, mono: B7.mono }))
-    check('step 28 — B7: the footed note is last, above a hairline, and names the same derived count', B7.noteLast && B7.noteRule === '1px' && B7.noteText === `Editing a site-wide section changes it on all ${TEMPLATE_COUNT} templates.`, JSON.stringify({ note: B7.noteText, rule: B7.noteRule, last: B7.noteLast }))
+    check('step 28 — R-126: the Site-wide group is the page group\'s own shape — no card, no shadow, no glyph — divided from it by one hairline, and the site doc\'s rows are the ones in it', B7.inSite === TEMPLATES.site.length && B7.site.divider === '1px' && B7.site.bg === 'rgba(0, 0, 0, 0)' && B7.site.shadow === 'none' && B7.site.glyphs === 0 && B7.groups === 2, JSON.stringify(B7.site) + ` · inSite ${B7.inSite} · groups ${B7.groups}`)
+    check('step 28 — R-126: the Site-wide heading and its template count sit on ONE line — the same height as the page group\'s heading, which never wrapped', B7.headHeights.length === 2 && Math.abs(B7.headHeights[0] - B7.headHeights[1]) <= 1 && B7.headHeights[0] < 28, JSON.stringify(B7.headHeights))
+    check('step 28 — SITE-WIDE beside a derived template count on ONE line (R-126), then THIS PAGE · HOME beside its own row count', B7.headings.includes('Site-wide') && B7.headings.some((h) => /^This page · Home$/i.test(h)) && B7.mono.includes(`${TEMPLATE_COUNT} templates`) && B7.mono.includes(String(TEMPLATES.home.length)), JSON.stringify({ headings: B7.headings, mono: B7.mono }))
+    check('step 28 — R-126: B7\'s footed note is gone, its count already carried by the Site-wide heading', B7.noteGone, JSON.stringify({ noteGone: B7.noteGone }))
     check('step 28 — roving tabindex: exactly one row is a tab stop', B7.rows.filter((r) => r.tab === '0').length === 1 && B7.rows.filter((r) => r.tab === '-1').length === B7.rows.length - 1, JSON.stringify(B7.rows.map((r) => r.tab)))
 
     // ── step 29 — a press on a row selects, and D8e's four states ──
@@ -1257,8 +1259,9 @@ async function main() {
       shadow: getComputedStyle(r).boxShadow,
       words: getComputedStyle(r.querySelector('button')).color,
       weight: getComputedStyle(r.querySelector('button')).fontWeight,
-      eye: r.querySelector('button[aria-label^="Hide"], button[aria-label^="Show"]')?.getAttribute('aria-label'),
-      eyeShown: getComputedStyle(r.querySelector('button[aria-label^="Hide"], button[aria-label^="Show"]').parentElement).opacity,
+      // R-126: the row's ONLY control is the ⋯; Hide/Show moved into its menu
+      controls: [...r.querySelectorAll('button')].map((b) => b.getAttribute('aria-label') ?? b.textContent.trim()),
+      size: getComputedStyle(r.querySelector('button')).fontSize,
     }))
     await page.keyboard.press('Escape')
     await rowAt(GRID).getByRole('button', { name: layerOf(GRID), exact: true }).click()
@@ -1276,26 +1279,39 @@ async function main() {
     check('step 29 — D8e: a focused-and-selected row reads as both — the coral tint with the 2px ring on the ROW', focusedSelected.bg === TINT && /rgb\(194, 56, 31\) 0px 0px 0px 2px/.test(focusedSelected.shadow), JSON.stringify(focusedSelected))
     await hoverOn(HERO)
     const washed = await rowState(HERO)
-    check('step 29 — D8e: a hovered section washes its row and reveals the eye', washed.bg === WASH && washed.eyeShown === '1' && washed.eye === `Hide ${layerOf(HERO)}`, JSON.stringify(washed))
+    check('step 29 — D8e: a hovered section washes its row; R-126: the row carries the ⋯ and nothing else', washed.bg === WASH && washed.controls.join(' · ') === `${layerOf(HERO)} · More for ${layerOf(HERO)}`, JSON.stringify(washed))
+    check('step 29 — R-126: the row\'s name is drawn at the smaller caption size, so it has the width to say itself', pressed29[2].size === '11px' && (await rowAt(GRID).locator('button').first().evaluate((b) => b.scrollWidth <= b.clientWidth)), `${pressed29[2].size} · ${JSON.stringify(washed.controls)}`)
 
-    // ── step 30 — the eye hides: the section leaves the canvas and the row stays ──
+    // ── step 30 — Hide from the ⋯ menu (R-126): the section leaves the canvas and the row stays ──
+    const menuOf = async (n) => {
+      await rowAt(n).getByRole('button', { name: `More for ${layerOf(n)}`, exact: true }).click()
+      await page.waitForTimeout(250)
+      return page.locator(`#layers-menu-${B7.rows[n].key.split(':')[1]} button`).allInnerTexts()
+    }
+    const fromMenu = async (n, label) => {
+      await rowAt(n).getByRole('button', { name: `More for ${layerOf(n)}`, exact: true }).click()
+      await page.waitForTimeout(250)
+      await page.getByRole('button', { name: label, exact: true }).click()
+      await page.waitForTimeout(400)
+    }
     const docNow = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc
     const rootCount = () => canvasFrame().evaluate(() => document.querySelectorAll('#canvas > *').length)
     const before30 = await rootCount()
-    await rowAt(GRID).getByRole('button', { name: `Hide ${layerOf(GRID)}`, exact: true }).click()
-    await page.waitForTimeout(400)
+    await fromMenu(GRID, 'Hide')
     const hidden30 = await rowState(GRID)
-    check('step 30 — the eye hides the section: it leaves the canvas, its row stays with ink-soft words and a crossed-out eye that keeps showing', (await rootCount()) === before30 - 1 && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length && hidden30.words === 'rgb(110, 106, 100)' && hidden30.eye === `Show ${layerOf(GRID)}` && hidden30.eyeShown === '1', JSON.stringify({ roots: await rootCount(), before: before30, row: hidden30 }))
+    check('step 30 — Hide from the ⋯ menu takes the section off the canvas; its row stays with ink-soft words (R-126: that, and the menu now saying Show, is what reads as hidden)', (await rootCount()) === before30 - 1 && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length && hidden30.words === 'rgb(110, 106, 100)', JSON.stringify({ roots: await rootCount(), before: before30, row: hidden30 }))
+    const menu30 = await menuOf(GRID)
+    await page.keyboard.press('Escape')
+    check('step 30 — a hidden row\'s menu leads with Show, not Hide', menu30[0] === 'Show', menu30.join(' · '))
     check('step 30 — nothing is persisted before Story 5.8: the stored doc still holds every instance, unhidden', (await docNow())?.instances?.length === TEMPLATES.home.length && (await docNow())?.instances?.every((i) => i.hidden === undefined || i.hidden === false), JSON.stringify(await docNow()))
-    await rowAt(GRID).getByRole('button', { name: `Show ${layerOf(GRID)}`, exact: true }).click()
-    await page.waitForTimeout(400)
-    check('step 30 — pressing it again brings the section back', (await rootCount()) === before30)
+    await fromMenu(GRID, 'Show')
+    check('step 30 — Show brings the section back', (await rootCount()) === before30)
     // UX-DR10's keyboard path to the same toggle: `Space` on the ROW, not on the eye (which is Enter's and the pointer's)
     await rowAt(GRID).focus()
     await page.keyboard.press(' ')
     await page.waitForTimeout(400)
     const spaced30 = await rowState(GRID)
-    check('step 30 — `Space` on a focused row hides it, and `Space` again shows it (UX-DR10)', (await rootCount()) === before30 - 1 && spaced30.eye === `Show ${layerOf(GRID)}` && spaced30.words === 'rgb(110, 106, 100)', JSON.stringify({ roots: await rootCount(), before: before30, row: spaced30 }))
+    check('step 30 — `Space` on a focused row still hides it (UX-DR10): R-126 took the eye off the row, and a KEY costs no width', (await rootCount()) === before30 - 1 && spaced30.words === 'rgb(110, 106, 100)', JSON.stringify({ roots: await rootCount(), before: before30, row: spaced30 }))
     await page.keyboard.press(' ')
     await page.waitForTimeout(400)
     check('step 30 — `Space` again brings it back, and the key never scrolled the panel', (await rootCount()) === before30 && (await page.evaluate(() => document.getElementById('editor-layers').lastElementChild.scrollTop)) === 0)
@@ -1353,16 +1369,15 @@ async function main() {
     await painted('home')
 
     // ── step 33 — the ⋯ menu, the rename dialog, and the two kinds of singleton ──
-    const menuOf = async (n) => {
-      await rowAt(n).getByRole('button', { name: `More for ${layerOf(n)}`, exact: true }).click()
-      await page.waitForTimeout(250)
-      return page.locator(`#layers-menu-${B7.rows[n].key.split(':')[1]} button`).allInnerTexts()
-    }
     const pageMenu = await menuOf(GRID)
+    // the owner's finding of 2026-09-18: a 210px menu right-aligned to a ⋯ in the 240px Layers panel hung off the
+    // LEFT edge of the window. `openMenu` clamps both edges now, so no part of any menu is cut off.
+    const menuBox = await page.locator(`#layers-menu-${B7.rows[GRID].key.split(':')[1]} ul`).boundingBox()
+    check('step 33 — the ⋯ menu is wholly on screen: no edge past the window on either side (the owner\'s finding)', menuBox.x >= 0 && menuBox.x + menuBox.width <= 1440 && menuBox.y >= 0, JSON.stringify(menuBox))
     await page.keyboard.press('Escape')
     const siteMenu = await menuOf(HEADER)
     await page.keyboard.press('Escape')
-    check('step 33 — a page row\'s ⋯ holds Rename · Duplicate · Delete; a SITE-WIDE row\'s holds Rename · Delete and no Duplicate (FR-D5)', pageMenu.join(' · ') === 'Rename · Duplicate · Delete' && siteMenu.join(' · ') === 'Rename · Delete', `page ${pageMenu.join(' · ')} · site ${siteMenu.join(' · ')}`)
+    check('step 33 — R-126: a page row\'s ⋯ holds Hide · Rename · Duplicate · Delete; a SITE-WIDE row\'s holds Hide · Rename · Delete and no Duplicate (FR-D5)', pageMenu.join(' · ') === 'Hide · Rename · Duplicate · Delete' && siteMenu.join(' · ') === 'Hide · Rename · Delete', `page ${pageMenu.join(' · ')} · site ${siteMenu.join(' · ')}`)
     await rowAt(HERO).getByRole('button', { name: `More for ${layerOf(HERO)}`, exact: true }).click()
     await page.waitForTimeout(250)
     await page.getByRole('button', { name: 'Rename', exact: true }).click()
@@ -1393,14 +1408,15 @@ async function main() {
     check('step 33 — Delete takes the copy away again, and the page group\'s count follows', (await pageNames()).length === B7.rows.length && (await rootCount()) === before30)
 
     // ── step 34 — a site-wide section asks first, naming every template ──
-    await rowAt(HEADER).getByRole('button', { name: `Hide ${layerOf(HEADER)}`, exact: true }).click()
-    await page.waitForTimeout(400)
+    await fromMenu(HEADER, 'Hide')
     const asked = await page.locator('dialog[aria-labelledby="editor-sitewide-title"]').evaluate((d) => ({ open: d.open, text: d.textContent.replace(/\s+/g, ' ') }))
     const askFocus = await page.evaluate(() => document.activeElement?.textContent)
-    check('step 34 — the eye on a site-wide row asks first, opening on Cancel and naming every template', asked.open && askFocus === 'Cancel' && new RegExp(`all ${TEMPLATE_COUNT} templates`).test(asked.text) && /site-wide/i.test(asked.text), `${JSON.stringify(asked)} · focus ${JSON.stringify(askFocus)}`)
+    check('step 34 — Hide on a site-wide row asks first, opening on Cancel and naming every template', asked.open && askFocus === 'Cancel' && new RegExp(`all ${TEMPLATE_COUNT} templates`).test(asked.text) && /site-wide/i.test(asked.text), `${JSON.stringify(asked)} · focus ${JSON.stringify(askFocus)}`)
     await page.getByRole('button', { name: 'Cancel', exact: true }).click()
     await page.waitForTimeout(300)
-    check('step 34 — Cancel changes nothing', (await rootCount()) === before30 && (await rowState(HEADER)).eye === `Hide ${layerOf(HEADER)}`)
+    const stillShown = await menuOf(HEADER)
+    await page.keyboard.press('Escape')
+    check('step 34 — Cancel changes nothing: the section is still drawn and its menu still says Hide', (await rootCount()) === before30 && stillShown[0] === 'Hide', stillShown.join(' · '))
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
 
@@ -1533,10 +1549,7 @@ async function main() {
     check('step 37 — back to Everyone and the section returns', (await rootCount()) === before30)
 
     // ── step 38 — hide every page section, then remove them all (EXPERIENCE § State Patterns, UX-DR6) ──
-    for (const n of TEMPLATES.home.map((_, i) => i + TEMPLATES.site.length)) {
-      await rowAt(n).getByRole('button', { name: `Hide ${layerOf(n)}`, exact: true }).click()
-      await page.waitForTimeout(250)
-    }
+    for (const n of TEMPLATES.home.map((_, i) => i + TEMPLATES.site.length)) await fromMenu(n, 'Hide')
     check('step 38 — every page section hidden: the canvas draws only the site-wide sections and every row stays', (await rootCount()) === TEMPLATES.site.length && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length)
     for (let i = 0; i < TEMPLATES.home.length; i++) {
       await rowAt(TEMPLATES.site.length).getByRole('button', { name: /^More for / }).click()

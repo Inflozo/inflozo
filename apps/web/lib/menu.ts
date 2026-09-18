@@ -90,6 +90,19 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     } else if (placement.side === 'up' && box.top < 0) {
       anchorTo(menu, trigger, { ...placement, side: 'down' })
     }
+    /* AND THE SAME CORRECTION SIDEWAYS (the owner's finding, 2026-09-18). `anchorTo` can only clamp the edge it
+       anchors — it runs while the popover is still `display:none` and has no width — so a RIGHT-aligned menu whose
+       trigger sits less than a menu-width from the left edge hangs off it. That is every ⋯ in the 240px Layers
+       panel: a 210px menu right-aligned to a ⋯ near x=202 starts at −8. Corrected here, where the box finally has a
+       width, for every menu in the app rather than for the one that found it (standing rule 3). */
+    const placed = menu.getBoundingClientRect()
+    if (placed.left < 8) {
+      menu.style.left = '8px'
+      menu.style.right = 'auto'
+    } else if (placed.right > window.innerWidth - 8) {
+      menu.style.right = '8px'
+      menu.style.left = 'auto'
+    }
     // THE MENU MUST NOT CLOSE ON THE SCROLL THAT OPENED IT. Story 3.6's review (2026-09-10) drove
     // the ⋯ of a card low on the list at 390 on production and the menu was gone before its row
     // could be pressed: the tap that reaches a ⋯ near the bottom edge is preceded by a scroll —

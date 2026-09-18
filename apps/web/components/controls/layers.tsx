@@ -4,26 +4,30 @@ import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
-import { Copy, Pencil } from '@/components/kit/icons'
+import { Copy, Eye, EyeOff, Pencil } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { LayersRow, SiteWideGroup } from '@/components/kit/layers-row'
 import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Layout } from '@/lib/reorder'
 
-/* B7 · LAYERS WITH SITE-WIDE PINNED (`B Missing Surfaces.dc.html`:1538-1580) — the panel body, and Story 5.4's whole
+/* B7 · LAYERS (`B Missing Surfaces.dc.html`:1538-1580), AS R-126 AMENDS IT — the panel body, and Story 5.4's whole
    Layers surface. The `<aside>`, its title and its fold stay in `editor.tsx`; everything below them is here, so that
    file keeps the shape Story 5.1 gave it.
 
-   TWO GROUPS, AND THE BOUNDARY IS THE RULE. A pinned white card — the Kit's `SiteWideGroup`: a globe, `SITE-WIDE` and
-   a mono template count — holds the site-wide sections, and the page's own rows follow under `THIS PAGE · {LABEL}`
-   with its own count. B7 draws no line between them because it does not need one: a section is never reordered from
-   one group into the other (FR-D5's shared instance), and a drag that leaves its own group lands back where it began.
-   The mono "This page · Home" line that sat under the panel's title until Story 5.3 lives HERE now, in the group
-   header B7 prints it in; the two headings are drawn with the Kit card's own classes, so they read as one pair.
+   R-126 (owner, 2026-09-18, on the deployed story) IS THE LATER WORD OVER B7, and is recorded as a ruling because
+   R-74 makes the export the design authority. Five things, all of them width: the two groups are drawn THE SAME —
+   heading, right-aligned mono count, rows — with a hairline between them instead of a pinned white card and its
+   globe; `Site-wide` and its template count fit ONE line; the row's name shrank to `text-helper-caption`; the eye
+   left the row for the `⋯` menu, which is now the row's only control; and B7's footed note is gone, because the
+   Site-wide heading already carries the count it repeated.
 
-   NEITHER COUNT IS WRITTEN DOWN (standing rule 4): the card's is how many canvases `lib/editor.ts` opens, which grows
-   on its own as Story 5.5 opens more, and the page group's is its own rows.
+   TWO GROUPS, AND THE BOUNDARY IS STILL THE RULE. A section is never reordered from one group into the other
+   (FR-D5's shared instance), and a drag that leaves its own group lands back where it began. The hairline says so
+   where B7's card outline used to.
+
+   NEITHER COUNT IS WRITTEN DOWN (standing rule 4): the site group's is how many canvases `lib/editor.ts` opens,
+   which grows on its own as Story 5.5 opens more, and the page group's is its own rows.
 
    NOTHING REORDERS UNTIL THE DROP (EXPERIENCE.md :308, the owner's finding 9 of 2026-09-13). A dashed slot the
    dragged row's height shows where it lands and the rows between are TRANSLATED — nothing moves in the DOM, so the
@@ -31,22 +35,19 @@ import { captureLayout, landingAt, shift, slotTop, type Layout } from '@/lib/reo
    same numbers P0-3's item list drags by. The drag STATE lives in `editor.tsx`, because the canvas pill's grip drives
    the same reorder from the other side of the frame: whichever grip is held, this panel draws the slot.
 
-   EVERY DRAG HAS A KEYBOARD PATH (UX-DR10). The ROW is the one tab stop per section — roving tabindex, D8e's ring on
-   the row — and carries the keys: `↑ ↓` move focus (through both groups, in the order B7 draws them), `⌥↑`/`⌥↓` move
-   the section inside its own group with the move announced politely in `moveSection`'s words (UX-DR12), `Enter`
-   selects, `Space` toggles visibility. The grip is `aria-hidden` and pointer-only; the `⋯` keeps its own tab stop,
-   because its Rename, Duplicate and Delete have no key of their own.
+   EVERY DRAG HAS A KEYBOARD PATH (UX-DR10), and R-126 costs it nothing. The ROW is the one tab stop per section —
+   roving tabindex, D8e's ring on the row — and carries the keys: `↑ ↓` move focus (through both groups, in the order
+   they are drawn), `⌥↑`/`⌥↓` move the section inside its own group with the move announced politely in
+   `moveSection`'s words (UX-DR12), `Enter` selects, `Space` toggles visibility — a KEY, not a control, so it survived
+   the eye's removal. The grip is `aria-hidden` and pointer-only; the `⋯` keeps its own tab stop.
 
    R-123's THIRD GROUND is the empty space BELOW THE ROWS, and its geometry is read from the last ROW — not from the
-   list's last element child, which is B7's footed note. A group heading, the note and the card's own padding are not
-   ground: a miss there while reaching for a row would cost the selection.
+   list's last element child, which is the rename dialog. A group heading and a group's padding are not ground: a
+   miss there while reaching for a row would cost the selection.
 
    THE SITE-WIDE ROW'S TWO REFUSALS. Duplicate is ABSENT from its menu (UX-DR3) — a header is one shared instance, not
    a copy per page. Delete and Hide ask first, in a confirm that lives in `editor.tsx` rather than here, because the
    canvas pill's Delete must open the SAME one.
-
-   ALWAYS DRAWN, NOT "THE FIRST TIME, THEN STOP" (DW-184): B7's footed note has nowhere to remember a first time
-   before Story 5.8's storage, and a session-only memory would make the note flicker between reloads.
 
    NOT BUILT, DELIBERATELY: hovering a row does NOT outline its section on the canvas (DW-188). Story 5.2's mirroring
    runs one way — the canvas's hover into this panel's wash — and nothing asks for the other. */
@@ -217,7 +218,6 @@ export function Layers({
         aria-describedby="layers-how"
         onKeyDown={(event) => onRowKey(row, event)}
         onSelect={() => onSelect(row)}
-        onToggleShown={() => onToggleHidden(row)}
         style={lifted ? { translate: `0 ${drag.dy}px` } : sliding ? { translate: `0 ${shift(drag, row.at, layout.current)}px` } : undefined}
         className={`relative ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : sliding ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
         gripProps={{
@@ -257,6 +257,13 @@ export function Layers({
               <Menu
                 label={row.layerName}
                 items={[
+                  // R-126: Hide/Show is a MENU ROW now, not an eye on the row — the row's width belongs to its name.
+                  // It leads, because it is the one a layer list is reached for most.
+                  {
+                    label: row.hidden ? 'Show' : 'Hide',
+                    icon: row.hidden ? <Eye size={13} /> : <EyeOff size={13} />,
+                    onSelect: () => onToggleHidden(row),
+                  },
                   {
                     label: 'Rename',
                     icon: <Pencil size={13} />,
@@ -324,15 +331,6 @@ export function Layers({
         Press Enter to select this section, Space to hide or show it, and Option or Alt with the up or down arrow to
         move it.
       </p>
-      {/* B7's footed note, above a hairline. `mt-auto` keeps it at the foot of a short list. Marked, because the
-          panel's LAST element child is the rename dialog and not this — anything reading "the foot of the list"
-          off `lastElementChild` would read the dialog instead. */}
-      <div data-layers-note className="mt-auto border-t border-line pt-[10px]">
-        <span className="text-helper-caption leading-[1.5] text-ink-soft">
-          Editing a site-wide section changes it on all {templates} templates.
-        </span>
-      </div>
-
       {/* Rename — S12c's shape, the same one `project-menu.tsx` uses for a project. NO SUBMIT CONTROL, and that is
           deliberate: `renameSection` is synchronous and local, so there is nothing happening in the background for a
           busy label to say (`busy.test.ts`'s rule, the owner's finding 1 of Story 3.4). The `<form>` stays, because
