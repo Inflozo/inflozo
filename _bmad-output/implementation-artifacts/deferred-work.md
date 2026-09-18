@@ -4494,3 +4494,48 @@ owner: Story 5.10 (the Section Picker, which draws the refusal surface for place
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`refuse`)
 reason: unreachable on the deployed editor until an A25 design exists; the picker's refusal surface is the natural
   place for a refusal that has no section to sit on
+
+## Deferred from: the planning of spec-5-5-the-template-switcher-and-the-synthesised-templates (2026-09-18)
+
+### DW-191: the A24 pilot compiles to `post.hbs` only, so `page.hbs`'s Synthesis Default loses its header
+
+plain: When you open a Page you have never touched, Inflozo is meant to build it for you from a standard recipe —
+  a page header, then the page's body. The header design exists in the library, but it is currently marked as
+  belonging to blog posts only, so the recipe drops it and the Page canvas comes up empty. Nothing is broken; the
+  provisional pilot was narrowed and the category that owns that design widens it.
+status: open
+severity: medium
+origin: Story 5.5's Create run (2026-09-18), executed against the repo: `packages/library/designs/a24/1` declares
+  `compileTarget: ['post.hbs']`, while `sections-inventory.md:824` puts **A24 #1 Centred** at row 1 of `page.hbs`'s
+  default stack and `A24 Post Headers - Spec.md:226` says in so many words "A24 compiles to `page.hbs` as well as
+  `post.hbs`". So the narrowing is the pilot's, not the design's.
+owner: A24's category story (Post Headers, Epic 10), which sets the category's real `compileTarget`s — AD-35: a
+  defect in a provisional pilot goes to its owning category, never to the story that noticed it.
+location: `packages/library/designs/a24/1/design.json` · `sections-inventory.md:822-826` ·
+  `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A24 Post Headers - Spec.md:226`
+reason: Story 5.5's `synthesize` drops a default row whose design the library cannot place on that file and reports
+  the reason, so the gap is visible rather than silent; it closes itself the moment A24's targets are correct, and
+  `synthesize.test.ts` derives the dropped set from the library rather than listing it, so nothing goes stale.
+
+### DW-192: the Private row's condition is drawn as a circle — "designed" cannot be reached
+
+plain: The Private page — the one a visitor sees when your whole site is locked — is only meant to appear in the
+  template menu when your site actually needs it. The drawing says it appears "once a Private Site Gate section has
+  been designed", but you cannot design a page that is not in the menu, so as drawn it could never appear at all.
+  The requirements say something different and workable: it appears once a private gate is *called for*.
+status: open
+severity: low
+origin: Story 5.5's Create run (2026-09-18). `D5 Canvas Markers and Template Switcher.dc.html` D5b's own caption
+  (:263) reads "PRIVATE APPEARS ONLY ONCE A PRIVATE SITE GATE SECTION HAS BEEN DESIGNED · OTHERWISE THE ROW IS
+  ABSENT, NOT GREYED"; `prd.md:223` (FR-D6) reads "it appears once a Private Site Gate (Appendix A §31) is called
+  for … opens empty, and compiles `private.hbs` only when designed", and adds that without the canvas "that design
+  is a launch deliverable with no surface that can create it". Behaviour is the PRD's to decide and the export's to
+  draw (build-sequence standing rule 6), so Story 5.5 builds FR-D6's wording: the row appears when the project's
+  linked site reports itself private.
+owner: the first story with a linked private site to try it on — Story 5.18 (live content from the connected site)
+  is the nearest, and Story 7.3 owns the matching `private.hbs` emission rule.
+location: `apps/web/lib/editor.ts` (the conditional canvas) · `prd.md:223` · D5b's caption ·
+  `sections-inventory.md:787`
+reason: unobservable on "Pilot sections", which links no site (`projects.linked_site_id` is null), so Private is
+  absent under either reading and the choice costs nothing to defer; recorded rather than resolved because settling
+  it needs a real private Ghost, which is an execution, not a reading (standing rule 1).
