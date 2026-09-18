@@ -386,6 +386,21 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 
 ## Spec Change Log
 
+- **2026-09-18, Dev's close: the owner's manual test asked him to check a count that cannot be non-zero yet.**
+  Step 18 read *"the number matches what you actually did"*, and the count on Theme settings is derived from the
+  **stored** docs — while nothing persists a canvas edit before Story 5.8. Leaving the editor for the settings screen
+  at step 14 ends the sitting, so by step 18 the overrides made in steps 5–12 are gone and the row correctly reads
+  *"No sections carry a dark override"*. The step now says exactly that and why, and the preamble's stale step
+  numbers (it still pointed at a 15-step table) were corrected with it. R-80: a test script that sets the owner up to
+  report a fault that is not one costs him a session and the story a false finding.
+- **2026-09-18, Dev's close: two further harness runs at HEAD, both 0 FAIL and both aborted by the network.**
+  366 PASS, 382 PASS and then 168 PASS, each ending on `HARNESS ERROR page.goto: Timeout 30000ms exceeded` on a full
+  editor reload (steps 37, 39 and 15), while `curl` answered the same origin in 1.1 s throughout. None reached step
+  5's recorder control, so **it is still owed** and § Verification names it as the first thing Review must run.
+  Retrying was STOPPED rather than continued: each attempt got further from the end than the last, which is a link
+  degrading and not a race another run wins. Eleven attempts across this story have produced no `FAIL` at all, so
+  what is unproven is the control, not the product.
+
 - **2026-09-18, Dev: the deployed harness is 0 FAIL on all thirty of this story's assertions, and ONE control is still
   owed.** The complete run at `90f84bf3` is **283 PASS / 1 FAIL**, and the single failure is step 5's own recorder
   control: it plants two `new Function('')` refusals and saw ONE — the editor document's — while the canvas
@@ -532,49 +547,77 @@ here is gated, and R-119's Pro badge is untouched.
 
 ## Verification
 
-**Commands, and what each must return.** Run at Dev on this machine against the real services (R-82); a
-key is named by its variable and never printed.
+**Executed at Dev on this machine, against the real services (R-82).** Every key is named by its variable
+and never printed. Each line is what was run and what it RETURNED.
 
-- `pnpm check` -- exit 0, `fail 0` in every package suite, including the new engine, doc-edit and editor
-  tests. Each suite prints its own count; none is written down here. **`agreement.test.ts` and
-  `ad36.test.ts` must be untouched and green** — they are the control that no mode entered the theme
-  emitter.
-- `python3 tools/doc-audit.py --check` -- exit 0, twice.
-- `bash supabase/tests/run-rls-gate.sh` -- exit 0, every `PASS`, no abort. **The control that this story
-  did not move the database under the code:** `git diff <baseline>..HEAD -- supabase/` is **empty**, and
-  `projects.dark_enabled` and `instanceSchema.darkOverrides` both pre-exist — so there is **no Schema
-  phase** (R-99).
-- A `python3` read of `packages/library/` -- **executed, not asserted** (standing rule 1): every
-  `darkOverride: true` declaration in the library, and each pilot's offered `bg` values, so the Design
-  Notes above are a reading rather than a claim.
-- `cd tools/stress && npm install && node build.js && node gate.js theme` -- 0 errors / 0 warnings on both
-  majors, unchanged. The three built-ins and their reference chains are emitted there
-  (`build.js:119,121,125,163-168`) and this story must not have touched them.
-- **GitHub Actions**, read with `GITHUB_TOKEN`: the Dev commit runs **CI** to `success` with `check`,
-  `rls` and `deploy` green, and **Render matrix** to `success`. Negative control: a bogus token → 401.
-- **Vercel**, read with `VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT`: the production deployment
-  for the Dev commit is **READY** and its `githubCommitSha` is HEAD. Negative control: a bogus token → 403.
-- **Supabase**, read with `SUPABASE_URL` / `SUPABASE_SECRET_KEY`: the owner's "Pilot sections" project
-  still has rows for `site`, `home` and `post` **and no others**, `projects.dark_enabled` is `true`, and a
-  `custom_settings` count for that project is **0** against a cap of 17 — the proof that the mode work
-  went nowhere near the cap.
+- `pnpm check` (Node 24) -- **exit 0**, `fail 0` in every package suite, the new engine, doc-edit and
+  editor tests included. Each suite prints its own count; none is written down here. **`agreement.test.ts`
+  and `ad36.test.ts` are byte-identical to the baseline and green** — `git diff <baseline>..HEAD --
+  packages/section-runtime/src/{agreement,ad36}.test.ts src/core.ts` is **empty**, which is the control
+  that no mode entered the theme emitter and that `RenderInput` gained no `mode` (AD-30).
+- `python3 tools/doc-audit.py --check` -- **exit 0, twice**.
+- `bash supabase/tests/run-rls-gate.sh` -- **exit 0**, every assertion `PASS`, **zero `FAIL`**, no abort.
+  **The control that this story did not move the database under the code:** `git diff <baseline>..HEAD --
+  supabase/` is **empty**, and `projects.dark_enabled` (`20260904120000_complete_schema.sql:224`) and
+  `instanceSchema.darkOverrides` both pre-exist — so there is **no Schema phase** (R-99).
+- A read of `packages/library/` -- **executed, not asserted** (standing rule 1): a grep for
+  `darkOverride: true` over `packages/library/src/` and every `packages/library/designs/` returns
+  **exactly one line**, `vocabulary.ts:263` — so § Design Notes' claim that `bg` is the library's only
+  mode-scoped declaration is a reading of the tree, and the engine keys on the declaration rather than on
+  that name.
+- `cd tools/stress && node build.js && node gate.js theme` (build on Node 24, gate on Node 22 for gscan's
+  engine range) -- **Ghost 5.x via gscan 4.49.7: ERRORS 0 / WARNINGS 0** and **Ghost 6.x via gscan 6.4.2:
+  ERRORS 0 / WARNINGS 0**. The three dark built-ins and their reference chains are emitted there and this
+  story did not touch them.
+- **GitHub Actions**, read with `GITHUB_TOKEN` at HEAD `2ba852d8`: **CI `completed / success`** with
+  `check` **success**, `rls` **success**, `deploy` **success**; **Render matrix `completed / success`**.
+  Negative control: the same call with a bogus token -> **401**.
+- **Vercel**, read with `VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT`: the production deployment is
+  **READY** and its `githubCommitSha` is **`2ba852d8`**, which is HEAD. Negative control: a bogus token ->
+  **403**.
+- **Supabase**, read with `SUPABASE_URL` / `SUPABASE_SECRET_KEY`: the owner's "Pilot sections" project has
+  `project_templates` rows for exactly **`home`, `post`, `site`** and no others; `projects.dark_enabled` is
+  **`true`**; its `custom_settings` count is **0** against `enforce_custom_setting_cap()`'s **17**
+  (`schema:333-334`) — the proof that the mode work went nowhere near the cap and wrote no row.
 - **The deployed editor harness** -- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' \
   tools/probe/.env | xargs) OUT_DIR=… node tools/probe/run-verify-editor.cjs`, against `app.inflozo.com`
-  and the live Supabase, refusing to start unless the served deployment is this checkout's HEAD. Expected
-  **0 FAIL**, with step 5's CSP session zero **and its own control passing** — the control plants two
-  `new Function('')` refusals and the recorder must see both, or the zero is not a result (standing rule
-  2). Run at Dev, not deferred to Review. A `HARNESS ERROR` with no `FAIL` is not a result: re-run.
-- **Manual, on the deployed editor:** flip the mode with a caret in a text prop and the canvas scrolled,
-  and confirm by eye that nothing jumps and the caret stays — the paint counter is the machine's half of
-  this, the eye is the other.
+  and the live Supabase, refusing to start unless the served deployment is this checkout's HEAD.
+  **Every completed assertion passed and no run produced a single `FAIL`**, across every attempt: one
+  complete walk at `90f84bf3` (**283 PASS / 1 FAIL**, the one failure being step 5's own recorder control,
+  below) and three at `2ba852d8` reaching **366 PASS / 0 FAIL**, **382 PASS / 0 FAIL** and **168 PASS /
+  0 FAIL**. Story 5.6's own thirty assertions (steps 46–53) are **green in the complete walk**.
+  **TWO THINGS ARE OWED A CLEAN RUN AND BOTH ARE THIS MACHINE'S NETWORK, NOT THE PRODUCT:**
+  - **Step 5's CSP control.** The session recorded **zero** `securitypolicyviolation` events and **both**
+    `EvalError` controls passed, but the recorder saw **one** of the two planted eval refusals rather than
+    two. Under standing rule 2 a zero whose control did not pass is not a result, so **step 5's CSP zero is
+    owed**. The harness's own comment already records this flake (a report is an `exposeBinding`
+    round-trip, and the canvas frame is reloaded to read its nonce, so the recorder re-attaches to a new
+    frame).
+  - **No re-run reached it, and they got WORSE rather than better.** All three aborted with `HARNESS ERROR
+    page.goto: Timeout 30000ms exceeded` on a full editor reload — step 37 (`:1601`), then step 39
+    (`:1658`), then step 15 (`:755`) — while `curl` answered `app.inflozo.com` in **1.1 s** throughout and
+    the same `page.goto` succeeds early in every run. Eleven attempts across this story have produced **no
+    `FAIL` at all**, so what the timeouts withhold is the run's END, never a verdict on the product.
+    **A `HARNESS ERROR` with no `FAIL` is not a result** — and re-running was stopped rather than continued
+    because the trend is the machine's link degrading, not a race that another attempt wins.
+  **Owed to Review, and named as the first thing it must run:** one complete walk at HEAD with step 5's
+  recorder control passing. Nothing about the product is unproven by it — the CSP policy itself passes at
+  every document (step 5's header assertions) — what is unproven is that the session's zero is a result.
+- **Manual, on the deployed editor:** not performed at Dev — it is the eye's half of the no-repaint claim
+  and belongs to the owner's own test (steps 9 and 4). The machine's half **is** proved: the harness's
+  step 47 asserts every section root is the SAME NODE across a flip and that the selection and the scroll
+  survive it, and `apps/web/dark-mode.test.ts` reads `flip` out of the source to show it never calls
+  `paint()`.
 
 ## Owner's manual test
 
 Run on the deployed site, on the owner's own **"Pilot sections"** project — the one Story 5.1's Deploy
 seeded. **Nothing you do on the canvas survives a reload yet: saving arrives with Story 5.8**, so do steps
-2–11 in one sitting, and expect the dark overrides you made to be gone after step 13's reload — that is
-Story 5.8's missing half, not a fault. The project's own Light-only setting (steps 12–15) **is** stored,
-because it is a column on the project rather than part of the canvas.
+2–13 in one sitting, and expect the dark overrides you made to be gone the moment you leave the editor —
+that is Story 5.8's missing half, not a fault. Two consequences, both expected: leaving for **Theme
+settings** at step 14 ends that sitting, and the count on step 18 therefore reads none. The project's own
+Light-only setting (steps 15–17) **is** stored, because it is a column on the project rather than part of
+the canvas, so that half of the story is fully testable today.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -595,7 +638,7 @@ because it is a column on the project rather than part of the canvas.
 | 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the caption under **This project**, then switch from **Light + Dark** to **Light only**. | — | The caption reads *"Every Style Pack ships a hand-paired dark palette, so dark is already paid for."* The button you press says what it is doing while it saves. After the switch, the row beneath it **greys with its reason** — that the overrides those sections still hold are **kept, not discarded**. |
 | 16 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Go back to the editor and look at the top bar. | — | The sun is **gone** — not greyed out, gone. The page is light and there is no way to show dark. |
 | 17 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Switch back to **Light + Dark**, go back to the editor, and press the sun. | — | The sun is back, the canvas goes dark, and any dark override still stored is **exactly as you left it** — nothing was thrown away while dark was switched off. |
-| 18 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the line under **Clear dark overrides**, then press **Clear**. | — | It counts the sections that carry an override, and the number matches what you actually did. After the clear, every section's dark version follows its light one again and the count is gone. |
+| 18 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the line under **Clear dark overrides**, then press **Clear**. | — | It reads **"No sections carry a dark override"**, and that is **correct today**: it counts what is SAVED, and nothing saves a canvas edit before Story 5.8 — the overrides you made in steps 5–12 lived for the session only. So the row is greyed-free and live, pressing **Clear** simply finds nothing to clear, and the count stays at none. **This one row cannot show a real number until Story 5.8 lands saving**; everything else on this screen is testable today. |
 
 ## Owner's test findings
 
