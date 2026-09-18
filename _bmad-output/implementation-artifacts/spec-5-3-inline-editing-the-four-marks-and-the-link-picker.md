@@ -797,8 +797,11 @@ holds 40 characters." under the field.
   and the fix for F1 was proved on a local production build -- `pnpm check` green, `pnpm build` green, the editor harness
   **157 PASS, 2 FAIL**, both failures the known local artifacts (`step 6`'s `APP_PREFIX` navigation and `step 9`'s
   streaming race, the second of which passes against production).
-- **Still owed:** both harnesses against production once this fix is published, and the owner's re-check of steps 12
-  and 14 (Question 3).
+- **The fix, executed against production** (`493b5925`, after CI's `deploy`): `run-verify-editor.cjs` **163 PASS, 0
+  FAIL** -- including the new step 16 reading the edited field's computed box (`outline: none`, the coral haze at
+  `rgba(194, 56, 31, 0.043)`) and step 23's five Ghost words, each naming itself with zero `contenteditable` in the
+  canvas -- and `run-verify-controls.cjs` **84 PASS, 0 FAIL**, both against production Supabase with `users 9 → 9`.
+- **Still owed:** the owner's re-check of steps 12 and 14 (Question 3), and his look at the new editing haze.
 
 **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no billing,
 and reads no Ghost: link search uses Orbit Weekly's sample data until Story 5.18.
