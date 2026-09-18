@@ -151,39 +151,7 @@ async function main() {
     }
     const violations = []
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
-    /* DW-183, CLOSED HERE (Story 5.4, 2026-09-18, on its third observation). Three runs against the live app have
-       stopped on a Playwright 30-second TimeoutError with 0 FAIL: step 6's signed-in `request.get` (twice — 5.3's
-       review and this story's Dev) and step 7's `page.goBack` (once). THE PATTERN THE LEDGER WAS WAITING FOR: it is
-       always a SIGNED-IN load of the deployed app, never the same step twice running, and an unauthenticated request
-       to the very same URL answers in under a second — a cold serverless function on an authenticated route, not a
-       fault in the app and not something a FAIL should ever be hidden behind.
-
-       The fix is patience and ONE retry, set on the context so it reaches every navigation and every API request this
-       run makes — a guard written at each call site is the drift standing rule 3 forbids, and the three stalls were
-       at three different call sites. 60s absorbs a cold start; the retry covers a stall that outlasts even that. */
-    context.setDefaultTimeout(60_000)
-    context.setDefaultNavigationTimeout(60_000)
     const page = await context.newPage()
-    /* DW-183's retry, wrapped ONCE so no call site has to remember it. Only a timeout is retried — every other error
-       still throws, and a FAIL is never retried into a PASS.
-
-       ONLY THE IDEMPOTENT CALLS ARE RETRIED. `page.goBack` is NOT one of them and is deliberately left out: a timed-out
-       history move may already have navigated, so a second one goes back TWICE or aborts the first — executed here on
-       2026-09-18, where retrying it answered `net::ERR_ABORTED; maybe frame was detached?`. The 60s default above is
-       what covers `goBack`; a GET and a `goto` can simply be asked again. */
-    const patient = (owner, name) => {
-      const once = owner[name].bind(owner)
-      owner[name] = async (...args) => {
-        try {
-          return await once(...args)
-        } catch (error) {
-          if (!/Timeout .+ exceeded/.test(String(error))) throw error
-          note('DW-183 retry', `${name} timed out once — retrying ${String(args[0] ?? '').slice(0, 60)}`)
-          return once(...args)
-        }
-      }
-    }
-    for (const [owner, name] of [[context.request, 'get'], [page, 'goto']]) patient(owner, name)
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
     check('step 1 — A signs in', !page.url().includes('/sign-in'), page.url())

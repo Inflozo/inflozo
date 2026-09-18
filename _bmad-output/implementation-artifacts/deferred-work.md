@@ -4323,35 +4323,41 @@ reason: the editor harness runs on "Pilot sections" and no pilot is this story's
 
 ### DW-183: the editor harness has no retry, so one production stall costs the whole run
 
-plain: The automatic check of the editor runs on the live site with a throwaway account. Twice in one afternoon the live
-  site took longer than the check's thirty-second patience to answer one signed-in page, and the whole check stopped
-  there — with nothing wrong found and the throwaway account cleaned up. A third run went through. It cost time, not
-  correctness, but it can hide a real failure behind a stall.
-status: closed
+plain: The automatic check of the editor runs on the live site with a throwaway account. Now and then the live site
+  takes longer than the check's thirty-second patience to answer one page that needs you to be signed in, and the whole
+  check stops there — with nothing wrong found and the throwaway account cleaned up. Running it again goes through. It
+  costs time, not correctness, but it can hide a real failure behind a stall.
+status: open
 severity: low
 origin: Story 5.3's second code review (2026-09-18, real-infra layer): runs 1 and 2 of `run-verify-editor.cjs` against
   `https://app.inflozo.com` stalled on step 6's signed-in `request.get` and step 7's `page.goBack` respectively, each a
   Playwright 30-second `TimeoutError` with 0 FAIL and `users 9 → 9`; unauthenticated `curl` to the same URLs answered in
   under a second six times in a row, and DNS resolved the same through the stub and `@1.1.1.1`.
-closed: Story 5.4's Dev (2026-09-18) — the THIRD observation arrived and named the pattern. Run 2 of this story's
-  harness stopped at step 6's `fourOhFour` signed-in `request.get` (`GET /projects/abc`), a Playwright 30-second
-  `TimeoutError`, **0 FAIL across 201 checks** and both throwaway accounts cleaned up (`users 9 → 9`). THE PATTERN:
-  all three stalls are a SIGNED-IN load of the deployed app, never the same call site twice running (step 6's request
-  twice, step 7's `goBack` once), while an unauthenticated request to the identical URL answers in under a second —
-  a cold serverless function on an authenticated route, not the app and not a hidden failure. THE FIX, in one place
-  because the three stalls were at three call sites: `context.setDefaultTimeout` / `setDefaultNavigationTimeout` at
-  60s so a cold start is simply waited out, and one `patient()` wrapper over `context.request.get`, `page.goto` and
-  that retries a TIMEOUT once and rethrows everything else — so a FAIL can never be retried into a PASS. Each retry
-  prints a `DW-183 retry` note, so a run that needed one says so. **`page.goBack` is deliberately NOT retried**, and
-  that is the one thing the fix had to learn by executing: a timed-out history move may already have navigated, so a
-  second one answered `net::ERR_ABORTED; maybe frame was detached?` (observed the same day). Only idempotent calls are
-  retried; `goBack` is covered by the 60s default alone.
-owner: closed by Story 5.4
-location: `tools/probe/run-verify-editor.cjs` (the context's defaults and `patient()`, both beside the `newContext`)
-reason: a retry was a design choice the ledger deliberately held open until a third stall could say whether the cause
-  was one step or one KIND of step; it is the kind — every signed-in load — so the guard belongs on the context and
-  not at a call site (standing rule 3).
-
+also: Story 5.4's Dev (2026-09-18) added the third and fourth observations and NAMED THE PATTERN, which is the thing
+  this entry was held open for. Run 2 stopped at step 6's `fourOhFour` signed-in `request.get` (`GET /projects/abc`),
+  30s, **0 FAIL across 201 checks**, `users 9 → 9`. Run 4 stopped at step 16's `page.goto(editorUrl())`, **0 FAIL
+  across 83 checks**. THE PATTERN: every stall is a SIGNED-IN load of the deployed app, never the same call site twice
+  running, while an unauthenticated request to the identical URL answers in ~0.4s at a load average under 1 — a cold
+  serverless function on an authenticated route, not the app and not a hidden failure.
+  **TWO CANDIDATE FIXES ARE NOW RULED OUT BY EXECUTION, which is most of what a later story needs from this entry:**
+  (1) **Never retry `page.goBack`.** A timed-out history move may already have navigated, so a second one goes back
+  twice: it answered `net::ERR_ABORTED; maybe frame was detached?` the moment it was tried.
+  (2) **Never retry `page.goto` blindly either.** Step 1 signs in by MAGIC LINK, whose token is single-use, and the
+  retry fired on exactly that URL — a second `goto` re-spends a consumed token, so a retry there can manufacture a
+  sign-in failure that never happened.
+  A 60s default plus one retry was tried on both and withdrawn in the same session: run 4 exceeded even 60s TWICE on
+  one `goto`, so the patience did not buy the stall out, and while it was in place step 5's `securitypolicyviolation`
+  control stopped seeing its own two planted eval refusals (`[]`, twice, and a 4-second wait for them did not help,
+  so it was not timing). Under standing rule 2 a control that does not pass voids the result it guards, so a change
+  that breaks one is worse than the intermittent stall it was meant to fix. Reverted; the harness is back to the shape
+  whose control passed.
+owner: the first story that touches the harness's session (Story 5.8's saving, or the next editor story with a new step)
+location: `tools/probe/run-verify-editor.cjs` (its signed-in navigations, and `main().catch`)
+reason: the pattern is now named and two shapes of fix are excluded, but the remaining one — retrying only the
+  genuinely idempotent, non-auth navigations, or making the stall visible as a NOTE and re-running just that step —
+  still has to be built without disturbing step 5's control, and that control is the harness's own proof. Whoever
+  takes it should change the retry and the control's reliability in separate commits, and run the harness twice after
+  each, because the interaction between them is exactly what was not understood here.
 
 ## Deferred from: the planning of spec-5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton (2026-09-18)
 
