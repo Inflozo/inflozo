@@ -4190,7 +4190,8 @@ reason: a soft navigation can be faked from the harness only through Next's priv
   is not a product path; the real one arrives with 5.5.
 closed: Story 5.5 built D5b's switcher, which pushes inside a `useTransition` while the `[id]` layout holds the
   editor mounted — the product path the ledger was waiting for. `run-verify-editor.cjs` step 41 selects a section,
-  presses another canvas's row, and reads THREE things: no `framenavigated` on the main frame, a stamp on the editor
+  presses another canvas's row, and reads THREE things: no `load` on the page (NOT `framenavigated`, which fires for a
+  soft push too and is no test at all — corrected at the review, 2026-09-18, to what the harness really counts), a stamp on the editor
   window AND one on the canvas document's `<html>` both surviving (a document load clears the first, a re-created
   iframe the second), and the selection and the Controls panel gone. Step 6's Back walk is now the same two pushes
   followed by two Backs, with both stamps still there at the end — so the `[key]` effect is walked twice per run and
@@ -4559,3 +4560,54 @@ amended: Story 5.5's Dev (2026-09-18) executed two things the owning story inher
   `canvasFromSegment` refuses a `CONDITIONAL` segment from the scheme, and the story that gives the condition
   something to read must solve the body problem — a decision above the layout, or a refusal that needs no I/O — in
   the same change.
+
+### DW-193: production's `template_key_shape` refuses every `custom:` key — the regex carries two backslashes
+
+plain: The three membership pages (Signup, Signin, Member home) are stored under names like
+  `custom:custom-signup.hbs`. The database has a rule about which names it accepts, and that rule was typed with one
+  backslash too many — so today it would REFUSE all three. Nothing is broken yet, because the editor does not save
+  anything until Story 5.8. The day it does, saving a membership page would fail unless this is fixed first.
+status: open
+severity: high
+origin: Story 5.5's review, the Real-infra verifier (2026-09-18). EXECUTED on production through
+  `SUPABASE_DB_POOLER_URL`, every insert inside a rolled-back transaction: `custom:custom-signup.hbs`,
+  `custom:custom-signin.hbs` and `custom:custom-member-home.hbs` are each refused with `23514 template_key_shape`;
+  `index` is accepted (the control that the probe could insert at all); `custom:custom-signup\xhbs` — a literal
+  backslash and any character — is ACCEPTED (the control that names the cause). The stored pattern is
+  `'^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\\.hbs$'`: with `standard_conforming_strings = on` the two backslashes reach
+  the regex engine as an escaped backslash followed by "any character", not as an escaped dot. Zero `custom:%` rows
+  were left behind.
+owner: Story 5.8 (undo, redo and local-first persistence) — the first writer of `project_templates`. It therefore HAS
+  a Schema phase (R-99): a migration that drops and re-adds the constraint with a single backslash, on BOTH tables
+  that carry it, pushed and applied before the code that saves. Story 7.16 (the Routes Manager) inherits the same fix
+  for `custom_templates`-backed keys.
+location: `supabase/migrations/20260904120000_complete_schema.sql:254,269` · the architecture original
+  `SCHEMA.sql:269,284` (the RLS gate refuses to run if the two drift, so they change together) ·
+  `apps/web/editor.test.ts` (asserts the INTENDED pattern, which is how the claim passed `pnpm check`)
+reason: not caused by Story 5.5, which writes no row — and a migration is its own phase, pushed first and applied by
+  hand, never folded into a review's patch. What Story 5.5 DID do is assert in three places that the keys "already
+  satisfy" the CHECK; that was a reading of the intended pattern, never an execution (standing rule 1), and the
+  review corrected all three. `supabase/tests/run-rls-gate.sh` stays green because it never inserts a `custom:` key
+  — the migration's story should add one, so the gate would have caught this.
+
+### DW-194: `indexStack` trusts a designed Home — a hidden feed, a second feed, or a section page 2 cannot hold
+
+plain: Page 2 of the blog is built from your Home page "from the main feed down". Today nobody can mark a section as
+  the main feed (that control arrives with Story 5.19), so page 2 always falls back to the standard stack and this
+  cannot go wrong yet. The day a feed can be marked, three cases need an answer: the marked feed is hidden, two
+  sections are marked, or a section below the feed is one that is only allowed on Home.
+status: open
+severity: medium
+origin: Story 5.5's review (2026-09-18), Blind Hunter and Edge Case Hunter, read in
+  `packages/section-runtime/src/synthesize.ts` (`indexStack`): with a designed Home it returns
+  `instances.slice(feed)` and `dropped: []` — it never asks whether those designs list `index.hbs` in
+  `compileTarget` (DW-191's class of fault, which `synthesize` DOES guard), `findIndex` silently takes the first of
+  several `isMainFeed` rows, `docSchema` has no "at most one" refine, `duplicateSection` copies the flag, and a
+  hidden main feed still counts as the feed although FR-I1 says `index.hbs` never ships empty.
+owner: Story 5.19 (the Data group, which is where a main feed is designated — FR-H2's "exactly one per paginated
+  template") for the one-feed rule and the hidden case; Story 7.3 (which compiles `index.hbs` from `indexStack`) for
+  the `compileTarget` filter, reporting the rest in `dropped` as `synthesize` does.
+location: `packages/section-runtime/src/synthesize.ts` (`indexStack`) · `doc-schema.ts` (`isMainFeed`) ·
+  `doc-edit.ts` (`duplicateSection`)
+reason: unreachable today — no surface writes `isMainFeed: true`, and the owner's own project has none, which is
+  R-127's second fallback. Guarding it now would mean deciding FR-H2's refusal wording before the story that owns it.

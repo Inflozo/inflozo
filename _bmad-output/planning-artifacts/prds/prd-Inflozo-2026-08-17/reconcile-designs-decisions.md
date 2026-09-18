@@ -2651,7 +2651,9 @@ Subscribe and Membership."*
     **Subscribe and Membership are ordinary custom page templates**, created in the Routes Manager (FR-I3) and listed
     in the switcher's own Routes Manager group — the same `custom-*.hbs` mechanism, arriving with Story 7.16.
   - `project_templates.template_key` for each is `custom:custom-{name}.hbs`, which the existing `template_key_shape`
-    CHECK already admits; the editor's URL segment is `custom-{name}`.
+    CHECK already admits; the editor's URL segment is `custom-{name}`. **Corrected at Story 5.5's review (2026-09-18,
+    executed on production): the CHECK is MEANT to admit it and, as stored, refuses it — its pattern carries two
+    backslashes. Nothing writes the key yet; DW-193 gives Story 5.8 the Schema phase that fixes it.**
 - Targets:
   - ✅ Story 5.5's spec · ✅ `epic-5-context.md` — Story 5.5's Create run (2026-09-18).
   - ⬜ `apps/web/lib/editor.ts` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.5's Dev.
@@ -2660,6 +2662,32 @@ Subscribe and Membership."*
 - **Deliberately not touched:** `prd.md` FR-D6 and FR-I1, which say the membership canvases are page-backed custom
   templates and never name a filename; §7.4's frozen-filename rule, which this ruling exists to satisfy; the export
   (R-74) — B19 is not edited, this file is the record.
+
+**R-130 — the auto-generated marker has one place, and the switcher's third state is `circle-off`.** Story 5.5's owner
+test and its Q4, ruled by the owner on the deployed editor (2026-09-18): *"There is a notification adjacent to the
+Template dropdown in top bar… I do not want to show that. We already have the identifier in the Dropdown."* — and, for
+the row that is neither designed nor auto-generated, Tabler's `circle-off` rather than any of the four words offered.
+
+- **Why it was a question.** D5a and FR-D6 put the sentence "Auto-generated — edit anything to make it yours" in two
+  places, a chip beside the Template control and a row at the head of Layers. D5a draws the switcher CLOSED, so it
+  could not show what the built screen did: the closed control names the canvas, its open row carries the hollow dot
+  and the word, and the chip repeated it a third time. Separately, D5b draws two row states and FR-D6 implies a third
+  — a membership canvas or Private that nobody has designed — for which a filled dot and "Auto-generated" are both
+  false.
+- **What it binds.**
+  - **D5a is superseded on the chip alone.** The Layers row is built measure for measure; R-74 stands everywhere else.
+  - The third state is `circle-off` **beside the word "Empty"** — the shape never travels alone (D5b's own caption).
+  - **R-92 carries one stated exception.** Tabler is still the sections' set and the chrome still draws the frames'
+    own paths; a Tabler path enters `kit/icons.tsx` only where the owner names one, and this is the one. The path is
+    `packages/library/icons/tabler.json`'s own, inlined, with its licence in the file's header.
+- Targets:
+  - ✅ Story 5.5's spec (§ Design Notes, *R-130*) · ✅ `apps/web/components/kit/icons.tsx` ·
+    ✅ `apps/web/components/editor/template-switcher.tsx` · ✅ `editor.tsx` · ✅ `tools/probe/run-verify-editor.cjs` —
+    Story 5.5's Dev (2026-09-18).
+  - ✅ this entry · ✅ `prd.md` FR-D6's M4 sentence · ✅ `EXPERIENCE.md`'s "what is drawn" row for the marker — Story
+    5.5's review (2026-09-18), which found the ruling recorded nowhere outside the story's own files.
+- **Deliberately not touched:** the export (R-74) — D5a still draws the chip and this file is the record;
+  `EXPERIENCE.md`'s quoted D5 design prompt ("TWO markers…"), which is the prompt as it was sent.
 
 ## B · Approved decisions superseded by this session
 

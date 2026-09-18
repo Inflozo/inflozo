@@ -7,7 +7,7 @@ import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-revi
 import { CANVASES, canvasesOf, isUuid, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
-import { carriesMemberVisibility, pilot, pilotRows } from '@/lib/pilots'
+import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -76,7 +76,8 @@ export type EditorData = {
    *  AD-22's round trip needs the stack of a canvas that is DESIGNED at load too: taking its last section off returns
    *  it to untouched, and what re-renders is this. Keyed by `template_key`, as `docs` is. */
   defaults: Readonly<Record<string, ProjectDoc>>
-  /** Story 5.5 — per synthesized canvas, the default rows the library could not place and why. Derived from the
+  /** Story 5.5 — per synthesizable canvas, by stored key as `docs` and `defaults` are, the default rows the library
+   *  could not place and why. Derived from the
    *  library, so it empties itself as Epics 9 and 10 land; nothing draws it, and it is here because a drop that
    *  nothing can read is a drop nobody can check. */
   dropped: Readonly<Record<string, readonly DroppedRow[]>>
@@ -123,13 +124,13 @@ export async function editorData(projectId: string): Promise<EditorData> {
   const held = (designId: string) => {
     const known = entries[designId]
     if (known) return known
-    try {
-      const entry = pilot(designId)
-      entries[designId] = entry
-      return entry
-    } catch {
-      return undefined
-    }
+    // ABSENT is asked, not caught: a design the directory holds but that does not validate or assemble is a broken
+    // library and throws as it does for a stored doc — swallowing it would report "the library holds no design"
+    // and quietly drop the row from every canvas that defaults to it (review, 2026-09-18).
+    if (!pilotIds().includes(designId)) return undefined
+    const entry = pilot(designId)
+    entries[designId] = entry
+    return entry
   }
   // no condition can be true yet, so this is every unconditional canvas — `lib/editor.ts`'s `CONDITIONAL` carries why
   const canvases = canvasesOf()
@@ -146,7 +147,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // EVERY synthesizable canvas's stack is handed over, designed or not: AD-22's round trip means a canvas the user
     // empties returns to untouched and re-renders THIS, and a canvas that was designed at load can be emptied too.
     defaults[key] = { schemaVersion: 1, instances: stack.instances }
-    if (stack.dropped.length > 0) dropped[canvas] = stack.dropped
+    if (stack.dropped.length > 0) dropped[key] = stack.dropped
     // AD-22: no row, or a row with zero instances, is untouched — and only then does the canvas OPEN on its default
     // stack and carry D5a's marker.
     if (isDesigned(docs[key] ?? { schemaVersion: 1, instances: [] })) continue

@@ -25,7 +25,8 @@ import { ChevronLeft, Panel } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
-import { CANVASES, canvasOfPath, canvasOfTemplateKey, canvasStack, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPath, canvasStack, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
@@ -105,7 +106,7 @@ import type { EditorData } from './read'
    Tap-and-hold and Esc deselecting are drawn nowhere either, and the panel at rest is PAGE over the Kit's empty state.
 
    THE SWITCHER AND THE MARKER (Story 5.5 — D5b, D5a). The top bar's centred group is `components/editor/`: D5b's
-   switcher, and — only while this canvas is untouched — D5a's chip. The switcher is the editor's FIRST SOFT
+   switcher, alone since R-130 took D5a's chip out of the bar (the marker's one place is the Layers panel). The switcher is the editor's FIRST SOFT
    NAVIGATION: `router.push` inside a transition, the `[id]` layout keeping this component mounted, and the `[key]`
    effect below clearing the selection as the new canvas paints (DW-176's close). SYNTHESIS IS SERVER TRUTH: `read.ts`
    hands over the Synthesis Default stack of every untouched synthesizable canvas as an ordinary doc, plus the set of
@@ -129,19 +130,7 @@ const DESKTOP = 1440
  *  Member visibility control says which visitor it is when a section is gated away. */
 const PREVIEWS: Exclude<MemberState, 'everyone'> = 'anonymous'
 
-/** An untouched canvas, for the readers that would otherwise each write `?? { instances: [] }`. */
-const EMPTY_DOC: ProjectDoc = { schemaVersion: 1, instances: [] }
-
-/** How many templates a site-wide section really reaches — derived, never written down (standing rule 4): the
- *  Site-wide heading and the site-wide confirm both say this number, from one place.
- *
- *  STORY 5.5 STOPPED IT BEING "EVERY CANVAS". A membership canvas EMITS NOTHING until it is designed (FR-D6), so a
- *  confirm that counted it would promise a change to a template that does not ship. The count is therefore the
- *  canvases this project offers that will actually ship: every synthesizable one, plus each of the others that has a
- *  doc with sections in it. It lands on EXPERIENCE's re-specified B7 wording — "the count is the project's own from
- *  the switcher" (:2189-2191) — by construction rather than by agreeing with a number. */
-const templatesOpen = (canvases: readonly CanvasKey[], docs: Readonly<Record<string, ProjectDoc>>, auto: ReadonlySet<CanvasKey>) =>
-  canvases.filter((key) => auto.has(key) || isDesigned(docs[templateKeyOf(key)] ?? EMPTY_DOC)).length
+// `EMPTY_DOC`, the template count and AD-22's round trip are `lib/round-trip.ts`'s, where `node --test` reaches them.
 
 /** A panel's fold: focus moves to the toggle that replaced the pressed one. Layout-held, so a soft navigation between
  *  canvases keeps it; a typed address is a document load and starts unfolded. */
@@ -216,7 +205,7 @@ export function Editor({
   const canvas = CANVASES[key]
   // Edits live here for the session: nothing writes `project_templates` before Story 5.8, so a reload starts again
   const [docs, setDocs] = useState(stored)
-  /** Story 5.5 — the canvases that are UNTOUCHED right now: D5a's two markers and D5b's hollow dot read this one set.
+  /** Story 5.5 — the canvases that are UNTOUCHED right now: D5a's Layers marker and D5b's hollow dot read this one set.
    *  It starts as the server's `synthesized` and `commit()` is the only thing that changes it. */
   const [auto, setAuto] = useState<ReadonlySet<CanvasKey>>(() => new Set(synthesized))
   const stack = stackOf(docs, key)
@@ -282,28 +271,19 @@ export function Editor({
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
    *
-   *  THE FIRST EDIT MATERIALISES. The canvas that was written to stops being auto-generated — its marker goes from
-   *  both places and its switcher dot fills. Nothing is persisted: Story 5.8 saves, so a reload starts over.
+   *  THE FIRST EDIT MATERIALISES. The canvas that was written to stops being auto-generated — its marker goes and
+   *  its switcher dot fills. Nothing is persisted: Story 5.8 saves, so a reload starts over.
    *
    *  THE LAST SECTION OFF GIVES IT BACK. A synthesizable canvas whose doc now holds no instances is untouched again,
-   *  so its Synthesis Default stack re-renders and both markers return. HIDING every section does NOT do this
+   *  so its Synthesis Default stack re-renders and the marker returns. HIDING every section does NOT do this
    *  (FR-D5): a hidden instance is retained, so `isDesigned` is still true. */
   const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string) => {
     const now = latest.current
-    const pristine = stacks[touched]
-    const back = pristine !== undefined && !isDesigned(written[touched] ?? EMPTY_DOC)
-    const docs = back ? { ...written, [touched]: pristine } : written
-    const owning = canvasOfTemplateKey(touched)
-    let auto = now.auto
-    if (owning && back !== auto.has(owning)) {
-      const set = new Set(now.auto)
-      if (back) set.add(owning)
-      else set.delete(owning)
-      auto = set
-      setAuto(set)
-    }
-    latest.current = { ...now, docs, auto, stack: stackOf(docs, now.key) }
-    setDocs(docs)
+    const next = committed(written, touched, stacks, now.auto)
+    if (next.auto !== now.auto) setAuto(next.auto)
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key) }
+    setDocs(next.docs)
+    return next.back
   }
 
   /** Each root's two attributes, from the latest selection and hover — after every paint, stamp and change of either. */
@@ -768,10 +748,14 @@ export function Editor({
     if (!doc) return `there is no ${pick.doc} template to edit`
     const next = op(doc)
     if (typeof next === 'string') return next
-    commit({ ...now.docs, [pick.doc]: next }, pick.doc)
-    // a selection cannot outlive the section it was on — and neither can it outlive a canvas returning to untouched,
-    // whose default stack carries different instances entirely
-    if (same(now.selected, pick) && !latest.current.docs[pick.doc]?.instances.some((i) => i.instanceId === pick.instanceId)) choose(null)
+    const back = commit({ ...now.docs, [pick.doc]: next }, pick.doc)
+    // a selection cannot outlive the section it was on — and neither can it (or a hover) outlive a canvas returning to
+    // untouched. `back` is asked, not the ids: synthesis DERIVES them (`auto-tag-1`), so the default stack that returns
+    // can repeat the id of the very section just removed, and a test by id would keep the panel open on a new instance
+    // (review, 2026-09-18).
+    const gone = !latest.current.docs[pick.doc]?.instances.some((i) => i.instanceId === pick.instanceId)
+    if (back && now.hovered?.doc === pick.doc) point(null)
+    if (now.selected?.doc === pick.doc && (back || (same(now.selected, pick) && gone))) choose(null)
     paint()
     return null
   }
@@ -893,12 +877,12 @@ export function Editor({
         >
           <ChevronLeft size={15} />
         </Link>
-        <span className="text-ui-dense font-semibold">{project.name}</span>
+        <span className="max-w-[calc(50%-200px)] truncate text-ui-dense font-semibold">{project.name}</span>
         {/* D5a's centred group (:37), now the switcher ALONE: the owner removed the marker chip that stood beside it
             at his test of Story 5.5 (R-130) — the switcher's own row already carries the hollow dot and the word, and
             the Layers row still carries the sentence. ABSOLUTELY centred, as the frame draws it, so it does not move
             as the project's name grows. */}
-        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
+        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center">
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
         </div>
       </header>

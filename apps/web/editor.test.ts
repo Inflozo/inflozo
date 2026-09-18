@@ -57,7 +57,9 @@ test('R-129: a membership canvas stores under its FILE, every other canvas under
   }
   assert.equal(canvasOfTemplateKey('site'), null, 'the site doc belongs to no canvas')
   assert.equal(canvasOfTemplateKey('index'), null, 'page 2 has no canvas (R-127)')
-  // the three are exactly the custom-templated ones, and each stored key satisfies the CHECK the migration writes
+  // the three are exactly the custom-templated ones, and each stored key satisfies the pattern the CHECK is MEANT to
+  // carry. NOT the one production stores: that has two backslashes and refuses all three (DW-193, executed at Story
+  // 5.5's review) — Story 5.8's Schema phase fixes the constraint, and this assertion is then the same pattern.
   for (const key of (Object.keys(CANVASES) as CanvasKey[]).filter(isMembership)) {
     assert.match(templateKeyOf(key), /^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$/, key)
   }

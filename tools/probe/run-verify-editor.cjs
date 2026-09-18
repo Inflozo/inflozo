@@ -242,7 +242,7 @@ async function main() {
     check('step 2 — one <main>, and none of the dashboard\'s sidebar, phone bar or drawer', shape.mains === 1 && shape.shellNav === 0 && shape.menuButton === 0, JSON.stringify({ mains: shape.mains, nav: shape.shellNav, menu: shape.menuButton }))
     check('step 2 — the bar: 48px with its 1px rule on paper, the back link to /', shape.header.h === 48 && shape.header.rule === '1px' && shape.header.bg === 'rgb(247, 245, 242)' && shape.back === '/', JSON.stringify(shape.header) + ` back=${shape.back}`)
     // D5a (:37-39): the switcher is CENTRED in the bar, and Home is designed on this project, so no marker chip
-    check('step 2 — D5b\'s switcher reads "Template · Home", centred in the bar, and the bar carries no marker chip at all (R-130)', shape.switcher === `Template${CANVASES.home.label}` && Math.abs((shape.switcherBox.left + shape.switcherBox.right) / 2 - (shape.headerBox.left + shape.headerBox.right) / 2) < 120 && shape.switcherBox.height === 32 && shape.marker === false, JSON.stringify({ switcher: shape.switcher, box: shape.switcherBox, marker: shape.marker }))
+    check('step 2 — D5b\'s switcher reads "Template · Home", centred in the bar, and the bar carries no marker chip at all (R-130)', shape.switcher === `Template${CANVASES.home.label}` && !!shape.switcherBox && !!shape.headerBox && Math.abs((shape.switcherBox.left + shape.switcherBox.right) / 2 - (shape.headerBox.left + shape.headerBox.right) / 2) < 2 && shape.switcherBox.height === 32 && shape.marker === false, JSON.stringify({ switcher: shape.switcher, box: shape.switcherBox, marker: shape.marker }))
     check('step 2 — the project name: 13px, 600, Inter', shape.name.text === 'Pilot sections' && shape.name.size === '13px' && shape.name.weight === '600' && /Inter/i.test(shape.name.family), JSON.stringify(shape.name))
     check('step 2 — Layers: 240px, right rule, paper, "THIS PAGE · HOME"', shape.layers.w === 240 && shape.layers.rule === '1px' && shape.layers.bg === 'rgb(247, 245, 242)' && /this page · home/i.test(shape.layers.title), JSON.stringify({ ...shape.layers, title: undefined }))
     check('step 2 — Layers lists the stack in canvas order', shape.rows.join(' | ') === stackOf('home').map(([, name]) => name).join(' | '), shape.rows.join(' | '))
@@ -1631,7 +1631,7 @@ async function main() {
     }
     const emptied = await layersShape()
     // STORY 5.5 CHANGED THIS OUTCOME, and that change IS AD-22: taking the last section off a synthesizable canvas
-    // returns it to UNTOUCHED, so Home re-renders its Synthesis Default stack and both markers come back. The
+    // returns it to UNTOUCHED, so Home re-renders its Synthesis Default stack and the marker comes back. The
     // expectation is the stack `synthesize` really produces against the library on disk, derived — not a number.
     const backHomeRows = autoStack('home').map((i) => i.layerName)
     check('step 38 — the last section off Home returns it to UNTOUCHED: the Synthesis Default stack re-renders and the marker comes back (AD-22, R-130)', emptied.rows.length === TEMPLATES.site.length + backHomeRows.length && emptied.mono.includes(String(backHomeRows.length)) && (await rootCount()) === TEMPLATES.site.length + backHomeRows.length && (await page.locator('#editor-layers [data-auto-generated="layers"]').count()) === 1 && (await page.locator('header [data-auto-generated]').count()) === 0, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono, want: backHomeRows }))

@@ -4,7 +4,8 @@ import {
   indexStack, isDesigned, isSynthesizable, removeSection, setHidden, synthesize, SYNTHESIS_DEFAULTS,
   type ProjectDoc, type SynthesisLibrary,
 } from '@inflozo/section-runtime'
-import { CANVASES, canvasesOf, isMembership, templateKeyOf, type CanvasKey } from './lib/editor.ts'
+import { CANVASES, CONDITIONAL, canvasesOf, isMembership, templateKeyOf, type CanvasKey } from './lib/editor.ts'
+import { committed, templatesOpen } from './lib/round-trip.ts'
 import { pilot, pilotIds } from './lib/pilots.ts'
 
 /* Story 5.5 — the doc rules that are NOT gestures: AD-22's round trip, FR-D5's "hiding is not emptying", and the
@@ -16,13 +17,7 @@ import { pilot, pilotIds } from './lib/pilots.ts'
  * from what the library actually holds and these assertions follow Epics 9 and 10 without an edit. */
 
 /** The library as the app hands it to synthesis: `read.ts`'s own lookup, answering `undefined` rather than throwing. */
-const held: SynthesisLibrary = (designId) => {
-  try {
-    return pilot(designId)
-  } catch {
-    return undefined
-  }
-}
+const held: SynthesisLibrary = (designId) => (pilotIds().includes(designId) ? pilot(designId) : undefined)
 
 const EMPTY: ProjectDoc = { schemaVersion: 1, instances: [] }
 const doc = (instances: ProjectDoc['instances']): ProjectDoc => ({ schemaVersion: 1, instances })
@@ -81,11 +76,12 @@ test('an untouched canvas with every row dropped is STILL auto-generated — it 
 
 // ─── AD-22's round trip, over the docs the editor really holds ───
 
-/** `editor.tsx`'s `commit`, as its one rule: EVERY write to a canvas makes it the user's — unless it left the doc with
- *  no instances at all and the canvas can be synthesized, which gives it back. Note what it is NOT: a test of the doc
+/** `editor.tsx`'s `commit` IS `lib/round-trip.ts`'s `committed` — imported, not copied (review, 2026-09-18: the copy
+ *  that stood here let the real rule be inverted with `pnpm check` green). Note what the rule is NOT: a test of the doc
  *  alone. An untouched canvas opens on its default stack, so its doc is full while it is still untouched — which is
- *  exactly why `editor.tsx` holds an explicit `auto` set instead of deriving the marker from the instances. */
-const autoAfter = (key: CanvasKey, next: ProjectDoc) => isSynthesizable(CANVASES[key].file) && !isDesigned(next)
+ *  exactly why the editor holds an explicit `auto` set instead of deriving the marker from the instances. */
+const write = (docs: Record<string, ProjectDoc>, auto: ReadonlySet<CanvasKey>, key: CanvasKey, next: ProjectDoc) =>
+  committed({ ...docs, [templateKeyOf(key)]: next }, templateKeyOf(key), docs, auto)
 
 test('the first edit MATERIALISES: the doc is the user\'s and the markers go', () => {
   const { docs, auto } = opened()
@@ -96,11 +92,14 @@ test('the first edit MATERIALISES: the doc is the user\'s and the markers go', (
   // any edit at all — a rename is the owner's own step 8
   const renamed = { ...before, instances: before.instances.map((i, n) => (n === 0 ? { ...i, layerName: 'My tag feed' } : i)) }
   assert.ok(isDesigned(renamed))
-  assert.ok(!autoAfter(key, renamed), 'the canvas is now the user\'s')
+  const after = write(docs, auto, key, renamed)
+  assert.ok(!after.auto.has(key) && !after.back, 'the canvas is now the user\'s')
+  assert.equal(after.docs[templateKeyOf(key)], renamed)
+  assert.ok(auto.has(key), 'and the set handed in is not mutated')
 })
 
-test('EMPTYING returns it to untouched, and the default stack comes back with both markers (AD-22)', () => {
-  const { docs } = opened()
+test('EMPTYING returns it to untouched, and the default stack comes back with its marker (AD-22)', () => {
+  const { docs, auto } = opened()
   const key: CanvasKey = 'tag'
   let live = docs[templateKeyOf(key)] as ProjectDoc
   for (const id of live.instances.map((i) => i.instanceId)) {
@@ -109,13 +108,16 @@ test('EMPTYING returns it to untouched, and the default stack comes back with bo
     live = next as ProjectDoc
   }
   assert.deepEqual(live.instances, [])
-  assert.ok(autoAfter(key, live), 'the last section off makes it untouched again')
+  const designed = new Set([...auto].filter((k) => k !== key))
+  const after = write(docs, designed, key, live)
+  assert.ok(after.back && after.auto.has(key), 'the last section off makes it untouched again')
+  assert.equal(after.docs[templateKeyOf(key)], docs[templateKeyOf(key)], 'and the doc in force is the default stack, not the empty one')
   // and what re-renders is the SAME stack it opened on — synthesis is pure, so it is the same doc byte for byte
   assert.deepEqual(synthesize(CANVASES[key].file, held).instances, (docs[templateKeyOf(key)] as ProjectDoc).instances)
 })
 
 test('HIDING every section is not emptying: still designed, nothing re-synthesizes (FR-D5)', () => {
-  const { docs } = opened()
+  const { docs, auto } = opened()
   const key: CanvasKey = 'tag'
   let live = docs[templateKeyOf(key)] as ProjectDoc
   for (const id of live.instances.map((i) => i.instanceId)) {
@@ -125,14 +127,12 @@ test('HIDING every section is not emptying: still designed, nothing re-synthesiz
   }
   assert.ok(live.instances.every((i) => i.hidden), 'every row is hidden')
   assert.ok(isDesigned(live), 'a hidden instance is RETAINED, so the canvas is still designed')
-  assert.ok(!autoAfter(key, live), 'no marker comes back')
+  // HIDE-FIRST, on a canvas nothing else has touched: it materialises like any other write, and gives nothing back
+  const after = write(docs, auto, key, live)
+  assert.ok(!after.back && !after.auto.has(key), 'no marker comes back, and the one it had goes')
 })
 
 // ─── the template count, and R-127 on the owner's own project ───
-
-/** `editor.tsx`'s `templatesOpen`, as its own rule: the canvases that will actually ship. */
-const templatesOpen = (canvases: readonly CanvasKey[], docs: Readonly<Record<string, ProjectDoc>>, auto: ReadonlySet<CanvasKey>) =>
-  canvases.filter((key) => auto.has(key) || isDesigned(docs[templateKeyOf(key)] ?? EMPTY)).length
 
 test('the site-wide count is the templates that SHIP, not every canvas the switcher offers', () => {
   const { docs, auto } = opened()
@@ -145,7 +145,7 @@ test('the site-wide count is the templates that SHIP, not every canvas the switc
   const designed = { ...docs, [templateKeyOf('custom-signup')]: doc(synthesize('tag.hbs', held).instances) }
   assert.equal(templatesOpen(canvases, designed, auto), count + 1)
   // nothing in this change is allowed to be a written-down number: every count above came out of `canvasesOf`
-  assert.equal(canvases.length, Object.keys(CANVASES).length - 1, 'Private is the one conditional canvas')
+  assert.equal(canvases.length, Object.keys(CANVASES).length - Object.keys(CONDITIONAL).length, 'every canvas but the conditional ones')
 })
 
 test('R-127 on the owner\'s own project: a designed Home with no main feed gives page 2 the default stack', () => {

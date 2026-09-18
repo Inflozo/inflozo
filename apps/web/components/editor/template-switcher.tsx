@@ -39,7 +39,7 @@ import { isApp } from '@/routing'
    have had nothing to list anyway: `custom_templates` has no writer.
 
    ABSENT, NOT GREYED, THE OTHER WAY TOO: a conditional canvas the project does not call for (Private) is simply not in
-   `canvases`, and its address 404s — the caller decides, from the server (`read.ts`'s `privateCanvasOpen`).
+   `canvases`, and its address 404s — `lib/editor.ts`'s `canvasesOf` and `CONDITIONAL` decide, and `read.ts` hands the list over.
 
    R-98's PRESSED CONTROL. The row that starts a navigation says "Opening…" and goes `aria-disabled` and `aria-busy`
    until the transition settles, and the menu stays open while it does so — a menu that vanished on the press would
@@ -76,7 +76,7 @@ export function TemplateSwitcher({
   canvases: readonly CanvasKey[]
   /** the canvases that are untouched: a hollow dot and the word "Auto-generated" (AD-22) */
   auto: ReadonlySet<CanvasKey>
-  /** the canvases that are neither designed nor auto-generatable: a hollow dot and the word "Empty" */
+  /** the canvases that are neither designed nor auto-generatable: R-130's `circle-off` glyph and the word "Empty" */
   empty: ReadonlySet<CanvasKey>
 }) {
   const router = useRouter()
@@ -111,8 +111,8 @@ export function TemplateSwitcher({
   }
 
   const row = (key: CanvasKey) => {
-    // three states, two shapes: designed (filled, no word), auto-generated (hollow, "Auto-generated") and
-    // never-auto-generated-and-not-yet-designed (hollow, "Empty") — see the note above
+    // three states: designed (filled, no word), auto-generated (hollow, "Auto-generated") and
+    // never-auto-generated-and-not-yet-designed (R-130's `circle-off`, "Empty") — see the note above
     const state = auto.has(key) ? 'auto' : empty.has(key) ? 'empty' : 'designed'
     const word = state === 'auto' ? 'Auto-generated' : state === 'empty' ? 'Empty' : null
     const busy = going === key
@@ -153,13 +153,12 @@ export function TemplateSwitcher({
         type="button"
         id="editor-template"
         aria-label={`Template: ${CANVASES[current].label}`}
-        aria-haspopup="menu"
         aria-expanded={open}
         popoverTarget="editor-template-menu"
         onClick={(event) => {
           if (menu.current) openMenu(menu.current, event.currentTarget, { side: 'down', align: 'left' })
         }}
-        className={`flex h-8 items-center gap-2 rounded-sm border border-line bg-surface px-3 transition-colors hover:border-line-strong ${ring}`}
+        className={`flex h-8 items-center gap-2 rounded-sm border bg-surface px-3 transition-colors hover:border-line-strong ${open ? 'border-line-strong' : 'border-line'} ${ring}`}
       >
         <span className="text-control-label font-medium text-ink-soft">Template</span>
         <span className="text-[12.5px] font-semibold">{CANVASES[current].label}</span>
@@ -169,7 +168,12 @@ export function TemplateSwitcher({
         ref={menu}
         id="editor-template-menu"
         popover="auto"
-        onToggle={(event) => setOpen((event as unknown as ToggleEvent).newState === 'open')}
+        onToggle={(event) => {
+          const opening = (event as unknown as ToggleEvent).newState === 'open'
+          setOpen(opening)
+          // the group opens WITH the menu, as D5b draws it: a fold left shut would hide the checked row next time
+          if (opening) setGroupOpen(true)
+        }}
         onKeyDown={arrowKeys}
         className="border-0 bg-transparent p-0"
       >
@@ -197,7 +201,8 @@ export function TemplateSwitcher({
                     id="editor-template-membership"
                     aria-expanded={groupOpen}
                     aria-controls="editor-template-membership-rows"
-                    onClick={() => setGroupOpen((was) => !was)}
+                    // never while one of its rows is the only thing saying "Opening…" (R-98)
+                    onClick={() => setGroupOpen((was) => (going !== null && isMembership(going) ? was : !was))}
                     className={`flex items-center gap-[9px] rounded-sm px-[10px] py-[7px] text-left text-ui-dense font-semibold transition-colors hover:bg-paper ${ring}`}
                   >
                     {groupOpen ? (

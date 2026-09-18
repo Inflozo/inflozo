@@ -2,10 +2,10 @@
 title: 'Story 5.5 — The template switcher and the synthesised templates'
 type: 'feature'
 created: '2026-09-18'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 baseline_commit: '74308a3ff3deabf2b53dabf90df10c52c0ba5cf6'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -85,8 +85,10 @@ chip is removed, because the switcher's own row already carries the dot and the 
 - **R-98 holds:** the switcher row that starts a navigation says so and goes `aria-disabled`/`aria-busy` until the new
   canvas paints; the route keeps the editor's existing Suspense skeleton (there is deliberately no `loading.tsx` under
   `projects/` — `layout.tsx:12-17`).
-- **No migration.** `isMainFeed` lives inside `project_templates.doc` (`jsonb`) and the membership keys already pass the
-  `template_key_shape` CHECK. **There is no Schema phase** (R-99).
+- **No migration.** `isMainFeed` lives inside `project_templates.doc` (`jsonb`) and this story writes no row, so
+  **there is no Schema phase** (R-99). ~~The membership keys already pass the `template_key_shape` CHECK~~ —
+  **false, executed at the review (2026-09-18):** production refuses all three, because the stored pattern carries
+  two backslashes. Latent until a story saves; DW-193 gives Story 5.8 the Schema phase that fixes it.
 
 **Ask First:** anything that would change a **Synthesis Default stack** — that means changing
 `sections-inventory.md` first, which is its own Invariant 1 and not a code decision. Any further departure from D5b or
@@ -115,7 +117,7 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
 | First edit materialises | rename a synthesised section | the stack becomes the canvas's in-memory doc; the marker goes; the switcher row's dot fills | N/A |
 | Emptying returns to untouched | delete every section of a materialised canvas | the default stack re-renders and the marker returns (AD-22) | N/A |
 | Hiding is not emptying | hide every section | still designed: no re-synthesis, no marker, the canvas draws empty (FR-D5) | N/A |
-| Switcher navigates | press "Tag archive" | a push to `/projects/<id>/tag`; the editor stays mounted; the selection and the Controls panel clear (DW-176) | N/A |
+| Switcher navigates | press "Tag" | a push to `/projects/<id>/tag`; the editor stays mounted; the selection and the Controls panel clear (DW-176) | N/A |
 | Membership canvas | press Signup | opens **empty** — no synthesis, no sections, no marker; its switcher row is `circle-off` + "Empty" (R-130) | N/A |
 | Private | no linked site, or a linked site that is not private | the row is **absent, not greyed**, and its segment 404s | N/A |
 | `index` segment | `/projects/<id>/index` | 404, unchanged from 5.1 | N/A |
@@ -207,8 +209,9 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
     deep link into the Routes Manager) · `:636`/`:640` (a `custom-{name}.hbs` filename is frozen public API and is the
     dropdown label) · `:1337` (the marker is app copy).
   - `supabase/migrations/20260904120000_complete_schema.sql:242-255` — `project_templates`, whose comment states
-    "Absence of a row IS 'untouched' (FR-D6)" and whose `template_key_shape` CHECK already admits
-    `^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$` **and** `index`.
+    "Absence of a row IS 'untouched' (FR-D6)" and whose `template_key_shape` CHECK is MEANT to admit
+    `^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$` **and** `index` — it admits `index` and, as stored, refuses every
+    `custom:` key (DW-193, executed at the review).
 - **Ledger** — `deferred-work.md` DW-176 (:4175-4190) is **this story's to close**; DW-187 (:4434) and DW-122 (:3233)
   stay open and are not this story's; two new entries are filed below.
 
@@ -269,7 +272,38 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
 - Given a project with no linked private site, when I open the switcher, then there is no Private row at all — absent,
   not greyed — and `/projects/<id>/private` answers 404.
 
+### Review Findings
+
+Five layers on 2026-09-18 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier)
+over the diff since `74308a3f`. No acceptance criterion was violated and nothing was the owner's to decide. Every
+patch was applied at Review, in the same phase; the dismissed ones were noise, unreachable, or already ruled (the
+`circle-off` glyph's size is R-130's and the owner saw it; the Verification block's run figures are dated records of a
+run, not counts anything reads; `canvasesOf(true)` has no caller, by `CONDITIONAL`'s own note).
+
+- [x] [Review][Patch] **A selection survived a canvas returning to untouched.** Synthesis DERIVES its instance ids, so removing the last section of a canvas (`auto-tag-1`, renamed) brought back a default stack holding the same id, and the Controls panel stayed open on a NEW instance. `commit` now answers `back` and `apply` clears the selection and the hover on it [apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx]
+- [x] [Review][Patch] **`canvas-switch.test.ts` asserted its own copies of `commit` and `templatesOpen`**, so inverting the shipped rule left `pnpm check` green. Both rules are now `apps/web/lib/round-trip.ts`, imported by the editor AND the test; a hide-FIRST case was added (hiding materialises and gives nothing back). Control executed: deleting the "default stack returns" line turns the test red [apps/web/lib/round-trip.ts · apps/web/canvas-switch.test.ts]
+- [x] [Review][Patch] **The spec asserted, three times, that the membership keys "already satisfy `template_key_shape`" — executed on production, they are refused** (`23514`; the stored pattern has two backslashes). Latent: nothing writes the key until Story 5.8. The three sentences, R-129's record, `editor.test.ts`'s comment and `epic-5-context.md` are corrected; the fix itself is a Schema phase and is DW-193 [spec :88 · :210 · Verification]
+- [x] [Review][Patch] **R-130 had reached no owning document** — it existed only in this spec and in code comments. Recorded in `reconcile-designs-decisions.md` with its targets; FR-D6's M4 sentence and EXPERIENCE's "what is drawn" row amended [prd.md · EXPERIENCE.md · reconcile-designs-decisions.md]
+- [x] [Review][Patch] Comments R-130 made stale — "D5a's chip", "two markers", "both places", "hollow, 'Empty'" — in the editor, the switcher, Layers, the test title and the harness [five files]
+- [x] [Review][Patch] The switcher's header and this spec's Change Log cited a `privateCanvasOpen` that was never built; both now name `canvasesOf` / `CONDITIONAL` [template-switcher.tsx:42]
+- [x] [Review][Patch] `read.ts`'s `held()` caught EVERY error from `pilot()`, so a design that does not validate would read as "the library holds no design" and drop silently from every canvas defaulting to it. Absence is now asked of `pilotIds()`; a broken design throws as it does for a stored doc [read.ts]
+- [x] [Review][Patch] `dropped` was keyed by URL segment while `docs` and `defaults` are keyed by `template_key` — one key now [read.ts]
+- [x] [Review][Patch] The Membership fold stayed shut across menu opens, hiding the checked row, and could be shut on the only row saying "Opening…" (R-98). It opens with the menu and holds while its row is in flight [template-switcher.tsx]
+- [x] [Review][Patch] `aria-haspopup="menu"` promised menu semantics the popup deliberately does not have (a labelled list, as the Kit's `Menu`); removed [template-switcher.tsx]
+- [x] [Review][Patch] D5b draws the OPEN control on `line-strong`; the built one only took it on hover [template-switcher.tsx]
+- [x] [Review][Patch] A long project name ran under the absolutely-centred switcher; the name truncates before it [editor.tsx]
+- [x] [Review][Patch] Harness step 2 called a 120px offset "centred" and threw a TypeError (a HARNESS ERROR, not a FAIL) when the switcher was missing; it is 2px and null-guarded [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] Owner's manual test step 12 told him the confirm's number matches the switcher's rows; it is deliberately smaller (empty membership pages do not ship), so the step as written would have produced a false finding [§ Owner's manual test]
+- [x] [Review][Patch] DW-176's `closed:` text said the harness reads "no `framenavigated`"; the harness counts `load`, and says why `framenavigated` is no test [deferred-work.md]
+- [x] [Review][Defer] Production's `template_key_shape` refuses every `custom:` key [supabase/migrations/20260904120000_complete_schema.sql:254] — deferred, pre-existing: **DW-193**, Story 5.8's Schema phase
+- [x] [Review][Defer] `indexStack` trusts a designed Home: hidden feed, second feed, a section `index.hbs` cannot hold [packages/section-runtime/src/synthesize.ts] — deferred, unreachable until a main feed can be designated: **DW-194**, Stories 5.19 and 7.3
+
 ## Spec Change Log
+
+- **2026-09-18 — Review.** Five layers; see *Review Findings*. One claim in this spec was FALSE and is struck where it
+  stood rather than deleted: "the membership keys already pass the `template_key_shape` CHECK". It was a reading of
+  the intended pattern, never an execution, and production refuses all three (DW-193). The story still has no Schema
+  phase — it writes no row — but Story 5.8 now does. R-130 was propagated to the decisions file, FR-D6 and EXPERIENCE.
 
 - **2026-09-18 — R-130, and two findings from the owner's own look at the deployed editor, during Dev.** He ruled
   Question 4 with a glyph rather than a word (Tabler's `circle-off` for the "Empty" rows), removed the top bar's
@@ -284,8 +318,8 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
     both of which read the same one string.
   - **The Private condition has nothing to read yet, EXECUTED (standing rule 1).** `sites.site_settings` — the
     snapshot Epic 3 keeps — records `code_injection`, `portal_button`, `announcement`, `brand`, `public_url` and
-    `plan_ask`, and no private flag: no story has needed one. So `privateCanvasOpen` is false for every project
-    today, the row is absent everywhere and `/private` 404s, which is what FR-D6 and D5b agree on for a project with
+    `plan_ask`, and no private flag: no story has needed one. So no condition can be true for any project
+    today (`lib/editor.ts`'s `CONDITIONAL`; an earlier draft named a `privateCanvasOpen` that was never built), the row is absent everywhere and `/private` 404s, which is what FR-D6 and D5b agree on for a project with
     no private site. It becomes true the day the snapshot carries the key; DW-192 already owns the disagreement.
   - **A conditional canvas is refused BY THE SCHEME, not by a database read, and that is executed.** The Code Map
     asks the `[template]` layout to 404 a conditional canvas whose condition is false. Built that way first — a
@@ -434,8 +468,9 @@ its variable and never printed.
 - `pnpm check` -- exit 0, `fail 0` in every package suite, including the new `synthesize.test.ts` and
   `canvas-switch.test.ts`. Each suite prints its own count; none is written down here.
 - `bash supabase/tests/run-rls-gate.sh` -- exit 0, every `PASS`, no abort. **The control that this story did not move
-  the database under the code:** `isMainFeed` lives inside `project_templates.doc` and the three membership keys
-  already satisfy `template_key_shape`, so there is **no Schema phase** (R-99).
+  the database under the code:** `isMainFeed` lives inside `project_templates.doc` and nothing in this story writes
+  a row, so there is **no Schema phase** (R-99). The review struck the second reason this line gave — that the three
+  membership keys "already satisfy `template_key_shape`": on production they do not (DW-193).
 - `python3 tools/doc-audit.py --check` -- exit 0, twice.
 - `python3 -c` over `packages/library/designs/` and the registry -- **executed, not asserted** (standing rule 1): the
   design ids and `compileTarget`s the Synthesis Defaults name, against what the library actually holds, so the
@@ -525,7 +560,7 @@ step 4 is where you see it.
 | 9 | same | Layers | Press "…" on that same section and choose **Delete**. | — | With nothing left, the page goes **back** to the standard recipe: the grid returns, and the "Auto-generated" note comes back at the top of the list. |
 | 10 | same | Layers | Press "…" on the grid and choose **Hide** instead. | — | The section disappears from the page but the row stays and **no** note comes back — hiding is not the same as taking it off. |
 | 11 | same | Browser | Press the browser's Back button twice. | — | You walk back through the canvases you visited, in order, without the editor reloading. |
-| 12 | same | Layers | Press "…" beside "Header — Rail" in the SITE-WIDE group and choose **Delete**. | — | The box that asks first names the number of templates it changes. Check the number matches how many pages the switcher actually offers. Then press **Cancel**. |
+| 12 | same | Layers | Press "…" beside "Header — Rail" in the SITE-WIDE group and choose **Delete**. | — | The box that asks first names the number of templates it changes. **The number is the pages that will actually ship, so it is SMALLER than the switcher's list:** count the rows in the switcher that are not marked "Empty" (the three Membership pages are empty until you design them, and an empty page is not published). Then press **Cancel**. |
 | 13 | same | Browser | Reload. | — | Everything is back as it started, including the notes. Saving arrives with Story 5.8. |
 
 ## Questions for the owner
