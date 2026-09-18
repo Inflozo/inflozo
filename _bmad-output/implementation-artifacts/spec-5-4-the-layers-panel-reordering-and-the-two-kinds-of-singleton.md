@@ -2,8 +2,8 @@
 title: 'Story 5.4 — The Layers panel, reordering, and the two kinds of singleton'
 type: 'feature'
 created: '2026-09-18'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 baseline_commit: 0aa7cd10b8b4cad1b8df0ac8de774aacf64289f4
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -533,7 +533,10 @@ Sign in as you normally do. Nothing you change here survives a reload — saving
 
 ## Owner's test findings
 
-Five, from his own look at the deployed story on 2026-09-18, before the formal test. All five are one finding —
+**Tested on `app.inflozo.com` on 2026-09-18, on the deployment confirmed at Deploy (`d6dcf88f`,
+`dpl_2wCDgi4xakkEx4vs1c7WRejoTMEu`). Passed.** No findings from the formal 18-step test.
+
+Five, from his own look at the deployed story earlier on 2026-09-18, before the formal test. All five are one finding —
 **the 240px Layers panel was spending its width on everything except the name** — and all five are fixed inside this
 story (R-80). They change what B7 draws, so they are recorded as a ruling, **R-126**, in
 `reconcile-designs-decisions.md`: R-74 makes the export the design authority, and a departure from it that is not

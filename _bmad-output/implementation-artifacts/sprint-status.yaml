@@ -89,7 +89,7 @@ development_status:
   5-1-the-editor-shell-the-canvas-boundary-and-the-url-scheme: done
   5-2-hover-selection-and-the-insertion-affordance: done
   5-3-inline-editing-the-four-marks-and-the-link-picker: done
-  5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton: review
+  5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton: done
   5-5-the-template-switcher-and-the-synthesised-templates: backlog
   5-6-light-and-dark-authoring: backlog
   5-7-device-preview-and-the-canvas-as-a-viewport: backlog
