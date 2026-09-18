@@ -2,8 +2,8 @@
 title: 'Story 5.5 — The template switcher and the synthesised templates'
 type: 'feature'
 created: '2026-09-18'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 baseline_commit: '74308a3ff3deabf2b53dabf90df10c52c0ba5cf6'
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -576,6 +576,11 @@ step 4 is where you see it.
 | 11 | same | Browser | Press the browser's Back button twice. | — | You walk back through the canvases you visited, in order, without the editor reloading. |
 | 12 | same | Layers | Press "…" beside "Header — Rail" in the SITE-WIDE group and choose **Delete**. | — | The box that asks first names the number of templates it changes. **The number is the pages that will actually ship, so it is SMALLER than the switcher's list:** count the rows in the switcher that are not marked "Empty" (the three Membership pages are empty until you design them, and an empty page is not published). Then press **Cancel**. |
 | 13 | same | Browser | Reload. | — | Everything is back as it started, including the notes. Saving arrives with Story 5.8. |
+
+## Owner's test findings
+
+**2026-09-18, on the deployment confirmed at Deploy (`2c93bd11`, `dpl_2L3tNYUChF1orBn8dqfWwS7qxNat`). Passed.** The
+owner walked the table above on `https://app.inflozo.com` and reported no findings.
 
 ## Questions for the owner
 
