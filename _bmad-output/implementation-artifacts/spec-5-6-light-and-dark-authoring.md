@@ -386,6 +386,17 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 
 ## Spec Change Log
 
+- **2026-09-18, Dev: the deployed harness is 0 FAIL on all thirty of this story's assertions, and ONE control is still
+  owed.** The complete run at `90f84bf3` is **283 PASS / 1 FAIL**, and the single failure is step 5's own recorder
+  control: it plants two `new Function('')` refusals and saw ONE — the editor document's — while the canvas
+  document's did not reach the binding. **Both `EvalError` controls passed** and the session itself recorded zero
+  violations, but under standing rule 2 a zero whose control did not pass is not a result, so **step 5's CSP zero is
+  owed a clean run** and is the first thing Review must re-run. It is the flake the harness's own comment already
+  records (*"seen to lose one of its two refusals on a loaded machine, 2026-09-18"*), not a finding about this story:
+  the canvas frame is reloaded to read its nonce and the recorder is re-attached to a new frame. Eight further runs
+  were attempted for a clean one and every single one died on a `page.goto`/`waitForFunction` 30 s timeout — this
+  machine's link to `app.inflozo.com` answered `curl` in 200 ms throughout while Playwright's `load` stalled on a
+  subresource, so the re-run wants a quieter network rather than a change.
 - **2026-09-18, Dev: the first deployed run was 279 PASS / 5 FAIL, and all five were the harness's own assertions.**
   Every value, every stored map and every count the product produced was right in the same lines that failed — the
   reads were wrong. Three defects, recorded because each is a trap the next story's steps can fall into: (1) a row's
