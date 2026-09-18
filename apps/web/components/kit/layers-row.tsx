@@ -18,7 +18,8 @@ import { ring } from './greyed'
    button there would be a second tab stop promising a keyboard drag it does not perform.
 
    THE EYE IS REVEALED, not always drawn: B7 draws it on the selected row and on the hidden one, and D8e draws it on
-   the hovered one — so it appears on hover, on selection, while the row holds focus anywhere inside it, and whenever
+   the hovered one — so it appears on hover (the row's OWN pointer hover and the canvas's hover mirrored onto it
+   alike), on selection, while the row holds focus anywhere inside it, and whenever
    the section is hidden, which is the one state that must read from across the panel. A hidden row's words go
    `text-ink-soft` with the eye crossed out (B7's "About, short").
 
@@ -102,9 +103,12 @@ export function LayersRow({
         {name}
       </button>
       {overflow}
+      {/* `hovered` is the CANVAS's hover mirrored onto the row (Story 5.2), and the pointer is over the iframe — no
+          CSS `:hover` reaches here — so it must reveal the eye itself, or D8e's HOVER · THE WASH would draw the wash
+          without the eye it is drawn with. */}
       <span
         className={`flex shrink-0 ${
-          shown && !selected ? 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100' : ''
+          shown && !selected && !hovered ? 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100' : ''
         }`}
       >
         <Visibility shown={shown} name={name} onToggle={onToggleShown} tabIndex={-1} />
