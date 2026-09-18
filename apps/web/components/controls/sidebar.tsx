@@ -350,7 +350,9 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
         onSelect={(value) => visibility.onChange(value as MemberState)}
       />
       <HelperCaption>Who sees the whole section.</HelperCaption>
-      {visibility.value !== 'everyone' ? (
+      {/* only when the canvas is NOT drawing this audience: `gateMembers` draws a section whose audience is the
+          previewed visitor, so "Logged out" on an anonymous preview is drawn and says nothing (review, 2026-09-18) */}
+      {visibility.value !== 'everyone' && visibility.value !== visibility.previews ? (
         <HelperCaption>
           The canvas is previewing {PREVIEWING[visibility.previews]}, so this section is not drawn here.
         </HelperCaption>

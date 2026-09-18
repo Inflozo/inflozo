@@ -5,7 +5,7 @@ created: '2026-09-18'
 status: 'in-progress'
 owner_test: pending
 baseline_commit: 0aa7cd10b8b4cad1b8df0ac8de774aacf64289f4
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -29,7 +29,8 @@ section per layout — exist only as prose (FR-D5, R-37).
 
 **Approach:** Give the doc the two fields it lacks (`hidden`, `memberVisibility`, both defaulted so every stored doc
 still parses), put every section operation in one pure module the editor, Story 5.8's journal and Epic 7's compiler
-all read, and draw B7's two-group Layers panel over it: a pinned Site-wide card and the page's own rows, each row
+all read, and draw B7's two-group Layers panel over it: a pinned Site-wide card and the page's own rows *(the card
+became the page group's own shape with a hairline under it — R-126, owner, 2026-09-18)*, each row
 interactive with D8e's four states and UX-DR10's keys. The canvas gains S4b's quick-action pill with the three
 controls R-118 assigns to this story. The placement rules that have no surface yet — the Post Content singleton and
 the non-placeable treatments — land as tested predicates that Story 5.10's Section Picker will call.
@@ -82,7 +83,7 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
 |---|---|---|---|
 | Press a row | Home, nothing selected | That section is selected: canvas outline, row in coral tint, panel headed by its layer name. The selection is NOT lost by the press | N/A |
 | Press below the rows | a section selected | Deselected, editing ended — R-123's third ground. Its geometry is read from the last **row**, not the list's last child, which is no longer the same element | N/A |
-| Press a group heading or the footed note | a section selected | The selection stays: only the empty space below the rows is a ground (R-123 as amended) | N/A |
+| Press a group heading (or, until R-126 removed it, the footed note) | a section selected | The selection stays: only the empty space below the rows is a ground (R-123 as amended). **Amended by R-126 (owner, 2026-09-18):** the note is gone, so a group heading is the one non-row surface left to press | N/A |
 | Drag a row | 3 page rows, grip pressed on row 1 | Row 1 lifts; a dashed slot the row's height shows where it lands; rows between slide; nothing moves until the drop, then the canvas repaints in the new order | A drop outside the row's own group returns without a change |
 | `⌥↓` on a focused row | row 1 of 3 focused | The section moves to position 2, focus follows it, and "Moved to position 2 of 3" is announced politely | At the last position the key does nothing |
 | `Space` on a focused row | row shown | Hidden: the section leaves the canvas and the row's words go ink-soft. **Amended by R-126 (owner, 2026-09-18), which renegotiated this frozen row:** the eye is no longer on the row, so what reads as hidden is the ink-soft name plus the row's `⋯` menu offering Show. The key itself is unchanged | N/A |
@@ -136,7 +137,7 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
       "This page · {label}" line (:650-652) moves into B7's own group header, which is where B7 prints it.
       **R-123's third ground (:659-662) has to be re-anchored, not merely kept:** it reads
       `lastElementChild.getBoundingClientRect().bottom`, and the list's last child stops being the last row the moment
-      the page group and B7's footed note are inside it.
+      the page group is inside it (and, since R-126 removed the note, the rename dialog is the list's last child).
     - the chrome layer (:565-603): `place(el, root, scale, how)` with `'fill' | 'top-left' | 'top-right' | 'above'`,
       kept on its root by a `requestAnimationFrame` loop. **The pill cannot live here** — a React portal into the
       canvas document gets no React events — which is why AD-21 puts pressable chrome outside.
@@ -151,8 +152,9 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
   - `apps/web/components/kit/layers-row.tsx` — `LayersRow`'s `interactive` branch (:42-58) already draws grip, thumb,
     name button and eye; `SiteWideGroup` (:73-…) already draws the pinned white card with its count. Both are
     Story 1.3's and have never been used. **Two corrections this story makes:** the card's icon is `DragGrip`, which
-    promises a drag the card does not have (B7's note: site-wide sections cannot be reordered against page sections);
-    and D8e's focus ring belongs on the ROW, over whichever state it is in, not on the name button alone.
+    promises a drag the card does not have (B7's note: site-wide sections cannot be reordered against page sections)
+    — moot since R-126 took the card and its glyph away altogether; and D8e's focus ring belongs on the ROW, over
+    whichever state it is in, not on the name button alone.
   - `apps/web/components/controls/item-list.tsx` (:104-190) — the app's one drag gesture, built to the owner's
     finding 9: `layout.current` captured at `pointerdown`, `shift(i)`, `slotTop`, the `to` computed from how many
     other rows' middles the dragged row's middle has passed, `setPointerCapture`, the 2° tilt under `motion-safe`, and
@@ -221,11 +223,13 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
       (owner, 2026-09-18):** the eye is not on the row at all — Hide/Show leads the `…` menu — the name is drawn at
       `text-helper-caption`, and `SiteWideGroup` is no longer a card with a glyph but the page group's own shape with
       a hairline under it.
-- [x] `apps/web/components/controls/layers.tsx` (new) -- B7's panel body: the pinned Site-wide card with its glyph,
-      `SITE-WIDE`, the derived template count and its rows; the `THIS PAGE · {label}` group with its own derived
-      count; the dashed landing slot; the `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` key handling with roving tabindex; a polite
-      `aria-live` for the move; the `…` menu (Rename · Duplicate · a rule · Delete, Duplicate absent on a site-wide
-      row); the S12c-shaped rename dialog; and B7's footed note -- one component, so `editor.tsx` keeps its shape.
+- [x] `apps/web/components/controls/layers.tsx` (new) -- B7's panel body **as R-126 amends it**: the `SITE-WIDE`
+      group with the derived template count and its rows, a hairline, then the `THIS PAGE · {label}` group with its
+      own derived count, both drawn the same; the dashed landing slot; the `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` key handling
+      with roving tabindex; a polite `aria-live` for the move; the `…` menu (Hide/Show · Rename · Duplicate · Delete,
+      Duplicate absent on a site-wide row); and the S12c-shaped rename dialog -- one component, so `editor.tsx` keeps
+      its shape. *(As first written this task named the pinned card, its glyph and B7's footed note; R-126 removed all
+      three on the deployed story.)*
 - [x] `apps/web/components/controls/section-pill.tsx` (new) -- S4b's quick-action pill in the editor document,
       anchored to the hovered section's on-screen rect through the frame's rect and the fit: Duplicate (absent on a
       site-wide section), Delete, and the drag grip. **R-125: the Pro tag keeps the corner it was given at 5.2 and the
@@ -290,6 +294,30 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
   else, so the name has the width to say itself without truncating (R-126).
 - Given `pnpm check`, when it runs, then every new test passes and no existing one changed meaning.
 
+### Review Findings
+
+Five layers on 2026-09-18 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier)
+over the diff since `0aa7cd10`; 8 dismissed as noise or unreachable. Patches applied at Review, in the same phase:
+
+- [ ] [Review][Decision] A drop past the end of a row's own group: land at the end (as it does, and as every list does) or snap back (as the frozen matrix row says)? — Question 4 under `## Questions for the owner`.
+- [x] [Review][Patch] The CSP recorder was no longer attached to the main harness session, so step 5's zero was vacuous and its control could only fail — restored, with the history in a comment [tools/probe/run-verify-editor.cjs:153]
+- [x] [Review][Patch] Step 27 still pressed B7's footed note, which R-126 removed, and threw before any Story 5.4 step — the entry dropped; step 28 asserts the note's absence [tools/probe/run-verify-editor.cjs:1190]
+- [x] [Review][Patch] Step 29 counted every `button` in the row, the closed ⋯ menu's included, against "name · More" — scoped to the row's own children [tools/probe/run-verify-editor.cjs:1263]
+- [x] [Review][Patch] The Member visibility second hint said the section was not drawn for every audience but Everyone — wrong for "Logged out", which the canvas previews and draws; now shown only when the audience is not the previewed visitor, and step 37 checks it [apps/web/components/controls/sidebar.tsx:353]
+- [x] [Review][Patch] A press on a row's name left focus on the `tabIndex=-1` button, so ⌥-arrows, Space and Enter did nothing after a click — the press now focuses the row, and the button's ring class goes with it [apps/web/components/kit/layers-row.tsx:89]
+- [x] [Review][Patch] The rename field kept abandoned text when the same row was renamed again after Cancel — `renaming` is let go on close so the field remounts [apps/web/components/controls/layers.tsx:343]
+- [x] [Review][Patch] The menu's DOM id and the rename field's key used the bare `instanceId`, which the file's own comment says is unique per doc, not across the two groups — keyed on `{doc}:{instanceId}`, harness selectors following [apps/web/components/controls/layers.tsx:206]
+- [x] [Review][Patch] The layout was captured in a layout effect AFTER the render that started the drag, so the slot's first frame read the previous drag's numbers — one re-render before paint after the measure [apps/web/components/controls/layers.tsx:154]
+- [x] [Review][Patch] The roving tab stop did not follow a canvas selection, so Tab into Layers landed on the first row — it prefers the selected row until a key steps it [apps/web/components/controls/layers.tsx:141]
+- [x] [Review][Patch] `kit/visibility.tsx` gained `onToggle`/`tabIndex` and a comment about a Layers row that no longer uses it — reverted to the baseline; `rowRef` on `LayersRow` was declared and never passed — removed [apps/web/components/kit/visibility.tsx, layers-row.tsx:43]
+- [x] [Review][Patch] `carriesMemberVisibility` had no unit test — four cases added [apps/web/pilots.test.ts]
+- [x] [Review][Patch] The template count was derived twice in `editor.tsx`; the confirm's body said "every page" then "all N templates" — one constant, one word [apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx:121]
+- [x] [Review][Patch] The canvas pill's grip drag had no check anywhere — step 35 now holds it past the next section, asserts the slot in Layers and nothing reordered, then the reorder and the announce on the drop [tools/probe/run-verify-editor.cjs:1462]
+- [x] [Review][Patch] Stale text against R-126 in `editor.tsx`'s header, `layers.tsx`'s comments, the harness header and step comments, and this spec (Intent, one matrix row, Code Map, two tasks, Design Notes, manual test 8, Verification) — corrected; DW-183's ledger text repeated the wrong root cause — corrected
+- [x] [Review][Patch] R-126's outstanding targets (`EXPERIENCE.md`, `DESIGN.md`, `epic-5-context.md`), which the ruling assigns to this Review — propagated and ticked
+- [x] [Review][Defer] A pill-grip drag over a site doc whose doc order differs from canvas order measures the landing in canvas order — the site doc holds one instance today [apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx:155] — deferred, DW-189
+- [x] [Review][Defer] A refusal on a hidden or gated section has no root to show its sentence on — reachable only through R-37's Post Content refusal, and no A25 design exists yet [apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx:232] — deferred to Story 5.10, DW-190
+
 ## Design Notes
 
 ### "Live canvas follow" and "nothing reorders until the drop" are not in conflict
@@ -334,15 +362,15 @@ null `relatedTarget`, which today clears the hover. The second needs a guard the
 B7 prints "on all 9 templates" and a page count of 6. Neither number is written down: the template count is
 `Object.keys(CANVASES).length` from `lib/editor.ts` — the canvases the editor opens today, which grows on its own as
 Story 5.5 opens more — and the page count is the group's own rows. FR-D5 calls the card's mark "a globe badge"; B7
-draws an arrow-on-a-stem the Kit has no glyph for. The Kit's `Globe` is used: it is the PRD's word, it is already in
-the app's vocabulary, and it says "site-wide" where a drag grip would promise a drag the card does not have.
+draws an arrow-on-a-stem the Kit has no glyph for. The Kit's `Globe` was used at Dev — and **removed by R-126**
+(owner, 2026-09-18, finding 5): the group has no glyph now, and the word `Site-wide` in the heading is the mark.
 
 ### What is deliberately not built
 
 Hovering a Layers row does **not** outline its section on the canvas — the mirroring Story 5.2 built runs one way and
-nothing asks for the other. B7's note is drawn always rather than "the first time, then stop": there is no per-user
-memory to remember a first time in before Story 5.8, and inventing a session-only one would make the note flicker
-between reloads. Both are filed in the ledger at Dev.
+nothing asks for the other (DW-188). B7's note was drawn always rather than "the first time, then stop" (there was no
+per-user memory to remember a first time in before Story 5.8), and then **R-126 removed the note itself**, which
+closed DW-184 rather than deferring it.
 
 ## Verification
 
@@ -386,7 +414,8 @@ rather than waiting for Review, because a step written and never executed proves
 | 5 | 1 FAIL, 222 PASS | the complete walk, no stall; the one FAIL is step 5's own control, which is why the retry was withdrawn. |
 | 6 | **0 FAIL, 83 PASS** | the reverted tree. Stopped at step 16's signed-in `goto` — the same call site as run 4 — before reaching step 5's control, so it neither confirms nor disputes it. |
 
-**What the harness established on the deployed site.** B7's card, groups and footed note, with both counts DERIVED —
+**What the harness established on the deployed site** *(runs 1–6, all BEFORE R-126 changed the panel; the run on the
+final tree is under **At Review** below)*. B7's card, groups and footed note, with both counts DERIVED —
 it read `on all 6 templates` from the canvases `lib/editor.ts` opens and `3` from the group's own rows, and after
 removing every page section the same span read `0`. A press on a row selects without deselecting, and a press on a
 group heading or on B7's footed note keeps the selection while the empty space below the rows lets it go (R-123 as
@@ -407,8 +436,33 @@ pill showing and a row's menu open. Both throwaway accounts deleted, `users 9 �
 result only when its own control passes — the control plants two `new Function('')` refusals and requires the recorder
 to see both (standing rule 2). It passed in runs 1 and 2, covering these gestures. It failed in runs 3 and 5, both of
 which carried an experimental DW-183 retry; that retry has been **withdrawn** (it also broke `page.goBack` and could
-re-spend the single-use magic-link token), and the harness is back to the shape whose control passed. The confirming
-run of the reverted tree belongs to Review, and DW-183 now carries the whole pattern and the two fix shapes ruled out.
+re-spend the single-use magic-link token). *As written at Dev this paragraph went on: "and the harness is back to the
+shape whose control passed". **That was wrong, and Review found why** (below): the retry commit had deleted the one
+line that attaches the CSP recorder to the main session, and the withdrawal did not put it back — so the control
+failed for a reason that had nothing to do with retrying, and would have failed on the reverted tree too.*
+
+
+**At Review (2026-09-18) — five layers over the diff since `0aa7cd10`, and the real services hit again (R-82).**
+
+- **GitHub Actions**, read with `GITHUB_TOKEN`: HEAD `035b2ba0` ran **CI** to `success` (`check`, `rls`, `deploy`
+  all green) and **Render matrix** to `success`; the same for the four commits before it. Negative control: a bogus
+  value in place of `GITHUB_TOKEN` → HTTP 401.
+- **Vercel**, read with `VERCEL_TOKEN` / `VERCEL_TEAM_ID`: the production deployment of `app.inflozo.com` is **READY**
+  and its `githubCommitSha` is HEAD. Negative control: a bogus token → HTTP 403.
+- **Supabase**, read with `SUPABASE_URL` / `SUPABASE_SECRET_KEY` (R-99): `git diff 0aa7cd10..HEAD -- supabase/` is
+  empty and the live `project_templates` columns are `doc, project_id, template_key, updated_at, user_id` — both new
+  fields live inside `doc`, so production's schema is as new as the code. **Never persisted, held:** the owner's
+  "Pilot sections" docs (home 3, post 1, site 1 instances) carry no `hidden` and no `memberVisibility` anywhere, and
+  their `updated_at` predates the story's first deploy. Negative control: a bogus secret → HTTP 401.
+- **The deployed harness, run 7 — on HEAD `035b2ba0` as deployed: `0 FAIL, 139 PASS, aborted (exit 2)`** at step 27,
+  `TypeError: Cannot read properties of undefined (reading 'getBoundingClientRect')` — the step still pressed B7's
+  footed note, which R-126 had removed. Deterministic, not DW-183; both accounts deleted, `users 9 → 9`. So **no
+  Story 5.4 step had executed on the tree under review, and step 5's control had not passed** — and reading the
+  harness showed the second reason it could not have: `ad50f413` (the DW-183 retry) deleted
+  `await recorder(context, violations)` and `35a17b53` (its withdrawal) never restored it, so the main session's
+  `violations` had no writer. Both are patched below; **run 8, on the patched tree once deployed, is recorded under
+  `## Review run` at the end of this section.**
+- `pnpm check` on the patched tree — recorded with run 8.
 
 **Manual checks:**
 
@@ -439,7 +493,7 @@ Sign in as you normally do. Nothing you change here survives a reload — saving
 | 5 | same | Layers | Press the "…" beside "Post Grid — Three Up" and choose **Hide**. Then open "…" again and choose **Show**. | — | The section disappears from the page and the row's words go grey; the menu now offers Show instead of Hide. Show brings it back. *(R-126: the eye moved into this menu so the name has the room.)* |
 | 6 | same | Layers | Press the "…" beside "Hero — Latest Post". Check no part of the menu is cut off, then choose **Rename**, type a new name and press Save. | `Top of the page` | The menu opens fully on screen — nothing clipped on the left. A small box asks for the name; after Save the row and the right-hand panel's heading both read your name. *(R-126.)* |
 | 7 | same | Layers | Press "…" beside "Newsletter — Inline Row" and choose **Duplicate**. Then press "…" on the new row and choose **Delete**. | — | A second copy of the section appears directly below, on the list and on the page, with the same words. Delete takes it away again. |
-| 8 | same | Layers | Press "…" beside "Header — Rail" in the white card at the top. | — | The menu has Rename and Delete but **no Duplicate** — your header is one shared thing, not a copy per page. |
+| 8 | same | Layers | Press "…" beside "Header — Rail" in the SITE-WIDE group at the top. | — | The menu has Rename and Delete but **no Duplicate** — your header is one shared thing, not a copy per page. |
 | 9 | same | Layers | Press "…" beside "Header — Rail" and choose **Hide**. | — | A box asks first and says it affects every page. Cancel leaves everything as it was. |
 | 10 | same | Canvas | Put the pointer over "Post Grid — Three Up" on the page itself, without clicking. | — | A small white pill appears in its top-right corner with a copy icon, a bin and six dots. Compare it with S4b in `S4 Editor.dc.html`. Move the pointer onto the pill — it stays. |
 | 11 | same | Canvas | Press the copy icon on that pill, then press the bin on the new copy. | — | The section is copied directly below and then removed, the same as from the list. |
@@ -544,3 +598,16 @@ pill on the canvas. **Nothing was built for this question** — it was asked and
 there is no code, no test and no ledger entry behind it. If right-click is wanted later it starts from this block,
 which already carries the three options and what each costs.
 
+### Question 4 — when you drag a row past the end of its own group, should it land at the end, or snap back?
+
+In the Layers list, a row can only be moved within its own group — a page section never mixes with the site-wide ones.
+The written plan says a drop that lands *outside* the group should put the row back where it started. What is built
+lands it at the nearest end of its group instead, which is what every other draggable list in Inflozo does (your
+finding 9 of 13 September, "nothing reorders until the drop", applies to every list, and the item lists in the panel
+already land at the end). **Example:** you drag "Newsletter — Inline Row" up above the SITE-WIDE heading and let go.
+
+1. **Land it at the top of its own group.** (RECOMMENDED) — same feel as the item lists you already approved; a drag
+   that overshoots still does what you meant.
+2. **Snap it back to where it was**, exactly as the plan's words say — an overshoot cancels the move.
+
+**Ruled:** _(awaiting the owner)_

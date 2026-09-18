@@ -2574,7 +2574,7 @@ export the authority and these five change what B7 draws.
   - ✅ `apps/web/components/kit/layers-row.tsx` · ✅ `apps/web/components/controls/layers.tsx` ·
     ✅ `apps/web/lib/menu.ts` · ✅ `tools/probe/run-verify-editor.cjs` · ✅ Story 5.4's spec ·
     ✅ `deferred-work.md` (DW-184 closed) — Story 5.4's Dev (2026-09-18).
-  - ⬜ `EXPERIENCE.md` · `DESIGN.md` · `epic-5-context.md` — at 5.4's Review, with the rest of the story's propagation.
+  - ✅ `EXPERIENCE.md` · ✅ `DESIGN.md` · ✅ `epic-5-context.md` — Story 5.4's Review (2026-09-18).
 - **Deliberately not touched:** D8e's four row states and the ring on the ROW; the drag, its dashed slot and every
   keyboard path; the two singletons; R-123's grounds; R-124 and R-125, which are about other surfaces. The export
   itself is NOT edited (R-74 forbids it) — this file is the record of the divergence.

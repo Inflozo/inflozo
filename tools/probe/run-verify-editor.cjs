@@ -34,9 +34,9 @@
 // press on its words is now the start of editing. Its review adds step 27: R-123's press on nothing, in each of its three grounds.
 // Story 5.4 adds steps 28–39, all inside step 5's CSP session so its zero covers them: B7's two groups and their DERIVED
 // counts (the canvases `lib/editor.ts` opens, and the page group's own rows — never a number written here), a press on a
-// row, D8e's four states with the ring on the ROW, the eye, `⌥`-arrows with the announce read from `#editor-said`, the
+// row, D8e's four states with the ring on the ROW, Hide/Show from the ⋯ menu and `Space` (R-126), `⌥`-arrows with the announce read from `#editor-said`, the
 // drag proving nothing reorders until the drop, the `⋯` menu and the rename dialog, the two kinds of singleton (no
-// Duplicate on a site-wide row, and one confirm for both its Delete and its eye, reached from the row AND the pill),
+// Duplicate on a site-wide row, and one confirm for both its Delete and its Hide, reached from the row AND the pill),
 // S4b's pill measured against the section's corner and against R-119's Pro tag (R-125), the pointer crossing onto the
 // pill keeping the hover, the pill hiding from the first scroll, R-124's Member visibility at the head of Section
 // Settings, hiding and then removing every page section, and a reload starting from the stored doc. Step 8's axe runs
@@ -151,6 +151,10 @@ async function main() {
     }
     const violations = []
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    // ATTACHED BEFORE THE FIRST PAGE, and never to be dropped again: Story 5.4's DW-183 retry commit deleted this line
+    // by accident and its withdrawal did not restore it, so step 5's zero was vacuous and its control failed for two
+    // runs while the retry took the blame (review, 2026-09-18). Without it `violations` has no writer.
+    await recorder(context, violations)
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
@@ -199,7 +203,7 @@ async function main() {
         card: card && { left: box(card).left - box(canvas).left, right: box(canvas).right - box(card).right, top: box(card).top - box(canvas).top, bottom: box(canvas).bottom - box(card).bottom, width: box(card).width, radius: css(card).borderRadius, shadow: css(card).boxShadow },
         controls: { w: box(controls)?.width, rule: css(controls)?.borderLeftWidth, pad: css(controls)?.paddingTop, bg: css(controls)?.backgroundColor, label: pageLabel?.textContent, labelTop: box(pageLabel)?.top - box(controls)?.top, labelSize: css(pageLabel)?.fontSize, labelWeight: css(pageLabel)?.fontWeight, labelCase: css(pageLabel)?.textTransform },
         rows: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].map((r) => r.querySelector('button')?.textContent),
-        // Story 5.4: every row is interactive — a name button, a ⋯ and an eye. `:scope >` only: each row also holds
+        // Story 5.4: every row is interactive — a name button and a ⋯ (R-126). `:scope >` only: each row also holds
         // its own ⋯ MENU, whose rows are buttons too (and whose popover keeps them out of the a11y tree until opened).
         rowControls: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].map((r) => r.querySelectorAll(':scope > button, :scope > span > button').length),
         rowGrips: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].filter((r) => r.querySelector('span[aria-hidden] svg')).length,
@@ -1162,7 +1166,7 @@ async function main() {
     check('step 27 — a press in the panel is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
     // the Layers panel's own ground, below its rows (R-123 as amended, 2026-09-18) — and a row is not ground
     const layersGround = await page.evaluate(() => {
-      // Story 5.4 re-anchored this: the list's last ELEMENT CHILD is B7's footed note now, so the ground is read from
+      // Story 5.4 re-anchored this: the list's last ELEMENT CHILD is no longer a row, so the ground is read from
       // the last ROW, exactly as `controls/layers.tsx` reads it
       const list = document.getElementById('editor-layers').lastElementChild
       const r = list.getBoundingClientRect()
@@ -1187,7 +1191,8 @@ async function main() {
     await page.waitForTimeout(250)
     check('step 27 — a press on a Layers row is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
     // nor is a group heading or B7's footed note: only the empty space BELOW THE ROWS lets the selection go
-    for (const [what, starts] of [['a group heading', 'This page · '], ['the footed note', 'Editing a site-wide section']]) {
+    // (B7's footed note was the second of these until R-126 removed it; step 28 asserts it is gone)
+    for (const [what, starts] of [['a group heading', 'This page · ']]) {
       const at = await page.evaluate((s) => {
         const el = [...document.querySelectorAll('#editor-layers span')].find((n) => n.textContent.startsWith(s))
         const r = el.getBoundingClientRect()
@@ -1260,7 +1265,8 @@ async function main() {
       words: getComputedStyle(r.querySelector('button')).color,
       weight: getComputedStyle(r.querySelector('button')).fontWeight,
       // R-126: the row's ONLY control is the ⋯; Hide/Show moved into its menu
-      controls: [...r.querySelectorAll('button')].map((b) => b.getAttribute('aria-label') ?? b.textContent.trim()),
+      // `:scope >` only: the row also holds its ⋯ MENU, whose rows are buttons in the DOM whether or not it is open
+      controls: [...r.querySelectorAll(':scope > button')].map((b) => b.getAttribute('aria-label') ?? b.textContent.trim()),
       size: getComputedStyle(r.querySelector('button')).fontSize,
     }))
     await page.keyboard.press('Escape')
@@ -1286,7 +1292,7 @@ async function main() {
     const menuOf = async (n) => {
       await rowAt(n).getByRole('button', { name: `More for ${layerOf(n)}`, exact: true }).click()
       await page.waitForTimeout(250)
-      return page.locator(`#layers-menu-${B7.rows[n].key.split(':')[1]} button`).allInnerTexts()
+      return page.locator(`#layers-menu-${B7.rows[n].key.replace(':', '-')} button`).allInnerTexts()
     }
     const fromMenu = async (n, label) => {
       await rowAt(n).getByRole('button', { name: `More for ${layerOf(n)}`, exact: true }).click()
@@ -1306,7 +1312,7 @@ async function main() {
     check('step 30 — nothing is persisted before Story 5.8: the stored doc still holds every instance, unhidden', (await docNow())?.instances?.length === TEMPLATES.home.length && (await docNow())?.instances?.every((i) => i.hidden === undefined || i.hidden === false), JSON.stringify(await docNow()))
     await fromMenu(GRID, 'Show')
     check('step 30 — Show brings the section back', (await rootCount()) === before30)
-    // UX-DR10's keyboard path to the same toggle: `Space` on the ROW, not on the eye (which is Enter's and the pointer's)
+    // UX-DR10's keyboard path to the same toggle: `Space` on the ROW
     await rowAt(GRID).focus()
     await page.keyboard.press(' ')
     await page.waitForTimeout(400)
@@ -1372,7 +1378,7 @@ async function main() {
     const pageMenu = await menuOf(GRID)
     // the owner's finding of 2026-09-18: a 210px menu right-aligned to a ⋯ in the 240px Layers panel hung off the
     // LEFT edge of the window. `openMenu` clamps both edges now, so no part of any menu is cut off.
-    const menuBox = await page.locator(`#layers-menu-${B7.rows[GRID].key.split(':')[1]} ul`).boundingBox()
+    const menuBox = await page.locator(`#layers-menu-${B7.rows[GRID].key.replace(':', '-')} ul`).boundingBox()
     check('step 33 — the ⋯ menu is wholly on screen: no edge past the window on either side (the owner\'s finding)', menuBox.x >= 0 && menuBox.x + menuBox.width <= 1440 && menuBox.y >= 0, JSON.stringify(menuBox))
     await page.keyboard.press('Escape')
     const siteMenu = await menuOf(HEADER)
@@ -1454,6 +1460,27 @@ async function main() {
     await page.locator(`[data-section-pill] button[aria-label="Delete ${layerOf(GRID)}"]`).click()
     await page.waitForTimeout(500)
     check('step 35 — and its bin removes it again', (await rootCount()) === before30 && (await pageNames()).length === B7.rows.length)
+    // EITHER GRIP DRIVES THE SAME REORDER (review, 2026-09-18): the pill's grip, held past the next section's screen
+    // middle, draws the dashed slot in Layers with nothing reordered, and one move lands on the drop — the second
+    // entry point to the one `moveSection`, checked as step 32 checks the first
+    await hoverOn(GRID)
+    const namesP = await pageNames()
+    const classesP = await canvasClasses()
+    const gripP = await page.locator('[data-section-pill] span[aria-hidden]').boundingBox()
+    const nextP = await onScreen(GRID + 1)
+    await page.mouse.move(gripP.x + gripP.width / 2, gripP.y + gripP.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(gripP.x + gripP.width / 2, (nextP.y + nextP.bottom) / 2 + 12, { steps: 10 })
+    await page.waitForTimeout(200)
+    const draggingP = await page.evaluate(() => ({ slot: !!document.querySelector('#editor-layers [data-drop-slot]'), lifted: [...document.querySelectorAll('#editor-layers [data-layer-row]')].filter((r) => getComputedStyle(r).rotate !== 'none').length }))
+    check('step 35 — the pill\'s grip: while held, Layers draws the dashed slot, no row is lifted (the section is what moves), and nothing is reordered', draggingP.slot && draggingP.lifted === 0 && (await pageNames()).join(' | ') === namesP.join(' | ') && (await canvasClasses()).join(' | ') === classesP.join(' | '), JSON.stringify(draggingP))
+    await page.mouse.up()
+    await page.waitForTimeout(400)
+    const swappedP = [...namesP]
+    swappedP.splice(GRID, 2, namesP[GRID + 1], namesP[GRID])
+    check('step 35 — on the drop the list and the canvas both take the new order, and the move is announced', (await pageNames()).join(' | ') === swappedP.join(' | ') && (await canvasClasses()).join(' | ') !== classesP.join(' | ') && /^Moved to position/.test(await page.locator('#editor-said').innerText()), (await pageNames()).join(' | '))
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
     await hoverOn(HEADER)
     check('step 35 — a site-wide section\'s pill has no Duplicate (FR-D5), and its bin asks first', (await pillNow())?.buttons.join(' · ') === `Delete ${layerOf(HEADER)}`, JSON.stringify((await pillNow())?.buttons))
     await page.locator(`[data-section-pill] button[aria-label="Delete ${layerOf(HEADER)}"]`).click()
@@ -1547,6 +1574,17 @@ async function main() {
     await page.getByRole('button', { name: 'Everyone', exact: true }).click()
     await page.waitForTimeout(500)
     check('step 37 — back to Everyone and the section returns', (await rootCount()) === before30)
+    // the canvas previews a visitor who is not signed in, so "Logged out" IS drawn and the second hint stays away
+    // (review, 2026-09-18: the hint used to claim the section was not drawn for every audience but Everyone)
+    await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Logged out', exact: true }).click()
+    await page.waitForTimeout(500)
+    check('step 37 — set to Logged out, the audience the canvas previews, the section stays drawn and the control adds no second line', (await rootCount()) === before30 && !/previewing/.test(await controlsAside().evaluate((a) => a.textContent)), `roots ${await rootCount()} of ${before30}`)
+    await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Everyone', exact: true }).click()
+    await page.waitForTimeout(500)
 
     // ── step 38 — hide every page section, then remove them all (EXPERIENCE § State Patterns, UX-DR6) ──
     for (const n of TEMPLATES.home.map((_, i) => i + TEMPLATES.site.length)) await fromMenu(n, 'Hide')
@@ -1558,7 +1596,7 @@ async function main() {
       await page.waitForTimeout(350)
     }
     const emptied = await layersShape()
-    check('step 38 — removed one by one, the page group\'s count reaches 0 and only the Site-wide card is left', emptied.rows.length === TEMPLATES.site.length && emptied.mono.includes('0') && (await rootCount()) === TEMPLATES.site.length, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono }))
+    check('step 38 — removed one by one, the page group\'s count reaches 0 and only the Site-wide group is left', emptied.rows.length === TEMPLATES.site.length && emptied.mono.includes('0') && (await rootCount()) === TEMPLATES.site.length, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono }))
 
     // ── step 39 — a reload starts from the stored doc: nothing here was persisted (Story 5.8 saves) ──
     await page.goto(editorUrl(), { waitUntil: 'load' })

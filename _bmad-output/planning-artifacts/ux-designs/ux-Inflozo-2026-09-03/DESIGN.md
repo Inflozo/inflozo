@@ -481,10 +481,11 @@ out — the owner's ruling on his test of story 2.1, for the passkey nudge (2026
 
 **Toast** — a bottom-centre pill: icon, message, action.
 
-**Layers rows** — grip, mini-thumbnail, name, eye. Four states: rest, hover (the 40% wash), selected
+**Layers rows** — grip, mini-thumbnail, name at the caption size, and a `⋯` as the row's only control (R-126, 2026-09-18: the eye moved into that menu so the name has the width). Four states: rest, hover (the 40% wash), selected
 (`{colors.coral-tint}`), and keyboard focus — the solid ring drawn over whichever state the row is
-already in, so focused-and-selected reads as both (D8e). The **site-wide group** is a separate white card with its own drag icon and
-a page count, so it reads as pinned rather than merely first.
+already in, so focused-and-selected reads as both (D8e). The **site-wide group** is drawn exactly as the page group
+— heading, right-aligned mono template count, rows — with one hairline under it; the export's white card, drag icon
+and footed note were retired by R-126 (the owner's ruling against B7, recorded in `reconcile-designs-decisions.md`).
 
 **Composite cards** — the **quick-controls card** holds three to five most-used controls on a
 surface card, and **the settings panel no longer uses it** (R-113, 2026-09-15: every setting sits in the accordion

@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DESIGNS_DIR, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
+import { carriesMemberVisibility, DESIGNS_DIR, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
 // for the pilots review. Rendering needs a DOM, which apps/web does not carry; `tools/check-snapshots.mjs` renders
@@ -90,4 +90,13 @@ test('every file the canvas document and the pilots review read is traced for ev
   }
   assert.ok(covers('./lib/canvas-chrome.css'), 'the chrome stylesheet the canvas document reads is not traced')
   for (const route of ['/app/pilots', '/app/canvas', '/app/projects/**']) assert.ok(config.includes(`'${route}': PILOTS_FILES`), `${route} is not traced`)
+})
+
+// Story 5.4 — R-124's row is drawn for the categories R-113's register files it under, and for nothing else
+test('carriesMemberVisibility: read off the control register, false for a category it does not file or an id with none', () => {
+  assert.equal(carriesMemberVisibility('a22/1'), true, 'a22 files Member visibility')
+  assert.equal(carriesMemberVisibility('a4/13'), true, 'a4 files it too')
+  assert.equal(carriesMemberVisibility('a17/1'), false, 'a17 does not')
+  assert.equal(carriesMemberVisibility('a22'), true, 'the category alone decides, so a bare category answers as its designs do')
+  for (const id of ['', 'zz/1', '/1']) assert.equal(carriesMemberVisibility(id), false, JSON.stringify(id))
 })

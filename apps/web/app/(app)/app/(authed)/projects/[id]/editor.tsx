@@ -77,9 +77,9 @@ import type { EditorData } from './read'
    selection takes it away.
 
    LAYERS, THE PILL, AND THE TWO KINDS OF SINGLETON (Story 5.4 — B7, D8e, S4b). The Layers panel's body is
-   `controls/layers.tsx`: B7's pinned Site-wide card over the page's own rows, each row pressable, draggable by its
-   grip, carrying an eye and a `…` (Rename · Duplicate · Delete) and answering `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` on the
-   row itself. Every operation goes through `doc-edit.ts` — ONE place decides what a move, a copy, a removal, a
+   `controls/layers.tsx`: B7's two groups as R-126 amends them — Site-wide over the page's own rows, one shape, a
+   hairline between — each row pressable, draggable by its grip, carrying a `…` (Hide/Show · Rename · Duplicate ·
+   Delete) as its only control and answering `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` on the row itself. Every operation goes through `doc-edit.ts` — ONE place decides what a move, a copy, a removal, a
    rename, a hide and an audience mean, so 5.8's journal and Epic 7's compiler read the rules rather than re-derive
    them — and each writes this session's `docs` and repaints. A HIDDEN instance stays in the doc and renders `''`, so
    `sectionRoots` gives it a null root exactly as a gated section does; R-124's Member visibility is an instance field
@@ -118,6 +118,10 @@ const DESKTOP = 1440
 /** The visitor the canvas previews until Story 5.14's View as: Story 4.10's own default, named here because R-124's
  *  Member visibility control says which visitor it is when a section is gated away. */
 const PREVIEWS: Exclude<MemberState, 'everyone'> = 'anonymous'
+
+/** How many templates the editor opens — derived, never written down (standing rule 4): the Site-wide heading and
+ *  the site-wide confirm both say this number, from one place. */
+const TEMPLATES_OPEN = Object.keys(CANVASES).length
 
 /** A panel's fold: focus moves to the toggle that replaced the pressed one. Layout-held, so a soft navigation between
  *  canvases keeps it; a typed address is a document load and starts unfolded. */
@@ -851,7 +855,7 @@ export function Editor({
             label={canvas.label}
             siteKey={SITE.key}
             // derived, never written down (standing rule 4): the canvases `lib/editor.ts` opens
-            templates={Object.keys(CANVASES).length}
+            templates={TEMPLATES_OPEN}
             selectedKey={selected ? keyOf(selected) : null}
             hoveredKey={hovered ? keyOf(hovered) : null}
             drag={drag}
@@ -1001,7 +1005,7 @@ export function Editor({
         {said}
       </p>
 
-      {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu or eye, and the canvas pill's bin */}
+      {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu (Hide or Delete), and the canvas pill's bin */}
       <dialog
         ref={confirm}
         onClick={closeOnBackdrop}
@@ -1014,8 +1018,8 @@ export function Editor({
             {ask?.kind === 'remove' ? 'Delete' : 'Hide'} {ask?.name ?? 'this section'}?
           </h2>
           <p id="editor-sitewide-body" className="text-ui-dense leading-[1.55] text-ink-soft">
-            This section is site-wide: it is one shared thing that appears on every page of your site, so{' '}
-            {ask?.kind === 'remove' ? 'deleting' : 'hiding'} it here changes all {Object.keys(CANVASES).length}{' '}
+            This section is site-wide: it is one shared thing that appears on every template of your site, so{' '}
+            {ask?.kind === 'remove' ? 'deleting' : 'hiding'} it here changes all {TEMPLATES_OPEN}{' '}
             templates.
           </p>
         </div>

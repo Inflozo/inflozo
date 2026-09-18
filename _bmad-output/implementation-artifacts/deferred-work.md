@@ -4353,8 +4353,15 @@ also: Story 5.4's Dev (2026-09-18) added the third and fourth observations and N
   one `goto`, so the patience did not buy the stall out, and while it was in place step 5's `securitypolicyviolation`
   control stopped seeing its own two planted eval refusals (`[]`, twice, and a 4-second wait for them did not help,
   so it was not timing). Under standing rule 2 a control that does not pass voids the result it guards, so a change
-  that breaks one is worse than the intermittent stall it was meant to fix. Reverted; the harness is back to the shape
-  whose control passed.
+  that breaks one is worse than the intermittent stall it was meant to fix. Reverted.
+  **CORRECTED AT REVIEW (2026-09-18): the control did not fail because of the retry.** The retry commit (`ad50f413`)
+  had deleted `await recorder(context, violations)` — the one line that attaches the `securitypolicyviolation` binding
+  to the main session — while inserting its own comment block, and the withdrawal (`35a17b53`) touched comments and
+  the wait loop only, so at Dev's final tree the main session's `violations` had NO WRITER and the control could not
+  pass on any tree. The Review restored the line (with the history beside it) and run 8 is the control's confirmation.
+  What stays true of this entry: a blind retry of `goBack` or of the magic-link `goto` is still wrong for the two
+  reasons above. What does not: "the retry breaks the control" — it never did, so a retry of the idempotent signed-in
+  loads alone is back on the table for whoever takes this.
 owner: the first story that touches the harness's session (Story 5.8's saving, or the next editor story with a new step)
 location: `tools/probe/run-verify-editor.cjs` (its signed-in navigations, and `main().catch`)
 reason: the pattern is now named and two shapes of fix are excluded, but the remaining one — retrying only the
@@ -4457,3 +4464,33 @@ location: `apps/web/components/controls/layers.tsx` · `apps/web/app/(app)/app/(
 reason: the section's name is on its row and its name tag is on the canvas, so nothing is unreachable today; the
   reverse hover would also have to decide whether a hovered row scrolls its section into view, which is a product
   decision the owner has not been asked.
+
+### DW-189: a pill-grip drag over a site doc measures its landing in canvas order, and the site doc is stored in doc order
+
+plain: The little grip on the hover pill lets you drag a section up or down the page itself. For the shared header and
+  footer it works out where you dropped by looking at where the sections sit on the page, while the list on the left
+  keeps them in the order they are stored. Today the shared group holds one section, so the two orders cannot differ.
+status: open
+severity: low
+origin: Story 5.4's Review (2026-09-18, Edge Case Hunter) — `editor.tsx`'s `screenRows()` hands `landingAt` the site
+  doc's instances in DOC order with each one's on-screen top; DW-187 records that the `a3/` footers compile last
+  whatever the doc order, so a site doc holding a header after its footer would count the landing against a footer
+  that is drawn at the bottom
+owner: Story 5.19 (the site-wide footer story) or whichever story first seeds a site doc with two instances
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`screenRows`, `pillGrip`)
+reason: unreachable while the seeded site doc holds one instance; the fix is to drag the site group by the Layers
+  list's own layout (doc order) rather than by screen rects, or to sort the rects into canvas order first
+
+### DW-190: a refusal shown "where the action was pressed" has nowhere to go when the section has no root
+
+plain: When Inflozo refuses to copy a section (today only "this layout already prints the article"), it says so in a
+  small note on that section on the page. A hidden section, or one shown only to paying members, is not on the page,
+  so the note has nowhere to appear and the refusal is silent.
+status: open
+severity: low
+origin: Story 5.4's Review (2026-09-18, Blind Hunter) — `editor.tsx`'s `refuse()` skips `showNote` when `rootOf(pick)`
+  is null; only R-37's Post Content refusal can reach it and `packages/library/designs/` holds no A25 design yet
+owner: Story 5.10 (the Section Picker, which draws the refusal surface for placement)
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`refuse`)
+reason: unreachable on the deployed editor until an A25 design exists; the picker's refusal surface is the natural
+  place for a refusal that has no section to sit on

@@ -23,7 +23,8 @@ import { captureLayout, landingAt, shift, slotTop, type Layout } from '@/lib/reo
    Site-wide heading already carries the count it repeated.
 
    TWO GROUPS, AND THE BOUNDARY IS STILL THE RULE. A section is never reordered from one group into the other
-   (FR-D5's shared instance), and a drag that leaves its own group lands back where it began. The hairline says so
+   (FR-D5's shared instance), and a drag that leaves its own group lands at that group's own end (`landingAt` never counts past the
+   list it measured, as P0-3's list does not). The hairline says so
    where B7's card outline used to.
 
    NEITHER COUNT IS WRITTEN DOWN (standing rule 4): the site group's is how many canvases `lib/editor.ts` opens,
@@ -69,7 +70,7 @@ export type LayerRow = {
 export type SectionDrag = { doc: string; from: number; to: number; dy: number; via: 'layers' | 'pill' }
 
 export type LayersProps = {
-  /** the site doc's instances in doc order — the pinned card's rows */
+  /** the site doc's instances in doc order — the Site-wide group's rows */
   site: readonly LayerRow[]
   /** this canvas's own instances in doc order */
   page: readonly LayerRow[]
@@ -138,7 +139,8 @@ export function Layers({
   const [nameError, setNameError] = useState<string | null>(null)
   const rename = useRef<HTMLDialogElement>(null)
 
-  const tabAt = current !== null && all.some((r) => keyOf(r) === current) ? current : (all[0] ? keyOf(all[0]) : null)
+  // the tab stop follows the selection until a key steps it elsewhere, so Tab into Layers lands on the selected row
+  const tabAt = current !== null && all.some((r) => keyOf(r) === current) ? current : (selectedKey ?? (all[0] ? keyOf(all[0]) : null))
   const rowEl = (key: string) => panel.current?.querySelector<HTMLElement>(`[data-layer-row="${CSS.escape(key)}"]`)
 
   useEffect(() => {
@@ -151,10 +153,13 @@ export function Layers({
   // the layout is read ONCE per drag, from whichever group started it: a slot measured against rows that are already
   // sliding would chase itself, and a drag started by the canvas pill has no layout of its own to hand over
   const dragDoc = drag?.doc ?? null
+  const [, measured] = useState(0)
   useLayoutEffect(() => {
     if (dragDoc === null) return
     const list = dragDoc === siteKey ? siteList.current : pageList.current
     layout.current = captureLayout([...(list?.querySelectorAll<HTMLElement>('[data-layer-row]') ?? [])])
+    // the render that started the drag drew the slot from the PREVIOUS layout; one re-render before paint corrects it
+    measured((n) => n + 1)
     // `drag.to` changes on every pointer move and must not re-measure
   }, [dragDoc, siteKey])
 
@@ -177,7 +182,7 @@ export function Layers({
   }
 
   const onRowKey = (row: LayerRow, event: KeyboardEvent<HTMLDivElement>) => {
-    // a key pressed in the ⋯, its menu or the eye belongs to that control, not to the row
+    // a key pressed in the ⋯ or its menu belongs to that control, not to the row
     if (event.target !== event.currentTarget) return
     const own = row.doc === siteKey ? site : page
     if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
@@ -203,7 +208,8 @@ export function Layers({
   /* Called as plain functions and never mounted as `<Row/>`: a component declared inside a render is a NEW type on
      every render, which would unmount each row — and a remounted grip loses the pointer capture the drag holds. */
   const drawRow = (row: LayerRow) => {
-    const menu = `layers-menu-${row.instanceId}`
+    // the doc is part of the id: an `instanceId` is unique inside a doc, not across the two groups
+    const menu = `layers-menu-${row.doc}-${row.instanceId}`
     const lifted = drag?.doc === row.doc && drag.from === row.at && drag.via === 'layers'
     const sliding = drag?.doc === row.doc
     return (
@@ -306,7 +312,7 @@ export function Layers({
     <div
       ref={panel}
       // R-123 as amended: the empty space BELOW THE ROWS is a ground, as it is in Figma and Sketch. A row is not, and
-      // neither is a group heading, the card's padding, the footed note or the gap between two rows — a miss there
+      // neither is a group heading, a group's padding or the gap between two rows — a miss there
       // while reaching for a row would cost the selection (review, 2026-09-18). The geometry is the last ROW's, never
       // this container's last element child, which is the note.
       onPointerDown={(event) => {
@@ -340,7 +346,11 @@ export function Layers({
         ref={rename}
         onClick={closeOnBackdrop}
         aria-labelledby="layers-rename-title"
-        onClose={() => setNameError(null)}
+        // `renaming` is let go on close, so the next Rename — of the same row too — remounts the field on that row's name
+        onClose={() => {
+          setNameError(null)
+          setRenaming(null)
+        }}
         className={`${sheet} gap-[18px]`}
       >
         <h2 id="layers-rename-title" className={title}>
@@ -355,7 +365,7 @@ export function Layers({
         >
           {/* keyed on the row: the field is the DOM's, and a second Rename must open on that row's own name */}
           <TextInput
-            key={renaming?.instanceId}
+            key={renaming ? keyOf(renaming) : undefined}
             id={NAME_FIELD}
             name="layerName"
             label="Name"

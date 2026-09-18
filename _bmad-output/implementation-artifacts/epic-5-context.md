@@ -94,6 +94,11 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `choose(pickAt(target))` unconditionally, and the stage `<section aria-label="Canvas">` and the Layers row list each
     deselect on a primary `pointerdown` whose target is that container itself. **Story 5.4 owns all three Layers rules
     together** — the row's press, the drag's start and this ground's press.
+  - **R-126 (owner, 2026-09-18, on the deployed Story 5.4):** the Layers panel is drawn for its NAMES — the two groups
+    the same shape with a hairline between (no card, no glyph, no footed note), `Site-wide` and its derived template
+    count on one line, the name at `text-helper-caption`, and the `⋯` as the row's only control with Hide/Show leading
+    its menu (`Space` on the row still toggles). `openMenu` clamps BOTH edges, for every menu in the app. B7 is
+    superseded on those points and `reconcile-designs-decisions.md` is the record; a later Layers story starts there.
   - **R-124 (owner, 2026-09-18, Story 5.4's Q1, closing DW-163):** "who can see this section" is the FIRST ROW of the
     settings panel's Section settings and Layers draws nothing about it — where every drawing puts it (`A4-13`:256,
     `A22-1`:69) and where R-113 already filed it. A NAMED SELECT, not a pill row: R-114's own rule refuses its values

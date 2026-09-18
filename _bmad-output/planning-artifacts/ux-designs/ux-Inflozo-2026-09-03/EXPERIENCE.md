@@ -142,7 +142,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 |---|---|---|---|
 | **Editor** | `S4 Editor.dc.html` S4a rest · S4b hover · S4c selected · `D8 Editor Below 1440.dc.html` D8a at 834 · D8b at 720 | project card | Top bar · Layers · canvas · Controls sidebar (FR-D1) |
 | **Template Switcher** | S4a · `D5 Canvas Markers and Template Switcher.dc.html` D5b, complete | top bar | Home · Post · Page · Tag · Author · **Membership (Signup / Signin / Member Home)** · 404 · conditional Private · custom templates · + New template (FR-D6) |
-| **Layers** | B7 · D8e focused row | `L` · left panel | Ordered sections; a pinned **Site-wide** card above the page's own |
+| **Layers** | B7 · D8e focused row *(as R-126 amends B7, 2026-09-18)* | `L` · left panel | Ordered sections; a **Site-wide** group above the page's own, both drawn the same with a hairline between, the row's only control a `⋯` |
 | **Design Picker** | B1a | Controls sidebar | The category's full design ring — "Design 7 of 18", twelve thumbs then a `+N` tile |
 | **Design Nav** | B1b | hover on a section | The same counter and arrows riding on the section itself |
 | **Control Sidebar** | B2 + `Editor Sidebar Kit.dc.html` | selection | Per-design controls, ~4–7 per design |
@@ -309,7 +309,7 @@ Behavioural. Visual specs live in `DESIGN.md` § Components.
 | **Design picker** | Position is always shown ("Design 7 of 18"). `]` past the last returns to the first. Switching **carries, parks and defaults**: a control in both designs carries its value, one only in the design being left is parked against it, one only in the design being entered takes its default (FR-D19) |
 | **Section on canvas** | Hover → 1px outline, name tag, ◀ ▶ design arrows, duplicate, delete, drag handle, and a "+" between sections. **The name tag holds the top-left; the Pro badge holds the top-right and the quick-action pill sits directly to its left** (R-125, Story 5.4). Click → persistent outline and sidebar. Click text inside a selection → inline editing. **Click the ground — around the page, below the last section, or below the Layers rows → deselected, editing and all** (R-123). **A click on Ghost's own words — a post's title, your site's name — shows a lock pill naming them, "Post title — set in Ghost", and nothing becomes editable** (R-122, Story 5.3). Esc deselects |
 | **Inline toolbar** | Exactly four marks. **A mark a field does not permit is absent, not greyed** — a fixed button order keeps the shapes recognisable at any width (`P0 Editor Primitives - Spec.md`). **A field that permits no mark shows no toolbar at all**, and ⌘B ⌘I ⌘U ⌘K do nothing in it; a Text Field is **one line** and a Text Area takes line breaks (Story 5.3) |
-| **Site-wide singleton** | Header, announcement bar and footer are one shared instance shown in every template's Layers as a pinned card with a page count. Cannot be duplicated. Deleting or hiding one confirms that it affects every template (FR-D5) |
+| **Site-wide singleton** | Header, announcement bar and footer are one shared instance shown in every template's Layers as the Site-wide group with its template count (B7's pinned card and globe went with R-126, 2026-09-18). Cannot be duplicated. Deleting or hiding one confirms that it affects every template (FR-D5) |
 | **Pro badge** | Marigold ✦ on selection only. **No upgrade sheet on click, ever** — that is the Pro Exit Sheet's job, once, at the exit |
 | **Persistence indicator** | One dot and one label, never a spinner. The labels are exactly those `B Missing Surfaces` B6 draws — it is headed FIVE STATES, the fifth being the browser with no local storage, which must never be told its work is saved on the device. Corrected 2026-09-05 by Story 1.3, which built the component from the frame and found this row said four. The expanded panel appears only on Retrying |
 | **Feedback banner** | One icon, one plain sentence. Sky informs, mint succeeds, marigold nudges without blocking, danger is serious |
@@ -344,7 +344,7 @@ whose Loading cell is "—": a surface with nothing to shimmer still has control
 | **Editor** | a blank canvas with "+ Add section" and nothing else — the canvas is sacred, so no grid, no placeholder | skeleton section blocks | Content API unreachable → falls back to sample content **and names the cause** (FR-H4) | coarse pointer below 834px → Small Screen Notice |
 | **Control Sidebar** | "Nothing selected. Click any section on the canvas — its controls appear here." | — | — | greyed control + reason |
 | **Section Picker** | search with no matches: the category rail stays, the grid says what was searched for | lazy previews, skeletons | — | a design whose `bindingContext` does not match this template is **never shown** (FR-D12) |
-| **Layers** | a template with no sections shows only the Site-wide card | — | — | second Post Content refused at placement, with the reason (R-37) |
+| **Layers** | a template with no sections shows only the Site-wide group, its page count at 0 | — | — | second Post Content refused at placement, with the reason (R-37) |
 | **Routes Manager** | S9d: "Your site uses Ghost's default routing. Nice and simple." | — | S9b: line-numbered YAML error, deploy blocked with the reason on the Ship button | a filename that collides, or a rename of a deployed template — refused at the naming step, with why (FR-I3) |
 | **Assets** | drop zone with the accepted types | per-file progress with a real byte count | over quota → read-only, existing files stay | delete-in-use → S10c, serious |
 | **Deploy History** | first deploy: "Nothing shipped yet" and the limit stated anyway | — | — | pin refusal at N−1, with the reason (F8) |
@@ -478,7 +478,7 @@ shortcut" rule — that rule is about *new global bindings*. So:
 
 | Where | Keys |
 |---|---|
-| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility. B7 draws three row states; the fourth, keyboard focus, is D8e — the ring over whichever state the row is in, with the keys captioned |
+| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility (the eye left the row for the `⋯` menu, R-126, and the key stayed). B7 draws three row states; the fourth, keyboard focus, is D8e — the ring over whichever state the row is in, with the keys captioned |
 | **Item list** (P0-3) | the same pattern — the Add, Remove and drag affordances each have a focusable control, and drag has the `⌥`-arrow equivalent |
 | **Section Picker** | ↑ ↓ ← → across the grid, `Enter` places, `Esc` closes and returns focus to the invoking position |
 | **Design picker** | ← → across the thumbnail strip, mirroring `[` and `]` |
@@ -826,7 +826,7 @@ a closed control vocabulary.
 | 6 | **Inline Toolbar** | She clicks the headline and types. Selecting raises four marks — bold, italic, underline, link — and nothing else |
 | 7 | **Style Packs** | She opens the panel, hovers Tangerine, and the whole canvas crossfades over 300ms |
 | 8 | **Template Switcher** | Home → Post → Page → Tag → Author. The six untouched synthesizable templates already render their default stacks, each carrying the **Auto-Generated Marker** until her first edit materialises it |
-| 9 | **Layers** | `L`. The Site-wide card is pinned at the top with a page count; below it, this page's sections. She drags one and the canvas follows |
+| 9 | **Layers** | `L`. The Site-wide group sits at the top with its template count; below a hairline, this page's sections. She drags one and the canvas follows |
 | 10 | **Preview Mode** | `P`. Every chip, outline and handle vanishes; the countdown ticks and the rotator rotates. `Esc` returns |
 | 11 | **Device Preview** | `3`. The canvas becomes 390 × 844 — a phone-shaped viewport that scrolls inside itself — so she can see where the fold lands |
 | 12 | **Site Remix** | `⇧R`. One button re-rolls every design on the site, keeping every word she typed. One undo, always |

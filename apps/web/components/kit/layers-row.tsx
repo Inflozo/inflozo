@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode, Ref } from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
 import { DragGrip } from './grip'
 import { ring } from './greyed'
 
@@ -39,8 +39,6 @@ type RowProps = {
    *  `hovered` in the wash, as the interactive row draws them. Story 5.4 made the editor's rows interactive, so the
    *  display-only row is now the `/kit` gallery's and any later read-only list's. */
   interactive?: boolean
-  /** Story 5.4 — the row itself, for the roving tabindex's focus call */
-  rowRef?: Ref<HTMLDivElement>
   /** Story 5.4 — pressing the name selects the section (R-123: a press on a row never deselects) */
   onSelect?: () => void
   /** Story 5.4 — the grip's pointer handlers and its `data-*`; `aria-hidden` and pointer-only either way */
@@ -57,7 +55,6 @@ export function LayersRow({
   thumb,
   className = '',
   interactive = true,
-  rowRef,
   onSelect,
   gripProps,
   overflow,
@@ -73,7 +70,6 @@ export function LayersRow({
   }
   return (
     <div
-      ref={rowRef}
       // The ring is the row's, over whichever state it is already in (D8e), which is why it is not on the name button.
       className={`group flex items-center gap-2 rounded-sm px-2 py-[7px] ${ring} ${
         selected ? 'bg-coral-tint' : hovered ? 'bg-coral-wash' : 'hover:bg-coral-wash'
@@ -88,10 +84,15 @@ export function LayersRow({
         type="button"
         tabIndex={-1}
         aria-current={selected ? 'true' : undefined}
-        onClick={onSelect}
+        // a press on the name puts focus on the ROW, the one tab stop, so ⌥-arrows, Space and Enter work right after a
+        // click and not only after a Tab (review, 2026-09-18) — the button itself is never a stop
+        onClick={(event) => {
+          event.currentTarget.parentElement?.focus()
+          onSelect?.()
+        }}
         className={`min-w-0 flex-1 truncate text-left text-helper-caption ${selected ? 'font-semibold' : 'font-medium'} ${
           shown ? 'text-ink' : 'text-ink-soft'
-        } ${ring}`}
+        } outline-none`}
       >
         {name}
       </button>
