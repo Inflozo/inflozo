@@ -2,10 +2,10 @@
 title: 'Story 5.6 — Light and dark authoring'
 type: 'feature'
 created: '2026-09-18'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 baseline_commit: 'b31b1e5bab89312c57f13aa10ab3d7d4b8e58eb2'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -384,7 +384,44 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 - Given the deployed editor, when the harness runs, then **0 FAIL** with step 5's CSP zero read after the
   new gestures and its own control passing (standing rule 2).
 
+### Review Findings
+
+Five layers on 2026-09-18 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier)
+over the diff since `b31b1e5b`. **One acceptance criterion was violated as shipped — AC 3, the caret** — and is
+patched; two findings are the owner's and sit under § Questions for the owner (4 and 5). Every patch was applied at
+Review. The dismissed ones were noise, deliberate and recorded, or unreachable: the `(editor)` layout's repeated
+`notFound()` only narrows a type over a cached read; `editorData` on the settings page is the documented choice (the
+count cannot be built on a doc the editor would refuse); a flip before the canvas loads is corrected by `paint()`,
+which writes the mode itself; D6b's "three" printed as a derived digit is standing rule 4, and D6a's own count line
+already uses a digit; line-number citations are this repository's convention; the per-section clear wiping the WHOLE
+map while its confirm counts the overrides in force is recorded in `clearDarkOverrides`' own comment — a deliberate
+clear is one of the two acts allowed to remove a stored value.
+
+- [x] [Review][Decision] The project-level Clear deletes every stored override on one press, with no confirm — § Questions for the owner, Question 4
+- [x] [Review][Decision] On a Light-only project the editor still offers both "Clear dark overrides" entry points, while Theme settings greys the same act — § Questions for the owner, Question 5
+- [x] [Review][Patch] **AC 3: pressing the sun ENDED an inline edit, so the caret did not survive a flip.** The toggle is a focusable button in the top document; the press moved focus out of the canvas, `inline.ts`'s focusout called `end()`, and `onEnd` repaints. Harness step 47 started no edit, so it could not see it. Fixed the way the mark toolbar already does it — `onMouseDown` prevents the focus move — and step 47 now puts a caret in a title, flips, and reads the caret back at the same offset [apps/web/components/editor/mode-toggle.tsx]
+- [x] [Review][Patch] **The greyed Clear was refused only by the button.** `aria-disabled` still submits with scripts off (the file's own header promises the forms work that way), and `clearProjectDarkOverrides` never read `dark_enabled` — so D6b's "kept, not discarded" was a promise the database did not keep. The action now refuses on a Light-only project; step 53 presses the greyed Clear and reads the stored override back unchanged [apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts]
+- [x] [Review][Patch] An override the design will not take made the dark render fall to the DEFAULT rather than follow the LIGHT value (`controls.bg='surface'`, `darkOverrides.bg='accent'` drew `base` in dark). The shipped test hid it by using a light value equal to the default. `storedFor` now takes only an override in force — `overridden`, the one definition the moon already reads [packages/section-runtime/src/controls.ts]
+- [x] [Review][Patch] In dark, a mode-scoped row with a non-default light value and NO override showed a reset arrow that did nothing, and an override EQUAL to the default showed the moon with no arrow to remove it. `resetControl` in dark now falls through to the light value when no override is stored, and an override in force is itself `changed` in dark [packages/section-runtime/src/controls.ts]
+- [x] [Review][Patch] `clearProjectDarkOverrides`: an unparseable doc threw out of the action as a 500 where `read.ts` drops it with a reason; a write matching zero rows answered `ok`. Both guarded [settings/actions.ts]
+- [x] [Review][Patch] Both actions revalidated the settings page alone, while the editor — a sibling route — reads `dark_enabled` and the docs too. They now revalidate the project's layout, and step 53 goes Back by the LINK (a soft navigation) and reads the sun absent without a reload; the harness had only ever crossed with `page.goto` (standing rule 1: a claim about Next, now executed) [settings/actions.ts]
+- [x] [Review][Patch] `aria-pressed` beside a name that changes reads "Back to light mode, pressed". Removed; the name and the polite announcement carry the state, which is what R-132's words asked for. The task line's `aria-pressed` was Dev-facing guidance, not the ruling [apps/web/components/editor/mode-toggle.tsx]
+- [x] [Review][Patch] The settings screen's two error sentences were silent to a screen reader — now `role="alert"`; and pressing the segment already in force ran a no-op write with a busy label it could never show — now refused client-side [settings/theme-settings.tsx]
+- [x] [Review][Patch] Harness: `/settings` joins step 6's stranger/random/`abc` 404 walk (its page sits UNDER its own skeleton, so the parent guard is all that stands between a stranger and a streamed 200, and steps 2/6/9 never asked it); step 49's `if (lightTo)` silent skip is now a check (standing rule 2) [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Defer] The project-level Clear writes doc by doc with no transaction and no `revision` check [settings/actions.ts] — deferred to Story 5.8 (DW-197), which owns the journal and the revision contract; nothing writes `project_templates` concurrently before it
+- [x] [Review][Defer] No harness step reads a Background-role swatch's COLOUR in dark, on `/pilots` or in the editor, and the project-level Clear is only ever proved on one section of one canvas [tools/probe/] — deferred (DW-198)
+
+**For the owner's eye at step 14 of his test, not a question:** the way into Theme settings is a text link "Theme
+settings" in the bar's right-hand cluster. S4a draws only the sun there; the spec asked for *a* way in and named no
+form, so Dev extrapolated one (R-74). If it reads wrong to him, it is fixed in this story.
+
 ## Spec Change Log
+
+- **2026-09-18, Review: three words of the task list were overridden, and why.** (1) `controlRow`'s `moon` and
+  `changed`: the task said leave them; `changed` now reads the mode, because a dead reset arrow is a control that
+  lies. (2) `storedFor` takes an override IN FORCE rather than one merely stored — the frozen matrix's "resolved away"
+  means the dark render follows light, and falling to the default was nobody's intent. (3) `aria-pressed` came off the
+  toggle. R-132's own words — a label naming the destination and a polite announcement — are untouched.
 
 - **2026-09-18, Dev's close: the owner's manual test asked him to check a count that cannot be non-zero yet.**
   Step 18 read *"the number matches what you actually did"*, and the count on Theme settings is derived from the
@@ -550,6 +587,17 @@ here is gated, and R-119's Pro badge is untouched.
 **Executed at Dev on this machine, against the real services (R-82).** Every key is named by its variable
 and never printed. Each line is what was run and what it RETURNED.
 
+- **REVIEW, 2026-09-18 — THE WALK DEV OWED, DONE:** the deployed harness at HEAD `4de9ea57` (Vercel `READY`,
+  `githubCommitSha` = HEAD; CI `check`/`rls`/`deploy` success; Render matrix success) completed on the FIRST attempt:
+  **0 FAIL**, no `HARNESS ERROR`, and **step 5's recorder control PASSED** — it saw both planted eval refusals, the
+  `/projects/<id>` document's and `/canvas`'s — so the session's CSP zero **is a result**. Steps 2, 6 and 9 green after
+  the `(editor)` move; steps 46–53 green. Both throwaway accounts deleted (200, 200). R-99: `git diff b31b1e5b HEAD --
+  supabase/` empty, and `projects.dark_enabled` read on the HOSTED database through `SUPABASE_DB_POOLER_URL`
+  (`boolean`, not null, default `true`; control: a column that does not exist returned no row). Negative controls:
+  bogus `GITHUB_TOKEN` 401, bogus `VERCEL_TOKEN` 403, bogus Supabase key 401. `pnpm check` exit 0, `fail 0`
+  everywhere. **The "owed" wording below is superseded by this line.** Review's own patches add harness assertions
+  (the caret, `/settings`' 404s, the greyed Clear pressed, the soft Back) that can only run once this commit is
+  deployed — **that walk is recorded in the line after this one.**
 - `pnpm check` (Node 24) -- **exit 0**, `fail 0` in every package suite, the new engine, doc-edit and
   editor tests included. Each suite prints its own count; none is written down here. **`agreement.test.ts`
   and `ad36.test.ts` are byte-identical to the baseline and green** — `git diff <baseline>..HEAD --
@@ -735,3 +783,43 @@ like its own neighbours and that is deliberate: the panel row is **always presen
 when there is nothing (R-12, the shape "Reset this design" beside it uses), while the menu item is **absent** when the
 section carries no usable override (UX-DR3, the shape Duplicate uses at `layers.tsx:289`). **R-126 is extended, not
 reversed** — the `⋯` is still the row's only control and Hide/Show still leads its menu.
+
+### Question 4 — the project-wide "Clear" wipes every dark override with one press and never asks
+
+On Theme settings, the **Clear** button removes the dark overrides from every section on every page of the
+project, at once, and they are saved data — there is no undo. Everywhere else in the editor, an act like that asks
+first: "Reset this design" asks (your ruling R-115), and so does the per-section "Clear dark overrides". The drawing
+shows this button with no "are you sure" — but the drawing of "Reset this design" showed none either, and you added
+one.
+
+**Example:** you spent an evening tuning the dark version of twelve sections. Next week you open Theme settings to
+check something, your hand slips onto **Clear**, and all twelve are gone before you have read a word.
+
+1. **Ask first, the same way the per-section one does** — a small window naming how many sections it will clear,
+   opening with focus on Cancel. (RECOMMENDED) — one rule for every act that throws work away, and it costs one
+   extra click on a button you will rarely press.
+2. **Leave it as drawn** — one press, no question. Fastest, and exactly the drawing, but it is the only destructive
+   button in the product that does not ask.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 5 — on a Light-only project, should the editor still offer "Clear dark overrides"?
+
+When a project is set to **Light only**, Theme settings greys its Clear button and says *"Switch to Light + Dark to
+use or clear them."* But inside the editor, the two per-section places — the row under "Reset this design" and the
+**⋯** menu in Layers — still work on a Light-only project and will clear that section's overrides. The two screens
+say opposite things. (You cannot run into this today: nothing saves a dark override before Story 5.8. It starts to
+matter the day saving lands.)
+
+**Example:** your project is Light only. You select a section, see "Clear dark overrides" in its panel, press it and
+confirm — and the dark settings Theme settings just told you were "kept, not discarded" until you switch back are
+gone.
+
+1. **Hide both in the editor while the project is Light only** — the row and the menu item are simply absent, like
+   the sun. (RECOMMENDED) — it is your "absent, not greyed" rule, the editor shows nothing about dark on a Light-only
+   project, and the two screens agree.
+2. **Grey the panel row with the same reason sentence, and hide the menu item** — more explanation on screen, for a
+   state few people will be in.
+3. **Leave it** — the editor may clear one section at any time; only the project-wide Clear needs Light + Dark.
+
+**Ruled:** _(awaiting the owner)_

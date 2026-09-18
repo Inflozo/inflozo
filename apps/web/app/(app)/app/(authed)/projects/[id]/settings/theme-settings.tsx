@@ -55,7 +55,7 @@ export function ThemeSettings({ projectId, darkEnabled, overriddenSections }: {
           <ModeSegment on={darkEnabled} value="on" label="Light + Dark" busy="Saving…" />
         </div>
         <HelperCaption>Every Style Pack ships a hand-paired dark palette, so dark is already paid for.</HelperCaption>
-        {mode && 'error' in mode ? <HelperCaption>{mode.error}</HelperCaption> : null}
+        {mode && 'error' in mode ? <span role="alert"><HelperCaption>{mode.error}</HelperCaption></span> : null}
       </form>
 
       <form action={onClear} className="flex flex-col gap-[6px] border-t border-line pt-[14px]">
@@ -90,7 +90,7 @@ export function ThemeSettings({ projectId, darkEnabled, overriddenSections }: {
             </HelperCaption>
           </>
         )}
-        {cleared && 'error' in cleared ? <HelperCaption>{cleared.error}</HelperCaption> : null}
+        {cleared && 'error' in cleared ? <span role="alert"><HelperCaption>{cleared.error}</HelperCaption></span> : null}
         <HelperCaption>
           The same badge marks an overridden control in the sidebar, and it always carries the label &ldquo;Dark
           override&rdquo;.
@@ -109,7 +109,8 @@ function ModeSegment({ on, value, label, busy }: { on: boolean; value: 'on' | 'o
       name="dark"
       value={value}
       aria-pressed={on}
-      onClick={guard}
+      // the segment already in force has nothing to save: no write, no revalidate, no busy label it could never show
+      onClick={(event) => (on ? event.preventDefault() : guard(event))}
       className={`${SEGMENT} ${ring} ${on ? 'bg-surface font-semibold text-ink shadow-sm' : 'font-medium text-ink-soft'}`}
     >
       <BusyLabel pending={pending && !on} busy={busy}>

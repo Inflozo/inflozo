@@ -4667,3 +4667,41 @@ location: `packages/library/src/registry.ts:136`, `:178`, `:229` · every
 reason: no story needs it and inventing a consumer for it inside an editor story would be inventing a
   vocabulary the library's authors never agreed. Recorded now because the field is cheap to keep filling in
   wrongly — standing rule 7's shape: a declaration nothing reads is a declaration nothing can falsify.
+
+## Deferred from: code review of spec-5-6-light-and-dark-authoring.md (2026-09-18)
+
+### DW-197: the project-level "Clear dark overrides" writes doc by doc, with no transaction and no revision check
+
+plain: Pressing Clear on Theme settings rewrites each page's saved design one after another. If one of those
+  writes failed half-way you would be told it did not work while some pages had already been cleared, and if the
+  editor were saving the same page at that moment the older copy could win. Neither can happen today, because
+  nothing else saves a page before Story 5.8.
+status: open
+severity: medium
+origin: Story 5.6's Review (2026-09-18), Blind Hunter and Edge Case Hunter, read in
+  `clearProjectDarkOverrides`: a `for` over `project_templates` rows, one `update({ doc })` each, returning the
+  error sentence on the first failed write with earlier rows already cleared; no `.eq('revision', …)`.
+owner: Story 5.8 (FR-D8's journal and the revision contract) — it is the first story in which a second writer of
+  `project_templates.doc` exists, and it decides what a guarded doc write looks like. This action adopts that.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` (`clearProjectDarkOverrides`)
+reason: Inventing a revision check here would pre-empt 5.8's contract, and before 5.8 there is no concurrent
+  writer to lose to. Review did close the two halves that were reachable: a zero-row write is now a refusal, and
+  an unparseable doc is skipped rather than thrown.
+
+### DW-198: no check reads a Background-role swatch's colour in dark, and the project-level Clear is proved on one section
+
+plain: In dark, the little colour dots beside "Background role" should show the dark colours. They do — but no
+  automatic check looks, so a future change could quietly put the light colours back. In the same way, the
+  project-wide Clear is only ever tested with one overridden section on one page.
+status: open
+severity: low
+origin: Story 5.6's Review (2026-09-18), Verification Gap: changing `swatches[mode]` to `swatches.light` in
+  `pilots/review.tsx` or the editor fails nothing; `run-verify-editor.cjs` step 53 (b) plants one override on
+  `home`'s first instance and reads only that back.
+owner: Story 5.8 for the Clear (it makes a multi-canvas stored override reachable without planting rows by hand);
+  the swatch read belongs to the next story that touches `run-verify-pilots.cjs`.
+location: `tools/probe/run-verify-editor.cjs` step 53 (b) · `tools/probe/run-verify-pilots.cjs` ·
+  `apps/web/app/(app)/app/(authed)/pilots/review.tsx`
+reason: Both are coverage, not defects — the behaviour was read correct at Review — and the harness run is already
+  long enough to time out on this machine's link.
+

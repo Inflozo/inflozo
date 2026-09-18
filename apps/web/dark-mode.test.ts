@@ -73,8 +73,9 @@ test('the control is ABSENT on a Light-only project, never disabled (UX-DR3, R-1
   assert.doesNotMatch(toggle, /aria-disabled|\sdisabled[=}]|greyed=|type Greyed/, 'the mode control has no greyed state at all')
 })
 
-test('R-132 — one button, `aria-pressed`, and an accessible name that names the DESTINATION', () => {
-  assert.match(toggle, /aria-pressed=\{dark\}/)
+test('R-132 — one button, an accessible name that names the DESTINATION, and a press that never takes the caret', () => {
+  assert.doesNotMatch(toggle, /aria-pressed=/, 'a name that changes already says the state')
+  assert.match(toggle, /onMouseDown=\{\(event\) => event\.preventDefault\(\)\}/)
   assert.match(toggle, /'Back to light mode' : 'Preview dark mode'/)
   assert.match(toggle, /aria-label=\{label\}/, 'the label is the accessible name (DESIGN.md:534-536\'s carve-out)')
   assert.match(toggle, /\{dark \? <Moon size=\{15\} \/> : <Sun size=\{15\} \/>\}/, 'the export\'s sun in light, the Kit\'s moon in dark')

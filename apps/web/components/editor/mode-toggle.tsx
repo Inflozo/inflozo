@@ -13,8 +13,8 @@ import { Moon, Sun } from '@/components/kit/icons'
 
    IT CARRIES ITS WORDS AS AN ACCESSIBLE NAME, AND THE NAME IS THE DESTINATION. UX-DR8 wants a shape to carry a
    visible word; `DESIGN.md:534-536` grants an accessible label "where the layout genuinely cannot hold one", which a
-   48px bar with View as, the device switch, undo/redo and Ship it still to land in it is. `aria-pressed` says which
-   state it is in; the mode now SHOWING is announced politely through the editor's one live region (`#editor-said`),
+   48px bar with View as, the device switch, undo/redo and Ship it still to land in it is. NO `aria-pressed` (Review, 2026-09-18): a name that changes already says
+   the state, and "Back to light mode, pressed" reads as a contradiction; the mode now SHOWING is announced politely through the editor's one live region (`#editor-said`),
    not a second one of this control's own — the same region a completed move reads out through (UX-DR12).
 
    ABSENT, NEVER GREYED, on a Light-only project: `editor.tsx` does not render this at all (UX-DR3, R-118, R-128).
@@ -32,8 +32,10 @@ export function ModeToggle({ mode, onMode }: { mode: Mode; onMode: (next: Mode) 
       id="editor-mode"
       type="button"
       aria-label={label}
-      aria-pressed={dark}
       title={label}
+      // the press never takes focus out of the canvas, so a caret in a text prop survives the flip — the mark
+      // toolbar's `keep`, for the same reason (`inline.ts`'s focusout ends an edit whose focus moved into the editor)
+      onMouseDown={(event) => event.preventDefault()}
       onClick={() => onMode(dark ? 'light' : 'dark')}
       className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
     >

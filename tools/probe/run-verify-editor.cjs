@@ -1892,7 +1892,7 @@ async function main() {
       }
     })
     check('step 46 — R-132: S4a\'s mode control is ONE 28×28 button with the export\'s 15px sun, right of centre, first of the right-hand cluster', sun !== null && sun.tag === 'BUTTON' && sun.width === 28 && sun.height === 28 && sun.glyph === 15 && sun.rays === 1 && sun.radius === '8px' && sun.rightOfCentre && sun.after[0] === 'editor-mode', JSON.stringify(sun))
-    check('step 46 — R-132: it carries `aria-pressed` and an accessible name naming the DESTINATION, not the state', sun?.pressed === 'false' && sun?.name === 'Preview dark mode', `${sun?.pressed} · ${JSON.stringify(sun?.name)}`)
+    check('step 46 — R-132: an accessible name naming the DESTINATION, and NO `aria-pressed` beside a name that already changes (Review)', sun?.pressed == null && sun?.name === 'Preview dark mode', `${sun?.pressed} · ${JSON.stringify(sun?.name)}`)
     check('step 46 — the canvas opens in light, from the one mode signal `tokens.ts` reserves for it (AD-30)', (await canvasMode()) === 'light', String(await canvasMode()))
 
     // ── step 47 — the flip: dark, and NOTHING REPAINTED ──
@@ -1918,9 +1918,21 @@ async function main() {
     check('step 47 — pressing the sun paints the canvas dark from `data-mode` alone, and NOTHING IS REPAINTED: every section root is the same node', flipped.mode === 'dark' && flipped.same && flipped.ground !== litGround, `${JSON.stringify(flipped)} · light ground ${litGround}`)
     check('step 47 — the selection and the scroll position both survive the flip (R-123: the top bar never deselects)', flipped.selected === 1 && flipped.scroll === scrolledTo && scrolledTo > 0, JSON.stringify({ selected: flipped.selected, scroll: flipped.scroll, was: scrolledTo }))
     const inDark = await page.evaluate(() => ({ name: document.getElementById('editor-mode').getAttribute('aria-label'), pressed: document.getElementById('editor-mode').getAttribute('aria-pressed'), said: document.getElementById('editor-said').textContent }))
-    check('step 47 — R-132: the sun became a moon, its name now names light, and the mode SHOWING is announced politely', inDark.name === 'Back to light mode' && inDark.pressed === 'true' && inDark.said === 'Dark mode', JSON.stringify(inDark))
+    check('step 47 — R-132: the sun became a moon, its name now names light, and the mode SHOWING is announced politely', inDark.name === 'Back to light mode' && inDark.pressed === null && inDark.said === 'Dark mode', JSON.stringify(inDark))
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
+    // Review, AC 3: THE CARET. A press on the sun used to move focus into the editor, which ENDS an inline edit
+    // (`inline.ts` focusout) and repaints — the roots-are-the-same-node read above cannot see that, since it starts no edit
+    await caretInto(GRID, TITLE)
+    const caretOf = () => canvasFrame().evaluate(() => ({ editable: document.activeElement?.isContentEditable === true, offset: document.getSelection()?.focusOffset ?? null, mode: document.documentElement.getAttribute('data-mode') }))
+    const caretBefore = await caretOf()
+    await modeButton().click()
+    await page.waitForTimeout(300)
+    const caretAfter = await caretOf()
+    check('step 47 — a caret in a text prop SURVIVES the flip: still editing, the same offset, and the mode did flip', caretBefore.editable && caretAfter.editable && caretAfter.offset === caretBefore.offset && caretAfter.mode !== caretBefore.mode, `${JSON.stringify(caretBefore)} → ${JSON.stringify(caretAfter)}`)
+    await modeButton().click()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
 
     // ── step 48 — authoring a dark override: dark only, with the moon and its words ──
     const BG = bgRow(homeStack[GRID][0])
@@ -1983,6 +1995,8 @@ async function main() {
     await modeButton().click()
     await page.waitForTimeout(300)
     const lightTo = (await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).count()) > 0
+    // standing rule 2: a missing control is a FAIL, never a silent skip
+    check('step 49 — the light panel offers the value the reset-in-light check presses', lightTo)
     if (lightTo) {
       await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).click()
       await page.waitForTimeout(250)
@@ -2080,6 +2094,14 @@ async function main() {
     await page.waitForTimeout(2000)
     const lightOnly = await readSettings()
     check('step 53 — D6b: switched to Light only the clear row GREYS WITH ITS REASON, and says the overrides are kept rather than discarded', lightOnly.pill[0].pressed === 'true' && lightOnly.greyed === true && lightOnly.clearRefuses === 'true' && lightOnly.reason && lightOnly.kept, JSON.stringify({ pressed: lightOnly.pill.map((b) => b.pressed), greyed: lightOnly.greyed, refuses: lightOnly.clearRefuses }))
+    // Review: the greyed Clear PRESSED — the button refuses, and (scripts off, or a hand-made POST) so does the action
+    await page.locator('[data-clear-row] button').click()
+    await page.waitForTimeout(1500)
+    check('step 53 — D6b: pressing the greyed Clear deletes NOTHING', JSON.stringify(await storedOverrides()) === JSON.stringify({ [BG_HERO.name]: BG_HERO.to.value }), JSON.stringify(await storedOverrides()))
+    // Review: BACK is a soft navigation, and the editor is a sibling route — the sun must be gone without a reload
+    await page.locator('a[aria-label^="Back to "]').click()
+    await painted('home')
+    check('step 53 — a SOFT navigation back to the editor already shows no sun (the action revalidates the project, not one page)', (await page.evaluate(() => document.getElementById('editor-mode') !== null)) === false)
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
     const noSun = await page.evaluate(() => document.getElementById('editor-mode') !== null)
@@ -2168,6 +2190,10 @@ async function main() {
       return { status: r.status(), title: /<title>([^<]*)<\/title>/.exec(body)?.[1], heading: /<h1[^>]*>([^<]*)<\/h1>/.exec(body)?.[1] }
     }
     const answers = [await fourOhFour(B), await fourOhFour(require('node:crypto').randomUUID()), await fourOhFour('abc')]
+    // R-131 (Review): `settings/page.tsx` sits UNDER its own `loading.tsx` boundary, so the parent guard is the only thing
+    // between a stranger and a streamed 200 — and steps 2/6/9 never asked this route
+    const settingsAnswers = [await fourOhFour(`${B}/settings`), await fourOhFour(`${require('node:crypto').randomUUID()}/settings`), await fourOhFour('abc/settings')]
+    check('step 6 — the same three on /settings answer the SAME real 404, above the settings skeleton', settingsAnswers.every((a) => JSON.stringify(a) === JSON.stringify(answers[0])), JSON.stringify(settingsAnswers))
     check('step 6 — B\'s project, a random uuid and abc answer identical real 404s', answers.every((a) => a.status === 404 && JSON.stringify(a) === JSON.stringify(answers[0])), JSON.stringify(answers))
     const stranger = await pwRequest.newContext()
     for (const [label, url, want] of [['/projects/<id>', editorUrl(), 307], ['/canvas', at('/canvas'), 303]]) {

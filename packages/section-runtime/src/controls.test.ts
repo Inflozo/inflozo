@@ -551,6 +551,14 @@ test('FR-F4 — a reset empties the map the mode names, and the other one is lef
   // a control that is not mode-scoped resets its light value in either mode
   const plain = start({ controls: { card: 'raised' } })
   assert.deepEqual(resetControl(entry, plain, 'card', 'dark').controls, {})
+  // Review: in dark with NO override, the arrow the row shows is the light value's, so pressing it must do something
+  const lightOnly = start({ controls: { bg: 'surface' } })
+  assert.equal(control(lightOnly, 'bg', 'dark').changed, true)
+  assert.deepEqual(resetControl(entry, lightOnly, 'bg', 'dark').controls, {}, 'never a dead arrow')
+  // and an override EQUAL to the default is still a change in dark: it carries the moon, so it carries its reset
+  const toDefault = start({ controls: { bg: 'surface' }, darkOverrides: { bg: 'base' } })
+  assert.equal(control(toDefault, 'bg', 'dark').moon, true)
+  assert.equal(control(toDefault, 'bg', 'dark').changed, true)
 })
 
 test('FR-F7 — an override the design will not take is resolved away, carries no moon, and is still stored (FR-D19)', () => {
@@ -558,6 +566,9 @@ test('FR-F7 — an override the design will not take is resolved away, carries n
   const state = start({ controls: { bg: 'base' }, darkOverrides: { bg: 'accent' } })
   assert.equal(resolveControls(entry, storedFor(entry, state, 'dark'))['bg'], 'base', 'the default stands, never `accent`')
   assert.equal(control(state, 'bg', 'dark').moon, false, 'no moon for a value nothing could stamp')
+  // Review: with a light value that is NOT the default, the dark render FOLLOWS LIGHT rather than falling to the default
+  const lit = start({ controls: { bg: 'surface' }, darkOverrides: { bg: 'accent' } })
+  assert.equal(resolveControls(entry, storedFor(entry, lit, 'dark'))['bg'], 'surface')
   assert.equal(control(state, 'bg').moon, false)
   assert.deepEqual(darkOverridesInForce(entry, state), [])
   assert.deepEqual(state.darkOverrides, { bg: 'accent' }, 'and it is still stored — another design may offer it')
@@ -579,7 +590,7 @@ test('FR-D7 — an override under a name nothing declares mode-scoped is ignored
 test('FR-D7 — a design whose mode-scoped control is locked to no value (R-103) has nothing to override and no moon', () => {
   const locked = { ...entry, universals: { ...entry.universals, bg: { values: [], reason: 'This design paints its own ground.' } } }
   const state = start({ darkOverrides: { bg: 'contrast' } })
-  assert.equal(storedFor(locked, state, 'dark')['bg'], 'contrast', 'the slice still carries it — resolution is what refuses')
+  assert.equal(storedFor(locked, state, 'dark')['bg'], undefined, 'Review: the slice takes only an override in force, so a refused one follows light')
   assert.equal(resolveControls(locked, storedFor(locked, state, 'dark'))['bg'], undefined, 'R-103: no entry at all')
   assert.deepEqual(darkOverridesInForce(locked, state), [], 'nothing offered means nothing an emitter could use')
   assert.equal(control(state, 'bg', 'dark').moon, true, 'the design that DOES offer it still shows the moon')

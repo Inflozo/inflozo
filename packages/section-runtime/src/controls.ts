@@ -154,7 +154,8 @@ export function storedFor(
   const slice: Record<string, unknown> = { ...(state.controls ?? {}) }
   if (mode === 'light') return slice
   for (const d of declared(entry)) {
-    if (d.darkOverride && own(state.darkOverrides, d.name)) slice[d.name] = read(state.darkOverrides, d.name)
+    // `overridden`, not "stored": an override this design will not take follows the LIGHT value, never the default
+    if (overridden(d, state)) slice[d.name] = read(state.darkOverrides, d.name)
   }
   return slice
 }
@@ -232,7 +233,7 @@ export function darkOverridesInForce(entry: Pick<ControlEntry, 'controlSchema' |
   return declared(entry).flatMap((d) => (overridden(d, state) ? [d.name] : []))
 }
 
-function controlRow(r: Resolved, state: ControlState): ControlRow {
+function controlRow(r: Resolved, state: ControlState, mode: Mode = 'light'): ControlRow {
   const d = r.def
   const row: ControlRow = {
     kind: 'control',
@@ -249,7 +250,8 @@ function controlRow(r: Resolved, state: ControlState): ControlRow {
     // the moon lights for a stored override an emitter could use — a value this design OFFERS — never for junk
     moon: overridden(d, state),
     // a greyed row cannot be changed, so it carries no reset; its stored value returns with the row (P0-0)
-    changed: r.greyed === undefined && r.stored !== null && r.stored !== d.default,
+    // in dark an override in force is itself the change, even one equal to the default — its reset is how it goes
+    changed: r.greyed === undefined && ((mode === 'dark' && overridden(d, state)) || (r.stored !== null && r.stored !== d.default)),
     universal: d.universal,
   }
   if (r.greyed !== undefined) row.greyed = r.greyed
@@ -350,7 +352,7 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}, mode: Mod
   // Story 5.6: the value MARKED is the value in force in the mode being shown, which is the mode's own slice
   const resolved = resolveAll(entry, storedFor(entry, state, mode))
   // in DECLARATION order, never the resolver's: a control greyed by one declared after it resolves that one first
-  const rows = declared(entry).map((d) => controlRow(resolved.get(d.name)!, state))
+  const rows = declared(entry).map((d) => controlRow(resolved.get(d.name)!, state, mode))
   const absent = (g: SidebarGroup) => (entry.absent ?? []).filter((a) => a.group === g).map((a) => a.note)
 
   const content: PropRow[] = []
@@ -414,7 +416,8 @@ export function setControl(entry: ControlEntry, state: ControlState, name: strin
  *  mode-scoped control, so the row goes back to following the light one; in light it is the light value, and the
  *  dark override stays (FR-F4, the spec's I/O matrix). The same test names the map both ways. */
 export function resetControl(entry: ControlEntry, state: ControlState, name: string, mode: Mode = 'light'): ControlState {
-  if (mode === 'dark' && scoped(declared(entry), name)) {
+  // with no override stored the value in force IS the light one, so the arrow the row shows resets that
+  if (mode === 'dark' && scoped(declared(entry), name) && own(state.darkOverrides, name)) {
     const darkOverrides = { ...(state.darkOverrides ?? {}) }
     delete darkOverrides[name]
     return { ...state, darkOverrides }

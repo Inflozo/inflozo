@@ -11,6 +11,10 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  *  address; this is the file-tree one. */
 const routeOf = (id: string) => `/app${settingsPath(id)}`
 
+/** Both writes change what the EDITOR shows too (the sun; the stored overrides), and it is a sibling route under the
+ *  same `[id]` layout — so the project's whole subtree is revalidated, never the settings page alone. */
+const revalidateProject = (id: string) => revalidatePath(routeOf(id).replace(/\/settings$/, ''), 'layout')
+
 /**
  * R-131's TWO WRITES, and nothing else.
  *
@@ -60,7 +64,7 @@ export async function setProjectMode(_previous: SettingsResult | null, formData:
     console.error('projects/settings: mode write failed', { code: error?.code })
     return { error: COULD_NOT.mode }
   }
-  revalidatePath(routeOf(id))
+  revalidateProject(id)
   return { ok: true }
 }
 
@@ -77,6 +81,10 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
   await signedIn()
 
   const supabase = await supabaseServer()
+  // D6b's greyed Clear is refused HERE, not only by the button: with scripts off `aria-disabled` still submits, and
+  // "the overrides are kept, not discarded" is a promise about the database (FR-D7, AD-17). Review, 2026-09-18.
+  const project = await supabase.from('projects').select('dark_enabled').eq('id', id).maybeSingle()
+  if (project.error || !project.data || project.data.dark_enabled === false) return { error: COULD_NOT.clear }
   const { data, error } = await supabase.from('project_templates').select('template_key, doc').eq('project_id', id)
   if (error) {
     console.error('projects/settings: templates read failed', { code: error.code })
@@ -84,7 +92,13 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
   }
   for (const row of data ?? []) {
     const key = row.template_key as string
-    let doc: ProjectDoc = parseDoc(row.doc, key)
+    let doc: ProjectDoc
+    try {
+      doc = parseDoc(row.doc, key)
+    } catch {
+      // a doc the editor would drop with a reason (`read.ts`) is not this action's to rewrite — and never a 500
+      continue
+    }
     let changed = false
     for (const instance of doc.instances) {
       if (Object.keys(instance.darkOverrides).length === 0) continue
@@ -95,12 +109,12 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
       changed = true
     }
     if (!changed) continue
-    const written = await supabase.from('project_templates').update({ doc }).eq('project_id', id).eq('template_key', key)
-    if (written.error) {
-      console.error('projects/settings: clear write failed', { code: written.error.code })
+    const written = await supabase.from('project_templates').update({ doc }).eq('project_id', id).eq('template_key', key).select('template_key')
+    if (written.error || written.data.length === 0) {
+      console.error('projects/settings: clear write failed', { code: written.error?.code })
       return { error: COULD_NOT.clear }
     }
   }
-  revalidatePath(routeOf(id))
+  revalidateProject(id)
   return { ok: true }
 }
