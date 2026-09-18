@@ -366,11 +366,42 @@ named by its variable and never printed.
   is **READY** (`2f43fc1c` and `308043ca`), so `app.inflozo.com` serves this story's code now.
 - **Supabase** is reached by the editor harness below, through `SUPABASE_URL` / `SUPABASE_SECRET_KEY`.
 
-**The deployed editor harness.**
+**The deployed editor harness** — `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' \
+tools/probe/.env | xargs) OUT_DIR=… node tools/probe/run-verify-editor.cjs`, against the deployed `app.inflozo.com`
+and the live Supabase, each run refusing to start unless the served deployment is this checkout's HEAD. Run at Dev
+rather than waiting for Review, because a step written and never executed proves nothing.
 
-- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=… node
-  tools/probe/run-verify-editor.cjs` -- run against the deployed `app.inflozo.com` and the live Supabase.
-  **Result recorded below.**
+| run | result | what it said |
+|---|---|---|
+| 1 | **3 FAIL, 220 PASS** | every Story 5.4 step passed but three assertions. All three were the CHECK disagreeing with deliberate behaviour, not the product: step 29 read the `focus-visible` ring after a PROGRAMMATIC `.focus()`, which correctly draws none (the owner reaches it by Tab); step 36's two measured the pill 10px below a corner that had scrolled above the canvas card, where the clamp — the matrix row's own "like P0-1's toolbar" — deliberately puts it at the card's edge instead. |
+| 2 | **0 FAIL, 201 PASS** | with those two corrected: the ring reached by keyboard reads `rgb(194, 56, 31) 0 0 0 2px` over the coral tint, and the pill is **0.0px outside its section in every frame** of a real 1080px wheel scroll (100 frames, 29 hidden, 71 placed). Stopped afterwards on a 30s signed-in stall — DW-183, its third observation. |
+| 3 | 1 FAIL, 203 PASS | the DW-183 retry under test; withdrawn (below). |
+| 4 | **0 FAIL, 83 PASS** | stopped at a signed-in `goto` that exceeded 60s twice. |
+| 5 | 1 FAIL, 222 PASS | the complete walk, no stall; the one FAIL is step 5's own control, which is why the retry was withdrawn. |
+
+**What the harness established on the deployed site.** B7's card, groups and footed note, with both counts DERIVED —
+it read `on all 6 templates` from the canvases `lib/editor.ts` opens and `3` from the group's own rows, and after
+removing every page section the same span read `0`. A press on a row selects without deselecting, and a press on a
+group heading or on B7's footed note keeps the selection while the empty space below the rows lets it go (R-123 as
+amended, all four grounds). D8e's four states. The eye, and `Space` on the focused row. `⌥↓`/`⌥↑` with
+`Moved to position 3 of 3` announced politely and focus following. The drag showing a dashed slot the row's own height
+with nothing reordered until the drop. The `⋯` menu — `Rename · Duplicate · Delete` on a page row and
+`Rename · Delete` on the site-wide one — and the rename dialog opening on Cancel and refusing a blank name. The
+site-wide confirm, focused on Cancel, naming all 6 templates, reached from the row AND from the pill. S4b's pill:
+white, 1px, radius 24, 3px padding, carrying exactly Duplicate, Delete and the grip, **10px inside the section's
+top-right**, keeping the hover when the pointer crosses onto it from the iframe. **R-125 measured: the Pro tag's right
+edge is 8.01px inside the section's right (R-119 untouched) and the pill's right edge sits 6.02px to its left,
+neither overlapping.** R-124's Member visibility as the first Section-settings row reading `Everyone`, with A22's four
+values in a named select, nothing about it in Layers, and the section leaving the canvas when set to Paid members
+while its row stays. A reload restoring the stored doc, nothing persisted. Zero axe violations at WCAG 2.1 AA with the
+pill showing and a row's menu open. Both throwaway accounts deleted, `users 9 → 9`.
+
+**The one thing the harness has NOT established for the final tree, stated plainly.** Step 5's CSP session zero is a
+result only when its own control passes — the control plants two `new Function('')` refusals and requires the recorder
+to see both (standing rule 2). It passed in runs 1 and 2, covering these gestures. It failed in runs 3 and 5, both of
+which carried an experimental DW-183 retry; that retry has been **withdrawn** (it also broke `page.goBack` and could
+re-spend the single-use magic-link token), and the harness is back to the shape whose control passed. The confirming
+run of the reverted tree belongs to Review, and DW-183 now carries the whole pattern and the two fix shapes ruled out.
 
 **Manual checks:**
 
