@@ -1685,9 +1685,11 @@ async function main() {
     await axePage.keyboard.press('Escape')
     await axePage.mouse.move(g.x, g.y, { steps: 3 })
     await axePage.waitForTimeout(300)
-    const layersRowAxe = axePage.locator('#editor-layers [data-layer-row]').nth(1)
-    await layersRowAxe.focus()
-    await layersRowAxe.getByRole('button', { name: /^More for / }).click()
+    // the ⋯ is opened BY KEYBOARD and never by a press: a pointer on it leaves the iframe, and leaving the section
+    // takes the hover and the pill with it (step 35's own rule) — the two states could not otherwise be axed together
+    const moreAxe = axePage.locator('#editor-layers [data-layer-row]').nth(1).getByRole('button', { name: /^More for / })
+    await moreAxe.focus()
+    await axePage.keyboard.press('Enter')
     await axePage.waitForTimeout(400)
     const layersAxe = await axeRun()
     check('step 8 — axe: zero violations with S4b\'s pill showing and a Layers row\'s ⋯ menu open', layersAxe.length === 0 && (await axePage.locator('[data-section-pill]').count()) === 1 && (await axePage.locator('[popover]:popover-open').count()) === 1, layersAxe.join('; '))
