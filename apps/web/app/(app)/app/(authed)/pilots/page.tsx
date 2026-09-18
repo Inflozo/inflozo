@@ -28,7 +28,9 @@ export default function PilotsReview() {
     <Review
       entries={entries}
       rows={Object.fromEntries(entries.map((e) => [e.id, pilotRows(e)]))}
-      swatches={referenceSwatches()}
+      // Story 5.6: per mode, because this page HAS a mode toggle — drawn from `light` alone the Background-role dots
+      // said the light ground was in force while the canvas beside them was painted dark
+      swatches={{ light: referenceSwatches('light'), dark: referenceSwatches('dark') }}
       links={linkResources()}
       pool={imagePool()}
       timezone={orbitWeekly.site().timezone}

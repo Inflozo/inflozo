@@ -6,6 +6,11 @@ import type { ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, settingsPath } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
+/** The route as NEXT sees it — under the internal `/app` prefix the proxy strips, which is the form every other
+ *  action in the app revalidates (`projects/actions.ts`'s `DASHBOARD = '/app'`). `settingsPath` is the customer's
+ *  address; this is the file-tree one. */
+const routeOf = (id: string) => `/app${settingsPath(id)}`
+
 /**
  * R-131's TWO WRITES, and nothing else.
  *
@@ -55,7 +60,7 @@ export async function setProjectMode(_previous: SettingsResult | null, formData:
     console.error('projects/settings: mode write failed', { code: error?.code })
     return { error: COULD_NOT.mode }
   }
-  revalidatePath(settingsPath(id))
+  revalidatePath(routeOf(id))
   return { ok: true }
 }
 
@@ -96,6 +101,6 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
       return { error: COULD_NOT.clear }
     }
   }
-  revalidatePath(settingsPath(id))
+  revalidatePath(routeOf(id))
   return { ok: true }
 }

@@ -73,7 +73,7 @@ export function Review({
 }: {
   entries: SectionRegistryEntry[]
   rows: Rows
-  swatches: Readonly<Record<string, string>>
+  swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
   timezone: string
@@ -252,7 +252,7 @@ export function Review({
             entry={entry}
             state={state}
             onChange={onChange}
-            swatches={swatches}
+            swatches={swatches[mode]}
             timezone={timezone}
             links={links}
             assets={panelAssets}

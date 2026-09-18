@@ -1894,7 +1894,9 @@ async function main() {
       document.scrollingElement.scrollTo(0, 260)
     })
     await page.waitForTimeout(200)
-    const litGround = await canvasFrame().evaluate(() => getComputedStyle(document.body).backgroundColor)
+    // read where the canvas ACTUALLY sits rather than asserting the number asked for: a short canvas clamps a scroll,
+    // and the claim is that the flip does not move it
+    const [litGround, scrolledTo] = await canvasFrame().evaluate(() => [getComputedStyle(document.body).backgroundColor, Math.round(document.scrollingElement.scrollTop)])
     await modeButton().click()
     await page.waitForTimeout(300)
     const flipped = await canvasFrame().evaluate(() => ({
@@ -1906,7 +1908,7 @@ async function main() {
       selected: document.querySelectorAll('[data-inflozo-selected]').length,
     }))
     check('step 47 — pressing the sun paints the canvas dark from `data-mode` alone, and NOTHING IS REPAINTED: every section root is the same node', flipped.mode === 'dark' && flipped.same && flipped.ground !== litGround, `${JSON.stringify(flipped)} · light ground ${litGround}`)
-    check('step 47 — the selection and the scroll position both survive the flip (R-123: the top bar never deselects)', flipped.selected === 1 && flipped.scroll === 260, JSON.stringify({ selected: flipped.selected, scroll: flipped.scroll }))
+    check('step 47 — the selection and the scroll position both survive the flip (R-123: the top bar never deselects)', flipped.selected === 1 && flipped.scroll === scrolledTo && scrolledTo > 0, JSON.stringify({ selected: flipped.selected, scroll: flipped.scroll, was: scrolledTo }))
     const inDark = await page.evaluate(() => ({ name: document.getElementById('editor-mode').getAttribute('aria-label'), pressed: document.getElementById('editor-mode').getAttribute('aria-pressed'), said: document.getElementById('editor-said').textContent }))
     check('step 47 — R-132: the sun became a moon, its name now names light, and the mode SHOWING is announced politely', inDark.name === 'Back to light mode' && inDark.pressed === 'true' && inDark.said === 'Dark mode', JSON.stringify(inDark))
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
@@ -2003,7 +2005,8 @@ async function main() {
     }
     const withOverride = await menuItems(GRID)
     check('step 51 — R-133: the ⋯ of a section carrying an override offers "Clear dark overrides", below Hide, and R-126\'s Hide/Show still LEADS the menu', withOverride[0] === 'Hide' && withOverride.includes('Clear dark overrides'), withOverride.join(' · '))
-    await page.getByRole('button', { name: 'Clear dark overrides', exact: true }).last().click()
+    // scoped to the OPEN popover: the same words are on the panel's row and on the dialog's confirm button
+    await page.locator('[popover]:popover-open').getByRole('button', { name: 'Clear dark overrides', exact: true }).click()
     await page.waitForTimeout(300)
     const sameConfirm = await page.evaluate(() => {
       const all = [...document.querySelectorAll('dialog[aria-labelledby="editor-cleardark-title"]')]
