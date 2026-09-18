@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-17'
 status: 'in-progress'
 baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 2
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -930,6 +930,12 @@ holds 40 characters." under the field.
   The deployed run of the patched editor is the Deploy phase's.
 - **Still owed:** his look at the new editing haze and at the three grounds, on the deployed site (steps 1, 17 of his
   manual test). Questions 1 to 4 are all ruled.
+
+**Run at Deploy (2026-09-18).** CI run `35307798832` on `2ee9309c` (the Review commit, HEAD) -- `check`, `rls` and
+`deploy` all green, and Vercel's production deployment `dpl_GPgqLEX3VaR4HNnHdbtD6gnUxnS9` READY on that commit. No
+schema change this story (see "Not touched" below), so no migration to apply.
+
+Deployment: `inflozo-cmbjlzo8v-umangkagathara.vercel.app` (`dpl_GPgqLEX3VaR4HNnHdbtD6gnUxnS9`)
 
 **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no billing,
 and reads no Ghost: link search uses Orbit Weekly's sample data until Story 5.18.
