@@ -164,8 +164,13 @@ async function main() {
     context.setDefaultTimeout(60_000)
     context.setDefaultNavigationTimeout(60_000)
     const page = await context.newPage()
-    /* DW-183's retry, wrapped ONCE over the three calls the three stalls happened at, so no call site has to remember
-       it. Only a timeout is retried — every other error still throws, and a FAIL is never retried into a PASS. */
+    /* DW-183's retry, wrapped ONCE so no call site has to remember it. Only a timeout is retried — every other error
+       still throws, and a FAIL is never retried into a PASS.
+
+       ONLY THE IDEMPOTENT CALLS ARE RETRIED. `page.goBack` is NOT one of them and is deliberately left out: a timed-out
+       history move may already have navigated, so a second one goes back TWICE or aborts the first — executed here on
+       2026-09-18, where retrying it answered `net::ERR_ABORTED; maybe frame was detached?`. The 60s default above is
+       what covers `goBack`; a GET and a `goto` can simply be asked again. */
     const patient = (owner, name) => {
       const once = owner[name].bind(owner)
       owner[name] = async (...args) => {
@@ -178,7 +183,7 @@ async function main() {
         }
       }
     }
-    for (const [owner, name] of [[context.request, 'get'], [page, 'goto'], [page, 'goBack']]) patient(owner, name)
+    for (const [owner, name] of [[context.request, 'get'], [page, 'goto']]) patient(owner, name)
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
     check('step 1 — A signs in', !page.url().includes('/sign-in'), page.url())
@@ -1606,7 +1611,11 @@ async function main() {
     const canvasEval = await evalIn(canvasFrame(), /'nonce-([^']+)'/.exec((await reloaded.allHeaders())['content-security-policy'] || '')?.[1])
     check('step 5 — control: new Function(\'\') throws EvalError in the editor document, from a script carrying its nonce', editorEval === 'EvalError', editorEval)
     check('step 5 — control: new Function(\'\') throws EvalError in the canvas document, from a script carrying its nonce', canvasEval === 'EvalError', canvasEval)
-    await page.waitForTimeout(300)
+    // WAITED FOR, not slept at: each report is an `exposeBinding` round-trip, and a fixed 300ms lost both of them once
+    // on a loaded machine (2026-09-18) — which under standing rule 2 would have voided step 5's zero for the whole run.
+    // Waiting weakens nothing: the control still fails if the refusals never reach the recorder.
+    const evals = () => violations.filter((v) => /script-src/.test(v.directive) && /eval/.test(v.blocked))
+    for (let i = 0; i < 40 && evals().length < 2; i++) await page.waitForTimeout(100)
     const recorded = violations.splice(0)
     check('step 5 — control: the recorder sees those two eval refusals, so its zero above is a result', recorded.filter((v) => /script-src/.test(v.directive) && /eval/.test(v.blocked)).length >= 2, JSON.stringify(recorded))
 

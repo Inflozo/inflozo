@@ -4341,8 +4341,11 @@ closed: Story 5.4's Dev (2026-09-18) — the THIRD observation arrived and named
   a cold serverless function on an authenticated route, not the app and not a hidden failure. THE FIX, in one place
   because the three stalls were at three call sites: `context.setDefaultTimeout` / `setDefaultNavigationTimeout` at
   60s so a cold start is simply waited out, and one `patient()` wrapper over `context.request.get`, `page.goto` and
-  `page.goBack` that retries a TIMEOUT once and rethrows everything else — so a FAIL can never be retried into a PASS.
-  Each retry prints a `DW-183 retry` note, so a run that needed one says so.
+  that retries a TIMEOUT once and rethrows everything else — so a FAIL can never be retried into a PASS. Each retry
+  prints a `DW-183 retry` note, so a run that needed one says so. **`page.goBack` is deliberately NOT retried**, and
+  that is the one thing the fix had to learn by executing: a timed-out history move may already have navigated, so a
+  second one answered `net::ERR_ABORTED; maybe frame was detached?` (observed the same day). Only idempotent calls are
+  retried; `goBack` is covered by the 60s default alone.
 owner: closed by Story 5.4
 location: `tools/probe/run-verify-editor.cjs` (the context's defaults and `patient()`, both beside the `newContext`)
 reason: a retry was a design choice the ledger deliberately held open until a third stall could say whether the cause
