@@ -84,7 +84,7 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
 | Press a row | Home, nothing selected | That section is selected: canvas outline, row in coral tint, panel headed by its layer name. The selection is NOT lost by the press | N/A |
 | Press below the rows | a section selected | Deselected, editing ended — R-123's third ground. Its geometry is read from the last **row**, not the list's last child, which is no longer the same element | N/A |
 | Press a group heading (or, until R-126 removed it, the footed note) | a section selected | The selection stays: only the empty space below the rows is a ground (R-123 as amended). **Amended by R-126 (owner, 2026-09-18):** the note is gone, so a group heading is the one non-row surface left to press | N/A |
-| Drag a row | 3 page rows, grip pressed on row 1 | Row 1 lifts; a dashed slot the row's height shows where it lands; rows between slide; nothing moves until the drop, then the canvas repaints in the new order | A drop outside the row's own group returns without a change |
+| Drag a row | 3 page rows, grip pressed on row 1 | Row 1 lifts; a dashed slot the row's height shows where it lands; rows between slide; nothing moves until the drop, then the canvas repaints in the new order | A drop past the group's end lands at that end (**owner, 2026-09-18, Question 4**: as every list does); the boundary is never crossed |
 | `⌥↓` on a focused row | row 1 of 3 focused | The section moves to position 2, focus follows it, and "Moved to position 2 of 3" is announced politely | At the last position the key does nothing |
 | `Space` on a focused row | row shown | Hidden: the section leaves the canvas and the row's words go ink-soft. **Amended by R-126 (owner, 2026-09-18), which renegotiated this frozen row:** the eye is no longer on the row, so what reads as hidden is the ink-soft name plus the row's `⋯` menu offering Show. The key itself is unchanged | N/A |
 | Hide every section | all page rows hidden | The canvas draws an empty page; the template is still *designed* (`isDesigned` true), never untouched | N/A |
@@ -299,7 +299,7 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
 Five layers on 2026-09-18 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier)
 over the diff since `0aa7cd10`; 8 dismissed as noise or unreachable. Patches applied at Review, in the same phase:
 
-- [ ] [Review][Decision] A drop past the end of a row's own group: land at the end (as it does, and as every list does) or snap back (as the frozen matrix row says)? — Question 4 under `## Questions for the owner`.
+- [x] [Review][Decision] A drop past the end of a row's own group: land at the end (as it does, and as every list does) or snap back (as the frozen matrix row says)? — Question 4, **ruled option 1 (owner, 2026-09-18)**: land at the end or top, as built.
 - [x] [Review][Patch] The CSP recorder was no longer attached to the main harness session, so step 5's zero was vacuous and its control could only fail — restored, with the history in a comment [tools/probe/run-verify-editor.cjs:153]
 - [x] [Review][Patch] Step 27 still pressed B7's footed note, which R-126 removed, and threw before any Story 5.4 step — the entry dropped; step 28 asserts the note's absence [tools/probe/run-verify-editor.cjs:1190]
 - [x] [Review][Patch] Step 29 counted every `button` in the row, the closed ⋯ menu's included, against "name · More" — scoped to the row's own children [tools/probe/run-verify-editor.cjs:1263]
@@ -629,4 +629,6 @@ already land at the end). **Example:** you drag "Newsletter — Inline Row" up a
    that overshoots still does what you meant.
 2. **Snap it back to where it was**, exactly as the plan's words say — an overshoot cancels the move.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"Land it at the end/top depending on where it was dragged."* What is built
+stands; the matrix row's "returns without a change" is superseded by this ruling, and the group boundary is still never
+crossed.
