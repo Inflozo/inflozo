@@ -87,7 +87,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-D2** Hover state: 1px outline, name tag, Previous/Next design arrows, duplicate, delete, drag handle, and a hairline "+" between sections.
 - **FR-D3** Click selects a section; Esc deselects; clicking a text element inside a selection enters inline editing.
 - **FR-D4** Inline editing of every text prop, with a floating toolbar offering exactly four marks — bold, italic, underline, link. Rich text is stored as **text plus mark ranges**, never as an HTML string; the compiler is the single serialisation point.
-- **FR-D5** Layers panel: ordered list, drag reorder, per-instance rename, duplicate/delete, visibility toggle; site-wide singletons as a pinned group; at most one Post Content section per layout, refused at placement; non-placeable treatments never appear; CTA-bearing sections carry the member-visibility control.
+- **FR-D5** Layers panel: ordered list, drag reorder, per-instance rename, duplicate/delete, visibility toggle; site-wide singletons as a pinned group; at most one Post Content section per layout, refused at placement; non-placeable treatments never appear; CTA-bearing sections carry the member-visibility control, drawn in the settings panel's Section settings and not in Layers (R-124).
 - **FR-D6** Template switcher: Home, Post, Page, Tag, Author, Membership (Signup/Signin/Member Home), 404, conditional Private, plus custom templates. Synthesis applies to exactly seven templates, and synthesised templates are visible and marked.
 - **FR-D7** Light/Dark authoring with mode-scoped controls, the moon badge, per-section "Clear dark overrides", and the project-level Light only / Light + Dark setting. No visitor mode-toggle is offered on a pinned colour scheme.
 - **FR-D8** Device preview — Desktop / Tablet 834 / Mobile 390, display only, resizing the canvas in both axes to a real device size.
@@ -1645,7 +1645,9 @@ placement and says why** — "this layout already prints the article" — rather
 **And** **non-placeable treatments never appear in Layers** and are excluded from placement, drag, reorder,
 duplicate and delete
 **And** **CTA-bearing sections carry a member-visibility control** — Everyone / Logged out / Free members / Paid
-members
+members — **drawn as the first row of the settings panel's Section settings, and nowhere in Layers** (R-124), as a
+named select rather than a pill row (R-114), stored on the instance and handed to the render door as
+`RenderInput.visibility`, never declared as a design control
 **And** **hiding every section is not emptying**: a fully hidden template is designed and compiles an empty body;
 only removing every section returns a template to untouched
 **And** keyboard: **↑↓ move focus, `⌥↑`/`⌥↓` move the section itself with the canvas following and the move
@@ -1653,7 +1655,9 @@ announced, `Enter` selects, `Space` toggles visibility** (UX-DR10, UX-DR12)
 **And** a template with no sections shows only the Site-wide card (UX-DR6)
 **And** a hovered section on the canvas carries S4b's quick-action pill with **Duplicate, Delete and a drag handle**,
 under the same site-wide rules (R-118); S4b puts the pill in the top-right corner Story 5.2's Pro badge already
-holds (R-119), so this story moves one of the two
+holds (R-119), and **the badge keeps that corner while the pill sits directly to its left** (R-125)
+**And** the Layers half of R-123 is designed here — **a press on a row keeps the selection, a drag starts from it, and
+the empty space below the rows lets the selection go**, three rules in one panel
 **And** the panel matches B7 and its keyboard focus state matches D8e.
 
 **FRs:** FR-D5, FR-D2 (Duplicate, Delete, drag). · **Frame:** `B Missing Surfaces.dc.html` B7 · `D8 Editor Below 1440.dc.html` D8e · `S4 Editor.dc.html` S4b (the pill). · **UX-DRs:**

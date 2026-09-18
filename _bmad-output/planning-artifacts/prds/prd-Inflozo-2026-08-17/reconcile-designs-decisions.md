@@ -2492,9 +2492,57 @@ like how we press Esc key and it unselects everything."*
     ✅ `EXPERIENCE.md` § the focus model (2) and § Component Patterns' Section on canvas row · ✅ `epic-5-context.md` ·
     ✅ `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` and `tools/probe/run-verify-editor.cjs` step 27 —
     Story 5.3's two Fix runs (2026-09-18).
-  - ⬜ `epics.md` Story 5.4, which builds the Layers row's press and its drag beside this ground — at 5.4's Create.
+  - ✅ `epics.md` Story 5.4, which builds the Layers row's press and its drag beside this ground — Story 5.4's Create
+    run (2026-09-18).
   - **Deliberately not touched:** Story 5.2's spec, which is the record of what 5.2 built and says so; `prd.md`, which
     names no gesture for deselection.
+
+**R-124 — "who can see this section" is drawn in the panel's Section settings, not in Layers.** Story 5.4's Q1, ruled
+option 1 (owner, 2026-09-18): *"The right-hand panel, at the top of 'Section settings', where the drawings put it."*
+
+- **Why it was a question.** `prd.md` FR-D5 names the control inside the paragraph that specifies the Layers panel,
+  and `epics.md` Story 5.4 repeats it there, so the plan read as "Layers". Every drawing puts it in the settings
+  panel: `A4-13 Latest Post.dc.html:256` draws the row inside that section's panel, `A22-1 Inline Row.dc.html:69`
+  draws it there too, `A22 Newsletter - Spec.md:171-173` says it and `signedInBehaviour` are "both in the panel, one
+  under the other, and the panel says which is which", and R-113 already files it under **Section Settings** in
+  `packages/library/control-groups.json`. DW-163 held the disagreement open for this story to put to the owner.
+- **What it binds.**
+  - Member visibility is the **first row of the panel's Section settings** on a section whose category carries it, and
+    the Layers panel draws nothing about it. Where a design declares no other Section-settings row, the group is drawn
+    for this row alone, first, in `SIDEBAR_GROUPS`' order.
+  - It is a **named select**, not a pill row: R-114's own rule, run over its four values while planning, refuses them
+    ("Logged out" is 66 px against a 58.3 px pill). `A22-1` draws exactly that; `A4-13`'s four-way pill row was drawn
+    before R-114 and is superseded by it, as A17 #1 and A24 #1 already were.
+  - Its values are `A22 Newsletter - Spec.md:291`'s: **Everyone** (default) · Logged out · Free members · Paid members.
+  - The value is stored **on the instance** (`memberVisibility` in `doc-schema.ts`) and handed to the render door as
+    `RenderInput.visibility`, which Story 4.10 already honours on both emitters. It is **never** declared in a design's
+    `controlSchema`: a declared control would stamp a second, inert copy on the root through `stampControls` (DW-186).
+- Targets:
+  - ✅ Story 5.4's spec · ✅ `deferred-work.md` DW-163 (closed) and DW-186 · ✅ `epics.md` Story 5.4 ·
+    ✅ `docs/section-authoring.md` § 2 · ✅ `epic-5-context.md` — Story 5.4's Create run (2026-09-18).
+  - ⬜ `apps/web/components/controls/sidebar.tsx` and `packages/section-runtime/src/doc-schema.ts` — at 5.4's Dev.
+- **Deliberately not touched:** `prd.md` FR-D5, which says what the control does and never says where it is drawn —
+  what was ambiguous was the paragraph it sits in, not its words; `control-groups.json`, which already files it under
+  Section Settings; the export (R-74), whose A4-13 panel stays as drawn.
+
+**R-125 — the Pro tag keeps the section's top-right corner, and the quick-action pill sits to its left.** Story 5.4's
+Q2, ruled option 1 (owner, 2026-09-18): *"The Pro tag keeps the corner; the pill sits directly to its left."*
+
+- **Why it was a question.** R-119 put the Kit's "✦ Pro" tag 8 px inside a selected Pro design's **top-right corner**,
+  and `S4 Editor.dc.html` S4b draws the hover quick-action pill at `top:10px;right:10px` — the same corner. R-119 said
+  in so many words that Story 5.4, which builds the pill, moves one of the two. A Pro section that is selected and
+  hovered is an ordinary state, so both are drawn at once.
+- **What it binds.**
+  - The Pro tag does not move: R-119 stands as ruled, 8 px inside the top-right, on selection only, never pressable.
+  - The pill is placed with its right edge a gap short of the tag's left edge while the tag is showing, and at S4b's
+    own 10 px inset from the section's right when it is not. The two never overlap and neither is clipped.
+  - The name tag keeps the top-left (S4b), so no third thing enters either corner.
+- Targets:
+  - ✅ Story 5.4's spec · ✅ `epics.md` Story 5.4 · ✅ `EXPERIENCE.md` § Component Patterns' Section on canvas row ·
+    ✅ `epic-5-context.md` — Story 5.4's Create run (2026-09-18).
+  - ⬜ `apps/web/components/controls/section-pill.tsx` and `tools/probe/run-verify-editor.cjs` — at 5.4's Dev.
+- **Deliberately not touched:** R-119, which is unchanged; the export (R-74), whose S4b frame draws a pill this story
+  builds three controls of (R-118) and therefore narrower than drawn.
 
 ## B · Approved decisions superseded by this session
 

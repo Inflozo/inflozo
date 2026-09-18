@@ -2,7 +2,7 @@
 title: 'Story 5.4 — The Layers panel, reordering, and the two kinds of singleton'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -59,12 +59,12 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
   in its CSP session, over the "Pilot sections" project Story 5.1 seeded. Never a second seed.
 
 **Ask First:**
-- Both questions under `## Questions for the owner` — where Member visibility sits (DW-163), and which of the Pro
-  badge and the quick-action pill gives up the section's top-right corner (R-119). Do not start Dev until both carry
-  a `**Ruled:**` line with his signature and date.
+- Both of this story's questions are ruled (**R-124** and **R-125**, owner, 2026-09-18) and are not reopened: Member
+  visibility is drawn at the head of the panel's **Section settings**, and the **Pro tag keeps the section's
+  top-right corner** with the pill directly to its left. Anything that would move either is a new question.
 - Any change to what a *design* declares. `memberVisibility` is an instance field, never an entry in a design's
   `controlSchema`: the runtime gates a section through `RenderInput.visibility`, and a declared control would stamp a
-  second, inert copy of the value on the root.
+  second, inert copy of the value on the root (DW-186).
 
 **Never:**
 - Never persist anything. `project_templates` is not written before Story 5.8; every edit here lives in the editor's
@@ -227,18 +227,21 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
       row); the S12c-shaped rename dialog; and B7's footed note -- one component, so `editor.tsx` keeps its shape.
 - [ ] `apps/web/components/controls/section-pill.tsx` (new) -- S4b's quick-action pill in the editor document,
       anchored to the hovered section's on-screen rect through the frame's rect and the fit: Duplicate (absent on a
-      site-wide section), Delete, and the drag grip. It hides from the first canvas `scroll` and is placed again
-      150 ms after the last, and holding the pointer over it keeps the hover -- R-118 gives it these three controls
-      and no others.
+      site-wide section), Delete, and the drag grip. **R-125: the Pro tag keeps the corner it was given at 5.2 and the
+      pill sits directly to its left** — its right edge a gap short of the badge's left when the badge is showing,
+      S4b's 10 px inset from the section's right when it is not. It hides from the first canvas `scroll` and is placed
+      again 150 ms after the last, and holding the pointer over it keeps the hover -- R-118 gives it these three
+      controls and no others.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- wire it: the two new components, one `docs`
       update path per operation through `doc-edit.ts`, `renderSection`'s `visibility` fed from the instance, a hidden
       instance rendering `''`, the site-wide confirm dialogs, the `pointerout` guard and the `scroll` listener firing
       for the pill as well as for an edited field; delete the two ABSENT lines this story fills and record what it
       built in the header comment -- that comment is the file's map and is read before the code.
 - [ ] `apps/web/components/controls/sidebar.tsx` -- take an optional `visibility` prop and draw Member visibility as
-      R-114's named select at the head of Section Settings, with A22's four values and its hint, plus the second hint
-      line when the chosen audience is not the previewed one -- **only after Question 1 is ruled**; if the owner
-      rules the Layers panel instead, the row moves to `layers.tsx` and this task is dropped.
+      R-114's named select at the head of **Section settings**, with A22's four values (Everyone · Logged out · Free
+      members · Paid members), its drawn hint, and a second hint line when the chosen audience is not the one the
+      canvas previews. Where a design declares no other Section-settings row, the group is drawn for this row alone,
+      first, as `SIDEBAR_GROUPS` orders it -- R-124 (owner, 2026-09-18) puts it here and not in Layers.
 - [ ] `tools/probe/run-verify-editor.cjs` -- add the story's steps from 28 on, inside step 5's CSP session so the
       no-`unsafe-eval` zero is read after them (the spine's rule for every Epic 5 story that adds a gesture), and add
       a Layers-and-pill state to the axe pass at step 8. Measure the pill against step 15's scroll capture, as the
@@ -270,8 +273,12 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
   answers "this layout already prints the article" and nothing is placed.
 - Given a doc naming an A32, A33 or A34 design, when the editor reads it, then it throws a sentence naming the
   instance rather than showing that design in Layers.
-- Given a CTA-bearing section, when its audience is set to anything but Everyone, then the canvas stops drawing it,
-  its Layers row stays, and the control says why the canvas is empty there.
+- Given a CTA-bearing section, when it is selected, then Member visibility is the first row of the panel's **Section
+  settings** and nothing about it is drawn in Layers (R-124); when its audience is set to anything but Everyone, then
+  the canvas stops drawing it, its Layers row stays, and the control says why the canvas is empty there.
+- Given a Pro design selected on a Free plan and hovered, when both the Pro tag and the pill are drawn, then the tag
+  is exactly where R-119 put it — 8 px inside the section's top-right — and the pill sits to its left, neither
+  overlapping the other (R-125).
 - Given the canvas is scrolled while a section is hovered, when the scroll starts, then the pill hides; 150 ms after
   the last scroll event it is placed again on its section, with no frame in which it sits away from it.
 - Given `pnpm check`, when it runs, then every new test passes and no existing one changed meaning.
@@ -377,9 +384,9 @@ Sign in as you normally do. Nothing you change here survives a reload — saving
 | 11 | same | Canvas | Press the copy icon on that pill, then press the bin on the new copy. | — | The section is copied directly below and then removed, the same as from the list. |
 | 12 | same | Canvas | Drag the six dots on the pill up or down the page and let go. | — | The dashed box in the list on the left shows where it will land; on release the page redraws in the new order. |
 | 13 | same | Canvas | Hover a section so the pill shows, then scroll the page with the wheel or trackpad. | — | The pill disappears while the page moves and comes back on its section when you stop. It is never left floating over the wrong section. |
-| 14 | same | Right panel | Select "Newsletter — Inline Row" and open **Section settings**. | — | A row called "Member visibility" reading "Everyone", with a short line under it saying who it decides. *(Where this row sits is your Question 1.)* |
+| 14 | same | Right panel | Select "Newsletter — Inline Row" and open **Section settings**. | — | "Member visibility" is the first row there, reading "Everyone", with a short line under it saying what it decides. Nothing about it appears in the Layers list. *(Your ruling, R-124.)* |
 | 15 | same | Right panel | Change it to **Paid members**. | — | The section disappears from the page, its row stays in the list, and a second line under the control says the page is being previewed as a visitor who is not signed in. Set it back to Everyone and the section returns. |
-| 16 | same | Canvas | Select "Hero — Latest Post" (the one with the Pro mark) and keep the pointer on it. | — | The Pro mark and the pill are both in view and neither sits on top of the other. *(Which one moved is your Question 2.)* |
+| 16 | same | Canvas | Select "Hero — Latest Post" (the one with the Pro mark) and keep the pointer on it. | — | The "✦ Pro" tag is exactly where it has always been, in the top-right corner, and the pill sits directly to its left. Neither covers the other. *(Your ruling, R-125.)* |
 | 17 | same | Layers | Hide every row under "THIS PAGE · HOME", then press "…" on each and Delete them all. | — | With all of them hidden the page is blank but the rows stay. After deleting them all, only the white Site-wide card is left. |
 | 18 | same | Browser | Reload. | — | Everything is back as it started. Saving arrives with Story 5.8. |
 
@@ -405,7 +412,8 @@ which". Your own ruling R-113 already files it under **Section settings** in the
 2. **The Layers list**, as one more control on the section's row.
 3. **Both** — the row shows who it is for, and the panel is where you change it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"The right-hand panel, at the top of 'Section settings', where the drawings
+put it."* Recorded as **R-124**; it closes DW-163.
 
 ### Question 2 — the Pro mark and the new hover buttons want the same corner
 
@@ -420,4 +428,5 @@ Select it, keep the pointer on it, and today both would be drawn on top of each 
 2. **The pill keeps the corner; the Pro tag moves to the bottom-right** of the section.
 3. **The pill keeps the corner; the Pro tag moves to the top-left**, beside the section's name tag.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"The Pro tag keeps the corner; the pill sits directly to its left."*
+Recorded as **R-125**; R-119 stands untouched.

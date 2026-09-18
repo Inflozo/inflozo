@@ -3917,7 +3917,7 @@ reason: `apps/web` evaluates app `.ts` under Node 24 type-stripping already; the
 plain: Who a section is shown to (Everyone, Logged out, Free members, Paid members) has two homes on paper. The
   plan puts it in the Layers panel; the header and hero drawings put it inside each section's settings panel. The
   settings panel's rule already says that, if it lives there, it belongs under Section Settings.
-status: open
+status: closed
 severity: medium
 origin: Story 4.10's Fix review (sweep 1, acceptance audit) — `prd.md` FR-D5 and Appendix C's Member Visibility row
   and `epics.md` Story 5.4 name the Layers panel; `A4-13 Latest Post.dc.html`'s panel draws the control; R-113 files
@@ -3928,6 +3928,9 @@ location: _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md (FR
   packages/library/control-groups.json · docs/section-authoring.md § 2
 reason: no pilot panel carries the control today (`/pilots`' Show to is the page's own switcher), so nothing built in
   Story 4.10 depends on the answer, and the answer is the owner's.
+CLOSED 2026-09-18 by **R-124** — Story 5.4's Q1, ruled option 1 by the owner: the panel's Section settings, first row,
+  as every drawing and R-113 already had it; Layers draws nothing about it. The rule now sits in
+  `docs/section-authoring.md` § 2 and in `epics.md` Story 5.4.
 
 ### DW-164: `epics.md`'s library stories list behaviour modules as cut-off sentence fragments
 
@@ -4387,8 +4390,8 @@ origin: Story 5.4's planning (2026-09-18) — Story 4.10 already gates a section
   `data-member-visibility` on the root through `stampControls`, a second copy nothing reads. The category specs list
   `memberVisibility` in their control tables (`A22 Newsletter - Spec.md:291`) — that describes the panel ROW, not a
   `controlSchema` entry.
-owner: each E9/E10 category story that builds a CTA-bearing design; the rule belongs in `docs/section-authoring.md` § 2
-  and, as a refusal, in the validator
+owner: each E9/E10 category story that builds a CTA-bearing design — **the rule itself landed in
+  `docs/section-authoring.md` § 2 on 2026-09-18 with R-124, so what is left here is the validator's refusal**
 location: `docs/section-authoring.md` · `packages/library/src/validate.ts` ·
   `packages/section-runtime/src/doc-schema.ts` (`memberVisibility`, the one place it is stored)
 reason: no built design declares it and `tools/check-snapshots.mjs` reads only declared settings, so nothing can go

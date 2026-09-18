@@ -392,7 +392,11 @@ records the run). **A category story reads its designs' groups from it.** `tools
 built design's control to the entry its title names, and **fails a control whose title has no entry, or whose title
 its own frame does not draw** (R-74): the story that gives a setting a title the register does not carry adds it, with
 its group, so a setting cannot leave its group by being renamed in the same edit. A title filed under Data is a
-query's setting, declared in `dataBindings`, never a control. Each title is the one the design's drawn panel prints
+query's setting, declared in `dataBindings`, never a control. **"Member visibility" is filed under Section
+Settings and is not a control either** (R-124, 2026-09-18): who a section is shown to is stored on the placed instance
+(`memberVisibility`) and handed to the render door as `RenderInput.visibility`, which gates the root on both emitters;
+declaring it in a `controlSchema` would stamp a second, inert `data-member-visibility` on the root through
+`stampControls` and give the value two homes that can disagree. Each title is the one the design's drawn panel prints
 (DW-111) — the check reads the frame's own row, the title with one of the setting's values beside it (a toggle's
 switch), so relabelling a setting to another row's title fails unless the two rows share a value's words or are both
 switches, when the group change shows in `design.json` — and a labelled group's rows are filed under the titles

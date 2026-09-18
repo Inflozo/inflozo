@@ -94,6 +94,17 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `choose(pickAt(target))` unconditionally, and the stage `<section aria-label="Canvas">` and the Layers row list each
     deselect on a primary `pointerdown` whose target is that container itself. **Story 5.4 owns all three Layers rules
     together** — the row's press, the drag's start and this ground's press.
+  - **R-124 (owner, 2026-09-18, Story 5.4's Q1, closing DW-163):** "who can see this section" is the FIRST ROW of the
+    settings panel's Section settings and Layers draws nothing about it — where every drawing puts it (`A4-13`:256,
+    `A22-1`:69) and where R-113 already filed it. A NAMED SELECT, not a pill row: R-114's own rule refuses its values
+    ("Logged out" is 66 px against a 58.3 px pill), so `A22-1`'s drawn select wins over `A4-13`'s pre-R-114 pills. Its
+    values are `A22 Newsletter - Spec.md:291`'s — Everyone (default) · Logged out · Free members · Paid members — the
+    value is stored on the INSTANCE (`memberVisibility`) and handed to the render door as `RenderInput.visibility`,
+    which Story 4.10 already honours on both emitters, and it is never declared in a `controlSchema` (DW-186).
+  - **R-125 (owner, 2026-09-18, Story 5.4's Q2):** R-119's Pro tag keeps the selected section's top-right corner
+    unchanged, and S4b's quick-action pill sits directly to its LEFT — its right edge a gap short of the tag's left
+    while the tag shows, S4b's own 10 px inset when it does not. The name tag keeps the top-left, so nothing else
+    enters either corner.
   - **R-122 (owner, 2026-09-17, Story 5.3's Q2):** a click on Ghost's own words in a selected section shows P0-1's lock pill naming them — "Post title — set in Ghost" — as chrome in the canvas's layer; the names are one list beside the context matrix (`labels.json`, `ghostLabel`). Story 7.10 reuses the pill for a text prop promoted to Ghost Admin, naming its setting.
 - **The settings panel is Section Settings · Content · Layout · Style · Data.** Nothing is pinned above, pills are for short choices (R-114), reset asks first (R-115); could-never is absent with a reason, could-but-not-now greyed with a caption, never a tooltip.
 - **Colour never carries the only signal.** The indicator is a dot and a label, never a spinner; markers carry words; design, pack and Remix changes announce politely, lock notices assertively; reduced motion makes every transition instant.
