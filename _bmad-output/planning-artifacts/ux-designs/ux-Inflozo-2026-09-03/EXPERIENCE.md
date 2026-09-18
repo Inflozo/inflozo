@@ -307,7 +307,7 @@ Behavioural. Visual specs live in `DESIGN.md` § Components.
 | **Item list** | Add · Remove · drag, on an array the **user typed**. Never on a Ghost-bound repeat, which gets a count instead. **Remove never greys** — at the floor it stays active and explains itself (ruling R-12) |
 | **Reordering by drag** | While a row is dragged it lifts, and **a dashed empty slot the size of the row shows where it will land**; the rows between slide aside to make room, and nothing reorders until the drop. **Every editable list does this** — the item list, Layers, a hand-picked post list — and every one keeps its keyboard equivalent (`⌥↑` / `⌥↓`). No frame draws the slot; it is the Kit's own dashed border, the "+ Add" button's (owner, 2026-09-13, finding 9 on Story 4.5; built in `components/controls/item-list.tsx`) |
 | **Design picker** | Position is always shown ("Design 7 of 18"). `]` past the last returns to the first. Switching **carries, parks and defaults**: a control in both designs carries its value, one only in the design being left is parked against it, one only in the design being entered takes its default (FR-D19) |
-| **Section on canvas** | Hover → 1px outline, name tag, ◀ ▶ design arrows, duplicate, delete, drag handle, and a "+" between sections. Click → persistent outline and sidebar. Click text inside a selection → inline editing. **Click the ground around or below the page → deselected, editing and all** (R-123). **A click on Ghost's own words — a post's title, your site's name — shows a lock pill naming them, "Post title — set in Ghost", and nothing becomes editable** (R-122, Story 5.3). Esc deselects |
+| **Section on canvas** | Hover → 1px outline, name tag, ◀ ▶ design arrows, duplicate, delete, drag handle, and a "+" between sections. Click → persistent outline and sidebar. Click text inside a selection → inline editing. **Click the ground — around the page, below the last section, or below the Layers rows → deselected, editing and all** (R-123). **A click on Ghost's own words — a post's title, your site's name — shows a lock pill naming them, "Post title — set in Ghost", and nothing becomes editable** (R-122, Story 5.3). Esc deselects |
 | **Inline toolbar** | Exactly four marks. **A mark a field does not permit is absent, not greyed** — a fixed button order keeps the shapes recognisable at any width (`P0 Editor Primitives - Spec.md`). **A field that permits no mark shows no toolbar at all**, and ⌘B ⌘I ⌘U ⌘K do nothing in it; a Text Field is **one line** and a Text Area takes line breaks (Story 5.3) |
 | **Site-wide singleton** | Header, announcement bar and footer are one shared instance shown in every template's Layers as a pinned card with a page count. Cannot be duplicated. Deleting or hiding one confirms that it affects every template (FR-D5) |
 | **Pro badge** | Marigold ✦ on selection only. **No upgrade sheet on click, ever** — that is the Pro Exit Sheet's job, once, at the exit |
@@ -448,12 +448,15 @@ documents each hold their own focus and selection.
 Layers panel or the top bar **does not clear the canvas selection** — the persistent outline stays,
 and the sidebar keeps showing that section's controls. This is what makes the sidebar the "second
 way to do everything" (FR-D1) rather than a way that only works with a mouse. A selection is cleared
-by `Esc`, by selecting something else, by deleting it, **or by a press on nothing — the canvas ground
-below the last section, or the editor's own ground around the page card** (R-123, the owner's ruling
-of 2026-09-18, reversing Story 5.2's "the selection stays"). That press is the whole `Esc` ladder in
-one: any inline editing ends and the section is let go together. The chrome is not nothing — the
-Controls sidebar, the Layers panel, the top bar and the mark toolbar all keep the selection, which is
-what (2) above is for.
+by `Esc`, by selecting something else, by deleting it, **or by a press on nothing, which is
+three places: the canvas ground below the last section, the editor's own ground around the page card,
+and the empty space below the Layers rows** (R-123 and its amendment, the owner's rulings of
+2026-09-18, reversing Story 5.2's "the selection stays"). That press is the whole `Esc` ladder in
+one: any inline editing ends and the section is let go together. Everything else is chrome and keeps
+the selection — the Controls sidebar, the top bar, the mark toolbar, the Layers header and a Layers
+row — which is what (2) above is for. **The top bar is deliberately not a ground:** its empty space is
+a sliver that shrinks with every control still to land in it, and a miss while reaching for one would
+cost the selection mid-edit.
 
 **(3) The mark toolbar is operable without destroying the selection it acts on.**
 

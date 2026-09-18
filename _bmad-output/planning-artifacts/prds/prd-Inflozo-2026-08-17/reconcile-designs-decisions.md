@@ -2470,21 +2470,29 @@ like how we press Esc key and it unselects everything."*
   stays"* — and `EXPERIENCE.md` § the focus model (2), *"A selection is cleared only by `Esc`, by selecting something
   else, or by deleting it."* Story 5.2's spec is the record of what 5.2 built and is left as written (standing rule:
   never edit a record); this ruling supersedes it, and the living documents carry the new rule.
-- **What it binds.**
-  - A press on **nothing** deselects: the canvas ground below the last section, inside the frame, and the editor's own
-    ground around the page card, outside it. One press does the whole `Esc` ladder — any inline editing ends and the
-    section is let go together.
-  - **Chrome is not nothing.** The Controls sidebar, the Layers panel, the top bar and the mark toolbar and its link
-    panel all keep the selection, because the panel edits the selected section — `EXPERIENCE.md` § the focus model (2)
-    stands for everything but the two grounds. A Layers row, which 5.2's row named alongside the ground, keeps it too.
-  - It is the same one rule in both documents: the canvas document's `click` hands `choose` whatever section the target
-    sits in, which is `null` on the ground; the stage deselects on a primary `pointerdown` whose target is the stage
-    itself, so the card, the toolbar and the link panel are excluded by construction.
+- **What it binds** (amended the same day by the owner's answer to Story 5.3's Q4: *"Also deselect when clicking empty
+  area below the Left Layers Panel."*).
+  - A press on **nothing** deselects, and nothing is **three places**: the canvas ground below the last section, inside
+    the frame; the editor's own ground around the page card; and the empty space below the Layers rows. One press does
+    the whole `Esc` ladder — any inline editing ends and the section is let go together.
+  - **Chrome is not nothing.** The Controls sidebar, the top bar, the Layers header, a Layers ROW and the mark toolbar
+    and its link panel all keep the selection, because the panel edits the selected section — `EXPERIENCE.md` § the focus
+    model (2) stands for everything but the three grounds.
+  - **The top bar was offered and declined** (the same answer): its empty space is a sliver that shrinks with every
+    control still to land in it — the template pill (5.5), View as (5.14), the sun (5.6), the device switch (5.7), Ship
+    it (7.18) — and a miss there while reaching for one would cost the selection mid-edit.
+  - It is one rule in three containers: the canvas document's `click` hands `choose` whatever section the target sits
+    in, which is `null` on the ground; the stage and the Layers row list each deselect on a primary `pointerdown` whose
+    target is that container itself, so the page card, the toolbar, the link panel and every Layers row are excluded by
+    construction.
+  - **Story 5.4 inherits the Layers half.** It makes a row pressable and draggable, so the row's press, a drag's start
+    and this ground's press are three rules in one panel and are designed together there.
 - Targets:
-  - ✅ Story 5.3's spec (§ Owner's test findings F4, § Verification's step 27, § Owner's manual test) ·
+  - ✅ Story 5.3's spec (§ Owner's test findings F4, § Verification's step 27, § Owner's manual test, § Questions Q4) ·
     ✅ `EXPERIENCE.md` § the focus model (2) and § Component Patterns' Section on canvas row · ✅ `epic-5-context.md` ·
     ✅ `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` and `tools/probe/run-verify-editor.cjs` step 27 —
-    Story 5.3's Fix run (2026-09-18).
+    Story 5.3's two Fix runs (2026-09-18).
+  - ⬜ `epics.md` Story 5.4, which builds the Layers row's press and its drag beside this ground — at 5.4's Create.
   - **Deliberately not touched:** Story 5.2's spec, which is the record of what 5.2 built and says so; `prd.md`, which
     names no gesture for deselection.
 

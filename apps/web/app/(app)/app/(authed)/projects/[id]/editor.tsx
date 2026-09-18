@@ -50,8 +50,9 @@ import type { EditorData } from './read'
    what `/pilots` feeds it: a control change stamps the live root, anything else repaints — and after every paint and
    every stamp the attributes are re-applied, because `stampControls` strips every root `data-*` it does not own. Esc
    deselects unless a field, a picker or the reset dialog owns it; a change of canvas deselects too, and so does a press on
-   NOTHING — the canvas ground below the last section, or the editor's own ground around the page card — which ends any
-   editing in the same press (R-123, the owner's ruling of 2026-09-18, reversing Story 5.2's "the selection stays").
+   NOTHING, which ends any editing in the same press: the canvas ground below the last section, the editor's own ground
+   around the page card, and the empty space below the Layers rows (R-123 and its amendment, the owner's rulings of
+   2026-09-18, reversing Story 5.2's "the selection stays"). The top bar is deliberately not one of them.
 
    TYPING ON THE CANVAS (Story 5.3 — P0-1, B4b). Every paint asks the canvas emitter for its editing stamps and lifts them
    into memory in the same task (`takeStamps`), so nothing is left on the page. A press on a stamped text prop inside the
@@ -630,7 +631,14 @@ export function Editor({
               This page · {canvas.label}
             </span>
           </div>
-          <div className={`flex min-h-0 flex-1 flex-col gap-[2px] overflow-y-auto px-2 py-[10px] ${slimScrollbar}`}>
+          <div
+            // R-123 as amended: the empty space below the rows is a ground too, as it is in Figma and Sketch. A row is
+            // not — `currentTarget` alone — and Story 5.4, which makes a row pressable and draggable, owns all three.
+            onPointerDown={(e) => {
+              if (e.button === 0 && e.target === e.currentTarget) choose(null)
+            }}
+            className={`flex min-h-0 flex-1 flex-col gap-[2px] overflow-y-auto px-2 py-[10px] ${slimScrollbar}`}
+          >
             {stack.map((i) => (
               // the canvas's state mirrored; pressing a row is Story 5.4's
               <LayersRow key={`${i.target}:${i.instanceId}`} name={i.layerName} interactive={false} selected={same(i, selected)} hovered={same(i, hovered)} />
@@ -643,7 +651,8 @@ export function Editor({
           aria-label="Canvas"
           // R-123: the ground around the page card is nothing too — a press on it ends editing and deselects, exactly as
           // Esc does. `currentTarget` alone: the card, the toolbar and its link panel are children and keep the selection,
-          // as the panel, Layers and the top bar do (EXPERIENCE § the focus model (2)).
+          // as the Controls panel, the top bar, the Layers header and a Layers row do (EXPERIENCE § the focus model (2));
+          // the space below the Layers rows is the third ground, on its own list container.
           onPointerDown={(e) => {
             if (e.button === 0 && e.target === e.currentTarget) choose(null)
           }}

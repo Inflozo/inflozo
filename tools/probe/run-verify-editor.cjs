@@ -31,7 +31,7 @@
 // AD-36's paste vectors, line breaks, a submit button's label, R-122's lock pill, the Esc ladder, the toolbar hiding
 // while the canvas scrolls, and the panel's own rich field, its token row, catalog words and the theme's own words — all inside step 5's CSP session; step 8's axe runs twice more, with the toolbar showing and
 // with the link panel open; step 14 gains a tap into a text prop; and step 13 presses the section's top padding, because a
-// press on its words is now the start of editing. Its review adds step 27: R-123's press on nothing, in both documents.
+// press on its words is now the start of editing. Its review adds step 27: R-123's press on nothing, in each of its three grounds.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -1080,8 +1080,9 @@ async function main() {
     const reloadedWords = { title: await wordsOf(GRID, TITLE), heroSub: await markupOf(HERO, HERO_SUB), button: await wordsOf(NEWS, '.a22-1__button') }
     check('step 26 — a reload starts from the stored docs: this session\'s typing, marks and links are gone', !reloadedWords.title.includes(' and summer') && !/<(strong|em|u|a|br)\b/.test(reloadedWords.heroSub) && reloadedWords.button.trim() === 'Subscribe', JSON.stringify(reloadedWords))
 
-    // ── step 27 — a press on NOTHING deselects, as Esc does (R-123, the owner's ruling of 2026-09-18) ──
-    // Two grounds in two documents: the editor's own around the page card, and the canvas's below the last section.
+    // ── step 27 — a press on NOTHING deselects, as Esc does (R-123 and its amendment, owner, 2026-09-18) ──
+    // Three grounds in two documents: the editor's own around the page card, the empty space below the Layers rows, and
+    // the canvas's below the last section. The Controls panel, a Layers row and the top bar are not grounds.
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
     await clickOn(GRID)
@@ -1100,6 +1101,26 @@ async function main() {
     await openGroup('Layout')
     await page.waitForTimeout(250)
     check('step 27 — a press in the panel is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
+    // the Layers panel's own ground, below its rows (R-123 as amended, 2026-09-18) — and a row is not ground
+    const layersGround = await page.evaluate(() => {
+      const list = document.getElementById('editor-layers').lastElementChild
+      const r = list.getBoundingClientRect()
+      const rows = [...list.children]
+      const last = rows[rows.length - 1].getBoundingClientRect()
+      const at = { x: r.left + r.width / 2, y: last.bottom + 40 }
+      return { rows: rows.length, room: r.bottom - last.bottom, isGround: document.elementFromPoint(at.x, at.y) === list, at }
+    })
+    await page.mouse.click(layersGround.at.x, layersGround.at.y)
+    await page.waitForTimeout(300)
+    check('step 27 — a press on the empty space below the Layers rows deselects too', layersGround.isGround && layersGround.room > 40 && !(await onScreen(GRID)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(layersGround))
+    await clickOn(GRID)
+    const layersRow = await page.evaluate(() => {
+      const r = document.getElementById('editor-layers').lastElementChild.firstElementChild.getBoundingClientRect()
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+    })
+    await page.mouse.click(layersRow.x, layersRow.y)
+    await page.waitForTimeout(250)
+    check('step 27 — a press on a Layers row is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
     // the canvas's own ground: the tag canvas draws the site header and nothing else, so the room below it is real
     await page.goto(editorUrl('tag'), { waitUntil: 'load' })
     await painted('tag')
