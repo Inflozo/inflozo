@@ -1266,8 +1266,12 @@ async function main() {
     await page.waitForTimeout(300)
     const pressed29 = [await onScreen(GRID), await panelOf(), await rowState(GRID)]
     check('step 29 — a press on a Layers row selects that section, coral-tints the row and heads the panel with its name (R-123: the press does not deselect)', pressed29[0].selected && pressed29[1].head === layerOf(GRID) && pressed29[2].bg === TINT && pressed29[2].weight === '600', JSON.stringify({ selected: pressed29[0].selected, head: pressed29[1].head, row: pressed29[2] }))
-    // D8e: the ring is drawn ON THE ROW, over whichever state it is already in
+    // D8e: the ring is drawn ON THE ROW, over whichever state it is already in. It is `focus-visible`, so focus has
+    // to ARRIVE BY KEYBOARD as it does in the owner's test (Tab, then the arrows): a programmatic `.focus()` whose
+    // last user interaction was the press above draws no ring, and correctly so.
     await rowAt(GRID).focus()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowUp')
     await page.waitForTimeout(150)
     const focusedSelected = await rowState(GRID)
     check('step 29 — D8e: a focused-and-selected row reads as both — the coral tint with the 2px ring on the ROW', focusedSelected.bg === TINT && /rgb\(194, 56, 31\) 0px 0px 0px 2px/.test(focusedSelected.shadow), JSON.stringify(focusedSelected))
@@ -1452,7 +1456,16 @@ async function main() {
     await page.waitForTimeout(700)
     const settled36 = await pillNow()
     const grid36 = await onScreen(GRID)
-    check('step 36 — the pill hides from the first canvas scroll and is placed again on its section when the scroll settles', !!placed36 && placed36.visibility === 'visible' && scrolling36?.visibility === 'hidden' && settled36?.visibility === 'visible' && Math.abs(grid36.right - settled36.right - 10) <= 1 && Math.abs(settled36.top - grid36.y - 10) <= 1, `${JSON.stringify({ placed: placed36?.visibility, scrolling: scrolling36?.visibility, settled: settled36?.visibility })} · pill ${JSON.stringify({ right: settled36?.right, top: settled36?.top })} · root ${JSON.stringify({ right: grid36.right, top: grid36.y })}`)
+    /* WHAT "ON ITS SECTION" MEANS ONCE THE CORNER HAS SCROLLED OFF. The pill is kept inside the canvas card, the way
+       P0-1's toolbar is kept inside the window — which is what the matrix row asks for in so many words ("like P0-1's
+       toolbar"). So a section whose top is above the card draws the pill at the card's edge and NOT 10px below a
+       corner nobody can see. The claim that survives both cases, and the one the owner's test 13 states, is
+       CONTAINMENT: the pill sits within the part of its own section that is on screen, never over another one. The
+       10px corner itself is step 35's check, at rest, where the corner is in view. */
+    const card36 = await page.locator('section[aria-label="Canvas"] iframe').boundingBox()
+    const within = (p, r, box) => p.left >= Math.max(r.left, box.x) - 1 && p.right <= Math.min(r.right, box.x + box.width) + 1
+      && p.top >= Math.max(r.top, box.y) - 1 && p.bottom <= Math.min(r.bottom, box.y + box.height) + 1
+    check('step 36 — the pill hides from the first canvas scroll and is placed again on its own section when the scroll settles', !!placed36 && placed36.visibility === 'visible' && scrolling36?.visibility === 'hidden' && settled36?.visibility === 'visible' && Math.abs(grid36.right - settled36.right - 10) <= 1 && within(settled36, { left: grid36.x, right: grid36.right, top: grid36.y, bottom: grid36.bottom }, card36), `${JSON.stringify({ placed: placed36?.visibility, scrolling: scrolling36?.visibility, settled: settled36?.visibility })} · pill ${JSON.stringify({ left: settled36?.left, right: settled36?.right, top: settled36?.top, bottom: settled36?.bottom })} · root ${JSON.stringify({ left: grid36.x, right: grid36.right, top: grid36.y, bottom: grid36.bottom })}`)
     /* And the same claim PER FRAME, which is what "never between the two" means (the epic context's direction to
        measure the pill against step 15's scroll capture). A sampler in the page reads, on every animation frame of a
        real wheel scroll, whether the pill is hidden and — when it is not — how far its own corner is from the corner
@@ -1472,7 +1485,12 @@ async function main() {
           const fr = f.getBoundingClientRect()
           const s = fr.width / f.offsetWidth
           const [r, p] = [root.getBoundingClientRect(), el.getBoundingClientRect()]
-          return out.push(Math.max(Math.abs(fr.left + r.right * s - p.right - 10), Math.abs(p.top - (fr.top + r.top * s) - 10)))
+          // how far the pill lies OUTSIDE the on-screen part of the section it is anchored to — 0 while it is on it.
+          // Containment, not the 10px corner: a section scrolled half off draws the pill at the card's edge, which is
+          // still on that section (the clamp, "like P0-1's toolbar"). This catches the drift the rule exists for:
+          // a pill left over the WRONG section, or floating off every section, while the canvas moved under it.
+          const box = { left: Math.max(fr.left + r.left * s, fr.left), right: Math.min(fr.left + r.right * s, fr.right), top: Math.max(fr.top + r.top * s, fr.top), bottom: Math.min(fr.top + r.bottom * s, fr.bottom) }
+          return out.push(Math.max(0, box.left - p.left, p.right - box.right, box.top - p.top, p.bottom - box.bottom))
         }
         await new Promise((done) => {
           let n = 0
@@ -1484,7 +1502,7 @@ async function main() {
       (async () => { for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, 180); await page.waitForTimeout(60) } })(),
     ])
     const off = frames.filter((v) => typeof v === 'number')
-    check('step 36 — per frame of a real scroll, the pill is either hidden or on its section (≤ 3px, step 15\'s tolerance) — never between the two', frames.length > 30 && frames.includes('hidden') && off.length > 0 && Math.max(...off) <= 3, `${frames.length} frames · ${frames.filter((v) => v === 'hidden').length} hidden · ${off.length} placed · worst ${Math.max(0, ...off).toFixed(1)}px`)
+    check('step 36 — per frame of a real scroll, the pill is either hidden or wholly on its own section (≤ 3px, step 15\'s tolerance) — never between the two', frames.length > 30 && frames.includes('hidden') && off.length > 0 && Math.max(...off) <= 3, `${frames.length} frames · ${frames.filter((v) => v === 'hidden').length} hidden · ${off.length} placed · worst ${Math.max(0, ...off).toFixed(1)}px outside its section`)
 
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
