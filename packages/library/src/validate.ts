@@ -20,7 +20,7 @@ import {
   SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
   PILL_CHARS, pillRefusal, safeUrl, splitFirst, tCallRefusals, valueWords,
 } from './vocabulary.ts'
-import { catalogPropRefusal } from './catalog.ts'
+import { CATALOG, catalogPropRefusal } from './catalog.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
 export type Failure = { code: string; message: string }
@@ -171,6 +171,13 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       // Story 4.9 — S5: both emitters stamp data-i18n-* on a module's mount from the registry's strings
       if (name.startsWith('data-i18n-')) {
         push(out, 'bad-value', `<${tag.name} ${name}> — both emitters stamp data-i18n-* on a module's mount from FR-G7's registry strings (S5); a design never writes one.`)
+        continue
+      }
+      // Story 5.3 (review): the editor's own prefix — its stamps, its state marks and the chrome keyed on them. An
+      // authored one would be lifted as a stamp and make its element editable against that prop, or paint the
+      // editing haze at rest.
+      if (name.startsWith('data-inflozo-')) {
+        push(out, 'editor-attribute', `<${tag.name} ${name}> — data-inflozo-* is the editor's own prefix: the canvas emitter's editing stamps and the state marks its chrome is keyed on. A design never writes one.`)
         continue
       }
 
@@ -656,6 +663,12 @@ export function validateCategoryContent(content: CategoryContent, icons?: IconLo
         const words = typeof prop.default === 'string' ? prop.default : typeof prop.default === 'object' && prop.default !== null && typeof (prop.default as { text?: unknown }).text === 'string' ? (prop.default as { text: string }).text : ''
         if (words.length > prop.maxChars) {
           push(out, 'max-chars-default', `prop "${path}" defaults to ${words.length} characters and holds ${prop.maxChars}. The design's own words must fit the limit a customer is held to.`)
+        }
+        // a catalog-linked prop starts from the catalog's words (S6), which the editor reads as its first text: longer
+        // than the limit, every keystroke would be refused (review, 2026-09-18)
+        const linked = typeof prop.catalog === 'string' && Object.prototype.hasOwnProperty.call(CATALOG.keys, prop.catalog) ? CATALOG.keys[prop.catalog]?.en : undefined
+        if (linked !== undefined && linked.length > prop.maxChars) {
+          push(out, 'max-chars-catalog', `prop "${path}" starts from the catalog's "${linked}" (${linked.length} characters) and holds ${prop.maxChars}. The words a field starts with must fit the limit a customer is held to.`)
         }
       }
     }

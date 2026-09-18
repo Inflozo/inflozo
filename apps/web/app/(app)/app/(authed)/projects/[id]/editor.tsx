@@ -180,7 +180,17 @@ export function Editor({
   const [session, setSession] = useState<Inline | null>(null)
   const [inlineAt, setInlineAt] = useState<ScreenSelection | null>(null)
   const [scrolling, setScrolling] = useState(false)
-  const [note, setNote] = useState<{ el: HTMLElement; kind: 'lock' | 'limit'; words: string } | null>(null)
+  type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
+  const [note, setNote] = useState<Note | null>(null)
+  // the pill as the canvas document's handlers see it, in the same task it was set — paint reads it before React has
+  // rendered the state
+  const noteRef = useRef<Note | null>(null)
+  const showNote = (next: Note | null) => {
+    noteRef.current = next
+    setNote(next)
+  }
+  /** the elements a paint stamped with this lock's name, in document order — the same order on every paint of the same docs */
+  const sameLock = (words: string) => [...stamps.current].filter(([, s]) => 'ghost' in s && `${s.ghost} — set in Ghost` === words).map(([el]) => el)
   const noteBox = useRef<HTMLDivElement>(null)
   const tools = useRef<InlineToolsHandle>(null)
   /** a press on the canvas is under way: a repaint it causes waits for its click, which must still find its target */
@@ -205,7 +215,7 @@ export function Editor({
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
     setSelected(pick)
-    setNote(null)
+    showNote(null)
     // a change of selection ends editing
     editing.current?.inline.end()
     mark()
@@ -229,7 +239,11 @@ export function Editor({
     const was = editing.current
     editing.current = null
     was?.inline.end()
-    setNote(null)
+    // review (2026-09-18): a click on a Ghost word while another field is being edited ends that field, whose repaint
+    // waits for this click and then arrived AFTER the pill was set, taking it away; a lock pill survives the paint on the
+    // element in the same place of the new render
+    const lock = noteRef.current?.kind === 'lock' ? { words: noteRef.current.words, at: sameLock(noteRef.current.words).indexOf(noteRef.current.el) } : null
+    showNote(null)
     try {
       const assets = canvasAssets(pool)
       const parts = now.stack.map((i) => {
@@ -240,6 +254,8 @@ export function Editor({
       mountSections(mount, parts.join(''))
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
       stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>('[data-inflozo-prop], [data-inflozo-ghost]'))
+      const back = lock && lock.at >= 0 ? sameLock(lock.words)[lock.at] : undefined
+      if (back && lock) showNote({ el: back, kind: 'lock', words: lock.words })
       roots.current = sectionRoots(parts, mount) as (HTMLElement | null)[]
       wire(doc)
       // the hovered root was replaced, and the pointer has not said where it is since
@@ -282,6 +298,16 @@ export function Editor({
     if (press.current.on) press.current.repaint = true
     else paint()
   }
+  /** the press is over: after the click it fires, which runs in the same task */
+  const release = () => {
+    setTimeout(() => {
+      press.current.on = false
+      if (press.current.repaint) {
+        press.current.repaint = false
+        paint()
+      }
+    }, 0)
+  }
   /** The selection's rect on screen: through the frame's own rect and the fit. */
   const onScreen = (s: InlineSelection | null): ScreenSelection | null => {
     const f = frame.current
@@ -299,7 +325,7 @@ export function Editor({
     const was = editing.current
     editing.current = null
     was?.inline.end()
-    setNote(null)
+    showNote(null)
     const doc = target.ownerDocument
     let el = target
     let unwrap = () => {}
@@ -332,11 +358,11 @@ export function Editor({
         latest.current = { ...now, docs, stack: stackOf(docs, now.key) }
         setDocs(docs)
         // the limit's pill stays until the next edit
-        setNote((shown) => (shown?.kind === 'limit' ? null : shown))
+        if (noteRef.current?.kind === 'limit') showNote(null)
         // the same prop drawn twice follows as it is typed
         for (const other of samePropElsewhere<HTMLElement>(stamps.current, target, me.path, me.item, roots.current[me.n])) other.innerHTML = serializeMarks(next, def)
       },
-      onRefused: (words) => setNote({ el: target, kind: 'limit', words }),
+      onRefused: (words) => showNote({ el: target, kind: 'limit', words }),
       onSelection: (s) => setInlineAt(onScreen(s)),
       onLinkKey: () => tools.current?.openLink(),
       onToolbarKey: () => tools.current?.focusBar(),
@@ -387,7 +413,9 @@ export function Editor({
     }, true)
     doc.addEventListener('mousedown', (e) => {
       press.current.on = true
-      const hit = stampAt(e.target, pressedIn)
+      // the primary button alone starts editing: a right press would put the caret in and open the browser's editing
+      // menu over it, and a middle press on Linux pastes the primary selection (review, 2026-09-18)
+      const hit = e.button === 0 ? stampAt(e.target, pressedIn) : null
       if (hit && 'path' in hit.stamp && hit.el.tagName !== 'BUTTON') {
         // not prevented: contenteditable is on before the default action, so the caret lands under the pointer
         if (editing.current?.target === hit.el || startEditing(hit.el, hit.stamp, hit.n, 'pointer')) return
@@ -403,20 +431,7 @@ export function Editor({
       if (active && active !== doc.body) active.blur()
       doc.defaultView?.focus()
     })
-    const release = () => {
-      // after the click this press fires, which runs in the same task
-      setTimeout(() => {
-        press.current.on = false
-        if (press.current.repaint) {
-          press.current.repaint = false
-          paint()
-        }
-      }, 0)
-    }
     doc.addEventListener('mouseup', release)
-    // a press that starts on the canvas and lifts over the panel releases in the editor document, not the canvas's
-    // ponytail: a lift outside the browser window reaches neither; the next press releases it
-    window.addEventListener('mouseup', release)
     let settle: ReturnType<typeof setTimeout> | undefined
     doc.addEventListener('scroll', () => {
       if (!editing.current) return
@@ -481,7 +496,7 @@ export function Editor({
       if (step({ type: 'click' }) === 'swallow') return
       // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away
       const ghost = stampAt(e.target, latest.current.selected)
-      setNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : null)
+      showNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : null)
       // R-123 (owner, 2026-09-18): a click on NOTHING — the ground below the last section — deselects, as Esc does.
       // It used to keep the selection (Story 5.2's matrix); one press now ends any editing and lets the section go.
       choose(pickAt(e.target))
@@ -512,10 +527,15 @@ export function Editor({
     if (el?.contentDocument?.readyState === 'complete') ready()
     el?.addEventListener('load', ready)
     window.addEventListener('keydown', onEscape)
+    // a press that starts on the canvas and lifts over the panel releases in the editor document, not the canvas's —
+    // added once here, not once per canvas document wired (review, 2026-09-18)
+    // ponytail: a lift outside the browser window reaches neither; the next press releases it
+    window.addEventListener('mouseup', release)
     return () => {
       alive = false
       el?.removeEventListener('load', ready)
       window.removeEventListener('keydown', onEscape)
+      window.removeEventListener('mouseup', release)
     }
     // mount only
   }, [])
@@ -632,10 +652,13 @@ export function Editor({
             </span>
           </div>
           <div
-            // R-123 as amended: the empty space below the rows is a ground too, as it is in Figma and Sketch. A row is
-            // not — `currentTarget` alone — and Story 5.4, which makes a row pressable and draggable, owns all three.
+            // R-123 as amended: the empty space BELOW the rows is a ground too, as it is in Figma and Sketch. A row is
+            // not, and neither are the list's padding beside a row and the gap between two — a miss there while reaching
+            // for a row would cost the selection (review, 2026-09-18) — and Story 5.4, which makes a row pressable and
+            // draggable, owns all three.
             onPointerDown={(e) => {
-              if (e.button === 0 && e.target === e.currentTarget) choose(null)
+              const last = e.currentTarget.lastElementChild?.getBoundingClientRect().bottom ?? -Infinity
+              if (e.button === 0 && e.target === e.currentTarget && e.clientY >= last) choose(null)
             }}
             className={`flex min-h-0 flex-1 flex-col gap-[2px] overflow-y-auto px-2 py-[10px] ${slimScrollbar}`}
           >
@@ -650,9 +673,10 @@ export function Editor({
         <section
           aria-label="Canvas"
           // R-123: the ground around the page card is nothing too — a press on it ends editing and deselects, exactly as
-          // Esc does. `currentTarget` alone: the card, the toolbar and its link panel are children and keep the selection,
-          // as the Controls panel, the top bar, the Layers header and a Layers row do (EXPERIENCE § the focus model (2));
-          // the space below the Layers rows is the third ground, on its own list container.
+          // Esc does. `currentTarget` alone: a press on the page card keeps the selection, as the Controls panel, the top
+          // bar, the Layers header and a Layers row do (EXPERIENCE § the focus model (2)); the toolbar and its link panel
+          // are portalled to the body, so their presses never reach this handler at all. The space below the Layers rows
+          // is the third ground, on its own list container.
           onPointerDown={(e) => {
             if (e.button === 0 && e.target === e.currentTarget) choose(null)
           }}

@@ -887,6 +887,16 @@ async function main() {
     const filled = await linkDialog.evaluate((el) => [...el.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.textContent.trim()))
     const reopenedQuery = await page.locator('#canvas-inline-q').inputValue()
     check('step 19 — Link on a selection touching a link opens the panel filled with that link\'s own record, and the last search cleared', filled.includes('Sign up') && reopenedQuery === '', `${JSON.stringify(filled)} · query ${JSON.stringify(reopenedQuery)}`)
+    // Escape in the panel commits nothing and returns to the text with the selection intact (the matrix's "Add a link"
+    // row; review, 2026-09-18)
+    const beforeEsc = await markupOf(HERO, HERO_SUB)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    const afterEsc = await editingNow()
+    check('step 19 — Escape in the link panel closes it, commits nothing and returns to the text with the selection intact', !(await linkDialog.evaluate((el) => el.matches(':popover-open'))) && (await markupOf(HERO, HERO_SUB)) === beforeEsc && afterEsc.editable && afterEsc.selected === 'small', JSON.stringify(afterEsc))
+    await pickWord(HERO, HERO_SUB, 'small')
+    await bar.getByRole('button', { name: 'Link', exact: true }).click()
+    await page.waitForTimeout(300)
     const beforePress = await markupOf(HERO, HERO_SUB)
     const pressPoint = await textAt(HERO, HERO_SUB, 'about')
     await page.mouse.click(pressPoint.x, pressPoint.y)
@@ -928,6 +938,12 @@ async function main() {
     const broken = await markupOf(GRID, GRID_SUB)
     const panelSub = await controlsAside().getByLabel('Sub', { exact: true }).innerText()
     check('step 21 — Shift+Enter in a Text Area stores a line break and both the canvas and the panel show two lines', /<br>Second line/.test(broken) && panelSub.includes('\n'), `${broken} · panel ${JSON.stringify(panelSub)}`)
+    // and Enter alone — `insertParagraph`, not `insertLineBreak` — is the same line break, never a paragraph (review, 2026-09-18)
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('Third')
+    await page.waitForTimeout(250)
+    const brokenTwice = await markupOf(GRID, GRID_SUB)
+    check('step 21 — Enter in a Text Area is the same line break, and no block element appears', /<br>Second line<br>Third/.test(brokenTwice) && !/<(p|div)\b/.test(brokenTwice), brokenTwice)
     await clickOn(HERO)
     const headlineWas = await markupOf(HERO, HEADLINE)
     await caretInto(HERO, HEADLINE)
@@ -968,6 +984,16 @@ async function main() {
       return { editable: el.isContentEditable, editables: document.querySelectorAll('[contenteditable]').length }
     }, HERO)
     check('step 23 — a click on the card\'s post title shows P0-1\'s pill naming the field, in a chrome host, and nothing becomes editable', pill && pill.text === 'Post title — set in Ghost' && !pill.pressable && pill.events === 'none' && !lockedTitle.editable && lockedTitle.editables === 0, `${JSON.stringify(pill)} · ${JSON.stringify(lockedTitle)}`)
+    // the same click while another field is being typed in: that field ends and repaints, and the pill still shows
+    // (review, 2026-09-18: the repaint used to arrive after the pill and take it away)
+    await caretInto(HERO, HEADLINE)
+    await page.keyboard.type('q')
+    await page.waitForTimeout(200)
+    await page.mouse.click(ghostWords.x, ghostWords.y)
+    await page.waitForTimeout(400)
+    const pillAfterEditing = await chromeNow('[data-chrome="note"]')
+    const editablesAfter = await canvasFrame().evaluate(() => document.querySelectorAll('[contenteditable]').length)
+    check('step 23 — a click on a Ghost word while another field is being edited ends that field and still shows the pill', pillAfterEditing !== null && pillAfterEditing.text === 'Post title — set in Ghost' && editablesAfter === 0 && (await wordsOf(HERO, HEADLINE)).includes('q'), `${JSON.stringify(pillAfterEditing && pillAfterEditing.text)} · editables ${editablesAfter}`)
     // the owner's rule (2026-09-18): NOTHING Ghost fills is ever editable, and each names itself — not the hero's title alone
     for (const [n, selector, name] of [[HERO, '.a4-13__tag', 'Tag name'], [HERO, '.a4-13__date', 'Publish date'], [GRID, '.a17-1__post-title', 'Post title'], [GRID, '.a17-1__excerpt', 'Post excerpt']]) {
       if (!(await onScreen(n)).selected) await clickOn(n)
@@ -1043,6 +1069,11 @@ async function main() {
     check('step 26 — the panel\'s Text Area raises the same toolbar over the field, and Italic pressed there shows on the canvas', !!panelBar && !/<em>/.test(noteWas) && /<em>/.test(noteNow), `${JSON.stringify(panelBar && panelBar.buttons.map((b) => b.name))} · ${noteNow}`)
     check('step 26 — a field that declares no token has no token row', (await controlsAside().getByText('TOKENS THIS FIELD ACCEPTS').count()) === 0)
     await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
+    // Esc in the panel's field ends its session and hands focus back to the panel, and the section stays selected — the
+    // controller's `keep` branch, the one path where Esc blurs a field (review, 2026-09-18)
+    const panelEsc = await page.evaluate(() => ({ inField: document.activeElement?.getAttribute('role') === 'textbox', toolbar: document.querySelector('[role="toolbar"][aria-label="Text formatting"]') !== null }))
+    check('step 26 — Escape in the panel\'s Text Area ends editing, leaves the field and keeps the section selected', !panelEsc.inField && !panelEsc.toolbar && (await onScreen(GRID)).selected, JSON.stringify(panelEsc))
 
     // the token row: P0-1's chips under the one pilot field that declares a token
     await clickOn(NEWS)
@@ -1060,7 +1091,17 @@ async function main() {
     await clickOn(HERO)
     await openGroup('Content')
     const catalogWas = await wordsOf(HERO, '.a4-13__action--primary')
+    const fillOf = () => canvasFrame().evaluate((n) => {
+      const el = document.querySelectorAll('#canvas > *')[n].querySelector('.a4-13__action--primary')
+      const s = getComputedStyle(el)
+      return { fill: s.backgroundColor, radius: s.borderRadius, editing: el.hasAttribute('data-inflozo-editing') }
+    }, HERO)
+    const fillWas = await fillOf()
     await caretInto(HERO, '.a4-13__action--primary')
+    await page.waitForTimeout(200)
+    const fillNow = await fillOf()
+    // the editing haze is a ring on a button-styled link: its own fill and radius stay (review, 2026-09-18)
+    check('step 26 — the editing haze leaves a button-styled link its own fill and radius', fillNow.editing && !fillWas.editing && fillNow.fill === fillWas.fill && fillNow.radius === fillWas.radius, `${JSON.stringify(fillWas)} → ${JSON.stringify(fillNow)}`)
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
     check('step 26 — a catalog-linked label left without typing keeps the catalog\'s words and an empty value', catalogWas === 'Subscribe' && (await wordsOf(HERO, '.a4-13__action--primary')) === 'Subscribe' && (await controlsAside().getByLabel('Primary action text', { exact: true }).inputValue()) === '', `${JSON.stringify(catalogWas)} · panel ${JSON.stringify(await controlsAside().getByLabel('Primary action text', { exact: true }).inputValue())}`)
@@ -1402,4 +1443,6 @@ async function main() {
     process.exitCode = fails ? 1 : 0
   }
 }
-main().catch((e) => { console.log(results.join('\n')); console.error('HARNESS ERROR', e); process.exitCode = 2 })
+// a Playwright timeout prints its call log, request headers included: a cookie line carries the throwaway account's
+// session, so those lines are stripped before anything reaches a log (review, 2026-09-18)
+main().catch((e) => { console.log(results.join('\n')); console.error('HARNESS ERROR', String(e && e.stack ? e.stack : e).replace(/^.*cookie.*$/gim, '  [a header line stripped]')); process.exitCode = 2 })

@@ -15,10 +15,14 @@
    So the ring goes and the words take a coral haze — the same coral as the caret and P0-1's pressed mark, at a twentieth
    of its strength, on a box-shadow rather than padding so nothing on the page moves when a field starts or stops being
    edited. `lib/inline.ts` puts the mark on and takes it off with `contenteditable`, so the canvas at rest carries
-   neither. */
+   neither. A prop whose element IS a button-styled link (Hero — Latest Post's actions, Header — Rail's CTA) keeps its
+   own fill and radius — this sheet loads after the design's, at the same specificity, and would otherwise turn a coral
+   button near-transparent under its white words (review, 2026-09-18); such a field shows the ring alone. */
 [data-inflozo-editing] {
   outline: none;
+  box-shadow: 0 0 0 3px rgba(194, 56, 31, 0.045);
+}
+[data-inflozo-editing]:not(a) {
   border-radius: 3px;
   background-color: rgba(194, 56, 31, 0.045);
-  box-shadow: 0 0 0 3px rgba(194, 56, 31, 0.045);
 }

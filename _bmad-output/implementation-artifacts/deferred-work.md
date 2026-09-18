@@ -4315,3 +4315,24 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`onRefused
   (`onFocusOut`) · `tools/probe/run-verify-editor.cjs`
 reason: the editor harness runs on "Pilot sections" and no pilot is this story's to edit (AD-35); the first design that
   declares a limit brings the pill within reach of its own harness step.
+
+## Deferred from: the second code review of spec-5-3-inline-editing-the-four-marks-and-the-link-picker (2026-09-18)
+
+### DW-183: the editor harness has no retry, so one production stall costs the whole run
+
+plain: The automatic check of the editor runs on the live site with a throwaway account. Twice in one afternoon the live
+  site took longer than the check's thirty-second patience to answer one signed-in page, and the whole check stopped
+  there — with nothing wrong found and the throwaway account cleaned up. A third run went through. It cost time, not
+  correctness, but it can hide a real failure behind a stall.
+status: open
+severity: low
+origin: Story 5.3's second code review (2026-09-18, real-infra layer): runs 1 and 2 of `run-verify-editor.cjs` against
+  `https://app.inflozo.com` stalled on step 6's signed-in `request.get` and step 7's `page.goBack` respectively, each a
+  Playwright 30-second `TimeoutError` with 0 FAIL and `users 9 → 9`; unauthenticated `curl` to the same URLs answered in
+  under a second six times in a row, and DNS resolved the same through the stub and `@1.1.1.1`.
+owner: the first story that touches the harness's session (Story 5.8's saving, or the next editor story with a new step)
+location: `tools/probe/run-verify-editor.cjs` (its step 6 and 7 navigations, and `main().catch`)
+reason: a retry is a design choice — once per navigation, once per run, or a longer timeout on the signed-in loads alone
+  — and the two stalls were at different steps, so the fix needs a third observation to name the pattern; the harness
+  already cleans up on a crash, so nothing durable is at stake.
+

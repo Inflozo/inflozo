@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { PropDef } from '@inflozo/library'
 import { replaceRange, serializeMarks } from '@inflozo/section-runtime'
 import type { PropValue } from '@inflozo/section-runtime'
@@ -19,9 +19,10 @@ import { InlineTools, type InlineToolsHandle, type ScreenSelection } from './mar
 const textOf = (v: unknown) =>
   typeof v === 'string' ? v : typeof v === 'object' && v !== null && typeof (v as { text?: unknown }).text === 'string' ? (v as { text: string }).text : ''
 
-/** The limit's sentence, under the field, while the words are at it — the same slot and tone a Text Field's hint takes. */
-export const LimitCaption = ({ id, label, max, text }: { id: string; label: string; max: number | undefined; text: string }) =>
-  max !== undefined && text.length >= max ? (
+/** The limit's sentence, under the field, while the words are at it or when a token was refused for not fitting whole
+ *  — the same slot and tone a Text Field's hint takes. */
+export const LimitCaption = ({ id, label, max, text, refused = false }: { id: string; label: string; max: number | undefined; text: string; refused?: boolean }) =>
+  max !== undefined && (refused || text.length >= max) ? (
     <p id={`${id}-limit`} role="status" className="text-helper-caption leading-[1.5] text-marigold-text">
       {limitSentence(label, max)}
     </p>
@@ -79,10 +80,21 @@ export function RichField({
   const tools = useRef<InlineToolsHandle>(null)
   const [session, setSession] = useState<Inline | null>(null)
   const [selection, setSelection] = useState<ScreenSelection | null>(null)
+  // a token chip refused for not fitting whole says so under the field until the next edit (review, 2026-09-18)
+  const [refused, setRefused] = useState(false)
   const latest = useRef(value)
   latest.current = value
   const change = useRef(onValue)
   change.current = onValue
+  useEffect(() => setRefused(false), [value])
+  // the aside scrolls under a fixed toolbar: the selection's rect is reported again so the bar follows its words, as the
+  // canvas's does after a scroll (review, 2026-09-18)
+  useEffect(() => {
+    if (!session) return
+    const follow = () => session.report()
+    document.addEventListener('scroll', follow, { capture: true, passive: true })
+    return () => document.removeEventListener('scroll', follow, { capture: true })
+  }, [session])
 
   // the serializer's markup, whenever the value changes and the field is not being typed in
   useLayoutEffect(() => {
@@ -101,8 +113,8 @@ export function RichField({
       value: latest.current as PropValue,
       keep: true,
       onValue: (next) => change.current(next),
-      // the caption under the field says it while the words are at the limit
-      onRefused: () => undefined,
+      // the caption under the field says it while the words are at the limit, and when a token was refused whole
+      onRefused: () => setRefused(true),
       onSelection: (s) => setSelection(s && { ...s, rect: s.rect, edge: 0 }),
       onLinkKey: () => tools.current?.openLink(),
       onToolbarKey: () => tools.current?.focusBar(),
@@ -123,7 +135,7 @@ export function RichField({
         role="textbox"
         aria-multiline="true"
         aria-labelledby={`${id}-label`}
-        aria-describedby={def.maxChars !== undefined && text.length >= def.maxChars ? `${id}-limit` : undefined}
+        aria-describedby={def.maxChars !== undefined && (refused || text.length >= def.maxChars) ? `${id}-limit` : undefined}
         contentEditable
         suppressContentEditableWarning
         onFocus={start}
@@ -132,13 +144,16 @@ export function RichField({
         onAuxClick={(event) => event.preventDefault()}
         className={`min-h-16 whitespace-pre-wrap break-words rounded-sm border px-[11px] py-[9px] text-[12.5px] leading-[1.5] text-ink caret-coral ${fieldTone(undefined)} ${ring} focus-visible:border-coral-text`}
       />
-      <LimitCaption id={id} label={label} max={def.maxChars} text={text} />
+      <LimitCaption id={id} label={label} max={def.maxChars} text={text} refused={refused} />
       <TokenRow
         tokens={def.tokens}
         text={text}
         onInsert={(token) => {
           if (session && !session.ended) return session.insert(token)
-          change.current(replaceRange(latest.current as PropValue, text.length, text.length, token, { max: def.maxChars }).value)
+          const r = replaceRange(latest.current as PropValue, text.length, text.length, token, { max: def.maxChars })
+          // whole or nothing, and never silent: a cut token prints literally (R-27)
+          if (r.refused > 0) return setRefused(true)
+          change.current(r.value)
         }}
       />
       <InlineTools id={`${id}-inline`} session={session} selection={selection} resources={links} handle={tools} />

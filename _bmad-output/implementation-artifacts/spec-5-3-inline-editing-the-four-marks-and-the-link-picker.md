@@ -5,7 +5,7 @@ created: '2026-09-17'
 status: 'in-progress'
 baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
 owner_test: issues
-review_loop_iteration: 1
+review_loop_iteration: 2
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -453,7 +453,7 @@ P0-1's lock pill naming them (R-122).
     stories.
 - [x] `tools/probe/run-verify-editor.cjs` -- the harness:
   - Steps 16–26 under Verification, their gestures inside step 5's session, and step 8's two new axe states.
-  - Step 14 gains the tap into a title.
+  - Step 14 gains the tap into Hero — Latest Post's headline.
   - Step 13's first Esc check clicks Three Up's top padding, not its text, so it still asserts deselection.
 - [x] `tools/probe/run-verify-controls.cjs` -- a step on `/controls`:
   - Typing past Eyebrow's 30 characters, and past Heading's 40, is refused, and each field shows its sentence.
@@ -566,6 +566,42 @@ path hands no tokens either), `setContent`'s refusal (unreachable for a stamped 
 `href` in a paste (the task names the four schemes), spellcheck in a `contenteditable`, arrow keys reaching the
 `aria-disabled` Remove link (the toolbar pattern keeps disabled items focusable), and `custom_excerpt` sharing "Post
 excerpt" with `excerpt`.
+
+**Second review, 2026-09-18, on `16483c97`** (after the owner's findings F1–F4 and R-121 to R-123 were built): the same
+five layers, none failed. The real-infra layer confirmed CI green and Vercel READY on HEAD, ran both harnesses against
+`https://app.inflozo.com` and production Supabase before any patch (`run-verify-editor.cjs` 170 PASS, 0 FAIL after two
+runs that stalled on a 30-second production timeout with 0 FAIL and accounts cleaned up; `run-verify-controls.cjs` 85 PASS,
+0 FAIL; `users 9 → 9` each), its negative control failed exactly its one flipped step, and `pnpm check` was green; no
+migration in the diff. Two findings were defects a user would meet, the rest are hardening, tests and words. No question is
+the owner's. Patches, all applied:
+
+- [x] [Review][Patch] F1's editing haze repainted a BUTTON-STYLED LINK prop (Latest Post's Subscribe, Rail's CTA) — `canvas-chrome.css` loads after the design's sheet at equal specificity, so its fill went to 4.5% coral under white words; the haze is now the ring alone on an `<a>`, and step 26 reads the button's computed fill and radius before and during editing [`apps/web/lib/canvas-chrome.css`, `tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] A click on a Ghost word while another field was being typed in never showed the lock pill: the press ended that field, whose repaint waited for the click and then arrived after the pill was set, clearing it; `paint()` now carries a lock pill over to the element in the same place of the new render, and step 23 clicks the post title mid-edit [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, `tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] Any mouse button started editing — a right press put the caret in under the browser's editing menu, a middle press on Linux pastes the primary selection; the primary button alone starts it, as R-123's grounds already required [`editor.tsx`]
+- [x] [Review][Patch] ⌘K, ⌘B, ⌘I and ⌘U were swallowed in a field that permits no mark, where the spec says they do nothing — ⌘K never reached the address bar; a mark the field does not permit now leaves the key to the browser, whose own bold is a `format*` input `beforeinput` already refuses [`apps/web/lib/inline.ts`]
+- [x] [Review][Patch] A token chip that did not fit under `maxChars` was refused silently on a Text Field and CUT on a rich field (`{mem`, which prints literally, R-27); both now refuse it whole and say the limit's sentence until the next edit [`apps/web/components/controls/sidebar.tsx`, `rich-field.tsx`, `lib/inline.ts`]
+- [x] [Review][Patch] The panel's toolbar sat still while the Controls aside scrolled under it; the rich field re-reports the selection on any scroll, as the canvas does after its scroll settles [`rich-field.tsx`]
+- [x] [Review][Patch] The window `mouseup` release was added once per canvas document wired and never removed; it is added once with the mount effect and removed with it [`editor.tsx`]
+- [x] [Review][Patch] R-123's Layers ground took the list's padding beside a row and the 2px gap between two, the same class of miss the owner declined the top bar for; it is now the space below the last row, the ruling's words [`editor.tsx`, this spec's F4]
+- [x] [Review][Patch] An authored `data-inflozo-*` attribute was refused by nothing, and would be lifted as a stamp or paint the haze at rest; the validator refuses the prefix (`editor-attribute`), with the test and the authoring row [`packages/library/src/validate.ts`, `validate.test.ts`, `docs/section-authoring.md`]
+- [x] [Review][Patch] A catalog-linked prop could declare `maxChars` shorter than its catalog string, and the field — which starts from those words — would refuse every keystroke; `max-chars-catalog` refuses it, tested against `member.signup_cta` [`validate.ts`, `validate.test.ts`, `docs/section-authoring.md`]
+- [x] [Review][Patch] Four matrix rows had no automated check: Esc in the link panel commits nothing and returns to the text with the selection intact (step 19); Enter, not only Shift+Enter, in a Text Area (step 21); Esc in the panel's rich field ends the session and leaves the field with the section selected (step 26); typing into the panel's Text Area lands at the caret and leaves it there, the redraw guard (controls step 19) [`tools/probe/run-verify-editor.cjs`, `run-verify-controls.cjs`]
+- [x] [Review][Patch] `LinkPanel`'s reset on reopen — the one behaviour the split had to preserve — was indistinguishable from a persisting draft; controls step 12 opens, picks Upgrade, presses Escape and reopens to an empty panel [`run-verify-controls.cjs`]
+- [x] [Review][Patch] `place()`'s `above` flip below 48px and its edge clamps were read, never measured; held with plain objects in `apps/web/canvas-layer.test.ts` [`apps/web/canvas-layer.test.ts`]
+- [x] [Review][Patch] The controls harness restated 30 and 40 under a comment claiming it did not; it reads both limits from the fixture [`run-verify-controls.cjs`]
+- [x] [Review][Patch] A Playwright timeout printed its call log, the throwaway account's session cookie included; the harness's error path strips header lines [`run-verify-editor.cjs`]
+- [x] [Review][Patch] `isRich` was exported for the editor and not used by it; `inline.ts` reads the value through it [`apps/web/lib/inline.ts`]
+- [x] [Review][Patch] Three sentences claimed a structure the code does not have — the toolbar and link panel as "children of the stage" (F4, `editor.tsx`), the link panel as "never a `popover`" (spine AD-21), and step 14's tap "into a title" (task bullet); each reworded to what is built [this spec, `ARCHITECTURE-SPINE.md`, `editor.tsx`]
+- [x] [Review][Defer] The editor harness has no retry: a 30-second production stall on a signed-in load costs the whole run (two of three runs this review, both with 0 FAIL and accounts cleaned up) [`tools/probe/run-verify-editor.cjs`] — deferred, DW-183
+
+Dismissed as noise or as the spec's own choice: eleven — among them the twin-element rewrite (no pilot draws a prop twice
+on the anonymous canvas; the rule is a pure helper with its test, and the paint path hands no tokens either),
+`setContent`'s refusal (unreachable for a stamped path, as the first review found), a richtext `\n` reaching an attribute
+(`<br>` in an attribute would disagree between the emitters, but a scan of every design finds no richtext prop bound
+into an attribute), the link panel outliving a session (light dismiss in the editor document closes it on every press
+that could end one, and Esc closes it first), a button label with an icon sibling (Story 9.1's, R-121), an emptied
+inline button span losing its caret (unverified), the caret drifting when a token-holding field is rewritten before the
+press lands (the spec's own rewrite; no pilot has one on the canvas), and the arrows with focus off the bar.
 
 ## Spec Change Log
 
@@ -875,6 +911,23 @@ holds 40 characters." under the field.
   row each keep the selection. **Control:** the same build with the working tree's `editor.tsx` stashed -- which removes
   the Layers handler alone, the other two grounds being already committed at `083be920` -- failed exactly the Layers
   check and nothing else, **2 FAIL, 168 PASS**. The deployed run is the Deploy phase's.
+- **Run at the second Review (2026-09-18), R-82.** Before any patch, the real-infra layer confirmed CI run `35304114488`
+  on `16483c97` (`check`, `rls`, `deploy` green) and Vercel's production deployment READY on it, then ran both harnesses
+  against **`https://app.inflozo.com`** and production Supabase: `run-verify-editor.cjs` **170 PASS, 0 FAIL** on its third
+  run — the first two stalled on a 30-second Playwright timeout at different signed-in loads, each with 0 FAIL up to the
+  stall and `users 9 → 9` (DW-183) — and `run-verify-controls.cjs` **85 PASS, 0 FAIL**, `users 9 → 9`; its negative
+  control (one controls assertion flipped in a scratch copy) failed exactly that step; `pnpm check` green. After the
+  patches: `pnpm check` **green** in every package with the new `canvas-layer.test.ts` and the two validator tests;
+  `run-verify-controls.cjs` against **production** **87 PASS, 0 FAIL** (`users 9 → 9`; the two new assertions — typing
+  into the panel's Text Area, and a pick abandoned with Escape gone on reopen — read behaviour production already
+  serves); the editor harness against a **local production build** (`APP_ORIGIN=http://localhost:3111`, `APP_PREFIX=/app`,
+  production Supabase, the app's environment read from `tools/probe/.env` by a loader because `RESEND_FROM` holds a
+  space): **174 PASS, 1 FAIL**, the one being step 6's known `APP_PREFIX` artifact, with all five new assertions passing —
+  Esc in the link panel, Enter as a line break, the pill while another field is being edited, Esc in the panel's field,
+  and the button-styled link keeping its fill (`rgb(217, 108, 63)`, radius 8px) while edited. **Control:** the same
+  build with `editor.tsx` and `canvas-chrome.css` stashed failed exactly the two checks that are the defects — the pill
+  `null` after the mid-edit click, and the button's fill `rgba(194, 56, 31, 0.043)` — **3 FAIL, 172 PASS** with step 6.
+  The deployed run of the patched editor is the Deploy phase's.
 - **Still owed:** his look at the new editing haze and at the three grounds, on the deployed site (steps 1, 17 of his
   manual test). Questions 1 to 4 are all ruled.
 
@@ -962,10 +1015,13 @@ the Left Layers Panel"*), and declined the top bar. So, as built:
 - **Inside the frame**, the canvas document's `click` now hands `choose` whatever section the target sits in, which is
   `null` on the ground below the last section — one line, the `if (pick)` gone.
 - **Outside the frame**, the stage `<section aria-label="Canvas">` deselects on a primary `pointerdown` whose target is
-  the stage itself, so the grey ground around the page card is a press on nothing while the page card, the mark toolbar
-  and its link panel — all children of that stage — are not.
-- **In the Layers panel**, the row list does the same: the empty space below the rows is a ground, a row is not. It is
-  the pattern Figma and Sketch use, and **Story 5.4 inherits it** alongside the row's press and its drag.
+  the stage itself, so the grey ground around the page card is a press on nothing while the page card — the stage's
+  child — is not; the mark toolbar and its link panel are portalled to the body, so their presses never reach the stage
+  at all (the second review corrected this sentence, which had called them children too).
+- **In the Layers panel**, the row list does the same: the empty space below the LAST row is a ground; a row is not, and
+  neither are the list's padding beside a row and the gap between two, where a miss while reaching for a row would cost
+  the selection (the second review narrowed it to the ruling's words). It is the pattern Figma and Sketch use, and
+  **Story 5.4 inherits it** alongside the row's press and its drag.
 - **One press does the whole Esc ladder:** `choose(null)` ends any inline editing and lets the section go together,
   which is what "unselects everything" asks for.
 - **Chrome is not nothing.** The Controls sidebar, the top bar, the Layers header, a Layers row and the toolbar keep the

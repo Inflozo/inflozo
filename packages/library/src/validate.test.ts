@@ -116,6 +116,11 @@ test("Story 4.7 — an authored js-enabled class is refused: core sets it on the
   refuses('js-enabled-authored', '<div class="card js-enabled">x</div>', '<div class="card js-enabled-note">x</div>')
 })
 
+test('Story 5.3 review — an authored data-inflozo-* is refused: the prefix is the editor\'s stamps and state marks', () => {
+  refuses('editor-attribute', '<h2 data-inflozo-prop="title">x</h2>', '<h2 data-prop="title">x</h2>')
+  refuses('editor-attribute', '<p data-inflozo-editing>x</p>', '<p data-prop="sub">x</p>')
+})
+
 // ─── Story 4.9 — the catalog at the lexical door ─────────────────────────────
 
 test('data-t — the grammar: a key, then name=path params, and a helper argument runs to the end of the value', () => {
@@ -726,6 +731,9 @@ test('content.json: a prop needs a label and a known type; an array its bounds a
   only({ n: { type: 'richtext', label: 'Heading', maxChars: 2.5 } }, 'max-chars-value')
   only({ n: { type: 'text', label: 'Eyebrow', maxChars: 4, default: 'Five!' } }, 'max-chars-default')
   only({ n: { type: 'richtext', label: 'Heading', maxChars: 4, default: { text: 'Five!' } } }, 'max-chars-default')
+  // review (2026-09-18): a catalog-linked field starts from the catalog's words — "Subscribe" is nine — so a shorter limit would refuse every keystroke
+  only({ n: { type: 'text', label: 'Button', catalog: 'member.signup_cta', maxChars: 4 } }, 'max-chars-catalog')
+  clean(validateCategoryContent({ category: 'a5', props: { n: { type: 'text', label: 'Button', catalog: 'member.signup_cta', maxChars: 9 } }}), 'a catalog string that fits its limit')
   only({ i: { type: 'icon', label: 'Icon', default: 'rocketship' } }, 'icon-default', set)
   only({ i: { type: 'icon', label: 'Icon', default: '"><script>' } }, 'icon-default')
   only({ d: { type: 'date', label: 'Next issue', default: '1 October 2026' } }, 'date-default')

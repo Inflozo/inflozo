@@ -174,6 +174,8 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
   const [nothingToReset, setNothingToReset] = useState(false)
+  // the Text Field whose token chip was refused for not fitting whole: its hint says so until its next edit (review, 2026-09-18)
+  const [refusedToken, setRefusedToken] = useState<string | null>(null)
   const confirm = useRef<HTMLDialogElement>(null)
   const model = sidebar(entry, state)
   const changes = resetChanges(entry, state)
@@ -236,8 +238,11 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
               label={prop.label}
               value={text}
               maxLength={max}
-              hint={max !== undefined && text.length >= max ? limitSentence(prop.label, max) : null}
-              onChange={(e) => onValue(editText(value as PropValue, e.target.value))}
+              hint={max !== undefined && (text.length >= max || refusedToken === id) ? limitSentence(prop.label, max) : null}
+              onChange={(e) => {
+                setRefusedToken(null)
+                onValue(editText(value as PropValue, e.target.value))
+              }}
             />
             <TokenRow
               tokens={prop.def.tokens}
@@ -246,7 +251,9 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
                 const input = document.getElementById(id) as HTMLInputElement | null
                 const [start, end] = [input?.selectionStart ?? text.length, input?.selectionEnd ?? text.length]
                 const next = text.slice(0, start) + token + text.slice(end)
-                if (max !== undefined && next.length > max) return
+                // whole or nothing, and never silent: a cut token prints literally (R-27)
+                if (max !== undefined && next.length > max) return setRefusedToken(id)
+                setRefusedToken(null)
                 onValue(editText(value as PropValue, next))
                 requestAnimationFrame(() => input?.setSelectionRange(start + token.length, start + token.length))
               }}

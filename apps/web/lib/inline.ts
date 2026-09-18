@@ -17,7 +17,7 @@
 
 import type { Link, PropDef } from '@inflozo/library'
 import {
-  activeMarks, allowedMarks, diffText, domPoint, readMarks, readText, replaceRange, serializeMarks, setLink, textOffset, toggleMark, unlink,
+  activeMarks, allowedMarks, diffText, domPoint, isRich, readMarks, readText, replaceRange, serializeMarks, setLink, textOffset, toggleMark, unlink,
 } from '@inflozo/section-runtime'
 import type { MarkNode, PropValue, RichText } from '@inflozo/section-runtime'
 
@@ -66,7 +66,7 @@ export type Inline = {
 
 export const limitSentence = (label: string, max: number) => `${label} holds ${max} characters.`
 
-const textOf = (v: PropValue) => (typeof v === 'object' && v !== null ? v.text : v == null ? '' : String(v))
+const textOf = (v: PropValue) => (isRich(v) ? v.text : v == null ? '' : String(v))
 
 /** The markup an editing element holds: the serializer's, plus one `<br>` when the words end in a line break, so the
  *  empty last line shows and takes the caret (`readText` ignores it). No token values, so `{members}` reads as typed. */
@@ -233,11 +233,15 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
     const key = e.key.toLowerCase()
     // Shift off: Ctrl+Shift+I, +B and +K are the browser's own (devtools, bookmarks, the address bar)
     if ((mac ? e.metaKey : e.ctrlKey) && !e.altKey && !e.shiftKey && KEYS[key] !== undefined) {
-      // the browser's own ⌘B would be a `format*` input, and ⌘K would leave the page for the address bar
-      e.preventDefault()
       const mark = KEYS[key] as string
+      // a field that does not permit the mark leaves the key to the browser — ⌘K to the address bar, Ctrl+U to the
+      // source — and the browser's own ⌘B/⌘I/⌘U would be a `format*` input, which `beforeinput` refuses (review,
+      // 2026-09-18: the spec's "do nothing in it" is not "swallow it")
+      if (!allowed.includes(mark)) return
+      // permitted: the browser's own bold would be that `format*` input, and ⌘K would leave the page
+      e.preventDefault()
       const at = offsets()
-      if (!allowed.includes(mark) || !at || at[0] === at[1]) return
+      if (!at || at[0] === at[1]) return
       if (mark === 'a') {
         last = at
         o.onLinkKey()
@@ -320,8 +324,9 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
       if (ended) return
       const [start, end] = offsets() ?? last ?? [words.length, words.length]
       const r = replaceRange(base, start, end, text, { typed: false, max })
-      commit(r.value, start + text.length - r.refused)
-      if (r.refused > 0) refuse()
+      // a token chip is whole or nothing: `{mem` would print literally on the page (R-27) — refused, and said
+      if (r.refused > 0) return refuse()
+      commit(r.value, start + text.length)
     },
     refocus: () => {
       if (ended) return

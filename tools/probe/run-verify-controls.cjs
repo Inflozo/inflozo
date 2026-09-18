@@ -311,6 +311,18 @@ async function main() {
     await archTrigger.click()
     await linkDialog.getByRole('button', { name: 'Remove link' }).click()
     check('step 12 — and disappears when removed', !(await canvas()).archiveLink?.shown)
+    // a pick abandoned with Escape is not there when the panel opens again: each opening starts from the stored record
+    // with an empty search (review, 2026-09-18: the reset moved into `LinkPanel` when Story 5.3 split it out)
+    await archTrigger.click()
+    await linkDialog.getByRole('button', { name: 'Upgrade' }).click()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    await archTrigger.click()
+    await page.waitForTimeout(200)
+    const reopened = { pressed: await linkDialog.locator('button[aria-pressed="true"]').count(), query: await linkDialog.locator('input[id$="-archive-link-q"]').inputValue(), shown: (await canvas()).archiveLink?.shown }
+    check('step 12 — a pick abandoned with Escape is gone when the panel reopens, and nothing was committed', reopened.pressed === 0 && reopened.query === '' && !reopened.shown, JSON.stringify(reopened))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
 
     // ── step 13
     const dateInput = content.locator('input[type=date]')
@@ -373,8 +385,10 @@ async function main() {
     check('step 17 — the strip\'s button brings the panel back as it was, focus on Collapse', g17b.asideVisible && g17b.focus === 'Collapse controls' && g17b.pageRange === 0 && g17b.w === wBefore, JSON.stringify(g17b))
 
     // ── step 19 (Story 5.3) — a prop's character limit stops typing and a paste, and the field says which
-    // The sample's Eyebrow holds 30 and its Heading 40 (`packages/library/fixtures/controls/content.json`); nothing here
-    // restates the numbers — they are read off the schema through the sentence the field prints.
+    // The limits are the sample's own (`packages/library/fixtures/controls/content.json`), read here rather than
+    // restated (review, 2026-09-18: counts are derived)
+    const LIMITS = require(require('node:path').join(__dirname, '../../packages/library/fixtures/controls/content.json')).props
+    const [EYEBROW_MAX, HEADING_MAX] = [LIMITS.eyebrow.maxChars, LIMITS.heading.maxChars]
     await openGroup('Content')
     const eyebrowField = page.getByLabel('Eyebrow', { exact: true })
     await eyebrowField.click()
@@ -382,10 +396,23 @@ async function main() {
     await page.keyboard.type('ABCDEFGHIJKLMNOP')
     await page.waitForTimeout(300)
     const eyebrowNow = await eyebrowField.inputValue()
-    check('step 19 — Eyebrow refuses the characters past its limit and says so under the field', eyebrowNow.length === 30 && (await content.locator('p', { hasText: 'Eyebrow holds 30 characters.' }).count()) === 1 && (await canvas()).eyebrow.length === 30, `${eyebrowNow.length} characters · ${JSON.stringify(eyebrowNow)}`)
-    // the Heading is a Text Area, and a paste past the limit arrives cut at it
+    check('step 19 — Eyebrow refuses the characters past its limit and says so under the field', eyebrowNow.length === EYEBROW_MAX && (await content.locator('p', { hasText: `Eyebrow holds ${EYEBROW_MAX} characters.` }).count()) === 1 && (await canvas()).eyebrow.length === EYEBROW_MAX, `${eyebrowNow.length} characters · ${JSON.stringify(eyebrowNow)}`)
+    // the Heading is a Text Area: typed characters land where the caret is, which stays put — the field is not redrawn
+    // under a caret while it is being typed in (review, 2026-09-18)
     const headingField = page.getByLabel('Heading', { exact: true })
     await headingField.click()
+    await page.keyboard.press('End')
+    await page.keyboard.type(' ab')
+    await page.waitForTimeout(300)
+    const typedInPanel = await headingField.evaluate((el) => {
+      const sel = getSelection()
+      const r = sel.getRangeAt(0).cloneRange()
+      r.selectNodeContents(el)
+      r.setEnd(sel.focusNode, sel.focusOffset)
+      return { text: el.innerText, caret: r.toString().length, focused: document.activeElement === el }
+    })
+    check('step 19 — typing into the panel\'s Text Area lands at the caret and leaves it there', typedInPanel.text.endsWith(' ab') && typedInPanel.caret === typedInPanel.text.length && typedInPanel.focused && (await canvas()).title === typedInPanel.text, JSON.stringify(typedInPanel))
+    // and a paste past the limit arrives cut at it
     await page.keyboard.press('ControlOrMeta+a')
     await headingField.evaluate((el, words) => {
       const data = new DataTransfer()
@@ -394,13 +421,13 @@ async function main() {
     }, 'The quick brown fox jumps over the lazy dog and keeps running')
     await page.waitForTimeout(300)
     const headingNow = await headingField.innerText()
-    check('step 19 — a paste longer than Heading\'s limit arrives cut at it, with the same sentence under it', headingNow.length === 40 && (await content.locator('p', { hasText: 'Heading holds 40 characters.' }).count()) === 1 && (await canvas()).title === headingNow, `${headingNow.length} characters · ${JSON.stringify(headingNow)}`)
+    check('step 19 — a paste longer than Heading\'s limit arrives cut at it, with the same sentence under it', headingNow.length === HEADING_MAX && (await content.locator('p', { hasText: `Heading holds ${HEADING_MAX} characters.` }).count()) === 1 && (await canvas()).title === headingNow, `${headingNow.length} characters · ${JSON.stringify(headingNow)}`)
     // typed, not pasted: the rich field refuses the character at `beforeinput`, which the paste path never runs (review)
     await page.keyboard.press('End')
     await page.keyboard.type('XYZ')
     await page.waitForTimeout(300)
     const headingTyped = await headingField.innerText()
-    check('step 19 — typing at Heading\'s limit is refused too, and the sentence stays', headingTyped === headingNow && (await content.locator('p', { hasText: 'Heading holds 40 characters.' }).count()) === 1, `${headingTyped.length} characters · ${JSON.stringify(headingTyped)}`)
+    check('step 19 — typing at Heading\'s limit is refused too, and the sentence stays', headingTyped === headingNow && (await content.locator('p', { hasText: `Heading holds ${HEADING_MAX} characters.` }).count()) === 1, `${headingTyped.length} characters · ${JSON.stringify(headingTyped)}`)
 
     // ── axe at 1440 and 390, WCAG 2.1 AA, with a positive control
     const axeRun = async () => {

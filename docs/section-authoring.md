@@ -507,9 +507,11 @@ is an id — and each shape has its own rule instead, enforced where the value i
 `<input>`, which cannot hold a `\n`, so a line break typed on the canvas would be lost at its next panel
 edit; a `richtext` prop's is a rich Text Area, where Enter and Shift+Enter store a `\n` that both emitters
 write as `<br>`. A `text` or `richtext` prop may also declare **`maxChars`**, a whole number of at least 1
-that no authored `default` may exceed: typing and paste stop there, on the canvas and in the panel, and the
-field says which — "{Label} holds {n} characters." It counts UTF-16 code units, as `String.length` does, so
-an emoji counts two.
+that no authored `default` — nor, on a catalog-linked prop, the catalog's own string — may exceed: typing and
+paste stop there, on the canvas and in the panel, and the field says which — "{Label} holds {n} characters." It
+counts UTF-16 code units, as `String.length` does, so an emoji counts two. A token chip that would not fit whole
+is refused whole, never cut. And `data-inflozo-*` is the editor's own prefix — its editing stamps and the state
+marks its chrome is keyed on — so a design never writes one.
 
 **An `a` mark whose record names no destination writes no anchor** *(Story 5.3, DW-120)*: its words stay and
 the mark is dropped, which is the `url` prop sink's rule for an unset link (FR-F8) at the other sink.
@@ -1382,7 +1384,8 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `{{t}}` call whose params are not exactly its key's placeholder set (`catalog-params`) | *(Story 4.9)* V4. Recorded on both majors: an omitted param renders "An error occurred", and an extra one is a name no translator sees. The message names what is missing and what is extra. Validator **and** runtime. |
 | literal words in a `data-text` template (`chrome-literal`) · a `data-t-attr` attribute other than `alt`, `title`, `placeholder`, `aria-label` · `data-empty` or a second text directive on a `data-t` element · an authored `data-i18n-*` | *(Story 4.9)* V1's lexical half and S5: English outside the catalog cannot be translated; the four attributes are the ones that hold text; a `data-t` element hides when a param is empty; the emitters stamp `data-i18n-*` from the registry. |
 | `catalog` on a prop that is not `text`, on a key not marked prop, or beside a `default` (`catalog-prop`) | *(Story 4.9)* S6. The catalog string is the default, so a second one would be ignored; only a prop-marked string may become editable. |
-| `maxChars` on a prop that is not `text` or `richtext` (`max-chars-type`), one that is not a whole number of at least 1 (`max-chars-value`), or an authored `default` longer than it (`max-chars-default`) | *(Story 5.3)* FR-D4's hard limit. Only a field that is typed into has a character limit, and the design's own words must fit the limit a customer is held to. |
+| `maxChars` on a prop that is not `text` or `richtext` (`max-chars-type`), one that is not a whole number of at least 1 (`max-chars-value`), an authored `default` longer than it (`max-chars-default`), or a catalog string longer than it on a catalog-linked prop (`max-chars-catalog`) | *(Story 5.3)* FR-D4's hard limit. Only a field that is typed into has a character limit, and the words a field starts with — the design's own, or the catalog's — must fit the limit a customer is held to. |
+| an authored `data-inflozo-*` attribute (`editor-attribute`) | *(Story 5.3's review)* The editor's own prefix: the canvas emitter's editing stamps, lifted off as the canvas mounts, and the state marks (`data-inflozo-hover`, `-selected`, `-editing`) its chrome is keyed on. An authored one would be lifted as a stamp or paint chrome at rest. |
 | a render naming its target whose markup prints a bare text node, or an `alt` / `title` / `placeholder` / `aria-label`, holding a letter or digit that no directive writes | *(Story 4.9)* V1's tree half. **Refused by the runtime**, beside FR-H7's scope check, in one error naming every literal; `checkChromeLiterals` returns the list. Exempt: text under `data-prop`, `data-bind`, `data-t`, `data-helper`, `data-initials`, `data-index`, `data-text` or `data-pagination="numbers"`; an attribute a directive writes; `alt=""`; text with no letter or digit. |
 | `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |
 | `bindingContext: page` | a page and a post are one resource; the difference is the product, and that is `compileTarget`. |
