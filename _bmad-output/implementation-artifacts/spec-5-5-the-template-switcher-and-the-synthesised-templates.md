@@ -415,8 +415,14 @@ Design Notes table above is that reading. The editor harness ran against a produ
 Supabase (`APP_ORIGIN=http://localhost:3000`): **0 FAIL, 250 PASS**, with step 5's CSP zero **and both of its eval
 controls passing**, and `step 1 — three project_templates rows: site, home, post` as the proof that synthesis wrote
 nothing. One row is **not assertable on a local run and says so** — step 6's second Back, because `openCard` re-enters
-under the `/app` prefix and leaves an unprefixed 404 in the history that Chromium will not Back out of; it is asserted
-on the deployed run, which is R-82's result and is owed at Deploy against `app.inflozo.com` with `VERCEL_*`.
+under the `/app` prefix and leaves an unprefixed 404 in the history that Chromium will not Back out of.
+
+**Then on the deployed app, at the Dev commit (2026-09-18).** CI `c7aeed80` **success** with `check`, `rls` and `deploy`
+green and **Render matrix** success (bogus token → 401); the production Vercel deployment **READY** with
+`githubCommitSha` = HEAD (bogus token → 403); `git diff <baseline>..HEAD -- supabase/` **empty**; and the owner's
+"Pilot sections" project still holds rows for **`site`, `home` and `post` and no others** — the proof that synthesis
+wrote nothing. The editor harness against `app.inflozo.com` and the live Supabase, refusing to start until Vercel
+served this checkout's HEAD: **0 FAIL, 251 PASS**, step 5's CSP session zero with **both** eval controls recorded.
 
 **Manual checks:**
 
