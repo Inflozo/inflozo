@@ -324,8 +324,10 @@ export function Layers({
         Press Enter to select this section, Space to hide or show it, and Option or Alt with the up or down arrow to
         move it.
       </p>
-      {/* B7's footed note, above a hairline. `mt-auto` keeps it at the foot of a short list. */}
-      <div className="mt-auto border-t border-line pt-[10px]">
+      {/* B7's footed note, above a hairline. `mt-auto` keeps it at the foot of a short list. Marked, because the
+          panel's LAST element child is the rename dialog and not this — anything reading "the foot of the list"
+          off `lastElementChild` would read the dialog instead. */}
+      <div data-layers-note className="mt-auto border-t border-line pt-[10px]">
         <span className="text-helper-caption leading-[1.5] text-ink-soft">
           Editing a site-wide section changes it on all {templates} templates.
         </span>

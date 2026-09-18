@@ -1170,11 +1170,15 @@ async function main() {
       const rows = [...list.querySelectorAll('[data-layer-row]')]
       const last = rows[rows.length - 1].getBoundingClientRect()
       const at = { x: r.left + r.width / 2, y: last.bottom + 40 }
-      return { rows: rows.length, lastChildIsTheNote: list.lastElementChild !== rows[rows.length - 1].parentElement, room: r.bottom - last.bottom, isGround: document.elementFromPoint(at.x, at.y) === list, at }
+      // what the re-anchoring is for: the list's own last children are B7's note and the rename dialog, so neither
+      // `lastElementChild` nor its rect is the last ROW any more
+      const drawn = [...list.children].filter((c) => c.tagName !== 'DIALOG')
+      const lastChildIsNotTheRows = drawn[drawn.length - 1].hasAttribute('data-layers-note') && !list.lastElementChild.contains(rows[rows.length - 1])
+      return { rows: rows.length, lastChildIsNotTheRows, room: r.bottom - last.bottom, isGround: document.elementFromPoint(at.x, at.y) === list, at }
     })
     await page.mouse.click(layersGround.at.x, layersGround.at.y)
     await page.waitForTimeout(300)
-    check('step 27 — a press on the empty space below the Layers rows deselects too, read from the last ROW and not the list\'s last child', layersGround.isGround && layersGround.lastChildIsTheNote && layersGround.room > 40 && !(await onScreen(GRID)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(layersGround))
+    check('step 27 — a press on the empty space below the Layers rows deselects too, read from the last ROW and not the list\'s last child', layersGround.isGround && layersGround.lastChildIsNotTheRows && layersGround.room > 40 && !(await onScreen(GRID)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(layersGround))
     await clickOn(GRID)
     // its OWN row: R-123's rule is that the press keeps the selection, and pressing another row would move it
     const layersRow = await page.evaluate((n) => {
@@ -1227,7 +1231,9 @@ async function main() {
       const card = rows[0].closest('div.bg-surface, div[class*="bg-surface"]')
       const css = (el) => el && getComputedStyle(el)
       const headings = [...list.querySelectorAll('span')].map((x) => x.textContent.trim())
-      const note = list.lastElementChild
+      // by its marker, never `lastElementChild`: the panel's last element child is the rename dialog
+      const note = list.querySelector('[data-layers-note]')
+      const drawn = [...list.children].filter((c) => c.tagName !== 'DIALOG')
       return {
         rows: rows.map((r) => ({ name: r.querySelector('button')?.textContent, key: r.getAttribute('data-layer-row'), tab: r.getAttribute('tabindex') })),
         inCard: rows.filter((r) => card && card.contains(r)).length,
@@ -1235,7 +1241,7 @@ async function main() {
         headings,
         noteText: note?.textContent.trim(),
         noteRule: css(note)?.borderTopWidth,
-        noteLast: note === list.lastElementChild && !note.querySelector('[data-layer-row]'),
+        noteLast: note === drawn[drawn.length - 1] && !note.querySelector('[data-layer-row]'),
         mono: [...list.querySelectorAll('span')].filter((x) => /mono/i.test(css(x).fontFamily)).map((x) => x.textContent.trim()),
       }
     })
