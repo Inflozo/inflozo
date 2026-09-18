@@ -523,12 +523,14 @@ async function main() {
       head: a.querySelector('span')?.textContent,
       headCase: a.querySelector('span') && getComputedStyle(a.querySelector('span')).textTransform,
       groups: [...a.querySelectorAll('button[aria-expanded][aria-controls$="-body"]')].map((b) => b.textContent.trim()),
-      foot: [...a.querySelectorAll('button')].filter((b) => !b.closest('dialog')).map((b) => b.textContent.trim()).filter(Boolean).pop(),
+      // the panel's foot is TWO controls since R-133 (Story 5.6): "Reset this design", then "Clear dark overrides"
+      // directly under it, in the same shape — so the last two are read in order rather than only the last
+      foot: [...a.querySelectorAll('button')].filter((b) => !b.closest('dialog')).map((b) => b.textContent.trim()).filter(Boolean).slice(-2).join(' · '),
       chip: a.textContent.includes('4 / 18'),
       empty: a.textContent.includes('Nothing selected'),
     }))
     const railPanel = await panelOf()
-    check('step 11 — "Section settings", headed HEADER — RAIL, R-113\'s groups for the design in order, Reset this design at the foot, no "4 / 18"', railPanel.label === 'Section settings' && railPanel.head === layerOf(HEADER) && railPanel.headCase === 'uppercase' && railPanel.groups.join(' · ') === groupsOf(homeStack[HEADER][0]).join(' · ') && railPanel.foot === 'Reset this design' && !railPanel.chip && !railPanel.empty && (await page.getByText('4 / 18').count()) === 0, JSON.stringify(railPanel))
+    check('step 11 — "Section settings", headed HEADER — RAIL, R-113\'s groups for the design in order, Reset this design and R-133\'s Clear dark overrides at the foot in that order, no "4 / 18"', railPanel.label === 'Section settings' && railPanel.head === layerOf(HEADER) && railPanel.headCase === 'uppercase' && railPanel.groups.join(' · ') === groupsOf(homeStack[HEADER][0]).join(' · ') && railPanel.foot === 'Reset this design · Clear dark overrides' && !railPanel.chip && !railPanel.empty && (await page.getByText('4 / 18').count()) === 0, JSON.stringify(railPanel))
     await clickOn(GRID)
     const moved = [await onScreen(HEADER), await onScreen(GRID), await panelOf()]
     check('step 11 — clicking Three Up moves the selection and the panel', !moved[0].selected && moved[1].selected && moved[2].head === layerOf(GRID) && moved[2].groups.join(' · ') === groupsOf(homeStack[GRID][0]).join(' · '), JSON.stringify(moved[2]))
@@ -1929,9 +1931,25 @@ async function main() {
     check('step 48 — back in light the root returns to the value it had: THE LIGHT PAGE WAS NOT TOUCHED', (await canvasMode()) === 'light' && (await attrOf(GRID, `data-${BG.name}`)) === beforeBg, `${await attrOf(GRID, `data-${BG.name}`)} · was ${beforeBg}`)
     check('step 48 — and the moon STAYS on the row, because an override is stored whatever mode is being shown', (await moonOn(BG.label))?.moon === true, JSON.stringify(await moonOn(BG.label)))
 
-    // ── step 49 — a control that is NOT mode-scoped, and reset in each mode ──
+    // ── step 48 (b) — A REPAINT IN DARK DRAWS THE DARK RENDER ──
+    // Found at Dev by reading `paint()`: the mode picks the slice handed to the one door in `restampAll` and in
+    // `onChange`, and it has to do the same where `renderSection` is called, or any repaint — a content edit, a
+    // section operation, a change of canvas — would silently put the page back into light while dark is shown.
+    // A RENAME is the repaint used here because it changes no control of its own: `onRename` → `apply` → `paint`.
     await modeButton().click()
     await page.waitForTimeout(300)
+    await rowAt(GRID).getByRole('button', { name: /^More for / }).click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Rename', exact: true }).click()
+    await page.waitForTimeout(300)
+    await page.fill('#layers-rename-name', 'Repainted in dark')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await page.waitForTimeout(500)
+    const repainted = { mode: await canvasMode(), value: await attrOf(GRID, `data-${BG.name}`) }
+    check('step 48 — a REPAINT while dark is shown keeps the dark render: the override is stamped again, never the light value', repainted.mode === 'dark' && repainted.value === BG.to.value, `${JSON.stringify(repainted)} · want ${BG.to.value}, light was ${beforeBg}`)
+    await clickOn(GRID)
+
+    // ── step 49 — a control that is NOT mode-scoped, and reset in each mode ── (dark is showing, from 48 (b))
     await asideGroup('Layout')
     const PLAIN = await controlsAside().getByRole('radiogroup', { name: 'Per row' }).count()
     if (PLAIN > 0) {

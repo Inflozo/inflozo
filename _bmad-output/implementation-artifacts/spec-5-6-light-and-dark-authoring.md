@@ -386,6 +386,16 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 
 ## Spec Change Log
 
+- **2026-09-18, Dev: `paint()` needed the mode's slice too, which no task line named.** The task list threads the mode
+  through `sidebar`, `setControl`, `resetControl` and the flip's re-stamp — and `renderSection` reads
+  `state.controls`, so a REPAINT while dark was shown (a content edit ending, a section operation, a change of canvas)
+  drew the light render under a dark `data-mode`. Found by reading `paint()` against `restampAll`, not by a test. The
+  fix is the same expression in the third place, `storedFor(entry, i, now.mode)`; `dark-mode.test.ts` asserts all
+  three places and `run-verify-editor.cjs` step 48 (b) repaints in dark through a rename and reads the stamp back.
+- **2026-09-18, Dev: step 11 of the harness had to move, and it is R-133's doing.** Its `panelOf().foot` read the
+  panel's LAST control and expected "Reset this design"; R-133 puts "Clear dark overrides" directly under it, so the
+  last control is now that one. The assertion reads the last TWO in order — which is a stronger claim than the one it
+  replaced, since it also pins the two into the order the ruling gives them.
 - **2026-09-18, Dev: one word of the frozen matrix needed a change the task list forbade, and the matrix won.** The
   matrix row *"An override the design will not take"* requires **no moon** for a stored override outside the design's
   offered set, and cites `controls.ts:199` as already guarding it. Read in the code, it did not: the guard was

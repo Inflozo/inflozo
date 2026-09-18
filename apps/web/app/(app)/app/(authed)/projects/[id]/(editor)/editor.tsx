@@ -394,7 +394,9 @@ export function Editor({
         // `sectionRoots` gives it a null root exactly as a member-gated section does, and Epic 7 leaves it out of the
         // compile. R-124's audience reaches the render door as `visibility`, which gates the root on both emitters.
         if (i.hidden) return ''
-        return renderSection(doc, entry, i, { target: i.target, rows: rows[i.designId], feed: 'first', member: PREVIEWS, visibility: i.memberVisibility, assets, icons: lookup, editing: true })
+        // Story 5.6: a repaint in dark must draw the DARK render — the mode picks the stored slice handed to the one
+        // door, here as it does in `restampAll` and `onChange`, so no repaint ever silently returns to light
+        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: PREVIEWS, visibility: i.memberVisibility, assets, icons: lookup, editing: true })
       })
       mountSections(mount, parts.join(''))
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable

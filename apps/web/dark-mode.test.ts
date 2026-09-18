@@ -43,7 +43,11 @@ test('the swatches follow the mode, so the panel\'s dots are the colours the can
 })
 
 test('the mode is ONE attribute on the canvas root, written by every paint (AD-30, tokens.ts:165-172)', () => {
-  assert.match(body(editor, 'const paint = ()'), /documentElement\.setAttribute\('data-mode', now\.mode\)/)
+  const paint = body(editor, 'const paint = ()')
+  assert.match(paint, /documentElement\.setAttribute\('data-mode', now\.mode\)/)
+  // …and a repaint in dark draws the DARK render: `renderSection` reads `state.controls`, so the mode's slice has to
+  // reach it here too, or an edit, a section operation or a change of canvas would silently return the page to light
+  assert.match(paint, /renderSection\(doc, entry, \{ \.\.\.i, controls: storedFor\(entry, i, now\.mode\) \}/)
   // no second mode signal: no class, no body attribute, no per-control `-dark` twin
   assert.doesNotMatch(editor, /data-mode-dark|-dark"|scheme-dark/, 'AD-30 forbids a second mode signal')
 })
