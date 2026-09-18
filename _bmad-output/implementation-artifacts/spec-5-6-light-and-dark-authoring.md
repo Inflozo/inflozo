@@ -386,6 +386,16 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 
 ## Spec Change Log
 
+- **2026-09-18, Dev: the first deployed run was 279 PASS / 5 FAIL, and all five were the harness's own assertions.**
+  Every value, every stored map and every count the product produced was right in the same lines that failed — the
+  reads were wrong. Three defects, recorded because each is a trap the next story's steps can fall into: (1) a row's
+  moon was read as "an `svg` somewhere in this row", which the reset arrow and the Image swatch both satisfy, and its
+  label span was found by TEXT, which matched the head span when no badge sat beside the title and the title span
+  when one did — so `parentElement` was a different element in the two cases. It now finds `span[id$="-label"]` and
+  tests the WORDS "Dark override" plus the badge's own round chip. (2) the Kit's `MoonBadge` names itself with an SVG
+  `<title>` where D6a's markup uses `aria-label`; the read now accepts either. (3) the zero-count sentence reads "No
+  sections carry a dark override" and the assertion had written "No section carries". Standing rule 2's shape,
+  inverted: a failing test is not a failing product until the test is read.
 - **2026-09-18, Dev: `paint()` needed the mode's slice too, which no task line named.** The task list threads the mode
   through `sidebar`, `setControl`, `resetControl` and the flip's re-stamp — and `renderSection` reads
   `state.controls`, so a REPAINT while dark was shown (a content edit ending, a section operation, a change of canvas)

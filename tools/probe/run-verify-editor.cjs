@@ -1860,11 +1860,19 @@ async function main() {
       if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
       await page.waitForTimeout(150)
     }
-    /** the row's moon and its words, as the panel draws them */
+    /** The row's moon and its words, as the panel draws them.
+     *  BY THE LABEL SPAN'S OWN ID, never by text: every Kit control writes its title into `<span id="…-label">` inside
+     *  the head span, and a search by textContent alone matched the HEAD when there was no badge beside the title
+     *  (the head's text IS the title then) and the title span when there was — so `parentElement` was the whole
+     *  control in one case and the head in the other, and the control's own swatch glyphs read as a moon.
+     *  AND THE MOON IS ITS WORDS: the panel always prints "Dark override" beside the badge (UX-DR8), so the words are
+     *  the test and the round ink chip beside them is the second half — never "an svg is somewhere in this row",
+     *  which the reset arrow and the Image swatch both satisfy. */
     const moonOn = (label) => controlsAside().evaluate((a, label) => {
-      const span = [...a.querySelectorAll('span')].find((s) => s.textContent === label)
+      const span = [...a.querySelectorAll('span[id$="-label"]')].find((s) => s.textContent === label)
       const head = span?.parentElement
-      return head === undefined || head === null ? null : { words: head.textContent, moon: head.querySelectorAll('[role="img"], svg').length > 0 }
+      if (head === undefined || head === null) return null
+      return { words: head.textContent, moon: /Dark override/.test(head.textContent) && head.querySelector('.rounded-full svg') !== null }
     }, label)
 
     // ── step 46 — S4a's sun, at its drawn place and size, and nothing else right of centre ──
@@ -2050,7 +2058,12 @@ async function main() {
       row: document.querySelector('[data-clear-row]')?.innerText.replace(/\s+/g, ' '),
       greyed: document.querySelector('[data-clear-row]')?.hasAttribute('data-greyed'),
       clearRefuses: document.querySelector('[data-clear-row] button[type="submit"]')?.getAttribute('aria-disabled'),
-      moonLabel: document.querySelector('[data-clear-row] [role="img"]')?.getAttribute('aria-label'),
+      // the Kit's `MoonBadge` names itself with an SVG `<title>`, where D6a's own markup uses `aria-label`: both are
+      // the accessible name, so the badge is read either way rather than by the frame's spelling
+      moonLabel: (() => {
+        const el = document.querySelector('[data-clear-row] [role="img"]')
+        return el === null ? null : (el.getAttribute('aria-label') ?? el.querySelector('title')?.textContent ?? null)
+      })(),
       reason: document.body.innerText.includes('Switch to Light + Dark to use or clear them.'),
       kept: document.body.innerText.includes('The overrides are kept, not discarded'),
       // R-118 a fourth time: everything else D6a draws is ABSENT — not greyed and not captioned
@@ -2094,7 +2107,7 @@ async function main() {
     await page.waitForTimeout(2500)
     const afterClear = await readSettings()
     const clearedStored = await storedOverrides()
-    check('step 53 — D6a\'s Clear empties every section\'s overrides across every canvas, and the DERIVED count goes with them', /No section carries a dark override/.test(afterClear.row ?? '') && JSON.stringify(clearedStored) === '{}', `${JSON.stringify(afterClear.row)} · stored ${JSON.stringify(clearedStored)}`)
+    check('step 53 — D6a\'s Clear empties every section\'s overrides across every canvas, and the DERIVED count goes with them', /No sections carry a dark override/.test(afterClear.row ?? '') && JSON.stringify(clearedStored) === '{}', `${JSON.stringify(afterClear.row)} · stored ${JSON.stringify(clearedStored)}`)
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
 
