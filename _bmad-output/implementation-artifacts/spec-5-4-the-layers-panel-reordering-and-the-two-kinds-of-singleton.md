@@ -483,6 +483,13 @@ canvas previews — keeps the section drawn with no second hint; step 29 counts 
 is read from the last row. Zero axe violations with the pill showing and a row's menu open.
 
 
+**Deploy (2026-09-18).** App code only — no Schema phase (the two new fields live inside `project_templates.doc`,
+already confirmed at Review). Read with `VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT`: the production
+deployment for HEAD `d6dcf88f` is **READY**.
+
+- Deployment: `dpl_2wCDgi4xakkEx4vs1c7WRejoTMEu` (`https://inflozo-2r4t4iyqk-umangkagathara.vercel.app`, serving
+  `app.inflozo.com`).
+
 **Manual checks:**
 
 - The pill measured against step 15's screencast: in every captured frame of a synthesized scroll gesture it is either
