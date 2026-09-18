@@ -2,7 +2,7 @@
 title: 'Story 5.5 — The template switcher and the synthesised templates'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -42,7 +42,19 @@ sentence in both places; and materialise the stack into the in-memory doc on the
   this story writes a row** — there is no persistence until 5.8. Removing every section returns a canvas to untouched
   and the default stack and both markers come back; **hiding every section does not** (FR-D5).
 - **Seven files are synthesisable; six have canvases.** `home.hbs`, `index.hbs`, `post.hbs`, `page.hbs`, `tag.hbs`,
-  `author.hbs`, `error.hbs` (`sections-inventory.md:786`). `index.hbs` has no canvas of its own — see Question 1.
+  `author.hbs`, `error.hbs` (`sections-inventory.md:786`). **`index.hbs` has no canvas, now and permanently
+  (R-127)** — `/projects/<id>/index` stays a 404 and Story 5.1's reserved-segment row is settled.
+- **What `index.hbs` is made from (R-127).** Home designed → that doc **from its designated main feed onward**, in
+  order, everything above it dropped. Home designed with **no** designated main feed → the Synthesis Default stack,
+  because `index.hbs` is always compiled and must never be emitted empty. Home untouched → unchanged
+  (`sections-inventory.md:804-806`: the same stack into both). It is **one function beside `synthesize`**, because
+  Story 7.3's compiler and Story 5.16's page-2 preview both call it and neither may re-derive it (AD-27(d)).
+- **The switcher ships without "+ New template" and without the `FROM THE ROUTES MANAGER` heading (R-128)** — R-118's
+  rule, second application: a control arrives with the story that makes it work. Story 7.16 adds both. Nothing greyed,
+  nothing captioned.
+- **The three membership canvases are `custom-signup.hbs` ("Signup"), `custom-signin.hbs` ("Signin") and
+  `custom-member-home.hbs` ("Member home") (R-129)** — the filename is frozen public API and Ghost derives the label
+  from it (`prd.md:636`). Their stored keys are `custom:custom-{name}.hbs`; their URL segments are `custom-{name}`.
 - **Never synthesised:** the three membership canvases, Private, and every custom template. They open **empty**
   (FR-D6, `sections-inventory.md:785`).
 - **The Synthesis Defaults are normative and are not restated here.** The stacks, their control values and the
@@ -52,7 +64,8 @@ sentence in both places; and materialise the stack into the in-memory doc on the
   `editorData`'s loud refusals are for *stored* docs — a user's data — and stay loud. A synthesised row is dropped when
   the library holds no such design, or holds it with a `compileTarget` that excludes this file. The dropped set is
   **derived** from the library, so it empties itself as Epics 9 and 10 land.
-- **The switcher matches D5b complete and the marker matches D5a** (R-74). The marker's sentence is exactly
+- **The switcher matches D5b and the marker matches D5a** (R-74), the two rows R-128 defers excepted. The marker's
+  sentence is exactly
   "Auto-generated — edit anything to make it yours" in both places, it is app copy and never a theme string
   (`prd.md:1337`), and it carries **no keyboard shortcut**, deliberately (FR-D11).
 - **The word is not optional** (D5b): an untouched row carries a hollow dot **and** the word "Auto-generated"; a
@@ -65,9 +78,10 @@ sentence in both places; and materialise the stack into the in-memory doc on the
 - **No migration.** `isMainFeed` lives inside `project_templates.doc` (`jsonb`) and the membership keys already pass the
   `template_key_shape` CHECK. **There is no Schema phase** (R-99).
 
-**Ask First:** the three questions below — `index.hbs` (Q1), "+ New template" before the Routes Manager exists (Q2),
-and the three membership filenames, which are frozen public API once shipped (Q3). Each is under
-`## Questions for the owner`; none is defaulted.
+**Ask First:** anything that would change a **Synthesis Default stack** — that means changing
+`sections-inventory.md` first, which is its own Invariant 1 and not a code decision. Any further departure from D5b or
+D5a beyond R-128's two absent rows. Any fourth membership canvas: R-129 fixes the group at the three FR-D6 names, and
+Subscribe and Membership are ordinary custom page templates arriving with the Routes Manager (Story 7.16).
 
 **Never:**
 - The Routes Manager, custom-template creation and its naming/collision rules (Story 7.16, FR-I2/FR-I3). The custom
@@ -95,6 +109,10 @@ and the three membership filenames, which are frozen public API once shipped (Q3
 | Private | no linked site, or a linked site that is not private | the row is **absent, not greyed**, and its segment 404s | N/A |
 | `index` segment | `/projects/<id>/index` | 404, unchanged from 5.1 | N/A |
 | Current canvas | the switcher is open on `tag` | the Tag row takes the check; pressing it closes the menu and navigates nowhere | N/A |
+| The menu's last row | any project | the rows end at 404 (and Private when called for). **No "+ New template", no Routes Manager heading** (R-128) | N/A |
+| `index.hbs` from a designed Home | a Home doc with a designated main feed | the stack from that instance onward, in order; everything above it dropped (R-127) | N/A |
+| `index.hbs` with no main feed | the pilot project's Home (no instance carries `isMainFeed`) | the Synthesis Default stack | never empty — `index.hbs` is always compiled (FR-I1) |
+| `index.hbs` from an untouched Home | no `home` row | the same synthesised stack as `home.hbs` (`sections-inventory.md:804-806`) | N/A |
 
 </frozen-after-approval>
 
@@ -170,7 +188,7 @@ and the three membership filenames, which are frozen public API once shipped (Q3
     "a hollow dot always carries the word" and "PRIVATE APPEARS ONLY ONCE … OTHERWISE THE ROW IS ABSENT, NOT GREYED".
   - `EXPERIENCE.md:144` (the switcher's IA row and its frame), `:163` (the marker's), `:1708-1722` (both frame specs),
     `:2142-2144` (A7 item 6: D5b's routes-manager example is renamed `Landing · custom-landing.hbs` because
-    `custom-membership.hbs` is the Membership group's own — Question 3), `:2189-2191` (A7 item 13: B7's unit is
+    `custom-membership.hbs` is the Membership group's own — superseded by R-129), `:2189-2191` (A7 item 13: B7's unit is
     templates and the count is the project's own from the switcher).
   - `sections-inventory.md:778-867` — the normative Synthesis Defaults: scope and trigger (:782-787), inheritance by
     reference (:789-800), the per-template stacks (:802-847), the main-feed rule (:849-861), the invariants (:863-867).
@@ -190,21 +208,22 @@ and the three membership filenames, which are frozen public API once shipped (Q3
       `instanceSchema` -- the Synthesis Defaults designate a main feed on every collection template and AD-27 names
       this field; defaulted because every stored doc lacks it.
 - [ ] `packages/section-runtime/src/synthesize.ts` -- **new**: the Synthesis Defaults as a table citing
-      `sections-inventory.md`, and `synthesize(file, library)` returning `{ instances, dropped }` -- one core
-      function, shared with Story 7.3's compiler (AD-27(d)).
+      `sections-inventory.md`, `synthesize(file, library)` returning `{ instances, dropped }`, and `indexStack(home)`
+      for R-127 -- one core function, shared with Story 7.3's compiler and Story 5.16's preview (AD-27(d)).
 - [ ] `packages/section-runtime/src/index.ts` -- export it -- the app and the compiler reach it the same way.
-- [ ] `packages/section-runtime/src/synthesize.test.ts` -- **new**: every I/O-matrix rule about a stack, with the
-      present and dropped rows **derived** from the library rather than listed -- so the test empties itself as
-      Epics 9 and 10 land instead of going stale.
-- [ ] `apps/web/lib/editor.ts` -- add the membership canvases and Private's condition; derive `templateKeyOf` --
-      the URL segment and the stored `template_key` stop being the same string for a custom template.
+- [ ] `packages/section-runtime/src/synthesize.test.ts` -- **new**: every I/O-matrix rule about a stack, R-127's
+      three `index.hbs` cases included, with the present and dropped rows **derived** from the library rather than
+      listed -- so the test empties itself as Epics 9 and 10 land instead of going stale.
+- [ ] `apps/web/lib/editor.ts` -- add R-129's three membership canvases and Private's condition; derive
+      `templateKeyOf`; leave `index` reserved (R-127) -- the URL segment and the stored `template_key` stop being the
+      same string for a custom template.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- extend `fileOf` and apply synthesis in
       `editorData`, returning the synthesised keys -- the marker is then server truth, and the loud refusals still
       guard stored docs only.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/[template]/layout.tsx` -- open the new segments; 404 a
       conditional canvas whose condition is false -- a canvas the switcher does not offer is not reachable by URL.
-- [ ] `apps/web/components/editor/template-switcher.tsx` -- **new**: D5b complete, built on `openMenu` -- the top
-      bar's first control, and the editor's first soft navigation.
+- [ ] `apps/web/components/editor/template-switcher.tsx` -- **new**: D5b complete **less R-128's two absent rows**,
+      built on `openMenu` -- the top bar's first control, and the editor's first soft navigation.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- mount the switcher and D5a's chip in the centre
       of the top bar; track materialisation; keep `TEMPLATES_OPEN` derived and counting only templates that ship --
       the whole shell change lands in one file.
@@ -219,8 +238,12 @@ and the three membership filenames, which are frozen public API once shipped (Q3
       reaches an owning document or it is not closed.
 
 **Acceptance Criteria:**
-- Given the top bar, when I open the switcher, then it matches **D5b** complete — every row, both dot states with the
-  word beside the hollow one, the Membership group, the rules, and the current canvas checked.
+- Given the top bar, when I open the switcher, then it matches **D5b** — every row, both dot states with the word
+  beside the hollow one, the Membership group and the current canvas checked — **less the "+ New template" row and the
+  `FROM THE ROUTES MANAGER` heading, which arrive with Story 7.16** (R-128).
+- Given a designed Home with a designated main feed, when `indexStack` is asked for `index.hbs`, then it returns that
+  doc from the main feed onward and drops everything above it; with no designated main feed it returns the Synthesis
+  Default stack (R-127).
 - Given an untouched synthesizable canvas, when I open it, then the auto-generated marker matches **D5a** in both
   places and reads exactly "Auto-generated — edit anything to make it yours".
 - Given a canvas open and a section selected, when I choose another canvas in the switcher, then the browser does not
@@ -243,8 +266,22 @@ neither document says so: **seven** is the synthesizable `.hbs` **files** (`sect
 list), **six** is the **canvases a user can open**, because `home.hbs` and `index.hbs` share one canvas —
 `sections-inventory.md:804-806`, "an untouched Home synthesizes the **same stack into both files** — the root and its
 paginated continuation must not disagree about what the feed is". The code already picks six (`lib/editor.ts:9-22`).
-The story builds six canvases and states the reconciliation wherever it prints a count. **What no document settles is
-what `index.hbs` is made from once Home is designed** — Question 1, booked to this story by `spec-5-1…md:373`.
+The story builds six canvases and states the reconciliation wherever it prints a count. **What no document settled was
+what `index.hbs` is made from once Home is designed** — booked to this story by `spec-5-1…md:373` and now ruled.
+
+### R-127: page 2 is Home from the main feed down
+
+The owner's Question 1, option 1. `index.hbs` gets **no canvas** — permanently, which settles 5.1's reserved-segment
+row — and is instead derived from the Home doc: everything above the designated main feed is dropped, the feed and
+everything below it are kept in order. A welcome banner is meant once; a newsletter band and a closing CTA carry on.
+Two edges matter and both are in the matrix: a designed Home with **no** designated main feed falls back to the
+Synthesis Default stack, because `index.hbs` is always compiled and must never ship empty (FR-I1); and an **untouched**
+Home is unchanged — the same synthesised stack into both files (`sections-inventory.md:804-806`).
+
+It is `indexStack(home)` in `synthesize.ts`, not in the app: nothing in this story's UI calls it, but Story 7.3's
+compiler and Story 5.16's page-2 preview both will, and AD-27(d) exists precisely so the rule is not written twice.
+On the owner's "Pilot sections" project no instance carries `isMainFeed`, so the fallback branch is the one his data
+exercises and the one the unit test pins.
 
 ### Synthesis is one function, and it degrades honestly
 
@@ -271,6 +308,21 @@ and the markers go (nothing is written: there is no persistence until 5.8, so a 
 says so). Remove every section → **back to untouched**, the default stack re-renders and the markers return. Hide every
 section → still designed, nothing re-synthesises (FR-D5: "hiding every section is not emptying"). The round trip is the
 cheapest proof that absence really is the signal.
+
+### R-128 and R-129: what the switcher does *not* ship, and what the membership pages are called
+
+**R-128** applies R-118 a second time: "+ New template" and the `FROM THE ROUTES MANAGER` heading are absent until
+Story 7.16 gives them somewhere to go. Nothing is greyed and nothing is captioned — an absent row asks no questions —
+and the custom group would have had nothing to list anyway, since `custom_templates` has no writer.
+
+**R-129** fixes the three filenames: `custom-signup.hbs` ("Signup"), `custom-signin.hbs` ("Signin"),
+`custom-member-home.hbs` ("Member home"). The filename is frozen public API and Ghost derives the dropdown label from
+it (`prd.md:636`), so it is chosen once. B19 is superseded on the first one — it draws `custom-membership.hbs` — while
+its mechanism is untouched. The owner's reason is the useful part: **Signin, Sign up, Subscribe and Membership are
+different pages**, so the signup canvas cannot be called "Membership". The group stays the three FR-D6 names, which are
+also A30's three surfaces (FR-D13's partition); **Subscribe and Membership are ordinary custom page templates** created
+in the Routes Manager (FR-I3) and listed in the switcher's own Routes Manager group — the same `custom-*.hbs`
+mechanism, arriving with Story 7.16.
 
 ### Private, and the circle in the frame
 
@@ -349,7 +401,7 @@ step 4 is where you see it.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | A new control reading **Template · Home** with a small chevron. No "Auto-generated" note anywhere — you designed this page. |
-| 2 | same | Top bar | Press it. | — | A menu: Home · Post · Page · Tag · Author · a **Membership** heading with Signup, Signin and Member home under it · 404 · then a rule and **+ New template**. Home has a tick. Pages you have never touched carry a small hollow dot **and the word "Auto-generated"**; Home and Post carry a filled dot and no word. **No "Private" row** — your site has not asked for one. Compare it with D5b in `D5 Canvas Markers and Template Switcher.dc.html`. |
+| 2 | same | Top bar | Press it. | — | A menu: Home · Post · Page · Tag · Author · a **Membership** heading with Signup, Signin and Member home under it · 404. Home has a tick. **No "+ New template"** — that arrives with the Routes Manager (your ruling, R-128). Pages you have never touched carry a small hollow dot **and the word "Auto-generated"**; Home and Post carry a filled dot and no word. **No "Private" row** — your site has not asked for one. Compare it with D5b in `D5 Canvas Markers and Template Switcher.dc.html`. |
 | 3 | same | Switcher | Choose **Tag**. | — | The page does **not** reload — no white flash, no spinner in the browser tab. The address becomes `…/projects/…/tag`, the canvas becomes a tag archive, and the top bar now reads **Template · Tag** with a note beside it: "Auto-generated — edit anything to make it yours". The same sentence sits at the top of the list on the left. |
 | 4 | same | Canvas, Tag | Look at what is on the page. | — | Your site's header and footer, and **one** section — a three-up grid of posts. The archive heading above it is missing on purpose: that design is not in the library yet. The list on the left shows the one section. |
 | 5 | same | Canvas, Tag | Press that grid to select it, then use the switcher to go to **Author**. | — | The selection lets go as you arrive: nothing is outlined, and the right-hand panel is empty. The Author canvas is also marked auto-generated and also shows one grid. |
@@ -385,7 +437,9 @@ is the seventh. The only open point is what it is made from once you have design
 4. **Give page 2 its own canvas** in the switcher, designed separately. Most control, one more page to keep in step
    with Home, and it is the only option that adds a row to every menu in this story.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"Page 2 shows your Home page from the post grid down — the banner and
+anything above the grid are dropped, the grid itself carries on with the next posts, and everything below it stays."*
+Recorded as **R-127**; it settles `spec-5-1…md:373`'s reserved `index` segment as "no canvas, permanently".
 
 ### Question 2 — "+ New template" points at a screen that does not exist yet
 
@@ -403,7 +457,8 @@ that makes it work, and is absent until then.*
 3. **Show it live and let it go nowhere** — closest to the drawing today, and the only option that can disappoint
    someone who presses it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-18).** *"Leave it out until the Routes Manager is built, exactly as R-118 says."*
+Recorded as **R-128**; R-118 now covers two surfaces and the `FROM THE ROUTES MANAGER` heading goes with the row.
 
 ### Question 3 — what your customers will see in Ghost's menu for the sign-up page
 
@@ -421,4 +476,9 @@ customer opens a page in Ghost, opens the Template dropdown, and has to recognis
    the same in both places, but it reads more like a form than a page.
 3. **`custom-join.hbs` — it shows as "Join"**, or another word you prefer. Say the word and I will use it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-18).** *"`custom-signup.hbs` — it shows as 'Signup'. There will be different pages
+for Signin, Sign up, Subscribe and Membership."* Recorded as **R-129**: the three are `custom-signup.hbs`,
+`custom-signin.hbs` and `custom-member-home.hbs`, and B19 is superseded on the first. **Subscribe and Membership are
+ordinary custom page templates** — created in the Routes Manager (FR-I3), listed in the switcher's own Routes Manager
+group, same `custom-*.hbs` mechanism — so they arrive with Story 7.16 and this story's group stays the three FR-D6
+names. Say so if you meant them as built-in rows instead and each is one table entry to add.

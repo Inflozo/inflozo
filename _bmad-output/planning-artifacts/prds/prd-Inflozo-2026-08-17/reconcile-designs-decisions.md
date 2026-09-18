@@ -2579,6 +2579,88 @@ export the authority and these five change what B7 draws.
   keyboard path; the two singletons; R-123's grounds; R-124 and R-125, which are about other surfaces. The export
   itself is NOT edited (R-74 forbids it) — this file is the record of the divergence.
 
+**R-127 — page 2 of the blog is the Home canvas from the main feed down.** Story 5.5's Q1, ruled option 1 (owner,
+2026-09-18): *"Page 2 shows your Home page from the post grid down — the banner and anything above the grid are
+dropped, the grid itself carries on with the next posts, and everything below it stays."*
+
+- **Why it was a question.** Ghost resolves `home.hbs` for the site root and `index.hbs` for `/page/N/`.
+  `sections-inventory.md:804-806` covers only the untouched case — "an untouched Home synthesizes the same stack into
+  both files" — and `prd.md:344` (FR-I1) says `home.hbs` is emitted "whenever the Home canvas **differs** from the
+  generic post feed, which is the ordinary case", without ever saying what `index.hbs` is made from once Home is
+  designed. `spec-5-1…md:373` booked the decision to Story 5.5. Left unsettled, a user's own page 2 would have shipped
+  from a stack nobody chose.
+- **What it binds.**
+  - **`index.hbs` has no canvas**, now and permanently: the switcher offers six, `/projects/<id>/index` stays a 404,
+    and Story 5.1's reserved-segment row is settled. Seven files are synthesizable; six are canvases.
+  - When Home is **designed**, `index.hbs` is that doc **from its designated main feed onward** — every instance above
+    the main feed is dropped, the feed itself and everything below it are kept, in order. One page-1 welcome is not
+    repeated on page 2, and the parts of the site that continue — the feed, a newsletter band, a closing CTA — do.
+  - When Home is **untouched**, `sections-inventory.md:804-806` is unchanged: the same synthesized stack into both.
+  - When a designed Home carries **no designated main feed**, `index.hbs` falls back to the Synthesis Default stack —
+    `index.hbs` is always compiled (FR-I1) and must never be emitted empty.
+  - **One implementation.** The rule is a function beside `synthesize` in `packages/section-runtime` (AD-27(d)):
+    Story 7.3's compiler and Story 5.16's page-2 preview call it; neither re-derives it.
+- Targets:
+  - ✅ Story 5.5's spec · ✅ `epic-5-context.md` — Story 5.5's Create run (2026-09-18).
+  - ⬜ `packages/section-runtime/src/synthesize.ts` and its test · ⬜ `apps/web/lib/editor.ts` (the settled reserved
+    segment) — at 5.5's Dev.
+  - ⬜ `epics.md` Story 7.3 and Story 5.16 · ⬜ `sections-inventory.md` § Synthesis Defaults §3's heading, which today
+    reads "(both, only when Home is untouched)" and never says what follows — at those stories, or at the next edit
+    of that document, whichever is first.
+- **Deliberately not touched:** the Synthesis Defaults' own stacks and the main-feed rule (`:849-861`), both unchanged;
+  FR-D21 and Story 5.16, which decide how page 2 is *previewed*, not what it is made of; the export (R-74), which
+  draws no `index.hbs` surface because there is none.
+
+**R-128 — "+ New template" arrives with the Routes Manager, and is absent until then.** Story 5.5's Q2, ruled option 1
+(owner, 2026-09-18): *"Leave it out until the Routes Manager is built, exactly as R-118 says."*
+
+- **Why it was a question.** `D5 Canvas Markers and Template Switcher.dc.html` D5b draws the switcher ending in a rule
+  and **+ New template**, and `prd.md:346` (FR-I3) makes it a deep link into the Routes Manager's creation flow. That
+  screen is Story 7.16 and does not exist, so the drawn row would have pointed at nothing. Story 5.5's own acceptance
+  criterion says the switcher "matches D5b complete", so omitting a drawn row is a departure R-74 makes the owner's.
+- **What it binds.** R-118's rule — *a control arrives with the story that makes it work, and is absent until then* —
+  is not specific to a hovered section: it is the general rule, and this is its second application. The switcher ships
+  without the **+ New template** row and without the `FROM THE ROUTES MANAGER` heading (which has nothing to list:
+  `custom_templates` has no writer until 7.16). Story 7.16 adds both, in the same change that gives them somewhere to
+  go. Nothing is greyed and nothing is captioned: an absent row asks no questions.
+- Targets:
+  - ✅ Story 5.5's spec · ✅ `epic-5-context.md` — Story 5.5's Create run (2026-09-18).
+  - ⬜ `apps/web/components/editor/template-switcher.tsx` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.5's Dev.
+  - ⬜ `epics.md` Story 7.16 — at that story, which is where the row and its heading arrive.
+- **Deliberately not touched:** R-118, which is unchanged and now covers two surfaces; the export (R-74), whose D5b
+  keeps the row it draws — this file is the record of the divergence; FR-I3, which says what the row does when it
+  exists and is silent on when it appears.
+
+**R-129 — the signup canvas ships as `custom-signup.hbs` and reads "Signup" in Ghost.** Story 5.5's Q3, ruled option 2
+(owner, 2026-09-18): *"`custom-signup.hbs` — it shows as 'Signup'. There will be different pages for Signin, Sign up,
+Subscribe and Membership."*
+
+- **Why it was a question.** A `custom-{name}.hbs` filename is a **frozen public API** of the emitted theme
+  (`prd.md:636`): Ghost stores the exact string on every page that selects it, derives the Template dropdown's label
+  from it by a fixed transform, and never revalidates or repairs it — so a rename silently detaches every page. The
+  sources disagreed on the first of the three. `B Missing Surfaces.dc.html` B19 draws **Membership ·
+  `custom-membership.hbs`**, and `EXPERIENCE.md:2142-2144` renames D5b's routes-manager example away from that
+  filename precisely because it belonged to the Membership group's own signup template. `A30 Members Pages -
+  Spec.md:65` says `custom-signup.hbs` and `custom-signin.hbs`. D5b's row has always read **Signup**.
+- **What it binds.**
+  - The three membership canvases ship as **`custom-signup.hbs`** ("Signup"), **`custom-signin.hbs`** ("Signin") and
+    **`custom-member-home.hbs`** ("Member home"). The label is not ours to choose: Ghost derives it from the filename.
+  - B19 is **superseded** on the first row's name and filename; its mechanism — one page per template, bound from
+    Ghost's page-editor Template dropdown — is untouched, and so is FR-I6's post-deploy checklist that prints it.
+  - The group in the switcher stays the three FR-D6 names, which are also A30's three surfaces (FR-D13's partition).
+    **Subscribe and Membership are ordinary custom page templates**, created in the Routes Manager (FR-I3) and listed
+    in the switcher's own Routes Manager group — the same `custom-*.hbs` mechanism, arriving with Story 7.16.
+  - `project_templates.template_key` for each is `custom:custom-{name}.hbs`, which the existing `template_key_shape`
+    CHECK already admits; the editor's URL segment is `custom-{name}`.
+- Targets:
+  - ✅ Story 5.5's spec · ✅ `epic-5-context.md` — Story 5.5's Create run (2026-09-18).
+  - ⬜ `apps/web/lib/editor.ts` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.5's Dev.
+  - ⬜ `EXPERIENCE.md` § A7 item 6, which names `custom-membership.hbs` as the signup template's own · ⬜ `epics.md`
+    Story 7.3 (the `custom-{name}.hbs` emission) — at 5.5's Dev and at 7.3.
+- **Deliberately not touched:** `prd.md` FR-D6 and FR-I1, which say the membership canvases are page-backed custom
+  templates and never name a filename; §7.4's frozen-filename rule, which this ruling exists to satisfy; the export
+  (R-74) — B19 is not edited, this file is the record.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
