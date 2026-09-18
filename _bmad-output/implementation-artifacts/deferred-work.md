@@ -4611,3 +4611,59 @@ location: `packages/section-runtime/src/synthesize.ts` (`indexStack`) · `doc-sc
   `doc-edit.ts` (`duplicateSection`)
 reason: unreachable today — no surface writes `isMainFeed: true`, and the owner's own project has none, which is
   R-127's second fallback. Guarding it now would mean deciding FR-H2's refusal wording before the story that owns it.
+
+## Deferred from: Story 5.6's Create run (2026-09-18)
+
+### DW-195: AD-30 says a dark override "needs no second attribute" — true on the canvas, and not expressible in a shipped theme
+
+plain: You can pick a different background for a section's dark version, and on the editor's canvas that works
+  exactly as promised. What nobody has decided yet is how the theme we build for your real site carries that
+  difference — the rules we wrote for ourselves rule out every obvious way of doing it. Nothing is broken and
+  nothing you set is lost; the choice is stored. The compiler story has to settle it before dark overrides can
+  reach a visitor.
+status: open
+severity: high
+origin: Story 5.6's Create run (2026-09-18), read in the normative documents. `ARCHITECTURE-SPINE.md:345`
+  (AD-30) says **Background role** "is a Style Pack swatch role, so it resolves through the token block and
+  needs no second attribute at all". On the canvas that holds, because the canvas has a live `data-mode` and a
+  dark override is simply a different `data-bg` while dark is shown. In a theme there is one visitor and one
+  markup: `data-bg="base"` cannot also be `data-bg="contrast"` for a dark visitor, and the same paragraph
+  forbids the three ways out — a `data-{control}-dark` twin ("never a `-dark` twin"), a mode-scoped selector in
+  a design stylesheet ("a design stylesheet that names `prefers-color-scheme`, a scheme class or `data-mode`
+  fails the build", `:347`), and a second attribute set. AD-3's only inline-`style` carve-out is "a CSS custom
+  property from **bound Ghost data**, and nothing else" (`:109`), so an inline per-section property is out too.
+  The invariant the paragraph wants to keep — "the token block and the base stylesheet are the only files in a
+  generated theme that mention a mode" — is compatible with a per-instance custom property emitted INTO the
+  token block, but no document says that and nothing in the repository emits it.
+owner: Epic 7's theme-assembly story (FR-J3/§7.3, the `default.hbs` token block), which is the first thing that
+  must express a dark override to a visitor — and an AD-30 amendment recording whichever expression it picks.
+  Raise it at that story's Create, not later: by then the library may hold authored overrides.
+location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md:345`
+  and `:347` (AD-30) · `:109` (AD-3's carve-out) · `packages/section-runtime/src/tokens.ts:165-186` ·
+  `_bmad-output/implementation-artifacts/spec-5-6-light-and-dark-authoring.md` § Design Notes
+reason: Story 5.6 is the editor, and Epic 5 deploys nothing — the override is stored faithfully and previewed
+  honestly, so nothing is at risk now and settling the emission here would mean inventing a compiler convention
+  in an editor story. Standing rule 6: flag, do not guess. Deciding it needs the compiler in front of you.
+
+### DW-196: `darkCapabilities` is declared on every design and read by nothing
+
+plain: Every section design in our library carries a note saying how much dark-mode support it has. Nothing in
+  the product ever looks at that note. Either something should use it, or it should go — right now it is a field
+  authors have to fill in for no effect, which is how a field quietly starts saying something untrue.
+status: open
+severity: low
+origin: Story 5.6's Create run (2026-09-18), executed over the repository: `darkCapabilities: string[]` is
+  declared on `DesignJson` and on `SectionRegistryEntry` (`packages/library/src/registry.ts:136`, `:178`) and
+  copied through `buildEntry` (`:229`); a grep for the name across every `.ts`/`.tsx`/`.js`/`.cjs`/`.mjs` in the
+  repository returns those three lines, one test fixture (`validate.test.ts:415`) and nothing else. Its
+  vocabulary is unvalidated — a bare `string[]`, so any word passes — and all five pilots plus both fixtures
+  declare exactly `["tokens"]`. Story 5.6 needed none of it: the engine keys on each control's own
+  `darkOverride` declaration, which is the thing that actually decides whether a control is mode-scoped.
+owner: unowned — needs one. Candidates: Epic 6's Style Pack stories (where "what dark support does this design
+  have" is a pack-facing question), or the first category story that authors a design whose dark support is not
+  just tokens. A reader with a validated vocabulary, or deletion; not a third state.
+location: `packages/library/src/registry.ts:136`, `:178`, `:229` · every
+  `packages/library/designs/*/*/design.json` · `packages/library/fixtures/*/design.json`
+reason: no story needs it and inventing a consumer for it inside an editor story would be inventing a
+  vocabulary the library's authors never agreed. Recorded now because the field is cheap to keep filling in
+  wrongly — standing rule 7's shape: a declaration nothing reads is a declaration nothing can falsify.

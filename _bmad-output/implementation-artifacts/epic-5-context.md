@@ -72,6 +72,31 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **Story 5.3 — the editing stamps, and where the toolbar and the pill sit (2026-09-18, AD-21's fourth amendment):** the canvas emitter is ASKED for stamps (`RenderInput.editing`): `data-inflozo-prop` (plus `data-inflozo-item` for an authored item's index) on each surviving text prop, `data-inflozo-ghost` with the field's plain name on each surviving Ghost word and helper (R-122, `packages/library/contexts/labels.json` + `ghostLabel`); `renderTheme` handed `editing` throws. The editor lifts them into a map as it mounts the canvas and removes them in the same task (`takeStamps`), so rest is still zero and step 4's `outerHTML` equality with `/pilots` still holds — the core test asserts that, stripped, the render is exactly the render without `editing`. P0-1's toolbar and its link panel are pressed, so they are OUTSIDE the frame and hide from the first canvas `scroll` until 150ms after the last (Story 5.2's finding: anything positioned from the editor document trails the compositor by a frame); the lock and limit pill takes no press, so it is chrome in the canvas layer (`place()`'s `above`) and scrolls with its words. The field being typed in carries one more keyed state mark, `data-inflozo-editing` (put on and taken off with `contenteditable` by `lib/inline.ts`), which `canvas-chrome.css` styles as a coral haze in place of the browser's focus ring (the owner's test, 2026-09-18) — the first rule the file has held since R-120; on a button-styled link prop (Latest Post's Subscribe) the haze is the ring alone, because the sheet loads after the design's at equal specificity and would otherwise take the button's fill (second review).
   - **Story 5.2 — `stampControls` strips the chrome attributes:** it removes every root `data-*` that is not a directive before stamping (`core.ts`), `data-inflozo-*` included, so whatever marks a root re-applies its attributes after every stamp and every paint (`editor.tsx` `mark()`). Any later chrome attribute on a root (9.1's empty slot — R-121 — or 5.21's PAUSED) inherits the rule.
 - **A design switch replaces the root's attributes.** Undeclared ones go and their values park; a dark override is a second token-resolved value of the same control — never a `-dark` attribute or a mode selector in a design stylesheet — and `color_scheme` alone selects the mode (AD-3, AD-30).
+  - **Story 5.6's planning (2026-09-18, read in the runtime and executed over the library):** Epic 4 already built every
+    part of a dark override except a reader. `ControlState.darkOverrides`, `ControlDef`/`UniversalDef.darkOverride`,
+    `ControlRow.moon` (`controls.ts:199`) and the Kit's `MoonBadge` all exist, the panel already draws the badge with the
+    words "Dark override" (`sidebar.tsx:105`), and `REFERENCE_TOKENS.dark` plus `referenceTokensCss`'s
+    `:root[data-mode="dark"]` block already make both modes reachable — `tokens.ts:165-172` RESERVES `data-mode` for the
+    canvas's preview so no fourth mode signal exists, and `pilots/review.tsx:121` already flips it. So the preview is one
+    attribute plus a re-stamp, never a repaint, and `resolveControls`/`stampControls` need no change: the mode picks the
+    STORED SLICE handed to the one door. **`bg` / Background role is the library's ONLY `darkOverride: true`**
+    (`vocabulary.ts:263`) and it is a universal, so every design has one and every pilot offers two or three values —
+    while no design declares a mode-scoped control of its own, no design has a per-mode image swap, and
+    `darkCapabilities` (`["tokens"]` on every pilot) is READ BY NOTHING. `projects.dark_enabled` and
+    `instanceSchema.darkOverrides` both pre-exist, so the story has **no Schema phase**; the custom-settings cap cannot
+    move, because the three dark built-ins are not rows and `enforce_custom_setting_cap()` is fixed at 17
+    (`schema:304-305,329-340`) — AD-17: a `dark_enabled = false` project still emits and still references all three.
+  - **AD-30's theme half is an OPEN GAP, filed at 5.6's Create, and it is Epic 7's:** AD-30`:345` says Background role
+    "needs no second attribute at all", which holds on a canvas that has a live `data-mode` and does NOT hold in a
+    shipped theme — one `data-bg` cannot be `base` for a light visitor and `contrast` for a dark one, a `-dark` twin is
+    forbidden by the same paragraph, a design stylesheet naming a mode fails the build, and AD-3's only inline-`style`
+    carve-out is bound Ghost data. Story 5.6 stores and previews faithfully and settles nothing about emission.
+  - **R-118 applied a third time (Story 5.6's planning):** FR-D7's visitor `mode-toggle` refusal is NOT built in Epic 5 —
+    the module is registered (`modules/registry.json:30`) but implemented by nothing and declared by no design, and
+    `color_scheme` has no Inflozo column to read before Epic 7's Theme Settings, so R-34's condition is unreadable and
+    there is nothing to refuse. A1's category story (Epic 9) owns it. S4's own "Dark mode / Readers get a moon toggle"
+    sidebar row is that visitor setting and is STALE — `EXPERIENCE.md:652` and `:1783-1790` record D6a's project-mode
+    block as its replacement; never build it.
 - **CSP.** The app host uses a nonce with `'strict-dynamic'` and `frame-ancestors 'self'`; `connect-src` has been a static `'self' https:` since Story 3.2 (`apps/web/csp.ts`), though the PRD still says per-session (Story 5.1 corrected the spine).
   - **Story 5.1 verified the no-`'unsafe-eval'` half on the deployed editor (2026-09-17, the spine's CSP row, refreshed here at 5.2's Create):** `tools/probe/run-verify-editor.cjs` recorded zero violations behind an `EvalError` control, and the spine says the proof "is re-run at each Epic 5 story's Review" — so every Epic 5 story that adds a gesture adds it to that harness's step 5 session.
   - **Story 5.2 did (2026-09-17):** steps 10–13's hover, select, edits, reset and Esc run inside step 5's session and its zero is read after them; step 14's touch runs in its own `hasTouch` context, outside the CSP session.
