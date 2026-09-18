@@ -2,9 +2,9 @@
 title: 'Story 5.3 — Inline editing, the four marks and the link picker'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 2
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
