@@ -1176,13 +1176,25 @@ async function main() {
     await page.waitForTimeout(300)
     check('step 27 — a press on the empty space below the Layers rows deselects too, read from the last ROW and not the list\'s last child', layersGround.isGround && layersGround.lastChildIsTheNote && layersGround.room > 40 && !(await onScreen(GRID)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(layersGround))
     await clickOn(GRID)
-    const layersRow = await page.evaluate(() => {
-      const r = document.querySelectorAll('#editor-layers [data-layer-row]')[1].getBoundingClientRect()
+    // its OWN row: R-123's rule is that the press keeps the selection, and pressing another row would move it
+    const layersRow = await page.evaluate((n) => {
+      const r = document.querySelectorAll('#editor-layers [data-layer-row]')[n].getBoundingClientRect()
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
-    })
+    }, GRID)
     await page.mouse.click(layersRow.x, layersRow.y)
     await page.waitForTimeout(250)
     check('step 27 — a press on a Layers row is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
+    // nor is a group heading or B7's footed note: only the empty space BELOW THE ROWS lets the selection go
+    for (const [what, starts] of [['a group heading', 'This page · '], ['the footed note', 'Editing a site-wide section']]) {
+      const at = await page.evaluate((s) => {
+        const el = [...document.querySelectorAll('#editor-layers span')].find((n) => n.textContent.startsWith(s))
+        const r = el.getBoundingClientRect()
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+      }, starts)
+      await page.mouse.click(at.x, at.y)
+      await page.waitForTimeout(250)
+      check(`step 27 — a press on ${what} is not a press on nothing either: the section stays selected`, (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings', JSON.stringify(at))
+    }
     // the canvas's own ground: the tag canvas draws the site header and nothing else, so the room below it is real
     await page.goto(editorUrl('tag'), { waitUntil: 'load' })
     await painted('tag')
@@ -1269,6 +1281,15 @@ async function main() {
     await rowAt(GRID).getByRole('button', { name: `Show ${layerOf(GRID)}`, exact: true }).click()
     await page.waitForTimeout(400)
     check('step 30 — pressing it again brings the section back', (await rootCount()) === before30)
+    // UX-DR10's keyboard path to the same toggle: `Space` on the ROW, not on the eye (which is Enter's and the pointer's)
+    await rowAt(GRID).focus()
+    await page.keyboard.press(' ')
+    await page.waitForTimeout(400)
+    const spaced30 = await rowState(GRID)
+    check('step 30 — `Space` on a focused row hides it, and `Space` again shows it (UX-DR10)', (await rootCount()) === before30 - 1 && spaced30.eye === `Show ${layerOf(GRID)}` && spaced30.words === 'rgb(110, 106, 100)', JSON.stringify({ roots: await rootCount(), before: before30, row: spaced30 }))
+    await page.keyboard.press(' ')
+    await page.waitForTimeout(400)
+    check('step 30 — `Space` again brings it back, and the key never scrolled the panel', (await rootCount()) === before30 && (await page.evaluate(() => document.getElementById('editor-layers').lastElementChild.scrollTop)) === 0)
 
     // ── step 31 — ⌥↓ moves the section, focus follows, and the move is announced politely ──
     const pageNames = () => page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => r.querySelector('button').textContent))

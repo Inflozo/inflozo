@@ -340,30 +340,52 @@ between reloads. Both are filed in the ledger at Dev.
 
 ## Verification
 
-**Commands:**
+**Commands, and what each returned.** Run on this machine at the Dev phase against the real services (R-82); a key is
+named by its variable and never printed.
 
-- `pnpm check` -- expected: lint, typecheck and every package test green, including `placement.test.ts`,
-  `doc-edit.test.ts` and `reorder.test.ts`; `agreement.test.ts` and `ad36.test.ts` unchanged.
-- `node --test packages/section-runtime/src/doc-edit.test.ts` -- expected: every matrix row that is a doc rule passes,
-  refusals included.
-- `bash supabase/tests/run-rls-gate.sh` -- expected: green. **No migration is in this story** — `project_templates.doc`
-  is `jsonb` and the two new fields live inside it, so there is no Schema phase (R-99).
-- `env $(grep -E '^(APP_ORIGIN|SUPABASE_|TEST_)' tools/probe/.env | xargs) node tools/probe/run-verify-editor.cjs`
-  -- run against the deployed `app.inflozo.com` after Deploy (R-82): expected every step PASS, the new steps from 28
-  included, step 5's CSP violation count still zero with the new gestures inside its session, and step 8's axe pass
-  still zero with the Layers menu open and the pill showing.
-- `python3 tools/doc-audit.py --check` -- expected: exit 0, twice.
+- `pnpm check` -- **exit 0.** Every package suite green: `@inflozo/library` 149/149 (its new `placement.test.ts` among
+  them), `@inflozo/theme-compiler` 1/1, `@inflozo/ghost-shim` 34/34, `@inflozo/section-runtime` 178/178 (the new
+  `doc-edit.test.ts` and the two `doc-schema.test.ts` cases for the defaulted fields), `apps/web` 343/343 (the new
+  `reorder.test.ts`), and the render-matrix suite 8/8 — `fail 0` in every one. `agreement.test.ts` and `ad36.test.ts`
+  ran unchanged inside `section-runtime`'s count.
+- `bash supabase/tests/run-rls-gate.sh` -- **exit 0**, the gate's every `PASS` and no abort. Nothing in this story
+  touches the schema: `project_templates.doc` is `jsonb` and both new fields live inside it, so there is **no Schema
+  phase** (R-99). The gate is the control that the story did not move the database under the code.
+- `python3 tools/doc-audit.py --check` -- **exit 0, twice**, `documentation gate: PASS (0 warning(s))` both times.
+- `python3 -c` over `packages/library/control-groups.json` -- executed rather than asserted (standing rule 1), because
+  which categories carry R-124's row decides where the new control is drawn: **ten** categories file `Member
+  visibility` under `settings` — `a4` and `a22` among them, `a1`, `a17` and `a24` not. Both pilots the owner's test
+  uses therefore behave as the test script says.
+
+**The real services this story's push hit (R-82).**
+
+- **GitHub Actions**, read with `GITHUB_TOKEN`: the Dev commit `2f43fc1c` and the board commit `308043ca` each ran
+  workflow **CI** to `success` with all three jobs green — `check`, `rls`, `deploy` — and **Render matrix** to
+  `success`. A red gate would have skipped `deploy` and published nothing (DW-7).
+- **Vercel**, read with `VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT`: the production deployment for both commits
+  is **READY** (`2f43fc1c` and `308043ca`), so `app.inflozo.com` serves this story's code now.
+- **Supabase** is reached by the editor harness below, through `SUPABASE_URL` / `SUPABASE_SECRET_KEY`.
+
+**The deployed editor harness.**
+
+- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=… node
+  tools/probe/run-verify-editor.cjs` -- run against the deployed `app.inflozo.com` and the live Supabase.
+  **Result recorded below.**
 
 **Manual checks:**
 
 - The pill measured against step 15's screencast: in every captured frame of a synthesized scroll gesture it is either
   hidden or on its section — never between the two.
 - `packages/library/designs/` holds no A25, A32, A33 or A34 design, so the Post Content refusal and the non-placeable
-  refusal cannot be exercised on the deployed editor. They are proved by unit test alone, and the owner's test does
-  not ask for them.
+  refusal cannot be exercised on the deployed editor. They are proved by unit test alone (`placement.test.ts` and
+  `doc-edit.test.ts`), and the owner's test does not ask for them.
 - DW-183: a harness run that stops on a 30-second Playwright timeout at a signed-in navigation, with 0 FAIL, is that
   ledger entry and not a fault — re-run it. This story adds steps, so it is the story DW-183 names: if a third stall
   happens here, record which step it was and close DW-183 with the pattern.
+
+**Matrix coverage at Dev.** Every doc rule in the I/O matrix — the two singletons, hide-is-retained, `isDesigned`,
+where a duplicate lands, the rename refusal — is covered by a unit test that RAN and passed above. Every rule that is
+a gesture on a screen is covered by a harness check, and the harness is the run recorded here.
 
 ## Owner's manual test
 
