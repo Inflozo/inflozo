@@ -4336,3 +4336,76 @@ reason: a retry is a design choice — once per navigation, once per run, or a l
   — and the two stalls were at different steps, so the fix needs a third observation to name the pattern; the harness
   already cleans up on a crash, so nothing durable is at stake.
 
+
+## Deferred from: the planning of spec-5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton (2026-09-18)
+
+### DW-184: B7's "we say so the first time, then stop" has no first time to remember before saving lands
+
+plain: The Layers panel carries a line saying that editing your header, announcement bar or footer changes it on every
+  page. The drawing says we show that line the first time and then stop. Nothing about you is remembered between
+  visits until saving arrives, so for now the line is simply always there.
+status: open
+severity: low
+origin: Story 5.4's planning (2026-09-18) — `B Missing Surfaces.dc.html` B7's footed note, "Editing a site-wide section
+  changes it on all N templates. We say so the first time, then stop."; nothing writes `project_templates`,
+  `project_template_prefs` or `profiles` before Story 5.8
+owner: Story 5.8 (undo, redo and local-first persistence), the first story with somewhere to keep it
+location: `apps/web/components/controls/layers.tsx` (B7's footed note) ·
+  `supabase/migrations/20260904120000_complete_schema.sql` (`project_template_prefs`, `profiles`)
+reason: a session-only "first time" would make the line come and go between reloads, which reads as a bug rather than as
+  a note; showing it always is honest, costs one line, and is removed by one condition the day there is a place to
+  remember in.
+
+### DW-185: the control register gives a Member visibility row to more categories than the PRD's four CTA-bearing ones
+
+plain: The setting "who can see this section" is meant for sections that ask the reader to do something. The
+  requirements name four kinds of section. The table built from the drawings gives the row to more than that. Someone
+  has to say which list is right before those sections are built.
+status: open
+severity: medium
+origin: Story 5.4's planning (2026-09-18) — `prd.md` :909 and Appendix C's Member Visibility row name A2, A6, A22 and
+  A26; `packages/library/control-groups.json` carries a `"Member visibility"` entry for a4, a5, a6, a7, a8, a9, a16,
+  a21, a22 and a29 as the file stands, and `A4-13 Latest Post.dc.html:256` and `A22-1 Inline Row.dc.html:69` both draw
+  the row
+owner: the first E9/E10 category story whose designs the two lists disagree about, with the answer put to the owner in
+  R-83's shape — R-74 and DW-111 make a drawn panel win over a spec table, so the PRD is the likelier of the two to be
+  corrected
+location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` (:909, Appendix C) ·
+  `packages/library/control-groups.json`
+reason: Story 5.4 draws the row for whichever section carries it and reads the register rather than the PRD's list, so
+  nothing it builds depends on the answer; the two pilots it is tested on, a4/13 and a22/1, appear in both lists.
+
+### DW-186: "who can see this section" must never become a design control, or the value would exist twice
+
+plain: Who a section is shown to is kept on the section you placed, not among the design's own settings. If someone
+  later writes it into a design's settings list as well, the editor would hold the same answer in two places and they
+  could drift apart.
+status: open
+severity: medium
+origin: Story 5.4's planning (2026-09-18) — Story 4.10 already gates a section through `RenderInput.visibility`
+  (`core.ts` :200-202, `gateMembers` :1484-1500) on both emitters; a declared control would additionally stamp
+  `data-member-visibility` on the root through `stampControls`, a second copy nothing reads. The category specs list
+  `memberVisibility` in their control tables (`A22 Newsletter - Spec.md:291`) — that describes the panel ROW, not a
+  `controlSchema` entry.
+owner: each E9/E10 category story that builds a CTA-bearing design; the rule belongs in `docs/section-authoring.md` § 2
+  and, as a refusal, in the validator
+location: `docs/section-authoring.md` · `packages/library/src/validate.ts` ·
+  `packages/section-runtime/src/doc-schema.ts` (`memberVisibility`, the one place it is stored)
+reason: no built design declares it and `tools/check-snapshots.mjs` reads only declared settings, so nothing can go
+  wrong today; the refusal is one line in the validator and belongs with the first design that would trip it.
+
+### DW-187: dragging inside the Site-wide card cannot move a footer above a header on the canvas
+
+plain: Your header, announcement bar and footer are listed together in one card at the top of the Layers panel. The
+  page always draws footers last, whatever order that card is in, so dragging a footer above a header would change the
+  list without changing the page.
+status: open
+severity: low
+origin: Story 5.4's planning (2026-09-18) — `apps/web/lib/editor.ts`'s `canvasStack` (:47-51) splits the site doc by
+  `designId.startsWith('a3/')` and draws the footers last; the seeded "Pilot sections" project holds one site-wide
+  section, so the case cannot be reached on it
+owner: Story 5.5 (the template switcher and the synthesised templates), or the first story that seeds a footer beside a
+  header
+location: `apps/web/lib/editor.ts` (`canvasStack`) · `apps/web/components/controls/layers.tsx`
+reason: no project in the repo holds both a header and a footer, and "footers compile last" is the compiler's rule, not
+  the list's — whether the card should refuse that drop or the canvas should follow it is a decision, not a patch.
