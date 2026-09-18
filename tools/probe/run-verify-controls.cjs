@@ -394,7 +394,13 @@ async function main() {
     }, 'The quick brown fox jumps over the lazy dog and keeps running')
     await page.waitForTimeout(300)
     const headingNow = await headingField.innerText()
-    check('step 19 — a 60-character paste into Heading arrives cut at its limit, with the same sentence under it', headingNow.length === 40 && (await content.locator('p', { hasText: 'Heading holds 40 characters.' }).count()) === 1 && (await canvas()).title === headingNow, `${headingNow.length} characters · ${JSON.stringify(headingNow)}`)
+    check('step 19 — a paste longer than Heading\'s limit arrives cut at it, with the same sentence under it', headingNow.length === 40 && (await content.locator('p', { hasText: 'Heading holds 40 characters.' }).count()) === 1 && (await canvas()).title === headingNow, `${headingNow.length} characters · ${JSON.stringify(headingNow)}`)
+    // typed, not pasted: the rich field refuses the character at `beforeinput`, which the paste path never runs (review)
+    await page.keyboard.press('End')
+    await page.keyboard.type('XYZ')
+    await page.waitForTimeout(300)
+    const headingTyped = await headingField.innerText()
+    check('step 19 — typing at Heading\'s limit is refused too, and the sentence stays', headingTyped === headingNow && (await content.locator('p', { hasText: 'Heading holds 40 characters.' }).count()) === 1, `${headingTyped.length} characters · ${JSON.stringify(headingTyped)}`)
 
     // ── axe at 1440 and 390, WCAG 2.1 AA, with a positive control
     const axeRun = async () => {

@@ -122,6 +122,8 @@ test('replaceRange: the limit cuts the insert and says how many characters it re
   assert.deepEqual(replaceRange('abcdef', 0, 3, 'xyz!', { max: 6 }), { value: 'xyzdef', refused: 1 }, 'a replaced range makes room')
   const paste = replaceRange('ab', 1, 1, { text: 'XYZ', marks: [{ start: 1, end: 3, mark: 'em' }] }, { max: 4 })
   assert.deepEqual(paste, { value: { text: 'aXYb', marks: [{ start: 2, end: 3, mark: 'em' }] }, refused: 1 }, 'a paste\'s marks are shifted and cut with it')
+  assert.deepEqual(replaceRange('abc', 3, 3, 'd😀e', { max: 5 }), { value: 'abcd', refused: 3 }, 'a limit inside an emoji drops the whole emoji, never half')
+  assert.deepEqual(replaceRange('abc', 3, 3, 'd😀e', { max: 6 }), { value: 'abcd😀', refused: 1 })
 })
 
 test('toggleMark adds, removes exactly the range, and makes a partly marked range wholly marked', () => {
@@ -166,4 +168,9 @@ test('readMarks: the four marks where allowed, a safe href only, everything else
   assert.deepEqual(readMarks(parse('<p>one</p><p>two<br>three</p>'), [], true), { text: 'one\ntwo\nthree' })
   assert.deepEqual(readMarks(parse('<p>one</p><p>two<br>three</p>'), [], false), { text: 'one two three' })
   assert.deepEqual(readMarks(parse('<a href="mailto:a@b.c">m</a><a href="tel:1">t</a>'), ['a'], false).marks?.map((m) => m.href), ['mailto:a@b.c', 'tel:1'])
+  // what a page's clipboard carries that no reader saw is not text either (Spec Change Log, 2026-09-18)
+  // (body content first: the parser puts a leading <noscript> in <head> and spills its words into the body itself)
+  assert.deepEqual(readMarks(parse('<p>words</p><style>p{color:red}</style><title>T</title><template>x</template><noscript>n</noscript>'), [], true), { text: 'words' })
+  // a page split across two anchors with the same href is one link
+  assert.deepEqual(readMarks(parse('<a href="https://x/">a</a><a href="https://x/">b</a>'), ['a'], false).marks, [{ start: 0, end: 2, mark: 'a', href: 'https://x/' }])
 })

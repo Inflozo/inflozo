@@ -2,10 +2,10 @@
 title: 'Story 5.3 — Inline editing, the four marks and the link picker'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
 owner_test: issues
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -520,7 +520,8 @@ P0-1's lock pill naming them (R-122).
   - the bar over body text (:28-46) and over a headline with a mark pressed (:48-64), in steps 17 and 18;
   - both states of the link popover (:66-136), in step 19;
   - the lock pill (:138-147), in step 23;
-  - the typed-token row (:174-204), on `/controls` and in the owner's test.
+  - the typed-token row (:174-204), on the editor's panel (harness step 26, Newsletter — Inline Row's Social proof line) and
+    in the owner's test — the controls sample declares no `tokens` prop, so `/controls` cannot show it (review, 2026-09-18).
   - P0-1's docked bar at 390 (:149-172) is not built (R-87).
 - Given link entry, then it **matches the pair EXPERIENCE.md names** (:150): it opens at the selection in the toolbar's
   place, searching as you type, as B4b draws it (`B Missing Surfaces.dc.html` :1305-1348), and it is P0-1's popover.
@@ -530,6 +531,41 @@ P0-1's lock pill naming them (R-122).
   control, then it reports zero violations.
 - Given steps 1–15 of the editor harness and every step of the controls harness, when each is run after this story,
   then each still passes.
+
+### Review Findings
+
+Review, 2026-09-18, on `5866e6db`: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier) and none failed. The real-infra layer confirmed CI's `deploy` green and the production deployment
+READY for HEAD, then ran both harnesses against `https://app.inflozo.com` and production Supabase before any patch:
+`run-verify-editor.cjs` 163 PASS, 0 FAIL and `run-verify-controls.cjs` 84 PASS, 0 FAIL, users 9 → 9 each time; its own
+negative control (one controls assertion flipped in a scratch copy) failed exactly that step; no migration in the diff
+(R-99 needs nothing). Two findings were real defects, both found by reading and confirmed in the code; the rest are
+tests, guards and words. No question is the owner's — Question 3 stays open from his test. Patches, all applied:
+
+- [x] [Review][Patch] A press on a text prop in an UNSELECTED section started editing it against the selected section's value — the stamp walk climbed past the selected root to `<html>`, and the pilots share prop names (`sub`, `eyebrow`, `note`); `stampAt` now answers only for a target inside the root [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] After ⌥F10 (or Enter on a toolbar button) a press back into the text left the session marked alive, so the bar stayed over a stale rect and a later focus move to the panel did not end editing; the bar now clears `alive` and re-reports when focus returns to the text [`apps/web/components/controls/mark-toolbar.tsx`]
+- [x] [Review][Patch] ⌘/Ctrl+Shift+B, +I and +K were swallowed inside a field (devtools, bookmarks, the address bar): Shift now leaves them to the browser [`apps/web/lib/inline.ts`]
+- [x] [Review][Patch] A typed insert that partly fits under `maxChars` (an autocomplete, an IME candidate) was refused whole while a paste was cut to fit; `beforeinput` now refuses only when there is no room, and `replaceRange` cuts the rest [`apps/web/lib/inline.ts`]
+- [x] [Review][Patch] A limit that fell inside an emoji stored half a surrogate pair; `replaceRange` drops the whole character, with the test [`packages/section-runtime/src/marks.ts`, `marks.test.ts`]
+- [x] [Review][Patch] A press that lifted over the panel never cleared the press gate, deferring every later repaint to the next canvas click; the editor window's `mouseup` releases it too [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] The canvas `scroll` listener hid the toolbar for document scrolls only; it now captures, so a section's own scrolling box hides it too [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] A frame not yet laid out divided by zero in `onScreen`; guarded [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`]
+- [x] [Review][Patch] The pill at the canvas's edge could sit half off it; `place()`'s `above` keeps it 8px inside the host, as the toolbar is kept inside the window [`apps/web/lib/canvas-layer.ts`]
+- [x] [Review][Patch] A middle click or a modifier click on a link inside the panel's rich field opened the page; every click and `auxclick` in it is prevented [`apps/web/components/controls/rich-field.tsx`]
+- [x] [Review][Patch] Typing at a rich field's limit had no check (controls step 19 typed into Eyebrow's native `maxlength` and only pasted into Heading): step 19 now types at Heading's limit too [`tools/probe/run-verify-controls.cjs`]
+- [x] [Review][Patch] The lock pill's placement (`above`, centred, 8px) was asserted by nothing; step 23 now measures it against the title's on-screen rect [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] The link panel's cleared search on reopen was unverified after the `LinkPanel` split; step 19 asserts the empty search [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] `readMarks` dropped `<style>`, `<title>`, `<template>` and `<noscript>` contents by a set only `<script>` was tested against, and the same-href join had no test; both added [`packages/section-runtime/src/marks.test.ts`]
+- [x] [Review][Patch] `data-inflozo-editing` was named only in this spec's F1 while the spine's AD-21 and `epic-5-context.md` still said `canvas-chrome.css` holds no rule; propagated to both and to `pilots.test.ts`' comment (standing rule: propagate, never localise) [`ARCHITECTURE-SPINE.md`, `epic-5-context.md`, `apps/web/pilots.test.ts`]
+- [x] [Review][Patch] Written-down counts in the harnesses ("steps 16–25", "a 60-character paste") and two spec sentences that disagreed with the harness (the token row "on `/controls`", step 14's tap into "Three Up's title") reworded to what is checked [`tools/probe/run-verify-editor.cjs`, `run-verify-controls.cjs`, this spec]
+- [x] [Review][Defer] A paste from Google Docs, Word Online or Apple Notes carries bold and italic as `<span style="font-weight:700">`, never `<b>`/`<i>`, so every mark from those sources arrives as text — the matrix's `span style` row says as much, and reading styles is a decision the spec did not take [`packages/section-runtime/src/marks.ts`] — deferred, DW-181
+- [x] [Review][Defer] The canvas's limit pill and the keep-the-edit-on-window-blur rule have no harness path: no pilot declares `maxChars`, and headless Chromium cannot blur the window [`apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, `apps/web/lib/inline.ts`] — deferred, DW-182
+
+Dismissed as noise or as the spec's own choice: twelve — among them the token-less rewrite of a twice-drawn prop (the paint
+path hands no tokens either), `setContent`'s refusal (unreachable for a stamped path), refs written in render, a relative
+`href` in a paste (the task names the four schemes), spellcheck in a `contenteditable`, arrow keys reaching the
+`aria-disabled` Remove link (the toolbar pattern keeps disabled items focusable), and `custom_excerpt` sharing "Post
+excerpt" with `excerpt`.
 
 ## Spec Change Log
 
@@ -754,7 +790,7 @@ ponytail: a timer, not `scrollend`; switch when every engine the editor supports
       Translations surface's (Story 7.12).
     - A reload of the editor: the session's typing, marks and links are gone and the stored docs are drawn again.
 
-Step 14 gains a touch tap into Three Up's title once it is selected: the canvas's active element is the title, with a
+Step 14 gains a touch tap into Hero — Latest Post's headline once it is selected: the canvas's active element is the headline, with a
 collapsed selection inside it. Step 8's axe runs twice more, with the toolbar showing and with the link panel open. Steps
 1–15 keep their assertions, step 13 clicking Three Up's top padding before its Esc.
 
@@ -801,6 +837,19 @@ holds 40 characters." under the field.
   FAIL** -- including the new step 16 reading the edited field's computed box (`outline: none`, the coral haze at
   `rgba(194, 56, 31, 0.043)`) and step 23's five Ghost words, each naming itself with zero `contenteditable` in the
   canvas -- and `run-verify-controls.cjs` **84 PASS, 0 FAIL**, both against production Supabase with `users 9 → 9`.
+- **Run at Review (2026-09-18), R-82.** Before any patch, the real-infra layer confirmed CI run `35294592112` on
+  `5866e6db` with `check`, `rls` and `deploy` all green and Vercel's production deployment READY on that commit, then ran
+  both harnesses against **`https://app.inflozo.com`** and production Supabase: `run-verify-editor.cjs` **163 PASS, 0
+  FAIL** and `run-verify-controls.cjs` **84 PASS, 0 FAIL**, `users 9 → 9` each; its negative control (one controls
+  assertion flipped in a scratch copy) failed exactly that step. After the patches: `pnpm check` **green** in every
+  package; `run-verify-controls.cjs` against production **85 PASS, 0 FAIL** (the new typing-at-limit assertion reads
+  behaviour production already serves); the editor harness refuses a dirty checkout against production by design, so
+  it ran as the Dev phase did against a **local production build** (`APP_ORIGIN=http://localhost:3111`,
+  `APP_PREFIX=/app`, production Supabase): **164 PASS, 1 FAIL**, the one being step 6's known `APP_PREFIX` artifact,
+  with the three new assertions passing -- the held press on another section's words, the pill's placement (bottom
+  8.0px above the title, centred within 1px) and the cleared search on reopen. **Control for the new step:** the same
+  build without the `editor.tsx` patch failed it with the defect itself (`editablesInHero: 1`, Hero's paragraph holding
+  Three Up's words), 162 PASS otherwise. The deployed run of the patched editor is the Deploy phase's.
 - **Still owed:** the owner's re-check of steps 12 and 14 (Question 3), and his look at the new editing haze.
 
 **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no billing,

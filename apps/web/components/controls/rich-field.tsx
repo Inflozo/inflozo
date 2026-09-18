@@ -127,10 +127,9 @@ export function RichField({
         contentEditable
         suppressContentEditableWarning
         onFocus={start}
-        onClick={(event) => {
-          // a link inside the field is words to edit, never somewhere to go
-          if ((event.target as HTMLElement).closest('a')) event.preventDefault()
-        }}
+        // a link inside the field is words to edit, never somewhere to go — by any button, with any modifier
+        onClick={(event) => event.preventDefault()}
+        onAuxClick={(event) => event.preventDefault()}
         className={`min-h-16 whitespace-pre-wrap break-words rounded-sm border px-[11px] py-[9px] text-[12.5px] leading-[1.5] text-ink caret-coral ${fieldTone(undefined)} ${ring} focus-visible:border-coral-text`}
       />
       <LimitCaption id={id} label={label} max={def.maxChars} text={text} />

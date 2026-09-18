@@ -88,7 +88,7 @@ development_status:
   epic-5: in-progress
   5-1-the-editor-shell-the-canvas-boundary-and-the-url-scheme: done
   5-2-hover-selection-and-the-insertion-affordance: done
-  5-3-inline-editing-the-four-marks-and-the-link-picker: in-progress
+  5-3-inline-editing-the-four-marks-and-the-link-picker: review
   5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton: backlog
   5-5-the-template-switcher-and-the-synthesised-templates: backlog
   5-6-light-and-dark-authoring: backlog

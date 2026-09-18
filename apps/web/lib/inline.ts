@@ -201,7 +201,9 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
     }
     if (max !== undefined && (type === 'insertText' || type === 'insertReplacementText') && e.data) {
       const [start, end] = offsets() ?? [words.length, words.length]
-      if (words.length - (end - start) + e.data.length > max) {
+      // no room at all: refused here, before the browser writes it. An insert that partly fits (an autocomplete, an IME
+      // candidate) goes through and `onInput`'s `replaceRange` cuts it at the limit, as a paste is cut
+      if (words.length - (end - start) >= max) {
         e.preventDefault()
         refuse()
       }
@@ -229,7 +231,8 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
   const onKeyDown = (e: KeyboardEvent) => {
     if (ended) return
     const key = e.key.toLowerCase()
-    if ((mac ? e.metaKey : e.ctrlKey) && !e.altKey && KEYS[key] !== undefined) {
+    // Shift off: Ctrl+Shift+I, +B and +K are the browser's own (devtools, bookmarks, the address bar)
+    if ((mac ? e.metaKey : e.ctrlKey) && !e.altKey && !e.shiftKey && KEYS[key] !== undefined) {
       // the browser's own ⌘B would be a `format*` input, and ⌘K would leave the page for the address bar
       e.preventDefault()
       const mark = KEYS[key] as string

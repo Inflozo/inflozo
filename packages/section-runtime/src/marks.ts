@@ -399,7 +399,9 @@ export function replaceRange(
   const [a, b] = [Math.max(0, Math.min(start, text.length)), Math.max(0, Math.min(end, text.length))]
   const [from, to] = a <= b ? [a, b] : [b, a]
   const wanted = typeof insert === 'string' ? insert : insert.text
-  const room = o.max === undefined ? wanted.length : Math.max(0, o.max - (text.length - (to - from)))
+  let room = o.max === undefined ? wanted.length : Math.max(0, o.max - (text.length - (to - from)))
+  // a limit that falls inside a surrogate pair (an emoji) drops the whole character, never half of one
+  if (room > 0 && room < wanted.length && /[\uD800-\uDBFF]/.test(wanted[room - 1] as string)) room--
   const kept = wanted.slice(0, room)
   const n = kept.length
   const removed = to - from

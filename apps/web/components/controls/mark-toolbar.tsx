@@ -234,8 +234,11 @@ export function InlineTools({
             if (linking || (to instanceof Node && document.getElementById(pop)?.contains(to))) return
             // focus left the bar for somewhere that is not the text: that is the end of editing
             setTimeout(() => {
-              if (session.ended || session.focused()) return
+              if (session.ended) return
+              // back in the text (a press into it): the session is no longer held alive by the bar, and the bar follows
+              // the selection again — leaving it alive would keep editing open after focus left for the panel (review)
               session.alive(false)
+              if (session.focused()) return session.report()
               session.end()
             }, 0)
           }}

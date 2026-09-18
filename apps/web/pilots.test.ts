@@ -34,8 +34,9 @@ test('the pilots canvas document carries no script, every pilot stylesheet and t
 
 // Story 5.1 — AD-21's mechanism, and what makes "zero chrome at rest" a result: the chrome is CSS keyed on attributes
 // nothing carries at rest. A selector without the key would paint the site itself.
-// Since R-120 (Story 5.2) the file holds no rule — the outlines are drawn outside the frame — so the reader runs first on
-// planted rules, keyed and unkeyed, and an empty file is a result rather than a reader that found nothing.
+// Since R-120 (Story 5.2) the outlines are drawn outside the frame and the file held no rule until Story 5.3's editing haze
+// (`[data-inflozo-editing]`), so the reader runs first on planted rules, keyed and unkeyed, and an empty file is a result
+// rather than a reader that found nothing.
 test('every editor chrome selector is keyed on a data-inflozo-* attribute, and the document carries it', () => {
   const css = readFileSync(join('lib', 'canvas-chrome.css'), 'utf8')
   const selectors = (sheet: string) => sheet.replace(/\/\*[^]*?\*\//g, '').split('}').map((rule) => rule.split('{')[0]?.trim() ?? '').filter(Boolean).flatMap((s) => s.split(','))

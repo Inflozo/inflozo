@@ -4281,3 +4281,37 @@ reason: no design in the library declares `maxChars` today — the controls fixt
   review page — so nothing is truncated that a design asked to advise. A10 is where the two meet, and the choice is the
   category story's: a second declaration (`softMax`, a counter that colours and never refuses) beside the hard one, or
   the hard limit with A10's notes re-ruled. Building an advisory counter now would be a control no design uses.
+
+## Deferred from: code review of spec-5-3-inline-editing-the-four-marks-and-the-link-picker (2026-09-18)
+
+### DW-181: a paste from Google Docs, Word Online or Apple Notes loses its bold and italic
+
+plain: When you copy words from Google Docs, Word on the web or Apple Notes and paste them into a section, the bold and
+  italic do not come with them — only the words. Those apps write bold as a styled span rather than as a bold tag, and
+  the paste reader keeps only the four real tags. Pasting from a web page, an email or Ghost's own editor keeps them.
+status: open
+severity: low
+origin: Story 5.3's code review (2026-09-18, blind-hunter layer). The spec's matrix says `span style` "arrives as its
+  text", which is what `readMarks` does; the finding is that the most common sources of a formatted paste use exactly that.
+owner: none yet — the first story that hears it from a user, or Story 5.8 (saving), whichever comes first
+location: `packages/section-runtime/src/marks.ts` (`readMarks`, `TAG_MARKS`)
+reason: reading `font-weight`, `font-style` and `text-decoration` from inline styles is a rule the spec did not take —
+  where the threshold sits (600? 700? `bold`?), and whether a styled span inside a `<b style="font-weight:normal">`
+  wrapper (Google Docs' shape) is bold — is a decision, not a patch. Nothing unsafe happens meanwhile: the words arrive.
+
+### DW-182: two rules of the editing session that no harness on the pilots can reach
+
+plain: Two things the story builds cannot be checked automatically on your pilot page: the small pill that says "holds
+  40 characters" when you type past a limit on the page (no pilot section has a limit — only the review page's sample
+  does, and that page has no canvas typing), and the rule that switching to another window keeps your cursor where it
+  was (the test browser cannot pretend to lose the window). Both work by reading; both are checked by hand.
+status: open
+severity: low
+origin: Story 5.3's code review (2026-09-18, verification-gap layer): `editor.tsx`'s `onRefused` → `CanvasNote` with
+  `kind: 'limit'`, and `inline.ts`'s `onFocusOut` guard `win.top?.document.hasFocus() === false`.
+owner: the first category story whose design declares `maxChars` (DW-180 names Story 10.26) for the pill; the window
+  rule stays a manual check
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`onRefused`) · `apps/web/lib/inline.ts`
+  (`onFocusOut`) · `tools/probe/run-verify-editor.cjs`
+reason: the editor harness runs on "Pilot sections" and no pilot is this story's to edit (AD-35); the first design that
+  declares a limit brings the pill within reach of its own harness step.

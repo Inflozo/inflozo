@@ -147,7 +147,10 @@ export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fil
   const top = (r.top - h.top) * fit
   // Story 5.3's pill (P0-1 :138-147): centred 8px above its words, or below them when their top is within 48px of the
   // canvas viewport's top, where it would be cut off
-  const centre = (r.left + r.width / 2 - h.left) * fit - el.offsetWidth / 2
+  // kept inside the canvas viewport (the host has no width of its own), as the toolbar is kept inside the window: words
+  // at the canvas's edge would put it half off
+  const edge = (root.ownerDocument.documentElement.clientWidth - h.left) * fit
+  const centre = Math.max(8, Math.min((r.left + r.width / 2 - h.left) * fit - el.offsetWidth / 2, edge - el.offsetWidth - 8))
   const style =
     how === 'above'
       ? { left: `${centre}px`, top: `${r.top * fit < 48 ? (r.bottom - h.top) * fit + 8 : top - 8 - el.offsetHeight}px` }

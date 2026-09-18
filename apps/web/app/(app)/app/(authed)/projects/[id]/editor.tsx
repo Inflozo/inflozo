@@ -263,7 +263,10 @@ export function Editor({
   const stampAt = (target: EventTarget | null, pick: Pick | null) => {
     const n = pick ? latest.current.stack.findIndex((i) => same(i, pick)) : -1
     const root = roots.current[n]
-    if (!root) return null
+    // review (2026-09-18): a press in ANOTHER section walks up to <html> without meeting this root, and the pilots share
+    // prop names (`sub`, `eyebrow`, `note`), so its stamp would start editing that element against this section's value
+    // (`instanceof Node` would be the editor window's Node, and the target lives in the canvas document's realm)
+    if (!root || !target || !root.contains(target as Node)) return null
     for (let x = target as HTMLElement | null; x; x = x.parentElement) {
       const stamp = stamps.current.get(x)
       if (stamp) return { el: x, stamp, n }
@@ -279,7 +282,7 @@ export function Editor({
   /** The selection's rect on screen: through the frame's own rect and the fit. */
   const onScreen = (s: InlineSelection | null): ScreenSelection | null => {
     const f = frame.current
-    if (!s || !f) return null
+    if (!s || !f || f.offsetWidth === 0) return null
     const fr = f.getBoundingClientRect()
     const k = fr.width / f.offsetWidth
     return { ...s, rect: { left: fr.left + s.rect.left * k, top: fr.top + s.rect.top * k, width: s.rect.width * k, height: s.rect.height * k }, edge: fr.top }
@@ -397,7 +400,7 @@ export function Editor({
       if (active && active !== doc.body) active.blur()
       doc.defaultView?.focus()
     })
-    doc.addEventListener('mouseup', () => {
+    const release = () => {
       // after the click this press fires, which runs in the same task
       setTimeout(() => {
         press.current.on = false
@@ -406,7 +409,11 @@ export function Editor({
           paint()
         }
       }, 0)
-    })
+    }
+    doc.addEventListener('mouseup', release)
+    // a press that starts on the canvas and lifts over the panel releases in the editor document, not the canvas's
+    // ponytail: a lift outside the browser window reaches neither; the next press releases it
+    window.addEventListener('mouseup', release)
     let settle: ReturnType<typeof setTimeout> | undefined
     doc.addEventListener('scroll', () => {
       if (!editing.current) return
@@ -417,7 +424,8 @@ export function Editor({
         setScrolling(false)
         editing.current?.inline.report()
       }, 150)
-    }, { passive: true })
+      // capture: a section's own scrolling box (a carousel, an overflow row) moves the words under the toolbar too
+    }, { passive: true, capture: true })
     // hover is the mouse's and the pen's: touch has the hold, so a tap never flashes an outline before it selects
     doc.addEventListener('pointerover', (e) => {
       if (e.pointerType !== 'touch') point(pickAt(e.target))

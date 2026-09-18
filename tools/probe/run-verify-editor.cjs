@@ -677,7 +677,7 @@ async function main() {
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
 
-    // ── steps 16–25 — Story 5.3's inline editing, inside the CSP session ──
+    // ── Story 5.3's inline editing steps, inside the CSP session ──
     // Every gesture is a real press or key on the deployed editor: the caret the browser places under the pointer, the
     // toolbar's own buttons, a paste event carrying AD-36's vectors, and the canvas scrolling under the wheel.
     await page.goto(editorUrl(), { waitUntil: 'load' })
@@ -784,6 +784,21 @@ async function main() {
     })
     check('step 16 — the field being typed in wears the keyed editing mark and no browser focus ring', editedBox.mark && (editedBox.outline === 'none' || editedBox.width === '0px') && /rgba\(194, 56, 31/.test(`${editedBox.bg} ${editedBox.shadow}`), JSON.stringify(editedBox))
     check('step 16 — the canvas carries no data-inflozo-prop: the stamps were lifted off at the paint', (await canvasFrame().evaluate(() => document.querySelectorAll('[data-inflozo-prop], [data-inflozo-item], [data-inflozo-ghost]').length)) === 0)
+    // review (2026-09-18): the pilots share prop names (`sub`), and a press on ANOTHER section's words — read while the
+    // button is still down, before its click selects that section and the repaint repairs the page — must edit nothing
+    const heroSubBefore = await wordsOf(HERO, HERO_SUB)
+    const crossPoint = await textAt(HERO, HERO_SUB, 'about')
+    await page.mouse.move(crossPoint.x, crossPoint.y)
+    await page.mouse.down()
+    await page.waitForTimeout(150)
+    const held = await canvasFrame().evaluate(([n, selector]) => {
+      const root = document.querySelectorAll('#canvas > *')[n]
+      return { editablesInHero: root.querySelectorAll('[contenteditable]').length, sub: root.querySelector(selector).textContent }
+    }, [HERO, HERO_SUB])
+    await page.mouse.up()
+    await page.waitForTimeout(300)
+    check('step 16 — a press held on an unselected section\'s words edits nothing there: no caret, and its words are its own', held.editablesInHero === 0 && held.sub === heroSubBefore && (await onScreen(HERO)).selected, JSON.stringify({ held, heroSubBefore }))
+    await clickOn(GRID)
 
     // ── step 17 — the toolbar ──
     await pickWord(GRID, TITLE, 'spring')
@@ -870,7 +885,8 @@ async function main() {
     await bar.getByRole('button', { name: 'Link', exact: true }).click()
     await page.waitForTimeout(300)
     const filled = await linkDialog.evaluate((el) => [...el.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.textContent.trim()))
-    check('step 19 — Link on a selection touching a link opens the panel filled with that link\'s own record', filled.includes('Sign up'), JSON.stringify(filled))
+    const reopenedQuery = await page.locator('#canvas-inline-q').inputValue()
+    check('step 19 — Link on a selection touching a link opens the panel filled with that link\'s own record, and the last search cleared', filled.includes('Sign up') && reopenedQuery === '', `${JSON.stringify(filled)} · query ${JSON.stringify(reopenedQuery)}`)
     const beforePress = await markupOf(HERO, HERO_SUB)
     const pressPoint = await textAt(HERO, HERO_SUB, 'about')
     await page.mouse.click(pressPoint.x, pressPoint.y)
@@ -938,6 +954,15 @@ async function main() {
     await page.mouse.click(ghostWords.x, ghostWords.y)
     await page.waitForTimeout(300)
     const pill = await chromeNow('[data-chrome="note"]')
+    // P0-1 :138-147, through `place()`'s `above`: centred on its words within 1px, its bottom 8 ± 1px above them (review)
+    const titleBox = await canvasFrame().evaluate((n) => {
+      const r = document.querySelectorAll('#canvas > *')[n].querySelector('.a4-13__title').getBoundingClientRect()
+      return { left: r.left, right: r.right, top: r.top }
+    }, HERO)
+    const frameBox = await page.evaluate(() => { const f = document.querySelector('section[aria-label="Canvas"] iframe'); const fr = f.getBoundingClientRect(); return { left: fr.left, top: fr.top, s: fr.width / f.offsetWidth } })
+    const titleOnScreen = { left: frameBox.left + titleBox.left * frameBox.s, right: frameBox.left + titleBox.right * frameBox.s, top: frameBox.top + titleBox.top * frameBox.s }
+    const pillPlaced = pill && Math.abs((pill.left + pill.right) / 2 - (titleOnScreen.left + titleOnScreen.right) / 2) <= 1 && Math.abs(titleOnScreen.top - pill.bottom - 8) <= 1
+    check('step 23 — the pill sits centred over the title, its bottom 8px above the words', pillPlaced, `pill ${JSON.stringify(pill && { left: pill.left, right: pill.right, bottom: pill.bottom })} · title ${JSON.stringify(titleOnScreen)}`)
     const lockedTitle = await canvasFrame().evaluate((n) => {
       const el = document.querySelectorAll('#canvas > *')[n].querySelector('.a4-13__title')
       return { editable: el.isContentEditable, editables: document.querySelectorAll('[contenteditable]').length }
