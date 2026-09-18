@@ -511,3 +511,32 @@ Select it, keep the pointer on it, and today both would be drawn on top of each 
 
 **Ruled: option 1 (owner, 2026-09-18).** *"The Pro tag keeps the corner; the pill sits directly to its left."*
 Recorded as **R-125**; R-119 stands untouched.
+
+### Question 3 — should right-click replace the "…" button, or sit beside it?
+
+You asked for a right-click menu on the Layers rows **and** on the sections in the middle of the page, for every
+section, and for the "…" button to go. The right-click part is a clear win and I would build it either way. The only
+decision is whether the "…" button disappears with it.
+
+**Example:** you right-click "Newsletter — Inline Row" — in the list or on the page itself — and the same little menu
+opens under your pointer: Hide · Rename · Duplicate · Delete. That works exactly as you describe.
+
+What removing the "…" costs, in plain terms:
+
+- **A right-click menu is invisible.** Nothing on screen says it is there. You know, because you asked for it; someone
+  using Inflozo for the first time has no way to discover that Rename or Delete exist.
+- **There is no right-click on a tablet or phone.** The editor already answers touch (press and hold shows a section,
+  a tap selects it). Hold is taken, so on touch there would be no way at all to reach Rename, Duplicate or Delete.
+- **Keyboard.** There is a keyboard equivalent of right-click (the Menu key, or Shift+F10), so that path survives —
+  but it is obscure, and today the "…" is simply the next thing you reach with Tab.
+
+1. **Add right-click everywhere, and keep the "…" on the row.** (RECOMMENDED) — you get the fast path you want on both
+   the list and the page, and the button stays as the visible, touchable, tab-reachable way in. This is how Figma,
+   Finder and File Explorer all work: the right-click menu is the shortcut, never the only door.
+2. **Add right-click everywhere and remove the "…" entirely**, exactly as asked. The rows get a little more width for
+   names, and the actions become invisible and unreachable on touch.
+3. **Add right-click everywhere, and keep the "…" only on the Layers rows** — the canvas gets right-click plus the
+   hover pill it already has (copy, bin, drag), and the row keeps its button.
+
+**Ruled:** _(awaiting the owner)_
+
