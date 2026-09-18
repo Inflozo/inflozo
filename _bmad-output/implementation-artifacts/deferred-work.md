@@ -4327,17 +4327,27 @@ plain: The automatic check of the editor runs on the live site with a throwaway 
   site took longer than the check's thirty-second patience to answer one signed-in page, and the whole check stopped
   there — with nothing wrong found and the throwaway account cleaned up. A third run went through. It cost time, not
   correctness, but it can hide a real failure behind a stall.
-status: open
+status: closed
 severity: low
 origin: Story 5.3's second code review (2026-09-18, real-infra layer): runs 1 and 2 of `run-verify-editor.cjs` against
   `https://app.inflozo.com` stalled on step 6's signed-in `request.get` and step 7's `page.goBack` respectively, each a
   Playwright 30-second `TimeoutError` with 0 FAIL and `users 9 → 9`; unauthenticated `curl` to the same URLs answered in
   under a second six times in a row, and DNS resolved the same through the stub and `@1.1.1.1`.
-owner: the first story that touches the harness's session (Story 5.8's saving, or the next editor story with a new step)
-location: `tools/probe/run-verify-editor.cjs` (its step 6 and 7 navigations, and `main().catch`)
-reason: a retry is a design choice — once per navigation, once per run, or a longer timeout on the signed-in loads alone
-  — and the two stalls were at different steps, so the fix needs a third observation to name the pattern; the harness
-  already cleans up on a crash, so nothing durable is at stake.
+closed: Story 5.4's Dev (2026-09-18) — the THIRD observation arrived and named the pattern. Run 2 of this story's
+  harness stopped at step 6's `fourOhFour` signed-in `request.get` (`GET /projects/abc`), a Playwright 30-second
+  `TimeoutError`, **0 FAIL across 201 checks** and both throwaway accounts cleaned up (`users 9 → 9`). THE PATTERN:
+  all three stalls are a SIGNED-IN load of the deployed app, never the same call site twice running (step 6's request
+  twice, step 7's `goBack` once), while an unauthenticated request to the identical URL answers in under a second —
+  a cold serverless function on an authenticated route, not the app and not a hidden failure. THE FIX, in one place
+  because the three stalls were at three call sites: `context.setDefaultTimeout` / `setDefaultNavigationTimeout` at
+  60s so a cold start is simply waited out, and one `patient()` wrapper over `context.request.get`, `page.goto` and
+  `page.goBack` that retries a TIMEOUT once and rethrows everything else — so a FAIL can never be retried into a PASS.
+  Each retry prints a `DW-183 retry` note, so a run that needed one says so.
+owner: closed by Story 5.4
+location: `tools/probe/run-verify-editor.cjs` (the context's defaults and `patient()`, both beside the `newContext`)
+reason: a retry was a design choice the ledger deliberately held open until a third stall could say whether the cause
+  was one step or one KIND of step; it is the kind — every signed-in load — so the guard belongs on the context and
+  not at a call site (standing rule 3).
 
 
 ## Deferred from: the planning of spec-5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton (2026-09-18)
