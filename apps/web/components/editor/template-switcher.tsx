@@ -130,7 +130,7 @@ export function TemplateSwitcher({
           }`}
         >
           <Mark state={state} />
-          <span className={`flex-1 text-ui-dense ${key === current ? 'font-semibold' : 'font-medium'}`}>
+          <span data-name className={`flex-1 text-ui-dense ${key === current ? 'font-semibold' : 'font-medium'}`}>
             {CANVASES[key].label}
           </span>
           <span data-word className="text-[10px] text-ink-soft">{busy ? 'Opening…' : word}</span>

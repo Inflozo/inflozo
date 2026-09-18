@@ -1660,7 +1660,7 @@ async function main() {
           })(),
           rows: [...pop.querySelectorAll('button[data-canvas]')].map((b) => ({
             key: b.dataset.canvas,
-            name: b.querySelector('span').nextElementSibling.textContent,
+            name: b.querySelector('[data-name]').textContent,
             dot: dot(b),
             word: b.querySelector('[data-word]').textContent,
             checked: b.getAttribute('aria-current') === 'true',
