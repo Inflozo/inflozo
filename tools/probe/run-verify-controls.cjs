@@ -19,7 +19,8 @@ const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/nod
 const APP = 'https://app.inflozo.com'
 const SB = process.env.SUPABASE_URL.replace(/\/$/, '')
 const SECRET = process.env.SUPABASE_SECRET_KEY
-const OUT = process.env.OUT_DIR
+// no OUT_DIR: a temp directory of its own, never a folder called `undefined` in whatever directory it was run from
+const OUT = process.env.OUT_DIR || require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'controls-'))
 
 const results = []
 let fails = 0
