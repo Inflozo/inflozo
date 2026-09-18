@@ -546,6 +546,13 @@ five times running. It is **not a result and not a fault** — there is no `FAIL
   for the de-copied round-trip test executed (the rule broken → the test red → restored → green). Production's
   `template_key_shape` executed through `SUPABASE_DB_POOLER_URL` in rolled-back transactions: see DW-193.
 
+- **Deploy, 2026-09-18, at HEAD `2c93bd11`** (GitHub Actions read with `GITHUB_TOKEN`, bogus token → 401): CI
+  `2c93bd11` **success** with `check`, `rls` and `deploy` all green, and **Render matrix** `success`. **Vercel** (read
+  with `VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT`, bogus token → 403): the production deployment for this
+  SHA is **READY**, `githubCommitSha` = HEAD. `Deployment: dpl_2L3tNYUChF1orBn8dqfWwS7qxNat`
+  (`inflozo-qh6tfgz2p-umangkagathara.vercel.app`, served on `app.inflozo.com`). No Schema phase (this story writes no
+  row) and no new tooling, so nothing else to deploy.
+
 ## Owner's manual test
 
 The project is the "Pilot sections" project Story 5.1's Deploy added to your account; Deploy re-checks its address.
