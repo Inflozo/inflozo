@@ -3,9 +3,9 @@ import assert from 'node:assert/strict'
 import { parseDoc, type DocInstance } from './doc-schema.ts'
 import type { ControlState } from './controls.ts'
 
-/** A STORED instance, as every doc that exists holds one: without Story 5.4's two defaulted fields, which is exactly
- *  what those defaults are for. `DocInstance` is the parsed shape and carries them. */
-const instance = (): Omit<DocInstance, 'hidden' | 'memberVisibility'> => ({
+/** A STORED instance, as every doc that exists holds one: without Story 5.4's two defaulted fields or Story 5.5's
+ *  main-feed flag, which is exactly what those defaults are for. `DocInstance` is the parsed shape and carries them. */
+const instance = (): Omit<DocInstance, 'hidden' | 'memberVisibility' | 'isMainFeed'> => ({
   instanceId: 'i1',
   layerName: 'Header — Rail',
   designId: 'a1/1',
@@ -20,9 +20,9 @@ const doc = (over: Record<string, unknown> = {}) => ({ schemaVersion: 1, instanc
 const asState: ControlState = instance()
 void asState
 
-test('a valid doc parses, with Story 5.4\'s two defaults filled in', () => {
+test('a valid doc parses, with every defaulted field filled in', () => {
   const d = doc()
-  assert.deepEqual(parseDoc(d, 'home'), { ...d, instances: [{ ...d.instances[0], hidden: false, memberVisibility: 'everyone' }] })
+  assert.deepEqual(parseDoc(d, 'home'), { ...d, instances: [{ ...d.instances[0], hidden: false, memberVisibility: 'everyone', isMainFeed: false }] })
 })
 
 test('an unknown field fails, naming the instance', () => {
@@ -31,11 +31,14 @@ test('an unknown field fails, naming the instance', () => {
   assert.throws(() => parseDoc({ ...doc(), extra: 1 }, 'site'), /the site doc .*\(root\): .*extra/)
 })
 
-test('Story 5.4\'s two fields are defaulted, so every doc written before them still parses', () => {
-  // the seeded docs, and every doc that exists, carry neither — a required field would throw for the whole editor
+test('every field a later story added is defaulted, so every doc written before it still parses', () => {
+  // the seeded docs, and every doc that exists, carry none of them — a required field would throw for the whole editor
   const [filled] = parseDoc(doc(), 'home').instances
   assert.equal(filled?.hidden, false)
   assert.equal(filled?.memberVisibility, 'everyone')
+  // Story 5.5: only `synthesize` writes it, and it designates one instance per collection template (FR-H2)
+  assert.equal(filled?.isMainFeed, false)
+  assert.equal(parseDoc(doc({ isMainFeed: true }), 'home').instances[0]?.isMainFeed, true)
   // and a stored value round-trips
   assert.equal(parseDoc(doc({ hidden: true, memberVisibility: 'paid' }), 'home').instances[0]?.memberVisibility, 'paid')
   assert.equal(parseDoc(doc({ hidden: true }), 'home').instances[0]?.hidden, true)

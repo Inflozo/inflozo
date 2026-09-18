@@ -2,8 +2,9 @@
 title: 'Story 5.5 — The template switcher and the synthesised templates'
 type: 'feature'
 created: '2026-09-18'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
+baseline_commit: '74308a3ff3deabf2b53dabf90df10c52c0ba5cf6'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -204,37 +205,37 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/section-runtime/src/doc-schema.ts` -- add `isMainFeed: z.boolean().default(false)` to
+- [x] `packages/section-runtime/src/doc-schema.ts` -- add `isMainFeed: z.boolean().default(false)` to
       `instanceSchema` -- the Synthesis Defaults designate a main feed on every collection template and AD-27 names
       this field; defaulted because every stored doc lacks it.
-- [ ] `packages/section-runtime/src/synthesize.ts` -- **new**: the Synthesis Defaults as a table citing
+- [x] `packages/section-runtime/src/synthesize.ts` -- **new**: the Synthesis Defaults as a table citing
       `sections-inventory.md`, `synthesize(file, library)` returning `{ instances, dropped }`, and `indexStack(home)`
       for R-127 -- one core function, shared with Story 7.3's compiler and Story 5.16's preview (AD-27(d)).
-- [ ] `packages/section-runtime/src/index.ts` -- export it -- the app and the compiler reach it the same way.
-- [ ] `packages/section-runtime/src/synthesize.test.ts` -- **new**: every I/O-matrix rule about a stack, R-127's
+- [x] `packages/section-runtime/src/index.ts` -- export it -- the app and the compiler reach it the same way.
+- [x] `packages/section-runtime/src/synthesize.test.ts` -- **new**: every I/O-matrix rule about a stack, R-127's
       three `index.hbs` cases included, with the present and dropped rows **derived** from the library rather than
       listed -- so the test empties itself as Epics 9 and 10 land instead of going stale.
-- [ ] `apps/web/lib/editor.ts` -- add R-129's three membership canvases and Private's condition; derive
+- [x] `apps/web/lib/editor.ts` -- add R-129's three membership canvases and Private's condition; derive
       `templateKeyOf`; leave `index` reserved (R-127) -- the URL segment and the stored `template_key` stop being the
       same string for a custom template.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- extend `fileOf` and apply synthesis in
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- extend `fileOf` and apply synthesis in
       `editorData`, returning the synthesised keys -- the marker is then server truth, and the loud refusals still
       guard stored docs only.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/[template]/layout.tsx` -- open the new segments; 404 a
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/[template]/layout.tsx` -- open the new segments; 404 a
       conditional canvas whose condition is false -- a canvas the switcher does not offer is not reachable by URL.
-- [ ] `apps/web/components/editor/template-switcher.tsx` -- **new**: D5b complete **less R-128's two absent rows**,
+- [x] `apps/web/components/editor/template-switcher.tsx` -- **new**: D5b complete **less R-128's two absent rows**,
       built on `openMenu` -- the top bar's first control, and the editor's first soft navigation.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- mount the switcher and D5a's chip in the centre
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- mount the switcher and D5a's chip in the centre
       of the top bar; track materialisation; keep `TEMPLATES_OPEN` derived and counting only templates that ship --
       the whole shell change lands in one file.
-- [ ] `apps/web/components/controls/layers.tsx` -- D5a's marker row at the head of the panel -- the second of the
+- [x] `apps/web/components/controls/layers.tsx` -- D5a's marker row at the head of the panel -- the second of the
       two places FR-D6 names.
-- [ ] `apps/web/canvas-switch.test.ts` -- **new**: materialise, empty-back-to-untouched, hide-is-not-emptying, and
+- [x] `apps/web/canvas-switch.test.ts` -- **new**: materialise, empty-back-to-untouched, hide-is-not-emptying, and
       the derived template count -- the doc rules that are not gestures.
-- [ ] `tools/probe/run-verify-editor.cjs` -- append this story's steps inside step 5's session, extend step 6's
+- [x] `tools/probe/run-verify-editor.cjs` -- append this story's steps inside step 5's session, extend step 6's
       scheme and turn its Back walk into a soft-navigation walk -- closing DW-176, which exists because the harness
       could only reach `/post` by a document load.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-176; file DW-191 and DW-192 -- a finding
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-176; file DW-191 and DW-192 -- a finding
       reaches an owning document or it is not closed.
 
 **Acceptance Criteria:**
@@ -256,6 +257,30 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
   not greyed — and `/projects/<id>/private` answers 404.
 
 ## Spec Change Log
+
+- **2026-09-18, Dev.** Two readings the story made rather than assumed, both recorded where the code is:
+  - **The canvas labels are the export's, not Story 5.1's.** `lib/editor.ts` carried `Tag archive` and `Author
+    archive`; D5b's rows read **Tag** and **Author**, and D5a's Layers heading reads `LAYERS · TAG`. R-74 makes the
+    export the authority, so the two labels changed — which also changes the Layers heading and the iframe's title,
+    both of which read the same one string.
+  - **The Private condition has nothing to read yet, EXECUTED (standing rule 1).** `sites.site_settings` — the
+    snapshot Epic 3 keeps — records `code_injection`, `portal_button`, `announcement`, `brand`, `public_url` and
+    `plan_ask`, and no private flag: no story has needed one. So `privateCanvasOpen` is false for every project
+    today, the row is absent everywhere and `/private` 404s, which is what FR-D6 and D5b agree on for a project with
+    no private site. It becomes true the day the snapshot carries the key; DW-192 already owns the disagreement.
+  - **A conditional canvas is refused BY THE SCHEME, not by a database read, and that is executed.** The Code Map
+    asks the `[template]` layout to 404 a conditional canvas whose condition is false. Built that way first — a
+    `cache`d read of the linked site inside the layout — and measured on a production build: `/private` answered a
+    404 whose BODY was Next's bare `__next_error__` document, with none of the app's 404 and no way home, while
+    `/index` and `/paywall` beside it answered the app's own. A `notFound()` thrown after an await lets Next flush
+    the shell first, which is `[id]/layout.tsx:12-17`'s rule met from the other side. So `canvasFromSegment` refuses
+    a `CONDITIONAL` segment synchronously; `canvasesOf` and `CONDITIONAL` stay as the scheme's data with the unit
+    test on them, and DW-192 now carries both findings for the story that gives the condition something to read.
+  - **A third dot state the frame does not draw** — an undesigned canvas that is never synthesized. Built as a
+    hollow dot with the word **"Empty"**, and put to the owner as **Question 4**.
+  - **The switcher's push carries the internal `/app` prefix** when the address does (`isApp(usePathname())`), the
+    same question `canvasSrc` asks — without it a local run pushes a path that is not a route there.
+  - **DW-191 and DW-192 were already filed at Create**, so Dev closed DW-176 and amended DW-192.
 
 ## Design Notes
 
@@ -384,6 +409,15 @@ its variable and never printed.
   CSP session zero **and its own control passing** — the control plants two `new Function('')` refusals and the
   recorder must see both, or the zero is not a result (standing rule 2). Run at Dev, not deferred to Review.
 
+**Run at Dev (2026-09-18).** `pnpm check` exit 0 with `fail 0` in every package suite; `bash supabase/tests/run-rls-gate.sh`
+exit 0, every PASS; `python3 tools/doc-audit.py --check` PASS; the library read executed against the registry, and the
+Design Notes table above is that reading. The editor harness ran against a production build of this checkout on the live
+Supabase (`APP_ORIGIN=http://localhost:3000`): **0 FAIL, 250 PASS**, with step 5's CSP zero **and both of its eval
+controls passing**, and `step 1 — three project_templates rows: site, home, post` as the proof that synthesis wrote
+nothing. One row is **not assertable on a local run and says so** — step 6's second Back, because `openCard` re-enters
+under the `/app` prefix and leaves an unprefixed 404 in the history that Chromium will not Back out of; it is asserted
+on the deployed run, which is R-82's result and is owed at Deploy against `app.inflozo.com` with `VERCEL_*`.
+
 **Manual checks:**
 
 - The switcher and the marker measured against D5b and D5a from a device-scale screenshot, never computed style —
@@ -482,3 +516,24 @@ for Signin, Sign up, Subscribe and Membership."* Recorded as **R-129**: the thre
 ordinary custom page templates** — created in the Routes Manager (FR-I3), listed in the switcher's own Routes Manager
 group, same `custom-*.hbs` mechanism — so they arrive with Story 7.16 and this story's group stays the three FR-D6
 names. Say so if you meant them as built-in rows instead and each is one table entry to add.
+
+### Question 4 — what the dot says beside a page that is neither yours nor auto-built
+
+Every row in the new Template menu carries a small dot. A **filled** dot means you designed that page. A **hollow**
+dot means Inflozo built it for you from its standard recipe, and the word **"Auto-generated"** sits beside it — your
+own drawing is firm that a shape must never travel alone. But three of the rows are neither: the membership pages
+(Signup, Signin, Member home) are **never** auto-built — they stay blank until you design them — so a filled dot would
+claim you made them and "Auto-generated" would be untrue. **Example:** you open the menu on a brand-new project and
+look at "Signup". It is blank and you have never touched it. What should the dot beside it say?
+
+The drawing does not answer: it shows Signup with a filled dot and Signin marked auto-generated, and the requirements
+say neither can be right for a membership page. So it is a small new choice, and it is yours.
+
+1. **A hollow dot and the word "Empty".** (RECOMMENDED) — one word, exactly true, and it keeps your rule that a hollow
+   dot always carries a word. It reads "this page is not yours yet and nothing has been built for it". **This is what
+   is built today**, so you will see it at your test and can change it with one word.
+2. **A hollow dot and nothing beside it.** Closest to saying as little as possible, but it breaks the rule you set —
+   a shape with no word — and a reader has to guess what the hollow one means on those three rows.
+3. **A filled dot, as the drawing shows for Signup.** Simplest to explain, but it tells you that you designed a page
+   you have not touched.
+4. **A different word** — "Not built yet", "Blank", or one you prefer. Say the word and I will use it.

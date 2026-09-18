@@ -1,10 +1,10 @@
 import { cache } from 'react'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
-import { parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
+import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc } from '@inflozo/section-runtime'
 import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
-import { isUuid, SITE } from '@/lib/editor'
+import { CANVASES, canvasesOf, isUuid, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, pilot, pilotRows } from '@/lib/pilots'
@@ -29,6 +29,16 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * Since Story 5.2 it also hands over what the section panel needs — the inputs `/pilots` feeds `Sidebar` (swatches, link
  * resources, the site's time zone, each pool picture's size) — and the account's plan, for R-119's Pro badge. The plan
  * comes from AD-28's one resolver, so a failed read shows the badge (Free) rather than hiding it.
+ *
+ * SINCE STORY 5.5 IT ALSO SYNTHESIZES (FR-D6, AD-22). A canvas with no row — or a row with zero instances — is
+ * UNTOUCHED, and an untouched synthesizable canvas is handed its Synthesis Default stack as the doc it opens on, with
+ * its key in `synthesized` so D5a's marker is SERVER TRUTH and not a guess. Nothing is written: `project_templates`
+ * gains no row here and persistence is Story 5.8's.
+ *
+ * THE TWO REFUSALS ARE DIFFERENT, DELIBERATELY. Above, a STORED doc naming a design the library cannot place throws —
+ * it is a user's data, and a missing design there is corruption. A SYNTHESIZED row that cannot be placed is our own
+ * table meeting a library that has not caught up (A25-A31 unauthored; A24 narrowed to `post.hbs`, DW-191): it is
+ * DROPPED with its reason, because throwing would black out four canvases the user never touched.
  */
 
 export const projectOf = cache(async (id: string): Promise<{ id: string; name: string } | null> => {
@@ -38,9 +48,11 @@ export const projectOf = cache(async (id: string): Promise<{ id: string; name: s
   return data
 })
 
-/** The template file a stored key compiles into. `custom:custom-x.hbs` names its own. Every row of the project is
- *  checked, so a key with no `.hbs` of its own — `paywall` (5.20), `cards` (7.13) — throws for the whole editor the day
- *  its writer lands; the story that writes it extends this map in the same change (review, 2026-09-17). */
+/** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
+ *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
+ *  their shape). Every row of the project is checked, so a key with no `.hbs` of its own — `paywall` (5.20), `cards`
+ *  (7.13) — throws for the whole editor the day its writer lands; the story that writes it extends this map in the
+ *  same change (review, 2026-09-17). */
 const fileOf = (key: string) =>
   key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
 
@@ -56,6 +68,18 @@ export type EditorData = {
   /** the site's time zone name, printed under a date control */
   timezone: string
   plan: PlanId
+  /** Story 5.5 — the canvases this project offers, in D5b's row order; a conditional canvas is absent, not greyed */
+  canvases: CanvasKey[]
+  /** Story 5.5 — the canvas keys whose doc came from `synthesize`: D5a's marker, as server truth (AD-22) */
+  synthesized: CanvasKey[]
+  /** Story 5.5 — EVERY synthesizable canvas's default stack, by stored key, whether or not it is untouched right now.
+   *  AD-22's round trip needs the stack of a canvas that is DESIGNED at load too: taking its last section off returns
+   *  it to untouched, and what re-renders is this. Keyed by `template_key`, as `docs` is. */
+  defaults: Readonly<Record<string, ProjectDoc>>
+  /** Story 5.5 — per synthesized canvas, the default rows the library could not place and why. Derived from the
+   *  library, so it empties itself as Epics 9 and 10 land; nothing draws it, and it is here because a drop that
+   *  nothing can read is a drop nobody can check. */
+  dropped: Readonly<Record<string, readonly DroppedRow[]>>
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -92,6 +116,44 @@ export async function editorData(projectId: string): Promise<EditorData> {
     }
     docs[key] = doc
   }
+
+  // ── Story 5.5 — synthesis, after every stored doc has been read and checked ──
+  // The library, asked the same two questions as above and answering `undefined` instead of throwing. Memoised into
+  // `entries`, which is also how a synthesized design reaches the canvas: the editor paints from that map.
+  const held = (designId: string) => {
+    const known = entries[designId]
+    if (known) return known
+    try {
+      const entry = pilot(designId)
+      entries[designId] = entry
+      return entry
+    } catch {
+      return undefined
+    }
+  }
+  // no condition can be true yet, so this is every unconditional canvas — `lib/editor.ts`'s `CONDITIONAL` carries why
+  const canvases = canvasesOf()
+  const synthesized: CanvasKey[] = []
+  const defaults: Record<string, ProjectDoc> = {}
+  const dropped: Record<string, readonly DroppedRow[]> = {}
+  for (const canvas of canvases) {
+    const file = CANVASES[canvas].file
+    const key = templateKeyOf(canvas)
+    // A canvas that is never synthesized — R-129's three membership ones and Private — has no default stack at all,
+    // so it opens EMPTY and takes no marker (`sections-inventory.md:785`).
+    if (!isSynthesizable(file)) continue
+    const stack = synthesize(file, held)
+    // EVERY synthesizable canvas's stack is handed over, designed or not: AD-22's round trip means a canvas the user
+    // empties returns to untouched and re-renders THIS, and a canvas that was designed at load can be emptied too.
+    defaults[key] = { schemaVersion: 1, instances: stack.instances }
+    if (stack.dropped.length > 0) dropped[canvas] = stack.dropped
+    // AD-22: no row, or a row with zero instances, is untouched — and only then does the canvas OPEN on its default
+    // stack and carry D5a's marker.
+    if (isDesigned(docs[key] ?? { schemaVersion: 1, instances: [] })) continue
+    docs[key] = defaults[key] as ProjectDoc
+    synthesized.push(canvas)
+  }
+
   return {
     docs,
     entries,
@@ -103,5 +165,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // the dataset's own zone, as `/controls` and `/pilots` read it, until 5.18 reads the connected site's
     timezone: orbitWeekly.site().timezone,
     plan,
+    canvases,
+    synthesized,
+    defaults,
+    dropped,
   }
 }

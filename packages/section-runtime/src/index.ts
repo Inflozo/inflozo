@@ -102,3 +102,7 @@ export {
   setHidden,
   setMemberVisibility,
 } from './doc-edit.ts'
+// Story 5.5 — FR-D6's synthesis: ONE core function over the normative Synthesis Defaults, called by the editor now
+// and by Story 7.3's compiler and Story 5.16's page-2 preview later (AD-27(d)).
+export { indexStack, isSynthesizable, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
+export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrary } from './synthesize.ts'

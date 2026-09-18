@@ -42,6 +42,15 @@
 // Settings, hiding and then removing every page section, and a reload starting from the stored doc. Step 8's axe runs
 // once more with the pill showing and a row's menu open. Every Layers row is found by `[data-layer-row]`, which is
 // `{doc}:{instanceId}`.
+// Story 5.5 adds steps 40-45, inside step 5's session: D5b's switcher read row by row (order, both dot states with the
+// word beside the hollow one, the check on the current canvas, the Membership group, and R-128's two ABSENT rows); the
+// editor's FIRST SOFT NAVIGATION, proved by a stamp on the editor window AND one on the canvas document surviving the
+// change of canvas, with the selection and the Controls panel cleared (DW-176's close); the synthesized stack against
+// what the library can actually place, DERIVED; a membership canvas opening empty and unmarked; AD-22's whole round
+// trip — materialise on a rename, back to untouched when the last section goes, unchanged when every one is merely
+// hidden; and the site-wide confirm's DERIVED template count. Step 6 gains the three membership segments (200) and
+// keeps `index` and `private` at 404, and its Back walk is now a SOFT-navigation walk. Step 38's second half changed
+// with the story: emptying Home now returns it to its Synthesis Default stack rather than to nothing.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -140,6 +149,15 @@ async function main() {
     }
     const editorUrl = (key) => at(key ? `/projects/${P}/${key}` : `/projects/${P}`)
 
+    // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
+    // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
+    // of them since Story 5.5.
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+    ])
+
     browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
     // THE CSP CONTEXT: never bypassCSP. Every frame reports a violation to Node through a binding, so one survives the
     // navigations it spans.
@@ -196,6 +214,11 @@ async function main() {
         shellNav: document.querySelectorAll('nav[aria-label="Sections"]').length,
         menuButton: document.querySelectorAll('button[aria-label="Menu"], dialog[aria-label="Menu"]').length,
         back: header?.querySelector('a[aria-label="Back to dashboard"]')?.getAttribute('href'),
+        // Story 5.5 — D5a's centred group: the switcher, and the marker chip only while the canvas is untouched
+        switcher: header?.querySelector('#editor-template')?.textContent,
+        switcherBox: box(header?.querySelector('#editor-template')),
+        headerBox: box(header),
+        marker: header?.querySelector('[data-auto-generated]') !== null,
         header: { h: box(header)?.height, rule: css(header)?.borderBottomWidth, bg: css(header)?.backgroundColor },
         name: { text: name?.textContent, size: css(name)?.fontSize, weight: css(name)?.fontWeight, family: css(name)?.fontFamily },
         layers: { w: box(layers)?.width, rule: css(layers)?.borderRightWidth, bg: css(layers)?.backgroundColor, title: layers?.textContent },
@@ -213,6 +236,8 @@ async function main() {
     })
     check('step 2 — one <main>, and none of the dashboard\'s sidebar, phone bar or drawer', shape.mains === 1 && shape.shellNav === 0 && shape.menuButton === 0, JSON.stringify({ mains: shape.mains, nav: shape.shellNav, menu: shape.menuButton }))
     check('step 2 — the bar: 48px with its 1px rule on paper, the back link to /', shape.header.h === 48 && shape.header.rule === '1px' && shape.header.bg === 'rgb(247, 245, 242)' && shape.back === '/', JSON.stringify(shape.header) + ` back=${shape.back}`)
+    // D5a (:37-39): the switcher is CENTRED in the bar, and Home is designed on this project, so no marker chip
+    check('step 2 — D5b\'s switcher reads "Template · Home", centred in the bar, and Home carries NO auto-generated chip', shape.switcher === `Template${CANVASES.home.label}` && Math.abs((shape.switcherBox.left + shape.switcherBox.right) / 2 - (shape.headerBox.left + shape.headerBox.right) / 2) < 120 && shape.switcherBox.height === 32 && shape.marker === false, JSON.stringify({ switcher: shape.switcher, box: shape.switcherBox, marker: shape.marker }))
     check('step 2 — the project name: 13px, 600, Inter', shape.name.text === 'Pilot sections' && shape.name.size === '13px' && shape.name.weight === '600' && /Inter/i.test(shape.name.family), JSON.stringify(shape.name))
     check('step 2 — Layers: 240px, right rule, paper, "THIS PAGE · HOME"', shape.layers.w === 240 && shape.layers.rule === '1px' && shape.layers.bg === 'rgb(247, 245, 242)' && /this page · home/i.test(shape.layers.title), JSON.stringify({ ...shape.layers, title: undefined }))
     check('step 2 — Layers lists the stack in canvas order', shape.rows.join(' | ') === stackOf('home').map(([, name]) => name).join(' | '), shape.rows.join(' | '))
@@ -313,14 +338,16 @@ async function main() {
     await painted('home')
 
     // ── steps 10–13 — Story 5.2's gestures, inside the CSP session ──
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent }, { CANVASES }] = await Promise.all([
-      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
-      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
-      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
-    ])
-    // Story 5.4's counts are DERIVED (standing rule 4): the card's template count is the canvases `lib/editor.ts`
-    // opens, and the page group's is the seed's own rows
-    const TEMPLATE_COUNT = Object.keys(CANVASES).length
+    // The counts are DERIVED (standing rule 4) and nothing here is written down. Story 5.5 changed what the card's
+    // number MEANS: not every canvas, but every canvas that will actually ship — the synthesizable ones, plus any
+    // other with a doc of its own. "Pilot sections" links no site (so no Private row) and has designed no membership
+    // canvas, so that is its synthesizable canvases, computed the way `editor.tsx` computes it.
+    const OFFERED = canvasesOf(false)
+    const TEMPLATE_COUNT = OFFERED.filter((key) => isSynthesizable(CANVASES[key].file)).length
+    /** The rows `synthesize` really produces for a canvas, against the library on disk — the harness's expectation for
+     *  an untouched canvas, derived rather than listed so it follows Epics 9 and 10 (DW-191 closes itself here). */
+    const heldBy = (id) => { try { return pilot(id) } catch { return undefined } }
+    const autoStack = (key) => synthesize(CANVASES[key].file, heldBy).instances
     const homeStack = stackOf('home')
     const nth = (id) => homeStack.findIndex(([d]) => d === id)
     const [HEADER, HERO, GRID] = [nth(TEMPLATES.site[0][0]), nth('a4/13'), nth('a17/1')]
@@ -1202,9 +1229,11 @@ async function main() {
       await page.waitForTimeout(250)
       check(`step 27 — a press on ${what} is not a press on nothing either: the section stays selected`, (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings', JSON.stringify(at))
     }
-    // the canvas's own ground: the tag canvas draws the site header and nothing else, so the room below it is real
-    await page.goto(editorUrl('tag'), { waitUntil: 'load' })
-    await painted('tag')
+    // the canvas's own ground needs a canvas with ROOM below its last section. Until Story 5.5 that was `tag`, which
+    // now opens on its Synthesis Default stack; a membership canvas is EMPTY BY CONSTRUCTION (never synthesized), so
+    // the room below the site header is real there and stays real however the library grows.
+    await page.goto(editorUrl('custom-signup'), { waitUntil: 'load' })
+    await painted('custom-signup')
     await clickOn(0)
     const belowLast = await page.evaluate(() => {
       const f = document.querySelector('section[aria-label="Canvas"] iframe')
@@ -1596,15 +1625,172 @@ async function main() {
       await page.waitForTimeout(350)
     }
     const emptied = await layersShape()
-    check('step 38 — removed one by one, the page group\'s count reaches 0 and only the Site-wide group is left', emptied.rows.length === TEMPLATES.site.length && emptied.mono.includes('0') && (await rootCount()) === TEMPLATES.site.length, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono }))
+    // STORY 5.5 CHANGED THIS OUTCOME, and that change IS AD-22: taking the last section off a synthesizable canvas
+    // returns it to UNTOUCHED, so Home re-renders its Synthesis Default stack and both markers come back. The
+    // expectation is the stack `synthesize` really produces against the library on disk, derived — not a number.
+    const backHomeRows = autoStack('home').map((i) => i.layerName)
+    check('step 38 — the last section off Home returns it to UNTOUCHED: the Synthesis Default stack re-renders and both markers come back (AD-22)', emptied.rows.length === TEMPLATES.site.length + backHomeRows.length && emptied.mono.includes(String(backHomeRows.length)) && (await rootCount()) === TEMPLATES.site.length + backHomeRows.length && (await page.locator('#editor-layers [data-auto-generated="layers"]').count()) === 1 && (await page.locator('header [data-auto-generated="bar"]').count()) === 1, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono, want: backHomeRows }))
 
     // ── step 39 — a reload starts from the stored doc: nothing here was persisted (Story 5.8 saves) ──
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
     check('step 39 — a reload brings every section back, unhidden and in its stored order and name', (await pageNames()).join(' | ') === stackOf('home').map(([, name]) => name).join(' | ') && (await rootCount()) === before30, (await pageNames()).join(' | '))
 
+    // ── step 40 — D5b, row by row: the order, both dot states with the word, the check, and R-128's two absent rows ──
+    const readMenu = async () => {
+      await page.locator('#editor-template').click()
+      await page.waitForTimeout(300)
+      return page.evaluate(() => {
+        const pop = document.getElementById('editor-template-menu')
+        const dot = (b) => {
+          const d = getComputedStyle(b.firstElementChild)
+          return d.borderTopWidth === '0px' ? 'filled' : 'hollow'
+        }
+        return {
+          open: pop.matches(':popover-open'),
+          width: pop.firstElementChild.getBoundingClientRect().width,
+          rows: [...pop.querySelectorAll('button[data-canvas]')].map((b) => ({
+            key: b.dataset.canvas,
+            name: b.querySelector('span').nextElementSibling.textContent,
+            dot: dot(b),
+            word: b.querySelector('[data-word]').textContent,
+            checked: b.getAttribute('aria-current') === 'true',
+            indent: getComputedStyle(b).paddingLeft,
+          })),
+          groups: [...pop.querySelectorAll('ul[aria-labelledby]')].map((g) => document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim()),
+          text: pop.textContent,
+          rules: pop.querySelectorAll('hr').length,
+        }
+      })
+    }
+    const d5b = await readMenu()
+    const offeredNames = OFFERED.map((key) => CANVASES[key].label)
+    check('step 40 — D5b: the menu opens at 284 and lists every canvas this project offers, in the frame\'s own order', d5b.open && d5b.width === 284 && d5b.rows.map((r) => r.name).join(' · ') === offeredNames.join(' · '), `${d5b.width} · ${d5b.rows.map((r) => r.name).join(' · ')}`)
+    // THE WORD IS NOT OPTIONAL, and the expectation is DERIVED: a canvas is designed here iff the seed wrote a row
+    // for it, auto-generated iff it is synthesizable and undesigned, and "Empty" otherwise — the third state D5b does
+    // not draw (never-synthesized and not yet designed: R-129's three and Private).
+    const wantWord = (key) => (Object.keys(TEMPLATES).includes(templateKeyOf(key)) ? '' : isSynthesizable(CANVASES[key].file) ? 'Auto-generated' : 'Empty')
+    const wrong = d5b.rows.filter((r) => r.word !== wantWord(r.key) || (r.dot === 'filled') !== (wantWord(r.key) === ''))
+    check('step 40 — a designed canvas carries a FILLED dot and no word; every hollow one carries its word — "Auto-generated" when it is synthesized, "Empty" when it never is — and never one without the other', wrong.length === 0, JSON.stringify({ wrong, rows: d5b.rows }))
+    check('step 40 — the current canvas takes the check, and only it', d5b.rows.filter((r) => r.checked).length === 1 && d5b.rows.find((r) => r.checked)?.name === CANVASES.home.label, JSON.stringify(d5b.rows.filter((r) => r.checked)))
+    const memberRows = d5b.rows.filter((r, n) => isMembership(OFFERED[n]))
+    check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
+    check('step 40 — R-128: no "+ New template", no FROM THE ROUTES MANAGER heading and no rule — they arrive with Story 7.16', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 0, JSON.stringify({ rules: d5b.rules, text: d5b.text.slice(0, 200) }))
+    check('step 40 — FR-D6: no Private row at all — absent, not greyed — for a project whose site has not asked for one', !d5b.rows.some((r) => r.name === CANVASES.private.label) && !OFFERED.includes('private'), d5b.rows.map((r) => r.name).join(' · '))
+    // Escape closes it and returns focus to the trigger — the platform's, not ours — so the next step opens it again
+    // rather than toggling a menu that was left showing
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
+
+    // ── step 41 — the editor's FIRST SOFT NAVIGATION (DW-176) ──
+    // Two stamps, and both must survive: one on the editor window, one on the CANVAS document. A document load clears
+    // the first; re-creating the iframe clears the second. Together they are "the editor stayed mounted".
+    await page.evaluate(() => { window.__soft = 'editor' })
+    await canvasFrame().evaluate(() => { document.documentElement.dataset.soft = 'canvas' })
+    // something selected, so DW-176's own code — the `[key]` effect that nulls the selection — is walked
+    await rowAt(GRID).getByRole('button', { name: layerOf(GRID), exact: true }).click()
+    await page.waitForTimeout(300)
+    const selectedBefore = (await panelOf()).head
+    // `load` and NOT `framenavigated`: Next's client router pushes a history entry, which Playwright reports as a
+    // same-document `framenavigated` on the main frame — so that event fires for a soft navigation too and is no
+    // test at all (executed 2026-09-18, it counted 1 while both stamps survived). The document's `load` event fires
+    // only for a real document load, and the two stamps below are the other half of the proof.
+    let documentLoads = 0
+    const countLoad = () => documentLoads++
+    page.on('load', countLoad)
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-template-menu button[data-canvas="tag"]').click()
+    await painted('tag')
+    await page.waitForTimeout(400)
+    page.off('load', countLoad)
+    const soft = await page.evaluate(() => ({
+      editor: window.__soft,
+      canvas: document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.documentElement.dataset.soft,
+      url: location.pathname,
+      switcher: document.getElementById('editor-template').textContent,
+      selected: document.querySelectorAll('[data-inflozo-selected]').length,
+      panel: document.querySelector('#editor-controls')?.textContent,
+    }))
+    check('step 41 — DW-176: the switcher is a SOFT navigation — no document load, the editor window and the canvas document both survive, and the address is the new canvas', documentLoads === 0 && soft.editor === 'editor' && soft.canvas === 'canvas' && soft.url.endsWith(`/projects/${P}/tag`), JSON.stringify({ documentLoads, ...soft, panel: undefined }))
+    check('step 41 — DW-176: the selection and the Controls panel clear as the new canvas paints', selectedBefore === layerOf(GRID) && soft.selected === 0 && /Nothing selected/.test(soft.panel ?? ''), JSON.stringify({ before: selectedBefore, selected: soft.selected }))
+    check('step 41 — the switcher now names the canvas it moved to', soft.switcher === `Template${CANVASES.tag.label}`, soft.switcher)
+
+    // ── step 42 — the untouched canvas: the Synthesis Default stack, and D5a's marker in BOTH places ──
+    const markers = () => page.evaluate(() => [...document.querySelectorAll('[data-auto-generated]')].map((el) => ({ where: el.dataset.autoGenerated, words: el.textContent })))
+    const WORDS = 'Auto-generated — edit anything to make it yours'
+    const tagMarkers = await markers()
+    check('step 42 — D5a: the marker reads its one sentence in BOTH places — the top bar and the head of Layers', tagMarkers.length === 2 && tagMarkers.every((m) => m.words === WORDS) && tagMarkers.map((m) => m.where).sort().join(',') === 'bar,layers', JSON.stringify(tagMarkers))
+    const tagWant = autoStack('tag').map((i) => i.layerName)
+    check('step 42 — the untouched Tag canvas opens on exactly the Synthesis Default rows the library can place, and Layers counts them', (await pageNames()).slice(TEMPLATES.site.length).join(' | ') === tagWant.join(' | ') && (await rootCount()) === TEMPLATES.site.length + tagWant.length, `${(await pageNames()).join(' | ')} · want ${tagWant.join(' | ')}`)
+    // and a canvas whose every default row the library cannot place is STILL marked — the site-wide sections and the note
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-template-menu button[data-canvas="error"]').click()
+    await painted('error')
+    await page.waitForTimeout(400)
+    const errWant = autoStack('error').map((i) => i.layerName)
+    check('step 42 — a canvas with every default row dropped still says it is auto-generated, and draws the site-wide sections alone', (await markers()).length === 2 && (await rootCount()) === TEMPLATES.site.length + errWant.length && (await pageNames()).length === TEMPLATES.site.length + errWant.length, `roots ${await rootCount()} · want ${errWant.length} page rows`)
+
+    // ── step 43 — a membership canvas is NEVER synthesized: empty, and unmarked ──
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-template-menu button[data-canvas="custom-signup"]').click()
+    await painted('custom-signup')
+    await page.waitForTimeout(400)
+    check('step 43 — R-129\'s Signup canvas opens EMPTY with no marker anywhere: a custom template is never auto-built', (await markers()).length === 0 && (await rootCount()) === TEMPLATES.site.length && (await pageNames()).length === TEMPLATES.site.length, `roots ${await rootCount()} · rows ${(await pageNames()).length} · markers ${(await markers()).length}`)
+
+    // ── step 44 — AD-22's round trip, on the Tag canvas ──
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-template-menu button[data-canvas="tag"]').click()
+    await painted('tag')
+    await page.waitForTimeout(400)
+    const FIRST = TEMPLATES.site.length // the first PAGE row, whichever rows the Synthesis Defaults produced
+    const tagRow = async (label) => {
+      await page.locator('#editor-layers [data-layer-row]').nth(FIRST).getByRole('button', { name: /^More for / }).click()
+      await page.waitForTimeout(250)
+      await page.getByRole('button', { name: label, exact: true }).click()
+      await page.waitForTimeout(400)
+    }
+    await tagRow('Rename')
+    await page.fill('#layers-rename-name', 'My tag feed')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await page.waitForTimeout(400)
+    const afterEdit = await readMenu()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    check('step 44 — the first edit MATERIALISES: both markers go, and the switcher\'s Tag dot fills and loses its word', (await markers()).length === 0 && afterEdit.rows.find((r) => r.checked)?.dot === 'filled' && afterEdit.rows.find((r) => r.checked)?.word === '', JSON.stringify(afterEdit.rows.find((r) => r.checked)))
+    // hide every page row: still designed, no marker (FR-D5)
+    for (let i = 0; i < tagWant.length; i++) {
+      await page.locator('#editor-layers [data-layer-row]').nth(FIRST + i).getByRole('button', { name: /^More for / }).click()
+      await page.waitForTimeout(250)
+      await page.getByRole('button', { name: 'Hide', exact: true }).click()
+      await page.waitForTimeout(350)
+    }
+    check('step 44 — FR-D5: HIDING every section is not emptying — the rows stay, nothing re-synthesizes and no marker comes back', (await markers()).length === 0 && (await pageNames()).length === TEMPLATES.site.length + tagWant.length && (await rootCount()) === TEMPLATES.site.length, `rows ${(await pageNames()).length} · roots ${await rootCount()} · markers ${(await markers()).length}`)
+    // and now remove them: the canvas goes BACK to untouched
+    for (let i = 0; i < tagWant.length; i++) await tagRow('Delete')
+    await page.waitForTimeout(300)
+    const round = await readMenu()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    check('step 44 — AD-22: the last section off returns Tag to UNTOUCHED — the default stack re-renders, both markers return and the dot hollows again', (await markers()).length === 2 && (await pageNames()).slice(TEMPLATES.site.length).join(' | ') === tagWant.join(' | ') && round.rows.find((r) => r.checked)?.dot === 'hollow' && round.rows.find((r) => r.checked)?.word === 'Auto-generated', JSON.stringify({ rows: await pageNames(), dot: round.rows.find((r) => r.checked) }))
+
+    // ── step 45 — the site-wide confirm's DERIVED template count ──
+    await page.locator('#editor-layers [data-layer-row]').nth(0).getByRole('button', { name: /^More for / }).click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Delete', exact: true }).click()
+    await page.waitForTimeout(400)
+    const confirmWords = await page.locator('dialog[aria-labelledby="editor-sitewide-title"]').innerText()
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.waitForTimeout(300)
+    check('step 45 — the site-wide confirm names the templates that will actually SHIP, derived from the canvases this project offers', confirmWords.includes(`changes all ${TEMPLATE_COUNT} templates`) && TEMPLATE_COUNT < OFFERED.length, `${JSON.stringify(confirmWords)} · offered ${OFFERED.length} · shipping ${TEMPLATE_COUNT}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, and Story 5.5\'s switcher, its soft navigations and the whole round trip — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -1639,14 +1825,18 @@ async function main() {
     check('step 5 — control: the recorder sees those two eval refusals, so its zero above is a result', recorded.filter((v) => /script-src/.test(v.directive) && /eval/.test(v.blocked)).length >= 2, JSON.stringify(recorded))
 
     // ── step 6 — the scheme ──
-    for (const key of ['post', 'page', 'tag', 'author', 'error']) {
+    // every canvas this project offers answers 200 — derived from `lib/editor.ts`, so a canvas a later story opens
+    // joins this walk without an edit here (Story 5.5 added R-129's three membership segments this way)
+    for (const key of OFFERED.filter((k) => k !== 'home')) {
       const r = await context.request.get(editorUrl(key), { maxRedirects: 0 })
       check(`step 6 — /${key} answers 200`, r.status() === 200, `HTTP ${r.status()}`)
     }
     const home = await context.request.get(editorUrl('home'), { maxRedirects: 0 })
     // `endsWith`: the app's redirects are written for the app host, so on localhost the location has no /app prefix
     check('step 6 — /home answers 308 to /projects/<id>', home.status() === 308 && new URL(home.headers().location, APP).pathname.endsWith(`/projects/${P}`), `HTTP ${home.status()} → ${home.headers().location}`)
-    for (const key of ['index', 'private', 'paywall', 'cards', 'custom-x', 'nonsense']) {
+    // `index` is 404 PERMANENTLY (R-127: page 2 has no canvas), `private` is 404 because this project's site has not
+    // asked for one — a canvas the switcher does not offer must not be reachable by typing its address either
+    for (const key of ['index', 'private', 'paywall', 'cards', 'custom-x', 'custom-nonsense', 'nonsense']) {
       const r = await context.request.get(editorUrl(key), { maxRedirects: 0 })
       check(`step 6 — /${key} answers 404`, r.status() === 404 && /Page not found/.test(await r.text()), `HTTP ${r.status()}`)
     }
@@ -1667,14 +1857,37 @@ async function main() {
     const projectsUrl = page.url()
     await openCard()
     await painted('home')
-    await page.goto(editorUrl('post'), { waitUntil: 'load' })
+    // STORY 5.5 MAKES THIS WALK SOFT, which is DW-176's whole point: every canvas change below is the switcher's own
+    // push, not a `page.goto`, so browser Back walks a history the editor built without ever reloading. The stamps
+    // prove it — one on the editor window, one on the canvas document — and they must survive the whole walk.
+    await page.evaluate(() => { window.__soft = 'editor' })
+    await canvasFrame().evaluate(() => { document.documentElement.dataset.soft = 'canvas' })
+    const pressRow = async (key) => {
+      await page.locator('#editor-template').click()
+      await page.waitForTimeout(300)
+      await page.locator(`#editor-template-menu button[data-canvas="${key}"]`).click()
+      await painted(key)
+      await page.waitForTimeout(300)
+    }
+    await pressRow('post')
+    await pressRow('tag')
+    await page.goBack()
     await painted('post')
-    await page.goBack({ waitUntil: 'load' })
+    await page.goBack()
     await painted('home')
-    const backHome = { url: page.url(), rows: await page.locator('aside[aria-label="Layers"] [data-layer-row]').all().then((r) => r.length) }
-    check('step 6 — Back from /post lands on /projects/<id> showing Home\'s sections', backHome.url === editorUrl() && backHome.rows === stackOf('home').length, JSON.stringify(backHome))
+    const backHome = {
+      url: page.url(),
+      rows: await page.locator('aside[aria-label="Layers"] [data-layer-row]').all().then((r) => r.length),
+      ...(await page.evaluate(() => ({ editor: window.__soft, canvas: document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.documentElement.dataset.soft }))),
+    }
+    check('step 6 — two soft pushes and two Backs land on /projects/<id> showing Home\'s sections, with the editor never reloaded', backHome.url === editorUrl() && backHome.rows === stackOf('home').length && backHome.editor === 'editor' && backHome.canvas === 'canvas', JSON.stringify(backHome))
     await page.goBack({ waitUntil: 'load' })
-    check('step 6 — Back again lands on Projects', page.url() === projectsUrl, page.url())
+    // A LOCAL RUN CANNOT MAKE THIS WALK, and the reason is `openCard`'s: off the app host the card's link carries no
+    // `/app` prefix, so the local re-entry leaves an unprefixed 404 in the history between the editor and Projects —
+    // and Chromium aborts a Back out of that error document. Skipped there and stated, never skipped on the deployed
+    // run, which is the result R-82 asks for (executed 2026-09-18).
+    if (LOCAL && page.url() !== projectsUrl) note('step 6 — Back again lands on Projects', `not assertable on a LOCAL run: openCard re-enters under the prefix, leaving ${page.url()} in the history`)
+    else check('step 6 — Back again lands on Projects', page.url() === projectsUrl, page.url())
 
     // ── step 6b — a bad doc is loud, never a partly drawn canvas (the matrix's "Bad doc" row; review, 2026-09-17) ──
     // A `tag` row placing a24/1, which compiles to post.hbs alone: `editorData` throws for the whole project, so even

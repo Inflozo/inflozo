@@ -132,4 +132,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **Settled (2026-09-17):** where the hover actions and "+" live is Story 5.1's AD-21 amendment (outside the frame); when they arrive is R-118.
   - **Settled (2026-09-18, Story 5.5's Q1 — R-127):** `index.hbs` gets **no canvas, permanently** (`spec-5-1…md:373`'s reserved segment is closed), and once Home is designed it IS that doc **from its designated main feed onward** — everything above the feed dropped, the feed and everything below it kept in order. No designated main feed → the Synthesis Default stack, because `index.hbs` is always compiled (FR-I1). Untouched Home → unchanged (`sections-inventory.md:804-806`). One function, `indexStack` beside `synthesize`, called later by Story 7.3 and Story 5.16 (AD-27(d)).
   - **Also ruled at that Create (2026-09-18):** **R-128** — "+ New template" and the `FROM THE ROUTES MANAGER` heading are ABSENT until Story 7.16, R-118's rule applied a second time, nothing greyed and nothing captioned. **R-129** — the three membership canvases are `custom-signup.hbs` ("Signup"), `custom-signin.hbs` ("Signin") and `custom-member-home.hbs` ("Member home"); the filename is frozen public API and Ghost derives the label from it, so B19's `custom-membership.hbs` is superseded on the first row. Subscribe and Membership are ORDINARY custom page templates from the Routes Manager (FR-I3), not extra built-in rows.
-- **Read the deferred-work ledger's Epic 5 entries at each Create:** DW-114 (5.1) may need the owner, DW-176 (the selection cleared by a canvas change) closes at 5.5's Dev, and DW-107 (image focus) and DW-122 (moving a section across templates) have no owner.
+  - **Story 5.5 built it (2026-09-18):** `synthesize(file, library)` and `indexStack(home, library)` are ONE pure core
+    function pair in `packages/section-runtime/src/synthesize.ts`, over the normative Synthesis Defaults as a cited
+    table; Story 7.3's compiler and Story 5.16's page-2 preview call the same ones (AD-27(d)). A default row the
+    library cannot place is DROPPED with its reason and the dropped set is derived, while `editorData`'s refusals stay
+    loud for STORED docs. `read.ts` applies synthesis and hands the editor `canvases`, `synthesized` and `dropped`, so
+    D5a's marker is server truth; `editor.tsx`'s `commit()` is AD-22's round trip in ONE place (an edit materialises,
+    the last section off gives the default stack back, hiding does neither). `isMainFeed` joined `doc-schema.ts` with
+    its only writer, defaulted. The URL segment and the stored `template_key` stopped being the same string
+    (`templateKeyOf`/`canvasOfTemplateKey`), `TEMPLATES_OPEN` became `templatesOpen` — the canvases that will actually
+    SHIP, not every canvas — and D5a's Tag/Author labels replaced 5.1's "Tag archive"/"Author archive" (R-74). The
+    Private canvas is conditional on the linked site reporting itself private; EXECUTED 2026-09-18, `sites.site_settings`
+    carries no such flag, so the row is absent for every project today and `/private` 404s (DW-192).
+- **Read the deferred-work ledger's Epic 5 entries at each Create:** DW-114 (5.1) may need the owner, DW-176 (the selection cleared by a canvas change) is CLOSED by 5.5's Dev, and DW-107 (image focus) and DW-122 (moving a section across templates) have no owner.

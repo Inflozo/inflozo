@@ -4178,7 +4178,7 @@ plain: When you move from the Home page to the Post page inside the editor witho
   selected should be let go. The code that does this exists, but nothing in the editor can trigger it yet: today
   every way of changing page reloads the editor, which starts fresh anyway. The first control that changes page
   without a reload is Story 5.5's template switcher, and that story's checks will walk it.
-status: open
+status: done 2026-09-18 (Story 5.5)
 severity: low
 origin: Story 5.2's code review (2026-09-17, verification-gap layer): `editor.tsx`'s `[key]` effect sets
   `selected` to null before repainting, and the spec's Tasks say "A change of canvas (`key`) clears the selection",
@@ -4188,6 +4188,15 @@ owner: Story 5.5 (the switcher is the first soft navigation between canvases; `e
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`, the `useEffect` on `[key]`.
 reason: a soft navigation can be faked from the harness only through Next's private `window.next.router`, which
   is not a product path; the real one arrives with 5.5.
+closed: Story 5.5 built D5b's switcher, which pushes inside a `useTransition` while the `[id]` layout holds the
+  editor mounted — the product path the ledger was waiting for. `run-verify-editor.cjs` step 41 selects a section,
+  presses another canvas's row, and reads THREE things: no `framenavigated` on the main frame, a stamp on the editor
+  window AND one on the canvas document's `<html>` both surviving (a document load clears the first, a re-created
+  iframe the second), and the selection and the Controls panel gone. Step 6's Back walk is now the same two pushes
+  followed by two Backs, with both stamps still there at the end — so the `[key]` effect is walked twice per run and
+  deleting its two lines now fails. Its sibling finding stands unchanged and un-acted-on: the effect clears
+  `selected` but not `hovered`, which is correct, because `paint()` clears the hover itself (the pointer has not
+  said where it is since the repaint).
 
 ## Deferred from: Story 5.3's Create run (2026-09-17)
 
@@ -4539,3 +4548,14 @@ location: `apps/web/lib/editor.ts` (the conditional canvas) · `prd.md:223` · D
 reason: unobservable on "Pilot sections", which links no site (`projects.linked_site_id` is null), so Private is
   absent under either reading and the choice costs nothing to defer; recorded rather than resolved because settling
   it needs a real private Ghost, which is an execution, not a reading (standing rule 1).
+amended: Story 5.5's Dev (2026-09-18) executed two things the owning story inherits. **(1) There is nothing to read
+  yet.** `sites.site_settings` — the snapshot Epic 3 keeps — records `code_injection`, `portal_button`,
+  `announcement`, `brand`, `public_url` and `plan_ask`, and no private flag, because no story has needed one; so no
+  condition can be true and Private is offered to nobody. **(2) The refusal has to be SYNCHRONOUS.** Story 5.5 first
+  built the 404 as a database read inside `[template]/layout.tsx`, and measured on a production build the status was
+  still 404 while the BODY was Next's bare `__next_error__` document — none of the app's 404, no way home — where
+  every synchronous refusal beside it (`index`, `paywall`) answered the app's own. A `notFound()` thrown after an
+  await lets Next flush the shell first, which is `[id]/layout.tsx:12-17`'s rule met from the other side. So
+  `canvasFromSegment` refuses a `CONDITIONAL` segment from the scheme, and the story that gives the condition
+  something to read must solve the body problem — a decision above the layout, or a refusal that needs no I/O — in
+  the same change.
