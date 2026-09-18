@@ -10,7 +10,19 @@
  * inside the sites customers build — not Inflozo's own chrome. The owner ruled that scope on
  * 2026-09-05 (R-92, Story 1.3's review) when this file was found carrying Tabler's MIT notice
  * over drawings that were not Tabler's; the notice left with the ruling and returns with the
- * first Tabler path, which belongs in the library, not here.
+ * first Tabler path.
+ *
+ * THAT PATH ARRIVED ON 2026-09-18, and the notice below is its (ruling R-130, Story 5.5): the
+ * owner handed over `circle-off` for the Template switcher's "Empty" rows — a state D5b does not
+ * draw, so there was no export glyph to read. R-92's scope therefore carries one stated exception
+ * rather than being overturned: a glyph the export draws is still read from the export, and a
+ * Tabler path enters this file only where the owner names one. The drawing was NOT retyped from
+ * his message — it is `packages/library/icons/tabler.json`'s own `circle-off`, verified path for
+ * path, and inlined here because importing `@inflozo/library/icons` for one glyph would pull all
+ * of its icons into the editor's client bundle.
+ *
+ * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
+ * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
  * Icons are drawn inline, once per use (R-26): no sprite, no icon font, no package. Each inherits
  * `currentColor`, costs no request, and survives with everything switched off. MEMBERSHIP IS THE
@@ -71,6 +83,15 @@ export const Search = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="11" cy="11" r="7" />
     <path d="M21 21l-4.3-4.3" />
+  </Icon>
+)
+/* Tabler's `circle-off` — the owner's own glyph for the Template switcher's "Empty" rows (R-130,
+   2026-09-18). Its two paths are `tabler.json`'s, byte for byte; see this file's header for why a
+   Tabler path sits here and where its licence ships. Story 5.5. */
+export const CircleOff = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M20.042 16.045a9 9 0 0 0 -12.087 -12.087m-2.318 1.677a9 9 0 1 0 12.725 12.73" />
+    <path d="M3 3l18 18" />
   </Icon>
 )
 export const Check = (p: IconProps) => (

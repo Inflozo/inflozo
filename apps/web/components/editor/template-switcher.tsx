@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { Check, ChevronDown, ChevronUp } from '@/components/kit/icons'
+import { Check, ChevronDown, ChevronRight, ChevronUp, CircleOff } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
 import { CANVASES, canvasPath, isMembership, type CanvasKey } from '@/lib/editor'
 import { arrowKeys, openMenu } from '@/lib/menu'
@@ -24,13 +24,14 @@ import { isApp } from '@/routing'
    carries a HOLLOW dot AND the word "Auto-generated". "A shape alone is the same failure as a colour alone", and this
    menu is where a user decides which canvas to open.
 
-   AND THERE IS A THIRD STATE THE FRAME DOES NOT DRAW. A canvas that is never synthesized — R-129's three membership
-   ones and Private — and that the user has not designed is neither: a filled dot would SAY it is designed, which is
-   false, and the word "Auto-generated" would be false too (`sections-inventory.md:785`). D5b draws Signup filled and
-   Signin auto-generated, which FR-D6 contradicts for both, so the frame is illustrating the two states across its
-   rows rather than asserting these. Built on D5b's own reasoning rather than its picture: the dot is HOLLOW, because
-   the canvas is not the user's yet, and it carries the word "Empty", because a hollow dot never travels alone. One
-   word of app copy, exactly true — and the owner's Question 4 in the spec is where he rules on it.
+   AND THERE IS A THIRD STATE THE FRAME DOES NOT DRAW, NOW RULED (R-130, the owner, 2026-09-18). A canvas that is
+   never synthesized — R-129's three membership ones and Private — and that the user has not designed is neither: a
+   filled dot would SAY it is designed, which is false, and "Auto-generated" would be false too
+   (`sections-inventory.md:785`). D5b draws Signup filled and Signin auto-generated, which FR-D6 contradicts for both,
+   so the frame illustrates the two states across its rows rather than asserting these. The owner answered his own
+   Question 4 with a GLYPH rather than a word: Tabler's `circle-off`, which is why it is the one Tabler path in
+   `kit/icons.tsx` (its header carries the licence and the scope R-92 now excepts). The word "Empty" stays beside it —
+   his rule that a shape never travels alone is exactly why the icon needed answering for in the first place.
 
    WHAT IT DOES NOT SHIP, AND WHY (R-128, the owner, 2026-09-18): the rule, the `FROM THE ROUTES MANAGER` heading and
    the `+ New template` row are ABSENT until Story 7.16 builds the Routes Manager for them to reach — R-118's rule, a
@@ -48,13 +49,18 @@ import { isApp } from '@/routing'
 
 const ROW = 'flex w-full items-center gap-[9px] rounded-sm py-[7px] pr-[10px] text-left transition-colors'
 
-/** D5b's two dot states. The hollow one NEVER travels alone — its row writes the word beside it. */
-const Dot = ({ filled }: { filled: boolean }) => (
-  <span
-    aria-hidden
-    className={`size-2 shrink-0 rounded-full ${filled ? 'bg-ink' : 'border-[1.5px] border-line-strong'}`}
-  />
-)
+/** The row's mark, in D5b's two states plus R-130's third. `data-mark` is the state itself, so a reader — the probe
+ *  included — asks the element what it is instead of inferring it from a computed border, which an icon has none of. */
+const Mark = ({ state }: { state: 'designed' | 'auto' | 'empty' }) =>
+  state === 'empty' ? (
+    <CircleOff size={9} data-mark={state} className="shrink-0 text-ink-soft" />
+  ) : (
+    <span
+      aria-hidden
+      data-mark={state}
+      className={`size-2 shrink-0 rounded-full ${state === 'designed' ? 'bg-ink' : 'border-[1.5px] border-line-strong'}`}
+    />
+  )
 
 export function TemplateSwitcher({
   projectId,
@@ -82,6 +88,8 @@ export function TemplateSwitcher({
   const [open, setOpen] = useState(false)
   /** the row pressed, so only IT says "Opening…" while the transition is in flight */
   const [going, setGoing] = useState<CanvasKey | null>(null)
+  /** D5b's Membership group, open as the frame draws it — the chevron is the control that shuts it */
+  const [groupOpen, setGroupOpen] = useState(true)
   const menu = useRef<HTMLDivElement>(null)
 
   // the transition settling is the new canvas being there; the menu closes then, not on the press (R-98)
@@ -105,7 +113,8 @@ export function TemplateSwitcher({
   const row = (key: CanvasKey) => {
     // three states, two shapes: designed (filled, no word), auto-generated (hollow, "Auto-generated") and
     // never-auto-generated-and-not-yet-designed (hollow, "Empty") — see the note above
-    const word = auto.has(key) ? 'Auto-generated' : empty.has(key) ? 'Empty' : null
+    const state = auto.has(key) ? 'auto' : empty.has(key) ? 'empty' : 'designed'
+    const word = state === 'auto' ? 'Auto-generated' : state === 'empty' ? 'Empty' : null
     const busy = going === key
     return (
       <li key={key} className="flex flex-col">
@@ -120,7 +129,7 @@ export function TemplateSwitcher({
             key === current ? 'bg-coral-tint' : 'hover:bg-paper'
           }`}
         >
-          <Dot filled={word === null} />
+          <Mark state={state} />
           <span className={`flex-1 text-ui-dense ${key === current ? 'font-semibold' : 'font-medium'}`}>
             {CANVASES[key].label}
           </span>
@@ -176,11 +185,32 @@ export function TemplateSwitcher({
           {membership.length > 0 ? (
             <li className="flex flex-col">
               <ul aria-labelledby="editor-template-membership" className="flex list-none flex-col gap-px">
-                <li id="editor-template-membership" className="flex items-center gap-[9px] px-[10px] py-[7px] text-ui-dense font-semibold">
-                  <ChevronDown size={12} aria-hidden className="shrink-0 text-ink-soft" />
-                  Membership
+                {/* THE CHEVRON IS A CONTROL, so it is a button (the owner's test of Story 5.5, 2026-09-18): D5b draws
+                    the group with one and it drew nothing here, which is the same fault R-118 names from the other
+                    end — a control that is present must work. The heading keeps its own id, so the group stays
+                    labelled by it whether it is open or shut, and `arrowKeys` walks it with every row because it is
+                    now one of the menu's `button`s. Collapsed rows are NOT rendered rather than hidden: a hidden
+                    button is still a `querySelector('button')`, so `arrowKeys` would step onto a row nobody can see. */}
+                <li className="flex flex-col">
+                  <button
+                    type="button"
+                    id="editor-template-membership"
+                    aria-expanded={groupOpen}
+                    aria-controls="editor-template-membership-rows"
+                    onClick={() => setGroupOpen((was) => !was)}
+                    className={`flex items-center gap-[9px] rounded-sm px-[10px] py-[7px] text-left text-ui-dense font-semibold transition-colors hover:bg-paper ${ring}`}
+                  >
+                    {groupOpen ? (
+                      <ChevronDown size={12} aria-hidden className="shrink-0 text-ink-soft" />
+                    ) : (
+                      <ChevronRight size={12} aria-hidden className="shrink-0 text-ink-soft" />
+                    )}
+                    Membership
+                  </button>
                 </li>
-                {membership.map(row)}
+                <li id="editor-template-membership-rows" className="flex flex-col">
+                  <ul className="flex list-none flex-col gap-px">{groupOpen ? membership.map(row) : null}</ul>
+                </li>
               </ul>
             </li>
           ) : null}

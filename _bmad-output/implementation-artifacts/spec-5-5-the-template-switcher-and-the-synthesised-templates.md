@@ -14,9 +14,11 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 A new control in the middle of the top bar lets you move between every kind of page your site will have — Home, Post,
 Page, Tag archive, Author archive, 404 and the three membership pages — without leaving the editor or reloading it.
 A page kind you have never touched no longer opens blank: it opens **already built** from Inflozo's standard recipe for
-that kind of page, and says so in two places, a small note reading "Auto-generated — edit anything to make it yours" in
-the top bar and at the top of the list on the left. The moment you change anything on it the note goes and the page is
-yours; take every section off again and it goes back to the standard recipe, note and all.
+that kind of page, and says so in the Template menu — a hollow dot and the word "Auto-generated" beside its row — and
+once more at the top of the list on the left, where a note reads "Auto-generated — edit anything to make it yours".
+A page that is never auto-built, like Signup, carries a crossed-out circle and the word "Empty" instead. The moment you
+change anything the note goes and the page is yours; take every section off again and it goes back to the standard
+recipe, note and all.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -33,6 +35,8 @@ navigation** between canvases, offering every canvas the project can have. Add `
 `packages/section-runtime` (AD-27(d) — Epic 7's compiler calls the same one at Story 7.3), reading the normative
 Synthesis Defaults, so an untouched canvas renders its default stack as the starting canvas; mark that state with D5a's
 sentence in both places; and materialise the stack into the in-memory doc on the first edit.
+**Amended by R-130 (the owner, 2026-09-18, at his test): the marker has ONE place, the head of Layers — the top bar's
+chip is removed, because the switcher's own row already carries the dot and the word.**
 
 ## Boundaries & Constraints
 
@@ -67,10 +71,15 @@ sentence in both places; and materialise the stack into the in-memory doc on the
   **derived** from the library, so it empties itself as Epics 9 and 10 land.
 - **The switcher matches D5b and the marker matches D5a** (R-74), the two rows R-128 defers excepted. The marker's
   sentence is exactly
-  "Auto-generated — edit anything to make it yours" in both places, it is app copy and never a theme string
+  "Auto-generated — edit anything to make it yours" **in its one place, the head of Layers (R-130 — the top bar's chip
+  is removed)**, it is app copy and never a theme string
   (`prd.md:1337`), and it carries **no keyboard shortcut**, deliberately (FR-D11).
 - **The word is not optional** (D5b): an untouched row carries a hollow dot **and** the word "Auto-generated"; a
-  designed row carries a filled dot and no word. A shape alone is the same failure as a colour alone.
+  designed row carries a filled dot and no word; **a row that is never auto-built carries Tabler's `circle-off` glyph
+  and the word "Empty" (R-130)**. A shape alone is the same failure as a colour alone.
+- **The Membership group's chevron is a control and it works** (the owner's test, 2026-09-18): the heading is a
+  button, `aria-expanded`, and a collapsed group's rows are **not rendered** rather than hidden — a hidden button is
+  still one `arrowKeys` would step onto.
 - **Every count is derived.** The site-wide confirm's template count, the Layers page count and the dropped-row set all
   derive from the canvases and the library, never from a literal.
 - **R-98 holds:** the switcher row that starts a navigation says so and goes `aria-disabled`/`aria-busy` until the new
@@ -98,15 +107,16 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Untouched canvas opens | `tag`, no row | the Synthesis Default stack renders as the starting canvas; both markers show; Layers' page group counts the synthesised sections | N/A |
+| Untouched canvas opens | `tag`, no row | the Synthesis Default stack renders as the starting canvas; the Layers marker shows and the switcher's row is hollow + "Auto-generated" (R-130: no top-bar chip); Layers' page group counts the synthesised sections | N/A |
 | Designed canvas opens | `home`, 3 instances | the stored stack; no marker anywhere | N/A |
 | Default row the library cannot place | `page.hbs` row 1 is A24 #1, whose pilot declares `compileTarget: ['post.hbs']` | the row is dropped and reported in `dropped` with the reason | dropped, never thrown — the loud refusal is for stored docs |
 | Zero-row synthesis | `error`, A31 #1 not in the library | the canvas shows the site-wide sections and nothing else, **and is still marked auto-generated** | N/A |
-| First edit materialises | rename a synthesised section | the stack becomes the canvas's in-memory doc; both markers go; the switcher row's dot fills | N/A |
-| Emptying returns to untouched | delete every section of a materialised canvas | the default stack re-renders and both markers return (AD-22) | N/A |
+| The group's chevron | the switcher is open | pressing the Membership heading collapses the group — its three rows leave the menu — and pressing it again brings them back | N/A |
+| First edit materialises | rename a synthesised section | the stack becomes the canvas's in-memory doc; the marker goes; the switcher row's dot fills | N/A |
+| Emptying returns to untouched | delete every section of a materialised canvas | the default stack re-renders and the marker returns (AD-22) | N/A |
 | Hiding is not emptying | hide every section | still designed: no re-synthesis, no marker, the canvas draws empty (FR-D5) | N/A |
 | Switcher navigates | press "Tag archive" | a push to `/projects/<id>/tag`; the editor stays mounted; the selection and the Controls panel clear (DW-176) | N/A |
-| Membership canvas | press Signup | opens **empty** — no synthesis, no sections, no marker | N/A |
+| Membership canvas | press Signup | opens **empty** — no synthesis, no sections, no marker; its switcher row is `circle-off` + "Empty" (R-130) | N/A |
 | Private | no linked site, or a linked site that is not private | the row is **absent, not greyed**, and its segment 404s | N/A |
 | `index` segment | `/projects/<id>/index` | 404, unchanged from 5.1 | N/A |
 | Current canvas | the switcher is open on `tag` | the Tag row takes the check; pressing it closes the menu and navigates nowhere | N/A |
@@ -239,14 +249,17 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
       reaches an owning document or it is not closed.
 
 **Acceptance Criteria:**
-- Given the top bar, when I open the switcher, then it matches **D5b** — every row, both dot states with the word
-  beside the hollow one, the Membership group and the current canvas checked — **less the "+ New template" row and the
+- Given the top bar, when I open the switcher, then it matches **D5b** — every row, R-130's three marks each with its
+  own word, the Membership group and the current canvas checked — **less the "+ New template" row and the
   `FROM THE ROUTES MANAGER` heading, which arrive with Story 7.16** (R-128).
+- Given the switcher is open, when I press the Membership heading, then the group collapses and its rows leave the
+  menu; pressing it again brings them back (the owner's test, 2026-09-18).
 - Given a designed Home with a designated main feed, when `indexStack` is asked for `index.hbs`, then it returns that
   doc from the main feed onward and drops everything above it; with no designated main feed it returns the Synthesis
   Default stack (R-127).
-- Given an untouched synthesizable canvas, when I open it, then the auto-generated marker matches **D5a** in both
-  places and reads exactly "Auto-generated — edit anything to make it yours".
+- Given an untouched synthesizable canvas, when I open it, then the auto-generated marker matches **D5a** at the head
+  of Layers and reads exactly "Auto-generated — edit anything to make it yours", **and the top bar carries no marker
+  chip at all** (R-130).
 - Given a canvas open and a section selected, when I choose another canvas in the switcher, then the browser does not
   reload, the editor stays mounted, the address changes, and the selection and the Controls panel clear (DW-176).
 - Given the project's canvases, when the site-wide confirm or the Layers heading prints a template count, then that
@@ -258,6 +271,12 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
 
 ## Spec Change Log
 
+- **2026-09-18 — R-130, and two findings from the owner's own look at the deployed editor, during Dev.** He ruled
+  Question 4 with a glyph rather than a word (Tabler's `circle-off` for the "Empty" rows), removed the top bar's
+  marker chip — *"We already have the identifier in the Dropdown"* — and reported that the Membership group's chevron
+  drew but did nothing. The frozen Intent, Boundaries and I/O matrix were amended for the first two, which is the
+  renegotiation the `frozen-after-approval` tag provides for; the third was a plain defect and needed no ruling. See
+  Design Notes below.
 - **2026-09-18, Dev.** Two readings the story made rather than assumed, both recorded where the code is:
   - **The canvas labels are the export's, not Story 5.1's.** `lib/editor.ts` carried `Tag archive` and `Author
     archive`; D5b's rows read **Tag** and **Author**, and D5a's Layers heading reads `LAYERS · TAG`. R-74 makes the
@@ -283,6 +302,31 @@ Subscribe and Membership are ordinary custom page templates arriving with the Ro
   - **DW-191 and DW-192 were already filed at Create**, so Dev closed DW-176 and amended DW-192.
 
 ## Design Notes
+
+### R-130, and the two things the owner found at the deployed editor
+
+**The marker's one place.** D5a and FR-D6 both name two — a chip beside the Template control and a row at the head of
+Layers. Standing on the built screen, the owner removed the chip: *"There is a notification adjacent to the Template
+dropdown in top bar… I do not want to show that. We already have the identifier in the Dropdown."* He is describing a
+real redundancy the frame could not show, because the frame draws the switcher closed: on the live screen the same
+fact is stated three times at once — the closed control names the canvas, its open row carries a hollow dot **and** the
+word "Auto-generated", and the chip then repeated the whole sentence beside it. The Layers row survives because it is
+the only one of the three a user reading the **section list** sees without opening anything. **D5a is superseded on
+the chip alone**; its Layers row is unchanged, measure for measure, and R-74 stands everywhere else.
+
+**The third state is a glyph, not a word.** Question 4 offered four words; he answered with Tabler's `circle-off`.
+The word "Empty" stays beside it — his own rule that a shape never travels alone is why the state needed answering at
+all. Two things follow and both are recorded where they bite. **R-92's scope now carries one stated exception:**
+Tabler is the *sections'* icon set and not Inflozo's chrome, so `kit/icons.tsx` held no Tabler path and no Tabler
+licence; it now holds one of each, and its header says a glyph the export draws is still read from the export — a
+Tabler path enters only where the owner names one. And **the drawing was not retyped from his message**: it is
+`packages/library/icons/tabler.json`'s own `circle-off`, verified path for path, inlined rather than imported because
+`@inflozo/library/icons` would pull its whole set into the editor's client bundle.
+
+**The chevron that did nothing.** The Membership heading drew D5b's chevron and had no handler — R-118's fault from
+the other end: a control that is *present* must work. It is a `button` with `aria-expanded` now, and a collapsed
+group's rows are **not rendered** rather than hidden, because a hidden button is still one `arrowKeys` would step onto
+and a keyboard user would land on a row nobody can see.
 
 ### Seven files, six canvases — the "contradiction" is two different counts
 
@@ -456,14 +500,15 @@ step 4 is where you see it.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | A new control reading **Template · Home** with a small chevron. No "Auto-generated" note anywhere — you designed this page. |
-| 2 | same | Top bar | Press it. | — | A menu: Home · Post · Page · Tag · Author · a **Membership** heading with Signup, Signin and Member home under it · 404. Home has a tick. **No "+ New template"** — that arrives with the Routes Manager (your ruling, R-128). Pages you have never touched carry a small hollow dot **and the word "Auto-generated"**; Home and Post carry a filled dot and no word. **No "Private" row** — your site has not asked for one. Compare it with D5b in `D5 Canvas Markers and Template Switcher.dc.html`. |
-| 3 | same | Switcher | Choose **Tag**. | — | The page does **not** reload — no white flash, no spinner in the browser tab. The address becomes `…/projects/…/tag`, the canvas becomes a tag archive, and the top bar now reads **Template · Tag** with a note beside it: "Auto-generated — edit anything to make it yours". The same sentence sits at the top of the list on the left. |
+| 2 | same | Top bar | Press it. | — | A menu: Home · Post · Page · Tag · Author · a **Membership** heading with Signup, Signin and Member home under it · 404. Home has a tick. **No "+ New template"** — that arrives with the Routes Manager (your ruling, R-128). Pages you have never touched carry a small hollow dot **and the word "Auto-generated"**; Home and Post carry a filled dot and no word; the three Membership rows carry **your crossed-out circle and the word "Empty"** (R-130). **No "Private" row** — your site has not asked for one. Compare it with D5b in `D5 Canvas Markers and Template Switcher.dc.html`. |
+| 2b | same | Switcher | Press the word **Membership** (or its chevron). | — | The three rows underneath fold away and the chevron turns to point right. Press it again and they come back. This is the control that did nothing when you tested it. |
+| 3 | same | Switcher | Choose **Tag**. | — | The page does **not** reload — no white flash, no spinner in the browser tab. The address becomes `…/projects/…/tag`, the canvas becomes a tag archive, and the top bar reads **Template · Tag** — **and nothing beside it**, the note you removed (R-130). The sentence "Auto-generated — edit anything to make it yours" now sits only at the top of the list on the left. |
 | 4 | same | Canvas, Tag | Look at what is on the page. | — | Your site's header and footer, and **one** section — a three-up grid of posts. The archive heading above it is missing on purpose: that design is not in the library yet. The list on the left shows the one section. |
 | 5 | same | Canvas, Tag | Press that grid to select it, then use the switcher to go to **Author**. | — | The selection lets go as you arrive: nothing is outlined, and the right-hand panel is empty. The Author canvas is also marked auto-generated and also shows one grid. |
-| 6 | same | Switcher | Choose **404**. | — | An empty page with just your header and footer, and still marked "Auto-generated" in both places — the standard 404 design has not been built yet, and the note tells you this page is not yours. |
-| 7 | same | Switcher | Choose **Signup** under Membership. | — | A blank page and an empty list, with **no** "Auto-generated" note anywhere. Membership pages are never auto-built — they stay empty until you design them. |
-| 8 | same | Switcher | Go back to **Tag**, press the "…" beside the one section and choose **Rename**. | `My tag feed` | The note disappears from both the top bar and the list the moment you save the name — the page is now yours. Open the switcher: Tag's dot is now filled and the word is gone. |
-| 9 | same | Layers | Press "…" on that same section and choose **Delete**. | — | With nothing left, the page goes **back** to the standard recipe: the grid returns, and the "Auto-generated" note comes back in both places. |
+| 6 | same | Switcher | Choose **404**. | — | An empty page with just your header and footer, and still marked "Auto-generated" at the top of the list on the left — the standard 404 design has not been built yet, and the note tells you this page is not yours. |
+| 7 | same | Switcher | Choose **Signup** under Membership. | — | A blank page and an empty list, with **no** "Auto-generated" note anywhere. Membership pages are never auto-built — they stay empty until you design them, which is what its crossed-out circle and "Empty" say in the menu. |
+| 8 | same | Switcher | Go back to **Tag**, press the "…" beside the one section and choose **Rename**. | `My tag feed` | The note disappears from the list the moment you save the name — the page is now yours. Open the switcher: Tag's dot is now filled and the word is gone. |
+| 9 | same | Layers | Press "…" on that same section and choose **Delete**. | — | With nothing left, the page goes **back** to the standard recipe: the grid returns, and the "Auto-generated" note comes back at the top of the list. |
 | 10 | same | Layers | Press "…" on the grid and choose **Hide** instead. | — | The section disappears from the page but the row stays and **no** note comes back — hiding is not the same as taking it off. |
 | 11 | same | Browser | Press the browser's Back button twice. | — | You walk back through the canvases you visited, in order, without the editor reloading. |
 | 12 | same | Layers | Press "…" beside "Header — Rail" in the SITE-WIDE group and choose **Delete**. | — | The box that asks first names the number of templates it changes. Check the number matches how many pages the switcher actually offers. Then press **Cancel**. |
@@ -559,4 +604,11 @@ say neither can be right for a membership page. So it is a small new choice, and
    you have not touched.
 4. **A different word** — "Not built yet", "Blank", or one you prefer. Say the word and I will use it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: a glyph, not one of the four words (owner, 2026-09-18).** He answered with Tabler's `circle-off` — a circle
+with a line through it — for the Empty rows, and in the same message removed the top bar's marker chip: *"There is a
+notification adjacent to the Template dropdown in top bar… I do not want to show that. We already have the identifier
+in the Dropdown."* Recorded as **R-130**: the mark for a never-auto-built canvas is `circle-off` and the word "Empty"
+stays beside it (his own "a shape never travels alone"); the auto-generated marker has **one** place, the head of
+Layers. D5a is superseded on the chip alone. Its two consequences are in the Design Notes: R-92's scope gains one
+stated exception for a Tabler path in `kit/icons.tsx`, with the MIT notice that path owes, and the drawing is
+`tabler.json`'s own rather than retyped.
