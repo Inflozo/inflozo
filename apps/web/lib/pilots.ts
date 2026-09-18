@@ -22,6 +22,8 @@ const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..',
 export const DESIGNS_DIR = () => join(PACKAGES(), 'library', 'designs')
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')
+/** R-113's control register — which settings-panel group each category's rows sit in (Story 5.4 reads one row of it). */
+const REGISTER = () => join(PACKAGES(), 'library', 'control-groups.json')
 /** The editor's in-canvas chrome (AD-21), read the way the tokens are: from this module's own address. */
 const CHROME = () => join(dirname(fileURLToPath(import.meta.url)), 'canvas-chrome.css')
 
@@ -58,6 +60,20 @@ export function pilot(id: string): SectionRegistryEntry {
  *  `pilot()` re-lists the directory to check its id — nothing at the pilots' size. Build the list once per module when
  *  the category stories' designs make a request slow. */
 export const pilots = (): SectionRegistryEntry[] => pilotIds().map(pilot)
+
+/** R-124's Member visibility row, per CATEGORY, read off R-113's control register (Story 5.4).
+ *
+ *  WHY THE REGISTER AND NOT THE PRD: the two disagree about which categories carry the row — `prd.md`'s Appendix C
+ *  names four CTA-bearing ones, `control-groups.json` files it for ten — and DW-185 leaves the answer to the first
+ *  E9/E10 category story the disagreement touches. The register is the list a drawn panel produced (DW-111, R-74), so
+ *  the editor reads it and nothing this story builds depends on the answer: both pilots the owner tests it on, a4/13
+ *  and a22/1, appear in both lists. */
+let register: Readonly<Record<string, unknown>> | null = null
+export function carriesMemberVisibility(designId: string): boolean {
+  register ??= JSON.parse(readFileSync(REGISTER(), 'utf8')) as Record<string, unknown>
+  const own = register[designId.split('/')[0] ?? '']
+  return typeof own === 'object' && own !== null && Object.hasOwn(own, 'Member visibility')
+}
 
 /** Each declared query's rows in both orders at the Count's ceiling, as `/controls`' `queryRows`, so the client picks
  *  by the stored Order, slices to the limit and never runs a query. A fixed query and a hand-picked list are their own

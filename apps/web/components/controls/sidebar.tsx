@@ -2,9 +2,9 @@
 
 import { useId, useRef, useState, type ReactNode } from 'react'
 import {
-  editText, resetChanges, resetControl, resetSection, setContent, setControl, setData, sidebar,
+  editText, GROUP_LABELS, resetChanges, resetControl, resetSection, setContent, setControl, setData, sidebar,
 } from '@inflozo/section-runtime'
-import type { ControlEntry, ControlRow, ControlState, DataRow, PropRow, PropValue } from '@inflozo/section-runtime'
+import type { ControlEntry, ControlRow, ControlState, DataRow, MemberState, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
 import { Accordion } from '@/components/kit/accordion'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
@@ -42,14 +42,34 @@ import { limitSentence } from '@/lib/inline'
    glyph and asks first (R-115): S14c's confirm, in the app's one dialog vocabulary (`kit/dialog.ts`), naming the
    count and the changed rows, with the fear answered in the second sentence and focus on Cancel. Nothing changed,
    it says so under the button instead — R-12's rule for a control at its floor, which stays live and explains
-   itself. The moon badge carries its words, "Dark override" (UX-DR8). */
+   itself. The moon badge carries its words, "Dark override" (UX-DR8).
+
+   R-124 (owner, 2026-09-18, Story 5.4's Q1) ADDS ONE ROW THE ENGINE DOES NOT DECLARE: "who can see this section" is
+   the FIRST ROW of Section Settings and Layers draws nothing about it — where `A4-13 Latest Post.dc.html`:256 and
+   `A22-1 Inline Row.dc.html`:69 both draw it, and where R-113 already filed it. It is NOT a design control: the value
+   lives on the INSTANCE (`memberVisibility`) and reaches both emitters as `RenderInput.visibility`, and a declared
+   control would stamp a second, inert copy of it on the root through `stampControls` (DW-186). So it is drawn here,
+   above `sidebar()`'s own rows, and Section Settings is drawn for it alone where a design declares nothing else for
+   that group. A NAMED SELECT, not a pill row: run over these four values R-114's own rule refuses them ("Logged out"
+   is 66px against a 58.3px pill), which is why `A22-1`'s drawn select wins over `A4-13`'s pre-R-114 pills. */
 
 export type Edit = 'control' | 'content'
+
+/** R-124's row: the instance's own audience, the visitor the canvas previews, and where to send a change.
+ *  Absent — the whole prop left out — for a section whose category carries no Member visibility row (DW-185: the
+ *  control register decides, not the PRD's list, while the two disagree). */
+export type VisibilityRow = {
+  value: MemberState
+  /** the visitor the canvas is drawing for, so the control can say why the section is not there */
+  previews: Exclude<MemberState, 'everyone'>
+  onChange: (value: MemberState) => void
+}
 
 export type SidebarProps = {
   entry: ControlEntry
   state: ControlState
   onChange: (next: ControlState, kind: Edit) => void
+  visibility?: VisibilityRow
   /** Background role's colours, by role — the site's own (the review hands it the reference tokens) */
   swatches: Readonly<Record<string, string>>
   /** the site's time zone name, printed under a date (the value itself is never converted) */
@@ -169,7 +189,22 @@ const Absent = ({ note }: { note: string }) => (
 const inWords = (words: readonly string[]) =>
   words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`
 
-export function Sidebar({ entry, state, onChange, swatches, timezone, links, assets, sourceRows }: SidebarProps) {
+/** `A22 Newsletter - Spec.md`:291's four values, in its order, with its own words. */
+const AUDIENCE: readonly { value: MemberState; label: string }[] = [
+  { value: 'everyone', label: 'Everyone' },
+  { value: 'anonymous', label: 'Logged out' },
+  { value: 'free', label: 'Free members' },
+  { value: 'paid', label: 'Paid members' },
+]
+
+/** What the canvas is previewing, in the words the audience list uses. */
+const PREVIEWING: Readonly<Record<Exclude<MemberState, 'everyone'>, string>> = {
+  anonymous: 'a visitor who is not signed in',
+  free: 'a free member',
+  paid: 'a paying member',
+}
+
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -302,10 +337,38 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
     })
   }
 
+  /* R-124's row, drawn where every drawing puts it: the head of Section Settings. `A4-13`'s own hint is the first
+     line; the second appears only when the chosen audience is not the one the canvas previews, so the section's
+     absence from the canvas is never silent. */
+  const audience = visibility === undefined ? null : (
+    <div key="member-visibility" className="flex flex-col gap-[5px]">
+      <Select
+        id={`${base}-member-visibility`}
+        label="Member visibility"
+        value={AUDIENCE.find((o) => o.value === visibility.value)?.label ?? 'Everyone'}
+        options={AUDIENCE.map((o) => ({ value: o.value, label: o.label, active: o.value === visibility.value }))}
+        onSelect={(value) => visibility.onChange(value as MemberState)}
+      />
+      <HelperCaption>Who sees the whole section.</HelperCaption>
+      {visibility.value !== 'everyone' ? (
+        <HelperCaption>
+          The canvas is previewing {PREVIEWING[visibility.previews]}, so this section is not drawn here.
+        </HelperCaption>
+      ) : null}
+    </div>
+  )
+
+  // Section Settings is drawn for that one row even where the design declares nothing else for it, first, as
+  // `SIDEBAR_GROUPS` orders the panel (R-113)
+  const groups: SidebarGroupModel[] =
+    audience === null || model.groups.some((g) => g.id === 'settings')
+      ? model.groups
+      : [{ id: 'settings', label: GROUP_LABELS.settings, rows: [], absent: [] }, ...model.groups]
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col">
-        {model.groups.map((group) => {
+        {groups.map((group) => {
           // in the engine's order (R-113), which ends with the universal controls: the absent notes go just above them
           const at = group.rows.findIndex((r) => r.kind === 'control' && r.universal)
           const [rows, foot] = at === -1 ? [group.rows, []] : [group.rows.slice(0, at), group.rows.slice(at)]
@@ -319,6 +382,7 @@ export function Sidebar({ entry, state, onChange, swatches, timezone, links, ass
               onToggle={() => setOpen({ ...open, [group.id]: open[group.id] !== true })}
             >
               <div className="flex flex-col gap-3 pb-3 pt-1">
+                {group.id === 'settings' ? audience : null}
                 {rows.map(draw)}
                 {/* a query's rows are only ever Data's, drawn as one list per query */}
                 {data(rows.filter((r): r is DataRow => r.kind === 'data'))}

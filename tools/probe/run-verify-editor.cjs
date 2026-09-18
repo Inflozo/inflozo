@@ -32,6 +32,16 @@
 // while the canvas scrolls, and the panel's own rich field, its token row, catalog words and the theme's own words — all inside step 5's CSP session; step 8's axe runs twice more, with the toolbar showing and
 // with the link panel open; step 14 gains a tap into a text prop; and step 13 presses the section's top padding, because a
 // press on its words is now the start of editing. Its review adds step 27: R-123's press on nothing, in each of its three grounds.
+// Story 5.4 adds steps 28–39, all inside step 5's CSP session so its zero covers them: B7's two groups and their DERIVED
+// counts (the canvases `lib/editor.ts` opens, and the page group's own rows — never a number written here), a press on a
+// row, D8e's four states with the ring on the ROW, the eye, `⌥`-arrows with the announce read from `#editor-said`, the
+// drag proving nothing reorders until the drop, the `⋯` menu and the rename dialog, the two kinds of singleton (no
+// Duplicate on a site-wide row, and one confirm for both its Delete and its eye, reached from the row AND the pill),
+// S4b's pill measured against the section's corner and against R-119's Pro tag (R-125), the pointer crossing onto the
+// pill keeping the hover, the pill hiding from the first scroll, R-124's Member visibility at the head of Section
+// Settings, hiding and then removing every page section, and a reload starting from the stored doc. Step 8's axe runs
+// once more with the pill showing and a row's menu open. Every Layers row is found by `[data-layer-row]`, which is
+// `{doc}:{instanceId}`.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -189,7 +199,11 @@ async function main() {
         ground: css(canvas)?.backgroundColor,
         card: card && { left: box(card).left - box(canvas).left, right: box(canvas).right - box(card).right, top: box(card).top - box(canvas).top, bottom: box(canvas).bottom - box(card).bottom, width: box(card).width, radius: css(card).borderRadius, shadow: css(card).boxShadow },
         controls: { w: box(controls)?.width, rule: css(controls)?.borderLeftWidth, pad: css(controls)?.paddingTop, bg: css(controls)?.backgroundColor, label: pageLabel?.textContent, labelTop: box(pageLabel)?.top - box(controls)?.top, labelSize: css(pageLabel)?.fontSize, labelWeight: css(pageLabel)?.fontWeight, labelCase: css(pageLabel)?.textTransform },
-        rows: [...(layers?.querySelectorAll('div.overflow-y-auto > div > span:last-child') ?? [])].map((s) => s.textContent),
+        rows: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].map((r) => r.querySelector('button')?.textContent),
+        // Story 5.4: every row is interactive — a name button, a ⋯ and an eye. `:scope >` only: each row also holds
+        // its own ⋯ MENU, whose rows are buttons too (and whose popover keeps them out of the a11y tree until opened).
+        rowControls: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].map((r) => r.querySelectorAll(':scope > button, :scope > span > button').length),
+        rowGrips: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].filter((r) => r.querySelector('span[aria-hidden] svg')).length,
         buttonsInLayers: layers?.querySelectorAll('button').length,
         windowScrolls: document.documentElement.scrollHeight > innerHeight,
       }
@@ -198,7 +212,8 @@ async function main() {
     check('step 2 — the bar: 48px with its 1px rule on paper, the back link to /', shape.header.h === 48 && shape.header.rule === '1px' && shape.header.bg === 'rgb(247, 245, 242)' && shape.back === '/', JSON.stringify(shape.header) + ` back=${shape.back}`)
     check('step 2 — the project name: 13px, 600, Inter', shape.name.text === 'Pilot sections' && shape.name.size === '13px' && shape.name.weight === '600' && /Inter/i.test(shape.name.family), JSON.stringify(shape.name))
     check('step 2 — Layers: 240px, right rule, paper, "THIS PAGE · HOME"', shape.layers.w === 240 && shape.layers.rule === '1px' && shape.layers.bg === 'rgb(247, 245, 242)' && /this page · home/i.test(shape.layers.title), JSON.stringify({ ...shape.layers, title: undefined }))
-    check('step 2 — Layers lists the stack in canvas order, not interactive but its one fold', shape.rows.join(' | ') === stackOf('home').map(([, name]) => name).join(' | ') && shape.buttonsInLayers === 1, `${shape.rows.join(' | ')} · buttons ${shape.buttonsInLayers}`)
+    check('step 2 — Layers lists the stack in canvas order', shape.rows.join(' | ') === stackOf('home').map(([, name]) => name).join(' | '), shape.rows.join(' | '))
+    check('step 2 — Story 5.4: every row carries a name button, a ⋯ and an eye, and a pointer-only grip that is no tab stop', shape.rowControls.length === stackOf('home').length && shape.rowControls.every((n) => n === 3) && shape.rowGrips === shape.rowControls.length, `${JSON.stringify(shape.rowControls)} · grips ${shape.rowGrips} · buttons ${shape.buttonsInLayers}`)
     check('step 2 — the canvas ground #EDEAE6', shape.ground === 'rgb(237, 234, 230)', shape.ground)
     const c = shape.card
     check('step 2 — the page card: 24 from the top, 28 each side, flush at the bottom, 864 wide, 6px top radius, the page shadow', c && c.top === 24 && c.left === 28 && c.right === 28 && c.bottom === 0 && c.width === 864 && c.radius === '6px 6px 0px 0px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), JSON.stringify(c))
@@ -295,10 +310,14 @@ async function main() {
     await painted('home')
 
     // ── steps 10–13 — Story 5.2's gestures, inside the CSP session ──
-    const [{ pilot }, { sidebar, defaultContent }] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent }, { CANVASES }] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
     ])
+    // Story 5.4's counts are DERIVED (standing rule 4): the card's template count is the canvases `lib/editor.ts`
+    // opens, and the page group's is the seed's own rows
+    const TEMPLATE_COUNT = Object.keys(CANVASES).length
     const homeStack = stackOf('home')
     const nth = (id) => homeStack.findIndex(([d]) => d === id)
     const [HEADER, HERO, GRID] = [nth(TEMPLATES.site[0][0]), nth('a4/13'), nth('a17/1')]
@@ -346,7 +365,7 @@ async function main() {
       return t && { ...t, x: t.left, y: t.top }
     }
     const badgeNow = () => chromeNow('[data-chrome="pro"] span')
-    const rowsNow = () => page.evaluate(() => [...document.querySelectorAll('aside[aria-label="Layers"] div.overflow-y-auto > div')].map((r) => getComputedStyle(r).backgroundColor))
+    const rowsNow = () => page.evaluate(() => [...document.querySelectorAll('aside[aria-label="Layers"] [data-layer-row]')].map((r) => getComputedStyle(r).backgroundColor))
     const marked = () => canvasFrame().evaluate(() => [...document.querySelectorAll('*')].filter((el) => [...el.attributes].some((a) => a.name.startsWith('data-inflozo-'))).length)
     const controlsAside = () => page.locator('#editor-controls')
     // R-120's outline boxes. The width is read as PAINTED PIXELS, never from computed style — computed style said 1.5px
@@ -1144,19 +1163,21 @@ async function main() {
     check('step 27 — a press in the panel is not a press on nothing: the section stays selected', (await onScreen(GRID)).selected && (await panelOf()).label === 'Section settings')
     // the Layers panel's own ground, below its rows (R-123 as amended, 2026-09-18) — and a row is not ground
     const layersGround = await page.evaluate(() => {
+      // Story 5.4 re-anchored this: the list's last ELEMENT CHILD is B7's footed note now, so the ground is read from
+      // the last ROW, exactly as `controls/layers.tsx` reads it
       const list = document.getElementById('editor-layers').lastElementChild
       const r = list.getBoundingClientRect()
-      const rows = [...list.children]
+      const rows = [...list.querySelectorAll('[data-layer-row]')]
       const last = rows[rows.length - 1].getBoundingClientRect()
       const at = { x: r.left + r.width / 2, y: last.bottom + 40 }
-      return { rows: rows.length, room: r.bottom - last.bottom, isGround: document.elementFromPoint(at.x, at.y) === list, at }
+      return { rows: rows.length, lastChildIsTheNote: list.lastElementChild !== rows[rows.length - 1].parentElement, room: r.bottom - last.bottom, isGround: document.elementFromPoint(at.x, at.y) === list, at }
     })
     await page.mouse.click(layersGround.at.x, layersGround.at.y)
     await page.waitForTimeout(300)
-    check('step 27 — a press on the empty space below the Layers rows deselects too', layersGround.isGround && layersGround.room > 40 && !(await onScreen(GRID)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(layersGround))
+    check('step 27 — a press on the empty space below the Layers rows deselects too, read from the last ROW and not the list\'s last child', layersGround.isGround && layersGround.lastChildIsTheNote && layersGround.room > 40 && !(await onScreen(GRID)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(layersGround))
     await clickOn(GRID)
     const layersRow = await page.evaluate(() => {
-      const r = document.getElementById('editor-layers').lastElementChild.firstElementChild.getBoundingClientRect()
+      const r = document.querySelectorAll('#editor-layers [data-layer-row]')[1].getBoundingClientRect()
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
     })
     await page.mouse.click(layersRow.x, layersRow.y)
@@ -1180,6 +1201,312 @@ async function main() {
     await page.mouse.click(belowLast.screen.x, belowLast.screen.y)
     await page.waitForTimeout(300)
     check('step 27 — on the canvas, a press on the ground below the last section deselects it too', belowLast.insideFrame && !belowLast.inSection && !(await onScreen(0)).selected && (await panelOf()).label === 'Page settings', JSON.stringify(belowLast))
+
+    // ── Story 5.4's steps, inside the CSP session ──────────────────────────────────────────────────────────────────
+    // Layers as B7 draws it, every row's four states and keys, the two kinds of singleton, and S4b's pill.
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+
+    // ── step 28 — B7: the pinned Site-wide card, the page group, both derived counts and the footed note ──
+    const layersShape = () => page.evaluate(() => {
+      const aside = document.getElementById('editor-layers')
+      const list = aside.lastElementChild
+      const rows = [...list.querySelectorAll('[data-layer-row]')]
+      const card = rows[0].closest('div.bg-surface, div[class*="bg-surface"]')
+      const css = (el) => el && getComputedStyle(el)
+      const headings = [...list.querySelectorAll('span')].map((x) => x.textContent.trim())
+      const note = list.lastElementChild
+      return {
+        rows: rows.map((r) => ({ name: r.querySelector('button')?.textContent, key: r.getAttribute('data-layer-row'), tab: r.getAttribute('tabindex') })),
+        inCard: rows.filter((r) => card && card.contains(r)).length,
+        card: card && { bg: css(card).backgroundColor, border: css(card).borderTopWidth, radius: css(card).borderRadius, pad: css(card).padding },
+        headings,
+        noteText: note?.textContent.trim(),
+        noteRule: css(note)?.borderTopWidth,
+        noteLast: note === list.lastElementChild && !note.querySelector('[data-layer-row]'),
+        mono: [...list.querySelectorAll('span')].filter((x) => /mono/i.test(css(x).fontFamily)).map((x) => x.textContent.trim()),
+      }
+    })
+    const B7 = await layersShape()
+    check('step 28 — B7: the Site-wide card is a white box on the hairline, and the site doc\'s rows are the ones inside it', B7.inCard === TEMPLATES.site.length && B7.card?.bg === 'rgb(255, 255, 255)' && B7.card?.border === '1px', JSON.stringify({ inCard: B7.inCard, card: B7.card }))
+    check('step 28 — B7: SITE-WIDE over a derived template count, then THIS PAGE · HOME over its own row count', B7.headings.includes('Site-wide') && B7.headings.some((h) => /^This page · Home$/i.test(h)) && B7.mono.includes(`on all ${TEMPLATE_COUNT} templates`) && B7.mono.includes(String(TEMPLATES.home.length)), JSON.stringify({ headings: B7.headings, mono: B7.mono }))
+    check('step 28 — B7: the footed note is last, above a hairline, and names the same derived count', B7.noteLast && B7.noteRule === '1px' && B7.noteText === `Editing a site-wide section changes it on all ${TEMPLATE_COUNT} templates.`, JSON.stringify({ note: B7.noteText, rule: B7.noteRule, last: B7.noteLast }))
+    check('step 28 — roving tabindex: exactly one row is a tab stop', B7.rows.filter((r) => r.tab === '0').length === 1 && B7.rows.filter((r) => r.tab === '-1').length === B7.rows.length - 1, JSON.stringify(B7.rows.map((r) => r.tab)))
+
+    // ── step 29 — a press on a row selects, and D8e's four states ──
+    const rowAt = (n) => page.locator('#editor-layers [data-layer-row]').nth(n)
+    const rowState = (n) => rowAt(n).evaluate((r) => ({
+      bg: getComputedStyle(r).backgroundColor,
+      shadow: getComputedStyle(r).boxShadow,
+      words: getComputedStyle(r.querySelector('button')).color,
+      weight: getComputedStyle(r.querySelector('button')).fontWeight,
+      eye: r.querySelector('button[aria-label^="Hide"], button[aria-label^="Show"]')?.getAttribute('aria-label'),
+      eyeShown: getComputedStyle(r.querySelector('button[aria-label^="Hide"], button[aria-label^="Show"]').parentElement).opacity,
+    }))
+    await page.keyboard.press('Escape')
+    await rowAt(GRID).getByRole('button', { name: layerOf(GRID), exact: true }).click()
+    await page.waitForTimeout(300)
+    const pressed29 = [await onScreen(GRID), await panelOf(), await rowState(GRID)]
+    check('step 29 — a press on a Layers row selects that section, coral-tints the row and heads the panel with its name (R-123: the press does not deselect)', pressed29[0].selected && pressed29[1].head === layerOf(GRID) && pressed29[2].bg === TINT && pressed29[2].weight === '600', JSON.stringify({ selected: pressed29[0].selected, head: pressed29[1].head, row: pressed29[2] }))
+    // D8e: the ring is drawn ON THE ROW, over whichever state it is already in
+    await rowAt(GRID).focus()
+    await page.waitForTimeout(150)
+    const focusedSelected = await rowState(GRID)
+    check('step 29 — D8e: a focused-and-selected row reads as both — the coral tint with the 2px ring on the ROW', focusedSelected.bg === TINT && /rgb\(194, 56, 31\) 0px 0px 0px 2px/.test(focusedSelected.shadow), JSON.stringify(focusedSelected))
+    await hoverOn(HERO)
+    const washed = await rowState(HERO)
+    check('step 29 — D8e: a hovered section washes its row and reveals the eye', washed.bg === WASH && washed.eyeShown === '1' && washed.eye === `Hide ${layerOf(HERO)}`, JSON.stringify(washed))
+
+    // ── step 30 — the eye hides: the section leaves the canvas and the row stays ──
+    const docNow = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc
+    const rootCount = () => canvasFrame().evaluate(() => document.querySelectorAll('#canvas > *').length)
+    const before30 = await rootCount()
+    await rowAt(GRID).getByRole('button', { name: `Hide ${layerOf(GRID)}`, exact: true }).click()
+    await page.waitForTimeout(400)
+    const hidden30 = await rowState(GRID)
+    check('step 30 — the eye hides the section: it leaves the canvas, its row stays with ink-soft words and a crossed-out eye that keeps showing', (await rootCount()) === before30 - 1 && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length && hidden30.words === 'rgb(110, 106, 100)' && hidden30.eye === `Show ${layerOf(GRID)}` && hidden30.eyeShown === '1', JSON.stringify({ roots: await rootCount(), before: before30, row: hidden30 }))
+    check('step 30 — nothing is persisted before Story 5.8: the stored doc still holds every instance, unhidden', (await docNow())?.instances?.length === TEMPLATES.home.length && (await docNow())?.instances?.every((i) => i.hidden === undefined || i.hidden === false), JSON.stringify(await docNow()))
+    await rowAt(GRID).getByRole('button', { name: `Show ${layerOf(GRID)}`, exact: true }).click()
+    await page.waitForTimeout(400)
+    check('step 30 — pressing it again brings the section back', (await rootCount()) === before30)
+
+    // ── step 31 — ⌥↓ moves the section, focus follows, and the move is announced politely ──
+    const pageNames = () => page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => r.querySelector('button').textContent))
+    const canvasClasses = () => canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].map((e) => e.className))
+    const names31 = await pageNames()
+    const classes31 = await canvasClasses()
+    await rowAt(GRID).focus()
+    await page.keyboard.down('Alt')
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.up('Alt')
+    await page.waitForTimeout(400)
+    const moved31 = { names: await pageNames(), classes: await canvasClasses(), said: await page.locator('#editor-said').innerText(), focus: await page.evaluate(() => document.activeElement?.getAttribute('data-layer-row')) }
+    const swapped = [...names31]
+    swapped.splice(GRID, 2, names31[GRID + 1], names31[GRID])
+    check('step 31 — ⌥↓ moves the section one place, the canvas repaints in the new order and focus follows the row', moved31.names.join(' | ') === swapped.join(' | ') && moved31.classes.join(' | ') !== classes31.join(' | ') && moved31.focus === B7.rows[GRID].key, `${moved31.names.join(' | ')} · focus ${moved31.focus}`)
+    check('step 31 — the move is announced politely in moveSection\'s own words', moved31.said === `Moved to position ${GRID - TEMPLATES.site.length + 2} of ${TEMPLATES.home.length}`, JSON.stringify(moved31.said))
+    await page.keyboard.down('Alt')
+    await page.keyboard.press('ArrowUp')
+    await page.keyboard.up('Alt')
+    await page.waitForTimeout(400)
+    check('step 31 — ⌥↑ puts it back, and ⌥↑ at the first position does nothing', (await pageNames()).join(' | ') === names31.join(' | '))
+    await page.keyboard.press('ArrowUp')
+    await page.waitForTimeout(150)
+    check('step 31 — ↑ moves focus between rows without moving anything', (await page.evaluate(() => document.activeElement?.getAttribute('data-layer-row'))) === B7.rows[GRID - 1].key && (await pageNames()).join(' | ') === names31.join(' | '))
+
+    // ── step 32 — the drag: nothing reorders until the drop, and a dashed slot the row's height ──
+    const gripAt = async (n) => {
+      const r = await rowAt(n).locator('span[aria-hidden]').first().boundingBox()
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+    const from32 = await gripAt(GRID)
+    const to32 = await gripAt(GRID + 1)
+    await page.mouse.move(from32.x, from32.y)
+    await page.mouse.down()
+    await page.mouse.move(to32.x, to32.y + 4, { steps: 8 })
+    await page.waitForTimeout(200)
+    const dragging32 = await page.evaluate(() => {
+      const slot = document.querySelector('#editor-layers [data-drop-slot]')
+      const rows = [...document.querySelectorAll('#editor-layers [data-layer-row]')]
+      return {
+        slot: slot && { h: slot.getBoundingClientRect().height, dashed: getComputedStyle(slot).borderTopStyle, events: getComputedStyle(slot).pointerEvents },
+        rowH: rows[0].getBoundingClientRect().height,
+        translated: rows.filter((r) => getComputedStyle(r).translate !== 'none').length,
+        names: rows.map((r) => r.querySelector('button').textContent),
+      }
+    })
+    check('step 32 — while dragging: a dashed slot the row\'s own height, rows translated aside, and NOTHING reordered in the list or on the canvas', !!dragging32.slot && dragging32.slot.dashed === 'dashed' && dragging32.slot.events === 'none' && Math.abs(dragging32.slot.h - dragging32.rowH) <= 1 && dragging32.translated > 0 && dragging32.names.join(' | ') === names31.join(' | ') && (await canvasClasses()).join(' | ') === classes31.join(' | '), JSON.stringify(dragging32))
+    await page.mouse.up()
+    await page.waitForTimeout(400)
+    check('step 32 — on the drop the list and the canvas both take the new order, and the slot goes', (await pageNames()).join(' | ') === swapped.join(' | ') && (await canvasClasses()).join(' | ') !== classes31.join(' | ') && (await page.locator('#editor-layers [data-drop-slot]').count()) === 0, (await pageNames()).join(' | '))
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+
+    // ── step 33 — the ⋯ menu, the rename dialog, and the two kinds of singleton ──
+    const menuOf = async (n) => {
+      await rowAt(n).getByRole('button', { name: `More for ${layerOf(n)}`, exact: true }).click()
+      await page.waitForTimeout(250)
+      return page.locator(`#layers-menu-${B7.rows[n].key.split(':')[1]} button`).allInnerTexts()
+    }
+    const pageMenu = await menuOf(GRID)
+    await page.keyboard.press('Escape')
+    const siteMenu = await menuOf(HEADER)
+    await page.keyboard.press('Escape')
+    check('step 33 — a page row\'s ⋯ holds Rename · Duplicate · Delete; a SITE-WIDE row\'s holds Rename · Delete and no Duplicate (FR-D5)', pageMenu.join(' · ') === 'Rename · Duplicate · Delete' && siteMenu.join(' · ') === 'Rename · Delete', `page ${pageMenu.join(' · ')} · site ${siteMenu.join(' · ')}`)
+    await rowAt(HERO).getByRole('button', { name: `More for ${layerOf(HERO)}`, exact: true }).click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Rename', exact: true }).click()
+    await page.waitForTimeout(300)
+    const renameFocus = await page.evaluate(() => document.activeElement?.textContent)
+    await page.locator('#layers-rename-name').fill('')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await page.waitForTimeout(250)
+    const blank = await page.locator('dialog[aria-labelledby="layers-rename-title"]').evaluate((d) => ({ open: d.open, text: d.textContent }))
+    check('step 33 — the rename dialog opens on Cancel and refuses a blank name without closing', renameFocus === 'Cancel' && blank.open && /Give this section a name\./.test(blank.text), `focus ${JSON.stringify(renameFocus)} · ${JSON.stringify(blank.open)}`)
+    await page.locator('#layers-rename-name').fill('Top of the page')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await page.waitForTimeout(400)
+    await rowAt(HERO).getByRole('button', { name: 'Top of the page', exact: true }).click()
+    await page.waitForTimeout(300)
+    check('step 33 — the renamed row and the panel\'s heading both read the new name', (await pageNames())[HERO] === 'Top of the page' && (await panelOf()).head === 'Top of the page', JSON.stringify(await pageNames()))
+    // Duplicate lands directly after its original, with the same name; Delete takes it away
+    await rowAt(NEWS).getByRole('button', { name: `More for ${layerOf(NEWS)}`, exact: true }).click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Duplicate', exact: true }).click()
+    await page.waitForTimeout(500)
+    const dup = { names: await pageNames(), roots: await rootCount() }
+    check('step 33 — Duplicate lands a copy directly after its original, on the list and on the canvas', dup.names.length === B7.rows.length + 1 && dup.names[NEWS] === layerOf(NEWS) && dup.names[NEWS + 1] === layerOf(NEWS) && dup.roots === before30 + 1, `${dup.names.join(' | ')} · roots ${dup.roots}`)
+    await rowAt(NEWS + 1).getByRole('button', { name: `More for ${layerOf(NEWS)}`, exact: true }).click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Delete', exact: true }).click()
+    await page.waitForTimeout(500)
+    check('step 33 — Delete takes the copy away again, and the page group\'s count follows', (await pageNames()).length === B7.rows.length && (await rootCount()) === before30)
+
+    // ── step 34 — a site-wide section asks first, naming every template ──
+    await rowAt(HEADER).getByRole('button', { name: `Hide ${layerOf(HEADER)}`, exact: true }).click()
+    await page.waitForTimeout(400)
+    const asked = await page.locator('dialog[aria-labelledby="editor-sitewide-title"]').evaluate((d) => ({ open: d.open, text: d.textContent.replace(/\s+/g, ' ') }))
+    const askFocus = await page.evaluate(() => document.activeElement?.textContent)
+    check('step 34 — the eye on a site-wide row asks first, opening on Cancel and naming every template', asked.open && askFocus === 'Cancel' && new RegExp(`all ${TEMPLATE_COUNT} templates`).test(asked.text) && /site-wide/i.test(asked.text), `${JSON.stringify(asked)} · focus ${JSON.stringify(askFocus)}`)
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.waitForTimeout(300)
+    check('step 34 — Cancel changes nothing', (await rootCount()) === before30 && (await rowState(HEADER)).eye === `Hide ${layerOf(HEADER)}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+
+    // ── step 35 — S4b's pill: three controls, its corner, and the hover it must not lose ──
+    const pillNow = () => page.evaluate(() => {
+      const el = document.querySelector('[data-section-pill]')
+      if (!el) return null
+      const c = getComputedStyle(el)
+      const r = el.getBoundingClientRect()
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, bg: c.backgroundColor, border: c.borderTopWidth, radius: c.borderTopLeftRadius, pad: c.padding, shadow: c.boxShadow, visibility: c.visibility, buttons: [...el.querySelectorAll('button')].map((b) => b.getAttribute('aria-label')), grips: el.querySelectorAll('span[aria-hidden] svg').length }
+    })
+    await hoverOn(GRID)
+    const pill35 = await pillNow()
+    const grid35 = await onScreen(GRID)
+    check('step 35 — S4b: a white pill on the hairline, radius 24, 3px padding and the md shadow, carrying Duplicate, Delete and the grip and NOTHING else (R-118)', pill35 && pill35.bg === 'rgb(255, 255, 255)' && pill35.border === '1px' && pill35.radius === '24px' && pill35.pad === '3px' && /rgba\(28, 27, 26, 0\.08\)/.test(pill35.shadow) && pill35.buttons.join(' · ') === `Duplicate ${layerOf(GRID)} · Delete ${layerOf(GRID)}` && pill35.grips === 1, JSON.stringify(pill35))
+    check('step 35 — S4b: 10px inside the hovered section\'s top-right on screen', pill35 && Math.abs(grid35.right - pill35.right - 10) <= 1 && Math.abs(pill35.top - grid35.y - 10) <= 1, `pill ${JSON.stringify({ right: pill35?.right, top: pill35?.top })} · root right ${grid35.right} top ${grid35.y}`)
+    await page.mouse.move((pill35.left + pill35.right) / 2, (pill35.top + pill35.bottom) / 2, { steps: 4 })
+    await page.waitForTimeout(300)
+    check('step 35 — the pointer moving from the iframe onto the pill keeps the hover and the pill (the null-relatedTarget trap)', (await pillNow()) !== null && (await onScreen(GRID)).hover, `pill ${(await pillNow()) !== null} · hover ${(await onScreen(GRID)).hover}`)
+    await page.mouse.move(120, 400)
+    await page.waitForTimeout(300)
+    check('step 35 — leaving the pill for a panel lets the hover go, and the pill with it', (await pillNow()) === null && !(await onScreen(GRID)).hover)
+    // R-125: the Pro tag keeps the corner, the pill sits to its left
+    await clickOn(HERO)
+    await hoverOn(HERO)
+    const [pill125, badge125, hero125] = [await pillNow(), await badgeNow(), await onScreen(HERO)]
+    await page.screenshot({ path: `${OUT}/editor-pill-and-pro-tag-1440x900.png` })
+    check('step 35 — R-125: the Pro tag is still 8px inside the section\'s top-right (R-119 untouched) and the pill sits to its LEFT, not overlapping', !!pill125 && !!badge125 && Math.abs(hero125.right - badge125.right - 8) <= 1 && Math.abs(badge125.top - hero125.y - 8) <= 1 && pill125.right <= badge125.left && badge125.left - pill125.right <= 10, `pill ${JSON.stringify({ right: pill125?.right })} · badge ${JSON.stringify({ left: badge125?.left, right: badge125?.right, top: badge125?.top })} · root ${JSON.stringify({ right: hero125.right, top: hero125.y })}`)
+    // the pill's Duplicate and Delete, and a site-wide section's absent Duplicate
+    await hoverOn(GRID)
+    await page.locator(`[data-section-pill] button[aria-label="Duplicate ${layerOf(GRID)}"]`).click()
+    await page.waitForTimeout(500)
+    check('step 35 — the pill\'s Duplicate copies the section directly below, as the row\'s menu does', (await pageNames())[GRID + 1] === layerOf(GRID) && (await rootCount()) === before30 + 1)
+    await hoverOn(GRID + 1)
+    await page.locator(`[data-section-pill] button[aria-label="Delete ${layerOf(GRID)}"]`).click()
+    await page.waitForTimeout(500)
+    check('step 35 — and its bin removes it again', (await rootCount()) === before30 && (await pageNames()).length === B7.rows.length)
+    await hoverOn(HEADER)
+    check('step 35 — a site-wide section\'s pill has no Duplicate (FR-D5), and its bin asks first', (await pillNow())?.buttons.join(' · ') === `Delete ${layerOf(HEADER)}`, JSON.stringify((await pillNow())?.buttons))
+    await page.locator(`[data-section-pill] button[aria-label="Delete ${layerOf(HEADER)}"]`).click()
+    await page.waitForTimeout(400)
+    check('step 35 — the pill\'s bin on a site-wide section opens the SAME confirm, on Cancel', await page.locator('dialog[aria-labelledby="editor-sitewide-title"]').evaluate((d) => d.open) && (await page.evaluate(() => document.activeElement?.textContent)) === 'Cancel')
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.waitForTimeout(250)
+
+    // ── step 36 — the pill hides from the first canvas scroll and is placed again 150ms after the last ──
+    await hoverOn(GRID)
+    const placed36 = await pillNow()
+    await page.mouse.wheel(0, 300)
+    await page.waitForTimeout(60)
+    const scrolling36 = await pillNow()
+    await page.waitForTimeout(700)
+    const settled36 = await pillNow()
+    const grid36 = await onScreen(GRID)
+    check('step 36 — the pill hides from the first canvas scroll and is placed again on its section when the scroll settles', !!placed36 && placed36.visibility === 'visible' && scrolling36?.visibility === 'hidden' && settled36?.visibility === 'visible' && Math.abs(grid36.right - settled36.right - 10) <= 1 && Math.abs(settled36.top - grid36.y - 10) <= 1, `${JSON.stringify({ placed: placed36?.visibility, scrolling: scrolling36?.visibility, settled: settled36?.visibility })} · pill ${JSON.stringify({ right: settled36?.right, top: settled36?.top })} · root ${JSON.stringify({ right: grid36.right, top: grid36.y })}`)
+    /* And the same claim PER FRAME, which is what "never between the two" means (the epic context's direction to
+       measure the pill against step 15's scroll capture). A sampler in the page reads, on every animation frame of a
+       real wheel scroll, whether the pill is hidden and — when it is not — how far its own corner is from the corner
+       of whatever section is hovered at that instant. 3px is step 15's own tolerance for the same class of measure;
+       the drift this rule exists to prevent was 8–15px (the owner's finding, Story 5.2). */
+    await hoverOn(GRID)
+    const [frames] = await Promise.all([
+      page.evaluate(async () => {
+        const f = document.querySelector('section[aria-label="Canvas"] iframe')
+        const out = []
+        const read = () => {
+          const el = document.querySelector('[data-section-pill]')
+          if (!el) return out.push(null)
+          if (getComputedStyle(el).visibility === 'hidden') return out.push('hidden')
+          const root = f.contentDocument.querySelector('[data-inflozo-hover]')
+          if (!root) return out.push(null)
+          const fr = f.getBoundingClientRect()
+          const s = fr.width / f.offsetWidth
+          const [r, p] = [root.getBoundingClientRect(), el.getBoundingClientRect()]
+          return out.push(Math.max(Math.abs(fr.left + r.right * s - p.right - 10), Math.abs(p.top - (fr.top + r.top * s) - 10)))
+        }
+        await new Promise((done) => {
+          let n = 0
+          const tick = () => { read(); if (++n < 100) requestAnimationFrame(tick); else done() }
+          requestAnimationFrame(tick)
+        })
+        return out
+      }),
+      (async () => { for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, 180); await page.waitForTimeout(60) } })(),
+    ])
+    const off = frames.filter((v) => typeof v === 'number')
+    check('step 36 — per frame of a real scroll, the pill is either hidden or on its section (≤ 3px, step 15\'s tolerance) — never between the two', frames.length > 30 && frames.includes('hidden') && off.length > 0 && Math.max(...off) <= 3, `${frames.length} frames · ${frames.filter((v) => v === 'hidden').length} hidden · ${off.length} placed · worst ${Math.max(0, ...off).toFixed(1)}px`)
+
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+
+    // ── step 37 — R-124: Member visibility is the panel's first Section-settings row, and Layers draws none of it ──
+    check('step 37 — control: the register gives Newsletter the row and Three Up none, so this step has both halves', carriesMemberVisibility('a22/1') === true && carriesMemberVisibility('a17/1') === false)
+    await clickOn(NEWS)
+    await openGroup('Section Settings')
+    await page.waitForTimeout(250)
+    const audience = await controlsAside().evaluate((a) => {
+      // the Accordion wraps its children in one column div, so the panel's first Section-settings row is two deep
+      const body = a.querySelector('[id$="-group-settings-body"]')
+      const first = body?.firstElementChild?.firstElementChild
+      return { label: first?.querySelector('span')?.textContent, value: first?.querySelector('button')?.textContent, hints: [...(first?.querySelectorAll('span') ?? [])].map((x) => x.textContent).filter((t) => /sees|previewing/.test(t)) }
+    })
+    check('step 37 — R-124: Member visibility is the FIRST row of Section Settings, reading Everyone, with its drawn hint — and nothing about it in Layers', audience.label === 'Member visibility' && audience.value === 'Everyone' && audience.hints.some((h) => /Who sees the whole section\./.test(h)) && !(await page.locator('#editor-layers').innerText()).includes('Member visibility'), JSON.stringify(audience))
+    await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
+    await page.waitForTimeout(250)
+    const options = await page.locator('ul[aria-label="Member visibility"]').allInnerTexts()
+    await page.getByRole('button', { name: 'Paid members', exact: true }).click()
+    await page.waitForTimeout(500)
+    const gated = await controlsAside().evaluate((a) => a.textContent)
+    check('step 37 — R-114: a named SELECT with A22\'s four values, not a pill row', /Everyone/.test(options.join(' ')) && /Logged out/.test(options.join(' ')) && /Free members/.test(options.join(' ')) && /Paid members/.test(options.join(' ')) && (await controlsAside().getByRole('radiogroup', { name: 'Member visibility' }).count()) === 0, options.join(' | ').replace(/\n/g, ' '))
+    check('step 37 — set to Paid members the section leaves the canvas, its Layers row stays, and the control says which visitor the canvas previews', (await rootCount()) === before30 - 1 && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length && /not signed in/.test(gated), `roots ${await rootCount()} of ${before30}`)
+    await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Everyone', exact: true }).click()
+    await page.waitForTimeout(500)
+    check('step 37 — back to Everyone and the section returns', (await rootCount()) === before30)
+
+    // ── step 38 — hide every page section, then remove them all (EXPERIENCE § State Patterns, UX-DR6) ──
+    for (const n of TEMPLATES.home.map((_, i) => i + TEMPLATES.site.length)) {
+      await rowAt(n).getByRole('button', { name: `Hide ${layerOf(n)}`, exact: true }).click()
+      await page.waitForTimeout(250)
+    }
+    check('step 38 — every page section hidden: the canvas draws only the site-wide sections and every row stays', (await rootCount()) === TEMPLATES.site.length && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length)
+    for (let i = 0; i < TEMPLATES.home.length; i++) {
+      await rowAt(TEMPLATES.site.length).getByRole('button', { name: /^More for / }).click()
+      await page.waitForTimeout(250)
+      await page.getByRole('button', { name: 'Delete', exact: true }).click()
+      await page.waitForTimeout(350)
+    }
+    const emptied = await layersShape()
+    check('step 38 — removed one by one, the page group\'s count reaches 0 and only the Site-wide card is left', emptied.rows.length === TEMPLATES.site.length && emptied.mono.includes('0') && (await rootCount()) === TEMPLATES.site.length, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono }))
+
+    // ── step 39 — a reload starts from the stored doc: nothing here was persisted (Story 5.8 saves) ──
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    check('step 39 — a reload brings every section back, unhidden and in its stored order and name', (await pageNames()).join(' | ') === stackOf('home').map(([, name]) => name).join(' | ') && (await rootCount()) === before30, (await pageNames()).join(' | '))
 
     const session = violations.splice(0)
     check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
@@ -1245,8 +1572,8 @@ async function main() {
     await painted('post')
     await page.goBack({ waitUntil: 'load' })
     await painted('home')
-    const backHome = { url: page.url(), rows: await page.locator('aside[aria-label="Layers"] div.overflow-y-auto > div > span:last-child').allInnerTexts() }
-    check('step 6 — Back from /post lands on /projects/<id> showing Home\'s sections', backHome.url === editorUrl() && backHome.rows.length === stackOf('home').length, JSON.stringify(backHome))
+    const backHome = { url: page.url(), rows: await page.locator('aside[aria-label="Layers"] [data-layer-row]').all().then((r) => r.length) }
+    check('step 6 — Back from /post lands on /projects/<id> showing Home\'s sections', backHome.url === editorUrl() && backHome.rows === stackOf('home').length, JSON.stringify(backHome))
     await page.goBack({ waitUntil: 'load' })
     check('step 6 — Back again lands on Projects', page.url() === projectsUrl, page.url())
 
@@ -1326,6 +1653,17 @@ async function main() {
     await axePage.waitForTimeout(400)
     const linkAxe = await axeRun()
     check('step 8 — axe: zero violations with the link panel open at the selection', linkAxe.length === 0 && (await axePage.locator('#canvas-inline-link').evaluate((el) => el.matches(':popover-open'))), linkAxe.join('; '))
+    // Story 5.4's own state: the hover pill showing, a Layers row focused and its ⋯ menu open
+    await axePage.keyboard.press('Escape')
+    await axePage.keyboard.press('Escape')
+    await axePage.mouse.move(g.x, g.y, { steps: 3 })
+    await axePage.waitForTimeout(300)
+    const layersRowAxe = axePage.locator('#editor-layers [data-layer-row]').nth(1)
+    await layersRowAxe.focus()
+    await layersRowAxe.getByRole('button', { name: /^More for / }).click()
+    await axePage.waitForTimeout(400)
+    const layersAxe = await axeRun()
+    check('step 8 — axe: zero violations with S4b\'s pill showing and a Layers row\'s ⋯ menu open', layersAxe.length === 0 && (await axePage.locator('[data-section-pill]').count()) === 1 && (await axePage.locator('[popover]:popover-open').count()) === 1, layersAxe.join('; '))
     await axeContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──

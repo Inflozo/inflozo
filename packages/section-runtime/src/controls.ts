@@ -174,8 +174,10 @@ export type SidebarRow = ControlRow | PropRow | DataRow
 export type SidebarGroupModel = { id: SidebarGroup; label: string; rows: SidebarRow[]; absent: string[] }
 export type SidebarModel = { groups: SidebarGroupModel[] }
 
-/** The accordions' titles (R-113). The ids are `SIDEBAR_GROUPS`, in the panel's order. */
-const GROUP_LABELS: Readonly<Record<SidebarGroup, string>> = {
+/** The accordions' titles (R-113). The ids are `SIDEBAR_GROUPS`, in the panel's order. Exported since Story 5.4: the
+ *  panel draws Section Settings for R-124's Member visibility even where the design declares no row of its own, and
+ *  one label written twice would be one label to change twice. */
+export const GROUP_LABELS: Readonly<Record<SidebarGroup, string>> = {
   settings: 'Section Settings', content: 'Content', layout: 'Layout', style: 'Style', data: 'Data',
 }
 
@@ -464,6 +466,10 @@ export function removeItem(entry: ControlEntry, state: ControlState, path: strin
   return withItems(state, path, items.filter((_, i) => i !== index))
 }
 
+/** P0-3's own words for a completed move, announced politely. ONE WORDING for every reorderable list in the app
+ *  (standing rule 3): Story 5.4's Layers panel reorders sections rather than items and announces through this. */
+export const movedTo = (to: number, count: number) => `Moved to position ${to + 1} of ${count}`
+
 /** Reorder, by drag or ⌥↑/⌥↓ — the array and the canvas order change together, and the move is
  *  announced politely in P0-3's words. */
 export function moveItem(
@@ -475,7 +481,7 @@ export function moveItem(
   if (!inRange(from, items.length) || !inRange(to, items.length)) return `There is no ${def.item ?? 'item'} at that position.`
   const next = items.filter((_, i) => i !== from)
   next.splice(to, 0, items[from])
-  return { state: withItems(state, path, next), announce: `Moved to position ${to + 1} of ${items.length}` }
+  return { state: withItems(state, path, next), announce: movedTo(to, items.length) }
 }
 
 const inRange = (i: number, n: number) => Number.isInteger(i) && i >= 0 && i < n

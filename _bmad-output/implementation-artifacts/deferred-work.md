@@ -4412,3 +4412,21 @@ owner: Story 5.5 (the template switcher and the synthesised templates), or the f
 location: `apps/web/lib/editor.ts` (`canvasStack`) · `apps/web/components/controls/layers.tsx`
 reason: no project in the repo holds both a header and a footer, and "footers compile last" is the compiler's rule, not
   the list's — whether the card should refuse that drop or the canvas should follow it is a decision, not a patch.
+
+### DW-188: hovering a Layers row does not outline its section on the canvas
+
+plain: Hovering a section on the page highlights its row in the list on the left. The other way round does nothing —
+  put the pointer on a row and the page does not show you which section it is. Nothing asked for it; it is noted here
+  so the decision is a decision.
+status: open
+severity: low
+origin: Story 5.4's Dev (2026-09-18) — the mirroring Story 5.2 built runs ONE way (`editor.tsx`'s `point()` sets
+  `data-inflozo-hover` from the canvas's own `pointerover`, and `controls/layers.tsx` draws the wash from `hoveredKey`);
+  no frame draws the reverse, and no FR or ruling asks for it
+owner: Story 5.9 (the keyboard map, and keyboard completeness) or 5.23's play-loop gate, whichever first finds a user
+  cannot tell which section a row is
+location: `apps/web/components/controls/layers.tsx` · `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`
+  (`point`) · `apps/web/lib/canvas-chrome.css`
+reason: the section's name is on its row and its name tag is on the canvas, so nothing is unreachable today; the
+  reverse hover would also have to decide whether a hovered row scrolls its section into view, which is a product
+  decision the owner has not been asked.

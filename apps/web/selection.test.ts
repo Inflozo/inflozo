@@ -44,7 +44,8 @@ test('escDeselects: false inside a field, a select, contenteditable, an open pop
 })
 
 test('withState: replaces the one instance\'s four slices, and touches no other instance, doc or field', () => {
-  const inst = (instanceId: string) => ({ instanceId, layerName: instanceId, designId: 'a1/1', content: { a: 1 }, controls: { b: 'x' }, data: {}, darkOverrides: {} })
+  // Story 5.4's two instance fields are part of an instance now: `withState` must carry them through untouched
+  const inst = (instanceId: string) => ({ instanceId, layerName: instanceId, designId: 'a1/1', content: { a: 1 }, controls: { b: 'x' }, data: {}, darkOverrides: {}, hidden: false, memberVisibility: 'everyone' as const })
   const docs: Record<string, ProjectDoc> = {
     site: { schemaVersion: 1, instances: [inst('h')] },
     home: { schemaVersion: 1, instances: [inst('one'), inst('two')] },
@@ -53,7 +54,7 @@ test('withState: replaces the one instance\'s four slices, and touches no other 
   assert.notEqual(next, docs)
   assert.equal(next.site, docs.site)
   assert.equal(next.home?.instances[0], docs.home?.instances[0])
-  assert.deepEqual(next.home?.instances[1], { instanceId: 'two', layerName: 'two', designId: 'a1/1', content: { a: 2 }, controls: { b: 'y' }, data: { q: 1 }, darkOverrides: { d: 'z' } })
+  assert.deepEqual(next.home?.instances[1], { instanceId: 'two', layerName: 'two', designId: 'a1/1', content: { a: 2 }, controls: { b: 'y' }, data: { q: 1 }, darkOverrides: { d: 'z' }, hidden: false, memberVisibility: 'everyone' })
   assert.deepEqual(docs.home?.instances[1]?.controls, { b: 'x' }, 'the input is not mutated')
   const empty = withState(docs, 'site', 'h', {})
   assert.deepEqual(empty.site?.instances[0], { ...inst('h'), content: {}, controls: {}, data: {}, darkOverrides: {} }, 'an absent slice is stored empty, as the schema needs')

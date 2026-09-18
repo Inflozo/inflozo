@@ -2,8 +2,9 @@
 title: 'Story 5.4 — The Layers panel, reordering, and the two kinds of singleton'
 type: 'feature'
 created: '2026-09-18'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
+baseline_commit: 0aa7cd10b8b4cad1b8df0ac8de774aacf64289f4
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -188,61 +189,61 @@ the non-placeable treatments — land as tested predicates that Story 5.10's Sec
 
 **Execution:**
 
-- [ ] `packages/section-runtime/src/doc-schema.ts` -- add `hidden: z.boolean().default(false)` and
+- [x] `packages/section-runtime/src/doc-schema.ts` -- add `hidden: z.boolean().default(false)` and
       `memberVisibility: z.enum(MEMBER_STATES).default('everyone')` to `instanceSchema`, with a comment saying why each
       is defaulted rather than required -- the schema is strict at both levels, so a required field would break every
       stored doc on the next read.
-- [ ] `packages/library/src/placement.ts` (new) + `index.ts` -- `NON_PLACEABLE` (A32, A33, A34 — the treatments
+- [x] `packages/library/src/placement.ts` (new) + `index.ts` -- `NON_PLACEABLE` (A32, A33, A34 — the treatments
       `sections-inventory.md` § Placeable sections vs non-placeable treatments names), `POST_CONTENT` (A25),
       `isPlaceable(designId)` and `placementRefusal(designId, present)` returning
       `this layout already prints the article` for a second Post Content and `null` otherwise -- the rules FR-D5 and
       R-37 state in prose exist nowhere in code, and Story 5.10's picker calls the same function.
-- [ ] `packages/library/src/placement.test.ts` (new) -- the matrix's placement rows: each non-placeable category
+- [x] `packages/library/src/placement.test.ts` (new) -- the matrix's placement rows: each non-placeable category
       refused, a first `a25/…` allowed and a second refused with the sentence, an ordinary design unaffected.
-- [ ] `packages/section-runtime/src/doc-edit.ts` (new) + `index.ts` -- one pure module over `ProjectDoc`:
+- [x] `packages/section-runtime/src/doc-edit.ts` (new) + `index.ts` -- one pure module over `ProjectDoc`:
       `moveSection`, `duplicateSection`, `removeSection`, `renameSection`, `setHidden`, `setMemberVisibility`, and
       `isDesigned(doc)` (`instances.length > 0`). Each returns the next doc or a refusal sentence; `moveSection`
       returns `{ doc, announce }` in `moveItem`'s exact wording -- one place decides what a section operation means,
       so 5.8's journal and Epic 7's compiler read the rules rather than re-deriving them.
-- [ ] `packages/section-runtime/src/doc-edit.test.ts` (new) -- every operation and every refusal, including: hiding
+- [x] `packages/section-runtime/src/doc-edit.test.ts` (new) -- every operation and every refusal, including: hiding
       every instance leaves `isDesigned` true and removing them all makes it false; a duplicate carries a new
       `instanceId` and lands directly after its original; a rename refuses an empty or blank name.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- refuse a non-placeable design beside the existing
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- refuse a non-placeable design beside the existing
       `compileTarget` check, in the same sentence shape -- a treatment can then never reach Layers, by construction.
-- [ ] `apps/web/lib/reorder.ts` (new) + `apps/web/reorder.test.ts` (new) -- lift the drag geometry out of
+- [x] `apps/web/lib/reorder.ts` (new) + `apps/web/reorder.test.ts` (new) -- lift the drag geometry out of
       `item-list.tsx` unchanged: `captureLayout(rows)`, `shift(drag, i)`, `slotTop(drag, layout)` and
       `landingAt(layout, from, pointerY, startY)` -- one gesture, one implementation (standing rule 3); the owner's
       finding 9 governs every list, and a second copy is how they drift apart.
-- [ ] `apps/web/components/controls/item-list.tsx` -- call `lib/reorder.ts` in place of its inline maths, with no
+- [x] `apps/web/components/controls/item-list.tsx` -- call `lib/reorder.ts` in place of its inline maths, with no
       change in behaviour -- proved by `controls.test.ts` and the controls harness staying green.
-- [ ] `apps/web/components/kit/layers-row.tsx` -- make the interactive row the story's row: D8e's focus ring on the
+- [x] `apps/web/components/kit/layers-row.tsx` -- make the interactive row the story's row: D8e's focus ring on the
       ROW (over rest, wash or tint), the grip `aria-hidden` and pointer-only (its keyboard path is the row's
       `⌥`-arrows), the eye revealed on hover, selection, focus-within or while hidden, the hidden row's words
       `text-ink-soft`, a `…` overflow before the eye, and `SiteWideGroup`'s icon changed from `DragGrip` to `Globe` --
       a grip on that card promises a drag B7 says it does not have.
-- [ ] `apps/web/components/controls/layers.tsx` (new) -- B7's panel body: the pinned Site-wide card with its glyph,
+- [x] `apps/web/components/controls/layers.tsx` (new) -- B7's panel body: the pinned Site-wide card with its glyph,
       `SITE-WIDE`, the derived template count and its rows; the `THIS PAGE · {label}` group with its own derived
       count; the dashed landing slot; the `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` key handling with roving tabindex; a polite
       `aria-live` for the move; the `…` menu (Rename · Duplicate · a rule · Delete, Duplicate absent on a site-wide
       row); the S12c-shaped rename dialog; and B7's footed note -- one component, so `editor.tsx` keeps its shape.
-- [ ] `apps/web/components/controls/section-pill.tsx` (new) -- S4b's quick-action pill in the editor document,
+- [x] `apps/web/components/controls/section-pill.tsx` (new) -- S4b's quick-action pill in the editor document,
       anchored to the hovered section's on-screen rect through the frame's rect and the fit: Duplicate (absent on a
       site-wide section), Delete, and the drag grip. **R-125: the Pro tag keeps the corner it was given at 5.2 and the
       pill sits directly to its left** — its right edge a gap short of the badge's left when the badge is showing,
       S4b's 10 px inset from the section's right when it is not. It hides from the first canvas `scroll` and is placed
       again 150 ms after the last, and holding the pointer over it keeps the hover -- R-118 gives it these three
       controls and no others.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- wire it: the two new components, one `docs`
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- wire it: the two new components, one `docs`
       update path per operation through `doc-edit.ts`, `renderSection`'s `visibility` fed from the instance, a hidden
       instance rendering `''`, the site-wide confirm dialogs, the `pointerout` guard and the `scroll` listener firing
       for the pill as well as for an edited field; delete the two ABSENT lines this story fills and record what it
       built in the header comment -- that comment is the file's map and is read before the code.
-- [ ] `apps/web/components/controls/sidebar.tsx` -- take an optional `visibility` prop and draw Member visibility as
+- [x] `apps/web/components/controls/sidebar.tsx` -- take an optional `visibility` prop and draw Member visibility as
       R-114's named select at the head of **Section settings**, with A22's four values (Everyone · Logged out · Free
       members · Paid members), its drawn hint, and a second hint line when the chosen audience is not the one the
       canvas previews. Where a design declares no other Section-settings row, the group is drawn for this row alone,
       first, as `SIDEBAR_GROUPS` orders it -- R-124 (owner, 2026-09-18) puts it here and not in Layers.
-- [ ] `tools/probe/run-verify-editor.cjs` -- add the story's steps from 28 on, inside step 5's CSP session so the
+- [x] `tools/probe/run-verify-editor.cjs` -- add the story's steps from 28 on, inside step 5's CSP session so the
       no-`unsafe-eval` zero is read after them (the spine's rule for every Epic 5 story that adds a gesture), and add
       a Layers-and-pill state to the axe pass at step 8. Measure the pill against step 15's scroll capture, as the
       epic context directs.

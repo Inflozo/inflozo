@@ -28,6 +28,8 @@ const PILOTS_FILES = [
   '../../packages/library/designs/**',
   '../../packages/library/orbit-weekly/images/**',
   '../../packages/section-runtime/reference-tokens.css',
+  // Story 5.4: R-113's control register, one row of which decides whether a section carries Member visibility
+  '../../packages/library/control-groups.json',
   './lib/canvas-chrome.css',
 ]
 

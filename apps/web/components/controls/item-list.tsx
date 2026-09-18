@@ -11,6 +11,7 @@ import { Segmented } from '@/components/kit/segmented'
 import { Menu } from '@/components/kit/select'
 import { Stepper } from '@/components/kit/stepper'
 import { arrowKeys, openMenu } from '@/lib/menu'
+import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
 
 /* The two list grammars of `P0-3 Item List Controls.dc.html`, which must never blur.
 
@@ -60,10 +61,11 @@ export function ItemList({
   const items = Array.isArray(row.value) ? (row.value as unknown[]) : []
   const [open, setOpen] = useState<number | null>(null)
   const [said, setSaid] = useState('')
-  const [drag, setDrag] = useState<{ from: number; to: number; dy: number } | null>(null)
+  const [drag, setDrag] = useState<Drag | null>(null)
   // every row's top and height as the drag began, relative to the list — the slot is read against these,
-  // never against rows that are already sliding, which would chase itself
-  const layout = useRef<{ tops: number[]; heights: number[]; gap: number }>({ tops: [], heights: [], gap: 0 })
+  // never against rows that are already sliding, which would chase itself. Story 5.4 lifted the arithmetic
+  // into `lib/reorder.ts`, unchanged, so Layers drags by the same numbers (standing rule 3).
+  const layout = useRef<Layout>({ tops: [], heights: [], gap: 0 })
   const [focusAt, setFocusAt] = useState<number | null>(null)
   const start = useRef(0)
   const rows = useRef<HTMLUListElement>(null)
@@ -92,18 +94,6 @@ export function ItemList({
     commit(moved.state)
   }
 
-  /** How far a row between the origin and the slot slides, and where the dashed slot is drawn. */
-  const { tops, heights, gap } = layout.current
-  const shift = (i: number) => {
-    if (drag === null || i === drag.from) return 0
-    const by = (heights[drag.from] ?? 0) + gap
-    if (drag.from < drag.to && i > drag.from && i <= drag.to) return -by
-    if (drag.to < drag.from && i >= drag.to && i < drag.from) return by
-    return 0
-  }
-  const slotTop =
-    drag === null ? 0 : drag.to > drag.from ? (tops[drag.to] ?? 0) + (heights[drag.to] ?? 0) - (heights[drag.from] ?? 0) : (tops[drag.to] ?? 0)
-
   const range = list.min !== undefined && list.max !== undefined ? `${list.min}–${list.max} · ${list.count} used` : `${list.count} used`
 
   return (
@@ -120,7 +110,7 @@ export function ItemList({
           <li
             aria-hidden
             data-drop-slot
-            style={{ top: slotTop, height: heights[drag.from] ?? 0 }}
+            style={{ top: slotTop(drag, layout.current), height: layout.current.heights[drag.from] ?? 0 }}
             className="pointer-events-none absolute inset-x-0 rounded-sm border border-dashed border-line-strong bg-paper-sunk"
           />
         ) : null}
@@ -132,7 +122,7 @@ export function ItemList({
             <li
               key={i}
               data-row={i}
-              style={lifted ? { translate: `0 ${drag.dy}px` } : drag !== null ? { translate: `0 ${shift(i)}px` } : undefined}
+              style={lifted ? { translate: `0 ${drag.dy}px` } : drag !== null ? { translate: `0 ${shift(drag, i, layout.current)}px` } : undefined}
               className={`relative flex items-center gap-2 rounded-sm border bg-surface p-2 ${
                 open === i ? 'border-coral shadow-[0_0_0_2px_var(--color-coral-wash)]' : 'border-line'
               } ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : drag !== null ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
@@ -154,21 +144,14 @@ export function ItemList({
                   if (event.button !== 0 || drag !== null) return // a second pointer never takes over a live drag
                   event.currentTarget.setPointerCapture(event.pointerId)
                   start.current = event.clientY
-                  const els = [...(rows.current?.querySelectorAll<HTMLElement>('[data-row]') ?? [])]
-                  const t = els.map((el) => el.offsetTop)
-                  const h = els.map((el) => el.offsetHeight)
-                  layout.current = { tops: t, heights: h, gap: t.length > 1 ? t[1]! - t[0]! - h[0]! : 0 }
+                  layout.current = captureLayout([...(rows.current?.querySelectorAll<HTMLElement>('[data-row]') ?? [])])
                   setDrag({ from: i, to: i, dy: 0 })
                 }}
                 onPointerMove={(event) => {
                   if (drag === null || drag.from !== i) return
                   // the slot is how many OTHER rows the dragged row's middle has passed the middle of, as they
-                  // stood when the drag began
-                  const at = layout.current
-                  const dy = event.clientY - start.current
-                  const middle = (at.tops[i] ?? 0) + (at.heights[i] ?? 0) / 2 + dy
-                  const to = at.tops.filter((top, j) => j !== i && top + (at.heights[j] ?? 0) / 2 < middle).length
-                  setDrag({ from: i, to, dy })
+                  // stood when the drag began (`lib/reorder.ts`)
+                  setDrag({ from: i, to: landingAt(layout.current, i, event.clientY, start.current), dy: event.clientY - start.current })
                 }}
                 onPointerUp={() => {
                   if (drag === null) return

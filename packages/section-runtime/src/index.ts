@@ -63,7 +63,9 @@ export {
   defaultContent,
   duplicateItem,
   getPath,
+  GROUP_LABELS,
   moveItem,
+  movedTo,
   removeItem,
   resetControl,
   resetSection,
@@ -89,3 +91,14 @@ export type {
 // Story 5.1 — AD-27's one doc schema: every reader and writer of `project_templates.doc` parses through it.
 export { docSchema, instanceSchema, parseDoc } from './doc-schema.ts'
 export type { DocInstance, ProjectDoc } from './doc-schema.ts'
+// Story 5.4 — what a section operation MEANS, over that doc: the editor's gestures, 5.8's journal and Epic 7's
+// compiler all read the rules here rather than re-deriving them.
+export {
+  duplicateSection,
+  isDesigned,
+  moveSection,
+  removeSection,
+  renameSection,
+  setHidden,
+  setMemberVisibility,
+} from './doc-edit.ts'

@@ -1,5 +1,5 @@
 import { cache } from 'react'
-import { orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
+import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
 import { parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
@@ -7,7 +7,7 @@ import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-revi
 import { isUuid, SITE } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
-import { pilot, pilotRows } from '@/lib/pilots'
+import { carriesMemberVisibility, pilot, pilotRows } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -20,6 +20,11 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * `editorData` runs inside the layout's Suspense boundary: every `project_templates` row, each parsed through AD-27's
  * one schema and checked against the design library, LOUDLY — a doc that fails any of it throws a sentence naming
  * the template key and the offending instance, and the app's error boundary shows instead of a partly drawn canvas.
+ *
+ * Since Story 5.4 the design check has TWO halves: the design must compile to this template's file, and it must be
+ * PLACEABLE at all. A32, A33 and A34 are treatments chosen outside the canvas (FR-D5, FR-D12, FR-Q9), so a doc that
+ * names one is a doc nothing could have written — refused here, which is what makes "a treatment never reaches
+ * Layers" true by construction rather than by every surface remembering to filter.
  *
  * Since Story 5.2 it also hands over what the section panel needs — the inputs `/pilots` feeds `Sidebar` (swatches, link
  * resources, the site's time zone, each pool picture's size) — and the account's plan, for R-119's Pro badge. The plan
@@ -44,6 +49,8 @@ export type EditorData = {
   entries: Readonly<Record<string, SectionRegistryEntry>>
   rows: Readonly<Record<string, DesignRows>>
   pool: readonly { id: string; bytes: number }[]
+  /** per design id: does its category carry R-124's Member visibility row (`carriesMemberVisibility`)? */
+  memberVisibility: Readonly<Record<string, boolean>>
   swatches: Readonly<Record<string, string>>
   links: LinkResources
   /** the site's time zone name, printed under a date control */
@@ -68,6 +75,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
     const file = fileOf(key)
     for (const [n, instance] of doc.instances.entries()) {
       const where = `${key} instance ${n} (${instance.instanceId}, ${instance.designId})`
+      // Story 5.4, before the library is even asked: a treatment is chosen outside the canvas and never placed on one
+      if (!isPlaceable(instance.designId)) {
+        throw new Error(`${where}: that design is a treatment chosen outside the canvas, never placed on one`)
+      }
       let entry = entries[instance.designId]
       try {
         entry ??= pilot(instance.designId)
@@ -85,6 +96,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     docs,
     entries,
     rows: Object.fromEntries(Object.values(entries).map((e) => [e.id, pilotRows(e)])),
+    memberVisibility: Object.fromEntries(Object.values(entries).map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
     swatches: referenceSwatches(),
     links: linkResources(),

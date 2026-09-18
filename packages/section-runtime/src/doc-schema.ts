@@ -2,8 +2,9 @@
 //
 // First written by Story 5.1, whose editor is the first reader. STRICT AT BOTH LEVELS: a field this schema does not
 // name fails loudly rather than being dropped, so a writer that got ahead of its readers is a thrown error, never a
-// value lost on the next save. The stories that write `hidden`, `parkedControls`, `isMainFeed` and the rest (5.4,
-// 5.11, 5.19) add their fields HERE, in the same change as the writer.
+// value lost on the next save. The stories that write a new field add it HERE, in the same change as the writer, and
+// ALWAYS with a `.default(…)` — Story 5.4 added `hidden` and `memberVisibility` that way; `parkedControls` (5.11) and
+// `isMainFeed` (5.19) are still to come.
 //
 // JITLESS, AND THE HARNESS IS WHY. The spec guessed zod's JIT probe (`allowsEval`, `new Function("")`) ran on a
 // schema's first parse, so a server-side parse would keep it out of the browser. Executed on a production build
@@ -12,6 +13,7 @@
 // runtime's index — so the canvas page reported a `script-src` eval violation on every load. `jitless` skips the probe
 // (`util.js:146-148`); it is global to zod, so it is set here before the first schema this module builds.
 
+import { MEMBER_STATES } from '@inflozo/library'
 import { z } from 'zod'
 
 z.config({ jitless: true })
@@ -27,6 +29,19 @@ export const instanceSchema = z.strictObject({
   controls: values,
   data: values,
   darkOverrides: values,
+  /** Story 5.4 — FR-D5's visibility toggle. HIDDEN IS RETAINED, NEVER REMOVED: the instance stays in the doc, the
+   *  canvas renders `''` for it and Epic 7 leaves it out of the compile.
+   *  DEFAULTED, NEVER REQUIRED — and the same goes for every field a later story adds here. This schema is strict at
+   *  both levels, which cuts both ways: a *required* new field fails just as loudly for every doc written before it,
+   *  which is every doc that exists (the seeded one included), so `parseDoc` would throw for the whole editor.
+   *  `.default(…)` keeps the input optional and the output total, so `DocInstance.hidden` is a `boolean` everywhere
+   *  downstream and no reader needs a `?? false`. */
+  hidden: z.boolean().default(false),
+  /** Story 5.4 — R-124's Member visibility: who this instance is shown to, handed to both emitters as
+   *  `RenderInput.visibility` (Story 4.10's `gateMembers`). An INSTANCE field and never an entry in a design's
+   *  `controlSchema` (DW-186): a declared control would stamp a second, inert copy of the value on the root through
+   *  `stampControls`. Defaulted for the same reason as `hidden`. */
+  memberVisibility: z.enum(MEMBER_STATES).default('everyone'),
 })
 
 export const docSchema = z

@@ -51,8 +51,10 @@ test('every directory the controls review reads off disk is traced for both rout
     '../../packages/library/fixtures/controls/content.json',
     '../../packages/library/orbit-weekly/images/feature-03.svg',
     '../../packages/section-runtime/reference-tokens.css',
+    // Story 5.4: `lib/pilots.ts`'s `carriesMemberVisibility` reads R-113's register for the editor's routes
+    '../../packages/library/control-groups.json',
   ]) {
-    assert.ok(covers(rel), `${rel} is read by lib/controls-review.ts and not traced — the deployed function would throw ENOENT`)
+    assert.ok(covers(rel), `${rel} is read off disk and not traced — the deployed function would throw ENOENT`)
   }
   for (const route of ['/app/controls', '/app/controls/frame']) assert.match(config, new RegExp(`'${route}': CONTROLS_FILES`))
 })

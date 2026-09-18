@@ -2,25 +2,31 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
-import { getPath, serializeMarks, setContent, stampControls } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
+import {
+  duplicateSection, getPath, moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden,
+  setMemberVisibility, stampControls,
+} from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, MemberState, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
+import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
+import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { ProBadge } from '@/components/kit/badge'
-import { IconButton } from '@/components/kit/button'
+import { Button, IconButton } from '@/components/kit/button'
+import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronLeft, Panel } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
-import { LayersRow } from '@/components/kit/layers-row'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { CANVASES, canvasOfPath, canvasStack, SITE, type CanvasKey } from '@/lib/editor'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
+import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { isApp, stripApp } from '@/routing'
 import type { EditorData } from './read'
@@ -70,22 +76,48 @@ import type { EditorData } from './read'
    shows P0-1's lock pill naming them (R-122), in the chrome layer beside them; the next click, Esc or a change of
    selection takes it away.
 
+   LAYERS, THE PILL, AND THE TWO KINDS OF SINGLETON (Story 5.4 — B7, D8e, S4b). The Layers panel's body is
+   `controls/layers.tsx`: B7's pinned Site-wide card over the page's own rows, each row pressable, draggable by its
+   grip, carrying an eye and a `…` (Rename · Duplicate · Delete) and answering `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` on the
+   row itself. Every operation goes through `doc-edit.ts` — ONE place decides what a move, a copy, a removal, a
+   rename, a hide and an audience mean, so 5.8's journal and Epic 7's compiler read the rules rather than re-derive
+   them — and each writes this session's `docs` and repaints. A HIDDEN instance stays in the doc and renders `''`, so
+   `sectionRoots` gives it a null root exactly as a gated section does; R-124's Member visibility is an instance field
+   handed to the render door as `RenderInput.visibility`, which Story 4.10 already honours on both emitters, and the
+   panel draws it at the head of Section Settings (never in Layers). A SITE-WIDE section is one shared instance: its
+   Duplicate is absent, and Delete or Hide asks first in the app's one dialog vocabulary, naming every template.
+   S4b's QUICK-ACTION PILL (`controls/section-pill.tsx`) carries Duplicate, Delete and the drag grip and nothing else
+   (R-118). It is OUTSIDE the frame because it is pressed — and because a React portal into the canvas document gets
+   no React events at all — so it is placed from the hovered section's rect through the frame's rect and the fit, on
+   its own frame loop, hides from the first canvas `scroll` and is placed again 150 ms after the last, exactly as
+   P0-1's toolbar does. R-125 keeps it a gap to the LEFT of R-119's Pro tag, which does not move. The pointer crossing
+   from the iframe onto it reaches the canvas document as a `pointerout` with a null `relatedTarget`, which would
+   clear the very hover it is anchored to: guarded by GEOMETRY, because the two documents' events have no guaranteed
+   order. A repaint still clears the hover — the pointer has not said where it is since — so the pill returns on the
+   next move. Either grip drives the SAME reorder, and the dashed landing slot is drawn in Layers whichever one is
+   held; the geometry is `lib/reorder.ts`, the one implementation P0-3's item list also drags by.
+
    EXTRAPOLATED, NOT DRAWN AT 1440 (R-74): the Layers header is D8e's (`D8 Editor Below 1440.dc.html:372-373`) with
-   the mono line under the title rather than beside it, because "THIS PAGE · AUTHOR ARCHIVE" does not fit beside it
-   in 240; both folds are D8's "Show layers" rail (:193-194), the Controls one mirrored, as `/controls` does (DW-114).
+   its "THIS PAGE · HOME" line moved out of the title row — it does not fit beside it in 240, and since Story 5.4 it
+   is B7's own group header, where B7 prints it; both folds are D8's "Show layers" rail (:193-194), the Controls one
+   mirrored, as `/controls` does (DW-114).
    Tap-and-hold and Esc deselecting are drawn nowhere either, and the panel at rest is PAGE over the Kit's empty state.
 
    ABSENT, NOT GREYED (UX-DR3), each until its story: "Saved", saving and Undo/Redo (5.8 — until then an edit lives for
    the session and a reload starts from the stored docs), the Template pill (5.5), View as (5.14), the sun (5.6), the
-   device switch (5.7), Ship it (7.18), the name's rename underline (no story yet), Layers' grip, eye, thumbnails and a
-   pressable row (5.4), "+ Add section" and the hairline "+" between sections (5.10), the hover pill's Duplicate, Delete
-   and drag handle (5.4), the design arrows and S4c's "4 / 18" chip (5.11), the Style Pack card (6.3) and Dark mode (5.6)
+   device switch (5.7), Ship it (7.18), the name's rename underline (no story yet),
+   "+ Add section" and the hairline "+" between sections (5.10),
+   the design arrows and S4c's "4 / 18" chip (5.11), the Style Pack card (6.3) and Dark mode (5.6)
    (R-118); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's docked bar at 390
    (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
    P0-2's filled-slot popover. S4a's posts-per-page note and S4c's pinned Quick Controls card are never
    built (FR-Q1, R-113). */
 
 const DESKTOP = 1440
+
+/** The visitor the canvas previews until Story 5.14's View as: Story 4.10's own default, named here because R-124's
+ *  Member visibility control says which visitor it is when a section is gated away. */
+const PREVIEWS: Exclude<MemberState, 'everyone'> = 'anonymous'
 
 /** A panel's fold: focus moves to the toggle that replaced the pressed one. Layout-held, so a soft navigation between
  *  canvases keeps it; a typed address is a document load and starts unfolded. */
@@ -144,6 +176,7 @@ export function Editor({
   pool,
   swatches,
   links,
+  memberVisibility,
   timezone,
   plan,
 }: EditorData & { project: { id: string; name: string } }) {
@@ -180,6 +213,13 @@ export function Editor({
   const [session, setSession] = useState<Inline | null>(null)
   const [inlineAt, setInlineAt] = useState<ScreenSelection | null>(null)
   const [scrolling, setScrolling] = useState(false)
+  // Story 5.4 — the one reorder, held here because EITHER grip starts it: a Layers row's or the canvas pill's
+  const [drag, setDrag] = useState<SectionDrag | null>(null)
+  /** the pill drag's own start: the pointer's Y and the dragged doc's sections as they sat ON SCREEN */
+  const pillDrag = useRef<{ y: number; layout: Layout }>({ y: 0, layout: { tops: [], heights: [], gap: 0 } })
+  const pill = useRef<HTMLDivElement | null>(null)
+  /** what a completed move says, politely — `moveSection`'s own words, announced from here so both grips announce */
+  const [said, setSaid] = useState('')
   type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
   const [note, setNote] = useState<Note | null>(null)
   // the pill as the canvas document's handlers see it, in the same task it was set — paint reads it before React has
@@ -249,7 +289,11 @@ export function Editor({
       const parts = now.stack.map((i) => {
         const entry: SectionRegistryEntry | undefined = entries[i.designId]
         if (!entry) throw new Error(`${i.designId} was not read for this project`)
-        return renderSection(doc, entry, i, { target: i.target, rows: rows[i.designId], feed: 'first', member: 'anonymous', visibility: 'everyone', assets, icons: lookup, editing: true })
+        // Story 5.4: HIDDEN IS RETAINED, NEVER REMOVED — the instance stays in the doc and renders nothing, so
+        // `sectionRoots` gives it a null root exactly as a member-gated section does, and Epic 7 leaves it out of the
+        // compile. R-124's audience reaches the render door as `visibility`, which gates the root on both emitters.
+        if (i.hidden) return ''
+        return renderSection(doc, entry, i, { target: i.target, rows: rows[i.designId], feed: 'first', member: PREVIEWS, visibility: i.memberVisibility, assets, icons: lookup, editing: true })
       })
       mountSections(mount, parts.join(''))
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
@@ -315,6 +359,39 @@ export function Editor({
     const fr = f.getBoundingClientRect()
     const k = fr.width / f.offsetWidth
     return { ...s, rect: { left: fr.left + s.rect.left * k, top: fr.top + s.rect.top * k, width: s.rect.width * k, height: s.rect.height * k }, edge: fr.top }
+  }
+
+  // ─── Story 5.4 — the canvas's geometry, read from outside the frame ───
+
+  /** The fit, as the frame draws it: one canvas pixel is `k` screen pixels. */
+  const fitOf = (f: HTMLIFrameElement, fr: DOMRect) => (f.offsetWidth > 0 ? fr.width / f.offsetWidth : 1)
+
+  /** Is a point in the CANVAS document's coordinates inside S4b's pill, which lives outside the frame? */
+  const overPill = (cx: number, cy: number) => {
+    const [f, el] = [frame.current, pill.current]
+    if (!f || !el || el.style.visibility === 'hidden') return false
+    const fr = f.getBoundingClientRect()
+    const k = fitOf(f, fr)
+    const p = el.getBoundingClientRect()
+    const [x, y] = [fr.left + cx * k, fr.top + cy * k]
+    return x >= p.left && x <= p.right && y >= p.top && y <= p.bottom
+  }
+
+  /** One doc's own sections as they sit ON SCREEN, in `captureLayout`'s two offsets — what the pill's grip drags
+   *  against, because the pointer is over the canvas rather than over the Layers list. A hidden or gated section has
+   *  no root and contributes a zero-height row at the last one's edge, so a drag still passes it. */
+  const screenRows = (docKey: string) => {
+    const f = frame.current
+    const fr = f?.getBoundingClientRect()
+    const k = f && fr ? fitOf(f, fr) : 1
+    let last = 0
+    return (latest.current.docs[docKey]?.instances ?? []).map((inst) => {
+      const n = latest.current.stack.findIndex((placed) => placed.doc === docKey && placed.instanceId === inst.instanceId)
+      const r = (n === -1 ? null : roots.current[n])?.getBoundingClientRect()
+      if (!r) return { offsetTop: last, offsetHeight: 0 }
+      last = r.bottom * k
+      return { offsetTop: r.top * k, offsetHeight: r.height * k }
+    })
   }
 
   const startEditing = (target: HTMLElement, stamp: { path: string; item?: number }, n: number, caret: 'pointer' | 'end') => {
@@ -434,7 +511,9 @@ export function Editor({
     doc.addEventListener('mouseup', release)
     let settle: ReturnType<typeof setTimeout> | undefined
     doc.addEventListener('scroll', () => {
-      if (!editing.current) return
+      // Story 5.4: the pill is anchored from THIS document too, so it hides and re-places on the same timer as P0-1's
+      // toolbar. Nothing hovered and nothing being edited means nothing outside the frame to hide (review, 5.2).
+      if (!editing.current && !latest.current.hovered) return
       setScrolling(true)
       clearTimeout(settle)
       // ponytail: a timer, not `scrollend`; switch when every engine the editor supports fires it
@@ -449,7 +528,13 @@ export function Editor({
       if (e.pointerType !== 'touch') point(pickAt(e.target))
     })
     doc.addEventListener('pointerout', (e) => {
-      if (e.pointerType !== 'touch' && e.relatedTarget === null) point(null)
+      if (e.pointerType === 'touch' || e.relatedTarget !== null) return
+      // Story 5.4: the pointer crossing from the iframe onto S4b's pill arrives HERE, as a `pointerout` with a null
+      // relatedTarget — the pill is outside the frame (AD-21) — so clearing the hover would take the pill away from
+      // under the pointer that is inside it. Tested by GEOMETRY and not by the pill's own `pointerenter`, because two
+      // documents' pointer events have no guaranteed order.
+      if (overPill(e.clientX, e.clientY)) return
+      point(null)
     })
     let pressed: EventTarget | null = null
     let state = HOLD_IDLE
@@ -602,6 +687,119 @@ export function Editor({
     return () => cancelAnimationFrame(id)
   })
 
+  // ─── Story 5.4 — every section operation, through `doc-edit.ts`, and the two surfaces that ask for one ───
+
+  /** A row's identity across both Layers groups: an `instanceId` is unique inside a doc, not between two. */
+  const keyOf = (p: Pick) => `${p.doc}:${p.instanceId}`
+
+  /** One doc's own instances as Layers rows, in DOC order — the card's are `site`'s, the page group's are this
+   *  canvas's. Doc order, not `canvasStack`'s: the row's `at` is the position `moveSection` is given, and B7 draws
+   *  the card's rows as the site doc stores them (DW-187: the `a3/` footers compile last whatever that order). */
+  const rowsOf = (docKey: string): LayerRow[] =>
+    (docs[docKey]?.instances ?? []).map((i, at) => ({ doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at }))
+
+  /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null. */
+  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string): string | null => {
+    const now = latest.current
+    const doc = now.docs[pick.doc]
+    if (!doc) return `there is no ${pick.doc} template to edit`
+    const next = op(doc)
+    if (typeof next === 'string') return next
+    const docs = { ...now.docs, [pick.doc]: next }
+    latest.current = { ...now, docs, stack: stackOf(docs, now.key) }
+    setDocs(docs)
+    // a selection cannot outlive the section it was on
+    if (same(now.selected, pick) && !next.instances.some((i) => i.instanceId === pick.instanceId)) choose(null)
+    paint()
+    return null
+  }
+
+  /** A refusal is shown WHERE THE ACTION WAS PRESSED: P0-1's pill over the section itself, the shape the character
+   *  limit already uses. Only R-37's second Post Content can reach it, and `packages/library/designs/` holds no A25
+   *  design — so this path is proved by `doc-edit.test.ts` and not on the deployed editor. */
+  const refuse = (pick: Pick, words: string) => {
+    choose(pick)
+    const root = rootOf(pick)
+    if (root) showNote({ el: root, kind: 'limit', words })
+  }
+  const edit = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string) => {
+    const refused = apply(pick, op)
+    if (refused !== null) refuse(pick, refused)
+  }
+
+  const onDuplicate = (pick: Pick) => edit(pick, (doc) => duplicateSection(doc, pick.instanceId, crypto.randomUUID()))
+  const onRename = (pick: Pick, name: string) => apply(pick, (doc) => renameSection(doc, pick.instanceId, name))
+
+  /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
+   *  one dialog vocabulary asks first, opening on Cancel (EXPERIENCE § destructive confirms). SHOWING one again asks
+   *  nothing: it is the restoring half. The dialog lives here and not in Layers, because the canvas pill's Delete
+   *  must open the same one. */
+  const [ask, setAsk] = useState<{ kind: 'hide' | 'remove'; pick: Pick; name: string } | null>(null)
+  const confirm = useRef<HTMLDialogElement>(null)
+  const askFirst = (kind: 'hide' | 'remove', row: Pick & { layerName: string }) => {
+    setAsk({ kind, pick: { doc: row.doc, instanceId: row.instanceId }, name: row.layerName })
+    // opened on the frame after the one that filled its words in
+    requestAnimationFrame(() => openOnCancel(confirm.current))
+  }
+  const onRemove = (row: Pick & { layerName: string }) =>
+    row.doc === SITE.key ? askFirst('remove', row) : edit(row, (doc) => removeSection(doc, row.instanceId))
+  const onToggleHidden = (row: LayerRow) =>
+    row.doc === SITE.key && !row.hidden ? askFirst('hide', row) : edit(row, (doc) => setHidden(doc, row.instanceId, !row.hidden))
+
+  /** The drop, and `⌥↑`/`⌥↓`: one `moveSection`, announced politely in its own words (UX-DR12). */
+  const moveTo = (pick: Pick, to: number): string | null => {
+    const doc = latest.current.docs[pick.doc]
+    const moved = doc ? moveSection(doc, pick.instanceId, to) : 'there is no template to edit'
+    if (typeof moved === 'string') return null
+    apply(pick, () => moved.doc)
+    setSaid(moved.announce)
+    return moved.announce
+  }
+
+  /** S4b's pill, read from outside the frame every frame: the hovered section's rect on screen, the card's own box to
+   *  stay inside, and — R-125 — R-119's Pro tag's left edge while the tag is drawn on THIS section. */
+  const pillBox = (): PillBox | null => {
+    const f = frame.current
+    if (!f || !hoveredRoot) return null
+    const fr = f.getBoundingClientRect()
+    const k = fitOf(f, fr)
+    const r = hoveredRoot.getBoundingClientRect()
+    // the badge is placed on the SELECTED root: only a hovered selection puts the two in the same corner
+    const b = pro && same(hovered, selected) ? badge.current?.getBoundingClientRect() : undefined
+    return {
+      rect: { left: fr.left + r.left * k, top: fr.top + r.top * k, right: fr.left + r.right * k, bottom: fr.top + r.bottom * k },
+      bounds: { left: fr.left, top: fr.top, right: fr.right, bottom: fr.bottom },
+      badgeLeft: b && b.width > 0 ? fr.left + b.left * k : null,
+    }
+  }
+
+  /** The pill's grip: the SAME reorder as a Layers row's, read against the sections as they sit on the canvas,
+   *  because that is where the pointer is. Layers draws the dashed slot either way. */
+  const pillGrip: HTMLAttributes<HTMLSpanElement> = {
+    onPointerDown: (event) => {
+      const pick = latest.current.hovered
+      if (event.button !== 0 || drag !== null || !pick) return
+      const from = (latest.current.docs[pick.doc]?.instances ?? []).findIndex((i) => i.instanceId === pick.instanceId)
+      if (from === -1) return
+      event.currentTarget.setPointerCapture(event.pointerId)
+      pillDrag.current = { y: event.clientY, layout: captureLayout(screenRows(pick.doc)) }
+      setDrag({ doc: pick.doc, from, to: from, dy: 0, via: 'pill' })
+    },
+    onPointerMove: (event) => {
+      if (!drag) return
+      // dy stays 0: the row in Layers is not the thing being dragged, so only the slot follows the pointer
+      setDrag({ ...drag, to: landingAt(pillDrag.current.layout, drag.from, event.clientY, pillDrag.current.y) })
+    },
+    onPointerUp: () => {
+      if (!drag) return
+      const { doc, from, to } = drag
+      setDrag(null)
+      const moved = latest.current.docs[doc]?.instances[from]
+      if (to !== from && moved) moveTo({ doc, instanceId: moved.instanceId }, to)
+    },
+    onPointerCancel: () => setDrag(null),
+  }
+
   if (failure) throw failure
 
   const src = canvasSrc(isApp(pathname))
@@ -640,33 +838,32 @@ export function Editor({
 
       <div className="flex min-h-0 flex-1">
         <aside id="editor-layers" aria-label="Layers" hidden={layers.folded} className="flex w-[240px] shrink-0 flex-col border-r border-line bg-paper">
-          <div className="flex flex-col gap-[2px] px-4 pt-[10px]">
-            <div className="flex items-center gap-2">
-              <span className="flex-1 text-[12.5px] font-semibold">Layers</span>
-              <IconButton ref={layers.hide} label="Collapse layers" title="Collapse layers" aria-expanded aria-controls="editor-layers" onClick={() => layers.toggle(true)}>
-                <Panel size={15} />
-              </IconButton>
-            </div>
-            <span className="font-mono text-[10px] uppercase text-ink-soft-aa [font-variant-ligatures:none]">
-              This page · {canvas.label}
-            </span>
+          <div className="flex items-center gap-2 px-4 pt-[10px]">
+            <span className="flex-1 text-[12.5px] font-semibold">Layers</span>
+            <IconButton ref={layers.hide} label="Collapse layers" title="Collapse layers" aria-expanded aria-controls="editor-layers" onClick={() => layers.toggle(true)}>
+              <Panel size={15} />
+            </IconButton>
           </div>
-          <div
-            // R-123 as amended: the empty space BELOW the rows is a ground too, as it is in Figma and Sketch. A row is
-            // not, and neither are the list's padding beside a row and the gap between two — a miss there while reaching
-            // for a row would cost the selection (review, 2026-09-18) — and Story 5.4, which makes a row pressable and
-            // draggable, owns all three.
-            onPointerDown={(e) => {
-              const last = e.currentTarget.lastElementChild?.getBoundingClientRect().bottom ?? -Infinity
-              if (e.button === 0 && e.target === e.currentTarget && e.clientY >= last) choose(null)
-            }}
-            className={`flex min-h-0 flex-1 flex-col gap-[2px] overflow-y-auto px-2 py-[10px] ${slimScrollbar}`}
-          >
-            {stack.map((i) => (
-              // the canvas's state mirrored; pressing a row is Story 5.4's
-              <LayersRow key={`${i.target}:${i.instanceId}`} name={i.layerName} interactive={false} selected={same(i, selected)} hovered={same(i, hovered)} />
-            ))}
-          </div>
+          {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`) */}
+          <Layers
+            site={rowsOf(SITE.key)}
+            page={rowsOf(key)}
+            label={canvas.label}
+            siteKey={SITE.key}
+            // derived, never written down (standing rule 4): the canvases `lib/editor.ts` opens
+            templates={Object.keys(CANVASES).length}
+            selectedKey={selected ? keyOf(selected) : null}
+            hoveredKey={hovered ? keyOf(hovered) : null}
+            drag={drag}
+            onDrag={setDrag}
+            onSelect={choose}
+            onGround={() => choose(null)}
+            onToggleHidden={onToggleHidden}
+            onRename={onRename}
+            onDuplicate={onDuplicate}
+            onRemove={onRemove}
+            onMove={moveTo}
+          />
         </aside>
         {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" /> : null}
 
@@ -728,8 +925,28 @@ export function Editor({
             {/* P0-1's pill (R-122, and the limit's sentence): chrome in the canvas's own layer, so it scrolls with its words */}
             {note && chosen && layerFor(selectedRoot) ? createPortal(<CanvasNote ref={noteBox} kind={note.kind} words={note.words} />, layerFor(selectedRoot) as ShadowRoot) : null}
           </div>
-          {/* P0-1's toolbar and its link panel: pressed, so outside the frame (AD-21) */}
+          {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
+              (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last */}
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling} resources={links} handle={tools} />
+          <SectionPill
+            shown={!!pointed}
+            hidden={scrolling}
+            boxOf={pillBox}
+            // FR-D5: a site-wide section is one shared instance, so its Duplicate is absent here as it is in Layers
+            canDuplicate={pointed?.doc !== SITE.key}
+            name={pointed?.layerName ?? ''}
+            pillRef={pill}
+            onDuplicate={() => pointed && onDuplicate(pointed)}
+            onDelete={() => pointed && onRemove(pointed)}
+            gripProps={pillGrip}
+            onPointerLeave={(e) => {
+              // leaving the pill for the canvas is the canvas document's own `pointerover`; leaving it for a panel or
+              // the bar reaches neither document, so the hover is let go here. Never mid-drag, which holds the pointer.
+              const f = frame.current?.getBoundingClientRect()
+              if (drag || !f) return
+              if (e.clientX < f.left || e.clientX > f.right || e.clientY < f.top || e.clientY > f.bottom) point(null)
+            }}
+          />
         </section>
 
         {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" /> : null}
@@ -759,12 +976,67 @@ export function Editor({
               links={links}
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}
               sourceRows={shownRows(entry, chosen, rows[entry.id])}
+              // R-124: the FIRST ROW of Section Settings, for a section whose category carries it — never in Layers.
+              // The value is the instance's own and reaches both emitters as `RenderInput.visibility`, so there is no
+              // design control to declare (DW-186); `carriesMemberVisibility` reads R-113's register (DW-185).
+              visibility={
+                memberVisibility[chosen.designId] === true
+                  ? {
+                      value: chosen.memberVisibility,
+                      previews: PREVIEWS,
+                      onChange: (value) => edit(chosen, (doc) => setMemberVisibility(doc, chosen.instanceId, value)),
+                    }
+                  : undefined
+              }
             />
           ) : (
             <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
           )}
         </aside>
       </div>
+
+      {/* A completed move, announced politely in `moveSection`'s own words — from here, so a drop on either grip
+          (a Layers row's or the canvas pill's) reads out through one live region (UX-DR12) */}
+      <p id="editor-said" aria-live="polite" className="sr-only">
+        {said}
+      </p>
+
+      {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu or eye, and the canvas pill's bin */}
+      <dialog
+        ref={confirm}
+        onClick={closeOnBackdrop}
+        aria-labelledby="editor-sitewide-title"
+        aria-describedby="editor-sitewide-body"
+        className={`${sheet} gap-[18px]`}
+      >
+        <div className="flex flex-col gap-[6px]">
+          <h2 id="editor-sitewide-title" className={title}>
+            {ask?.kind === 'remove' ? 'Delete' : 'Hide'} {ask?.name ?? 'this section'}?
+          </h2>
+          <p id="editor-sitewide-body" className="text-ui-dense leading-[1.55] text-ink-soft">
+            This section is site-wide: it is one shared thing that appears on every page of your site, so{' '}
+            {ask?.kind === 'remove' ? 'deleting' : 'hiding'} it here changes all {Object.keys(CANVASES).length}{' '}
+            templates.
+          </p>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => confirm.current?.close()}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant={ask?.kind === 'remove' ? 'danger' : 'coral'}
+            size={36}
+            onClick={() => {
+              confirm.current?.close()
+              if (!ask) return
+              edit(ask.pick, (doc) => (ask.kind === 'remove' ? removeSection(doc, ask.pick.instanceId) : setHidden(doc, ask.pick.instanceId, true)))
+            }}
+          >
+            {ask?.kind === 'remove' ? 'Delete section' : 'Hide section'}
+          </Button>
+        </div>
+      </dialog>
     </div>
   )
 }
