@@ -1,35 +1,24 @@
 import { notFound } from 'next/navigation'
-import { Suspense, type ReactNode } from 'react'
-import { Editor } from './editor'
-import { EditorSkeleton } from './editor-skeleton'
-import { editorData, projectOf } from './read'
+import type { ReactNode } from 'react'
+import { projectOf } from './(editor)/read'
 
 /**
- * THE EDITOR'S LAYOUT (Story 5.1) — the guard, then the editor. A layout and not a page, because a layout survives a
- * change of its child segment: moving between canvases (`/projects/<id>` → `/post`) keeps the editor mounted, with its
- * folds now and its journal and lock later (5.8, 5.17). The pages render nothing; the canvas is read off the path.
+ * THE PROJECT'S GUARD, AND NOTHING ELSE (Story 5.1, split by Story 5.6's R-131).
  *
- * THE ORDER IS THE STATUS LINE (R-98's second effect, DW-67). The 404 guard runs before any Suspense boundary, and
- * `{children}` — whose `[template]` layout 308s `home` and 404s every segment that is not a canvas — renders OUTSIDE
- * and BEFORE the boundary, so both decide the response before the first flush. Inside it they would stream as a 200.
- * That this placement keeps the real status is a claim about Next: `tools/probe/run-verify-editor.cjs` reads it.
+ * It used to render the Editor too — which is exactly why `settings` could not be a child of this segment: every
+ * child of `[id]` came up inside the editor's bar, Layers, canvas and Controls. The editor therefore descends into
+ * `(editor)/`, a route group, which is NOT a URL segment: `/projects/<id>` and every canvas segment are
+ * byte-identical afterwards, and `run-verify-editor.cjs` steps 2, 6 and 9 are the control that says so.
  *
- * The skeleton is the boundary's fallback, below the guard, so a stranger never sees an editor's shape.
+ * THE GUARD STAYS HERE, ABOVE BOTH CHILDREN AND ABOVE EVERY SUSPENSE BOUNDARY (R-98's second effect, DW-67). A 404
+ * decided above the first flush is a real 404; decided inside a boundary it streams as a 200. `projectOf` is
+ * `cache`d, so the editor's own read, the pages' metadata and the settings screen share this one query.
+ *
+ * NOTHING ELSE MOVED WITH IT. The editor is still in a LAYOUT (`(editor)/layout.tsx`), because a layout survives a
+ * change of its child segment: moving between canvases keeps the editor mounted, with its folds now and its journal
+ * and lock later (5.8, 5.17).
  */
-export default async function EditorLayout({ children, params }: { children: ReactNode; params: Promise<{ id: string }> }) {
-  const project = await projectOf((await params).id)
-  if (!project) notFound()
-  return (
-    <>
-      {children}
-      <Suspense fallback={<EditorSkeleton name={project.name} />}>
-        <Loaded project={project} />
-      </Suspense>
-    </>
-  )
-}
-
-async function Loaded({ project }: { project: { id: string; name: string } }) {
-  const data = await editorData(project.id)
-  return <Editor project={project} {...data} />
+export default async function ProjectLayout({ children, params }: { children: ReactNode; params: Promise<{ id: string }> }) {
+  if (!(await projectOf((await params).id))) notFound()
+  return children
 }

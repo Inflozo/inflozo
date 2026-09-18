@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
-import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc } from '@inflozo/section-runtime'
+import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc } from '@inflozo/section-runtime'
 import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
@@ -41,12 +41,18 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * DROPPED with its reason, because throwing would black out four canvases the user never touched.
  */
 
-export const projectOf = cache(async (id: string): Promise<{ id: string; name: string } | null> => {
+/** Story 5.6 — `dark_enabled` joins the guard's own select (FR-D7's project mode, `projects.dark_enabled`, default
+ *  true). It is SERVER TRUTH, exactly as 5.5 made synthesis server truth: the editor must not guess whether it may
+ *  offer the sun, and `/projects/<id>/settings` reads the same cached row. No migration — the column pre-exists
+ *  (`20260904120000_complete_schema.sql:224`), so this story has no Schema phase (R-99). */
+export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled').eq('id', id).maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
+
+export type Project = { id: string; name: string; dark_enabled: boolean }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -63,7 +69,11 @@ export type EditorData = {
   pool: readonly { id: string; bytes: number }[]
   /** per design id: does its category carry R-124's Member visibility row (`carriesMemberVisibility`)? */
   memberVisibility: Readonly<Record<string, boolean>>
-  swatches: Readonly<Record<string, string>>
+  /** Story 5.6 — Background role's colours per MODE, so the panel's dots are what the canvas is painting */
+  swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
+  /** Story 5.6 — FR-D7: is this project Light + Dark? False means the sun is ABSENT from the bar, not disabled
+   *  (UX-DR3, R-118), and every stored override is untouched (AD-17) */
+  darkEnabled: boolean
   links: LinkResources
   /** the site's time zone name, printed under a date control */
   timezone: string
@@ -86,9 +96,11 @@ export type EditorData = {
 export async function editorData(projectId: string): Promise<EditorData> {
   // the client first, so the two reads below really run together (an await inside the array would serialise them)
   const sb = await supabaseServer()
-  const [{ data, error }, { plan }] = await Promise.all([
+  const [{ data, error }, { plan }, project] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     signedIn().then((user) => resolveEntitlement(user.id)),
+    // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
+    projectOf(projectId),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -161,7 +173,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     rows: Object.fromEntries(Object.values(entries).map((e) => [e.id, pilotRows(e)])),
     memberVisibility: Object.fromEntries(Object.values(entries).map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
-    swatches: referenceSwatches(),
+    swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },
+    darkEnabled: project?.dark_enabled !== false,
     links: linkResources(),
     // the dataset's own zone, as `/controls` and `/pilots` read it, until 5.18 reads the connected site's
     timezone: orbitWeekly.site().timezone,

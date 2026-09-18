@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, CONDITIONAL,
-  isEditorPath, isMembership, isUuid, templateKeyOf, type CanvasKey,
+  isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 
 // Story 5.1's URL scheme, held by the module the route, the Shell, the switcher and the harness read it from.
@@ -21,11 +21,22 @@ test('every canvas key round-trips through its address', () => {
   assert.equal(canvasFromSegment('home'), 'home', "'home' is a key; the route answers it with the 308")
 })
 
-test('every reserved or unknown segment is refused — `index` permanently (R-127)', () => {
-  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '']) {
+test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
+  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
+})
+
+test('R-131: `settings` is the scheme\'s one NON-CANVAS segment — a real route, and never a canvas', () => {
+  assert.equal(settingsPath(ID), `/projects/${ID}/${SETTINGS}`)
+  assert.ok(isEditorPath(settingsPath(ID)), 'it is under the project, so the Shell reads it as an editor path')
+  // it compiles into no template and stores no row, so nothing about it may resolve as a canvas
+  assert.equal(canvasOfPath(settingsPath(ID)), null)
+  assert.equal(canvasOfTemplateKey(SETTINGS), null)
+  assert.ok(!Object.hasOwn(CANVASES, SETTINGS), '`settings` must never join CANVASES')
+  // and it is not the address of any canvas, so the two can never collide
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), settingsPath(ID), key)
 })
 
 test('a conditional canvas is ABSENT until its condition holds, and the route 404s it meanwhile (FR-D6)', () => {

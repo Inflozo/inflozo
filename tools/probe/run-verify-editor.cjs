@@ -55,6 +55,18 @@
 // Step 6 gains the three membership segments (200) and
 // keeps `index` and `private` at 404, and its Back walk is now a SOFT-navigation walk. Step 38's second half changed
 // with the story: emptying Home now returns it to its Synthesis Default stack rather than to nothing.
+// Story 5.6 adds steps 46-53, inside step 5's session: S4a's sun measured at its drawn size and place with R-132's
+// accessible name; the flip painting the canvas dark from `data-mode` alone with EVERY SECTION ROOT THE SAME NODE (no
+// repaint) and the selection, the scroll and the announcement with it; a dark Background-role change moving that root
+// in dark only, with the moon and its words on the row and the light canvas untouched; a control that is not
+// mode-scoped being one value for both; reset in each mode (the override forgotten in dark, the light value forgotten
+// and the override KEPT in light); R-133's two entry points opening the ONE confirm in the document, the `⋯` item
+// absent on a section with no override and the panel row saying so instead; and FR-D7's Light-only half against the
+// STORED docs — an override planted through the service key (nothing persists a canvas edit before 5.8), the sun
+// ABSENT, the canvas light, the stored map byte-identical, and every override reapplying exactly on the way back.
+// R-131's screen is read for D6a's two rows, D6b's greyed row with its reason, the DERIVED count, and the ABSENCE of
+// every other row D6a draws; steps 2, 6 and 9 are unchanged, which is the control that the `(editor)` route-group
+// move changed no URL and no status.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -156,10 +168,11 @@ async function main() {
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, { UNIVERSALS }] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/index.ts')).href),
     ])
 
     browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
@@ -353,6 +366,9 @@ async function main() {
      *  an untouched canvas, derived rather than listed so it follows Epics 9 and 10 (DW-191 closes itself here). */
     const heldBy = (id) => { try { return pilot(id) } catch { return undefined } }
     const autoStack = (key) => synthesize(CANVASES[key].file, heldBy).instances
+    // Story 5.6 — the LIBRARY's mode-scoped control names, derived from the vocabulary rather than written here: the
+    // engine keys on each control's own `darkOverride` declaration and never on the name `bg` (standing rule 4)
+    const MODE_SCOPED = UNIVERSALS.filter((u) => u.darkOverride === true).map((u) => u.name)
     const homeStack = stackOf('home')
     const nth = (id) => homeStack.findIndex(([d]) => d === id)
     const [HEADER, HERO, GRID] = [nth(TEMPLATES.site[0][0]), nth('a4/13'), nth('a17/1')]
@@ -1820,8 +1836,249 @@ async function main() {
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
 
+    // ── Story 5.6's steps, inside the CSP session ────────────────────────────────────────────────────────────────
+    // FR-D7, R-131, R-132, R-133. Every expectation is DERIVED: the mode-scoped control and the value pressed come
+    // from the pilot's own `sidebar()` model, and the project count from `darkOverrideCount` over the stored docs.
+
+    const bgRow = (design) => {
+      const row = sidebar(pilot(design), { content: {}, controls: {}, data: {}, darkOverrides: {} })
+        .groups.flatMap((g) => g.rows)
+        .find((r) => r.kind === 'control' && r.moon === false && MODE_SCOPED.includes(r.name))
+      if (!row) throw new Error(`${design} draws no mode-scoped control, so there is nothing for Story 5.6 to author`)
+      // a value this design OFFERS and that is not the one in force, so a change is really a change
+      const to = row.options.find((o) => o.greyed === undefined && o.value !== row.value)
+      if (!to) throw new Error(`${design}'s ${row.name} offers only one value, so it cannot be overridden`)
+      return { name: row.name, label: row.label, from: row.value, to }
+    }
+    const attrOf = (n, name) => canvasFrame().evaluate(([n, name]) => document.querySelectorAll('#canvas > *')[n].getAttribute(name), [n, name])
+    const canvasMode = () => canvasFrame().evaluate(() => document.documentElement.getAttribute('data-mode'))
+    const modeButton = () => page.locator('#editor-mode')
+    const asideGroup = async (title) => {
+      const head = controlsAside().getByRole('button', { name: title, exact: true })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+      await page.waitForTimeout(150)
+    }
+    /** the row's moon and its words, as the panel draws them */
+    const moonOn = (label) => controlsAside().evaluate((a, label) => {
+      const span = [...a.querySelectorAll('span')].find((s) => s.textContent === label)
+      const head = span?.parentElement
+      return head === undefined || head === null ? null : { words: head.textContent, moon: head.querySelectorAll('[role="img"], svg').length > 0 }
+    }, label)
+
+    // ── step 46 — S4a's sun, at its drawn place and size, and nothing else right of centre ──
+    const sun = await page.evaluate(() => {
+      const el = document.getElementById('editor-mode')
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      const bar = el.closest('header').getBoundingClientRect()
+      const svg = el.querySelector('svg')
+      return {
+        name: el.getAttribute('aria-label'), pressed: el.getAttribute('aria-pressed'), tag: el.tagName,
+        width: Math.round(r.width), height: Math.round(r.height), glyph: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
+        rays: el.querySelectorAll('circle').length, radius: getComputedStyle(el).borderTopLeftRadius,
+        rightOfCentre: r.left > bar.left + bar.width / 2,
+        // first of the right-hand cluster: nothing pressable sits to its right but the way into Theme settings
+        after: [...el.parentElement.children].map((c) => c.id),
+      }
+    })
+    check('step 46 — R-132: S4a\'s mode control is ONE 28×28 button with the export\'s 15px sun, right of centre, first of the right-hand cluster', sun !== null && sun.tag === 'BUTTON' && sun.width === 28 && sun.height === 28 && sun.glyph === 15 && sun.rays === 1 && sun.radius === '8px' && sun.rightOfCentre && sun.after[0] === 'editor-mode', JSON.stringify(sun))
+    check('step 46 — R-132: it carries `aria-pressed` and an accessible name naming the DESTINATION, not the state', sun?.pressed === 'false' && sun?.name === 'Preview dark mode', `${sun?.pressed} · ${JSON.stringify(sun?.name)}`)
+    check('step 46 — the canvas opens in light, from the one mode signal `tokens.ts` reserves for it (AD-30)', (await canvasMode()) === 'light', String(await canvasMode()))
+
+    // ── step 47 — the flip: dark, and NOTHING REPAINTED ──
+    await clickOn(GRID)
+    await canvasFrame().evaluate(() => {
+      window.__nodes = [...document.querySelectorAll('#canvas > *')]
+      document.scrollingElement.scrollTo(0, 260)
+    })
+    await page.waitForTimeout(200)
+    const litGround = await canvasFrame().evaluate(() => getComputedStyle(document.body).backgroundColor)
+    await modeButton().click()
+    await page.waitForTimeout(300)
+    const flipped = await canvasFrame().evaluate(() => ({
+      mode: document.documentElement.getAttribute('data-mode'),
+      // the SAME nodes: `mountSections` would have replaced every one of them
+      same: [...document.querySelectorAll('#canvas > *')].every((el, n) => el === window.__nodes[n]),
+      ground: getComputedStyle(document.body).backgroundColor,
+      scroll: Math.round(document.scrollingElement.scrollTop),
+      selected: document.querySelectorAll('[data-inflozo-selected]').length,
+    }))
+    check('step 47 — pressing the sun paints the canvas dark from `data-mode` alone, and NOTHING IS REPAINTED: every section root is the same node', flipped.mode === 'dark' && flipped.same && flipped.ground !== litGround, `${JSON.stringify(flipped)} · light ground ${litGround}`)
+    check('step 47 — the selection and the scroll position both survive the flip (R-123: the top bar never deselects)', flipped.selected === 1 && flipped.scroll === 260, JSON.stringify({ selected: flipped.selected, scroll: flipped.scroll }))
+    const inDark = await page.evaluate(() => ({ name: document.getElementById('editor-mode').getAttribute('aria-label'), pressed: document.getElementById('editor-mode').getAttribute('aria-pressed'), said: document.getElementById('editor-said').textContent }))
+    check('step 47 — R-132: the sun became a moon, its name now names light, and the mode SHOWING is announced politely', inDark.name === 'Back to light mode' && inDark.pressed === 'true' && inDark.said === 'Dark mode', JSON.stringify(inDark))
+    await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
+    await page.waitForTimeout(200)
+
+    // ── step 48 — authoring a dark override: dark only, with the moon and its words ──
+    const BG = bgRow(homeStack[GRID][0])
+    await clickOn(GRID)
+    await canvasFrame().evaluate(() => { window.__nodes = [...document.querySelectorAll('#canvas > *')] })
+    await asideGroup('Style')
+    const beforeBg = await attrOf(GRID, `data-${BG.name}`)
+    await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).click()
+    await page.waitForTimeout(300)
+    const authored = await page.evaluate(([n, name]) => {
+      const r = document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.querySelectorAll('#canvas > *')[n]
+      return { value: r.getAttribute(`data-${name}`), same: r === document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.defaultView.__nodes[n] }
+    }, [GRID, BG.name])
+    check(`step 48 — in dark, ${BG.label} → ${BG.to.label} stamps the same root in place: data-${BG.name}="${BG.to.value}"`, authored.value === BG.to.value && authored.same, JSON.stringify(authored))
+    check('step 48 — FR-F5: the row carries the moon badge with the words "Dark override"', /Dark override/.test((await moonOn(BG.label))?.words ?? '') && (await moonOn(BG.label))?.moon === true, JSON.stringify(await moonOn(BG.label)))
+    await modeButton().click()
+    await page.waitForTimeout(300)
+    check('step 48 — back in light the root returns to the value it had: THE LIGHT PAGE WAS NOT TOUCHED', (await canvasMode()) === 'light' && (await attrOf(GRID, `data-${BG.name}`)) === beforeBg, `${await attrOf(GRID, `data-${BG.name}`)} · was ${beforeBg}`)
+    check('step 48 — and the moon STAYS on the row, because an override is stored whatever mode is being shown', (await moonOn(BG.label))?.moon === true, JSON.stringify(await moonOn(BG.label)))
+
+    // ── step 49 — a control that is NOT mode-scoped, and reset in each mode ──
+    await modeButton().click()
+    await page.waitForTimeout(300)
+    await asideGroup('Layout')
+    const PLAIN = await controlsAside().getByRole('radiogroup', { name: 'Per row' }).count()
+    if (PLAIN > 0) {
+      await controlsAside().getByRole('radiogroup', { name: 'Per row' }).getByRole('radio', { name: 'Two' }).click()
+      await page.waitForTimeout(250)
+      const darkPlain = await attrOf(GRID, 'data-per-row')
+      await modeButton().click()
+      await page.waitForTimeout(300)
+      check('step 49 — a control that is not mode-scoped is ONE value for both modes: changed in dark, it is changed in light too', darkPlain === 'two' && (await attrOf(GRID, 'data-per-row')) === 'two' && (await moonOn('Per row'))?.moon === false, `${darkPlain} · light ${await attrOf(GRID, 'data-per-row')}`)
+      await modeButton().click()
+      await page.waitForTimeout(300)
+    } else note('step 49', `${homeStack[GRID][0]} draws no Per row control, so the not-mode-scoped row is proved in controls.test.ts alone`)
+    // reset in DARK: the override is forgotten and the row follows light again
+    await asideGroup('Style')
+    await controlsAside().getByRole('button', { name: `Reset ${BG.label}`, exact: true }).click()
+    await page.waitForTimeout(300)
+    check('step 49 — FR-F4 in dark: "Reset ' + BG.label + '" forgets the OVERRIDE, the row follows the light value, and the moon goes', (await attrOf(GRID, `data-${BG.name}`)) === beforeBg && (await moonOn(BG.label))?.moon === false, `${await attrOf(GRID, `data-${BG.name}`)} · was ${beforeBg}`)
+    // and in LIGHT the dark override is KEPT: put one back, flip to light, reset there
+    await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).click()
+    await page.waitForTimeout(250)
+    await modeButton().click()
+    await page.waitForTimeout(300)
+    const lightTo = (await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).count()) > 0
+    if (lightTo) {
+      await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).click()
+      await page.waitForTimeout(250)
+      await controlsAside().getByRole('button', { name: `Reset ${BG.label}`, exact: true }).click()
+      await page.waitForTimeout(300)
+      check('step 49 — FR-F4 in light: the LIGHT value is forgotten and the dark override STAYS (its moon is still on the row)', (await attrOf(GRID, `data-${BG.name}`)) === beforeBg && (await moonOn(BG.label))?.moon === true, JSON.stringify(await moonOn(BG.label)))
+    }
+
+    // ── step 50 — R-133: two entry points, ONE confirm ──
+    const clearDialog = page.locator('dialog[aria-labelledby="editor-cleardark-title"]')
+    await controlsAside().getByRole('button', { name: 'Clear dark overrides', exact: true }).click()
+    await page.waitForTimeout(250)
+    const fromPanel = await page.evaluate(() => {
+      const d = document.querySelector('dialog[aria-labelledby="editor-cleardark-title"]')
+      return d === null ? null : { open: d.open, words: d.innerText.replace(/\s+/g, ' '), focus: document.activeElement?.textContent }
+    })
+    check('step 50 — R-115: the panel\'s row asks first, names the count, and opens with focus on Cancel (UX-DR14)', fromPanel?.open === true && /1 setting/.test(fromPanel.words) && fromPanel.focus === 'Cancel', JSON.stringify(fromPanel))
+    await clearDialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.waitForTimeout(250)
+    check('step 50 — Cancel changes nothing: the override is still stored and its moon is still on the row', (await moonOn(BG.label))?.moon === true && !(await clearDialog.evaluate((d) => d.open)))
+
+    // ── step 51 — R-133's second entry point: the ⋯ menu, and its ABSENCE ──
+    const menuItems = async (n) => {
+      await rowAt(n).getByRole('button', { name: /^More for / }).click()
+      await page.waitForTimeout(250)
+      const items = await page.evaluate(() => [...document.querySelectorAll('[popover]')].filter((p) => p.matches(':popover-open')).flatMap((p) => [...p.querySelectorAll('button')].map((b) => b.textContent.trim())))
+      return items
+    }
+    const withOverride = await menuItems(GRID)
+    check('step 51 — R-133: the ⋯ of a section carrying an override offers "Clear dark overrides", below Hide, and R-126\'s Hide/Show still LEADS the menu', withOverride[0] === 'Hide' && withOverride.includes('Clear dark overrides'), withOverride.join(' · '))
+    await page.getByRole('button', { name: 'Clear dark overrides', exact: true }).last().click()
+    await page.waitForTimeout(300)
+    const sameConfirm = await page.evaluate(() => {
+      const all = [...document.querySelectorAll('dialog[aria-labelledby="editor-cleardark-title"]')]
+      return { dialogs: all.length, open: all.filter((d) => d.open).length, words: all.find((d) => d.open)?.innerText.replace(/\s+/g, ' ') }
+    })
+    check('step 51 — R-133: BOTH entry points open the SAME confirm — there is exactly one in the document, as Delete\'s and Hide\'s is', sameConfirm.dialogs === 1 && sameConfirm.open === 1 && sameConfirm.words === fromPanel?.words, JSON.stringify(sameConfirm))
+    await clearDialog.getByRole('button', { name: 'Clear dark overrides', exact: true }).click()
+    await page.waitForTimeout(400)
+    check('step 51 — confirmed, that section\'s dark version follows its light one again and the moon goes', (await attrOf(GRID, `data-${BG.name}`)) === beforeBg && (await moonOn(BG.label))?.moon === false, `${await attrOf(GRID, `data-${BG.name}`)} · ${JSON.stringify(await moonOn(BG.label))}`)
+    const noOverride = await menuItems(HERO)
+    check('step 51 — R-133/UX-DR3: on a section with no override the item is ABSENT from the menu — not greyed, gone (the shape Duplicate uses)', !noOverride.includes('Clear dark overrides') && noOverride[0] === 'Hide', noOverride.join(' · '))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    await clickOn(HERO)
+    await controlsAside().getByRole('button', { name: 'Clear dark overrides', exact: true }).click()
+    await page.waitForTimeout(300)
+    const saysSo = await controlsAside().evaluate((a) => ({ open: !!document.querySelector('dialog[aria-labelledby="editor-cleardark-title"]')?.open, words: a.innerText.replace(/\s+/g, ' ') }))
+    check('step 51 — R-12: with nothing to clear the panel\'s row SAYS SO under itself rather than asking, and stays live', saysSo.open === false && /Nothing to clear/.test(saysSo.words), JSON.stringify({ open: saysSo.open, said: /Nothing to clear[^.]*\./.exec(saysSo.words)?.[0] }))
+
+    // ── step 52 — R-131's Theme settings screen: D6a's two rows, and every other row of D6a ABSENT ──
+    // The override is planted through the service key, because nothing persists a canvas edit before Story 5.8 — so
+    // this is the only way to prove "every stored override is untouched" across a mode change and a reload, and the
+    // only way to give the project-level count something real to derive.
+    const BG_HERO = bgRow(homeStack[HERO][0])
+    const homeRow = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)
+    const plantedDoc = JSON.parse(JSON.stringify(homeRow.body?.[0]?.doc ?? null))
+    plantedDoc.instances[0].darkOverrides = { [BG_HERO.name]: BG_HERO.to.value }
+    const plant = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: plantedDoc }) })
+    check('step 52 — an override is planted on Home\'s first section through the service key, so the STORED half can be read', plant.status === 200 || plant.status === 204, `HTTP ${plant.status}`)
+    const storedOverrides = async () => {
+      const r = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)
+      return r.body?.[0]?.doc?.instances?.[0]?.darkOverrides
+    }
+    const settingsUrl = at(`/projects/${P}/settings`)
+    // `BusyLabel` keeps both labels in one grid cell, so a segment's accessible name carries its busy word too: the
+    // pill is read and pressed by its form value, never by an exact name
+    const segment = (value) => page.locator(`button[name="dark"][value="${value}"]`)
+    const readSettings = () => page.evaluate(() => ({
+      pill: [...document.querySelectorAll('[role="group"][aria-label="This project"] button')].map((b) => ({ value: b.getAttribute('value'), label: b.querySelector('span span')?.textContent, pressed: b.getAttribute('aria-pressed') })),
+      caption: document.body.innerText.includes('Every Style Pack ships a hand-paired dark palette, so dark is already paid for.'),
+      row: document.querySelector('[data-clear-row]')?.innerText.replace(/\s+/g, ' '),
+      greyed: document.querySelector('[data-clear-row]')?.hasAttribute('data-greyed'),
+      clearRefuses: document.querySelector('[data-clear-row] button[type="submit"]')?.getAttribute('aria-disabled'),
+      moonLabel: document.querySelector('[data-clear-row] [role="img"]')?.getAttribute('aria-label'),
+      reason: document.body.innerText.includes('Switch to Light + Dark to use or clear them.'),
+      kept: document.body.innerText.includes('The overrides are kept, not discarded'),
+      // R-118 a fourth time: everything else D6a draws is ABSENT — not greyed and not captioned
+      restOfD6a: ['Posts per page', 'Site basics', 'Accent colour', 'Credits', 'OF 17', 'Navigation', 'Social accounts', 'Translations', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
+    }))
+    await page.goto(settingsUrl, { waitUntil: 'load' })
+    const settings = await readSettings()
+    check('step 52 — R-131: /projects/<id>/settings draws D6a\'s mode block — "This project" as Light only | Light + Dark, with its caption verbatim', settings.pill.map((b) => b.label).join(' | ') === 'Light only | Light + Dark' && settings.pill[1].pressed === 'true' && settings.caption, JSON.stringify(settings.pill))
+    check('step 52 — R-131: D6a\'s clear row carries the moon labelled "Dark override" and a DERIVED count, live while the project is Light + Dark', settings.moonLabel === 'Dark override' && /1 section carries a dark override/.test(settings.row ?? '') && settings.greyed === false && settings.clearRefuses === null, JSON.stringify({ row: settings.row, greyed: settings.greyed, refuses: settings.clearRefuses }))
+    check('step 52 — R-118 a fourth time: every other row and group D6a draws is ABSENT from the screen — not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
+
+    // ── step 53 — FR-D7's Light-only half, against the STORED docs, and back again ──
+    await segment('off').click()
+    await page.waitForTimeout(2000)
+    const lightOnly = await readSettings()
+    check('step 53 — D6b: switched to Light only the clear row GREYS WITH ITS REASON, and says the overrides are kept rather than discarded', lightOnly.pill[0].pressed === 'true' && lightOnly.greyed === true && lightOnly.clearRefuses === 'true' && lightOnly.reason && lightOnly.kept, JSON.stringify({ pressed: lightOnly.pill.map((b) => b.pressed), greyed: lightOnly.greyed, refuses: lightOnly.clearRefuses }))
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const noSun = await page.evaluate(() => document.getElementById('editor-mode') !== null)
+    const litMode = await canvasMode()
+    const keptStored = await storedOverrides()
+    check('step 53 — FR-D7 on a Light-only project: the sun is ABSENT from the bar rather than disabled, and the canvas is light', noSun === false && litMode === 'light', `control ${noSun ? 'present' : 'absent'} · mode ${litMode}`)
+    check('step 53 — AD-17: NOTHING WAS DELETED by the mode change — the stored override is byte-identical', JSON.stringify(keptStored) === JSON.stringify({ [BG_HERO.name]: BG_HERO.to.value }), JSON.stringify(keptStored))
+    await page.goto(settingsUrl, { waitUntil: 'load' })
+    await segment('on').click()
+    await page.waitForTimeout(2000)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    await clickOn(HERO)
+    await asideGroup('Style')
+    const backOn = { sun: await page.evaluate(() => document.getElementById('editor-mode') !== null), moon: (await moonOn(BG_HERO.label))?.moon }
+    await modeButton().click()
+    await page.waitForTimeout(300)
+    check('step 53 — Light + Dark again: the sun is back and the stored override REAPPLIES EXACTLY — nothing was thrown away while dark was off', backOn.sun && backOn.moon === true && (await attrOf(HERO, `data-${BG_HERO.name}`)) === BG_HERO.to.value, `${JSON.stringify(backOn)} · stamped ${await attrOf(HERO, `data-${BG_HERO.name}`)} · want ${BG_HERO.to.value}`)
+    await modeButton().click()
+    await page.waitForTimeout(300)
+
+    // ── step 53 (b) — D6a's project-level Clear, and its derived count going with it ──
+    await page.goto(settingsUrl, { waitUntil: 'load' })
+    await page.locator('[data-clear-row] button[type="submit"]').click()
+    await page.waitForTimeout(2500)
+    const afterClear = await readSettings()
+    const clearedStored = await storedOverrides()
+    check('step 53 — D6a\'s Clear empties every section\'s overrides across every canvas, and the DERIVED count goes with them', /No section carries a dark override/.test(afterClear.row ?? '') && JSON.stringify(clearedStored) === '{}', `${JSON.stringify(afterClear.row)} · stored ${JSON.stringify(clearedStored)}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, and Story 5.5\'s switcher, its soft navigations and the whole round trip — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, and Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code

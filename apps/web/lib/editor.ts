@@ -80,6 +80,17 @@ export const isUuid = (id: string) => UUID.test(id)
 export const canvasPath = (projectId: string, key: CanvasKey = 'home') =>
   key === 'home' ? `/projects/${projectId}` : `/projects/${projectId}/${key}`
 
+/** THE SCHEME'S ONE NON-CANVAS SEGMENT (Story 5.6, R-131): Theme settings, `/projects/<id>/settings`, holding D6a's
+ *  project-mode block and the project-level "Clear dark overrides" row and nothing else that screen draws.
+ *
+ *  Named HERE because the scheme is data in one place (Story 5.1) — the route, the editor's way in and the harness
+ *  all read it from this module, so nothing learns the word twice. It is deliberately NOT in `CANVASES`: it compiles
+ *  into no `.hbs`, stores no `project_templates` row and opens no Layers panel. And `canvasFromSegment` keeps its
+ *  refusal list exactly as it was — `settings` is a STATIC sibling of `[template]`, which Next resolves first, so the
+ *  refusal is never asked about it (`editor.test.ts` is the assertion that it is still refused if it ever is). */
+export const SETTINGS = 'settings'
+export const settingsPath = (projectId: string) => `/projects/${projectId}/${SETTINGS}`
+
 /** The canvas a segment names, or null for a reserved, unknown or CONDITIONAL one — a canvas the switcher offers to
  *  nobody must not be reachable by typing its address either, and refusing it here is the only refusal that is
  *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it. */

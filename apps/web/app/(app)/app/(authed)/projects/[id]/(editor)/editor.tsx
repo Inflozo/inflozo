@@ -6,12 +6,13 @@ import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes } fro
 import { createPortal } from 'react-dom'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import {
-  duplicateSection, getPath, isDesigned, moveSection, removeSection, renameSection, serializeMarks, setContent,
-  setHidden, setMemberVisibility, stampControls,
+  clearDarkOverrides, darkOverridesInForce, duplicateSection, getPath, isDesigned, moveSection, removeSection,
+  renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor,
 } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, MemberState, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
+import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
@@ -25,7 +26,7 @@ import { ChevronLeft, Panel } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
-import { CANVASES, canvasOfPath, canvasStack, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
@@ -114,12 +115,26 @@ import type { EditorData } from './read'
    one place: the first edit to a canvas makes it the user's, and taking its last section off gives it back to the
    default stack, marker and all — while merely HIDING them all does not (FR-D5).
 
+   LIGHT AND DARK (Story 5.6 — S4a's sun, R-132, R-133, D6a). THE PREVIEW IS ONE ATTRIBUTE AND A RE-STAMP, NEVER A
+   REPAINT: the canvas document's `<html>` carries `data-mode`, which `tokens.ts` reserved for exactly this
+   (`:165-172` — no fourth mode signal exists), the token block does the colouring, and a flip re-stamps each root
+   through `storedFor(design, instance, mode)` and re-applies `mark()`. So a caret, a text selection, the scroll
+   position and the selection all survive a flip; `paint()` writes the attribute too, so a repaint from any other
+   cause keeps the mode. `resolveControls` and `stampControls` are unchanged and no mode reaches the theme emitter
+   (AD-30, `agreement.test.ts`). A MODE-SCOPED control's change in dark lands in `darkOverrides` and the light page
+   keeps what it had — decided in the engine, keyed on each control's own `darkOverride` DECLARATION and never on the
+   name `bg`. The sun is ABSENT, not disabled, on a Light-only project (`dark_enabled`, server truth from `read.ts`),
+   and every stored override survives that untouched (AD-17). R-133's per-section clear has TWO entry points — the
+   Controls panel's foot and the Layers `⋯` — and ONE confirm, below, beside Delete's and Hide's and for the same
+   reason. The project's own two rows live on R-131's Theme settings screen, reached from the bar.
+
    ABSENT, NOT GREYED (UX-DR3), each until its story: "Saved", saving and Undo/Redo (5.8 — until then an edit lives for
-   the session and a reload starts from the stored docs), View as (5.14), the sun (5.6), the
+   the session and a reload starts from the stored docs), View as (5.14), the
    device switch (5.7), Ship it (7.18), the name's rename underline (no story yet),
    "+ Add section" and the hairline "+" between sections (5.10),
-   the design arrows and S4c's "4 / 18" chip (5.11), the Style Pack card (6.3) and Dark mode (5.6)
-   (R-118); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's docked bar at 390
+   the design arrows and S4c's "4 / 18" chip (5.11) and the Style Pack card (6.3)
+   (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the VISITOR's `mode-toggle` and a
+   different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's docked bar at 390
    (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
    P0-2's filled-slot popover. S4a's posts-per-page note and S4c's pinned Quick Controls card are never
    built (FR-Q1, R-113). */
@@ -198,6 +213,7 @@ export function Editor({
   canvases,
   synthesized,
   defaults: stacks,
+  darkEnabled,
 }: EditorData & { project: { id: string; name: string } }) {
   const pathname = usePathname()
   // the layout 404s every segment that is not a canvas, so a null here is never drawn
@@ -217,6 +233,9 @@ export function Editor({
   const [selected, setSelected] = useState<Pick | null>(null)
   const [hovered, setHovered] = useState<Pick | null>(null)
   const [paints, setPaints] = useState(0)
+  /** Story 5.6 — the mode the canvas is SHOWING. Session state, like `pilots/review.tsx`'s: it is never in the URL
+   *  (`lib/editor.ts`) and never a stored per-canvas preference. A Light-only project has no way to leave 'light'. */
+  const [mode, setMode] = useState<Mode>('light')
 
   const layers = useFold()
   const controls = useFold()
@@ -265,8 +284,8 @@ export function Editor({
   // a card measured at 0 (folded away, not yet laid out) would put Infinity in the iframe's height
   const scale = size.width > 0 ? Math.min(1, size.width / DESKTOP) : 1
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto })
-  latest.current = { key, docs, stack, selected, hovered, auto }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode }
 
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
@@ -296,6 +315,40 @@ export function Editor({
       root.toggleAttribute('data-inflozo-hover', same(placed, now.hovered))
     })
   }
+  /** The stored slice each root's attributes come from, in the mode being shown — `stampControls`' single door,
+   *  handed a different slice. This is the whole of the dark render (AD-30). */
+  const slice = (placed: Placed, state: ControlState = placed) => {
+    const design = entries[placed.designId]
+    return design === undefined
+      ? undefined
+      : { controlSchema: design.controlSchema, universals: design.universals, controls: storedFor(design, state, latest.current.mode) }
+  }
+
+  /** Every root re-stamped for the mode now showing. NEVER A REPAINT: nothing in the DOM is replaced, so the caret,
+   *  the text selection, the scroll position and the selection all survive the flip (the story's whole point). */
+  const restampAll = () => {
+    const now = latest.current
+    roots.current.forEach((root, n) => {
+      const placed = now.stack[n]
+      const input = placed ? slice(placed) : undefined
+      if (root && input) stampControls(root as unknown as RuntimeElement, input)
+    })
+    // `stampControls` strips every root `data-*` it does not own, `data-inflozo-*` included
+    mark()
+  }
+
+  /** R-132's press: the attribute, a re-stamp, and the mode now showing announced politely through the editor's one
+   *  live region. The top bar never deselects (R-123), so nothing is chosen or unchosen here. */
+  const flip = (next: Mode) => {
+    if (next === latest.current.mode) return
+    latest.current = { ...latest.current, mode: next }
+    setMode(next)
+    const doc = frame.current?.contentDocument
+    if (doc) doc.documentElement.setAttribute('data-mode', next)
+    restampAll()
+    setSaid(modeShown(next))
+  }
+
   const choose = (pick: Pick | null) => {
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
@@ -320,6 +373,9 @@ export function Editor({
     // `load` listener each paint `latest` when they land, so a key change dropped here is painted then
     if (!doc || !mount || !lookup || !frame.current) return
     const now = latest.current
+    // Story 5.6: the mode is ONE attribute on the canvas root, and every paint re-asserts it — the token block
+    // (`tokens.ts`'s `:root[data-mode="dark"]`) does all the colouring from there (AD-30)
+    doc.documentElement.setAttribute('data-mode', now.mode)
     // a field being edited is ended in place before its element is replaced, and asks for no second paint
     const was = editing.current
     editing.current = null
@@ -739,7 +795,11 @@ export function Editor({
    *  canvas's. Doc order, not `canvasStack`'s: the row's `at` is the position `moveSection` is given, and B7 draws
    *  the card's rows as the site doc stores them (DW-187: the `a3/` footers compile last whatever that order). */
   const rowsOf = (docKey: string): LayerRow[] =>
-    (docs[docKey]?.instances ?? []).map((i, at) => ({ doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at }))
+    (docs[docKey]?.instances ?? []).map((i, at) => ({
+      doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at,
+      // R-133: the `⋯` item is ABSENT where nothing could be cleared, and the engine's own definition decides
+      darkOverride: darkOverridesInForce(entries[i.designId] ?? { controlSchema: [] }, i).length > 0,
+    }))
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null. */
   const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string): string | null => {
@@ -787,6 +847,21 @@ export function Editor({
     // opened on the frame after the one that filled its words in
     requestAnimationFrame(() => openOnCancel(confirm.current))
   }
+  /** R-133's ONE confirm, for BOTH entry points — the Controls panel's foot and the Layers `⋯` — beside Delete's and
+   *  Hide's and for the same reason (`layers.tsx`'s header): two entry points, one act, one dialog. It asks first,
+   *  names the count, and opens on Cancel (R-115, UX-DR14). Neither entry point ever reaches it with nothing to
+   *  clear: the panel row says so itself and the menu item is absent. */
+  const [askDark, setAskDark] = useState<{ pick: Pick; name: string; count: number } | null>(null)
+  const clearDark = useRef<HTMLDialogElement>(null)
+  const askClearDark = (row: Pick & { layerName: string }) => {
+    const placed = latest.current.stack.find((i) => same(i, row))
+    const entry_ = placed ? entries[placed.designId] : undefined
+    const count = placed && entry_ ? darkOverridesInForce(entry_, placed).length : 0
+    if (count === 0) return
+    setAskDark({ pick: { doc: row.doc, instanceId: row.instanceId }, name: row.layerName, count })
+    requestAnimationFrame(() => openOnCancel(clearDark.current))
+  }
+
   const onRemove = (row: Pick & { layerName: string }) =>
     row.doc === SITE.key ? askFirst('remove', row) : edit(row, (doc) => removeSection(doc, row.instanceId))
   const onToggleHidden = (row: LayerRow) =>
@@ -860,8 +935,10 @@ export function Editor({
     const design = entries[now.stack[n]?.designId ?? '']
     // a control changes only the root's attributes, so it is stamped in place (`/pilots`' fast path); no root means
     // the section is gated away, and anything else needs a render
-    if (kind === 'control' && root && design) {
-      stampControls(root as unknown as RuntimeElement, { controlSchema: design.controlSchema, universals: design.universals, controls: next.controls })
+    const placed = now.stack[n]
+    const input = kind === 'control' && placed ? slice(placed, next) : undefined
+    if (input && root && design) {
+      stampControls(root as unknown as RuntimeElement, input)
       mark()
     } else paint()
   }
@@ -884,6 +961,24 @@ export function Editor({
             as the project's name grows. */}
         <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center">
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
+        </div>
+        {/* S4a's RIGHT-HAND CLUSTER, which the frame draws as the sun alone (:35) — position 6, and nothing was right
+            of centre before this story. R-132's one button leads it; View as (5.14), the device switch (5.7),
+            undo/redo (5.8) and Ship it (7.18) land beside it later (R-118).
+            ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so many
+            words): there is no toggle rather than a theme that declares less. */}
+        <div className="ml-auto flex items-center gap-[10px]">
+          {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
+          {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
+              so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
+              icon for it, and R-92 forbids inventing one here. */}
+          <Link
+            href={settingsPath(project.id)}
+            id="editor-theme-settings"
+            className={`rounded-sm px-[6px] py-1 text-ui-dense text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink ${ring}`}
+          >
+            Theme settings
+          </Link>
         </div>
       </header>
 
@@ -914,6 +1009,7 @@ export function Editor({
             onRename={onRename}
             onDuplicate={onDuplicate}
             onRemove={onRemove}
+            onClearDark={askClearDark}
             onMove={moveTo}
           />
         </aside>
@@ -1023,7 +1119,11 @@ export function Editor({
               entry={entry}
               state={chosen}
               onChange={onChange}
-              swatches={swatches}
+              // Story 5.6 — the mode's own swatch values, so the Background-role dots are the colours the canvas
+              // is actually painting; the mode itself scopes every resolution, write and reset in the panel
+              swatches={swatches[mode]}
+              mode={mode}
+              onClearDark={() => askClearDark(chosen)}
               timezone={timezone}
               links={links}
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}
@@ -1086,6 +1186,42 @@ export function Editor({
             }}
           >
             {ask?.kind === 'remove' ? 'Delete section' : 'Hide section'}
+          </Button>
+        </div>
+      </dialog>
+
+      {/* R-133's ONE confirm, opened by the Controls panel's row AND the Layers `⋯` — R-115's shape, on Cancel */}
+      <dialog
+        ref={clearDark}
+        onClick={closeOnBackdrop}
+        aria-labelledby="editor-cleardark-title"
+        aria-describedby="editor-cleardark-body"
+        className={`${sheet} gap-[18px]`}
+      >
+        <div className="flex flex-col gap-[6px]">
+          <h2 id="editor-cleardark-title" className={title}>
+            Clear dark overrides on {askDark?.name ?? 'this section'}?
+          </h2>
+          <p id="editor-cleardark-body" className="text-ui-dense leading-[1.55] text-ink-soft">
+            This section&apos;s dark version will follow its light one again, {askDark?.count ?? 0}{' '}
+            {askDark?.count === 1 ? 'setting' : 'settings'} in all. Your light page, your words and your pictures are
+            not touched.
+          </p>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => clearDark.current?.close()}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="coral"
+            size={36}
+            onClick={() => {
+              clearDark.current?.close()
+              if (askDark) edit(askDark.pick, (doc) => clearDarkOverrides(doc, askDark.pick.instanceId))
+            }}
+          >
+            Clear dark overrides
           </Button>
         </div>
       </dialog>

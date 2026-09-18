@@ -2714,8 +2714,12 @@ the row that is neither designed nor auto-generated, Tabler's `circle-off` rathe
     scheme is data (Story 5.1), so nothing has to learn it twice.
 - Targets:
   - ✅ this entry · ✅ Story 5.6's spec — Story 5.6's Create run (2026-09-18).
-  - ⬜ `apps/web/lib/editor.ts` · ⬜ the route tree under `apps/web/app/(app)/app/(authed)/projects/[id]/` ·
-    ⬜ `apps/web/editor.test.ts` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.6's Dev.
+  - ✅ `apps/web/lib/editor.ts` (`SETTINGS`, `settingsPath`) · ✅ the route tree under
+    `apps/web/app/(app)/app/(authed)/projects/[id]/` — the editor in `(editor)/`, the guard alone in `[id]/layout.tsx`,
+    the screen in `settings/` with its own `loading.tsx` and `actions.ts` · ✅ `apps/web/editor.test.ts` ·
+    ✅ `apps/web/busy.test.ts` (`NO_SKELETON`'s two keys moved with the group) · ✅ `tools/probe/run-verify-editor.cjs`
+    (steps 52–53) — Story 5.6's Dev (2026-09-18). `next build`'s route table is the control: `/app/projects/[id]` and
+    `/app/projects/[id]/[template]` are unchanged and `/app/projects/[id]/settings` is added.
   - ⬜ `EXPERIENCE.md:172`'s Theme Settings row, which should say what of D6a exists when · ⬜ `epics.md` Story 5.6 —
     at 5.6's Review.
 - **Deliberately not touched:** the export (R-74) — D6a still draws the whole screen and this file is the record;
@@ -2737,8 +2741,10 @@ takes you ("Preview dark mode" / "Back to light mode") and a polite announcement
   moon is the Kit's own (`kit/icons.tsx:297`). **S4a is completed, not superseded** — the drawn sun is the light state.
 - Targets:
   - ✅ this entry · ✅ Story 5.6's spec — Story 5.6's Create run (2026-09-18).
-  - ⬜ `apps/web/components/kit/icons.tsx` (`Sun`) · ⬜ `apps/web/components/editor/mode-toggle.tsx` ·
-    ⬜ `tools/probe/run-verify-editor.cjs` — at 5.6's Dev.
+  - ✅ `apps/web/components/kit/icons.tsx` (`Sun`, the frame's path verbatim) ·
+    ✅ `apps/web/components/editor/mode-toggle.tsx` · ✅ `editor.tsx` (its place in the bar, and the mode it flips) ·
+    ✅ `apps/web/dark-mode.test.ts` · ✅ `tools/probe/run-verify-editor.cjs` (steps 46–47) — Story 5.6's Dev
+    (2026-09-18).
 - **Deliberately not touched:** the moon **badge**, which is a different thing — 12px, on an overridden control, always
   captioned "Dark override" (D6a`:113`, `Editor Sidebar Kit.dc.html:178-179`); S4's stale "Dark mode / Readers get a
   moon toggle" sidebar row, which is the VISITOR's `mode-toggle` (`EXPERIENCE.md:652`) and is not built.
@@ -2763,9 +2769,14 @@ together rather than either alone.
     only control; its menu gains a fifth item by the owner's word. Hide/Show still leads it.
 - Targets:
   - ✅ this entry · ✅ Story 5.6's spec — Story 5.6's Create run (2026-09-18).
-  - ⬜ `apps/web/components/controls/sidebar.tsx` · ⬜ `apps/web/components/controls/layers.tsx` ·
-    ⬜ `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (the one confirm) ·
-    ⬜ `packages/section-runtime/src/doc-edit.ts` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.6's Dev.
+  - ✅ `apps/web/components/controls/sidebar.tsx` (the always-present row) ·
+    ✅ `apps/web/components/controls/layers.tsx` (the absent-when-empty menu item) ·
+    ✅ `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the ONE confirm) ·
+    ✅ `packages/section-runtime/src/doc-edit.ts` (`clearDarkOverrides`, `darkOverrideCount`) ·
+    ✅ `packages/section-runtime/src/controls.ts` (`darkOverridesInForce` — one definition of "carries an override",
+    which the moon, both entry points, the confirm's count and the project count all read) ·
+    ✅ `apps/web/dark-mode.test.ts` · ✅ `tools/probe/run-verify-editor.cjs` (steps 50–53) — Story 5.6's Dev
+    (2026-09-18).
   - ⬜ `EXPERIENCE.md` § the frame/PRD divergence table, where the missing per-section clear is recorded — at 5.6's
     Review.
 - **Deliberately not touched:** the export (R-74) — neither surface is drawn and this file is the record; the

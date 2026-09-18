@@ -293,6 +293,17 @@ export const Grip = ({ label, ...rest }: IconProps) => (
   </svg>
 )
 
+/** S4a's mode control in its LIGHT state (`S4 Editor.dc.html:35`), lifted verbatim: a 4-unit circle and eight rays,
+ *  at the frame's own 1.5px stroke and 24-unit viewBox. The frame draws it at 15px inside a 28px button, in the
+ *  value the token layer calls `ink-soft` — so the stroke stays `currentColor` and no colour literal enters
+ *  `apps/web` (`tokens.test.ts`). R-132: the moon above is its dark counterpart, which the export draws nowhere. */
+export const Sun = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  </Icon>
+)
+
 /** The moon inside the badge. Filled, because it is a glyph and not a stroke. */
 export const Moon = ({ size = 7, label, ...rest }: IconProps) => (
   <svg

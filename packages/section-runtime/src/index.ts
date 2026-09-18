@@ -70,6 +70,10 @@ export {
   resetControl,
   resetSection,
   resolveControls,
+  // Story 5.6 — FR-D7's mode: the one function that decides which stored slice a mode resolves from, and the
+  // one definition of "this section carries a dark override"
+  darkOverridesInForce,
+  storedFor,
   setContent,
   setControl,
   setData,
@@ -82,6 +86,7 @@ export type {
   ControlOption,
   ControlRow,
   ControlState,
+  Mode,
   DataRow,
   PropRow,
   SidebarGroupModel,
@@ -94,6 +99,8 @@ export type { DocInstance, ProjectDoc } from './doc-schema.ts'
 // Story 5.4 — what a section operation MEANS, over that doc: the editor's gestures, 5.8's journal and Epic 7's
 // compiler all read the rules here rather than re-deriving them.
 export {
+  clearDarkOverrides,
+  darkOverrideCount,
   duplicateSection,
   isDesigned,
   moveSection,

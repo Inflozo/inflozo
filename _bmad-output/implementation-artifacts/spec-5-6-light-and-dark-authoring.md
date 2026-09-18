@@ -2,7 +2,7 @@
 title: 'Story 5.6 — Light and dark authoring'
 type: 'feature'
 created: '2026-09-18'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 baseline_commit: 'b31b1e5bab89312c57f13aa10ab3d7d4b8e58eb2'
 review_loop_iteration: 0
@@ -259,7 +259,7 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/section-runtime/src/controls.ts` -- add `export type Mode = 'light' | 'dark'` and ONE new
+- [x] `packages/section-runtime/src/controls.ts` -- add `export type Mode = 'light' | 'dark'` and ONE new
       pure function, `storedFor(entry, state, mode)`, returning the stored slice the mode resolves from:
       in `dark`, each `darkOverride: true` name takes its `darkOverrides` value where one is stored, and
       every other name is `state.controls`' — so `resolveControls` and `stampControls` need no change at
@@ -269,28 +269,28 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
       `controls` otherwise; `resetControl` deletes from whichever map that same test names. Leave
       `resetSection`, `resetChanges` and `controlRow`'s `moon` exactly as they are. -- the engine is the
       one place that knows what a mode means, and a default keeps every existing caller and test compiling
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- `clearDarkOverrides(doc, instanceId)` (that instance's
+- [x] `packages/section-runtime/src/doc-edit.ts` -- `clearDarkOverrides(doc, instanceId)` (that instance's
       map to `{}`, the doc otherwise identical) and `darkOverrideCount(docs)` returning the number of
       instances carrying at least one override an emitter could use -- one place decides what a doc
       operation means (5.8's journal and Epic 7 read it), and the count is derived, never stored
-- [ ] `packages/section-runtime/src/index.ts` -- export the three new names -- the editor imports from the
+- [x] `packages/section-runtime/src/index.ts` -- export the three new names -- the editor imports from the
       package, never from a path inside it
-- [ ] `apps/web/components/kit/icons.tsx` -- add `Sun`, the path lifted verbatim from
+- [x] `apps/web/components/kit/icons.tsx` -- add `Sun`, the path lifted verbatim from
       `S4 Editor.dc.html:35` (`circle r=4` + the eight-ray `path`), stroked `currentColor` like its
       neighbours -- R-92: a glyph the export draws is read from the export
-- [ ] `apps/web/lib/controls-review.ts` -- `referenceSwatches(mode: Mode = 'light')` reading
+- [x] `apps/web/lib/controls-review.ts` -- `referenceSwatches(mode: Mode = 'light')` reading
       `REFERENCE_TOKENS[mode]`, throwing by property name as it already does -- the Background-role
       swatches must be the colours the canvas is actually painting
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- select `dark_enabled` in `projectOf` and
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/read.ts` -- select `dark_enabled` in `projectOf` and
       carry it on `EditorData`; hand both swatch sets (`{ light, dark }`) -- the project's mode is server
       truth, exactly as 5.5 made synthesis server truth
-- [ ] `apps/web/components/editor/mode-toggle.tsx` -- **new, R-132**: ONE button at S4a's position, first
+- [x] `apps/web/components/editor/mode-toggle.tsx` -- **new, R-132**: ONE button at S4a's position, first
       of the right-hand cluster, 28×28 — the `Sun` while light, the Kit's `Moon` while dark — carrying
       `aria-pressed` and an accessible name that names the **destination** ("Preview dark mode" /
       "Back to light mode"), with the mode now shown announced politely (UX-DR12) -- a small shape carries
       its words, or an accessible label where the layout cannot hold one (`DESIGN.md:534-536`), which a
       48px bar with four controls still to land in it is
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hold `mode` beside the other session
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` -- hold `mode` beside the other session
       state and in the `latest` ref; set `data-mode` on the canvas `documentElement` in `paint()` and on
       every flip; on a flip **re-stamp every root through `storedFor(…, mode)` and call `mark()` — never
       repaint**; pass the mode and the mode's swatches to `Sidebar`; make the control absent when
@@ -298,52 +298,52 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
       take "the sun (5.6)" and "Dark mode (5.6)" out of the absent list at `:117-122` and write this
       story's paragraph into the header log -- one attribute plus a re-stamp is the whole preview, and it
       is what lets a caret and a selection survive the flip
-- [ ] `apps/web/components/controls/sidebar.tsx` -- thread `mode` into `sidebar`/`setControl`/
+- [x] `apps/web/components/controls/sidebar.tsx` -- thread `mode` into `sidebar`/`setControl`/
       `resetControl`; add **R-133's first entry point**: "Clear dark overrides" directly under "Reset this
       design" at the panel foot, in the same shape, **always present**, saying there is nothing to clear
       when there is nothing rather than asking (R-12) -- the panel edits the selection, and the two acts
       are neighbours in meaning
-- [ ] `apps/web/components/controls/layers.tsx` -- **R-133's second entry point**: "Clear dark overrides"
+- [x] `apps/web/components/controls/layers.tsx` -- **R-133's second entry point**: "Clear dark overrides"
       in the row's `⋯` menu (`items` at `:269`), **absent** when that section carries no usable override,
       exactly as Duplicate is absent on a site-wide row (`:289`); Hide/Show still leads the menu -- R-126
       is extended by the owner's word, not reversed
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- **the ONE confirm both entry
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- **the ONE confirm both entry
       points open**, beside Delete's and Hide's and for the same reason (`layers.tsx:51-52`): it asks
       first, names the count, and opens with focus on Cancel (R-115, UX-DR14) -- two entry points, one
       act, one dialog
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/` -- **R-131's move, first and on its own**: the
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/` -- **R-131's move, first and on its own**: the
       editor's `layout.tsx`, `page.tsx`, `editor.tsx`, `editor-skeleton.tsx`, `read.ts` and `[template]/`
       descend into a new `(editor)/` route group; `[id]/layout.tsx` keeps **only** the `projectOf` 404
       guard, above both children and above every Suspense boundary (R-98). No URL changes, no behaviour
       changes -- a settings page nested under today's `[id]` would come up inside the editor's chrome,
       because that layout renders the Editor for every child segment
-- [ ] `apps/web/lib/editor.ts` -- name `settings` as the scheme's one non-canvas segment, beside the
+- [x] `apps/web/lib/editor.ts` -- name `settings` as the scheme's one non-canvas segment, beside the
       canvases, and keep `canvasFromSegment`'s refusal list as it is -- the scheme is data in one place
       (Story 5.1), and `editor.test.ts` reads it there
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/page.tsx` + `loading.tsx` -- **new, R-131's
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/page.tsx` + `loading.tsx` -- **new, R-131's
       screen**: D6a's mode block and nothing else — "This project" as the two-segment control
       (`Light only` | `Light + Dark`) with its caption verbatim, then the project-level clear row with its
       **derived** count and its `Clear`, greyed with **D6b's reason sentence** while the project is Light
       only. Everything else D6a draws is absent, its left rail included. The skeleton draws **these** rows;
       `metadata` per `app-routes.test.ts` -- Light only is unreachable and untestable without it
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- the server action writing
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- the server action writing
       `projects.dark_enabled`, and the one clearing every instance's overrides across every canvas of the
       project; the pressed control says what it is doing (`Submit`'s required `busy` label, R-98). Follow
       `projects/actions.ts:194`'s shape and write no other column -- AD-31: `projects` carries fields only
       the server may assert, so an action touches exactly what it came for
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the way into the screen from
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the way into the screen from
       the editor (`EXPERIENCE.md:172`'s entry point), and **not** a shell-nav destination -- the screen is
       the project's, not the account's
-- [ ] `packages/section-runtime/src/controls.test.ts` -- the matrix's engine rows: resolution in each mode,
+- [x] `packages/section-runtime/src/controls.test.ts` -- the matrix's engine rows: resolution in each mode,
       which map a write lands in for a mode-scoped and a non-mode-scoped control, which map a reset
       empties, a stored override the design does not offer (resolved away, no moon, still stored), an
       override under an undeclared name, and a design whose mode-scoped control is locked to no value
-- [ ] `packages/section-runtime/src/doc-edit.test.ts` -- the per-section clear leaves everything else
+- [x] `packages/section-runtime/src/doc-edit.test.ts` -- the per-section clear leaves everything else
       identical, and the count is derived over the real library rather than a written number
-- [ ] `apps/web/` -- a `node --test` file covering the flip: `data-mode` written on the canvas root, roots
+- [x] `apps/web/` -- a `node --test` file covering the flip: `data-mode` written on the canvas root, roots
       re-stamped, no repaint (the paint counter unchanged), and the control absent when `dark_enabled` is
       false
-- [ ] `tools/probe/run-verify-editor.cjs` -- steps 46+ **inside step 5's CSP session**: the sun in the bar
+- [x] `tools/probe/run-verify-editor.cjs` -- steps 46+ **inside step 5's CSP session**: the sun in the bar
       at S4a's position; the flip painting the canvas dark and the selection surviving it; a dark
       Background-role change moving the root's `data-bg` in dark only, with the moon and its words on the
       row; the light canvas unchanged; reset in each mode; the per-section clear's confirm and its result;
@@ -386,6 +386,21 @@ files disagree on two pack accents — *the colour-scheme story must read PRD Ap
 
 ## Spec Change Log
 
+- **2026-09-18, Dev: one word of the frozen matrix needed a change the task list forbade, and the matrix won.** The
+  matrix row *"An override the design will not take"* requires **no moon** for a stored override outside the design's
+  offered set, and cites `controls.ts:199` as already guarding it. Read in the code, it did not: the guard was
+  `d.values.includes(…)` — the control's WHOLE vocabulary — so `darkOverrides.bg = 'accent'` on a design narrowing
+  `bg` to base/surface/contrast lit a moon beside a value neither emitter could stamp. The Tasks list said to leave
+  `controlRow`'s `moon` "exactly as they are", which was written believing the guard already matched. The **frozen**
+  matrix is owner-owned intent and the task note is Dev-facing guidance, so the matrix governs: the guard is now
+  `d.offered.includes(…)` — one word — and that is also what the row's own comment always claimed ("a stored override
+  an emitter could use"). It is extracted as `darkOverridesInForce`, the ONE definition the badge, both R-133 entry
+  points, its confirm's count and D6a's project count all read. Recorded here rather than silently: the flagged
+  discrepancy is between the spec's two halves, not between two owner rulings, so it needed no ruling.
+- **2026-09-18, Dev: `darkOverrideCount` takes the library as a second argument.** The task line writes it
+  `darkOverrideCount(docs)`, and its own words — "at least one override **an emitter could use**" — cannot be
+  answered without each instance's design declaration. It therefore takes `entryOf` in exactly `synthesize`'s
+  established shape (`(designId) => ControlEntry | undefined`), so a design the library cannot hold counts nothing.
 - **2026-09-18, the owner ruled all three questions at the Create checkpoint — R-131, R-132, R-133.** The
   frozen **Boundaries** were amended for the first (its `Ask First` no longer holds three open questions,
   and its `Never` now carries R-131's scope for D6a), which is the renegotiation the

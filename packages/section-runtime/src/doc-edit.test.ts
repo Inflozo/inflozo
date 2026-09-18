@@ -1,6 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { duplicateSection, isDesigned, moveSection, removeSection, renameSection, setHidden, setMemberVisibility } from './doc-edit.ts'
+import { UNIVERSALS } from '@inflozo/library'
+import type { ControlEntry } from './controls.ts'
+import {
+  clearDarkOverrides, darkOverrideCount, duplicateSection, isDesigned, moveSection, removeSection, renameSection,
+  setHidden, setMemberVisibility,
+} from './doc-edit.ts'
 import { parseDoc, type DocInstance, type ProjectDoc } from './doc-schema.ts'
 
 // Story 5.4 — every section operation and every refusal, over docs parsed through AD-27's own schema, so the defaults
@@ -115,4 +120,59 @@ test('setMemberVisibility: each of the four states, and the stored doc still par
     assert.deepEqual(parseDoc(d, 'home'), d)
   }
   assert.match(String(setMemberVisibility(home(), 'nope', 'paid')), /no section nope/)
+})
+
+// ─── Story 5.6 — R-133's per-section clear, and D6a's derived count ──────────────────────────────────────────────
+//
+// NOTHING BELOW NAMES A CONTROL OR WRITES A COUNT (standing rule 4): the mode-scoped control and the value used are
+// read out of `UNIVERSALS` — the real library — so the day a second one is declared these rows follow it.
+
+const SCOPED = UNIVERSALS.filter((u) => u.darkOverride === true)
+const universal = () => {
+  assert.ok(SCOPED.length > 0, 'no universal declares `darkOverride`, so there is no mode-scoped control to be about')
+  return SCOPED[0] as (typeof UNIVERSALS)[number]
+}
+/** A design that offers every value its mode-scoped universal has — enough for the engine to call an override usable. */
+const design = (): ControlEntry => ({ controlSchema: [], contentSchema: {}, html: '' })
+/** An instance carrying one usable override under that universal's name. */
+const withOverride = (instanceId: string): unknown => ({
+  ...(instance(instanceId) as Record<string, unknown>),
+  darkOverrides: { [universal().name]: universal().values[universal().values.length - 1] },
+})
+
+test('clearDarkOverrides: that instance\'s map is emptied and every other byte of the doc is identical', () => {
+  const before = doc(withOverride('hero'), withOverride('grid'), instance('news'))
+  const after = ok(clearDarkOverrides(before, 'hero'))
+  assert.deepEqual(after.instances[0]?.darkOverrides, {})
+  assert.deepEqual(after.instances[1], before.instances[1], 'the other overridden section is untouched')
+  assert.deepEqual(after.instances[2], before.instances[2])
+  assert.deepEqual({ ...after.instances[0], darkOverrides: before.instances[0]?.darkOverrides }, before.instances[0], 'nothing else on the instance changed')
+  assert.notEqual(before.instances[0]?.darkOverrides[universal().name], undefined, 'the original doc is not mutated')
+  assert.deepEqual(parseDoc(after, 'home'), after, 'and the result still parses through AD-27\'s one schema')
+  assert.match(String(clearDarkOverrides(before, 'nope')), /no section nope/)
+})
+
+test('clearDarkOverrides on a section with nothing stored is a no-op that still answers a doc', () => {
+  const before = doc(instance('hero'))
+  assert.deepEqual(ok(clearDarkOverrides(before, 'hero')), before)
+})
+
+test('darkOverrideCount: one per SECTION carrying a usable override, across every doc, derived and never stored', () => {
+  const site = doc(withOverride('header'))
+  const home = doc(withOverride('hero'), instance('grid'), withOverride('news'))
+  assert.equal(darkOverrideCount([site, home], design), 3)
+  assert.equal(darkOverrideCount([doc(instance('a'), instance('b'))], design), 0)
+  assert.equal(darkOverrideCount([], design), 0)
+  // a section carrying two overrides is still ONE section (D6a counts sections, not settings)
+  const two = doc({ ...(instance('hero') as Record<string, unknown>), darkOverrides: Object.fromEntries(SCOPED.map((u) => [u.name, u.values[0]])) })
+  assert.equal(darkOverrideCount([two], design), SCOPED.length > 0 ? 1 : 0)
+  // a design the library cannot hold has no declaration to read, so nothing of its overrides could be used
+  assert.equal(darkOverrideCount([home], () => undefined), 0)
+  // …and neither could an override under a name the design narrows away (`darkOverridesInForce` is the one definition)
+  const narrowed: ControlEntry = { ...design(), universals: { [universal().name]: { values: [], reason: 'not offered here' } } }
+  assert.equal(darkOverrideCount([home], () => narrowed), 0)
+  // and the clear closes it: after clearing both, the count is 0
+  let cleared = home
+  for (const id of ['hero', 'news']) cleared = ok(clearDarkOverrides(cleared, id))
+  assert.equal(darkOverrideCount([cleared], design), 0)
 })

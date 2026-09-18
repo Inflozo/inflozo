@@ -2,9 +2,10 @@
 
 import { useId, useRef, useState, type ReactNode } from 'react'
 import {
-  editText, GROUP_LABELS, resetChanges, resetControl, resetSection, setContent, setControl, setData, sidebar,
+  darkOverridesInForce, editText, GROUP_LABELS, resetChanges, resetControl, resetSection, setContent, setControl,
+  setData, sidebar,
 } from '@inflozo/section-runtime'
-import type { ControlEntry, ControlRow, ControlState, DataRow, MemberState, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
+import type { ControlEntry, ControlRow, ControlState, DataRow, MemberState, Mode, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
 import { Accordion } from '@/components/kit/accordion'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
@@ -51,7 +52,15 @@ import { limitSentence } from '@/lib/inline'
    control would stamp a second, inert copy of it on the root through `stampControls` (DW-186). So it is drawn here,
    above `sidebar()`'s own rows, and Section Settings is drawn for it alone where a design declares nothing else for
    that group. A NAMED SELECT, not a pill row: run over these four values R-114's own rule refuses them ("Logged out"
-   is 66px against a 58.3px pill), which is why `A22-1`'s drawn select wins over `A4-13`'s pre-R-114 pills. */
+   is 66px against a 58.3px pill), which is why `A22-1`'s drawn select wins over `A4-13`'s pre-R-114 pills.
+
+   STORY 5.6 THREADS THE MODE THROUGH, AND CHANGES NOTHING IT DRAWS. `mode` is handed to `sidebar()`, `setControl`
+   and `resetControl`, so in dark the value MARKED is the value in force in dark, a mode-scoped control's change
+   lands in `darkOverrides` and its reset empties the same map — all three decided in the engine, which is the one
+   place that knows what a mode means (`storedFor`). The panel's own dark-mode job is ONE ROW: R-133's "Clear dark
+   overrides" directly under "Reset this design", in the same shape, ALWAYS PRESENT, saying there is nothing to clear
+   when there is nothing rather than asking (R-12). The CONFIRM is not here — it lives in `editor.tsx`, because the
+   Layers `⋯` menu opens the same one, exactly as Delete's and Hide's two paths already share one. */
 
 export type Edit = 'control' | 'content'
 
@@ -78,6 +87,11 @@ export type SidebarProps = {
   assets: readonly Asset[]
   /** each Ghost-sourced query's rows as the canvas shows them, for the read-only preview */
   sourceRows: Readonly<Record<string, readonly unknown[]>>
+  /** Story 5.6 — the mode the canvas is SHOWING. Every resolution, write and reset below is scoped to it. */
+  mode?: Mode
+  /** Story 5.6, R-133 — open the editor's ONE "Clear dark overrides" confirm for this section. The row is drawn only
+   *  where there is a doc to clear, so `/controls` and `/pilots` (in-memory state, no instance) draw none. */
+  onClearDark?: () => void
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -204,16 +218,20 @@ const PREVIEWING: Readonly<Record<Exclude<MemberState, 'everyone'>, string>> = {
   paid: 'a paying member',
 }
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows }: SidebarProps) {
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
   const [nothingToReset, setNothingToReset] = useState(false)
+  const [nothingToClear, setNothingToClear] = useState(false)
   // the Text Field whose token chip was refused for not fitting whole: its hint says so until its next edit (review, 2026-09-18)
   const [refusedToken, setRefusedToken] = useState<string | null>(null)
   const confirm = useRef<HTMLDialogElement>(null)
-  const model = sidebar(entry, state)
+  const model = sidebar(entry, state, mode)
   const changes = resetChanges(entry, state)
+  /** R-133's count, and the engine's ONE definition of "carries an override" — the same one the moon reads */
+  const overridden = darkOverridesInForce(entry, state)
+  if (nothingToClear && overridden.length > 0) setNothingToClear(false)
   // a change from anywhere — an edit, the canvas, an undo, one landing before the next frame — takes the line with it
   // for good, so undoing back to nothing changed never announces it again unasked
   if (nothingToReset && changes.length > 0) setNothingToReset(false)
@@ -237,8 +255,8 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
       id={`${base}-control-${row.name}`}
       row={row}
       swatches={swatches}
-      onValue={(value) => commit(setControl(entry, state, row.name, value), 'control')}
-      onReset={() => commit(resetControl(entry, state, row.name), 'control')}
+      onValue={(value) => commit(setControl(entry, state, row.name, value, mode), 'control')}
+      onReset={() => commit(resetControl(entry, state, row.name, mode), 'control')}
     />
   )
 
@@ -417,6 +435,34 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
             </HelperCaption>
           ) : null}
         </div>
+
+        {/* R-133's FIRST entry point (owner, 2026-09-18) — the two acts are neighbours in meaning, so they read as a
+            pair and it needs no new pattern. ALWAYS PRESENT, never greyed: with nothing stored it says so under
+            itself instead of asking, which is R-12's rule and the shape "Reset this design" above it already uses.
+            The confirm is `editor.tsx`'s, because the Layers `⋯` menu opens the same one. */}
+        {onClearDark === undefined ? null : (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                if (overridden.length > 0) return onClearDark()
+                setNothingToClear(false)
+                requestAnimationFrame(() => setNothingToClear(true))
+              }}
+              className={`inline-flex items-center gap-[6px] text-[12px] text-ink-soft hover:text-ink ${ring}`}
+            >
+              <MoonBadge label="" />
+              Clear dark overrides
+            </button>
+            <div role="status">
+              {nothingToClear ? (
+                <HelperCaption>
+                  Nothing to clear: this section&apos;s dark version already follows its light one.
+                </HelperCaption>
+              ) : null}
+            </div>
+          </>
+        )}
       </div>
 
       <dialog

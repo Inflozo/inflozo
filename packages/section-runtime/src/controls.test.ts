@@ -18,10 +18,10 @@ import { ICONS, filledKey, iconDrawing } from '@inflozo/library/icons'
 import design from '../../library/fixtures/controls/1/design.json' with { type: 'json' }
 import content from '../../library/fixtures/controls/content.json' with { type: 'json' }
 import {
-  addItem, defaultContent, duplicateItem, moveItem, removeItem, resetChanges, resetControl, resetSection, resolveControls,
-  setContent, setControl, setData, sidebar, withData,
+  addItem, darkOverridesInForce, defaultContent, duplicateItem, moveItem, removeItem, resetChanges, resetControl,
+  resetSection, resolveControls, setContent, setControl, setData, sidebar, storedFor, withData,
 } from './controls.ts'
-import type { ControlRow, ControlState, DataRow, PropRow } from './controls.ts'
+import type { ControlRow, ControlState, DataRow, Mode, PropRow } from './controls.ts'
 import { editText, iconSvg, renderCanvas, renderTheme } from './index.ts'
 import type { RenderInput, RichText } from './index.ts'
 
@@ -68,8 +68,8 @@ const both = (state: ControlState, over: Partial<RenderInput> = {}) => ({
   theme: renderTheme(doc(), HTML, input(state, over)).template,
 })
 const rootOf = (html: string) => /<section[^>]*>/.exec(html)?.[0] ?? ''
-const control = (state: ControlState, name: string): ControlRow => {
-  const m = sidebar(entry, state)
+const control = (state: ControlState, name: string, mode: Mode = 'light'): ControlRow => {
+  const m = sidebar(entry, state, mode)
   const row = m.groups.flatMap((g) => g.rows).find((r) => r.kind === 'control' && r.name === name)
   assert.ok(row !== undefined, `no row for ${name}`)
   return row as ControlRow
@@ -494,4 +494,102 @@ test('row · R-108, a query the design fixes: no Show and no Order, a stored Cou
   const loose = { latest: { source: 'posts', limit: 1, order: 'published_at desc' } }
   assert.equal(withData(loose, stored)['latest']!.limit, 5)
   assert.ok(sidebar({ ...entry, dataBindings: loose }, start()).groups.some((g) => g.id === 'data'))
+})
+
+// ─── Story 5.6 — FR-D7's mode, every row of the spec's I/O matrix the engine owns ────────────────────────────────
+//
+// `bg` (Background role) is a UNIVERSAL this sample narrows to base · surface · contrast, and `tint` is the sample's
+// OWN `darkOverride: true` control — so both kinds of mode-scoped control are exercised, which is what proves the
+// engine keys on the DECLARATION and never on the name `bg`.
+
+test('FR-D7 — the mode picks the stored slice: a dark override in dark, the light value in light, and nothing else moves', () => {
+  const state = start({ controls: { bg: 'base', columns: '2' }, darkOverrides: { bg: 'contrast' } })
+  assert.equal(storedFor(entry, state)['bg'], 'base', 'light reads `controls`')
+  assert.equal(storedFor(entry, state, 'dark')['bg'], 'contrast', 'dark reads the override')
+  assert.equal(storedFor(entry, state, 'dark')['columns'], '2', 'a control that is not mode-scoped is one value for both')
+  // and the ONE door both emitters read produces the dark render from that slice alone — no mode inside it (AD-30)
+  assert.equal(resolveControls(entry, storedFor(entry, state))['bg'], 'base')
+  assert.equal(resolveControls(entry, storedFor(entry, state, 'dark'))['bg'], 'contrast')
+  for (const html of [both(state).canvas, both(state).theme]) assert.match(rootOf(html), /data-bg="base"/)
+  const dark = { ...state, controls: storedFor(entry, state, 'dark') }
+  for (const html of [both(dark).canvas, both(dark).theme]) assert.match(rootOf(html), /data-bg="contrast"/)
+})
+
+test('FR-D7 — a design\'s OWN mode-scoped control works the same way, so nothing is special-cased to `bg`', () => {
+  const state = start({ controls: { tint: 'none' }, darkOverrides: { tint: 'strong' } })
+  assert.equal(storedFor(entry, state, 'dark')['tint'], 'strong')
+  assert.equal(control(state, 'tint', 'dark').value, 'strong')
+  assert.equal(control(state, 'tint').value, 'none', 'light is untouched')
+  assert.equal(control(state, 'tint').moon, true, 'the moon shows whichever mode is being viewed')
+})
+
+test('FR-D7 — in dark a mode-scoped write lands in `darkOverrides` and one that is not mode-scoped lands in `controls`', () => {
+  const scoped = ok(setControl(entry, start({ controls: { bg: 'base' } }), 'bg', 'contrast', 'dark'))
+  assert.deepEqual(scoped.darkOverrides, { bg: 'contrast' })
+  assert.deepEqual(scoped.controls, { bg: 'base' }, 'the light page keeps what it had')
+  const plain = ok(setControl(entry, start(), 'card', 'raised', 'dark'))
+  assert.deepEqual(plain.controls, { card: 'raised' })
+  assert.equal(plain.darkOverrides, undefined)
+  // in LIGHT a mode-scoped write is the ordinary one
+  const light = ok(setControl(entry, start({ darkOverrides: { bg: 'contrast' } }), 'bg', 'surface'))
+  assert.deepEqual(light.controls, { bg: 'surface' })
+  assert.deepEqual(light.darkOverrides, { bg: 'contrast' }, 'the dark override is not touched by a light write')
+  // and a value this design narrows away is refused in dark exactly as in light (FR-F7)
+  assert.equal(setControl(entry, start(), 'bg', 'accent', 'dark'), entry.universals!['bg']!.reason)
+})
+
+test('FR-F4 — a reset empties the map the mode names, and the other one is left alone', () => {
+  const state = start({ controls: { bg: 'surface' }, darkOverrides: { bg: 'contrast' } })
+  const inDark = resetControl(entry, state, 'bg', 'dark')
+  assert.deepEqual(inDark.darkOverrides, {}, 'the override is forgotten')
+  assert.deepEqual(inDark.controls, { bg: 'surface' }, 'the row returns to the light value')
+  assert.equal(control(inDark, 'bg', 'dark').moon, false, 'and the moon goes')
+  const inLight = resetControl(entry, state, 'bg')
+  assert.deepEqual(inLight.controls, {}, 'the light value is forgotten')
+  assert.deepEqual(inLight.darkOverrides, { bg: 'contrast' }, 'the dark override STAYS (FR-F4)')
+  assert.equal(control(inLight, 'bg').moon, true)
+  // a control that is not mode-scoped resets its light value in either mode
+  const plain = start({ controls: { card: 'raised' } })
+  assert.deepEqual(resetControl(entry, plain, 'card', 'dark').controls, {})
+})
+
+test('FR-F7 — an override the design will not take is resolved away, carries no moon, and is still stored (FR-D19)', () => {
+  // `accent` is one of Background role's values and NOT one this design offers (its `universals` narrowing)
+  const state = start({ controls: { bg: 'base' }, darkOverrides: { bg: 'accent' } })
+  assert.equal(resolveControls(entry, storedFor(entry, state, 'dark'))['bg'], 'base', 'the default stands, never `accent`')
+  assert.equal(control(state, 'bg', 'dark').moon, false, 'no moon for a value nothing could stamp')
+  assert.equal(control(state, 'bg').moon, false)
+  assert.deepEqual(darkOverridesInForce(entry, state), [])
+  assert.deepEqual(state.darkOverrides, { bg: 'accent' }, 'and it is still stored — another design may offer it')
+})
+
+test('FR-D7 — an override under a name nothing declares mode-scoped is ignored in both modes and stays stored', () => {
+  // `spacing` is a universal with no `darkOverride`; `nonsense` is declared by nothing at all
+  const state = start({ darkOverrides: { spacing: 'compact', nonsense: 'x' } })
+  for (const mode of ['light', 'dark'] as const) {
+    assert.equal(storedFor(entry, state, mode)['spacing'], undefined)
+    assert.equal(storedFor(entry, state, mode)['nonsense'], undefined)
+    assert.equal(control(state, 'spacing', mode).moon, false)
+    assert.equal(resolveControls(entry, storedFor(entry, state, mode))['spacing'], 'comfortable')
+  }
+  assert.deepEqual(darkOverridesInForce(entry, state), [])
+  assert.deepEqual(state.darkOverrides, { spacing: 'compact', nonsense: 'x' })
+})
+
+test('FR-D7 — a design whose mode-scoped control is locked to no value (R-103) has nothing to override and no moon', () => {
+  const locked = { ...entry, universals: { ...entry.universals, bg: { values: [], reason: 'This design paints its own ground.' } } }
+  const state = start({ darkOverrides: { bg: 'contrast' } })
+  assert.equal(storedFor(locked, state, 'dark')['bg'], 'contrast', 'the slice still carries it — resolution is what refuses')
+  assert.equal(resolveControls(locked, storedFor(locked, state, 'dark'))['bg'], undefined, 'R-103: no entry at all')
+  assert.deepEqual(darkOverridesInForce(locked, state), [], 'nothing offered means nothing an emitter could use')
+  assert.equal(control(state, 'bg', 'dark').moon, true, 'the design that DOES offer it still shows the moon')
+})
+
+test('FR-D7 — `darkOverridesInForce` is the panel\'s moon, exactly, for both kinds of mode-scoped control', () => {
+  const state = start({ darkOverrides: { bg: 'contrast', tint: 'soft' } })
+  assert.deepEqual(darkOverridesInForce(entry, state), ['tint', 'bg'], 'declaration order: the design\'s own, then the universals')
+  for (const name of ['bg', 'tint']) assert.equal(control(state, name).moon, true, name)
+  const moons = sidebar(entry, state).groups.flatMap((g) => g.rows.flatMap((r) => (r.kind === 'control' && r.moon ? [r.name] : [])))
+  assert.deepEqual([...moons].sort(), [...darkOverridesInForce(entry, state)].sort())
+  assert.deepEqual(darkOverridesInForce(entry, start()), [])
 })

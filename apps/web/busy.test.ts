@@ -170,12 +170,14 @@ const NO_SKELETON: Record<string, string> = {
     'click JavaScript turns into the card\'s <dialog>, and it is a PLAIN anchor and not a <Link>, so ' +
     'nothing soft-navigates here either. One card the page draws whole, reached only by a document ' +
     'load (scripts off, a modified click, a typed URL) with the browser\'s own progress on it',
-  [join(AUTHED, 'projects', '[id]')]:
+  [join(AUTHED, 'projects', '[id]', '(editor)')]:
     'Story 5.1\'s editor, and a loading.tsx here would be a defect: both editor pages render nothing, and the ' +
     'editor\'s skeleton — its own shape, bar, both panels and the page card — is the Suspense fallback inside ' +
-    '`projects/[id]/layout.tsx`, BELOW that layout\'s 404 guard. A loading.tsx is a boundary ABOVE the guard, so a ' +
-    'stranger\'s project id would stream an editor skeleton under a committed 200 (R-98\'s second effect, DW-67)',
-  [join(AUTHED, 'projects', '[id]', '[template]')]:
+    '`projects/[id]/(editor)/layout.tsx`, BELOW `[id]/layout.tsx`\'s 404 guard. A loading.tsx is a boundary ABOVE ' +
+    'the guard, so a stranger\'s project id would stream an editor skeleton under a committed 200 (R-98\'s second ' +
+    'effect, DW-67). The `(editor)` group is Story 5.6\'s R-131: it changed no URL, and it is what lets ' +
+    '`settings/` have a skeleton of its own without standing over the editor',
+  [join(AUTHED, 'projects', '[id]', '(editor)', '[template]')]:
     'the same editor on another canvas, and the same reason — plus this segment\'s own layout 308s `home` and ' +
     '404s every segment that is not a canvas, which a boundary above it would turn into a 200',
 }

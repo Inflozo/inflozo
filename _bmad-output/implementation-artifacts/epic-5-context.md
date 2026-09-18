@@ -91,6 +91,23 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     shipped theme — one `data-bg` cannot be `base` for a light visitor and `contrast` for a dark one, a `-dark` twin is
     forbidden by the same paragraph, a design stylesheet naming a mode fails the build, and AD-3's only inline-`style`
     carve-out is bound Ghost data. Story 5.6 stores and previews faithfully and settles nothing about emission.
+  - **Story 5.6 built it (2026-09-18):** ONE pure function decides what a mode means —
+    `storedFor(entry, state, mode)` in `controls.ts`, the STORED SLICE the mode resolves from: in dark each
+    `darkOverride: true` name takes its `darkOverrides` value and every other name keeps `controls`'. `resolveControls`,
+    `stampControls` and `core.ts` are UNCHANGED and `RenderInput` gained no `mode`, so no mode reaches the theme
+    emitter (`agreement.test.ts` and `ad36.test.ts` untouched and green — the control). `sidebar`, `setControl` and
+    `resetControl` take `mode: Mode = 'light'`, so every existing caller and test compiled unchanged; a dark write
+    lands in `darkOverrides` only where the RESOLVED control declares `darkOverride`, and a reset empties whichever map
+    that same test names. THE FLIP IS ONE ATTRIBUTE PLUS A RE-STAMP, NEVER A REPAINT (`editor.tsx`'s `flip` →
+    `restampAll` → `mark()`), which is what lets a caret, a text selection, the scroll and the selection survive it.
+    The moon's guard moved from `d.values.includes` to `d.offered.includes` — the spec's frozen matrix row requires no
+    moon for an override the design narrows away, and `values` lit one for a value nothing could stamp; the ONE
+    definition is now `darkOverridesInForce`, which the badge, both R-133 entry points, its confirm's count and D6a's
+    project count all read. `doc-edit.ts` gained `clearDarkOverrides` (the deliberate clear) and `darkOverrideCount`
+    (derived over the docs, taking the library in `synthesize`'s `entryOf` shape). `referenceSwatches(mode)` paints the
+    Background-role dots in the colours the canvas is actually painting. EXECUTED over the library (2026-09-18):
+    `vocabulary.ts:263` is still the only `darkOverride: true` in `packages/library`, every pilot offers `bg` as
+    base→surface at least, and no pilot declares a mode-scoped control of its own.
   - **R-118 applied a third time (Story 5.6's planning):** FR-D7's visitor `mode-toggle` refusal is NOT built in Epic 5 —
     the module is registered (`modules/registry.json:30`) but implemented by nothing and declared by no design, and
     `color_scheme` has no Inflozo column to read before Epic 7's Theme Settings, so R-34's condition is unreadable and
@@ -167,6 +184,14 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     Suspense boundary where R-98's second effect requires it. **No URL changes**; `run-verify-editor.cjs` steps 2, 6
     and 9 are the control. `settings` is named in `apps/web/lib/editor.ts` beside the canvases, and being a STATIC
     sibling of `[template]` it never reaches `canvasFromSegment`, so 5.5's no-awaited-refusal finding stands.
+  - **Story 5.6 did the move (2026-09-18):** `projects/[id]/layout.tsx` is now the `projectOf` 404 guard and NOTHING
+    else; the editor's layout, pages, `editor.tsx`, `editor-skeleton.tsx`, `read.ts` and `[template]/` live in
+    `[id]/(editor)/`, and `settings/` (page, `loading.tsx`, `actions.ts`) sits beside them. `next build`'s route table
+    is the control: the two editor routes are byte-identical and `/app/projects/[id]/settings` is added.
+    `busy.test.ts`'s `NO_SKELETON` keys moved with the group — a `loading.tsx` at `[id]` would still be a boundary
+    above the guard, and the group is what lets `settings/` have a skeleton of its own without standing over the
+    editor. `SETTINGS`/`settingsPath` are in `lib/editor.ts` and `editor.test.ts` asserts `settings` resolves as no
+    canvas.
   - **Story 5.1 settled both (2026-09-17, spec § Design Notes):** `/projects/<uuid>` is Home and `/projects/<uuid>/{post,page,tag,author,error}` the rest (`apps/web/lib/editor.ts` is the scheme as data — the route, the Shell and the harness read it there); `/home` 308s; `index`, `private`, `custom-<slug>`, `paywall`, `cards` 404 until their stories. Canvas change is a soft-navigation push inside the `[id]` layout, which holds the editor so it stays mounted (5.8's flush hooks its unmount); modes and folds never enter the URL. Pages render nothing — the active canvas is read from the pathname.
 - **5.8 underpins the loop:** its one-transaction-per-gesture journal makes a shuffle one edit (5.11, 5.12), gives 5.17 `unsynced_edits` and the superseding hydrate, and gives 5.23 a doc to assert over.
   - **Story 5.5's review (2026-09-18, executed on production):** 5.8 is the first writer of `project_templates`, and the stored `template_key_shape` refuses every `custom:` key (two backslashes in the pattern) — so 5.8 **has a Schema phase** that fixes the constraint before its code ships (DW-193, R-99).

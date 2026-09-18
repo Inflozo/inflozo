@@ -123,6 +123,42 @@ export function resolveControls(
   return values
 }
 
+// ─── the mode, and the slice it resolves from ────────────────────────────────
+
+/** FR-D7's two modes. The canvas shows one at a time; `data-mode` on its `<html>` is the signal, and
+ *  `tokens.ts:165-172` reserved it for exactly that (AD-30: never a `-dark` twin, never a mode selector in a
+ *  design's stylesheet, never a second mode signal). */
+export type Mode = 'light' | 'dark'
+
+/** Does THIS design declare `name` mode-scoped? The DECLARATION decides and never the name: `bg` is the library's
+ *  only `darkOverride: true` today (`vocabulary.ts:263`) and a design that declares its own must work the same day
+ *  it lands, with no engine change. */
+const scoped = (defs: readonly Declared[], name: string) => defs.some((d) => d.name === name && d.darkOverride)
+
+/** THE ONE FUNCTION THAT KNOWS WHAT A MODE MEANS: the stored slice a mode resolves from.
+ *
+ *  In `light` it is the instance's `controls`, unchanged. In `dark` every mode-scoped name with an override stored
+ *  takes that value and every other name keeps `controls`', so a dark override is A SECOND VALUE FOR THE SAME
+ *  CONTROL (AD-30) rather than a second attribute. `resolveControls` and `stampControls` therefore need no mode at
+ *  all — hand the same single door a different slice and the same walk produces the dark render, which is why no
+ *  mode enters the theme emitter (`agreement.test.ts` is the control).
+ *
+ *  An override under a name this design does not declare mode-scoped is not read here, and one outside the offered
+ *  set is resolved away by `resolveAll` as any stored value is (FR-F7). Neither is deleted: it is another design's
+ *  to mean (FR-D19). */
+export function storedFor(
+  entry: Pick<ControlEntry, 'controlSchema' | 'universals'>,
+  state: ControlState,
+  mode: Mode = 'light',
+): Record<string, unknown> {
+  const slice: Record<string, unknown> = { ...(state.controls ?? {}) }
+  if (mode === 'light') return slice
+  for (const d of declared(entry)) {
+    if (d.darkOverride && own(state.darkOverrides, d.name)) slice[d.name] = read(state.darkOverrides, d.name)
+  }
+  return slice
+}
+
 // ─── the sidebar model ───────────────────────────────────────────────────────
 
 export type ControlOption = { value: string; label: string; greyed?: string }
@@ -181,6 +217,21 @@ export const GROUP_LABELS: Readonly<Record<SidebarGroup, string>> = {
   settings: 'Section Settings', content: 'Content', layout: 'Layout', style: 'Style', data: 'Data',
 }
 
+/** FR-F5's moon: a stored dark override AN EMITTER COULD USE — mode-scoped by declaration, and a value THIS design
+ *  offers. `offered`, not `values`: an override the design narrows away is resolved away and never stamped, so a
+ *  moon beside it would say a change is in force that nothing renders (the spec's I/O matrix, "An override the
+ *  design will not take"). ONE definition, so the badge, the menu item, the confirm's count and the project count
+ *  cannot disagree. */
+const overridden = (d: Declared, state: ControlState): boolean =>
+  d.darkOverride && d.offered.includes(read(state.darkOverrides, d.name) as string)
+
+/** The mode-scoped controls of this design carrying an override in force, in the panel's order — what the moon marks
+ *  and what a clear removes. Story 5.6: R-133's two entry points, its confirm's count and the project-level count
+ *  all read this. */
+export function darkOverridesInForce(entry: Pick<ControlEntry, 'controlSchema' | 'universals'>, state: ControlState): string[] {
+  return declared(entry).flatMap((d) => (overridden(d, state) ? [d.name] : []))
+}
+
 function controlRow(r: Resolved, state: ControlState): ControlRow {
   const d = r.def
   const row: ControlRow = {
@@ -195,8 +246,8 @@ function controlRow(r: Resolved, state: ControlState): ControlRow {
       return o
     }),
     value: r.value,
-    // the moon lights for a stored override an emitter could use — one of the control's values — never for junk
-    moon: d.darkOverride && d.values.includes(read(state.darkOverrides, d.name) as string),
+    // the moon lights for a stored override an emitter could use — a value this design OFFERS — never for junk
+    moon: overridden(d, state),
     // a greyed row cannot be changed, so it carries no reset; its stored value returns with the row (P0-0)
     changed: r.greyed === undefined && r.stored !== null && r.stored !== d.default,
     universal: d.universal,
@@ -295,8 +346,9 @@ function orderWord(b: DataBinding): 'newest' | 'oldest' | undefined {
  *  only), then its own controls in declaration order, then the universal controls that sit in it, which the panel
  *  draws at the group's foot after its absent notes — the trio at the foot of Style. Data holds a declared query's
  *  rows. A group with nothing in it is not drawn. */
-export function sidebar(entry: ControlEntry, state: ControlState = {}): SidebarModel {
-  const resolved = resolveAll(entry, state.controls)
+export function sidebar(entry: ControlEntry, state: ControlState = {}, mode: Mode = 'light'): SidebarModel {
+  // Story 5.6: the value MARKED is the value in force in the mode being shown, which is the mode's own slice
+  const resolved = resolveAll(entry, storedFor(entry, state, mode))
   // in DECLARATION order, never the resolver's: a control greyed by one declared after it resolves that one first
   const rows = declared(entry).map((d) => controlRow(resolved.get(d.name)!, state))
   const absent = (g: SidebarGroup) => (entry.absent ?? []).filter((a) => a.group === g).map((a) => a.note)
@@ -344,17 +396,29 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}): SidebarM
 
 /** Set one control. A greyed control, and a value this design does not offer, answer with the reason
  *  and change nothing — the validator refuses the value and the emitters never stamp it (FR-F7). */
-export function setControl(entry: ControlEntry, state: ControlState, name: string, value: string): ControlState | string {
-  const r = resolveAll(entry, state.controls).get(name)
+export function setControl(entry: ControlEntry, state: ControlState, name: string, value: string, mode: Mode = 'light'): ControlState | string {
+  const r = resolveAll(entry, storedFor(entry, state, mode)).get(name)
   if (r === undefined) return `This design has no control named "${name}".`
   if (r.greyed !== undefined) return r.greyed
   if (!r.def.values.includes(value)) return `${r.def.label} has no value "${value}".`
   if (!r.def.offered.includes(value)) return r.def.narrowed ?? ''
+  // FR-D7: in dark, a MODE-SCOPED control's change is a second value for the same control and lands in
+  // `darkOverrides`, leaving the light page exactly as it was. Every other control is one value for both modes.
+  if (mode === 'dark' && r.def.darkOverride) {
+    return { ...state, darkOverrides: { ...(state.darkOverrides ?? {}), [name]: value } }
+  }
   return { ...state, controls: { ...(state.controls ?? {}), [name]: value } }
 }
 
-/** FR-F4: one control back to its default — its stored value is forgotten. */
-export function resetControl(_entry: ControlEntry, state: ControlState, name: string): ControlState {
+/** FR-F4: one control back to its default — its stored value is forgotten. In dark that is the DARK override for a
+ *  mode-scoped control, so the row goes back to following the light one; in light it is the light value, and the
+ *  dark override stays (FR-F4, the spec's I/O matrix). The same test names the map both ways. */
+export function resetControl(entry: ControlEntry, state: ControlState, name: string, mode: Mode = 'light'): ControlState {
+  if (mode === 'dark' && scoped(declared(entry), name)) {
+    const darkOverrides = { ...(state.darkOverrides ?? {}) }
+    delete darkOverrides[name]
+    return { ...state, darkOverrides }
+  }
   const controls = { ...(state.controls ?? {}) }
   delete controls[name]
   return { ...state, controls }

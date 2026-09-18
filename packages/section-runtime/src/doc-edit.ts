@@ -12,7 +12,8 @@
 // EVERY OPERATION ANSWERS THE NEXT DOC OR A SENTENCE, the same shape `controls.ts`'s edits use — so a refusal is one
 // wording, shown where the action was pressed, and never a silent no-op.
 
-import { movedTo } from './controls.ts'
+import { darkOverridesInForce, movedTo } from './controls.ts'
+import type { ControlEntry } from './controls.ts'
 import type { DocInstance, ProjectDoc } from './doc-schema.ts'
 import { placementRefusal } from '@inflozo/library'
 
@@ -86,6 +87,34 @@ export function setHidden(doc: ProjectDoc, instanceId: string, hidden: boolean):
 /** R-124's Member visibility, stored on the instance and handed to both emitters as `RenderInput.visibility`. */
 export function setMemberVisibility(doc: ProjectDoc, instanceId: string, visibility: MemberVisibility): ProjectDoc | string {
   return withOne(doc, instanceId, (i) => ({ ...i, memberVisibility: visibility }))
+}
+
+/** R-133's clear, for ONE section: its dark version follows its light one again, and every other byte of the doc is
+ *  identical. A DELIBERATE clear, and one of only two in the product — the other is the project-level row on Theme
+ *  settings — because everything else keeps a stored override on purpose: a mode change keeps them (FR-D7) and so
+ *  does `resetSection` (FR-F4, `controls.test.ts:413`). The whole map goes, not only the names in force: a value
+ *  this design narrows away is still a dark override the customer asked for on this section. */
+export function clearDarkOverrides(doc: ProjectDoc, instanceId: string): ProjectDoc | string {
+  return withOne(doc, instanceId, (i) => ({ ...i, darkOverrides: {} }))
+}
+
+/** How many sections across these docs carry a dark override AN EMITTER COULD USE — D6a's count, DERIVED by walking
+ *  the docs and never stored (standing rule 4). `entryOf` is the library, in `synthesize`'s own shape: a design it
+ *  cannot hold has no declaration to read, so nothing of its overrides could be used and it is not counted. One
+ *  definition of "carries an override" for the badge, both menus, both confirms and this count
+ *  (`darkOverridesInForce`). */
+export function darkOverrideCount(
+  docs: Iterable<ProjectDoc>,
+  entryOf: (designId: string) => ControlEntry | undefined,
+): number {
+  let carrying = 0
+  for (const doc of docs) {
+    for (const instance of doc.instances) {
+      const entry = entryOf(instance.designId)
+      if (entry !== undefined && darkOverridesInForce(entry, instance).length > 0) carrying++
+    }
+  }
+  return carrying
 }
 
 /** AD-22: a template with a section on it is DESIGNED, however many of those sections are hidden. Only removing them
