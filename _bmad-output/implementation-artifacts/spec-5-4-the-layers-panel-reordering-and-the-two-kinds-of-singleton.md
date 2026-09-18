@@ -538,5 +538,9 @@ What removing the "…" costs, in plain terms:
 3. **Add right-click everywhere, and keep the "…" only on the Layers rows** — the canvas gets right-click plus the
    hover pill it already has (copy, bin, drag), and the row keeps its button.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: withdrawn — none of the three (owner, 2026-09-18).** *"Ignore it for now. Lets keep like it is now."*
+Layers and the canvas keep exactly what R-126 left: the `…` button on each row as its only control, and the hover
+pill on the canvas. **Nothing was built for this question** — it was asked and withdrawn inside Story 5.4's Dev, so
+there is no code, no test and no ledger entry behind it. If right-click is wanted later it starts from this block,
+which already carries the three options and what each costs.
 
