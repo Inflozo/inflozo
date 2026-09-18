@@ -777,6 +777,12 @@ async function main() {
       return { same: root === window.__root, sameTitle: root.querySelector('.a17-1__title') === window.__title, title: root.querySelector('.a17-1__title').textContent, sub: root.querySelector('.a17-1__sub').textContent, editing: document.activeElement?.className ?? '' }
     }, GRID)
     check('step 16 — a press into the sub moves the caret there and repaints nothing: the title keeps its words and both nodes are the ones the paint made', movedFields.same && movedFields.sameTitle && movedFields.title.endsWith(' and summer') && movedFields.sub.endsWith(' Two') && /a17-1__sub/.test(movedFields.editing), JSON.stringify(movedFields))
+    const editedBox = await canvasFrame().evaluate(() => {
+      const el = document.activeElement
+      const c = getComputedStyle(el)
+      return { mark: el.hasAttribute('data-inflozo-editing'), outline: c.outlineStyle, width: c.outlineWidth, bg: c.backgroundColor, shadow: c.boxShadow }
+    })
+    check('step 16 — the field being typed in wears the keyed editing mark and no browser focus ring', editedBox.mark && (editedBox.outline === 'none' || editedBox.width === '0px') && /rgba\(194, 56, 31/.test(`${editedBox.bg} ${editedBox.shadow}`), JSON.stringify(editedBox))
     check('step 16 — the canvas carries no data-inflozo-prop: the stamps were lifted off at the paint', (await canvasFrame().evaluate(() => document.querySelectorAll('[data-inflozo-prop], [data-inflozo-item], [data-inflozo-ghost]').length)) === 0)
 
     // ── step 17 — the toolbar ──
@@ -937,6 +943,16 @@ async function main() {
       return { editable: el.isContentEditable, editables: document.querySelectorAll('[contenteditable]').length }
     }, HERO)
     check('step 23 — a click on the card\'s post title shows P0-1\'s pill naming the field, in a chrome host, and nothing becomes editable', pill && pill.text === 'Post title — set in Ghost' && !pill.pressable && pill.events === 'none' && !lockedTitle.editable && lockedTitle.editables === 0, `${JSON.stringify(pill)} · ${JSON.stringify(lockedTitle)}`)
+    // the owner's rule (2026-09-18): NOTHING Ghost fills is ever editable, and each names itself — not the hero's title alone
+    for (const [n, selector, name] of [[HERO, '.a4-13__tag', 'Tag name'], [HERO, '.a4-13__date', 'Publish date'], [GRID, '.a17-1__post-title', 'Post title'], [GRID, '.a17-1__excerpt', 'Post excerpt']]) {
+      if (!(await onScreen(n)).selected) await clickOn(n)
+      const words = await textAt(n, selector, null)
+      await page.mouse.click(words.x, words.y)
+      await page.waitForTimeout(300)
+      const shown = await chromeNow('[data-chrome="note"]')
+      check(`step 23 — ${selector} is Ghost's: the pill names it and nothing becomes editable`, shown !== null && shown.text === `${name} — set in Ghost` && (await canvasFrame().evaluate(() => document.querySelectorAll('[contenteditable]').length)) === 0, `${JSON.stringify(shown && shown.text)}`)
+    }
+    await clickOn(HERO)
     await page.keyboard.press('Escape')
     await page.waitForTimeout(250)
     check('step 23 — Escape deselects and the pill goes with the selection', !(await onScreen(HERO)).selected && (await chromeNow('[data-chrome="note"]')) === null)

@@ -2,9 +2,23 @@
    attribute, and nothing carries one while nothing is hovered or selected — so the canvas at rest is the site with
    zero chrome, by construction. pilots.test.ts holds the keying.
 
-   EMPTY SINCE R-120 (Story 5.2, 2026-09-17). The hover and selected outlines are not CSS on the root: Chromium floors an
+   IT HELD ONE RULE SINCE STORY 5.3, and none before that (empty from R-120, Story 5.2, 2026-09-17, until the owner's
+   test of 2026-09-18). The hover and selected outlines are not CSS on the root: Chromium floors an
    outline's or a border's width to whole pixels before the fit shrinks the frame. They are boxes with an inset
    box-shadow line in the chrome layer (lib/canvas-layer.ts), shadow-root hosts on this document's <body> that exist
    only while something is hovered or selected. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots
    as state marks. Painted chrome that belongs inside — the insertion hairline, PAUSED, the empty icon slot — keys its
    rule on a data-inflozo-* attribute here. */
+
+/* THE FIELD BEING TYPED IN (Story 5.3, the owner's test of 2026-09-18). The browser's own focus ring is a heavy dark box
+   around the whole block, which reads as a bug beside the section's hairline outline; the caret is the real signal.
+   So the ring goes and the words take a coral haze — the same coral as the caret and P0-1's pressed mark, at a twentieth
+   of its strength, on a box-shadow rather than padding so nothing on the page moves when a field starts or stops being
+   edited. `lib/inline.ts` puts the mark on and takes it off with `contenteditable`, so the canvas at rest carries
+   neither. */
+[data-inflozo-editing] {
+  outline: none;
+  border-radius: 3px;
+  background-color: rgba(194, 56, 31, 0.045);
+  box-shadow: 0 0 0 3px rgba(194, 56, 31, 0.045);
+}

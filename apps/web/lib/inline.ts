@@ -110,6 +110,9 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
 
   if (textOf(o.value) !== '' && !holds(el, markup(o.value, o.def))) el.innerHTML = markup(o.value, o.def)
   if (!el.isContentEditable) el.contentEditable = 'true'
+  // The field being typed in says so with one keyed state mark, which `canvas-chrome.css` styles inside the canvas:
+  // the browser's own focus ring is a heavy dark box around the whole block (owner's test, 2026-09-18).
+  el.setAttribute('data-inflozo-editing', '')
 
   const offsets = (): [number, number] | null => {
     const sel = doc.getSelection()
@@ -289,6 +292,7 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
     el.removeEventListener('compositionend', onCompositionEnd)
     doc.removeEventListener('selectionchange', report)
     if (!o.keep) el.removeAttribute('contenteditable')
+    el.removeAttribute('data-inflozo-editing')
     // the serializer's markup again, without the editing element's extra <br>; untouched, the shown words stay
     if (edited) el.innerHTML = serializeMarks(base, o.def)
     o.onSelection(null)

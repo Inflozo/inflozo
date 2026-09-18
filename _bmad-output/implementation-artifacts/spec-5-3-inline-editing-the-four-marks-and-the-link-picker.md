@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-09-17'
 status: 'in-progress'
 baseline_commit: '85f7dd2e29d0d7838baa24eb79bb2ded30511d4a'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -788,8 +788,17 @@ holds 40 characters." under the field.
   local-run artifact (`openCard` re-navigates under `/app`), not this story: it does not occur against production. One
   earlier run of the same tree also failed step 9 (the skeleton's sr-only sentence ahead of the editor in the raw
   stream) and passed it on the next run with nothing changed -- a local streaming race, watched for on the deployed run.
-- **Still owed, and by whom:** both harnesses against **`https://app.inflozo.com`** after CI deploys this commit
-  (the Review phase, R-82), and the owner's manual test (R-80).
+- **Run again at Fix (2026-09-18), after CI published `eb6684fc`:** both harnesses against
+  **`https://app.inflozo.com`** and production Supabase -- `run-verify-editor.cjs` **158 PASS, 0 FAIL** and
+  `run-verify-controls.cjs` **84 PASS, 0 FAIL**, each deleting its throwaway accounts in `finally` with the user count
+  equal before and after (`users 9 → 9`). That is the deployed run R-82 asks for, and it is what makes the owner's F3
+  report a question rather than a defect.
+- **The owner's findings** were executed the same day against the same production site (see `## Owner's test findings`),
+  and the fix for F1 was proved on a local production build -- `pnpm check` green, `pnpm build` green, the editor harness
+  **157 PASS, 2 FAIL**, both failures the known local artifacts (`step 6`'s `APP_PREFIX` navigation and `step 9`'s
+  streaming race, the second of which passes against production).
+- **Still owed:** both harnesses against production once this fix is published, and the owner's re-check of steps 12
+  and 14 (Question 3).
 
 **Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story sends no email, reads no billing,
 and reads no Ghost: link search uses Orbit Weekly's sample data until Story 5.18.
@@ -817,6 +826,49 @@ in as you normally do. If a page stays blank, refresh once and tell us (DW-175).
 | 14 | `https://app.inflozo.com/controls` | Controls review page | Click into Eyebrow and type past its end, then do the same in Heading. | `ABCDEFGHIJKLMNOP` | Each box stops accepting letters at its limit, and a line under it says so: "Eyebrow holds 30 characters.", "Heading holds 40 characters.". |
 | 15 | the editor again | Browser | Reload the page. | — | Your typing and formatting are gone. Saving arrives with Story 5.8. |
 | 16 | same, on an iPad or a touchscreen, if you have one | Canvas | Tap a section once, then tap inside its heading. | — | The first tap selects the section. The second opens the keyboard with the cursor in the heading. |
+
+## Owner's test findings
+
+**Tested by the owner on `app.inflozo.com`, 2026-09-18.** He reported steps 12 and 14 failing, one look problem, and one
+standing rule.
+
+### F1 — "Inline text editing creates a very bold outline around text. Keep it very minimal and classy." — FIXED
+
+Read on production: the element being typed into carried the browser's own focus ring, `outline: rgb(16, 16, 16) auto
+1px` — a near-black box around the whole block, beside the section's own hairline. The export draws no treatment for a
+field being edited (P0-1 is the toolbar, the popover and the lock pill), so this is extrapolated from the nearest thing
+it does draw: the coral of the caret and of P0-1's pressed mark. `lib/inline.ts` now marks the field
+`data-inflozo-editing` while it is being edited and takes the mark off with `contenteditable`; `canvas-chrome.css` —
+whose every selector must be keyed on a `data-inflozo-*` attribute (`pilots.test.ts`) — drops the ring and gives the
+words a coral haze at 4.5%, carried on a `box-shadow` so nothing on the page moves when a field starts or stops being
+edited. Harness step 16 now reads the computed box, so the ring cannot come back unnoticed.
+
+### F2 — "I do not want to allow any content edits to data coming from Ghost. Users can just style it." — HELD, AND NOW TESTED WIDER
+
+This is what the story already does, and it was executed against production on 2026-09-18 before anything was changed: a
+click on the hero card's **post title**, its **tag** and its **date**, and on the grid card's **post title** and
+**excerpt**, each showed its own pill — "Post title — set in Ghost", "Tag name — set in Ghost", "Publish date — set in
+Ghost", "Post excerpt — set in Ghost" — with zero `contenteditable` elements in the canvas document each time. Nothing
+Ghost fills is stamped as a prop, so nothing Ghost fills can take a caret. Harness step 23 checked the hero's post title
+alone; it now checks all five, so the rule is a test rather than a claim.
+
+### F3 — steps 12 and 14 reported failing — NOT REPRODUCED; one re-check asked for below
+
+Both were executed against `https://app.inflozo.com` and production Supabase on 2026-09-18, in headless Chromium, in the
+owner's own order:
+- **Step 12.** Hero — Latest Post selected, its post title clicked: the pill read "Post title — set in Ghost", nothing
+  became editable, and on a 180px scroll the title moved 108px and the pill moved 108px with it — it tracks its words
+  exactly. The same for the grid's card title, and for the tag, the date and the excerpt (F2).
+- **Step 14.** `/controls`, typed past both limits: Eyebrow stopped at 30 characters with "Eyebrow holds 30
+  characters." under it, and Heading stopped at 40 with "Heading holds 40 characters.".
+- Both harnesses, run whole against production the same day: **158 of 158** and **84 of 84**, with zero
+  `securitypolicyviolation` events and the `EvalError` control holding.
+
+The likeliest cause is **timing**: the Dev push (`1e0383eb`, 18:58 UTC) failed CI's documentation gate on the day's stale
+date stamps (DW-132), so **nothing was published from it**; the story only reached production with `eb6684fc`, around
+forty minutes later. A test run in that window sees the previous build, where neither the pill nor the limits exist. The
+question below asks him to re-check, because a browser of his that behaves differently is the other explanation and it
+cannot be read from here.
 
 ## Questions for the owner
 
@@ -882,3 +934,25 @@ Under options 1 and 2 nothing becomes editable, and Esc or your next click takes
 P0-1's lock pill naming them — "Post title — set in Ghost" — from one list of names beside the context matrix, and
 nothing becomes editable. Story 7.10 reuses the pill for a text prop promoted to Ghost Admin; `epics.md` Stories 5.3 and
 7.10 moved with the ruling.
+
+### Question 3 — steps 12 and 14: were you looking at the old page?
+
+**Plain English:** You reported #12 (the "set in Ghost" pill) and #14 (the two character limits on the review page)
+failing. Both work here, tested on the live site today, so before changing anything I need to know which of us is looking
+at what. There is a plain explanation: the first push of the day did not publish. Our gate refuses to publish a page
+whose date stamps are a day old, so the code sat unpublished for about forty minutes, and the version you were looking at
+in that window was the old one — no pill, no limits. Everything else you tried (typing on the page, the bold outline)
+existed in both versions, which is why only those two looked broken.
+
+**Example:** You open the editor at 12:20, click a post's title, and nothing happens — because the site you are looking
+at is still yesterday's. At 12:45 the new version is live. You refresh once, click the same title, and the small pill
+"Post title — set in Ghost" appears above it.
+
+1. **Refresh the page once and try #12 and #14 again.** If both work now, nothing more is needed and the fixed outline
+   is waiting for you in the same pass. **(RECOMMENDED)**
+2. **They still fail** — then tell me which browser you used (Safari, Chrome, Firefox, or an iPad) and what you saw
+   instead, and I will reproduce it in that browser rather than guessing.
+3. **You would rather I simply made the pill and the limits impossible to miss** — a louder pill, or a message when a
+   limit is hit — regardless of what happened today.
+
+**Ruled:** _(awaiting the owner)_
