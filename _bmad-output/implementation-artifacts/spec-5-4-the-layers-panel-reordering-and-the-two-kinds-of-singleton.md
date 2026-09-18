@@ -378,6 +378,7 @@ rather than waiting for Review, because a step written and never executed proves
 | 3 | 1 FAIL, 203 PASS | the DW-183 retry under test; withdrawn (below). |
 | 4 | **0 FAIL, 83 PASS** | stopped at a signed-in `goto` that exceeded 60s twice. |
 | 5 | 1 FAIL, 222 PASS | the complete walk, no stall; the one FAIL is step 5's own control, which is why the retry was withdrawn. |
+| 6 | **0 FAIL, 83 PASS** | the reverted tree. Stopped at step 16's signed-in `goto` — the same call site as run 4 — before reaching step 5's control, so it neither confirms nor disputes it. |
 
 **What the harness established on the deployed site.** B7's card, groups and footed note, with both counts DERIVED —
 it read `on all 6 templates` from the canvases `lib/editor.ts` opens and `3` from the group's own rows, and after

@@ -4336,9 +4336,13 @@ origin: Story 5.3's second code review (2026-09-18, real-infra layer): runs 1 an
 also: Story 5.4's Dev (2026-09-18) added the third and fourth observations and NAMED THE PATTERN, which is the thing
   this entry was held open for. Run 2 stopped at step 6's `fourOhFour` signed-in `request.get` (`GET /projects/abc`),
   30s, **0 FAIL across 201 checks**, `users 9 → 9`. Run 4 stopped at step 16's `page.goto(editorUrl())`, **0 FAIL
-  across 83 checks**. THE PATTERN: every stall is a SIGNED-IN load of the deployed app, never the same call site twice
-  running, while an unauthenticated request to the identical URL answers in ~0.4s at a load average under 1 — a cold
-  serverless function on an authenticated route, not the app and not a hidden failure.
+  across 83 checks**. Run 6, on the reverted tree, stopped at THE SAME call site as run 4 — step 16's
+  `page.goto(editorUrl())` — at 30s, 0 FAIL across 83 checks. THE PATTERN: every stall is a SIGNED-IN load of the
+  deployed app, while an unauthenticated request to the identical URL answers in ~0.4s at a load average under 1 — a
+  cold serverless function on an authenticated route, not the app and not a hidden failure. (An earlier draft of this
+  entry said the stalls never repeat a call site; runs 4 and 6 falsified that, and step 16's `goto` is now the most
+  frequent of them — which makes it the one to instrument first.) It is also not a fixed duration: run 4 exceeded 60s
+  twice on that goto and run 6 exceeded 30s on it, so patience alone is not the answer.
   **TWO CANDIDATE FIXES ARE NOW RULED OUT BY EXECUTION, which is most of what a later story needs from this entry:**
   (1) **Never retry `page.goBack`.** A timed-out history move may already have navigated, so a second one goes back
   twice: it answered `net::ERR_ABORTED; maybe frame was detached?` the moment it was tried.
