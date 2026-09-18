@@ -2084,6 +2084,9 @@ async function main() {
       restOfD6a: ['Posts per page', 'Site basics', 'Accent colour', 'Credits', 'OF 17', 'Navigation', 'Social accounts', 'Translations', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
     }))
     await page.goto(settingsUrl, { waitUntil: 'load' })
+    // Review: `load` can land while React's streamed rows still sit in their HIDDEN holder — `querySelector` finds them
+    // there and `body.innerText` does not, so the caption read false beside a pill read true. Wait for the words SHOWN.
+    await page.getByText('Every Style Pack ships a hand-paired dark palette').waitFor({ state: 'visible' })
     const settings = await readSettings()
     check('step 52 — R-131: /projects/<id>/settings draws D6a\'s mode block — "This project" as Light only | Light + Dark, with its caption verbatim', settings.pill.map((b) => b.label).join(' | ') === 'Light only | Light + Dark' && settings.pill[1].pressed === 'true' && settings.caption, JSON.stringify(settings.pill))
     check('step 52 — R-131: D6a\'s clear row carries the moon labelled "Dark override" and a DERIVED count, live while the project is Light + Dark', settings.moonLabel === 'Dark override' && /1 section carries a dark override/.test(settings.row ?? '') && settings.greyed === false && settings.clearRefuses === null, JSON.stringify({ row: settings.row, greyed: settings.greyed, refuses: settings.clearRefuses }))
@@ -2095,8 +2098,12 @@ async function main() {
     const lightOnly = await readSettings()
     check('step 53 — D6b: switched to Light only the clear row GREYS WITH ITS REASON, and says the overrides are kept rather than discarded', lightOnly.pill[0].pressed === 'true' && lightOnly.greyed === true && lightOnly.clearRefuses === 'true' && lightOnly.reason && lightOnly.kept, JSON.stringify({ pressed: lightOnly.pill.map((b) => b.pressed), greyed: lightOnly.greyed, refuses: lightOnly.clearRefuses }))
     // Review: the greyed Clear PRESSED — the button refuses, and (scripts off, or a hand-made POST) so does the action
-    await page.locator('[data-clear-row] button').click()
-    await page.waitForTimeout(1500)
+    // `force`: Playwright will not click an `aria-disabled` control, and a person can. Then the form submitted PAST the
+    // button (`requestSubmit()` runs no click handler) — which is what scripts-off does — so the ACTION's refusal is read too
+    await page.locator('[data-clear-row] button').click({ force: true })
+    await page.waitForTimeout(800)
+    await page.locator('[data-clear-row]').evaluate((row) => row.closest('form').requestSubmit())
+    await page.waitForTimeout(2000)
     check('step 53 — D6b: pressing the greyed Clear deletes NOTHING', JSON.stringify(await storedOverrides()) === JSON.stringify({ [BG_HERO.name]: BG_HERO.to.value }), JSON.stringify(await storedOverrides()))
     // Review: BACK is a soft navigation, and the editor is a sibling route — the sun must be gone without a reload
     await page.locator('a[aria-label^="Back to "]').click()
