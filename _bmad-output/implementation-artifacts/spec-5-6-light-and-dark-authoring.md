@@ -598,6 +598,22 @@ and never printed. Each line is what was run and what it RETURNED.
   everywhere. **The "owed" wording below is superseded by this line.** Review's own patches add harness assertions
   (the caret, `/settings`' 404s, the greyed Clear pressed, the soft Back) that can only run once this commit is
   deployed — **that walk is recorded in the line after this one.**
+- **REVIEW, 2026-09-19 — THE PATCHES ON THE DEPLOYED SITE, at `402bac95`** (Vercel `READY` from that sha; CI success
+  — `397a250f`'s own CI run was red on the day's date stamps, DW-132, published nothing, and the next push did).
+  Six walks, **no `FAIL` in any of the five at `402bac95`**; the one at `e9d48cf2` had a single `FAIL` that was the
+  harness's own read (below). The furthest, **251 PASS / 0 FAIL**, ran all of step 5's session — **its recorder
+  control PASSED again** — and every Review assertion in it: **the caret survives the flip** (still editing, offset
+  45 → 45, the mode flipped); **the greyed Clear pressed, and the form submitted past its button, deletes nothing**
+  (stored `{"bg":"surface"}` before and after); **a SOFT Back to the editor shows no sun**; step 49's control is
+  offered; steps 46–53 all green. It then died on `apiRequestContext.get: read ETIMEDOUT`; the others on
+  `page.goto` / `waitForFunction` 30 s timeouts at 207, 71, 206 and 36 PASS — the same degrading link Dev recorded,
+  and retrying was stopped for the same reason. **ONE REVIEW ASSERTION IS THEREFORE STILL UNEXECUTED AND IS OWED TO
+  DEPLOY: step 6's `/settings` 404 walk** (another user's id, a random uuid and `abc`), which sits after the point
+  every run died. A `HARNESS ERROR` with no `FAIL` is not a result, and this line does not claim one for it.
+  The first Review walk, at `e9d48cf2`, was 239 PASS / 1 FAIL and the failure was the harness's: step 52 read
+  `body.innerText` on `load`, while React's streamed rows were still in their hidden holder — the pill was found by
+  `querySelector` and the caption was not yet SHOWN. It now waits for the words to be visible. The owner's project was
+  read afterwards: `dark_enabled` is `true`, as he left it.
 - `pnpm check` (Node 24) -- **exit 0**, `fail 0` in every package suite, the new engine, doc-edit and
   editor tests included. Each suite prints its own count; none is written down here. **`agreement.test.ts`
   and `ad36.test.ts` are byte-identical to the baseline and green** — `git diff <baseline>..HEAD --
