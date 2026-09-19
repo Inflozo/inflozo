@@ -59,6 +59,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     inline caret and the scroll survive it, and every section root is the same node. The device is session state like
     the mode: no column, no migration, **no Schema phase**. `1` `2` `3` stay Story 5.9's and the `⋯` collapse at 834
     stays Story 5.22's; FR-D14's fps gate stays Story 5.23's, while its **no-cap** and **5 s lockup bound** are 5.7's.
+  - **R-138 · R-139 (owner, 2026-09-19, Story 5.7's Q2 and its Review) — the chip and the ground.** The invariant is
+    that the viewport chip NEVER OVERLAPS the page card, on any device; measured on the deployed editor, a height-bound
+    card rose under a chip pinned to the stage's corner (Tablet by 5px, folded Desktop to within 4px), because the chip
+    is pinned while the card moves. Delivered as 4px/4px on the chip rather than `B Missing Surfaces.dc.html:740`'s
+    drawn 9px/12px, and the ground's TOP padding at 32px rather than `S4 Editor.dc.html:62`'s 24px; the two offsets are
+    the delivery, not the rule. R-139 then gives the ground the SAME 32px at the BOTTOM (`py-8`, in the editor and its
+    skeleton), so no height-bound card stands on the window's edge — it amends R-138's "the other three sides stay
+    S4a's" to the two sides. Cost: Tablet 71% and Mobile 93% on the 1440 stage; a width-bound Desktop does not move.
+    The export is untouched (R-74); `reconcile-designs-decisions.md` is the record.
   - **As built (Story 5.7, 2026-09-19):** the device table, `fitFor`, the chip's words and the live region's sentence
     are `apps/web/lib/device.ts` — **pure and importless on purpose**, because `node --test` strips types but cannot
     load a `.tsx`, so the fit is unit-tested in `editor.test.ts` (`kit-button.test.ts:6-7` is the standing precedent).
