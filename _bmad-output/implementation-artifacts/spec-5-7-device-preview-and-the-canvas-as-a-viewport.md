@@ -459,6 +459,11 @@ holding `mode` in `editor.tsx` and persisting nothing. Same here. No column, no 
   0 FAIL.** Step 55 read the card's box per device — Tablet 591 × 788 and Mobile 364 × 788, each with **32 px above and
   32 px below**; Desktop 864 × 540 with 156 px each side of it — and step 56 read a FOLDED Desktop (the state the owner
   was looking at) ending 94.75 px above the window's edge. `pnpm check` exit 0.
+- **THE DEPLOYED WALK AT `045b3967`, which closes what was owed** — the same command against `https://app.inflozo.com`
+  (Vercel: `dpl_BMQf9AAhKiqUu232K7kjrFREAq61` READY, built from HEAD) and the live Supabase: **exit 0, 0 FAIL**, every
+  step PASS on the third run (the first two died on 30 s network timeouts with no FAIL, which are not results). Steps
+  15, 23 and 55 pass on the live site; Tablet and Mobile end 32 px above the window's edge and a folded Desktop
+  94.75 px; both throwaway accounts deleted, users 13 → 13.
 
 **Manual checks (if no CLI):**
 - The owner's walk below, on the production domain, after Deploy (R-80).
