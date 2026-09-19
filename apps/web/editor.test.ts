@@ -98,9 +98,11 @@ test('the stack: site-wide outside a3 first, then the canvas, then the a3 footer
 // ─── Story 5.7 — the canvas as a viewport. The fit is the only arithmetic in the story, so it is the only thing
 // here: the table itself is read out of the export (`lib/device.ts` cites each height) and the chip's words are
 // UX-DR17's, quoted rather than computed. The worked stage is the owner's own 1440 laptop —
-// 1440 − 240 (Layers) − 280 (Controls) − 56 (`px-7`) = 864 wide, 900 − 48 (bar) − 24 (`pt-6`) = 828 tall.
+// 1440 − 240 (Layers) − 280 (Controls) − 56 (`px-7`) = 864 wide, 900 − 48 (bar) − 32 (`pt-8`) = 820 tall. The 32 is
+// R-138's (owner, 2026-09-19): 8px more than S4a draws, so the page card can never rise under the viewport chip —
+// measured on the deployed editor, where a height-bound card did. It costs Mobile one point, 98% → 97%.
 
-const STAGE = { width: 864, height: 828 }
+const STAGE = { width: 864, height: 820 }
 const pct = (device: Device) => Math.round(fitFor(STAGE, device) * 100)
 
 test('R-137: every device is a viewport in BOTH axes, and each is a named size read out of the export', () => {
@@ -115,9 +117,9 @@ test('R-137: every device is a viewport in BOTH axes, and each is a named size r
 test('the fit is min(1, w/W, h/H) — BOTH axes, over the matrix the spec worked', () => {
   // Desktop is width-bound on this stage, Tablet and Mobile are height-bound: the whole point of fitting both
   assert.equal(fitFor(STAGE, DESKTOP), 864 / 1440)
-  assert.equal(fitFor(STAGE, TABLET), 828 / 1112)
-  assert.equal(fitFor(STAGE, MOBILE), 828 / 844)
-  assert.deepEqual([pct(DESKTOP), pct(TABLET), pct(MOBILE)], [60, 74, 98])
+  assert.equal(fitFor(STAGE, TABLET), 820 / 1112)
+  assert.equal(fitFor(STAGE, MOBILE), 820 / 844)
+  assert.deepEqual([pct(DESKTOP), pct(TABLET), pct(MOBILE)], [60, 74, 97])
   // and the whole viewport is in shot in both axes, every time
   for (const d of DEVICES) {
     const fit = fitFor(STAGE, d)
@@ -141,7 +143,7 @@ test('a stage with no size yet is 1, never Infinity or NaN — the state before 
 })
 
 test('UX-DR17: the chip states the TRUE SIZE first and the shrinking second, as a sentence', () => {
-  assert.equal(viewportWords(MOBILE, fitFor(STAGE, MOBILE)), 'viewport 390 × 844 · shown at 98%')
+  assert.equal(viewportWords(MOBILE, fitFor(STAGE, MOBILE)), 'viewport 390 × 844 · shown at 97%')
   assert.equal(viewportWords(DESKTOP, 1), 'viewport 1440 × 900 · shown at 100%')
   // the live region says the device NOW SHOWING and its real size, never the press (`modeShown`'s shape)
   assert.equal(deviceShown(TABLET), 'Tablet — 834 × 1112')

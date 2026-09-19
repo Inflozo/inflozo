@@ -2889,8 +2889,10 @@ ruled option 1 (owner, 2026-09-19): *"Tuck it in + keep page clear."*
   `S4 Editor.dc.html:62`'s 24px, so the card's top edge clears the chip's bottom on **every device**. The invariant —
   *the chip never overlaps the page card, on any device* — is what the walk asserts; the two offsets are how it is
   delivered and are not themselves normative.
-- **What it costs:** 8px of fitted height. Tablet reads 74% before and after; Desktop is width-bound at 1440 and does
-  not change at all. The chip's own ink, fill, hairline, radius, type and words are untouched — this is a position,
+- **What it costs:** 8px of fitted height, measured on the deployed editor at 1440 × 900 after the change — every
+  device clears the chip by 8px, and folded Desktop by 13px. Tablet reads 74% before and after and Desktop is
+  width-bound at 1440 and does not move at all; **Mobile is the one number that changed, 98% → 97%**, which
+  `apps/web/editor.test.ts`'s worked stage now carries (820 tall, not 828) and the owner's manual test quotes. The chip's own ink, fill, hairline, radius, type and words are untouched — this is a position,
   not a redesign.
 - **It amends R-137's "deliberately not touched" line**, which reserved S4a's stage padding. R-137 gave the card the
   device's size; that is precisely what let a tall card reach a chip drawn for a card that filled the height, so the

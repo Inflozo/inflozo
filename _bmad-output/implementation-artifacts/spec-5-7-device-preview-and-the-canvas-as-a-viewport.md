@@ -293,6 +293,13 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
   9 px / 12 px and from `S4 Editor.dc.html:62`'s 24 px of top padding, and it amends **R-137**'s "deliberately not
   touched" line, which had reserved that padding.
 
+- **Dev (2026-09-19) — R-138 moves the I/O matrix's worked stage, which is frozen and therefore stands as written.**
+  The matrix works a stage of **864 × 828** (`900 − 48 − 24`) and quotes Mobile at **98%**. R-138's 32px of top
+  padding makes the real stage **864 × 820**, so Mobile now reads **97%**; Desktop (60%, width-bound) and Tablet
+  (74%) are unchanged. The matrix is intent and is not edited (`<frozen-after-approval>`); the live arithmetic lives
+  in `apps/web/editor.test.ts`, whose `STAGE` and comment were updated with the ruling, and in the walk, which derives
+  every expectation from `lib/device.ts` and the measured stage rather than from a written-down percentage.
+
 ## Design Notes
 
 ### The mechanism is two numbers and a transform, and it already half exists
@@ -427,7 +434,7 @@ saved yet — saving arrives with Story 5.8 — so do this in one sitting.
 | 1b | same | Editor, Home | Look at the right-hand end of the top bar, just past the sun. | — | Three small joined buttons — a **screen**, a **tablet** and a **phone** — with the screen one white and raised, the other two plain. |
 | 2 | same | Top bar | Hover each of the three in turn. | — | Each one tells you what it is — "Desktop", "Tablet", "Mobile" — and nothing else in the bar has moved. |
 | 3 | same | Canvas, Home | Press the **phone**. | — | The page in the middle becomes **phone-shaped** — narrow *and* short, with a proper bottom edge — with grey either side of it. The menu has collapsed to a hamburger and the hero has stacked. |
-| 4 | same | Canvas, Home | Read the small grey chip at the top-left of the grey area. | — | **"viewport 390 × 844 · shown at 98%"** (the percentage depends on your monitor). It tells you the real size first and the shrinking second. |
+| 4 | same | Canvas, Home | Read the small grey chip at the top-left of the grey area. | — | **"viewport 390 × 844 · shown at 97%"** (the percentage depends on your monitor). It tells you the real size first and the shrinking second. |
 | 5 | same | Canvas, Home | Look for a way to zoom in or out. | — | **There is none, on purpose.** The only thing you operate is the device; the shrinking is worked out for you and only reported. |
 | 6 | same | Canvas, Home | Scroll the phone-shaped page with your mouse wheel. | — | The page scrolls **inside** the phone shape, like a real phone. The editor around it does not move, and the phone's own bottom edge stays put — that edge is the **fold**. |
 | 7 | same | Canvas, Home | Press the **tablet**, then the **screen**. | — | Each press resizes the page in **both** directions — 834 wide by 1112 tall, then back to the desktop size — and the chip's numbers change with it. No white flash, no spinner in the browser tab, no reload. |
