@@ -1358,3 +1358,161 @@ begin
 
   delete from auth.users where id in (a, b);
 end $$;
+
+-- ── STORY 5.8 — DW-193's constraint, and `sync_project_doc()`'s compare-and-set ──────────────────
+--
+-- TWO CLAIMS, BOTH BEHAVIOURAL. Neither is a catalogue read: a `select … from pg_constraint` passes
+-- on a constraint that exists and bites the wrong string, and a `has_function_privilege` passes on a
+-- function that is executable and writes the wrong rows.
+--
+-- (A) DW-193 — `template_key_shape` used to carry two backslashes, which under
+--     `standard_conforming_strings = on` is "a literal backslash, then any character" and not an
+--     escaped dot, so it refused EVERY `custom:` key. Executed on production 2026-09-18 and green on
+--     this gate the whole time, because nothing here had ever inserted one. That is the hole this
+--     block closes: the key that used to be refused is inserted, and a key that must STILL be refused
+--     is attempted beside it, so a regression in either direction turns exactly one assertion red.
+--
+-- (B) AD-15's flush. `public.sync_project_doc()` is `security definer`, which is the whole reason it
+--     needs this: a definer function runs as its OWNER and RLS does not constrain it, so "it only ever
+--     touches auth.uid()'s project" is a claim about the WHERE clause and nothing else. Proved as two
+--     tenants, exactly as every other surface in this file is: the compare-and-set writes on a
+--     matching base, writes NOTHING on a stale one and says so, answers NULL for a project that is
+--     not the caller's, and cannot be called by `anon` at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-7777-7777-7777-777777777777',
+                                    '88888888-8888-8888-8888-888888888888');
+insert into auth.users(id) values ('77777777-7777-7777-7777-777777777777'),
+                                  ('88888888-8888-8888-8888-888888888888');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-5588-0000-0000-000000000001','77777777-7777-7777-7777-777777777777','Pilot','pilot-58','{}');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('dddddddd-5588-0000-0000-000000000002','88888888-8888-8888-8888-888888888888','Theirs','theirs-58','{}');
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7777-7777-7777-777777777777';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-5588-0000-0000-000000000001';
+  answer jsonb; rev bigint; stored jsonb; n int;
+begin
+  -- (A) DW-193. All three membership keys, because all three were refused.
+  insert into public.project_templates(project_id,user_id,template_key,doc) values
+    (c_proj,'77777777-7777-7777-7777-777777777777','custom:custom-signup.hbs','{"instances":[]}'),
+    (c_proj,'77777777-7777-7777-7777-777777777777','custom:custom-signin.hbs','{"instances":[]}'),
+    (c_proj,'77777777-7777-7777-7777-777777777777','custom:custom-member-home.hbs','{"instances":[]}');
+  raise notice 'PASS (DW-193): the three custom: membership keys insert';
+
+  -- and the control that names the old cause: a literal backslash and any character used to be
+  -- ACCEPTED by the broken pattern and must be refused by the repaired one.
+  begin
+    insert into public.project_templates(project_id,user_id,template_key,doc)
+      values (c_proj,'77777777-7777-7777-7777-777777777777','custom:custom-signup\xhbs','{}');
+    raise exception 'FAIL (DW-193): `custom:custom-signup\xhbs` was accepted — the pattern still reads its backslash as an escape';
+  exception when check_violation then
+    raise notice 'PASS (DW-193): a literal backslash in place of the dot is refused (%)', sqlstate;
+  end;
+
+  -- (B1) the compare-and-set writes on a matching base, and moves the revision by exactly one.
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"a"}]}'::jsonb), rev);
+  if answer is null then raise exception 'FAIL (5.8): sync_project_doc() answered null for the caller''s own project'; end if;
+  if (answer->>'applied')::boolean is not true then
+    raise exception 'FAIL (5.8): a matching base_revision was refused (%)', answer;
+  end if;
+  if (answer->>'revision')::bigint <> rev + 1 then
+    raise exception 'FAIL (5.8): the revision moved by % and not by one', (answer->>'revision')::bigint - rev;
+  end if;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if stored is null or stored->'instances'->0->>'instanceId' <> 'a' then
+    raise exception 'FAIL (5.8): the applied call did not write the doc it was given';
+  end if;
+  raise notice 'PASS (5.8): a matching base_revision upserts the doc and advances revision by one';
+
+  -- (B2) a STALE base writes nothing and hands back the revision that is actually there. The stale
+  --      value used is `rev` — the one that has just been superseded — which is the real shape of
+  --      the conflict: a second tab flushed once while this one was editing.
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"CLOBBER"}]}'::jsonb), rev);
+  if (answer->>'applied')::boolean is not false then
+    raise exception 'FAIL (5.8): a stale base_revision was applied (%)', answer;
+  end if;
+  if (answer->>'revision')::bigint <> rev + 1 then
+    raise exception 'FAIL (5.8): the refusal reported revision % rather than the current %', answer->>'revision', rev + 1;
+  end if;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if stored->'instances'->0->>'instanceId' <> 'a' then
+    raise exception 'FAIL (5.8): a refused call overwrote the doc anyway';
+  end if;
+  select revision into n from public.projects where id = c_proj;
+  if n <> rev + 1 then raise exception 'FAIL (5.8): a refused call moved the revision'; end if;
+  raise notice 'PASS (5.8): a stale base_revision writes nothing and reports the current revision';
+
+  -- (B2a) AND THE COLLISION THE RETURN SHAPE EXISTS FOR. `applied` is what tells the two apart:
+  --       a success and this refusal both carry the number `rev + 1`, so a bigint return would be
+  --       read as a success and the unsent work dropped.
+  if (answer->>'revision')::bigint <> rev + 1 then
+    raise exception 'FAIL (5.8): this assertion is no longer standing on the collision it was written for';
+  end if;
+  raise notice 'PASS (5.8): the refusal and a success carry the same number — `applied` is the only thing that separates them';
+end $$;
+
+-- (B3) ANOTHER USER'S PROJECT. B is a real account with a real project, so this is the cross-tenant
+--      question and not "no such row": the definer function must answer NULL and write nothing.
+set request.jwt.claim.sub = '88888888-8888-8888-8888-888888888888';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-5588-0000-0000-000000000001';
+  answer jsonb; stored jsonb; n int;
+begin
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"B_WAS_HERE"}]}'::jsonb), 1::bigint);
+  if answer is not null then
+    raise exception 'FAIL (5.8): B got % for A''s project — a definer function answered across the tenant line', answer;
+  end if;
+  reset role;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if stored->'instances'->0->>'instanceId' <> 'a' then
+    raise exception 'FAIL (5.8): B wrote into A''s project through the RPC';
+  end if;
+  select count(*) into n from public.project_templates where project_id = c_proj and user_id <> '77777777-7777-7777-7777-777777777777';
+  if n <> 0 then raise exception 'FAIL (5.8): % row(s) of B''s were left in A''s project', n; end if;
+  raise notice 'PASS (5.8): another user''s project id answers null and writes nothing — the same answer as no such project';
+
+  -- and an id that exists nowhere answers identically, so the null is no existence oracle.
+  set role authenticated;
+  answer := public.sync_project_doc('00000000-0000-0000-0000-0000000058ff',
+              jsonb_build_object('home','{}'::jsonb), 0::bigint);
+  if answer is not null then
+    raise exception 'FAIL (5.8): a project that does not exist answered % rather than null', answer;
+  end if;
+  raise notice 'PASS (5.8): a nonexistent project answers exactly what another user''s does';
+end $$;
+
+reset role;
+
+-- (B4) anon cannot call it at all. `revoke execute … from public, anon` is what makes this 42501 —
+--      without it a definer function is granted to PUBLIC by default. The claim is not "it would
+--      return null"; it is "it cannot be called", which is why the subject is cleared first: an
+--      errant EXECUTE would then change nothing and this block would fail for the RIGHT reason.
+set request.jwt.claim.sub = '';
+set role anon;
+
+do $$
+declare answered text;
+begin
+  answered := public.sync_project_doc('cccccccc-5588-0000-0000-000000000001','{}'::jsonb,0::bigint)::text;
+  raise exception 'FAIL (5.8): anon executed sync_project_doc() and got %', coalesce(answered,'null');
+exception
+  when insufficient_privilege then
+    raise notice 'PASS (5.8): anon cannot execute sync_project_doc() (42501)';
+end $$;
+
+reset role;
+
+delete from auth.users where id in ('77777777-7777-7777-7777-777777777777',
+                                    '88888888-8888-8888-8888-888888888888');

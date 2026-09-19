@@ -2,9 +2,10 @@
 title: 'Story 5.8 — Undo, redo, and local-first persistence'
 type: 'feature'
 created: '2026-09-19'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: '6c73e5d9f573c8e2ab98b44dde9dc0dad669157e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -246,20 +247,20 @@ differs → the cloud replaces the doc and the journal is cleared.
 ## Tasks & Acceptance
 
 **Execution — Schema phase first, alone, before any code that needs it (R-99):**
-- [ ] `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql` -- new migration: drop and
+- [x] `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql` -- new migration: drop and
       re-add `template_key_shape` on **both** `project_templates` and `project_template_prefs` with a single
       backslash; create `public.sync_project_doc(uuid, jsonb, bigint) returns bigint` as `security definer set
       search_path = public`, keyed on `auth.uid()`, compare-and-set on `revision`, upserting each key of the
       jsonb object and advancing `revision` in the one transaction; `revoke execute … from public, anon` and
       `grant execute … to authenticated` -- DW-193 and the only writer of `revision` there can be.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the same
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the same
       two changes in the cumulative picture -- the RLS gate diffs the two databases and refuses to run if
       they drift.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` and its
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` and its
       `supabase/tests/` copy -- assert a `custom:custom-signup.hbs` key **inserts**, that the new function is
       executable by `authenticated` and not by `anon`, and that the RPC refuses a stale `base_revision` and
       another user's project -- byte-identical copies, `cmp -s` in the gate.
-- [ ] Apply the migration by hand through `SUPABASE_DB_POOLER_URL`, then push `Story 5.8 - Schema - …` alone.
+- [x] Apply the migration by hand through `SUPABASE_DB_POOLER_URL`, then push `Story 5.8 - Schema - …` alone.
 
 **Execution — Dev:**
 - [ ] `apps/web/lib/journal.ts` -- new, pure and `node --test`-reachable: the journal's rules (`append`,
@@ -335,6 +336,17 @@ differs → the cloud replaces the doc and the journal is cleared.
   others (R-74).
 
 ## Spec Change Log
+
+**Schema phase, 2026-09-19 — `sync_project_doc` returns `jsonb`, not `bigint`.** A routine judgement
+call, recorded rather than put to the owner, because the frozen text it serves is unchanged. The Tasks
+line named `returns bigint`; a bigint cannot carry the verdict. On success the answer is `p_base + 1`,
+and the COMMONEST conflict — one other tab having flushed exactly once — leaves the current revision at
+`p_base + 1` too, so the two answers are the same number and the client would read a refusal as a
+success and drop the work it had not sent. That is the matrix's *"Another session wrote"* row failing
+silently, which is the one failure this story exists to prevent. The return is therefore
+`{"applied": bool, "revision": bigint}`. The frozen Boundary is satisfied literally — a mismatch still
+"writes nothing and returns the current revision", in the object's `revision` — and the gate now stands
+on the collision itself (`RLS-TEST.sql`, Story 5.8's block, assertion B2a).
 
 ## Design Notes
 

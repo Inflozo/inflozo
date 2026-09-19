@@ -266,7 +266,7 @@ create table public.project_templates (
   primary key (project_id, template_key),
   constraint template_key_shape check (
     template_key in ('site','home','index','post','page','tag','author','error','private')
-    or template_key ~ '^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\\.hbs$')
+    or template_key ~ '^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$')   -- ONE backslash: DW-193
 );
 
 -- FR-D22 preview subject, FR-D16 member-state coverage. Set-and-forget context that must NOT
@@ -281,7 +281,7 @@ create table public.project_template_prefs (
   primary key (project_id, template_key),
   constraint template_key_shape check (
     template_key in ('site','home','index','post','page','tag','author','error','private')
-    or template_key ~ '^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\\.hbs$')
+    or template_key ~ '^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$')   -- ONE backslash: DW-193
 );
 
 -- FR-I3 + §7.4: custom-{name}.hbs is a FROZEN PUBLIC API. Two tables, deliberately:
@@ -1692,3 +1692,81 @@ revoke execute on function public.request_account_deletion() from public, anon;
 revoke execute on function public.restore_account() from public, anon;
 grant  execute on function public.request_account_deletion() to authenticated;
 grant  execute on function public.restore_account() to authenticated;
+
+-- ============================================================================
+-- 14. Story 5.8 — AD-15's flush, as the only thing that can perform it
+-- ============================================================================
+--
+-- `authenticated` is granted UPDATE on eight columns of `public.projects` in §11 and `revision` is not
+-- one of them — AD-31's deliberate choice, because a client that picks its own revision can start above
+-- any legitimate one. So `revision` can only move inside a `security definer` function, and once the
+-- function exists the upserts belong inside it too: one plpgsql body is one transaction, which is
+-- exactly what DW-197 found missing from the project-level "Clear dark overrides".
+--
+-- COMPARE-AND-SET, and it is the whole contract. `p_base` is the caller's `base_revision`; the call
+-- writes if and only if the project's `revision` still equals it. A mismatch writes NOTHING and hands
+-- back the revision that is actually there, which is the second row of `addendum.md` §AD1.1 arriving
+-- at the client as a fact rather than as a guess.
+--
+-- THE RETURN IS `jsonb`, NOT `bigint`, and the reason is a collision that a bigint cannot survive:
+-- on success the answer is `p_base + 1`, and the COMMONEST conflict — one other tab having flushed
+-- exactly once — leaves the current revision at `p_base + 1` as well. The two would be the same
+-- number, and the client would read a refusal as a success and drop the work it had not sent. So the
+-- verdict is carried separately from the number: `{"applied": bool, "revision": bigint}`. §AD1.1's
+-- sentence is unchanged — a mismatch still "writes nothing and returns the current revision"; it is
+-- `revision` in the object.
+--
+-- `auth.uid()` keys it, and the `user_id` term is not redundant: a definer function runs as its owner
+-- and RLS does not constrain it, so ownership is asserted in the WHERE clause or it is not asserted at
+-- all. Another user's project id — and an id that does not exist — both reach zero rows and both answer
+-- NULL, which is the same answer to both questions and therefore no existence oracle.
+--
+-- `for update` holds the project row for the body, so two concurrent flushes of the same project
+-- serialise on it and the second sees the first's revision rather than racing past the check.
+--
+-- `updated_at` is set by the `_touch` triggers on both tables (§10c), so nothing here sets it.
+--
+-- Mirrors `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql`; the RLS gate
+-- diffs the database the migrations build against the one this file builds, so the two move together.
+create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  owner_id uuid = auth.uid();
+  current_rev bigint;
+  k text;
+begin
+  if owner_id is null or p_docs is null or jsonb_typeof(p_docs) <> 'object' then
+    return null;
+  end if;
+
+  select p.revision into current_rev
+    from public.projects p
+   where p.id = p_project and p.user_id = owner_id
+     for update;
+
+  if not found then
+    return null;
+  end if;
+
+  if current_rev is distinct from p_base then
+    return jsonb_build_object('applied', false, 'revision', current_rev);
+  end if;
+
+  for k in select jsonb_object_keys(p_docs) loop
+    insert into public.project_templates(project_id, user_id, template_key, doc)
+      values (p_project, owner_id, k, p_docs -> k)
+    on conflict (project_id, template_key) do update set doc = excluded.doc;
+  end loop;
+
+  update public.projects set revision = current_rev + 1 where id = p_project;
+
+  return jsonb_build_object('applied', true, 'revision', current_rev + 1);
+end $$;
+
+-- A definer function is granted to PUBLIC by default, which would hand this to `anon`. It is not
+-- reachable without a session — `auth.uid()` is null for anon and the body returns null on the first
+-- line — but "returns null" is not the same as "cannot be called", and RLS-TEST.sql asserts the second
+-- (42501) rather than the first.
+revoke execute on function public.sync_project_doc(uuid, jsonb, bigint) from public, anon;
+grant  execute on function public.sync_project_doc(uuid, jsonb, bigint) to authenticated;

@@ -4569,7 +4569,16 @@ plain: The three membership pages (Signup, Signin, Member home) are stored under
   `custom:custom-signup.hbs`. The database has a rule about which names it accepts, and that rule was typed with one
   backslash too many — so today it would REFUSE all three. Nothing is broken yet, because the editor does not save
   anything until Story 5.8. The day it does, saving a membership page would fail unless this is fixed first.
-status: open
+status: done 2026-09-19 (Story 5.8, Schema phase)
+resolution: Story 5.8's Schema phase (2026-09-19) — `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql` drops and re-adds `template_key_shape` with ONE backslash on BOTH tables, and
+  `SCHEMA.sql` carries the same, so the RLS gate's schema diff holds them together. APPLIED BY HAND through
+  `SUPABASE_DB_POOLER_URL` (PostgreSQL 17.6, 2026-09-19) and proved there inside a rolled-back transaction:
+  all three `custom:custom-*.hbs` keys INSERT where they were refused with `23514`, and the control that
+  named the cause — `custom:custom-signup\xhbs`, a literal backslash and any character — is now REFUSED
+  with `23514`. Zero `custom:%` rows left behind. The gate carries both assertions from this story onward
+  (`RLS-TEST.sql`, Story 5.8's block), and the control ran: with the migration withheld the proof aborts at
+  that insert, which is the hole the ledger entry named — the gate was green for it only because nothing
+  here had ever inserted a `custom:` key.
 severity: high
 origin: Story 5.5's review, the Real-infra verifier (2026-09-18). EXECUTED on production through
   `SUPABASE_DB_POOLER_URL`, every insert inside a rolled-back transaction: `custom:custom-signup.hbs`,
