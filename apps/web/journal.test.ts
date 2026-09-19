@@ -4,7 +4,7 @@ import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
   flushPayload, holdsCaret, hydrationFor, labelOf, maxSeq, panelOpen, redo, shortcutFor, undo, unsynced,
-  unsyncedEdits, vanishedDesign, type Journal, type SyncState,
+  restingState, unsyncedEdits, vanishedDesign, type Journal, type SyncState,
 } from './lib/journal.ts'
 
 /* STORY 5.8 — the journal, the indicator, the backoff and R-141's shortcuts, asserted where `node --test` can reach
@@ -149,20 +149,37 @@ test('FR-D9: a restored doc naming a design the library no longer holds is refus
 
 // ── B6's indicator ─────────────────────────────────────────────────────────────────────────────────────────────
 
-test('B6: every state has a label, the panel opens on Retrying and on nothing else', () => {
+test('B6: every state has its own name, the panel opens on Retrying and on nothing else', () => {
   const states: SyncState[] = [
-    { kind: 'rest' },
+    { kind: 'rest', owed: true },
+    { kind: 'rest', owed: false },
     { kind: 'syncing' },
-    { kind: 'synced' },
     { kind: 'retrying', attempt: 1, seconds: 5 },
     { kind: 'fallback' },
   ]
   const labels = states.map(labelOf)
-  assert.equal(new Set(labels).size, states.length, 'no two states print the same label')
+  assert.equal(new Set(labels).size, states.length, 'no two states answer to the same name')
   assert.deepEqual(states.filter(panelOpen).map((s) => s.kind), ['retrying'])
-  // the resting label is B6's, not S4a's "Saved" — the divergence the Code Map records
-  assert.equal(labelOf({ kind: 'rest' }), 'Saved on this device')
+  // the resting names are B6's own, not S4a's "Saved" — the divergence the Code Map records
+  assert.equal(labelOf({ kind: 'rest', owed: true }), 'Saved on this device')
   assert.equal(labelOf({ kind: 'fallback' }), 'Syncing every change to the cloud')
+})
+
+test('R-144: the resting state reports what is OWED — green with nothing to send, grey the moment there is', () => {
+  // it is DERIVED from the journal, never remembered: this is what let the four-second fade go
+  assert.deepEqual(restingState(EMPTY_JOURNAL), { kind: 'rest', owed: false })
+  assert.equal(labelOf(restingState(EMPTY_JOURNAL)), 'Synced', 'nothing owed reads as on the server')
+
+  const edited = append(EMPTY_JOURNAL, { txn: 't', docKey: 'home', before: doc(), after: doc('a') }).journal
+  assert.deepEqual(restingState(edited), { kind: 'rest', owed: true })
+  assert.equal(labelOf(restingState(edited)), 'Saved on this device', 'an edit is owed until it goes up')
+
+  // …and a flush that lands puts it back, with no timer in between
+  const sent = flushed(edited, edited.stamp, maxSeq(edited))
+  assert.equal(labelOf(restingState(sent)), 'Synced')
+
+  // an UNDO is owed too, so the circle goes grey again rather than claiming the server has it
+  assert.equal(labelOf(restingState(undo(sent)!.journal)), 'Saved on this device')
 })
 
 test('the backoff is 5 · 10 · 20 · 40 · 60, capped, and never goes backwards', () => {

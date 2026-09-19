@@ -311,7 +311,7 @@ Behavioural. Visual specs live in `DESIGN.md` § Components.
 | **Inline toolbar** | Exactly four marks. **A mark a field does not permit is absent, not greyed** — a fixed button order keeps the shapes recognisable at any width (`P0 Editor Primitives - Spec.md`). **A field that permits no mark shows no toolbar at all**, and ⌘B ⌘I ⌘U ⌘K do nothing in it; a Text Field is **one line** and a Text Area takes line breaks (Story 5.3) |
 | **Site-wide singleton** | Header, announcement bar and footer are one shared instance shown in every template's Layers as the Site-wide group with its template count (B7's pinned card and globe went with R-126, 2026-09-18). Cannot be duplicated. Deleting or hiding one confirms that it affects every template (FR-D5) |
 | **Pro badge** | Marigold ✦ on selection only. **No upgrade sheet on click, ever** — that is the Pro Exit Sheet's job, once, at the exit |
-| **Persistence indicator** | One dot and one label, never a spinner. The labels are exactly those `B Missing Surfaces` B6 draws — it is headed FIVE STATES, the fifth being the browser with no local storage, which must never be told its work is saved on the device. Corrected 2026-09-05 by Story 1.3, which built the component from the frame and found this row said four. The expanded panel appears only on Retrying |
+| **Persistence indicator** | **One ICON IN A CIRCLE, never a spinner** (R-142, 2026-09-19 — B6 drew a dot and a printed label, and the owner replaced both). Five states, and the fifth is the browser with no local storage, which must never be told its work is saved on the device. Each state has its own Tabler glyph as well as its own hue, so colour is never the only signal; B6's five labels are still the only five, and they are now the `title` a hover shows and the accessible name a live region announces rather than printed words. **AT REST IT REPORTS WHAT IS OWED** (R-144): a green check when everything is on the server, a grey clock the moment there is an edit that is not — B6's four-second "Synced" flash, and the timer behind it, are gone. The expanded panel appears only on Retrying, and moves to the notification system when that is built |
 | **Feedback banner** | One icon, one plain sentence. Sky informs, mint succeeds, marigold nudges without blocking, danger is serious |
 | **Wizard step rail** | Numbered, and the count grows: 4 steps on an ordinary deploy, 6 on the first deploy to a site |
 | **Typed confirm** | Only where the action is irreversible and account-wide — Delete Account, and project delete |
@@ -508,9 +508,22 @@ unaffected. **axe-core does not detect this**, which is exactly why it is stated
 ### What is announced, and how
 
 **Colour classifies; it never carries the only signal, and neither does shape.** Every state in this
-document has a text equivalent — the persistence indicator has four *labels* and one dot, not four
-dots; the Pro badge carries the word **Pro** beside its ✦; the auto-generated, has-feature-image and
-dark-override marks each carry their words (D5b writes "Auto-generated" beside the hollow dot, D5e writes "has image" beside the marker, and D6a captions the moon badge "Dark override").
+document has a text equivalent — the Pro badge carries the word **Pro** beside its ✦; the
+auto-generated, has-feature-image and dark-override marks each carry their words (D5b writes
+"Auto-generated" beside the hollow dot, D5e writes "has image" beside the marker, and D6a captions the
+moon badge "Dark override").
+
+**THE PERSISTENCE INDICATOR USED TO BE THIS RULE'S OWN EXAMPLE, and R-142 changed how it keeps it
+rather than whether.** It read "four *labels* and one dot, not four dots". It is now one dot — a
+circle — and no printed label at all, and it satisfies the rule more strongly than it did: each state
+carries its own GLYPH as well as its own hue, so colour and shape are redundant with each other, and
+the word survives as the `title` a hover shows and the name a polite live region announces. The
+measurements are why the change was taken rather than resisted: B6's four dots come in at 1.62:1,
+2.86:1, 2.75:1 and 4.85:1 against the bar's paper — three below the 3:1 a meaningful graphic owes —
+and coral *"Syncing"* against mint *"Synced"* is **1.04:1**, one appearance for the two states that
+separate "still sending" from "safe on the server". A label is one way to keep this rule. A glyph is
+another, and here it is the better one. **A text equivalent is still required of every state; being
+ALWAYS VISIBLE is not.**
 
 | Region | Politeness | What it announces |
 |---|---|---|

@@ -11,11 +11,12 @@ import { labelOf, panelOpen, type SyncState } from '@/lib/journal'
  * against it: the machine in `lib/journal.ts` and the Kit's union are checked against each other at build time
  * rather than kept in step by hand.
  *
- * WHERE IT SITS is `S4 Editor.dc.html:32` — in the 48px bar, third item, directly after the project name, a 6px dot
- * and a 12px label. S4a draws that resting state as a GREEN dot and the word "Saved"; B6 governs the labels and the
- * dot colours, which `prd.md:1335` and `EXPERIENCE.md:314` both say in so many words — so the resting state is a GREY
- * dot and *"Saved on this device"*, and "Saved" is never printed. Same shape as R-137: one frame governs the geometry,
- * the other everything else, and the divergence is recorded rather than guessed.
+ * WHERE IT SITS is `S4 Editor.dc.html:32` — in the 48px bar, third item, directly after the project name. S4a draws
+ * a GREEN dot and the word "Saved" there; B6 governs the states and their colours, which `prd.md:1335` and
+ * `EXPERIENCE.md:314` both say in so many words. Since **R-142** it is neither frame's dot: it is a Tabler glyph in a
+ * filled circle, with B6's own five labels moved to the hover and to assistive tech. Since **R-144** its resting
+ * state reports what is OWED — a green check when everything is on the server, a grey clock when there are edits
+ * written here that are not. The Kit component carries all of that; this file places it and owns the panel.
  *
  * THE PANEL OPENS ON RETRYING AND ON NOTHING ELSE — the frame's own note and an acceptance criterion, expressed as
  * `panelOpen(state)` so there is one predicate rather than a condition written at each of two places. B6 draws it as
@@ -29,7 +30,10 @@ import { labelOf, panelOpen, type SyncState } from '@/lib/journal'
  * out — nothing in Inflozo reads such a file back in — so it is ABSENT, never greyed and never captioned (UX-DR3,
  * R-118 applied a sixth time). The reassurance sentence is untouched either way, which is what the frame drew it for.
  *
- * NO SPINNER ANYWHERE, and colour never carries the only signal: the dot always has its word.
+ * NO SPINNER ANYWHERE — B6's note survives both rulings untouched, and the Syncing glyph is a static arrow rather
+ * than a turning one. And colour still never carries the only signal: every state has its own SHAPE as well as its
+ * own hue, which is a stronger guarantee than the printed label gave (the label was the only thing keeping three of
+ * B6's four dots legal, and coral against mint measured 1.04:1).
  */
 
 /** B6's own title line, which counts the attempt rather than naming the error. The frame prints "third attempt"; the

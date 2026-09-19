@@ -2600,7 +2600,9 @@ async function main() {
     // Every label, depth and interval below is READ FROM `lib/journal.ts` — the module the app itself uses — so a
     // default the Architect moves changes this walk with it and is never restated here (standing rule 4).
     const JOURNAL58 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href)
-    const RESTING58 = JOURNAL58.labelOf({ kind: 'rest' })
+    // R-144 split the resting state in two, so there are two resting names and the walk reads both
+    const SYNCED58 = JOURNAL58.labelOf({ kind: 'rest', owed: false })
+    const OWED58 = JOURNAL58.labelOf({ kind: 'rest', owed: true })
     const FALLBACK_LABEL58 = JOURNAL58.labelOf({ kind: 'fallback' })
 
     const revisionNow58 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision ?? null
@@ -2617,18 +2619,34 @@ async function main() {
     /** B6's indicator and S4a's arrows, as the bar actually draws them. */
     const topBarNow = () => page.evaluate(() => {
       const ind = document.querySelector('#editor-save-state [role="status"]')
-      const dot = ind?.querySelector('span[aria-hidden]')
+      // R-142: the state is an icon in a filled circle now, and `data-sync-state` is the circle naming itself
+      const circle = document.querySelector('#editor-save-state [data-sync-state]')
+      const glyph = circle?.querySelector('svg')
       const undo = document.getElementById('editor-undo')
       const redo = document.getElementById('editor-redo')
       const box = (el) => el && (({ width, height }) => ({ w: Math.round(width), h: Math.round(height) }))(el.getBoundingClientRect())
-      const track = document.getElementById('editor-device')
       const history = document.getElementById('editor-history')
+      const saveState = document.getElementById('editor-save-state')
       return {
         label: ind?.textContent ?? null,
-        dotColour: dot && getComputedStyle(dot).backgroundColor,
-        // B6's note: "never a spinner". Nothing in the bar may animate or carry one.
-        spinners: document.querySelectorAll('#editor-save-state [class*="animate"], #editor-save-state svg circle').length,
-        afterTrack: track?.nextElementSibling?.id ?? null,
+        state: circle?.getAttribute('data-sync-state') ?? null,
+        // the hover name, which is where B6's words went (R-142)
+        title: circle?.getAttribute('title') ?? null,
+        fill: circle && getComputedStyle(circle).backgroundColor,
+        circle: box(circle),
+        radius: circle && getComputedStyle(circle).borderRadius,
+        // THE GLYPH ITSELF, by its own path data — so a state that silently lost its icon, or two states that
+        // came to share one, fail here rather than passing on the colour alone (which is the whole of R-142)
+        glyphPaths: glyph ? [...glyph.querySelectorAll('path')].map((x) => x.getAttribute('d')).join(' | ') : null,
+        glyphColour: glyph && getComputedStyle(glyph).color,
+        // B6's note survives both rulings: "never a spinner". Nothing here may animate.
+        spinners: [...document.querySelectorAll('#editor-save-state *')].filter((el) => {
+          const c = getComputedStyle(el)
+          return c.animationName !== 'none' || c.transitionProperty.includes('transform')
+        }).length,
+        // R-143: the pair sits immediately AFTER the indicator now, not after the device track
+        afterSaveState: saveState?.nextElementSibling?.id ?? null,
+        afterTrack: document.getElementById('editor-device')?.nextElementSibling?.id ?? null,
         gap: history && getComputedStyle(history).columnGap,
         undo: undo && { ...box(undo), radius: getComputedStyle(undo).borderTopLeftRadius, opacity: getComputedStyle(undo).opacity, disabled: undo.getAttribute('aria-disabled'), label: undo.getAttribute('aria-label'), tabbable: undo.tabIndex >= 0 },
         redo: redo && { ...box(redo), radius: getComputedStyle(redo).borderTopLeftRadius, opacity: getComputedStyle(redo).opacity, disabled: redo.getAttribute('aria-disabled'), label: redo.getAttribute('aria-label'), tabbable: redo.tabIndex >= 0 },
@@ -2636,12 +2654,25 @@ async function main() {
       }
     })
 
-    // ── step 61 — B6 at rest and S4a's pair, both drawn as the frames draw them ──
+    // ── step 61 — R-142's circle, R-144's green rest, and R-143's moved pair ──
+    // The GLYPH is asserted by its own path data, read out of `packages/library/icons/tabler.json` — the file the
+    // component was generated from — so the five states cannot silently come to share an icon, which is the one
+    // way R-142's guarantee could rot (standing rule 4: derived, never retyped).
+    const TABLER58 = JSON.parse(require('node:fs').readFileSync(path.join(REPO, 'packages/library/icons/tabler.json'), 'utf8')).icons
+    const glyph58 = (n) => TABLER58[n].outline.filter(([el]) => el === 'path').map(([, a]) => a.d).join(' | ')
     const topBar = await topBarNow()
-    check('step 61 — B6 at rest: the resting label, a GREY dot, no spinner (S4a draws "Saved" in green; B6 governs the words and the colours — the Code Map\'s recorded divergence)',
-      topBar.label === RESTING58 && topBar.dotColour === 'rgb(201, 194, 184)' && topBar.spinners === 0, JSON.stringify(topBar))
-    check('step 61 — S4a:41-43: two 28 × 28 buttons, 8px radius, 2px apart, immediately right of the device track',
-      topBar.afterTrack === 'editor-history' && topBar.gap === '2px' && topBar.undo?.w === 28 && topBar.undo?.h === 28 && topBar.undo?.radius === '8px' && topBar.redo?.w === 28 && topBar.redo?.h === 28, JSON.stringify(topBar))
+    check('step 61 — R-144: with nothing owed the indicator rests GREEN and says Synced — not the grey it showed before the ruling',
+      topBar.state === SYNCED58 && topBar.fill === 'rgb(21, 122, 88)' && topBar.label === SYNCED58, JSON.stringify(topBar))
+    // the radius is DERIVED, not written down: `rounded-full` is this project's 24px pill alias and NOT Tailwind's
+    // infinite radius (DESIGN.md's own note), so what makes it round is the radius reaching half the box — which
+    // stays true whatever the token is set to (standing rule 4)
+    check('step 61 — R-142: it is a 16px CIRCLE carrying Tabler `check` in white, and its name is on the hover',
+      topBar.circle?.w === 16 && topBar.circle?.h === 16 && parseFloat(topBar.radius ?? '0') >= topBar.circle.w / 2 && topBar.glyphPaths === glyph58('check') && topBar.glyphColour === 'rgb(255, 255, 255)' && topBar.title === SYNCED58, JSON.stringify(topBar))
+    check('step 61 — B6\'s note survives both rulings: NOTHING in the indicator animates or spins', topBar.spinners === 0, String(topBar.spinners))
+    check('step 61 — R-143: the undo/redo pair sits immediately AFTER the indicator, and no longer after the device track',
+      topBar.afterSaveState === 'editor-history' && topBar.afterTrack !== 'editor-history', JSON.stringify({ afterSaveState: topBar.afterSaveState, afterTrack: topBar.afterTrack }))
+    check('step 61 — and the buttons themselves are still S4a:41-43\'s: two 28 × 28, 8px radius, 2px apart',
+      topBar.gap === '2px' && topBar.undo?.w === 28 && topBar.undo?.h === 28 && topBar.undo?.radius === '8px' && topBar.redo?.w === 28 && topBar.redo?.h === 28, JSON.stringify(topBar))
     check('step 61 — nothing to undo or redo yet: both at opacity .35, both aria-disabled and both still in the tab order (never `disabled`)',
       topBar.undo?.opacity === '0.35' && topBar.redo?.opacity === '0.35' && topBar.undo?.disabled === 'true' && topBar.redo?.disabled === 'true' && topBar.undo?.tabbable && topBar.redo?.tabbable, JSON.stringify(topBar))
     check('step 61 — B6\'s panel exists in NO state but Retrying', topBar.panel === false, JSON.stringify(topBar))
@@ -2661,7 +2692,9 @@ async function main() {
     const afterEdit58 = await topBarNow()
     check('step 62 — one gesture removes the section and wakes undo; redo stays asleep',
       afterDelete58.length === before58.length - 1 && afterEdit58.undo?.disabled === null && afterEdit58.undo?.opacity === '1' && afterEdit58.redo?.disabled === 'true', `${before58.length} → ${afterDelete58.length} · ${JSON.stringify(afterEdit58)}`)
-    check('step 62 — FR-D10: the indicator still reads the resting label — the write is off the interaction path and nothing claims the cloud', afterEdit58.label === RESTING58, afterEdit58.label)
+    check('step 62 — R-144: one edit turns the circle GREY with Tabler `clock` — the work is here and the server has not got it, which is the whole point of the ruling',
+      afterEdit58.state === OWED58 && afterEdit58.fill === 'rgb(110, 106, 100)' && afterEdit58.glyphPaths === glyph58('clock') && afterEdit58.title === OWED58, JSON.stringify(afterEdit58))
+    check('step 62 — and it is a different GLYPH, not only a different colour — R-142\'s whole guarantee', afterEdit58.glyphPaths !== glyph58('check'), afterEdit58.glyphPaths)
 
     // ── step 63 — the arrows: one press each way, for however many operations the gesture cost (AD-16) ──
     await page.locator('#editor-undo').click()
@@ -2720,13 +2753,17 @@ async function main() {
     labels58.push(...(await watching58))
     const flushedRevision58 = await revisionNow58()
     const flushedDoc58 = await homeDocNow58()
-    check('step 66 — ⌘S: the indicator goes Syncing → Synced (B6\'s two in-flight labels, and never a spinner)',
-      labels58.includes(JOURNAL58.labelOf({ kind: 'syncing' })) && labels58.includes(JOURNAL58.labelOf({ kind: 'synced' })), JSON.stringify(labels58))
+    check('step 66 — ⌘S: the indicator passes through Syncing and lands on Synced, and never a spinner',
+      labels58.includes(JOURNAL58.labelOf({ kind: 'syncing' })) && labels58.includes(SYNCED58), JSON.stringify(labels58))
     // B6's "Fades to the resting label after a few seconds" is read LIVE rather than off the recording: it is a state
     // the indicator RESTS in, so asking what it says NOW is the stronger question and cannot be missed by a mutation
     // frame that batched two changes into one.
-    const settled66 = await page.waitForFunction((resting) => document.querySelector('#editor-save-state [role="status"]')?.textContent === resting, RESTING58, { timeout: 15000 }).then(() => true, () => false)
-    check('step 66 — and it fades to the resting label after a few seconds (B6\'s fourth transition)', settled66, await page.locator('#editor-save-state [role="status"]').innerText())
+    // R-144: there is no four-second fade any more. The flush empties `pending`, so the resting state simply
+    // reads GREEN — and it STAYS green until the next edit, which is the state B6 could only show for 4s.
+    const settled66 = await page.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED58, { timeout: 15000 }).then(() => true, () => false)
+    const rested66 = await topBarNow()
+    check('step 66 — R-144: after the save the circle goes GREEN and STAYS there — no timer, no fade back to grey',
+      settled66 && rested66.state === SYNCED58 && rested66.glyphPaths === glyph58('check'), JSON.stringify(rested66))
     check('step 66 — and it really wrote: projects.revision advanced by exactly one and the stored doc is the edited one',
       flushedRevision58 === beforeSave58 + 1 && Array.isArray(flushedDoc58?.instances), `revision ${beforeSave58} → ${flushedRevision58} · ${flushedDoc58?.instances?.length} instances`)
 
@@ -2787,12 +2824,18 @@ async function main() {
         first: el.children[0]?.textContent ?? null,
         reassurance: el.children[1]?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
         controls: controls.map((c) => c.textContent.replace(/\s+/g, ' ').trim()),
+        // since R-142 the countdown has nowhere to be printed, so it rides in the NAME — the hover and the
+        // announcement both carry it, and this reads both
         label: document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null,
+        title: document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('title') ?? null,
+        glyphPaths: [...(document.querySelector('#editor-save-state [data-sync-state] svg')?.querySelectorAll('path') ?? [])].map((x) => x.getAttribute('d')).join(' | '),
         spinners: el.querySelectorAll('[class*="animate"]').length,
       }
     })
-    check('step 69 — B6: the panel opens on Retrying, at the frame\'s own fill, radius and padding, with the countdown beside it',
-      panel58 && panel58.fill === 'rgb(253, 236, 236)' && panel58.radius === '10px' && panel58.padding === '11px 12px' && /Retrying · \d+s/.test(panel58.label ?? ''), JSON.stringify(panel58))
+    check('step 69 — B6: the panel opens on Retrying, at the frame\'s own fill, radius and padding, with the countdown in the indicator\'s NAME (R-142 left it nowhere to be printed)',
+      panel58 && panel58.fill === 'rgb(253, 236, 236)' && panel58.radius === '10px' && panel58.padding === '11px 12px' && /Retrying · \d+s/.test(panel58.label ?? '') && /Retrying · \d+s/.test(panel58.title ?? ''), JSON.stringify(panel58))
+    check('step 69 — R-142: and the circle wears Tabler `exclamation-mark` — its own glyph, not a recoloured one',
+      panel58?.glyphPaths === glyph58('exclamation-mark'), panel58?.glyphPaths)
     check('step 69 — B6: its first line counts the attempt and its SECOND is the reassurance, never the error',
       /^Retrying, \w+ attempt$/.test(panel58?.first ?? '') && /^Your work is safe on this device\./.test(panel58?.reassurance ?? ''), JSON.stringify(panel58))
     check('step 69 — R-140 (owner, 2026-09-19): the panel carries "Retry now" AND NO SECOND CONTROL — "Download a copy" is ABSENT, never greyed',
@@ -2839,10 +2882,20 @@ async function main() {
     // WAITED FOR, not slept at: each report is an `exposeBinding` round-trip, and a fixed 300ms lost both of them once
     // on a loaded machine (2026-09-18) — which under standing rule 2 would have voided step 5's zero for the whole run.
     // Waiting weakens nothing: the control still fails if the refusals never reach the recorder.
+    // WAITED FOR PER DOCUMENT, not by a bare count. Both refusals really happen — the two checks above read the
+    // EvalError each document threw — but the two binding round-trips are independent and the canvas document's has
+    // been the slower one, arriving after a flat count had already given up (twice, 2026-09-19). Counting to two
+    // also cannot tell "both documents refused" from "the editor refused twice", which is the thing this control is
+    // for. So it waits for one from EACH, and still fails if either never comes.
     const evals = () => violations.filter((v) => /script-src/.test(v.directive) && /eval/.test(v.blocked))
-    for (let i = 0; i < 40 && evals().length < 2; i++) await page.waitForTimeout(100)
+    const fromBoth = () => {
+      const seen = evals()
+      return seen.some((v) => /\/canvas$/.test(new URL(v.url).pathname)) && seen.some((v) => !/\/canvas$/.test(new URL(v.url).pathname))
+    }
+    for (let i = 0; i < 100 && !fromBoth(); i++) await page.waitForTimeout(100)
+    const both = fromBoth()
     const recorded = violations.splice(0)
-    check('step 5 — control: the recorder sees those two eval refusals, so its zero above is a result', recorded.filter((v) => /script-src/.test(v.directive) && /eval/.test(v.blocked)).length >= 2, JSON.stringify(recorded))
+    check('step 5 — control: the recorder sees an eval refusal from EACH document, so its zero above is a result', both, JSON.stringify(recorded))
 
     // ── step 6 — the scheme ──
     // every canvas this project offers answers 200 — derived from `lib/editor.ts`, so a canvas a later story opens
@@ -2960,10 +3013,14 @@ async function main() {
     await noIdbPage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
     const fallbackBar = await noIdbPage.evaluate(() => ({
       label: document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null,
+      state: document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') ?? null,
+      glyphPaths: [...(document.querySelector('#editor-save-state [data-sync-state] svg')?.querySelectorAll('path') ?? [])].map((x) => x.getAttribute('d')).join(' | '),
       canvases: document.querySelectorAll('section[aria-label="Canvas"]').length,
     }))
-    check('step 70 — FR-D10: with no IndexedDB the editor still opens and paints, and the indicator says exactly what is true — never the resting label',
-      fallbackBar.canvases === 1 && fallbackBar.label === FALLBACK_LABEL58 && fallbackBar.label !== RESTING58, JSON.stringify(fallbackBar))
+    check('step 70 — FR-D10: with no IndexedDB the editor still opens and paints, and the indicator says exactly what is true — never either resting state',
+      fallbackBar.canvases === 1 && fallbackBar.state === FALLBACK_LABEL58 && fallbackBar.label === FALLBACK_LABEL58 && fallbackBar.state !== SYNCED58 && fallbackBar.state !== OWED58, JSON.stringify(fallbackBar))
+    check('step 70 — R-142: it is GREY like "Saved on this device" and told apart from it by its GLYPH, never by its colour',
+      fallbackBar.glyphPaths === glyph58('upload') && fallbackBar.glyphPaths !== glyph58('clock'), fallbackBar.glyphPaths)
     check('step 70 — that context records zero CSP violations of its own', noIdbViolations.length === 0, JSON.stringify(noIdbViolations))
     await noIdb.close()
 

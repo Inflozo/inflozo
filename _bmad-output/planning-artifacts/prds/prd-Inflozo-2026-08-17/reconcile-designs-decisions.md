@@ -3138,3 +3138,65 @@ library-wide rulings that collapse the 1,078-row register. **Not** ruled, and ow
   catalog default, and keys cited that do not exist).
 - The **editor surfaces with no frame** and the **flows drawn on wrong semantics** (§37.7) — these
   belong to **step 5** (`/bmad-ux`), not to this room.
+
+**R-142 — the persistence indicator is an ICON IN A CIRCLE, not a dot and a label.** The owner, 2026-09-19, on his
+read of Story 5.8's Dev build: *"Instead of dot, keep the colors but with icons inside a circle. Use appropriate
+Tabler Icons for different stages. Add title/labels so we can hover over it to know the status."*
+
+- **What it replaces.** `B Missing Surfaces` B6 draws one 6px dot and one printed label per state, `prd.md` names the
+  five labels as *the drawn ones*, and `EXPERIENCE.md`'s state table says *"one dot and one label, never a spinner"*.
+  The states, their meanings and their hues all survive; what changes is that the STATE IS CARRIED BY A GLYPH and the
+  words move to the `title` a hover shows and to the accessible name a screen reader reads.
+- **It makes the accessibility floor STRONGER, not weaker, and that is measured rather than argued.** Against the
+  bar's own paper, B6's four dots measure 1.62:1 (grey), 2.86:1 (coral), 2.75:1 (mint) and 4.85:1 (danger) — three of
+  them under the 3:1 WCAG 2.1 asks of a graphic that carries meaning. They were legal only because the LABEL carried
+  the meaning and the dot was decoration, so removing the label and keeping the dot — which is what was first asked
+  for — would have been the one change that broke it. Worse, coral *"Syncing"* against mint *"Synced"* measures
+  **1.04:1**: as near identical as two colours get, and it is the pair that separates "still sending" from "safe on
+  the server". A distinct glyph per state makes colour and shape redundant with each other, which is what
+  `EXPERIENCE.md`'s *"colour classifies; it never carries the only signal"* actually asks for — and every state keeps
+  a text equivalent, on the hover and in a polite live region.
+- **The fill is each hue's deeper `-text` value, not its bright one.** White on the bright fills measures 2.99:1 and
+  3.11:1; on the `-text` values it measures 5.28–5.41:1, and the circle clears 4.85:1 against paper. The project has
+  made exactly this move once before and for exactly this reason (`marigold-solid`, Story 1.5, ruled 2026-09-06).
+- **The glyphs are Tabler, and this is R-130's second stated exception rather than a widening of R-26.** B6 draws a
+  dot, so there is no export glyph to read for any of the five states, and the owner named the set — which is
+  precisely R-130's shape. Their paths are NOT retyped: each is `packages/library/icons/tabler.json`'s own `outline`,
+  emitted from that file, and `run-verify-editor.cjs` step 61 asserts each state's path data against that same file
+  so two states can never silently come to share one glyph. `check` · `clock` · `arrow-up` · `exclamation-mark` ·
+  `upload`.
+- **B6's "never a spinner" is untouched.** Nothing animates, and Syncing is a STATIC arrow for that reason.
+- **Where it lands.** `prd.md` §FR-D10's label paragraph · `EXPERIENCE.md`'s Persistence indicator row and its
+  accessibility floor (which used the indicator as its own example) · `components/kit/persistence-indicator.tsx` ·
+  `components/kit/icons.tsx`'s licence note · Story 5.8's spec.
+
+**R-143 — the undo/redo pair sits beside the save state, not in S4a's right-hand cluster.** The owner, 2026-09-19:
+*"Move the undo/redo buttons near the dot show them after the dot."*
+
+- **What it replaces.** `S4 Editor.dc.html:41-43` draws the pair on the RIGHT, between the device track and Ship it.
+  They now sit immediately after the persistence indicator, which is the bar's third item.
+- **Why it is better than the frame, and the frame could not have known.** Undo and the save state answer the same
+  question — *what has happened to my work* — so they belong to the same glance. The frame drew the bar before either
+  had behaviour behind it.
+- **Only the POSITION moves.** The buttons are still S4a's own: 28 × 28, 8px radius, 2px apart, the unavailable one at
+  `opacity:.35`, `aria-disabled` and never `disabled`. R-141's keys still call the arrows' own handlers.
+- **One consequence to carry forward.** Story 5.22 collapses the bar's RIGHT cluster into D8b's `⋯` below 1440. The
+  pair will not collapse with it — which is right for undo, and means that story re-tunes the project name's
+  truncation rather than the pair.
+
+**R-144 — the resting indicator reports what is OWED: green when the server has it, grey when it does not.** The
+owner, 2026-09-19: *"Keep the dot as green until user makes any edits. So it shows clear status that the status is
+saved on server. And any new edits are being saved in browser."*
+
+- **What it replaces.** B6 flashes *"Synced"* for four seconds after a save and then fades to *"Saved on this device"*
+  for ever. So the resting appearance meant BOTH "saved here, not sent" and "everything is sent" — one appearance for
+  two different truths — and the stronger of the two was visible for four seconds in every hour of editing.
+- **It costs no new vocabulary.** Green is B6's own *"Synced"* and grey is its *"Saved on this device"*. What goes is
+  the four-second fade, and with it the timer that drove it: the resting state is now DERIVED from the journal
+  (`unsynced(journal)`), so it cannot drift from what is actually owed.
+- **An undo is owed too.** Undoing a change the server already has makes the document differ from the server again,
+  so the circle goes grey and the next flush sends it — which the old machine could not express at all.
+- **One matrix row changed with it.** ⌘S with nothing owed used to flash *"Synced"* for four seconds to acknowledge
+  the press; the indicator is now already the green check, so the press re-asserts it and sends nothing. There is
+  still no request, which was always the rule.
+

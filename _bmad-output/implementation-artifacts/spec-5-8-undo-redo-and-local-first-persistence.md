@@ -22,10 +22,12 @@ remembers your last hundred changes, and it remembers
 them **through a reload** — so if you delete the wrong section, go and make tea, come back and reload the
 page, the arrow still brings it back with everything you had typed into it.
 
-A small dot and a word beside your project's name tell you the truth at all times: **"Saved on this
-device"** while you work, **"Syncing"** while it is going up, **"Synced"** when it is safe on the server,
-and **"Retrying · 12s"** with a calm explanation if your connection drops. It never says your work is safe
-when it is not.
+A small **coloured circle** beside your project's name tells you the truth at all times, and each state has its
+own little picture inside it as well as its own colour. **Green with a tick** means everything on your screen is
+on the server. **Grey with a clock** means you have made changes that are written safely on this computer but
+have not gone up yet. **Orange with an up-arrow** means they are going up now, and **red** means the connection
+dropped and we are trying again. Hover over it and it tells you in words. It never says your work is safe when
+it is not — and the two arrows sit right beside it, because undo and "where is my work" are the same question.
 
 ## Intent
 
@@ -67,9 +69,13 @@ differs → the cloud replaces the doc and the journal is cleared.
 - **The RPC is compare-and-set on `revision`.** A mismatch writes nothing and returns the current revision.
   `authenticated` has no UPDATE grant on `projects.revision` (`schema:1209-1212`), so the client cannot
   advance it and there is no second path to invent.
-- **The indicator's labels are B6's five, exactly** (`prd.md:1335`, `EXPERIENCE.md:314`) — one dot, one
-  label, **never a spinner**. The Kit component already exists and its five-member union is the compile
-  error that enforces it (`components/kit/persistence-indicator.tsx`).
+- **The indicator answers to B6's five names, exactly** (`prd.md:1335`, `EXPERIENCE.md:314`) and **never a
+  spinner**. **R-142 and R-144 (owner, 2026-09-19) changed how it shows them, not which they are**: it is a
+  TABLER GLYPH IN A COLOURED CIRCLE rather than a dot and a printed label, the five names are the `title` a
+  hover shows and the name a polite live region announces, and at rest it reports what is OWED — green with
+  nothing to send, grey the moment there is. The Kit component's five-member union is still the compile error
+  for a sixth (`components/kit/persistence-indicator.tsx`), and every state has its own SHAPE as well as its own
+  hue, so colour is never the only signal.
 - **⌘Z, ⇧⌘Z and ⌘S are bound on the editor shell and are inert while a field or a `contenteditable` holds
   the caret** — the browser's own undo owns the text being typed, and taking it would break inline editing
   (Story 5.3). Outside a field they are `preventDefault`ed, so the browser's page-level undo never competes.
@@ -119,11 +125,11 @@ differs → the cloud replaces the doc and the journal is cleared.
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |---|---|---|---|
-| An edit | any `commit()` — typing, a control, a reorder, a hide, a delete | one transaction appended; indicator → *"Saved on this device"*; no await on the interaction path | a failed local write → fallback mode |
-| The timer | 3 minutes since the last flush, unsynced entries exist | *"Syncing"* → RPC → *"Synced"* → after 4 s back to *"Saved on this device"* (B6's "fades to the resting label") | network failure → Retrying |
+| An edit | any `commit()` — typing, a control, a reorder, a hide, a delete | one transaction appended; the circle turns GREY with its clock (*"Saved on this device"*); no await on the interaction path | a failed local write → fallback mode |
+| The timer | 3 minutes since the last flush, unsynced entries exist | *"Syncing"* → RPC → and the resting state now reads *"Synced"* and STAYS there until the next edit (R-144 — no fade, no timer) | network failure → Retrying |
 | The timer, nothing unsynced | no entries above the synced watermark | **no request at all**; the indicator does not move | N/A |
 | ⌘S | any state, unsynced entries exist | an immediate flush, exactly as the timer's | as above |
-| ⌘S, nothing unsynced | — | *"Synced"* for 4 s, then rest — the press is always acknowledged | N/A |
+| ⌘S, nothing unsynced | — | the circle is ALREADY the green check (R-144), so the press re-asserts it and sends nothing. No request, which was always the rule | N/A |
 | Tab close | `visibilitychange` → `hidden`, unsynced entries exist | one `fetch(..., { keepalive: true })` to the sync route | nothing is shown — the tab is going |
 | Sync fails | offline, or a 5xx | *"Retrying · {n}s"* counting down; B6's panel opens **only** here; backoff 5 s → 10 s → 20 s → 40 s → 60 s (capped) | the local doc is untouched; nothing is lost |
 | Retry now | pressed in the panel | the backoff resets and the flush fires at once; the button says *"Retrying…"*, `aria-busy` | a further failure restarts the countdown |
@@ -171,6 +177,21 @@ differs → the cloud replaces the doc and the journal is cleared.
   **R-141 gives them ⌘Z and ⇧⌘Z**; the frame draws no shortcut hint and none is added.
 - `S12 Billing.dc.html` S12a's right column — the Account card the autosave toggle joins, extrapolated from
   the Email and Sessions cards beside it exactly as Sessions was (R-74).
+
+**Three rulings of the owner's, taken on his read of the Dev build (2026-09-19)**
+- **R-142 — the indicator is an ICON IN A CIRCLE, not a dot and a label.** B6's five states, meanings and hues
+  survive; the state is carried by a Tabler glyph and B6's five words move to the hover and to a polite live
+  region. It is measurably SAFER than the dot: three of B6's four dots are under 3:1 against the bar's paper
+  (1.62 · 2.86 · 2.75 · 4.85) and were legal only because the label carried the meaning, and coral *"Syncing"*
+  against mint *"Synced"* is **1.04:1** — the pair that separates "still sending" from "safe". The fill is each
+  hue's deeper `-text` value so white sits on it at 5.28–5.41:1 (`marigold-solid`'s precedent). Glyphs:
+  `check` · `clock` · `arrow-up` · `exclamation-mark` · `upload`, each emitted from
+  `packages/library/icons/tabler.json` and asserted against it by the harness — R-130's second stated exception.
+- **R-143 — the undo/redo pair sits after the indicator**, not in S4a's right-hand cluster. Only the position
+  moves; the buttons are still `S4 Editor.dc.html:41-43`'s own. Story 5.22 inherits one consequence: the pair
+  will not collapse into D8b's `⋯` with the rest of the right cluster.
+- **R-144 — the resting state reports what is OWED.** Green with nothing to send, grey the moment there is.
+  B6's four-second "Synced" flash and the timer behind it are gone; the state is derived from `unsynced(journal)`.
 
 **Two divergences from the frames, both recorded rather than guessed**
 - **S4a draws the resting indicator as a GREEN dot and the word "Saved".** B6 governs the labels and the dot
@@ -333,12 +354,26 @@ differs → the cloud replaces the doc and the journal is cleared.
 - Given the whole story, **no number of operations is displayed, stored in a heartbeat, or logged for
   display, anywhere** (AD-16).
 - Given the finished story, when the top bar and the Retrying panel are compared with the frames, then the
-  indicator **matches `B Missing Surfaces.dc.html` B6** — five labels, one dot, its four colours, no spinner,
-  the panel only on Retrying — and the arrows **match `S4 Editor.dc.html` S4a** — 28 × 28, 8px radius, 2px
-  apart, the unavailable one at `opacity:.35` — with the two divergences recorded in the Code Map and no
-  others (R-74).
+  indicator carries **B6's five states, their meanings and their hues**, with no sixth and no spinner and the
+  panel only on Retrying — shown as **R-142's glyph in a circle** rather than B6's dot and label, and resting
+  as **R-144** says — and the arrows **match `S4 Editor.dc.html` S4a** — 28 × 28, 8px radius, 2px apart, the
+  unavailable one at `opacity:.35` — sitting where **R-143** puts them. Every departure from the frames is one
+  of the five recorded in the Code Map and there are no others (R-74).
+- Given the indicator in any of its five states, then that state has **its own glyph as well as its own hue**,
+  so colour is never the only signal, and its name reaches a hover and a polite live region (R-142,
+  `EXPERIENCE.md`'s accessibility floor).
 
 ## Spec Change Log
+
+**Dev, 2026-09-19 — the owner's three rulings on his read of the build: R-142, R-143, R-144.** He asked for the
+status text gone and the dot alone; I countered with measurements — three of B6's four dots are under 3:1 against
+the bar's paper and coral *"Syncing"* against mint *"Synced"* is 1.04:1, so the label was the only thing keeping
+the indicator legible and removing it would have broken the one rule `EXPERIENCE.md` uses this very component to
+illustrate. He ruled a better answer than any of the three options I offered: **an icon in a circle**, which makes
+colour and shape redundant with each other and needs no printed word at all. The three rulings are written up in
+`reconcile-designs-decisions.md` §A10 and their divergences listed in this spec's Code Map. `EXPERIENCE.md`'s
+state row and its accessibility floor, and `prd.md`'s FR-D10 label paragraph, all moved with them.
+
 
 **Schema phase, 2026-09-19 — `sync_project_doc` returns `jsonb`, not `bigint`.** A routine judgement
 call, recorded rather than put to the owner, because the frozen text it serves is unchanged. The Tasks
@@ -501,6 +536,28 @@ to the cloud and would have thrown the customer's work away. Fixed by handing ov
 today, ~68 KB, read from `pilotIds()`), which is also what Stories 5.10 and 5.11 will need. The growth is
 **DW-200**.
 
+#### Re-executed after R-142/143/144 — 2026-09-19
+
+```
+run-verify-editor.cjs                  0 FAIL, 384 PASS  (the indicator's own steps rewritten for the rulings)
+  step 61  R-144: at rest with nothing owed the circle is GREEN and says Synced
+  step 61  R-142: a 16px circle carrying Tabler `check` in white, its name on the hover, nothing animating
+           — the GLYPH asserted by its own path data, read out of packages/library/icons/tabler.json, so two
+           states can never silently come to share one icon
+  step 61  R-143: the pair sits immediately after the indicator and no longer after the device track, with the
+           buttons still S4a's own 28 x 28 / 8px / 2px
+  step 62  R-144: one edit turns it GREY with Tabler `clock` — and it is a different GLYPH, not just a colour
+  step 66  R-144: after ⌘S it goes green and STAYS — no timer, no fade back to grey
+  step 69  R-142: red wears `exclamation-mark`, and the countdown rides in the name the hover shows
+  step 70  R-142: the no-storage state is GREY like the resting one and told apart by its glyph, never its colour
+pnpm check                             exit 0 — every package `fail 0`, journal.test.ts now 24
+```
+
+**And the CSP control was strengthened rather than re-run until it passed.** It failed twice — the recorder saw
+only one of the two eval refusals — while both documents demonstrably threw `EvalError`. A flat count to two also
+could not tell "both documents refused" from "the editor refused twice", which is the very thing the control is
+for. It now waits for a refusal from EACH document by url, and still fails if either never arrives.
+
 #### The matrix, row by row — what covers each, and the four that are the owner's to drive
 
 Every row of `## I/O & Edge-Case Matrix` is covered by a check that RAN and PASSED above, except where noted.
@@ -536,22 +593,28 @@ sitting. Step 6 asks you to close the tab on purpose.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the top bar, just after the project name. | — | A small **grey dot** and the words **"Saved on this device"**. Nothing is spinning. |
-| 2 | same | Top bar, right | Look between the three device buttons and the right-hand end. | — | Two small **arrows**, one curving left and one curving right. Both are faded — there is nothing to undo yet. |
-| 3 | same | Canvas, Home | Click a headline and type something into it. | type `Tuesday letters` over the headline | The left arrow **wakes up** the moment you stop typing. The words beside your project name still read "Saved on this device". |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the top bar, just after the project name. Hover over the little circle. | — | A small **green circle with a tick** — everything on this page is on the server. Hovering says **"Synced"**. Nothing is spinning. |
+| 2 | same | Top bar | Look immediately to the right of that circle. | — | Two small **arrows**, one curving left and one curving right, right beside the circle where you asked for them. Both are faded — there is nothing to undo yet. |
+| 3 | same | Canvas, Home | Click a headline and type something into it. Then look at the circle again. | type `Tuesday letters` over the headline | The left arrow **wakes up**, and the circle turns **grey with a little clock** — your change is safe on this computer and has not gone up yet. Hovering says "Saved on this device". |
 | 4 | same | Top bar | Press the **left arrow** once. Then press the **right arrow** once. | — | Your headline goes back to what it was, then returns to `Tuesday letters`. One press each way — not one press per letter. |
 | 4b | same | Editor | Now do the same with the keyboard: **⌘Z**, then **⇧⌘Z** (Ctrl+Z and Ctrl+Shift+Z on Windows). | — | Exactly what the arrows did. **This is your ruling R-141** — it is why undo works the way your hands expect. |
 | 4c | same | Canvas, Home | Click **into** a headline so the cursor is blinking in it, type a few letters, and press **⌘Z**. | type `abc` | Only your **letters** come back out, one step at a time — the editor keeps its hands off while you are typing, which is the browser's own undo doing its ordinary job. Click away from the headline first, and ⌘Z goes back to undoing whole changes again. |
 | 5 | same | Canvas, Home | Click a whole section to select it, and delete it with the bin in the little pill. Then press the **left arrow**. | — | The section disappears, then comes **straight back** — in the same place, with everything you had typed into it. |
-| 6 | same | Editor | Press **⌘S** (Ctrl+S on Windows). Watch the words beside your project name. | — | They change to **"Syncing"** with an orange dot, then **"Synced"** with a green one, then settle back to "Saved on this device" after a few seconds. |
+| 6 | same | Editor | Press **⌘S** (Ctrl+S on Windows). Watch the circle. | — | It goes **orange with an up-arrow** for a moment while it sends, then **green with a tick** — and it **stays green**. It does not drift back to grey, because there is nothing left to send. That is your ruling R-144: green means the server has it. |
 | 7 | — | — | **Close the tab completely.** Make a cup of tea. Then open the URL in step 1 again. | — | Your `Tuesday letters` headline is **still there**. This is the whole story. |
 | 8 | same | Top bar | Press the **left arrow** a few times. | — | It still undoes the changes you made **before** you closed the tab — the history survived too. |
-| 9 | same | Canvas, Home | Make one small change. Now **switch your wifi off**, wait about three minutes, and watch the words beside your project name. | change any headline | They go to **"Retrying · 12s"** in red, counting down. A small pink panel opens underneath: *"Retrying, third attempt"* and *"Your work is safe on this device. Nothing is lost if you close the tab — we will send it when the connection returns."* |
-| 10 | same | The pink panel | Read the panel, then switch your wifi back on and press **"Retry now"**. | — | There is **one** button in it, "Retry now" — the drawing had a second, "Download a copy", and your ruling R-140 left it out. The button says it is retrying, then the panel closes and the words go **"Syncing" → "Synced"**. Nothing you typed was lost. |
+| 9 | same | Canvas, Home | Make one small change. Now **switch your wifi off**, wait about three minutes, and watch the circle. | change any headline | It goes **red with an exclamation mark**, and hovering it counts down — *"Retrying · 12s"*. A small pink panel opens underneath: *"Retrying, third attempt"* and *"Your work is safe on this device. Nothing is lost if you close the tab — we will send it when the connection returns."* *(This panel is what moves into the notification system when you build it — see the note under the table.)* |
+| 10 | same | The pink panel | Read the panel, then switch your wifi back on and press **"Retry now"**. | — | There is **one** button in it, "Retry now" — the drawing had a second, "Download a copy", and your ruling R-140 left it out. The button says it is retrying, then the panel closes and the circle goes **orange → green**. Nothing you typed was lost. |
 | 11 | `https://app.inflozo.com/account` | Account | Scroll to the new **Saving** card and read it. | — | A row saying your work is sent to the cloud every few minutes, with the switch **on**. |
 | 12 | same | Account | Turn the switch **off**. | — | A box asks first and tells you plainly what it costs — your work would then only be sent when you close the tab or press ⌘S, and a browser that clears its storage could lose it. The **Cancel** button is the one already selected. |
 | 13 | same | Account | Press Cancel. Then turn it off again and confirm this time. Then turn it back on. | — | Turning it off needs the confirm each time; turning it back **on** asks nothing. |
 | 14 | step 1's URL | Editor | Open the editor in **two** browser tabs. Make a change in the first and press ⌘S. Then make a change in the second and press ⌘S. | any headline in each | The second tab tells you the project was changed somewhere else and offers to **reload**. Nothing of yours is silently thrown away, and reloading shows you the first tab's change. *(A proper "one editor at a time" is Story 5.17; this is the honest stop-gap until then.)* |
+
+**One judgement call, stated rather than asked.** You said errors can move to the notification system once it
+exists. B6's pink Retrying panel is **kept until that system is built** — removing it now would leave a failed save
+with no explanation at all, only a red circle, and R-118's own logic is that a thing arrives with the story that
+makes it work rather than leaving before its replacement does. The moment notifications land, the panel's two
+sentences and its "Retry now" move there and this surface becomes the circle alone. Say the word and it goes sooner.
 
 ## Questions for the owner
 

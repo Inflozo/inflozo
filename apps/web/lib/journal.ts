@@ -196,23 +196,31 @@ export function vanishedDesign(doc: ProjectDoc, held: (designId: string) => bool
  *
  * Five states and four transitions, and NOTHING ELSE MAY DRIVE IT (`B Missing Surfaces.dc.html:1351-1388`).
  *
- *   idle ── commit ────────────▶ "Saved on this device"   (grey)
- *     └──── flush starts ──────▶ "Syncing"                (coral)
- *             ├── ok ──────────▶ "Synced" (mint) ──4s──▶ "Saved on this device"
- *             └── fail ────────▶ "Retrying · {n}s" (danger) + B6's panel
- *   no IndexedDB ─────────────▶ "Syncing every change to the cloud"  (grey, sticky)
+ *   at rest, nothing owed ────▶ "Synced"                 (green · check)
+ *     └──── commit ────────────▶ "Saved on this device"   (grey · clock)
+ *     └──── flush starts ──────▶ "Syncing"                (coral · arrow up)
+ *             ├── ok ──────────▶ back to rest, now owing nothing → "Synced"
+ *             └── fail ────────▶ "Retrying · {n}s"        (red · exclamation) + B6's panel
+ *   no IndexedDB ─────────────▶ "Syncing every change to the cloud"  (grey · upload, sticky)
  *
- * The resting label is *"Saved on this device"* and it stays true after a sync, because the local store is always
- * written. It is the weaker of the two truths deliberately: the resting claim is the one always verifiable HERE.
+ * R-144 (owner, 2026-09-19) SPLIT THE RESTING STATE BY WHAT IS OWED, and it is a better machine than the one B6
+ * drew. B6 flashed "Synced" for four seconds after a save and then faded to "Saved on this device" for ever — so
+ * the resting state meant BOTH "saved here, not sent" and "everything is sent", one appearance for two different
+ * truths, and the stronger of the two was visible for four seconds in every hour. Now the resting state simply
+ * reports whether anything is owed, which it already knows: `unsynced(journal)`.
+ *
+ * It costs no new vocabulary. Green is B6's own "Synced" and grey is its "Saved on this device"; all that went is
+ * the four-second fade, and with it the timer that drove it.
  *
  * FALLBACK IS STICKY. Once IndexedDB has refused or a write has failed, nothing returns the indicator to a label that
  * claims the device holds the work — not a successful sync, not a reload of the component. Only a new page load, with
  * a store that opens, can leave it.
  */
 export type SyncState =
-  | { kind: 'rest' }
+  /** at rest, and `owed` is the whole of R-144: false → everything on screen is on the server (green), true →
+   *  there are edits written here that have not gone up yet (grey). */
+  | { kind: 'rest'; owed: boolean }
   | { kind: 'syncing' }
-  | { kind: 'synced' }
   | { kind: 'retrying'; attempt: number; seconds: number }
   | { kind: 'fallback' }
 
@@ -226,16 +234,17 @@ export type SyncLabel =
 
 export const labelOf = (s: SyncState): SyncLabel =>
   s.kind === 'syncing' ? 'Syncing'
-  : s.kind === 'synced' ? 'Synced'
   : s.kind === 'retrying' ? 'Retrying'
   : s.kind === 'fallback' ? 'Syncing every change to the cloud'
-  : 'Saved on this device'
+  : s.owed ? 'Saved on this device'
+  : 'Synced'
 
 /** B6's panel opens on Retrying AND ON NOTHING ELSE — the frame's own note, and an acceptance criterion. */
 export const panelOpen = (s: SyncState) => s.kind === 'retrying'
 
-/** B6's "Fades to the resting label after a few seconds" — the fourth transition. */
-export const SYNCED_MS = 4_000
+/** The resting state, derived rather than timed — R-144. There is no fourth transition to schedule any more:
+ *  a flush that lands empties `pending`, and the next render simply reads it. */
+export const restingState = (j: Journal): SyncState => ({ kind: 'rest', owed: unsynced(j) })
 
 /** AD1's flush interval. A DEFAULT WITH RATIONALE (§AD4), not behaviour. */
 export const FLUSH_MS = 3 * 60 * 1000

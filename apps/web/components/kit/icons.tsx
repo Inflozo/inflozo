@@ -21,6 +21,15 @@
  * path, and inlined here because importing `@inflozo/library/icons` for one glyph would pull all
  * of its icons into the editor's client bundle.
  *
+ * THE OWNER NAMED FIVE MORE ON 2026-09-19 (ruling R-142), and they are the second stated exception rather
+ * than a widening: B6 draws the persistence indicator as a coloured DOT, and he replaced it with an icon in a
+ * circle — "keep the colors but with icons inside a circle, use appropriate Tabler Icons" — so there is no
+ * export glyph to read for any of the five states. Same shape as R-130: the export still governs every glyph
+ * it draws, and Tabler enters here only where the owner names it. Their paths are NOT retyped from the frame
+ * or from his message — each is `packages/library/icons/tabler.json`'s own `outline`, emitted from that file
+ * and verified path for path, and each is inlined for R-130's reason (importing `@inflozo/library/icons` for
+ * five glyphs would pull the whole set into the editor's client bundle).
+ *
  * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
  * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
@@ -94,6 +103,49 @@ export const CircleOff = (p: IconProps) => (
     <path d="M3 3l18 18" />
   </Icon>
 )
+/* ── R-142's five, the persistence indicator's states (Story 5.8) ────────────────────────────────────────
+   Each is Tabler's own `outline`, emitted from `packages/library/icons/tabler.json`. They default to a 2.5
+   stroke rather than the file's 1.5: these are drawn at 10px inside a 16px circle, where 1.5 on a 24-unit
+   viewBox resolves to two thirds of a device pixel and disappears. NONE OF THEM ANIMATES — B6's "never a
+   spinner" is unchanged by the owner's ruling, and the Syncing state is a static arrow for exactly that
+   reason. */
+/** Tabler `check` — Synced — everything on this screen is on the server */
+export const SyncCheck = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M5 12l5 5l10 -10" />
+  </Icon>
+)
+/** Tabler `clock` — Saved on this device — written here, waiting its turn to go up */
+export const SyncClock = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+    <path d="M12 7v5l3 3" />
+  </Icon>
+)
+/** Tabler `arrow-up` — Syncing — going up now. A STATIC arrow: B6 forbids a spinner and so does this story */
+export const SyncArrowUp = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M12 5l0 14" />
+    <path d="M18 11l-6 -6" />
+    <path d="M6 11l6 -6" />
+  </Icon>
+)
+/** Tabler `exclamation-mark` — Retrying — the simplest alert there is, which is all the circle needs to say now that the panel carries the rest */
+export const SyncAlert = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M12 19v.01" />
+    <path d="M12 15v-10" />
+  </Icon>
+)
+/** Tabler `upload` — Syncing every change to the cloud — this browser holds nothing, so everything goes straight up */
+export const SyncUpload = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+    <path d="M7 9l5 -5l5 5" />
+    <path d="M12 4l0 12" />
+  </Icon>
+)
+
 export const Check = (p: IconProps) => (
   <Icon {...p}>
     <polyline points="20 6 9 17 4 12" />

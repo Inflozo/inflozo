@@ -32,7 +32,7 @@ import { DESKTOP, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS, holdsCaret,
-  flushDecision, hydrationFor, maxSeq, redo as redoIn, shortcutFor, SYNCED_MS, undo as undoIn, unsynced,
+  flushDecision, hydrationFor, maxSeq, redo as redoIn, restingState, shortcutFor, undo as undoIn, unsynced,
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
@@ -275,7 +275,7 @@ export function Editor({
    * `paint()` returns early until `hydrated` and the skeleton stays up for the one IndexedDB round trip.
    */
   const [journal, setJournal] = useState<Journal>(EMPTY_JOURNAL)
-  const [sync, setSync] = useState<SyncState>({ kind: 'rest' })
+  const [sync, setSync] = useState<SyncState>({ kind: 'rest', owed: false })
   const [hydrated, setHydrated] = useState(false)
   // `paint()` is called from the canvas document's own handlers, which never re-close over a new render's state
   const hydratedRef = useRef(false)
@@ -289,7 +289,7 @@ export function Editor({
   const base = useRef(revision)
   const attempt = useRef(0)
   const inFlight = useRef(false)
-  const clocks = useRef<{ settle?: ReturnType<typeof setTimeout>; retry?: ReturnType<typeof setInterval> }>({})
+  const clocks = useRef<{ retry?: ReturnType<typeof setInterval> }>({})
 
   const layers = useFold()
   const controls = useFold()
@@ -370,16 +370,11 @@ export function Editor({
 
   /* ─── Story 5.8 — one gesture, one transaction, one undo step, one edit (AD-16) ───────────────────────────────── */
 
-  /** The indicator back to B6's resting label. Never out of FALLBACK, which is sticky: once the device is not holding
-   *  the work, nothing may print a label that says it is. */
-  const rest = () => setSync((was) => (was.kind === 'fallback' ? was : { kind: 'rest' }))
-
-  /** B6's "Synced", then its "Fades to the resting label after a few seconds". */
-  const showSynced = () => {
-    setSync((was) => (was.kind === 'fallback' ? was : { kind: 'synced' }))
-    clearTimeout(clocks.current.settle)
-    clocks.current.settle = setTimeout(rest, SYNCED_MS)
-  }
+  /** THE INDICATOR AT REST, AND R-144 IS THE WHOLE OF IT: the resting state reports whether anything is OWED, so
+   *  it is derived from the journal rather than remembered. Green with nothing owed, grey the moment an edit lands.
+   *  Never out of FALLBACK, which is sticky: once the device is not holding the work, nothing may show a state that
+   *  says it is. */
+  const rest = () => setSync((was) => (was.kind === 'fallback' ? was : restingState(latest.current.journal)))
 
   /** The device is no longer holding the work, from this moment. The indicator changes in the same task the failure
    *  arrives in — never a stale *"Saved on this device"* — and every later change goes straight to the cloud. */
@@ -498,7 +493,10 @@ export function Editor({
     // owed sends nothing at all, and ⌘S is acknowledged either way — three matrix rows, one function.
     const asked = flushDecision(now.journal, why, autosave)
     if (asked === 'acknowledge') {
-      showSynced()
+      // ⌘S WITH NOTHING OWED. Before R-144 this flashed "Synced" for four seconds, because the resting state could
+      // not say it; now the indicator is ALREADY the green check and re-asserting it is the honest acknowledgement.
+      // No request goes out, and none should: there is nothing to send.
+      rest()
       return
     }
     if (asked === 'nothing') return
@@ -534,7 +532,8 @@ export function Editor({
       stopRetrying()
       attempt.current = 0
       store(next, latest.current.docs, latest.current.auto)
-      showSynced()
+      // `pending` is empty now, so the resting state reads green on its own (R-144)
+      rest()
     } catch {
       // offline, a 5xx, a dropped connection: the local doc is untouched and nothing is lost
       scheduleRetry()
@@ -1127,10 +1126,7 @@ export function Editor({
   }, [hydrated, autosave])
 
   // every timer this component owns, stopped with it
-  useEffect(() => () => {
-    clearTimeout(clocks.current.settle)
-    clearInterval(clocks.current.retry)
-  }, [])
+  useEffect(() => () => clearInterval(clocks.current.retry), [])
 
   // the fit: re-measured whenever a fold or the window changes THE ROOM AVAILABLE. The stage's content box, never the
   // card's — since R-137 the card is the device's size fitted, so measuring it would measure this effect's own answer
@@ -1365,14 +1361,44 @@ export function Editor({
         >
           <ChevronLeft size={15} />
         </Link>
-        <span className="max-w-[calc(50%-260px)] truncate text-ui-dense font-semibold">{project.name}</span>
-        {/* S4a`:32` — the bar's third item, directly after the project name. B6 governs its labels and its dot
-            colours (`prd.md:1335`, `EXPERIENCE.md:314`), so the resting state is a GREY dot and "Saved on this
-            device" where S4a draws a green one and the word "Saved"; the divergence is recorded in the spec's Code
-            Map. One indicator, one place (`EXPERIENCE.md`'s own rule), and never a spinner. */}
+        <span className="max-w-[calc(50%-320px)] truncate text-ui-dense font-semibold">{project.name}</span>
+        {/* S4a`:32` — the bar's third item, directly after the project name. Since R-142 it is an ICON IN A CIRCLE
+            rather than B6's dot and label, and since R-144 its resting state reports what is OWED: a green check
+            when everything is on the server, a grey clock the moment there is an edit that is not. The words are
+            still B6's five — they are the hover and the announcement now, not printed. One indicator, one place
+            (`EXPERIENCE.md`'s own rule), and still never a spinner. */}
         <span id="editor-save-state">
           <SaveState state={sync} onRetry={retryNow} retrying={pressingRetry} />
         </span>
+        {/* R-143 (owner, 2026-09-19): THE PAIR SITS HERE, immediately after the indicator, and no longer in S4a's
+            right-hand cluster where `S4 Editor.dc.html:41-43` draws it. His reason is the one the frame could not
+            have: undo and the save state are the same question — "what has happened to my work" — so they belong
+            to the same glance. Everything about the buttons themselves is still the frame's (28 × 28, 8px radius,
+            2px apart, the unavailable one at `opacity:.35`); only where they sit has moved.
+            THE KEYS ARE THE ARROWS' OWN HANDLERS (R-141), so the two can never disagree.
+            `aria-disabled`, never `disabled`: the control stays in the tab order and stays announced. */}
+        <div id="editor-history" className="flex items-center gap-[2px]">
+          <IconButton
+            id="editor-undo"
+            label="Undo"
+            title="Undo"
+            aria-disabled={!canUndo(journal) || undefined}
+            onClick={canUndo(journal) ? onUndo : undefined}
+            className={canUndo(journal) ? undefined : 'opacity-[.35]'}
+          >
+            <UndoIcon size={14} />
+          </IconButton>
+          <IconButton
+            id="editor-redo"
+            label="Redo"
+            title="Redo"
+            aria-disabled={!canRedo(journal) || undefined}
+            onClick={canRedo(journal) ? onRedo : undefined}
+            className={canRedo(journal) ? undefined : 'opacity-[.35]'}
+          >
+            <RedoIcon size={14} />
+          </IconButton>
+        </div>
         {/* D5a's centred group (:37), now the switcher ALONE: the owner removed the marker chip that stood beside it
             at his test of Story 5.5 (R-130) — the switcher's own row already carries the hollow dot and the word, and
             the Layers row still carries the sentence. ABSOLUTELY centred, as the frame draws it, so it does not move
@@ -1389,35 +1415,6 @@ export function Editor({
         <div className="ml-auto flex items-center gap-[10px]">
           {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
           <DeviceSwitch device={device} onDevice={pickDevice} />
-          {/* S4a`:41-43` — two 28 × 28 buttons, 8px radius, 2px apart, the unavailable one at `opacity:.35`. They sit
-              between the device track and Ship it (7.18), which is not built.
-              R-141 (owner, 2026-09-19) GIVES THEM ⌘Z AND ⇧⌘Z, and the keys call these very handlers — one
-              implementation, so the arrow and the key can never disagree. The frame draws no shortcut hint and none
-              is added; the title says what the control does, as every other icon button in this bar does.
-              `aria-disabled`, never `disabled`: the control stays in the tab order and stays announced (the Kit's own
-              line, and R-98's). */}
-          <div id="editor-history" className="flex items-center gap-[2px]">
-            <IconButton
-              id="editor-undo"
-              label="Undo"
-              title="Undo"
-              aria-disabled={!canUndo(journal) || undefined}
-              onClick={canUndo(journal) ? onUndo : undefined}
-              className={canUndo(journal) ? undefined : 'opacity-[.35]'}
-            >
-              <UndoIcon size={14} />
-            </IconButton>
-            <IconButton
-              id="editor-redo"
-              label="Redo"
-              title="Redo"
-              aria-disabled={!canRedo(journal) || undefined}
-              onClick={canRedo(journal) ? onRedo : undefined}
-              className={canRedo(journal) ? undefined : 'opacity-[.35]'}
-            >
-              <RedoIcon size={14} />
-            </IconButton>
-          </div>
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
               icon for it, and R-92 forbids inventing one here. */}
