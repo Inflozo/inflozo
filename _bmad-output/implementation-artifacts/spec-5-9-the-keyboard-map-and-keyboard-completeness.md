@@ -238,9 +238,10 @@ at Review (R-82).
 
 ## Tasks & Acceptance
 
-**Execution.** No migration and no schema change, so **no Schema phase** (R-99). Tasks assume
-Question 1's and Question 3's recommended options; if the owner rules otherwise, the map's rows and
-the sheet's door change and nothing else does.
+**Execution.** No migration and no schema change, so **no Schema phase** (R-99). **All three questions
+are ruled — R-145, R-146 and R-147, option 1 each (owner, 2026-09-19)** — so the task list below is the
+whole of it: the eight live keys plus `?`, the five deferred ones absent and named to their stories, and
+the journey in `pnpm check` over a harness mount as well as on the deployed editor.
 
 - [ ] `apps/web/lib/keymap.ts` -- new, pure and importless-but-for-types so `node --test` reaches it:
       FR-D11's map as one table — every binding, its display chips, whether it is `⌘`-modified or
@@ -292,9 +293,10 @@ the sheet's door change and nothing else does.
       journey on the **deployed** editor with a real session (R-82, NFR-6(d)), the sheet measured
       against the Kit's rows, `/harness/editor` asserted **404** in production, and step 8's axe run
       once more with the sheet open -- the truth, on the real stack.
-- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` · `epics.md` --
-      record which story lands each deferred key, and D8c's link as built -- propagate, never
-      localise (standing rule 3); only after the owner rules Question 1.
+- [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` · `epics.md` ·
+      `reconcile-designs-decisions.md` -- R-145, R-146 and R-147 recorded, and each deferred key made a
+      criterion of the story that lands it (5.10, 5.11, 5.12, 5.15, 7.18) -- done at Create, the moment
+      the owner ruled; propagate, never localise (standing rule 3).
 - [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-167 with its resolution;
       raise the keyboard-focus half of DW-188 if the journey finds it -- the ledger is the record.
 
@@ -443,7 +445,14 @@ nothing (a key that lies) or we would have to invent something for it to do.
    piece. The cost is that the editor has **no single-key shortcuts at all** for at least six more
    stories, and every one of those stories is one you will test by hand in the meantime.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** Build the eight that work; each of the other five arrives with its
+own story. Recorded as **R-145** in `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` §A10 — R-118
+applied a seventh time, and the first time to a KEY rather than a button. A binding whose action has not been
+built is **absent**: not bound, not listed in the `?` card, never greyed. The map is one table naming all
+thirteen with the story that lands each, and both the handler and the card's rows are derived from it. `⌘K`
+lands with 5.10, `[` `]` with 5.11, `⇧R` with 5.12, `P` with 5.15 and `⌘⏎` with 7.18 — each tested by the
+story that lands it, each now a criterion in `epics.md`, and the map complete when 7.18 ships. R-141's "5.9
+still builds and tests the COMPLETE map" is narrowed by this ruling and by nothing else.
 
 ### Question 2 — should the keyboard test run on every commit, or only on the live site?
 
@@ -469,7 +478,12 @@ publishes with `Esc` broken, and it is caught when the next story's live walk is
    maintain and the checks stay fast. The cost is that the keyboard promises are only ever as fresh
    as the last time someone ran the live walk, and DW-167 stays open with no owner.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** Build it, as the plan says. Recorded as **R-146** in
+`reconcile-designs-decisions.md` §A10. The journey runs inside `pnpm check` and therefore inside CI's
+`check` job, which is the only place a gate can block a deploy (R-116); it drives a harness mount that
+answers `notFound()` unless `INFLOZO_HARNESS=1` and renders the REAL `Editor` with the pilot fixture.
+**DW-167 closes here.** R-82 is untouched — the same walk runs again on the deployed editor with a real
+session at Review, because a harness proves the wiring and never the stack.
 
 ### Question 3 — should `?` open the shortcuts card?
 
@@ -493,4 +507,8 @@ no menu to open. You press `?`, read the card, press `Esc`, carry on.
    plan wrote it. The cost is that the card cannot be opened from the place it is about: you would
    have to leave the editor, open the menu, read it, and go back.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** `?` opens the card, and the account menu's row opens the same card
+everywhere else. Recorded as **R-147** in `reconcile-designs-decisions.md` §A10 — FR-D11's fourteenth key, and
+the record of why the PRD's "complete set" is now thirteen actions plus the key that lists them. It carries the
+identical single-key focus condition (UX-DR11, WCAG 2.1.4): while any text holds the caret it does nothing.
+S3's row is built as drawn, and the card lists exactly the keys that work (R-145).

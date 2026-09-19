@@ -387,6 +387,7 @@ the three. The shortcuts are FR-D11's, and they are the complete set:
 | `1` `2` `3` | device preview |
 | `L` | Layers · `.` dark toggle · `Esc` deselect |
 | `P` | Preview Mode · `⇧R` Site Remix · `⌘⏎` Ship it |
+| `?` | the shortcuts card — **the one key added to FR-D11's list, R-147** (owner, 2026-09-19, Story 5.9's Q3). `S3 Dashboard.dc.html:362` draws it on the account menu's **Keyboard shortcuts** row, and the editor draws no account menu, so inside the editor it is the card's only door. A single-character shortcut, carrying the identical focus condition below |
 
 **States added after the shortcut map carry no shortcut, deliberately** (FR-D11): the paginated
 preview, the preview subject, and the member-state nudge are all reached by clicking.
@@ -397,7 +398,17 @@ drives: Story 5.8 builds `⌘Z`, `⇧⌘Z` and `⌘S` beside S4a's undo arrows, 
 with typing on the canvas. A **single-key** binding may not, because it is live only while the shell
 holds focus and never inside a text field or a `contenteditable` (UX-DR11, WCAG 2.1.4) — a condition
 the keyboard journey verifies as one walk and cannot verify one key at a time. So `[` `]`, `1` `2` `3`,
-`L`, `.`, `P`, `⇧R` and `Esc` all stay Story 5.9's, which still builds and tests the complete set.
+`L`, `.`, `P`, `⇧R` and `Esc` all stay Story 5.9's.
+
+**And a binding whose ACTION does not exist yet cannot land at all — R-145 (owner, 2026-09-19, Story
+5.9's Q1), which is R-118 applied to a key for the first time.** A key with nothing to press is
+**absent**: not bound, not listed in the `?` card, never greyed and never captioned (UX-DR3). Story
+5.9 builds `L`, `.`, `1` `2` `3`, `Esc`, `⌘D`, `Del` and `?`, and finds `⌘Z`, `⇧⌘Z` and `⌘S` already
+passing; **`⌘K` lands with the Section Picker (5.10), `[` `]` with the design ring (5.11), `⇧R` with
+Site Remix (5.12), `P` with Preview Mode (5.15) and `⌘⏎` with the deploy wizard (7.18)** — each tested
+by the story that lands it, and the map complete when 7.18 ships. The map is **one table** naming all
+of them with the story that lands each, and both the handler and the card's rows are derived from it,
+so a key can never be advertised without being bound or bound without being listed.
 
 **That rule governs new *global* bindings, and nothing else.** Standard within-component keyboard
 behaviour — arrows through a list, `Enter` to select, `⌥`-arrow to move a row, `⌥F10` into a
@@ -578,6 +589,15 @@ had none, because the scan runs on NFR-6(a)'s render matrix and that matrix is *
 > four rows above depended on a pass that did not exist. **NFR-6(d) now carries one keyboard-only
 > journey** — sign in, connect, place a section, cycle the ring with `]` and `[`, deploy — run with no
 > pointer events, and it is the verifier those four rows name.
+
+> **And since R-146 (owner, 2026-09-19, Story 5.9's Q2) those four rows are checked twice.** The
+> editor's half of that journey runs **on every commit**, inside `pnpm check` and so inside the CI job
+> `deploy` needs (R-116) — over a **harness mount**: a page that answers "not found" unless
+> `INFLOZO_HARNESS=1`, rendering the real editor with the pilot fixture as its props, so a browser can
+> open it with no database. The deployed run is unchanged and still the authority: a harness proves the
+> wiring and never the stack (R-82), and the same walk runs on `app.inflozo.com` at every story's
+> Review. It closes **DW-167**, whose "a DOM is a dependency (Ask First)" had deferred it four times —
+> the dependency arrived on its own with Story 4.11's render matrix.
 
 ### Where the floor stops, and why it is a scope statement rather than an exemption
 

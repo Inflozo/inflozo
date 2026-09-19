@@ -1802,24 +1802,35 @@ So that the editor is usable rather than merely compliant.
 
 **Given** the editor
 **When** I use the shortcuts
-**Then** the complete global set works: **⌘K** insert section · **`[` `]`** previous/next design · **⌘D**
-duplicate · **Del** delete · **⌘Z / ⇧⌘Z** · **⌘S** save now · **1/2/3** device preview · **L** layers · **`.`**
-dark toggle · **Esc** deselect · **P** Preview Mode · **⇧R** Site Remix · **⌘⏎** Ship it
+**Then** every key of FR-D11's map **whose action exists** works: **⌘D** duplicate · **Del** delete · **⌘Z /
+⇧⌘Z** · **⌘S** save now · **1/2/3** device preview · **L** layers · **`.`** dark toggle · **Esc** deselect —
+**and `?`, which opens the shortcuts card** (**R-147**, FR-D11's fourteenth key, drawn on S3's menu row)
+**And** **the five keys whose action no story has built are ABSENT — not bound, not listed, never greyed**
+(**R-145**, R-118 applied a seventh time and the first time to a key): **⌘K** arrives with the Section Picker
+(5.10), **`[` `]`** with the design ring (5.11), **⇧R** with Site Remix (5.12), **P** with Preview Mode (5.15)
+and **⌘⏎** with the deploy wizard (7.18) — so the map is complete when 7.18 ships, and each key is tested by
+the story that lands it
+**And** **the map is ONE TABLE naming all thirteen with the story that lands each**, from which both the key
+handler and the card's rows are DERIVED — a key cannot be advertised without being bound, or bound without
+being listed (standing rule 4)
 **And** **every single-character shortcut is live only while the editor shell holds focus, and never while a
 text field or a `contenteditable` has it** — WCAG 2.1.4, which axe-core does not detect, so it is verified by the
 E2E keyboard journey (UX-DR11, UX-DR21)
 **And** ⌘-modified shortcuts are unaffected by that rule
 **And** **⌘Z, ⇧⌘Z and ⌘S already work when this story starts** — Story 5.8 built them with the undo arrows
-(**R-141**). This story is narrowed, not relieved: it still builds and tests the **complete** map as one journey,
-and finds those three already passing
+(**R-141**), and this story finds those three already passing
 **And** **the states added after the map carry no shortcut, deliberately** — the paginated preview, the preview
 subject, the auto-generated marker and the member-state toggle are set-and-forget context, not per-edit actions
 **And** **standard within-component keyboard behaviour is not a shortcut and is required**: Section Picker arrows
 across the grid with `Enter` to place and **`Esc` returning focus to the invoking position**; design picker ←→
 mirroring `[` `]`; every menu, popover and sheet moving focus in, trapping it, and returning it to the invoking
 control (UX-DR10)
-**And** the keyboard journey is the editor's first browser test in `pnpm check`, and it walks the settings panel's
-reset wiring — the button, the confirm and its Esc — which only the deployed harness holds today (DW-167)
+**And** the keyboard journey is the editor's first browser test in `pnpm check` (**R-146**) — driving a
+**harness mount** of the real editor that answers "not found" unless `INFLOZO_HARNESS=1`, inside the CI job
+`deploy` needs (R-116) — and it walks the settings panel's reset wiring — the button, the confirm and its Esc —
+which only the deployed harness holds today (DW-167, closed here)
+**And** the same journey runs again on the **deployed** editor with a real session at Review, because a harness
+proves the wiring and never the stack (R-82, NFR-6(d))
 **And** the canvas is **one tab stop between Layers and the Controls sidebar**, reachable and escapable by
 keyboard, with focus landing on the canvas container rather than inside the rendered site (UX-DR9)
 **And** **a drag with no keyboard equivalent is a defect** — every drag surface has one.
@@ -1848,9 +1859,11 @@ match the template being edited, so a design binding a resource the template lac
 **And** the **non-placeable treatments are absent from the rail entirely**
 **And** a search with no matches keeps the category rail and says what was searched for (UX-DR6)
 **And** previews are lazily rendered with skeletons, holding NFR-1
+**And** **`⌘K` is bound HERE** — FR-D11's key lands with the action it drives and joins Story 5.9's one table and
+its `?` card, and the keyboard journey grows a stop for it (**R-145**)
 **And** the overlay matches S5a and S5c dark.
 
-**FRs:** FR-D12, FR-D2 (the "+"). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Owner test:** yes.
+**FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Owner test:** yes.
 
 ### Story 5.11: The design ring — navigation, shuffle, and carry / park / default
 
@@ -1879,9 +1892,12 @@ crosses, because those surfaces differ in form markup and content model rather t
 **And** a design renders only as many list items as its structure fits, surplus items are preserved invisibly,
 and the sidebar states the count — "8 items · 3 shown in this design"
 **And** the change is announced politely — *"Design 8 of 18 — Image Backdrop"* (UX-DR12)
+**And** **`[` and `]` are bound HERE** — FR-D11's keys land with the ring they drive and join Story 5.9's one
+table and its `?` card, carrying the single-key focus condition, and the keyboard journey grows a stop for them
+(**R-145**)
 **And** the picker matches B1a, the on-section nav matches B1b, and shuffle matches `S6 Variant Shuffle.dc.html`.
 
-**FRs:** FR-D13, FR-D19, FR-D2 (◀ ▶). · **Frame:** `B Missing Surfaces.dc.html` B1a · B1b · `S6 Variant Shuffle.dc.html`. ·
+**FRs:** FR-D13, FR-D19, FR-D2 (◀ ▶), FR-D11 (`[` `]`). · **Frame:** `B Missing Surfaces.dc.html` B1a · B1b · `S6 Variant Shuffle.dc.html`. ·
 **UX-DRs:** UX-DR5, UX-DR12. · **Owner test:** yes.
 
 ### Story 5.12: Site Remix
@@ -1904,6 +1920,9 @@ touches**
 **And** the section count after a re-roll is announced politely (UX-DR12)
 **And** **the drawn "Keep Free designs only" tick-box is not built** — Remix always re-rolls from the whole
 library, because FR-L3's exit sheet is the mechanism the product already has (UX-DR20, ruling R-77)
+**And** **`⇧R` is bound HERE** — FR-D11's key lands with the action it drives (B8 draws it on the button itself,
+the only surface that does) and joins Story 5.9's one table and its `?` card, carrying the single-key focus
+condition (**R-145**)
 **And** the surface matches B8 **as re-specified**.
 
 **FRs:** FR-D17 (the action). · **Frame:** `B Missing Surfaces.dc.html` B8 as re-specified. · **UX-DRs:**
@@ -1984,10 +2003,12 @@ designing their open and closed states requires it
 **And** **`lightbox` is not edit-safe**: a modal opening over the canvas when I click an image to edit its caption
 is the defining case
 **And** the **Preview toggle hides all editing chrome and runs everything for real**, and returns
+**And** **`P` is bound HERE** — FR-D11's key lands with the toggle it drives and joins Story 5.9's one table and
+its `?` card, carrying the single-key focus condition (**R-145**)
 **And** the declaration is part of the module contract, **not a per-instance setting**
 **And** the states match B3a editing and B3b preview.
 
-**FRs:** FR-D20. · **Frame:** `B Missing Surfaces.dc.html` B3a · B3b. · **Owner test:** yes.
+**FRs:** FR-D20, FR-D11 (P). · **Frame:** `B Missing Surfaces.dc.html` B3a · B3b. · **Owner test:** yes.
 
 ### Story 5.16: Previewing page 2
 
@@ -2979,9 +3000,11 @@ mismatch; Starter-plan block
 **And** a successful activation ends on **Deploy Live — the product's one confetti moment** — which **respects
 `prefers-reduced-motion`** (UX-DR15)
 **And** the wizard requires the **edit lock**, so a stale cloud snapshot can never silently ship
+**And** **`⌘⏎` is bound HERE** — the last key of FR-D11's map, landing with the action it drives and joining
+Story 5.9's one table and its `?` card; **with it the map is complete** (**R-145**)
 **And** the screens match S8a, S8b, S8c, S8d and S8d′ on failure.
 
-**FRs:** FR-J8 (the wizard). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
+**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
 
 ### Story 7.19: The first-deploy credential step, and its decline path

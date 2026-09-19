@@ -129,6 +129,28 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     probe. Executed for it: `next dev` with NO Supabase environment is ready in 307 ms and serves every route outside
     `(authed)` (the marketing page 200, every authed page 500), because `proxy.ts:27-30` returns early and
     `server.ts:25-30` throws only when a client is built. No migration and **no Schema phase**.
+  - **R-145 (owner, 2026-09-19, Story 5.9's Q1) — a shortcut arrives with the action it drives, so FR-D11's map is
+    completed over six stories rather than one.** R-118 applied a seventh time and the first time to a KEY: a binding
+    whose action has not been built is ABSENT — not bound, not listed in the `?` card, never greyed (UX-DR3). Story
+    5.9 builds `L`, `.`, `1` `2` `3`, `Esc`, `⌘D`, `Del` and `?`, and finds `⌘Z`, `⇧⌘Z`, `⌘S` already passing;
+    **`⌘K` lands with 5.10, `[` `]` with 5.11, `⇧R` with 5.12, `P` with 5.15 and `⌘⏎` with 7.18**, each now a
+    criterion of that story and tested by it. The map is ONE TABLE naming all thirteen with the story that lands
+    each, and the handler and the card's rows are both DERIVED from it. It narrows R-141's "5.9 tests the COMPLETE
+    map" and nothing else.
+  - **R-146 (owner, 2026-09-19, Story 5.9's Q2) — the keyboard journey runs on every commit, over a test-only mount
+    of the real editor.** Inside `pnpm check` and so inside CI's `check` job, the only place a gate can block a
+    deploy (R-116, which is why it is not a job of its own); the harness is a page answering `notFound()` unless
+    `INFLOZO_HARNESS=1`, rendering the REAL `Editor` with the pilot fixture, typed against `EditorData` so drift is a
+    compile error. **DW-167 closes with it** — its "a DOM is a dependency (Ask First)" lapsed when Story 4.11 made
+    `@playwright/test` a root devDependency. R-82 is untouched: the same walk runs on the deployed editor at Review
+    (`run-verify-editor.cjs` from step 71), because a harness proves the wiring and never the stack. The precedent it
+    departs from is DW-16, closed at 3.9 by a deployed probe alone.
+  - **R-147 (owner, 2026-09-19, Story 5.9's Q3) — `?` opens the shortcuts card, and it is FR-D11's fourteenth key.**
+    `S3 Dashboard.dc.html:362` draws it on the account menu's row, Story 1.5 left that row for 5.9 by name, and the
+    editor draws no account menu (`shell.tsx:295-297`) — so inside the editor `?` is the card's only door. It carries
+    the identical single-key focus condition, and the card is the map's table printed through the Kit's shortcut rows
+    (`Editor Sidebar Kit.dc.html:274-280`) inside `kit/dialog.ts`'s one vocabulary. The PRD's "complete set" is now
+    thirteen actions plus the key that lists them, and R-147 is the record of the difference.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions

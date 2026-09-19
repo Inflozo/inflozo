@@ -2976,6 +2976,88 @@ Story 5.8's Q1, ruled option 1 (owner, 2026-09-19): *"Leave the button out for n
   ruling is about; the map itself, which is unchanged in content and in ownership; the single-key focus rule, which is
   the whole reason the two halves are separated here.
 
+**R-145 — a shortcut arrives with the action it drives, so FR-D11's map is completed over six stories rather than
+one.** Story 5.9's Q1, ruled option 1 (owner, 2026-09-19): *"Build the eight that work; each of the other five
+arrives with its own story."*
+
+- **Why it was a question.** R-141 had just said Story 5.9 "still builds and tests the COMPLETE map", and
+  `EXPERIENCE.md`'s own table calls FR-D11's thirteen "the complete set". Five of those thirteen press a control no
+  story has built: **`⌘K`** (the Section Picker, Story 5.10), **`[` `]`** (the design ring, 5.11), **`⇧R`** (Site
+  Remix, 5.12), **`P`** (Preview Mode, 5.15) and **`⌘⏎`** (Ship it, 7.18). R-118 answers this for a CONTROL and had
+  never been asked about a KEY; R-141 answers WHEN a binding may land early and says nothing about one that cannot
+  land at all. Two approved rulings, neither of which settled it — standing rule 6, so it was asked.
+- **What it binds.** **A BINDING WHOSE ACTION HAS NOT BEEN BUILT IS ABSENT** — not bound, not listed in the `?`
+  sheet, never greyed and never captioned (UX-DR3). R-118 applied a seventh time, and the first time to a key rather
+  than a button. Story 5.9 builds the eight that have something to press — `L`, `.`, `1` `2` `3`, `Esc`, `⌘D`, `Del`,
+  plus `?` (R-147) — and finds `⌘Z`, `⇧⌘Z` and `⌘S` already passing (R-141). **Each of the five remaining keys is
+  now a criterion of its own story**, which is where its test lives too; the map is complete when 7.18 ships.
+- **How it is kept honest.** The map is ONE TABLE naming all thirteen with the story that lands each, and both the
+  key handler and the sheet's rows are DERIVED from it (standing rule 4). A key cannot be advertised without being
+  bound, and a key cannot be bound without being listed.
+- **What it costs:** no single run ever asserts "all thirteen" before Epic 7, and R-141's sentence about 5.9 testing
+  the complete map is narrowed by this entry. Accepted: the alternative was an editor with no single-key shortcut at
+  all through six more stories the owner tests by hand.
+- Targets:
+  - ✅ this entry · ✅ Story 5.9's spec (its Question 1, its Boundaries, its matrix and its map task) ·
+    ✅ `epics.md` (Story 5.9's AC, and Stories 5.10, 5.11, 5.12, 5.15 and 7.18 each gaining their key) ·
+    ✅ `EXPERIENCE.md` (the shortcut table's when-it-is-built note) — Story 5.9's Create run (2026-09-19).
+- **Deliberately not touched:** FR-D11's map itself — no key is added, removed or remapped by this ruling, only
+  scheduled; R-141, whose modifier rule still decides whether a binding MAY land early; the single-key focus
+  condition, which every key here carries whenever it lands.
+
+**R-146 — the keyboard journey runs on every commit, over a test-only mount of the real editor.** Story 5.9's Q2,
+ruled option 1 (owner, 2026-09-19): *"Build it, as the plan says."*
+
+- **Why it was a question.** Every browser check in this project runs against the DEPLOYED site, by hand, once per
+  story (R-82), and the same gap for the dashboard was closed exactly that way — **DW-16**, closed at Story 3.9 by
+  `run-verify-dashboard.py` and not by a browser in CI. **DW-167** names Story 5.9 as its owner and gives the reason
+  it was deferred four times: *"`apps/web` runs `node --test` with no DOM, and a DOM for it is a dependency (Ask
+  First)."* That dependency has since arrived on its own — `@playwright/test` is a root devDependency since Story
+  4.11's render matrix — so what was left was cost, which is the owner's.
+- **What it binds.** The NFR-6(d) keyboard-only journey runs **inside `pnpm check`**, and therefore inside CI's
+  `check` job, which is the only place a gate can block a deploy (R-116 fixes `deploy`'s `needs` at `[check, rls]`).
+  It drives a **harness mount**: a page that answers `notFound()` unless `INFLOZO_HARNESS=1`, rendering the REAL
+  `Editor` component with the pilot fixture as its props, so a browser can open the editor with no database.
+  **Executed for it (2026-09-19):** `next dev` with no Supabase environment is ready in 307 ms and serves every route
+  outside `(authed)`. It closes **DW-167**, whose reset-wiring walk the journey carries.
+- **What the harness does NOT prove, and who does.** The server read, the session, the sync route and the CSP are the
+  DEPLOYED walk's, which R-82 requires every story to run anyway — `run-verify-editor.cjs` gains the same journey
+  from step 71. Nothing is mocked in either: the harness passes fixture props to a real component, exactly as
+  `/pilots` has since Story 4.5.
+- **What it costs:** about a minute on every `pnpm check`, a Chromium download in CI, and one test-only page that
+  must keep step with the real one — which is a compile error rather than a silent drift, because both are typed
+  against `EditorData`.
+- Targets:
+  - ✅ this entry · ✅ Story 5.9's spec (its Question 2, its tasks, its Design Notes and its Verification) ·
+    ✅ `epics.md` (Story 5.9's AC) · ✅ `EXPERIENCE.md` (the four keyboard rows of the verified-by table) —
+    Story 5.9's Create run (2026-09-19).
+- **Deliberately not touched:** R-82, which still sends every story's review to the real infrastructure and is not
+  softened by a harness that runs earlier; R-116, whose `needs: [check, rls]` is why this went inside `check` rather
+  than into a job of its own; NFR-6(d)'s own definition, which is the deployed run and stays it.
+
+**R-147 — `?` opens the shortcuts card, and it is FR-D11's fourteenth key.** Story 5.9's Q3, ruled option 1 (owner,
+2026-09-19): *"Yes — `?` opens the card, and the menu row opens the same card everywhere else."*
+
+- **Why it was a question.** `S3 Dashboard.dc.html:362` draws a **Keyboard shortcuts** row in the account menu with a
+  mono **`?`** chip on it, and Story 1.5 left the row out by name — *"Story 5.9 adds it back with the shortcuts it
+  lists"* (`account-menu.tsx:43-46`). But **the editor draws no account menu at all** (`shell.tsx:295-297`), so inside
+  the one surface the card is about, the row is unreachable and `?` is the only door. FR-D11 calls its list complete,
+  so binding `?` adds a key the PRD's list does not hold — a PRD-touching decision, and his.
+- **What it binds.** `?` opens the shortcuts card from anywhere the editor holds focus, and the account menu's row
+  opens the same card on every other screen. It is a **single-character shortcut** and carries the identical
+  condition every other one carries — live only while the shell holds focus, never while a text field or a
+  `contenteditable` has it (UX-DR11, WCAG 2.1.4). The card is the map's own table printed through the Kit's shortcut
+  rows (`Editor Sidebar Kit.dc.html:274-280`) inside the app's one dialog vocabulary, and it lists exactly the keys
+  that work (R-145).
+- **What it costs:** FR-D11's "complete set" is now thirteen actions plus the key that lists them, and this entry is
+  the record of that difference. Accepted: a map nobody can read from inside the editor is a map that is not used.
+- Targets:
+  - ✅ this entry · ✅ Story 5.9's spec (its Question 3, its Boundaries, its tasks and the owner's test) ·
+    ✅ `epics.md` (Story 5.9's AC) · ✅ `EXPERIENCE.md` (the shortcut table) — Story 5.9's Create run (2026-09-19).
+- **Deliberately not touched:** the thirteen actions of FR-D11's map, which are unchanged; S3's row, which is built
+  as drawn; WCAG 2.1.4's remedy — this product still takes active-on-focus, and neither remapping nor a way to turn
+  shortcuts off is built.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
