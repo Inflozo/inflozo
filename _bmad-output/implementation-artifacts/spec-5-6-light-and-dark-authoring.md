@@ -609,6 +609,23 @@ and never printed. Each line is what was run and what it RETURNED.
   everywhere. **The "owed" wording below is superseded by this line.** Review's own patches add harness assertions
   (the caret, `/settings`' 404s, the greyed Clear pressed, the soft Back) that can only run once this commit is
   deployed — **that walk is recorded in the line after this one.**
+- **REVIEW, 2026-09-19 — A COMPLETE, CLEAN WALK AT `b54c3391`, WITH NOTHING OWED.** `exit 0`, **293 PASS / 0 FAIL**,
+  no `HARNESS ERROR`, **step 5's recorder control PASSED** (both planted eval refusals seen, so the session's CSP zero
+  is a result), and the **thirty-eight** assertions of steps 46–53 all green. It carries every check this story's
+  Review added, each now executed rather than owed: the **`/settings` 404 walk** (another user's id, a random uuid and
+  `abc`, identical real 404s above the settings skeleton — the one thing the earlier note left owed to Deploy); **the
+  caret surviving a flip**; **the greyed Clear deleting nothing**, pressed and submitted past its button; **a soft
+  Back showing no sun**; and the owner's three rulings — **R-134** (the project Clear asks first, names the count,
+  opens on Cancel; Cancel changes nothing; with nothing to clear it says so rather than asking), **R-135** (on a
+  Light-only project both editor entry points absent), **R-136** (the moon alone, its words its name and its hover
+  title, printed nowhere in the row). Two runs before it were 250 and 274 PASS / 0 FAIL, each ending on a `page.goto`
+  / `waitForFunction` timeout in Story 5.5's soft-navigation tail, after this story's own assertions and after the
+  account cleanup — the same degrading link, and not a verdict withheld. The owner's project was read afterwards:
+  `dark_enabled` is `true`, as he left it.
+  One FAIL appeared at `fb628fd6` and was the harness's own read, not the product: step 48 tested "the words are not
+  printed in the row" with `textContent`, which **includes the badge's SVG `<title>`** — the accessible name, printed
+  nowhere. It now strips the badge and reads the visible text. Standing rule 2's shape inverted, for the second time
+  in this story: a failing test is not a failing product until the test is read.
 - **REVIEW, 2026-09-19 — THE PATCHES ON THE DEPLOYED SITE, at `402bac95`** (Vercel `READY` from that sha; CI success
   — `397a250f`'s own CI run was red on the day's date stamps, DW-132, published nothing, and the next push did).
   Six walks, **no `FAIL` in any of the five at `402bac95`**; the one at `e9d48cf2` had a single `FAIL` that was the
