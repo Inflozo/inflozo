@@ -2,8 +2,8 @@
 title: 'Story 5.6 — Light and dark authoring'
 type: 'feature'
 created: '2026-09-18'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 baseline_commit: 'b31b1e5bab89312c57f13aa10ab3d7d4b8e58eb2'
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
