@@ -68,7 +68,7 @@ export const KEYMAP: readonly Binding[] = [
   // (FR-D5), which is the caller's rule and not the map's.
   { gesture: 'duplicate', action: 'Duplicate section', chips: ['⌘D'], keys: ['d'], meta: true, shift: false },
   // `Backspace` is the same key on a Mac keyboard, where it is labelled Delete and reports `Backspace`. The chip is
-  // what the frame draws; the binding is what the hardware sends.
+  // what the frame draws; the binding is what the hardware sends. The owner's, R-148 (2026-09-19).
   { gesture: 'remove', action: 'Delete section', chips: ['Del'], keys: ['delete', 'backspace'], shift: false },
   { gesture: 'undo', action: 'Undo', chips: ['⌘Z'], keys: ['z'], meta: true, shift: false },
   { gesture: 'redo', action: 'Redo', chips: ['⇧⌘Z'], keys: ['z'], meta: true, shift: true },

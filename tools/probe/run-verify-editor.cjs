@@ -3400,7 +3400,12 @@ async function main() {
       return r.violations.map((v) => v.id)
     }, WCAG)
     check('step 8 — axe positive control: an <img> with no alt is reported', control.includes('image-alt'), control.join(','))
-    const axe = await axePage.evaluate(async (tags) => (await window.axe.run(document, { runOnly: tags })).violations.map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`), WCAG)
+    // R-149 (owner, 2026-09-19): ONE axe rule is excepted on ONE element. The canvas iframe carries `tabIndex={-1}` so
+    // the canvas is a single tab stop (UX-DR9), and `frame-focusable-content` refuses that attribute on any frame
+    // whose document holds a focusable element. Everything in the canvas has a keyboard route through Layers and the
+    // panel, which `tools/keyboard/journey.spec.mjs` proves on every commit. The filter below drops that rule's node
+    // for that iframe ALONE — the same rule on any other frame, and every other rule on this one, still fails.
+    const axe = await axePage.evaluate(async (tags) => (await window.axe.run(document, { runOnly: tags })).violations.map((v) => v.id !== 'frame-focusable-content' ? v : { ...v, nodes: v.nodes.filter((n) => document.querySelector(n.target[0]) !== document.querySelector('section[aria-label="Canvas"] iframe')) }).filter((v) => v.nodes.length > 0).map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`), WCAG)
     check('step 8 — axe-core finds zero WCAG 2.1 AA violations on the editor at 1440, the canvas included', axe.length === 0, axe.join('; '))
     // twice more (Story 5.2): with Three Up hovered, and with it selected
     const gridAt = async () => {
@@ -3410,7 +3415,7 @@ async function main() {
       const s = fr.width / 1440
       return { x: fr.x + r.x * s, y: fr.y + r.y * s }
     }
-    const axeRun = () => axePage.evaluate(async (tags) => (await window.axe.run(document, { runOnly: tags })).violations.map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`), WCAG)
+    const axeRun = () => axePage.evaluate(async (tags) => (await window.axe.run(document, { runOnly: tags })).violations.map((v) => v.id !== 'frame-focusable-content' ? v : { ...v, nodes: v.nodes.filter((n) => document.querySelector(n.target[0]) !== document.querySelector('section[aria-label="Canvas"] iframe')) }).filter((v) => v.nodes.length > 0).map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`), WCAG)
     let g = await gridAt()
     await axePage.waitForTimeout(150)
     await axePage.mouse.move(g.x, g.y, { steps: 3 })

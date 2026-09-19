@@ -307,8 +307,8 @@ the journey in `pnpm check` over a harness mount as well as on the deployed edit
 
 Review of 2026-09-19 — five layers over `467aec61..a9aa4b21`. Every patch below is applied and ticked.
 
-- [ ] [Review][Decision] **`Backspace` deletes the selected section, and nobody was asked.** FR-D11 names `Del`; the map also binds `Backspace`, because a Mac keyboard's "delete" key reports `Backspace`. This spec's own Ask First lists "any new global binding beyond FR-D11's map" — `?` was asked for that reason and this was not. Question 4 below.
-- [ ] [Review][Decision] **HIGH — the accessibility scan is red on the live editor, and this story made it so.** The first complete deployed walk (on `27a638fa`) has axe-core failing all of step 8 with `frame-focusable-content`: the canvas iframe carries `tabIndex={-1}` — which is how this story makes the canvas ONE tab stop (UX-DR9) — and axe refuses any frame with that attribute whose document holds a focusable element, whatever that element's own tabindex. UX-DR9 as built and NFR-5's zero cannot both stand. Dev recorded that axe run as "not yet executed". Question 5 below.
+- [x] [Review][Decision] **(ruled: R-148) `Backspace` deletes the selected section, and nobody was asked.** FR-D11 names `Del`; the map also binds `Backspace`, because a Mac keyboard's "delete" key reports `Backspace`. This spec's own Ask First lists "any new global binding beyond FR-D11's map" — `?` was asked for that reason and this was not. Question 4 below.
+- [x] [Review][Decision] **HIGH — (ruled: R-149) the accessibility scan is red on the live editor, and this story made it so.** The first complete deployed walk (on `27a638fa`) has axe-core failing all of step 8 with `frame-focusable-content`: the canvas iframe carries `tabIndex={-1}` — which is how this story makes the canvas ONE tab stop (UX-DR9) — and axe refuses any frame with that attribute whose document holds a focusable element, whatever that element's own tabindex. UX-DR9 as built and NFR-5's zero cannot both stand. Dev recorded that axe run as "not yet executed". Question 5 below.
 - [x] [Review][Patch] **MEDIUM — the deployed walk could never pass as written.** Steps 74 and 78 asserted the polite region `=== ''`, and the editor never empties it, so both failed on every run that reached them (the Real-infra verifier's fourth run: 2 FAIL, 367 PASS; the product facts inside both held). They compare before and after, as the harness journey's own stop already did [tools/probe/run-verify-editor.cjs]
 - [x] [Review][Patch] **MEDIUM — the journey's "no pointer" control did not read the helpers it said it read**: `lastIndexOf` found the needle on the control's own line, so `open`, `caretIntoCanvas`, `openEveryGroup`, `openGroup` and `select` were never scanned. `indexOf`; the control still passes with the helpers in [tools/keyboard/journey.spec.mjs]
 - [x] [Review][Patch] **MEDIUM — a letter typed at a focused `<select>` folded Layers or flipped the canvas** instead of jumping to the option, and `1` `2` `3` or Backspace in a date field changed the device or deleted the section. A `<select>` keeps its single keys; the date and time kinds count as holding a caret [editor.tsx `onShortcut` · lib/keymap.ts `TEXTUAL`]
@@ -621,7 +621,8 @@ deletes a character, exactly like every other single key. The shortcuts card sho
 2. **`Del` only, as the plan wrote it.** A Mac laptop user then deletes a section with `fn`+delete, or
    from the `⋯` menu.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** `Del` and Backspace both delete the selected section. Recorded as **R-148** in
+`reconcile-designs-decisions.md` §A10; the code is unchanged.
 
 ### Question 5 — the accessibility scanner objects to how the canvas skips the Tab key
 
@@ -648,4 +649,5 @@ scanner flags the preview anyway.
    have not found one — the scanner objects to the attribute itself — so this is a research task with
    no promised result, and the story waits on it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** The canvas stays one Tab stop; axe's `frame-focusable-content` is excepted on
+the canvas iframe alone, as a node filter in step 8 of the deployed walk. Recorded as **R-149**.

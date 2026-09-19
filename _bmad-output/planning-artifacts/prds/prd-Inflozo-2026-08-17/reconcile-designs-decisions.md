@@ -3058,6 +3058,33 @@ ruled option 1 (owner, 2026-09-19): *"Build it, as the plan says."*
   as drawn; WCAG 2.1.4's remedy — this product still takes active-on-focus, and neither remapping nor a way to turn
   shortcuts off is built.
 
+**R-148 — `Backspace` deletes the selected section, as `Del` does.** Story 5.9's Q4, ruled option 1 (owner,
+2026-09-19): *"Keep both — Del and Backspace delete the selected section."*
+
+- **Why it was a question.** FR-D11 names `Del`. A Mac laptop has no such key: the key labelled "delete" reports
+  `Backspace`. Story 5.9's Dev bound both, and the spec's own Ask First reserves any global binding beyond FR-D11's
+  map to the owner — the Review found it had not been asked.
+- **What it binds.** One action, two hardware keys, one chip on the card (`Del`, as the frame draws it). Both carry the
+  single-key condition (UX-DR11, WCAG 2.1.4): in any text field `Backspace` deletes a character and nothing else.
+  A site-wide section still asks first (R-115); `⌘Z` undoes it.
+- Targets: ✅ this entry · ✅ Story 5.9's spec (Question 4) · ✅ `lib/keymap.ts` (the `remove` row's comment).
+
+**R-149 — the canvas stays ONE tab stop, and axe's `frame-focusable-content` is excepted on the canvas iframe alone.**
+Story 5.9's Q5, ruled option 1 (owner, 2026-09-19): *"Keep the one Tab stop, and record this one scanner rule as a
+deliberate exception for the canvas frame only."*
+
+- **Why it was a question.** UX-DR9 makes the canvas one stop, built as `tabIndex={-1}` on the iframe. axe-core refuses
+  that attribute on any frame whose document holds a focusable element — executed on production at `27a638fa`, where
+  every one of step 8's scans went red on it. UX-DR9 as built and NFR-5's zero could not both stand.
+- **What it binds.** NFR-5's zero holds for every rule on every element **except this rule on this element**. The
+  exception is a node filter in `tools/probe/run-verify-editor.cjs` step 8, never a disabled rule: the same rule on any
+  other frame still fails, and so does every other rule on the canvas frame and inside it.
+- **What carries the weight instead:** everything in the canvas has a keyboard route through Layers and the Controls
+  panel, and `tools/keyboard/journey.spec.mjs` proves it on every commit (R-146).
+- **What it costs:** an automated WCAG 2.1.1 rule is answered by argument and a journey rather than by the scanner.
+  Accepted: the alternative is dozens of Tab presses through the site's own links on every pass.
+- Targets: ✅ this entry · ✅ Story 5.9's spec (Question 5) · ✅ `run-verify-editor.cjs` step 8 · ✅ `prd.md` NFR-5.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
