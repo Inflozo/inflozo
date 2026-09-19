@@ -2,9 +2,9 @@
 title: 'Story 5.8 — Undo, redo, and local-first persistence'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '6c73e5d9f573c8e2ab98b44dde9dc0dad669157e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -60,7 +60,10 @@ differs → the cloud replaces the doc and the journal is cleared.
   before/after beats an inverse-op log here.
 - **The hydrate comparison is `projects.revision` vs the local `base_revision`, and nothing else**
   (AD-15, `addendum.md` §AD1.1). Equal → doc kept, journal kept. Differs → doc replaced, journal cleared.
-  No local record → the server's doc, an empty journal.
+  No local record → the server's doc, an empty journal. **One recognition sits in front of it since the Review
+  (2026-09-19):** a revision exactly one ahead, with edits owed, whose owed docs on the server ARE the local
+  ones, is this editor's own tab-close flush landing unheard — nothing differs, so nothing is replaced and the
+  journal stays (`ownFlushLanded`, `lib/journal.ts`). Another session's write cannot pass it: its doc differs.
 - **The canvas does not paint until the local store has answered.** A reload must never flash the cloud
   document over the local one.
 - **The sync writes only the docs the journal names**, and `projects.revision` moves in the same
@@ -363,6 +366,28 @@ differs → the cloud replaces the doc and the journal is cleared.
   so colour is never the only signal, and its name reaches a hover and a polite live region (R-142,
   `EXPERIENCE.md`'s accessibility floor).
 
+### Review Findings
+
+Review of 2026-09-19 — five layers over `6c73e5d9..9ad1ac47`. Every patch below is applied and ticked.
+
+- [x] [Review][Patch] **HIGH — the tab-close flush never read its answer, so the editor conflicted with its own save.** `visibilitychange → hidden` is also an ordinary tab switch: the write landed, `base` stayed old, and the next ⌘S opened "changed somewhere else" against the user's own write (reproduced: `dialogs 1`). It now goes through the one `flush()` — answer read, in-flight guard kept, `keepalive` only under the browser's ~64KiB cap [editor.tsx `leaving`, `flush`]
+- [x] [Review][Patch] **HIGH — a reload with edits owed cleared the undo history**, because the reload's own flush moved the revision under the page; FR-D9 held only when a ⌘S came first, which is how step 67 had passed. `ownFlushLanded` recognises the editor's own write on hydrate, and the sync route answers 200 rather than 409 when a stale-base request carries exactly what the server already holds (the flush that lands after the new page read the old revision; a lost answer retried) [lib/journal.ts · sync/route.ts]
+- [x] [Review][Patch] A flush asked for while one was in flight was dropped — in fallback that edit was held nowhere; ⌘S mid-flight did nothing. It is now owed and sent when the first lands [editor.tsx `flush`]
+- [x] [Review][Patch] An edit or an undo during Syncing or Retrying overwrote the indicator and flickered the red panel shut; and Retrying overwrote FALLBACK, so the next success said "Saved on this device" about a device holding nothing. Fallback is now read from the device, and only the flush leaves its own states [editor.tsx `rest`, `toFallback`]
+- [x] [Review][Patch] The Retrying panel said "Your work is safe on this device" in fallback, where it is not. It says "Your latest changes have not reached the cloud yet. Keep this tab open…" there; the frame's sentence is untouched everywhere else [save-state.tsx]
+- [x] [Review][Patch] ⌘Z was dead after using any panel control: `holdsCaret` counted checkboxes, ranges, colour wells and selects as holding a caret. Text fields only [lib/journal.ts]
+- [x] [Review][Patch] ⌘Z and ⇧⌘Z changed the document under an open dialog [editor.tsx `onShortcut`]
+- [x] [Review][Patch] The sync route passed an illegal template key to the RPC, where it became a 502 the editor retried for ever; it is a 422 at the route, and `__proto__` with it [sync/route.ts]
+- [x] [Review][Patch] The live region announced the retry countdown every second; it carries the state alone, the hover keeps the seconds [persistence-indicator.tsx]
+- [x] [Review][Patch] The indicator showed green "Synced" before the local store had answered [editor.tsx]
+- [x] [Review][Patch] Leaving the editor by a link sent nothing (no `visibilitychange` on a soft navigation); a failed flush could schedule retries from an unmounted editor; "tenth attempt" for ever after ten; the tab never closed its IndexedDB handle for another tab's upgrade [editor.tsx · save-state.tsx · local-store.ts]
+- [x] [Review][Patch] The harness: step 70's CSP zero was unscoped and failed on the Projects page's violation (step 14 scopes the same check); nothing drove a tab switch, a reload with edits owed, the route's 409/422, or an edit in fallback. Steps 66b, 66c and 70's edit are new, and step 67 now reloads with an edit owed [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Defer] The Projects page ships a zod that runs its `Function("")` JIT probe under the CSP (refused, harmless, but a recorded violation) [apps/web — `/`] — deferred, pre-existing → DW-201
+- [x] [Review][Defer] A sync refusal that retrying cannot fix (401 after the session expires, 404, 422) still shows Retrying with the connection sentence [editor.tsx `flush`] — deferred → DW-202
+- [x] [Review][Defer] Two tabs of one project share one local record and interleave their journals; the local database outlives sign-out and project deletion [local-store.ts] — deferred to Story 5.17's lock and the account stories → DW-203
+
+Dismissed as noise or as ruled: Ctrl+Y (R-141 names the two gestures), "⌘S" in copy on Windows (the spec's own word throughout), a declined conflict asking again (the spec's stated behaviour), body-size caps (Vercel's own), `done.applied` unchecked (the route maps it to the status), and ten smaller ones.
+
 ## Spec Change Log
 
 **Dev, 2026-09-19 — the owner's three rulings on his read of the build: R-142, R-143, R-144.** He asked for the
@@ -584,6 +609,45 @@ Every row of `## I/O & Edge-Case Matrix` is covered by a check that RAN and PASS
 The walk above is a **LOCAL** production build against the live Supabase, and it says so in its own first line. The
 **deployed** run on `app.inflozo.com` is the Review phase's, after CI publishes this push — as is the second-writer
 case driven by account B through a real browser rather than by the service key, and the render matrix.
+
+### Executed at Review — 2026-09-19
+
+**Production first (R-99), through `SUPABASE_DB_POOLER_URL`, PostgreSQL 17.6, every write rolled back.** Both
+`template_key_shape` constraints carry one backslash; `sync_project_doc(uuid,jsonb,bigint)` is there, `security
+definer`, EXECUTE to `authenticated` and not `anon`; every column the code writes exists
+(`profiles.autosave_enabled`, `projects.revision`, `projects.dark_enabled`, `project_templates.doc`). As the owner:
+a matching base → `{"applied": true, "revision": 1}`; **the control**, a stale base → `{"applied": false}` and 0
+rows; another user → NULL; `custom:custom-signup\xhbs` → refused by `template_key_shape`. Nothing remained after
+ROLLBACK. HEAD `9ad1ac47` was what Vercel served (`READY`), CI green.
+
+```
+bash supabase/tests/run-rls-gate.sh                 exit 0 — 100 PASS notices
+run-verify-saving.cjs  (APP_ORIGIN=https://app.inflozo.com)   12 PASS, 0 FAIL — the deployed site
+run-verify-editor.cjs  (deployed, 9ad1ac47)         ONE complete run: 384 PASS, 1 FAIL — step 70's unscoped CSP
+                                                    check tripping on the Projects page (patched above; DW-201).
+                                                    Step 66 failed ONCE in a run that then died on page.goto
+                                                    timeouts and passed in the complete run — a HARNESS ERROR with
+                                                    no clean FAIL is not a result, and the deployed re-walk below
+                                                    is what settles it.
+```
+
+**The patches, against a production build on the live Supabase (a LOCAL run and it says so):**
+
+```
+run-verify-editor.cjs  patched build                0 FAIL, 389 PASS, twice
+  step 66b  tab hidden with an edit owed → grey → green, revision +1; the next ⌘S is +1 again and NO dialog
+  step 66c  stale base + different doc → 409 · bad doc → 422 · illegal key → 422 · none wrote;
+            stale base + the doc the server already holds → 200, nothing written
+  step 67   reload WITH an edit owed: the local doc, the history and FR-D9's undo-through-reload all hold
+  step 70   in fallback one change with no ⌘S moves projects.revision (and a second puts it back)
+THE CONTROL, executed: the SAME harness against the UNPATCHED editor and route →
+  step 66b FAIL (`synced false`, then `dialogs 1` — the editor conflicting with itself)
+  step 66c FAIL (illegal key → 502; the already-held doc → 409)
+pnpm check                                          exit 0
+```
+
+**Not driven by any harness, and said so:** the two-live-browsers conflict dialog (the owner's test walks it) and a
+mid-session quota refusal. **Owed after this push deploys:** one complete walk on `app.inflozo.com`.
 
 ## Owner's manual test
 

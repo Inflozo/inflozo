@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { docSchema } from '@inflozo/section-runtime'
 import { isUuid } from '@/lib/editor'
+import { stable } from '@/lib/journal'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -34,6 +35,8 @@ const no = (status: number, body: string) =>
 const json = (status: number, body: unknown) =>
   NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 
+const TEMPLATE_KEY = /^(site|home|index|post|page|tag|author|error|private|custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs)$/
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // `currentUser()`, not `signedIn()`: a route handler answers with a response of its own rather than throwing a page
   // redirect, and a flush from a tab whose session has expired must get a status the editor can read.
@@ -59,8 +62,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const keys = Object.keys(docs as Record<string, unknown>)
   if (keys.length === 0) return no(400, 'Nothing to write')
 
-  const parsed: Record<string, unknown> = {}
+  const parsed: Record<string, unknown> = Object.create(null)
   for (const key of keys) {
+    // `template_key_shape`, word for word (SCHEMA.sql): refused HERE as a 422, because inside the RPC it is a 23514,
+    // which is a 502, which the editor retries for ever. `__proto__` is refused by the same line.
+    if (!TEMPLATE_KEY.test(key)) return no(422, 'Not a template key')
     const doc = docSchema.safeParse((docs as Record<string, unknown>)[key])
     if (!doc.success) return no(422, `${key} is not a document this editor could have written`)
     parsed[key] = doc.data
@@ -81,5 +87,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (data === null) return no(404, 'Not found')
 
   const answer = data as { applied: boolean; revision: number }
+  if (!answer.applied) {
+    // REFUSED — BUT IS IT ALREADY THERE? (Story 5.8's review.) A tab-close flush lands after the reloaded page has read
+    // the OLD revision, and a flush whose answer was lost is retried from the old base: both are the editor conflicting
+    // with ITS OWN write, and both used to open "changed somewhere else" over work that was safely stored. If every
+    // doc this request carries is exactly what the server holds, there is nothing to write and nothing to refuse —
+    // the editor adopts the revision. A real second writer's doc differs, and gets the 409 it always got.
+    const { data: rows } = await supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', keys)
+    const held = new Map((rows ?? []).map((r) => [r.template_key as string, docSchema.safeParse(r.doc)]))
+    const same = keys.every((key) => {
+      const there = held.get(key)
+      return there?.success === true && stable(there.data) === stable(parsed[key])
+    })
+    if (same) return json(200, { applied: true, revision: answer.revision })
+  }
   return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision })
 }

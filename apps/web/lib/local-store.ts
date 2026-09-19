@@ -105,7 +105,12 @@ export async function openLocal(userId: string): Promise<LocalStore | null> {
           next.createObjectStore(JOURNAL, { keyPath: 'key' }).createIndex('byProject', 'projectId')
         }
       }
-      request.onsuccess = () => resolve(request.result)
+      request.onsuccess = () => {
+        // never be the tab that blocks the next schema upgrade: close when another tab asks, and every call after
+        // that fails soft into the fallback
+        request.result.onversionchange = () => request.result.close()
+        resolve(request.result)
+      }
       request.onerror = () => reject(request.error ?? new Error('IndexedDB could not be opened'))
       request.onblocked = () => reject(new Error('IndexedDB upgrade is blocked by another tab'))
     })

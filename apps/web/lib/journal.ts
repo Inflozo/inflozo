@@ -274,8 +274,15 @@ export const backoffSeconds = (attempt: number) => BACKOFF_S[Math.min(Math.max(a
 export type Shortcut = 'undo' | 'redo' | 'save'
 
 /** Does this element own the caret — a form field, or anything `contenteditable`? */
-export const holdsCaret = (el: { tagName?: string; isContentEditable?: boolean } | null | undefined): boolean =>
-  !!el && (el.isContentEditable === true || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName ?? ''))
+/*  ONLY A FIELD WITH TEXT IN IT (Story 5.8's review): a checkbox, a range, a colour well or a `<select>` has no caret
+ *  and no undo of its own, and focus RESTS on one after every panel control is used — so counting them made ⌘Z dead
+ *  exactly when it is most wanted, straight after changing a control. */
+const TEXTUAL = ['', 'text', 'search', 'url', 'email', 'number', 'password', 'tel']
+export const holdsCaret = (el: { tagName?: string; type?: string; isContentEditable?: boolean } | null | undefined): boolean =>
+  !!el &&
+  (el.isContentEditable === true ||
+    el.tagName === 'TEXTAREA' ||
+    (el.tagName === 'INPUT' && TEXTUAL.includes((el.type ?? '').toLowerCase())))
 
 /** The gesture a key press is, or null for every other press. `inField` is `holdsCaret` over whatever holds the caret
  *  — in the editor document OR in the canvas document, which is why the caller resolves it and this does not. */
@@ -303,6 +310,8 @@ export type Hydration =
 /**
  * THE COMPARISON IS `projects.revision` VS THE LOCAL `base_revision`, AND NOTHING ELSE (AD-15, `addendum.md` §AD1.1).
  * Equal → both kept. Different → the doc is replaced and the journal cleared. No record → the server's doc.
+ * ONE RECOGNITION SITS IN FRONT OF IT since Story 5.8's review — `ownFlushLanded` below — and it is not a second rule:
+ * it finds the case where nothing differs at all.
  *
  * THE TAKEOVER HALF OF AD-15'S JOURNAL-CLEARING RULE IS NOT HERE, and its absence is deliberate: `lock_generation`
  * advancing is the other reason a journal is cleared, and nothing writes `edit_locks` until Story 5.17, so it has
@@ -310,6 +319,33 @@ export type Hydration =
  */
 export const hydrationFor = (local: { baseRevision: number } | null, cloudRevision: number): Hydration =>
   local === null ? { kind: 'first' } : local.baseRevision === cloudRevision ? { kind: 'local' } : { kind: 'cloud' }
+
+/**
+ * OUR OWN TAB-CLOSE FLUSH, RECOGNISED ON THE WAY BACK IN (Story 5.8's review).
+ *
+ * A reload or a close with edits owed sends them with `keepalive`, and the tab is gone before the answer arrives — so
+ * the server moves to `base + 1` and the device never hears. `hydrationFor` then reads "different" and the journal is
+ * cleared, which broke FR-D9's promise for every reload that was not preceded by a ⌘S. This asks the one question that
+ * tells OUR write from another session's: the revision moved by exactly one, something was owed, and every owed doc
+ * on the server IS the local one. Then there is nothing to replace — the journal's snapshots are still true — and the
+ * caller adopts the revision and marks the journal flushed. Anything else is §AD1.1's second row, unchanged: a second
+ * session's write cannot pass, because its doc would differ.
+ */
+export const stable = (v: unknown): string =>
+  v === null || typeof v !== 'object'
+    ? JSON.stringify(v) ?? 'null'
+    : Array.isArray(v)
+      ? `[${v.map(stable).join(',')}]`
+      : `{${Object.keys(v).filter((k) => (v as Record<string, unknown>)[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${stable((v as Record<string, unknown>)[k])}`).join(',')}}`
+
+export const ownFlushLanded = (
+  local: { baseRevision: number; docs: Readonly<Record<string, unknown>>; journal: Journal },
+  cloudRevision: number,
+  cloudDocs: Readonly<Record<string, unknown>>,
+): boolean =>
+  cloudRevision === local.baseRevision + 1 &&
+  unsynced(local.journal) &&
+  Object.keys(local.journal.pending).every((key) => key in cloudDocs && stable(cloudDocs[key]) === stable(local.docs[key]))
 
 /**
  * The auto-generated set a local record carries, narrowed to the canvases this project still offers.

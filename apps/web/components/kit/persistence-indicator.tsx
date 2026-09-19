@@ -77,8 +77,10 @@ export function PersistenceIndicator({
       </span>
       {/* POLITE, and the text equivalent the accessibility floor asks of every state. It is `sr-only` rather
           than absent: the words are B6's own and they still have to reach somebody. */}
+      {/* THE STATE, NOT THE COUNTDOWN (the review): with the seconds in here a screen reader announced "Retrying ·
+          5s", "· 4s"… for the whole backoff. The hover keeps the seconds; the announcement is made once. */}
       <span role="status" className="sr-only">
-        {name}
+        {state}
       </span>
     </span>
   )

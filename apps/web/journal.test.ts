@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, holdsCaret, hydrationFor, labelOf, maxSeq, panelOpen, redo, shortcutFor, undo, unsynced,
+  flushPayload, holdsCaret, hydrationFor, ownFlushLanded, labelOf, maxSeq, panelOpen, redo, shortcutFor, undo, unsynced,
   restingState, unsyncedEdits, vanishedDesign, type Journal, type SyncState,
 } from './lib/journal.ts'
 
@@ -225,7 +225,10 @@ test('holdsCaret is the guard, and it covers a contenteditable as well as a fiel
   assert.equal(holdsCaret({ tagName: 'DIV' }), false)
   assert.equal(holdsCaret({ tagName: 'INPUT' }), true)
   assert.equal(holdsCaret({ tagName: 'TEXTAREA' }), true)
-  assert.equal(holdsCaret({ tagName: 'SELECT' }), true)
+  assert.equal(holdsCaret({ tagName: 'SELECT' }), false, 'no caret, no undo of its own')
+  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'checkbox' }), false, 'focus rests here after a panel control: ⌘Z must work')
+  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'range' }), false)
+  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'text' }), true)
   assert.equal(holdsCaret({ tagName: 'H1', isContentEditable: true }), true, 'Story 5.3 edits a heading in place')
   assert.equal(holdsCaret({ tagName: 'SPAN', isContentEditable: true }), true, 'and a button\'s label in a span')
 })
@@ -284,4 +287,15 @@ test("AD-22's round trip: undoing the last section off hands back the doc that w
   assert.deepEqual(ids(back.doc), ['only'], 'the section returns')
   const forward = redo(back.journal)!
   assert.deepEqual(ids(forward.doc), [], 'and redo empties it again')
+})
+
+test('a tab-close flush of our own is recognised on the way back in, and another session\'s write never is', () => {
+  const a = { instances: [{ x: 1, y: undefined }] }
+  const local = { baseRevision: 4, docs: { home: a, post: { instances: [] } }, journal: { ...EMPTY_JOURNAL, pending: { home: 1 } } }
+  const sameReordered = { home: JSON.parse('{"instances":[{"x":1}]}') }
+  assert.equal(ownFlushLanded(local, 5, sameReordered), true, 'base + 1 and the owed doc is ours')
+  assert.equal(ownFlushLanded(local, 6, sameReordered), false, 'two revisions on: somebody else wrote as well')
+  assert.equal(ownFlushLanded(local, 5, { home: { instances: [] } }), false, 'the control: a different doc is another session')
+  assert.equal(ownFlushLanded(local, 5, {}), false)
+  assert.equal(ownFlushLanded({ ...local, journal: EMPTY_JOURNAL }, 5, sameReordered), false, 'nothing was owed, so it was not us')
 })

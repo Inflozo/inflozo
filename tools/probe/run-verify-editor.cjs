@@ -2767,7 +2767,52 @@ async function main() {
     check('step 66 — and it really wrote: projects.revision advanced by exactly one and the stored doc is the edited one',
       flushedRevision58 === beforeSave58 + 1 && Array.isArray(flushedDoc58?.instances), `revision ${beforeSave58} → ${flushedRevision58} · ${flushedDoc58?.instances?.length} instances`)
 
+    // ── step 66b — THE REVIEW'S FINDING: a TAB SWITCH is `hidden` too, and the editor must not conflict with itself ──
+    // Undo then redo is an edit that owes something and leaves the document exactly as it was, so steps 67-69 read
+    // the same names. `visibilityState` is overridden because a headless page never really hides.
+    const owe58 = async () => {
+      await page.locator('#editor-undo').click(); await page.waitForTimeout(350)
+      await page.locator('#editor-redo').click(); await page.waitForTimeout(350)
+    }
+    const stateIs58 = (want) => page.waitForFunction((w) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === w, want, { timeout: 15000 }).then(() => true, () => false)
+    const beforeHide58 = await revisionNow58()
+    await owe58()
+    const owedBeforeHide58 = (await topBarNow()).state
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    const hidSynced58 = await stateIs58(SYNCED58)
+    await page.evaluate(() => { delete document.visibilityState; document.dispatchEvent(new Event('visibilitychange')) })
+    check('step 66b — hiding the tab with an edit owed sends it, and the editor HEARS the answer: grey, then green',
+      owedBeforeHide58 === OWED58 && hidSynced58 && (await revisionNow58()) === beforeHide58 + 1, `${owedBeforeHide58} → synced ${hidSynced58} · revision ${beforeHide58} → ${await revisionNow58()}`)
+    await owe58()
+    await page.keyboard.press(`${CMD58}+s`)
+    const backSynced58 = await stateIs58(SYNCED58)
+    const selfConflict58 = await page.locator('dialog[open]').count()
+    check('step 66b — and the next ⌘S after coming back is an ordinary save: no "changed somewhere else" against its own write',
+      backSynced58 && selfConflict58 === 0 && (await revisionNow58()) === beforeHide58 + 2, `dialogs ${selfConflict58} · revision → ${await revisionNow58()}`)
+
+    // ── step 66c — the sync route's own refusals, asked directly from the signed-in page ──
+    const post58 = (body) => page.evaluate(async ([b, id]) => {
+      const r = await fetch(`${location.pathname.startsWith('/app/') ? '/app' : ''}/projects/${id}/sync`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })
+      return r.status
+    }, [body, P])
+    const rev66c = await revisionNow58()
+    const doc66c = await homeDocNow58()
+    const stale66c = await post58({ base: rev66c - 1, docs: { home: { ...doc66c, instances: [] } } })
+    const bad66c = await post58({ base: rev66c, docs: { home: { nonsense: true } } })
+    const key66c = await post58({ base: rev66c, docs: { 'custom:nope': doc66c } })
+    const already66c = await post58({ base: rev66c - 1, docs: { home: doc66c } })
+    check('step 66c — a stale base with a DIFFERENT doc is a 409, a doc the schema refuses and a key the table refuses are 422s, and none of them wrote',
+      stale66c === 409 && bad66c === 422 && key66c === 422 && (await revisionNow58()) === rev66c && JSON.stringify(await homeDocNow58()) === JSON.stringify(doc66c), JSON.stringify({ stale66c, bad66c, key66c }))
+    check('step 66c — a stale base carrying EXACTLY what the server holds is not a conflict: 200, and still nothing written (the control is the 409 above)',
+      already66c === 200 && (await revisionNow58()) === rev66c, `HTTP ${already66c}`)
+
     // ── step 67 — FR-D9's whole promise: the work AND the history survive a reload ──
+    // SINCE THE REVIEW it reloads WITH AN EDIT OWED, which is what a person does: the reload itself fires the tab-close
+    // flush, the revision moves under the page, and the journal used to be cleared for it.
+    await owe58()
     const namesBeforeReload58 = await namesNow58()
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
@@ -2832,8 +2877,8 @@ async function main() {
         spinners: el.querySelectorAll('[class*="animate"]').length,
       }
     })
-    check('step 69 — B6: the panel opens on Retrying, at the frame\'s own fill, radius and padding, with the countdown in the indicator\'s NAME (R-142 left it nowhere to be printed)',
-      panel58 && panel58.fill === 'rgb(253, 236, 236)' && panel58.radius === '10px' && panel58.padding === '11px 12px' && /Retrying · \d+s/.test(panel58.label ?? '') && /Retrying · \d+s/.test(panel58.title ?? ''), JSON.stringify(panel58))
+    check('step 69 — B6: the panel opens on Retrying, at the frame\'s own fill, radius and padding, with the countdown in the HOVER and the state ALONE in the live region (the review: a countdown in `role=status` is announced every second)',
+      panel58 && panel58.fill === 'rgb(253, 236, 236)' && panel58.radius === '10px' && panel58.padding === '11px 12px' && panel58.label === 'Retrying' && /Retrying · \d+s/.test(panel58.title ?? ''), JSON.stringify(panel58))
     check('step 69 — R-142: and the circle wears Tabler `exclamation-mark` — its own glyph, not a recoloured one',
       panel58?.glyphPaths === glyph58('exclamation-mark'), panel58?.glyphPaths)
     check('step 69 — B6: its first line counts the attempt and its SECOND is the reassurance, never the error',
@@ -3021,7 +3066,28 @@ async function main() {
       fallbackBar.canvases === 1 && fallbackBar.state === FALLBACK_LABEL58 && fallbackBar.label === FALLBACK_LABEL58 && fallbackBar.state !== SYNCED58 && fallbackBar.state !== OWED58, JSON.stringify(fallbackBar))
     check('step 70 — R-142: it is GREY like "Saved on this device" and told apart from it by its GLYPH, never by its colour',
       fallbackBar.glyphPaths === glyph58('upload') && fallbackBar.glyphPaths !== glyph58('clock'), fallbackBar.glyphPaths)
-    check('step 70 — that context records zero CSP violations of its own', noIdbViolations.length === 0, JSON.stringify(noIdbViolations))
+    // AND THE FALLBACK'S ONE CLAIM IS TRUE, not only printed (the review): an edit here really goes up, with no ⌘S
+    const beforeNoIdb = await revisionNow58()
+    // Hide or Show from the first PAGE row's ⋯ menu — whichever it offers — is one ordinary edit with no dialog
+    await noIdbPage.locator('#editor-layers [data-layer-row]').nth(GRID).getByRole('button', { name: /^More for / }).click()
+    await noIdbPage.waitForTimeout(250)
+    await noIdbPage.getByRole('button', { name: /^(Hide|Show)$/ }).first().click()
+    const noIdbEdit = async () => {
+      await noIdbPage.waitForTimeout(3000)
+      return revisionNow58()
+    }
+    const afterNoIdb = await noIdbEdit()
+    // …and put back, so the axe pass below still finds Three Up on the canvas: a second change, a second revision
+    await noIdbPage.locator('#editor-layers [data-layer-row]').nth(GRID).getByRole('button', { name: /^More for / }).click()
+    await noIdbPage.waitForTimeout(250)
+    await noIdbPage.getByRole('button', { name: /^(Hide|Show)$/ }).first().click()
+    const restoredNoIdb = await noIdbEdit()
+    check('step 70 — "Syncing every change to the cloud" is true: one change, no ⌘S, and projects.revision moved',
+      afterNoIdb === beforeNoIdb + 1 && restoredNoIdb === beforeNoIdb + 2, `revision ${beforeNoIdb} → ${afterNoIdb} → ${restoredNoIdb}`)
+    // scoped to the editor and the canvas exactly as step 14's `touchSession()` is: the magic link lands on `/`, whose
+    // own violation (zod's JIT probe, DW below) is not this context's subject
+    const noIdbOwn = noIdbViolations.filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
+    check('step 70 — that context records zero CSP violations of its own in the editor or the canvas', noIdbOwn.length === 0, JSON.stringify(noIdbViolations))
     await noIdb.close()
 
     // ── step 8 — axe, in its own context (bypassCSP: axe is injected, which the policy would refuse) ──

@@ -32,7 +32,7 @@ import { DESKTOP, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS, holdsCaret,
-  flushDecision, hydrationFor, maxSeq, redo as redoIn, restingState, shortcutFor, undo as undoIn, unsynced,
+  flushDecision, hydrationFor, maxSeq, ownFlushLanded, redo as redoIn, restingState, shortcutFor, undo as undoIn, unsynced,
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
@@ -289,6 +289,11 @@ export function Editor({
   const base = useRef(revision)
   const attempt = useRef(0)
   const inFlight = useRef(false)
+  // Story 5.8's review: a flush asked for while one is in flight is OWED, never dropped; fallback is a fact about the
+  // device and outlives every indicator state; and nothing is scheduled by a component that has gone
+  const again = useRef(false)
+  const fellBack = useRef(false)
+  const gone = useRef(false)
   const clocks = useRef<{ retry?: ReturnType<typeof setInterval> }>({})
 
   const layers = useFold()
@@ -374,13 +379,23 @@ export function Editor({
    *  it is derived from the journal rather than remembered. Green with nothing owed, grey the moment an edit lands.
    *  Never out of FALLBACK, which is sticky: once the device is not holding the work, nothing may show a state that
    *  says it is. */
-  const rest = () => setSync((was) => (was.kind === 'fallback' ? was : restingState(latest.current.journal)))
+  /*  AN EDIT NEVER ENDS A FLUSH'S STATE (the review): `journalise` and `restore` call this mid-request and mid-backoff,
+   *  and replacing Syncing or Retrying there flickered the red panel shut for a second. Only the flush itself — which
+   *  passes `done` — may leave them. And fallback is read from the device, not from the last state: Retrying used to
+   *  overwrite it, and the next success then said "Saved on this device" about a device holding nothing. */
+  const rest = (done = false) =>
+    setSync((was) =>
+      fellBack.current ? { kind: 'fallback' }
+      : !done && (was.kind === 'syncing' || was.kind === 'retrying') ? was
+      : restingState(latest.current.journal))
 
   /** The device is no longer holding the work, from this moment. The indicator changes in the same task the failure
    *  arrives in — never a stale *"Saved on this device"* — and every later change goes straight to the cloud. */
   const toFallback = () => {
     local.current = null
-    setSync({ kind: 'fallback' })
+    fellBack.current = true
+    // a new object even when Retrying stays, so the panel re-renders with the fallback's own sentence
+    setSync((was) => (was.kind === 'retrying' ? { ...was } : { kind: 'fallback' }))
   }
 
   /**
@@ -467,6 +482,7 @@ export function Editor({
   /** The backoff, counted down a second at a time so waiting feels finite (B6). */
   const scheduleRetry = () => {
     stopRetrying()
+    if (gone.current) return
     attempt.current += 1
     let left = backoffSeconds(attempt.current)
     setSync({ kind: 'retrying', attempt: attempt.current, seconds: left })
@@ -496,29 +512,39 @@ export function Editor({
       // ⌘S WITH NOTHING OWED. Before R-144 this flashed "Synced" for four seconds, because the resting state could
       // not say it; now the indicator is ALREADY the green check and re-asserting it is the honest acknowledgement.
       // No request goes out, and none should: there is nothing to send.
-      rest()
+      rest(true)
       return
     }
     if (asked === 'nothing') return
     const payload = flushPayload(now.journal, now.docs)
     if (Object.keys(payload).length === 0) return
-    if (inFlight.current) return
+    if (inFlight.current) {
+      // owed, not dropped: in fallback this edit is held NOWHERE else, and a ⌘S pressed mid-flight meant it
+      again.current = true
+      return
+    }
     inFlight.current = true
     // the clock this request is sending AT: an edit that lands while it is in flight has a higher stamp and is kept
     const sentStamp = now.journal.stamp
     const upTo = maxSeq(now.journal)
     setSync((was) => (was.kind === 'fallback' ? was : { kind: 'syncing' }))
+    const body = JSON.stringify({ base: base.current, docs: payload })
+    let landed = false
     try {
       const answer = await fetch(syncUrl(), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ base: base.current, docs: payload }),
+        body,
+        // THE TAB MAY BE GOING (`unload`): `keepalive` is the only thing the browser promises to finish. Browsers cap
+        // such a body near 64KiB and REJECT a larger one outright, so a big document goes as an ordinary request — it
+        // completes on a tab switch, and on a real close the device still holds it.
+        keepalive: why === 'unload' && body.length < 60_000,
       })
       if (answer.status === 409) {
         // ANOTHER SESSION WROTE. Nothing was written and nothing of ours is lost — the local doc is untouched.
         stopRetrying()
         attempt.current = 0
-        rest()
+        rest(true)
         setConflicted(true)
         requestAnimationFrame(() => openOnCancel(conflict.current))
         return
@@ -526,6 +552,7 @@ export function Editor({
       if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
       const done = (await answer.json()) as { applied: boolean; revision: number }
       base.current = done.revision
+      landed = true
       const next = flushed(latest.current.journal, sentStamp, upTo)
       latest.current = { ...latest.current, journal: next }
       setJournal(next)
@@ -533,12 +560,17 @@ export function Editor({
       attempt.current = 0
       store(next, latest.current.docs, latest.current.auto)
       // `pending` is empty now, so the resting state reads green on its own (R-144)
-      rest()
+      rest(true)
     } catch {
       // offline, a 5xx, a dropped connection: the local doc is untouched and nothing is lost
       scheduleRetry()
     } finally {
       inFlight.current = false
+      if (again.current) {
+        again.current = false
+        // only after a SUCCESS: a refusal or a failure already has its own next step (the dialog, the backoff)
+        if (landed && unsynced(latest.current.journal)) void flush('change')
+      }
     }
   }
 
@@ -844,6 +876,8 @@ export function Editor({
     const inField = editing.current !== null || holdsCaret(target) || holdsCaret(active)
     const gesture = shortcutFor(e, inField)
     if (!gesture) return
+    // an open dialog owns the page, exactly as `onEscape` below has it: ⌘Z must not change the document under a modal
+    if (gesture !== 'save' && target?.ownerDocument?.querySelector('dialog[open]')) return
     e.preventDefault()
     if (gesture === 'save') void flush('manual')
     else if (gesture === 'undo') onUndo()
@@ -1047,7 +1081,9 @@ export function Editor({
       askToPersist()
       const held = await opened.read(project.id)
       if (!alive) return
-      const how = hydrationFor(held, revision)
+      // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this
+      const landed = held !== null && ownFlushLanded(held, revision, stored)
+      const how = landed ? ({ kind: 'local' } as const) : hydrationFor(held, revision)
       if (how.kind === 'local' && held) {
         // A LOCAL DOC MAY NAME A DESIGN THE SERVER'S DOCS DO NOT, and `entries` was built from the server's — so the
         // library is asked before the local document is trusted. Nothing today can reach this (no surface adds or
@@ -1056,12 +1092,14 @@ export function Editor({
         const unknown = Object.values(held.docs).some((doc) => vanishedDesign(doc, (id) => entries[id] !== undefined))
         if (!unknown) {
           const back = autoFrom(held.auto, canvases) as CanvasKey[]
-          base.current = held.baseRevision
-          latest.current = { ...latest.current, docs: held.docs, auto: new Set(back), journal: held.journal, stack: stackOf(held.docs, latest.current.key) }
+          const kept = landed ? flushed(held.journal, held.journal.stamp, maxSeq(held.journal)) : held.journal
+          base.current = landed ? revision : held.baseRevision
+          latest.current = { ...latest.current, docs: held.docs, auto: new Set(back), journal: kept, stack: stackOf(held.docs, latest.current.key) }
           setDocs(held.docs)
           setAuto(new Set(back))
-          setJournal(held.journal)
-          if (unsynced(held.journal)) rest()
+          setJournal(kept)
+          if (landed) void opened.save(project.id, { baseRevision: revision, docs: held.docs, auto: back, journal: kept })
+          if (unsynced(kept)) rest()
           settle(true)
           return
         }
@@ -1103,30 +1141,29 @@ export function Editor({
      *  called from here at all — which is the whole reason the flush is a route handler. Nothing is shown: there is
      *  nowhere to show it. */
     const leaving = () => {
-      if (document.visibilityState !== 'hidden') return
-      const now = latest.current
-      // AUTOSAVE OFF DOES NOT STOP THIS (AD-15): `flushDecision` lets `unload` through, and the only question left is
-      // whether anything is owed.
-      if (flushDecision(now.journal, 'unload', autosave) !== 'send') return
-      const payload = flushPayload(now.journal, now.docs)
-      if (Object.keys(payload).length === 0) return
-      try {
-        void fetch(syncUrl(), {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ base: base.current, docs: payload }),
-          keepalive: true,
-        }).catch(() => {})
-      } catch {
-        // a tab that is already gone cannot be told anything
-      }
+      // THE ONE FLUSH, NOT A SECOND ONE (the review). This used to be a fire-and-forget `fetch` of its own, and
+      // `hidden` is also an ordinary TAB SWITCH: the write landed, nobody read the answer, and the next ⌘S sent the
+      // old base and was refused as a conflict with the user's own save. `flush` reads the answer, keeps the
+      // in-flight guard, and AUTOSAVE OFF STILL DOES NOT STOP IT (AD-15): `flushDecision` lets `unload` through.
+      if (document.visibilityState === 'hidden') void flush('unload')
     }
     document.addEventListener('visibilitychange', leaving)
     return () => document.removeEventListener('visibilitychange', leaving)
   }, [hydrated, autosave])
 
   // every timer this component owns, stopped with it
-  useEffect(() => () => clearInterval(clocks.current.retry), [])
+  useEffect(
+    () => {
+      gone.current = false
+      return () => {
+        // LEAVING BY A LINK IS LEAVING TOO: no `visibilitychange` fires on a soft navigation, so what is owed goes now
+        void flush('unload')
+        gone.current = true
+        clearInterval(clocks.current.retry)
+      }
+    },
+    [],
+  )
 
   // the fit: re-measured whenever a fold or the window changes THE ROOM AVAILABLE. The stage's content box, never the
   // card's — since R-137 the card is the device's size fitted, so measuring it would measure this effect's own answer
@@ -1368,7 +1405,9 @@ export function Editor({
             still B6's five — they are the hover and the announcement now, not printed. One indicator, one place
             (`EXPERIENCE.md`'s own rule), and still never a spinner. */}
         <span id="editor-save-state">
-          <SaveState state={sync} onRetry={retryNow} retrying={pressingRetry} />
+          {/* nothing is claimed before the device has answered: the initial state is green "Synced", and a reload with
+              edits owed must never show that for the moment IndexedDB takes (the review) */}
+          {hydrated ? <SaveState state={sync} onRetry={retryNow} retrying={pressingRetry} held={!fellBack.current} /> : null}
         </span>
         {/* R-143 (owner, 2026-09-19): THE PAIR SITS HERE, immediately after the indicator, and no longer in S4a's
             right-hand cluster where `S4 Editor.dc.html:41-43` draws it. His reason is the one the frame could not

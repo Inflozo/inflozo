@@ -4755,3 +4755,49 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (the 
 reason: the shape of the durable answer is clear — the editor asks the server for a design when a doc names one it has
   not got — but it is a new route, a new cache and a new failure mode on the undo path, and none of it is measurable
   against a library of five. Doing it now would be inventing a budget for a payload nobody can weigh.
+
+### DW-201: the Projects page runs zod's `Function("")` probe, which the content-security policy refuses
+
+plain: One of the code libraries the app uses quietly tests, once, whether the browser lets it build code on the fly.
+  Our security policy says no — correctly — and the library carries on the slow, safe way. Nothing breaks and nothing
+  is exposed, but the browser writes a "blocked" note each time the Projects page loads, which muddies our own checks.
+status: open
+severity: low
+origin: Story 5.8's Review (2026-09-19), the Real-infra verifier, on the deployed site: `securitypolicyviolation`
+  `script-src` / `eval` at `https://app.inflozo.com/`, source a `_next/static/chunks` file at the offset of zod's
+  `try{return Function(""),!0}`. `z.config({ jitless: true })` in `doc-schema.ts` evidently does not reach that chunk.
+owner: the next story that touches the Projects page or the CSP — or Story 5.9, whichever is first.
+location: `packages/section-runtime/src/doc-schema.ts` (the `jitless` call) · whichever module puts zod on `/`
+reason: pre-existing and harmless; finding which import carries a second zod instance onto `/` is its own small hunt.
+  `run-verify-editor.cjs` step 70 is now scoped to the editor and canvas exactly as step 14 is, so it no longer trips.
+
+### DW-202: a save the server refuses for good still shows "Retrying … when the connection returns"
+
+plain: If you leave the editor open so long that you are signed out, the editor keeps trying to send your work and
+  says it is waiting for the connection — when what it really needs is for you to sign in again. Your work is still
+  safe on your computer, and signing in from another tab makes the next try succeed, but the message is not the true
+  reason.
+status: open
+severity: medium
+origin: Story 5.8's Review (2026-09-19), four of five layers. `flush()` sends every non-OK status but 409 to the
+  backoff. 401 is the reachable one; 404 and 422 need a bug or a deleted project. B6 has five states and no sixth,
+  so an honest answer is a new sentence or a new surface, which is the owner's to draw.
+owner: Story 5.17 (the edit lock), which already adds the editor's "you are no longer the one editing" surface.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`'s `catch`) · `sync/route.ts`
+reason: nothing is lost while it stands — the device holds the work and a retry after sign-in lands — and the fix is
+  a piece of interface nobody has drawn (R-74).
+
+### DW-203: two tabs of one project share one local record, and the local database outlives sign-out
+
+plain: Open the same project in two tabs and both write their undo history into the same place on your computer, so
+  a reload can come back with a mixture. And the copy of your work kept on the computer stays there after you sign
+  out or delete the project, which matters on a shared machine.
+status: open
+severity: medium
+origin: Story 5.8's Review (2026-09-19), Blind Hunter and Edge Case Hunter. `local-store.ts` keys rows by
+  `<projectId>:<seq>` with no tab identity; nothing deletes `inflozo-doc-<userId>`.
+owner: Story 5.17 for the two tabs (its lock makes the second tab read-only, which removes the writer); the account
+  deletion story for the clean-up.
+location: `apps/web/lib/local-store.ts`
+reason: the lock is the designed answer to two writers and building a second one first would be thrown away.
+
