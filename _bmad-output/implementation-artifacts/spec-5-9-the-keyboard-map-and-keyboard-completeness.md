@@ -1,0 +1,496 @@
+---
+title: 'Story 5.9 — The keyboard map, and keyboard completeness'
+type: 'feature'
+created: '2026-09-19'
+status: 'ready-for-dev'
+owner_test: pending
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
+---
+
+## In plain English
+
+After this story you can **drive the editor without touching the mouse**. One key each does the
+things you do all day — `L` hides and shows the Layers list, `.` flips the canvas between light and
+dark, `1` `2` `3` switch between desktop, tablet and phone, `⌘D` duplicates the selected section,
+`Del` removes it, and `Esc` steps back out of whatever you are in — and **`?` opens a card that
+lists every key**, so you never have to remember them.
+
+Two quieter things come with it. **Tab now works properly**: the very first Tab shows a "Skip the
+canvas" button over the top bar, and tabbing moves Layers → the canvas → the settings panel in one
+step each, instead of walking you through every link on the page you are designing. And **typing is
+safe**: while your cursor is in any text — a headline on the canvas, a field in the panel — the
+single-letter keys do nothing at all, so writing the word "dark" never flips your canvas to dark.
+
+Five keys in the plan are **not** here, because what they do has not been built yet: `⌘K` (add a
+section), `[` `]` (flip through designs), `⇧R` (Site Remix), `P` (Preview Mode) and `⌘⏎` (Ship it).
+Each arrives with its own story — that is Question 1 below.
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** The editor answers to three keys and no more — `⌘Z`, `⇧⌘Z` and `⌘S`, built beside the
+undo arrows at Story 5.8 under R-141, which held every single-key binding back for this story
+"because only it carries the focus condition". Everything else needs a pointer. The canvas is not a
+tab stop at all (`editor.tsx:1508` carries `aria-label="Canvas"` and no `tabIndex`), so Tab walks
+straight into the iframe and through every link the customer's own site emits; D8c's skip link is
+not built; `Esc` deselects but moves no focus, so its ladder has one rung of three; and the account
+menu's **Keyboard shortcuts** row is deliberately absent with the note *"Story 5.9 adds it back with
+the shortcuts it lists"* (`account-menu.tsx:43-46`). Four rows of `EXPERIENCE.md` § Accessibility
+Floor name one verifier — the NFR-6(d) keyboard journey — and it does not exist; DW-167 has been
+deferred four times waiting for it.
+
+**Approach:** One pure table names **every** binding in FR-D11's map, each row carrying the story
+that lands it, so the handler and the `?` sheet are two readers of one list and neither can
+advertise a key that does nothing. One guard decides whether a single-key press is live — the shell
+holds focus, no caret in a field or a `contenteditable`, no dialog or popover open — and `⌘`-modified
+presses skip it, exactly as 5.8 already has it. The canvas becomes **one** tab stop by taking the
+iframe out of the sequential order (`tabindex="-1"`, executed below), which is what UX-DR9 asks for
+and what the skip link alone cannot give. And the journey that proves all of it runs in a real
+browser: in `pnpm check` against a harness mount of the real editor, and again on the deployed site
+at Review (R-82).
+
+## Boundaries & Constraints
+
+**Always:**
+- **Every single-character shortcut is live only while the editor shell holds focus, and never while
+  a text field or a `contenteditable` has it** (UX-DR11, WCAG 2.1.4 — a Level A rule inside the AA
+  threshold). `⌘`-modified shortcuts are unaffected. axe-core cannot see this; the keyboard journey
+  is its only verifier.
+- **One table, two readers.** The map is data in one module. The key handler and the `?` sheet both
+  derive from it; a row that names a story not yet landed is neither bound nor listed (standing rule
+  4 — the list is derived, never written twice).
+- **One handler per action, never a second implementation.** `L` calls the fold the Collapse button
+  calls, `.` calls `flip`, `1` `2` `3` call `pickDevice`, `⌘D`/`Del` call `onDuplicate`/`onRemove` —
+  the same functions the pill and the `⋯` menu call, so a key and its button cannot drift (R-141's
+  rule, already proved by `⌘Z`).
+- **The canvas is ONE tab stop, between Layers and the Controls sidebar, and focus lands on the
+  container and not inside the rendered site** (UX-DR9). The `Esc` ladder is three rungs and each
+  announces where it landed: inline editing → editing ends, the section stays selected (Story 5.3,
+  already built) · a selection → deselected, focus rests on the canvas container · the container →
+  focus leaves the canvas for the chrome.
+- **`Del` and `⌘D` act on the SELECTION, never on the hover**, and obey the rules their buttons obey:
+  a site-wide section has no Duplicate (FR-D5) and its Delete asks first through the one confirm.
+- **Every drag surface has a keyboard equivalent** — the Layers row / pill grip and the item list's
+  Move handle both answer `⌥↑`/`⌥↓` today; the journey asserts it rather than assuming it.
+- **`⌘Z`, `⇧⌘Z` and `⌘S` already work and are found passing** (R-141). This story is narrowed, not
+  relieved: it builds and tests the map as one journey.
+- **R-98 on every new pressable control** — the skip link and the sheet's controls; `busy.test.ts`
+  walks the tree.
+- **The harness mounts the REAL editor.** Its props are `EditorData`, built from the same helpers
+  `read.ts` uses, so drift between the two mounts is a type error (the precedent is `/pilots`, which
+  has mounted the real `Sidebar` since Story 4.5).
+
+**Ask First:**
+- Any **new** global binding beyond FR-D11's map. `?` is asked as Question 3 for exactly this reason.
+- Any change to what a key DOES, as opposed to which key does it. The map is the PRD's (FR-D11) and
+  the actions are their own stories'.
+- Remapping or a preference screen. WCAG 2.1.4 offers three remedies and this product took the
+  third (active-on-focus); the other two are not built.
+
+**Never:**
+- **No shortcut for a state added after the map** (FR-D11, in so many words): the paginated preview,
+  the preview subject, the auto-generated marker and the member-state toggle are set-and-forget
+  context, not per-edit actions.
+- **No key that does nothing.** A binding whose action has not been built is absent — not bound, not
+  listed in the sheet, never greyed and never captioned (UX-DR3, R-118).
+- **No second keyboard implementation anywhere.** `⌥F10`, the toolbar's `←`/`→` and its `Esc` are
+  Story 5.3's (`lib/inline.ts:251-255`, `mark-toolbar.tsx:87-98`); Layers' and the item list's
+  `⌥`-arrows are 5.4's and 4.5's. This story tests them; it does not rebuild them.
+- **No `inert` on the iframe.** It would take the pointer with it and the canvas would stop being
+  editable. `tabindex="-1"` removes the embedded document from the tab order and nothing else.
+- **No change to the canvas emitter, the runtime or any design.** Keys are editor chrome.
+- **No mock of Supabase, Ghost, Dodo or Resend anywhere in the harness.** It mounts a component with
+  fixture props; anything that needs a server is the deployed walk's (R-82).
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|---|---|---|---|
+| A single-key press, shell focused | `L`, focus anywhere in the chrome or on the canvas container | the Layers panel folds; focus moves to the rail's Show button (`useFold`) | N/A |
+| The same key in a panel field | `.` typed into the panel's rich Text Area | a full stop is typed; the mode does **not** flip | N/A |
+| The same key in a canvas `contenteditable` | `1` typed into a headline being edited | the digit is typed; the device does **not** change | N/A |
+| The same key with a menu or dialog open | `.` with a Layers `⋯` menu open | the menu owns the key; nothing flips | N/A |
+| A `⌘`-modified press in a field | `⌘S` while typing | saves, as Story 5.8 already has it | N/A |
+| `.` on a Light-only project | `projects.dark_enabled = false` | nothing happens and nothing is announced — there is no sun to press (R-135) | N/A |
+| `⌘D` with a page section selected | any canvas-owned section | duplicated below it, announced politely | N/A |
+| `⌘D` with a site-wide section selected | the shared header | nothing happens (FR-D5 — one shared instance, no Duplicate on its row or its pill) | N/A |
+| `Del` with a page section selected | — | removed, announced | N/A |
+| `Del` with a site-wide section selected | — | the one confirm opens, focus on Cancel (R-115) | Cancel leaves the doc untouched |
+| `Del` / `⌘D` with nothing selected | no selection | nothing happens, nothing announced | N/A |
+| `Esc`, rung 1 | caret in a text prop | editing ends, the section stays selected (5.3) | N/A |
+| `Esc`, rung 2 | a section selected, not editing | deselected; focus rests on the canvas container; announced | N/A |
+| `Esc`, rung 3 | focus on the canvas container, nothing selected | focus leaves the canvas for the chrome; announced | N/A |
+| `Esc` with a dialog or popover open | the reset confirm, a `⋯` menu, a picker | it closes and the selection is untouched (today's guard) | N/A |
+| First `Tab` on the editor | page loaded, nothing focused | **"Skip the canvas"** (D8c) is the first stop — invisible at rest, shown in the corrected 2px ring while focused | N/A |
+| `Tab` through the shell | from the top bar | Layers → **the canvas container, one stop** → the Controls sidebar; no link inside the rendered site is a stop | N/A |
+| The skip link pressed | focused | focus moves to the Controls sidebar's first control (the rail's Show button when it is folded) | N/A |
+| `?` | shell focused | the shortcuts sheet opens, focus moves in; `Esc` closes it and returns focus to where it was | N/A |
+| A deferred key | `⌘K` · `[` · `]` · `P` · `⇧R` · `⌘⏎` | nothing happens, nothing announced, and the sheet does not list it | N/A |
+| `⌥↑` / `⌥↓` on a focused Layers row or item row | (built at 5.4 / 4.5) | the section or item moves, announced in `moveSection`'s own words | N/A |
+| `⌥F10` with a live text selection | (built at 5.3) | focus moves into the mark toolbar; `←`/`→` move between marks; `Esc` restores the exact selection | N/A |
+
+</frozen-after-approval>
+
+## Code Map
+
+**The frames, read**
+- `D8 Editor Below 1440.dc.html:311-345` — **D8c · SKIP LINK**, the frame this story's one new
+  editor affordance is built from. Two states: *at rest, not rendered* (`:324`, drawn dashed at 45%
+  only to place it) and *on the first Tab* (`:338`) — a pill at `left:10px; top:9px`, 30px high,
+  `0 13px` padding, 12px radius, `#FFFFFF` on the bar, 1px `#E7E2DB`, `sm` shadow, 12.5px/600
+  `#1C1B1A`, the words **"Skip the canvas"**, and the corrected focus ring: `0 0 0 2px #C2381F`
+  (`:340`, A7 item 7 — 7.9:1 on paper). Its note at `:344` is the reason the affordance exists.
+  **The drawn `href="#d8-canvas"` points AT the canvas because the frame is a mock of a bar with no
+  sidebar beside it; the link skips PAST the canvas** (`EXPERIENCE.md:444-449`).
+- `S3 Dashboard.dc.html:362` — the account menu's **Keyboard shortcuts** row: the Tabler keyboard
+  glyph at 15px, the words, and a mono **`?`** chip at `ml-auto` (11px, 1px `#E7E2DB`, 5px radius,
+  `1px 5px`). It is the row Story 1.5 left out for this story.
+- `Editor Sidebar Kit.dc.html:274-280` — **shortcut rows**, the sheet's body drawn as a Kit part:
+  a row per binding, the action at 12.5px/500 on the left and its keys as mono chips on the right
+  (11px, `#6E6A64`, 1px `#E7E2DB`, 5px radius, `1px 6px`, white), `8px 0` padding, a hairline
+  between and none under the last. Its three sample rows are `[` `]` · `⌘D` · `⌘⏎`.
+- **The sheet itself has no frame** and is extrapolated from the two that do (R-74): the app's one
+  dialog vocabulary (`kit/dialog.ts` — a 460px sheet, the display title, `openOnCancel`) wrapped
+  around the Kit's rows above. `reconcile-designs-decisions.md` records the gap the same way R-133's
+  two surfaces were recorded.
+- `D8 Editor Below 1440.dc.html:380-400` — D8e's fourth Layers state (the ring **on the row**) is
+  already built at 5.4; read here only so the journey asserts the built state rather than a new one.
+
+**The normative text**
+- `prd.md` FR-D11 — the map. `EXPERIENCE.md:376-396` prints it as the table and states
+  **"they are the complete set"**; `:398-410` is R-141's when-a-binding-is-built rule; `:500-506` is
+  the 2.1.4 paragraph and its speech-input example; `:440-470` is §7.3's focus model in three parts;
+  `:472-490` is the keyboard-completeness table (Layers, item list, picker, design picker, assets,
+  every menu) and **"a drag that has no keyboard equivalent is a defect"**; `:566-572` is the
+  verified-by table whose four keyboard rows name NFR-6(d) and nothing else.
+- `prd.md:488` — **NFR-6(d)**: "Playwright against the running stack (pre-launch: production)"
+  covering the journeys "**and one keyboard-only journey … run with no pointer events, verifying the
+  keyboard rows of `EXPERIENCE.md` § Accessibility Floor**" (F-097, 2026-09-03).
+- `epics.md:1795-1828` — this story, including the two clauses that set its shape: the journey is
+  "the editor's first browser test in `pnpm check`", and it "walks the settings panel's reset wiring
+  … which only the deployed harness holds today (DW-167)".
+
+**What exists and is extended, never rebuilt**
+- `apps/web/lib/journal.ts:265-300` — **`shortcutFor` and `holdsCaret`**, Story 5.8's three keys and
+  their guard. Its own comment names the eight keys that "stay Story 5.9's entire". Both move to the
+  new map module; `journal.ts` keeps the journal (standing rule 7: grep for both names after).
+- `apps/web/app/…/(editor)/editor.tsx:877-890` — **`onShortcut`**, the one handler, already bound on
+  BOTH documents (`:1014-1016` the canvas document, `:1041-1043` the window) because the caret is
+  usually in the other one. The new keys join it; the binding sites do not change.
+- `:892-898` — **`onEscape`**, today one rung: it refuses inside a field or an open popover/dialog
+  (`escDeselects`) and calls `choose(null)`. Rungs 2 and 3 are the focus moves it does not make.
+- `apps/web/lib/selection.ts:34-42` — **`escDeselects`**, the ancestor walk (field · select ·
+  `contenteditable` · open `<dialog>` · `:popover-open`). It is nine tenths of the single-key gate;
+  the gate is it plus `editing.current` and the document-wide `querySelector` `onEscape` already does.
+- `:170-183` — **`useFold`**, and it already moves focus to the toggle that replaced the pressed one,
+  which is what makes `L` correct with no focus code of its own. `:186-203` — `Rail`.
+- `:1508-1522` — the canvas **`<section aria-label="Canvas">`**: R-123's ground, the centring, no
+  `tabIndex`. `:1543-1553` — the **iframe** that gets `tabIndex={-1}`.
+- `:622-641` — `flip` and `pickDevice`, each already announcing through `setSaid`; `:329` — `said`;
+  `:1672` — `<p id="editor-said" aria-live="polite" class="sr-only">`.
+- `:1300-1320` — `onDuplicate` / `onRemove` / `askFirst`, and `:1603` `canDuplicate={pointed?.doc
+  !== SITE.key}` — the site-wide rule `⌘D` must obey.
+- `apps/web/lib/inline.ts:251-255` — **`⌥F10` already exists** (Story 5.3), and `:255-262` is the
+  `Esc` that ends editing with `preventDefault` so the shell's listeners leave the selection alone —
+  rung 1, built. `apps/web/components/controls/mark-toolbar.tsx:87-98` — the toolbar's `←`/`→`
+  roving tabindex and its `Esc`.
+- `apps/web/components/controls/layers.tsx:205` · `item-list.tsx:136` — the two `⌥`-arrow moves.
+- `apps/web/components/shell/account-menu.tsx:43-46` — the note that hands this story the row:
+  *"KEYBOARD SHORTCUTS IS ABSENT, and the frame draws it … Story 5.9 adds it back with the shortcuts
+  it lists."* `lib/menu.ts` (`item`, `anchorTo`) is the row vocabulary; the platform's `popover="auto"`
+  gives light dismiss, `Esc` and the return of focus.
+- `apps/web/components/kit/dialog.ts` — `sheet`, `sheetBox`, `title`, `openOnCancel`; `kit/icons.tsx`
+  (gains the S3 keyboard glyph, emitted from `packages/library/icons/tabler.json`, R-130's rule).
+- `apps/web/components/shell/shell.tsx:295-297` — **the editor has no shell chrome and therefore no
+  account menu**, which is why `?` is the only door to the sheet from inside the editor (Question 3).
+
+**The harness, and what makes it possible**
+- `apps/web/proxy.ts:27-30` — `refreshSession` **returns early when `SUPABASE_URL` is unset**, and
+  `lib/supabase/server.ts:25-30` throws only when a client is actually built. **Executed 2026-09-19:**
+  `next dev` with no Supabase environment is ready in 307 ms, the marketing page answers **200**, and
+  every `(authed)` page answers 500 — so a route outside `(authed)` renders with no database at all.
+- `apps/web/app/…/(editor)/read.ts` — `EditorData`, and the helpers that build it without a session:
+  `lib/pilots` (`pilot`, `pilotRows`, `pilotsCanvasDocument`), `lib/controls-review` (`imagePool`,
+  `linkResources`, `referenceSwatches`), `orbitWeekly.site().timezone`.
+- `apps/web/app/…/(authed)/canvas/route.ts` — the canvas document and its own `currentUser()` guard
+  (route handlers run under no layout). The harness serves the same `pilotsCanvasDocument()` bytes
+  from its own path and the editor is told the path, rather than the guard being bypassed.
+- `tools/matrix/run-matrix-gate.sh` · `playwright.config.mjs` — the shape to copy for a gate script
+  and a runner config, and the proof the repository already owns Playwright: **`@playwright/test`
+  1.61.1 is a root devDependency since Story 4.11** and `~/.cache/ms-playwright/chromium-1228` is on
+  this machine. **DW-167's "Ask First" named a dependency; the dependency has since arrived.**
+- `supabase/tests/run-rls-gate.sh` — the other gate that keys on an exit code and refuses rather than
+  reports; `.github/workflows/ci.yml:34-41` — the `check` job, the one `deploy` needs (R-116 fixes
+  `needs` at `[check, rls]`, so a gate that must block a deploy belongs **inside** this job).
+- `tools/probe/run-verify-editor.cjs` — **70 steps today**; 71 onward are this story's, inside step
+  5's CSP session as every Epic 5 story's are. Step 8 is the axe pass that gains the sheet.
+
+**The ledger**
+- **DW-167** (low) — this story is its named owner: the settings panel's reset wiring and `/pilots`'
+  client wiring are held by the deployed harness only. Its Story 5.7 addendum adds the device wiring.
+- **DW-16** (done, Story 3.9) — the precedent this story is weighed against: the same gap for the
+  dashboard was closed by a **deployed** probe, not by a browser in CI. Question 2 is that choice.
+- **DW-188** (low) — hovering a Layers row does not outline its section; named to 5.9 **or** 5.23,
+  "whichever first finds a user cannot tell which section a row is". Keyboard focus on a row is that
+  moment for a keyboard-only user: raised, not closed here (it is a product decision, not a patch).
+
+## Tasks & Acceptance
+
+**Execution.** No migration and no schema change, so **no Schema phase** (R-99). Tasks assume
+Question 1's and Question 3's recommended options; if the owner rules otherwise, the map's rows and
+the sheet's door change and nothing else does.
+
+- [ ] `apps/web/lib/keymap.ts` -- new, pure and importless-but-for-types so `node --test` reaches it:
+      FR-D11's map as one table — every binding, its display chips, whether it is `⌘`-modified or
+      single-key, and for a binding not yet live the **story** that lands it; `shortcutFor` and
+      `holdsCaret` move here from `lib/journal.ts` and grow to return every live gesture; one
+      exported `sheetRows()` derives the sheet -- one list, two readers, and no key that does nothing.
+- [ ] `apps/web/lib/journal.ts` -- delete the two moved functions and their keyboard comment, leaving
+      the journal -- the map is not the journal's business (standing rule 7: grep `shortcutFor` and
+      `holdsCaret` repo-wide afterwards).
+- [ ] `apps/web/keymap.test.ts` -- new: the I/O matrix's key rows as unit tests — each live key to its
+      gesture, every single-key gesture null when the caret is in a field, `⌘` gestures unaffected,
+      a deferred row bound by nothing and listed by nothing, and the sheet's rows derived from the
+      table -- the pure half, on every commit.
+- [ ] `apps/web/journal.test.ts` -- move the `shortcutFor`/`holdsCaret` tests to `keymap.test.ts`,
+      keeping every assertion verbatim -- Story 5.8's proofs survive the move.
+- [ ] `apps/web/app/…/[id]/(editor)/editor.tsx` -- extend `onShortcut` with the live single-key
+      bindings behind the one gate (`L`, `.`, `1` `2` `3`, `?`) and `⌘D` / `Del` on the selection,
+      each calling the handler its button calls; give the canvas `<section>` `tabIndex={0}` and the
+      iframe `tabIndex={-1}`; render D8c's skip link as the shell's first focusable element; finish
+      the `Esc` ladder's rungs 2 and 3 with their announcements -- the whole map, one handler.
+- [ ] `apps/web/components/editor/shortcuts-sheet.tsx` -- new: the Kit's dialog vocabulary around the
+      Kit's shortcut rows, the rows from `sheetRows()`, `Esc` and focus return the platform's
+      (`showModal`) -- the sheet, extrapolated from the two frames that exist.
+- [ ] `apps/web/components/shell/account-menu.tsx` -- add S3's **Keyboard shortcuts** row with its
+      glyph and `?` chip, opening the same sheet, and replace the "absent" note with what landed --
+      the row Story 1.5 deferred here by name.
+- [ ] `apps/web/components/kit/icons.tsx` -- add S3's keyboard glyph from `tabler.json` -- R-130's
+      rule: an icon is emitted from the set, never drawn here.
+- [ ] `apps/web/app/(app)/app/harness/editor/page.tsx` · `harness/canvas/route.ts` -- new, both
+      refusing with `notFound()` unless `INFLOZO_HARNESS === '1'`: the real `Editor` mounted with
+      `EditorData` built from the pilot fixture, and the same `pilotsCanvasDocument()` bytes the
+      editor's iframe reads -- a browser can open the editor with no database (executed above).
+- [ ] `apps/web/app/…/[id]/(editor)/editor.tsx` -- one optional `canvasSrc` prop, defaulting to
+      today's `canvasSrc(isApp(pathname))` -- the harness names its own canvas path instead of a
+      guard being bypassed in a real route.
+- [ ] `tools/keyboard/journey.spec.mjs` · `playwright.config.mjs` · `run-keyboard-gate.sh` -- new:
+      the keyboard-only journey (no pointer events) over the harness — every stop in the I/O matrix
+      above plus the settings panel's reset wiring, its confirm and its `Esc` (DW-167) — booting
+      `next dev` on a free port with `INFLOZO_HARNESS=1`, refusing with the install command when no
+      browser is present, and restoring `apps/web/next-env.d.ts` on the way out (`next dev` rewrites
+      it — executed) -- the gate, shaped like `run-matrix-gate.sh` and `run-rls-gate.sh`.
+- [ ] `package.json` -- `test` gains the gate -- so it runs wherever `pnpm check` runs, which is the
+      only place that gates `deploy` (R-116).
+- [ ] `.github/workflows/ci.yml` -- install Chromium for the `check` job before `pnpm check` -- the
+      one step that makes the gate real in CI; nothing else about the job changes.
+- [ ] `tools/doc-audit.py` -- catalogue rows for the three new `tools/keyboard/` files, then
+      `--generate` -- a new file under `tools/` without a row blocks the commit.
+- [ ] `tools/probe/run-verify-editor.cjs` -- steps 71 onward inside step 5's CSP session: the same
+      journey on the **deployed** editor with a real session (R-82, NFR-6(d)), the sheet measured
+      against the Kit's rows, `/harness/editor` asserted **404** in production, and step 8's axe run
+      once more with the sheet open -- the truth, on the real stack.
+- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` · `epics.md` --
+      record which story lands each deferred key, and D8c's link as built -- propagate, never
+      localise (standing rule 3); only after the owner rules Question 1.
+- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-167 with its resolution;
+      raise the keyboard-focus half of DW-188 if the journey finds it -- the ledger is the record.
+
+**Acceptance Criteria:**
+- Given the deployed editor, when the skip link takes focus, then it **matches `D8c`** — the pill at
+  its drawn place, size, radius, ink and 2px `#C2381F` ring — and is not rendered at rest.
+- Given the account menu, when it opens, then the **Keyboard shortcuts** row **matches `S3
+  Dashboard.dc.html:362`** and the sheet's rows **match `Editor Sidebar Kit.dc.html:274-280`**.
+- Given a keyboard-only session with no pointer events, when the journey runs, then every stop passes
+  in `pnpm check` and again on the deployed site, and `⌘Z`, `⇧⌘Z` and `⌘S` are found already passing.
+- Given any text field or `contenteditable` in either document, when a single-character shortcut is
+  typed into it, then the character is entered and no editor action fires (WCAG 2.1.4).
+- Given the shell, when Tab is pressed from the top, then the first stop is the skip link and the
+  canvas contributes exactly one stop between Layers and the Controls sidebar.
+- Given a key whose action is not built, when it is pressed, then nothing happens, nothing is
+  announced, and the sheet does not list it.
+- Given `pnpm check`, `pnpm build`, the RLS gate and the documentation gate, when each runs, then all
+  are green — and the keyboard gate is inside `pnpm check`, in the `check` job `deploy` needs.
+
+## Design Notes
+
+**The iframe leaves the tab order — executed, not reasoned (2026-09-19).** Chromium 1228 through the
+repository's own Playwright, a same-origin iframe holding two links, tabbed from `body`:
+
+```
+plain   layers -> canvas -> IFRAME>site-1 -> IFRAME>site-2 -> controls
+minus   layers -> canvas -> controls
+```
+
+`tabindex="-1"` on the iframe takes **the whole embedded document** out of sequential navigation
+while leaving click and programmatic focus alone — so the caret still lands in a headline under the
+pointer, and the canvas is the single stop UX-DR9 asks for. `inert` would have taken the pointer with
+it. **D8c's skip link is built anyway and its note is honest about the change**: `EXPERIENCE.md:444`
+describes it as the fix for "dozens of stops before the sidebar", and with the iframe out of the
+order it saves one stop rather than dozens. It stays because it is drawn, approved and the first
+thing a keyboard user meets — and because the day a story puts a focusable control **inside** the
+canvas, it is the affordance already in place. The keyboard path into a text prop is unchanged and is
+the panel: the sidebar is "the second way to do everything" (FR-D1, `EXPERIENCE.md:456`).
+
+**Why the map is a table with a `story` column rather than a list of live keys.** FR-D11 calls its
+map the complete set, and five of its thirteen have nothing to press until 5.10, 5.11, 5.12, 5.15 and
+7.18. Writing only the live ones down would lose the fact that the others are owed; writing all
+thirteen as bindings would ship keys that do nothing. One table that names both, and derives the
+bound set and the sheet's rows from it, is the same shape as `lib/editor.ts`'s `CANVASES` +
+`CONDITIONAL` — where a canvas that is offered to nobody is refused by the scheme itself.
+
+**Why the journey runs against a harness mount and not `next start` with a real session.** The
+editor's page needs a session, a project and `project_templates` rows; CI has no Supabase secrets by
+design, and giving it some would put throwaway accounts on the live database on every commit. The
+harness is the real `Editor` component with the pilot fixture as props — the same trade `/pilots` has
+made since Story 4.5 — and it is typed against `EditorData`, so a prop the editor gains and the
+harness does not is a compile error rather than a silent drift. What the harness cannot prove — the
+read, the session, the sync route, the CSP — is the deployed walk's, which R-82 requires every story
+to run anyway.
+
+**`next dev`, not a build.** Measured 2026-09-19: ready in **307 ms** with no Supabase environment,
+and the first page answered in half a second. A production build inside `pnpm check` would cost
+minutes and prove nothing more about key handling. **One side effect, found by running it:** `next
+dev` rewrites the tracked `apps/web/next-env.d.ts` to point at `.next/dev/types/…` and `next build`
+points it back, so the gate must restore the file before it exits or every `pnpm check` leaves a
+dirty tree and the next commit carries it.
+
+## Verification
+
+**Commands:**
+- `pnpm check` -- expected: green, with the keyboard gate's stops listed and its own count printed
+  (never written down). This is the run that must stay green: it is the `check` job `deploy` needs.
+- `bash tools/keyboard/run-keyboard-gate.sh` -- expected: exit 0; with no browser installed, a
+  refusal naming `pnpm exec playwright install chromium` rather than a failure.
+- `node --test 'apps/web/keymap.test.ts'` -- expected: every map row asserted, the guard both ways.
+- `python3 tools/doc-audit.py --check` (twice) -- expected: green; the three `tools/keyboard/` files
+  have catalogue rows.
+- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs)
+  OUT_DIR=/tmp/kb node tools/probe/run-verify-editor.cjs` -- expected: 0 FAIL across all steps,
+  including 71 onward on the deployed editor with a real session; step 5's CSP count still zero
+  behind its `EvalError` control; step 8's axe zero with the sheet open; `/harness/editor` 404.
+- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0 (nothing here touches the database; run
+  as the control that it does not).
+
+## Owner's manual test
+
+Do this on the real site after Deploy fills the URL in. Use the **Pilot sections** project — the one
+seeded to your account at Story 5.1 — and a keyboard only where a step says so.
+
+1. **URL:** `https://app.inflozo.com/projects/<PILOT-PROJECT-ID>` · **Screen:** the editor.
+   Press `Tab` once, without touching the mouse first. **Expect:** a small white pill reading
+   **"Skip the canvas"** appears over the top-left of the bar, with a coral ring around it. Press
+   `Tab` again — it disappears.
+2. **Same screen.** Press `Tab` slowly about a dozen times and watch where the ring goes.
+   **Expect:** it moves through the top bar, into the Layers list on the left, then **once** onto the
+   page area in the middle, then into the settings panel on the right. It never walks you through the
+   links inside the page you are designing.
+3. **Same screen.** Press `L`. **Expect:** the Layers list folds away to a thin strip. Press `L`
+   again — it comes back.
+4. **Same screen.** Press `.` (a full stop). **Expect:** the canvas turns dark. Press `.` again — it
+   comes back to light.
+5. **Same screen.** Press `1`, then `2`, then `3`. **Expect:** the page changes between desktop,
+   tablet and phone, the chip under it naming each one.
+6. **Same screen.** Click any section on the canvas to select it, then press `⌘D`. **Expect:** a copy
+   of that section appears below it. Press `⌘Z` to undo it.
+7. **Same screen.** With a section still selected, press `Del`. **Expect:** it is removed. Press
+   `⌘Z`. **Expect:** it comes back exactly as it was. (If you picked the shared header, a small
+   window asks first — that is correct; press Cancel.)
+8. **Same screen.** Click into a headline on the canvas so the text cursor is in it, and type the
+   word **"dark"**. **Dummy data:** the word `dark`. **Expect:** the word is typed into the headline
+   and **nothing else happens at all** — the canvas does not flip to dark, the device does not
+   change. This is the single most important step on this list.
+9. **Same screen.** Press `Esc` once. **Expect:** you stop editing the words but the section stays
+   selected (its outline is still there). Press `Esc` again — the outline goes. Press `Esc` a third
+   time — the ring moves out of the page area into the panel beside it.
+10. **Same screen.** Press `?` (shift and the question mark). **Expect:** a card opens in the middle
+    listing every shortcut with its keys. Check the list **only shows keys that work** — there should
+    be no "Add section", no "previous / next design", no "Site Remix", no "Preview Mode" and no "Ship
+    it", because none of those has been built yet. Press `Esc` to close it.
+11. **URL:** `https://app.inflozo.com/` · **Screen:** your projects, then your own initial at the
+    bottom-left. Open that menu. **Expect:** a row reading **Keyboard shortcuts** with a small `?`
+    beside it. Click it — the same card opens.
+
+## Questions for the owner
+
+### Question 1 — five of the thirteen shortcuts have nothing to press yet
+
+The keyboard list in the plan has thirteen entries. **Eight of them can be built today.** The other
+five press buttons that do not exist yet:
+
+| Key | What it would do | Built in |
+|---|---|---|
+| `⌘K` | open the Add-a-section picker | Story 5.10, next |
+| `[` `]` | flip to the previous / next design | Story 5.11 |
+| `⇧R` | Site Remix | Story 5.12 |
+| `P` | Preview Mode | Story 5.15 |
+| `⌘⏎` | Ship it | Epic 7 (Story 7.18) |
+
+**Example.** You open the editor after this story and press `[`. Nothing happens — there is no design
+ring to flip through until Story 5.11 builds it. If we instead "built" the key now, it would either do
+nothing (a key that lies) or we would have to invent something for it to do.
+
+1. **Build the eight that work; each of the other five arrives with its own story.** (RECOMMENDED) —
+   this is your own standing rule **R-118**, applied a seventh time: a control arrives with the story
+   that makes it work and is simply absent until then. The `?` card lists only the keys that work, so
+   it can never advertise a dead key. Each of those five stories then carries its own key and its own
+   test, and by the end of Epic 7 the map is complete. The cost: the map is finished over six stories
+   rather than in one, so no single test ever says "all thirteen" until 7.18.
+2. **Hold the whole map until everything it names exists** — do the keyboard work again after Story
+   5.15, and the `⌘⏎` half after Epic 7. You would get one test that proves the complete list in one
+   piece. The cost is that the editor has **no single-key shortcuts at all** for at least six more
+   stories, and every one of those stories is one you will test by hand in the meantime.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 2 — should the keyboard test run on every commit, or only on the live site?
+
+Today every browser check in this project runs **against the live site**, by hand, once per story —
+that is your ruling R-82, and it is how the dashboard's equivalent gap was closed (DW-16, Story 3.9).
+The plan for this story asks for something new: the keyboard journey **also** running automatically
+on every single commit, inside the checks that must be green before anything publishes.
+
+To do that, a browser has to open the editor without a database. The way to do that is a **stand-in
+page** that exists only while testing (it answers "not found" on the live site) and shows the real
+editor filled with the same sample sections the pilots page uses.
+
+**Example.** Someone changes a line in the editor next month and accidentally breaks `Esc`. Under
+option 1 the commit goes red within a minute and never publishes. Under option 2 the live site
+publishes with `Esc` broken, and it is caught when the next story's live walk is run — days later.
+
+1. **Build it, as the plan says.** (RECOMMENDED) — the four accessibility promises this story makes
+   are then checked on every commit for ever, and it closes **DW-167**, which has now been deferred
+   four times (Stories 4.10 → 5.1 → 5.2 → 5.7) and grows each time. Costs: about a minute added to
+   every check run, a browser downloaded once in the build service, and one extra test-only page to
+   keep in step with the real one (the computer catches that one automatically).
+2. **Keep it on the live site only**, as every other browser check in this project is. Nothing new to
+   maintain and the checks stay fast. The cost is that the keyboard promises are only ever as fresh
+   as the last time someone ran the live walk, and DW-167 stays open with no owner.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 3 — should `?` open the shortcuts card?
+
+The drawings already put a **Keyboard shortcuts** row in your account menu, with a small `?` beside it
+(S3). Story 1.5 left the row out on purpose, with a note saying this story adds it back. But **the
+account menu is not shown inside the editor** — the editor takes over the whole window — so inside the
+editor that row is unreachable, and `?` would be the only way to open the card.
+
+The wrinkle: the product plan (FR-D11) calls its thirteen-key list "the complete set". Adding `?`
+makes fourteen.
+
+**Example.** You are in the editor, you cannot remember which key hides the Layers list, and there is
+no menu to open. You press `?`, read the card, press `Esc`, carry on.
+
+1. **Yes — `?` opens the card, and the menu row opens the same card everywhere else.** (RECOMMENDED) —
+   it is drawn on the row as the key for it, it is the convention every editor uses, and it is the one
+   key that teaches all the others. It obeys the same safety rule as every other letter key: while you
+   are typing anywhere, it does nothing. I will record it as the one addition to FR-D11's list and
+   why.
+2. **No — the card is reachable only from the account menu**, so the key list stays exactly as the
+   plan wrote it. The cost is that the card cannot be opened from the place it is about: you would
+   have to leave the editor, open the menu, read it, and go back.
+
+**Ruled:** _(awaiting the owner)_

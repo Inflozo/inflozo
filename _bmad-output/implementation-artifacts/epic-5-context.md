@@ -110,6 +110,25 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `P`, `⇧R` and `Esc` all stay Story 5.9's. It narrows 5.9, never relieves it: 5.9 still builds and tests the
     COMPLETE map and finds three of them already passing. R-118 is untouched — it governs a control with no story to
     make it work, which is a different question.
+  - **Story 5.9's planning (2026-09-19, executed in a browser and read in the frames):** R-141's "COMPLETE map" cannot
+    be met here and the reason is R-118's own — **five of FR-D11's thirteen keys press a control no story has built**:
+    `⌘K` (5.10), `[` `]` (5.11), `⇧R` (5.12), `P` (5.15), `⌘⏎` (7.18). So the map is ONE TABLE naming all thirteen with
+    the story that lands each, and the bound set and the `?` sheet's rows are both DERIVED from it — the shape
+    `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses, and the story's **Question 1**. **THE CANVAS BECOMES ONE
+    TAB STOP BY `tabindex="-1"` ON THE IFRAME** — executed in Chromium 1228 through the repository's own Playwright:
+    plain gives `layers → canvas → site-1 → site-2 → controls` and `-1` gives `layers → canvas → controls`, with click
+    and programmatic focus untouched (`inert` would have taken the pointer with it and stopped the canvas being
+    editable). D8c's skip link is still built as drawn, and `EXPERIENCE.md:444`'s "dozens of stops" is honestly now one
+    — the keyboard path into a text prop is the panel (FR-D1). Already built and only TESTED here: `⌥F10` and the
+    toolbar's `←`/`→` and `Esc` (`lib/inline.ts:251-255`, 5.3), the `Esc` ladder's first rung (5.3), and both
+    `⌥`-arrow reorders (5.4, 4.5). The account menu's **Keyboard shortcuts** row is this story's by name
+    (`account-menu.tsx:43-46`) and the editor draws NO account menu (`shell.tsx:295-297`), which is why `?` is asked as
+    **Question 3** — it would be FR-D11's fourteenth key. **Question 2 is DW-167**: its "Ask First" named a dependency
+    that has since arrived (`@playwright/test` is a root devDependency since 4.11), so the choice left is cost — a
+    browser in `pnpm check` over a harness mount, against DW-16's precedent of closing the same gap with a DEPLOYED
+    probe. Executed for it: `next dev` with NO Supabase environment is ready in 307 ms and serves every route outside
+    `(authed)` (the marketing page 200, every authed page 500), because `proxy.ts:27-30` returns early and
+    `server.ts:25-30` throws only when a client is built. No migration and **no Schema phase**.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions
