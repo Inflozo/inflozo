@@ -539,6 +539,11 @@ export function Editor({
         // such a body near 64KiB and REJECT a larger one outright, so a big document goes as an ordinary request — it
         // completes on a tab switch, and on a real close the device still holds it.
         keepalive: why === 'unload' && body.length < 60_000,
+        // A REQUEST THAT NEVER ANSWERS MUST NOT WEDGE THE EDITOR (the review's deployed walk, 2026-09-19: a ⌘S sat on
+        // "Syncing" for good, and with `inFlight` held every later flush was refused too). A stall is a failure like
+        // any other: it lands in the `catch`, the indicator says Retrying, and the backoff takes it from there. If
+        // the write DID land, the route's "already there" answer makes the retry a plain 200.
+        signal: AbortSignal.timeout(20_000),
       })
       if (answer.status === 409) {
         // ANOTHER SESSION WROTE. Nothing was written and nothing of ours is lost — the local doc is untouched.

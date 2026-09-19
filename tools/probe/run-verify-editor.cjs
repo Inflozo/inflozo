@@ -2893,6 +2893,19 @@ async function main() {
     check('step 69 — Retry now: the panel closes, the indicator leaves Retrying and nothing was lost',
       recovered58.panel === false && recovered58.label !== null && !/Retrying/.test(recovered58.label), JSON.stringify(recovered58))
 
+    // ── step 69b — THE REVIEW'S DEPLOYED WALK: a request that NEVER ANSWERS is a failure too, not "Syncing" for good ──
+    let stalled58 = null
+    await page.route('**/projects/*/sync', (r) => { stalled58 = r })   // held: neither continued nor aborted
+    await owe58()
+    await page.keyboard.press(`${CMD58}+s`)
+    const gaveUp58 = await page.waitForFunction(() => document.getElementById('editor-retrying') !== null, null, { timeout: 30000 }).then(() => true, () => false)
+    await page.unroute('**/projects/*/sync')
+    await stalled58?.abort().catch(() => {})
+    await page.locator('#editor-retry-now').click().catch(() => {})
+    const unstuck58 = await stateIs58(SYNCED58)
+    check('step 69b — a sync request that never answers becomes Retrying within its own time limit, and Retry now then lands it',
+      gaveUp58 && unstuck58, JSON.stringify({ gaveUp58, unstuck58 }))
+
     // Story 5.8's steps have been EDITING, and since this story an edit reaches the stored doc — so the seed is handed
     // back before steps 6, 6b and 7, which read it. Same `freshLoad` the rest of the walk uses.
     await freshLoad()
