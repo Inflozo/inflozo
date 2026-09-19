@@ -2,8 +2,8 @@
 title: 'Story 5.7 — Device preview, and the canvas as a viewport'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 baseline_commit: '5f3b60cb7ff0925e9f19ce964fc5a40c1e7fe0d0'
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
