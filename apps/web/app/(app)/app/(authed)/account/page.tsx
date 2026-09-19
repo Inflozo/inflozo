@@ -7,6 +7,7 @@ import { DangerCard } from './danger-card'
 import { EmailCard } from './email-card'
 import { EMAIL_CHANGED, isEmailChanged, isEmailStale, pendingChange } from './email-change-rule'
 import { PasskeysCard } from './passkeys-card'
+import { SavingCard } from './saving-card'
 import { SessionsCard } from './sessions-card'
 
 /* ─────────────────────────────────────── S12 Billing.dc.html — S12a, its RIGHT column.
@@ -36,7 +37,14 @@ import { SessionsCard } from './sessions-card'
    The Passkeys card is absent entirely unless BOTH switches are on (`lib/flags.ts`). THE
    SESSIONS CARD IS NOT: 2.4 extrapolated it from the Email card beside it, because the frame
    draws no sessions surface, and it renders whether or not the passkey switches are on — a way
-   out of every device must not hang on a way in. */
+   out of every device must not hang on a way in.
+
+   STORY 5.8 ADDS THE SAVING CARD on the same terms and for the same reason: the frame draws no
+   saving surface either, so it is extrapolated from its neighbours (R-74), and it is
+   unconditional because a setting about whether work leaves the device must not hang on a
+   feature flag. `EXPERIENCE.md:702` is what puts FR-D10's toggle on this screen. The skeleton
+   below it is already four cards and does not become five — see `loading.tsx` for why a count
+   there is deliberately not kept in step. */
 
 export const metadata: Metadata = {
   title: 'Account · Inflozo',
@@ -58,10 +66,13 @@ export default async function AccountPage({
   // The two counts S12c's sentence is composed from. HEAD requests — `count: 'exact', head: true`
   // sends no rows at all — and RLS scopes both, so neither carries a `where` of ours.
   // ponytail: counts on the sentence are two HEAD requests; one view the day the page needs a third.
-  const [passkeys, projects, assets] = await Promise.all([
+  const [passkeys, projects, assets, profile] = await Promise.all([
     passkeysEnabled(),
     countOf(supabase, 'projects'),
     countOf(supabase, 'assets'),
+    // FR-D10's toggle, per USER (`schema:118`). A read that FAILS answers the column's own default, which is the
+    // state that sends MORE — never a switch that shows "off" over a preference nobody turned off.
+    supabase.from('profiles').select('autosave_enabled').eq('user_id', user.id).maybeSingle(),
   ])
   // `auth.passkey.list()` is asked for ONLY when the module is on: with the flag off the method
   // is not merely unused, it is a call the platform would refuse.
@@ -88,6 +99,11 @@ export default async function AccountPage({
         {/* FR-A6's sign-out-everywhere. It sits under Passkeys and above the Danger zone, and it
             costs no read: GoTrue owns the sessions and nothing of ours lists them. */}
         <SessionsCard />
+
+        {/* FR-D10's autosave toggle (Story 5.8). Extrapolated from the cards beside it exactly as Sessions was, and
+            unconditional for the same reason: a setting about whether work leaves the device must not hang on a
+            feature flag. */}
+        <SavingCard autosave={profile.data?.autosave_enabled !== false} />
 
         {/* FR-A5's way out, last on the surface as the frame draws it, and unconditional for the
             reason the Sessions card is: leaving must not depend on a feature flag. */}

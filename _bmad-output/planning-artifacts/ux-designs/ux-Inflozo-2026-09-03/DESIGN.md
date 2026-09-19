@@ -49,6 +49,8 @@ colors:
   danger-text: '#C4383C — danger wherever it carries words: the danger button fill under white type, the outline variant label, the Delete menu row (Editor Sidebar Kit :113, :135). Added 2026-09-05 by Story 1.3 — every other hue already had its -text twin and danger did not, so #E5484D was being set in words at 3.91:1 and 3.42:1. Read off the frame, which had it all along'
   danger-text-hover: '#C63A3F — the danger button's hover (Editor Sidebar Kit :135). Added 2026-09-05 by Story 1.3's review'
   danger-tint: '#FDECEC — B Missing Surfaces; the frames more often use #FDEBEC (S12 delete hover), both are export values (F-110)'
+  danger-panel-ink: '#8E2C30 — the ink B6 sets its Retrying panel in, title and reassurance sentence alike, deeper than danger-text (B Missing Surfaces :1380-1381). It is the one danger surface in the product that carries a paragraph rather than a line, and the frame chose a deeper ink for it. Added 2026-09-19 by Story 5.8'
+  danger-panel-line: '#F0CFD0 — the border of B6 Retry now (B Missing Surfaces :1383). Not danger-line, which is a banner HAIRLINE and is documented as not a button border; this is a 28px control outlined on a tinted ground. Added 2026-09-19 by Story 5.8'
   sky-line: '#D4E0FA — the info banner's hairline (Editor Sidebar Kit :238). The four banner hairlines are drawn as their own solid hexes, never a tinted mix; added 2026-09-05 by Story 1.3's review'
   mint-line: '#BFE7D6 — the success banner's hairline (Editor Sidebar Kit :239)'
   marigold-line: '#F5E3B8 — the notice banner's hairline (Editor Sidebar Kit :240)'

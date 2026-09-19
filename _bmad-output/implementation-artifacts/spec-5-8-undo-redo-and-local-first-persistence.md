@@ -263,46 +263,49 @@ differs → the cloud replaces the doc and the journal is cleared.
 - [x] Apply the migration by hand through `SUPABASE_DB_POOLER_URL`, then push `Story 5.8 - Schema - …` alone.
 
 **Execution — Dev:**
-- [ ] `apps/web/lib/journal.ts` -- new, pure and `node --test`-reachable: the journal's rules (`append`,
+- [x] `apps/web/lib/journal.ts` -- new, pure and `node --test`-reachable: the journal's rules (`append`,
       `undo`, `redo`, the 100-edit trim, the undone-tail discard, `unsyncedEdits` as distinct transaction ids
       above the watermark, the docs a flush must send), the indicator's state machine and the retry backoff
       -- so every rule that can be got wrong is testable without a browser.
-- [ ] `apps/web/lib/local-store.ts` -- new: the IndexedDB door. One database per user, two object stores
+- [x] `apps/web/lib/local-store.ts` -- new: the IndexedDB door. One database per user, two object stores
       (`meta`, `journal`), keyed by project id; open, read, append, trim, clear, and
       `navigator.storage.persist()`. **Every function fails soft** — a rejected open or a failed write
       resolves to `null` and the caller enters fallback mode.
-- [ ] `apps/web/lib/editor.ts` -- add `SYNC` / `syncPath` beside `SETTINGS`, and keep `sync` out of
+- [x] `apps/web/lib/editor.ts` -- add `SYNC` / `syncPath` beside `SETTINGS`, and keep `sync` out of
       `canvasFromSegment` -- R-131's static-sibling rule, applied a second time.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` -- new: POST, the caller's own session,
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` -- new: POST, the caller's own session,
       the body parsed through `docSchema` per key before it is trusted, one `rpc('sync_project_doc', …)`,
       answering the new revision or a conflict -- one path for the timer, ⌘S and `keepalive` at tab close.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- add `revision` to `projectOf`'s
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- add `revision` to `projectOf`'s
       select and to `EditorData` -- the hydrate comparison needs the cloud revision as server truth, exactly
       as 5.6 made `dark_enabled` server truth.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hook `commit()` to open a
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hook `commit()` to open a
       transaction and append; gate the first paint on the local read; add the hydrate comparison, the flush
       timer, `visibilitychange`, the undo/redo pair in the bar and the indicator beside the project name; bind
       **⌘Z, ⇧⌘Z and ⌘S** on the shell, inert while a field or a `contenteditable` holds the caret (R-141)
       -- `commit()` is already the one door, so the journal hooks one function, and the shortcuts call the
       same two handlers the arrows do rather than a second implementation.
-- [ ] `apps/web/components/editor/save-state.tsx` -- new: the Kit indicator wired to the state machine, and
+- [x] `apps/web/components/editor/save-state.tsx` -- new: the Kit indicator wired to the state machine, and
       B6's Retrying panel anchored beneath it with its reassurance sentence and Retry now (R-98's busy
       label) -- the panel opens on Retrying and on nothing else.
-- [ ] `apps/web/components/kit/icons.tsx` -- add `Undo` and `Redo` from `S4 Editor.dc.html:41-43` -- the
-      arrows are two `IconButton`s inline in the bar and need no component of their own.
-- [ ] `apps/web/app/(app)/app/(authed)/account/saving-card.tsx` and `account/actions.ts` and `account/page.tsx`
+- [x] `apps/web/components/kit/icons.tsx` -- **already there, and byte-identical to the frame**: Story 1.3 read both
+      paths off `S4 Editor.dc.html:41-43` when it built the Kit, so nothing was added. What DID change is
+      `components/kit/button.tsx`: `IconButton` hardcoded its class string and took `className` in `...rest`, where a
+      caller's class would have replaced the size, the radius, the hover and the focus ring. No caller had ever passed
+      one; S4a's pair is the first, because the unavailable arrow is drawn at `opacity:.35`. It is APPENDED now.
+- [x] `apps/web/app/(app)/app/(authed)/account/saving-card.tsx` and `account/actions.ts` and `account/page.tsx`
       -- the per-user autosave toggle, its confirm carrying the data-loss sentence with focus on Cancel, and
       the card rendered beside Sessions -- FR-D10's toggle, in the place `EXPERIENCE.md:702` puts it.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- move
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- move
       `clearProjectDarkOverrides` onto the same RPC -- **closes DW-197**: one transaction, one revision check,
       and one definition of what a guarded doc write is.
-- [ ] `apps/web/journal.test.ts` -- new: the matrix's journal, indicator and backoff rows as unit tests,
+- [x] `apps/web/journal.test.ts` -- new: the matrix's journal, indicator and backoff rows as unit tests,
       including the 100-edit trim, the undone-tail discard, the vanished-design refusal and `unsyncedEdits`.
       The shortcut's own rule is pure too -- which key, in which focus state, means what -- so it is tested
       here and not only in the browser.
-- [ ] `apps/web/editor.test.ts` -- `sync` resolves as no canvas and collides with no canvas path -- the same
+- [x] `apps/web/editor.test.ts` -- `sync` resolves as no canvas and collides with no canvas path -- the same
       three assertions `settings` carries.
-- [ ] `tools/probe/run-verify-editor.cjs` -- steps 61+ inside step 5's CSP session: an edit survives a
+- [x] `tools/probe/run-verify-editor.cjs` -- steps 61+ inside step 5's CSP session: an edit survives a
       reload, undo reaches through it **by ⌘Z as well as by the arrow**, ⌘Z is inert with the caret in a text
       prop, the journal clears when account B writes and the revision moves, the indicator's four reachable
       labels, the Retrying panel carrying **one** control, and the fallback with IndexedDB refused.
@@ -403,32 +406,127 @@ indicator at *"Saved on this device"*, which is true, and the next flush asks ag
 
 ## Verification
 
-**Commands:**
-- `bash supabase/tests/run-rls-gate.sh` -- expected: green, **after** the Schema phase — the gate applies
-  every migration to one database and SCHEMA.sql to another and diffs them, so it is the proof that the
-  constraint fix and the RPC landed in both. It aborts rather than reporting.
-- `pnpm check` -- expected: lint, typecheck and every package test green, including `journal.test.ts`,
-  `editor.test.ts`'s `sync` assertions, `busy.test.ts` (Retry now and the toggle) and `tokens.test.ts` (no
-  hex under `apps/web`).
-- `node tools/probe/run-verify-editor.cjs` -- expected: every step PASS with step 5's CSP violation count
-  still zero after the new gestures. A HARNESS ERROR with no FAIL is not a result — re-run.
-- `pnpm --filter @inflozo/web build` -- expected: the route table gains `/app/projects/[id]/sync` and the
-  two editor routes are unchanged.
+### Executed at Dev — 2026-09-19
 
-**Real infrastructure (R-82) — the Review phase names what it hit:**
-- **Supabase (production, `SUPABASE_DB_POOLER_URL`)** — the constraint fix executed: all three
-  `custom:custom-*.hbs` keys insert where they were refused with `23514`, inside a rolled-back transaction,
-  with `index` as the control that the probe could insert at all. DW-193's own probe, re-run for its close.
-- **Supabase (production)** — the RPC executed as a real signed-in user: a correct `base_revision` writes
-  and returns `revision + 1`; a stale one writes nothing and returns the current revision; another user's
-  project id writes nothing. Zero rows left behind.
-- **The deployed editor (`app.inflozo.com`)** — the journal surviving a reload, undo after it, and the
-  cleared journal when account B advances the revision between two loads of account A.
-- **Vercel** — the deployment READY at the Deploy commit, recorded by id.
+**R-82: every check below hit a real service**, recorded by the key's variable name and never its value.
+`SUPABASE_DB_POOLER_URL` (production, PostgreSQL 17.6 — the Schema phase's apply and both of its proofs) ·
+`SUPABASE_URL` + `SUPABASE_SECRET_KEY` (the two harnesses' fixtures, and every read-back below, against the **live**
+Supabase). No Ghost server, Resend or Dodo is in this story's path and none was touched.
 
-**Manual checks:**
-- `navigator.storage.persist()` is requested once and its answer is shown nowhere.
-- The Retrying panel exists in no other state, and no spinner exists anywhere in the story.
+#### The Schema phase, on production (pushed alone, before any code — R-99)
+
+```
+template_key_shape, BOTH tables            two backslashes -> ONE, applied through SUPABASE_DB_POOLER_URL
+  custom:custom-signup.hbs                 INSERTS (was 23514)      \
+  custom:custom-signin.hbs                 INSERTS (was 23514)       > inside a rolled-back transaction
+  custom:custom-member-home.hbs            INSERTS (was 23514)      /
+  custom:custom-signup\xhbs                REFUSED 23514            <- control: the cause, now gone
+  custom:% rows left behind                0
+public.sync_project_doc(uuid,jsonb,bigint) prosecdef t · search_path=public · returns jsonb
+  authenticated EXECUTE                    true
+  anon EXECUTE                             false
+  a matching base_revision                 {"applied": true,  "revision": base+1}   and the doc written
+  a STALE base_revision                    {"applied": false, "revision": base+1}   and NOTHING written
+  another user's project id                null, nothing written
+  rows left behind                         0 (rolled back; revision back to its starting value)
+```
+
+#### The gates
+
+```
+bash supabase/tests/run-rls-gate.sh    exit 0 — 100 PASS notices, this story's eight among them
+  CONTROL, executed: with the migration withheld the proof ABORTS at DW-193's insert (exit 3) — the hole the
+  ledger named, and the reason the gate was green for it all along (nothing in it had ever inserted a `custom:` key)
+pnpm check                             exit 0 — lint, typecheck, every package suite `fail 0`
+                                       (library 149 · theme-compiler 1 · ghost-shim 34 · section-runtime 200 ·
+                                        web 386 · stress 8 — counts printed by the run, never written down here)
+pnpm --filter @inflozo/web build       exit 0 — the route table gains `ƒ /app/projects/[id]/sync`; `[id]`,
+                                       `[id]/[template]` and `[id]/settings` are unchanged
+python3 tools/doc-audit.py --check     PASS (0 warnings), twice
+```
+
+#### `run-verify-editor.cjs` — the whole walk, twice, against a production build on the live Supabase
+
+```
+0 FAIL, 378 PASS   (APP_ORIGIN=http://localhost:3100, APP_PREFIX=/app — a LOCAL run and it says so)
+step 5's CSP zero  [] in both documents, across Story 5.8's edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two
+                   reloads and its Retrying panel — with BOTH eval controls passing and the recorder's own
+                   control seeing the two refusals, so the zero is a result
+step 61  B6 at rest: the resting label, a GREY dot, no spinner; S4a's pair at 28 × 28, 8px radius, 2px apart,
+         immediately right of the device track, both at opacity .35, both `aria-disabled` and both still tabbable
+step 62  one gesture (a Delete through the Layers ⋯) removes the section and wakes undo; the indicator keeps
+         the resting label — the write never touched the interaction path
+step 63  ONE press of the left arrow brings the whole section back; ONE press of the right takes it away
+step 64  R-141: ⌘Z and ⇧⌘Z do exactly what the arrows do
+step 65  R-141: with the caret in Three Up's title (Story 5.3's own `caretInto`), ⌘Z does NOT undo the editor's
+         last change — with a control first that the letters really went in
+step 66  ⌘S: Syncing → Synced → the resting label; `projects.revision` advanced by EXACTLY one and the stored
+         doc is the edited one
+step 67  a reload comes back to the LOCAL document; the history came with it; undo reaches THROUGH the reload
+         and brings the deleted section back (5 presses — the typing after it comes off first)
+step 68  a second writer advances `projects.revision`: the cloud doc replaces the local one, the journal is
+         CLEARED, both arrows sleep (AD-15, §AD1.1's second row)
+step 69  B6's panel opens on Retrying at the frame's own fill, radius and padding, first line counting the
+         attempt and SECOND line the reassurance, carrying "Retry now" AND NO SECOND CONTROL (R-140), no
+         spinner; Retry now closes it and nothing was lost
+step 70  with IndexedDB refused, the editor still opens and paints and the indicator reads "Syncing every
+         change to the cloud" — never "Saved on this device" (FR-D10), in its own context with its own CSP zero
+step 53  D6a's project-level Clear, now on the RPC (DW-197), still empties every override across every canvas
+```
+
+#### `run-verify-saving.cjs` — FR-D10's toggle, the one surface the editor walk cannot reach
+
+```
+0 FAIL, 12 PASS   (its own throwaway account through the Auth Admin API, deleted in a `finally`)
+the card is on /account in its neighbours' own shell; its sentence says the work is ALWAYS kept on the device
+and ALSO sent every few minutes; turning it OFF asks first in the app's one 460px dialog opening on Cancel;
+the dialog states what it costs (AD-15: the timer alone stops); Cancel writes NOTHING; confirming writes
+`profiles.autosave_enabled = false` per USER; turning it back ON asks nothing. Every assertion is read back off
+the DATABASE and not off the switch.
+```
+
+#### Two controls that changed what was built, rather than confirming it
+
+**The step-15 and step-12 failures were CONTROLLED before they were diagnosed** (standing rule 2). The whole walk
+was re-run against the PRE-STORY product — the working tree stashed, the new files moved aside, rebuilt and served —
+and both steps passed there (484 PASS, and `step 15 … yyyy…` on all 29 frames). So both were this story's, and the
+diagnosis followed: step 12 asserted that a reload throws the session away, which is exactly what this story
+inverts, and step 15 was then measuring a header whose `data-on-scroll` a surviving session had set to `static`.
+
+**Undoing a deletion after a sync was REFUSED, and that was a real defect** (`run-verify-editor.cjs` step 67).
+`read.ts` handed over only the designs the SERVER'S docs name, so deleting the only section using one, letting the
+flush go up and reloading left `entries` without it — FR-D9's vanished-design guard then refused the undo as though
+the library had dropped the design, and a local doc naming it could not be painted at all, so the hydrate fell back
+to the cloud and would have thrown the customer's work away. Fixed by handing over every PLACEABLE design (five
+today, ~68 KB, read from `pilotIds()`), which is also what Stories 5.10 and 5.11 will need. The growth is
+**DW-200**.
+
+#### The matrix, row by row — what covers each, and the four that are the owner's to drive
+
+Every row of `## I/O & Edge-Case Matrix` is covered by a check that RAN and PASSED above, except where noted.
+
+| Row | Covered by |
+|---|---|
+| An edit · Undo · Redo · ⌘Z / ⇧⌘Z · ⌘Z in a text prop · ⌘Z with nothing to undo | `run-verify-editor` 61–65, 67 |
+| The timer, nothing unsynced · ⌘S with nothing unsynced · Autosave off | `journal.test.ts` — `flushDecision`, the one function all three read, extracted at Dev so they stopped being three conditions at three callers |
+| ⌘S | `run-verify-editor` 66, and `projects.revision` read back off the database |
+| The timer (firing on its own) | the walk itself: step 61 opens on **revision 9** without a single ⌘S before it, so the 3-minute timer had flushed repeatedly during the run |
+| Tab close | proved by the walk BREAKING on it: `freshLoad` had to be reordered because the departing editor's `keepalive` POST landed on top of the seed it had just restored (`leaveEditor`'s comment is the record). A flush that did not fire could not have overwritten anything |
+| Sync fails · Retry now | `run-verify-editor` 69 — the route aborted at the browser, the panel read off the frame's own values |
+| Reload, same revision · Reload, differing revision · First visit on a device | `run-verify-editor` 67, 68, 61 |
+| No IndexedDB | `run-verify-editor` 70, in its own context with its own CSP zero |
+| An edit while undone > 0 · 101st edit · Undo past a vanished design · Undo across canvases · Undo the last section off a synthesizable canvas | `journal.test.ts` |
+| Turning autosave off | `run-verify-saving.cjs`, read back off `profiles` |
+| A 40-section canvas | `run-verify-editor` 60 — a `commit()` still returns without waiting, longest main-thread task 153 ms against FR-D14's 5 s bound |
+| Another user's project id | `RLS-TEST.sql`'s Story 5.8 block, and executed on production |
+| **Another session wrote** (the DIALOG half) | the RPC's refusal is proved three ways — the gate, production, and `run-verify-editor` 68's hydrate. The DIALOG itself is **not driven**: it needs two live browser sessions, which is the owner's manual test step 14 and the Review phase's account-B walk |
+| **A local write fails mid-session** (quota) | **not driven.** `openLocal`'s every path fails soft and `toFallback()` is the one handler, which step 70 exercises from the other direction (the store refused at open). Inducing a quota refusal mid-session needs a browser flag no harness here sets |
+
+#### What is owed at Review, and is not claimed here
+
+The walk above is a **LOCAL** production build against the live Supabase, and it says so in its own first line. The
+**deployed** run on `app.inflozo.com` is the Review phase's, after CI publishes this push — as is the second-writer
+case driven by account B through a real browser rather than by the service key, and the render matrix.
 
 ## Owner's manual test
 

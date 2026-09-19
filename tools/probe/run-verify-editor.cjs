@@ -27,6 +27,12 @@
 // stack (step 10); a press that does nothing else — focus, text selection and a middle click — and the sticky header's
 // box in the fixed layer (step 11); On scroll → Static moving that box to the scrolling layer (step 12); a finger that
 // moves being a scroll, and the touch context's own CSP zero (step 14).
+//
+// Story 5.8 adds steps 61-70 and INVERTS four older ones. Steps 12, 26 and 39 used to assert that a reload threw
+// the session away; since this story it keeps it, so each now asserts what survives AND drops this user's IndexedDB
+// database to take the same reading again — the control, and the reset that lets every later step meet the seed
+// unchanged. Step 30's "nothing is persisted" became "one gesture is one undoable edit" (AD-16), because what reaches
+// the SERVER is now steps 66-68's subject and the 3-minute timer can fire at any point of a walk this long.
 // Story 5.3 adds steps 16–26 — typing and moving between fields, P0-1's toolbar and its keys, a narrowed field, links,
 // AD-36's paste vectors, line breaks, a submit button's label, R-122's lock pill, the Esc ladder, the toolbar hiding
 // while the canvas scrolls, and the panel's own rich field, its token row, catalog words and the theme's own words — all inside step 5's CSP session; step 8's axe runs twice more, with the toolbar showing and
@@ -39,7 +45,7 @@
 // Duplicate on a site-wide row, and one confirm for both its Delete and its Hide, reached from the row AND the pill),
 // S4b's pill measured against the section's corner and against R-119's Pro tag (R-125), the pointer crossing onto the
 // pill keeping the hover, the pill hiding from the first scroll, R-124's Member visibility at the head of Section
-// Settings, hiding and then removing every page section, and a reload starting from the stored doc. Step 8's axe runs
+// Settings, hiding and then removing every page section, and a reload KEEPING the session and its history (5.8). Step 8's axe runs
 // once more with the pill showing and a row's menu open. Every Layers row is found by `[data-layer-row]`, which is
 // `{doc}:{instanceId}`.
 // Story 5.5 adds steps 40-45, inside step 5's session: D5b's switcher read row by row (order, R-130's THREE marks each
@@ -62,7 +68,7 @@
 // mode-scoped being one value for both; reset in each mode (the override forgotten in dark, the light value forgotten
 // and the override KEPT in light); R-133's two entry points opening the ONE confirm in the document, the `⋯` item
 // absent on a section with no override and the panel row saying so instead; and FR-D7's Light-only half against the
-// STORED docs — an override planted through the service key (nothing persists a canvas edit before 5.8), the sun
+// STORED docs — an override planted through the service key (the editor's own write goes through 5.8's journal, so a planted row is how a STORED override is reached), the sun
 // ABSENT, the canvas light, the stored map byte-identical, and every override reapplying exactly on the way back.
 // R-131's screen is read for D6a's two rows, D6b's greyed row with its reason, the DERIVED count, and the ABSENCE of
 // every other row D6a draws; steps 2, 6 and 9 are unchanged, which is the control that the `(editor)` route-group
@@ -222,6 +228,62 @@ async function main() {
     }
     const painted = (key) => page.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 })
 
+    /* STORY 5.8's ONE RESET, and the walk needs it in four places.
+     *
+     * Before this story a reload threw the session away, and two thirds of this file leans on that: step 33 wants the
+     * seed's row ORDER, step 40 wants its names, step 53 wants its stored overrides. Since 5.8 a reload KEEPS what the
+     * customer did — which is the story — so a walk that wants the seed has to say so, and this is how it says it:
+     * drop this user's own IndexedDB database, then load. It is deliberately the CUSTOMER'S OWN door and not a
+     * back door: nothing here writes the database, so a bug that stopped the editor reading it would be visible as
+     * step 12, 26 and 39 failing rather than hidden by a fixture.
+     *
+     * Every caller is a place that follows edits and wants the seed. The three steps that assert the SURVIVING
+     * document call it as their own control, one reading either side. */
+    const dropLocal = () => page.evaluate((u) => new Promise((done) => {
+      const req = indexedDB.deleteDatabase(`inflozo-doc-${u}`)
+      req.onsuccess = req.onerror = req.onblocked = () => done(true)
+    }), ids[0]).catch(() => null)
+    /** LEAVE THE EDITOR AND LET ITS LAST FLUSH LAND (Story 5.8). Navigating away fires the editor's own tab-close
+     *  flush — a `keepalive` POST of whatever it holds — so anything this walk PLANTS in the stored doc must be
+     *  planted AFTER the editor has gone, or the departing page overwrites it a moment later. Executed: step 52's
+     *  planted override vanished exactly this way. */
+    const leaveEditor = async () => {
+      await dropLocal()
+      await page.goto('about:blank')
+      await page.waitForTimeout(600)
+    }
+    /** The seed's rows, read ONCE before anything has edited them — what `freshLoad` puts back. */
+    const SEED_DOCS = (await call('/rest/v1', `/project_templates?project_id=eq.${P}&select=template_key,doc`)).body ?? []
+    const freshLoad = async (key) => {
+      // THE SERVER HALF, and it is the half Story 5.8 made necessary: the editor now FLUSHES, so by the time a later
+      // step asks for "the stored doc" the stored doc may legitimately be a previous step's typing. Both halves go
+      // back — the seed's rows through the service key, and this user's own database — so a step that wants the seed
+      // gets the seed however long the walk has been running and however often the 3-minute timer has fired.
+      // `projects.revision` is NOT put back and cannot be (`guard_revision` is monotonic against every writer); with
+      // no local record the hydrate takes the server's docs regardless, which is §AD1.1's third row.
+      //
+      // THE ORDER IS LOAD-BEARING, and getting it wrong cost a run. Leaving the editor fires ITS OWN tab-close flush
+      // (`visibilitychange` → a `keepalive` POST), so a seed written before the page was left arrived FIRST and the
+      // departing editor's own document overwrote it a moment later. So: drop the device copy, LEAVE THE EDITOR, let
+      // that last flush land, and only then put the seed back.
+      await leaveEditor()
+      // WRITTEN AND THEN READ BACK, up to three times, rather than written after a sleep chosen by guess: the
+      // departing editor's keepalive POST is a race this walk cannot see the end of, and a seed that lost it would
+      // fail a later step for a reason that has nothing to do with the step.
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await page.waitForTimeout(400)
+        for (const row of SEED_DOCS) {
+          await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(row.template_key)}`, { method: 'PATCH', body: JSON.stringify({ doc: row.doc }) })
+        }
+        const back = (await call('/rest/v1', `/project_templates?project_id=eq.${P}&select=template_key,doc`)).body ?? []
+        const same = SEED_DOCS.every((row) => JSON.stringify(back.find((r) => r.template_key === row.template_key)?.doc) === JSON.stringify(row.doc))
+        if (same) break
+        if (attempt === 2) note('freshLoad', 'the seed could not be restored in three attempts — a later step may fail for that reason and not its own')
+      }
+      await page.goto(editorUrl(key), { waitUntil: 'load' })
+      await painted(key ?? 'home')
+    }
+
     // ── step 2 — Projects → the card → the editor ──
     await page.goto(at('/'), { waitUntil: 'load' })
     await openCard()
@@ -371,6 +433,8 @@ async function main() {
       const focus = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))
       check(`step 5 — ${panel} restores, focus back on its collapse toggle, the card as it was`, focus === collapse && (await cardWidth()) === w0, `focus ${focus}`)
     }
+    // a PLAIN goto: this line exists so the Back below lands on the editor, and `freshLoad` puts an about:blank
+    // in the history between the two. Nothing has edited anything yet either, so the seed is already the stored doc.
     await page.goto(editorUrl('post'), { waitUntil: 'load' })
     await painted('post')
     await page.goBack({ waitUntil: 'load' })
@@ -575,14 +639,12 @@ async function main() {
     check('step 11 — R-119: Esc takes the badge away with the selection', shown && (await badgeNow()) === null && !(await onScreen(HERO)).selected)
     entitlementBack = plan
     const pro = await call('/rest/v1', `/entitlements?user_id=eq.${ids[0]}`, { method: 'PATCH', body: JSON.stringify({ state: 'pro_active' }) })
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
     await clickOn(HERO)
     check('step 11 — R-119 control: A set to pro_active through the service key, Latest Post selected shows no badge', (pro.status === 200 || pro.status === 204) && (await onScreen(HERO)).selected && (await badgeNow()) === null, `HTTP ${pro.status}`)
     const back = await call('/rest/v1', `/entitlements?user_id=eq.${ids[0]}`, { method: 'PATCH', body: JSON.stringify({ state: plan }) })
     if (back.status === 200 || back.status === 204) entitlementBack = null
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
 
     // ── step 12 — edits ──
     const openGroup = async (title) => {
@@ -640,9 +702,27 @@ async function main() {
     await page.waitForTimeout(200)
     check('step 13 — after hovering, selecting and Esc, no element in the canvas document carries a data-inflozo-* attribute', (await marked()) === 0)
 
+    // STORY 5.8 INVERTS THIS STEP, and the inversion IS the story. It used to read "a reload shows the STORED values":
+    // nothing persisted a canvas edit, so a reload threw the session away. Since 5.8 every `commit()` is written to this
+    // browser's IndexedDB, the hydrate keeps the local document while `projects.revision` still matches the local
+    // `base_revision`, and the reload comes back to WHAT THE CUSTOMER DID. The control that this is a real assertion and
+    // not a tautology is the SECOND half, below: with the local database dropped, the very same reload shows the stored
+    // values again — the two readings differ, and the local store is what separates them.
     await page.reload({ waitUntil: 'load' })
     await painted('home')
-    check('step 12 — a reload shows the stored values', (await attr(GRID, 'data-per-row')) === 'three' && (await attr(HEADER, 'data-on-scroll')) === 'shrink' && !(await canvasFrame().evaluate((n) => document.querySelectorAll('#canvas > *')[n].textContent, HERO)).includes(typed))
+    const survived = {
+      perRow: await attr(GRID, 'data-per-row'), onScroll: await attr(HEADER, 'data-on-scroll'),
+      typed: (await canvasFrame().evaluate((n) => document.querySelectorAll('#canvas > *')[n].textContent, HERO)).includes(typed),
+    }
+    // `data-per-row` is 'three' on BOTH readings, and deliberately so: the Reset above put it back, which is itself an
+    // edit this journal holds. The two readings are separated by the HEADLINE and by `data-on-scroll`, which the stored
+    // doc has never carried.
+    check('step 12 — Story 5.8: a reload comes back to the LOCAL document — the typed words and the changed control are still there', survived.typed && survived.perRow === 'three' && survived.onScroll === 'static', JSON.stringify(survived))
+    // AND THE SESSION IS RESET HERE, deliberately, so every step below meets the seed exactly as it did before this
+    // story: drop this user's local database and reload. It is also the control above — the same navigation, the other
+    // reading — and it is why steps 13 to 60 need no edit for 5.8.
+    await freshLoad()
+    check('step 12 — CONTROL: with the local database dropped, the same reload shows the STORED values again', (await attr(GRID, 'data-per-row')) === 'three' && (await attr(HEADER, 'data-on-scroll')) === 'shrink' && !(await canvasFrame().evaluate((n) => document.querySelectorAll('#canvas > *')[n].textContent, HERO)).includes(typed))
 
     // ── step 15 — the outlines stay on their section while the canvas scrolls (the owner's finding, 2026-09-17) ──
     // What he saw: scrolling, "the outline jumps out of sync and seems to move over nearby sections a bit". The canvas
@@ -776,8 +856,7 @@ async function main() {
     // ── Story 5.3's inline editing steps, inside the CSP session ──
     // Every gesture is a real press or key on the deployed editor: the caret the browser places under the pointer, the
     // toolbar's own buttons, a paste event carrying AD-36's vectors, and the canvas scrolling under the wheel.
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
     const NEWS = nth('a22/1')
     const TITLE = '.a17-1__title'
     const GRID_SUB = '.a17-1__sub'
@@ -1213,17 +1292,24 @@ async function main() {
     await page.keyboard.press('Escape')
     await page.waitForTimeout(200)
 
-    // the edits live in memory for the session: a reload starts from the stored docs again (saving is Story 5.8's)
+    // STORY 5.8 INVERTS THIS STEP TOO, and step 12's note is its record: this used to read "a reload starts from the
+    // stored docs", because nothing persisted a canvas edit. Since 5.8 the TYPING, THE MARKS AND THE LINK all come
+    // back — which is FR-D9's whole promise, on Story 5.3's own gestures rather than on a control.
     await page.reload({ waitUntil: 'load' })
     await painted('home')
+    const keptWords = { title: await wordsOf(GRID, TITLE), heroSub: await markupOf(HERO, HERO_SUB), button: await wordsOf(NEWS, '.a22-1__button') }
+    check('step 26 — Story 5.8: a reload comes back to what was TYPED — the words, the marks and the link all survive', keptWords.title.includes(' and summer') && /<(strong|em|u|a|br)\b/.test(keptWords.heroSub) && keptWords.button.trim() !== 'Subscribe', JSON.stringify(keptWords))
+    // …and the session is reset again, so every step below meets the seed exactly as it did before this story. The same
+    // navigation with the local database gone is also the control: the two readings differ, and the local store is the
+    // only thing between them.
+    await freshLoad()
     const reloadedWords = { title: await wordsOf(GRID, TITLE), heroSub: await markupOf(HERO, HERO_SUB), button: await wordsOf(NEWS, '.a22-1__button') }
-    check('step 26 — a reload starts from the stored docs: this session\'s typing, marks and links are gone', !reloadedWords.title.includes(' and summer') && !/<(strong|em|u|a|br)\b/.test(reloadedWords.heroSub) && reloadedWords.button.trim() === 'Subscribe', JSON.stringify(reloadedWords))
+    check('step 26 — CONTROL: with the local database dropped, the same reload starts from the stored docs again', !reloadedWords.title.includes(' and summer') && !/<(strong|em|u|a|br)\b/.test(reloadedWords.heroSub) && reloadedWords.button.trim() === 'Subscribe', JSON.stringify(reloadedWords))
 
     // ── step 27 — a press on NOTHING deselects, as Esc does (R-123 and its amendment, owner, 2026-09-18) ──
     // Three grounds in two documents: the editor's own around the page card, the empty space below the Layers rows, and
     // the canvas's below the last section. The Controls panel, a Layers row and the top bar are not grounds.
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
     await clickOn(GRID)
     const gutter = await page.evaluate(() => {
       const stage = document.querySelector('section[aria-label="Canvas"]')
@@ -1281,8 +1367,7 @@ async function main() {
     // the canvas's own ground needs a canvas with ROOM below its last section. Until Story 5.5 that was `tag`, which
     // now opens on its Synthesis Default stack; a membership canvas is EMPTY BY CONSTRUCTION (never synthesized), so
     // the room below the site header is real there and stays real however the library grows.
-    await page.goto(editorUrl('custom-signup'), { waitUntil: 'load' })
-    await painted('custom-signup')
+    await freshLoad('custom-signup')
     await clickOn(0)
     const belowLast = await page.evaluate(() => {
       const f = document.querySelector('section[aria-label="Canvas"] iframe')
@@ -1301,8 +1386,7 @@ async function main() {
 
     // ── Story 5.4's steps, inside the CSP session ──────────────────────────────────────────────────────────────────
     // Layers as B7 draws it, every row's four states and keys, the two kinds of singleton, and S4b's pill.
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
 
     // ── step 28 — B7 as R-126 amends it: two groups of one shape, a hairline between, both counts derived ──
     const layersShape = () => page.evaluate(() => {
@@ -1387,7 +1471,11 @@ async function main() {
     const menu30 = await menuOf(GRID)
     await page.keyboard.press('Escape')
     check('step 30 — a hidden row\'s menu leads with Show, not Hide', menu30[0] === 'Show', menu30.join(' · '))
-    check('step 30 — nothing is persisted before Story 5.8: the stored doc still holds every instance, unhidden', (await docNow())?.instances?.length === TEMPLATES.home.length && (await docNow())?.instances?.every((i) => i.hidden === undefined || i.hidden === false), JSON.stringify(await docNow()))
+    // STORY 5.8: "nothing is persisted" stopped being true here, and what replaced it is stronger — the hide is ONE
+    // transaction in the journal, so ONE press of undo takes it back however many operations it cost (AD-16). What
+    // reaches the SERVER is steps 66 to 68's subject and is no longer asserted from this step, because the 3-minute
+    // timer can legitimately fire at any point of a walk this long.
+    check('step 30 — AD-16: hiding a section is ONE undoable edit — the left arrow wakes and one press is all it takes', (await page.locator('#editor-undo').getAttribute('aria-disabled')) === null, await page.locator('#editor-undo').getAttribute('aria-disabled'))
     await fromMenu(GRID, 'Show')
     check('step 30 — Show brings the section back', (await rootCount()) === before30)
     // UX-DR10's keyboard path to the same toggle: `Space` on the ROW
@@ -1449,8 +1537,8 @@ async function main() {
     await page.mouse.up()
     await page.waitForTimeout(400)
     check('step 32 — on the drop the list and the canvas both take the new order, and the slot goes', (await pageNames()).join(' | ') === swapped.join(' | ') && (await canvasClasses()).join(' | ') !== classes31.join(' | ') && (await page.locator('#editor-layers [data-drop-slot]').count()) === 0, (await pageNames()).join(' | '))
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    // Story 5.8: the reorder SURVIVES a reload now, so the seed's order is asked for rather than assumed
+    await freshLoad()
 
     // ── step 33 — the ⋯ menu, the rename dialog, and the two kinds of singleton ──
     const pageMenu = await menuOf(GRID)
@@ -1501,8 +1589,8 @@ async function main() {
     const stillShown = await menuOf(HEADER)
     await page.keyboard.press('Escape')
     check('step 34 — Cancel changes nothing: the section is still drawn and its menu still says Hide', (await rootCount()) === before30 && stillShown[0] === 'Hide', stillShown.join(' · '))
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    // Story 5.8: the edits above survive a reload now, so the seed is asked for (see `freshLoad`)
+    await freshLoad()
 
     // ── step 35 — S4b's pill: three controls, its corner, and the hover it must not lose ──
     const pillNow = () => page.evaluate(() => {
@@ -1557,8 +1645,7 @@ async function main() {
     const swappedP = [...namesP]
     swappedP.splice(GRID, 2, namesP[GRID + 1], namesP[GRID])
     check('step 35 — on the drop the list and the canvas both take the new order, and the move is announced', (await pageNames()).join(' | ') === swappedP.join(' | ') && (await canvasClasses()).join(' | ') !== classesP.join(' | ') && /^Moved to position/.test(await page.locator('#editor-said').innerText()), (await pageNames()).join(' | '))
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
     await hoverOn(HEADER)
     check('step 35 — a site-wide section\'s pill has no Duplicate (FR-D5), and its bin asks first', (await pillNow())?.buttons.join(' · ') === `Delete ${layerOf(HEADER)}`, JSON.stringify((await pillNow())?.buttons))
     await page.locator(`[data-section-pill] button[aria-label="Delete ${layerOf(HEADER)}"]`).click()
@@ -1624,8 +1711,8 @@ async function main() {
     const off = frames.filter((v) => typeof v === 'number')
     check('step 36 — per frame of a real scroll, the pill is either hidden or wholly on its own section (≤ 3px, step 15\'s tolerance) — never between the two', frames.length > 30 && frames.includes('hidden') && off.length > 0 && Math.max(...off) <= 3, `${frames.length} frames · ${frames.filter((v) => v === 'hidden').length} hidden · ${off.length} placed · worst ${Math.max(0, ...off).toFixed(1)}px outside its section`)
 
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    // Story 5.8: the edits above survive a reload now, so the seed is asked for (see `freshLoad`)
+    await freshLoad()
 
     // ── step 37 — R-124: Member visibility is the panel's first Section-settings row, and Layers draws none of it ──
     check('step 37 — control: the register gives Newsletter the row and Three Up none, so this step has both halves', carriesMemberVisibility('a22/1') === true && carriesMemberVisibility('a17/1') === false)
@@ -1680,10 +1767,17 @@ async function main() {
     const backHomeRows = autoStack('home').map((i) => i.layerName)
     check('step 38 — the last section off Home returns it to UNTOUCHED: the Synthesis Default stack re-renders and the marker comes back (AD-22, R-130)', emptied.rows.length === TEMPLATES.site.length + backHomeRows.length && emptied.mono.includes(String(backHomeRows.length)) && (await rootCount()) === TEMPLATES.site.length + backHomeRows.length && (await page.locator('#editor-layers [data-auto-generated="layers"]').count()) === 1 && (await page.locator('header [data-auto-generated]').count()) === 0, JSON.stringify({ rows: emptied.rows.length, mono: emptied.mono, want: backHomeRows }))
 
-    // ── step 39 — a reload starts from the stored doc: nothing here was persisted (Story 5.8 saves) ──
+    // ── step 39 — Story 5.8: the reload keeps the session, AND its history ──
+    // Inverted by this story for step 12's reason. The assertion is the one FR-D9 actually promises and the one that is
+    // stable whatever steps 30 to 38 left behind: the HISTORY survived the document load, so the left arrow is awake
+    // and the customer can still walk back through everything they did before they reloaded.
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
-    check('step 39 — a reload brings every section back, unhidden and in its stored order and name', (await pageNames()).join(' | ') === stackOf('home').map(([, name]) => name).join(' | ') && (await rootCount()) === before30, (await pageNames()).join(' | '))
+    check('step 39 — FR-D9: the journal survives a document load — undo still reaches back through everything steps 30–38 did', (await page.locator('#editor-undo').getAttribute('aria-disabled')) === null, await page.locator('#editor-undo').getAttribute('aria-disabled'))
+    // …and the session is reset for the steps below, which is also the control: the same navigation with the local
+    // database gone brings the STORED doc back and puts both arrows to sleep.
+    await freshLoad()
+    check('step 39 — CONTROL: with the local database dropped, the reload brings every section back, unhidden and in its stored order and name, and both arrows sleep', (await pageNames()).join(' | ') === stackOf('home').map(([, name]) => name).join(' | ') && (await rootCount()) === before30 && (await page.locator('#editor-undo').getAttribute('aria-disabled')) === 'true', (await pageNames()).join(' | '))
 
     // ── step 40 — D5b, row by row: the order, R-130's three marks with their words, the check, the group's chevron,
     //    and R-128's two absent rows ──
@@ -1861,8 +1955,7 @@ async function main() {
     await page.getByRole('button', { name: 'Cancel', exact: true }).click()
     await page.waitForTimeout(300)
     check('step 45 — the site-wide confirm names the templates that will actually SHIP, derived from the canvases this project offers', confirmWords.includes(`changes all ${TEMPLATE_COUNT} templates`) && TEMPLATE_COUNT < OFFERED.length, `${JSON.stringify(confirmWords)} · offered ${OFFERED.length} · shipping ${TEMPLATE_COUNT}`)
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
 
     // ── Story 5.6's steps, inside the CSP session ────────────────────────────────────────────────────────────────
     // FR-D7, R-131, R-132, R-133. Every expectation is DERIVED: the mode-scoped control and the value pressed come
@@ -2082,11 +2175,19 @@ async function main() {
     check('step 51 — R-12: with nothing to clear the panel\'s row SAYS SO under itself rather than asking, and stays live', saysSo.open === false && /Nothing to clear/.test(saysSo.words), JSON.stringify({ open: saysSo.open, said: /Nothing to clear[^.]*\./.exec(saysSo.words)?.[0] }))
 
     // ── step 52 — R-131's Theme settings screen: D6a's two rows, and every other row of D6a ABSENT ──
-    // The override is planted through the service key, because nothing persists a canvas edit before Story 5.8 — so
+    // The override is planted through the service key, because this step's subject is a STORED override and not one this
+    // session made — the editor's own write goes through 5.8's journal and would be this session's. So
     // this is the only way to prove "every stored override is untouched" across a mode change and a reload, and the
     // only way to give the project-level count something real to derive.
     const BG_HERO = bgRow(homeStack[HERO][0])
+    // THE SEED FIRST, so the doc this step plants INTO is the one `homeStack` was derived from. Since Story 5.8 the
+    // stored doc can legitimately be an earlier step's editing, and an override planted under a control the section
+    // no longer carries counts as none. `freshLoad` also leaves the editor with NOTHING pending, which is what makes
+    // the `leaveEditor` below a clean departure rather than one more flush.
+    await freshLoad()
     const homeRow = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)
+    // the editor goes FIRST, so its tab-close flush cannot land on top of the plant (`leaveEditor`)
+    await leaveEditor()
     const plantedDoc = JSON.parse(JSON.stringify(homeRow.body?.[0]?.doc ?? null))
     plantedDoc.instances[0].darkOverrides = { [BG_HERO.name]: BG_HERO.to.value }
     const plant = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: plantedDoc }) })
@@ -2144,6 +2245,10 @@ async function main() {
     if (LOCAL) { await page.waitForTimeout(1500); if (page.url() !== editorUrl()) await page.goto(editorUrl(), { waitUntil: 'load' }) }
     await painted('home')
     check('step 53 — a SOFT navigation back to the editor already shows no sun (the action revalidates the project, not one page)', (await page.evaluate(() => document.getElementById('editor-mode') !== null)) === false)
+    // `dropLocal`, NOT `freshLoad`: steps 52 and 53 stand on an override PLANTED in the stored doc, and
+    // `freshLoad` puts the seed back — which would wipe the very row this step is about. The device copy is
+    // still dropped, so the hydrate takes the server's doc (§AD1.1's third row) and reads the plant.
+    await dropLocal()
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
     const noSun = await page.evaluate(() => document.getElementById('editor-mode') !== null)
@@ -2176,6 +2281,10 @@ async function main() {
     await page.goto(settingsUrl, { waitUntil: 'load' })
     await segment('on').click()
     await page.waitForTimeout(2000)
+    // `dropLocal`, NOT `freshLoad`: steps 52 and 53 stand on an override PLANTED in the stored doc, and
+    // `freshLoad` puts the seed back — which would wipe the very row this step is about. The device copy is
+    // still dropped, so the hydrate takes the server's doc (§AD1.1's third row) and reads the plant.
+    await dropLocal()
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
     await clickOn(HERO)
@@ -2216,8 +2325,7 @@ async function main() {
     const atZero = await page.evaluate(() => ({ asked: document.querySelector('dialog[aria-labelledby="cleardark-project-title"]')?.open === true, said: document.querySelector('[data-clear-row]')?.parentElement?.innerText ?? '' }))
     check('step 53 — R-134/R-12: with nothing to clear the project row SAYS so rather than asking', atZero.asked === false && /Nothing to clear/.test(atZero.said), JSON.stringify(atZero))
     check('step 53 — D6a\'s Clear empties every section\'s overrides across every canvas, and the DERIVED count goes with them', /No sections carry a dark override/.test(afterClear.row ?? '') && JSON.stringify(clearedStored) === '{}', `${JSON.stringify(afterClear.row)} · stored ${JSON.stringify(clearedStored)}`)
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
 
     // ─────────────────────────────────────────── Story 5.7 — DEVICE PREVIEW, AND THE CANVAS AS A VIEWPORT ───
     // Steps 54–60, inside step 5's CSP session so its zero covers every one of them. Every expectation is DERIVED
@@ -2434,7 +2542,7 @@ async function main() {
     await page.waitForTimeout(400)
 
     // ── step 60 — FR-D14: NOTHING CAPS SECTIONS, and a device change blocks the main thread for no more than 5s ──
-    // The fixture is planted through the service key, because nothing persists a canvas edit before Story 5.8. Its 40
+    // The fixture is planted through the service key, because 40 sections are not a gesture anybody makes. Its 40
     // instances are the seeded stack cycled with fresh ids, so every design is one this project already reads.
     // NFR-1's 60fps / p95 / 50ms gate is NOT owed here — it is manual-only on the reference laptop at 4x throttle and
     // is Story 5.23's. The 5s LOCKUP BOUND is FR-D14's own pass/fail condition and is measurable, so it is owed here.
@@ -2446,8 +2554,14 @@ async function main() {
     // `hidden: false` on every one: a hidden instance renders '' and has no root, so leaving the flag as it is would
     // make the expectation below depend on what an earlier step hid
     big.instances = Array.from({ length: FIXTURE }, (_, i) => ({ ...homeDoc.instances[i % homeDoc.instances.length], instanceId: crypto.randomUUID(), layerName: `Section ${i + 1}`, hidden: false }))
+    // the editor goes FIRST, for step 52's reason: a departing page's flush would land on top of the fixture. After
+    // `rootsAtSeed`, which needs the live canvas.
+    await leaveEditor()
     const planted = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: big }) })
-    check(`step 60 — a ${FIXTURE}-section doc is planted through the service key (nothing persists a canvas edit before Story 5.8)`, planted.status === 200 || planted.status === 204, `HTTP ${planted.status}`)
+    check(`step 60 — a ${FIXTURE}-section doc is planted through the service key (40 sections are not a gesture anybody makes)`, planted.status === 200 || planted.status === 204, `HTTP ${planted.status}`)
+    // `dropLocal`, NOT `freshLoad`: the 40-section fixture IS the stored doc for this step, and `freshLoad` puts the
+    // seed back over it. The device copy still goes, so the hydrate reads the plant (§AD1.1's third row).
+    await dropLocal()
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
     // `buffered`, so the 40-section LOAD is in the buffer too — the AC is "loads and changes device" (review). And THE
@@ -2475,8 +2589,228 @@ async function main() {
     const restored = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: homeDoc }) })
     check('step 60 — the planted fixture is removed and Home is the doc it was, so every later step reads the seed', (restored.status === 200 || restored.status === 204) && JSON.stringify((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc) === JSON.stringify(homeDoc), `HTTP ${restored.status}`)
 
+    // ── Story 5.8's steps, inside step 5's CSP session ────────────────────────────────────────────────────────────
+    //
+    // THE SESSION IS RESET FIRST, and both halves matter. The steps above have been editing this canvas for several
+    // minutes and every one of those edits is now journalled and pending — which is the story working, and which would
+    // make every expectation below depend on what step 43 happened to type. So the home doc goes back to the seed, the
+    // revision goes back to 0 through the service key (the only thing that may set it backwards), and the browser's own
+    // database for this user is deleted. From here the walk stands on a known base.
+    //
+    // Every label, depth and interval below is READ FROM `lib/journal.ts` — the module the app itself uses — so a
+    // default the Architect moves changes this walk with it and is never restated here (standing rule 4).
+    const JOURNAL58 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href)
+    const RESTING58 = JOURNAL58.labelOf({ kind: 'rest' })
+    const FALLBACK_LABEL58 = JOURNAL58.labelOf({ kind: 'fallback' })
+
+    const revisionNow58 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision ?? null
+    const homeDocNow58 = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+    // THE REVISION IS NOT PUT BACK, and it cannot be: `guard_revision` makes it monotonic against EVERY writer, the
+    // service role included (`schema:1292-1303`). By the time this walk reaches here the 3-minute timer has legitimately
+    // flushed at least once, so whatever the revision is now is this walk's baseline and step 66 measures its move from
+    // there. Only the LOCAL database is reset, which is all these steps need: every expectation below is read off the
+    // screen rather than off the seed.
+    await freshLoad()
+    const seedRevision58 = await revisionNow58()
+    check('step 61 — the local database is dropped and the editor hydrates from the cloud: both arrows asleep, the revision read as this walk\'s baseline', Number.isInteger(seedRevision58) && (await page.locator('#editor-undo').getAttribute('aria-disabled')) === 'true', `revision ${seedRevision58}`)
+
+    /** B6's indicator and S4a's arrows, as the bar actually draws them. */
+    const topBarNow = () => page.evaluate(() => {
+      const ind = document.querySelector('#editor-save-state [role="status"]')
+      const dot = ind?.querySelector('span[aria-hidden]')
+      const undo = document.getElementById('editor-undo')
+      const redo = document.getElementById('editor-redo')
+      const box = (el) => el && (({ width, height }) => ({ w: Math.round(width), h: Math.round(height) }))(el.getBoundingClientRect())
+      const track = document.getElementById('editor-device')
+      const history = document.getElementById('editor-history')
+      return {
+        label: ind?.textContent ?? null,
+        dotColour: dot && getComputedStyle(dot).backgroundColor,
+        // B6's note: "never a spinner". Nothing in the bar may animate or carry one.
+        spinners: document.querySelectorAll('#editor-save-state [class*="animate"], #editor-save-state svg circle').length,
+        afterTrack: track?.nextElementSibling?.id ?? null,
+        gap: history && getComputedStyle(history).columnGap,
+        undo: undo && { ...box(undo), radius: getComputedStyle(undo).borderTopLeftRadius, opacity: getComputedStyle(undo).opacity, disabled: undo.getAttribute('aria-disabled'), label: undo.getAttribute('aria-label'), tabbable: undo.tabIndex >= 0 },
+        redo: redo && { ...box(redo), radius: getComputedStyle(redo).borderTopLeftRadius, opacity: getComputedStyle(redo).opacity, disabled: redo.getAttribute('aria-disabled'), label: redo.getAttribute('aria-label'), tabbable: redo.tabIndex >= 0 },
+        panel: document.getElementById('editor-retrying') !== null,
+      }
+    })
+
+    // ── step 61 — B6 at rest and S4a's pair, both drawn as the frames draw them ──
+    const topBar = await topBarNow()
+    check('step 61 — B6 at rest: the resting label, a GREY dot, no spinner (S4a draws "Saved" in green; B6 governs the words and the colours — the Code Map\'s recorded divergence)',
+      topBar.label === RESTING58 && topBar.dotColour === 'rgb(201, 194, 184)' && topBar.spinners === 0, JSON.stringify(topBar))
+    check('step 61 — S4a:41-43: two 28 × 28 buttons, 8px radius, 2px apart, immediately right of the device track',
+      topBar.afterTrack === 'editor-history' && topBar.gap === '2px' && topBar.undo?.w === 28 && topBar.undo?.h === 28 && topBar.undo?.radius === '8px' && topBar.redo?.w === 28 && topBar.redo?.h === 28, JSON.stringify(topBar))
+    check('step 61 — nothing to undo or redo yet: both at opacity .35, both aria-disabled and both still in the tab order (never `disabled`)',
+      topBar.undo?.opacity === '0.35' && topBar.redo?.opacity === '0.35' && topBar.undo?.disabled === 'true' && topBar.redo?.disabled === 'true' && topBar.undo?.tabbable && topBar.redo?.tabbable, JSON.stringify(topBar))
+    check('step 61 — B6\'s panel exists in NO state but Retrying', topBar.panel === false, JSON.stringify(topBar))
+
+    // ── step 62 — one gesture wakes undo, and the indicator keeps its resting claim ──
+    // ONE EDIT THE SPEC'S OWN MATRIX NAMES: a section deleted through the Layers row's menu, which is many operations
+    // and exactly one transaction (AD-16). Its layer name is read back afterwards, which is what proves the whole doc
+    // came back and not a shape of it.
+    // THE WALK'S OWN HELPERS, never a second selector: `pageNames` reads the Layers rows and `fromMenu` opens a row's
+    // ⋯ and presses an item, both already used by Story 5.4's steps. `NEWS` is a PAGE row, so Delete asks nothing —
+    // a site-wide one would open FR-D5's confirm, which is step 34's subject and not this one's.
+    const namesNow58 = pageNames
+    const before58 = await namesNow58()
+    const victim58 = before58[NEWS]
+    await fromMenu(NEWS, 'Delete')
+    const afterDelete58 = await namesNow58()
+    const afterEdit58 = await topBarNow()
+    check('step 62 — one gesture removes the section and wakes undo; redo stays asleep',
+      afterDelete58.length === before58.length - 1 && afterEdit58.undo?.disabled === null && afterEdit58.undo?.opacity === '1' && afterEdit58.redo?.disabled === 'true', `${before58.length} → ${afterDelete58.length} · ${JSON.stringify(afterEdit58)}`)
+    check('step 62 — FR-D10: the indicator still reads the resting label — the write is off the interaction path and nothing claims the cloud', afterEdit58.label === RESTING58, afterEdit58.label)
+
+    // ── step 63 — the arrows: one press each way, for however many operations the gesture cost (AD-16) ──
+    await page.locator('#editor-undo').click()
+    await page.waitForTimeout(500)
+    const undone58 = await namesNow58()
+    check(`step 63 — ONE press of the left arrow brings "${victim58}" back, whole`, JSON.stringify(undone58) === JSON.stringify(before58), JSON.stringify(undone58))
+    await page.locator('#editor-redo').click()
+    await page.waitForTimeout(500)
+    check('step 63 — ONE press of the right arrow takes it away again', JSON.stringify(await namesNow58()) === JSON.stringify(afterDelete58))
+
+    // ── step 64 — R-141: ⌘Z and ⇧⌘Z do EXACTLY what the arrows do (one handler, not a second implementation) ──
+    const CMD58 = process.platform === 'darwin' ? 'Meta' : 'Control'
+    await page.locator('#editor-history').click({ position: { x: 1, y: 1 } }).catch(() => {})
+    await page.keyboard.press(`${CMD58}+z`)
+    await page.waitForTimeout(500)
+    check('step 64 — R-141: ⌘Z undoes, identically to the arrow', JSON.stringify(await namesNow58()) === JSON.stringify(before58))
+    await page.keyboard.press(`${CMD58}+Shift+z`)
+    await page.waitForTimeout(500)
+    check('step 64 — R-141: ⇧⌘Z redoes, identically to the arrow', JSON.stringify(await namesNow58()) === JSON.stringify(afterDelete58))
+    // LEFT REDONE on purpose: steps 66 and 67 need a journal with something IN FORCE and something to undo
+
+    // ── step 65 — ⌘Z is INERT with the caret in a text prop: Story 5.3's inline editing is untouched ──
+    // The editor must do NOTHING here — the browser's own undo owns the words being typed. Through Story 5.3's own
+    // helpers and on a section that really carries a stamped prop: `clickOn` selects, `caretInto` puts the caret in
+    // Three Up's title exactly as step 16 does. The claim is NEGATIVE, so what is measured is the SECTION COUNT —
+    // which ⌘Z would change if the editor had taken the key.
+    await clickOn(GRID)
+    await page.waitForTimeout(300)
+    await caretInto(GRID, TITLE)
+    await page.keyboard.type('ZZZ')
+    await page.waitForTimeout(400)
+    const typing58 = { sections: (await namesNow58()).length, words: await wordsOf(GRID, TITLE) }
+    check('step 65 — control: the caret really is in a text prop and the letters went in', /ZZZ/.test(typing58.words ?? ''), JSON.stringify(typing58))
+    await page.keyboard.press(`${CMD58}+z`)
+    await page.waitForTimeout(600)
+    const after58 = { sections: (await namesNow58()).length, words: await wordsOf(GRID, TITLE) }
+    check('step 65 — R-141: with the caret in a text prop, \u2318Z does NOT undo the editor\'s last change — the section count is untouched and Story 5.3 keeps the gesture',
+      after58.sections === typing58.sections, JSON.stringify({ after: after58, whileTyping: typing58 }))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+
+    // ── step 66 — ⌘S: the flush, and the row is really there ──
+    await page.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    const labels58 = []
+    const watching58 = page.evaluate(() => new Promise((done) => {
+      const seen = []
+      const el = document.querySelector('#editor-save-state [role="status"]')
+      const obs = new MutationObserver(() => { const t = el.textContent; if (t !== seen[seen.length - 1]) seen.push(t) })
+      obs.observe(el, { childList: true, subtree: true, characterData: true })
+      setTimeout(() => { obs.disconnect(); done(seen) }, 8000)
+    }))
+    // read HERE and not at step 61: this walk is long enough for the 3-minute timer to have flushed in between, which
+    // is the feature working and would otherwise make the +1 below arithmetic about the wrong number
+    const beforeSave58 = await revisionNow58()
+    await page.keyboard.press(`${CMD58}+s`)
+    labels58.push(...(await watching58))
+    const flushedRevision58 = await revisionNow58()
+    const flushedDoc58 = await homeDocNow58()
+    check('step 66 — ⌘S: the indicator goes Syncing → Synced (B6\'s two in-flight labels, and never a spinner)',
+      labels58.includes(JOURNAL58.labelOf({ kind: 'syncing' })) && labels58.includes(JOURNAL58.labelOf({ kind: 'synced' })), JSON.stringify(labels58))
+    // B6's "Fades to the resting label after a few seconds" is read LIVE rather than off the recording: it is a state
+    // the indicator RESTS in, so asking what it says NOW is the stronger question and cannot be missed by a mutation
+    // frame that batched two changes into one.
+    const settled66 = await page.waitForFunction((resting) => document.querySelector('#editor-save-state [role="status"]')?.textContent === resting, RESTING58, { timeout: 15000 }).then(() => true, () => false)
+    check('step 66 — and it fades to the resting label after a few seconds (B6\'s fourth transition)', settled66, await page.locator('#editor-save-state [role="status"]').innerText())
+    check('step 66 — and it really wrote: projects.revision advanced by exactly one and the stored doc is the edited one',
+      flushedRevision58 === beforeSave58 + 1 && Array.isArray(flushedDoc58?.instances), `revision ${beforeSave58} → ${flushedRevision58} · ${flushedDoc58?.instances?.length} instances`)
+
+    // ── step 67 — FR-D9's whole promise: the work AND the history survive a reload ──
+    const namesBeforeReload58 = await namesNow58()
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const afterReload58 = { names: await namesNow58(), topBar: await topBarNow() }
+    check('step 67 — a reload comes back to the LOCAL document, not the cloud one (the revisions agree, so both survive)',
+      JSON.stringify(afterReload58.names) === JSON.stringify(namesBeforeReload58), JSON.stringify(afterReload58.names))
+    check('step 67 — and the history survived with it: the left arrow is awake and the right one sleeps — the journal kept its entries AND its pointer', afterReload58.topBar.undo?.disabled === null && afterReload58.topBar.redo?.disabled === 'true', JSON.stringify(afterReload58.topBar))
+    // FR-D9'S WHOLE PROMISE, walked rather than asserted in one press: the head of the journal after step 65 is the
+    // TYPING, so the first presses take letters back off the title and the deletion is further down. Undo is pressed
+    // until the section returns — which is exactly what the owner's manual test does, and what "the arrow still brings
+    // it back with everything you had typed into it" means. The bound is the journal's own depth, read from the module.
+    let reachedBack58 = await namesNow58()
+    let presses58 = 0
+    while (reachedBack58.length <= namesBeforeReload58.length && presses58 < JOURNAL58.DEPTH) {
+      if ((await page.locator('#editor-undo').getAttribute('aria-disabled')) === 'true') break
+      await page.locator('#editor-undo').click()
+      await page.waitForTimeout(350)
+      reachedBack58 = await namesNow58()
+      presses58 += 1
+    }
+    check('step 67 — FR-D9: undo reaches THROUGH the reload and brings the deleted section back, with everything that was typed after it',
+      reachedBack58.length === namesBeforeReload58.length + 1 && reachedBack58.includes(victim58), `${presses58} presses · ${JSON.stringify(reachedBack58)}`)
+
+    // ── step 68 — §AD1.1's second row: another writer moves the revision, and the journal is CLEARED ──
+    // The service role is the second writer — the only role that may set `revision` to anything at all — which is
+    // exactly what a second tab's flush looks like to this one.
+    const moved58 = await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ revision: (await revisionNow58()) + 1 }) })
+    check('step 68 — a second writer advances projects.revision', moved58.status === 200 || moved58.status === 204, `HTTP ${moved58.status}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const cleared58 = await topBarNow()
+    check('step 68 — AD-15: the cloud doc replaces the local one and the JOURNAL IS CLEARED — both arrows are asleep again',
+      cleared58.undo?.disabled === 'true' && cleared58.redo?.disabled === 'true', JSON.stringify(cleared58))
+    check('step 68 — and the canvas shows the CLOUD document: the section ⌘S sent is the one on screen',
+      JSON.stringify(await namesNow58()) === JSON.stringify(namesBeforeReload58), JSON.stringify(await namesNow58()))
+
+    // ── step 69 — B6's Retrying panel: ONE control (R-140), and Retry now recovers ──
+    // The connection is failed at the route rather than at the network, so nothing else in the session is affected and
+    // the failure is exactly the one the editor must survive: the flush cannot reach the server.
+    await page.route('**/projects/*/sync', (r) => r.abort('failed'))
+    // HIDE rather than Delete, and on `GRID`: this step needs ONE unsynced edit and nothing about which one. Three Up
+    // is on the canvas whatever steps 62 to 68 left behind, where the Newsletter row may be deleted or restored.
+    await fromMenu(GRID, 'Hide')
+    await page.keyboard.press(`${CMD58}+s`)
+    await page.waitForFunction(() => /Retrying/.test(document.querySelector('#editor-save-state [role="status"]')?.textContent ?? ''), null, { timeout: 15000 })
+    const panel58 = await page.evaluate(() => {
+      const el = document.getElementById('editor-retrying')
+      if (!el) return null
+      const cs = getComputedStyle(el)
+      const controls = [...el.querySelectorAll('button, a, [role="button"]')]
+      return {
+        fill: cs.backgroundColor, radius: cs.borderTopLeftRadius, padding: `${cs.paddingTop} ${cs.paddingLeft}`,
+        // B6's own note: "its first sentence is the reassurance rather than the error"
+        first: el.children[0]?.textContent ?? null,
+        reassurance: el.children[1]?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
+        controls: controls.map((c) => c.textContent.replace(/\s+/g, ' ').trim()),
+        label: document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null,
+        spinners: el.querySelectorAll('[class*="animate"]').length,
+      }
+    })
+    check('step 69 — B6: the panel opens on Retrying, at the frame\'s own fill, radius and padding, with the countdown beside it',
+      panel58 && panel58.fill === 'rgb(253, 236, 236)' && panel58.radius === '10px' && panel58.padding === '11px 12px' && /Retrying · \d+s/.test(panel58.label ?? ''), JSON.stringify(panel58))
+    check('step 69 — B6: its first line counts the attempt and its SECOND is the reassurance, never the error',
+      /^Retrying, \w+ attempt$/.test(panel58?.first ?? '') && /^Your work is safe on this device\./.test(panel58?.reassurance ?? ''), JSON.stringify(panel58))
+    check('step 69 — R-140 (owner, 2026-09-19): the panel carries "Retry now" AND NO SECOND CONTROL — "Download a copy" is ABSENT, never greyed',
+      panel58?.controls.length === 1 && /^Retry now/.test(panel58.controls[0]), JSON.stringify(panel58?.controls))
+    check('step 69 — and no spinner anywhere in it', panel58?.spinners === 0, String(panel58?.spinners))
+    await page.unroute('**/projects/*/sync')
+    await page.locator('#editor-retry-now').click()
+    await page.waitForFunction(() => document.getElementById('editor-retrying') === null, null, { timeout: 20000 })
+    const recovered58 = await topBarNow()
+    check('step 69 — Retry now: the panel closes, the indicator leaves Retrying and nothing was lost',
+      recovered58.panel === false && recovered58.label !== null && !/Retrying/.test(recovered58.label), JSON.stringify(recovered58))
+
+    // Story 5.8's steps have been EDITING, and since this story an edit reaches the stored doc — so the seed is handed
+    // back before steps 6, 6b and 7, which read it. Same `freshLoad` the rest of the walk uses.
+    await freshLoad()
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, and Story 5.7\'s device changes, folds, arrows and the 40-section fixture — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, and Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -2584,20 +2918,24 @@ async function main() {
     // Home shows the app's error boundary and no canvas. Production replaces the thrown sentence with a digest, so the
     // boundary and the absence of a canvas are what a deployed run can read. The row is removed again afterwards.
     const [postOnly] = TEMPLATES.post
-    const bad = await call('/rest/v1', '/project_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: 'tag', doc: { schemaVersion: 1, instances: [{ instanceId: 'bad-1', layerName: 'Wrong canvas', designId: postOnly[0], content: {}, controls: {}, data: {}, darkOverrides: {} }] } }) })
-    check('step 6b — a tag row placing a post-only design is written', bad.status === 201, `HTTP ${bad.status}`)
+    // UPSERT, not INSERT. Since Story 5.8 the editor WRITES `project_templates`, so by the time this walk reaches
+    // here a `tag` row may legitimately exist from a step that designed that canvas — and a plain POST answers 409.
+    const badDoc = { schemaVersion: 1, instances: [{ instanceId: 'bad-1', layerName: 'Wrong canvas', designId: postOnly[0], content: {}, controls: {}, data: {}, darkOverrides: {} }] }
+    const bad = await call('/rest/v1', '/project_templates', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: 'tag', doc: badDoc }) })
+    check('step 6b — a tag row placing a post-only design is written', bad.status === 200 || bad.status === 201, `HTTP ${bad.status}`)
+    // `dropLocal` and not `freshLoad`: a bad doc means the canvas NEVER paints, so waiting for one would be the
+    // harness timing out on the very state this step exists to read
+    await dropLocal()
     await page.goto(editorUrl(), { waitUntil: 'load' })
     const loud = await page.locator('h1').first().innerText().catch(() => '')
     const canvases = await page.locator('section[aria-label="Canvas"]').count()
     check('step 6b — the editor shows the error boundary and no canvas, never a partly drawn one', /couldn.t show that/i.test(loud) && canvases === 0, `h1 ${JSON.stringify(loud)} · canvases ${canvases}`)
     const unbad = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.tag`, { method: 'DELETE' })
     check('step 6b — the bad row is removed and Home paints again', unbad.status === 200 || unbad.status === 204, `HTTP ${unbad.status}`)
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
 
     // ── step 7 — scroll ──
-    await page.goto(editorUrl(), { waitUntil: 'load' })
-    await painted('home')
+    await freshLoad()
     const box = await page.locator('section[aria-label="Canvas"]').boundingBox()
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
     await page.mouse.wheel(0, 800)
@@ -2605,6 +2943,29 @@ async function main() {
     const scroll = { window: await page.evaluate(() => ({ scrollHeight: document.documentElement.scrollHeight, innerHeight, scrollY })), canvas: await canvasFrame().evaluate(() => document.scrollingElement.scrollTop) }
     check('step 7 — the window cannot scroll, and the wheel over the canvas scrolls the canvas document', scroll.window.scrollHeight === scroll.window.innerHeight && scroll.window.scrollY === 0 && scroll.canvas > 0, JSON.stringify(scroll))
     await context.close()
+
+    // ── step 70 — FR-D10's honest fallback, in its OWN context ──
+    // IN ITS OWN CONTEXT because the only way to model "this browser has no IndexedDB" is an init script, and an init
+    // script cannot be taken off a page again — leaving it on would silently disable the local store for every step
+    // after it. Its own recorder, so its own zero is its own result.
+    const noIdbViolations = []
+    const noIdb = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(noIdb, noIdbViolations)
+    await noIdb.addInitScript(() => {
+      Object.defineProperty(window, 'indexedDB', { configurable: true, get() { throw new Error('site data is switched off in this browser') } })
+    })
+    const noIdbPage = await noIdb.newPage()
+    await noIdbPage.goto(await magic(emailA), { waitUntil: 'load' })
+    await noIdbPage.goto(editorUrl(), { waitUntil: 'load' })
+    await noIdbPage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const fallbackBar = await noIdbPage.evaluate(() => ({
+      label: document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null,
+      canvases: document.querySelectorAll('section[aria-label="Canvas"]').length,
+    }))
+    check('step 70 — FR-D10: with no IndexedDB the editor still opens and paints, and the indicator says exactly what is true — never the resting label',
+      fallbackBar.canvases === 1 && fallbackBar.label === FALLBACK_LABEL58 && fallbackBar.label !== RESTING58, JSON.stringify(fallbackBar))
+    check('step 70 — that context records zero CSP violations of its own', noIdbViolations.length === 0, JSON.stringify(noIdbViolations))
+    await noIdb.close()
 
     // ── step 8 — axe, in its own context (bypassCSP: axe is injected, which the policy would refuse) ──
     const axeContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, bypassCSP: true })

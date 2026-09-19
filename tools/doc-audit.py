@@ -506,6 +506,15 @@ DOCS = [
   "document's own nonce as the control; the URL scheme's statuses, identical 404s and Back; the canvas scrolling while "
   'the window cannot; axe-core at WCAG 2.1 AA after a positive control; and the skeleton in the raw stream. Both accounts '
   'deleted with the user count read before and after. Refuses a dirty tree or a deployment that is not HEAD.'),
+ ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
+  "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
+  'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
+  'Admin API, signed in by magic link and deleted again in a finally. Asserts the Saving card is drawn in its '
+  "neighbours' own shell (R-74), that its sentence says the work is always kept on the device and also sent every few "
+  "minutes, that turning it OFF asks first in the app's one 460px dialog opening on Cancel (R-115, UX-DR14) and that "
+  "the dialog states what it costs (AD-15: the timer alone stops), that Cancel writes nothing, that confirming writes "
+  'profiles.autosave_enabled = false per USER, and that turning it back on asks nothing. Every assertion is read back '
+  'off the database rather than off the switch. Takes APP_ORIGIN/APP_PREFIX for a local build.'),
  ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
   'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '
   "way createProject makes them, and site, home and post project_templates rows holding the pilots at their default "

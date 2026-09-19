@@ -74,6 +74,14 @@ export async function setProjectMode(_previous: SettingsResult | null, formData:
  * ONE definition of what a clear MEANS — `clearDarkOverrides`, the same function the per-section confirm calls
  * (`doc-edit.ts`), applied instance by instance so 5.8's journal and Epic 7's compiler read the rule rather than
  * re-derive it. A row whose doc holds no override is not written at all, so the write touches only what it must.
+ *
+ * DW-197, CLOSED BY STORY 5.8. It used to write ROW BY ROW through PostgREST, with no transaction and no revision
+ * check: a failure on the fourth template left three cleared and three not, and a clear racing the editor's own flush
+ * could silently overwrite an edit the customer had just made. It now goes through `public.sync_project_doc()` — the
+ * same `security definer` RPC AD-15's flush uses — so all of it lands in ONE transaction, the compare-and-set on
+ * `projects.revision` refuses rather than clobbers, and there is ONE definition in the product of what a guarded doc
+ * write is. `revision` is read first and handed back as `p_base`; a refusal means somebody wrote between the two, and
+ * the customer is told to try again rather than having their editor's work quietly replaced.
  */
 export async function clearProjectDarkOverrides(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
   const id = idOf(formData)
@@ -83,13 +91,15 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
   const supabase = await supabaseServer()
   // D6b's greyed Clear is refused HERE, not only by the button: with scripts off `aria-disabled` still submits, and
   // "the overrides are kept, not discarded" is a promise about the database (FR-D7, AD-17). Review, 2026-09-18.
-  const project = await supabase.from('projects').select('dark_enabled').eq('id', id).maybeSingle()
+  // `revision` rides in on the SAME read the greyed-Clear refusal already needed, so the guard costs no extra query
+  const project = await supabase.from('projects').select('dark_enabled, revision').eq('id', id).maybeSingle()
   if (project.error || !project.data || project.data.dark_enabled === false) return { error: COULD_NOT.clear }
   const { data, error } = await supabase.from('project_templates').select('template_key, doc').eq('project_id', id)
   if (error) {
     console.error('projects/settings: templates read failed', { code: error.code })
     return { error: COULD_NOT.clear }
   }
+  const cleared: Record<string, ProjectDoc> = {}
   for (const row of data ?? []) {
     const key = row.template_key as string
     let doc: ProjectDoc
@@ -108,12 +118,22 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
       doc = next
       changed = true
     }
-    if (!changed) continue
-    const written = await supabase.from('project_templates').update({ doc }).eq('project_id', id).eq('template_key', key).select('template_key')
-    if (written.error || written.data.length === 0) {
-      console.error('projects/settings: clear write failed', { code: written.error?.code })
-      return { error: COULD_NOT.clear }
-    }
+    if (changed) cleared[key] = doc
+  }
+  // NOTHING TO CLEAR IS A SUCCESS AND NOT A WRITE: the RPC would refuse an empty object, and advancing the revision
+  // over a change nobody made would invalidate every open editor's `base_revision` for nothing.
+  if (Object.keys(cleared).length === 0) {
+    revalidateProject(id)
+    return { ok: true }
+  }
+  const { data: answer, error: rpcError } = await supabase.rpc('sync_project_doc', {
+    p_project: id,
+    p_docs: cleared,
+    p_base: project.data.revision,
+  })
+  if (rpcError || answer === null || (answer as { applied: boolean }).applied !== true) {
+    console.error('projects/settings: clear write refused', { code: rpcError?.code, applied: (answer as { applied?: boolean } | null)?.applied ?? null })
+    return { error: COULD_NOT.clear }
   }
   revalidateProject(id)
   return { ok: true }

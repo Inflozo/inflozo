@@ -14,6 +14,7 @@ import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
+import { SaveState } from '@/components/editor/save-state'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
@@ -23,12 +24,18 @@ import { Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
-import { ChevronLeft, Panel } from '@/components/kit/icons'
+import { ChevronLeft, Panel, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, deviceShown, fitFor, type Device } from '@/lib/device'
-import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import {
+  append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS, holdsCaret,
+  flushDecision, hydrationFor, maxSeq, redo as redoIn, shortcutFor, SYNCED_MS, undo as undoIn, unsynced,
+  vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
+} from '@/lib/journal'
+import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
@@ -225,12 +232,17 @@ export function Editor({
   synthesized,
   defaults: stacks,
   darkEnabled,
+  revision,
+  userId,
+  autosave,
 }: EditorData & { project: { id: string; name: string } }) {
   const pathname = usePathname()
   // the layout 404s every segment that is not a canvas, so a null here is never drawn
   const key = canvasOfPath(stripApp(pathname)) ?? 'home'
   const canvas = CANVASES[key]
-  // Edits live here for the session: nothing writes `project_templates` before Story 5.8, so a reload starts again
+  // STORY 5.8 — EDITS NO LONGER LIVE FOR THE SESSION. They are still held here, and they are also written to this
+  // browser's IndexedDB on every `commit()` and sent to the server on the timer, at tab close and on ⌘S. The server's
+  // docs are the OPENING value only: the hydrate below replaces them with the local ones when the revisions agree.
   const [docs, setDocs] = useState(stored)
   /** Story 5.5 — the canvases that are UNTOUCHED right now: D5a's Layers marker and D5b's hollow dot read this one set.
    *  It starts as the server's `synthesized` and `commit()` is the only thing that changes it. */
@@ -252,6 +264,32 @@ export function Editor({
    *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
    *  card fills the room available. */
   const [device, setDevice] = useState<Device>(DESKTOP)
+
+  /* ─── Story 5.8 — the journal, the indicator and the flush ───────────────────────────────────────────────────────
+   *
+   * THE JOURNAL IS THE UNDO STACK (AD-15), which is why undo surviving a reload costs nothing extra: the same records
+   * that say what to send are the records that say what to put back. Its rules are `lib/journal.ts`'s, where
+   * `node --test` reaches them; this component holds the state and the effects.
+   *
+   * THE FIRST PAINT IS GATED ON THE LOCAL READ. A reload must never flash the cloud document over the local one, so
+   * `paint()` returns early until `hydrated` and the skeleton stays up for the one IndexedDB round trip.
+   */
+  const [journal, setJournal] = useState<Journal>(EMPTY_JOURNAL)
+  const [sync, setSync] = useState<SyncState>({ kind: 'rest' })
+  const [hydrated, setHydrated] = useState(false)
+  // `paint()` is called from the canvas document's own handlers, which never re-close over a new render's state
+  const hydratedRef = useRef(false)
+  /** B6's "Retry now" is in flight — R-98's swapped label and its two aria attributes */
+  const [pressingRetry, setPressingRetry] = useState(false)
+  const [conflicted, setConflicted] = useState(false)
+  const conflict = useRef<HTMLDialogElement>(null)
+  /** null means FALLBACK MODE: IndexedDB refused, or a write failed, and every change goes straight to the cloud */
+  const local = useRef<LocalStore | null>(null)
+  /** AD-15's `base_revision`: the `projects.revision` this session's document descends from */
+  const base = useRef(revision)
+  const attempt = useRef(0)
+  const inFlight = useRef(false)
+  const clocks = useRef<{ settle?: ReturnType<typeof setTimeout>; retry?: ReturnType<typeof setInterval> }>({})
 
   const layers = useFold()
   const controls = useFold()
@@ -304,8 +342,8 @@ export function Editor({
    *  DOM — so this line is the whole of the change. */
   const scale = fitFor(size, device)
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal }
 
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
@@ -318,11 +356,199 @@ export function Editor({
    *  (FR-D5): a hidden instance is retained, so `isDesigned` is still true. */
   const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string) => {
     const now = latest.current
+    // STORY 5.8: the touched doc either side of the transaction — the journal's whole record, taken HERE because this
+    // is the only place that knows both (`addendum.md` §AD4). `before` is the SETTLED doc, so restoring it and running
+    // `committed()` over it again is a no-op on the round trip rather than a second decision.
+    const before = now.docs[touched] ?? EMPTY_DOC
     const next = committed(written, touched, stacks, now.auto)
     if (next.auto !== now.auto) setAuto(next.auto)
     latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key) }
     setDocs(next.docs)
+    journalise(touched, before, next.docs[touched] ?? EMPTY_DOC)
     return next.back
+  }
+
+  /* ─── Story 5.8 — one gesture, one transaction, one undo step, one edit (AD-16) ───────────────────────────────── */
+
+  /** The indicator back to B6's resting label. Never out of FALLBACK, which is sticky: once the device is not holding
+   *  the work, nothing may print a label that says it is. */
+  const rest = () => setSync((was) => (was.kind === 'fallback' ? was : { kind: 'rest' }))
+
+  /** B6's "Synced", then its "Fades to the resting label after a few seconds". */
+  const showSynced = () => {
+    setSync((was) => (was.kind === 'fallback' ? was : { kind: 'synced' }))
+    clearTimeout(clocks.current.settle)
+    clocks.current.settle = setTimeout(rest, SYNCED_MS)
+  }
+
+  /** The device is no longer holding the work, from this moment. The indicator changes in the same task the failure
+   *  arrives in — never a stale *"Saved on this device"* — and every later change goes straight to the cloud. */
+  const toFallback = () => {
+    local.current = null
+    setSync({ kind: 'fallback' })
+  }
+
+  /**
+   * THE LOCAL WRITE, AND NOTHING AWAITS IT (FR-D10, NFR-1). `commit()` has already returned by the time this runs, so
+   * a slow or failing IndexedDB changes the indicator and never the edit.
+   */
+  const store = (j: Journal, docs: Readonly<Record<string, ProjectDoc>>, auto: ReadonlySet<CanvasKey>, entry?: Parameters<LocalStore['push']>[1], dropped?: readonly number[]) => {
+    const s = local.current
+    if (!s) {
+      // FALLBACK: there is nowhere local to put it, so the cloud is the only place it can be
+      void flush('change')
+      return
+    }
+    void (async () => {
+      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j })
+      const pushed = entry ? await s.push(project.id, entry, dropped ?? []) : true
+      if (!wrote || !pushed) {
+        toFallback()
+        void flush('change')
+      }
+    })()
+  }
+
+  /** One transaction appended to the journal and written to the device. */
+  const journalise = (docKey: string, before: ProjectDoc, after: ProjectDoc) => {
+    const now = latest.current
+    const { journal: next, entry, dropped } = append(now.journal, { txn: crypto.randomUUID(), docKey, before, after })
+    latest.current = { ...latest.current, journal: next }
+    setJournal(next)
+    rest()
+    store(next, latest.current.docs, latest.current.auto, entry, dropped)
+  }
+
+  /**
+   * An undo or a redo applied: ONE doc, whole.
+   *
+   * FR-D9's "never half-applying" is this function's shape. The restored doc is checked against the library BEFORE any
+   * of it is applied — one check, one assignment — and a design the library no longer holds no-ops with a notice and
+   * leaves the pointer where it was.
+   *
+   * AD-22's round trip is decided by `committed()`, exactly as a forward edit decides it: taking the last section off a
+   * synthesizable canvas and then undoing it moves the marker back and forth through the one rule.
+   */
+  const restore = (r: Restore | null) => {
+    if (!r) return
+    const missing = vanishedDesign(r.doc, (id) => entries[id] !== undefined)
+    if (missing) {
+      setSaid(`That change cannot be undone: the ${missing} design is no longer in the library.`)
+      return
+    }
+    const now = latest.current
+    const next = committed({ ...now.docs, [r.docKey]: r.doc }, r.docKey, stacks, now.auto)
+    if (next.auto !== now.auto) setAuto(next.auto)
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key), journal: r.journal }
+    setDocs(next.docs)
+    setJournal(r.journal)
+    // a selection cannot outlive the section it was on, exactly as `apply()` decides it
+    if (now.selected && !next.docs[now.selected.doc]?.instances.some((i) => i.instanceId === now.selected?.instanceId)) choose(null)
+    paint()
+    rest()
+    store(r.journal, next.docs, next.auto)
+  }
+
+  /** THE ARROWS AND THE KEYS CALL THESE TWO AND NOTHING ELSE (R-141): one handler, never a second implementation. */
+  const onUndo = () => restore(undoIn(latest.current.journal))
+  const onRedo = () => restore(redoIn(latest.current.journal))
+
+  /* ─── Story 5.8 — the flush: one route, three callers (AD-15) ──────────────────────────────────────────────────
+   *
+   * The 3-minute timer, ⌘S and tab close all post the same body to the same route. There is exactly one place the
+   * compare-and-set can be got wrong, and `sync/route.ts` is it.
+   *
+   * A CONFLICT WRITES NOTHING. `addendum.md` §AD1.1 resolves a differing revision at LOCK ACQUISITION, and there is no
+   * lock until Story 5.17 — but a second tab is reachable today. The smallest honest answer, inventing no vocabulary:
+   * the RPC refuses, and the editor opens the app's one dialog offering a reload. A reload IS a hydrate, so it runs
+   * §AD1.1's second row exactly. Declining leaves the indicator at "Saved on this device", which is true, and the next
+   * flush asks again.
+   */
+  const stopRetrying = () => {
+    clearInterval(clocks.current.retry)
+    clocks.current.retry = undefined
+  }
+
+  /** The backoff, counted down a second at a time so waiting feels finite (B6). */
+  const scheduleRetry = () => {
+    stopRetrying()
+    attempt.current += 1
+    let left = backoffSeconds(attempt.current)
+    setSync({ kind: 'retrying', attempt: attempt.current, seconds: left })
+    clocks.current.retry = setInterval(() => {
+      left -= 1
+      if (left > 0) {
+        setSync({ kind: 'retrying', attempt: attempt.current, seconds: left })
+        return
+      }
+      stopRetrying()
+      void flush('retry')
+    }, 1000)
+  }
+
+  /** THE SYNC ROUTE'S ADDRESS AS THE BROWSER MUST ASK FOR IT. On `app.inflozo.com` the proxy adds the internal `/app`
+   *  prefix, so a plain `/projects/<id>/sync` is right; on localhost there is no proxy and the page itself is under
+   *  the prefix, so the fetch must carry it. The same rule `canvasSrc` applies to the canvas iframe, read from the
+   *  same `isApp(pathname)` (`routing.ts`) — one rule, two callers, never a second literal. */
+  const syncUrl = () => `${isApp(pathname) ? '/app' : ''}${syncPath(project.id)}`
+
+  const flush = async (why: FlushCall) => {
+    const now = latest.current
+    // ONE decision, in `lib/journal.ts` where `node --test` reaches it: autosave off stops the TIMER alone, nothing
+    // owed sends nothing at all, and ⌘S is acknowledged either way — three matrix rows, one function.
+    const asked = flushDecision(now.journal, why, autosave)
+    if (asked === 'acknowledge') {
+      showSynced()
+      return
+    }
+    if (asked === 'nothing') return
+    const payload = flushPayload(now.journal, now.docs)
+    if (Object.keys(payload).length === 0) return
+    if (inFlight.current) return
+    inFlight.current = true
+    // the clock this request is sending AT: an edit that lands while it is in flight has a higher stamp and is kept
+    const sentStamp = now.journal.stamp
+    const upTo = maxSeq(now.journal)
+    setSync((was) => (was.kind === 'fallback' ? was : { kind: 'syncing' }))
+    try {
+      const answer = await fetch(syncUrl(), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ base: base.current, docs: payload }),
+      })
+      if (answer.status === 409) {
+        // ANOTHER SESSION WROTE. Nothing was written and nothing of ours is lost — the local doc is untouched.
+        stopRetrying()
+        attempt.current = 0
+        rest()
+        setConflicted(true)
+        requestAnimationFrame(() => openOnCancel(conflict.current))
+        return
+      }
+      if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
+      const done = (await answer.json()) as { applied: boolean; revision: number }
+      base.current = done.revision
+      const next = flushed(latest.current.journal, sentStamp, upTo)
+      latest.current = { ...latest.current, journal: next }
+      setJournal(next)
+      stopRetrying()
+      attempt.current = 0
+      store(next, latest.current.docs, latest.current.auto)
+      showSynced()
+    } catch {
+      // offline, a 5xx, a dropped connection: the local doc is untouched and nothing is lost
+      scheduleRetry()
+    } finally {
+      inFlight.current = false
+    }
+  }
+
+  /** B6's "Retry now": the backoff resets and the flush fires at once. R-98's busy state is `pressingRetry`. */
+  const retryNow = () => {
+    stopRetrying()
+    attempt.current = 0
+    setPressingRetry(true)
+    void flush('retry').finally(() => setPressingRetry(false))
   }
 
   /** Each root's two attributes, from the latest selection and hover — after every paint, stamp and change of either. */
@@ -402,6 +628,10 @@ export function Editor({
     // before the icons resolve or the frame loads this returns early ON PURPOSE: the icons callback and the frame's
     // `load` listener each paint `latest` when they land, so a key change dropped here is painted then
     if (!doc || !mount || !lookup || !frame.current) return
+    // STORY 5.8: AND BEFORE THE LOCAL STORE HAS ANSWERED. A reload must never flash the cloud document over the local
+    // one, so nothing is drawn until the hydrate below has decided which document this session is editing; it paints
+    // when it lands, exactly as the two above do.
+    if (!hydratedRef.current) return
     const now = latest.current
     // Story 5.6: the mode is ONE attribute on the canvas root, and every paint re-asserts it — the token block
     // (`tokens.ts`'s `:root[data-mode="dark"]`) does all the colouring from there (AD-30)
@@ -595,6 +825,32 @@ export function Editor({
     return true
   }
 
+  /* ─── Story 5.8 / R-141 — ⌘Z, ⇧⌘Z and ⌘S, on the shell and inside the canvas document ─────────────────────────
+   *
+   * ONE HANDLER, NOT A SECOND IMPLEMENTATION: the keys call the same `onUndo`/`onRedo` the arrows' `onClick` calls, so
+   * the two can never drift. The only rule of their own is the guard — while a field or a `contenteditable` holds the
+   * caret, ⌘Z returns WITHOUT preventing the default, so the browser's own undo owns the words being typed and Story
+   * 5.3's inline editing is untouched. Everywhere else the gesture is prevented, so the browser's page-level undo
+   * never competes for it. ⌘S is claimed in every focus state: Save Page As is never what the press meant.
+   *
+   * BOUND ON BOTH DOCUMENTS, because the caret is usually in the OTHER one: a press while editing a headline is
+   * delivered to the canvas document, which is a different window. `holdsCaret` is asked of whichever document the
+   * press arrived in, plus this component's own `editing` ref — a `contenteditable` span inside a canvas `<button>`
+   * is not the active element of anything until the caret is placed in it.
+   */
+  const onShortcut = (e: KeyboardEvent) => {
+    if (e.defaultPrevented) return
+    const target = e.target as HTMLElement | null
+    const active = target?.ownerDocument?.activeElement as HTMLElement | null
+    const inField = editing.current !== null || holdsCaret(target) || holdsCaret(active)
+    const gesture = shortcutFor(e, inField)
+    if (!gesture) return
+    e.preventDefault()
+    if (gesture === 'save') void flush('manual')
+    else if (gesture === 'undo') onUndo()
+    else onRedo()
+  }
+
   const onEscape = (e: KeyboardEvent) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return
     const target = e.target as HTMLElement | null
@@ -718,6 +974,8 @@ export function Editor({
       choose(pickAt(e.target))
     })
     doc.addEventListener('keydown', onEscape)
+    // R-141: the caret is usually IN HERE, so the keys are bound on this document too
+    doc.addEventListener('keydown', onShortcut)
   }
 
   // a change of canvas is a soft navigation: the iframe keeps its document and is repainted, and nothing stays chosen
@@ -743,6 +1001,8 @@ export function Editor({
     if (el?.contentDocument?.readyState === 'complete') ready()
     el?.addEventListener('load', ready)
     window.addEventListener('keydown', onEscape)
+    // R-141's three, on the shell. The canvas document gets the same handler in `wire()`.
+    window.addEventListener('keydown', onShortcut)
     // a press that starts on the canvas and lifts over the panel releases in the editor document, not the canvas's —
     // added once here, not once per canvas document wired (review, 2026-09-18)
     // ponytail: a lift outside the browser window reaches neither; the next press releases it
@@ -751,9 +1011,125 @@ export function Editor({
       alive = false
       el?.removeEventListener('load', ready)
       window.removeEventListener('keydown', onEscape)
+      window.removeEventListener('keydown', onShortcut)
       window.removeEventListener('mouseup', release)
     }
     // mount only
+  }, [])
+
+  /* ─── Story 5.8 — the hydrate (AD-15, `addendum.md` §AD1.1) ────────────────────────────────────────────────────
+   *
+   * ONE COMPARISON DECIDES EVERYTHING: the cloud revision against the local `base_revision`, and NOTHING ELSE.
+   * Equal → the local doc and the journal both survive. Different → the cloud doc replaces the local one and the
+   * journal is cleared. No local record → the server's docs and an empty journal.
+   *
+   * The takeover half of AD-15's journal-clearing rule (`lock_generation` advancing) is not here: nothing writes
+   * `edit_locks` until Story 5.17, so it has nothing to read. The revision half is, and a second tab reaches it today.
+   */
+  useEffect(() => {
+    let alive = true
+    const settle = (ok: boolean) => {
+      if (!alive) return
+      hydratedRef.current = true
+      setHydrated(true)
+      if (!ok) toFallback()
+      paint()
+    }
+    void (async () => {
+      const opened = await openLocal(userId)
+      if (!alive) return
+      if (!opened) {
+        // NO IndexedDB: private mode, a blocked upgrade, site data switched off. Every change goes straight up and the
+        // indicator says exactly that — never "Saved on this device" (FR-D10).
+        settle(false)
+        return
+      }
+      local.current = opened
+      askToPersist()
+      const held = await opened.read(project.id)
+      if (!alive) return
+      const how = hydrationFor(held, revision)
+      if (how.kind === 'local' && held) {
+        // A LOCAL DOC MAY NAME A DESIGN THE SERVER'S DOCS DO NOT, and `entries` was built from the server's — so the
+        // library is asked before the local document is trusted. Nothing today can reach this (no surface adds or
+        // swaps a design until 5.10 and 5.11), and the alternative to asking is a canvas that throws for the whole
+        // editor on the next load.
+        const unknown = Object.values(held.docs).some((doc) => vanishedDesign(doc, (id) => entries[id] !== undefined))
+        if (!unknown) {
+          const back = autoFrom(held.auto, canvases) as CanvasKey[]
+          base.current = held.baseRevision
+          latest.current = { ...latest.current, docs: held.docs, auto: new Set(back), journal: held.journal, stack: stackOf(held.docs, latest.current.key) }
+          setDocs(held.docs)
+          setAuto(new Set(back))
+          setJournal(held.journal)
+          if (unsynced(held.journal)) rest()
+          settle(true)
+          return
+        }
+      }
+      // §AD1.1's second and third rows: the server's docs win and the journal goes. `stored`, `synthesized` and
+      // `revision` are already this component's props, so nothing is re-read to do it.
+      base.current = revision
+      await opened.clearJournal(project.id)
+      if (!alive) return
+      latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
+      setJournal(EMPTY_JOURNAL)
+      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL })
+      settle(true)
+    })()
+    return () => {
+      alive = false
+    }
+    // one project, one mount — the `[id]` layout keeps this component through every canvas change
+  }, [])
+
+  /* ─── Story 5.8 — the three flush callers ─────────────────────────────────────────────────────────────────────
+   *
+   * AUTOSAVE OFF STOPS THE TIMER ALONE (AD-15, FR-D10). The local journal, tab close and ⌘S are unchanged, which is
+   * why the toggle's confirm can say plainly what it costs: not "your work is not saved" but "it goes up later".
+   */
+  useEffect(() => {
+    if (!hydrated || !autosave) return
+    const tick = setInterval(() => {
+      // the matrix's own row: nothing unsynced means NO REQUEST AT ALL, and the indicator does not move. `flush`
+      // asks `flushDecision` the same question, so this is the cheap guard and not a second rule.
+      if (unsynced(latest.current.journal)) void flush('timer')
+    }, FLUSH_MS)
+    return () => clearInterval(tick)
+  }, [hydrated, autosave])
+
+  useEffect(() => {
+    if (!hydrated) return
+    /** THE TAB IS GOING. `keepalive` is the only thing the browser promises to finish, and a Server Action cannot be
+     *  called from here at all — which is the whole reason the flush is a route handler. Nothing is shown: there is
+     *  nowhere to show it. */
+    const leaving = () => {
+      if (document.visibilityState !== 'hidden') return
+      const now = latest.current
+      // AUTOSAVE OFF DOES NOT STOP THIS (AD-15): `flushDecision` lets `unload` through, and the only question left is
+      // whether anything is owed.
+      if (flushDecision(now.journal, 'unload', autosave) !== 'send') return
+      const payload = flushPayload(now.journal, now.docs)
+      if (Object.keys(payload).length === 0) return
+      try {
+        void fetch(syncUrl(), {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ base: base.current, docs: payload }),
+          keepalive: true,
+        }).catch(() => {})
+      } catch {
+        // a tab that is already gone cannot be told anything
+      }
+    }
+    document.addEventListener('visibilitychange', leaving)
+    return () => document.removeEventListener('visibilitychange', leaving)
+  }, [hydrated, autosave])
+
+  // every timer this component owns, stopped with it
+  useEffect(() => () => {
+    clearTimeout(clocks.current.settle)
+    clearInterval(clocks.current.retry)
   }, [])
 
   // the fit: re-measured whenever a fold or the window changes THE ROOM AVAILABLE. The stage's content box, never the
@@ -989,7 +1365,14 @@ export function Editor({
         >
           <ChevronLeft size={15} />
         </Link>
-        <span className="max-w-[calc(50%-200px)] truncate text-ui-dense font-semibold">{project.name}</span>
+        <span className="max-w-[calc(50%-260px)] truncate text-ui-dense font-semibold">{project.name}</span>
+        {/* S4a`:32` — the bar's third item, directly after the project name. B6 governs its labels and its dot
+            colours (`prd.md:1335`, `EXPERIENCE.md:314`), so the resting state is a GREY dot and "Saved on this
+            device" where S4a draws a green one and the word "Saved"; the divergence is recorded in the spec's Code
+            Map. One indicator, one place (`EXPERIENCE.md`'s own rule), and never a spinner. */}
+        <span id="editor-save-state">
+          <SaveState state={sync} onRetry={retryNow} retrying={pressingRetry} />
+        </span>
         {/* D5a's centred group (:37), now the switcher ALONE: the owner removed the marker chip that stood beside it
             at his test of Story 5.5 (R-130) — the switcher's own row already carries the hollow dot and the word, and
             the Layers row still carries the sentence. ABSOLUTELY centred, as the frame draws it, so it does not move
@@ -1006,6 +1389,35 @@ export function Editor({
         <div className="ml-auto flex items-center gap-[10px]">
           {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
           <DeviceSwitch device={device} onDevice={pickDevice} />
+          {/* S4a`:41-43` — two 28 × 28 buttons, 8px radius, 2px apart, the unavailable one at `opacity:.35`. They sit
+              between the device track and Ship it (7.18), which is not built.
+              R-141 (owner, 2026-09-19) GIVES THEM ⌘Z AND ⇧⌘Z, and the keys call these very handlers — one
+              implementation, so the arrow and the key can never disagree. The frame draws no shortcut hint and none
+              is added; the title says what the control does, as every other icon button in this bar does.
+              `aria-disabled`, never `disabled`: the control stays in the tab order and stays announced (the Kit's own
+              line, and R-98's). */}
+          <div id="editor-history" className="flex items-center gap-[2px]">
+            <IconButton
+              id="editor-undo"
+              label="Undo"
+              title="Undo"
+              aria-disabled={!canUndo(journal) || undefined}
+              onClick={canUndo(journal) ? onUndo : undefined}
+              className={canUndo(journal) ? undefined : 'opacity-[.35]'}
+            >
+              <UndoIcon size={14} />
+            </IconButton>
+            <IconButton
+              id="editor-redo"
+              label="Redo"
+              title="Redo"
+              aria-disabled={!canRedo(journal) || undefined}
+              onClick={canRedo(journal) ? onRedo : undefined}
+              className={canRedo(journal) ? undefined : 'opacity-[.35]'}
+            >
+              <RedoIcon size={14} />
+            </IconButton>
+          </div>
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
               icon for it, and R-92 forbids inventing one here. */}
@@ -1253,6 +1665,48 @@ export function Editor({
             }}
           >
             {ask?.kind === 'remove' ? 'Delete section' : 'Hide section'}
+          </Button>
+        </div>
+      </dialog>
+
+      {/* STORY 5.8 — ANOTHER SESSION WROTE. `addendum.md` §AD1.1 resolves a differing revision at LOCK ACQUISITION and
+          there is no lock until Story 5.17, but a second tab is reachable today — so this is the honest stop-gap, in
+          the app's one dialog vocabulary and inventing none of its own. NOTHING OF THEIRS IS THROWN AWAY: the RPC
+          wrote nothing, the local doc is untouched, and a reload IS a hydrate, so Reload runs §AD1.1's second row
+          exactly — the cloud doc replaces the local one and the journal is cleared. Not now leaves the indicator at
+          "Saved on this device", which is TRUE, and the next flush asks again. Opens on the way OUT (R-115, UX-DR14),
+          which here is "Not now": losing this session's work is what the dialog is about. */}
+      <dialog
+        ref={conflict}
+        onClick={closeOnBackdrop}
+        aria-labelledby="editor-conflict-title"
+        aria-describedby="editor-conflict-body"
+        className={`${sheet} gap-[18px]`}
+      >
+        <div className="flex flex-col gap-[6px]">
+          <h2 id="editor-conflict-title" className={title}>
+            This project was changed somewhere else
+          </h2>
+          <p id="editor-conflict-body" className="text-ui-dense leading-[1.55] text-ink-soft">
+            Another tab or another device has saved this project since you opened it, so we have not sent your latest
+            changes — nothing of yours has been overwritten. Reloading brings that version in and starts again from it,
+            which means the changes you have made in this tab since then will be let go.
+          </p>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => conflict.current?.close()}>
+            Not now
+          </Button>
+          <Button
+            type="button"
+            variant="coral"
+            size={36}
+            onClick={() => {
+              conflict.current?.close()
+              window.location.reload()
+            }}
+          >
+            Reload
           </Button>
         </div>
       </dialog>

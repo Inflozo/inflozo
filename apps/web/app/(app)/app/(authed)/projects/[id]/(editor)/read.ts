@@ -41,18 +41,24 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * DROPPED with its reason, because throwing would black out four canvases the user never touched.
  */
 
+/** Story 5.8 — `revision` joins it too, and for the same reason `dark_enabled` did: AD-15's hydrate comparison is
+ *  `projects.revision` vs the local `base_revision` and NOTHING ELSE, so the cloud revision has to be SERVER TRUTH
+ *  read above the boundary rather than a number the client asks for afterwards. The column pre-exists
+ *  (`20260904120000_complete_schema.sql:231-232`); what this story's migration adds is the only function that can
+ *  MOVE it.
+ */
 /** Story 5.6 — `dark_enabled` joins the guard's own select (FR-D7's project mode, `projects.dark_enabled`, default
  *  true). It is SERVER TRUTH, exactly as 5.5 made synthesis server truth: the editor must not guess whether it may
  *  offer the sun, and `/projects/<id>/settings` reads the same cached row. No migration — the column pre-exists
  *  (`20260904120000_complete_schema.sql:224`), so this story has no Schema phase (R-99). */
 export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision').eq('id', id).maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
 
-export type Project = { id: string; name: string; dark_enabled: boolean }
+export type Project = { id: string; name: string; dark_enabled: boolean; revision: number }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -74,6 +80,17 @@ export type EditorData = {
   /** Story 5.6 — FR-D7: is this project Light + Dark? False means the sun is ABSENT from the bar, not disabled
    *  (UX-DR3, R-118), and every stored override is untouched (AD-17) */
   darkEnabled: boolean
+  /** Story 5.8 — AD-15's hydrate comparison, as SERVER TRUTH: the cloud revision the local `base_revision` is tested
+   *  against. Equal → the local doc and the journal both survive; different → the cloud doc replaces the local one and
+   *  the journal is cleared (`addendum.md` §AD1.1). */
+  revision: number
+  /** Story 5.8 — whose local store this is. IndexedDB is per ORIGIN, not per session, so two accounts on one browser
+   *  would otherwise share one database; the id names it (`lib/local-store.ts`). It is the caller's own id, which they
+   *  already carry in their session cookie. */
+  userId: string
+  /** Story 5.8 — FR-D10's per-USER autosave preference (`profiles.autosave_enabled`, the Account screen's toggle).
+   *  False stops THE TIMER ALONE: the local journal, tab close and ⌘S are unchanged (AD-15). */
+  autosave: boolean
   links: LinkResources
   /** the site's time zone name, printed under a date control */
   timezone: string
@@ -96,11 +113,17 @@ export type EditorData = {
 export async function editorData(projectId: string): Promise<EditorData> {
   // the client first, so the two reads below really run together (an await inside the array would serialise them)
   const sb = await supabaseServer()
-  const [{ data, error }, { plan }, project] = await Promise.all([
+  // Story 5.8: the user is needed for its own sake now — the local store is named after them — so `signedIn()` is
+  // awaited once and its id used twice rather than read a second time.
+  const user = await signedIn()
+  const [{ data, error }, { plan }, project, profile] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
-    signedIn().then((user) => resolveEntitlement(user.id)),
+    resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
     projectOf(projectId),
+    // FR-D10's toggle is per USER, not per device (`schema:118`). A read that FAILS answers true, which is the
+    // column's own default and the safe side of this one: autosave off is the state that sends less.
+    sb.from('profiles').select('autosave_enabled').eq('user_id', user.id).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -167,6 +190,25 @@ export async function editorData(projectId: string): Promise<EditorData> {
     synthesized.push(canvas)
   }
 
+  /* STORY 5.8 — EVERY PLACEABLE DESIGN THE LIBRARY HOLDS, not only the ones this project's STORED docs name.
+   *
+   * Found by execution, not by reading: the editor's local document can legitimately hold a design the server's does
+   * not. Delete the only section using one, let the flush go up, reload — the server's doc no longer names it, so
+   * `entries` no longer carried it, and UNDOING that deletion was refused by FR-D9's vanished-design guard as though
+   * the library had dropped the design. Worse, a local doc naming it could not be painted at all, so the hydrate fell
+   * back to the cloud and silently threw the customer's work away. (`run-verify-editor.cjs` step 67, 2026-09-19.)
+   *
+   * The editor must therefore be able to render ANY doc the library can place, which is also exactly what Story
+   * 5.10's "+ Add section" and Story 5.11's design swap will need. `held` is the lenient reader synthesis already
+   * uses: it answers `undefined` for a design the library does not hold rather than throwing, and it memoises into
+   * this same map, so a design already read above costs nothing.
+   *
+   * ponytail: every placeable design, eagerly. The library holds a handful today and each entry is a few KB; the day
+   * Epics 9 and 10 fill it, this becomes a per-design read the editor asks for when a doc names one it has not got
+   * (DW-200).
+   */
+  for (const id of pilotIds()) if (isPlaceable(id)) held(id)
+
   return {
     docs,
     entries,
@@ -175,6 +217,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },
     darkEnabled: project?.dark_enabled !== false,
+    revision: project?.revision ?? 0,
+    userId: user.id,
+    autosave: profile.data?.autosave_enabled !== false,
     links: linkResources(),
     // the dataset's own zone, as `/controls` and `/pilots` read it, until 5.18 reads the connected site's
     timezone: orbitWeekly.site().timezone,

@@ -1,0 +1,314 @@
+import type { ProjectDoc } from '@inflozo/section-runtime'
+
+/* THE JOURNAL, THE INDICATOR AND THE BACKOFF, AS PURE RULES (Story 5.8).
+ *
+ * Every rule that can be got wrong lives here, in a `.ts` `node --test` can import — the standing precedent
+ * `lib/device.ts` and `lib/round-trip.ts` set, and for the same reason: `node --test` strips types but cannot load a
+ * `.tsx`, so a rule that lives in `editor.tsx` is a rule no test can reach.
+ *
+ * ONE GESTURE = ONE TRANSACTION = ONE UNDO STEP = ONE EDIT (AD-16). `commit()` is the editor's only door to the
+ * session's docs and therefore the only caller of `append` below — so a Variant Shuffle (5.11) and a Style Pack change
+ * (6.3) inherit the rule by going through that door, and have nothing to add. AD-16's other half is negative and is
+ * kept by construction: nothing here counts OPERATIONS, and no count of any kind is rendered.
+ *
+ * THE RECORD IS `{ seq, txn, docKey, before, after }` — `addendum.md` §AD4 hands the record's shape to the Architect
+ * and keeps only the transaction id load-bearing, and it survives. A whole-doc before/after beats an inverse-op log
+ * here for three reasons the spec's Design Notes set out: one transaction touches exactly one doc, so an entry is one
+ * template's JSON; FR-D9's "never half-applying" is then one check before one assignment; and FR-D9's parked value
+ * comes back free, because the doc that comes back is the doc that was there.
+ *
+ * TWO PIECES OF STATE DO TWO DIFFERENT JOBS, and collapsing them is the bug this comment exists to prevent.
+ * `synced` is a WATERMARK over `seq` and answers AD-16's question — how many EDITS has the server not been told
+ * about. `pending` is the set of DOC KEYS whose content differs from what the server last accepted, and answers the
+ * only question a flush asks. They come apart at undo: an undo changes the document without appending an edit, so the
+ * watermark does not move and `pending` does — and a design that drove the flush off the watermark alone would never
+ * send an undo, which is work silently lost.
+ */
+
+/** FR-D9's depth. A DEFAULT WITH RATIONALE (`addendum.md` §AD4), owned by the Architect — not behaviour to change
+ *  without the owner. One entry is one edit, so this is a length. */
+export const DEPTH = 100
+
+/** One transaction: the touched doc either side of it. */
+export type JournalEntry = {
+  seq: number
+  /** the transaction id §AD4 makes load-bearing — opaque here, and never counted or displayed */
+  txn: string
+  /** the `project_templates.template_key` this transaction touched */
+  docKey: string
+  before: ProjectDoc
+  after: ProjectDoc
+}
+
+export type Journal = {
+  entries: readonly JournalEntry[]
+  /** how many entries at the TAIL are undone — the pointer, expressed as a distance from the head */
+  undone: number
+  /** the highest `seq` the server has accepted. AD-16's count is measured above this. */
+  synced: number
+  /** THE ONLY thing a flush reads: each doc key whose content differs from the server's, against the `stamp` of the
+   *  change that made it so. The stamp is what makes a flush safe to run CONCURRENTLY with editing — a key edited
+   *  again while the request was in flight has a higher stamp than the one that was sent, so the success does not
+   *  clear it and the newer content goes up next time. A plain set of keys loses that edit silently. */
+  pending: Readonly<Record<string, number>>
+  /** monotonic, bumped by every append, undo and redo — the clock `pending` is stamped against */
+  stamp: number
+  nextSeq: number
+}
+
+export const EMPTY_JOURNAL: Journal = { entries: [], undone: 0, synced: 0, pending: {}, stamp: 0, nextSeq: 1 }
+
+/** Is anything owed to the server? The matrix's "The timer, nothing unsynced" row is this answering false. */
+export const unsynced = (j: Journal) => Object.keys(j.pending).length > 0
+
+/** The highest `seq` the journal holds — the watermark a successful flush moves to. */
+export const maxSeq = (j: Journal) => j.entries.reduce((high, e) => Math.max(high, e.seq), j.synced)
+
+/** The entries still in force — the head is the last of them. */
+const live = (j: Journal) => (j.undone === 0 ? j.entries : j.entries.slice(0, j.entries.length - j.undone))
+
+export const canUndo = (j: Journal) => live(j).length > 0
+export const canRedo = (j: Journal) => j.undone > 0
+
+/**
+ * One transaction appended.
+ *
+ * THE UNDONE TAIL IS DISCARDED — the ordinary editor rule, and the reason `undone` is a distance rather than an
+ * index: the entries that were undone are simply no longer there, so nothing can redo into a history that the new
+ * edit has replaced.
+ *
+ * THEN TRIMMED FROM THE HEAD to `DEPTH`, so undo reaches back exactly that many edits and no further. The trim never
+ * touches the tail, so it can never move the pointer; `synced` is a seq and survives its entry being dropped.
+ */
+export function append(j: Journal, entry: Omit<JournalEntry, 'seq'>): { journal: Journal; entry: JournalEntry; dropped: readonly number[] } {
+  const kept = live(j)
+  const full: JournalEntry = { ...entry, seq: j.nextSeq }
+  const all = [...kept, full]
+  const over = Math.max(0, all.length - DEPTH)
+  const dropped = all.slice(0, over).map((e) => e.seq)
+  // the undone tail is gone as well as trimmed: both are entries this journal no longer holds
+  const gone = [...j.entries.slice(j.entries.length - j.undone).map((e) => e.seq), ...dropped]
+  return {
+    journal: {
+      entries: all.slice(over),
+      undone: 0,
+      synced: j.synced,
+      pending: { ...j.pending, [entry.docKey]: j.stamp + 1 },
+      stamp: j.stamp + 1,
+      nextSeq: j.nextSeq + 1,
+    },
+    entry: full,
+    dropped: gone,
+  }
+}
+
+/** What an undo or a redo asks the editor to put back: one doc, whole. */
+export type Restore = { journal: Journal; docKey: string; doc: ProjectDoc }
+
+/** The head entry undone: its `before` is restored and the pointer moves back one. */
+export function undo(j: Journal): Restore | null {
+  const kept = live(j)
+  const head = kept[kept.length - 1]
+  if (!head) return null
+  return {
+    journal: { ...j, undone: j.undone + 1, pending: { ...j.pending, [head.docKey]: j.stamp + 1 }, stamp: j.stamp + 1 },
+    docKey: head.docKey,
+    doc: head.before,
+  }
+}
+
+/** The first undone entry put back: its `after` is restored. */
+export function redo(j: Journal): Restore | null {
+  if (j.undone === 0) return null
+  const next = j.entries[j.entries.length - j.undone]
+  if (!next) return null
+  return {
+    journal: { ...j, undone: j.undone - 1, pending: { ...j.pending, [next.docKey]: j.stamp + 1 }, stamp: j.stamp + 1 },
+    docKey: next.docKey,
+    doc: next.after,
+  }
+}
+
+/**
+ * AD-16's count: EDITS the server has not been told about, never operations. Distinct transaction ids above the
+ * watermark — distinct because the record's shape may one day let one transaction write two rows, and the count must
+ * not become an operation count the day it does.
+ *
+ * NOTHING RENDERS THIS. It is the quantity AD-16 names as the only legitimate one, kept here so the day a surface
+ * needs it there is one definition rather than a second one invented beside it.
+ */
+export const unsyncedEdits = (j: Journal) => new Set(j.entries.filter((e) => e.seq > j.synced).map((e) => e.txn)).size
+
+/**
+ * After the server accepted what was sent at `sentStamp`, having been told about seqs up to `upTo`.
+ *
+ * A KEY CHANGED SINCE THE REQUEST LEFT IS KEPT. That is the whole reason `pending` carries a stamp: a flush is
+ * asynchronous, the editor is not frozen while it is in flight, and clearing the map wholesale on success would
+ * discard an edit the server has never seen — silently, which is the one failure this story exists to prevent.
+ */
+export const flushed = (j: Journal, sentStamp: number, upTo: number): Journal => ({
+  ...j,
+  synced: Math.max(j.synced, upTo),
+  pending: Object.fromEntries(Object.entries(j.pending).filter(([, at]) => at > sentStamp)),
+})
+
+/** Who asked for a flush. `unload` is the tab going, which cannot be acknowledged and cannot be refused. */
+export type FlushCall = 'timer' | 'manual' | 'change' | 'retry' | 'unload'
+
+/**
+ * WHETHER A FLUSH GOES OUT, in one place — three matrix rows that were each a condition written at the caller.
+ *
+ * `nothing` — the timer with AUTOSAVE OFF (AD-15: the timer ALONE stops, which is why `manual` and `unload` fall
+ * through it), and any caller with nothing owed.
+ * `acknowledge` — ⌘S with nothing owed. The press is ALWAYS answered: a keystroke that does nothing visible reads as
+ * broken, so the indicator says "Synced" and settles, without a request.
+ * `send` — there is something owed and this caller may send it.
+ */
+export const flushDecision = (j: Journal, why: FlushCall, autosave: boolean): 'send' | 'acknowledge' | 'nothing' =>
+  why === 'timer' && !autosave ? 'nothing' : unsynced(j) ? 'send' : why === 'manual' ? 'acknowledge' : 'nothing'
+
+/** The docs a flush must send: the pending keys, each with the doc as it stands NOW. A key whose doc has gone is
+ *  skipped rather than sent as null — the RPC upserts what it is given and a synthesized doc is never written, which
+ *  would materialise an untouched canvas and break AD-22. */
+export function flushPayload(j: Journal, docs: Readonly<Record<string, ProjectDoc>>): Record<string, ProjectDoc> {
+  const out: Record<string, ProjectDoc> = {}
+  for (const key of Object.keys(j.pending)) {
+    const doc = docs[key]
+    if (doc) out[key] = doc
+  }
+  return out
+}
+
+/**
+ * FR-D9: AN UNDO ENTRY WHOSE DESIGN THE LIBRARY NO LONGER HOLDS NO-OPS WITH A NOTICE, NEVER HALF-APPLYING. The WHOLE
+ * restored doc is checked before any of it is applied, which is the property the record's shape buys: an inverse-op
+ * replay would have to validate op by op and unwind on the third.
+ *
+ * Answers the first missing design id, or null when every one is held. A HIDDEN instance is checked too: it is still
+ * in the doc and still compiles the day it is shown again.
+ */
+export function vanishedDesign(doc: ProjectDoc, held: (designId: string) => boolean): string | null {
+  for (const instance of doc.instances) if (!held(instance.designId)) return instance.designId
+  return null
+}
+
+/* ───────────────────────────── B6's indicator, as a machine ─────────────────────────────
+ *
+ * Five states and four transitions, and NOTHING ELSE MAY DRIVE IT (`B Missing Surfaces.dc.html:1351-1388`).
+ *
+ *   idle ── commit ────────────▶ "Saved on this device"   (grey)
+ *     └──── flush starts ──────▶ "Syncing"                (coral)
+ *             ├── ok ──────────▶ "Synced" (mint) ──4s──▶ "Saved on this device"
+ *             └── fail ────────▶ "Retrying · {n}s" (danger) + B6's panel
+ *   no IndexedDB ─────────────▶ "Syncing every change to the cloud"  (grey, sticky)
+ *
+ * The resting label is *"Saved on this device"* and it stays true after a sync, because the local store is always
+ * written. It is the weaker of the two truths deliberately: the resting claim is the one always verifiable HERE.
+ *
+ * FALLBACK IS STICKY. Once IndexedDB has refused or a write has failed, nothing returns the indicator to a label that
+ * claims the device holds the work — not a successful sync, not a reload of the component. Only a new page load, with
+ * a store that opens, can leave it.
+ */
+export type SyncState =
+  | { kind: 'rest' }
+  | { kind: 'syncing' }
+  | { kind: 'synced' }
+  | { kind: 'retrying'; attempt: number; seconds: number }
+  | { kind: 'fallback' }
+
+/** B6's five labels, and the compile error for a sixth is the Kit's own union (`kit/persistence-indicator.tsx`). */
+export type SyncLabel =
+  | 'Saved on this device'
+  | 'Syncing'
+  | 'Synced'
+  | 'Retrying'
+  | 'Syncing every change to the cloud'
+
+export const labelOf = (s: SyncState): SyncLabel =>
+  s.kind === 'syncing' ? 'Syncing'
+  : s.kind === 'synced' ? 'Synced'
+  : s.kind === 'retrying' ? 'Retrying'
+  : s.kind === 'fallback' ? 'Syncing every change to the cloud'
+  : 'Saved on this device'
+
+/** B6's panel opens on Retrying AND ON NOTHING ELSE — the frame's own note, and an acceptance criterion. */
+export const panelOpen = (s: SyncState) => s.kind === 'retrying'
+
+/** B6's "Fades to the resting label after a few seconds" — the fourth transition. */
+export const SYNCED_MS = 4_000
+
+/** AD1's flush interval. A DEFAULT WITH RATIONALE (§AD4), not behaviour. */
+export const FLUSH_MS = 3 * 60 * 1000
+
+/** The retry backoff: 5 · 10 · 20 · 40 · 60, capped. `attempt` counts from 1. */
+export const BACKOFF_S = [5, 10, 20, 40, 60] as const
+export const backoffSeconds = (attempt: number) => BACKOFF_S[Math.min(Math.max(attempt, 1), BACKOFF_S.length) - 1] as number
+
+/* ───────────────────────────── R-141's three shortcuts ─────────────────────────────
+ *
+ * ONE HANDLER, NEVER A SECOND IMPLEMENTATION. R-141 (owner, 2026-09-19) is a SEQUENCING ruling and not a behavioural
+ * one: ⌘Z calls the same `undo()` the arrow's `onClick` calls, so the two can never drift. Its only rule of its own is
+ * the guard below.
+ *
+ * ⌘Z AND ⇧⌘Z ARE INERT WHILE A FIELD OR A `contenteditable` HOLDS THE CARET. The browser's own undo owns the words
+ * being typed and taking it would break Story 5.3's inline editing — so the handler returns `null` there, WITHOUT
+ * preventing the default. Everywhere else the gesture is ours and is prevented, so the browser's page-level undo never
+ * competes for it.
+ *
+ * ⌘S IS GUARDED THE SAME WAY IN REVERSE: it is claimed in every focus state, because the browser's Save Page As is
+ * never what the press meant.
+ *
+ * `[` `]`, `1` `2` `3`, `L`, `.`, `P`, `⇧R` and `Esc` are NOT here. They carry UX-DR11's focus condition, which is
+ * verified as one keyboard journey rather than one key at a time, so they stay Story 5.9's entire. R-141 draws the
+ * line at the modifier: a ⌘-modified binding cannot collide with typing on the canvas.
+ */
+export type Shortcut = 'undo' | 'redo' | 'save'
+
+/** Does this element own the caret — a form field, or anything `contenteditable`? */
+export const holdsCaret = (el: { tagName?: string; isContentEditable?: boolean } | null | undefined): boolean =>
+  !!el && (el.isContentEditable === true || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName ?? ''))
+
+/** The gesture a key press is, or null for every other press. `inField` is `holdsCaret` over whatever holds the caret
+ *  — in the editor document OR in the canvas document, which is why the caller resolves it and this does not. */
+export function shortcutFor(
+  e: { key: string; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey?: boolean },
+  inField: boolean,
+): Shortcut | null {
+  // exactly one of the two, so ⌃⌘Z and a stray AltGr combination are not this gesture
+  if (e.metaKey === e.ctrlKey || e.altKey === true) return null
+  const key = e.key.toLowerCase()
+  if (key === 's') return 'save'
+  if (key !== 'z') return null
+  if (inField) return null
+  return e.shiftKey ? 'redo' : 'undo'
+}
+
+/* ───────────────────────────── the hydrate comparison (AD-15, §AD1.1) ───────────────────────────── */
+
+/** What a hydrate decided, so the editor states it rather than deriving it twice. */
+export type Hydration =
+  | { kind: 'local' }   // the revisions agree: the local doc and the journal both survive
+  | { kind: 'cloud' }   // they differ: the cloud doc replaces the local one and the journal is cleared
+  | { kind: 'first' }   // no local record for this project: the server's doc, an empty journal
+
+/**
+ * THE COMPARISON IS `projects.revision` VS THE LOCAL `base_revision`, AND NOTHING ELSE (AD-15, `addendum.md` §AD1.1).
+ * Equal → both kept. Different → the doc is replaced and the journal cleared. No record → the server's doc.
+ *
+ * THE TAKEOVER HALF OF AD-15'S JOURNAL-CLEARING RULE IS NOT HERE, and its absence is deliberate: `lock_generation`
+ * advancing is the other reason a journal is cleared, and nothing writes `edit_locks` until Story 5.17, so it has
+ * nothing to read. The revision half is, and is reachable today — a second tab is all it takes.
+ */
+export const hydrationFor = (local: { baseRevision: number } | null, cloudRevision: number): Hydration =>
+  local === null ? { kind: 'first' } : local.baseRevision === cloudRevision ? { kind: 'local' } : { kind: 'cloud' }
+
+/**
+ * The auto-generated set a local record carries, narrowed to the canvases this project still offers.
+ *
+ * IT IS STORED RATHER THAN DERIVED, and that is the whole point: `read.ts` MATERIALISES an untouched canvas's
+ * Synthesis Default stack into `docs`, so a doc with instances is no evidence that anybody designed it and `isDesigned`
+ * cannot tell the two apart. The set is written in the same record as the docs it describes, so it can never be stale
+ * against them; all this does is drop a canvas the project no longer offers.
+ */
+export const autoFrom = (stored: readonly string[], offered: readonly string[]): string[] =>
+  stored.filter((canvas) => offered.includes(canvas))

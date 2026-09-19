@@ -4730,3 +4730,28 @@ owner: Story 5.9 (the editor's first in-`pnpm check` browser test), or the first
 location: apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx · tools/probe/run-verify-editor.cjs step 9
 reason: Correct on the owner's 1440 stage, where Desktop is width-bound; a Suspense fallback has no `ResizeObserver`,
   so the fix is a CSS `min()` on the width and it changes if Question 3 adds bottom padding.
+
+## Deferred from: Story 5.8's Dev run (2026-09-19)
+
+### DW-200: the editor is handed EVERY placeable design, which is right today and will not scale past Epic 9
+
+plain: When you open a page in the editor, the app sends your browser a copy of every ready-made section design it
+  knows about, so it can draw anything your page might contain. There are five of them today, so that costs almost
+  nothing. When the library grows to hundreds, sending all of them on every editor load will be too much.
+status: open
+severity: medium
+origin: Story 5.8's Dev run (2026-09-19), found by EXECUTION rather than by reading — `run-verify-editor.cjs` step 67.
+  `read.ts` used to hand over only the designs this project's STORED docs name. Since 5.8 the editor's LOCAL document
+  can legitimately hold a design the server's does not: delete the only section using one, let the flush go up, reload
+  — and undoing that deletion was refused by FR-D9's vanished-design guard as though the library had dropped the
+  design, while a local doc naming it could not be painted at all, so the hydrate fell back to the cloud and threw the
+  customer's work away. The fix was to hand over every placeable design (five, ~68 KB read from `pilotIds()` on
+  2026-09-19), which is also what Story 5.10's "+ Add section" and Story 5.11's design swap will need.
+owner: the first story of Epic 9 that takes the library past a couple of dozen placeable designs — it is the story
+  that makes the payload a problem and the one that can measure it.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (the `pilotIds()` loop and its `ponytail:`
+  note) · `apps/web/lib/journal.ts` (`vanishedDesign`, the guard that surfaced it) ·
+  `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the hydrate's own library check)
+reason: the shape of the durable answer is clear — the editor asks the server for a design when a doc names one it has
+  not got — but it is a new route, a new cache and a new failure mode on the undo path, and none of it is measurable
+  against a library of five. Doing it now would be inventing a budget for a payload nobody can weigh.

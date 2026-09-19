@@ -91,6 +91,16 @@ export const canvasPath = (projectId: string, key: CanvasKey = 'home') =>
 export const SETTINGS = 'settings'
 export const settingsPath = (projectId: string) => `/projects/${projectId}/${SETTINGS}`
 
+/** THE SCHEME'S SECOND NON-CANVAS SEGMENT (Story 5.8, R-131 applied a second time): the sync route AD-15's flush
+ *  posts to — the one path the 3-minute timer, ⌘S and `fetch(..., { keepalive: true })` at tab close all take.
+ *
+ *  A ROUTE HANDLER AND NOT A SERVER ACTION, for one reason: a tab that is going cannot call a Server Action, and
+ *  `keepalive` is only defined for `fetch`. It is a STATIC sibling of `[template]` exactly as `settings` is, so Next
+ *  resolves it first and `canvasFromSegment` is never asked about it — `editor.test.ts` carries the same three
+ *  assertions for it that it carries for `settings`, so the day anything DOES ask, it is refused. */
+export const SYNC = 'sync'
+export const syncPath = (projectId: string) => `/projects/${projectId}/${SYNC}`
+
 /** The canvas a segment names, or null for a reserved, unknown or CONDITIONAL one — a canvas the switcher offers to
  *  nobody must not be reachable by typing its address either, and refusing it here is the only refusal that is
  *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it. */

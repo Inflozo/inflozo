@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, CONDITIONAL,
-  isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, templateKeyOf, type CanvasKey,
+  isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 
@@ -23,7 +23,7 @@ test('every canvas key round-trips through its address', () => {
 })
 
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
-  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS]) {
+  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
@@ -38,6 +38,19 @@ test('R-131: `settings` is the scheme\'s one NON-CANVAS segment — a real route
   assert.ok(!Object.hasOwn(CANVASES, SETTINGS), '`settings` must never join CANVASES')
   // and it is not the address of any canvas, so the two can never collide
   for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), settingsPath(ID), key)
+})
+
+test('Story 5.8: `sync` is the scheme\'s SECOND non-canvas segment — the same three assertions `settings` carries', () => {
+  assert.equal(syncPath(ID), `/projects/${ID}/${SYNC}`)
+  // (1) it resolves as no canvas — it compiles into no template and stores no `project_templates` row
+  assert.equal(canvasOfPath(syncPath(ID)), null)
+  assert.equal(canvasOfTemplateKey(SYNC), null)
+  assert.ok(!Object.hasOwn(CANVASES, SYNC), '`sync` must never join CANVASES')
+  // (2) it collides with no canvas path, so the two can never resolve to the same address
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), syncPath(ID), key)
+  // (3) and it is not `settings` either — two static siblings of `[template]`, never one word twice
+  assert.notEqual(syncPath(ID), settingsPath(ID))
+  assert.ok(isEditorPath(syncPath(ID)), 'it is under the project, so the Shell reads it as an editor path')
 })
 
 test('a conditional canvas is ABSENT until its condition holds, and the route 404s it meanwhile (FR-D6)', () => {

@@ -71,6 +71,10 @@
   --color-danger-text: #C4383C;   /* danger wherever it carries words — Kit :113, :135 */
   --color-danger-text-hover: #C63A3F;  /* the danger button's hover — Kit :135 */
   --color-danger-tint: #FDECEC;
+  /* B6's Retrying panel, the one surface that sets danger words deeper than the banner's — B Missing
+     Surfaces :1379-1384 (Story 5.8) */
+  --color-danger-panel-ink: #8E2C30;
+  --color-danger-panel-line: #F0CFD0;
   --color-scrim: rgba(28,27,26,.4);
   /* the feedback banners' hairlines — Kit :238-241 draws each as its own solid hex */
   --color-sky-line: #D4E0FA;

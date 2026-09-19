@@ -61,6 +61,7 @@ type Code =
   | 'delete_failed'
   | 'restore_failed'
   | 'window_closed'
+  | 'autosave_failed'
 
 export type RegisterStart =
   | { ok: true; challengeId: string; options: ServerCredentialCreationOptions }
@@ -92,6 +93,9 @@ const MESSAGES: Record<Code, string> = {
   delete_failed: DELETE_FAILED,
   restore_failed: RESTORE_FAILED,
   window_closed: WINDOW_CLOSED,
+  // FR-D10's toggle. The switch is put back where it was and this is said beside it — never a card that shows the
+  // new position over a preference that did not move.
+  autosave_failed: "We couldn't change that just now. Try again in a moment.",
 }
 
 /** S1b's sentence at the account's altitude: the seconds are GoTrue's, never a guess of ours. */
@@ -549,4 +553,38 @@ export async function restoreAccount(
   }
 
   redirect(RESTORED_PATH)
+}
+
+
+/**
+ * FR-D10'S AUTOSAVE TOGGLE — `profiles.autosave_enabled`, and it is PER USER, NOT PER DEVICE (`schema:118`).
+ *
+ * THE COLUMN IS ALREADY OWNER-WRITABLE: §11 grants `authenticated` UPDATE on `display_name, autosave_enabled,
+ * updated_at`, so this story adds no grant and no policy. The write goes through the caller's own session, so RLS
+ * decides whose row it is and nothing here compares a user id.
+ *
+ * WHAT TURNING IT OFF ACTUALLY COSTS, so the confirm can say it plainly: the 3-MINUTE TIMER ALONE stops (AD-15). The
+ * local journal is unchanged, tab close still flushes and ⌘S still flushes. Turning it back ON asks nothing — it is
+ * the restoring half, exactly as SHOWING a hidden site-wide section asks nothing.
+ *
+ * `(previous, formData)` so a form drives it through `useActionState`, the shape every action in this file takes.
+ */
+export async function setAutosave(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  const wanted = formData.get('autosave')
+  if (wanted !== 'on' && wanted !== 'off') return fail('autosave_failed')
+  const user = await signedIn()
+
+  const supabase = await supabaseServer()
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ autosave_enabled: wanted === 'on' })
+    .eq('user_id', user.id)
+    .select('user_id')
+  if (error || !data || data.length === 0) {
+    console.error('account: autosave write failed', { code: error?.code })
+    return fail('autosave_failed')
+  }
+  // the INTERNAL route tree, as every other action in this file addresses it (`routing.ts:25`)
+  revalidatePath('/app/account')
+  return { ok: true }
 }

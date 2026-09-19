@@ -121,13 +121,17 @@ export function AddButton({
 export function IconButton({
   label,
   children,
+  className = '',
   ...rest
 }: ComponentProps<'button'> & { label: string }) {
   return (
     <button
       type="button"
       aria-label={label}
-      className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk disabled:opacity-35 disabled:hover:bg-transparent ${ring}`}
+      /* `className` is APPENDED, never replaced (Story 5.8). It used to arrive inside `...rest`, where it would have
+         silently taken the size, the radius, the hover and the focus ring with it — no caller had passed one, so
+         nothing had met it. S4a's undo/redo pair is the first: the unavailable one is drawn at `opacity:.35`. */
+      className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk disabled:opacity-35 disabled:hover:bg-transparent ${ring} ${className}`}
       {...rest}
     >
       {children}
