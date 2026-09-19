@@ -187,6 +187,7 @@ async function main() {
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/device.ts')).href),
     ])
     const DEVICE_DESKTOP = DEVICE.DESKTOP
+    const LABELS = DEVICE.DEVICES.map((d) => d.label)
 
     browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
     // THE CSP CONTEXT: never bypassCSP. Every frame reports a violation to Node through a binding, so one survives the
@@ -2142,6 +2143,19 @@ async function main() {
     const litMode = await canvasMode()
     const keptStored = await storedOverrides()
     check('step 53 — FR-D7 on a Light-only project: the sun is ABSENT from the bar rather than disabled, and the canvas is light', noSun === false && litMode === 'light', `control ${noSun ? 'present' : 'absent'} · mode ${litMode}`)
+    // Story 5.7: and the DEVICE TRACK is untouched by any of it — R-135 scopes dark and nothing else, so the track is
+    // beside the sun rather than part of it, and a Light-only project previews on a phone exactly as every other does
+    const litDevice = await page.evaluate(() => {
+      const track = document.getElementById('editor-device')
+      if (!track) return null
+      const cluster = track.parentElement
+      return {
+        radios: [...track.querySelectorAll('[role="radio"]')].map((b) => b.getAttribute('aria-label')),
+        checked: track.querySelector('[aria-checked="true"]')?.getAttribute('aria-label') ?? null,
+        first: cluster?.firstElementChild === track,
+      }
+    })
+    check('step 53 — on a Light-only project the DEVICE TRACK is unaffected: all three devices, Desktop in force, and it now LEADS the right-hand cluster the absent sun has left', litDevice !== null && litDevice.radios.join(' | ') === LABELS.join(' | ') && litDevice.checked === DEVICE.DESKTOP.label && litDevice.first === true, JSON.stringify(litDevice))
     // R-135 (owner, 2026-09-19): and the editor says nothing else about dark either — both clears are ABSENT, so it
     // cannot delete what Theme settings has just greyed with the reason that it is kept
     await clickOn(HERO)
@@ -2265,7 +2279,6 @@ async function main() {
         }),
       }
     })
-    const LABELS = DEVICE.DEVICES.map((d) => d.label)
     const onSeg = track?.buttons.filter((b) => b.checked === 'true') ?? []
     check('step 54 — S4a\'s device track sits IMMEDIATELY right of the sun and is a WAI-ARIA radio group, one per device in the frame\'s order', track?.afterSun === 'editor-device' && track.role === 'radiogroup' && track.label === 'Device' && track.buttons.map((b) => b.name).join(' | ') === LABELS.join(' | ') && track.buttons.every((b) => b.role === 'radio'), JSON.stringify({ afterSun: track?.afterSun, role: track?.role, names: track?.buttons.map((b) => b.name) }))
     check('step 54 — the pill: #EFECE7 (`paper-sunk`), an 8px radius and 2px of padding', track?.bg === 'rgb(239, 236, 231)' && track.radius === '8px' && track.pad === '2px', JSON.stringify({ bg: track?.bg, radius: track?.radius, pad: track?.pad }))

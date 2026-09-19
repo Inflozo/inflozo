@@ -267,6 +267,13 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
   and the chip. Nothing else about the task changed: one new component file, one new lib file, and the same exports
   by the same names. No decision of the owner's is touched.
 
+- **Dev (2026-09-19) — the matrix's Light-only row is covered at step 53, not in steps 54+.** The Execution list
+  put this story's harness work at "steps 54+", and the matrix's last row — *a Light-only project: the device
+  switch is unaffected* — needs a project with `dark_enabled = false` in front of it. Step 53 already stands one
+  up and puts it back; asserting there costs one read and no second settings round-trip, where a step 61 would
+  have had to switch the project off and on again. `LABELS` moved up beside the harness's `lib/device.ts` import
+  so both steps read the same table.
+
 ## Design Notes
 
 ### The mechanism is two numbers and a transform, and it already half exists
@@ -327,18 +334,49 @@ holding `mode` in `editor.tsx` and persisting nothing. Same here. No column, no 
 
 ## Verification
 
-**Commands:**
-- `pnpm check` -- expected: lint, typecheck and every package test green, `editor.test.ts`'s new `fitFor`
-  cases included. Needs Node 24 on `PATH` (the shell defaults to 22).
-- `python3 tools/doc-audit.py --check` -- expected: exit 0, run twice (its sub-tools regenerate on the first
-  failure).
-- `node tools/probe/run-verify-editor.cjs` -- expected: every step PASS, 0 FAIL, **against the deployed
-  `app.inflozo.com`** on the seeded "Pilot sections" project (R-82). Steps 54+ are this story's; steps 2, 5,
-  6, 9, 10-11 and 15 are the controls that the geometry change moved no URL, raised no CSP violation, and
-  left the chrome layer's painted line widths and its scroll tracking where they were. A HARNESS ERROR with
-  no FAIL is not a result — re-run.
-- `bash tools/matrix/run-matrix-gate.sh` -- expected: green. It photographs the library at 1440/834/390 and
-  is the independent check that the three device widths are the three the designs were built for.
+**Executed at Dev (2026-09-19), and what each returned:**
+
+- `pnpm check` (Node 24 on `PATH`; the shell defaults to 22) — **exit 0.** Lint, typecheck and every package's
+  tests green: `apps/web` **366 pass / 0 fail**, including `editor.test.ts`'s six new `fitFor` cases;
+  `packages/section-runtime` 200, `packages/library` 149, `packages/ghost-shim` 34, `packages/theme-compiler` 1.
+  Counts are the runs' own, printed by `node --test` — none is written into the tree.
+- `python3 tools/doc-audit.py --check`, **twice** — `documentation gate: PASS (0 warning(s))`, exit 0 both times.
+- `bash tools/matrix/run-matrix-gate.sh` — **`render matrix: 180 cases · 5 designs · 1 packs · 0 violations —
+  passed`**, 182 Playwright cases in 46.4 s, in its own container. This is the independent check that **1440,
+  834 and 390 are the three widths the library itself is photographed at** — the same three the device table
+  names — and that R-137's editor-chrome change moved none of them.
+- `node --check tools/probe/run-verify-editor.cjs` — clean, with `LABELS` hoisted to the harness's device
+  import so step 53 can read it (a `const` used before its declaration in the same block is a TDZ error, not a
+  hoist).
+
+**Real services this story hit at Dev (R-82; every key read into a command's environment, never printed):**
+
+- **Vercel REST API** — `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`. `GET /v6/deployments?target=production`
+  returned the three most recent production deployments, the newest **`8fe60457` `READY`/`READY`** — so the Dev
+  commit is live on `app.inflozo.com` and the Review walk has a deployment to run against.
+- **Supabase, Resend, Dodo, and the Ghost test servers T1 / T3 — not hit, and this story has nothing for them.**
+  The device is session state in `editor.tsx`: no column, no migration, **no Schema phase**, no mail, no billing
+  and no theme upload. `SUPABASE_URL` / `SUPABASE_SECRET_KEY` are read by the editor harness below, at Review.
+
+**Owed at Review, and why it could not run at Dev:**
+
+- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) node
+  tools/probe/run-verify-editor.cjs` — expected: every step PASS, 0 FAIL, against the deployed
+  `app.inflozo.com` on the seeded "Pilot sections" project. **The harness refuses to run while `apps/`,
+  `packages/` or `tools/probe/` is dirty, or while Vercel serves a commit other than HEAD**
+  (`run-verify-editor.cjs:122-130`) — by design, so a PASS can only ever be a statement about what the site
+  actually serves. The Dev commit's own harness edits are therefore provable only once CI has deployed them,
+  which is the Review phase (project-context: a check that can only run after deploy belongs here, not in the
+  task list).
+- Steps **54–60** are this story's — the track at its drawn size, place and inks; per device the real CSS
+  viewport, `100vh`, the media query, the transform-only scale, the card and the chip's words; the absence of
+  any zoom control; a fold re-fitting with the true size unmoved; node identity, the stamps, the selection and
+  the caret surviving a change; R-123 in the letterbox; the arrow keys; and a 40-section planted doc for
+  FR-D14's no-cap and its 5 s lockup bound. Step **53** gained the matrix's Light-only row (the track is
+  unaffected by `dark_enabled = false` and leads the cluster the absent sun leaves). Steps **2, 5, 6, 9,
+  10–11, 15** are the controls; step 2's card assertion was rewritten for R-137, and it is the likeliest place
+  a geometry error would surface.
+- A HARNESS ERROR with no FAIL is not a result — re-run.
 
 **Manual checks (if no CLI):**
 - The owner's walk below, on the production domain, after Deploy (R-80).
