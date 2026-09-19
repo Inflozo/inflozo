@@ -666,6 +666,18 @@ the deployed site is the remaining proof.**
 **Not driven by any harness, and said so:** the two-live-browsers conflict dialog (the owner's test walks it) and a
 mid-session quota refusal. **Owed after this push deploys:** one complete walk on `app.inflozo.com`.
 
+### Executed at Deploy (2026-09-19)
+
+- `GET https://api.vercel.com/v6/deployments` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — the
+  production deployment built from HEAD (`4ea52bc7`, the Review commit) is **READY**.
+  `Deployment: dpl_831viYkJjfd81xzKfrGBh5gR457F` (`inflozo-ha5cqpu8b-umangkagathara.vercel.app`, serving
+  `app.inflozo.com`). `GET https://api.github.com/repos/Inflozo/inflozo/commits/4ea52bc7.../check-runs`
+  (`GITHUB_TOKEN`) — `check`, `rls`, `matrix` and `deploy` all `completed success` on this commit.
+- No migration owed here — the Schema phase (`79685613`) already applied `20260919120000_doc_sync_and_
+  template_key_shape.sql` to production and the Review phase re-verified it live (`SUPABASE_DB_POOLER_URL`,
+  above); `git diff --stat 79685613..4ea52bc7 -- supabase` is empty, so nothing further landed for R-99 to
+  check.
+
 ## Owner's manual test
 
 Run on the deployed site, on the **"Pilot sections"** project Story 5.1 seeded. **This is the first story
