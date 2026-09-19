@@ -467,6 +467,13 @@ count caught the Projects page's DW-201 event through step 80 (the harness's sco
 placement during a scroll failed in this walk and passed in the verifier's fourth — intermittent, Story 5.4's, not
 this diff's. No migration in the diff, so R-99 had nothing to check.
 
+**After the rulings (2026-09-19, `7874dd5b`, production, same keys by name).** CI green — `check`, `rls`, `deploy`.
+Two complete walks. The first: every Story 5.9 step passed, **step 8's axe zero on every scan with R-149's one-node
+exception**, step 5's CSP zero, step 36 passing again — and **2 FAIL, both step 66 (Story 5.8's ⌘S)**: the indicator
+stayed on Syncing and `projects.revision` did not move, which is the stalled `/sync` request DW-204 already names.
+The second, straight after: **0 FAIL**, every check passing, accounts deleted. Step 66 is therefore intermittent on
+the real stack and not this diff's; it is added to DW-204's evidence rather than left here.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy fills the URL in. Use the **Pilot sections** project — the one

@@ -4831,7 +4831,9 @@ reason: telling the two causes apart needs Vercel's logs and a second vantage po
   5.8 owns; the harness already refuses to call a died run a result.
   **Story 5.9's Review (2026-09-19):** Dev did not touch it, and the Real-infra verifier's four walks of `a9aa4b21`
   all died the same way (lines 1661, 1325, 655 and 3145) while curl had the site in 0.25s. Every navigation after the
-  magic link now gets one retry (`steady`), which is a way round it and not its cause — the diagnosis above is still owed.
+  magic link now gets one retry (`steady`), which is a way round it and not its cause — the diagnosis above is still owed. On `7874dd5b` two walks
+  completed: one had step 66's ⌘S stuck on Syncing with the revision unmoved (the stalled `/sync` again, this time
+  past the 20s give-up within the step's wait), the next had 0 FAIL. A customer pressing ⌘S would see the same.
 
 ### DW-205: the same announcement twice in a row is silent to a screen reader
 
