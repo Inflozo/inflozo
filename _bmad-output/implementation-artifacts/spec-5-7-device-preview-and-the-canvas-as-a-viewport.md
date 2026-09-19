@@ -2,7 +2,7 @@
 title: 'Story 5.7 — Device preview, and the canvas as a viewport'
 type: 'feature'
 created: '2026-09-19'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 baseline_commit: '5f3b60cb7ff0925e9f19ce964fc5a40c1e7fe0d0'
 review_loop_iteration: 0
@@ -196,15 +196,17 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/components/kit/icons.tsx` -- add `DeviceDesktop`, `DeviceTablet`, `DeviceMobile` from
+- [x] `apps/web/components/kit/icons.tsx` -- add `DeviceDesktop`, `DeviceTablet`, `DeviceMobile` from
       `S4 Editor.dc.html:37-39`'s paths, in `Sun`/`Moon`'s shape -- the Kit is where every glyph lives, and
       S4a's device glyphs differ from B11's explainer toolbar; S4a's are the editor's.
-- [ ] `apps/web/components/editor/device-switch.tsx` -- **new.** Export `DEVICES` (the table: name, width,
-      height, icon, with each height's source cited in a comment), the pure `fitFor(stage, device)`, the
-      `DeviceSwitch` radio group and the `ViewportChip`. Reuse `radioKeys`/`tabStop` from
-      `kit/segmented.tsx` rather than writing arrow keys again -- one keyboard behaviour for every radio
-      group in the app.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hold `device` in state beside
+- [x] `apps/web/lib/device.ts` -- **new, and the reason it is a `lib/*.ts` is in the Spec Change Log.** `DEVICES`
+      (the table: name, label, width, height, each height's source cited in a comment), the pure
+      `fitFor(stage, device)`, `viewportWords` and `deviceShown`. Pure and importless, so `editor.test.ts` can reach
+      the arithmetic -- `node --test` cannot load a `.tsx`.
+- [x] `apps/web/components/editor/device-switch.tsx` -- **new.** The glyph map, the `DeviceSwitch` radio group and the
+      `ViewportChip`. Reuse `radioKeys`/`tabStop` from `kit/segmented.tsx` rather than writing arrow keys again -- one
+      keyboard behaviour for every radio group in the app.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hold `device` in state beside
       `mode`; move the `ResizeObserver` from the card to the stage `<section>`; replace `scale` with
       `fitFor`; size the card and the iframe from the device and the fit; put `DeviceSwitch` beside
       `ModeToggle` and `ViewportChip` over the ground; set `data-width` to the active device's width;
@@ -212,17 +214,17 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
       `rounded-t-[6px]` for the device's size, `rounded-[6px]` and centring **on the `<section>` itself** --
       one component owns the geometry, as it owns the mode, and no wrapper is added that R-123's ground test
       would not cover.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx` -- draw the resting card
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx` -- draw the resting card
       at Desktop's 16:10 proportion, centred, fully rounded (R-137) -- a skeleton that draws a different shape
       from the screen it stands in for is the flicker R-98 exists to remove.
-- [ ] `apps/web/editor.test.ts` -- unit-test `fitFor` over the matrix's rows: both axes, the cap at 1, a
+- [x] `apps/web/editor.test.ts` -- unit-test `fitFor` over the matrix's rows: both axes, the cap at 1, a
       zero-sized stage before the first measurement -- the fit is the only arithmetic in the story.
-- [ ] `tools/probe/run-verify-editor.cjs` -- steps **54+**, inside step 5's session: the switch measured at
+- [x] `tools/probe/run-verify-editor.cjs` -- steps **54+**, inside step 5's session: the switch measured at
       its drawn size and place; each device's iframe CSS size and the chip's words; the fit recomputed on a
       fold; the selection, the stamps, the caret and **node identity** surviving a device change; R-123's
       ground on a letterboxed card; and the 40-section planted doc with `PerformanceObserver('longtask')`
       asserting no task over 5 s -- R-82: the proof runs on the deployed site, not on mocks.
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- at
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- at
       Review, record the owner's ruling on Question 1 as a new §A10 entry with its targets, and propagate to
       `EXPERIENCE.md`'s frame/PRD divergence table and to `epics.md`'s Story 5.7 AC if the ruling departs
       from a frame -- standing rule 3: a finding is not closed until it reaches an owning document.
@@ -254,6 +256,16 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
   no main-thread task exceeds 5 seconds (FR-D14).
 
 ## Spec Change Log
+
+- **Dev (2026-09-19) — the table and the fit live in `apps/web/lib/device.ts`, not in `device-switch.tsx`.** The
+  Execution list named one new file exporting `DEVICES`, `fitFor`, `DeviceSwitch` and `ViewportChip`, and the
+  Verification list asks `editor.test.ts` to unit-test `fitFor`. Those two cannot both hold: `node --test` strips
+  types but **cannot load a `.tsx`** (`kit-button.test.ts:6-7` and `passkey-banner.test.ts` are the precedent, and
+  "every pure test in this repo lives on a `lib/*.ts`" is the rule they state). So the split is the repo's own: the
+  device table, `fitFor`, the chip's words and the live region's sentence are `lib/device.ts` — pure and importless,
+  which is what makes them testable — and `components/editor/device-switch.tsx` holds the glyph map, the radio group
+  and the chip. Nothing else about the task changed: one new component file, one new lib file, and the same exports
+  by the same names. No decision of the owner's is touched.
 
 ## Design Notes
 

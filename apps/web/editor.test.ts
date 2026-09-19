@@ -4,6 +4,7 @@ import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, CONDITIONAL,
   isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
+import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 
 // Story 5.1's URL scheme, held by the module the route, the Shell, the switcher and the harness read it from.
 // Story 5.5 added R-129's three membership canvases, whose stored key is not their segment, and Private's condition.
@@ -92,4 +93,56 @@ test('the stack: site-wide outside a3 first, then the canvas, then the a3 footer
   const own = [i('a4/13', 'hero'), i('a17/1', 'grid')]
   assert.deepEqual(canvasStack(site, own).map((x) => x.n), ['header', 'bar', 'hero', 'grid', 'footer', 'footer2'])
   assert.deepEqual(canvasStack([], []), [])
+})
+
+// ─── Story 5.7 — the canvas as a viewport. The fit is the only arithmetic in the story, so it is the only thing
+// here: the table itself is read out of the export (`lib/device.ts` cites each height) and the chip's words are
+// UX-DR17's, quoted rather than computed. The worked stage is the owner's own 1440 laptop —
+// 1440 − 240 (Layers) − 280 (Controls) − 56 (`px-7`) = 864 wide, 900 − 48 (bar) − 24 (`pt-6`) = 828 tall.
+
+const STAGE = { width: 864, height: 828 }
+const pct = (device: Device) => Math.round(fitFor(STAGE, device) * 100)
+
+test('R-137: every device is a viewport in BOTH axes, and each is a named size read out of the export', () => {
+  // no count is asserted — membership is the table's (standing rule 4); what is asserted is that each has a height
+  for (const d of DEVICES) assert.ok(d.width > 0 && d.height > 0, `${d.name} ${d.width}×${d.height}`)
+  assert.deepEqual([DESKTOP.width, DESKTOP.height], [1440, 900], 'B11a: VIEWPORT 1440 × 900')
+  assert.deepEqual([TABLET.width, TABLET.height], [834, 1112], 'D8a · TABLET · 834 × 1112')
+  assert.deepEqual([MOBILE.width, MOBILE.height], [390, 844], 'UX-DR17, verbatim')
+  assert.equal(DEVICES[0], DESKTOP, 'Desktop leads the track and is the resting state')
+})
+
+test('the fit is min(1, w/W, h/H) — BOTH axes, over the matrix the spec worked', () => {
+  // Desktop is width-bound on this stage, Tablet and Mobile are height-bound: the whole point of fitting both
+  assert.equal(fitFor(STAGE, DESKTOP), 864 / 1440)
+  assert.equal(fitFor(STAGE, TABLET), 828 / 1112)
+  assert.equal(fitFor(STAGE, MOBILE), 828 / 844)
+  assert.deepEqual([pct(DESKTOP), pct(TABLET), pct(MOBILE)], [60, 74, 98])
+  // and the whole viewport is in shot in both axes, every time
+  for (const d of DEVICES) {
+    const fit = fitFor(STAGE, d)
+    assert.ok(d.width * fit <= STAGE.width + 1e-9 && d.height * fit <= STAGE.height + 1e-9, `${d.name} ${d.width * fit}×${d.height * fit}`)
+  }
+})
+
+test('NOTHING IS EVER MAGNIFIED: a stage larger than the device in both axes fits at exactly 1', () => {
+  // the cap is the reason it is `min(1, …)`: without it a 390-wide viewport fills a 1440 stage at 3.7× and lies
+  // about size in the opposite direction
+  assert.equal(fitFor({ width: 2560, height: 1440 }, MOBILE), 1)
+  assert.equal(fitFor({ width: 1441, height: 901 }, DESKTOP), 1)
+  // larger in ONE axis only is still bound by the other
+  assert.equal(fitFor({ width: 4000, height: 422 }, MOBILE), 0.5)
+})
+
+test('a stage with no size yet is 1, never Infinity or NaN — the state before the first ResizeObserver callback', () => {
+  for (const stage of [{ width: 0, height: 0 }, { width: 864, height: 0 }, { width: 0, height: 828 }]) {
+    assert.equal(fitFor(stage, DESKTOP), 1, JSON.stringify(stage))
+  }
+})
+
+test('UX-DR17: the chip states the TRUE SIZE first and the shrinking second, as a sentence', () => {
+  assert.equal(viewportWords(MOBILE, fitFor(STAGE, MOBILE)), 'viewport 390 × 844 · shown at 98%')
+  assert.equal(viewportWords(DESKTOP, 1), 'viewport 1440 × 900 · shown at 100%')
+  // the live region says the device NOW SHOWING and its real size, never the press (`modeShown`'s shape)
+  assert.equal(deviceShown(TABLET), 'Tablet — 834 × 1112')
 })

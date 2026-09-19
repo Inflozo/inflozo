@@ -67,6 +67,15 @@
 // R-131's screen is read for D6a's two rows, D6b's greyed row with its reason, the DERIVED count, and the ABSENCE of
 // every other row D6a draws; steps 2, 6 and 9 are unchanged, which is the control that the `(editor)` route-group
 // move changed no URL and no status.
+// Story 5.7 adds steps 54-60, inside step 5's session: S4a's device track measured at its drawn size, place and inks with
+// R-136's names; each device's iframe as a REAL CSS VIEWPORT in both axes (`100vh` measured, a media query answering at
+// that width) with the fit as a transform over it, R-137's card — device-sized, centred, a 6px radius on all four corners
+// — and UX-DR17's chip; the ABSENCE of any zoom, fit or percentage control; a fold re-fitting without touching the true
+// size or repainting; a device change repainting NOTHING (same nodes, same stamps, the selection, the chrome re-placed,
+// the caret mid-word); R-123's ground beside a letterboxed phone; the arrows moving the device; and FR-D14's two clauses
+// this story owns — no cap, and no main-thread task over 5s on a 40-section planted doc (NFR-1's fps gate is Story
+// 5.23's, manual-only). STEP 2 CHANGED WITH R-137: the page card is no longer flush with the bottom at a top-only
+// radius, it is Desktop's 1440 x 900 fitted, centred, rounded all round — the one change the owner is asked to expect.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -168,12 +177,16 @@ async function main() {
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, { UNIVERSALS }] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, { UNIVERSALS }, DEVICE] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/index.ts')).href),
+      // Story 5.7's device table, its fit and the chip's words — read from the app's own module, so a size, a word or
+      // a device added later joins this walk without an edit here (standing rule 4)
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/device.ts')).href),
     ])
+    const DEVICE_DESKTOP = DEVICE.DESKTOP
 
     browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] })
     // THE CSP CONTEXT: never bypassCSP. Every frame reports a violation to Node through a binding, so one survives the
@@ -241,7 +254,7 @@ async function main() {
         name: { text: name?.textContent, size: css(name)?.fontSize, weight: css(name)?.fontWeight, family: css(name)?.fontFamily },
         layers: { w: box(layers)?.width, rule: css(layers)?.borderRightWidth, bg: css(layers)?.backgroundColor, title: layers?.textContent },
         ground: css(canvas)?.backgroundColor,
-        card: card && { left: box(card).left - box(canvas).left, right: box(canvas).right - box(card).right, top: box(card).top - box(canvas).top, bottom: box(canvas).bottom - box(card).bottom, width: box(card).width, radius: css(card).borderRadius, shadow: css(card).boxShadow },
+        card: card && { left: box(card).left - box(canvas).left, right: box(canvas).right - box(card).right, top: box(card).top - box(canvas).top, bottom: box(canvas).bottom - box(card).bottom, width: box(card).width, height: box(card).height, radius: css(card).borderRadius, shadow: css(card).boxShadow, pad: css(canvas).paddingTop },
         controls: { w: box(controls)?.width, rule: css(controls)?.borderLeftWidth, pad: css(controls)?.paddingTop, bg: css(controls)?.backgroundColor, label: pageLabel?.textContent, labelTop: box(pageLabel)?.top - box(controls)?.top, labelSize: css(pageLabel)?.fontSize, labelWeight: css(pageLabel)?.fontWeight, labelCase: css(pageLabel)?.textTransform },
         rows: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].map((r) => r.querySelector('button')?.textContent),
         // Story 5.4: every row is interactive — a name button and a ⋯ (R-126). `:scope >` only: each row also holds
@@ -262,7 +275,14 @@ async function main() {
     check('step 2 — R-126: every row carries a name button and a ⋯ and NOTHING else, plus a pointer-only grip that is no tab stop', shape.rowControls.length === stackOf('home').length && shape.rowControls.every((n) => n === 2) && shape.rowGrips === shape.rowControls.length, `${JSON.stringify(shape.rowControls)} · grips ${shape.rowGrips} · buttons ${shape.buttonsInLayers}`)
     check('step 2 — the canvas ground #EDEAE6', shape.ground === 'rgb(237, 234, 230)', shape.ground)
     const c = shape.card
-    check('step 2 — the page card: 24 from the top, 28 each side, flush at the bottom, 864 wide, 6px top radius, the page shadow', c && c.top === 24 && c.left === 28 && c.right === 28 && c.bottom === 0 && c.width === 864 && c.radius === '6px 6px 0px 0px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), JSON.stringify(c))
+    // R-137 (owner, 2026-09-19, Story 5.7): the card is DESKTOP'S 1440 x 900 FITTED, centred in the ground with a 6px
+    // radius on all four corners — not `height:100%` standing on the bottom of the window. Its ground, ink, shadow and
+    // radius are S4a's still. Every number below is DERIVED from the device rather than written down: the two axes
+    // carry the same fit, and the card is centred in the room below the stage's 24px top padding.
+    const fitW = c && c.width / DEVICE_DESKTOP.width
+    check('step 2 — R-137: the page card is Desktop 1440 x 900 FITTED — one fit on both axes, 28 each side, a 6px radius on ALL FOUR corners, the page shadow', c && Math.abs(c.height / DEVICE_DESKTOP.height - fitW) < 0.002 && fitW > 0 && fitW <= 1 && c.left === 28 && c.right === 28 && c.radius === '6px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), `${JSON.stringify(c)} · fit ${fitW}`)
+    check('step 2 — R-137: it is CENTRED in the ground, with ground below it — the card no longer stands on the bottom of the window', c && c.bottom > 0 && Math.abs((c.top - parseFloat(c.pad)) - c.bottom) < 1.5, JSON.stringify({ top: c?.top, pad: c?.pad, bottom: c?.bottom }))
+    check('step 2 — S4a\'s 864 survives as the WIDTH the stage allows at 1440 (1440 - 240 - 280 - 56), so the fit is width-bound here', c && c.width === 864, String(c?.width))
     check('step 2 — Controls: 280px, left rule, 16px padding, paper, PAGE 13/600 uppercase at 16px from the top', shape.controls.w === 280 && shape.controls.rule === '1px' && shape.controls.pad === '16px' && shape.controls.bg === 'rgb(247, 245, 242)' && shape.controls.label === 'Page' && shape.controls.labelSize === '13px' && shape.controls.labelWeight === '600' && shape.controls.labelCase === 'uppercase' && Math.abs(shape.controls.labelTop - 16) < 2, JSON.stringify(shape.controls))
     // the mouse is where the card was clicked, over the canvas now, and a section painted under a resting pointer is
     // hovered (Story 5.2): move it onto Layers so "at rest" is at rest
@@ -2178,8 +2198,244 @@ async function main() {
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
 
+    // ─────────────────────────────────────────── Story 5.7 — DEVICE PREVIEW, AND THE CANVAS AS A VIEWPORT ───
+    // Steps 54–60, inside step 5's CSP session so its zero covers every one of them. Every expectation is DERIVED
+    // from `apps/web/lib/device.ts` — the table, the fit and the chip's words — so a device, a size or a word that
+    // changes there changes this walk with it and is never restated here (standing rule 4). The editor is freshly
+    // loaded here, from step 53 (b)'s last two lines.
+    const deviceButton = (name) => page.locator(`#editor-device button[data-device="${name}"]`)
+    /** everything the canvas IS right now: the frame's real CSS viewport, its box, the fit on it, the chip and the card */
+    const viewportNow = () => page.evaluate(() => {
+      const stage = document.querySelector('section[aria-label="Canvas"]')
+      const f = stage.querySelector('iframe')
+      const card = stage.firstElementChild
+      const chip = document.getElementById('editor-viewport')
+      const cs = getComputedStyle(stage)
+      const sr = stage.getBoundingClientRect()
+      const cr = card.getBoundingClientRect()
+      // `100vh` INSIDE the canvas, measured rather than assumed: the whole claim is that vh resolves to the device's
+      // height. The probe is appended and removed in this one task, so nothing is ever observable on the page.
+      const probe = f.contentDocument.createElement('div')
+      probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:100vh;pointer-events:none;visibility:hidden'
+      f.contentDocument.body.append(probe)
+      const vh = probe.getBoundingClientRect().height
+      probe.remove()
+      return {
+        // innerWidth/innerHeight, not clientWidth: the canvas scrolls internally, so a scrollbar is inside the viewport
+        inner: { w: f.contentWindow.innerWidth, h: f.contentWindow.innerHeight },
+        vh,
+        // a media query inside the canvas answers at THAT width, which is the reason the CSS size is the device's
+        narrow: f.contentWindow.matchMedia('(max-width: 600px)').matches,
+        box: { w: f.offsetWidth, h: f.offsetHeight },
+        attrW: f.dataset.width,
+        transform: f.style.transform,
+        chip: chip?.textContent ?? null,
+        chipCase: chip && getComputedStyle(chip).textTransform,
+        chipEvents: chip && getComputedStyle(chip).pointerEvents,
+        chipPressable: chip !== null && chip.closest('button, a, [role="button"], input') !== null,
+        said: document.getElementById('editor-said')?.textContent ?? null,
+        card: { w: cr.width, h: cr.height, radius: getComputedStyle(card).borderRadius, left: cr.left - sr.left, right: sr.right - cr.right, top: cr.top - sr.top, bottom: sr.bottom - cr.bottom, pad: parseFloat(cs.paddingTop) },
+        // the ROOM AVAILABLE — the stage's content box, which is what the fit is computed against
+        stage: { w: sr.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), h: sr.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) },
+      }
+    })
+
+    // ── step 54 — S4a's device track (`S4 Editor.dc.html:36-40`), at its drawn size, place and inks ──
+    const track = await page.evaluate(() => {
+      const el = document.getElementById('editor-device')
+      if (!el) return null
+      const sun = document.getElementById('editor-mode')
+      const c = getComputedStyle(el)
+      return {
+        role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+        bg: c.backgroundColor, radius: c.borderTopLeftRadius, pad: c.paddingTop,
+        // "IMMEDIATELY right of the sun" (:35 then :36), read as document order and not as a coordinate
+        afterSun: sun?.nextElementSibling?.id ?? null,
+        buttons: [...el.querySelectorAll('button')].map((b) => {
+          const s = getComputedStyle(b)
+          const r = b.getBoundingClientRect()
+          const svg = b.querySelector('svg')
+          return {
+            name: b.getAttribute('aria-label'), title: b.getAttribute('title'), role: b.getAttribute('role'),
+            checked: b.getAttribute('aria-checked'), tab: b.tabIndex,
+            w: Math.round(r.width), h: Math.round(r.height), radius: s.borderTopLeftRadius,
+            bg: s.backgroundColor, shadow: s.boxShadow, ink: s.color,
+            glyph: svg ? Math.round(svg.getBoundingClientRect().width) : 0, stroke: svg?.getAttribute('stroke-width') ?? null,
+          }
+        }),
+      }
+    })
+    const LABELS = DEVICE.DEVICES.map((d) => d.label)
+    const onSeg = track?.buttons.filter((b) => b.checked === 'true') ?? []
+    check('step 54 — S4a\'s device track sits IMMEDIATELY right of the sun and is a WAI-ARIA radio group, one per device in the frame\'s order', track?.afterSun === 'editor-device' && track.role === 'radiogroup' && track.label === 'Device' && track.buttons.map((b) => b.name).join(' | ') === LABELS.join(' | ') && track.buttons.every((b) => b.role === 'radio'), JSON.stringify({ afterSun: track?.afterSun, role: track?.role, names: track?.buttons.map((b) => b.name) }))
+    check('step 54 — the pill: #EFECE7 (`paper-sunk`), an 8px radius and 2px of padding', track?.bg === 'rgb(239, 236, 231)' && track.radius === '8px' && track.pad === '2px', JSON.stringify({ bg: track?.bg, radius: track?.radius, pad: track?.pad }))
+    check('step 54 — every segment is 28 x 26 at a 6px radius, carrying a 14px glyph at the house 1.5px stroke', track?.buttons.every((b) => b.w === 28 && b.h === 26 && b.radius === '6px' && b.glyph === 14 && b.stroke === '1.5'), JSON.stringify(track?.buttons.map((b) => [b.w, b.h, b.radius, b.glyph, b.stroke])))
+    check('step 54 — the ACTIVE segment is Desktop, white with the frame\'s own shadow and the ink ink; every other is #6E6A64 on nothing', onSeg.length === 1 && onSeg[0].name === DEVICE.DESKTOP.label && onSeg[0].bg === 'rgb(255, 255, 255)' && /rgba\(28, 27, 26, 0\.06\) 0px 1px 2px/.test(onSeg[0].shadow) && onSeg[0].ink === 'rgb(28, 27, 26)' && track.buttons.filter((b) => b.checked !== 'true').every((b) => b.ink === 'rgb(110, 106, 100)' && b.bg === 'rgba(0, 0, 0, 0)'), JSON.stringify(track?.buttons.map((b) => [b.name, b.checked, b.bg, b.ink])))
+    check('step 54 — R-136\'s carve-out: each segment carries its word as its accessible name AND as its hover title, because a 48px bar cannot hold three', track?.buttons.every((b) => b.title === b.name && LABELS.includes(b.name)), JSON.stringify(track?.buttons.map((b) => [b.name, b.title])))
+    check('step 54 — ONE Tab stop for the whole group, on the value in force (the Kit\'s `tabStop`, reused rather than rewritten)', track?.buttons.filter((b) => b.tab === 0).length === 1 && (track.buttons.find((b) => b.tab === 0) ?? {}).checked === 'true', JSON.stringify(track?.buttons.map((b) => [b.name, b.tab])))
+
+    // ── step 55 — each device IS a viewport: the frame's CSS pixels, `100vh`, the media query, the card and the chip ──
+    // FR-D14 and `prd.md:569`: the CSS size is the device's own and the fit is a transform OVER it, so nothing here
+    // can change which breakpoint applies inside the canvas.
+    // Desktop LAST, so every press in this loop is a real change and each one's announcement is a result
+    for (const d of [...DEVICE.DEVICES.slice(1), DEVICE.DEVICES[0]]) {
+      await deviceButton(d.name).click()
+      await page.waitForTimeout(400)
+      const v = await viewportNow()
+      const fit = DEVICE.fitFor(v.stage, d)
+      check(`step 55 — ${d.label}: the iframe's CSS viewport is ${d.width} x ${d.height} in BOTH axes, \`100vh\` resolves to ${d.height}, and \`data-width\` says so`, v.inner.w === d.width && v.inner.h === d.height && v.box.w === d.width && v.box.h === d.height && Math.round(v.vh) === d.height && v.attrW === String(d.width), JSON.stringify({ inner: v.inner, box: v.box, vh: v.vh, attrW: v.attrW }))
+      // read as a NUMBER: the fit is a float, and a string compare would turn a 1e-15 measuring difference into a FAIL
+      const scaled = /^scale\(([\d.]+)\)$/.exec(v.transform)
+      check(`step 55 — ${d.label}: the only scale on it is a TRANSFORM — the fit of both axes, never a changed width`, scaled !== null && Math.abs(Number(scaled[1]) - fit) < 1e-6, `${v.transform} · want scale(${fit})`)
+      check(`step 55 — ${d.label}: a media query inside the canvas answers at ${d.width}, not at the window's width`, v.narrow === (d.width <= 600), `(max-width: 600px) matched ${v.narrow} at ${d.width}`)
+      check(`step 55 — ${d.label}: R-137's card is that viewport fitted — ${d.width} x ${d.height} at the fit, centred in the ground with a 6px radius on all four corners`, Math.abs(v.card.w - d.width * fit) < 1 && Math.abs(v.card.h - d.height * fit) < 1 && v.card.radius === '6px' && Math.abs((v.card.top - v.card.pad) - v.card.bottom) < 1.5 && Math.abs(v.card.left - v.card.right) < 1.5, JSON.stringify(v.card))
+      check(`step 55 — ${d.label}: UX-DR17's chip reads the TRUE SIZE first and the shrinking second, uppercased in CSS so the sentence is what is read out`, v.chip === DEVICE.viewportWords(d, fit) && v.chipCase === 'uppercase', `${JSON.stringify(v.chip)} · want ${JSON.stringify(DEVICE.viewportWords(d, fit))} · ${v.chipCase}`)
+      check(`step 55 — ${d.label}: the change is announced politely through the editor's ONE live region`, v.said === DEVICE.deviceShown(d), `${JSON.stringify(v.said)} · want ${JSON.stringify(DEVICE.deviceShown(d))}`)
+      check(`step 55 — ${d.label}: the fit is capped at 1 and the whole viewport is in shot in both axes`, fit > 0 && fit <= 1 && v.card.w <= v.stage.w + 1 && v.card.h <= v.stage.h + 1, JSON.stringify({ fit, card: [v.card.w, v.card.h], stage: [v.stage.w, v.stage.h] }))
+      check(`step 55 — ${d.label}: NOTHING SETS THE SCALE — the chip is pointer-transparent and is in no button (UX-DR17, UX-DR20)`, v.chipEvents === 'none' && v.chipPressable === false, JSON.stringify({ events: v.chipEvents, pressable: v.chipPressable }))
+    }
+    // B11's drawn "Fit / 55%" picker is NOT built: nothing pressable in the editor offers a scale
+    const zoomControls = await page.evaluate(() => [...document.querySelectorAll('button, a, input, select, [role="button"], [role="slider"], [role="radio"]')]
+      .map((el) => `${el.getAttribute('aria-label') ?? ''} ${el.textContent ?? ''}`.trim())
+      .filter((t) => /\bzoom\b|\bfit\b|\d+\s?%/i.test(t)))
+    check('step 55 — UX-DR17/UX-DR20: there is NO zoom, fit or percentage control anywhere in the editor — the chip reports and nothing sets', zoomControls.length === 0, zoomControls.join(' · '))
+
+    // ── step 56 — the fit recomputes when THE ROOM changes; the true size does not ──
+    // Desktop, because on this 1440 stage Desktop is the width-bound one: folding Layers gives the fit 196px more to
+    // work with, which is exactly what the chip exists to report.
+    await deviceButton(DEVICE.DESKTOP.name).click()
+    await page.waitForTimeout(400)
+    const beforeFold = await viewportNow()
+    await canvasFrame().evaluate(() => { window.__nodes = [...document.querySelectorAll('#canvas > *')] })
+    await page.getByRole('button', { name: 'Collapse layers' }).click()
+    await page.waitForTimeout(400)
+    const afterFold = await viewportNow()
+    const pctOf = (chip) => Number(/(\d+)%/.exec(chip ?? '')?.[1] ?? NaN)
+    const sizeOf = (chip) => /viewport \d+ × \d+/i.exec(chip ?? '')?.[0] ?? null
+    check('step 56 — a fold gives the canvas more room: the card grows, the chip\'s percentage goes UP, and the TRUE SIZE in front of it does not move', afterFold.stage.w > beforeFold.stage.w && afterFold.card.w > beforeFold.card.w && pctOf(afterFold.chip) > pctOf(beforeFold.chip) && sizeOf(afterFold.chip) === sizeOf(beforeFold.chip) && sizeOf(beforeFold.chip) !== null, `${JSON.stringify(beforeFold.chip)} → ${JSON.stringify(afterFold.chip)}`)
+    check('step 56 — and the frame\'s CSS viewport did NOT move with it: the room changed, the device did not', afterFold.inner.w === DEVICE.DESKTOP.width && afterFold.inner.h === DEVICE.DESKTOP.height, JSON.stringify(afterFold.inner))
+    check('step 56 — a re-fit is NOT a repaint: every section root is still the same node', await canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].every((el, n) => el === window.__nodes[n])))
+    await page.getByRole('button', { name: 'Show layers' }).click()
+    await page.waitForTimeout(400)
+
+    // ── step 57 — A DEVICE CHANGE IS A STYLE CHANGE, NEVER A REPAINT ──
+    await clickOn(GRID)
+    await canvasFrame().evaluate(() => {
+      window.__nodes = [...document.querySelectorAll('#canvas > *')]
+      document.scrollingElement.scrollTo(0, 240)
+    })
+    await page.waitForTimeout(250)
+    const scrolledWas = await canvasFrame().evaluate(() => Math.round(document.scrollingElement.scrollTop))
+    const stampsBefore = await canvasFrame().evaluate(() => document.querySelectorAll('[data-inflozo-prop], [data-inflozo-ghost]').length)
+    const rootsBefore = await canvasFrame().evaluate(() => document.querySelectorAll('#canvas > *').length)
+    await deviceButton(DEVICE.MOBILE.name).click()
+    await page.waitForTimeout(500)
+    const changed = await canvasFrame().evaluate(() => ({
+      same: [...document.querySelectorAll('#canvas > *')].every((el, n) => el === window.__nodes[n]),
+      roots: document.querySelectorAll('#canvas > *').length,
+      selected: document.querySelectorAll('[data-inflozo-selected]').length,
+      scroll: Math.round(document.scrollingElement.scrollTop),
+      // the stamps are LIFTED into memory at each paint and never painted, so a repaint would put a fresh set on the
+      // page and this count would rise off zero
+      stamped: document.querySelectorAll('[data-inflozo-prop], [data-inflozo-ghost]').length,
+    }))
+    check('step 57 — pressing a device REPAINTS NOTHING: every section root is the same node object, and the selection and its mark survive', changed.same && changed.roots === rootsBefore && changed.selected === 1, JSON.stringify(changed))
+    check('step 57 — the stamps are untouched, because the canvas DOM is untouched (a repaint would re-stamp and lift them again)', changed.stamped === stampsBefore, `${changed.stamped} · was ${stampsBefore}`)
+    // NO SCROLL RESTORATION is the story's own rule — re-laying the page out at 390 moves the scroll and nothing
+    // invents a policy for it. What must not happen is the canvas jumping back to the top, which a reload would do.
+    check('step 57 — the canvas did not jump back to the top (the frame was never reloaded)', changed.scroll > 0 && scrolledWas > 0, `${changed.scroll} · was ${scrolledWas}`)
+    const selectedAfter = await onScreen(GRID)
+    const outlineAfter = await boxNow('selected')
+    check('step 57 — the chrome re-places on the next frame: the selected outline is back over its root at the new fit', outlineAfter !== null && Math.abs(outlineAfter.left - selectedAfter.x) < 2 && Math.abs(outlineAfter.top - selectedAfter.y) < 2, JSON.stringify({ box: outlineAfter && [outlineAfter.left, outlineAfter.top], root: [selectedAfter.x, selectedAfter.y] }))
+
+    // the caret, which is the reason `DeviceSwitch` prevents its own mousedown: a press that took focus out of the
+    // canvas would end the edit through `inline.ts`'s focusout, and the roots-are-the-same-node read cannot see that
+    await deviceButton(DEVICE.DESKTOP.name).click()
+    await page.waitForTimeout(400)
+    await caretInto(GRID, TITLE)
+    const caretHere = () => canvasFrame().evaluate(() => ({ editable: document.activeElement?.isContentEditable === true, offset: document.getSelection()?.focusOffset ?? null }))
+    const caretWas = await caretHere()
+    await deviceButton(DEVICE.TABLET.name).click()
+    await page.waitForTimeout(400)
+    const caretIs = await caretHere()
+    const tabletNow = await viewportNow()
+    check('step 57 — a caret mid-word SURVIVES a device change: still editing, the same offset, and the device did change', caretWas.editable && caretIs.editable && caretIs.offset === caretWas.offset && tabletNow.inner.w === DEVICE.TABLET.width, `${JSON.stringify(caretWas)} → ${JSON.stringify(caretIs)} · ${tabletNow.inner.w}`)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+
+    // ── step 58 — R-123 on a LETTERBOXED card: the ground beside it is still nothing ──
+    await deviceButton(DEVICE.MOBILE.name).click()
+    await page.waitForTimeout(400)
+    await clickOn(GRID)
+    const letterbox = await page.evaluate(() => {
+      const stage = document.querySelector('section[aria-label="Canvas"]')
+      const s = stage.getBoundingClientRect()
+      const card = stage.firstElementChild.getBoundingClientRect()
+      return { x: (s.left + card.left) / 2, y: card.top + card.height / 2, room: card.left - s.left }
+    })
+    await page.mouse.click(letterbox.x, letterbox.y)
+    await page.waitForTimeout(400)
+    const afterLetterbox = await panelOf()
+    check('step 58 — R-123: with a phone-shaped card there is real ground each side, and a press on it deselects exactly as the ground below the last section does', letterbox.room > 100 && !(await onScreen(GRID)).selected && afterLetterbox.label === 'Page settings' && afterLetterbox.empty, `${JSON.stringify(letterbox)} · ${JSON.stringify(afterLetterbox.label)}`)
+
+    // ── step 59 — the keyboard: one Tab stop, the arrows move the choice ──
+    await page.locator('#editor-device button[tabindex="0"]').focus()
+    const arrowed = []
+    for (const key of ['ArrowRight', 'ArrowRight', 'ArrowLeft']) {
+      await page.keyboard.press(key)
+      await page.waitForTimeout(350)
+      arrowed.push(await page.evaluate(() => {
+        const on = document.querySelector('#editor-device button[aria-checked="true"]')
+        return { device: on?.dataset.device ?? null, focused: document.activeElement === on, width: document.querySelector('section[aria-label="Canvas"] iframe').offsetWidth }
+      }))
+    }
+    const order = DEVICE.DEVICES.map((d) => d.name)
+    const from = order.indexOf(DEVICE.MOBILE.name)
+    const want = [order[(from + 1) % order.length], order[(from + 2) % order.length], order[(from + 1) % order.length]]
+    check('step 59 — the Kit\'s `radioKeys`: the arrows move the device without the mouse, the focus follows the choice, and the canvas resizes with it', arrowed.map((a) => a.device).join(' → ') === want.join(' → ') && arrowed.every((a) => a.focused) && arrowed.every((a, i) => a.width === DEVICE.DEVICES.find((d) => d.name === want[i]).width), JSON.stringify(arrowed) + ' · want ' + want.join(' → '))
+    await deviceButton(DEVICE.DESKTOP.name).click()
+    await page.waitForTimeout(400)
+
+    // ── step 60 — FR-D14: NOTHING CAPS SECTIONS, and a device change blocks the main thread for no more than 5s ──
+    // The fixture is planted through the service key, because nothing persists a canvas edit before Story 5.8. Its 40
+    // instances are the seeded stack cycled with fresh ids, so every design is one this project already reads.
+    // NFR-1's 60fps / p95 / 50ms gate is NOT owed here — it is manual-only on the reference laptop at 4x throttle and
+    // is Story 5.23's. The 5s LOCKUP BOUND is FR-D14's own pass/fail condition and is measurable, so it is owed here.
+    const homeBefore = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)
+    const homeDoc = homeBefore.body?.[0]?.doc ?? null
+    const FIXTURE = 40
+    const rootsAtSeed = await canvasFrame().evaluate(() => document.querySelectorAll('#canvas > *').length)
+    const big = JSON.parse(JSON.stringify(homeDoc))
+    // `hidden: false` on every one: a hidden instance renders '' and has no root, so leaving the flag as it is would
+    // make the expectation below depend on what an earlier step hid
+    big.instances = Array.from({ length: FIXTURE }, (_, i) => ({ ...homeDoc.instances[i % homeDoc.instances.length], instanceId: crypto.randomUUID(), layerName: `Section ${i + 1}`, hidden: false }))
+    const planted = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: big }) })
+    check(`step 60 — a ${FIXTURE}-section doc is planted through the service key (nothing persists a canvas edit before Story 5.8)`, planted.status === 200 || planted.status === 204, `HTTP ${planted.status}`)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    // `longtask` is recorded from before the press, so the press's own task is in the buffer whatever its length
+    await page.evaluate(() => {
+      window.__long = []
+      window.__obs = new PerformanceObserver((list) => window.__long.push(...list.getEntries().map((e) => e.duration)))
+      window.__obs.observe({ entryTypes: ['longtask'] })
+    })
+    const bigRoots = await canvasFrame().evaluate(() => document.querySelectorAll('#canvas > *').length)
+    await deviceButton(DEVICE.MOBILE.name).click()
+    await page.waitForTimeout(1500)
+    await deviceButton(DEVICE.DESKTOP.name).click()
+    await page.waitForTimeout(1500)
+    const longest = await page.evaluate(() => { window.__obs.disconnect(); return Math.max(0, ...window.__long) })
+    // DERIVED from what is actually on this canvas: the roots the seed drew, less Home's own drawn instances, plus 40
+    const bigStack = rootsAtSeed - homeDoc.instances.filter((i) => !i.hidden).length + FIXTURE
+    check(`step 60 — FR-D14: NOTHING CAPS SECTIONS PER TEMPLATE — all ${FIXTURE} planted sections plus the site-wide ones are drawn`, bigRoots === bigStack, `${bigRoots} roots · want ${bigStack}`)
+    check('step 60 — FR-D14\'s lockup bound: no main-thread task over 5s while a device change lands on that canvas (slower is acceptable, a lockup is not)', longest < 5000, `longest long task ${Math.round(longest)}ms`)
+    note('step 60', `NFR-1's 60fps / p95 <= 16.7ms / no-task-over-50ms gate is NOT asserted here — manual-only at 4x throttle on the reference laptop, Story 5.23 (longest task this run: ${Math.round(longest)}ms)`)
+    // the fixture is put back before anything else reads this canvas
+    const restored = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: homeDoc }) })
+    check('step 60 — the planted fixture is removed and Home is the doc it was, so every later step reads the seed', (restored.status === 200 || restored.status === 204) && JSON.stringify((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc) === JSON.stringify(homeDoc), `HTTP ${restored.status}`)
+
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, and Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, and Story 5.7\'s device changes, folds, arrows and the 40-section fixture — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code

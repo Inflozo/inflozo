@@ -20,8 +20,14 @@ export function EditorSkeleton({ name }: { name: string }) {
             <Skeleton />
             <Skeleton />
           </div>
-          <div className="flex min-w-0 flex-1 flex-col bg-canvas-ground px-7 pt-6">
-            <div className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col gap-8 rounded-t-[6px] bg-paper-raised p-8 shadow-canvas-page">
+          <div className="flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-6">
+            {/* R-137 (Story 5.7): the resting card is Desktop's 1440 × 900 fitted — centred in the ground, rounded on
+                all four corners, with ground below it. A skeleton that draws a different shape from the screen it
+                stands in for is the very flicker R-98 exists to remove.
+                ponytail: width-bound only, which the owner's 1440 stage is (864 / 1440 beats 828 / 900). On a short,
+                wide window the real card is height-bound and this draws taller; measure the stage here if that is
+                ever seen — the fallback has no `ResizeObserver` to read. */}
+            <div className="flex aspect-[1440/900] max-h-full w-full shrink-0 flex-col gap-8 overflow-hidden rounded-[6px] bg-paper-raised p-8 shadow-canvas-page">
               <Skeleton />
               <Skeleton />
               <Skeleton />

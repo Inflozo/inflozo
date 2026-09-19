@@ -59,6 +59,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     inline caret and the scroll survive it, and every section root is the same node. The device is session state like
     the mode: no column, no migration, **no Schema phase**. `1` `2` `3` stay Story 5.9's and the `⋯` collapse at 834
     stays Story 5.22's; FR-D14's fps gate stays Story 5.23's, while its **no-cap** and **5 s lockup bound** are 5.7's.
+  - **As built (Story 5.7, 2026-09-19):** the device table, `fitFor`, the chip's words and the live region's sentence
+    are `apps/web/lib/device.ts` — **pure and importless on purpose**, because `node --test` strips types but cannot
+    load a `.tsx`, so the fit is unit-tested in `editor.test.ts` (`kit-button.test.ts:6-7` is the standing precedent).
+    `components/editor/device-switch.tsx` holds S4a's icon radio group — reusing the Kit's own `radioKeys`/`tabStop`,
+    never a second arrow implementation — and B11's chip, whose two rounded colours are named in its comment
+    (`tokens.test.ts` forbids a hex under `apps/web`). The `ResizeObserver` moved from the page card to the stage
+    `<section>`: the card is now the ANSWER (the device's size, fitted) and the stage is the question. The centring is
+    on that same `<section>`, never a wrapper, or R-123's `e.target === e.currentTarget` would stop covering the
+    letterbox beside a phone-shaped card. The chip renders AFTER the card so the card stays the ground's
+    `firstElementChild`, which is how the harness and step 27's gutter find it.
 - **Live content is read in the browser and degrades honestly.** Reads are cached 60 s, batched and de-duplicated across canvas, picker and link search under a per-session ceiling, and fall back to Orbit Weekly naming the cause on 429 (that Ghost rate-limits Content API keys is the PRD's statement, not a measurement); body HTML is never read — `{{content}}` is the style-guide fixture.
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.

@@ -12,6 +12,7 @@ import {
 import type { ControlState, DocInstance, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
+import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
@@ -26,6 +27,7 @@ import { ChevronLeft, Panel } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
+import { DESKTOP, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
@@ -37,15 +39,18 @@ import type { EditorData } from './read'
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
    FR-D1's four regions, read off the frame: the 48px bar and its rule (:28), Layers at 240 with a right rule (:54),
-   the canvas ground with the page card 24px from the top and 28px from each side, flush with the bottom, a 6px top
-   radius and the page shadow (:62-63), and Controls at 280 with a left rule and 16px padding (:118). The window never
-   scrolls: the canvas document scrolls inside its frame and each panel on its own.
+   the canvas ground with the page card 24px from the top and 28px from each side and the page shadow (:62-63), and
+   Controls at 280 with a left rule and 16px padding (:118). The window never scrolls: the canvas document scrolls
+   inside its frame and each panel on its own.
 
    THE CANVAS is the one canvas document `/canvas` serves (no script; the pilots review frames the same one), every
-   section drawn through `lib/canvas.ts` — the render `/pilots` uses — at Desktop 1440, scaled to fit the card's
-   width and filling its height: the fit, not a cap (S4a's 864 is 1440 − 240 − 280 − 56). Nothing on it is chrome at
-   rest: the chrome stylesheet inside is keyed on `data-inflozo-*`, and a root carries one only while hovered or
-   selected.
+   section drawn through `lib/canvas.ts` — the render `/pilots` uses. Since Story 5.7 it is a DEVICE VIEWPORT in both
+   axes (`lib/device.ts`, R-137): the iframe's CSS pixel size is the device's own, so a media query fires at that width
+   and `vh` resolves honestly, and the only scale on it is a `transform` fitted to BOTH axes and capped at 1. The card
+   takes the device's size rather than the room available and is centred in the ground — S4a`:63`'s `height:100%`, its
+   top-only radius and its 864 ceiling are what R-137 replaced, and its ground, ink, shadow and 6px radius are what it
+   kept. Nothing on it is chrome at rest: the chrome stylesheet inside is keyed on `data-inflozo-*`, and a root carries
+   one only while hovered or selected.
 
    HOVER AND SELECTION (Story 5.2 — S4b and S4c). The editor listens on the canvas document from this one, and marks
    the section root under the pointer `data-inflozo-hover` and the chosen one `data-inflozo-selected` — state marks, which
@@ -128,9 +133,17 @@ import type { EditorData } from './read'
    Controls panel's foot and the Layers `⋯` — and ONE confirm, below, beside Delete's and Hide's and for the same
    reason. The project's own two rows live on R-131's Theme settings screen, reached from the bar.
 
+   DEVICE PREVIEW (Story 5.7 — S4a's track, B11's chip, R-137). THE DEVICE IS A STYLE CHANGE, NEVER A REPAINT — even
+   weaker than 5.6's flip, which at least re-stamps: nothing in the canvas DOM is touched at all, so every section root
+   is the same node and the selection, the stamps, the inline caret and the canvas scroll all survive it. The device is
+   session state like the mode, and resets to Desktop on reload. The `ResizeObserver` watches the stage `<section>` and
+   not the card, because the card is now the ANSWER (the device's size, fitted) and the stage is the question (the room
+   available). NO ZOOM CONTROL and no per-breakpoint editing (UX-DR17, UX-DR20, FR-D8): the fit is derived and only
+   reported. `1` `2` `3` are Story 5.9's whole keyboard map, and D8b's collapse into `⋯` below 1440 is Story 5.22's.
+
    ABSENT, NOT GREYED (UX-DR3), each until its story: "Saved", saving and Undo/Redo (5.8 — until then an edit lives for
-   the session and a reload starts from the stored docs), View as (5.14), the
-   device switch (5.7), Ship it (7.18), the name's rename underline (no story yet),
+   the session and a reload starts from the stored docs), View as (5.14),
+   Ship it (7.18), the name's rename underline (no story yet),
    "+ Add section" and the hairline "+" between sections (5.10),
    the design arrows and S4c's "4 / 18" chip (5.11) and the Style Pack card (6.3)
    (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the VISITOR's `mode-toggle` and a
@@ -138,8 +151,6 @@ import type { EditorData } from './read'
    (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
    P0-2's filled-slot popover. S4a's posts-per-page note and S4c's pinned Quick Controls card are never
    built (FR-Q1, R-113). */
-
-const DESKTOP = 1440
 
 /** The visitor the canvas previews until Story 5.14's View as: Story 4.10's own default, named here because R-124's
  *  Member visibility control says which visitor it is when a section is gated away. */
@@ -236,11 +247,18 @@ export function Editor({
   /** Story 5.6 — the mode the canvas is SHOWING. Session state, like `pilots/review.tsx`'s: it is never in the URL
    *  (`lib/editor.ts`) and never a stored per-canvas preference. A Light-only project has no way to leave 'light'. */
   const [mode, setMode] = useState<Mode>('light')
+  /** Story 5.7 — the device the canvas IS. Session state like the mode, for the same reason: it is a property of the
+   *  person looking and not of the canvas, so it survives a canvas switch (this component stays mounted), resets to
+   *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
+   *  card fills the room available. */
+  const [device, setDevice] = useState<Device>(DESKTOP)
 
   const layers = useFold()
   const controls = useFold()
   const frame = useRef<HTMLIFrameElement>(null)
-  const card = useRef<HTMLDivElement>(null)
+  /** the canvas ground: its CONTENT BOX is the room the card is fitted into — the card itself is the answer, so
+   *  measuring it would measure the fit rather than the space (Story 5.7; it was the card until R-137) */
+  const stage = useRef<HTMLElement>(null)
   const tag = useRef<HTMLDivElement>(null)
   const hoverBox = useRef<HTMLDivElement>(null)
   const selectedBox = useRef<HTMLDivElement>(null)
@@ -248,7 +266,7 @@ export function Editor({
   const icons = useRef<IconLookup | null>(null)
   /** index-aligned with the stack last painted; null where a section rendered nothing */
   const roots = useRef<(HTMLElement | null)[]>([])
-  const [size, setSize] = useState({ width: DESKTOP, height: 0 })
+  const [size, setSize] = useState({ width: 0, height: 0 })
   // A section that will not draw is a broken doc or design, not a canvas to show around it: thrown in render, so the
   // app's error boundary shows it (the spec's "never a partly drawn canvas").
   const [failure, setFailure] = useState<Error | null>(null)
@@ -281,8 +299,10 @@ export function Editor({
   const tools = useRef<InlineToolsHandle>(null)
   /** a press on the canvas is under way: a repaint it causes waits for its click, which must still find its target */
   const press = useRef({ on: false, repaint: false })
-  // a card measured at 0 (folded away, not yet laid out) would put Infinity in the iframe's height
-  const scale = size.width > 0 ? Math.min(1, size.width / DESKTOP) : 1
+  /** THE ONE SCALE (Story 5.7): `min(1, stageW/deviceW, stageH/deviceH)`, derived and never set. Everything downstream
+   *  already takes the fit as a derived quantity — `place()` is handed it, `onScreen` and `fitOf` recompute it from the
+   *  DOM — so this line is the whole of the change. */
+  const scale = fitFor(size, device)
   // the canvas document's handlers and paint read the latest values through here
   const latest = useRef({ key, docs, stack, selected, hovered, auto, mode })
   latest.current = { key, docs, stack, selected, hovered, auto, mode }
@@ -347,6 +367,16 @@ export function Editor({
     if (doc) doc.documentElement.setAttribute('data-mode', next)
     restampAll()
     setSaid(modeShown(next))
+  }
+
+  /** Story 5.7's press, and it is deliberately smaller than `flip`'s: A DEVICE CHANGE IS A STYLE CHANGE AND NOTHING
+   *  ELSE. Nothing is reloaded, `paint()` is not called and nothing re-stamps — the card and the iframe simply take
+   *  new numbers — so every section root is the same node object and the selection, the outlines, the stamps, the
+   *  inline caret and the canvas scroll all survive it. The top bar never deselects (R-123). */
+  const pickDevice = (next: Device) => {
+    if (next.name === device.name) return
+    setDevice(next)
+    setSaid(deviceShown(next))
   }
 
   const choose = (pick: Pick | null) => {
@@ -726,11 +756,12 @@ export function Editor({
     // mount only
   }, [])
 
-  // the fit: re-measured whenever a fold or the window changes the card
+  // the fit: re-measured whenever a fold or the window changes THE ROOM AVAILABLE. The stage's content box, never the
+  // card's — since R-137 the card is the device's size fitted, so measuring it would measure this effect's own answer
   useLayoutEffect(() => {
-    if (!card.current) return
+    if (!stage.current) return
     const watch = new ResizeObserver(([row]) => row && setSize({ width: row.contentRect.width, height: row.contentRect.height }))
-    watch.observe(card.current)
+    watch.observe(stage.current)
     return () => watch.disconnect()
   }, [])
   useLayoutEffect(mark, [selected, hovered])
@@ -966,13 +997,15 @@ export function Editor({
         <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center">
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
         </div>
-        {/* S4a's RIGHT-HAND CLUSTER, which the frame draws as the sun alone (:35) — position 6, and nothing was right
-            of centre before this story. R-132's one button leads it; View as (5.14), the device switch (5.7),
-            undo/redo (5.8) and Ship it (7.18) land beside it later (R-118).
-            ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so many
-            words): there is no toggle rather than a theme that declares less. */}
+        {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
+            RIGHT OF IT, as the frame draws them; View as (5.14), undo/redo (5.8) and Ship it (7.18) land beside them
+            later (R-118).
+            The sun is ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so
+            many words): there is no toggle rather than a theme that declares less. The device track is NOT scoped by
+            dark — R-135 scopes the mode and nothing else — so it is drawn on every project. */}
         <div className="ml-auto flex items-center gap-[10px]">
           {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
+          <DeviceSwitch device={device} onDevice={pickDevice} />
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
               icon for it, and R-92 forbids inventing one here. */}
@@ -1020,25 +1053,38 @@ export function Editor({
         {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" /> : null}
 
         <section
+          ref={stage}
           aria-label="Canvas"
           // R-123: the ground around the page card is nothing too — a press on it ends editing and deselects, exactly as
           // Esc does. `currentTarget` alone: a press on the page card keeps the selection, as the Controls panel, the top
           // bar, the Layers header and a Layers row do (EXPERIENCE § the focus model (2)); the toolbar and its link panel
           // are portalled to the body, so their presses never reach this handler at all. The space below the Layers rows
           // is the third ground, on its own list container.
+          // STORY 5.7: the centring is on THIS ELEMENT and not on a wrapper around the card. A wrapper would become a
+          // fourth ground that `e.target === e.currentTarget` does not cover, and a press in the letterbox beside a
+          // phone-shaped card would silently stop deselecting. The chip is absolutely positioned and pointer-transparent,
+          // so it is out of the centring and out of this test.
           onPointerDown={(e) => {
             if (e.button === 0 && e.target === e.currentTarget) choose(null)
           }}
-          className="flex min-w-0 flex-1 flex-col bg-canvas-ground px-7 pt-6"
+          className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-6"
         >
-          <div ref={card} className="relative mx-auto min-h-0 w-full max-w-[1440px] flex-1 overflow-hidden rounded-t-[6px] bg-paper-raised shadow-canvas-page">
+          {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
+              ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage. */}
+          <div
+            style={{ width: device.width * scale, height: device.height * scale }}
+            className="relative shrink-0 overflow-hidden rounded-[6px] bg-paper-raised shadow-canvas-page"
+          >
             <iframe
               ref={frame}
               src={src}
               title={`${canvas.label} canvas`}
-              data-width={DESKTOP}
+              // the CSS PIXEL SIZE IS THE DEVICE'S, always — so a media query inside the canvas fires at that width and
+              // `100vh` resolves to that height; the fit is a transform over it and never touches the CSS viewport
+              // (`prd.md:569`). Never scale by changing this width.
+              data-width={device.width}
               className="block origin-top-left border-0"
-              style={{ width: DESKTOP, height: size.height / scale, transform: `scale(${scale})` }}
+              style={{ width: device.width, height: device.height, transform: `scale(${scale})` }}
             />
             {/* The outlines (R-120): boxes over the root, whose line is an inset box-shadow spread, which paints its exact
                 width where a border or an outline is floored to whole pixels: S4b's 1px (:181) and S4c's 1.5px (:293),
@@ -1077,6 +1123,10 @@ export function Editor({
             {/* P0-1's pill (R-122, and the limit's sentence): chrome in the canvas's own layer, so it scrolls with its words */}
             {note && chosen && layerFor(selectedRoot) ? createPortal(<CanvasNote ref={noteBox} kind={note.kind} words={note.words} />, layerFor(selectedRoot) as ShadowRoot) : null}
           </div>
+          {/* B11's chip: the true size first, the fit second, and nothing sets it (UX-DR17, UX-DR20). LAST, not first:
+              the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's gutter
+              find it — and out of flow it paints over the ground either way. */}
+          <ViewportChip device={device} fit={scale} />
           {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
               (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last */}
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling} resources={links} handle={tools} />

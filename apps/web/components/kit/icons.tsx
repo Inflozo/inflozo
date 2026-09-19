@@ -320,6 +320,29 @@ export const Moon = ({ size = 7, label, ...rest }: IconProps) => (
   </svg>
 )
 
+/* S4a's DEVICE TRACK (`S4 Editor.dc.html:37-39`), the three glyphs lifted verbatim — 24-unit viewBox, the house 1.5px
+   stroke, drawn at 14px inside each 28 × 26 button. B11's explainer toolbar draws three different device glyphs at
+   1.7px (`B Missing Surfaces.dc.html:726-728`); THOSE ARE THE EXPLAINER'S, and S4a's are the editor's (Story 5.7). */
+
+export const DeviceDesktop = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="4" width="20" height="13" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </Icon>
+)
+
+export const DeviceTablet = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="5" y="3" width="14" height="18" rx="2" />
+  </Icon>
+)
+
+export const DeviceMobile = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="8" y="3" width="8" height="18" rx="2" />
+  </Icon>
+)
+
 /* ────────────────────────────────────────────── S3 / D4 / S12 — the dashboard's own glyphs.
    Added by Story 1.5, each read verbatim off the frame that draws it: the sidebar nav
    (`S3 Dashboard.dc.html` S3a/S3b/S3c), the account menu (S3d), the ⋯ menu (S3c), the top
