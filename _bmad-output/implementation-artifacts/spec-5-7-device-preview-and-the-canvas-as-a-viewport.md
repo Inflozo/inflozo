@@ -123,7 +123,8 @@ wide**, and 900 − 48 (top bar) − 24/48 (`pt-6`/`py-6`) ≈ **828 tall**.
   from B11a** — so `height:100%`, the top-only radius and the 864 ceiling are the three things that go, and
   nothing else on this line does.
 - `B Missing Surfaces.dc.html:720-827` — **B11**. B11a's chip `VIEWPORT 1440 × 900 · SHOWN AT 46%` and
-  B11b's `VIEWPORT 390 × 844 · SHOWN AT 55%`, each a mono pill at `top:9px; left:12px` of the stage:
+  B11b's `VIEWPORT 390 × 844 · SHOWN AT 55%`, each a mono pill drawn at `top:9px; left:12px` of the stage —
+  **the BUILT chip is at 4px/4px, which is R-138 (Question 2), and the ground's top padding is 32px with it** —:
   `9.5px`, ink `#6B6459`, `background:#F4F1EC`, `border:1px solid #D8D2C7`, `border-radius:24px`,
   `padding:2px 8px`. Its device track is the explainer's own toolbar, **not** the editor's — S4a's is.
   The drawn "Fit / 55%" picker is **not built** (UX-DR17).
@@ -224,6 +225,10 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
       fold; the selection, the stamps, the caret and **node identity** surviving a device change; R-123's
       ground on a letterboxed card; and the 40-section planted doc with `PerformanceObserver('longtask')`
       asserting no task over 5 s -- R-82: the proof runs on the deployed site, not on mocks.
+- [x] **R-138 (added at Dev, on the owner's report):** tuck the chip to 4 px / 4 px in
+      `components/editor/device-switch.tsx`, give the canvas ground 32 px of top padding in `(editor)/editor.tsx` and
+      `editor-skeleton.tsx` so the card can never reach it, and assert the INVARIANT per device at step 55 of
+      `tools/probe/run-verify-editor.cjs` -- not the two offsets, which are only how it is delivered.
 - [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- at
       Review, record the owner's ruling on Question 1 as a new §A10 entry with its targets, and propagate to
       `EXPERIENCE.md`'s frame/PRD divergence table and to `epics.md`'s Story 5.7 AC if the ruling departs
@@ -250,6 +255,9 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
   `B Missing Surfaces.dc.html:740` draws it, so the accessible string stays the sentence).
 - Given the canvas at any device, when I look for a scale control, then there is none — the chip reports and
   nothing sets (UX-DR17, UX-DR20).
+- Given any device, when the chip and the page card are both on screen, then **they never overlap and the card's top
+  edge clears the chip's bottom** — the chip at 4 px / 4 px of the ground and the ground's 32 px of top padding
+  together (**R-138**), the invariant asserted rather than the two offsets.
 - Given a letterboxed card, when I press the ground beside it, then the selection clears exactly as it does
   below the last section (R-123).
 - Given a 40-section canvas, when it loads and I change device, then nothing caps the number of sections and
@@ -273,6 +281,17 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
   up and puts it back; asserting there costs one read and no second settings round-trip, where a step 61 would
   have had to switch the project off and on again. `LABELS` moved up beside the harness's `lib/device.ts` import
   so both steps read the same table.
+
+- **Dev (2026-09-19) — R-138: the chip moved and the ground gained 8 px, on the owner's report.** He said the chip was
+  "overlaying the canvas on desktop". **Measured first, on the deployed editor at 1440 × 900** (a throwaway account
+  through the Auth Admin API and the harness's own seed), because the report and the arithmetic disagreed: **Desktop
+  at rest does not overlap** — 139 px of ground between them — but **Tablet overlaps by 84 × 5 px** and **Desktop with
+  both panels folded leaves 4 px**, which the card's shadow bleeds across. The cause: the chip is pinned to the
+  stage's corner while the card moves, so any height-bound card rises to meet it. His literal request had ~5 px of
+  room before the chip touched the top bar's and Layers' rules, and would not have fixed Tablet — so R-83's options
+  went to him and he ruled **option 1**, both halves. This departs from `B Missing Surfaces.dc.html:740`'s drawn
+  9 px / 12 px and from `S4 Editor.dc.html:62`'s 24 px of top padding, and it amends **R-137**'s "deliberately not
+  touched" line, which had reserved that padding.
 
 ## Design Notes
 
@@ -348,6 +367,22 @@ holding `mode` in `editor.tsx` and persisting nothing. Same here. No column, no 
 - `node --check tools/probe/run-verify-editor.cjs` — clean, with `LABELS` hoisted to the harness's device
   import so step 53 can read it (a `const` used before its declaration in the same block is a TDZ error, not a
   hoist).
+- **R-138's measurement, executed on the DEPLOYED editor before anything was changed** — a throwaway account created
+  through the Supabase Auth Admin API (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), seeded with `tools/probe/seed-editor-project.mjs`,
+  signed in by a generated magic link, and driven with Playwright at a 1440 × 900 viewport against
+  `https://app.inflozo.com`. The chip's and the card's boxes, read from the live DOM:
+
+  | State | chip box | card box | result |
+  |---|---|---|---|
+  | Desktop at rest | 252,57 → 474,77 | 268,216 → 1132,756 | no overlap · **139px** of ground between them |
+  | **Tablet** | 252,57 → 474,77 | 390,72 → 1011,900 | **OVERLAP 84 × 5px** |
+  | Mobile | 252,57 → 468,77 | 509,72 → 891,900 | no overlap (the card is narrow and centred) |
+  | Desktop, both panels folded | 56,57 → 278,77 | 72,81 → 1368,891 | no overlap · **4px**, which the card's shadow crosses |
+
+  This is why the owner's report and the arithmetic disagreed, and why the remedy is the pair rather than the nudge.
+  After the change the invariant is asserted per device at step 55 of the editor walk, against the deployed site at
+  Review — the chip's bottom is 24px from the ground's top edge and the card's top is 32px, so the clearance is 8px
+  on every device and is measured rather than assumed.
 
 **Real services this story hit at Dev (R-82; every key read into a command's environment, never printed):**
 
@@ -444,3 +479,39 @@ Recorded as **R-137** in `reconcile-designs-decisions.md` §A10, and propagated 
 `epics.md`'s Story 5.7 AC and to `EXPERIENCE.md`'s device-preview paragraph and B11 divergence row. **B11a
 governs the card's geometry — device-sized, centred in the ground, a radius on all four corners — and S4a
 governs everything else about it**: the ground, the ink, the shadow and the 6 px radius.
+
+### Question 2 — the chip and the page get in each other's way
+
+You said the "viewport ... shown at" chip was overlaying the canvas on desktop, and asked to move it up and left.
+
+**What I measured on the live editor before changing anything** (your own 1440 × 900 size):
+
+| What you are looking at | Space between the chip and the page |
+|---|---|
+| Desktop, both panels open | **139 px** — the chip is nowhere near the page |
+| Desktop, **both panels folded away** | **4 px** — all but touching, and the page's shadow bleeds across it |
+| **Tablet** | **−5 px** — the chip's bottom-right corner sits *on* the page |
+| Mobile | clear — the page is narrow and centred |
+
+The chip is pinned to the top-left corner of the grey and it is the **page** that moves; when the page is tall it
+rises to meet the chip. "A bit up and left" had only about 5 px of room before the chip touched the top bar's line
+and the Layers panel's line, and it would not have fixed the tablet — which is why this came to you.
+
+**Example.** You press the tablet button. The page becomes tall and its top edge slides 5 px *under* the chip, so
+"SHOWN AT 74%" is printed across the corner of your page.
+
+1. **Tuck it into the corner AND keep the page clear of it.** (RECOMMENDED) — the chip moves up and left into the very
+   corner (4 px off each line instead of 9 and 12), and the page is stopped from ever rising under it on any device.
+   Does what you asked and fixes the tablet for good. Costs about 8 px of page height — the tablet still reads 74%,
+   and desktop does not change at all.
+2. **Just nudge it, nothing else** — only the chip moves. Smallest change; clears the tablet by about 1 px, which will
+   look tight, and a longer chip on another screen could touch again.
+3. **Leave the chip where the drawing puts it and only move the page down** — fixes the tablet, but nothing changes on
+   desktop at rest, so if what bothered you was the chip floating there, this would not change it.
+4. **Move the chip up into the top bar** beside the three device buttons — it could then never overlap anything, but
+   it takes room in a 48 px bar that still has undo/redo (5.8) and Ship it (7.18) to come.
+
+**Ruled: option 1 (owner, 2026-09-19).** Tuck it in and keep the page clear. Recorded as **R-138** in
+`reconcile-designs-decisions.md`, propagated to `EXPERIENCE.md`'s B11 divergence row, and built at this Dev run: the
+chip at 4 px / 4 px, the canvas ground at 32 px of top padding, and step 55 of the editor walk asserting per device
+that **the chip never overlaps the page card** — the invariant, not the two offsets.

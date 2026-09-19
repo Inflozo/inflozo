@@ -20,7 +20,7 @@ export function EditorSkeleton({ name }: { name: string }) {
             <Skeleton />
             <Skeleton />
           </div>
-          <div className="flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-6">
+          <div className="flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-8">
             {/* R-137 (Story 5.7): the resting card is Desktop's 1440 × 900 fitted — centred in the ground, rounded on
                 all four corners, with ground below it. A skeleton that draws a different shape from the screen it
                 stands in for is the very flicker R-98 exists to remove.

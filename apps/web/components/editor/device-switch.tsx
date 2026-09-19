@@ -68,8 +68,14 @@ export function DeviceSwitch({ device, onDevice }: { device: Device; onDevice: (
   )
 }
 
-/** B11's mono chip (`B Missing Surfaces.dc.html:740`), over the canvas ground at its drawn 9px/12px corner. It reports
- *  and nothing sets it, and it re-reads whenever the stage does — a fold, a window resize, a device change.
+/** B11's mono chip (`B Missing Surfaces.dc.html:740`), over the canvas ground. It reports and nothing sets it, and it
+ *  re-reads whenever the stage does — a fold, a window resize, a device change.
+ *
+ *  **R-138 (owner, 2026-09-19): 4px / 4px, not the frame's 9px / 12px** — the chip is pinned to the stage's corner
+ *  while the PAGE CARD moves, so a tall card rises to meet it: measured on the deployed editor at 1440 × 900, Tablet
+ *  put the card's top edge 5px UNDER the chip, and Desktop with both panels folded left a 4px gap the card's shadow
+ *  bled across. Tucking it into the corner is half the remedy and `editor.tsx`'s top padding is the other half — the
+ *  card can no longer reach it on ANY device, which is the invariant the harness asserts rather than these numbers.
  *
  *  TWO VALUES ARE ROUNDED TO THE NEAREST TOKEN, and the rounding is named here as Story 3.8 named its own, because
  *  `tokens.test.ts` forbids a colour literal anywhere under `apps/web`: the chip's own fill is drawn as `paper`, one
@@ -81,7 +87,7 @@ export function ViewportChip({ device, fit }: { device: Device; fit: number }) {
       id="editor-viewport"
       // pointer-events-none on purpose: a press here lands on the ground `<section>` itself, so R-123's deselect still
       // reads `e.target === e.currentTarget` and the chip is not a fourth ground of its own
-      className="pointer-events-none absolute left-3 top-[9px] rounded-pill border border-line-strong bg-paper px-2 py-[2px] font-mono text-[9.5px] uppercase text-ink-soft-aa"
+      className="pointer-events-none absolute left-1 top-1 rounded-pill border border-line-strong bg-paper px-2 py-[2px] font-mono text-[9.5px] uppercase text-ink-soft-aa"
     >
       {viewportWords(device, fit)}
     </span>

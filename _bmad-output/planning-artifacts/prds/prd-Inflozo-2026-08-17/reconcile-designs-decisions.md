@@ -2872,6 +2872,38 @@ moon icon and drop 'Dark override' text along with it. Add title on the icon so 
   never the canvas scale and may not be defeated (FR-D14, WCAG 1.4.4, `EXPERIENCE.md:613-618`); S4a's stage padding,
   ground, shadow and 864 arithmetic, which the card keeps as its width ceiling at rest.
 
+**R-138 — the viewport chip tucks into the stage's corner, and the page card may never reach it.** Story 5.7's Q2,
+ruled option 1 (owner, 2026-09-19): *"Tuck it in + keep page clear."*
+
+- **Why it was a question.** The owner reported the chip "overlaying the canvas on desktop". Measured on the
+  **deployed** editor at 1440 × 900 before anything was changed (a throwaway account through the Auth Admin API, the
+  harness's own seed): **Desktop at rest does NOT overlap** — 139px of ground between the chip's bottom and the card's
+  top — but **Tablet overlaps by 84 × 5px**, the chip's bottom-right corner printing `SHOWN AT 74%` over the page's
+  top-left corner, and **Desktop with both panels folded leaves 4px**, which the card's `0 4px 16px` shadow bleeds
+  across. The cause is geometric and not cosmetic: **the chip is pinned to the stage's corner while the card moves**,
+  so any height-bound card rises to meet it. The literal request — "a bit up and left" — had only ~5px of room before
+  the chip touched the top bar's rule and the Layers rule, and would not have fixed Tablet, so R-83's numbered options
+  were put to the owner rather than guessed at.
+- **What it binds.** TWO HALVES, AND NEITHER ALONE IS SUFFICIENT. The chip sits at **4px / 4px** of the canvas ground
+  rather than `B Missing Surfaces.dc.html:740`'s drawn 9px / 12px; and the ground's **top padding is 32px** rather than
+  `S4 Editor.dc.html:62`'s 24px, so the card's top edge clears the chip's bottom on **every device**. The invariant —
+  *the chip never overlaps the page card, on any device* — is what the walk asserts; the two offsets are how it is
+  delivered and are not themselves normative.
+- **What it costs:** 8px of fitted height. Tablet reads 74% before and after; Desktop is width-bound at 1440 and does
+  not change at all. The chip's own ink, fill, hairline, radius, type and words are untouched — this is a position,
+  not a redesign.
+- **It amends R-137's "deliberately not touched" line**, which reserved S4a's stage padding. R-137 gave the card the
+  device's size; that is precisely what let a tall card reach a chip drawn for a card that filled the height, so the
+  padding had to answer for it. The other three sides stay S4a's.
+- Targets:
+  - ✅ this entry · ✅ Story 5.7's spec (its Question 2 and its Owner's test findings) ·
+    ✅ `EXPERIENCE.md` (B11's divergence row) · ✅ the code and the walk
+    (`components/editor/device-switch.tsx`, `(editor)/editor.tsx`, `editor-skeleton.tsx`,
+    `tools/probe/run-verify-editor.cjs` step 55) — Story 5.7's Dev run (2026-09-19).
+- **Deliberately not touched:** the export (R-74) — B11a is not edited and stands as drawn, this entry being the
+  record of where the built chip departs from it and why; the chip's words, which are UX-DR17's verbatim; the ground,
+  the ink, the shadow, the 6px radius and the 28px sides, which stay S4a's.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

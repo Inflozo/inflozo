@@ -2244,6 +2244,9 @@ async function main() {
         attrW: f.dataset.width,
         transform: f.style.transform,
         chip: chip?.textContent ?? null,
+        // R-138: the two boxes, in viewport coordinates, so the walk can assert they never meet
+        chipBox: chip && (({ left, top, right, bottom }) => ({ left, top, right, bottom }))(chip.getBoundingClientRect()),
+        cardBox: { left: cr.left, top: cr.top, right: cr.right, bottom: cr.bottom },
         chipCase: chip && getComputedStyle(chip).textTransform,
         chipEvents: chip && getComputedStyle(chip).pointerEvents,
         chipPressable: chip !== null && chip.closest('button, a, [role="button"], input') !== null,
@@ -2305,6 +2308,12 @@ async function main() {
       check(`step 55 — ${d.label}: UX-DR17's chip reads the TRUE SIZE first and the shrinking second, uppercased in CSS so the sentence is what is read out`, v.chip === DEVICE.viewportWords(d, fit) && v.chipCase === 'uppercase', `${JSON.stringify(v.chip)} · want ${JSON.stringify(DEVICE.viewportWords(d, fit))} · ${v.chipCase}`)
       check(`step 55 — ${d.label}: the change is announced politely through the editor's ONE live region`, v.said === DEVICE.deviceShown(d), `${JSON.stringify(v.said)} · want ${JSON.stringify(DEVICE.deviceShown(d))}`)
       check(`step 55 — ${d.label}: the fit is capped at 1 and the whole viewport is in shot in both axes`, fit > 0 && fit <= 1 && v.card.w <= v.stage.w + 1 && v.card.h <= v.stage.h + 1, JSON.stringify({ fit, card: [v.card.w, v.card.h], stage: [v.stage.w, v.stage.h] }))
+      // R-138 (owner, 2026-09-19), and it is the INVARIANT that is asserted, never the two offsets that deliver it:
+      // the chip is pinned to the stage's corner while the card moves, so before the ruling a height-bound card rose
+      // under it — Tablet by 5px on a 1440 x 900 laptop, and folded Desktop to within 4px. The chip tucked to 4px/4px
+      // and the stage's 32px of top padding are the remedy TOGETHER; either alone leaves a case that touches.
+      const clear = v.chipBox && v.cardBox ? v.cardBox.top - v.chipBox.bottom : null
+      check(`step 55 — ${d.label}: R-138 — the chip NEVER overlaps the page card, and the card's top edge clears it`, v.chipBox !== null && !(v.chipBox.left < v.cardBox.right && v.chipBox.right > v.cardBox.left && v.chipBox.top < v.cardBox.bottom && v.chipBox.bottom > v.cardBox.top) && clear > 0, `chip ${JSON.stringify(v.chipBox)} · card ${JSON.stringify(v.cardBox)} · clearance ${clear}px`)
       check(`step 55 — ${d.label}: NOTHING SETS THE SCALE — the chip is pointer-transparent and is in no button (UX-DR17, UX-DR20)`, v.chipEvents === 'none' && v.chipPressable === false, JSON.stringify({ events: v.chipEvents, pressable: v.chipPressable }))
     }
     // B11's drawn "Fit / 55%" picker is NOT built: nothing pressable in the editor offers a scale

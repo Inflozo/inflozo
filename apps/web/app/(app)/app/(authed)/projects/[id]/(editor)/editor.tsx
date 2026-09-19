@@ -1067,7 +1067,12 @@ export function Editor({
           onPointerDown={(e) => {
             if (e.button === 0 && e.target === e.currentTarget) choose(null)
           }}
-          className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-6"
+          // R-138 (owner, 2026-09-19): `pt-8`, not S4a`:62`'s 24px. THE CHIP IS PINNED TO THIS CORNER AND THE CARD
+          // MOVES, so a height-bound card rose to meet it — measured on the deployed editor at 1440 × 900: Tablet put
+          // the card 5px UNDER the chip and Desktop with both panels folded left 4px the card's shadow bled across.
+          // The chip tucks to 4px/4px and ends at 24px; 32px of top padding is what keeps the card clear of it on
+          // EVERY device, at a cost of 8px of fitted height (Tablet 74% either way). The other three sides are S4a's.
+          className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-8"
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
               ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage. */}
