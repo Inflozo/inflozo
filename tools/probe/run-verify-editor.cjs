@@ -1865,14 +1865,17 @@ async function main() {
      *  the head span, and a search by textContent alone matched the HEAD when there was no badge beside the title
      *  (the head's text IS the title then) and the title span when there was — so `parentElement` was the whole
      *  control in one case and the head in the other, and the control's own swatch glyphs read as a moon.
-     *  AND THE MOON IS ITS WORDS: the panel always prints "Dark override" beside the badge (UX-DR8), so the words are
-     *  the test and the round ink chip beside them is the second half — never "an svg is somewhere in this row",
-     *  which the reset arrow and the Image swatch both satisfy. */
+     *  AND THE MOON IS ITS WORDS — as its ACCESSIBLE NAME and its hover `title` since R-136 (owner, 2026-09-19)
+     *  took the printed words off the row, so the badge is read by its name and its round ink chip, never by
+     *  "an svg is somewhere in this row", which the reset arrow and the Image swatch both satisfy. */
     const moonOn = (label) => controlsAside().evaluate((a, label) => {
       const span = [...a.querySelectorAll('span[id$="-label"]')].find((s) => s.textContent === label)
       const head = span?.parentElement
       if (head === undefined || head === null) return null
-      return { words: head.textContent, moon: /Dark override/.test(head.textContent) && head.querySelector('.rounded-full svg') !== null }
+      const chip = head.querySelector('.rounded-full')
+      // the name is the SVG <title> the Kit writes, and the hover title is on the chip itself — both must be the words
+      const named = chip?.querySelector('title')?.textContent ?? null
+      return { words: head.textContent, name: named, hover: chip?.getAttribute('title') ?? null, moon: named === 'Dark override' && chip?.querySelector('svg') !== undefined && chip?.querySelector('svg') !== null }
     }, label)
 
     // ── step 46 — S4a's sun, at its drawn place and size, and nothing else right of centre ──
@@ -1947,7 +1950,7 @@ async function main() {
       return { value: r.getAttribute(`data-${name}`), same: r === document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.defaultView.__nodes[n] }
     }, [GRID, BG.name])
     check(`step 48 — in dark, ${BG.label} → ${BG.to.label} stamps the same root in place: data-${BG.name}="${BG.to.value}"`, authored.value === BG.to.value && authored.same, JSON.stringify(authored))
-    check('step 48 — FR-F5: the row carries the moon badge with the words "Dark override"', /Dark override/.test((await moonOn(BG.label))?.words ?? '') && (await moonOn(BG.label))?.moon === true, JSON.stringify(await moonOn(BG.label)))
+    check('step 48 — FR-F5 with R-136: the row carries the moon badge, its words are its NAME and its hover title, and they are NOT printed in the row', (await moonOn(BG.label))?.moon === true && (await moonOn(BG.label))?.hover === 'Dark override' && !/Dark override/.test((await moonOn(BG.label))?.words ?? ''), JSON.stringify(await moonOn(BG.label)))
     await modeButton().click()
     await page.waitForTimeout(300)
     check('step 48 — back in light the root returns to the value it had: THE LIGHT PAGE WAS NOT TOUCHED', (await canvasMode()) === 'light' && (await attrOf(GRID, `data-${BG.name}`)) === beforeBg, `${await attrOf(GRID, `data-${BG.name}`)} · was ${beforeBg}`)
@@ -2115,6 +2118,15 @@ async function main() {
     const litMode = await canvasMode()
     const keptStored = await storedOverrides()
     check('step 53 — FR-D7 on a Light-only project: the sun is ABSENT from the bar rather than disabled, and the canvas is light', noSun === false && litMode === 'light', `control ${noSun ? 'present' : 'absent'} · mode ${litMode}`)
+    // R-135 (owner, 2026-09-19): and the editor says nothing else about dark either — both clears are ABSENT, so it
+    // cannot delete what Theme settings has just greyed with the reason that it is kept
+    await clickOn(HERO)
+    await asideGroup('Style')
+    const inPanel = await controlsAside().getByRole('button', { name: 'Clear dark overrides', exact: true }).count()
+    const inMenu = await menuItems(HERO)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    check('step 53 — R-135: on a Light-only project BOTH editor entry points are absent — the panel row and the ⋯ item, not greyed', inPanel === 0 && !inMenu.includes('Clear dark overrides'), JSON.stringify({ inPanel, inMenu }))
     check('step 53 — AD-17: NOTHING WAS DELETED by the mode change — the stored override is byte-identical', JSON.stringify(keptStored) === JSON.stringify({ [BG_HERO.name]: BG_HERO.to.value }), JSON.stringify(keptStored))
     await page.goto(settingsUrl, { waitUntil: 'load' })
     await segment('on').click()
@@ -2132,10 +2144,32 @@ async function main() {
 
     // ── step 53 (b) — D6a's project-level Clear, and its derived count going with it ──
     await page.goto(settingsUrl, { waitUntil: 'load' })
+    await page.getByText('Every Style Pack ships a hand-paired dark palette').waitFor({ state: 'visible' })
+    // R-134 (owner, 2026-09-19): the widest destructive act in the product asks first, names the count, opens on Cancel.
+    // The count is DERIVED from the row's own sentence, never written here (standing rule 4)
+    const stored = /(\d+) sections? carr/.exec((await readSettings()).row ?? '')
+    const saysCount = stored === null ? null : Number(stored[1]) === 1 ? 'One section' : `All ${stored[1]} sections`
     await page.locator('[data-clear-row] button[type="submit"]').click()
+    await page.waitForTimeout(400)
+    const projectAsk = await page.evaluate(() => {
+      const d = document.querySelector('dialog[aria-labelledby="cleardark-project-title"]')
+      return d === null ? null : { open: d.open, text: d.innerText.replace(/\s+/g, ' '), focus: document.activeElement?.textContent?.trim() ?? null }
+    })
+    check('step 53 — R-134: D6a\'s Clear ASKS FIRST, names the count and opens with focus on Cancel (R-115, UX-DR14)', projectAsk?.open === true && /Clear dark overrides\?/.test(projectAsk.text) && saysCount !== null && projectAsk.text.includes(saysCount) && projectAsk.focus === 'Cancel', JSON.stringify(projectAsk))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(800)
+    check('step 53 — R-134: Cancel changes nothing — every override is still stored', JSON.stringify(await storedOverrides()) === JSON.stringify({ [BG_HERO.name]: BG_HERO.to.value }), JSON.stringify(await storedOverrides()))
+    await page.locator('[data-clear-row] button[type="submit"]').click()
+    await page.waitForTimeout(400)
+    await page.locator('dialog[aria-labelledby="cleardark-project-title"] button', { hasText: 'Clear overrides' }).click()
     await page.waitForTimeout(2500)
     const afterClear = await readSettings()
     const clearedStored = await storedOverrides()
+    // R-12, the shape the panel row uses: with nothing left to clear it SAYS so rather than asking again
+    await page.locator('[data-clear-row] button[type="submit"]').click()
+    await page.waitForTimeout(500)
+    const atZero = await page.evaluate(() => ({ asked: document.querySelector('dialog[aria-labelledby="cleardark-project-title"]')?.open === true, said: document.querySelector('[data-clear-row]')?.parentElement?.innerText ?? '' }))
+    check('step 53 — R-134/R-12: with nothing to clear the project row SAYS so rather than asking', atZero.asked === false && /Nothing to clear/.test(atZero.said), JSON.stringify(atZero))
     check('step 53 — D6a\'s Clear empties every section\'s overrides across every canvas, and the DERIVED count goes with them', /No sections carry a dark override/.test(afterClear.row ?? '') && JSON.stringify(clearedStored) === '{}', `${JSON.stringify(afterClear.row)} · stored ${JSON.stringify(clearedStored)}`)
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')

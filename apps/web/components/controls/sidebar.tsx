@@ -43,7 +43,7 @@ import { limitSentence } from '@/lib/inline'
    glyph and asks first (R-115): S14c's confirm, in the app's one dialog vocabulary (`kit/dialog.ts`), naming the
    count and the changed rows, with the fear answered in the second sentence and focus on Cancel. Nothing changed,
    it says so under the button instead — R-12's rule for a control at its floor, which stays live and explains
-   itself. The moon badge carries its words, "Dark override" (UX-DR8).
+   itself. The moon badge carries its words as its NAME and its hover title, never printed beside it (R-136).
 
    R-124 (owner, 2026-09-18, Story 5.4's Q1) ADDS ONE ROW THE ENGINE DOES NOT DECLARE: "who can see this section" is
    the FIRST ROW of Section Settings and Layers draws nothing about it — where `A4-13 Latest Post.dc.html`:256 and
@@ -116,12 +116,11 @@ function ControlField({
   const words = (v: string | null) => row.options.find((o) => o.value === v)?.label ?? ''
   const aside = (
     <>
-      {row.moon ? (
-        <>
-          <MoonBadge label="" />
-          <span className="font-normal text-ink-soft">Dark override</span>
-        </>
-      ) : null}
+      {/* R-136 (owner, 2026-09-19): THE MOON ALONE, and its words are its accessible name and its hover title.
+          A row head holds the label, the value, this badge and the reset arrow, and the printed words pushed a long
+          control label to wrap. UX-DR8 is met the way `DESIGN.md:534-536` provides for where the layout cannot hold
+          a word — which two words beside a 12px chip in a 280px panel is. */}
+      {row.moon ? <MoonBadge /> : null}
       {row.changed ? (
         <button
           type="button"

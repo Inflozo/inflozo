@@ -799,8 +799,10 @@ export function Editor({
   const rowsOf = (docKey: string): LayerRow[] =>
     (docs[docKey]?.instances ?? []).map((i, at) => ({
       doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at,
-      // R-133: the `⋯` item is ABSENT where nothing could be cleared, and the engine's own definition decides
-      darkOverride: darkOverridesInForce(entries[i.designId] ?? { controlSchema: [] }, i).length > 0,
+      // R-133: the `⋯` item is ABSENT where nothing could be cleared, and the engine's own definition decides.
+      // R-135 (owner, 2026-09-19): and absent on a LIGHT-ONLY project, where Theme settings greys the same act with
+      // its reason — the editor shows nothing about dark there, exactly as the sun is gone rather than disabled.
+      darkOverride: darkEnabled && darkOverridesInForce(entries[i.designId] ?? { controlSchema: [] }, i).length > 0,
     }))
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null. */
@@ -1125,7 +1127,8 @@ export function Editor({
               // is actually painting; the mode itself scopes every resolution, write and reset in the panel
               swatches={swatches[mode]}
               mode={mode}
-              onClearDark={() => askClearDark(chosen)}
+              // R-135: absent on a Light-only project — `sidebar.tsx` draws no row at all without this
+              onClearDark={darkEnabled ? () => askClearDark(chosen) : undefined}
               timezone={timezone}
               links={links}
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}

@@ -2783,6 +2783,65 @@ together rather than either alone.
   project-level row, which is R-131's; `resetSection`, which keeps stored dark overrides on purpose (FR-F4,
   `controls.test.ts:413`) and is why a deliberate clear had to exist at all.
 
+**R-134 — the project-level "Clear dark overrides" asks first.** Story 5.6's Review Question 4, ruled option 1
+(owner, 2026-09-19): *"Ask first, the same way the per-section one does — a small window naming how many sections it
+will clear, opening with focus on Cancel."*
+
+- **Why it was a question.** D6a draws the row with a bare `Clear` and no confirm — but D5 drew "Reset this design"
+  with no confirm either, and the owner added one there (**R-115**). This button is wider than any of them: every
+  section of every canvas, and saved data, with no undo. Review found it was the only destructive act in the product
+  that asked nothing.
+- **What it binds.** The app's one dialog vocabulary (`kit/dialog.ts`, the 460px sheet), the count NAMED in the
+  sentence and derived from the docs, focus opening on **Cancel** (R-115, UX-DR14). With nothing to clear it **says
+  so** under the row instead of asking — R-12, and the shape the per-section row beside it already uses. The confirm
+  is the JavaScript layer over a form that still posts without it, and the server action refuses a Light-only project
+  on its own, so the dialog is never the only thing between a press and the database.
+- Targets: ✅ this entry · ✅ Story 5.6's spec (its Question 4 and § Owner's manual test) ·
+  ✅ `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx` ·
+  ✅ `tools/probe/run-verify-editor.cjs` (step 53) — Story 5.6's Review (2026-09-19).
+- **Deliberately not touched:** the export (R-74) — D6a draws the row without one and this file is the record; the
+  per-section confirm, which R-133 already placed in `editor.tsx`; the action's own Light-only refusal, which is a
+  server rule and not a dialog.
+
+**R-135 — on a Light-only project the editor says nothing about dark, the two clears included.** Story 5.6's Review
+Question 5, ruled option 1 (owner, 2026-09-19): *"Hide both in the editor while the project is Light only — the row
+and the menu item are simply absent, like the sun."*
+
+- **Why it was a question.** Review found the two surfaces contradicting each other: Theme settings greys its Clear
+  with D6b's reason — *"Switch to Light + Dark to use or clear them"* — while the editor's panel row and `⋯` item
+  still cleared that section's overrides on the same project.
+- **What it binds.** On `dark_enabled = false` the editor renders neither entry point: `onClearDark` is not passed to
+  the panel (which draws no row without it) and a Layers row's `darkOverride` flag is false, so the menu item is
+  absent. **Absent, never greyed** — UX-DR3, R-118, R-128, and the same answer the sun already gets. The ONE thing
+  that greys with its reason stays D6b's project-level row, where the overrides exist and are merely not in force.
+- Targets: ✅ this entry · ✅ Story 5.6's spec (its Question 5, its I/O matrix's Light-only row and § Owner's manual
+  test step 16) · ✅ `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (both entry points) ·
+  ✅ `tools/probe/run-verify-editor.cjs` (step 53) — Story 5.6's Review (2026-09-19).
+- **Deliberately not touched:** what is STORED — nothing here deletes an override or changes one, and switching back
+  to Light + Dark returns both entry points with every override intact (FR-D7, AD-17); R-133, which is scoped by this
+  rather than reversed.
+
+**R-136 — the moon badge's words are its name and its hover title, not print beside it.** The owner's instruction at
+Story 5.6's Review (2026-09-19): *"in controls panel for any setting when using Dark override, just show the black
+moon icon and drop 'Dark override' text along with it. Add title on the icon so users know on hover what it is for."*
+
+- **Why it arose.** Dev printed "Dark override" beside the 12px badge in every overridden control row, reading UX-DR8
+  literally. In a 280px panel the head of a control row already holds the label, the value words and the reset arrow,
+  and two more words there push a long label to wrap.
+- **What it binds.** `MoonBadge` carries `title` as well as its accessible name, so the words reach a pointer on hover
+  and a screen reader always; a CONTROL row draws the badge alone. **UX-DR8 is satisfied, not waived** — through
+  `DESIGN.md:534-536`'s carve-out for where the layout genuinely cannot hold the word, the same carve-out R-132 used
+  for the sun. **D6a's own project-level row is untouched:** there the frame prints the words beside the badge and
+  they stay, because that row has the width for them.
+- Targets: ✅ this entry · ✅ Story 5.6's spec · ✅ `apps/web/components/kit/moon-badge.tsx` ·
+  ✅ `apps/web/components/controls/sidebar.tsx` · ✅ `epics.md` (UX-DR8's own example, and Story 5.6's AC) ·
+  ✅ `EXPERIENCE.md:652` (the frame/PRD divergence row) · ✅ `tools/probe/run-verify-editor.cjs` (step 48) ·
+  ✅ `tools/probe/run-verify-controls.cjs` (step 5) — Story 5.6's Review (2026-09-19).
+- **Deliberately not touched:** the export (R-74) — `Editor Sidebar Kit.dc.html:178-179` draws the badge and never
+  draws words beside it in a control row, so this is the Kit's own shape rather than a departure from it; the badge's
+  12px filled-chip geometry, which is the Kit's and not D6a's bare crescent (the two differ, and the Kit's is the one
+  built).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

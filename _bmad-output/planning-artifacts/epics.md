@@ -290,7 +290,7 @@ work and is not story material**; it is cited here only where it names the frame
 - **UX-DR5 · The design picker always shows position** ("Design 7 of 18"), `]` past the last returns to the first, and switching carries, parks and defaults.
 - **UX-DR6 · Every empty state is designed, not omitted.** § State Patterns answers "what does this show when it has nothing to show" for Dashboard, Editor, Control Sidebar, Section Picker, Layers, Routes Manager, Assets, Deploy History, Notifications, Sites, Paywall Editor, Suggestions, the main feed, a secondary `{{#get}}` feed and a user-authored section — each with its loading, error and refusal columns.
 - **UX-DR7 · Partial and degraded states are first-class, not errors.** Partially credentialed · Preview-only (sky, not danger) · uploaded-not-activated · read-only project (export still works) · read-only session · no local storage · offline · `pro_past_due`.
-- **UX-DR8 · Colour classifies; it never carries the only signal, and neither does shape.** Every state has a text equivalent — four persistence *labels* and one dot, the word **Pro** beside the ✦, "Auto-generated" beside the hollow dot, "has image" beside the marker, "Dark override" captioning the moon badge.
+- **UX-DR8 · Colour classifies; it never carries the only signal, and neither does shape.** Every state has a text equivalent — four persistence *labels* and one dot, the word **Pro** beside the ✦, "Auto-generated" beside the hollow dot, "has image" beside the marker, "Dark override" naming the moon badge — as its accessible name and its hover title rather than printed beside it, which is **R-136** (owner, 2026-09-19) applying `DESIGN.md`'s carve-out for where the layout cannot hold the word: a 12px chip in a 280px control row whose head already holds the label, the value and the reset arrow.
 - **UX-DR9 · The focus model across the canvas iframe boundary** — §7.3's named deliverable, discharged in `EXPERIENCE.md`: the canvas is one tab stop between Layers and the Controls sidebar, is reachable and escapable by keyboard, and selection survives the crossing.
 - **UX-DR10 · Keyboard completeness beyond FR-D11's global map.** Layers and every reorderable list: ↑↓ move focus, **`⌥↑`/`⌥↓` move the section itself** with the canvas following and the move announced, `Enter` selects, `Space` toggles visibility. Item lists take the same pattern. Section Picker: arrows across the grid, `Enter` places, `Esc` closes and **returns focus to the invoking position**. Design picker: ←→ mirroring `[` `]`. Assets: the drop zone is **also a file input with a visible "Choose files" button** — a drag-only upload has no keyboard path. Every menu, popover and sheet traps focus and returns it. **A drag with no keyboard equivalent is a defect.**
 - **UX-DR11 · WCAG 2.1.4 Character Key Shortcuts.** Every single-character shortcut is live **only while the editor shell holds focus**, never while a text field or `contenteditable` has it. axe-core does not detect this.
@@ -1707,8 +1707,9 @@ So that dark mode is prepaid rather than a project of its own.
 **Given** a Light + Dark project (the default, because every preset ships a hand-paired dark palette)
 **When** I use the sun/moon toggle
 **Then** the canvas re-renders in the other mode, and mode-scoped controls — Background role, per-mode image
-swaps, mode-specific toggles — **apply to the active mode only** and show a **moon badge captioned "Dark
-override"** where one exists (UX-DR8)
+swaps, mode-specific toggles — **apply to the active mode only** and show a **moon badge named "Dark
+override"** where one exists — its accessible name and its hover title, never printed beside it (UX-DR8 as R-136
+applies it)
 **And** **"Clear dark overrides"** is available per section, and the project surface reports how many sections
 carry one
 **And** switching the project to **Light only** hides the toggle, compiles without dark support, and leaves

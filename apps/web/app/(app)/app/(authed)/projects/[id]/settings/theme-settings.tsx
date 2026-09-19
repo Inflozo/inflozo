@@ -1,6 +1,9 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import { useActionState } from 'react'
+import { Button } from '@/components/kit/button'
+import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { BusyLabel, useSubmitting } from '@/components/kit/submit'
 import { ring } from '@/components/kit/greyed'
 import { HelperCaption } from '@/components/kit/labels'
@@ -26,6 +29,13 @@ import { clearProjectDarkOverrides, setProjectMode, type SettingsResult } from '
 
    THE COUNT IS DERIVED by walking the project's docs (`darkOverrideCount`), never stored — standing rule 4.
 
+   IT ASKS FIRST (R-134, owner 2026-09-19, Review's Question 4), in the app's ONE dialog vocabulary and exactly as the
+   per-section clear does: the count named, focus opening on Cancel (R-115, UX-DR14). It is the widest destructive act
+   in the product — every section of every canvas, and saved data — and it was the only one that asked nothing. With
+   nothing to clear it SAYS so rather than asking, which is R-12 and the shape the panel row beside it uses.
+   The confirm is the JavaScript layer over a form that still posts without it; the action refuses a Light-only
+   project on its own, so nothing here is the only thing standing between a press and the database.
+
    ponytail: the pill is two SUBMIT buttons rather than the Kit's `Segmented`, because a `Segmented` is a radio group
    of `type="button"` and this control has to post a form — so it says what it is doing while it saves (R-98) and
    works with JavaScript switched off, which nothing else on this screen would give it. Switch it to `Segmented` the
@@ -42,6 +52,9 @@ export function ThemeSettings({ projectId, darkEnabled, overriddenSections }: {
 }) {
   const [mode, onMode] = useActionState<SettingsResult | null, FormData>(setProjectMode, null)
   const [cleared, onClear] = useActionState<SettingsResult | null, FormData>(clearProjectDarkOverrides, null)
+  const clearForm = useRef<HTMLFormElement>(null)
+  const confirm = useRef<HTMLDialogElement>(null)
+  const [nothingToClear, setNothingToClear] = useState(false)
   const n = overriddenSections
   const carry = `${n === 0 ? 'No' : n} ${n === 1 ? 'section carries' : 'sections carry'} a dark override`
 
@@ -58,7 +71,7 @@ export function ThemeSettings({ projectId, darkEnabled, overriddenSections }: {
         {mode && 'error' in mode ? <span role="alert"><HelperCaption>{mode.error}</HelperCaption></span> : null}
       </form>
 
-      <form action={onClear} className="flex flex-col gap-[6px] border-t border-line pt-[14px]">
+      <form ref={clearForm} action={onClear} className="flex flex-col gap-[6px] border-t border-line pt-[14px]">
         <input type="hidden" name="project" value={projectId} />
         <div
           data-clear-row
@@ -74,7 +87,16 @@ export function ThemeSettings({ projectId, darkEnabled, overriddenSections }: {
             </span>
             <span className={`text-[11px] ${darkEnabled ? 'text-ink-soft' : 'text-ink-faint'}`}>{carry}</span>
           </div>
-          <ClearButton greyed={!darkEnabled} />
+          <ClearButton
+            greyed={!darkEnabled}
+            onAsk={() => {
+              if (n === 0) {
+                setNothingToClear(false)
+                return requestAnimationFrame(() => setNothingToClear(true))
+              }
+              openOnCancel(confirm.current)
+            }}
+          />
         </div>
         {/* D6b's own reason, verbatim: the row is greyed about what is IN FORCE, never about what is stored */}
         {darkEnabled ? null : (
@@ -90,11 +112,48 @@ export function ThemeSettings({ projectId, darkEnabled, overriddenSections }: {
             </HelperCaption>
           </>
         )}
+        <div role="status">
+          {nothingToClear ? <HelperCaption>Nothing to clear: no section of this project carries a dark override.</HelperCaption> : null}
+        </div>
         {cleared && 'error' in cleared ? <span role="alert"><HelperCaption>{cleared.error}</HelperCaption></span> : null}
         <HelperCaption>
           The same badge marks an overridden control in the sidebar, and it always carries the label &ldquo;Dark
           override&rdquo;.
         </HelperCaption>
+
+        <dialog
+          ref={confirm}
+          onClick={closeOnBackdrop}
+          aria-labelledby="cleardark-project-title"
+          aria-describedby="cleardark-project-body"
+          className={`${sheet} gap-[18px]`}
+        >
+          <div className="flex flex-col gap-[6px]">
+            <h2 id="cleardark-project-title" className={title}>
+              Clear dark overrides?
+            </h2>
+            <p id="cleardark-project-body" className="text-ui-dense leading-[1.55] text-ink-soft">
+              {n === 1 ? 'One section' : `All ${n} sections`} of this project {n === 1 ? 'has' : 'have'} its dark
+              version following its light one again. Your words, pictures and light settings stay.
+            </p>
+          </div>
+          <div className="flex justify-end gap-[10px]">
+            <Button type="button" variant="secondary" size={36} data-cancel onClick={() => confirm.current?.close()}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="coral"
+              size={36}
+              onClick={() => {
+                confirm.current?.close()
+                clearForm.current?.requestSubmit()
+              }}
+            >
+              Clear overrides
+            </Button>
+          </div>
+        </dialog>
       </form>
     </div>
   )
@@ -122,16 +181,17 @@ function ModeSegment({ on, value, label, busy }: { on: boolean; value: 'on' | 'o
 
 /** D6a's secondary Clear. Greyed with D6b's reason while the project is Light only — `aria-disabled`, never
  *  `disabled`, so it keeps its tab stop and its sentence is read (`greyed.ts`). */
-function ClearButton({ greyed }: { greyed: boolean }) {
-  const { pending, guard } = useSubmitting()
+function ClearButton({ greyed, onAsk }: { greyed: boolean; onAsk: () => void }) {
+  const { pending } = useSubmitting()
   return (
     <button
       type="submit"
       aria-disabled={greyed || pending || undefined}
       aria-busy={pending || undefined}
       onClick={(event) => {
-        if (greyed) return event.preventDefault()
-        guard(event)
+        // R-134: never straight to the action. The submit is the scripts-off path and the dialog submits the form itself
+        event.preventDefault()
+        if (!greyed) onAsk()
       }}
       className={`h-7 shrink-0 rounded-[9px] border px-[11px] text-[12px] font-semibold ${ring} ${
         greyed ? 'border-grey-border bg-grey-field text-ink-faint' : 'border-line bg-surface text-ink hover:bg-paper-sunk'

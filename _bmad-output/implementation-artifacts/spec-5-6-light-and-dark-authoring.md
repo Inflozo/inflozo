@@ -105,7 +105,7 @@ so a caret survives it.
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |---|---|---|---|
 | Preview dark | light canvas, press the sun | `data-mode="dark"` on the canvas `<html>`; every root re-stamped; **no repaint** — selection, caret and scroll all survive | N/A |
-| Author a dark override | dark, Background role → Contrast on a design offering it | `darkOverrides.bg = 'contrast'`; that root alone re-stamped `data-bg="contrast"`; row shows the moon + "Dark override"; `controls.bg` untouched | N/A |
+| Author a dark override | dark, Background role → Contrast on a design offering it | `darkOverrides.bg = 'contrast'`; that root alone re-stamped `data-bg="contrast"`; row shows the moon, **whose name and hover title are "Dark override"** (R-136 amends this row, owner 2026-09-19 — the words were printed beside it until then); `controls.bg` untouched | N/A |
 | Back to light | the same section, press the sun | root returns to the light value; the moon stays on the row (an override is stored, whatever mode is shown) | N/A |
 | A control that is not mode-scoped, in dark | dark, `card-side` → Right | writes `controls`; no moon; the light canvas shows it too | N/A |
 | Reset a mode-scoped row in dark | dark, a dark override stored, press "Reset Background role" | the override is forgotten; the row returns to the light value; the moon goes | N/A |
@@ -397,8 +397,9 @@ already uses a digit; line-number citations are this repository's convention; th
 map while its confirm counts the overrides in force is recorded in `clearDarkOverrides`' own comment — a deliberate
 clear is one of the two acts allowed to remove a stored value.
 
-- [x] [Review][Decision] The project-level Clear deletes every stored override on one press, with no confirm — § Questions for the owner, Question 4
-- [x] [Review][Decision] On a Light-only project the editor still offers both "Clear dark overrides" entry points, while Theme settings greys the same act — § Questions for the owner, Question 5
+- [x] [Review][Decision] The project-level Clear deletes every stored override on one press, with no confirm — **ruled R-134 (owner, 2026-09-19): ask first.** Built at Review [settings/theme-settings.tsx]
+- [x] [Review][Decision] On a Light-only project the editor still offers both "Clear dark overrides" entry points, while Theme settings greys the same act — **ruled R-135 (owner, 2026-09-19): hide both.** Built at Review [(editor)/editor.tsx]
+- [x] [Review][Owner] **R-136, the owner's own instruction at Review:** a control row draws the moon alone, its words its accessible name and its hover `title` [apps/web/components/kit/moon-badge.tsx, components/controls/sidebar.tsx]
 - [x] [Review][Patch] **AC 3: pressing the sun ENDED an inline edit, so the caret did not survive a flip.** The toggle is a focusable button in the top document; the press moved focus out of the canvas, `inline.ts`'s focusout called `end()`, and `onEnd` repaints. Harness step 47 started no edit, so it could not see it. Fixed the way the mark toolbar already does it — `onMouseDown` prevents the focus move — and step 47 now puts a caret in a title, flips, and reads the caret back at the same offset [apps/web/components/editor/mode-toggle.tsx]
 - [x] [Review][Patch] **The greyed Clear was refused only by the button.** `aria-disabled` still submits with scripts off (the file's own header promises the forms work that way), and `clearProjectDarkOverrides` never read `dark_enabled` — so D6b's "kept, not discarded" was a promise the database did not keep. The action now refuses on a Light-only project; step 53 presses the greyed Clear and reads the stored override back unchanged [apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts]
 - [x] [Review][Patch] An override the design will not take made the dark render fall to the DEFAULT rather than follow the LIGHT value (`controls.bg='surface'`, `darkOverrides.bg='accent'` drew `base` in dark). The shipped test hid it by using a light value equal to the default. `storedFor` now takes only an override in force — `overridden`, the one definition the moon already reads [packages/section-runtime/src/controls.ts]
@@ -411,11 +412,21 @@ clear is one of the two acts allowed to remove a stored value.
 - [x] [Review][Defer] The project-level Clear writes doc by doc with no transaction and no `revision` check [settings/actions.ts] — deferred to Story 5.8 (DW-197), which owns the journal and the revision contract; nothing writes `project_templates` concurrently before it
 - [x] [Review][Defer] No harness step reads a Background-role swatch's COLOUR in dark, on `/pilots` or in the editor, and the project-level Clear is only ever proved on one section of one canvas [tools/probe/] — deferred (DW-198)
 
+**The badge's printed words came off at Review (R-136), so his step 5 now reads:** a small moon appears beside
+"Background role", and hovering it says "Dark override".
+
 **For the owner's eye at step 14 of his test, not a question:** the way into Theme settings is a text link "Theme
 settings" in the bar's right-hand cluster. S4a draws only the sun there; the spec asked for *a* way in and named no
 form, so Dev extrapolated one (R-74). If it reads wrong to him, it is fixed in this story.
 
 ## Spec Change Log
+
+- **2026-09-19, the owner ruled Review's two questions and gave a third instruction — R-134, R-135, R-136.** All three
+  are built in this story, at Review. R-136 amends one word of the **frozen** I/O matrix (the "Author a dark override"
+  row said the row *shows* the moon + "Dark override"), which is the renegotiation the `frozen-after-approval` tag
+  provides for and is marked in the row itself. R-134 and R-135 needed no change to the frozen halves: the matrix's
+  "Clear one section's overrides" row already said *asks first, naming the count*, and its Light-only row already said
+  the sun is absent — R-135 only extends that answer to the two clears beside it.
 
 - **2026-09-18, Review: three words of the task list were overridden, and why.** (1) `controlRow`'s `moon` and
   `changed`: the task said leave them; `changed` now reads the mode, because a dead reset arrow is a control that
@@ -689,10 +700,10 @@ the canvas, so that half of the story is fully testable today.
 | 2 | same | Top bar | Press the sun. | — | The page in the middle becomes the **dark version of the same page** — deep grounds, lighter words, the same layout and the same words. Nothing outside the page changes: the bar and the two panels stay light, on purpose. |
 | 3 | same | Top bar | Look at the control you just pressed. | — | It is now a **moon**, and hovering it tells you it takes you back to light. |
 | 4 | same | Canvas, Home | Press the sun/moon a few times quickly. | — | The page flips each time with **no flicker and no reload** — no white flash, no spinner in the browser tab. |
-| 5 | same | Canvas, Home | With dark showing, click a section to select it, then find **Background role** in the right-hand panel (under **Style**) and pick a different one. | — | That section's ground changes **in the dark page**, and beside "Background role" a small **moon** appears with the words **"Dark override"**. |
-| 6 | same | Top bar | Press the moon to go back to light. | — | The section you just changed is back to the ground it had in light — **your light page was not touched**. The moon and its words stay on the control, because a dark override is still stored. |
+| 5 | same | Canvas, Home | With dark showing, click a section to select it, then find **Background role** in the right-hand panel (under **Style**) and pick a different one. Hover the little moon that appears. | — | That section's ground changes **in the dark page**, and beside "Background role" a small **moon** appears. Hovering it says **"Dark override"** (your ruling R-136 — the icon alone, its words on hover). |
+| 6 | same | Top bar | Press the moon to go back to light. | — | The section you just changed is back to the ground it had in light — **your light page was not touched**. The moon stays on the control, because a dark override is still stored. |
 | 7 | same | Canvas, Home | Select a different section and, in **light**, change its Background role. | — | It changes in light. Press the sun: it has changed in dark too. A control that is not mode-scoped is one value for both modes — only Background role splits. |
-| 8 | same | Canvas, Home | Go back to dark, select the section from step 5, and press the small undo arrow beside **Background role**. | — | The dark ground goes back to following the light one, and the moon and its words disappear. |
+| 8 | same | Canvas, Home | Go back to dark, select the section from step 5, and press the small undo arrow beside **Background role**. | — | The dark ground goes back to following the light one, and the moon disappears. |
 | 9 | same | Canvas, Home | In dark, put a dark override on **two** sections, then click into a headline and start typing. With the caret still in the text, press the moon. | type `Hello` into a headline | The mode flips and **your cursor stays exactly where it was**, mid-word. Nothing jumps and the page does not scroll back to the top. |
 | 10 | same | Controls panel | With a section that carries a dark override selected, find **Clear dark overrides** and press it. | — | A small window asks first, telling you how many settings it will clear on that section. Press **Cancel** — nothing changes. Press it again and confirm — that section's dark version follows its light one again and the moons go. |
 | 11 | same | Controls panel | Select a section that has **no** dark override and look at the same row. | — | It tells you there is nothing to clear rather than asking you a question. It is **not** greyed out. |
@@ -700,9 +711,10 @@ the canvas, so that half of the story is fully testable today.
 | 13 | same | Layers | Press **⋯** on a section that has **no** dark override. | — | **Clear dark overrides is not in the menu at all** — not greyed, absent. The menu is Hide, Rename, Duplicate, Delete as before. |
 | 14 | same | Editor, Home | Find the way through to **Theme settings** and open it. | — | A small screen with **This project** on it, and nothing else from the full Theme settings screen — no posts-per-page, no site title, no credits, no Ghost-settings builder. Those all arrive later, and nothing greyed-out is standing in for them. |
 | 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the caption under **This project**, then switch from **Light + Dark** to **Light only**. | — | The caption reads *"Every Style Pack ships a hand-paired dark palette, so dark is already paid for."* The button you press says what it is doing while it saves. After the switch, the row beneath it **greys with its reason** — that the overrides those sections still hold are **kept, not discarded**. |
-| 16 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Go back to the editor and look at the top bar. | — | The sun is **gone** — not greyed out, gone. The page is light and there is no way to show dark. |
+| 16 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Go back to the editor, look at the top bar, then select a section and look at the foot of the right-hand panel and at a **⋯** menu in Layers. | — | The sun is **gone** — not greyed out, gone. The page is light and there is no way to show dark. **And "Clear dark overrides" is gone from both places too** — the panel's foot and the **⋯** menu — because on a Light-only project the editor says nothing about dark at all (your ruling R-135). Nothing you set is deleted; step 17 brings it all back. |
 | 17 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Switch back to **Light + Dark**, go back to the editor, and press the sun. | — | The sun is back, the canvas goes dark, and any dark override still stored is **exactly as you left it** — nothing was thrown away while dark was switched off. |
-| 18 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the line under **Clear dark overrides**, then press **Clear**. | — | It reads **"No sections carry a dark override"**, and that is **correct today**: it counts what is SAVED, and nothing saves a canvas edit before Story 5.8 — the overrides you made in steps 5–12 lived for the session only. So the row is greyed-free and live, pressing **Clear** simply finds nothing to clear, and the count stays at none. **This one row cannot show a real number until Story 5.8 lands saving**; everything else on this screen is testable today. |
+| 18 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings` | Theme settings | Read the line under **Clear dark overrides**, then press **Clear**. | — | It reads **"No sections carry a dark override"**, and that is **correct today**: it counts what is SAVED, and nothing saves a canvas edit before Story 5.8 — the overrides you made in steps 5–12 lived for the session only. So the row is live rather than greyed, and pressing **Clear** with nothing to clear **says so under the row rather than asking you a question** (your ruling R-134, and the same shape the panel's row uses). **This one row cannot show a real number until Story 5.8 lands saving**; everything else on this screen is testable today. |
+| 19 | same | Theme settings | This step needs a saved override, so it is the one thing here you can only walk **after Story 5.8**. When you can: press **Clear** with a number showing. | — | A small window asks first and **names how many sections** it will clear, opening on **Cancel** (your ruling R-134). Cancel leaves everything as it was; confirming clears them all and the count goes to none. |
 
 ## Owner's test findings
 
@@ -817,7 +829,10 @@ check something, your hand slips onto **Clear**, and all twelve are gone before 
 2. **Leave it as drawn** — one press, no question. Fastest, and exactly the drawing, but it is the only destructive
    button in the product that does not ask.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** *"Ask first, the same way the per-section one does — a small window naming how
+many sections it will clear, opening with focus on Cancel."* Recorded as **R-134**. Built at Review in the app's one
+dialog vocabulary; with nothing to clear the row says so rather than asking (R-12), and the confirm is the JavaScript
+layer over a form that still posts without it.
 
 ### Question 5 — on a Light-only project, should the editor still offer "Clear dark overrides"?
 
@@ -838,4 +853,18 @@ gone.
    state few people will be in.
 3. **Leave it** — the editor may clear one section at any time; only the project-wide Clear needs Light + Dark.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** *"Hide both in the editor while the project is Light only — the row and the
+menu item are simply absent, like the sun."* Recorded as **R-135**. Built at Review: on `dark_enabled = false` the
+panel draws no row and the `⋯` menu has no item. Nothing stored changes, and switching back returns both with every
+override intact.
+
+### Question 6 — the moon badge's words in a control row
+
+Not a question but the owner's instruction, at the same sitting (2026-09-19): *"in controls panel for any setting when
+using Dark override, just show the black moon icon and drop 'Dark override' text along with it. Add title on the icon
+so users know on hover what it is for."*
+
+**Ruled: the owner's own words (owner, 2026-09-19).** Recorded as **R-136**. The badge carries the words as its
+accessible name AND its hover title; the control row prints none. UX-DR8 is met through `DESIGN.md:534-536`'s
+layout-cannot-hold-the-word carve-out — the same one R-132 used for the sun. **D6a's project-level row keeps its
+printed words**, which is the frame's own shape and has the width for them.

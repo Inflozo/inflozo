@@ -177,8 +177,9 @@ async function main() {
     const sw = await bg.locator('[role=radio]').evaluateAll((els) => els.map((e) => ({ n: e.getAttribute('aria-label') || e.textContent.trim(), grey: e.getAttribute('aria-disabled') })))
     check('step 5 — five swatches, Accent and Image grey', sw.length === 5 && sw.map((s) => s.n).join(',') === 'Base,Surface,Accent,Contrast,Image' && sw[2].grey === 'true' && sw[4].grey === 'true' && sw[0].grey === null, JSON.stringify(sw))
     check('step 5 — the plain-grounds sentence under them', (await styleRegion.locator('p', { hasText: 'This design is drawn for plain grounds, so accent and image are not offered.' }).count()) === 1)
-    const moons = await styleRegion.evaluate((r) => { const rows = [...r.querySelectorAll('[id$="-label"]')]; return rows.map((l) => ({ label: l.textContent.trim(), moon: l.parentElement.textContent.includes('Dark override') })) })
-    check('step 5 — moon "Dark override" beside Background role, none on Card tint', moons.some((m) => m.label === 'Background role' && m.moon) && moons.some((m) => m.label === 'Card tint' && !m.moon), JSON.stringify(moons))
+    // R-136: the badge's words are its accessible name and its hover title, never printed in the row
+    const moons = await styleRegion.evaluate((r) => { const rows = [...r.querySelectorAll('[id$="-label"]')]; return rows.map((l) => ({ label: l.textContent.trim(), moon: l.parentElement.querySelector('.rounded-full[title="Dark override"]') !== null, printed: l.parentElement.textContent.includes('Dark override') })) })
+    check('step 5 — R-136: the moon named "Dark override" beside Background role and none on Card tint, with the words NOT printed in either row', moons.some((m) => m.label === 'Background role' && m.moon && !m.printed) && moons.some((m) => m.label === 'Card tint' && !m.moon), JSON.stringify(moons))
     await bg.getByRole('radio', { name: 'Contrast' }).click()
     c = await canvas()
     check('step 5 — Contrast turns the section dark at once', c.attrs['data-bg'] === 'contrast')
