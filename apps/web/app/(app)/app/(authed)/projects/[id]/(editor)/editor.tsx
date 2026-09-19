@@ -39,7 +39,7 @@ import type { EditorData } from './read'
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
    FR-D1's four regions, read off the frame: the 48px bar and its rule (:28), Layers at 240 with a right rule (:54),
-   the canvas ground with the page card 28px from each side (and, since R-137/R-138, centred below 32px of top padding) and the page shadow (:62-63), and
+   the canvas ground with the page card 28px from each side (and, since R-137/R-138, centred between 32px of top and bottom padding) and the page shadow (:62-63), and
    Controls at 280 with a left rule and 16px padding (:118). The window never scrolls: the canvas document scrolls
    inside its frame and each panel on its own.
 
@@ -1071,8 +1071,12 @@ export function Editor({
           // MOVES, so a height-bound card rose to meet it — measured on the deployed editor at 1440 × 900: Tablet put
           // the card 5px UNDER the chip and Desktop with both panels folded left 4px the card's shadow bled across.
           // The chip tucks to 4px/4px and ends at 24px; 32px of top padding is what keeps the card clear of it on
-          // EVERY device, at a cost of 8px of fitted height (Tablet 74% either way). The other three sides are S4a's.
-          className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-8"
+          // EVERY device, at a cost of 8px of fitted height.
+          // R-139 (owner, 2026-09-19, the Review's Q3): THE BOTTOM GETS THE SAME 32px — `py-8`. R-137 said the card "no
+          // longer stands on the bottom of the window", and a height-bound card (Tablet, Mobile, a folded or short-window
+          // Desktop) still did, with its shadow cut off. Tablet 74% → 71%, Mobile 97% → 93% on the 1440 × 900 stage. The
+          // two sides are S4a's.
+          className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 py-8"
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
               ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage.

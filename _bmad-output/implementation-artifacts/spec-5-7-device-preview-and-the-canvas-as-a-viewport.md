@@ -268,7 +268,7 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
 Review of 2026-09-19 — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier,
 the last against the deployed `app.inflozo.com` at `2cc3a956` on the live Supabase.
 
-- [ ] [Review][Decision] Tablet and Mobile stand on the bottom of the window — R-137 says the card "no longer stands on the bottom of the window", R-138 says "the other three sides stay S4a's" (no bottom padding). Measured on the deployed editor: Tablet and Mobile end at `bottom: 0` and the bottom shadow is cut off. Two approved rulings disagree, so it is Question 3 below.
+- [x] [Review][Decision] **Ruled option 1 → R-139, built (`py-8`).** Tablet and Mobile stand on the bottom of the window — R-137 says the card "no longer stands on the bottom of the window", R-138 says "the other three sides stay S4a's" (no bottom padding). Measured on the deployed editor: Tablet and Mobile end at `bottom: 0` and the bottom shadow is cut off. Two approved rulings disagree, so it is Question 3 below.
 - [x] [Review][Patch] The walk's step 55 handed `fitFor` a `{ w, h }` stage, so the expected fit was always 1 and nine checks failed on a correct product [tools/probe/run-verify-editor.cjs — step 55]
 - [x] [Review][Patch] Step 15 rested the pointer at a fixed y of 860, which since R-137 is the ground below the card; four FAILs, harness geometry not product [tools/probe/run-verify-editor.cjs — `scrollCase`]
 - [x] [Review][Patch] Step 23 re-used the title's coordinates after `caretInto` had scrolled R-137's shorter card; one FAIL, harness not product [tools/probe/run-verify-editor.cjs — step 23]
@@ -455,6 +455,10 @@ holding `mode` in `editor.tsx` and persisting nothing. Same here. No column, no 
   observer recorded the deliberate 80 ms task; the longest real task was 162 ms) and step 56's folded-Desktop
   clearance measured at 86.5 px. `pnpm check` exit 0. The same walk against the DEPLOYED site can only run once CI has
   published this Review commit (the walk refuses any commit but HEAD) — its result is appended below.
+- **R-139, built and walked the same way** (a production build of this checkout, the live Supabase): **exit 0,
+  0 FAIL.** Step 55 read the card's box per device — Tablet 591 × 788 and Mobile 364 × 788, each with **32 px above and
+  32 px below**; Desktop 864 × 540 with 156 px each side of it — and step 56 read a FOLDED Desktop (the state the owner
+  was looking at) ending 94.75 px above the window's edge. `pnpm check` exit 0.
 
 **Manual checks (if no CLI):**
 - The owner's walk below, on the production domain, after Deploy (R-80).
@@ -470,7 +474,7 @@ saved yet — saving arrives with Story 5.8 — so do this in one sitting.
 | 1b | same | Editor, Home | Look at the right-hand end of the top bar, just past the sun. | — | Three small joined buttons — a **screen**, a **tablet** and a **phone** — with the screen one white and raised, the other two plain. |
 | 2 | same | Top bar | Hover each of the three in turn. | — | Each one tells you what it is — "Desktop", "Tablet", "Mobile" — and nothing else in the bar has moved. |
 | 3 | same | Canvas, Home | Press the **phone**. | — | The page in the middle becomes **phone-shaped** — narrow *and* short, with a proper bottom edge — with grey either side of it. The menu has collapsed to a hamburger and the hero has stacked. |
-| 4 | same | Canvas, Home | Read the small grey chip at the top-left of the grey area. | — | **"viewport 390 × 844 · shown at 97%"** (the percentage depends on your monitor). It tells you the real size first and the shrinking second. |
+| 4 | same | Canvas, Home | Read the small grey chip at the top-left of the grey area. | — | **"viewport 390 × 844 · shown at 93%"** (the percentage depends on your monitor). It tells you the real size first and the shrinking second. |
 | 5 | same | Canvas, Home | Look for a way to zoom in or out. | — | **There is none, on purpose.** The only thing you operate is the device; the shrinking is worked out for you and only reported. |
 | 6 | same | Canvas, Home | Scroll the phone-shaped page with your mouse wheel. | — | The page scrolls **inside** the phone shape, like a real phone. The editor around it does not move, and the phone's own bottom edge stays put — that edge is the **fold**. |
 | 7 | same | Canvas, Home | Press the **tablet**, then the **screen**. | — | Each press resizes the page in **both** directions — 834 wide by 1112 tall, then back to the desktop size — and the chip's numbers change with it. No white flash, no spinner in the browser tab, no reload. |
@@ -577,4 +581,13 @@ like it is standing on the window's edge rather than floating in the grey the wa
 3. **A smaller gap, 16 px** — enough to show the shadow and the rounded corners clear of the edge; Tablet 72%,
    Mobile 95%.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** The bottom gets the same 32 px as the top. Recorded as **R-139** in
+`reconcile-designs-decisions.md`, propagated to `EXPERIENCE.md`'s B11 divergence row, and built in this Review: the
+ground is `py-8` in the editor and its skeleton, `editor.test.ts`'s worked stage is 864 × 788 (Tablet 71%, Mobile
+93%), and step 55 of the walk asserts per device that the card ends a full bottom padding above the window's edge.
+
+**On "I do not see the desktop floating too":** Desktop only floated when it was the page's WIDTH that limited it —
+both panels open on a 1440-wide window. Fold a panel, or use a shorter or wider window, and Desktop becomes limited by
+HEIGHT exactly like the tablet, and stood on the bottom edge the same way (the Dev measurement above already shows it:
+folded Desktop's card ended at 891 of 900). R-139's bottom padding is applied to the ground, not to a device, so it
+fixes Desktop in that state too.

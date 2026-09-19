@@ -255,7 +255,7 @@ async function main() {
         name: { text: name?.textContent, size: css(name)?.fontSize, weight: css(name)?.fontWeight, family: css(name)?.fontFamily },
         layers: { w: box(layers)?.width, rule: css(layers)?.borderRightWidth, bg: css(layers)?.backgroundColor, title: layers?.textContent },
         ground: css(canvas)?.backgroundColor,
-        card: card && { left: box(card).left - box(canvas).left, right: box(canvas).right - box(card).right, top: box(card).top - box(canvas).top, bottom: box(canvas).bottom - box(card).bottom, width: box(card).width, height: box(card).height, radius: css(card).borderRadius, shadow: css(card).boxShadow, pad: css(canvas).paddingTop },
+        card: card && { left: box(card).left - box(canvas).left, right: box(canvas).right - box(card).right, top: box(card).top - box(canvas).top, bottom: box(canvas).bottom - box(card).bottom, width: box(card).width, height: box(card).height, radius: css(card).borderRadius, shadow: css(card).boxShadow, pad: css(canvas).paddingTop, padBottom: css(canvas).paddingBottom },
         controls: { w: box(controls)?.width, rule: css(controls)?.borderLeftWidth, pad: css(controls)?.paddingTop, bg: css(controls)?.backgroundColor, label: pageLabel?.textContent, labelTop: box(pageLabel)?.top - box(controls)?.top, labelSize: css(pageLabel)?.fontSize, labelWeight: css(pageLabel)?.fontWeight, labelCase: css(pageLabel)?.textTransform },
         rows: [...(layers?.querySelectorAll('[data-layer-row]') ?? [])].map((r) => r.querySelector('button')?.textContent),
         // Story 5.4: every row is interactive — a name button and a ⋯ (R-126). `:scope >` only: each row also holds
@@ -279,10 +279,10 @@ async function main() {
     // R-137 (owner, 2026-09-19, Story 5.7): the card is DESKTOP'S 1440 x 900 FITTED, centred in the ground with a 6px
     // radius on all four corners — not `height:100%` standing on the bottom of the window. Its ground, ink, shadow and
     // radius are S4a's still. Every number below is DERIVED from the device rather than written down: the two axes
-    // carry the same fit, and the card is centred in the room below the stage's top padding (32px since R-138).
+    // carry the same fit, and the card is centred in the room below the stage's padding (32px top since R-138, the same at the bottom since R-139).
     const fitW = c && c.width / DEVICE_DESKTOP.width
     check('step 2 — R-137: the page card is Desktop 1440 x 900 FITTED — one fit on both axes, 28 each side, a 6px radius on ALL FOUR corners, the page shadow', c && Math.abs(c.height / DEVICE_DESKTOP.height - fitW) < 0.002 && fitW > 0 && fitW <= 1 && c.left === 28 && c.right === 28 && c.radius === '6px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), `${JSON.stringify(c)} · fit ${fitW}`)
-    check('step 2 — R-137: it is CENTRED in the ground, with ground below it — the card no longer stands on the bottom of the window', c && c.bottom > 0 && Math.abs((c.top - parseFloat(c.pad)) - c.bottom) < 1.5, JSON.stringify({ top: c?.top, pad: c?.pad, bottom: c?.bottom }))
+    check('step 2 — R-137: it is CENTRED in the ground, with ground below it — the card no longer stands on the bottom of the window', c && c.bottom > 0 && Math.abs((c.top - parseFloat(c.pad)) - (c.bottom - parseFloat(c.padBottom))) < 1.5, JSON.stringify({ top: c?.top, pad: c?.pad, bottom: c?.bottom, padBottom: c?.padBottom }))
     check('step 2 — S4a\'s 864 survives as the WIDTH the stage allows at 1440 (1440 - 240 - 280 - 56), so the fit is width-bound here', c && c.width === 864, String(c?.width))
     check('step 2 — Controls: 280px, left rule, 16px padding, paper, PAGE 13/600 uppercase at 16px from the top', shape.controls.w === 280 && shape.controls.rule === '1px' && shape.controls.pad === '16px' && shape.controls.bg === 'rgb(247, 245, 242)' && shape.controls.label === 'Page' && shape.controls.labelSize === '13px' && shape.controls.labelWeight === '600' && shape.controls.labelCase === 'uppercase' && Math.abs(shape.controls.labelTop - 16) < 2, JSON.stringify(shape.controls))
     // the mouse is where the card was clicked, over the canvas now, and a section painted under a resting pointer is
@@ -2313,7 +2313,7 @@ async function main() {
       const scaled = /^scale\(([\d.]+)\)$/.exec(v.transform)
       check(`step 55 — ${d.label}: the only scale on it is a TRANSFORM — the fit of both axes, never a changed width`, scaled !== null && Math.abs(Number(scaled[1]) - fit) < 1e-6, `${v.transform} · want scale(${fit})`)
       check(`step 55 — ${d.label}: a media query inside the canvas answers at ${d.width}, not at the window's width`, v.narrow === (d.width <= 600), `(max-width: 600px) matched ${v.narrow} at ${d.width}`)
-      check(`step 55 — ${d.label}: R-137's card is that viewport fitted — ${d.width} x ${d.height} at the fit, centred in the ground with a 6px radius on all four corners`, Math.abs(v.card.w - d.width * fit) < 1 && Math.abs(v.card.h - d.height * fit) < 1 && v.card.radius === '6px' && Math.abs((v.card.top - v.card.pad) - (v.card.bottom - v.card.padBottom)) < 1.5 && Math.abs(v.card.left - v.card.right) < 1.5, JSON.stringify(v.card))
+      check(`step 55 — ${d.label}: R-137's card is that viewport fitted — ${d.width} x ${d.height} at the fit, centred in the ground with a 6px radius on all four corners`, Math.abs(v.card.w - d.width * fit) < 1 && Math.abs(v.card.h - d.height * fit) < 1 && v.card.radius === '6px' && Math.abs((v.card.top - v.card.pad) - (v.card.bottom - v.card.padBottom)) < 1.5 && v.card.bottom >= v.card.padBottom - 0.5 && v.card.padBottom > 0 && Math.abs(v.card.left - v.card.right) < 1.5, JSON.stringify(v.card))
       check(`step 55 — ${d.label}: UX-DR17's chip reads the TRUE SIZE first and the shrinking second, uppercased in CSS so the sentence is what is read out`, v.chip === DEVICE.viewportWords(d, fit) && v.chipCase === 'uppercase', `${JSON.stringify(v.chip)} · want ${JSON.stringify(DEVICE.viewportWords(d, fit))} · ${v.chipCase}`)
       check(`step 55 — ${d.label}: the change is announced politely through the editor's ONE live region`, v.said === DEVICE.deviceShown(d), `${JSON.stringify(v.said)} · want ${JSON.stringify(DEVICE.deviceShown(d))}`)
       check(`step 55 — ${d.label}: the fit is capped at 1 and the whole viewport is in shot in both axes`, fit > 0 && fit <= 1 && v.card.w <= v.stage.w + 1 && v.card.h <= v.stage.h + 1, JSON.stringify({ fit, card: [v.card.w, v.card.h], stage: [v.stage.w, v.stage.h] }))
@@ -2348,6 +2348,8 @@ async function main() {
     check('step 56 — a re-fit is NOT a repaint: every section root is still the same node', await canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].every((el, n) => el === window.__nodes[n])))
     // R-138's nearest miss was a FOLDED Desktop (4px, before the ruling), so the invariant is read here too (review)
     check('step 56 — R-138 with Layers folded: the larger card still clears the chip', afterFold.chipBox !== null && afterFold.cardBox.top - afterFold.chipBox.bottom > 0, `${afterFold.chipBox && afterFold.cardBox.top - afterFold.chipBox.bottom}px`)
+    // R-139: the owner's "I do not see the desktop floating" — a folded Desktop is the state he was looking at
+    check('step 56 — R-139 with Layers folded: Desktop still ends a full bottom padding above the window\'s edge', afterFold.card.padBottom > 0 && afterFold.card.bottom >= afterFold.card.padBottom - 0.5, JSON.stringify(afterFold.card))
     await page.getByRole('button', { name: 'Show layers' }).click()
     await page.waitForTimeout(400)
 

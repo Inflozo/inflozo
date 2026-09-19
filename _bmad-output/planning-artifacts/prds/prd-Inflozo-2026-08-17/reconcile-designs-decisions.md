@@ -2906,6 +2906,25 @@ ruled option 1 (owner, 2026-09-19): *"Tuck it in + keep page clear."*
   record of where the built chip departs from it and why; the chip's words, which are UX-DR17's verbatim; the ground,
   the ink, the shadow, the 6px radius and the 28px sides, which stay S4a's.
 
+**R-139 — the canvas ground carries the same 32px at the bottom as at the top.** Story 5.7's Q3 (its Review), ruled
+option 1 (owner, 2026-09-19): *"Give the bottom the same 32 px as the top. I do not see the desktop floating too."*
+
+- **Why it was a question.** R-137 says the card "no longer stands on the bottom of the window"; R-138 says "the other
+  three sides stay S4a's", and S4a has no bottom padding. Measured on the deployed editor at Review: every
+  HEIGHT-BOUND card — Tablet, Mobile, and Desktop whenever a panel is folded or the window is short — ended at
+  `bottom: 0` with its `0 4px 16px` shadow cut off. Only a width-bound Desktop floated, which is why the owner did not
+  see Desktop floating either.
+- **What it binds.** The ground is `py-8`, in the editor and in its skeleton. It is the GROUND's padding, never a
+  device's, so one rule covers all three. **It amends R-138's "the other three sides stay S4a's" to the two sides.**
+- **What it costs:** on the 1440 × 900 stage Tablet reads 71% (was 74%) and Mobile 93% (was 97%); a width-bound
+  Desktop does not move.
+- Targets:
+  - ✅ this entry · ✅ Story 5.7's spec (its Question 3, its Review Findings, its owner's test step 4) ·
+    ✅ `EXPERIENCE.md` (B11's divergence row) · ✅ the code, the test and the walk (`(editor)/editor.tsx`,
+    `editor-skeleton.tsx`, `apps/web/editor.test.ts`, `tools/probe/run-verify-editor.cjs` step 55) — Story 5.7's
+    Review (2026-09-19).
+- **Deliberately not touched:** the export (R-74); the 28px sides, which stay S4a's.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
