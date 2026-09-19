@@ -465,6 +465,14 @@ holding `mode` in `editor.tsx` and persisting nothing. Same here. No column, no 
   15, 23 and 55 pass on the live site; Tablet and Mobile end 32 px above the window's edge and a folded Desktop
   94.75 px; both throwaway accounts deleted, users 13 → 13.
 
+**Executed at Deploy (2026-09-19):**
+
+- `GET https://api.vercel.com/v6/deployments` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — the
+  production deployment built from HEAD (`7f002a7e`, the Review commit) is **READY**.
+  `Deployment: dpl_G3vy4MKKxFAkYyvuRs8Zot2Ypm1f` (`inflozo-i15v5a3tu-umangkagathara.vercel.app`, serving
+  `app.inflozo.com`). No migration — the Review phase's `git diff --stat` already showed `supabase/`
+  untouched, so there is nothing further for R-99 to check.
+
 **Manual checks (if no CLI):**
 - The owner's walk below, on the production domain, after Deploy (R-80).
 
