@@ -700,6 +700,18 @@ and never printed. Each line is what was run and what it RETURNED.
   step 47 asserts every section root is the SAME NODE across a flip and that the selection and the scroll
   survive it, and `apps/web/dark-mode.test.ts` reads `flip` out of the source to show it never calls
   `paint()`.
+- **Run at Deploy (2026-09-19).** GitHub check-runs on HEAD `19c82743` (read with `GITHUB_TOKEN`; a bogus
+  token controls **401**): `check`, `rls`, `deploy` and the render matrix all `completed`/`success` — CI run
+  `35412573151`, render matrix run `35412573060`. Vercel's production deployment (read with `VERCEL_TOKEN` /
+  `VERCEL_TEAM_ID`; a bogus token controls **403**), `dpl_5KtqYHE7XmU2rKypAa3QN6uXz4nz`, is **READY** with
+  `githubCommitSha` matching HEAD exactly. No schema change this story (R-99, confirmed above: `supabase/`
+  untouched since baseline), so no migration to apply.
+
+Deployment: `inflozo-jkug5t4fg-umangkagathara.vercel.app` (`dpl_5KtqYHE7XmU2rKypAa3QN6uXz4nz`)
+
+**Not touched, and why:** Resend, Dodo and the Ghost test servers T1 and T3. This story authors and previews
+a dark mode inside the editor; it sends no email, reads no billing, and compiles nothing for Ghost (the AD-30
+emission gap is Epic 7's, filed in § Design Notes).
 
 ## Owner's manual test
 
