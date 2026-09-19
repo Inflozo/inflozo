@@ -150,6 +150,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     carries no usable override (UX-DR3, as Duplicate is on a site-wide row). **R-126 is extended, not reversed** — the
     `⋯` is still the row's only control and Hide/Show still leads its menu. No frame draws either surface
     (`reconcile-design-prompt.md:60` records the gap); both are extrapolated from the neighbour each sits beside.
+  - **R-134 · R-135 · R-136 (owner, 2026-09-19, Story 5.6's Review).** The project-level "Clear dark
+    overrides" ASKS FIRST — the app's one dialog (`kit/dialog.ts`, 460px), the count named in the sentence and
+    derived from the docs, focus opening on Cancel (R-115, UX-DR14), and with nothing to clear it says so under the
+    row instead of asking (R-12). On a Light-only project the EDITOR says nothing about dark: neither the panel row
+    nor the `⋯` item is rendered — absent, never greyed, the same answer the sun gets — while Theme settings' own
+    row is the one thing that greys with D6b's reason. And a CONTROL row draws the moon badge ALONE: "Dark override"
+    is its accessible name and its hover `title`, never printed beside it, through `DESIGN.md:534-536`'s carve-out
+    for a layout that cannot hold the word — D6a's project-level row, which has the width, still prints them.
+    A control row's words are its name and title: read them with `getAttribute`/`aria-label`, never `textContent`,
+    which includes an inline SVG's `<title>` (`run-verify-editor.cjs` step 48).
   - **R-126 (owner, 2026-09-18, on the deployed Story 5.4):** the Layers panel is drawn for its NAMES — the two groups
     the same shape with a hairline between (no card, no glyph, no footed note), `Site-wide` and its derived template
     count on one line, the name at `text-helper-caption`, and the `⋯` as the row's only control with Hide/Show leading
