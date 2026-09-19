@@ -42,9 +42,11 @@ export const fitFor = (stage: { width: number; height: number }, device: Device)
 
 /** UX-DR17's words, in this order on purpose: the TRUE SIZE first and the shrinking second, because a scaled canvas is
  *  otherwise a lie about size. The chip draws them uppercased in CSS (`B Missing Surfaces.dc.html:740`), so the
- *  accessible string stays this sentence. */
+ *  accessible string stays this sentence.
+ *  A SHRUNK CANVAS NEVER READS 100% (review, 2026-09-19): a fit of 0.996 rounds to 100 and the chip would deny the very
+ *  shrinking it exists to report, so anything under 1 is held to 99 (and anything drawn at all to 1). */
 export const viewportWords = (device: Device, fit: number) =>
-  `viewport ${device.width} × ${device.height} · shown at ${Math.round(fit * 100)}%`
+  `viewport ${device.width} × ${device.height} · shown at ${fit < 1 ? Math.min(99, Math.max(1, Math.round(fit * 100))) : 100}%`
 
 /** What the editor's one live region says once the device has changed — the device NOW SHOWING and its real size,
  *  never the press. `modeShown`'s shape, and announced through the same `#editor-said`. */

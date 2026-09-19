@@ -4017,6 +4017,8 @@ owner: Story 5.9 (The keyboard map, and keyboard completeness), whose keyboard j
   `run-verify-editor.cjs` step 4
 location: apps/web/components/controls/sidebar.tsx · apps/web/app/(app)/app/(authed)/pilots/review.tsx ·
   apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx (`onChange`)
+  · Story 5.7's Review (2026-09-19) adds the device wiring: `editor.tsx`'s stage `ResizeObserver`, the card's and
+  the iframe's sizes, and `apps/web/components/editor/device-switch.tsx` — `run-verify-editor.cjs` steps 54–60 only
 reason: `apps/web` runs `node --test` with no DOM, and a DOM for it is a dependency (Ask First); the pure functions
   under both (`resetChanges`, `resetSection`, `renderCanvas`) are pinned in `packages/section-runtime`.
 
@@ -4705,3 +4707,17 @@ location: `tools/probe/run-verify-editor.cjs` step 53 (b) · `tools/probe/run-ve
 reason: Both are coverage, not defects — the behaviour was read correct at Review — and the harness run is already
   long enough to time out on this machine's link.
 
+### DW-199: nothing reads the editor skeleton's card, and it cannot hold 16:10 on a short, wide window
+
+plain: While the editor loads you see a grey placeholder shaped like the page. On your 1440 screen it is the right
+  shape. On a short, wide window the real page is shorter than the placeholder, so there would be a small jump when the
+  editor arrives — and no automatic check looks at the placeholder's shape at all.
+status: open
+severity: low
+origin: Story 5.7's Review (2026-09-19), Verification Gap + Acceptance Auditor: `aspect-[1440/900] max-h-full w-full`
+  squashes rather than fits when the stage is height-bound (the file's own `ponytail:` note), and reverting the
+  skeleton to its pre-R-137 shape fails no step of `run-verify-editor.cjs` (step 9 reads only the sr-only sentence).
+owner: Story 5.9 (the editor's first in-`pnpm check` browser test), or the first story that sees the jump.
+location: apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx · tools/probe/run-verify-editor.cjs step 9
+reason: Correct on the owner's 1440 stage, where Desktop is width-bound; a Suspense fallback has no `ResizeObserver`,
+  so the fix is a CSS `min()` on the width and it changes if Question 3 adds bottom padding.

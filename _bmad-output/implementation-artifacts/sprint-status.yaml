@@ -92,7 +92,7 @@ development_status:
   5-4-the-layers-panel-reordering-and-the-two-kinds-of-singleton: done
   5-5-the-template-switcher-and-the-synthesised-templates: done
   5-6-light-and-dark-authoring: done
-  5-7-device-preview-and-the-canvas-as-a-viewport: in-progress
+  5-7-device-preview-and-the-canvas-as-a-viewport: review
   5-8-undo-redo-and-local-first-persistence: backlog
   5-9-the-keyboard-map-and-keyboard-completeness: backlog
   5-10-the-section-picker: backlog

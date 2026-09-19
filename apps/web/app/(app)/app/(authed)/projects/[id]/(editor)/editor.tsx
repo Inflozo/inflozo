@@ -39,7 +39,7 @@ import type { EditorData } from './read'
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
    FR-D1's four regions, read off the frame: the 48px bar and its rule (:28), Layers at 240 with a right rule (:54),
-   the canvas ground with the page card 24px from the top and 28px from each side and the page shadow (:62-63), and
+   the canvas ground with the page card 28px from each side (and, since R-137/R-138, centred below 32px of top padding) and the page shadow (:62-63), and
    Controls at 280 with a left rule and 16px padding (:118). The window never scrolls: the canvas document scrolls
    inside its frame and each panel on its own.
 
@@ -1075,9 +1075,12 @@ export function Editor({
           className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 pt-8"
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
-              ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage. */}
+              ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage.
+              HIDDEN UNTIL THE STAGE IS MEASURED (review, 2026-09-19): before the first `ResizeObserver` callback the
+              fit is 1, and the server's HTML would otherwise paint a full 1440 × 900 card across both panels — the
+              old card was `w-full overflow-hidden` and clipped the same state, this one is `shrink-0`. */}
           <div
-            style={{ width: device.width * scale, height: device.height * scale }}
+            style={{ width: device.width * scale, height: device.height * scale, visibility: size.width > 0 && size.height > 0 ? undefined : 'hidden' }}
             className="relative shrink-0 overflow-hidden rounded-[6px] bg-paper-raised shadow-canvas-page"
           >
             <iframe

@@ -2,10 +2,10 @@
 title: 'Story 5.7 — Device preview, and the canvas as a viewport'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 baseline_commit: '5f3b60cb7ff0925e9f19ce964fc5a40c1e7fe0d0'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -263,6 +263,25 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
 - Given a 40-section canvas, when it loads and I change device, then nothing caps the number of sections and
   no main-thread task exceeds 5 seconds (FR-D14).
 
+### Review Findings
+
+Review of 2026-09-19 — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier,
+the last against the deployed `app.inflozo.com` at `2cc3a956` on the live Supabase.
+
+- [ ] [Review][Decision] Tablet and Mobile stand on the bottom of the window — R-137 says the card "no longer stands on the bottom of the window", R-138 says "the other three sides stay S4a's" (no bottom padding). Measured on the deployed editor: Tablet and Mobile end at `bottom: 0` and the bottom shadow is cut off. Two approved rulings disagree, so it is Question 3 below.
+- [x] [Review][Patch] The walk's step 55 handed `fitFor` a `{ w, h }` stage, so the expected fit was always 1 and nine checks failed on a correct product [tools/probe/run-verify-editor.cjs — step 55]
+- [x] [Review][Patch] Step 15 rested the pointer at a fixed y of 860, which since R-137 is the ground below the card; four FAILs, harness geometry not product [tools/probe/run-verify-editor.cjs — `scrollCase`]
+- [x] [Review][Patch] Step 23 re-used the title's coordinates after `caretInto` had scrolled R-137's shorter card; one FAIL, harness not product [tools/probe/run-verify-editor.cjs — step 23]
+- [x] [Review][Patch] Before the stage is measured the fit is 1, so the server's HTML painted a full 1440 × 900 `shrink-0` card across both panels for a frame — hidden until measured [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx — the card]
+- [x] [Review][Patch] A fit of 0.996 made the chip read "shown at 100%" on a shrunk canvas — held to 99 below 1, with a test [apps/web/lib/device.ts — `viewportWords`]
+- [x] [Review][Patch] Step 60's 5 s lockup bound passed on an empty buffer and never saw the load — `buffered: true` and an 80 ms control task [tools/probe/run-verify-editor.cjs — step 60]
+- [x] [Review][Patch] Vacuous controls: step 58 never proved the section was selected before the letterbox press; step 57's "mid-word" caret accepted offset 0 and its stamps never asserted the zero its comment claims [tools/probe/run-verify-editor.cjs — steps 57, 58]
+- [x] [Review][Patch] R-138's nearest miss, folded Desktop, was never re-asserted — now read at step 56 [tools/probe/run-verify-editor.cjs — step 56]
+- [x] [Review][Patch] R-138's 24 → 32 px left behind: `editor.tsx`'s header, the walk's step 2 comment, the skeleton's `828 / 900` and the test's 828 stage
+- [x] [Review][Patch] A LOCAL run of the walk died at step 53's Back (the link carries no `/app` prefix on localhost), so steps 54–60 could not be debugged without a deploy per attempt [tools/probe/run-verify-editor.cjs — step 53]
+- [x] [Review][Defer] The editor's device wiring (`editor.tsx`'s stage observer and card, `device-switch.tsx`) is held by the deployed walk only, never by `pnpm check` [apps/web/components/editor/device-switch.tsx] — deferred, DW-167 extended
+- [x] [Review][Defer] Nothing reads the skeleton card's shape, and it cannot hold 16:10 on a short, wide window (its own `ponytail:` note) [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx] — deferred, DW-199
+
 ## Spec Change Log
 
 - **Dev (2026-09-19) — the table and the fit live in `apps/web/lib/device.ts`, not in `device-switch.tsx`.** The
@@ -420,6 +439,23 @@ holding `mode` in `editor.tsx` and persisting nothing. Same here. No column, no 
   a geometry error would surface.
 - A HARNESS ERROR with no FAIL is not a result — re-run.
 
+**Executed at Review (2026-09-19), on the real infrastructure (R-82):**
+
+- **The deployed walk at `2cc3a956`** — `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs)
+  node tools/probe/run-verify-editor.cjs` against `https://app.inflozo.com` (Vercel answered the deployment READY and
+  built from HEAD) and the live Supabase (two throwaway accounts through the Auth Admin API, deleted in `finally`,
+  users 13 → 13). Five runs: three died on 30 s network timeouts with no FAIL and are not results; the complete one
+  returned **14 FAIL** — and **every one was the walk, not the product**: nine at step 55 (the walk handed `fitFor` a
+  `{ w, h }` stage, so it expected `scale(1)` while the site correctly served `scale(0.6)`, `scale(0.73741)` and
+  `scale(0.971564)`), four at step 15 and one at step 23 (pointer positions written for the card R-137 replaced).
+  Steps 2, 53, 54, 56–60 held on the deployed site as the story claims.
+- **No migration** — `git diff --stat 5f3b60cb HEAD -- supabase` is empty, so R-99 has nothing to check.
+- **The patched walk, against a production build of this checkout on the live Supabase**
+  (`APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app`): **exit 0, 0 FAIL**, with step 60's new control passing (the
+  observer recorded the deliberate 80 ms task; the longest real task was 162 ms) and step 56's folded-Desktop
+  clearance measured at 86.5 px. `pnpm check` exit 0. The same walk against the DEPLOYED site can only run once CI has
+  published this Review commit (the walk refuses any commit but HEAD) — its result is appended below.
+
 **Manual checks (if no CLI):**
 - The owner's walk below, on the production domain, after Deploy (R-80).
 
@@ -522,3 +558,23 @@ and the Layers panel's line, and it would not have fixed the tablet — which is
 `reconcile-designs-decisions.md`, propagated to `EXPERIENCE.md`'s B11 divergence row, and built at this Dev run: the
 chip at 4 px / 4 px, the canvas ground at 32 px of top padding, and step 55 of the editor walk asserting per device
 that **the chip never overlaps the page card** — the invariant, not the two offsets.
+
+### Question 3 — the tablet and the phone stand on the bottom edge of the window
+
+Your ruling R-137 says the page "no longer stands on the bottom of the window" and has grey ground below it. That is
+true on Desktop. **On Tablet and Mobile it is not**: they are tall, so they are shrunk until they fill the grey's whole
+height, and their bottom edge sits exactly on the bottom of your browser window — the rounded bottom corners are
+there, but the soft shadow under the page is cut off. Your later ruling R-138 added room at the *top* only and said the
+other three sides stay as drawn, so I did not add room at the bottom without asking.
+
+**Example.** Press the phone button. The phone-shaped page has 32 px of grey above it and **0 px** below it — it looks
+like it is standing on the window's edge rather than floating in the grey the way Desktop does.
+
+1. **Give the bottom the same 32 px as the top.** (RECOMMENDED) — every device floats in the grey with its shadow
+   whole, which is what R-137 describes. Costs a little size: Tablet reads 71% instead of 74%, Mobile 93% instead of
+   97%. Desktop does not change.
+2. **Leave it as it is** — Tablet and Mobile stay as large as they can be and stand on the bottom edge. Nothing to build.
+3. **A smaller gap, 16 px** — enough to show the shadow and the rounded corners clear of the edge; Tablet 72%,
+   Mobile 95%.
+
+**Ruled:** _(awaiting the owner)_

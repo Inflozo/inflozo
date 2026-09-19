@@ -279,7 +279,7 @@ async function main() {
     // R-137 (owner, 2026-09-19, Story 5.7): the card is DESKTOP'S 1440 x 900 FITTED, centred in the ground with a 6px
     // radius on all four corners — not `height:100%` standing on the bottom of the window. Its ground, ink, shadow and
     // radius are S4a's still. Every number below is DERIVED from the device rather than written down: the two axes
-    // carry the same fit, and the card is centred in the room below the stage's 24px top padding.
+    // carry the same fit, and the card is centred in the room below the stage's top padding (32px since R-138).
     const fitW = c && c.width / DEVICE_DESKTOP.width
     check('step 2 — R-137: the page card is Desktop 1440 x 900 FITTED — one fit on both axes, 28 each side, a 6px radius on ALL FOUR corners, the page shadow', c && Math.abs(c.height / DEVICE_DESKTOP.height - fitW) < 0.002 && fitW > 0 && fitW <= 1 && c.left === 28 && c.right === 28 && c.radius === '6px' && /rgba\(28, 27, 26, 0\.1\) 0px 4px 16px/.test(c.shadow), `${JSON.stringify(c)} · fit ${fitW}`)
     check('step 2 — R-137: it is CENTRED in the ground, with ground below it — the card no longer stands on the bottom of the window', c && c.bottom > 0 && Math.abs((c.top - parseFloat(c.pad)) - c.bottom) < 1.5, JSON.stringify({ top: c?.top, pad: c?.pad, bottom: c?.bottom }))
@@ -707,8 +707,11 @@ async function main() {
       }
       return out
     }, { shots, box })
-    const scrollCase = async (label, n, pointerY) => {
+    const scrollCase = async (label, n) => {
       const r0 = await onScreen(n)
+      // 40px above the CARD's bottom edge, never a fixed y: since R-137 the card is the device's size and ends well above
+      // the window's 900, so the old 860 rested on the ground and hovered nothing (review, 2026-09-19)
+      const pointerY = r0.card.bottom - 40
       const lineX = r0.card.left + 600
       const markerX = r0.card.left + (MARK_X + 30) * r0.s
       // the root's top edge starts low in the card, so it stays in view while the gesture scrolls the content up
@@ -732,11 +735,11 @@ async function main() {
     await page.waitForTimeout(200)
     // (b) static: Three Up selected, the pointer resting on it
     await clickOn(GRID)
-    await scrollCase('Three Up selected', GRID, 860)
+    await scrollCase('Three Up selected', GRID)
     // (a) hover: nothing selected, the pointer held still on Three Up while the content moves under it
     await page.keyboard.press('Escape')
     await page.waitForTimeout(200)
-    await scrollCase('Three Up hovered, the pointer still', GRID, 860)
+    await scrollCase('Three Up hovered, the pointer still', GRID)
     // (b) sticky: Header — Rail selected; stuck at the top, its box's top line must stay on the card's top edge
     await page.mouse.move(120, 400)
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
@@ -1082,7 +1085,9 @@ async function main() {
     await caretInto(HERO, HEADLINE)
     await page.keyboard.type('q')
     await page.waitForTimeout(200)
-    await page.mouse.click(ghostWords.x, ghostWords.y)
+    // read again, never reused: `caretInto` reveals the headline, and in R-137's shorter card that scrolls the title (review)
+    const ghostWordsNow = await textAt(HERO, '.a4-13__title', null)
+    await page.mouse.click(ghostWordsNow.x, ghostWordsNow.y)
     await page.waitForTimeout(400)
     const pillAfterEditing = await chromeNow('[data-chrome="note"]')
     const editablesAfter = await canvasFrame().evaluate(() => document.querySelectorAll('[contenteditable]').length)
@@ -2135,6 +2140,8 @@ async function main() {
     check('step 53 — D6b: pressing the greyed Clear deletes NOTHING', JSON.stringify(await storedOverrides()) === JSON.stringify({ [BG_HERO.name]: BG_HERO.to.value }), JSON.stringify(await storedOverrides()))
     // Review: BACK is a soft navigation, and the editor is a sibling route — the sun must be gone without a reload
     await page.locator('a[aria-label^="Back to "]').click()
+    // a LOCAL run's links carry no /app prefix (`openCard`'s note), so Back lands on a 404 and the walk died here
+    if (LOCAL) { await page.waitForTimeout(1500); if (page.url() !== editorUrl()) await page.goto(editorUrl(), { waitUntil: 'load' }) }
     await painted('home')
     check('step 53 — a SOFT navigation back to the editor already shows no sun (the action revalidates the project, not one page)', (await page.evaluate(() => document.getElementById('editor-mode') !== null)) === false)
     await page.goto(editorUrl(), { waitUntil: 'load' })
@@ -2251,7 +2258,7 @@ async function main() {
         chipEvents: chip && getComputedStyle(chip).pointerEvents,
         chipPressable: chip !== null && chip.closest('button, a, [role="button"], input') !== null,
         said: document.getElementById('editor-said')?.textContent ?? null,
-        card: { w: cr.width, h: cr.height, radius: getComputedStyle(card).borderRadius, left: cr.left - sr.left, right: sr.right - cr.right, top: cr.top - sr.top, bottom: sr.bottom - cr.bottom, pad: parseFloat(cs.paddingTop) },
+        card: { w: cr.width, h: cr.height, radius: getComputedStyle(card).borderRadius, left: cr.left - sr.left, right: sr.right - cr.right, top: cr.top - sr.top, bottom: sr.bottom - cr.bottom, pad: parseFloat(cs.paddingTop), padBottom: parseFloat(cs.paddingBottom) },
         // the ROOM AVAILABLE — the stage's content box, which is what the fit is computed against
         stage: { w: sr.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), h: sr.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) },
       }
@@ -2298,13 +2305,15 @@ async function main() {
       await deviceButton(d.name).click()
       await page.waitForTimeout(400)
       const v = await viewportNow()
-      const fit = DEVICE.fitFor(v.stage, d)
+      // `fitFor` reads width/height: handed `{ w, h }` it answers 1 for every stage, and every fit check below fails on a
+      // correct product (review, 2026-09-19)
+      const fit = DEVICE.fitFor({ width: v.stage.w, height: v.stage.h }, d)
       check(`step 55 — ${d.label}: the iframe's CSS viewport is ${d.width} x ${d.height} in BOTH axes, \`100vh\` resolves to ${d.height}, and \`data-width\` says so`, v.inner.w === d.width && v.inner.h === d.height && v.box.w === d.width && v.box.h === d.height && Math.round(v.vh) === d.height && v.attrW === String(d.width), JSON.stringify({ inner: v.inner, box: v.box, vh: v.vh, attrW: v.attrW }))
       // read as a NUMBER: the fit is a float, and a string compare would turn a 1e-15 measuring difference into a FAIL
       const scaled = /^scale\(([\d.]+)\)$/.exec(v.transform)
       check(`step 55 — ${d.label}: the only scale on it is a TRANSFORM — the fit of both axes, never a changed width`, scaled !== null && Math.abs(Number(scaled[1]) - fit) < 1e-6, `${v.transform} · want scale(${fit})`)
       check(`step 55 — ${d.label}: a media query inside the canvas answers at ${d.width}, not at the window's width`, v.narrow === (d.width <= 600), `(max-width: 600px) matched ${v.narrow} at ${d.width}`)
-      check(`step 55 — ${d.label}: R-137's card is that viewport fitted — ${d.width} x ${d.height} at the fit, centred in the ground with a 6px radius on all four corners`, Math.abs(v.card.w - d.width * fit) < 1 && Math.abs(v.card.h - d.height * fit) < 1 && v.card.radius === '6px' && Math.abs((v.card.top - v.card.pad) - v.card.bottom) < 1.5 && Math.abs(v.card.left - v.card.right) < 1.5, JSON.stringify(v.card))
+      check(`step 55 — ${d.label}: R-137's card is that viewport fitted — ${d.width} x ${d.height} at the fit, centred in the ground with a 6px radius on all four corners`, Math.abs(v.card.w - d.width * fit) < 1 && Math.abs(v.card.h - d.height * fit) < 1 && v.card.radius === '6px' && Math.abs((v.card.top - v.card.pad) - (v.card.bottom - v.card.padBottom)) < 1.5 && Math.abs(v.card.left - v.card.right) < 1.5, JSON.stringify(v.card))
       check(`step 55 — ${d.label}: UX-DR17's chip reads the TRUE SIZE first and the shrinking second, uppercased in CSS so the sentence is what is read out`, v.chip === DEVICE.viewportWords(d, fit) && v.chipCase === 'uppercase', `${JSON.stringify(v.chip)} · want ${JSON.stringify(DEVICE.viewportWords(d, fit))} · ${v.chipCase}`)
       check(`step 55 — ${d.label}: the change is announced politely through the editor's ONE live region`, v.said === DEVICE.deviceShown(d), `${JSON.stringify(v.said)} · want ${JSON.stringify(DEVICE.deviceShown(d))}`)
       check(`step 55 — ${d.label}: the fit is capped at 1 and the whole viewport is in shot in both axes`, fit > 0 && fit <= 1 && v.card.w <= v.stage.w + 1 && v.card.h <= v.stage.h + 1, JSON.stringify({ fit, card: [v.card.w, v.card.h], stage: [v.stage.w, v.stage.h] }))
@@ -2337,6 +2346,8 @@ async function main() {
     check('step 56 — a fold gives the canvas more room: the card grows, the chip\'s percentage goes UP, and the TRUE SIZE in front of it does not move', afterFold.stage.w > beforeFold.stage.w && afterFold.card.w > beforeFold.card.w && pctOf(afterFold.chip) > pctOf(beforeFold.chip) && sizeOf(afterFold.chip) === sizeOf(beforeFold.chip) && sizeOf(beforeFold.chip) !== null, `${JSON.stringify(beforeFold.chip)} → ${JSON.stringify(afterFold.chip)}`)
     check('step 56 — and the frame\'s CSS viewport did NOT move with it: the room changed, the device did not', afterFold.inner.w === DEVICE.DESKTOP.width && afterFold.inner.h === DEVICE.DESKTOP.height, JSON.stringify(afterFold.inner))
     check('step 56 — a re-fit is NOT a repaint: every section root is still the same node', await canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].every((el, n) => el === window.__nodes[n])))
+    // R-138's nearest miss was a FOLDED Desktop (4px, before the ruling), so the invariant is read here too (review)
+    check('step 56 — R-138 with Layers folded: the larger card still clears the chip', afterFold.chipBox !== null && afterFold.cardBox.top - afterFold.chipBox.bottom > 0, `${afterFold.chipBox && afterFold.cardBox.top - afterFold.chipBox.bottom}px`)
     await page.getByRole('button', { name: 'Show layers' }).click()
     await page.waitForTimeout(400)
 
@@ -2362,7 +2373,7 @@ async function main() {
       stamped: document.querySelectorAll('[data-inflozo-prop], [data-inflozo-ghost]').length,
     }))
     check('step 57 — pressing a device REPAINTS NOTHING: every section root is the same node object, and the selection and its mark survive', changed.same && changed.roots === rootsBefore && changed.selected === 1, JSON.stringify(changed))
-    check('step 57 — the stamps are untouched, because the canvas DOM is untouched (a repaint would re-stamp and lift them again)', changed.stamped === stampsBefore, `${changed.stamped} · was ${stampsBefore}`)
+    check('step 57 — the stamps are untouched, because the canvas DOM is untouched (a repaint would re-stamp and lift them again)', changed.stamped === stampsBefore && stampsBefore === 0, `${changed.stamped} · was ${stampsBefore}`)
     // NO SCROLL RESTORATION is the story's own rule — re-laying the page out at 390 moves the scroll and nothing
     // invents a policy for it. What must not happen is the canvas jumping back to the top, which a reload would do.
     check('step 57 — the canvas did not jump back to the top (the frame was never reloaded)', changed.scroll > 0 && scrolledWas > 0, `${changed.scroll} · was ${scrolledWas}`)
@@ -2381,7 +2392,7 @@ async function main() {
     await page.waitForTimeout(400)
     const caretIs = await caretHere()
     const tabletNow = await viewportNow()
-    check('step 57 — a caret mid-word SURVIVES a device change: still editing, the same offset, and the device did change', caretWas.editable && caretIs.editable && caretIs.offset === caretWas.offset && tabletNow.inner.w === DEVICE.TABLET.width, `${JSON.stringify(caretWas)} → ${JSON.stringify(caretIs)} · ${tabletNow.inner.w}`)
+    check('step 57 — a caret mid-word SURVIVES a device change: still editing, the same offset, and the device did change', caretWas.editable && caretIs.editable && caretWas.offset > 0 && caretIs.offset === caretWas.offset && tabletNow.inner.w === DEVICE.TABLET.width, `${JSON.stringify(caretWas)} → ${JSON.stringify(caretIs)} · ${tabletNow.inner.w}`)
     await page.keyboard.press('Escape')
     await page.waitForTimeout(400)
 
@@ -2389,6 +2400,8 @@ async function main() {
     await deviceButton(DEVICE.MOBILE.name).click()
     await page.waitForTimeout(400)
     await clickOn(GRID)
+    // the control: without a selection to lose, "deselected" below is vacuous (review)
+    const selectedFirst = (await onScreen(GRID)).selected
     const letterbox = await page.evaluate(() => {
       const stage = document.querySelector('section[aria-label="Canvas"]')
       const s = stage.getBoundingClientRect()
@@ -2398,7 +2411,7 @@ async function main() {
     await page.mouse.click(letterbox.x, letterbox.y)
     await page.waitForTimeout(400)
     const afterLetterbox = await panelOf()
-    check('step 58 — R-123: with a phone-shaped card there is real ground each side, and a press on it deselects exactly as the ground below the last section does', letterbox.room > 100 && !(await onScreen(GRID)).selected && afterLetterbox.label === 'Page settings' && afterLetterbox.empty, `${JSON.stringify(letterbox)} · ${JSON.stringify(afterLetterbox.label)}`)
+    check('step 58 — R-123: with a phone-shaped card there is real ground each side, and a press on it deselects exactly as the ground below the last section does', letterbox.room > 100 && selectedFirst && !(await onScreen(GRID)).selected && afterLetterbox.label === 'Page settings' && afterLetterbox.empty, `${JSON.stringify(letterbox)} · ${JSON.stringify(afterLetterbox.label)}`)
 
     // ── step 59 — the keyboard: one Tab stop, the arrows move the choice ──
     await page.locator('#editor-device button[tabindex="0"]').focus()
@@ -2435,12 +2448,16 @@ async function main() {
     check(`step 60 — a ${FIXTURE}-section doc is planted through the service key (nothing persists a canvas edit before Story 5.8)`, planted.status === 200 || planted.status === 204, `HTTP ${planted.status}`)
     await page.goto(editorUrl(), { waitUntil: 'load' })
     await painted('home')
-    // `longtask` is recorded from before the press, so the press's own task is in the buffer whatever its length
-    await page.evaluate(() => {
+    // `buffered`, so the 40-section LOAD is in the buffer too — the AC is "loads and changes device" (review). And THE
+    // CONTROL: an 80ms busy loop on a timer (the page's own task, never the evaluate's) must be recorded, or a longest
+    // of 0ms is an observer that saw nothing and not a result (standing rule 2).
+    await page.evaluate(() => new Promise((done) => {
       window.__long = []
       window.__obs = new PerformanceObserver((list) => window.__long.push(...list.getEntries().map((e) => e.duration)))
-      window.__obs.observe({ entryTypes: ['longtask'] })
-    })
+      window.__obs.observe({ type: 'longtask', buffered: true })
+      setTimeout(() => { const t = performance.now(); while (performance.now() - t < 80); setTimeout(done, 100) }, 0)
+    }))
+    check('step 60 — control: the long-task observer records a deliberate 80ms task, so a small longest below is a measurement', await page.evaluate(() => window.__long.some((d) => d >= 50)), await page.evaluate(() => window.__long.map(Math.round).join(' ')))
     const bigRoots = await canvasFrame().evaluate(() => document.querySelectorAll('#canvas > *').length)
     await deviceButton(DEVICE.MOBILE.name).click()
     await page.waitForTimeout(1500)

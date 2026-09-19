@@ -137,7 +137,7 @@ test('NOTHING IS EVER MAGNIFIED: a stage larger than the device in both axes fit
 })
 
 test('a stage with no size yet is 1, never Infinity or NaN — the state before the first ResizeObserver callback', () => {
-  for (const stage of [{ width: 0, height: 0 }, { width: 864, height: 0 }, { width: 0, height: 828 }]) {
+  for (const stage of [{ width: 0, height: 0 }, { width: 864, height: 0 }, { width: 0, height: 820 }]) {
     assert.equal(fitFor(stage, DESKTOP), 1, JSON.stringify(stage))
   }
 })
@@ -145,6 +145,9 @@ test('a stage with no size yet is 1, never Infinity or NaN — the state before 
 test('UX-DR17: the chip states the TRUE SIZE first and the shrinking second, as a sentence', () => {
   assert.equal(viewportWords(MOBILE, fitFor(STAGE, MOBILE)), 'viewport 390 × 844 · shown at 97%')
   assert.equal(viewportWords(DESKTOP, 1), 'viewport 1440 × 900 · shown at 100%')
+  // a shrunk canvas never reads 100%, and a drawn one never reads 0% (review)
+  assert.equal(viewportWords(DESKTOP, 0.996), 'viewport 1440 × 900 · shown at 99%')
+  assert.equal(viewportWords(DESKTOP, 0.001), 'viewport 1440 × 900 · shown at 1%')
   // the live region says the device NOW SHOWING and its real size, never the press (`modeShown`'s shape)
   assert.equal(deviceShown(TABLET), 'Tablet — 834 × 1112')
 })
