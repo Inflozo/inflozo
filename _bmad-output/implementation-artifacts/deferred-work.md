@@ -4001,10 +4001,11 @@ reason: nothing built repeats a title — `tools/check-snapshots.mjs` refuses a 
 
 ### DW-167: the settings panel's click wiring, and `/pilots`' client wiring, are held by the deployed harness only
 
-plain: The engine that decides what "Reset this design" removes is tested on every commit. The button that opens the
-  confirm and the confirm's "Reset design" that applies it are only checked when someone runs the pilots and controls
-  scripts against the live site, so a slip in that wiring would pass CI and be caught at the next hand run.
-status: open
+plain: FIXED 2026-09-19 (Story 5.9) — a real browser now opens the real editor on every commit and works the panel
+  from the keyboard: Reset this design with nothing changed says so under itself, one changed control makes the same
+  press ask first, the confirm opens on Cancel and Esc leaves the section exactly as it was. A slip in that wiring is
+  now red within a minute instead of at the next hand run.
+status: closed
 severity: low
 origin: Story 4.10's whole-story code review (2026-09-15, verification-gap layer) — `apps/web/components/controls/sidebar.tsx`'s
   branch on `resetChanges` and the confirm's commit, and `pilots/review.tsx`'s render inputs, have no test `pnpm check`
@@ -4021,6 +4022,16 @@ location: apps/web/components/controls/sidebar.tsx · apps/web/app/(app)/app/(au
   the iframe's sizes, and `apps/web/components/editor/device-switch.tsx` — `run-verify-editor.cjs` steps 54–60 only
 reason: `apps/web` runs `node --test` with no DOM, and a DOM for it is a dependency (Ask First); the pure functions
   under both (`resetChanges`, `resetSection`, `renderCanvas`) are pinned in `packages/section-runtime`.
+resolution: THE "Ask First" LAPSED AND THEN THE OWNER RULED. Story 4.11 made `@playwright/test` a root devDependency,
+  so the DOM this entry was waiting on had already arrived; **R-146** (owner, 2026-09-19, Story 5.9's Q2) then chose to
+  spend it. `tools/keyboard/run-keyboard-gate.sh` boots `next dev` with `INFLOZO_HARNESS=1` and drives
+  `/app/harness/editor` — the REAL `Editor` with the pilot fixture, typed against `EditorData` so drift is a compile
+  error — from the keyboard alone, inside `pnpm test` and therefore inside CI's `check` job, the only place a gate can
+  block a deploy (R-116). Its last test is this entry's own subject, the panel's reset wiring. What a harness cannot
+  prove is still the deployed walk's (R-82): `run-verify-editor.cjs` runs the same journey on the deployed editor with
+  a real session from step 71. `/pilots`' render inputs stay where Story 5.1 left them — `apps/web/lib/canvas.ts`,
+  shared with the editor and compared node by node on the deployed site by step 4 — and the device wiring the 5.7
+  addendum added is walked by the journey's device test.
 
 ### DW-168: no gate holds a design's `ghostCompat.minVersion` to the matrix's `since` for the fields it reads
 

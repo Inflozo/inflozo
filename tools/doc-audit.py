@@ -889,6 +889,28 @@ DOCS = [
   'sized to the section, toHaveScreenshot against packages/library/baselines/{category}/{n}/, then axe-core 4.12.1 at '
   'WCAG 2.1 AA behind an alt-less <img> control that must be reported or the case aborts. Only --update inside the '
   'image writes.'),
+ ('tools/keyboard/run-keyboard-gate.sh', 'tool', 'The keyboard gate — NFR-6(d), on every commit',
+  ("Story 5.9's gate (R-146), modelled on tools/matrix/run-matrix-gate.sh and supabase/tests/run-rls-gate.sh: it boots "
+   '`next dev` itself on a free port with INFLOZO_HARNESS=1 and no Supabase environment, waits for /app/harness/editor '
+   'to answer 200, and runs the journey against it. Exit 0 means the editor answered every stop of the story\'s I/O '
+   'matrix from the keyboard alone.',
+   'No container, unlike the render matrix: nothing is photographed, so the browser the repository installs is the one '
+   'it drives. With no Chromium it REFUSES, naming `pnpm exec playwright install chromium`, rather than failing green; '
+   'CI installs it in the check job before pnpm check. It restores apps/web/next-env.d.ts on the way out, because '
+   '`next dev` rewrites that tracked file. Run by `pnpm test`, so it runs wherever `pnpm check` runs — which is the '
+   'check job deploy needs (R-116).')),
+ ('tools/keyboard/journey.spec.mjs', 'tool', 'The keyboard-only journey',
+  "Story 5.9: D8c's skip link first and drawn only while focused, the canvas as ONE tab stop with the embedded document "
+  'out of sequential order, the eight live keys plus R-147\'s `?`, WCAG 2.1.4\'s focus condition typed into both a canvas '
+  'contenteditable and a panel field, a menu owning the key while it is up, the three-rung Esc ladder, the card listing '
+  'exactly the keys that work and no deferred one (R-145), both ⌥-arrow reorders, ⌥F10 into the mark toolbar, and the '
+  'settings panel\'s reset wiring, its confirm and its Esc (DW-167). Its first test reads its own source and fails if a '
+  'pointer API appears below the sentinel, which is how "no pointer events" is checked rather than remembered. Stores no '
+  'count: every subject is read off the page.'),
+ ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
+  'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '
+  'boots is the only thing this journey means anything against. Also covers tools/keyboard/test-results/, which is '
+  'generated output.'),
  ('tools/matrix/playwright.config.mjs', 'tool', 'The render matrix runner configuration',
   'Story 4.11: the one place NFR-6(a)\'s numbers live — threshold 0.1, maxDiffPixelRatio 0.01, animations disabled, '
   'caret hidden — with updateSnapshots none (a missing baseline fails) and the baseline path template. Refuses to load '

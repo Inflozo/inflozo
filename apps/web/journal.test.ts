@@ -3,13 +3,16 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, holdsCaret, hydrationFor, ownFlushLanded, labelOf, maxSeq, panelOpen, redo, shortcutFor, undo, unsynced,
+  flushPayload, hydrationFor, ownFlushLanded, labelOf, maxSeq, panelOpen, redo, undo, unsynced,
   restingState, unsyncedEdits, vanishedDesign, type Journal, type SyncState,
 } from './lib/journal.ts'
 
-/* STORY 5.8 — the journal, the indicator, the backoff and R-141's shortcuts, asserted where `node --test` can reach
-   them. Every row of the spec's matrix that is a RULE rather than a gesture is here; the gestures themselves are
+/* STORY 5.8 — the journal, the indicator and the backoff, asserted where `node --test` can reach them. Every row of
+   the spec's matrix that is a RULE rather than a gesture is here; the gestures themselves are
    `tools/probe/run-verify-editor.cjs`'s steps 61 onward, on the deployed editor.
+
+   R-141's THREE SHORTCUTS LEFT THIS FILE AT STORY 5.9, with `shortcutFor` and `holdsCaret` themselves: the map is
+   not the journal's business, and the whole of it — Story 5.8's assertions included — is now `keymap.test.ts`.
 
    Nothing below counts anything it could derive: the depth test reads `DEPTH`, the backoff test reads `BACKOFF_S`,
    and the label test walks every state of the union rather than listing five strings (standing rule 4). */
@@ -187,50 +190,6 @@ test('the backoff is 5 · 10 · 20 · 40 · 60, capped, and never goes backwards
   assert.deepEqual(seen, [...BACKOFF_S])
   assert.equal(backoffSeconds(BACKOFF_S.length + 9), BACKOFF_S[BACKOFF_S.length - 1], 'capped, however many attempts')
   assert.equal(backoffSeconds(0), BACKOFF_S[0], 'and an attempt below the first is the first')
-})
-
-// ── R-141's shortcuts ──────────────────────────────────────────────────────────────────────────────────────────
-
-const press = (key: string, extra: Partial<Parameters<typeof shortcutFor>[0]> = {}) =>
-  ({ key, metaKey: true, ctrlKey: false, shiftKey: false, ...extra })
-
-test('R-141: ⌘Z undoes, ⇧⌘Z redoes, ⌘S saves — and Ctrl is the same three on Windows', () => {
-  assert.equal(shortcutFor(press('z'), false), 'undo')
-  assert.equal(shortcutFor(press('z', { shiftKey: true }), false), 'redo')
-  assert.equal(shortcutFor(press('s'), false), 'save')
-  assert.equal(shortcutFor(press('z', { metaKey: false, ctrlKey: true }), false), 'undo')
-  assert.equal(shortcutFor(press('z', { metaKey: false, ctrlKey: true, shiftKey: true }), false), 'redo')
-  assert.equal(shortcutFor(press('Z', { shiftKey: true }), false), 'redo', 'Shift makes the key uppercase')
-})
-
-test('R-141: ⌘Z is INERT with the caret in a text prop, and ⌘S is not (Story 5.3 is untouched)', () => {
-  assert.equal(shortcutFor(press('z'), true), null, 'the browser\'s own undo owns the words being typed')
-  assert.equal(shortcutFor(press('z', { shiftKey: true }), true), null)
-  assert.equal(shortcutFor(press('s'), true), 'save', 'Save Page As is never what the press meant')
-})
-
-test('no OTHER key is this story\'s — the single-key map stays Story 5.9\'s entire', () => {
-  for (const key of ['[', ']', '1', '2', '3', 'l', '.', 'p', 'r', 'Escape', 'k', 'd', 'Delete', 'Enter', 'y']) {
-    assert.equal(shortcutFor(press(key), false), null, key)
-    assert.equal(shortcutFor({ key, metaKey: false, ctrlKey: false, shiftKey: false }, false), null, `bare ${key}`)
-  }
-  // an unmodified z is typing, and BOTH modifiers together is not this gesture either
-  assert.equal(shortcutFor({ key: 'z', metaKey: false, ctrlKey: false, shiftKey: false }, false), null)
-  assert.equal(shortcutFor({ key: 'z', metaKey: true, ctrlKey: true, shiftKey: false }, false), null)
-  assert.equal(shortcutFor(press('z', { altKey: true }), false), null, '⌥⌘Z is not ⌘Z')
-})
-
-test('holdsCaret is the guard, and it covers a contenteditable as well as a field', () => {
-  assert.equal(holdsCaret(null), false)
-  assert.equal(holdsCaret({ tagName: 'DIV' }), false)
-  assert.equal(holdsCaret({ tagName: 'INPUT' }), true)
-  assert.equal(holdsCaret({ tagName: 'TEXTAREA' }), true)
-  assert.equal(holdsCaret({ tagName: 'SELECT' }), false, 'no caret, no undo of its own')
-  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'checkbox' }), false, 'focus rests here after a panel control: ⌘Z must work')
-  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'range' }), false)
-  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'text' }), true)
-  assert.equal(holdsCaret({ tagName: 'H1', isContentEditable: true }), true, 'Story 5.3 edits a heading in place')
-  assert.equal(holdsCaret({ tagName: 'SPAN', isContentEditable: true }), true, 'and a button\'s label in a span')
 })
 
 // ── AD-15's hydrate comparison ─────────────────────────────────────────────────────────────────────────────────

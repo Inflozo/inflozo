@@ -41,11 +41,21 @@ const PUBLIC = [join('sign-in', 'page.tsx')]
 // checked rather than remembered.  [Story 2.5]
 const SELF_GUARDED = [join('restore', 'page.tsx')]
 
+// A THIRD LIST, AND IT IS NEITHER OF THE FIRST TWO. Story 5.9's keyboard harness (R-146) is not a
+// page anyone reaches: it mounts the real `Editor` with fixture props so a browser in `pnpm check`
+// can open the editor with no database, and it must therefore sit OUTSIDE `(authed)` — every page
+// inside that group answers 500 with no Supabase environment, which is exactly what makes the run
+// possible (executed 2026-09-19). It cannot call `signedIn()` either, for the same reason. Its
+// guard is that it DOES NOT EXIST unless the gate turned it on: `notFound()` unless
+// `INFLOZO_HARNESS=1`, which nothing in production sets. The test below is the promise that it
+// does, and the deployed walk asserts the 404 on the real stack (`run-verify-editor.cjs`).
+const HARNESS_ONLY = [join('harness', 'editor', 'page.tsx')]
+
 test('every page under /app is inside the (authed) group, or named as public here', () => {
   const found = pages()
   assert.ok(found.length >= 3, `expected the app's pages to be found, got ${found.length}`)
   for (const page of found) {
-    if (PUBLIC.includes(page) || SELF_GUARDED.includes(page)) continue
+    if (PUBLIC.includes(page) || SELF_GUARDED.includes(page) || HARNESS_ONLY.includes(page)) continue
     assert.ok(
       page.startsWith(`(authed)${'/'}`),
       `${page} sits under /app but not inside (authed) — it would ship with no sign-in guard at all. Move it, or add it to PUBLIC (or SELF_GUARDED) with its reason.`,
@@ -82,6 +92,21 @@ test('every page outside (authed) that is not public guards itself', () => {
       `${page} sits outside (authed) and never calls await signedIn() — it would render for anyone.`,
     )
   }
+})
+
+test('every harness page does not exist unless the gate switched it on', () => {
+  assert.ok(HARNESS_ONLY.length > 0, 'HARNESS_ONLY is empty — remove it rather than leaving an unused exemption')
+  for (const page of HARNESS_ONLY) {
+    assert.ok(pages().includes(page), `${page} is named in HARNESS_ONLY but no such page exists`)
+    const source = readFileSync(join(APP, page), 'utf8').replace(/\/\/[^\n]*|\/\*[^]*?\*\//g, ' ')
+    assert.match(
+      source,
+      /if \(!HARNESS\) notFound\(\)/,
+      `${page} sits outside (authed) and does not refuse without INFLOZO_HARNESS=1 — it would ship a test mount to production.`,
+    )
+  }
+  // and the switch itself is read in ONE place, so the page and the canvas route cannot disagree
+  assert.match(readFileSync('lib/harness.ts', 'utf8'), /process\.env\.INFLOZO_HARNESS === '1'/)
 })
 
 /** The `type=` values a template's links carry — in the href, and again in the pasteable URL. */

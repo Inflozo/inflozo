@@ -465,6 +465,15 @@ export const Book = (p: IconProps) => (
     <path d="M12 6v14" />
   </Icon>
 )
+/* S3d's **Keyboard shortcuts** row (`S3 Dashboard.dc.html:362`), read verbatim — the export draws it, so R-92's
+   scope applies unchanged and no Tabler path is owed here (R-130 is the exception for a glyph the export does NOT
+   draw). Story 1.5 left the row out and named Story 5.9; this is that glyph arriving with it. */
+export const Keyboard = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+  </Icon>
+)
 export const Logout = (p: IconProps) => (
   <Icon {...p}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

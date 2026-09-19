@@ -71,6 +71,9 @@ test('the control is ABSENT on a Light-only project, never disabled (UX-DR3, R-1
   // nothing anywhere greys it: a greyed control must carry a reason, and this one could never act here. (`ring` is
   // imported from `kit/greyed`, which is where the app's one focus ring lives — hence the narrow patterns.)
   assert.doesNotMatch(toggle, /aria-disabled|\sdisabled[=}]|greyed=|type Greyed/, 'the mode control has no greyed state at all')
+  // Story 5.9: and `.` is the same control by another route, so it carries the SAME condition — on a Light-only
+  // project there is no sun to press, and the press does nothing and announces nothing.
+  assert.match(editor, /case 'dark': return void \(darkEnabled && flip\(/, 'the key obeys the rule its button obeys')
 })
 
 test('R-132 — one button, an accessible name that names the DESTINATION, and a press that never takes the caret', () => {

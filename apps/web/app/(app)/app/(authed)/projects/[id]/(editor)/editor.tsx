@@ -15,6 +15,7 @@ import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/l
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
 import { SaveState } from '@/components/editor/save-state'
+import { openShortcuts, ShortcutsSheet } from '@/components/editor/shortcuts-sheet'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
@@ -28,13 +29,14 @@ import { ChevronLeft, Panel, Redo as RedoIcon, Undo as UndoIcon } from '@/compon
 import { PanelLabel } from '@/components/kit/labels'
 import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
-import { DESKTOP, deviceShown, fitFor, type Device } from '@/lib/device'
+import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import {
-  append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS, holdsCaret,
-  flushDecision, hydrationFor, maxSeq, ownFlushLanded, redo as redoIn, restingState, shortcutFor, undo as undoIn, unsynced,
+  append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
+  flushDecision, hydrationFor, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn, unsynced,
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
+import { holdsCaret, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
@@ -175,7 +177,9 @@ function useFold() {
   useEffect(() => {
     if (toggled.current) (folded ? show : hide).current?.focus()
   }, [folded])
-  const toggle = (next: boolean) => {
+  /* AN UPDATER, NOT A VALUE (Story 5.9): `L` is bound on the window ONCE, at mount, so a handler that read
+     `folded` from that render's closure would fold the panel and never unfold it. `setFolded` is asked instead. */
+  const toggle = (next: boolean | ((was: boolean) => boolean)) => {
     toggled.current = true
     setFolded(next)
   }
@@ -235,7 +239,14 @@ export function Editor({
   revision,
   userId,
   autosave,
-}: EditorData & { project: { id: string; name: string } }) {
+  canvasSrc: canvasPath,
+}: EditorData & {
+  project: { id: string; name: string }
+  /** Story 5.9 — the canvas document's address, defaulting to the app's own `/canvas`. The keyboard harness serves
+   *  the SAME `pilotsCanvasDocument()` bytes from a path of its own and names it here, so the real route keeps its
+   *  session guard rather than having it bypassed for a test. */
+  canvasSrc?: string
+}) {
   const pathname = usePathname()
   // the layout 404s every segment that is not a canvas, so a null here is never drawn
   const key = canvasOfPath(stripApp(pathname)) ?? 'home'
@@ -283,6 +294,8 @@ export function Editor({
   const [pressingRetry, setPressingRetry] = useState(false)
   const [conflicted, setConflicted] = useState(false)
   const conflict = useRef<HTMLDialogElement>(null)
+  /** R-147's card, opened by `?` here and by the account menu's row everywhere else — one component, one door */
+  const shortcuts = useRef<HTMLDialogElement>(null)
   /** null means FALLBACK MODE: IndexedDB refused, or a write failed, and every change goes straight to the cloud */
   const local = useRef<LocalStore | null>(null)
   /** AD-15's `base_revision`: the `projects.revision` this session's document descends from */
@@ -347,8 +360,8 @@ export function Editor({
    *  DOM — so this line is the whole of the change. */
   const scale = fitFor(size, device)
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device }
 
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
@@ -636,7 +649,9 @@ export function Editor({
    *  new numbers — so every section root is the same node object and the selection, the outlines, the stamps, the
    *  inline caret and the canvas scroll all survive it. The top bar never deselects (R-123). */
   const pickDevice = (next: Device) => {
-    if (next.name === device.name) return
+    // `latest`, not `device`: Story 5.9 binds `1` `2` `3` on the window ONCE, at mount, so the render's own value
+    // would be Desktop for ever and every later press would be swallowed as "already showing"
+    if (next.name === latest.current.device.name) return
     setDevice(next)
     setSaid(deviceShown(next))
   }
@@ -861,19 +876,58 @@ export function Editor({
     return true
   }
 
-  /* ─── Story 5.8 / R-141 — ⌘Z, ⇧⌘Z and ⌘S, on the shell and inside the canvas document ─────────────────────────
+  /* ─── Story 5.9 — FR-D11's MAP, ONE HANDLER (R-141, R-145, R-147) ──────────────────────────────────────────────
    *
-   * ONE HANDLER, NOT A SECOND IMPLEMENTATION: the keys call the same `onUndo`/`onRedo` the arrows' `onClick` calls, so
-   * the two can never drift. The only rule of their own is the guard — while a field or a `contenteditable` holds the
-   * caret, ⌘Z returns WITHOUT preventing the default, so the browser's own undo owns the words being typed and Story
-   * 5.3's inline editing is untouched. Everywhere else the gesture is prevented, so the browser's page-level undo
-   * never competes for it. ⌘S is claimed in every focus state: Save Page As is never what the press meant.
+   * THE MAP IS `lib/keymap.ts` AND THE ACTIONS ARE THE BUTTONS' OWN. `L` calls the fold the Collapse button calls,
+   * `.` calls `flip`, `1` `2` `3` call `pickDevice`, `⌘D` and `Del` call `onDuplicate`/`onRemove` — the very
+   * functions the pill and the `⋯` menu call — so a key and its button cannot drift (R-141's rule, already proved by
+   * ⌘Z at Story 5.8). Nothing below decides what a key DOES; `shortcutFor` decides what a press IS.
+   *
+   * A BINDING WHOSE ACTION IS NOT BUILT NEVER REACHES HERE (R-145): `⌘K`, `[`, `]`, `⇧R`, `P` and `⌘⏎` carry no keys
+   * in the table, so `shortcutFor` returns null for them, nothing is prevented, nothing is announced and the `?` card
+   * does not list them.
+   *
+   * TWO GUARDS, AND THE SPLIT IS THE MODIFIER'S. A single-character press is inert while ANY text holds the caret
+   * (UX-DR11, WCAG 2.1.4) — typing "dark" into a headline must never flip the canvas — and gives way to an open
+   * popover or dialog, which owns its own keys. A ⌘-modified press is unaffected by the caret except for ⌘Z/⇧⌘Z,
+   * whose refusal leaves the browser's own undo to the words being typed (Story 5.3), and every gesture but ⌘S gives
+   * way to an open dialog, because a modal owns the document under it.
    *
    * BOUND ON BOTH DOCUMENTS, because the caret is usually in the OTHER one: a press while editing a headline is
    * delivered to the canvas document, which is a different window. `holdsCaret` is asked of whichever document the
    * press arrived in, plus this component's own `editing` ref — a `contenteditable` span inside a canvas `<button>`
    * is not the active element of anything until the caret is placed in it.
    */
+
+  /** D8c's skip link and the `Esc` ladder's third rung land in the same place: the Controls sidebar's first control,
+   *  which is the rail's Show button while it is folded. The REFS are asked and not `controls.folded`, because these
+   *  handlers are bound once at mount — `show` exists only while the rail is drawn, so it answers the question. */
+  const toChrome = () => (controls.show.current ?? controls.hide.current)?.focus()
+
+  const run = (gesture: Gesture) => {
+    const pick = latest.current.selected
+    switch (gesture) {
+      case 'save': return void flush('manual')
+      case 'undo': return onUndo()
+      case 'redo': return onRedo()
+      // ON THE SELECTION, NEVER THE HOVER, and obeying the rules the buttons obey: FR-D5 gives a site-wide section no
+      // Duplicate at all, on its row, on its pill and therefore on this key, and its Delete asks first through the
+      // one confirm. With nothing selected both do nothing and say nothing.
+      case 'duplicate': return void (pick && pick.doc !== SITE.key && onDuplicate(pick))
+      case 'remove': return void (pick && onRemove({ ...pick, layerName: layerNameOf(pick) }))
+      case 'layers': return layers.toggle((was) => !was)
+      // R-135: on a Light-only project there is no sun to press, so nothing happens and nothing is announced
+      case 'dark': return void (darkEnabled && flip(latest.current.mode === 'dark' ? 'light' : 'dark'))
+      case 'shortcuts': return openShortcuts(shortcuts)
+      // the ladder below owns it; `shortcutFor` never returns it, and this arm is here so the union stays exhaustive
+      case 'deselect': return
+      default: {
+        const next = DEVICES.find((d) => d.name === gesture)
+        if (next) pickDevice(next)
+      }
+    }
+  }
+
   const onShortcut = (e: KeyboardEvent) => {
     if (e.defaultPrevented) return
     const target = e.target as HTMLElement | null
@@ -881,20 +935,41 @@ export function Editor({
     const inField = editing.current !== null || holdsCaret(target) || holdsCaret(active)
     const gesture = shortcutFor(e, inField)
     if (!gesture) return
-    // an open dialog owns the page, exactly as `onEscape` below has it: ⌘Z must not change the document under a modal
-    if (gesture !== 'save' && target?.ownerDocument?.querySelector('dialog[open]')) return
+    // an open dialog owns the page: ⌘Z must not change the document under a modal. A single-key press gives way to an
+    // open POPOVER too — a Layers `⋯` menu, a picker — because the menu owns the key while it is up.
+    const owner = SINGLE_KEY.has(gesture) ? ':popover-open, dialog[open]' : 'dialog[open]'
+    if (gesture !== 'save' && target?.ownerDocument?.querySelector(owner)) return
     e.preventDefault()
-    if (gesture === 'save') void flush('manual')
-    else if (gesture === 'undo') onUndo()
-    else onRedo()
+    run(gesture)
   }
 
+  /* THE `Esc` LADDER — three rungs, one key, each announcing where it landed (EXPERIENCE § the focus model (1)).
+   *
+   * RUNG 1 IS STORY 5.3'S AND NEVER REACHES HERE: `lib/inline.ts` ends editing on the press and prevents the default,
+   * so `defaultPrevented` above takes it and the section stays selected.
+   * RUNG 2 — a selection, not editing: deselected, and focus RESTS on the canvas container, which is why the
+   * container is a tab stop of its own.
+   * RUNG 3 — focus on the canvas container with nothing selected: focus leaves the canvas for the chrome.
+   * A field, a select, a picker or an open dialog keeps the key: it belongs to the control it was pressed in.
+   */
   const onEscape = (e: KeyboardEvent) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return
     const target = e.target as HTMLElement | null
+    const doc = target?.ownerDocument
     // an open popover or dialog anywhere in that document owns the key, whichever element holds focus
-    if (target?.ownerDocument?.querySelector(':popover-open, dialog[open]') || !escDeselects(target)) return
-    choose(null)
+    if (doc?.querySelector(':popover-open, dialog[open]') || !escDeselects(target)) return
+    if (latest.current.selected) {
+      choose(null)
+      stage.current?.focus()
+      setSaid('Nothing selected. Focus is on the page area.')
+      return
+    }
+    // RUNG 3, AND ONLY FROM THE CANVAS — from the Layers list or the panel there is nothing left to step out of.
+    // "On the canvas" is either document: the container itself in this one, or anything inside the frame, which is
+    // where focus goes when a press the canvas prevents blurs its target (Story 5.3).
+    if (doc === document && document.activeElement !== stage.current) return
+    toChrome()
+    setSaid('Focus left the page area for the editor controls.')
   }
 
   /** The canvas document's listeners, once per document — a reloaded frame is a new one. */
@@ -1280,9 +1355,21 @@ export function Editor({
   const edit = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string) => {
     const refused = apply(pick, op)
     if (refused !== null) refuse(pick, refused)
+    return refused === null
   }
 
-  const onDuplicate = (pick: Pick) => edit(pick, (doc) => duplicateSection(doc, pick.instanceId, crypto.randomUUID()))
+  /** What Layers calls this section, read from the session's own stack — the one name the row, the canvas tag, the
+   *  panel heading and every announcement below all use. */
+  const layerNameOf = (pick: Pick) => latest.current.stack.find((i) => same(i, pick))?.layerName ?? 'Section'
+
+  /* ANNOUNCED POLITELY, AND FROM HERE (Story 5.9, UX-DR12). `⌘D` and `Del` call these same two functions — one
+     handler per action, never a second implementation (R-141's rule) — so the announcement has to live where BOTH
+     the key and the button reach it, exactly as `moveTo`'s does. A refusal says nothing here: `refuse` puts P0-1's
+     pill over the section, which is where the press was. */
+  const onDuplicate = (pick: Pick) => {
+    const name = layerNameOf(pick)
+    if (edit(pick, (doc) => duplicateSection(doc, pick.instanceId, crypto.randomUUID()))) setSaid(`${name} duplicated`)
+  }
   const onRename = (pick: Pick, name: string) => apply(pick, (doc) => renameSection(doc, pick.instanceId, name))
 
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
@@ -1311,8 +1398,10 @@ export function Editor({
     requestAnimationFrame(() => openOnCancel(clearDark.current))
   }
 
-  const onRemove = (row: Pick & { layerName: string }) =>
-    row.doc === SITE.key ? askFirst('remove', row) : edit(row, (doc) => removeSection(doc, row.instanceId))
+  const onRemove = (row: Pick & { layerName: string }) => {
+    if (row.doc === SITE.key) return askFirst('remove', row)
+    if (edit(row, (doc) => removeSection(doc, row.instanceId))) setSaid(`${row.layerName} removed`)
+  }
   const onToggleHidden = (row: LayerRow) =>
     row.doc === SITE.key && !row.hidden ? askFirst('hide', row) : edit(row, (doc) => setHidden(doc, row.instanceId, !row.hidden))
 
@@ -1372,7 +1461,7 @@ export function Editor({
 
   if (failure) throw failure
 
-  const src = canvasSrc(isApp(pathname))
+  const src = canvasPath ?? canvasSrc(isApp(pathname))
 
   const onChange = (next: ControlState, kind: Edit) => {
     const now = latest.current
@@ -1395,6 +1484,24 @@ export function Editor({
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-paper text-ink">
       <header className="relative flex h-12 shrink-0 items-center gap-[10px] border-b border-line bg-paper px-3">
+        {/* D8c (`D8 Editor Below 1440.dc.html:311-345`) — THE FIRST FOCUSABLE THING IN THE SHELL, not rendered at
+            rest and drawn on the first Tab as the frame draws it: a surface pill at left 10 / top 9, 30px high,
+            `0 13px`, 12 radius, 1px line, the sm shadow AND the corrected 2px ring together (A7 item 7) — one
+            `box-shadow` of both, because a second utility would replace the first.
+            A BUTTON, NOT THE FRAME'S ANCHOR: the frame is a mock of a bar with no sidebar beside it, so its
+            `href="#d8-canvas"` points AT the canvas; the link skips PAST it, to the Controls sidebar's first control
+            (`EXPERIENCE.md:444-449`). Since the iframe leaves the tab order at this story it saves one stop rather
+            than the dozens that note describes — it stays because it is drawn and approved, because it is the first
+            thing a keyboard user meets, and because the day a story puts a focusable control INSIDE the canvas it is
+            the affordance already in place. */}
+        <button
+          type="button"
+          data-skip-canvas
+          onClick={toChrome}
+          className="sr-only font-semibold outline-none focus:not-sr-only focus:absolute focus:left-[10px] focus:top-[9px] focus:z-10 focus:inline-flex focus:h-[30px] focus:items-center focus:rounded focus:border focus:border-line focus:bg-surface focus:px-[13px] focus:text-[12.5px] focus:text-ink focus:shadow-[var(--shadow-sm),var(--shadow-focus)]"
+        >
+          Skip the canvas
+        </button>
         <Link
           href="/"
           aria-label="Back to dashboard"
@@ -1508,6 +1615,10 @@ export function Editor({
         <section
           ref={stage}
           aria-label="Canvas"
+          // UX-DR9 / §7.3(1): THE CANVAS IS ONE STOP IN THE TAB ORDER, between Layers and the Controls sidebar, and
+          // focus lands on this container rather than inside the rendered site — which is what the iframe's
+          // `tabindex="-1"` below makes true. It is also where the `Esc` ladder's second rung puts focus.
+          tabIndex={0}
           // R-123: the ground around the page card is nothing too — a press on it ends editing and deselects, exactly as
           // Esc does. `currentTarget` alone: a press on the page card keeps the selection, as the Controls panel, the top
           // bar, the Layers header and a Layers row do (EXPERIENCE § the focus model (2)); the toolbar and its link panel
@@ -1544,6 +1655,12 @@ export function Editor({
               ref={frame}
               src={src}
               title={`${canvas.label} canvas`}
+              // THE WHOLE EMBEDDED DOCUMENT LEAVES SEQUENTIAL NAVIGATION — executed in Chromium 1228 through this
+              // repository's own Playwright (the spec's Design Notes): plain gives
+              // `layers → canvas → site-1 → site-2 → controls` and `-1` gives `layers → canvas → controls`, with
+              // click and programmatic focus untouched, so the caret still lands in a headline under the pointer.
+              // NEVER `inert`: it would take the pointer with it and the canvas would stop being editable.
+              tabIndex={-1}
               // the CSS PIXEL SIZE IS THE DEVICE'S, always — so a media query inside the canvas fires at that width and
               // `100vh` resolves to that height; the fit is a transform over it and never touches the CSS viewport
               // (`prd.md:569`). Never scale by changing this width.
@@ -1751,6 +1868,10 @@ export function Editor({
           </Button>
         </div>
       </dialog>
+
+      {/* R-147's card, opened by `?` — the editor draws no account menu (`shell.tsx:295-297`), so this is its only
+          door from in here. Its rows are the map's own (R-145): exactly the keys that work. */}
+      <ShortcutsSheet dialog={shortcuts} />
 
       {/* R-133's ONE confirm, opened by the Controls panel's row AND the Layers `⋯` — R-115's shape, on Cancel */}
       <dialog

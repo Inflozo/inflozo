@@ -151,6 +151,24 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     the identical single-key focus condition, and the card is the map's table printed through the Kit's shortcut rows
     (`Editor Sidebar Kit.dc.html:274-280`) inside `kit/dialog.ts`'s one vocabulary. The PRD's "complete set" is now
     thirteen actions plus the key that lists them, and R-147 is the record of the difference.
+  - **Story 5.9 built it (2026-09-19):** the map is `apps/web/lib/keymap.ts` — pure, and its one import is
+    `lib/device.ts`, so `node --test` reaches all of it and the three device rows are DERIVED from S4a's own track.
+    `shortcutFor` and `holdsCaret` MOVED there from `lib/journal.ts` with Story 5.8's assertions verbatim
+    (`keymap.test.ts`); a row with a `story` carries no `keys`, so a deferred key is bound by nothing and listed by
+    nothing BY CONSTRUCTION, and `SINGLE_KEY` is derived from the same table so the caller needs no second list of
+    which keys carry WCAG 2.1.4's condition. `editor.tsx` gained ONE `run(gesture)` dispatcher calling the very
+    handlers the buttons call; `useFold.toggle` takes an UPDATER and `latest` gained the device, because a key bound
+    once at mount would otherwise read the first render's `folded` and `device` for ever. THE CANVAS IS ONE TAB STOP:
+    `tabIndex={0}` on the stage `<section>` and `tabIndex={-1}` on the iframe. The `Esc` ladder's rungs 2 and 3 are
+    focus moves plus an announcement through `#editor-said`; rung 1 is Story 5.3's `preventDefault` and never reaches
+    the handler. D8c's skip link is `sr-only` until focused and lands on the Controls sidebar's first control, the
+    same place rung 3 does (`toChrome`). `onDuplicate`/`onRemove` gained their announcements, so the key and the pill
+    announce through one place. **THE CANVAS HAS NO KEYBOARD PATH INTO INLINE EDITING and that is FR-D1 rather than a
+    gap** — the panel is the keyboard's way into a text prop — so the journey drives every live-session claim (rung 1,
+    `⌥F10`, the mark toolbar) through the panel's rich Text Area, which runs the same `lib/inline.ts` controller, and
+    the canvas's own caret is walked on the deployed editor. **`next dev` needed its own `distDir`** (`next.config.ts`,
+    keyed on `INFLOZO_HARNESS`): Next 16 allows one dev server per build directory, so without it `pnpm check` would
+    fail for anyone with the app running.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions

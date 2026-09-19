@@ -82,6 +82,19 @@
 // this story owns — no cap, and no main-thread task over 5s on a 40-section planted doc (NFR-1's fps gate is Story
 // 5.23's, manual-only). STEP 2 CHANGED WITH R-137: the page card is no longer flush with the bottom at a top-only
 // radius, it is Desktop's 1440 x 900 fitted, centred, rounded all round — the one change the owner is asked to expect.
+// Story 5.9 adds steps 71-80, inside step 5's CSP session, and they are the same journey `pnpm check` runs over a
+// harness mount (`tools/keyboard/journey.spec.mjs`, R-146) — here with a real session, a real read, the real canvas
+// route and the real policy, because a harness proves the wiring and never the stack (R-82, NFR-6(d)): D8c's skip
+// link measured at its drawn place, size, radius and corrected 2px ring and gone again when it loses focus; the
+// iframe's `tabindex="-1"` and the canvas as EXACTLY ONE stop between Layers and the Controls sidebar, with no link
+// of the customer's own site in the order; `L`, `.` and `1` `2` `3` each calling the handler its own button calls,
+// with the fold's focus move and the iframe's real width as the proof; ⌘D and Del on the SELECTION, FR-D5's
+// site-wide section refusing the first and opening the one confirm on Cancel for the second; WCAG 2.1.4 with a REAL
+// caret placed by a press — the state the harness cannot reach, because the canvas has no keyboard path into inline
+// editing (FR-D1); the Esc ladder's three rungs with that same caret, each announcement read from `#editor-said`;
+// R-147's card measured against `Editor Sidebar Kit.dc.html:274-280` and listing exactly the keys that work (R-145);
+// every deferred key inert; `/harness/editor` and `/harness/canvas` 404 in production; and S3d's account-menu row
+// opening the SAME card, row for row. Step 8's axe runs once more with the card open.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -2906,12 +2919,258 @@ async function main() {
     check('step 69b — a sync request that never answers becomes Retrying within its own time limit, and Retry now then lands it',
       gaveUp58 && unstuck58, JSON.stringify({ gaveUp58, unstuck58 }))
 
+    // ── Story 5.9's steps — FR-D11's MAP ON THE DEPLOYED EDITOR, inside step 5's CSP session ─────────────────────
+    //
+    // THE SAME JOURNEY `pnpm check` RUNS, on the real stack (R-82, NFR-6(d)). `tools/keyboard/journey.spec.mjs` drives
+    // a harness mount with fixture props and proves the WIRING; these steps prove it with a real session, a real read,
+    // the real canvas route and the real policy. Neither replaces the other — R-146 says so in as many words.
+    //
+    // The seed goes back first, for Story 5.8's own reason: the steps above have been deleting and retrying, and every
+    // expectation below is about the SEED's stack.
+    await freshLoad()
+
+    // ── step 71 — D8c's skip link: the first stop, drawn only while focused, and it skips PAST the canvas ──
+    const skip59 = page.locator('[data-skip-canvas]')
+    const atRest59 = await skip59.boundingBox()
+    await page.evaluate(() => document.body.focus())
+    await page.keyboard.press('Tab')
+    const focusedSkip59 = await page.evaluate(() => document.activeElement?.dataset?.skipCanvas !== undefined)
+    const drawn59 = await skip59.evaluate((el) => {
+      const b = el.getBoundingClientRect()
+      const c = getComputedStyle(el)
+      return { left: Math.round(b.left), top: Math.round(b.top), height: Math.round(b.height), radius: c.borderRadius, shadow: c.boxShadow, words: el.textContent.trim() }
+    })
+    check('step 71 — D8c: the FIRST Tab lands on "Skip the canvas", and nothing is drawn for it at rest',
+      focusedSkip59 && atRest59.width < 4 && drawn59.words === 'Skip the canvas', JSON.stringify({ focusedSkip59, atRest59, drawn59 }))
+    // `D8 Editor Below 1440.dc.html:338` — left 10, top 9, 30 high, 12 radius, and A7 item 7's corrected 2px ring
+    check('step 71 — D8c: the pill is at its drawn place, size, radius and ring',
+      drawn59.left === 10 && drawn59.top === 9 && drawn59.height === 30 && drawn59.radius === '12px' && /rgb\(194,\s*56,\s*31\)/.test(drawn59.shadow), JSON.stringify(drawn59))
+    await page.keyboard.press('Tab')
+    check('step 71 — and it is gone again the moment it loses focus', (await skip59.boundingBox()).width < 4)
+    await skip59.focus()
+    await page.keyboard.press('Enter')
+    check('step 71 — pressed, focus lands PAST the canvas, on the Controls sidebar\'s first control (`EXPERIENCE.md:444-449`)',
+      await page.evaluate(() => document.activeElement?.getAttribute('aria-label') === 'Collapse controls'),
+      await page.evaluate(() => document.activeElement?.outerHTML?.slice(0, 120)))
+
+    // ── step 72 — UX-DR9: the canvas is ONE tab stop, and the rendered site is not in the order at all ──
+    check('step 72 — the iframe carries tabindex="-1", so the whole embedded document leaves sequential navigation',
+      (await page.locator('section[aria-label="Canvas"] iframe').getAttribute('tabindex')) === '-1')
+    await page.evaluate(() => document.body.focus())
+    const stops59 = []
+    for (let i = 0; i < (await pageNames()).length * 2 + 16; i++) {
+      await page.keyboard.press('Tab')
+      stops59.push(await page.evaluate(() => {
+        const d = document.activeElement
+        if (!d) return 'nothing'
+        if (d.tagName === 'IFRAME') return 'INSIDE THE CANVAS'
+        return `${d.tagName}${d.id ? '#' + d.id : ''}${d.getAttribute('aria-label') ? '[' + d.getAttribute('aria-label') + ']' : ''}`
+      }))
+    }
+    const canvasStops59 = stops59.filter((x) => x === 'SECTION[Canvas]')
+    const at59 = stops59.indexOf('SECTION[Canvas]')
+    check('step 72 — UX-DR9: the canvas contributes EXACTLY ONE stop, between Layers and the Controls sidebar, and no link inside the customer\'s own site is a stop',
+      canvasStops59.length === 1 && !stops59.includes('INSIDE THE CANVAS') &&
+      stops59.indexOf('BUTTON[Collapse layers]') > -1 && stops59.indexOf('BUTTON[Collapse layers]') < at59 &&
+      stops59.indexOf('BUTTON[Collapse controls]') > at59, JSON.stringify(stops59))
+
+    // ── step 73 — the single keys, each calling the handler its own button calls (R-141's rule) ──
+    const modeNow59 = () => canvasFrame().evaluate(() => document.documentElement.dataset.mode)
+    const deviceNow59 = () => page.evaluate(() => document.querySelector('#editor-device [role="radio"][aria-checked="true"]')?.getAttribute('aria-label'))
+    const saidNow59 = () => page.evaluate(() => document.getElementById('editor-said')?.textContent ?? '')
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('l')
+    await page.waitForTimeout(250)
+    const folded59 = await page.evaluate(() => ({ hidden: document.getElementById('editor-layers')?.hidden, focus: document.activeElement?.getAttribute('aria-label') }))
+    await page.keyboard.press('l')
+    await page.waitForTimeout(250)
+    const unfolded59 = await page.evaluate(() => ({ hidden: document.getElementById('editor-layers')?.hidden, focus: document.activeElement?.getAttribute('aria-label') }))
+    check('step 73 — `L` folds and unfolds Layers through `useFold`, so focus lands on the button that replaced the one it pressed',
+      folded59.hidden === true && folded59.focus === 'Show layers' && unfolded59.hidden === false && unfolded59.focus === 'Collapse layers', JSON.stringify({ folded59, unfolded59 }))
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('.')
+    await page.waitForTimeout(300)
+    const dark59 = await modeNow59()
+    const saidDark59 = await saidNow59()
+    await page.keyboard.press('.')
+    await page.waitForTimeout(300)
+    check('step 73 — `.` flips the canvas to dark and back, and each mode now showing is announced politely (R-132)',
+      dark59 === 'dark' && (await modeNow59()) === 'light' && /dark/i.test(saidDark59), JSON.stringify({ dark59, saidDark59, back: await modeNow59() }))
+    const devices59 = []
+    for (const [n, d] of DEVICE.DEVICES.entries()) {
+      await page.keyboard.press(String(n + 1))
+      await page.waitForTimeout(300)
+      devices59.push({ pressed: n + 1, want: d.label, got: await deviceNow59(), width: await page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe').offsetWidth) })
+    }
+    check('step 73 — `1` `2` `3` are S4a\'s own track, in its order, and the iframe really takes each device\'s width',
+      devices59.every((x, i) => x.got === x.want && x.width === DEVICE.DEVICES[i].width), JSON.stringify(devices59))
+    await page.keyboard.press('1')
+    await page.waitForTimeout(300)
+
+    // ── step 74 — ⌘D and Del act on the SELECTION and obey the rules their buttons obey (FR-D5) ──
+    const beforeKeys59 = await pageNames()
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('Escape')
+    await page.keyboard.press(`${CMD58}+d`)
+    await page.keyboard.press('Delete')
+    await page.waitForTimeout(400)
+    check('step 74 — with NOTHING selected both keys do nothing and announce nothing',
+      JSON.stringify(await pageNames()) === JSON.stringify(beforeKeys59) && (await saidNow59()) === '', JSON.stringify(await pageNames()))
+    await page.locator(`#editor-layers [data-layer-row]`).nth(beforeKeys59.length > 1 ? 1 : 0).focus()
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(250)
+    await page.keyboard.press(`${CMD58}+d`)
+    await page.waitForTimeout(500)
+    const duped59 = await pageNames()
+    check('step 74 — ⌘D duplicates the selected PAGE section, announced politely', duped59.length === beforeKeys59.length + 1 && /duplicated/.test(await saidNow59()), JSON.stringify({ duped59, said: await saidNow59() }))
+    await page.keyboard.press(`${CMD58}+z`)
+    await page.waitForTimeout(500)
+    check('step 74 — control: ⌘Z takes the copy away again, so the key really went through the one `onDuplicate`', JSON.stringify(await pageNames()) === JSON.stringify(beforeKeys59))
+    // a site-wide section: no Duplicate at all, and Delete opens the ONE confirm on Cancel
+    await page.locator('#editor-layers [data-layer-row^="site:"]').first().focus()
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(250)
+    const siteNames59 = await page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row^="site:"]')].length)
+    await page.keyboard.press(`${CMD58}+d`)
+    await page.waitForTimeout(400)
+    check('step 74 — FR-D5: a site-wide section is one shared instance, so ⌘D does nothing on it — exactly as its row carries no Duplicate',
+      (await page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row^="site:"]')].length)) === siteNames59)
+    await page.keyboard.press('Delete')
+    await page.waitForTimeout(500)
+    const asked59 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][aria-labelledby="editor-sitewide-title"]')
+      return d ? { open: true, onCancel: document.activeElement === d.querySelector('[data-cancel]') } : { open: false }
+    })
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    check('step 74 — FR-D5 / R-115: Del on a site-wide section opens the ONE confirm with focus on Cancel, and Escape leaves the doc untouched',
+      asked59.open && asked59.onCancel && (await page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row^="site:"]')].length)) === siteNames59, JSON.stringify(asked59))
+
+    // ── step 75 — WCAG 2.1.4 WITH A REAL CARET IN THE CANVAS, which only the deployed walk can reach ──
+    // The harness makes an element `contenteditable` directly, because the canvas has no KEYBOARD path into inline
+    // editing (FR-D1: the panel is the keyboard's way into a text prop). Here the caret is placed by a real press
+    // through Story 5.3's own helpers, so this is the state a customer is actually in when they type the word.
+    await freshLoad()
+    await clickOn(GRID)
+    await page.waitForTimeout(300)
+    await caretInto(GRID, TITLE)
+    const wasMode59 = await modeNow59()
+    const wasDevice59 = await deviceNow59()
+    const wasNames59 = await pageNames()
+    await page.keyboard.type('dark 123')
+    await page.waitForTimeout(500)
+    const typed59 = await wordsOf(GRID, TITLE)
+    check('step 75 — control: the caret really is in a text prop on the canvas and the word went in', /dark 123/.test(typed59 ?? ''), JSON.stringify({ typed59 }))
+    check('step 75 — UX-DR11 / WCAG 2.1.4: typing "dark 123" into a headline flips nothing, changes no device and moves no section',
+      (await modeNow59()) === wasMode59 && (await deviceNow59()) === wasDevice59 && JSON.stringify(await pageNames()) === JSON.stringify(wasNames59),
+      JSON.stringify({ mode: await modeNow59(), device: await deviceNow59() }))
+
+    // ── step 76 — §7.3(1): the Esc ladder, three rungs, with that same real caret ──
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    const rung1_59 = await page.evaluate(() => document.querySelector('aside[aria-label="Section settings"]') !== null)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    const rung2_59 = await page.evaluate(() => ({
+      deselected: document.querySelector('aside[aria-label="Page settings"]') !== null,
+      onCanvas: document.activeElement === document.querySelector('section[aria-label="Canvas"]'),
+      said: document.getElementById('editor-said')?.textContent ?? '',
+    }))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    const rung3_59 = await page.evaluate(() => ({
+      focus: document.activeElement?.getAttribute('aria-label'),
+      said: document.getElementById('editor-said')?.textContent ?? '',
+    }))
+    check('step 76 — rung 1: Esc ends the editing and the section STAYS selected (Story 5.3, already built)', rung1_59)
+    check('step 76 — rung 2: Esc deselects, focus RESTS on the canvas container, and it says so', rung2_59.deselected && rung2_59.onCanvas && /nothing selected/i.test(rung2_59.said), JSON.stringify(rung2_59))
+    check('step 76 — rung 3: Esc takes focus out of the canvas into the chrome, and says that too', rung3_59.focus === 'Collapse controls' && /focus left/i.test(rung3_59.said), JSON.stringify(rung3_59))
+
+    // ── step 77 — R-147's card, measured against the Kit, and R-145's absences ──
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('?')
+    await page.waitForTimeout(400)
+    const card59 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][data-shortcuts-sheet]')
+      if (!d) return null
+      const rows = [...d.querySelectorAll('[data-shortcut-row]')]
+      const chip = rows[0]?.querySelector('span span')
+      const c = chip ? getComputedStyle(chip) : null
+      const action = rows[0]?.querySelector('span')
+      const a = action ? getComputedStyle(action) : null
+      return {
+        onCancel: document.activeElement === d.querySelector('[data-cancel]'),
+        actions: rows.map((r) => r.dataset.shortcutRow),
+        chips: rows.flatMap((r) => [...r.querySelectorAll('span span')].map((x) => x.textContent)),
+        chipFont: c && { size: c.fontSize, radius: c.borderRadius, padding: `${c.paddingTop} ${c.paddingLeft}`, mono: /mono/i.test(c.fontFamily) || /JetBrains/i.test(c.fontFamily) },
+        actionFont: a && { size: a.fontSize, weight: a.fontWeight },
+        lastHairline: rows.length ? getComputedStyle(rows[rows.length - 1]).borderBottomWidth : null,
+        words: d.textContent,
+      }
+    })
+    // `Editor Sidebar Kit.dc.html:274-280`: the action at 12.5px/500, the chips mono 11px at a 5px radius and `1px 6px`,
+    // and NO hairline under the last row
+    check('step 77 — R-147: `?` opens the card, focus moves in on Cancel, and its rows match the Kit',
+      card59 !== null && card59.onCancel && card59.actionFont.size === '12.5px' && card59.actionFont.weight === '500' &&
+      card59.chipFont.size === '11px' && card59.chipFont.radius === '5px' && card59.chipFont.padding === '1px 6px' && card59.chipFont.mono &&
+      card59.lastHairline === '0px', JSON.stringify(card59 && { ...card59, words: undefined }))
+    check('step 77 — R-145: the card lists exactly the keys that WORK — no ⌘K, no `[` `]`, no P, no ⇧R, no ⌘⏎ — and never greys or captions one',
+      card59 !== null && ['⌘K', '[', ']', 'P', '⇧R', '⌘⏎'].every((k) => !card59.chips.includes(k)) &&
+      ['L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
+      !/not yet|coming soon|unavailable/i.test(card59.words), JSON.stringify(card59 && card59.chips))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    check('step 77 — Esc closes the card and the platform returns focus to where it was', await page.evaluate(() => document.querySelector('dialog[open][data-shortcuts-sheet]') === null && document.activeElement === document.querySelector('section[aria-label="Canvas"]')))
+
+    // ── step 78 — R-145: a key whose action has not been built does nothing at all ──
+    const beforeDead59 = { names: await pageNames(), mode: await modeNow59(), device: await deviceNow59() }
+    await page.locator('section[aria-label="Canvas"]').focus()
+    for (const key of ['[', ']', 'p', `${CMD58}+k`, `${CMD58}+Enter`, 'Shift+R']) await page.keyboard.press(key)
+    await page.waitForTimeout(500)
+    check('step 78 — R-145: ⌘K, `[`, `]`, P, ⇧R and ⌘⏎ change nothing, announce nothing and open nothing — absent, never greyed',
+      JSON.stringify(await pageNames()) === JSON.stringify(beforeDead59.names) && (await modeNow59()) === beforeDead59.mode &&
+      (await deviceNow59()) === beforeDead59.device && (await saidNow59()) === '' &&
+      (await page.evaluate(() => document.querySelectorAll('dialog[open], :popover-open').length)) === 0,
+      JSON.stringify(beforeDead59))
+
+    // ── step 79 — the harness does NOT exist in production (R-146) ──
+    for (const path of ['/harness/editor', '/harness/canvas']) {
+      const r = await context.request.get(at(path), { maxRedirects: 0 })
+      check(`step 79 — R-146: ${path} answers 404 on the deployed site — the keyboard harness is the gate's alone`, r.status() === 404, `HTTP ${r.status()}`)
+    }
+
+    // ── step 80 — S3's account-menu row, on the dashboard, opening the same card ──
+    const menuPage59 = await context.newPage()
+    await menuPage59.goto(at('/'), { waitUntil: 'load' })
+    await menuPage59.locator('[popovertarget="account-menu"]').click()
+    await menuPage59.waitForTimeout(400)
+    const row59 = await menuPage59.evaluate(() => {
+      const b = document.querySelector('#account-menu [data-shortcuts-open]')
+      if (!b) return null
+      const chip = b.querySelector('span:last-child')
+      const c = getComputedStyle(chip)
+      return { words: b.textContent.replace(/\s+/g, ' ').trim(), chip: chip.textContent.trim(), size: c.fontSize, radius: c.borderRadius, padding: `${c.paddingTop} ${c.paddingLeft}`, glyph: !!b.querySelector('svg') }
+    })
+    // `S3 Dashboard.dc.html:362` — the glyph, the words, and a mono `?` chip at `margin-left:auto`, 11px / 5px / `1px 5px`
+    check('step 80 — S3d: the account menu carries **Keyboard shortcuts** with its glyph and its `?` chip, as drawn — the row Story 1.5 left for this story',
+      row59 !== null && /Keyboard shortcuts/.test(row59.words) && row59.chip === '?' && row59.glyph && row59.size === '11px' && row59.radius === '5px' && row59.padding === '1px 5px', JSON.stringify(row59))
+    await menuPage59.locator('#account-menu [data-shortcuts-open]').press('Enter')
+    await menuPage59.waitForTimeout(400)
+    const sameCard59 = await menuPage59.evaluate(() => {
+      const d = document.querySelector('dialog[open][data-shortcuts-sheet]')
+      return d ? [...d.querySelectorAll('[data-shortcut-row]')].map((r) => r.dataset.shortcutRow) : null
+    })
+    check('step 80 — and it opens THE SAME card, row for row (one list, two readers)',
+      sameCard59 !== null && JSON.stringify(sameCard59) === JSON.stringify(card59 && card59.actions), JSON.stringify(sameCard59))
+    await menuPage59.close()
+
     // Story 5.8's steps have been EDITING, and since this story an edit reaches the stored doc — so the seed is handed
     // back before steps 6, 6b and 7, which read it. Same `freshLoad` the rest of the walk uses.
     await freshLoad()
 
     const session = violations.splice(0)
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, and Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -3165,6 +3424,13 @@ async function main() {
     await axePage.waitForTimeout(400)
     const layersAxe = await axeRun()
     check('step 8 — axe: zero violations with S4b\'s pill showing and a Layers row\'s ⋯ menu open', layersAxe.length === 0 && (await axePage.locator('[data-section-pill]').count()) === 1 && (await axePage.locator('[popover]:popover-open').count()) === 1, layersAxe.join('; '))
+    // Story 5.9's own state: R-147's shortcuts card open over the editor
+    await axePage.keyboard.press('Escape')
+    await axePage.locator('section[aria-label="Canvas"]').focus()
+    await axePage.keyboard.press('?')
+    await axePage.waitForTimeout(400)
+    const cardAxe = await axeRun()
+    check('step 8 — axe: zero violations with R-147\'s shortcuts card open', cardAxe.length === 0 && (await axePage.locator('dialog[open][data-shortcuts-sheet]').count()) === 1, cardAxe.join('; '))
     await axeContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──

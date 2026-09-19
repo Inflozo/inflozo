@@ -36,6 +36,11 @@ const PILOTS_FILES = [
 const config: NextConfig = {
   // `next dev` otherwise writes AGENTS.md and CLAUDE.md into this folder on every start.
   agentRules: false,
+  /* STORY 5.9 — THE KEYBOARD GATE GETS ITS OWN BUILD DIRECTORY (R-146). Next 16 refuses a SECOND `next dev` for the
+     same directory ("Another next dev server is already running"), and the lock lives under the build directory — so
+     without this, `pnpm check` would fail for anyone who happened to have the app running. The gate boots its own
+     server with INFLOZO_HARNESS=1; nothing else sets it, so every other run is `.next` exactly as before. */
+  distDir: process.env.INFLOZO_HARNESS === '1' ? '.next-harness' : '.next',
   // AD-1: the core packages ship as TypeScript source and are compiled by the app. `@inflozo/library`
   // joined with Story 4.4, the first page to import one — which is what made this list do anything (DW-2).
   transpilePackages: [

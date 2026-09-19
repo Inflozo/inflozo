@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import { useRef, type ReactNode } from 'react'
+import { ShortcutsSheet, openShortcuts } from '@/components/editor/shortcuts-sheet'
 import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
-import { Book, Card, Lightbulb, Logout, Person } from '@/components/kit/icons'
+import { Book, Card, Keyboard, Lightbulb, Logout, Person } from '@/components/kit/icons'
 import { useSubmitting } from '@/components/kit/submit'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import type { PlanId } from '@/lib/plan'
@@ -39,10 +40,13 @@ export type { ShellUser }
    because it is treated differently but because the drawer's row is the sidebar's whole width
    rather than a 220px column, which leaves the line more than the address needs.)
 
-   KEYBOARD SHORTCUTS IS ABSENT, and the frame draws it. There is no editor yet and therefore
-   nothing for the sheet to list — a control that could NEVER act here is absent, not greyed
-   (UX-DR3); Story 5.9 adds it back with the shortcuts it lists. Every other destination is a
-   real link to the address its surface will have and answers "not found" until its epic lands.
+   KEYBOARD SHORTCUTS LANDED AT STORY 5.9, with the shortcuts it lists, exactly as the note that
+   stood here promised. It is the row `S3 Dashboard.dc.html:362` draws — the keyboard glyph at
+   15px, the words, and a mono `?` chip at `margin-left:auto` — and it is the one row that is not
+   a link: it opens `components/editor/shortcuts-sheet.tsx`, the same card `?` opens inside the
+   editor (R-147). Its rows are `lib/keymap.ts`'s `sheetRows()`, so the card lists exactly the
+   keys that work (R-145). Every other destination is a real link to the address its surface will
+   have and answers "not found" until its epic lands.
 
    Light dismiss, Escape and the return of focus to the invoker are the platform's, which is
    what `popover="auto"` buys — and a popover is in the top layer, so the drawer's menu still
@@ -73,6 +77,12 @@ export const PlanBadge = ({ plan }: { plan: PlanId }) => (plan === 'pro' ? <ProB
    `popovertarget` picks whichever came first. */
 const MENU_ID = { sidebar: 'account-menu', drawer: 'account-menu-mobile' } as const
 
+/** S3d's row shape, shared by the five links and the one button, so the two cannot drift. */
+const rowClasses = (dense: boolean) =>
+  `flex items-center gap-[10px] rounded-sm font-medium text-ink transition-colors hover:bg-paper ${
+    dense ? 'p-[9px_12px] text-ui-dense' : 'p-[13px_12px] text-[15px]'
+  } ${ring}`
+
 function Row({
   href,
   icon,
@@ -92,9 +102,7 @@ function Row({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`flex items-center gap-[10px] rounded-sm font-medium text-ink transition-colors hover:bg-paper ${
-        dense ? 'p-[9px_12px] text-ui-dense' : 'p-[13px_12px] text-[15px]'
-      } ${ring}`}
+      className={rowClasses(dense)}
     >
       <span className="shrink-0 text-ink-soft">{icon}</span>
       {children}
@@ -123,6 +131,7 @@ export function AccountMenu({
   onNavigate?: () => void
 }) {
   const menu = useRef<HTMLDivElement>(null)
+  const shortcuts = useRef<HTMLDialogElement>(null)
   const id = MENU_ID[variant]
   const dense = variant === 'sidebar'
   const iconSize = dense ? 15 : 16
@@ -253,6 +262,26 @@ export function AccountMenu({
         <Row href="https://inflozo.com/docs" dense={dense} onNavigate={follow} icon={<Book size={iconSize} />}>
           Docs
         </Row>
+        {/* `S3 Dashboard.dc.html:362`, the one row that opens a card rather than going somewhere. THE MENU IS LEFT
+            OPEN behind it on purpose: a modal `<dialog>` sits above a popover in the top layer, and closing the
+            popover would leave `showModal()`'s return of focus with a hidden element to return to — the trigger
+            would be gone and focus would fall to the body. The press is inside the popover, so nothing light-
+            dismisses it. */}
+        <button
+          type="button"
+          data-shortcuts-open
+          onClick={() => openShortcuts(shortcuts)}
+          className={`w-full text-left ${rowClasses(dense)}`}
+        >
+          <span className="shrink-0 text-ink-soft">
+            <Keyboard size={iconSize} />
+          </span>
+          Keyboard shortcuts
+          {/* the frame's own chip: mono 11px, ink-soft, 1px line, 5px radius, `1px 5px` */}
+          <span className="ml-auto shrink-0 rounded-[5px] border border-line px-[5px] py-px font-mono text-helper-caption text-ink-soft">
+            ?
+          </span>
+        </button>
 
         <div aria-hidden className="m-[4px_8px] h-px bg-line" />
 
@@ -261,6 +290,9 @@ export function AccountMenu({
           <SignOut dense={dense} iconSize={iconSize} />
         </form>
       </div>
+
+      {/* outside the popover, so the dialog is a sibling in the top layer rather than a child of one */}
+      <ShortcutsSheet dialog={shortcuts} />
     </>
   )
 }

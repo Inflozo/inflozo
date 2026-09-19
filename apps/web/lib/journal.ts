@@ -253,52 +253,6 @@ export const FLUSH_MS = 3 * 60 * 1000
 export const BACKOFF_S = [5, 10, 20, 40, 60] as const
 export const backoffSeconds = (attempt: number) => BACKOFF_S[Math.min(Math.max(attempt, 1), BACKOFF_S.length) - 1] as number
 
-/* ───────────────────────────── R-141's three shortcuts ─────────────────────────────
- *
- * ONE HANDLER, NEVER A SECOND IMPLEMENTATION. R-141 (owner, 2026-09-19) is a SEQUENCING ruling and not a behavioural
- * one: ⌘Z calls the same `undo()` the arrow's `onClick` calls, so the two can never drift. Its only rule of its own is
- * the guard below.
- *
- * ⌘Z AND ⇧⌘Z ARE INERT WHILE A FIELD OR A `contenteditable` HOLDS THE CARET. The browser's own undo owns the words
- * being typed and taking it would break Story 5.3's inline editing — so the handler returns `null` there, WITHOUT
- * preventing the default. Everywhere else the gesture is ours and is prevented, so the browser's page-level undo never
- * competes for it.
- *
- * ⌘S IS GUARDED THE SAME WAY IN REVERSE: it is claimed in every focus state, because the browser's Save Page As is
- * never what the press meant.
- *
- * `[` `]`, `1` `2` `3`, `L`, `.`, `P`, `⇧R` and `Esc` are NOT here. They carry UX-DR11's focus condition, which is
- * verified as one keyboard journey rather than one key at a time, so they stay Story 5.9's entire. R-141 draws the
- * line at the modifier: a ⌘-modified binding cannot collide with typing on the canvas.
- */
-export type Shortcut = 'undo' | 'redo' | 'save'
-
-/** Does this element own the caret — a form field, or anything `contenteditable`? */
-/*  ONLY A FIELD WITH TEXT IN IT (Story 5.8's review): a checkbox, a range, a colour well or a `<select>` has no caret
- *  and no undo of its own, and focus RESTS on one after every panel control is used — so counting them made ⌘Z dead
- *  exactly when it is most wanted, straight after changing a control. */
-const TEXTUAL = ['', 'text', 'search', 'url', 'email', 'number', 'password', 'tel']
-export const holdsCaret = (el: { tagName?: string; type?: string; isContentEditable?: boolean } | null | undefined): boolean =>
-  !!el &&
-  (el.isContentEditable === true ||
-    el.tagName === 'TEXTAREA' ||
-    (el.tagName === 'INPUT' && TEXTUAL.includes((el.type ?? '').toLowerCase())))
-
-/** The gesture a key press is, or null for every other press. `inField` is `holdsCaret` over whatever holds the caret
- *  — in the editor document OR in the canvas document, which is why the caller resolves it and this does not. */
-export function shortcutFor(
-  e: { key: string; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey?: boolean },
-  inField: boolean,
-): Shortcut | null {
-  // exactly one of the two, so ⌃⌘Z and a stray AltGr combination are not this gesture
-  if (e.metaKey === e.ctrlKey || e.altKey === true) return null
-  const key = e.key.toLowerCase()
-  if (key === 's') return 'save'
-  if (key !== 'z') return null
-  if (inField) return null
-  return e.shiftKey ? 'redo' : 'undo'
-}
-
 /* ───────────────────────────── the hydrate comparison (AD-15, §AD1.1) ───────────────────────────── */
 
 /** What a hydrate decided, so the editor states it rather than deriving it twice. */

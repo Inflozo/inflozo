@@ -2,9 +2,10 @@
 title: 'Story 5.9 — The keyboard map, and keyboard completeness'
 type: 'feature'
 created: '2026-09-19'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: '467aec611605b59371a7fff23471561a2d8f0d8e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -243,53 +244,53 @@ are ruled — R-145, R-146 and R-147, option 1 each (owner, 2026-09-19)** — so
 whole of it: the eight live keys plus `?`, the five deferred ones absent and named to their stories, and
 the journey in `pnpm check` over a harness mount as well as on the deployed editor.
 
-- [ ] `apps/web/lib/keymap.ts` -- new, pure and importless-but-for-types so `node --test` reaches it:
+- [x] `apps/web/lib/keymap.ts` -- new, pure and importless-but-for-types so `node --test` reaches it:
       FR-D11's map as one table — every binding, its display chips, whether it is `⌘`-modified or
       single-key, and for a binding not yet live the **story** that lands it; `shortcutFor` and
       `holdsCaret` move here from `lib/journal.ts` and grow to return every live gesture; one
       exported `sheetRows()` derives the sheet -- one list, two readers, and no key that does nothing.
-- [ ] `apps/web/lib/journal.ts` -- delete the two moved functions and their keyboard comment, leaving
+- [x] `apps/web/lib/journal.ts` -- delete the two moved functions and their keyboard comment, leaving
       the journal -- the map is not the journal's business (standing rule 7: grep `shortcutFor` and
       `holdsCaret` repo-wide afterwards).
-- [ ] `apps/web/keymap.test.ts` -- new: the I/O matrix's key rows as unit tests — each live key to its
+- [x] `apps/web/keymap.test.ts` -- new: the I/O matrix's key rows as unit tests — each live key to its
       gesture, every single-key gesture null when the caret is in a field, `⌘` gestures unaffected,
       a deferred row bound by nothing and listed by nothing, and the sheet's rows derived from the
       table -- the pure half, on every commit.
-- [ ] `apps/web/journal.test.ts` -- move the `shortcutFor`/`holdsCaret` tests to `keymap.test.ts`,
+- [x] `apps/web/journal.test.ts` -- move the `shortcutFor`/`holdsCaret` tests to `keymap.test.ts`,
       keeping every assertion verbatim -- Story 5.8's proofs survive the move.
-- [ ] `apps/web/app/…/[id]/(editor)/editor.tsx` -- extend `onShortcut` with the live single-key
+- [x] `apps/web/app/…/[id]/(editor)/editor.tsx` -- extend `onShortcut` with the live single-key
       bindings behind the one gate (`L`, `.`, `1` `2` `3`, `?`) and `⌘D` / `Del` on the selection,
       each calling the handler its button calls; give the canvas `<section>` `tabIndex={0}` and the
       iframe `tabIndex={-1}`; render D8c's skip link as the shell's first focusable element; finish
       the `Esc` ladder's rungs 2 and 3 with their announcements -- the whole map, one handler.
-- [ ] `apps/web/components/editor/shortcuts-sheet.tsx` -- new: the Kit's dialog vocabulary around the
+- [x] `apps/web/components/editor/shortcuts-sheet.tsx` -- new: the Kit's dialog vocabulary around the
       Kit's shortcut rows, the rows from `sheetRows()`, `Esc` and focus return the platform's
       (`showModal`) -- the sheet, extrapolated from the two frames that exist.
-- [ ] `apps/web/components/shell/account-menu.tsx` -- add S3's **Keyboard shortcuts** row with its
+- [x] `apps/web/components/shell/account-menu.tsx` -- add S3's **Keyboard shortcuts** row with its
       glyph and `?` chip, opening the same sheet, and replace the "absent" note with what landed --
       the row Story 1.5 deferred here by name.
-- [ ] `apps/web/components/kit/icons.tsx` -- add S3's keyboard glyph from `tabler.json` -- R-130's
+- [x] `apps/web/components/kit/icons.tsx` -- add S3's keyboard glyph from `tabler.json` -- R-130's
       rule: an icon is emitted from the set, never drawn here.
-- [ ] `apps/web/app/(app)/app/harness/editor/page.tsx` · `harness/canvas/route.ts` -- new, both
+- [x] `apps/web/app/(app)/app/harness/editor/page.tsx` · `harness/canvas/route.ts` -- new, both
       refusing with `notFound()` unless `INFLOZO_HARNESS === '1'`: the real `Editor` mounted with
       `EditorData` built from the pilot fixture, and the same `pilotsCanvasDocument()` bytes the
       editor's iframe reads -- a browser can open the editor with no database (executed above).
-- [ ] `apps/web/app/…/[id]/(editor)/editor.tsx` -- one optional `canvasSrc` prop, defaulting to
+- [x] `apps/web/app/…/[id]/(editor)/editor.tsx` -- one optional `canvasSrc` prop, defaulting to
       today's `canvasSrc(isApp(pathname))` -- the harness names its own canvas path instead of a
       guard being bypassed in a real route.
-- [ ] `tools/keyboard/journey.spec.mjs` · `playwright.config.mjs` · `run-keyboard-gate.sh` -- new:
+- [x] `tools/keyboard/journey.spec.mjs` · `playwright.config.mjs` · `run-keyboard-gate.sh` -- new:
       the keyboard-only journey (no pointer events) over the harness — every stop in the I/O matrix
       above plus the settings panel's reset wiring, its confirm and its `Esc` (DW-167) — booting
       `next dev` on a free port with `INFLOZO_HARNESS=1`, refusing with the install command when no
       browser is present, and restoring `apps/web/next-env.d.ts` on the way out (`next dev` rewrites
       it — executed) -- the gate, shaped like `run-matrix-gate.sh` and `run-rls-gate.sh`.
-- [ ] `package.json` -- `test` gains the gate -- so it runs wherever `pnpm check` runs, which is the
+- [x] `package.json` -- `test` gains the gate -- so it runs wherever `pnpm check` runs, which is the
       only place that gates `deploy` (R-116).
-- [ ] `.github/workflows/ci.yml` -- install Chromium for the `check` job before `pnpm check` -- the
+- [x] `.github/workflows/ci.yml` -- install Chromium for the `check` job before `pnpm check` -- the
       one step that makes the gate real in CI; nothing else about the job changes.
-- [ ] `tools/doc-audit.py` -- catalogue rows for the three new `tools/keyboard/` files, then
+- [x] `tools/doc-audit.py` -- catalogue rows for the three new `tools/keyboard/` files, then
       `--generate` -- a new file under `tools/` without a row blocks the commit.
-- [ ] `tools/probe/run-verify-editor.cjs` -- steps 71 onward inside step 5's CSP session: the same
+- [x] `tools/probe/run-verify-editor.cjs` -- steps 71 onward inside step 5's CSP session: the same
       journey on the **deployed** editor with a real session (R-82, NFR-6(d)), the sheet measured
       against the Kit's rows, `/harness/editor` asserted **404** in production, and step 8's axe run
       once more with the sheet open -- the truth, on the real stack.
@@ -297,7 +298,7 @@ the journey in `pnpm check` over a harness mount as well as on the deployed edit
       `reconcile-designs-decisions.md` -- R-145, R-146 and R-147 recorded, and each deferred key made a
       criterion of the story that lands it (5.10, 5.11, 5.12, 5.15, 7.18) -- done at Create, the moment
       the owner ruled; propagate, never localise (standing rule 3).
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-167 with its resolution;
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-167 with its resolution;
       raise the keyboard-focus half of DW-188 if the journey finds it -- the ledger is the record.
 
 **Acceptance Criteria:**
@@ -359,6 +360,16 @@ dev` rewrites the tracked `apps/web/next-env.d.ts` to point at `.next/dev/types/
 points it back, so the gate must restore the file before it exits or every `pnpm check` leaves a
 dirty tree and the next commit carries it.
 
+**One task line was written wrong and the ruling it cites is what was built.** The task for
+`kit/icons.tsx` says the keyboard glyph is "emitted from `packages/library/icons/tabler.json`,
+R-130's rule". That is the rule for a glyph **the export does not draw** — R-92 (owner, 2026-09-05)
+scopes Tabler to the sections, and R-130 and R-142 are its two stated exceptions, each for a state
+with no frame. `S3 Dashboard.dc.html:362` **does** draw this glyph, so it was read from the export
+verbatim, as `kit/icons.tsx`'s own header requires of every glyph the export draws. Nothing is lost
+by it: Tabler's own `keyboard` is the same picture, so the two sources agree and the export is the
+one with the ruling behind it. No Tabler path entered the file and no licence notice is owed by this
+story.
+
 ## Verification
 
 **Commands:**
@@ -375,6 +386,29 @@ dirty tree and the next commit carries it.
   behind its `EvalError` control; step 8's axe zero with the sheet open; `/harness/editor` 404.
 - `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0 (nothing here touches the database; run
   as the control that it does not).
+
+**Executed at Dev (2026-09-19), on this machine, Node 24.18.1:**
+
+| Command | Result |
+|---|---|
+| `bash tools/keyboard/run-keyboard-gate.sh` | **exit 0** — every test of `journey.spec.mjs` passed in one worker with no retries, the count printed by the run itself. `apps/web/next-env.d.ts` was clean afterwards (`git status --porcelain` empty), so the restore on the way out works. |
+| `pnpm check` | **exit 0** — lint, typecheck and every package test, with the keyboard gate inside it and green there too. This is the run CI's `check` job makes, and the one `deploy` needs (R-116). |
+| `pnpm build` | **exit 0** — both harness routes compile as dynamic (`ƒ`), so neither is prerendered into the production output. |
+| `node --test --experimental-strip-types keymap.test.ts dark-mode.test.ts app-routes.test.ts journal.test.ts` | **0 fail** — R-141's three moved proofs, this story's map, guard and card tests, the `HARNESS_ONLY` refusal, and `.` carrying the same Light-only condition its button carries (R-135). |
+| `python3 tools/doc-audit.py --check`, twice | **PASS (0 warnings)** both times — the three `tools/keyboard/` files have catalogue rows. |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0**, run as the control that this story touches no database. |
+
+**Real services (R-82): none were hit at Dev, and that is the story's shape rather than an omission.**
+The harness mounts the real `Editor` with fixture props and runs with **no Supabase environment at
+all** — that is precisely what lets NFR-6(d)'s journey run inside `pnpm check`. `SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `RESEND_API_KEY`, `DODO_API_KEY`,
+`GHOST6_*` and `GHOST5_*` were neither read nor set by anything above; no key was printed. The
+real-stack proof is the **Review** phase's, which R-82 requires and which this story has already
+written: `tools/probe/run-verify-editor.cjs` steps 71 onward drive the same journey against the
+**deployed** editor with a real session over `SUPABASE_URL` / `SUPABASE_SECRET_KEY`, assert
+`/app/harness/editor` and `/app/harness/canvas` answer **404** in production, and run step 8's axe
+pass again with R-147's card open. Those steps are written but **not yet executed** — the code they
+walk is not deployed until the Deploy phase of this story.
 
 ## Owner's manual test
 

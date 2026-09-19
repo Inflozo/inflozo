@@ -1,0 +1,95 @@
+import { randomUUID } from 'node:crypto'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
+import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
+import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
+import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
+import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
+import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
+import { HARNESS } from '@/lib/harness'
+import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
+
+/* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
+ *
+ * THE REAL `Editor`, MOUNTED WITH FIXTURE PROPS, so a browser can open the editor with NO DATABASE — which is what
+ * lets NFR-6(d)'s keyboard journey run inside `pnpm check`, and therefore inside the `check` job `deploy` needs
+ * (R-116). It is the trade `/pilots` has made since Story 4.5, and it is typed against `EditorData`: a prop the
+ * editor gains and this page does not is a COMPILE ERROR rather than silent drift.
+ *
+ * IT DOES NOT EXIST UNLESS `INFLOZO_HARNESS=1`. The gate sets it on the `next dev` it boots and nothing in
+ * production does, so `/harness/editor` answers "not found" there — asserted on the deployed site at Review.
+ *
+ * WHAT IT CANNOT PROVE is the deployed walk's, which R-82 requires of every story anyway: the read, the session, the
+ * sync route and the CSP. A harness proves the wiring and never the stack.
+ *
+ * THE FIXTURE IS DERIVED FROM THE LIBRARY, never written down: every placeable pilot that compiles to the site file
+ * becomes a site-wide section and every one that compiles to Home becomes a page section, each at its design's own
+ * default content — the same shape `seed-editor-project.mjs` writes for the real "Pilot sections" project. So the
+ * journey meets both kinds of singleton (FR-D5's shared header and an ordinary page section) the day the library
+ * holds them, and gains whatever Epics 9 and 10 add without this file being edited (standing rule 4).
+ *
+ * It sits OUTSIDE `(authed)`, which is the whole reason it renders with no Supabase environment at all: `proxy.ts`
+ * returns early when `SUPABASE_URL` is unset and `lib/supabase/server.ts` throws only when a client is really built,
+ * so every route outside that group answers (executed 2026-09-19 — `next dev` ready in 307 ms, the marketing page
+ * 200, every `(authed)` page 500).
+ */
+
+export const metadata: Metadata = { title: 'Editor harness — Inflozo', robots: { index: false, follow: false } }
+
+const HARNESS_PROJECT = { id: '00000000-0000-4000-8000-000000000009', name: 'Pilot sections' }
+
+const instanceOf = (entry: SectionRegistryEntry) => ({
+  instanceId: randomUUID(),
+  layerName: `${entry.category.toUpperCase()} — ${entry.name}`,
+  designId: entry.id,
+  content: defaultContent(entry.contentSchema),
+  controls: {},
+  data: {},
+  darkOverrides: {},
+})
+
+/** Through AD-27's ONE schema, exactly as `read.ts` and the seed do — so every field a later story defaults is
+ *  defaulted here too, and a fixture the real editor could not have stored throws at the harness rather than in the
+ *  browser. */
+const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc =>
+  parseDoc({ schemaVersion: 1, instances: entries.map(instanceOf) }, key)
+
+export default function EditorHarness() {
+  if (!HARNESS) notFound()
+
+  const entries = Object.fromEntries(pilotIds().filter(isPlaceable).map((id) => [id, pilot(id)] as const))
+  const placed = Object.values(entries)
+  const compiling = (file: string) => placed.filter((e) => e.compileTarget.includes(file))
+
+  const docs: Record<string, ProjectDoc> = {
+    [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
+    [templateKeyOf('home')]: docOf(templateKeyOf('home'), compiling(CANVASES.home.file)),
+  }
+
+  const data: EditorData = {
+    docs,
+    entries,
+    rows: Object.fromEntries(placed.map((e) => [e.id, pilotRows(e)])),
+    memberVisibility: Object.fromEntries(placed.map((e) => [e.id, carriesMemberVisibility(e.id)])),
+    pool: imagePool(),
+    swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },
+    // both halves of the map are walked: the sun is drawn, so `.` has something to press (R-135's other arm is the
+    // deployed walk's, on a real Light-only project)
+    darkEnabled: true,
+    revision: 0,
+    // IndexedDB is per ORIGIN, so the harness names its own database and never collides with a real session's
+    userId: 'harness',
+    autosave: false,
+    links: linkResources(),
+    timezone: orbitWeekly.site().timezone,
+    plan: 'free',
+    canvases: canvasesOf(),
+    synthesized: [],
+    defaults: {},
+    dropped: {},
+  }
+
+  // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it bypassed
+  return <Editor project={HARNESS_PROJECT} canvasSrc="/app/harness/canvas" {...data} />
+}
