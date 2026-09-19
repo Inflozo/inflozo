@@ -4801,3 +4801,21 @@ owner: Story 5.17 for the two tabs (its lock makes the second tab read-only, whi
 location: `apps/web/lib/local-store.ts`
 reason: the lock is the designed answer to two writers and building a second one first would be thrown away.
 
+### DW-204: the deployed editor page sometimes takes more than 30 seconds to finish loading for the test harness
+
+plain: Our automated walk of the live site opens the editor dozens of times. On 2026-09-19 roughly one opening in
+  twenty never finished loading within 30 seconds, which stops the walk. Ordinary pages on the same site answer in a
+  third of a second, and the same walk on a local copy never stalls. We do not yet know whether the slow part is this
+  computer's connection or the live editor page itself — if it is the page, a customer would see it too.
+status: open
+severity: medium
+origin: Story 5.8's Review (2026-09-19): fourteen deployed attempts across `9ad1ac47`, `02cd7f7a` and `9faf014c`,
+  two complete; every death a `page.goto` timeout on `/projects/<id>` at a different step. The one stalled `/sync`
+  POST in the same session (patched: the 20s limit) is the same symptom on a different request.
+owner: Story 5.9, before its own deployed walk — read Vercel's function logs for the `[id]` route over a walk, and
+  run the walk once from a second network.
+location: `tools/probe/run-verify-editor.cjs` (`freshLoad`, every `page.goto(editorUrl())`) · the editor route's
+  server reads (`(editor)/read.ts`)
+reason: telling the two causes apart needs Vercel's logs and a second vantage point, neither of which a review of
+  5.8 owns; the harness already refuses to call a died run a result.
+

@@ -383,6 +383,7 @@ Review of 2026-09-19 — five layers over `6c73e5d9..9ad1ac47`. Every patch belo
 - [x] [Review][Patch] Leaving the editor by a link sent nothing (no `visibilitychange` on a soft navigation); a failed flush could schedule retries from an unmounted editor; "tenth attempt" for ever after ten; the tab never closed its IndexedDB handle for another tab's upgrade [editor.tsx · save-state.tsx · local-store.ts]
 - [x] [Review][Patch] The harness: step 70's CSP zero was unscoped and failed on the Projects page's violation (step 14 scopes the same check); nothing drove a tab switch, a reload with edits owed, the route's 409/422, or an edit in fallback. Steps 66b, 66c and 70's edit are new, and step 67 now reloads with an edit owed [tools/probe/run-verify-editor.cjs]
 - [x] [Review][Patch] **HIGH, found by the deployed walk — a sync request that never answers left the editor on "Syncing" for good**, and with the in-flight guard held every later save was refused too (deployed run 8 at `02cd7f7a`: ⌘S → `["Syncing"]`, `revision 9 → 9`, and steps 66b–66c dead behind it; the verifier's run 5 at `9ad1ac47` is the same stall). The request now gives up after 20s and becomes Retrying like any other failure; if the write did land, the route's "already there" answer makes the retry a 200 [editor.tsx `flush`] — harness step 69b holds a request open and reads Retrying, then Retry now → Synced
+- [x] [Review][Defer] The deployed editor page intermittently takes over 30s to finish loading for the harness, so no walk of `9faf014c` completed [tools/probe/run-verify-editor.cjs · the `[id]` editor route] — deferred → DW-204
 - [x] [Review][Defer] The Projects page ships a zod that runs its `Function("")` JIT probe under the CSP (refused, harmless, but a recorded violation) [apps/web — `/`] — deferred, pre-existing → DW-201
 - [x] [Review][Defer] A sync refusal that retrying cannot fix (401 after the session expires, 404, 422) still shows Retrying with the connection sentence [editor.tsx `flush`] — deferred → DW-202
 - [x] [Review][Defer] Two tabs of one project share one local record and interleave their journals; the local database outlives sign-out and project deletion [local-store.ts] — deferred to Story 5.17's lock and the account stories → DW-203
@@ -652,6 +653,15 @@ machine's link stalls (`page.goto: Timeout 30000ms` at a different step each tim
 Run 6: **390 PASS, 0 FAIL**, every Story 5.8 step among them, then died on a later `page.goto`. Run 8 completed:
 383 PASS, **7 FAIL, all one cause** — step 66's sync POST never answered and the editor sat on "Syncing". That is a
 real defect whichever end stalled, patched above (the 20s limit), proved locally by step 69b: **0 FAIL, 390 PASS**.
+
+**The deployed walk at `9faf014c` — NOT A RESULT, and said so.** Six attempts, **0 FAIL in every one**, and every
+one died on `page.goto: Timeout 30000ms` loading the signed-in editor page (`/projects/<id>`, `waitUntil: 'load'`)
+before reaching step 61; the furthest got to step 46. Plain requests from the same machine answer in ~0.3s (six
+`curl`s of `/sign-in`), and the same walk against a local build on the same Supabase never stalls — so the stall is
+between this machine's browser and the deployed editor page, or in that page on Vercel, and nothing here tells the two
+apart (DW-204). Story 5.8's own steps therefore stand on the local production-build run above (0 FAIL, 390 PASS) and
+on run 6 at `02cd7f7a` (390 PASS, 0 FAIL on the deployed site, before the 20s limit went in). **The owner's test on
+the deployed site is the remaining proof.**
 
 **Not driven by any harness, and said so:** the two-live-browsers conflict dialog (the owner's test walks it) and a
 mid-session quota refusal. **Owed after this push deploys:** one complete walk on `app.inflozo.com`.
