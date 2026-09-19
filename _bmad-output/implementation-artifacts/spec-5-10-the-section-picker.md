@@ -439,24 +439,56 @@ published yet. Everything else in § Verification below is green on this machine
 
 ## Verification
 
-**Commands:**
-- `pnpm check` -- expected: green (lint, typecheck, every package test). It is browser-free by design.
-- `pnpm keyboard` -- expected: green, with the picker's stop among the journey's; the run prints its own count.
-- `node --test --experimental-strip-types apps/web/picker.test.ts apps/web/keymap.test.ts apps/web/editor.test.ts`
-  -- expected: 0 fail, the matrix's rows asserted and `⌘K` proved both sides of the caret.
-- `node --test --experimental-strip-types packages/library/src/placement.test.ts packages/library/src/validate.test.ts`
-  -- expected: 0 fail, including a synthetic design whose contexts fit none of its targets being refused.
-- `pnpm build` -- expected: exit 0, and the route table unchanged (this story adds no route).
-- `python3 tools/doc-audit.py --check`, twice -- expected: green; any new file under `tools/` has a catalogue row.
-- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, run as the control that this story touches no database.
-- `env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=/tmp/p5
-  node tools/probe/run-verify-editor.cjs` -- expected: 0 FAIL across every step on the **deployed** editor
-  (R-82); step 5's CSP count still zero behind its `EvalError` control; **step 8's axe zero with the picker
-  open and R-149's filter unchanged** — a second exception would be a failure of this story, not a finding.
+**Run on 2026-09-20 at `e794046b`, on this machine unless a line says otherwise. Every one green.**
 
-**Real services (R-82).** The Review phase runs the walk above against production with real Supabase
-sessions, on the **Pilot sections** project seeded at Story 5.1. Nothing here reads Ghost, Resend or Dodo;
-`projects.style_pack` is read from the real database by the deployed editor. Keys by variable name only.
+| Command | Returned |
+|---|---|
+| `pnpm check` | **exit 0** — lint, typecheck and every package's tests, `fail 0` in each of the six runs it prints (apps/web, section-runtime, library, ghost-shim, theme-compiler, and the root matrix cases). Browser-free by design. |
+| `pnpm keyboard` | **exit 0 — 20 passed**, including this story's three new stops: `⌘K` opens the picker, the arrows cross the grid, `Enter` places and `Esc` returns focus (`journey.spec.mjs:426`); R-152's globe, the replacement and its one `⌘Z` (`:474`); and `⌘K` with the caret in a field **not** opening it (`:499`). `:128`'s no-pointer assertion still passes over the grown spec. |
+| `node --test --experimental-strip-types apps/web/picker.test.ts apps/web/keymap.test.ts apps/web/editor.test.ts` | **34 pass · 0 fail** — the rail in numeric order counted at runtime, the site-wide row, the empty rail, the absent non-placeable, the search across the rail, the three empty states, the meta line, `invokedAt`, and `⌘K` bound, listed and yielding to a caret. |
+| `node --test --experimental-strip-types packages/library/src/placement.test.ts packages/library/src/validate.test.ts` | **0 fail** — `CONTEXTS_BY_TARGET` against appendix B1 §3/§5 with R-7 holding §5 off `error.hbs` and `private.hbs`, each of `offeredOn`'s three conditions withholding a design on its own, `byCategory` numeric, and the two new refusals: `context-unreachable` (a design whose contexts fit none of its own targets) and `category-title`. |
+| `node --test --experimental-strip-types packages/section-runtime/src/doc-edit.test.ts` | **19 pass · 0 fail** — `insertSection` at the invoked position, a position off either end **clamped** rather than refused, a blank or duplicate id refused with nothing written, and R-37's second Post Content refused with the sentence the picker shows (**DW-190**). |
+| `pnpm build` | **exit 0**, and the **route table is unchanged** — the diff since `5ab1ddd7` adds no `page.tsx`, `route.ts` or `layout.tsx`; the only route file it touches is the editor harness page. |
+| `python3 tools/doc-audit.py --check`, twice | **PASS (0 warnings)** both times. |
+| `bash supabase/tests/run-rls-gate.sh` | **exit 0** against the PostgreSQL 17 container with every file in `supabase/migrations/` applied — run as the control that this story touches no database. |
+
+**Real services this phase hit (R-82).** One, and it is the control R-99 exists for: `read.ts` now selects
+`projects.style_pack`, so the column was read **out of the production database** before the code that needs it
+shipped — `GET {SUPABASE_URL}/rest/v1/projects?select=id,name,style_pack` with `SUPABASE_SECRET_KEY`
+(variable names only; no value printed) returned **HTTP 200** with `style_pack` present on every project and
+`{"preset":"paper"}` on **Pilot sections** `b6d4db35-8e5e-45e1-a70f-4daa28916d51`, which `placeholderFor(…).name`
+resolves to `Paper` for S5a's meta line. No migration, no write, no Schema phase. Ghost (T1/T3), Resend and Dodo
+are not read by this story.
+
+**CI on the Dev commit.** `e794046b`'s `check` job went **red on `python3 tools/doc-audit.py --check`** and
+`deploy` was skipped — **DW-132**, not this story: the run crossed midnight, so the generated boards' `updated:`
+stamp went from 2026-09-19 to 2026-09-20 between the pre-commit hook and CI. The regenerated boards ride on this
+phase's second commit and CI is green from there.
+
+**Owed to Review, and not run here (R-82).** The deployed walk. `tools/probe/run-verify-editor.cjs` gains
+**steps 81-85** inside step 5's one CSP session — the picker's shape against S5a and S5c, the rail, the search,
+R-152's globe and its accessible name, the hairline and the pressed pill measured on a hovered gap, the placement
+and its one `⌘Z` — plus **one more `axeRun()` with the picker open**, whose exit criterion is **zero with no
+exception beyond R-149's one**. None of it has executed, because the code is not published yet.
+`env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=/tmp/p5
+node tools/probe/run-verify-editor.cjs` is the command; 0 FAIL across every step is the expectation.
+
+**The matrix, row by row.** Every row of § I/O & Edge-Case Matrix is asserted by a test that ran above, except
+the two noted:
+
+| Row | Proved by |
+|---|---|
+| Open at a gap | `picker.test.ts` `invokedAt` (the gap **is** the position) · probe step 85 for the pill itself |
+| Open by key, with and without a selection | `keymap.test.ts` `⌘K is bound…` · `journey.spec.mjs:426` |
+| Open on an empty canvas | `picker.test.ts` the three empty states |
+| Place | `doc-edit.test.ts` `insertSection` · `journey.spec.mjs:426` (places, closes, focus returns) |
+| Second Post Content | `doc-edit.test.ts` R-37's sentence (**DW-190**) |
+| Site-wide design · a second header | `picker.test.ts` R-152 ×2 · `journey.spec.mjs:474` (globe, replace, one `⌘Z`) |
+| Wrong template · wrong resource | `placement.test.ts` `offeredOn`'s three conditions · `validate.test.ts` `context-unreachable` |
+| Non-placeable | `placement.test.ts` · `picker.test.ts` |
+| Search, no matches · nothing offered here | `picker.test.ts` the search across the rail, and the three empty states |
+| `⌘K` with a caret | `keymap.test.ts` · `journey.spec.mjs:499`, both a panel field and a canvas `contenteditable` |
+| A preview that throws | **read, not executed** — `section-preview.tsx:113`'s `catch` keeps the `Skeleton`, leaves the card addable and `console.warn`s; it is a `.tsx`, which `node --test` cannot load, and no harness forces a `renderSection` throw. The smallest honest statement is that this row is covered by inspection alone. |
 
 ## Owner's manual test
 
